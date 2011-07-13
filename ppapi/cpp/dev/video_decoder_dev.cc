@@ -44,31 +44,11 @@ int32_t VideoDecoder_Dev::Initialize(const PP_VideoConfigElement* config,
       callback.pp_completion_callback());
 }
 
-bool VideoDecoder_Dev::GetConfigs(Instance* instance,
-                                  const PP_VideoConfigElement* prototype_config,
-                                  PP_VideoConfigElement* matching_configs,
-                                  uint32_t matching_configs_size,
-                                  uint32_t* num_of_matching_configs) {
-  if (!has_interface<PPB_VideoDecoder_Dev>())
-    return false;
-  return PP_ToBool(get_interface<PPB_VideoDecoder_Dev>()->GetConfigs(
-      instance->pp_instance(), prototype_config, matching_configs,
-      matching_configs_size, num_of_matching_configs));
-}
-
 void VideoDecoder_Dev::AssignGLESBuffers(
     const std::vector<PP_GLESBuffer_Dev>& buffers) {
   if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
     return;
   get_interface<PPB_VideoDecoder_Dev>()->AssignGLESBuffers(
-      pp_resource(), buffers.size(), &buffers[0]);
-}
-
-void VideoDecoder_Dev::AssignSysmemBuffers(
-    const std::vector<PP_SysmemBuffer_Dev>& buffers) {
-  if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
-    return;
-  get_interface<PPB_VideoDecoder_Dev>()->AssignSysmemBuffers(
       pp_resource(), buffers.size(), &buffers[0]);
 }
 
@@ -95,10 +75,17 @@ int32_t VideoDecoder_Dev::Flush(CompletionCallback callback) {
       pp_resource(), callback.pp_completion_callback());
 }
 
-int32_t VideoDecoder_Dev::Abort(CompletionCallback callback) {
+int32_t VideoDecoder_Dev::Reset(CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_VideoDecoder_Dev>()->Abort(
+  return get_interface<PPB_VideoDecoder_Dev>()->Reset(
+      pp_resource(), callback.pp_completion_callback());
+}
+
+int32_t VideoDecoder_Dev::Destroy(CompletionCallback callback) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+  return get_interface<PPB_VideoDecoder_Dev>()->Destroy(
       pp_resource(), callback.pp_completion_callback());
 }
 

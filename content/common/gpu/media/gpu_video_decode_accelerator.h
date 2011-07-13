@@ -46,7 +46,8 @@ class GpuVideoDecodeAccelerator
   virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyAbortDone() OVERRIDE;
+  virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyDestroyDone() OVERRIDE;
 
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
@@ -64,10 +65,6 @@ class GpuVideoDecodeAccelerator
   bool DeferMessageIfNeeded(const IPC::Message& msg, bool* deferred);
 
   // Handlers for IPC messages.
-  void OnGetConfigs(
-      const gpu::ReadWriteTokens& /* tokens */,
-      const std::vector<uint32>& config,
-      std::vector<uint32>* configs);
   void OnDecode(
       const gpu::ReadWriteTokens& /* tokens */,
       base::SharedMemoryHandle handle, int32 id, int32 size);
@@ -76,16 +73,12 @@ class GpuVideoDecodeAccelerator
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes);
-  void OnAssignSysmemBuffers(
-      const gpu::ReadWriteTokens& /* tokens */,
-      const std::vector<int32> buffer_ids,
-      const std::vector<base::SharedMemoryHandle> data,
-      const std::vector<gfx::Size> sizes);
   void OnReusePictureBuffer(
       const gpu::ReadWriteTokens& /* tokens */,
       int32 picture_buffer_id);
   void OnFlush(const gpu::ReadWriteTokens& /* tokens */);
-  void OnAbort(const gpu::ReadWriteTokens& /* tokens */);
+  void OnReset(const gpu::ReadWriteTokens& /* tokens */);
+  void OnDestroy(const gpu::ReadWriteTokens& /* tokens */);
 
   // Pointer to the IPC message sender.
   IPC::Message::Sender* sender_;

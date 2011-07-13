@@ -27,14 +27,6 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-bool PlatformVideoDecoderImpl::GetConfigs(
-    const std::vector<uint32>& requested_configs,
-    std::vector<uint32>* matched_configs) {
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& configs) {
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
@@ -71,12 +63,6 @@ void PlatformVideoDecoderImpl::AssignGLESBuffers(
   decoder_->AssignGLESBuffers(buffers);
 }
 
-void PlatformVideoDecoderImpl::AssignSysmemBuffers(
-    const std::vector<media::SysmemBuffer>& buffers) {
-  DCHECK(decoder_);
-  decoder_->AssignSysmemBuffers(buffers);
-}
-
 void PlatformVideoDecoderImpl::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(decoder_);
@@ -88,9 +74,14 @@ void PlatformVideoDecoderImpl::Flush() {
   decoder_->Flush();
 }
 
-void PlatformVideoDecoderImpl::Abort() {
+void PlatformVideoDecoderImpl::Reset() {
   DCHECK(decoder_);
-  decoder_->Abort();
+  decoder_->Reset();
+}
+
+void PlatformVideoDecoderImpl::Destroy() {
+  DCHECK(decoder_);
+  decoder_->Destroy();
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfStream() {
@@ -138,7 +129,12 @@ void PlatformVideoDecoderImpl::NotifyFlushDone() {
   client_->NotifyFlushDone();
 }
 
-void PlatformVideoDecoderImpl::NotifyAbortDone() {
+void PlatformVideoDecoderImpl::NotifyResetDone() {
   DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
-  client_->NotifyAbortDone();
+  client_->NotifyResetDone();
+}
+
+void PlatformVideoDecoderImpl::NotifyDestroyDone() {
+  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  client_->NotifyDestroyDone();
 }

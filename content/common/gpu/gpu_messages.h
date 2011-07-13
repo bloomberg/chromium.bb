@@ -462,12 +462,6 @@ IPC_MESSAGE_ROUTED1(GpuTransportTextureHostMsg_TextureUpdated,
 // implementation REQUIRES that |tokens| be the first parameter of these
 // messages.
 
-// Message to query configuration information from the GPU process.
-IPC_SYNC_MESSAGE_CONTROL2_1(AcceleratedVideoDecoderMsg_GetConfigs,
-                            gpu::ReadWriteTokens, /* tokens */
-                            std::vector<uint32>, /* Proto config */
-                            std::vector<uint32>) /* Matching configs */
-
 // Send input buffer for decoding.
 IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
                     gpu::ReadWriteTokens, /* tokens */
@@ -484,18 +478,6 @@ IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
                     std::vector<uint32>, /* Texture ID */
                     std::vector<gfx::Size>) /* Size */
 
-// Sent from Renderer process to the GPU process to give the system memory
-// buffers that the decoder will use for output.
-//
-// The length of the list of SharedMemoryHandles cannot exceed
-// FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE; see
-// ipc/file_descriptor_set_posix.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignSysmemBuffers,
-                    gpu::ReadWriteTokens, /* tokens */
-                    std::vector<int32>, /* Picture buffer ID */
-                    std::vector<base::SharedMemoryHandle>, /* Sysmem buffer */
-                    std::vector<gfx::Size>) /* Size */
-
 // Send from Renderer process to the GPU process to recycle the given picture
 // buffer for further decoding.
 IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
@@ -506,13 +488,13 @@ IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Flush,
                     gpu::ReadWriteTokens) /* tokens */
 
-// Send abort request to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Abort,
+// Send reset request to the decoder.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Reset,
                     gpu::ReadWriteTokens) /* tokens */
 
-// Destroy and release decoder asynchronously.
-IPC_SYNC_MESSAGE_CONTROL1_0(AcceleratedVideoDecoderMsg_Destroy,
-                            gpu::ReadWriteTokens) /* tokens */
+// Send destroy request to the decoder.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Destroy,
+                    gpu::ReadWriteTokens) /* tokens */
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Host Messages
@@ -548,8 +530,11 @@ IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_PictureReady,
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)
 
-// Confirm decoder has been aborted.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_AbortDone)
+// Confirm decoder has been reset.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_ResetDone)
+
+// Confirm decoder has been destroyed.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_DestroyDone)
 
 // Decoder has faced end of stream marker in the stream.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_EndOfStream)

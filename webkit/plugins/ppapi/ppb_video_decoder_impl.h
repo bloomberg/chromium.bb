@@ -18,7 +18,6 @@
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PP_GLESBuffer_Dev;
-struct PP_SysmemBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
 struct PP_VideoBitstreamBuffer_Dev;
 struct PPB_VideoDecoder_Dev;
@@ -40,10 +39,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder implementation.
-  virtual PP_Bool GetConfigs(const PP_VideoConfigElement* requested_configs,
-                             PP_VideoConfigElement* matching_configs,
-                             uint32_t matching_configs_size,
-                             uint32_t* num_of_matching_configs) OVERRIDE;
   virtual int32_t Initialize(PP_Resource context_id,
                              const PP_VideoConfigElement* dec_config,
                              PP_CompletionCallback callback) OVERRIDE;
@@ -51,11 +46,10 @@ class PPB_VideoDecoder_Impl : public Resource,
                          PP_CompletionCallback callback) OVERRIDE;
   virtual void AssignGLESBuffers(uint32_t no_of_buffers,
                                  const PP_GLESBuffer_Dev* buffers) OVERRIDE;
-  virtual void AssignSysmemBuffers(uint32_t no_of_buffers,
-                                   const PP_SysmemBuffer_Dev* buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
   virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Abort(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Reset(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Destroy(PP_CompletionCallback callback) OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
@@ -70,7 +64,8 @@ class PPB_VideoDecoder_Impl : public Resource,
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
-  virtual void NotifyAbortDone() OVERRIDE;
+  virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyDestroyDone() OVERRIDE;
 
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
@@ -89,8 +84,9 @@ class PPB_VideoDecoder_Impl : public Resource,
   PP_Resource context3d_id_;
 
   PP_CompletionCallback initialization_callback_;
-  PP_CompletionCallback abort_callback_;
+  PP_CompletionCallback destroy_callback_;
   PP_CompletionCallback flush_callback_;
+  PP_CompletionCallback reset_callback_;
   CallbackById bitstream_buffer_callbacks_;
 
   // Reference to the plugin requesting this interface.

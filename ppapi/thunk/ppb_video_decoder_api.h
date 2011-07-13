@@ -14,10 +14,6 @@ class PPB_VideoDecoder_API {
  public:
   virtual ~PPB_VideoDecoder_API() {}
 
-  virtual PP_Bool GetConfigs(const PP_VideoConfigElement* proto_config,
-                             PP_VideoConfigElement* matching_configs,
-                             uint32_t matching_configs_size,
-                             uint32_t* num_of_matching_configs) = 0;
   virtual int32_t Initialize(PP_Resource context_id,
                              const PP_VideoConfigElement* decoder_config,
                              PP_CompletionCallback callback) = 0;
@@ -25,11 +21,10 @@ class PPB_VideoDecoder_API {
                          PP_CompletionCallback callback) = 0;
   virtual void AssignGLESBuffers(uint32_t no_of_buffers,
                                  const PP_GLESBuffer_Dev* buffers) = 0;
-  virtual void AssignSysmemBuffers(uint32_t no_of_buffers,
-                                   const PP_SysmemBuffer_Dev* buffers) = 0;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) = 0;
   virtual int32_t Flush(PP_CompletionCallback callback) = 0;
-  virtual int32_t Abort(PP_CompletionCallback callback) = 0;
+  virtual int32_t Reset(PP_CompletionCallback callback) = 0;
+  virtual int32_t Destroy(PP_CompletionCallback callback) = 0;
 };
 
 }  // namespace thunk

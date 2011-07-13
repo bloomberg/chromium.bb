@@ -39,21 +39,31 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
-  bool GetConfigs(const std::vector<uint32>& requested_configs,
-                  std::vector<uint32>* matched_configs) OVERRIDE;
   bool Initialize(const std::vector<uint32>& config) OVERRIDE;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
       const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
-  virtual void AssignSysmemBuffers(
-      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
   void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
   void Flush() OVERRIDE;
-  void Abort() OVERRIDE;
+  void Reset() OVERRIDE;
+  void Destroy() OVERRIDE;
 
   void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 
  private:
+  // Because OMX state-transitions are described solely by the "state reached"
+  // (3.1.2.9.1, table 3-7 of the spec), we track what transition was requested
+  // using this enum.  Note that it is an error to request a transition while
+  // |*this| is in any state other than NO_TRANSITION.
+  enum CurrentStateChange {
+    NO_TRANSITION,  // Not in the middle of a transition.
+    INITIALIZING,
+    FLUSHING,
+    RESETTING,
+    DESTROYING,
+    ERRORING,  // Trumps all other transitions; no recovery is possible.
+  };
+
   // Helper struct for keeping track of the relationship between an OMX output
   // buffer and the GLESBuffer it points to.
   struct OutputPicture {
@@ -66,58 +76,77 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   };
   typedef std::map<int32, OutputPicture> OutputPictureById;
 
+  // Verify that |config| is compatible with this class and hardware.
+  bool VerifyConfigs(const std::vector<uint32>& configs);
+
   MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;
 
   // Create the Component for OMX. Handles all OMX initialization.
   bool CreateComponent();
+  void ShutdownComponent();
   // Buffer allocation/free methods for input and output buffers.
   bool AllocateInputBuffers();
   bool AllocateOutputBuffers();
   void FreeInputBuffers();
   void FreeOutputBuffers();
 
-  // Methods to handle OMX state transitions.
-  bool TransitionToState(OMX_STATETYPE new_state);
-  void OnStateChangeLoadedToIdle(OMX_STATETYPE state);
-  void OnStateChangeIdleToExecuting(OMX_STATETYPE state);
-  void OnStateChangeExecutingToIdle(OMX_STATETYPE state);
-  void OnStateChangeIdleToLoaded(OMX_STATETYPE state);
-  // Stop the components when error is detected.
-  void StopOnError(media::VideoDecodeAccelerator::Error error);
-  // Methods for shutdown
-  void PauseFromExecuting(OMX_STATETYPE ignored);
-  void FlushIOPorts();
-  void InputPortFlushDone(int port);
-  void OutputPortFlushDone(int port);
-  void FlushBegin();
-  void ShutDownOMXFromExecuting();
+  // Methods to handle OMX state transitions.  See section 3.1.1.2 of the spec.
+  // Request transitioning OMX component to some other state.
+  void BeginTransitionToState(OMX_STATETYPE new_state);
+  // The callback received when the OMX component has transitioned.
+  void DispatchStateReached(OMX_STATETYPE reached);
+  // Callbacks handling transitioning to specific states during state changes.
+  // These follow a convention of OnReached<STATE>In<CurrentStateChange>(),
+  // requiring that each pair of <reached-state>/CurrentStateChange is unique
+  // (i.e. the source state is uniquely defined by the pair).
+  void OnReachedIdleInInitializing();
+  void OnReachedExecutingInInitializing();
+  void OnReachedPauseInFlushing();
+  void OnReachedExecutingInFlushing();
+  void OnReachedPauseInResetting();
+  void OnReachedExecutingInResetting();
+  void OnReachedIdleInDestroying();
+  void OnReachedLoadedInDestroying();
+  void OnReachedEOSInFlushing();
+  void OnReachedInvalidInErroring();
 
-  // Determine whether we actually start decoding the bitstream.
-  bool CanAcceptInput();
-  // Determine whether we can issue fill buffer or empty buffer
-  // to the decoder based on the current state and port state.
-  bool CanEmptyBuffer();
+  // Port-flushing helpers.
+  void FlushIOPorts();
+  void InputPortFlushDone();
+  void OutputPortFlushDone();
+
+  // Stop the component when any error is detected.
+  void StopOnError(media::VideoDecodeAccelerator::Error error);
+
+  // Determine whether we can issue fill buffer to the decoder based on the
+  // current state (and outstanding state change) of the component.
   bool CanFillBuffer();
-  void OnIndexParamPortDefinitionChanged(int port);
+
   // Whenever port settings change, the first thing we must do is disable the
   // port (see Figure 3-18 of the OpenMAX IL spec linked to above).  When the
   // port is disabled, the component will call us back here.  We then re-enable
   // the port once we have textures, and that's the second method below.
-  void PortDisabledForSettingsChange(int port);
-  void PortEnabledAfterSettingsChange(int port);
+  void OnOutputPortDisabled();
+  void OnOutputPortEnabled();
 
   // IL-client state.
   OMX_STATETYPE client_state_;
+  // See comment on CurrentStateChange above.
+  CurrentStateChange current_state_change_;
+  // TODO(fischman): come up with a better scheme than this.  There must be some
+  // way that OMX signals to its client that EmptyBufferDone/FillBufferDone
+  // callbacks are the result of port-flushing as opposed to normal operation.
+  bool saw_eos_during_flush_;
 
   // Following are input port related variables.
   int input_buffer_count_;
   int input_buffer_size_;
-  int input_port_;
+  OMX_U32 input_port_;
   int input_buffers_at_component_;
 
   // Following are output port related variables.
-  int output_port_;
+  OMX_U32 output_port_;
   int output_buffers_at_component_;
 
   // NOTE: someday there may be multiple contexts for a single decoder.  But not
@@ -153,15 +182,9 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Method to receive buffers from component's output port
   void FillBufferDoneTask(OMX_BUFFERHEADERTYPE* buffer);
 
-  // Method used the change the state of the port.
-  void ChangePort(OMX_COMMANDTYPE cmd, int port_index);
-
-  // Member function pointers to respond to events
-  void (OmxVideoDecodeAccelerator::*on_port_disable_event_func_)(int port);
-  void (OmxVideoDecodeAccelerator::*on_port_enable_event_func_)(int port);
-  void (OmxVideoDecodeAccelerator::*on_state_event_func_)(OMX_STATETYPE state);
-  void (OmxVideoDecodeAccelerator::*on_flush_event_func_)(int port);
-  void (OmxVideoDecodeAccelerator::*on_buffer_flag_event_func_)();
+  // Send a command to an OMX port.  Return false on failure (after logging and
+  // setting |this| to ERRORING state).
+  bool SendCommandToPort(OMX_COMMANDTYPE cmd, int port_index);
 
   // Callback methods for the OMX component.
   // When these callbacks are received, the

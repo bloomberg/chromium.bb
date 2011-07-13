@@ -32,46 +32,17 @@ class VideoDecoder_Dev : public Resource {
   explicit VideoDecoder_Dev(PP_Resource resource);
   virtual ~VideoDecoder_Dev();
 
-  // Initializates the video decoder with a requested configuration.
-  // Calls Init() on PPB_VideoDecoder_Dev interface.
-  //
-  // Parameters:
-  //  |config| is the configuration on which the decoder should be initialized.
-  //  |context| GL context in which video decoder decodes frames.
-  //  |callback| will be called when decoder is initialized.
+  // PPB_VideoDecoder_Dev implementation.
   int32_t Initialize(const PP_VideoConfigElement* config,
                      const Context3D_Dev& context,
                      CompletionCallback callback);
-
-  // GetConfigs returns supported configurations that are subsets of given
-  // |prototype_config|.
-  bool GetConfigs(Instance* instance,
-                  const PP_VideoConfigElement* prototype_config,
-                  PP_VideoConfigElement* matching_configs,
-                  uint32_t matching_configs_size,
-                  uint32_t* num_of_matching_configs);
-
-  // Provides the decoder with picture buffers for video decoding.
-  // AssignGLESBuffers provides texture-backed buffers, whereas
-  // AssignSysmemBuffers provides system memory-backed buffers.
   void AssignGLESBuffers(const std::vector<PP_GLESBuffer_Dev>& buffers);
-  void AssignSysmemBuffers(const std::vector<PP_SysmemBuffer_Dev>& buffers);
-
-  // Decodes given bitstream buffer. Once decoder is done with processing
-  // |bitstream_buffer| is will call |callback| with provided user data.
   int32_t Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
                  CompletionCallback callback);
-
-  // Tells the decoder to reuse given picture buffer.
   void ReusePictureBuffer(int32_t picture_buffer_id);
-
-  // Flushes the decoder. |callback| will be called as soon as Flush has been
-  // finished.
   int32_t Flush(CompletionCallback callback);
-
-  // Dispatches abortion request to the decoder to abort decoding as soon as
-  // possible. |callback| will be called as soon as abortion has been finished.
-  int32_t Abort(CompletionCallback callback);
+  int32_t Reset(CompletionCallback callback);
+  int32_t Destroy(CompletionCallback callback);
 };
 
 }  // namespace pp

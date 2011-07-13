@@ -14,6 +14,7 @@
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder
 // implementation.
+// See PPB_VideoDecoder_Dev for general usage tips.
 struct PPP_VideoDecoder_Dev {
   // Callback function to provide buffers for the decoded output pictures. If
   // succeeds plugin must provide buffers through AssignPictureBuffers function

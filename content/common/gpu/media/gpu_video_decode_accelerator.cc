@@ -55,13 +55,12 @@ bool GpuVideoDecodeAccelerator::DeferMessageIfNeeded(
     const IPC::Message& msg, bool* deferred) {
   // Only consider deferring for message types that need it.
   switch (msg.type()) {
-    case AcceleratedVideoDecoderMsg_GetConfigs::ID:
     case AcceleratedVideoDecoderMsg_Decode::ID:
     case AcceleratedVideoDecoderMsg_AssignGLESBuffers::ID:
-    case AcceleratedVideoDecoderMsg_AssignSysmemBuffers::ID:
     case AcceleratedVideoDecoderMsg_ReusePictureBuffer::ID:
     case AcceleratedVideoDecoderMsg_Flush::ID:
-    case AcceleratedVideoDecoderMsg_Abort::ID:
+    case AcceleratedVideoDecoderMsg_Reset::ID:
+    case AcceleratedVideoDecoderMsg_Destroy::ID:
       break;
     default:
       return false;
@@ -89,16 +88,14 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_GetConfigs, OnGetConfigs)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
                         OnAssignGLESBuffers)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignSysmemBuffers,
-                        OnAssignSysmemBuffers)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
                         OnReusePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Flush, OnFlush)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Abort, OnAbort)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Reset, OnReset)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Destroy, OnDestroy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -158,16 +155,6 @@ void GpuVideoDecodeAccelerator::NotifyError(
   }
 }
 
-void GpuVideoDecodeAccelerator::OnGetConfigs(
-    const gpu::ReadWriteTokens& /* tokens */,
-    const std::vector<uint32>& requested, std::vector<uint32>* matched) {
-  // TODO(fischman,vrk): this is borked; can't have a VDA before calling
-  // Initialize, but can't call Initialize until we have some configs!
-  if (!video_decode_accelerator_.get())
-    return;
-  video_decode_accelerator_->GetConfigs(requested, matched);
-}
-
 void GpuVideoDecodeAccelerator::Initialize(const std::vector<uint32>& configs) {
   DCHECK(!video_decode_accelerator_.get());
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
@@ -213,15 +200,6 @@ void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
   video_decode_accelerator_->AssignGLESBuffers(buffers);
 }
 
-void GpuVideoDecodeAccelerator::OnAssignSysmemBuffers(
-    const gpu::ReadWriteTokens& /* tokens */,
-    const std::vector<int32> buffer_ids,
-    const std::vector<base::SharedMemoryHandle> data,
-    const std::vector<gfx::Size> sizes) {
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
-}
-
 void GpuVideoDecodeAccelerator::OnReusePictureBuffer(
     const gpu::ReadWriteTokens& /* tokens */,
     int32 picture_buffer_id) {
@@ -235,10 +213,16 @@ void GpuVideoDecodeAccelerator::OnFlush(
   video_decode_accelerator_->Flush();
 }
 
-void GpuVideoDecodeAccelerator::OnAbort(
+void GpuVideoDecodeAccelerator::OnReset(
     const gpu::ReadWriteTokens& /* tokens */) {
   DCHECK(video_decode_accelerator_.get());
-  video_decode_accelerator_->Abort();
+  video_decode_accelerator_->Reset();
+}
+
+void GpuVideoDecodeAccelerator::OnDestroy(
+    const gpu::ReadWriteTokens& /* tokens */) {
+  DCHECK(video_decode_accelerator_.get());
+  video_decode_accelerator_->Destroy();
 }
 
 void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
@@ -261,9 +245,14 @@ void GpuVideoDecodeAccelerator::NotifyFlushDone() {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_FlushDone) failed";
 }
 
-void GpuVideoDecodeAccelerator::NotifyAbortDone() {
-  if (!Send(new AcceleratedVideoDecoderHostMsg_AbortDone(host_route_id_)))
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_AbortDone) failed";
+void GpuVideoDecodeAccelerator::NotifyResetDone() {
+  if (!Send(new AcceleratedVideoDecoderHostMsg_ResetDone(host_route_id_)))
+    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
+}
+
+void GpuVideoDecodeAccelerator::NotifyDestroyDone() {
+  if (!Send(new AcceleratedVideoDecoderHostMsg_DestroyDone(host_route_id_)))
+    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_DestroyDone) failed";
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {

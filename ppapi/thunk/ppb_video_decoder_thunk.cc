@@ -28,19 +28,6 @@ PP_Bool IsVideoDecoder(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-PP_Bool GetConfigs(PP_Resource video_decoder,
-                   const PP_VideoConfigElement* proto_config,
-                   PP_VideoConfigElement* matching_configs,
-                   uint32_t matching_configs_size,
-                   uint32_t* num_of_matching_configs) {
-  EnterVideoDecoder enter(video_decoder, true);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->GetConfigs(proto_config, matching_configs,
-                                    matching_configs_size,
-                                    num_of_matching_configs);
-}
-
 int32_t Initialize(PP_Resource video_decoder,
                    PP_Resource context_id,
                    const PP_VideoConfigElement* decoder_config,
@@ -71,14 +58,6 @@ void AssignGLESBuffers(PP_Resource video_decoder,
     enter.object()->AssignGLESBuffers(no_of_buffers, buffers);
 }
 
-void AssignSysmemBuffers(PP_Resource video_decoder,
-                         uint32_t no_of_buffers,
-                         const PP_SysmemBuffer_Dev* buffers) {
-  EnterVideoDecoder enter(video_decoder, true);
-  if (enter.succeeded())
-    enter.object()->AssignSysmemBuffers(no_of_buffers, buffers);
-}
-
 void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.succeeded())
@@ -93,26 +72,34 @@ int32_t Flush(PP_Resource video_decoder, PP_CompletionCallback callback) {
   return MayForceCallback(callback, result);
 }
 
-int32_t Abort(PP_Resource video_decoder,
+int32_t Reset(PP_Resource video_decoder,
               PP_CompletionCallback callback) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.failed())
     return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Abort(callback);
+  int32_t result = enter.object()->Reset(callback);
+  return MayForceCallback(callback, result);
+}
+
+int32_t Destroy(PP_Resource video_decoder,
+                PP_CompletionCallback callback) {
+  EnterVideoDecoder enter(video_decoder, true);
+  if (enter.failed())
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Destroy(callback);
   return MayForceCallback(callback, result);
 }
 
 const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
   &Create,
   &IsVideoDecoder,
-  &GetConfigs,
   &Initialize,
   &Decode,
   &AssignGLESBuffers,
-  &AssignSysmemBuffers,
   &ReusePictureBuffer,
   &Flush,
-  &Abort
+  &Reset,
+  &Destroy
 };
 
 }  // namespace

@@ -348,7 +348,7 @@ enum ClientState {
   CS_INITIALIZED,
   CS_FLUSHED,
   CS_DONE,
-  CS_ABORTED,
+  CS_RESET,
   CS_ERROR,
   CS_DESTROYED,
   CS_MAX,  // Must be last entry.
@@ -420,7 +420,8 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   virtual void NotifyEndOfStream();
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id);
   virtual void NotifyFlushDone();
-  virtual void NotifyAbortDone();
+  virtual void NotifyResetDone();
+  virtual void NotifyDestroyDone();
   virtual void NotifyError(VideoDecodeAccelerator::Error error);
 
   // Simple getters for inspecting the state of the Client.
@@ -546,12 +547,15 @@ void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
 }
 
 void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
+  // We shouldn't be getting pictures delivered after Reset has completed.
+  DCHECK_LT(state_, CS_RESET);
+
   if (!decoder_.get())
     return;
   last_frame_delivered_ticks_ = base::TimeTicks::Now();
 
   // Because we feed the decoder a limited number of NALUs at a time, we can be
-  // sure each the bitstream buffer from which a frame comes has a limited
+  // sure that the bitstream buffer from which a frame comes has a limited
   // range.  Assert that.
   CHECK_GE((picture.bitstream_buffer_id() + 1) * num_NALUs_per_decode_,
            num_decoded_frames_);
@@ -588,11 +592,20 @@ void EglRenderingVDAClient::NotifyFlushDone() {
   SetState(CS_FLUSHED);
   if (!decoder_.get())
     return;
-  decoder_->Abort();
+  decoder_->Reset();
 }
 
-void EglRenderingVDAClient::NotifyAbortDone() {
-  SetState(CS_ABORTED);
+void EglRenderingVDAClient::NotifyResetDone() {
+  if (!decoder_.get())
+    return;
+  SetState(CS_RESET);
+  if (!decoder_.get())
+    return;
+  decoder_->Destroy();
+}
+
+void EglRenderingVDAClient::NotifyDestroyDone() {
+  SetState(CS_DESTROYED);
 }
 
 void EglRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
@@ -680,6 +693,18 @@ class OmxVideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<Tuple3<int, int, ClientState> > {
 };
 
+// Wait for |note| to report a state and if it's not |expected_state| then
+// assert |client| has deleted its decoder.
+static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
+                                        EglRenderingVDAClient* client,
+                                        ClientState expected_state) {
+  ClientState state = note->Wait();
+  if (state == expected_state) return;
+  ASSERT_TRUE(client->decoder_deleted())
+      << "Decoder not deleted but Wait() returned " << state
+      << ", instead of " << expected_state;
+}
+
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
@@ -743,11 +768,14 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     ASSERT_EQ(note->Wait(), CS_INITIALIZED);
     // InitializeDone kicks off decoding inside the client, so we just need to
     // wait for Flush.
-    if (note->Wait() != CS_FLUSHED)
-      ASSERT_TRUE(clients[i]->decoder_deleted());
-    // FlushDone requests Abort().
-    if (note->Wait() != CS_ABORTED)
-      ASSERT_TRUE(clients[i]->decoder_deleted());
+    ASSERT_NO_FATAL_FAILURE(
+        AssertWaitForStateOrDeleted(note, clients[i], CS_FLUSHED));
+    // FlushDone requests Reset().
+    ASSERT_NO_FATAL_FAILURE(
+        AssertWaitForStateOrDeleted(note, clients[i], CS_RESET));
+    // ResetDone requests Destroy().
+    ASSERT_NO_FATAL_FAILURE(
+        AssertWaitForStateOrDeleted(note, clients[i], CS_DESTROYED));
   }
   // Finally assert that decoding went as expected.
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {
@@ -791,7 +819,7 @@ INSTANTIATE_TEST_CASE_P(
     DISABLED_TearDownTiming, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, CS_DECODER_SET), MakeTuple(1, 1, CS_INITIALIZED),
-        MakeTuple(1, 1, CS_FLUSHED), MakeTuple(1, 1, CS_ABORTED),
+        MakeTuple(1, 1, CS_FLUSHED), MakeTuple(1, 1, CS_RESET),
         MakeTuple(1, 1, static_cast<ClientState>(-1)),
         MakeTuple(1, 1, static_cast<ClientState>(-10)),
         MakeTuple(1, 1, static_cast<ClientState>(-100))));
@@ -804,10 +832,10 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, CS_ABORTED), MakeTuple(1, 3, CS_ABORTED),
-        MakeTuple(2, 1, CS_ABORTED), MakeTuple(3, 1, CS_ABORTED),
-        MakeTuple(5, 1, CS_ABORTED), MakeTuple(8, 1, CS_ABORTED),
-        MakeTuple(15, 1, CS_ABORTED)));
+        MakeTuple(1, 1, CS_DESTROYED), MakeTuple(1, 3, CS_DESTROYED),
+        MakeTuple(2, 1, CS_DESTROYED), MakeTuple(3, 1, CS_DESTROYED),
+        MakeTuple(5, 1, CS_DESTROYED), MakeTuple(8, 1, CS_DESTROYED),
+        MakeTuple(15, 1, CS_DESTROYED)));
 
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play/RePlay for a single decoder.

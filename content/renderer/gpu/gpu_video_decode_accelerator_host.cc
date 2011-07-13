@@ -57,8 +57,10 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPictureReady)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_FlushDone,
                         OnFlushDone)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_AbortDone,
-                        OnAbortDone)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ResetDone,
+                        OnResetDone)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_DestroyDone,
+                        OnDestroyDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_EndOfStream,
                         OnEndOfStream)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ErrorNotification,
@@ -87,14 +89,6 @@ gpu::ReadWriteTokens GpuVideoDecodeAcceleratorHost::SyncTokens() {
   int32 written = cmd_buffer_helper_->InsertToken();
   cmd_buffer_helper_->Flush();
   return gpu::ReadWriteTokens(read, written);
-}
-
-bool GpuVideoDecodeAcceleratorHost::GetConfigs(
-    const std::vector<uint32>& requested_configs,
-    std::vector<uint32>* matched_configs) {
-  // TODO(vrk): Need to rethink GetConfigs.
-  NOTIMPLEMENTED();
-  return true;
 }
 
 bool GpuVideoDecodeAcceleratorHost::Initialize(
@@ -128,13 +122,6 @@ void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(
       command_buffer_route_id_, SyncTokens(), buffer_ids, texture_ids, sizes));
 }
 
-void GpuVideoDecodeAcceleratorHost::AssignSysmemBuffers(
-    const std::vector<media::SysmemBuffer>& buffers) {
-  DCHECK(CalledOnValidThread());
-  // TODO(vrk): Implement.
-  NOTIMPLEMENTED();
-}
-
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
@@ -148,9 +135,19 @@ void GpuVideoDecodeAcceleratorHost::Flush() {
       command_buffer_route_id_, SyncTokens()));
 }
 
-void GpuVideoDecodeAcceleratorHost::Abort() {
+void GpuVideoDecodeAcceleratorHost::Reset() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Abort(
+  if (!ipc_sender_->Send(new AcceleratedVideoDecoderMsg_Reset(
+          command_buffer_route_id_, SyncTokens()))) {
+    LOG(ERROR) << "Send(AcceleratedVideoDecoderMsg_Reset) failed";
+    // TODO(fischman/vrk): signal error to client.
+    return;
+  }
+}
+
+void GpuVideoDecodeAcceleratorHost::Destroy() {
+  DCHECK(CalledOnValidThread());
+  Send(new AcceleratedVideoDecoderMsg_Destroy(
       command_buffer_route_id_, SyncTokens()));
 }
 
@@ -207,9 +204,14 @@ void GpuVideoDecodeAcceleratorHost::OnFlushDone() {
   client_->NotifyFlushDone();
 }
 
-void GpuVideoDecodeAcceleratorHost::OnAbortDone() {
+void GpuVideoDecodeAcceleratorHost::OnResetDone() {
   DCHECK(CalledOnValidThread());
-  client_->NotifyAbortDone();
+  client_->NotifyResetDone();
+}
+
+void GpuVideoDecodeAcceleratorHost::OnDestroyDone() {
+  DCHECK(CalledOnValidThread());
+  client_->NotifyDestroyDone();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnEndOfStream() {

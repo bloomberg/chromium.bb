@@ -28,19 +28,15 @@ class PlatformVideoDecoderImpl
   virtual ~PlatformVideoDecoderImpl();
 
   // PlatformVideoDecoder implementation.
-  virtual bool GetConfigs(
-      const std::vector<uint32>& requested_configs,
-      std::vector<uint32>* matched_configs) OVERRIDE;
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
       const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
-  virtual void AssignSysmemBuffers(
-      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32 picture_buffer_id);
   virtual void Flush() OVERRIDE;
-  virtual void Abort() OVERRIDE;
+  virtual void Reset() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
@@ -55,7 +51,8 @@ class PlatformVideoDecoderImpl
       media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
-  virtual void NotifyAbortDone() OVERRIDE;
+  virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyDestroyDone() OVERRIDE;
 
  private:
   // Client lifetime must exceed lifetime of this class.

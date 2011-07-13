@@ -32,43 +32,13 @@ using ppapi::thunk::PPB_VideoDecoder_API;
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
-// Utility methods to convert data to and from the ppapi C-types and their
-// C++ media-namespace equivalents.
-void CopyToPictureDev(const media::Picture& input, PP_Picture_Dev* output) {
-  DCHECK(output);
-  output->picture_buffer_id = input.picture_buffer_id();
-  output->bitstream_buffer_id = input.bitstream_buffer_id();
-  output->visible_size =
-      PP_MakeSize(input.visible_size().width(), input.visible_size().height());
-  output->decoded_size =
-      PP_MakeSize(input.decoded_size().width(), input.decoded_size().height());
-}
-
-void CopyToConfigList(
-    const PP_VideoConfigElement* configs, std::vector<uint32>* output) {
-  DCHECK(configs);
-  DCHECK(output);
-  // TODO(vrk): This is assuming PP_VideoAttributeDictionary and
-  // VideoAttributeKey have identical enum values. There is no compiler
-  // assert to guarantee this. We either need to add such asserts or
-  // merge PP_VideoAttributeDictionary and VideoAttributeKey.
-  const PP_VideoConfigElement* current = configs;
-  while (*current != PP_VIDEOATTR_DICTIONARY_TERMINATOR) {
-    output->push_back(static_cast<uint32>(*configs));
-    current++;
-  }
-}
-
-}  // namespace
-
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
     : Resource(instance),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       context3d_id_(0),
-      abort_callback_(PP_BlockUntilComplete()),
-      flush_callback_(PP_BlockUntilComplete()) {
+      destroy_callback_(PP_BlockUntilComplete()),
+      flush_callback_(PP_BlockUntilComplete()),
+      reset_callback_(PP_BlockUntilComplete()) {
   ppp_videodecoder_ =
       static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
           GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
@@ -81,31 +51,6 @@ PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
 
 PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
   return this;
-}
-
-PP_Bool PPB_VideoDecoder_Impl::GetConfigs(
-    const PP_VideoConfigElement* requested_configs,
-    PP_VideoConfigElement* matching_configs,
-    uint32_t matching_configs_size,
-    uint32_t* num_of_matching_configs) {
-  if (!instance())
-    return PP_FALSE;
-  if (!platform_video_decoder_.get())
-    return PP_FALSE;
-  if (!matching_configs)
-    return PP_FALSE;
-
-  std::vector<uint32> requested;
-  CopyToConfigList(requested_configs, &requested);
-  std::vector<uint32> matched;
-  platform_video_decoder_->GetConfigs(requested, &matched);
-
-  uint32 i;
-  for (i = 0; i < matched.size() && i < matching_configs_size; i++)
-    matching_configs[i] = matched[i];
-  *num_of_matching_configs = i;
-
-  return PP_TRUE;
 }
 
 int32_t PPB_VideoDecoder_Impl::Initialize(
@@ -139,8 +84,19 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
     return PP_ERROR_FAILED;
 
   std::vector<uint32> copied;
-  // TODO(vrk): Validate configs before copy.
-  CopyToConfigList(decoder_config, &copied);
+  // TODO(fischman,vrk): this is completely broken in that it fails to account
+  // for the semantic distinction between keys and values; it is certainly
+  // possible for a value to show up as 0, and that shouldn't terminate the
+  // config vector.  Only a *key* of 0 should do so.
+  // TODO(vrk): This is assuming PP_VideoAttributeDictionary and
+  // VideoAttributeKey have identical enum values. There is no compiler
+  // assert to guarantee this. We either need to add such asserts or
+  // merge PP_VideoAttributeDictionary and VideoAttributeKey.
+  for (const PP_VideoConfigElement* current = decoder_config;
+       *current != PP_VIDEOATTR_DICTIONARY_TERMINATOR; ++current) {
+    copied.push_back(static_cast<uint32>(*current));
+  }
+
   if (platform_video_decoder_->Initialize(copied)) {
     initialization_callback_ = callback;
     return PP_OK_COMPLETIONPENDING;
@@ -188,31 +144,6 @@ void PPB_VideoDecoder_Impl::AssignGLESBuffers(
   platform_video_decoder_->AssignGLESBuffers(wrapped_buffers);
 }
 
-void PPB_VideoDecoder_Impl::AssignSysmemBuffers(
-    uint32_t no_of_buffers,
-    const PP_SysmemBuffer_Dev* buffers) {
-  if (!platform_video_decoder_.get())
-    return;
-
-  std::vector<media::SysmemBuffer> wrapped_buffers;
-  for (uint32 i = 0; i < no_of_buffers; i++) {
-    PP_SysmemBuffer_Dev in_buf = buffers[i];
-    // TODO(brettw) we should properly handle the errors here if the buffer
-    // isn't a valid image rather than CHECKing.
-    EnterResourceNoLock<PPB_Buffer_API> enter(in_buf.data, true);
-    CHECK(enter.succeeded());
-    webkit::ppapi::PPB_Buffer_Impl* pepper_buffer =
-        static_cast<webkit::ppapi::PPB_Buffer_Impl*>(enter.object());
-    CHECK(pepper_buffer->IsMapped());
-    media::SysmemBuffer buffer(
-        in_buf.info.id,
-        gfx::Size(in_buf.info.size.width, in_buf.info.size.height),
-        pepper_buffer->Map());
-    wrapped_buffers.push_back(buffer);
-  }
-  platform_video_decoder_->AssignSysmemBuffers(wrapped_buffers);
-}
-
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
   if (!platform_video_decoder_.get())
     return;
@@ -224,22 +155,34 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
     return PP_ERROR_BADRESOURCE;
 
   // Store the callback to be called when Flush() is done.
-  // TODO(vmr): Check for current flush/abort operations.
+  // TODO(fischman,vrk): consider implications of already-outstanding callback.
   flush_callback_ = callback;
 
   platform_video_decoder_->Flush();
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_VideoDecoder_Impl::Abort(PP_CompletionCallback callback) {
+int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
   if (!platform_video_decoder_.get())
     return PP_ERROR_BADRESOURCE;
 
-  // Store the callback to be called when Abort() is done.
-  // TODO(vmr): Check for current flush/abort operations.
-  abort_callback_ = callback;
+  // Store the callback to be called when Reset() is done.
+  // TODO(fischman,vrk): consider implications of already-outstanding callback.
+  reset_callback_ = callback;
 
-  platform_video_decoder_->Abort();
+  platform_video_decoder_->Reset();
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PPB_VideoDecoder_Impl::Destroy(PP_CompletionCallback callback) {
+  if (!platform_video_decoder_.get())
+    return PP_ERROR_BADRESOURCE;
+
+  // Store the callback to be called when Destroy() is done.
+  // TODO(fischman,vrk): consider implications of already-outstanding callback.
+  destroy_callback_ = callback;
+
+  platform_video_decoder_->Destroy();
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -266,10 +209,15 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
     return;
 
   ScopedResourceId resource(this);
-  PP_Picture_Dev out_pic;
-  CopyToPictureDev(picture, &out_pic);
+  PP_Picture_Dev output;
+  output.picture_buffer_id = picture.picture_buffer_id();
+  output.bitstream_buffer_id = picture.bitstream_buffer_id();
+  output.visible_size = PP_MakeSize(picture.visible_size().width(),
+                                    picture.visible_size().height());
+  output.decoded_size = PP_MakeSize(picture.decoded_size().width(),
+                                    picture.decoded_size().height());
   ppp_videodecoder_->PictureReady(
-      instance()->pp_instance(), resource.id, out_pic);
+      instance()->pp_instance(), resource.id, output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
@@ -303,12 +251,20 @@ void PPB_VideoDecoder_Impl::NotifyError(
       static_cast<PP_VideoDecodeError_Dev>(error));
 }
 
-void PPB_VideoDecoder_Impl::NotifyAbortDone() {
-  if (abort_callback_.func == NULL)
+void PPB_VideoDecoder_Impl::NotifyResetDone() {
+  if (reset_callback_.func == NULL)
     return;
 
-  // Call the callback that was stored to be called when Abort is done.
-  PP_RunAndClearCompletionCallback(&abort_callback_, PP_OK);
+  // Call the callback that was stored to be called when Reset is done.
+  PP_RunAndClearCompletionCallback(&reset_callback_, PP_OK);
+}
+
+void PPB_VideoDecoder_Impl::NotifyDestroyDone() {
+  if (destroy_callback_.func == NULL)
+    return;
+
+  // Call the callback that was stored to be called when Destroy is done.
+  PP_RunAndClearCompletionCallback(&destroy_callback_, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(

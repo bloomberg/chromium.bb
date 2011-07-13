@@ -40,18 +40,14 @@ class GpuVideoDecodeAcceleratorHost
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool GetConfigs(
-      const std::vector<uint32>& requested_configs,
-      std::vector<uint32>* matched_configs) OVERRIDE;
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignGLESBuffers(
       const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
-  virtual void AssignSysmemBuffers(
-      const std::vector<media::SysmemBuffer>& buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void Flush() OVERRIDE;
-  virtual void Abort() OVERRIDE;
+  virtual void Reset() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
  private:
   // Insert a token into the command buffer and return a token-pair suitable for
@@ -70,7 +66,8 @@ class GpuVideoDecodeAcceleratorHost
                       const gfx::Size& visible_size,
                       const gfx::Size& decoded_size);
   void OnFlushDone();
-  void OnAbortDone();
+  void OnResetDone();
+  void OnDestroyDone();
   void OnEndOfStream();
   void OnErrorNotification(uint32 error);
 
