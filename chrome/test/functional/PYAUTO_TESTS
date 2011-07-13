@@ -125,6 +125,8 @@
       # crbug.com/86525
       '-popups.PopupsTest.testAllowPopupsFromExternalSite',
       '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
+      # crbug.com/89128
+      '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
     ],
