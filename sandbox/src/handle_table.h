@@ -155,10 +155,6 @@ class HandleTable {
   DISALLOW_COPY_AND_ASSIGN(HandleTable);
 };
 
-// Returns the object manager's name associated with a handle
-BOOL GetHandleName(HANDLE handle, string16* handle_name);
-
-
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_HANDLE_TABLE_H_
