@@ -207,7 +207,8 @@ int main(int argc, const char* argv[]) {
     types |= FULL_TEXT;
 
   // We require two arguments: urlcount and profiledir.
-  if (cl->args().size() < 2) {
+  const CommandLine::StringVector& args = cl->GetArgs();
+  if (args.size() < 2) {
     printf("usage: %s [--top-sites] [--full-text] <urlcount> "
            "<profiledir>\n", argv[0]);
     printf("\n  --top-sites Generate thumbnails\n");
@@ -216,8 +217,8 @@ int main(int argc, const char* argv[]) {
   }
 
   int url_count = 0;
-  base::StringToInt(WideToUTF8(cl->args()[0]), &url_count);
-  FilePath dst_dir(cl->args()[1]);
+  base::StringToInt(WideToUTF8(args[0]), &url_count);
+  FilePath dst_dir(args[1]);
   if (!dst_dir.IsAbsolute()) {
     FilePath current_dir;
     file_util::GetCurrentDirectory(&current_dir);

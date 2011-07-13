@@ -235,7 +235,7 @@ int main(int argc, char* argv[]) {
              .AppendASCII("test_shell").AppendASCII("index.html");
   starting_url = net::FilePathToFileURL(path);
 
-  const std::vector<CommandLine::StringType>& args = parsed_command_line.args();
+  const CommandLine::StringVector& args = parsed_command_line.GetArgs();
   if (!args.empty()) {
     GURL url(args[0]);
     if (url.is_valid()) {

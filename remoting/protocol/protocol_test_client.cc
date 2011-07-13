@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  if (!cmd_line->args().empty() || cmd_line->HasSwitch("help"))
+  if (!cmd_line->GetArgs().empty() || cmd_line->HasSwitch("help"))
     usage(argv[0]);
 
   base::AtExitManager exit_manager;

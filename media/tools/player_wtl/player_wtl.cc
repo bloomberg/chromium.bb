@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ int Run(wchar_t* win_cmd_line, int cmd_show) {
   CommandLine::Init(0, NULL);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  const std::vector<std::wstring>& filenames = cmd_line->args();
+  const CommandLine::StringVector& filenames = cmd_line->GetArgs();
 
   CMessageLoop the_loop;
   g_module.AddMessageLoop(&the_loop);

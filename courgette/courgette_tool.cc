@@ -419,11 +419,12 @@ int main(int argc, const char* argv[]) {
 
   // TODO(evanm): this whole file should use FilePaths instead of wstrings.
   std::vector<std::wstring> values;
-  for (size_t i = 0; i < command_line.args().size(); ++i) {
+  const CommandLine::StringVector& args = command_line.GetArgs();
+  for (size_t i = 0; i < args.size(); ++i) {
 #if defined(OS_WIN)
-    values.push_back(command_line.args()[i]);
+    values.push_back(args[i]);
 #else
-    values.push_back(ASCIIToWide(command_line.args()[i]));
+    values.push_back(ASCIIToWide(args[i]));
 #endif
   }
 

@@ -202,16 +202,18 @@ chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
 
 chromeos::HTMLPageScreen* WizardController::GetHTMLPageScreen() {
   if (!html_page_screen_.get()) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+    const CommandLine::StringVector& args = cmd_line->GetArgs();
+
     std::string url;
     // It's strange but args may contains empty strings.
-    for (size_t i = 0; i < command_line->args().size(); i++) {
-      if (!command_line->args()[i].empty()) {
+    for (size_t i = 0; i < args.size(); i++) {
+      if (!args[i].empty()) {
         DCHECK(url.empty()) << "More than one URL in command line";
-        url = command_line->args()[i];
+        url = args[i];
       }
     }
-    DCHECK(!url.empty()) << "No URL in commane line";
+    DCHECK(!url.empty()) << "No URL in command line";
     html_page_screen_.reset(
         new chromeos::HTMLPageScreen(
             oobe_display_->GetHTMLPageScreenActor(), url));
