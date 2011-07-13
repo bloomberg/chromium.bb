@@ -1991,14 +1991,14 @@ static const NaClInst g_Opcodes[2253] = {
   },
   /* 179 */
   { NACLi_386,
-    NACL_EMPTY_IFLAGS,
+    NACL_IFLAG(NaClIllegal),
     InstSahf, 0x00,
     1, g_Operands + 102,
     NULL
   },
   /* 180 */
   { NACLi_386,
-    NACL_EMPTY_IFLAGS,
+    NACL_IFLAG(NaClIllegal),
     InstLahf, 0x00,
     1, g_Operands + 103,
     NULL

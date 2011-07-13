@@ -52,6 +52,10 @@ static const NaClMnemonic kNaClIllegalOp[] = {
   InstInto,
   InstInt1,
   InstInt3,
+  /* Lahf can produce #UD exception in 64-bit code, removing for now.
+   * Issues 1964.
+   */
+  InstLahf,
   InstLes,
   InstLds,
   InstLfs,
@@ -77,6 +81,10 @@ static const NaClMnemonic kNaClIllegalOp[] = {
   InstPushfd,
   InstPushfq,
   InstRet,
+  /* Sahf can produce #UD exception in 64-bit code, removing for now.
+   * Issues 1964.
+   */
+  InstSahf,
   /* TODO(Karl): Intel manual (see comments above) has a blank entry
    * for opcode 0xd6, which states that blank entries in the tables
    * correspond to reserved (undefined) values Should we treat this

@@ -969,11 +969,11 @@ Target: x86-32 bit mode
       RegESP                  OpUse OpSet OpImplicit
       RegRFLAGS               OpSet OpImplicit
   --- 9e ---
-  9e                          386 
+  9e                          386 NaClIllegal
     Sahf {%ah}
       RegAH                   OpUse OpImplicit
   --- 9f ---
-  9f                          386 
+  9f                          386 NaClIllegal
     Lahf {%ah}
       RegAH                   OpSet OpImplicit
   --- a0 ---

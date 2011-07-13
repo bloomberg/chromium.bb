@@ -42,6 +42,10 @@ VALIDATOR: 000000000000001b: d6                                           invali
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
 VALIDATOR: 000000000000001b: d6                                           invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+VALIDATOR: 000000000000001c: 9f                                           lahf
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 000000000000001d: 9e                                           sahf
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
 VALIDATOR: 000000000000001e: d7                                           xlat
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
 VALIDATOR: 000000000000001e: d7                                           xlat
