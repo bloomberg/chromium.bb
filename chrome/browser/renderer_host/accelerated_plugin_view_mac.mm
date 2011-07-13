@@ -96,10 +96,18 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     NSOpenGLPixelFormatAttribute attributes[] =
         { NSOpenGLPFAAccelerated, NSOpenGLPFADoubleBuffer, 0};
 
+    // TODO(zmo): remove the diagnostic error messages once we figure out the
+    // cause of the failure and a fix.
+
     glPixelFormat_.reset([[NSOpenGLPixelFormat alloc]
         initWithAttributes:attributes]);
+    if (!glPixelFormat_)
+      LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
+
     glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
                                                 shareContext:nil]);
+    if (!glContext_)
+      LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
 
     // We "punch a hole" in the window, and have the WindowServer render the
     // OpenGL surface underneath so we can draw over it.
@@ -107,7 +115,12 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
 
     cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
+    if (!cglContext_)
+      LOG(ERROR) << "CGLContextObj failed";
+
     cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
+    if (!cglPixelFormat_)
+      LOG(ERROR) << "CGLPixelFormatObj failed";
 
     // Draw at beam vsync.
     GLint swapInterval;
@@ -118,11 +131,19 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
     // Set up a display link to do OpenGL rendering on a background thread.
-    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
-    CVDisplayLinkSetOutputCallback(
+    CVReturn rt = CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
+    if (rt != kCVReturnSuccess)
+      LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed";
+
+    rt = CVDisplayLinkSetOutputCallback(
         displayLink_, &DrawOneAcceleratedPluginCallback, self);
-    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
+    if (rt != kCVReturnSuccess)
+      LOG(ERROR) << "CVDisplayLinkSetOutputCallback failed";
+
+    rt = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
         displayLink_, cglContext_, cglPixelFormat_);
+    if (rt != kCVReturnSuccess)
+      LOG(ERROR) << "CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext failed";
 
     [[NSNotificationCenter defaultCenter]
          addObserver:self
