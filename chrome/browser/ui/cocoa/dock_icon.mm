@@ -158,6 +158,15 @@ static const float kBadgeIndent = 5.0f;
   while (1) {
     NSFont* countFont = [NSFont fontWithName:@"Helvetica-Bold"
                                         size:countFontSize];
+
+    // This will generally be plain Helvetica.
+    if (!countFont)
+      countFont = [NSFont userFontOfSize:countFontSize];
+
+    // Continued failure would generate an NSException.
+    if (!countFont)
+      break;
+
     [countAttrsDict setObject:countFont forKey:NSFontAttributeName];
     countAttrString.reset(
         [[NSAttributedString alloc] initWithString:countString
