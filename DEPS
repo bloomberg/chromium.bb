@@ -1,6 +1,6 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "5979",
+  "arm_toolchain_version": "6044",
   "x86_toolchain_version": "5979",
   # Keep them seperate from the rest of the list.
 
