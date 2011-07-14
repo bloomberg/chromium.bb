@@ -348,13 +348,18 @@ def UpdateRemoteHW(buildroot, board, remote_ip):
 
 
 def RemoteRunPyAuto(buildroot, board, remote_ip):
-  """Runs the pyauto tests on actual hardware."""
+  """Execute PyAuto tests on a remote machine.
+
+  Runs the CONTINUOUS suite of desktopui_PyAutoFunctionalTests on a remote
+  Chromium OS device.
+  """
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   test_suite = 'client/site_tests/desktopui_PyAutoFunctionalTests/control'
   cmd = ['./run_remote_tests.sh',
          '--board=%s' % board,
          '--remote=%s' % remote_ip,
+         '--args=CONTINUOUS',
          test_suite, ]
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
