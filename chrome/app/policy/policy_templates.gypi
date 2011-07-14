@@ -136,7 +136,7 @@
                 # they are copied to the bundle.
                 'output_path': '<(INTERMEDIATE_DIR)/app_manifest',
                 # The reason we are not enumerating all the locales is that
-                # the translations would eat up 20MB disk space in the
+                # the translations would eat up 3.5MB disk space in the
                 # application bundle:
                 'available_locales': 'en',
               },
