@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,9 @@ bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
   if (no_sandbox) {
     base::ProcessHandle process = base::kNullProcessHandle;
     cmd_line->AppendSwitch(switches::kNoSandbox);
-    base::LaunchApp(*cmd_line, false, false, &process);
+    base::LaunchOptions options;
+    options.process_handle = &process;
+    base::LaunchProcess(*cmd_line, options);
     set_handle(process);
   } else {
     set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));

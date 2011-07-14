@@ -298,18 +298,17 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
   }
 
   if (using_suid_sandbox_ && !selinux) {
-    base::ProcessHandle sandbox_helper_process;
     std::vector<std::string> adj_oom_score_cmdline;
-
     adj_oom_score_cmdline.push_back(sandbox_binary_);
     adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);
     adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
     adj_oom_score_cmdline.push_back(base::IntToString(score));
-    CommandLine adj_oom_score_cmd(adj_oom_score_cmdline);
-    if (base::LaunchApp(adj_oom_score_cmd, false, true,
-                        &sandbox_helper_process)) {
+
+    base::ProcessHandle sandbox_helper_process;
+    base::LaunchOptions options;
+    options.process_handle = &sandbox_helper_process;
+    if (base::LaunchProcess(adj_oom_score_cmdline, options))
       ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
-    }
   } else if (!using_suid_sandbox_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;

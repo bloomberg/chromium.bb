@@ -803,6 +803,6 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
 
   CommandLine cmd(InstallUtil::GetChromeUninstallCmd(system_level_toast,
                                                      GetType()));
-  base::LaunchApp(cmd, false, false, NULL);
+  base::LaunchProcess(cmd, base::LaunchOptions());
 }
 #endif

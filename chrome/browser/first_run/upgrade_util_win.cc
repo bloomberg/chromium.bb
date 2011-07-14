@@ -64,8 +64,7 @@ namespace upgrade_util {
 bool RelaunchChromeBrowser(const CommandLine& command_line) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(chrome::kChromeVersionEnvVar);
-  return base::LaunchApp(
-      command_line.command_line_string(), false, false, NULL);
+  return base::LaunchProcess(command_line, base::LaunchOptions());
 }
 
 bool IsUpdatePendingRestart() {

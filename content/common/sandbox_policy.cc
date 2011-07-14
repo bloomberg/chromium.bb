@@ -400,7 +400,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   if (!in_sandbox) {
     policy->Release();
-    base::LaunchApp(*cmd_line, false, false, &process);
+    base::LaunchOptions options;
+    options.process_handle = &process;
+    base::LaunchProcess(*cmd_line, options);
     return process;
   }
 

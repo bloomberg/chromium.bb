@@ -59,8 +59,12 @@ HANDLE LaunchCommandViaProcessLauncher(const std::wstring& command_field) {
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateUpdateCommandLine(command_field));
 
-  if (command_line != NULL)
-    base::LaunchApp(*command_line, false, true, &launched_process);
+  if (command_line != NULL) {
+    base::LaunchOptions options;
+    options.start_hidden = true;
+    options.process_handle = &launched_process;
+    base::LaunchProcess(*command_line, options);
+  }
 
   return launched_process;
 }

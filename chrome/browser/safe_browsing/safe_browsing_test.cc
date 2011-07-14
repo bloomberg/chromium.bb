@@ -145,7 +145,12 @@ class SafeBrowsingTestServer {
     cmd_line.AppendArgNative(FILE_PATH_LITERAL("--datafile=") +
                              datafile.value());
 
-    if (!base::LaunchApp(cmd_line, false, true, &server_handle_)) {
+    base::LaunchOptions options;
+#if defined(OS_WIN)
+    options.start_hidden = true;
+#endif
+    options.process_handle = &server_handle_;
+    if (!base::LaunchProcess(cmd_line, options)) {
       LOG(ERROR) << "Failed to launch server: "
                  << cmd_line.command_line_string();
       return false;

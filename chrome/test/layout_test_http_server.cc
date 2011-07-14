@@ -82,7 +82,12 @@ bool LayoutTestHttpServer::Start() {
     cmd_line.AppendArg("--run_background");
 #endif
 
-  running_ = base::LaunchApp(cmd_line, true, false, NULL);
+  // The Python script waits for the server to start responding to requests,
+  // then exits.  So we want to wait for the Python script to exit before
+  // continuing.
+  base::LaunchOptions options;
+  options.wait = true;
+  running_ = base::LaunchProcess(cmd_line, options);
   return running_;
 }
 
@@ -96,7 +101,10 @@ bool LayoutTestHttpServer::Stop() {
   if (!PrepareCommandLine(&cmd_line))
     return false;
   cmd_line.AppendArg("--server=stop");
-  bool stopped = base::LaunchApp(cmd_line, true, false, NULL);
+
+  base::LaunchOptions options;
+  options.wait = true;
+  bool stopped = base::LaunchProcess(cmd_line, options);
   running_ = !stopped;
   return stopped;
 }

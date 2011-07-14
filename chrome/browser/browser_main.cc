@@ -926,7 +926,7 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
     CommandLine new_command_line = parameters.command_line_;
     new_command_line.AppendSwitchPath(switches::kUserDataDir,
                                       new_user_data_dir);
-    base::LaunchApp(new_command_line, false, false, NULL);
+    base::LaunchProcess(new_command_line, base::LaunchOptions());
   }
 #else
   // TODO(port): fix this.  See comments near the definition of

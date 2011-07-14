@@ -41,7 +41,9 @@ bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
                                            import_bookmarks_path);
   // Time to launch the process that is going to do the import. We'll wait
   // for the process to return.
-  return base::LaunchApp(import_cmd, true, false, NULL);
+  base::LaunchOptions options;
+  options.wait = true;
+  return base::LaunchProcess(import_cmd, options);
 }
 
 // static

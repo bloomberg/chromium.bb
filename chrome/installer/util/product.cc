@@ -62,7 +62,8 @@ bool Product::LaunchChrome(const FilePath& application_path) const {
   bool success = !application_path.empty();
   if (success) {
     CommandLine cmd(application_path.Append(installer::kChromeExe));
-    success = base::LaunchApp(cmd, false, false, NULL);
+    base::LaunchOptions options;
+    success = base::LaunchProcess(cmd, options);
   }
   return success;
 }

@@ -312,7 +312,11 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 
 void ServiceProcessControl::Launcher::DoRun() {
   DCHECK(notify_task_.get());
-  if (base::LaunchApp(*cmd_line_, false, true, NULL)) {
+  base::LaunchOptions options;
+#if defined(OS_WIN)
+  options.start_hidden = true;
+#endif
+  if (base::LaunchProcess(*cmd_line_, options)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             NewRunnableMethod(this,
                                               &Launcher::DoDetectLaunched));

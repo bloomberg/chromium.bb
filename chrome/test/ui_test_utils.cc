@@ -709,7 +709,9 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
                             websocket_pid_file_.value());
   SetPythonPath();
-  if (!base::LaunchApp(*cmd_line.get(), true, false, NULL)) {
+  base::LaunchOptions options;
+  options.wait = true;
+  if (!base::LaunchProcess(*cmd_line.get(), options)) {
     LOG(ERROR) << "Unable to launch websocket server.";
     return false;
   }
@@ -761,7 +763,9 @@ TestWebSocketServer::~TestWebSocketServer() {
   cmd_line->AppendArg("--chromium");
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
                             websocket_pid_file_.value());
-  base::LaunchApp(*cmd_line.get(), true, false, NULL);
+  base::LaunchOptions options;
+  options.wait = true;
+  base::LaunchProcess(*cmd_line.get(), options);
 }
 
 TestNotificationObserver::TestNotificationObserver()
