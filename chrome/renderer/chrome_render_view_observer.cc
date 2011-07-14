@@ -92,6 +92,7 @@ static const char kSSLInsecureContent[] = "SSL.InsecureContent";
 static const char kDotGoogleDotCom[] = ".google.com";
 static const char kWWWDotGoogleDotCom[] = "www.google.com";
 static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
+static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
 static const char kDotJS[] = ".js";
 static const char kDotCSS[] = ".css";
 static const char kDotSWF[] = ".swf";
@@ -108,6 +109,9 @@ enum {
   INSECURE_CONTENT_RUN_JS,
   INSECURE_CONTENT_RUN_CSS,
   INSECURE_CONTENT_RUN_SWF,
+  INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
+  INSECURE_CONTENT_RUN_HOST_YOUTUBE,
+  INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
   INSECURE_CONTENT_NUM_EVENTS
 };
 
@@ -440,6 +444,10 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+  else if (host == kWWWDotYoutubeDotCom)
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
+                              INSECURE_CONTENT_NUM_EVENTS);
   GURL gurl(url);
   if (EndsWith(gurl.path(), kDotHTML, false))
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
@@ -469,6 +477,14 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   if (host == kWWWDotGoogleDotCom)
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  else if (host == kWWWDotYoutubeDotCom)
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_YOUTUBE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  else if (EndsWith(host, kDotGoogleUserContentDotCom, false))
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
                               INSECURE_CONTENT_NUM_EVENTS);
   GURL gurl(url);
   if (gurl.host() == kWWWDotYoutubeDotCom)
