@@ -11,6 +11,7 @@
 
 InfoBarButtonBorder::InfoBarButtonBorder() {
 #ifdef TOUCH_UI
+  // The vertical padding would be 5 without the code below.
   static const int kPreferredPaddingVertical = 12;
   set_vertical_padding(kPreferredPaddingVertical);
 #endif
