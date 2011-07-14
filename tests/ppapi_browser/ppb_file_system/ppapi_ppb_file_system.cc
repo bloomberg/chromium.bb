@@ -26,12 +26,9 @@ const size_t kNumFileSystemTypes =
 
 void TestCreate() {
   PP_Resource file_system = kInvalidResource;
-  const struct PPB_Core* const ppb_core = PPBCore();
-  const struct PPB_FileSystem_Dev* const ppb_file_system = PPBFileSystemDev();
-  /*
-   * Test to see if PPB_FileSystem_Dev::Create returns PP_Resource value of 0
-   * if the instance parameter is invalid.
-   */
+  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
+  // Test to see if PPB_FileSystem_Dev::Create returns PP_Resource value of 0
+  // if the instance parameter is invalid.
   file_system = ppb_file_system->Create(kInvalidInstance,
                                         PP_FILESYSTEMTYPE_EXTERNAL);
   EXPECT(file_system == kInvalidResource);
@@ -42,45 +39,35 @@ void TestCreate() {
                                         PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   EXPECT(file_system == kInvalidResource);
 
-  /* Test for failure when an invalid file system type is requested. */
+  // Test for failure when an invalid file system type is requested.
   file_system = ppb_file_system->Create(pp_instance(),
                                         PP_FILESYSTEMTYPE_INVALID);
   EXPECT(file_system == kInvalidResource);
 
-  /*
-   * Test to see if PPB_FileSystem_Dev::Create returns a valid PP_Resource
-   * value when given a valid PP_Instance value parameter.  Test for all
-   * three file system types PPB_FileSystem_Dev supports.
-   */
-  for (size_t j = 0; j < kNumFileSystemTypes; ++j) {
-    file_system =
-        ppb_file_system->Create(pp_instance(), kFileSystemTypes[j]);
+  // Test to see if PPB_FileSystem_Dev::Create returns a valid PP_Resource
+  // value when given a valid PP_Instance value parameter.  Test for all
+  // three file system types PPB_FileSystem_Dev supports.
+  for (size_t i = 0; i < kNumFileSystemTypes; ++i) {
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
     EXPECT(file_system != kInvalidResource);
-    ppb_core->ReleaseResource(file_system);
+    PPBCore()->ReleaseResource(file_system);
   }
   TEST_PASSED;
 }
 
 void TestIsFileSystem() {
-  const struct PPB_Core* const ppb_core = PPBCore();
-  const struct PPB_FileSystem_Dev* const ppb_file_system = PPBFileSystemDev();
-  const struct PPB_URLRequestInfo* const ppb_url_request_info =
-      PPBURLRequestInfo();
-  PP_Resource url_request_info = kInvalidResource;
+  const PPB_Core* ppb_core = PPBCore();
+  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
   PP_Resource file_system = kInvalidResource;
-  size_t j = 0;
   PP_Bool is_file_system = PP_FALSE;
 
-  /* Test fail for invalid resource. */
+  // Test fail for invalid resource.
   EXPECT(ppb_file_system->IsFileSystem(kInvalidResource) != PP_TRUE);
 
-  /*
-   * Test pass for the different valid system types, and test fail against a
-   * resource that has been released.
-   */
-  for (j = 0; j < kNumFileSystemTypes; ++j) {
-    file_system = ppb_file_system->Create(pp_instance(),
-                                          kFileSystemTypes[j]);
+  // Test pass for the different valid system types, and test fail against a
+  // resource that has been released.
+  for (size_t i = 0; i < kNumFileSystemTypes; ++i) {
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
     CHECK(file_system != kInvalidResource);
 
     is_file_system = ppb_file_system->IsFileSystem(file_system);
@@ -92,8 +79,8 @@ void TestIsFileSystem() {
     EXPECT(is_file_system == PP_FALSE);
   }
 
-  /* Test fail against a non-filesystem resource */
-  url_request_info = ppb_url_request_info->Create(pp_instance());
+  // Test fail against a non-filesystem resource.
+  PP_Resource url_request_info = PPBURLRequestInfo()->Create(pp_instance());
   CHECK(url_request_info != kInvalidResource);
   is_file_system = ppb_file_system->IsFileSystem(url_request_info);
   ppb_core->ReleaseResource(url_request_info);
@@ -103,108 +90,87 @@ void TestIsFileSystem() {
 }
 
 void TestOpen() {
-  size_t j = 0;
-  PP_Resource file_system = 0;
+  const PPB_Core* ppb_core = PPBCore();
+  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
+  PP_Resource file_system = kInvalidResource;
   PP_CompletionCallback nop_callback =
       MakeTestableCompletionCallback("NopCallback", OpenCallback);
   PP_CompletionCallback open_callback =
-      MakeTestableCompletionCallback("OpenCallback", OpenCallback);
-  const struct PPB_Core* const ppb_core = PPBCore();
-  const struct PPB_FileSystem_Dev* const ppb_file_system = PPBFileSystemDev();
+      MakeTestableCompletionCallback("OpenCallback", OpenCallback, NULL);
+  int32_t pp_error = PP_ERROR_FAILED;
+  int64_t kSize = 1024;  // Dummy value.
 
-  /* Test to make sure opening an invalid file system fails. */
-  int32_t pp_error = ppb_file_system->Open(kInvalidResource,
-                                           1024,  /* Dummy value */
-                                           nop_callback);
+  // Test to make sure opening an invalid file system fails.
+  pp_error = ppb_file_system->Open(kInvalidResource, kSize, nop_callback);
   EXPECT(pp_error == PP_ERROR_BADRESOURCE);
 
-  /*
-   * Test to make sure external file system is not supported.
-   * TODO(sanga): Once Chrome supports external file systems, change this test
-   * to reflect the change.
-   */
+  // Test to make sure external file system is not supported.
+  // TODO(sanga): Once Chrome supports external file systems, change this test
+  // to reflect the change.
   file_system = ppb_file_system->Create(pp_instance(),
                                         PP_FILESYSTEMTYPE_EXTERNAL);
-  pp_error = ppb_file_system->Open(file_system,
-                                   1024,  /* Dummy value */
-                                   nop_callback);
+  pp_error = ppb_file_system->Open(file_system, kSize, nop_callback);
   ppb_core->ReleaseResource(file_system);
   EXPECT(pp_error == PP_ERROR_FAILED);
 
-  /* Test local temporary and local persistant file systems */
-  for (j = 1; j < kNumFileSystemTypes; ++j) {
+  // Test local temporary and local persistant file systems.
+  for (size_t i = 1; i < kNumFileSystemTypes; ++i) {
 #ifdef __native_client__
-    /* Test fail for blocking open */
-    /*
-     * Only conduct this test with nexe.  Trusted ppapi plugin does not work
-     * with synchronous Open call.
-     * See http://code.google.com/p/chromium/issues/detail?id=78449
-     */
-    file_system = ppb_file_system->Create(pp_instance(),
-                                          kFileSystemTypes[j]);
-    pp_error = ppb_file_system->Open(file_system,
-                                     1024,  /* Dummy value */
+    // Test fail for blocking open.
+    //
+    // Only conduct this test with nexe.  Trusted ppapi plugin does not work
+    // with synchronous Open call.
+    // See http://code.google.com/p/chromium/issues/detail?id=78449
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
+    pp_error = ppb_file_system->Open(file_system, kSize,
                                      PP_BlockUntilComplete());
     ppb_core->ReleaseResource(file_system);
     EXPECT(pp_error == PP_ERROR_BADARGUMENT);
 #endif
 
-    /* Test success for asynchronous open */
-    file_system = ppb_file_system->Create(pp_instance(),
-                                          kFileSystemTypes[j]);
-    pp_error = ppb_file_system->Open(file_system,
-                                     1024,  /* Dummy value */
-                                     open_callback);
+    // Test success for asynchronous open.
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
+    pp_error = ppb_file_system->Open(file_system, kSize, open_callback);
     ppb_core->ReleaseResource(file_system);
     EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
     open_callback =
         MakeTestableCompletionCallback("OpenCallback", OpenCallback);
 
-    /* Test fail for multiple opens */
-    file_system = ppb_file_system->Create(pp_instance(),
-                                          kFileSystemTypes[j]);
-    pp_error = ppb_file_system->Open(file_system,
-                                     1024,  /* Dummy value */
-                                     open_callback);
-    CHECK(pp_error == PP_OK_COMPLETIONPENDING);  /* Previously tested */
-    pp_error = ppb_file_system->Open(file_system,
-                                     1024,  /* Dummy value */
-                                     nop_callback);
+    // Test fail for multiple opens.
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
+    pp_error = ppb_file_system->Open(file_system, kSize, open_callback);
+    CHECK(pp_error == PP_OK_COMPLETIONPENDING);  // Previously tested.
+    pp_error = ppb_file_system->Open(file_system, kSize, nop_callback);
     ppb_core->ReleaseResource(file_system);
-    EXPECT(pp_error == PP_ERROR_FAILED);
+    // TODO(polina, sanga): take out PP_ERROR_FAILED when chrome is fixed.
+    EXPECT(pp_error == PP_ERROR_FAILED || pp_error == PP_ERROR_INPROGRESS);
   }
   TEST_PASSED;
 }
 
 void TestGetType() {
-  const struct PPB_Core* const ppb_core = PPBCore();
-  const struct PPB_FileSystem_Dev* const ppb_file_system = PPBFileSystemDev();
-  const struct PPB_URLRequestInfo* const ppb_url_request_info =
-      PPBURLRequestInfo();
-  PP_Resource url_request_info = kInvalidResource;
+  const PPB_Core* ppb_core = PPBCore();
+  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
   PP_Resource file_system = kInvalidResource;
-  size_t j = 0;
   PP_FileSystemType_Dev type = PP_FILESYSTEMTYPE_INVALID;
 
-  /* Test for invalid resource. */
+  // Test for invalid resource.
   EXPECT(PP_FILESYSTEMTYPE_INVALID == ppb_file_system->GetType(0));
 
-  /* Test pass for the different valid system types */
-  for (j = 0; j < kNumFileSystemTypes; ++j) {
-    file_system = ppb_file_system->Create(pp_instance(),
-                                          kFileSystemTypes[j]);
+  // Test pass for the different valid system types.
+  for (size_t i = 0; i < kNumFileSystemTypes; ++i) {
+    file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
     CHECK(file_system != kInvalidResource);
 
     type = ppb_file_system->GetType(file_system);
     ppb_core->ReleaseResource(file_system);
 
-    EXPECT(type == kFileSystemTypes[j]);
+    EXPECT(type == kFileSystemTypes[i]);
   }
 
-  /* Test fail against a non-filesystem resource */
-  url_request_info = ppb_url_request_info->Create(pp_instance());
+  // Test fail against a non-filesystem resource.
+  PP_Resource url_request_info = PPBURLRequestInfo()->Create(pp_instance());
   CHECK(url_request_info != kInvalidResource);
-
   type = ppb_file_system->GetType(url_request_info);
   ppb_core->ReleaseResource(url_request_info);
   EXPECT(type == PP_FILESYSTEMTYPE_INVALID);
