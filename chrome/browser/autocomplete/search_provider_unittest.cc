@@ -540,8 +540,8 @@ TEST_F(SearchProviderTest, AutocompletePreviousSearchOnSpace) {
   EXPECT_EQ(4u, term_match.inline_autocomplete_offset);
 }
 
-// Verifies the SearchProvider sets descriptions for results correctly.
-TEST_F(SearchProviderTest, PostProcessResults) {
+// Verifies AutocompleteControllers sets descriptions for results correctly.
+TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   // Add an entry that corresponds to a keyword search with 'term2'.
   string16 term(ASCIIToUTF16("term2"));
   HistoryService* history =
@@ -559,6 +559,7 @@ TEST_F(SearchProviderTest, PostProcessResults) {
   SearchProvider* provider = provider_.release();
   providers.push_back(provider);
   AutocompleteController controller(providers);
+  controller.set_search_provider(provider);
   provider->set_listener(&controller);
   controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
                    AutocompleteInput::ALL_MATCHES);

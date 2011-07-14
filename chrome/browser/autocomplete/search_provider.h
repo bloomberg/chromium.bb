@@ -69,7 +69,6 @@ class SearchProvider : public AutocompleteProvider,
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual void PostProcessResult(AutocompleteResult* result) OVERRIDE;
 
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,

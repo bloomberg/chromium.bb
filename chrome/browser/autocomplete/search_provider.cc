@@ -14,8 +14,8 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -213,33 +213,6 @@ void SearchProvider::Stop() {
   StopSuggest();
   done_ = true;
   default_provider_suggest_text_.clear();
-}
-
-void SearchProvider::PostProcessResult(AutocompleteResult* result) {
-  // For each group of contiguous matches from the same TemplateURL, show the
-  // provider name as a description on the first match in the group.
-  const TemplateURL* last_template_url = NULL;
-  for (AutocompleteResult::iterator i = result->begin(); i != result->end();
-       ++i) {
-    if (i->provider == this &&
-        (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-         i->type == AutocompleteMatch::SEARCH_HISTORY ||
-         i->type == AutocompleteMatch::SEARCH_SUGGEST)) {
-      i->description.clear();
-      i->description_class.clear();
-      DCHECK(i->template_url);  // We should always set a template_url
-      if (last_template_url != i->template_url) {
-        i->description = l10n_util::GetStringFUTF16(
-            IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-            i->template_url->AdjustedShortNameForLocaleDirection());
-        i->description_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::DIM));
-      }
-      last_template_url = i->template_url;
-    } else {
-      last_template_url = NULL;
-    }
-  }
 }
 
 void SearchProvider::OnURLFetchComplete(const URLFetcher* source,

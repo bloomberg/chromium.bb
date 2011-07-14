@@ -173,6 +173,7 @@ struct AutocompleteMatch;
 class AutocompleteProvider;
 class AutocompleteResult;
 class HistoryContentsProvider;
+class KeywordProvider;
 class Profile;
 class SearchProvider;
 class TemplateURL;
@@ -403,13 +404,6 @@ class AutocompleteProvider
   // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
   virtual void DeleteMatch(const AutocompleteMatch& match);
 
-  // Invoked after combining the results from all providers (including sorting,
-  // culling and all that) but before the AutocompleteController's delegate is
-  // notified. This is exposed to allow providers to alter the descriptions of
-  // matches based on position in the final result set. Providers should not use
-  // this to add new matches.
-  virtual void PostProcessResult(AutocompleteResult* result);
-
 #ifdef UNIT_TEST
   void set_listener(ACProviderListener* listener) { listener_ = listener; }
 #endif
@@ -604,6 +598,7 @@ class AutocompleteController : public ACProviderListener {
   explicit AutocompleteController(const ACProviders& providers)
       : delegate_(NULL),
         providers_(providers),
+        keyword_provider_(NULL),
         search_provider_(NULL),
         done_(true),
         in_start_(false) {
@@ -668,6 +663,11 @@ class AutocompleteController : public ACProviderListener {
   // the popup to ensure it's not showing an out-of-date query.
   void ExpireCopiedEntries();
 
+#ifdef UNIT_TEST
+  void set_search_provider(SearchProvider* provider) {
+    search_provider_ = provider;
+  }
+#endif
   SearchProvider* search_provider() const { return search_provider_; }
 
   // Getters
@@ -684,6 +684,10 @@ class AutocompleteController : public ACProviderListener {
   // Start() is calling this to get the synchronous result.
   void UpdateResult(bool is_synchronous_pass);
 
+  // For each group of contiguous matches from the same TemplateURL, show the
+  // provider name as a description on the first match in the group.
+  void UpdateKeywordDescriptions(AutocompleteResult* result);
+
   // Calls AutocompleteControllerDelegate::OnResultChanged() and if done sends
   // AUTOCOMPLETE_CONTROLLER_RESULT_READY.
   void NotifyChanged(bool notify_default_match);
@@ -698,6 +702,8 @@ class AutocompleteController : public ACProviderListener {
 
   // A list of all providers.
   ACProviders providers_;
+
+  KeywordProvider* keyword_provider_;
 
   SearchProvider* search_provider_;
 

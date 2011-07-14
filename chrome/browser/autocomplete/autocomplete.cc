@@ -47,6 +47,14 @@
 
 using base::TimeDelta;
 
+static bool AreTemplateURLsEqual(const TemplateURL* a,
+                                 const TemplateURL* b) {
+  // We can't use equality of the pointers because SearchProvider copies the
+  // TemplateURLs. Instead we compare based on ID.
+  // a may be NULL, but never b, so we don't handle the case of a==b==NULL.
+  return a && b && (a->id() == b->id());
+}
+
 // AutocompleteInput ----------------------------------------------------------
 
 AutocompleteInput::AutocompleteInput()
@@ -507,9 +515,6 @@ void AutocompleteProvider::Stop() {
 void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
-void AutocompleteProvider::PostProcessResult(AutocompleteResult* result) {
-}
-
 AutocompleteProvider::~AutocompleteProvider() {
   Stop();
 }
@@ -802,7 +807,8 @@ AutocompleteController::AutocompleteController(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
-  providers_.push_back(new KeywordProvider(this, profile));
+  keyword_provider_ = new KeywordProvider(this, profile);
+  providers_.push_back(keyword_provider_);
   providers_.push_back(new HistoryContentsProvider(this, profile, hqp_enabled));
   providers_.push_back(new BuiltinProvider(this, profile));
   providers_.push_back(new ExtensionAppProvider(this, profile));
@@ -953,13 +959,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
     result_.CopyOldMatches(input_, last_result);
   }
 
-  size_t start_size = result_.size();
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
-       ++i)
-    (*i)->PostProcessResult(&result_);
-  // Providers should not alter the number of matches, otherwise it's very
-  // likely the matches are no longer sorted.
-  DCHECK_EQ(start_size, result_.size());
+  UpdateKeywordDescriptions(&result_);
 
   bool notify_default_match = is_synchronous_pass;
   if (!is_synchronous_pass) {
@@ -978,6 +978,33 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   }
 
   NotifyChanged(notify_default_match);
+}
+
+void AutocompleteController::UpdateKeywordDescriptions(
+    AutocompleteResult* result) {
+  const TemplateURL* last_template_url = NULL;
+  for (AutocompleteResult::iterator i = result->begin(); i != result->end();
+       ++i) {
+    if (((i->provider == keyword_provider_) && i->template_url) ||
+        ((i->provider == search_provider_) &&
+         (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+          i->type == AutocompleteMatch::SEARCH_HISTORY ||
+          i->type == AutocompleteMatch::SEARCH_SUGGEST))) {
+      i->description.clear();
+      i->description_class.clear();
+      DCHECK(i->template_url);
+      if (!AreTemplateURLsEqual(last_template_url, i->template_url)) {
+        i->description = l10n_util::GetStringFUTF16(
+            IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
+            i->template_url->AdjustedShortNameForLocaleDirection());
+        i->description_class.push_back(
+            ACMatchClassification(0, ACMatchClassification::DIM));
+      }
+      last_template_url = i->template_url;
+    } else {
+      last_template_url = NULL;
+    }
+  }
 }
 
 void AutocompleteController::NotifyChanged(bool notify_default_match) {

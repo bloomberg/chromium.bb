@@ -436,20 +436,6 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     result.template_url = element;
   result.transition = PageTransition::KEYWORD;
 
-  // Create popup entry description based on the keyword name.
-  if (!element->IsExtensionKeyword()) {
-    result.description.assign(l10n_util::GetStringFUTF16(
-        IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION, keyword));
-    string16 keyword_desc(
-        l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION));
-    AutocompleteMatch::ClassifyLocationInString(
-        keyword_desc.find(ASCIIToUTF16("%s")),
-        prefix_length,
-        result.description.length(),
-        ACMatchClassification::DIM,
-        &result.description_class);
-  }
-
   return result;
 }
 
