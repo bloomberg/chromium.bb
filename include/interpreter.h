@@ -5,11 +5,6 @@
 #ifndef GESTURES_INTERPRETER_H__
 #define GESTURES_INTERPRETER_H__
 
-#include <algorithm>
-#include <set>
-
-#include <base/logging.h>
-
 #include "gestures/include/gestures.h"
 
 // This is a collection of supporting structs and an interface for

@@ -6,9 +6,8 @@
 
 #include <algorithm>
 
-#include <base/logging.h>
-
 #include "gestures/include/gestures.h"
+#include "gestures/include/logging.h"
 
 using std::min;
 
@@ -27,7 +26,7 @@ ImmediateInterpreter::~ImmediateInterpreter() {
 
 Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
   if (!prev_state_.fingers) {
-    LOG(ERROR) << "Must call SetHardwareProperties() before Push().";
+    Log("Must call SetHardwareProperties() before Push().");
     return 0;
   }
 

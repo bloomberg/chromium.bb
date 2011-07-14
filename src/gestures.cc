@@ -6,10 +6,9 @@
 
 #include <sys/time.h>
 
-#include <base/logging.h>
-
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
+#include "gestures/include/logging.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 
 // C API:
@@ -37,15 +36,17 @@ const FingerState* HardwareState::GetFingerState(short tracking_id) const {
 
 GestureInterpreter* NewGestureInterpreterImpl(int version) {
   if (version < kMinSupportedVersion) {
-    LOG(ERROR) << "Client too old. It's using version " << version
-               << ", but library has min supported version "
-               << kMinSupportedVersion;
+    Log("Client too old. It's using version %d"
+        ", but library has min supported version %d",
+        version,
+        kMinSupportedVersion);
     return NULL;
   }
   if (version > kMaxSupportedVersion) {
-    LOG(ERROR) << "Client too new. It's using version " << version
-               << ", but library has max supported version "
-               << kMaxSupportedVersion;
+    Log("Client too new. It's using version %d"
+        ", but library has max supported version %d",
+        version,
+        kMaxSupportedVersion);
     return NULL;
   }
   return new gestures::GestureInterpreter(version);

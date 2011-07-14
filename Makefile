@@ -72,6 +72,10 @@ CXXFLAGS+=\
 	--coverage \
 	-ftest-coverage \
 	-fprofile-arcs
+else
+CXXFLAGS+=\
+	-DXLOGGING \
+	$(shell $(PKG_CONFIG) --cflags pixman-1)
 endif
 
 all: $(SONAME)

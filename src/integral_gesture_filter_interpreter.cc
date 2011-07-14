@@ -6,8 +6,6 @@
 
 #include <math.h>
 
-#include <base/logging.h>
-
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 
