@@ -167,8 +167,13 @@ static Bool SerializeAllProcessors() {
   static int size = 0;
   int rv;
   if (NULL == g_squashybuffer) {
+    void *allocated;
     size = sysconf(_SC_PAGE_SIZE);
-    g_squashybuffer = valloc(size);
+    allocated = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
+    if (allocated == MAP_FAILED) {
+      return FALSE;
+    }
+    g_squashybuffer = allocated;
   }
   if (size == 0) return FALSE;
   if (NULL == g_squashybuffer) return FALSE;

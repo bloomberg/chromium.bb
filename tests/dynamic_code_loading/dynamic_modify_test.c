@@ -332,10 +332,8 @@ int TestMain() {
 
   RUN_TEST(test_replacing_code);
   RUN_TEST(test_replacing_code_unaligned);
-#ifndef DISABLE_SLOWPATH_TEST
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_replacing_code_slowpaths);
-#endif
 #endif
   RUN_TEST(test_illegal_code_replacment);
   RUN_TEST(test_external_jump_target_replacement);
