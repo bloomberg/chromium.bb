@@ -98,10 +98,7 @@
       # Browser crash?  crbug.com/86150
       '-flash.FlashTest.testDisableFlashPlugin',
       # crbug.com/89279
-      '-gpu.GpuTest.test3dCss',
-      '-gpu.GpuTest.testCompositing',
-      '-gpu.GpuTest.testSingleGpuProcess',
-      '-gpu.GpuTest.testWebGL',
+      '-gpu',
       # crbug.com/87959
       '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       # crbug.com/83459
