@@ -5,22 +5,15 @@
  */
 
 
-#include <stdio.h>
-#include <string.h>
-
-#include <map>
-
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
-#include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 
 
 namespace plugin {
 
-DescBasedHandle::DescBasedHandle()
-    : plugin_(NULL), wrapper_(NULL) {
+DescBasedHandle::DescBasedHandle(Plugin* plugin, nacl::DescWrapper* wrapper)
+    : plugin_(plugin), wrapper_(wrapper) {
   PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
 }
@@ -28,10 +21,6 @@ DescBasedHandle::DescBasedHandle()
 DescBasedHandle::~DescBasedHandle() {
   PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
-  if (NULL != wrapper_) {
-    delete wrapper_;
-    wrapper_ = NULL;
-  }
 }
 
 DescBasedHandle* DescBasedHandle::New(Plugin* plugin,
@@ -39,19 +28,10 @@ DescBasedHandle* DescBasedHandle::New(Plugin* plugin,
   PLUGIN_PRINTF(("DescBasedHandle::New (plugin=%p)\n",
                  static_cast<void*>(plugin)));
 
-  DescBasedHandle* desc_based_handle = new(std::nothrow) DescBasedHandle();
-
-  if (desc_based_handle == NULL || !desc_based_handle->Init(plugin, wrapper)) {
+  if ((plugin == NULL) || (wrapper == NULL)) {
     return NULL;
   }
-
-  return desc_based_handle;
-}
-
-bool DescBasedHandle::Init(Plugin* plugin, nacl::DescWrapper* wrapper) {
-  plugin_ = plugin;
-  wrapper_ = wrapper;
-  return true;
+  return new DescBasedHandle(plugin, wrapper);
 }
 
 BrowserInterface* DescBasedHandle::browser_interface() const {

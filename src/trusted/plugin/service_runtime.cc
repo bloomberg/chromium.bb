@@ -25,10 +25,10 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 #include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
@@ -221,7 +221,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   return true;
 }
 
-ScriptableHandle* ServiceRuntime::SetupAppChannel() {
+SrpcClient* ServiceRuntime::SetupAppChannel() {
   PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (subprocess_=%p)\n",
                  reinterpret_cast<void*>(subprocess_.get())));
   nacl::DescWrapper* connect_desc = subprocess_->socket_addr()->Connect();
@@ -231,14 +231,10 @@ ScriptableHandle* ServiceRuntime::SetupAppChannel() {
   } else {
     PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (conect_desc=%p)\n",
                    static_cast<void*>(connect_desc)));
-    ConnectedSocket* portable_connected_socket =
-        ConnectedSocket::New(plugin(), connect_desc);
-    ScriptableHandle* connected_socket =
-        plugin()->browser_interface()->NewScriptableHandle(
-            portable_connected_socket);
-    PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (connected_socket=%p)\n",
-                   static_cast<void*>(connected_socket)));
-    return connected_socket;
+    SrpcClient* srpc_client = SrpcClient::New(plugin(), connect_desc);
+    PLUGIN_PRINTF(("ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
+                   static_cast<void*>(srpc_client)));
+    return srpc_client;
   }
 }
 

@@ -28,9 +28,9 @@ struct SelLdrLauncher;
 namespace plugin {
 
 class BrowserInterface;
-class ConnectedSocket;
 class ErrorInfo;
 class Plugin;
+class SrpcClient;
 class SrtSocket;
 class ScriptableHandle;
 class ServiceRuntime;
@@ -62,14 +62,14 @@ class ServiceRuntime {
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
-  // Spawn a sel_ldr instance and establish a ConnectedSocket to it.  The nexe
+  // Spawn a sel_ldr instance and establish an SrpcClient to it.  The nexe
   // to be started is passed through |nacl_file_desc|.  On success, returns
   // true.  On failure, returns false and |error_string| is set to something
   // describing the error.
   bool Start(nacl::DescWrapper* nacl_file_desc, ErrorInfo* error_info);
 
   // Starts the application channel to the nexe.
-  ScriptableHandle* SetupAppChannel();
+  SrpcClient* SetupAppChannel();
 
   bool Kill();
   bool Log(int severity, nacl::string msg);

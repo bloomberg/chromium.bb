@@ -24,19 +24,18 @@ nacl::string NaClSubprocess::detailed_description() {
   nacl::stringstream ss;
   ss << description()
      << " w/ this(" << static_cast<void*>(this)
-     << "), socket(" << static_cast<void*>(socket_)
-     << "), service_runtime(" << static_cast<void*>(service_runtime_)
+     << "), srpc_client(" << static_cast<void*>(srpc_client_.get())
+     << "), service_runtime(" << static_cast<void*>(service_runtime_.get())
      << ")";
   return ss.str();
 }
 
 // Shutdown the socket connection and service runtime, in that order.
 void NaClSubprocess::Shutdown() {
-  ScriptableHandle::Unref(&socket_);
-  if (service_runtime_ != NULL) {
+  srpc_client_.reset(NULL);
+  if (service_runtime_.get() != NULL) {
     service_runtime_->Shutdown();
-    delete service_runtime_;
-    service_runtime_ = NULL;
+    service_runtime_.reset(NULL);
   }
 }
 
@@ -45,38 +44,33 @@ NaClSubprocess::~NaClSubprocess() {
 }
 
 bool NaClSubprocess::StartSrpcServices() {
-  ScriptableHandle::Unref(&socket_);
-  socket_ = service_runtime_->SetupAppChannel();
-  return socket_ != NULL;
+  srpc_client_.reset(service_runtime_->SetupAppChannel());
+  return NULL != srpc_client_.get();
 }
 
 bool NaClSubprocess::StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
-  return socket_->handle()->StartJSObjectProxy(plugin, error_info);
+  return srpc_client_->StartJSObjectProxy(plugin, error_info);
 }
 
-bool NaClSubprocess::HasMethod(uintptr_t method_id, CallType call_type) {
-  if (NULL == socket()) {
+bool NaClSubprocess::HasMethod(uintptr_t method_id) {
+  if (NULL == srpc_client_.get()) {
     return false;
   }
-  return socket()->handle()->HasMethod(method_id, call_type);
+  return srpc_client_->HasMethod(method_id);
 }
 
-bool NaClSubprocess::InitParams(uintptr_t method_id,
-                                CallType call_type,
-                                SrpcParams* params) {
-  if (NULL == socket()) {
+bool NaClSubprocess::InitParams(uintptr_t method_id, SrpcParams* params) {
+  if (NULL == srpc_client_.get()) {
     return false;
   }
-  return socket()->handle()->InitParams(method_id, call_type, params);
+  return srpc_client_->InitParams(method_id, params);
 }
 
-bool NaClSubprocess::Invoke(uintptr_t method_id,
-                            CallType call_type,
-                            SrpcParams* params) {
-  if (NULL == socket()) {
+bool NaClSubprocess::Invoke(uintptr_t method_id, SrpcParams* params) {
+  if (NULL == srpc_client_.get()) {
     return false;
   }
-  return socket()->handle()->Invoke(method_id, call_type, params);
+  return srpc_client_->Invoke(method_id, params);
 }
 
 }  // namespace plugin

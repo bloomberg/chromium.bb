@@ -50,22 +50,34 @@ class PortableHandle {
   // Delete this object.
   void Delete() { delete this; }
 
-  // A call to Invalidate() means the object should discard any
-  // refcounted objects it holds, without using Unref(), e.g. by
-  // setting the pointers to NULL.  These objects have either already
-  // been deallocated or will be deallocated shortly.
-  virtual void Invalidate() = 0;
-
-  // Generic dispatch interface
-  bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
-  bool HasMethod(uintptr_t method_id, CallType call_type);
-
-  std::vector<uintptr_t>* GetPropertyIdentifiers() {
-    return property_get_methods_.Keys();
+  // Get the method signature so ScriptableHandle can marshal the inputs
+  virtual bool InitParams(uintptr_t method_id,
+                          CallType call_type,
+                          SrpcParams* params) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
+    UNREFERENCED_PARAMETER(params);
+    return false;
   }
 
-  // Get the method signature so ScriptableHandle can marshal the inputs
-  bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  // Generic dispatch interface
+  virtual bool Invoke(uintptr_t method_id,
+                      CallType call_type,
+                      SrpcParams* params) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
+    UNREFERENCED_PARAMETER(params);
+    return false;
+  }
+  virtual bool HasMethod(uintptr_t method_id, CallType call_type) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
+    return false;
+  }
+
+  virtual std::vector<uintptr_t>* GetPropertyIdentifiers() {
+    return NULL;
+  }
 
   // The interface to the browser.
   virtual BrowserInterface* browser_interface() const = 0;
@@ -74,51 +86,14 @@ class PortableHandle {
   virtual Plugin* plugin() const = 0;
 
   // DescBasedHandle objects encapsulate a descriptor.
-  virtual nacl::DescWrapper* wrapper() const { return NULL; }
   virtual NaClDesc* desc() const { return NULL; }
-
-  // This is only implemented for ConnectedSocket, to avoid an unchecked
-  // downcast.  It reports an error if this binding is invoked.
-  virtual bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
-    UNREFERENCED_PARAMETER(plugin);
-    UNREFERENCED_PARAMETER(error_info);
-    NACL_NOTREACHED();
-    return false;
-  }
 
  protected:
   PortableHandle();
   virtual ~PortableHandle();
 
-  // Derived classes can set the properties and methods they export by
-  // the following three methods.
-  void AddPropertyGet(RpcFunction function_ptr,
-                      const char* name,
-                      const char* outs);
-  void AddPropertySet(RpcFunction function_ptr,
-                      const char* name,
-                      const char* ins);
-  void AddMethodCall(RpcFunction function_ptr,
-                     const char* name,
-                     const char* ins,
-                     const char* outs);
-
-  // Every derived class should provide an implementation for these functions
-  // to allow handling of method calls that cannot be registered at build time.
-  virtual bool InitParamsEx(uintptr_t method_id,
-                            CallType call_type,
-                            SrpcParams* params);
-  virtual bool InvokeEx(uintptr_t method_id,
-                        CallType call_type,
-                        SrpcParams* params);
-  virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
-
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PortableHandle);
-  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
-  MethodMap methods_;
-  MethodMap property_get_methods_;
-  MethodMap property_set_methods_;
 };
 
 }  // namespace plugin

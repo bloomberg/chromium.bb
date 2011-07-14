@@ -76,8 +76,7 @@ bool ScriptableHandlePpapi::HasProperty(const pp::Var& name,
                  static_cast<void*>(this), name.DebugString().c_str()));
   if (!name.is_string() && !name.is_int())
     return false;
-  bool has_property =
-      HasCallType(PROPERTY_GET, NameAsString(name), "HasProperty");
+  bool has_property = HasCallType(PROPERTY_GET, name.AsString(), "HasProperty");
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasProperty (has_property=%d)\n",
                  has_property));
   return has_property;
@@ -90,8 +89,7 @@ bool ScriptableHandlePpapi::HasMethod(const pp::Var& name, pp::Var* exception) {
                  static_cast<void*>(this), name.DebugString().c_str()));
   if (!name.is_string())
     return false;
-  bool has_method =
-      HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
+  bool has_method = HasCallType(METHOD_CALL, name.AsString(), "HasMethod");
   PLUGIN_PRINTF(("ScriptableHandlePpapi::HasMethod (has_method=%d)\n",
                  has_method));
   return has_method;
@@ -240,8 +238,13 @@ void ScriptableHandlePpapi::GetAllPropertyNames(
   UNREFERENCED_PARAMETER(exception);
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames ()\n"));
   std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
+  if (ids == NULL) {
+    PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+                   "(ids=%p)\n", reinterpret_cast<void*>(ids)));
+    return;
+  }
   PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
-                 "(ids=%"NACL_PRIuS")\n", ids->size()));
+                 "(ids->size()=%"NACL_PRIuS")\n", ids->size()));
   for (size_t i = 0; i < ids->size(); ++i) {
     nacl::string name =
         handle()->browser_interface()->IdentifierToString(ids->at(i));

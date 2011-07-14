@@ -12,7 +12,6 @@
       # which exports a library which is then linked in.
       # Currently this results inlink time symbol clashes
       # Portable plugin code
-      'connected_socket.cc',
       'desc_based_handle.cc',
       'method_map.cc',
       'nacl_subprocess.cc',

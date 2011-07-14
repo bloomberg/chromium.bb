@@ -12,10 +12,12 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_SUBPROCESS_H_
 
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/portable_handle.h"
+#include "native_client/src/trusted/plugin/service_runtime.h"
+#include "native_client/src/trusted/plugin/srpc_client.h"
 
 namespace plugin {
 
+class ConnectedSocket;
 class Plugin;
 class ServiceRuntime;
 
@@ -29,21 +31,21 @@ class NaClSubprocess {
  public:
   NaClSubprocess(NaClSubprocessId assigned_id,
                  ServiceRuntime* service_runtime,
-                 ScriptableHandle* socket)
+                 SrpcClient* srpc_client)
     : assigned_id_(assigned_id),
       service_runtime_(service_runtime),
-      socket_(socket) {
+      srpc_client_(srpc_client) {
   }
   virtual ~NaClSubprocess();
 
-  ServiceRuntime* service_runtime() const { return service_runtime_; }
+  ServiceRuntime* service_runtime() const { return service_runtime_.get(); }
   void set_service_runtime(ServiceRuntime* service_runtime) {
-    service_runtime_ = service_runtime;
+    service_runtime_.reset(service_runtime);
   }
 
   // The socket used for communicating w/ the NaCl module.
-  ScriptableHandle* socket() const { return socket_; }
-  void set_socket(ScriptableHandle* socket) { socket_ = socket; }
+  SrpcClient* srpc_client() const { return srpc_client_.get(); }
+  void set_socket(SrpcClient* srpc_client) { srpc_client_.reset(srpc_client); }
 
   // A basic description of the subprocess.
   nacl::string description();
@@ -57,9 +59,9 @@ class NaClSubprocess {
   bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
 
   // Interact.
-  bool HasMethod(uintptr_t method_id, CallType call_type);
-  bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
-  bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  bool HasMethod(uintptr_t method_id);
+  bool InitParams(uintptr_t method_id, SrpcParams* params);
+  bool Invoke(uintptr_t method_id, SrpcParams* params);
 
   // Fully shut down the subprocess.
   void Shutdown();
@@ -70,10 +72,10 @@ class NaClSubprocess {
   NaClSubprocessId assigned_id_;
 
   // The service runtime representing the NaCl module instance.
-  ServiceRuntime* service_runtime_;
+  nacl::scoped_ptr<ServiceRuntime> service_runtime_;
 
-  // Ownership of socket taken from the service runtime.
-  ScriptableHandle* socket_;
+  // Ownership of srpc_client taken from the service runtime.
+  nacl::scoped_ptr<SrpcClient> srpc_client_;
 };
 
 }  // namespace plugin

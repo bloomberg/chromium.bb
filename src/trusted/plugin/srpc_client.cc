@@ -11,7 +11,6 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
@@ -27,14 +26,23 @@ SrpcClient::SrpcClient()
                  static_cast<void*>(this)));
 }
 
+SrpcClient* SrpcClient::New(Plugin* plugin, nacl::DescWrapper* wrapper) {
+  nacl::scoped_ptr<SrpcClient> srpc_client(new SrpcClient());
+  if (!srpc_client->Init(plugin->browser_interface(), wrapper)) {
+    PLUGIN_PRINTF(("SrpcClient::New (SrpcClient::Init failed)\n"));
+    return NULL;
+  }
+  return srpc_client.release();
+}
+
 bool SrpcClient::Init(BrowserInterface* browser_interface,
-                      ConnectedSocket* socket) {
-  PLUGIN_PRINTF(("SrpcClient::Init (this=%p, browser_interface=%p, socket=%p)"
+                      nacl::DescWrapper* wrapper) {
+  PLUGIN_PRINTF(("SrpcClient::Init (this=%p, browser_interface=%p, wrapper=%p)"
                  "\n", static_cast<void*>(this),
                  static_cast<void*>(browser_interface),
-                 static_cast<void*>(socket)));
+                 static_cast<void*>(wrapper)));
   // Open the channel to pass RPC information back and forth
-  if (!NaClSrpcClientCtor(&srpc_channel_, socket->wrapper()->desc())) {
+  if (!NaClSrpcClientCtor(&srpc_channel_, wrapper->desc())) {
     return false;
   }
   srpc_channel_initialised_ = true;
@@ -94,11 +102,8 @@ void SrpcClient::GetMethods() {
       continue;
     }
     uintptr_t ident = browser_interface_->StringToIdentifier(name);
-    MethodInfo* method_info = new(std::nothrow) MethodInfo(NULL,
-                                                           name,
-                                                           input_types,
-                                                           output_types,
-                                                           i);
+    MethodInfo* method_info =
+        new MethodInfo(NULL, name, input_types, output_types, i);
     if (NULL == method_info) {
       return;
     }

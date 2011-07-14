@@ -33,8 +33,6 @@ class ScriptableHandle;
 
 class Plugin : public PortableHandle {
  public:
-  void Invalidate();
-
   // Load support.
   // NaCl module can be loaded given a DescWrapper.
   // Updates nacl_module_origin() and nacl_module_url().
@@ -74,14 +72,10 @@ class Plugin : public PortableHandle {
   // Report the error code that sel_ldr produces when starting a nexe.
   virtual void ReportSelLdrLoadStatus(int status) = 0;
 
-  // overriding virtual methods
-  virtual bool InvokeEx(uintptr_t method_id,
-                        CallType call_type,
-                        SrpcParams* params);
-  virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
-  virtual bool InitParamsEx(uintptr_t method_id,
-                            CallType call_type,
-                            SrpcParams* params);
+  // Get the method signature so ScriptableHandle can marshal the inputs
+  virtual bool InitParams(uintptr_t method_id,
+                          CallType call_type,
+                          SrpcParams* params);
 
   // The unique identifier for this plugin instance.
   InstanceIdentifier instance_id() const { return instance_id_; }
@@ -155,6 +149,15 @@ class Plugin : public PortableHandle {
   // Determines whether experimental APIs are usable.
   static bool ExperimentalJavaScriptApisAreEnabled();
 
+  // Override virtual methods for method and property dispatch.
+  virtual bool HasMethod(uintptr_t method_id, CallType call_type);
+  virtual bool Invoke(uintptr_t method_id,
+                      CallType call_type,
+                      SrpcParams* params);
+  virtual std::vector<uintptr_t>* GetPropertyIdentifiers() {
+    return property_get_methods_.Keys();
+  }
+
   // The size returned when a file download operation is unable to determine
   // the size of the file to load.  W3C ProgressEvents specify that unknown
   // sizes return 0.
@@ -183,6 +186,18 @@ class Plugin : public PortableHandle {
     return main_subprocess_.service_runtime();
   }
 
+  // Setting the properties and methods exported.
+  void AddPropertyGet(RpcFunction function_ptr,
+                      const char* name,
+                      const char* outs);
+  void AddPropertySet(RpcFunction function_ptr,
+                      const char* name,
+                      const char* ins);
+  void AddMethodCall(RpcFunction function_ptr,
+                     const char* name,
+                     const char* ins,
+                     const char* outs);
+
   bool receive_thread_running_;
   struct NaClThread receive_thread_;
 
@@ -208,6 +223,10 @@ class Plugin : public PortableHandle {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
+  MethodMap methods_;
+  MethodMap property_get_methods_;
+  MethodMap property_set_methods_;
+
   static bool SendAsyncMessage(void* obj, SrpcParams* params,
                                nacl::DescWrapper** fds, int fds_count);
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
@@ -222,6 +241,8 @@ class Plugin : public PortableHandle {
                                ErrorInfo* error_info);
   bool StartJSObjectProxy(NaClSubprocess* subprocess, ErrorInfo* error_info);
   static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
+
+  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 };
 
 }  // namespace plugin

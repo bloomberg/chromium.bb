@@ -14,21 +14,30 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/utility.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+
+namespace nacl {
+class DescWrapper;
+}  // namespace nacl
 
 namespace plugin {
 
-class ConnectedSocket;
+class BrowserInterface;
 class ErrorInfo;
 class MethodInfo;
+class Plugin;
+class SrpcParams;
 
 //  SrpcClient represents an SRPC connection to a client.
 class SrpcClient {
  public:
-  //  Init is passed a ConnectedSocket.  It performs service
-  //  discovery and provides the interface for future rpcs.
-  bool Init(BrowserInterface* browser_interface, ConnectedSocket* socket);
+  // Factory method for creating SrpcClients.
+  static SrpcClient* New(Plugin* plugin, nacl::DescWrapper* wrapper);
 
-  explicit SrpcClient();
+  //  Init is passed a DescWrapper.  The SrpcClient performs service
+  //  discovery and provides the interface for future rpcs.
+  bool Init(BrowserInterface* browser_interface, nacl::DescWrapper* socket);
+
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
 
@@ -41,6 +50,7 @@ class SrpcClient {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SrpcClient);
+  SrpcClient();
   void GetMethods();
   typedef std::map<uintptr_t, MethodInfo*> Methods;
   Methods methods_;

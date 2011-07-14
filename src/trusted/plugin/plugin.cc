@@ -29,7 +29,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
-#include "native_client/src/trusted/plugin/connected_socket.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
@@ -187,29 +186,62 @@ void Plugin::LoadMethods() {
   AddMethodCall(StartSrpcServicesWrapper, "__startSrpcServices", "", "");
 }
 
-bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
+bool Plugin::HasMethod(uintptr_t method_id, CallType call_type) {
+  PLUGIN_PRINTF(("Plugin::HasMethod (method_id=%x) = ",
+                 static_cast<int>(method_id)));
+  if (GetMethodInfo(method_id, call_type)) {
+    PLUGIN_PRINTF(("true\n"));
+    return true;
+  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
+    PLUGIN_PRINTF(("false\n"));
     return false;
   }
-  return main_subprocess_.HasMethod(method_id, call_type);
+  if (call_type != METHOD_CALL) {
+    // SRPC nexes can only export methods.
+    PLUGIN_PRINTF(("false\n"));
+    return false;
+  }
+  bool has_method = main_subprocess_.HasMethod(method_id);
+  PLUGIN_PRINTF(("%s\n", (has_method ? "true" : "false")));
+  return has_method;
 }
 
-bool Plugin::InvokeEx(uintptr_t method_id,
-                      CallType call_type,
-                      SrpcParams* params) {
+bool Plugin::InitParams(uintptr_t method_id,
+                        CallType call_type,
+                        SrpcParams* params) {
+  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
+  PLUGIN_PRINTF(("Plugin::InitParams (id=%"NACL_PRIxPTR", method_info=%p)\n",
+                 method_id, method_info));
+  if (NULL != method_info) {
+    return params->Init(method_info->ins(), method_info->outs());
+  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
-  return main_subprocess_.Invoke(method_id, call_type, params);
+  if (call_type != METHOD_CALL) {
+    // SRPC nexes can only export methods.
+    return false;
+  }
+  return main_subprocess_.InitParams(method_id, params);
 }
 
-bool Plugin::InitParamsEx(uintptr_t method_id,
-                          CallType call_type,
-                          SrpcParams* params) {
+bool Plugin::Invoke(uintptr_t method_id,
+                    CallType call_type,
+                    SrpcParams* params) {
+  MethodInfo* method_info = GetMethodInfo(method_id, call_type);
+
+  if (NULL != method_info && NULL != method_info->function_ptr()) {
+    return method_info->function_ptr()(reinterpret_cast<void*>(this), params);
+  }
   if (!ExperimentalJavaScriptApisAreEnabled()) {
     return false;
   }
-  return main_subprocess_.InitParams(method_id, call_type, params);
+  if (call_type != METHOD_CALL) {
+    // SRPC nexes can only export methods.
+    return false;
+  }
+  return main_subprocess_.Invoke(method_id, params);
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,
@@ -268,13 +300,6 @@ Plugin::Plugin()
     nacl_ready_state_(UNSENT),
     wrapper_factory_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
-}
-
-// TODO(polina): move this to PluginNpapi.
-void Plugin::Invalidate() {
-  PLUGIN_PRINTF(("Plugin::Invalidate (this=%p)\n", static_cast<void*>(this)));
-  main_subprocess_.set_socket(NULL);
-  // Other subprocesses (helper subprocesses) are not Invalidate()'ed.
 }
 
 void Plugin::ShutDownSubprocesses() {
@@ -352,8 +377,9 @@ bool Plugin::StartSrpcServicesCommon(NaClSubprocess* subprocess,
                           subprocess->description());
     return false;
   }
-  PLUGIN_PRINTF(("Plugin::StartSrpcServicesCommon (established socket %p)\n",
-                 static_cast<void*>(subprocess->socket())));
+  PLUGIN_PRINTF(("Plugin::StartSrpcServicesCommon (established srpc_client "
+                 "%p)\n",
+                 static_cast<void*>(subprocess->srpc_client())));
   return true;
 }
 
@@ -436,6 +462,55 @@ char* Plugin::LookupArgument(const char* key) {
     }
   }
   return NULL;
+}
+
+void Plugin::AddPropertyGet(RpcFunction function_ptr,
+                            const char* name,
+                            const char* outs) {
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("Plugin::AddPropertyGet (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
+  MethodInfo* new_method = new MethodInfo(function_ptr, name, "", outs);
+  property_get_methods_.AddMethod(method_id, new_method);
+}
+
+void Plugin::AddPropertySet(RpcFunction function_ptr,
+                            const char* name,
+                            const char* ins) {
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("Plugin::AddPropertySet (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
+  MethodInfo* new_method = new MethodInfo(function_ptr, name, ins, "");
+  property_set_methods_.AddMethod(method_id, new_method);
+}
+
+void Plugin::AddMethodCall(RpcFunction function_ptr,
+                           const char* name,
+                           const char* ins,
+                           const char* outs) {
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("Plugin::AddMethodCall (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
+  MethodInfo* new_method = new MethodInfo(function_ptr, name, ins, outs);
+  methods_.AddMethod(method_id, new_method);
+}
+
+MethodInfo* Plugin::GetMethodInfo(uintptr_t method_id, CallType call_type) {
+  MethodInfo* method_info = NULL;
+  switch (call_type) {
+    case METHOD_CALL:
+      method_info = methods_.GetMethod(method_id);
+      break;
+    case PROPERTY_GET:
+      method_info = property_get_methods_.GetMethod(method_id);
+      break;
+    case PROPERTY_SET:
+      method_info = property_set_methods_.GetMethod(method_id);
+      break;
+  }
+  PLUGIN_PRINTF(("Plugin::GetMethodInfo (id=%"NACL_PRIxPTR", "
+                 "return %p)\n", method_id, static_cast<void*>(method_info)));
+  return method_info;
 }
 
 }  // namespace plugin
