@@ -2914,12 +2914,12 @@ Cues::Cues(
     m_pSegment(pSegment),
     m_start(start_),
     m_size(size_),
+    m_element_start(element_start),
+    m_element_size(element_size),
     m_cue_points(NULL),
     m_count(0),
     m_preload_count(0),
-    m_pos(start_),
-    m_element_start(element_start),
-    m_element_size(element_size)
+    m_pos(start_)
 {
 }
 
@@ -6751,9 +6751,9 @@ Cluster* Cluster::Create(
 
 Cluster::Cluster() :
     m_pSegment(NULL),
+    m_element_start(0),
     m_index(0),
     m_pos(0),
-    m_element_start(0),
     m_element_size(0),
     m_timecode(0),
     m_entries(NULL),
@@ -6769,9 +6769,9 @@ Cluster::Cluster(
     long long element_start
     /* long long element_size */ ) :
     m_pSegment(pSegment),
+    m_element_start(element_start),
     m_index(idx),
     m_pos(element_start),
-    m_element_start(element_start),
     m_element_size(-1 /* element_size */ ),
     m_timecode(-1),
     m_entries(NULL),
