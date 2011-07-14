@@ -88,6 +88,11 @@ void PanelBrowserView::Close() {
     panel_controller_->Close();
 }
 
+void PanelBrowserView::FlashFrame() {
+  if (panel_controller_.get())
+    panel_controller_->SetUrgent(true);
+}
+
 void PanelBrowserView::UpdateTitleBar() {
   ::BrowserView::UpdateTitleBar();
   if (panel_controller_.get())
