@@ -428,7 +428,9 @@ or:
     else:
       libs.append(token)
 
-  return [SCons.Node.FS.find_file(lib, libpath) for lib in libs]
+  # Find those items in the library path, ignoring ones we fail to find.
+  found = [SCons.Node.FS.find_file(lib, libpath) for lib in libs]
+  return [lib for lib in found if lib is not None]
 
 def generate(env):
   """SCons entry point for this tool.
