@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/metrics/thread_watcher.h"
+
 #include <math.h>  // ceil
 
+#include "base/debug/alias.h"
 #include "base/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/notification_service.h"
 
@@ -29,6 +31,7 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
                              uint32 live_threads_threshold)
     : thread_id_(thread_id),
       thread_name_(thread_name),
+      watched_loop_(BrowserThread::GetMessageLoopProxyForThread(thread_id)),
       sleep_time_(sleep_time),
       unresponsive_time_(unresponsive_time),
       ping_time_(base::TimeTicks::Now()),
@@ -141,8 +144,7 @@ void ThreadWatcher::PostPingMessage() {
   // Send a ping message to the watched thread.
   Task* callback_task = method_factory_.NewRunnableMethod(
       &ThreadWatcher::OnPongMessage, ping_sequence_number_);
-  if (BrowserThread::PostTask(
-          thread_id(),
+  if (watched_loop_->PostTask(
           FROM_HERE,
           NewRunnableFunction(
               &ThreadWatcher::OnPingMessage, thread_id_, callback_task))) {
@@ -292,10 +294,10 @@ void ThreadWatcher::GotNoResponse() {
 
   // Crash the browser if the watched thread is to be crashed on hang and if the
   // number of other threads responding is equal to live_threads_threshold_.
-  if (crash_on_hang_ && responding_thread_count == live_threads_threshold_) {
-    int* crash = NULL;
-    CHECK(crash + thread_id_);
-  }
+  int thread_id = thread_id_;
+  base::debug::Alias(&thread_id);
+  if (crash_on_hang_ && responding_thread_count == live_threads_threshold_)
+    CHECK(false);
 
   hung_processing_complete_ = true;
 }
@@ -485,9 +487,6 @@ void ThreadWatcherList::StartWatching(
     const std::set<std::string>& crash_on_hang_thread_names,
     uint32 live_threads_threshold) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-
-  if (!BrowserThread::IsMessageLoopValid(thread_id))
-    return;
 
   std::set<std::string>::const_iterator it =
       crash_on_hang_thread_names.find(thread_name);

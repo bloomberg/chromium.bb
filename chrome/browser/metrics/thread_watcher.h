@@ -199,6 +199,9 @@ class ThreadWatcher {
   // The name of the thread being watched.
   const std::string thread_name_;
 
+  // Used to post messages to watched thread.
+  scoped_refptr<base::MessageLoopProxy> watched_loop_;
+
   // It is the sleep time between the receipt of a pong message back, and the
   // sending of another ping message.
   const base::TimeDelta sleep_time_;

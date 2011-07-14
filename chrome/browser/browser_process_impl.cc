@@ -225,6 +225,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // processes so this has to happen before stopping the IO thread.
   GpuProcessHostUIShim::DestroyAll();
 
+  // Stop the watchdog thread before stopping other threads.
+  watchdog_thread_.reset();
+
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
   // request before going away.
@@ -266,9 +269,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // Now OK to destroy NotificationService.
   main_notification_service_.reset();
-
-  // Stop the watchdog thread after stopping other threads.
-  watchdog_thread_.reset();
 
   g_browser_process = NULL;
 }
