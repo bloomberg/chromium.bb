@@ -99,6 +99,17 @@ using WebKit::WebVector;
 
 namespace {
 
+// Constants for UMA statistic collection.
+static const char kPluginTypeMismatch[] = "Plugin.PluginTypeMismatch";
+static const char kApplicationOctetStream[] = "application/octet-stream";
+enum {
+  PLUGIN_TYPE_MISMATCH_NONE = 0,
+  PLUGIN_TYPE_MISMATCH_ORIG_EMPTY,
+  PLUGIN_TYPE_MISMATCH_ORIG_OCTETSTREAM,
+  PLUGIN_TYPE_MISMATCH_ORIG_OTHER,
+  PLUGIN_TYPE_MISMATCH_NUM_EVENTS,
+};
+
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
                          WebVector<WebString>* existing_names,
@@ -256,15 +267,33 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::npapi::WebPluginInfo info;
   GURL url(original_params.url);
+  std::string orig_mime_type = original_params.mimeType.utf8();
   std::string actual_mime_type;
   render_view->Send(new ViewHostMsg_GetPluginInfo(
       render_view->routing_id(), url, frame->top()->document().url(),
-      original_params.mimeType.utf8(), &found, &info, &actual_mime_type));
+      orig_mime_type, &found, &info, &actual_mime_type));
 
   if (!found)
     return NULL;
   if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
+
+  if (orig_mime_type == actual_mime_type)
+    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
+                              PLUGIN_TYPE_MISMATCH_NONE,
+                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
+  else if (orig_mime_type.empty())
+    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
+                              PLUGIN_TYPE_MISMATCH_ORIG_EMPTY,
+                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
+  else if (orig_mime_type == kApplicationOctetStream)
+    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
+                              PLUGIN_TYPE_MISMATCH_ORIG_OCTETSTREAM,
+                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
+  else
+    UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
+                              PLUGIN_TYPE_MISMATCH_ORIG_OTHER,
+                              PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
 
   const webkit::npapi::PluginGroup* group =
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
