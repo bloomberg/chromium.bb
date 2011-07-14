@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -277,11 +276,9 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
 }
 
-PolicyProvider::PolicyProvider(HostContentSettingsMap* map,
-                               PrefService* prefs,
+PolicyProvider::PolicyProvider(PrefService* prefs,
                                DefaultProviderInterface* default_provider)
-    : host_content_settings_map_(map),
-      prefs_(prefs),
+    : prefs_(prefs),
       default_provider_(default_provider) {
   ReadManagedContentSettings(false);
 
@@ -428,22 +425,11 @@ void PolicyProvider::ClearAllContentSettingsRules(
 
 void PolicyProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RemoveAllObservers();
   if (!prefs_)
     return;
   pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
-  host_content_settings_map_ = NULL;
-}
-
-void PolicyProvider::NotifyObservers(
-    const ContentSettingsDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (host_content_settings_map_ == NULL)
-    return;
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(host_content_settings_map_),
-      Details<const ContentSettingsDetails>(&details));
 }
 
 void PolicyProvider::Observe(int type,
@@ -466,11 +452,10 @@ void PolicyProvider::Observe(int type,
         *name == prefs::kManagedPopupsAllowedForUrls ||
         *name == prefs::kManagedPopupsBlockedForUrls) {
       ReadManagedContentSettings(true);
-      ContentSettingsDetails details(ContentSettingsPattern(),
-                                     ContentSettingsPattern(),
-                                     CONTENT_SETTINGS_TYPE_DEFAULT,
-                                     std::string());
-      NotifyObservers(details);
+      NotifyObservers(ContentSettingsPattern(),
+                      ContentSettingsPattern(),
+                      CONTENT_SETTINGS_TYPE_DEFAULT,
+                      std::string());
     }
   } else {
     NOTREACHED() << "Unexpected notification";

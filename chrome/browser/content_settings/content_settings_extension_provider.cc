@@ -4,28 +4,21 @@
 
 #include "chrome/browser/content_settings/content_settings_extension_provider.h"
 
-#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_service.h"
-#include "content/common/notification_source.h"
 
 namespace content_settings {
 
 ExtensionProvider::ExtensionProvider(
-    HostContentSettingsMap* map,
     ExtensionContentSettingsStore* extensions_settings,
     bool incognito)
-    : map_(map),
-      incognito_(incognito),
+    : incognito_(incognito),
       extensions_settings_(extensions_settings) {
   extensions_settings_->AddObserver(this);
 }
 
 ExtensionProvider::~ExtensionProvider() {
-  DCHECK(!map_);
 }
 
 ContentSetting ExtensionProvider::GetContentSetting(
@@ -53,17 +46,8 @@ void ExtensionProvider::GetAllContentSettingsRules(
 }
 
 void ExtensionProvider::ShutdownOnUIThread() {
+  RemoveAllObservers();
   extensions_settings_->RemoveObserver(this);
-  map_ = NULL;
-}
-
-void ExtensionProvider::NotifyObservers(
-    const ContentSettingsDetails& details) {
-  DCHECK(map_);
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(map_),
-      Details<const ContentSettingsDetails>(&details));
 }
 
 void ExtensionProvider::OnContentSettingChanged(
@@ -72,11 +56,10 @@ void ExtensionProvider::OnContentSettingChanged(
   if (incognito_ != incognito)
     return;
   // TODO(markusheintz): Be more concise.
-  ContentSettingsDetails details(ContentSettingsPattern(),
-                                 ContentSettingsPattern(),
-                                 CONTENT_SETTINGS_TYPE_DEFAULT,
-                                 std::string());
-  NotifyObservers(details);
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_DEFAULT,
+                  std::string());
 }
 
 }  // namespace content_settings

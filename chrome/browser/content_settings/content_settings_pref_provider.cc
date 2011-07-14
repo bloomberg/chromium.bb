@@ -24,7 +24,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
@@ -384,11 +383,9 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::UNSYNCABLE_PREF);
 }
 
-PrefProvider::PrefProvider(HostContentSettingsMap* map,
-                           PrefService* prefs,
+PrefProvider::PrefProvider(PrefService* prefs,
                            bool incognito)
   : prefs_(prefs),
-    host_content_settings_map_(map),
     is_incognito_(incognito),
     updating_preferences_(false) {
   DCHECK(prefs_);
@@ -521,9 +518,8 @@ void PrefProvider::SetContentSetting(
                setting);
   }
 
-  ContentSettingsDetails details(
+  NotifyObservers(
       primary_pattern, secondary_pattern, content_type, resource_identifier);
-  NotifyObservers(details);
 }
 
 void PrefProvider::ClearAllContentSettingsRules(
@@ -555,19 +551,17 @@ void PrefProvider::ClearAllContentSettingsRules(
     }
   }
 
-  ContentSettingsDetails details(
-      ContentSettingsPattern(),
-      ContentSettingsPattern(),
-      content_type,
-      std::string());
-  NotifyObservers(details);
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  content_type,
+                  std::string());
 }
 
 void PrefProvider::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
@@ -587,11 +581,10 @@ void PrefProvider::Observe(
       return;
     }
 
-    ContentSettingsDetails details(ContentSettingsPattern(),
-                                   ContentSettingsPattern(),
-                                   CONTENT_SETTINGS_TYPE_DEFAULT,
-                                   std::string());
-    NotifyObservers(details);
+    NotifyObservers(ContentSettingsPattern(),
+                    ContentSettingsPattern(),
+                    CONTENT_SETTINGS_TYPE_DEFAULT,
+                    std::string());
   } else {
     NOTREACHED() << "Unexpected notification";
   }
@@ -898,22 +891,12 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
   }
 }
 
-void PrefProvider::NotifyObservers(
-    const ContentSettingsDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(host_content_settings_map_);
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(host_content_settings_map_),
-      Details<const ContentSettingsDetails>(&details));
-}
-
 void PrefProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
+  RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
-  host_content_settings_map_ = NULL;
 }
 
 void PrefProvider::MigrateObsoletePerhostPref() {

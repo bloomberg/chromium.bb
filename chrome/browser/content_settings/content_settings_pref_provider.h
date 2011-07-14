@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
@@ -102,13 +102,12 @@ class PrefDefaultProvider : public DefaultProviderInterface,
 
 // Content settings provider that provides content settings from the user
 // preference.
-class PrefProvider : public ProviderInterface,
+class PrefProvider : public ObservableProvider,
                      public NotificationObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
-  PrefProvider(HostContentSettingsMap* map,
-               PrefService* prefs,
+  PrefProvider(PrefService* prefs,
                bool incognito);
   virtual ~PrefProvider();
 
@@ -192,13 +191,8 @@ class PrefProvider : public ProviderInterface,
   static void CanonicalizeContentSettingsExceptions(
       base::DictionaryValue* all_settings_dictionary);
 
-  void NotifyObservers(const ContentSettingsDetails& details);
-
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
-
-  // Weak; owns us
-  HostContentSettingsMap* host_content_settings_map_;
 
   bool is_incognito_;
 

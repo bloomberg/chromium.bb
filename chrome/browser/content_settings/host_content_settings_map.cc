@@ -9,7 +9,9 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_extension_provider.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
@@ -55,10 +57,6 @@ typedef std::vector<ProviderPtr>::iterator ProviderIterator;
 typedef std::vector<ProviderPtr>::const_iterator ConstProviderIterator;
 
 typedef content_settings::ProviderInterface::Rules Rules;
-typedef content_settings::ProviderInterface::Rules::iterator
-    rules_iterator;
-typedef content_settings::ProviderInterface::Rules::const_iterator
-    const_rules_iterator;
 
 const char* kProviderNames[] = {
   "policy",
@@ -109,20 +107,22 @@ HostContentSettingsMap::HostContentSettingsMap(
   // The order in which the content settings providers are created is critical,
   // as providers that are further up in the list (i.e. added earlier) override
   // providers further down.
-  content_settings_providers_.push_back(make_linked_ptr(
-      new content_settings::PolicyProvider(this,
-                                           prefs_,
-                                           policy_default_provider)));
+  content_settings::ObservableProvider* provider =
+      new content_settings::PolicyProvider(prefs_, policy_default_provider);
+  provider->AddObserver(this);
+  content_settings_providers_.push_back(make_linked_ptr(provider));
+
   if (extension_service) {
     // |extension_service| can be NULL in unit tests.
-    content_settings_providers_.push_back(make_linked_ptr(
-        new content_settings::ExtensionProvider(
-            this,
-            extension_service->GetExtensionContentSettingsStore(),
-            is_off_the_record_)));
+    provider = new content_settings::ExtensionProvider(
+        extension_service->GetExtensionContentSettingsStore(),
+        is_off_the_record_);
+    provider->AddObserver(this);
+    content_settings_providers_.push_back(make_linked_ptr(provider));
   }
-  content_settings_providers_.push_back(make_linked_ptr(
-      new content_settings::PrefProvider(this, prefs_, is_off_the_record_)));
+  provider = new content_settings::PrefProvider(prefs_, is_off_the_record_);
+  provider->AddObserver(this);
+  content_settings_providers_.push_back(make_linked_ptr(provider));
 
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
@@ -445,6 +445,21 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
   }
 
   prefs_->SetBoolean(prefs::kBlockThirdPartyCookies, block);
+}
+
+void HostContentSettingsMap::OnContentSettingChanged(
+    ContentSettingsPattern primary_pattern,
+    ContentSettingsPattern secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  const ContentSettingsDetails details(primary_pattern,
+                                       secondary_pattern,
+                                       content_type,
+                                       resource_identifier);
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
+      Source<HostContentSettingsMap>(this),
+      Details<const ContentSettingsDetails>(&details));
 }
 
 void HostContentSettingsMap::Observe(int type,

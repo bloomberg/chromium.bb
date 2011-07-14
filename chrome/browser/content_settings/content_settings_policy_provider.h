@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "base/tuple.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -77,16 +77,15 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
 };
 
 // PolicyProvider that provider managed content-settings.
-class PolicyProvider : public ProviderInterface,
+class PolicyProvider : public ObservableProvider,
                        public NotificationObserver {
  public:
-  PolicyProvider(HostContentSettingsMap* map,
-                 PrefService* prefs,
+  PolicyProvider(PrefService* prefs,
                  DefaultProviderInterface* default_provider);
   virtual ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // ProviderInterface Implementation
+  // ProviderInterface implementations.
   virtual void SetContentSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
@@ -130,11 +129,8 @@ class PolicyProvider : public ProviderInterface,
 
   void ReadManagedContentSettingsTypes(ContentSettingsType content_type);
 
-  void NotifyObservers(const ContentSettingsDetails& details);
-
   OriginIdentifierValueMap value_map_;
 
-  HostContentSettingsMap* host_content_settings_map_;
   PrefService* prefs_;
 
   // Weak, owned by HostContentSettingsMap.

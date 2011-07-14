@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -109,7 +110,7 @@ TEST_F(PolicyProviderTest, Default) {
   prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
                         value);
 
-  PolicyProvider provider(profile.GetHostContentSettingsMap(), prefs, NULL);
+  PolicyProvider provider(prefs, NULL);
 
   ContentSettingsPattern yt_url_pattern =
       ContentSettingsPattern::FromString("www.youtube.com");
@@ -149,7 +150,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
                         value);
 
-  PolicyProvider provider(profile.GetHostContentSettingsMap(), prefs, NULL);
+  PolicyProvider provider(prefs, NULL);
 
   GURL youtube_url("http://www.youtube.com");
   GURL google_url("http://mail.google.com");

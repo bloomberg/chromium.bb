@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
 class ContentSettingsDetails;
@@ -16,17 +16,18 @@ class Profile;
 
 namespace content_settings {
 
+class Observer;
+
 // A content settings provider which manages settings defined by extensions.
-class ExtensionProvider : public ProviderInterface,
+class ExtensionProvider : public ObservableProvider,
                           public ExtensionContentSettingsStore::Observer {
  public:
-  ExtensionProvider(HostContentSettingsMap* map,
-                    ExtensionContentSettingsStore* extensions_settings,
+  ExtensionProvider(ExtensionContentSettingsStore* extensions_settings,
                     bool incognito);
 
   virtual ~ExtensionProvider();
 
-  // ProviderInterface methods:
+  // Provider Interface implementations.
   virtual ContentSetting GetContentSetting(
       const GURL& embedded_url,
       const GURL& top_level_url,
@@ -56,14 +57,6 @@ class ExtensionProvider : public ProviderInterface,
                                        bool incognito);
 
  private:
-  void NotifyObservers(const ContentSettingsDetails& details);
-
-  // The HostContentSettingsMap this provider belongs to. It is only
-  // used as the source for notifications.
-  // TODO(markusheintz): Make the HCSM an Observer of the
-  // ContentSettingsProvider and send out the Notifications itself.
-  HostContentSettingsMap* map_;
-
   // Specifies whether this provider manages settings for incognito or regular
   // sessions.
   bool incognito_;

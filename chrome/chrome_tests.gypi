@@ -1356,6 +1356,8 @@
         'browser/chromeos/system/mock_statistics_provider.h',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/command_updater_unittest.cc',
+        'browser/content_settings/content_settings_mock_observer.cc',
+        'browser/content_settings/content_settings_mock_observer.h',        
         'browser/content_settings/content_settings_mock_provider.cc',
         'browser/content_settings/content_settings_mock_provider.h',
         'browser/content_settings/content_settings_origin_identifier_value_map_unittest.cc',

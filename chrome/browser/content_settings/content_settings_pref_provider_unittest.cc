@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
@@ -159,29 +160,19 @@ class PrefProviderTest : public TestingBrowserProcessTest {
 
 TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
-  PrefProvider pref_content_settings_provider(
-      profile.GetHostContentSettingsMap(), profile.GetPrefs(), false);
-  MockSettingsObserver observer;
+  PrefProvider pref_content_settings_provider(profile.GetPrefs(), false);
+
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
+  content_settings::MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(pattern,
+                                      ContentSettingsPattern::Wildcard(),
+                                      CONTENT_SETTINGS_TYPE_IMAGES,
+                                      ""));
 
-  // There are two PrefProvider instances, one in the host content settings map
-  // and one instance that is created here. Setting a content setting will fire
-  // one notification. This will change the underlying preferences which will
-  // cause the second PrefProvider instance to reload these and to
-  // sync the obsolete prefences. Hence we get two more notifications which we
-  // will not get in the real world.
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_IMAGES,
-                                       false,
-                                       pattern,
-                                       ContentSettingsPattern::Wildcard(),
-                                       false));
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, _, true)).Times(2);
+  pref_content_settings_provider.AddObserver(&mock_observer);
+
   pref_content_settings_provider.SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -217,10 +208,8 @@ TEST_F(PrefProviderTest, Incognito) {
   otr_profile->set_incognito(true);
   otr_profile->SetPrefService(otr_prefs);
 
-  PrefProvider pref_content_settings_provider(
-      profile.GetHostContentSettingsMap(), regular_prefs, false);
-  PrefProvider pref_content_settings_provider_incognito(
-      otr_profile->GetHostContentSettingsMap(), otr_prefs, true);
+  PrefProvider pref_content_settings_provider(regular_prefs, false);
+  PrefProvider pref_content_settings_provider_incognito(otr_prefs, true);
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
   pref_content_settings_provider.SetContentSetting(
@@ -248,9 +237,8 @@ TEST_F(PrefProviderTest, Incognito) {
 
 TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
-  PrefProvider pref_content_settings_provider(
-      testing_profile.GetHostContentSettingsMap(),
-      testing_profile.GetPrefs(), false);
+  PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
+                                              false);
 
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
@@ -315,10 +303,8 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile testing_profile;
-  PrefProvider pref_content_settings_provider(
-      testing_profile.GetHostContentSettingsMap(),
-      testing_profile.GetPrefs(),
-      false);
+  PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
+                                              false);
 
   GURL host("http://example.com/");
   ContentSettingsPattern pattern =
@@ -365,8 +351,7 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
   prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
 
   // Test if single pattern settings are properly migrated.
-  content_settings::PrefProvider provider(profile.GetHostContentSettingsMap(),
-                                          prefs, false);
+  content_settings::PrefProvider provider(prefs, false);
 
   // Validate migrated preferences
   const DictionaryValue* const_all_settings_dictionary =
