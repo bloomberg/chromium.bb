@@ -1991,6 +1991,7 @@
         '../content/browser/mach_broker_mac_unittest.cc',
         '../content/browser/plugin_service_unittest.cc',
         '../content/browser/renderer_host/media/audio_renderer_host_unittest.cc',
+        '../content/browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
         '../content/browser/renderer_host/media/video_capture_host_unittest.cc',
         '../content/browser/renderer_host/media/video_capture_manager_unittest.cc',
         '../content/browser/renderer_host/render_view_host_unittest.cc',

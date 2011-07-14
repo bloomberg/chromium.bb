@@ -272,6 +272,8 @@
         'browser/renderer_host/media/audio_sync_reader.h',
         'browser/renderer_host/media/media_stream_device_settings.cc',
         'browser/renderer_host/media/media_stream_device_settings.h',
+        'browser/renderer_host/media/media_stream_dispatcher_host.cc',
+        'browser/renderer_host/media/media_stream_dispatcher_host.h',
         'browser/renderer_host/media/media_stream_manager.cc',
         'browser/renderer_host/media/media_stream_manager.h',
         'browser/renderer_host/media/media_stream_provider.h',

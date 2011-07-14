@@ -47,6 +47,8 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
+#include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper_file_message_filter.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
@@ -354,6 +356,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost());
   channel_->AddFilter(new AudioRendererHost(&profile()->GetResourceContext()));
+  channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(
       new AppCacheDispatcherHost(&profile()->GetResourceContext(), id()));
   channel_->AddFilter(new ClipboardMessageFilter());
@@ -365,6 +368,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       GeolocationDispatcherHost::New(
           id(), profile()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(id(), widget_helper_.get()));
+  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(
       new PepperMessageFilter(&profile()->GetResourceContext()));
