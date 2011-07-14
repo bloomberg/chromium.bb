@@ -87,7 +87,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@afa3616bae66f1b500fe9c481cd9436a607f4546',
+        Var('git_url') + '/external/gyp.git@c27d1917e3441b102ae77b66d792b12c91d7c38c',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@59c6ae4c476750845a529cd407454378ebaaa347',
     'src/v8':
