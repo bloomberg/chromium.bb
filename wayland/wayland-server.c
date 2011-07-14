@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -108,10 +109,8 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 
 	wl_closure_send(closure, client->connection);
 
-	if (wl_debug) {
-		fprintf(stderr, " -> ");
-		wl_closure_print(closure, sender);
-	}
+	if (wl_debug)
+		wl_closure_print(closure, sender, true);
 
 	wl_closure_destroy(closure);
 }
@@ -202,7 +201,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 
 		if (wl_debug)
-			wl_closure_print(closure, object);
+			wl_closure_print(closure, object, false);
 
 		wl_closure_invoke(closure, object,
 				  object->implementation[opcode], client);

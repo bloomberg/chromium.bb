@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -201,10 +202,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 
 	wl_closure_send(closure, proxy->display->connection);
 
-	if (wl_debug) {
-		fprintf(stderr, " -> ");
-		wl_closure_print(closure, &proxy->object);
-	}
+	if (wl_debug)
+		wl_closure_print(closure, &proxy->object, true);
 
 	wl_closure_destroy(closure);
 }
@@ -523,7 +522,7 @@ handle_event(struct wl_display *display,
 					  size, display->objects, message);
 
 	if (wl_debug)
-		wl_closure_print(closure, &proxy->object);
+		wl_closure_print(closure, &proxy->object, false);
 
 	wl_closure_invoke(closure, &proxy->object,
 			  proxy->object.implementation[opcode],

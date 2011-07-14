@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <time.h>
 
 #include "wayland-util.h"
 #include "connection.h"
@@ -684,12 +685,23 @@ wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 }
 
 void
-wl_closure_print(struct wl_closure *closure, struct wl_object *target)
+wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 {
 	union wl_value *value;
+	char buffer[4] = "\0";
 	int i;
+	struct timespec tp;
+	unsigned int time;
 
-	fprintf(stderr, "%s@%d.%s(",
+	if (send)
+		sprintf(buffer, " -> ");
+
+	clock_gettime(CLOCK_REALTIME, &tp);
+	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
+
+	fprintf(stderr, "[%10.3f] %s%s@%d.%s(",
+		time / 1000.0,
+		buffer,
 		target->interface->name, target->id,
 		closure->message->name);
 
