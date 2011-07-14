@@ -441,9 +441,6 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
   ExtensionMenuManager* menu_manager = service->menu_manager();
-  const GURL& document_url = GetDocumentURL(params_);
-  if (!menu_manager->HasAllowedScheme(document_url))
-    return;
 
   // Get a list of extension id's that have context menu items, and sort it by
   // the extension's name.
