@@ -348,7 +348,7 @@ void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
     bool enable_phishing_detection) {
-#if !defined(OS_CHROMEOS) || !defined(ENABLE_SAFE_BROWSING)
+#if defined(ENABLE_SAFE_BROWSING) && !defined(OS_CHROMEOS)
   phishing_classifier_ = enable_phishing_detection ?
       safe_browsing::PhishingClassifierDelegate::Create(
           render_view(), NULL) :

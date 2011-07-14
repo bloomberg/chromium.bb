@@ -641,6 +641,7 @@ void TabContentsWrapper::UpdateRendererPreferences() {
 }
 
 void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
+#if defined(ENABLE_SAFE_BROWSING)
   PrefService* prefs = profile()->GetPrefs();
   bool safe_browsing = prefs->GetBoolean(prefs::kSafeBrowsingEnabled);
   if (safe_browsing &&
@@ -654,6 +655,7 @@ void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
   }
   render_view_host()->Send(
       new ViewMsg_SetClientSidePhishingDetection(routing_id(), safe_browsing));
+#endif
 }
 
 void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
