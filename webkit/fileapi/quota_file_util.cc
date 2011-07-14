@@ -48,15 +48,19 @@ bool CanCopy(
 class ScopedOriginUpdateHelper {
  public:
   explicit ScopedOriginUpdateHelper(
-      FileSystemContext* context,
+      FileSystemOperationContext* operation_context,
       const GURL& origin_url,
       FileSystemType type)
-      : origin_url_(origin_url),
+      : operation_context_(operation_context),
+        origin_url_(origin_url),
         type_(type) {
-    DCHECK(context);
+    DCHECK(operation_context_);
+    DCHECK(operation_context_->file_system_context());
     DCHECK(type != kFileSystemTypeUnknown);
-    quota_util_ = context->GetQuotaUtil(type_);
-    quota_manager_proxy_ = context->quota_manager_proxy();
+    quota_util_ =
+        operation_context_->file_system_context()->GetQuotaUtil(type_);
+    quota_manager_proxy_ =
+        operation_context_->file_system_context()->quota_manager_proxy();
     if (quota_util_)
       quota_util_->StartUpdateOriginOnFileThread(origin_url_, type_);
   }
@@ -67,12 +71,15 @@ class ScopedOriginUpdateHelper {
   }
 
   void NotifyUpdate(int64 growth) {
+    operation_context_->set_allowed_bytes_growth(
+        operation_context_->allowed_bytes_growth() - growth);
     if (quota_util_)
       quota_util_->UpdateOriginUsageOnFileThread(
           quota_manager_proxy_, origin_url_, type_, growth);
   }
 
  private:
+  FileSystemOperationContext* operation_context_;
   FileSystemQuotaUtil* quota_util_;
   QuotaManagerProxy* quota_manager_proxy_;
   const GURL& origin_url_;
@@ -97,7 +104,7 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
   // TODO(kinuko): For cross-filesystem move case we need 2 helpers, one for
   // src and one for dest.
   ScopedOriginUpdateHelper helper(
-      fs_context->file_system_context(),
+      fs_context,
       fs_context->dest_origin_url(),
       fs_context->dest_type());
 
@@ -135,7 +142,7 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
     const FilePath& file_path) {
   DCHECK(fs_context);
   ScopedOriginUpdateHelper helper(
-      fs_context->file_system_context(),
+      fs_context,
       fs_context->src_origin_url(),
       fs_context->src_type());
 
@@ -160,7 +167,7 @@ base::PlatformFileError QuotaFileUtil::Truncate(
     int64 length) {
   int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
   ScopedOriginUpdateHelper helper(
-      fs_context->file_system_context(),
+      fs_context,
       fs_context->src_origin_url(),
       fs_context->src_type());
 

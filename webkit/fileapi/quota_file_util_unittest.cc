@@ -208,7 +208,8 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
 
 TEST_F(QuotaFileUtilTest, CopyDirectory) {
   const char *from_dir = "fromdir";
-  const char *from_file = "fromdir/fromfile";
+  const char *from_file1 = "fromdir/fromfile1";
+  const char *from_file2 = "fromdir/fromfile2";
   const char *to_dir1 = "todir1";
   const char *to_dir2 = "todir2";
   bool created;
@@ -219,15 +220,27 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
             QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
                                                           Path(from_dir),
                                                           false, false));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file1, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file2, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             QuotaFileUtil::GetInstance()->Truncate(context.get(),
-                                                   Path(from_file),
-                                                   1020));
+                                                   Path(from_file1),
+                                                   520));
+  ASSERT_EQ(520, quota_test_helper().GetCachedOriginUsage());
+  ASSERT_EQ(quota_test_helper().ComputeCurrentOriginUsage(),
+            quota_test_helper().GetCachedOriginUsage());
+
+  context.reset(NewContext());
+  context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            QuotaFileUtil::GetInstance()->Truncate(context.get(),
+                                                   Path(from_file2),
+                                                   500));
   ASSERT_EQ(1020, quota_test_helper().GetCachedOriginUsage());
   ASSERT_EQ(quota_test_helper().ComputeCurrentOriginUsage(),
             quota_test_helper().GetCachedOriginUsage());
@@ -248,7 +261,8 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
             QuotaFileUtil::GetInstance()->Copy(context.get(),
                                                Path(from_dir),
                                                Path(to_dir2)));
-  ASSERT_EQ(2040, quota_test_helper().GetCachedOriginUsage());
+  ASSERT_TRUE(2540 == quota_test_helper().GetCachedOriginUsage() ||
+              2560 == quota_test_helper().GetCachedOriginUsage());
   ASSERT_EQ(quota_test_helper().ComputeCurrentOriginUsage(),
             quota_test_helper().GetCachedOriginUsage());
 }
