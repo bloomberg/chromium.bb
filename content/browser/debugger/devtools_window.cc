@@ -470,7 +470,7 @@ GURL DevToolsWindow::GetDevToolsUrl() {
       tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
 
   std::string url_string = StringPrintf(
-      "%sdevtools.html?docked=%s&toolbar_color=%s&text_color=%s",
+      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s",
       chrome::kChromeUIDevToolsURL,
       docked_ ? "true" : "false",
       SkColorToRGBAString(color_toolbar).c_str(),
