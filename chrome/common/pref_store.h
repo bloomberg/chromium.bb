@@ -54,9 +54,9 @@ class PrefStore : public base::RefCounted<PrefStore> {
   // Whether the store has completed all asynchronous initialization.
   virtual bool IsInitializationComplete() const;
 
-  // Get the value for a given preference |key| and stores it in |result|.
-  // |result| is only modified if the return value is READ_OK. Ownership of the
-  // |result| value remains with the PrefStore.
+  // Get the value for a given preference |key| and stores it in |*result|.
+  // |*result| is only modified if the return value is READ_OK and if |result|
+  // is not NULL. Ownership of the |*result| value remains with the PrefStore.
   virtual ReadResult GetValue(const std::string& key,
                               const base::Value** result) const = 0;
 

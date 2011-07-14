@@ -1327,11 +1327,11 @@ const char kCloudPrintEnableJobPoll[] = "cloud_print.enable_job_poll";
 const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
 
-// Preference to story proxy settings.
+// Preference to store proxy settings.
 const char kProxy[] = "proxy";
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 
-// Preferences that are exclusivly used to store managed values for default
+// Preferences that are exclusively used to store managed values for default
 // content settings.
 const char kManagedDefaultCookiesSetting[] =
     "profile.managed_default_content_settings.cookies";
@@ -1344,7 +1344,7 @@ const char kManagedDefaultPluginsSetting[] =
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
 
-// Preferences that are exclusivly used to store managed
+// Preferences that are exclusively used to store managed
 // content settings patterns.
 const char kManagedCookiesAllowedForUrls[] =
     "profile.managed_cookies_allowed_for_urls";

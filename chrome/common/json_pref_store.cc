@@ -155,7 +155,8 @@ PrefStore::ReadResult JsonPrefStore::GetValue(const std::string& key,
                                               const Value** result) const {
   Value* tmp = NULL;
   if (prefs_->Get(key, &tmp)) {
-    *result = tmp;
+    if (result)
+      *result = tmp;
     return READ_OK;
   }
   return READ_NO_VALUE;

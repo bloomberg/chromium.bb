@@ -327,7 +327,8 @@ ConfigurationPolicyPrefKeeper::GetValue(const std::string& key,
   if (stored_value->IsType(Value::TYPE_NULL))
     return PrefStore::READ_USE_DEFAULT;
 
-  *result = stored_value;
+  if (result)
+    *result = stored_value;
   return PrefStore::READ_OK;
 }
 

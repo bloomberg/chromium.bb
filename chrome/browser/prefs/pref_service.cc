@@ -23,7 +23,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
-#include "chrome/browser/prefs/overlay_persistent_pref_store.h"
+#include "chrome/browser/prefs/incognito_user_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -192,7 +192,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
 PrefService::PrefService(const PrefService& original,
                          PrefStore* incognito_extension_prefs)
       : user_pref_store_(
-            new OverlayPersistentPrefStore(original.user_pref_store_.get())),
+            new IncognitoUserPrefStore(original.user_pref_store_.get())),
         default_store_(original.default_store_.get()) {
   // Incognito mode doesn't sync, so no need to create PrefModelAssociator.
   pref_notifier_.reset(new PrefNotifierImpl(this));

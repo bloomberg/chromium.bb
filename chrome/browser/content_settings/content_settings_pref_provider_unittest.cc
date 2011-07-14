@@ -10,7 +10,7 @@
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
-#include "chrome/browser/prefs/overlay_persistent_pref_store.h"
+#include "chrome/browser/prefs/incognito_user_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
@@ -187,8 +187,8 @@ TEST_F(PrefProviderTest, Observer) {
 // of the OTR unintentionally: http://crbug.com/74466.
 TEST_F(PrefProviderTest, Incognito) {
   PersistentPrefStore* user_prefs = new TestingPrefStore();
-  OverlayPersistentPrefStore* otr_user_prefs =
-      new OverlayPersistentPrefStore(user_prefs);
+  IncognitoUserPrefStore* otr_user_prefs =
+      new IncognitoUserPrefStore(user_prefs);
 
   PrefServiceMockBuilder builder;
   PrefService* regular_prefs = builder.WithUserPrefs(user_prefs).Create();
