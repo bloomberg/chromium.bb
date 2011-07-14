@@ -60,18 +60,18 @@ PrefServiceMockBuilder::WithRecommendedCloudPrefs(PrefStore* store) {
   return *this;
 }
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithManagedPlatformProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  managed_platform_prefs_ = policy::ConfigurationPolicyPrefStore::Create(
-      provider);
+  managed_platform_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
   return *this;
 }
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithManagedCloudProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  managed_cloud_prefs_ = policy::ConfigurationPolicyPrefStore::Create(provider);
+  managed_cloud_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
   return *this;
 }
 
@@ -79,17 +79,17 @@ PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithRecommendedPlatformProvider(
     policy::ConfigurationPolicyProvider* provider) {
   recommended_platform_prefs_ =
-      policy::ConfigurationPolicyPrefStore::Create(provider);
+      new policy::ConfigurationPolicyPrefStore(provider);
   return *this;
 }
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithRecommendedCloudProvider(
     policy::ConfigurationPolicyProvider* provider) {
-  recommended_cloud_prefs_ = policy::ConfigurationPolicyPrefStore::Create(
-      provider);
+  recommended_cloud_prefs_ = new policy::ConfigurationPolicyPrefStore(provider);
   return *this;
 }
+#endif
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithCommandLine(CommandLine* command_line) {

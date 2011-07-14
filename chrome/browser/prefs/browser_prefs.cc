@@ -113,7 +113,9 @@ void RegisterLocalState(PrefService* local_state) {
   BackgroundModeManager::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);
+#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+#endif
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)

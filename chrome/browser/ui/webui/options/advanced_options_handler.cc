@@ -203,10 +203,12 @@ void AdvancedOptionsHandler::Initialize() {
   SetupBackgroundModeSettings();
 #endif
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   banner_handler_.reset(
-      OptionsManagedBannerHandler::Create(web_ui_,
-                                          ASCIIToUTF16("AdvancedOptions"),
-                                          OPTIONS_PAGE_ADVANCED));
+      new OptionsManagedBannerHandler(web_ui_,
+                                      ASCIIToUTF16("AdvancedOptions"),
+                                      OPTIONS_PAGE_ADVANCED));
+#endif
 }
 
 WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {

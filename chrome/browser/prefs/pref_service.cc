@@ -128,19 +128,27 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   }
 #endif
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   ConfigurationPolicyPrefStore* managed_platform =
       ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
   ConfigurationPolicyPrefStore* managed_cloud =
       ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore();
+  ConfigurationPolicyPrefStore* recommended_platform =
+      ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore();
+  ConfigurationPolicyPrefStore* recommended_cloud =
+      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore();
+#else
+  ConfigurationPolicyPrefStore* managed_platform = NULL;
+  ConfigurationPolicyPrefStore* managed_cloud = NULL;
+  ConfigurationPolicyPrefStore* recommended_platform = NULL;
+  ConfigurationPolicyPrefStore* recommended_cloud = NULL;
+#endif  // ENABLE_CONFIGURATION_POLICY
+
   CommandLinePrefStore* command_line =
       new CommandLinePrefStore(CommandLine::ForCurrentProcess());
   JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  ConfigurationPolicyPrefStore* recommended_platform =
-      ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore();
-  ConfigurationPolicyPrefStore* recommended_cloud =
-      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore();
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
   return new PrefService(

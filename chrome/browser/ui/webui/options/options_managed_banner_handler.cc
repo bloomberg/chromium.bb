@@ -9,12 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/webui/web_ui.h"
 
-// static
-OptionsManagedBannerHandler* OptionsManagedBannerHandler::Create(
-    WebUI* web_ui, const string16& page_name, OptionsPage page) {
-  return new OptionsManagedBannerHandler(web_ui, page_name, page);
-}
-
 OptionsManagedBannerHandler::OptionsManagedBannerHandler(
     WebUI* web_ui, const string16& page_name, OptionsPage page)
     : policy::ManagedPrefsBannerBase(web_ui->GetProfile()->GetPrefs(), page),

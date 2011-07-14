@@ -38,7 +38,7 @@ class ConfigurationPolicyPrefStoreTestBase : public TESTBASE {
  protected:
   ConfigurationPolicyPrefStoreTestBase()
       : provider_(),
-        store_(ConfigurationPolicyPrefStore::Create(&provider_)) {}
+        store_(new ConfigurationPolicyPrefStore(&provider_)) {}
 
   MockConfigurationPolicyProvider provider_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
@@ -328,7 +328,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
                          kPolicyManuallyConfiguredProxyServerMode));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(
       *store, "chromium.org", "", "http://chromium.org/override",
       ProxyPrefs::MODE_FIXED_SERVERS);
@@ -344,7 +344,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
   provider.AddPolicy(kPolicyProxyServer,
                      Value::CreateStringValue("chromium.org"));
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(
       *store, "chromium.org", "", "http://chromium.org/override",
       ProxyPrefs::MODE_FIXED_SERVERS);
@@ -357,7 +357,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsInvalid) {
                          kPolicyManuallyConfiguredProxyServerMode));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
 }
@@ -369,7 +369,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyServerMode) {
                      Value::CreateIntegerValue(kPolicyNoProxyServerMode));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
@@ -380,7 +380,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyModeName) {
       Value::CreateStringValue(ProxyPrefs::kDirectProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
@@ -391,7 +391,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyServerMode) {
       Value::CreateIntegerValue(kPolicyAutoDetectProxyServerMode));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
@@ -402,7 +402,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyModeName) {
       Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
@@ -415,7 +415,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
       Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
@@ -427,7 +427,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeInvalid) {
       Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(prefs::kProxy, &value));
 }
@@ -445,7 +445,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyModeBug78016) {
       Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "http://short.org/proxy.pac", "",
                    ProxyPrefs::MODE_PAC_SCRIPT);
 }
@@ -457,7 +457,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyServerMode) {
       Value::CreateIntegerValue(kPolicyUseSystemProxyServerMode));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
@@ -468,7 +468,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyMode) {
       Value::CreateStringValue(ProxyPrefs::kSystemProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
@@ -482,7 +482,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest,
       Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
   VerifyProxyPrefs(*store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
@@ -500,7 +500,7 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
                        Value::CreateStringValue("chromium.org"));
 
     scoped_refptr<ConfigurationPolicyPrefStore> store(
-        ConfigurationPolicyPrefStore::Create(&provider));
+        new ConfigurationPolicyPrefStore(&provider));
     const Value* value = NULL;
     EXPECT_EQ(PrefStore::READ_NO_VALUE,
               store->GetValue(prefs::kProxy, &value));
@@ -521,7 +521,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
                      Value::CreateStringValue(search_url));
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
 
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -580,7 +580,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
 
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -632,7 +632,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
 
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
@@ -675,7 +675,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   provider.AddPolicy(kPolicyDefaultSearchProviderEncodings, encodings);
 
   scoped_refptr<ConfigurationPolicyPrefStore> store(
-      ConfigurationPolicyPrefStore::Create(&provider));
+      new ConfigurationPolicyPrefStore(&provider));
 
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));

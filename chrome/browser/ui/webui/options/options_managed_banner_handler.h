@@ -18,9 +18,9 @@ class WebUI;
 // that are under administator control.
 class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
  public:
-  static OptionsManagedBannerHandler* Create(WebUI* web_ui,
-                                             const string16& page_name,
-                                             OptionsPage page);
+  OptionsManagedBannerHandler(WebUI* web_ui,
+                              const string16& page_name,
+                              OptionsPage page);
   virtual ~OptionsManagedBannerHandler();
 
  protected:
@@ -28,10 +28,6 @@ class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
   virtual void OnUpdateVisibility();
 
  private:
-  OptionsManagedBannerHandler(WebUI* web_ui,
-                              const string16& page_name,
-                              OptionsPage page);
-
   // Set the managed options banner to be visible or invisible.
   void SetupBannerVisibility();
 

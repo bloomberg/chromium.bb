@@ -845,10 +845,18 @@ bool ConfigurationPolicyPrefKeeper::HasProxyPolicy(
   return true;
 }
 
-// static
-ConfigurationPolicyPrefStore* ConfigurationPolicyPrefStore::Create(
-    ConfigurationPolicyProvider* provider) {
-  return new ConfigurationPolicyPrefStore(provider);
+ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
+    ConfigurationPolicyProvider* provider)
+    : provider_(provider),
+      initialization_complete_(false) {
+  if (provider_) {
+    // Read initial policy.
+    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
+    registrar_.Init(provider_, this);
+    initialization_complete_ = provider->IsInitializationComplete();
+  } else {
+    initialization_complete_ = true;
+  }
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
@@ -1092,20 +1100,6 @@ ConfigurationPolicyPrefStore::IsProxyPolicy(ConfigurationPolicyType policy) {
       policy == kPolicyProxyServer ||
       policy == kPolicyProxyPacUrl ||
       policy == kPolicyProxyBypassList;
-}
-
-ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
-    ConfigurationPolicyProvider* provider)
-    : provider_(provider),
-      initialization_complete_(false) {
-  if (provider_) {
-    // Read initial policy.
-    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
-    registrar_.Init(provider_, this);
-    initialization_complete_ = provider->IsInitializationComplete();
-  } else {
-    initialization_complete_ = true;
-  }
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

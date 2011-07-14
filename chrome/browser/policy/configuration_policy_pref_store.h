@@ -29,8 +29,7 @@ class ConfigurationPolicyPrefStore
  public:
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
-  static ConfigurationPolicyPrefStore* Create(
-      ConfigurationPolicyProvider* provider);
+  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
@@ -66,8 +65,6 @@ class ConfigurationPolicyPrefStore
   static bool IsProxyPolicy(ConfigurationPolicyType policy);
 
  private:
-  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
-
   // Refreshes policy information, rereading policy from the provider and
   // sending out change notifications as appropriate.
   void Refresh();

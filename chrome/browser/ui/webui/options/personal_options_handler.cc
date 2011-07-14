@@ -349,10 +349,12 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 }
 
 void PersonalOptionsHandler::Initialize() {
+#if defined(ENABLE_CONFIGURATION_POLICY)
   banner_handler_.reset(
-      OptionsManagedBannerHandler::Create(web_ui_,
-                                          ASCIIToUTF16("PersonalOptions"),
-                                          OPTIONS_PAGE_CONTENT));
+      new OptionsManagedBannerHandler(web_ui_,
+                                      ASCIIToUTF16("PersonalOptions"),
+                                      OPTIONS_PAGE_CONTENT));
+#endif
 
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,

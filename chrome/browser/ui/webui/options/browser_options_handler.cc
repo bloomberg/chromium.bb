@@ -148,10 +148,12 @@ void BrowserOptionsHandler::Initialize() {
   pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
 
   UpdateSearchEngines();
+#if defined(ENABLE_CONFIGURATION_POLICY)
   banner_handler_.reset(
-      OptionsManagedBannerHandler::Create(web_ui_,
-                                          ASCIIToUTF16("BrowserOptions"),
-                                          OPTIONS_PAGE_GENERAL));
+      new OptionsManagedBannerHandler(web_ui_,
+                                      ASCIIToUTF16("BrowserOptions"),
+                                      OPTIONS_PAGE_GENERAL));
+#endif
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 }

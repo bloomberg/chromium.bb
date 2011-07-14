@@ -1656,7 +1656,6 @@
         '<(protoc_out_dir)/chrome/browser/policy/proto/chrome_device_policy.pb.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',
-        'browser/policy/policy_stubs.cc',
         'browser/policy/proto/device_management_constants.cc',
         'browser/policy/proto/device_management_constants.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.cc',
@@ -3556,7 +3555,6 @@
         'browser/ui/webui/options/language_options_handler_common.h',
         'browser/ui/webui/options/options_managed_banner_handler.cc',
         'browser/ui/webui/options/options_managed_banner_handler.h',
-        'browser/ui/webui/options/options_managed_banner_handler_stub.cc',
         'browser/ui/webui/options/options_ui.cc',
         'browser/ui/webui/options/options_ui.h',
         'browser/ui/webui/options/password_manager_handler.cc',
@@ -3683,17 +3681,14 @@
             'DEBUG_DEVTOOLS=1',
           ],
         }],
-        ['configuration_policy==1', {
-           'sources!': [
-             'browser/policy/policy_stubs.cc',
-             'browser/ui/webui/options/options_managed_banner_handler_stub.cc',
-           ],
-         }, {
-           'sources/': [
-             ['exclude', '^browser/policy/'],
-             ['include', '^browser/policy/policy_stubs.cc'],
-             ['exclude', '^browser/ui/webui/options/options_managed_banner_handler.cc'],
-           ],
+        ['configuration_policy==0', {
+          'sources!': [
+            'browser/ui/webui/options/options_managed_banner_handler.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/policy/'],
+            ['include', '^browser/policy/policy_path_parser'],
+          ],
         }],
         ['safe_browsing==1', {
           'defines': [

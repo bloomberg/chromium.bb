@@ -478,7 +478,9 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   if (!created_browser_policy_connector_) {
     DCHECK(browser_policy_connector_.get() == NULL);
     created_browser_policy_connector_ = true;
+#if defined(ENABLE_CONFIGURATION_POLICY)
     browser_policy_connector_.reset(policy::BrowserPolicyConnector::Create());
+#endif
   }
   return browser_policy_connector_.get();
 }

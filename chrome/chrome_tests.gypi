@@ -2063,9 +2063,11 @@
           ],
         }],
         ['configuration_policy==0', {
+          'sources!': [
+            'browser/prefs/proxy_policy_unittest.cc',
+          ],
           'sources/': [
             ['exclude', '^browser/policy/'],
-            ['exclude', '^browser/prefs/proxy_policy_unittest.cc'],
           ],
         }],
         ['safe_browsing==1', {
@@ -2619,6 +2621,11 @@
         ['toolkit_views==0', {
           'sources!': [
             'browser/extensions/extension_input_apitest.cc',
+          ],
+        }],
+        ['configuration_policy==0', {
+          'sources/': [
+            ['exclude', '^browser/policy/'],
           ],
         }],
         ['safe_browsing==1', {
