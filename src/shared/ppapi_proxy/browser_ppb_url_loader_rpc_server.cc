@@ -175,6 +175,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_ReadResponseBody(
     int32_t* pp_error_or_bytes) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  CHECK(*buffer_size == static_cast<nacl_abi_size_t>(bytes_to_read));
 
   // |buffer| is allocated by the rpc server and will be freed after this
   // function returns. Hence we must provide our own byte storage for
@@ -189,6 +190,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_ReadResponseBody(
       loader, callback_buffer, bytes_to_read, remote_callback);
   DebugPrintf("PPB_URLLoader::ReadResponseBody: pp_error_or_bytes=%"
               NACL_PRId32"\n", *pp_error_or_bytes);
+  CHECK(*pp_error_or_bytes <= bytes_to_read);
 
   if (*pp_error_or_bytes > 0) {  // Bytes read into |callback_buffer|.
     // No callback scheduled.

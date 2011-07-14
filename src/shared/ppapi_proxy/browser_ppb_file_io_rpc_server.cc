@@ -97,6 +97,7 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
       int32_t* pp_error_or_bytes) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  CHECK(*buffer_size == static_cast<nacl_abi_size_t>(bytes_to_read));
 
   char* callback_buffer = NULL;
   PP_CompletionCallback remote_callback =
@@ -113,6 +114,7 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
       remote_callback);
   DebugPrintf("PPB_FileIO_Dev::Read: pp_error_or_bytes=%"NACL_PRId32"\n",
               *pp_error_or_bytes);
+  CHECK(*pp_error_or_bytes <= bytes_to_read);
 
   if (*pp_error_or_bytes > 0) {  // Bytes read into |callback_buffer|.
     // No callback scheduled.
