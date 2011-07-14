@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status/capslock_menu_button.h"
+#include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
 
 #include <string>
 
@@ -15,52 +15,52 @@
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
-// CapslockMenuButton
+// CapsLockMenuButton
 
-CapslockMenuButton::CapslockMenuButton(StatusAreaHost* host)
+CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this) {
   SetTooltipText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_CAPSLOCK_ENABLED)));
+      l10n_util::GetStringUTF16(IDS_STATUSBAR_CAPS_LOCK_ENABLED)));
   SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_STATUSBAR_CAPSLOCK_ENABLED));
-  UpdateUIFromCurrentCapslock(input_method::CapsLockIsEnabled());
-  SystemKeyEventListener::GetInstance()->AddCapslockObserver(this);
+      IDS_STATUSBAR_CAPS_LOCK_ENABLED));
+  UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
+  SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 }
 
-CapslockMenuButton::~CapslockMenuButton() {
-  SystemKeyEventListener::GetInstance()->RemoveCapslockObserver(this);
+CapsLockMenuButton::~CapsLockMenuButton() {
+  SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::View implementation:
 
-gfx::Size CapslockMenuButton::GetPreferredSize() {
+gfx::Size CapsLockMenuButton::GetPreferredSize() {
   return StatusAreaButton::GetPreferredSize();
 }
 
-void CapslockMenuButton::OnLocaleChanged() {
-  UpdateUIFromCurrentCapslock(input_method::CapsLockIsEnabled());
+void CapsLockMenuButton::OnLocaleChanged() {
+  UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation:
 
-void CapslockMenuButton::RunMenu(views::View* unused_source,
+void CapsLockMenuButton::RunMenu(views::View* unused_source,
                                  const gfx::Point& pt) {
   // This button is just an indicator, and therefore does not have a menu.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SystemKeyEventListener::CapslockObserver implementation
+// SystemKeyEventListener::CapsLockObserver implementation
 
-void CapslockMenuButton::OnCapslockChange(bool enabled) {
-  UpdateUIFromCurrentCapslock(enabled);
+void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
+  UpdateUIFromCurrentCapsLock(enabled);
 }
 
-void CapslockMenuButton::UpdateUIFromCurrentCapslock(bool enabled) {
+void CapsLockMenuButton::UpdateUIFromCurrentCapsLock(bool enabled) {
   if (enabled) {
     SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_STATUSBAR_CAPSLOCK));
+        IDR_STATUSBAR_CAPS_LOCK));
   } else {
     SetIcon(SkBitmap());
   }

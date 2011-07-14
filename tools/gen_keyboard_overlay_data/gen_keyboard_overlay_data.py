@@ -439,7 +439,7 @@ def OutputCC(hotkey_data, outdir):
 def OutputAltGr(keyboard_glyph_data, outdir):
   """Outputs the keyboard overlay data as a JSON file."""
   altgr_output = []
-  capslock_output = []
+  caps_lock_output = []
 
   for layout in keyboard_glyph_data.keys():
     try:
@@ -455,11 +455,11 @@ def OutputAltGr(keyboard_glyph_data, outdir):
     try:
       caps_lock = keyboard_glyph_data[layout]["keys"]["E0 5B"]["label"].strip()
       if caps_lock.lower() != "search":
-        capslock_output.append('  "%s",' % layout)
+        caps_lock_output.append('  "%s",' % layout)
     except KeyError:
       pass
   snippet = ALTGR_TEMPLATE % ("\n".join(altgr_output),
-                              "\n".join(capslock_output))
+                              "\n".join(caps_lock_output))
 
   RewriteFile(ALTGR_START, ALTGR_END, ALTGR_OUTDIR, ALTGR_FILENAME, snippet,
               outdir)

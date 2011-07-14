@@ -22,7 +22,7 @@ const struct ModifierKeysSelectItem {
     chromeos::input_method::kLeftAltKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_VOID,
     chromeos::input_method::kVoidKey },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPSLOCK,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPS_LOCK,
     chromeos::input_method::kCapsLockKey },
 };
 

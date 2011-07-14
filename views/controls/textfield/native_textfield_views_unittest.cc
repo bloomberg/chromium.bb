@@ -197,10 +197,10 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   void SendKeyEvent(ui::KeyboardCode key_code,
                     bool shift,
                     bool control,
-                    bool capslock) {
+                    bool caps_lock) {
     int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
         (control ? ui::EF_CONTROL_DOWN : 0) |
-        (capslock ? ui::EF_CAPS_LOCK_DOWN : 0);
+        (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
     KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     input_method_->DispatchKeyEvent(event);
   }

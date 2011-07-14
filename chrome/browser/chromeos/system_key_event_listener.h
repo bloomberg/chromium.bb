@@ -28,9 +28,9 @@ class AudioHandler;
 class SystemKeyEventListener : public WmMessageListener::Observer,
                                public MessageLoopForUI::Observer {
  public:
-  class CapslockObserver {
+  class CapsLockObserver {
    public:
-    virtual void OnCapslockChange(bool enabled) = 0;
+    virtual void OnCapsLockChange(bool enabled) = 0;
   };
   static SystemKeyEventListener* GetInstance();
 
@@ -40,8 +40,8 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   void Stop();
 
-  void AddCapslockObserver(CapslockObserver* observer);
-  void RemoveCapslockObserver(CapslockObserver* observer);
+  void AddCapsLockObserver(CapsLockObserver* observer);
+  void RemoveCapsLockObserver(CapsLockObserver* observer);
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
@@ -68,13 +68,13 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 #endif
 
   // Tell X we are interested in the specified key/mask combination.
-  // Capslock and Numlock are always ignored.
+  // CapsLock and Numlock are always ignored.
   void GrabKey(int32 key, uint32 mask);
 
   void OnVolumeMute();
   void OnVolumeDown();
   void OnVolumeUp();
-  void OnCapslock(bool enabled);
+  void OnCapsLock(bool enabled);
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
@@ -88,7 +88,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   bool stopped_;
 
-  ObserverList<CapslockObserver> capslock_observers_;
+  ObserverList<CapsLockObserver> caps_lock_observers_;
   int xkb_event_base_code_;
 
   // AudioHandler is a Singleton class we are just caching a pointer to here,

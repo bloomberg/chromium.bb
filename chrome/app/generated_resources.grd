@@ -11719,7 +11719,7 @@ ls' lab.">
                desc="The dropdown list item for 'Customize modifier keys' overlay">
         Disabled
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPSLOCK"
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPS_LOCK"
                desc="The dropdown list item for 'Customize modifier keys' overlay">
         Caps Lock
       </message>
@@ -11814,7 +11814,7 @@ ls' lab.">
       <message name="IDS_STATUSBAR_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
         Searching for Wi-Fi networks...
       </message>
-      <message name="IDS_STATUSBAR_CAPSLOCK_ENABLED" desc="The tooltip for the capslock indicator button.">
+      <message name="IDS_STATUSBAR_CAPS_LOCK_ENABLED" desc="The tooltip for the caps lock indicator button.">
         Caps lock active
       </message>
       <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">

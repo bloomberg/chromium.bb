@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status/capslock_menu_button.h"
+#include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
 
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
@@ -15,9 +15,9 @@
 
 namespace chromeos {
 
-class CapslockMenuButtonTest : public CrosInProcessBrowserTest {
+class CapsLockMenuButtonTest : public CrosInProcessBrowserTest {
  protected:
-  CapslockMenuButtonTest()
+  CapsLockMenuButtonTest()
       : CrosInProcessBrowserTest() {
   }
 
@@ -26,19 +26,19 @@ class CapslockMenuButtonTest : public CrosInProcessBrowserTest {
     cros_mock_->SetStatusAreaMocksExpectations();
   }
 
-  CapslockMenuButton* GetCapslockMenuButton() {
+  CapsLockMenuButton* GetCapsLockMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
     return static_cast<StatusAreaView*>(view->
-        GetViewByID(VIEW_ID_STATUS_AREA))->capslock_view();
+        GetViewByID(VIEW_ID_STATUS_AREA))->caps_lock_view();
   }
 };
 
-IN_PROC_BROWSER_TEST_F(CapslockMenuButtonTest, InitialIndicatorTest) {
-  CapslockMenuButton* capslock = GetCapslockMenuButton();
-  ASSERT_TRUE(capslock != NULL);
+IN_PROC_BROWSER_TEST_F(CapsLockMenuButtonTest, InitialIndicatorTest) {
+  CapsLockMenuButton* caps_lock = GetCapsLockMenuButton();
+  ASSERT_TRUE(caps_lock != NULL);
 
   // By default, the indicator should be disabled.
-  EXPECT_FALSE(capslock->IsEnabled());
+  EXPECT_FALSE(caps_lock->IsEnabled());
 }
 
 }  // namespace chromeos

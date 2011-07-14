@@ -510,7 +510,7 @@
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_9" file="statusbar_battery9d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_MISSING" file="statusbar_battery_missing.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_UNKNOWN" file="statusbar_battery_unknown.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_CAPSLOCK" file="statusbar_capslock.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_CAPS_LOCK" file="statusbar_caps_lock.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" type="BINDATA" />

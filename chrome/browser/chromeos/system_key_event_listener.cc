@@ -95,13 +95,13 @@ void SystemKeyEventListener::Stop() {
   stopped_ = true;
 }
 
-void SystemKeyEventListener::AddCapslockObserver(CapslockObserver* observer) {
-  capslock_observers_.AddObserver(observer);
+void SystemKeyEventListener::AddCapsLockObserver(CapsLockObserver* observer) {
+  caps_lock_observers_.AddObserver(observer);
 }
 
-void SystemKeyEventListener::RemoveCapslockObserver(
-    CapslockObserver* observer) {
-  capslock_observers_.RemoveObserver(observer);
+void SystemKeyEventListener::RemoveCapsLockObserver(
+    CapsLockObserver* observer) {
+  caps_lock_observers_.RemoveObserver(observer);
 }
 
 
@@ -195,16 +195,16 @@ void SystemKeyEventListener::OnVolumeUp() {
   BrightnessBubble::GetInstance()->HideBubble();
 }
 
-void SystemKeyEventListener::OnCapslock(bool enabled) {
+void SystemKeyEventListener::OnCapsLock(bool enabled) {
   FOR_EACH_OBSERVER(
-      CapslockObserver, capslock_observers_, OnCapslockChange(enabled));
+      CapsLockObserver, caps_lock_observers_, OnCapsLockChange(enabled));
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == xkb_event_base_code_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
-      OnCapslock((xkey_event->state.locked_mods) & LockMask);
+      OnCapsLock((xkey_event->state.locked_mods) & LockMask);
       return true;
     }
   } else if (xevent->type == KeyPress) {
