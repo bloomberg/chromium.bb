@@ -449,9 +449,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   ASSERT_TRUE(http_server.Stop());
 }
 
-// Disabled temporarily because WebSocket tests are moving in WebKit.
-// See http://crbug.com/88445.
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
@@ -468,6 +466,7 @@ TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("websocket");
   worker_test_dir = worker_test_dir.AppendASCII("tests");
+  worker_test_dir = worker_test_dir.AppendASCII("hixie76");
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(websocket_test_dir, worker_test_dir, kHttpPort);
 
