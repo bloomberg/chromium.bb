@@ -46,7 +46,7 @@ class IsolatedAppApiTest : public ExtensionApiTest {
 // pages or other apps.
 //
 // Flaky on Mac/Win.  http://crbug.com/86562
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_CookieIsolation DISABLED_CookieIsolation
 #else
 #define MAYBE_CookieIsolation CookieIsolation

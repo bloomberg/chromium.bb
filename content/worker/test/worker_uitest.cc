@@ -557,7 +557,7 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 // See http://crbug.com/48664
 #define MAYBE_LimitPerPage DISABLED_LimitPerPage
 #else
@@ -579,7 +579,7 @@ TEST_F(WorkerTest, MAYBE_LimitPerPage) {
 #if defined(OS_LINUX)
 // Hangs on Linux: http://crbug.com/30332
 #define FLAKY_LimitTotal DISABLED_LimitTotal
-#elif defined(OS_MAC)
+#elif defined(OS_MACOSX)
 // Possibly causing ui_tests to hang on Mac: http://crbug.com/88958
 #define FLAKY_LimitTotal DISABLED_LimitTotal
 #endif
