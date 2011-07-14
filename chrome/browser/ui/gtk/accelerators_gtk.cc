@@ -179,6 +179,17 @@ const struct AcceleratorMapping {
 
 }  // namespace
 
+// static
+AcceleratorsGtk* AcceleratorsGtk::GetInstance() {
+  return Singleton<AcceleratorsGtk>::get();
+}
+
+const ui::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
+    int command_id) {
+  AcceleratorGtkMap::const_iterator i(primary_accelerators_.find(command_id));
+  return i != primary_accelerators_.end() ? &i->second : NULL;
+}
+
 AcceleratorsGtk::AcceleratorsGtk() {
   for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
     const AcceleratorMapping& entry = kAcceleratorMap[i];
@@ -193,19 +204,3 @@ AcceleratorsGtk::AcceleratorsGtk() {
 }
 
 AcceleratorsGtk::~AcceleratorsGtk() {}
-
-// static
-AcceleratorsGtk* AcceleratorsGtk::GetInstance() {
-  return Singleton<AcceleratorsGtk>::get();
-}
-
-const ui::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
-    int command_id) {
-  base::hash_map<int, ui::AcceleratorGtk>::const_iterator iter =
-      primary_accelerators_.find(command_id);
-
-  if (iter == primary_accelerators_.end())
-    return NULL;
-
-  return &iter->second;
-}

@@ -13,20 +13,14 @@ template <typename T> struct DefaultSingletonTraits;
 
 class AcceleratorsGtk {
  public:
-  typedef std::vector<std::pair<int, ui::AcceleratorGtk> >
-      AcceleratorGtkList;
+  typedef std::vector<std::pair<int, ui::AcceleratorGtk> > AcceleratorGtkList;
   typedef AcceleratorGtkList::const_iterator const_iterator;
 
   // Returns the singleton instance.
   static AcceleratorsGtk* GetInstance();
 
-  const_iterator const begin() {
-    return all_accelerators_.begin();
-  }
-
-  const_iterator const end() {
-    return all_accelerators_.end();
-  }
+  const_iterator const begin() { return all_accelerators_.begin(); }
+  const_iterator const end() { return all_accelerators_.end(); }
 
   // Returns NULL if there is no accelerator for the command.
   const ui::AcceleratorGtk* GetPrimaryAcceleratorForCommand(int command_id);
@@ -37,7 +31,8 @@ class AcceleratorsGtk {
   AcceleratorsGtk();
   ~AcceleratorsGtk();
 
-  base::hash_map<int, ui::AcceleratorGtk> primary_accelerators_;
+  typedef base::hash_map<int, ui::AcceleratorGtk> AcceleratorGtkMap;
+  AcceleratorGtkMap primary_accelerators_;
 
   AcceleratorGtkList all_accelerators_;
 };
