@@ -7710,8 +7710,12 @@ ls' lab.">
         Send feedback to Google.
       </message>
 
-      <message name="IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE" desc="Feedback message template for when a popular Autofill form is found.">
+      <message name="IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE" desc="Feedback message template used when a popular Autofill form is found.">
         The form signature <ph name="FORM_SIGNATURE">$1<ex>15146752457155269744</ex></ph> is for <ph name="FORM_URL">$2<ex>http://www.facebook.com</ex></ph>.
+      </message>
+
+      <message name="IDS_AUTOFILL_FEEDBACK_LARGE_QUERY_MESSAGE" desc="Feedback message template used when a large Autofill server query is encountered.">
+        The forms on <ph name="PAGE_URL">$1<ex>http://www.facebook.com</ex></ph> collectively include 100 or more form fields.
       </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
