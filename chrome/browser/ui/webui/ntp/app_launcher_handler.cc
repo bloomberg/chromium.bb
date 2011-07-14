@@ -242,10 +242,12 @@ void AppLauncherHandler::Observe(int type,
 
       if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
         scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
-        std::string function =
-            type == chrome::NOTIFICATION_EXTENSION_LOADED ?
-                "ntp4.appAdded" : "ntp4.appRemoved";
-        web_ui_->CallJavascriptFunction(function, *app_info);
+        if (app_info.get()) {
+          std::string function =
+              type == chrome::NOTIFICATION_EXTENSION_LOADED ?
+                  "ntp4.appAdded" : "ntp4.appRemoved";
+          web_ui_->CallJavascriptFunction(function, *app_info);
+        }
       } else if (web_ui_->tab_contents()) {
         HandleGetApps(NULL);
       }
