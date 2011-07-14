@@ -83,10 +83,6 @@ void NativeWidgetViews::DispatchKeyEventPostIME(const KeyEvent& key) {
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
-  view_.reset(new internal::NativeWidgetView(this));
-  view_->SetBoundsRect(params.bounds);
-  view_->SetPaintToLayer(true);
-
   View* parent_view = NULL;
   if (params.parent_widget) {
     hosting_widget_ = params.parent_widget;
@@ -95,6 +91,11 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     parent_view = ViewsDelegate::views_delegate->GetDefaultParentView();
     hosting_widget_ = parent_view->GetWidget();
   }
+
+  view_.reset(new internal::NativeWidgetView(this));
+  view_->SetBoundsRect(params.bounds);
+  view_->SetPaintToLayer(true);
+
   parent_view->AddChildView(view_.get());
 
   // TODO(beng): SetInitParams().

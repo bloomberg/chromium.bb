@@ -452,6 +452,8 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       mouse_move_handler_ = NULL;
     if (touch_pressed_handler_ == child)
       touch_pressed_handler_ = NULL;
+    if (capture_view_ == child)
+      capture_view_ = NULL;
   }
 }
 
