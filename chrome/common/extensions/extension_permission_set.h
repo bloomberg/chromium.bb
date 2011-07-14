@@ -86,7 +86,7 @@ class ExtensionAPIPermission {
     kInvalid = -2,
     kUnknown = -1,
 
-    // Default permission that every extension has implicity.
+    // Default permission that every extension has implicitly.
     kDefault,
 
     // Real permissions.
@@ -107,6 +107,7 @@ class ExtensionAPIPermission {
     kGeolocation,
     kHistory,
     kIdle,
+    kInputMethodPrivate,
     kManagement,
     kMediaPlayerPrivate,
     kNotification,

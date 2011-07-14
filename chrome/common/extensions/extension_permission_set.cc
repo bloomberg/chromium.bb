@@ -287,6 +287,10 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       ExtensionAPIPermission::kIdle, "idle", 0,
       ExtensionPermissionMessage::kNone);
   RegisterExtensionPermission(
+      ExtensionAPIPermission::kInputMethodPrivate,
+      "inputMethodPrivate", 0,
+      ExtensionPermissionMessage::kNone);
+  RegisterExtensionPermission(
       ExtensionAPIPermission::kManagement, "management",
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement);

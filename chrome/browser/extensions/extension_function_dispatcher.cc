@@ -72,6 +72,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_file_browser_private_api.h"
 #include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#include "chrome/browser/extensions/extension_input_method_api.h"
 #include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
 #endif
 
@@ -355,6 +356,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetPlaylistMediaplayerFunction>();
   RegisterFunction<TogglePlaylistPanelMediaplayerFunction>();
   RegisterFunction<ToggleFullscreenMediaplayerFunction>();
+
+  // InputMethod
+  RegisterFunction<GetInputMethodFunction>();
+
 #if defined(TOUCH_UI)
   // Input
   RegisterFunction<SendHandwritingStrokeFunction>();

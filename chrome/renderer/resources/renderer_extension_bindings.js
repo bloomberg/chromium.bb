@@ -323,6 +323,7 @@ var chrome = chrome || {};
       "fileSystem",
       "history",
       "idle",
+      "inputMethodPrivate",
       "management",
       "mediaPlayerPrivate",
       "omnibox",

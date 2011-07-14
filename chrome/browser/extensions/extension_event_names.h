@@ -34,6 +34,9 @@ extern const char kOnExtensionDisabled[];
 extern const char kOnFileBrowserDiskChanged[];
 extern const char kOnFileChanged[];
 
+// InputMethod.
+extern const char kOnInputMethodChanged[];
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_

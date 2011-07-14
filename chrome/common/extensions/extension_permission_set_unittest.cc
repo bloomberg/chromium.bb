@@ -486,6 +486,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kChromePrivate);
   skip.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   skip.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
+  skip.insert(ExtensionAPIPermission::kInputMethodPrivate);
 
   // Warned as part of host permissions.
   skip.insert(ExtensionAPIPermission::kDevtools);

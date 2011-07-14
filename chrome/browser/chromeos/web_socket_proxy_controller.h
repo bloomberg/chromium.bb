@@ -7,8 +7,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace chromeos {
+
+// Fills vector with extensions IDs which are allowed to use private
+// extension API (WebSocketProxyPrivate, InputMethodPrivate, etc.)
+void FillWithExtensionsIdsWithPrivateAccess(std::vector<std::string>* ids);
 
 // Controls webproxy to TCP service.
 class WebSocketProxyController {

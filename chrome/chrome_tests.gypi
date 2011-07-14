@@ -1908,8 +1908,8 @@
         'common/extensions/extension_unittest.cc',
         'common/extensions/extension_unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
-        'common/extensions/url_pattern_unittest.cc',
         'common/extensions/url_pattern_set_unittest.cc',
+        'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
         'common/guid_unittest.cc',
         'common/important_file_writer_unittest.cc',
@@ -2457,6 +2457,7 @@
         'browser/extensions/extension_info_private_apitest_chromeos.cc',
         'browser/extensions/extension_infobar_apitest.cc',
         'browser/extensions/extension_input_apitest.cc',
+        'browser/extensions/extension_input_method_apitest.cc',
         'browser/extensions/extension_input_ui_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
@@ -2599,6 +2600,7 @@
           'sources!': [
             'browser/chromeos/media/media_player_browsertest.cc',
             'browser/extensions/extension_file_browser_private_apitest.cc',
+            'browser/extensions/extension_input_method_apitest.cc',
           ],
         }, { #else: OS == "chromeos"
           'sources!': [

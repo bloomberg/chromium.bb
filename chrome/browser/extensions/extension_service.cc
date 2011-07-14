@@ -87,6 +87,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
+#include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -680,6 +681,9 @@ void ExtensionService::InitEventRouters() {
 #if defined(OS_CHROMEOS)
   ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
       profile_);
+  // Lazy initialization.
+  chromeos::ExtensionInputMethodEventRouter::GetInstance();
+
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
 #endif
 

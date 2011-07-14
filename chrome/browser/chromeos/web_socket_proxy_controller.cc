@@ -33,8 +33,8 @@ const char* kAllowedIds[] = {
 
 class OriginValidator {
  public:
-  OriginValidator()
-      : allowed_ids_(kAllowedIds, kAllowedIds + arraysize(kAllowedIds)) {
+  OriginValidator() {
+    chromeos::FillWithExtensionsIdsWithPrivateAccess(&allowed_ids_);
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     DCHECK(command_line);
     std::string allowed_list =
@@ -155,6 +155,12 @@ void ProxyTask::Run() {
 }  // namespace
 
 namespace chromeos {
+
+void FillWithExtensionsIdsWithPrivateAccess(std::vector<std::string>* ids) {
+  ids->clear();
+  for (size_t i = 0; i < arraysize(kAllowedIds); ++i)
+    ids->push_back(kAllowedIds[i]);
+}
 
 // static
 void WebSocketProxyController::Initiate() {
