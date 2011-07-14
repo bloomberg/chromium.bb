@@ -48,6 +48,7 @@
       'extensions',
       'find_in_page',
       'flash',
+      'gpu',
       'history',
       'https',
       'imports',
