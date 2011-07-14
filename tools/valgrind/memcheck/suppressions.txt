@@ -4867,6 +4867,17 @@
    fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
    fun:_ZL23AddDataSourceOnIOThread13scoped_refptrIN3net23URLRequestContextGetterEES_IN20ChromeURLDataManager10DataSourceEE
 }
+{
+   bug_89304
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net20ClientSocketPoolBaseINS_21TransportSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net25TransportClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net18ClientSocketHandle4InitINS_21TransportSocketParamsENS_25TransportClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
+   fun:_ZN3net12*120InitSocketPoolHelperERK4GURLRKNS_18HttpRequestHeadersEiNS_15RequestPriorityEPNS_18HttpNetworkSessionERKNS_9ProxyInfoEbbRKNS_9SSLConfigESF_bRKNS_11BoundNetLogEiPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net23ClientSocketPoolManager30InitSocketHandleForHttpRequestERK4GURLRKNS_18HttpRequestHeadersEiNS_15RequestPriorityEPNS_18HttpNetworkSessionERKNS_9ProxyInfoEbbRKNS_9SSLConfigESF_RKNS_11BoundNetLogEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net21HttpStreamFactoryImpl3Job16DoInitConnectionEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
