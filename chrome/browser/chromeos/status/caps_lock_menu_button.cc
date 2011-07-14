@@ -19,6 +19,8 @@ namespace chromeos {
 
 CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
     : StatusAreaButton(host, this) {
+  SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_STATUSBAR_CAPS_LOCK));
   SetTooltipText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_STATUSBAR_CAPS_LOCK_ENABLED)));
   SetAccessibleName(l10n_util::GetStringUTF16(
@@ -33,10 +35,6 @@ CapsLockMenuButton::~CapsLockMenuButton() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::View implementation:
-
-gfx::Size CapsLockMenuButton::GetPreferredSize() {
-  return StatusAreaButton::GetPreferredSize();
-}
 
 void CapsLockMenuButton::OnLocaleChanged() {
   UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
@@ -58,15 +56,7 @@ void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
 }
 
 void CapsLockMenuButton::UpdateUIFromCurrentCapsLock(bool enabled) {
-  if (enabled) {
-    SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_STATUSBAR_CAPS_LOCK));
-  } else {
-    SetIcon(SkBitmap());
-  }
-  SetEnabled(enabled);
-  Layout();
-  SchedulePaint();
+  SetVisible(enabled);
 }
 
 }  // namespace chromeos

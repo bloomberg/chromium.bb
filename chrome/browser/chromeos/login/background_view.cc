@@ -294,6 +294,10 @@ StatusAreaHost::TextStyle BackgroundView::GetTextStyle() const {
   return kWhitePlain;
 }
 
+void BackgroundView::ButtonVisibilityChanged(views::View* button_view) {
+  status_area_->ButtonVisibilityChanged(button_view);
+}
+
 // Overridden from LoginHtmlDialog::Delegate:
 void BackgroundView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.

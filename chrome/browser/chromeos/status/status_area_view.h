@@ -28,6 +28,7 @@ class StatusAreaView : public AccessiblePaneView {
 
   virtual void Init();
   void MakeButtonsActive(bool active);
+  void ButtonVisibilityChanged(views::View* button_view);
 
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();

@@ -26,7 +26,6 @@ class CapsLockMenuButton : public StatusAreaButton,
   virtual ~CapsLockMenuButton();
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize();
   virtual void OnLocaleChanged();
 
   // views::ViewMenuDelegate implementation.
