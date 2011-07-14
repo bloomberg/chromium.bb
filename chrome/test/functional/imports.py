@@ -207,6 +207,17 @@ class ImportsTest(pyauto.PyUITest):
     # TODO(nirnimesh): Anything else to be done on other platforms?
     return True
 
+  def _ImportFromFirefox(self, bookmarks, history, passwords, home_page,
+                         search_engines):
+    """Verify importing individual Firefox data through preferences"""
+    if not self._CanRunFirefoxTests():
+      logging.warn('Not running firefox import tests.')
+      return
+    self._SwapFirefoxProfile()
+    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self._CheckDefaults(bookmarks, history, passwords, home_page,
+                        search_engines)
+
   # Tests.
   def testFirefoxImportFromPrefs(self):
     """Verify importing Firefox data through preferences."""
@@ -252,6 +263,26 @@ class ImportsTest(pyauto.PyUITest):
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))
     self.assertEqual(num_passwords_orig, len(self.GetSavedPasswords()))
+
+  def testImportFirefoxBookmarksFromPrefs(self):
+    """Verify importing Firefox bookmarks through preferences."""
+    self._ImportFromFirefox(bookmarks=True, history=False, passwords=False,
+                            home_page=False, search_engines=False)
+
+  def testImportFirefoxHistoryFromPrefs(self):
+    """Verify importing Firefox history through preferences."""
+    self._ImportFromFirefox(bookmarks=False, history=True, passwords=False,
+                            home_page=False, search_engines=False)
+
+  def testImportFirefoxPasswordsFromPrefs(self):
+    """Verify importing Firefox passwords through preferences."""
+    self._ImportFromFirefox(bookmarks=False, history=False, passwords=True,
+                            home_page=False, search_engines=False)
+
+  def testImportFirefoxSearchEnginesFromPrefs(self):
+    """Verify importing Firefox search engines through preferences."""
+    self._ImportFromFirefox(bookmarks=False, history=False, passwords=False,
+                            home_page=False, search_engines=True)
 
   def testImportFromFirefoxAndSafari(self):
     """Verify importing from Firefox and then Safari."""
