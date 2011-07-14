@@ -63,8 +63,11 @@ IDENTIFIER(NaClSwitch):
         movq    %rdx, %r10
         movq    %rdx, %r11
 
-        jmp     *0x88(%rcx)
         /*
-         * This leaves %rcx pointing to the thread context, but that
-         * should be memory that's inaccessible by NaCl module code.
+         * Load the return address into %rcx rather than doing
+         * "jmp *0x88(%rcx)" so that we do not leak the address of the
+         * struct NaClThreadContext to untrusted code.  Knowing this
+         * address would make bugs in the sandbox easier to exploit.
          */
+        movq    0x88(%rcx), %rcx
+        jmp     *%rcx
