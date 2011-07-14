@@ -47,7 +47,6 @@
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_impl.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -405,11 +404,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
     p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
 #endif
-
-  if (command_line.HasSwitch(switches::kEnableMediaStream)) {
-    media_stream_impl_ = new MediaStreamImpl(
-        RenderThread::current()->video_capture_impl_manager());
-  }
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -1900,8 +1894,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client,
                                           collection.release(),
-                                          message_loop_factory.release(),
-                                          media_stream_impl_.get()));
+                                          message_loop_factory.release()));
   if (!result->Initialize(frame,
                           cmd_line->HasSwitch(switches::kSimpleDataSource),
                           video_renderer)) {

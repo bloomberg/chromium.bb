@@ -27,7 +27,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/media/media_stream_client.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/media/web_video_renderer.h"
 #include "webkit/glue/webvideoframe_impl.h"
@@ -272,8 +271,7 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
     media::FilterCollection* collection,
-    media::MessageLoopFactory* message_loop_factory,
-    MediaStreamClient* media_stream_client)
+    media::MessageLoopFactory* message_loop_factory)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
@@ -284,8 +282,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       seeking_(false),
       playback_rate_(0.0f),
       client_(client),
-      proxy_(NULL),
-      media_stream_client_(media_stream_client) {
+      proxy_(NULL) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
@@ -379,17 +376,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(proxy_);
-
-  if (media_stream_client_) {
-    scoped_refptr<media::VideoDecoder> new_decoder =
-        media_stream_client_->GetVideoDecoder(url, message_loop_factory_.get());
-    if (new_decoder.get()) {
-      // Remove the default decoder.
-      scoped_refptr<media::VideoDecoder> old_videodecoder;
-      filter_collection_->SelectVideoDecoder(&old_videodecoder);
-      filter_collection_->AddVideoDecoder(new_decoder.get());
-    }
-  }
 
   if (chunk_demuxer_factory_.get() &&
       chunk_demuxer_factory_->IsUrlSupported(url.spec())) {

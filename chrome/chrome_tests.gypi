@@ -2032,7 +2032,6 @@
         '../content/renderer/active_notification_tracker_unittest.cc',
         '../content/renderer/media/audio_message_filter_unittest.cc',
         '../content/renderer/media/audio_renderer_impl_unittest.cc',
-        '../content/renderer/media/capture_video_decoder_unittest.cc',
         '../content/renderer/media/media_stream_dispatcher_unittest.cc',
         '../content/renderer/media/rtc_video_decoder_unittest.cc',
         '../content/renderer/media/video_capture_impl_unittest.cc',
