@@ -10,9 +10,9 @@
       <arg name="version" type="uint"/>
     </request>
 
-    <!-- sync is an just an echo, which will reply with a sync event.
+    <!-- sync is an just an echo, which will reply with a key event.
          Since requests are handled in-order, this can be used as a
-         barrier to ensure all previous requests have ben handled.
+         barrier to ensure all previous requests have been handled.
          The key argument can be used to correlate between multiple
          sync invocations. -->
     <request name="sync">
@@ -70,7 +70,7 @@
     <!-- A reply to the frame or sync request.  The key is the one
          used in the request.  time is in millisecond units, and
          denotes the time when the frame was posted on the
-         display. time can be used to estimaate frame rate, determine
+         display. time can be used to estimate frame rate, determine
          how much to advance animations and compensate for jitter. -->
     <event name="key">
       <arg name="key" type="uint"/>
