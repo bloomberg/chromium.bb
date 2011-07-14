@@ -21,6 +21,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/download/download_item.h"
@@ -197,7 +198,7 @@ class DownloadItemView : public views::ButtonListener,
   DownloadShelfView* parent_;
 
   // Elements of our particular download
-  std::wstring status_text_;
+  string16 status_text_;
 
   // The font used to print the file name and status.
   gfx::Font font_;

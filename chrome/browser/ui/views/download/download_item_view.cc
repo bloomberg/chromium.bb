@@ -84,8 +84,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   : warning_icon_(NULL),
     download_(download),
     parent_(parent),
-    status_text_(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING))),
+    status_text_(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)),
     body_state_(NORMAL),
     drop_down_state_(NORMAL),
     progress_angle_(download_util::kStartAngleDegrees),
@@ -382,7 +381,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       NOTREACHED();
   }
 
-  status_text_ = UTF16ToWideHack(status_text);
+  status_text_ = status_text;
   UpdateAccessibleName();
 
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
@@ -737,7 +736,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
                                SkColorGetG(file_name_color)),
               static_cast<int>(kDownloadItemLuminanceMod *
                                SkColorGetB(file_name_color)));
-      canvas->DrawStringInt(WideToUTF16Hack(status_text_), font_,
+      canvas->DrawStringInt(status_text_, font_,
                             file_name_color, mirrored_x, y, kTextWidth,
                             font_.GetHeight());
     }
@@ -1110,7 +1109,7 @@ void DownloadItemView::UpdateAccessibleName() {
   if (download_->safety_state() == DownloadItem::DANGEROUS) {
     new_name = WideToUTF16Hack(dangerous_download_label_->GetText());
   } else {
-    new_name = WideToUTF16Hack(status_text_) + char16(' ') +
+    new_name = status_text_ + char16(' ') +
         download_->GetFileNameToReportUser().LossyDisplayName();
   }
 
