@@ -228,22 +228,25 @@ test-x86-64-sbtc() {
 # buildbot_toolchain_arm_untrusted.sh use the same tests directly.
 # TODO(jvoung): remove these when unified.
 
+# scons browser-tests are currently broken with concurrency, so use -j1
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=2019
+
 #@ test-arm-browser      - run arm browser tests via pnacl toolchain.
 test-arm-browser() {
   ${OTHER_TEST_SCRIPT} browser-tests "arm" \
-    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+    "--mode=opt-host,nacl -j1"
 }
 
 #@ test-x86-32-browser   - run x86-32 browser tests via pnacl toolchain.
 test-x86-32-browser() {
   ${OTHER_TEST_SCRIPT} browser-tests "x86-32" \
-    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+    "--mode=opt-host,nacl -j1"
 }
 
 #@ test-x86-64-browser   - run all x86-64 browser tests via pnacl toolchain.
 test-x86-64-browser() {
   ${OTHER_TEST_SCRIPT} browser-tests "x86-64" \
-    "--mode=opt-host,nacl -j${UTMAN_CONCURRENCY}"
+    "--mode=opt-host,nacl -j1"
 }
 
 #@ test-all              - run arm, x86-32, and x86-64 tests. (all should pass)
