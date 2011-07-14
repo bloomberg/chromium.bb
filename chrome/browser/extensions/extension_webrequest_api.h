@@ -45,7 +45,7 @@ class ExtensionWebRequestEventRouter {
     kInvalidEvent = 0,
     kOnBeforeRequest = 1 << 0,
     kOnBeforeSendHeaders = 1 << 1,
-    kOnRequestSent = 1 << 2,
+    kOnSendHeaders = 1 << 2,
     kOnBeforeRedirect = 1 << 3,
     kOnResponseStarted = 1 << 4,
     kOnErrorOccurred = 1 << 5,
@@ -131,12 +131,11 @@ class ExtensionWebRequestEventRouter {
                           net::CompletionCallback* callback,
                           net::HttpRequestHeaders* headers);
 
-  // Dispatches the onRequestSent event. This is fired for HTTP(s) requests
+  // Dispatches the onSendHeaders event. This is fired for HTTP(s) requests
   // only.
-  void OnRequestSent(void* profile,
+  void OnSendHeaders(void* profile,
                      ExtensionInfoMap* extension_info_map,
-                     uint64 request_id,
-                     const net::HostPortPair& socket_address,
+                     net::URLRequest* request,
                      const net::HttpRequestHeaders& headers);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
@@ -164,7 +163,6 @@ class ExtensionWebRequestEventRouter {
 
   // Notifications when objects are going away.
   void OnURLRequestDestroyed(void* profile, net::URLRequest* request);
-  void OnHttpTransactionDestroyed(void* profile, uint64 request_id);
 
   // Called when an event listener handles a blocking event and responds.
   void OnEventHandled(
@@ -207,7 +205,6 @@ class ExtensionWebRequestEventRouter {
   typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
   typedef std::map<void*, ListenerMapForProfile> ListenerMap;
   typedef std::map<uint64, BlockedRequest> BlockedRequestMap;
-  typedef std::map<uint64, net::URLRequest*> HttpRequestMap;
   // Map of request_id -> bit vector of EventTypes already signaled
   typedef std::map<uint64, int> SignaledRequestMap;
   typedef std::map<void*, void*> CrossProfileMap;
@@ -279,10 +276,6 @@ class ExtensionWebRequestEventRouter {
   // A map of network requests that are waiting for at least one event handler
   // to respond.
   BlockedRequestMap blocked_requests_;
-
-  // A map of HTTP(s) network requests. We use this to look up the URLRequest
-  // from the request ID given to us for HTTP-specific events.
-  HttpRequestMap http_requests_;
 
   // A map of request ids to a bitvector indicating which events have been
   // signaled and should not be sent again.

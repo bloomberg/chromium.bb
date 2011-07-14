@@ -35,7 +35,7 @@ extern const char kOnBeforeSendHeaders[];
 extern const char kOnCompleted[];
 extern const char kOnErrorOccurred[];
 extern const char kOnResponseStarted[];
-extern const char kOnRequestSent[];
+extern const char kOnSendHeaders[];
 
 // Error messages.
 extern const char kInvalidRedirectUrl[];

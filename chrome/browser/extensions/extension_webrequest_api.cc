@@ -42,7 +42,7 @@ static const char* const kWebRequestEvents[] = {
   keys::kOnBeforeSendHeaders,
   keys::kOnCompleted,
   keys::kOnErrorOccurred,
-  keys::kOnRequestSent,
+  keys::kOnSendHeaders,
   keys::kOnResponseStarted
 };
 
@@ -145,15 +145,13 @@ ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
   return headers_value;
 }
 
-ListValue* GetRequestHeadersList(const net::HttpRequestHeaders* headers) {
+ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
   ListValue* headers_value = new ListValue();
-  if (headers) {
-    for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext(); ) {
-      DictionaryValue* header = new DictionaryValue();
-      header->SetString(keys::kHeaderNameKey, it.name());
-      header->SetString(keys::kHeaderValueKey, it.value());
-      headers_value->Append(header);
-    }
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); ) {
+    DictionaryValue* header = new DictionaryValue();
+    header->SetString(keys::kHeaderNameKey, it.name());
+    header->SetString(keys::kHeaderValueKey, it.value());
+    headers_value->Append(header);
   }
   return headers_value;
 }
@@ -348,16 +346,6 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   if (!HasWebRequestScheme(request->url()))
     return net::OK;
 
-  // If this is an HTTP request, keep track of it. HTTP-specific events only
-  // have the request ID, so we'll need to look up the URLRequest from that.
-  // We need to do this even if no extension subscribes to OnBeforeRequest to
-  // guarantee that |http_requests_| is populated if an extension subscribes
-  // to OnBeforeSendHeaders or OnRequestSent.
-  if (request->url().SchemeIs(chrome::kHttpScheme) ||
-      request->url().SchemeIs(chrome::kHttpsScheme)) {
-    http_requests_[request->identifier()] = request;
-  }
-
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
@@ -426,7 +414,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
-    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
+    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
   // TODO(battre): implement request line.
 
   args.Append(dict);
@@ -440,27 +428,20 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   return net::OK;
 }
 
-void ExtensionWebRequestEventRouter::OnRequestSent(
+void ExtensionWebRequestEventRouter::OnSendHeaders(
     void* profile,
     ExtensionInfoMap* extension_info_map,
-    uint64 request_id,
-    const net::HostPortPair& socket_address,
+    net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   if (!profile)
     return;
 
   base::Time time(base::Time::Now());
 
-  HttpRequestMap::iterator iter = http_requests_.find(request_id);
-  if (iter == http_requests_.end())
-    return;
-
-  net::URLRequest* request = iter->second;
-
   if (!HasWebRequestScheme(request->url()))
     return;
 
-  if (GetAndSetSignaled(request->identifier(), kOnRequestSent))
+  if (GetAndSetSignaled(request->identifier(), kOnSendHeaders))
     return;
 
   ClearSignaled(request->identifier(), kOnBeforeRedirect);
@@ -468,7 +449,7 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
-                           keys::kOnRequestSent, request, &extra_info_spec);
+                           keys::kOnSendHeaders, request, &extra_info_spec);
   if (listeners.empty())
     return;
 
@@ -477,10 +458,9 @@ void ExtensionWebRequestEventRouter::OnRequestSent(
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetString(keys::kIpKey, socket_address.host());
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
-    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(&headers));
+    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
   // TODO(battre): support "request line".
   args.Append(dict);
 
@@ -505,7 +485,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
   ClearSignaled(request->identifier(), kOnBeforeRequest);
   ClearSignaled(request->identifier(), kOnBeforeSendHeaders);
-  ClearSignaled(request->identifier(), kOnRequestSent);
+  ClearSignaled(request->identifier(), kOnSendHeaders);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -516,6 +496,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
   int http_status_code = request->GetResponseCode();
 
+  std::string response_ip = request->GetSocketAddress().host();
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
@@ -523,6 +505,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
+  if (!response_ip.empty())
+    dict->SetString(keys::kIpKey, response_ip);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
@@ -563,11 +547,15 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   if (request->response_headers())
     response_code = request->response_headers()->response_code();
 
+  std::string response_ip = request->GetSocketAddress().host();
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
+  if (!response_ip.empty())
+    dict->SetString(keys::kIpKey, response_ip);
   dict->SetInteger(keys::kStatusCodeKey, response_code);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
@@ -609,12 +597,16 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (request->response_headers())
     response_code = request->response_headers()->response_code();
 
+  std::string response_ip = request->GetSocketAddress().host();
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetInteger(keys::kStatusCodeKey, response_code);
+  if (!response_ip.empty())
+    dict->SetString(keys::kIpKey, response_ip);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
@@ -651,11 +643,15 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (listeners.empty())
     return;
 
+  std::string response_ip = request->GetSocketAddress().host();
+
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(keys::kRequestIdKey,
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
+  if (!response_ip.empty())
+    dict->SetString(keys::kIpKey, response_ip);
   dict->SetString(keys::kErrorKey,
                   net::ErrorToString(request->status().os_error()));
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
@@ -668,17 +664,6 @@ void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     void* profile, net::URLRequest* request) {
   blocked_requests_.erase(request->identifier());
   signaled_requests_.erase(request->identifier());
-  http_requests_.erase(request->identifier());
-}
-
-void ExtensionWebRequestEventRouter::OnHttpTransactionDestroyed(
-    void* profile, uint64 request_id) {
-  if (blocked_requests_.find(request_id) != blocked_requests_.end() &&
-      blocked_requests_[request_id].event == kOnBeforeSendHeaders) {
-    // Ensure we don't call into the deleted HttpTransaction.
-    blocked_requests_[request_id].callback = NULL;
-    blocked_requests_[request_id].request_headers = NULL;
-  }
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(

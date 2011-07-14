@@ -47,17 +47,17 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   net::CompletionCallback* callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;
-  virtual void OnRequestSent(uint64 request_id,
-                             const net::HostPortPair& socket_address,
-                             const net::HttpRequestHeaders& headers);
+  virtual void OnSendHeaders(net::URLRequest* request,
+                             const net::HttpRequestHeaders& headers) OVERRIDE;
   virtual void OnBeforeRedirect(net::URLRequest* request,
-                                const GURL& new_location);
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnRawBytesRead(const net::URLRequest& request, int bytes_read);
-  virtual void OnCompleted(net::URLRequest* request);
-  virtual void OnURLRequestDestroyed(net::URLRequest* request);
-  virtual void OnHttpTransactionDestroyed(uint64 request_id);
-  virtual void OnPACScriptError(int line_number, const string16& error);
+                                const GURL& new_location) OVERRIDE;
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnRawBytesRead(const net::URLRequest& request,
+                              int bytes_read) OVERRIDE;
+  virtual void OnCompleted(net::URLRequest* request) OVERRIDE;
+  virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE;
+  virtual void OnPACScriptError(int line_number,
+                                const string16& error) OVERRIDE;
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;

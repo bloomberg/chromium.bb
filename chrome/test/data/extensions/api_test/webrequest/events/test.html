@@ -180,9 +180,9 @@ function initListeners(filter, extraInfoSpec) {
       function(details) {
     return captureEvent("onBeforeSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["blocking", "requestHeaders"]));
-  chrome.experimental.webRequest.onRequestSent.addListener(
+  chrome.experimental.webRequest.onSendHeaders.addListener(
       function(details) {
-    return captureEvent("onRequestSent", details);
+    return captureEvent("onSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["requestHeaders"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
@@ -214,7 +214,7 @@ function removeListeners() {
   }
   helper(chrome.experimental.webRequest.onBeforeRequest);
   helper(chrome.experimental.webRequest.onBeforeSendHeaders);
-  helper(chrome.experimental.webRequest.onRequestSent);
+  helper(chrome.experimental.webRequest.onSendHeaders);
   helper(chrome.experimental.webRequest.onResponseStarted);
   helper(chrome.experimental.webRequest.onBeforeRedirect);
   helper(chrome.experimental.webRequest.onCompleted);
@@ -240,13 +240,15 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "a-onCompleted",
           event: "onCompleted",
           details: {
             url: getURL("simpleLoad/a.html"),
-            statusCode: 200
+            statusCode: 200,
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -276,11 +278,10 @@ runTests([
             requestHeadersValid: true
           }
         },
-        { label: "onRequestSent-1",
-          event: "onRequestSent",
+        { label: "onSendHeaders-1",
+          event: "onSendHeaders",
           details: {
             url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
-            ip: "127.0.0.1",
             requestHeadersValid: true
           }
         },
@@ -291,6 +292,7 @@ runTests([
             redirectUrl: URL_HTTP_SIMPLE_LOAD,
             statusCode: 301,
             responseHeadersExist: true,
+            ip: "127.0.0.1",
             statusLine: "HTTP/1.0 301 Moved Permanently"
           }
         },
@@ -310,11 +312,10 @@ runTests([
             requestHeadersValid: true
           }
         },
-        { label: "onRequestSent-2",
-          event: "onRequestSent",
+        { label: "onSendHeaders-2",
+          event: "onSendHeaders",
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
-            ip: "127.0.0.1",
             requestHeadersValid: true
           }
         },
@@ -324,6 +325,7 @@ runTests([
             url: URL_HTTP_SIMPLE_LOAD,
             statusCode: 200,
             responseHeadersExist: true,
+            ip: "127.0.0.1",
             statusLine: "HTTP/1.0 200 OK",
           }
         },
@@ -332,15 +334,16 @@ runTests([
           details: {
             url: URL_HTTP_SIMPLE_LOAD,
             statusCode: 200,
+            ip: "127.0.0.1",
             responseHeadersExist: true,
             statusLine: "HTTP/1.0 200 OK"
           }
         }
       ],
       [  // event order
-        ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onRequestSent-1",
+        ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onSendHeaders-1",
          "onBeforeRedirect",
-         "onBeforeRequest-2", "onBeforeSendHeaders-2", "onRequestSent-2",
+         "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
          "onResponseStarted", "onCompleted"] ],
       {},  // filter
       ["requestHeaders", "responseHeaders", "statusLine"]);
@@ -385,6 +388,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b.html-onResponseStarted",
@@ -392,6 +396,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b.jpg-onResponseStarted",
@@ -399,6 +404,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.jpg"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "a.html-onCompleted",
@@ -406,6 +412,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b.html-onCompleted",
@@ -413,6 +420,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b.jpg-onCompleted",
@@ -420,6 +428,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.jpg"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -456,6 +465,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             error: "net::ERR_EMPTY_RESPONSE"
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -490,6 +500,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             error: "net::ERR_ABORTED"
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "onBeforeRequest-2",
@@ -506,6 +517,7 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "onCompleted",
@@ -513,6 +525,7 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -553,6 +566,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b-onResponseStarted",
@@ -560,6 +574,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.jpg"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "a-onCompleted",
@@ -567,6 +582,7 @@ runTests([
           details: {
             url: getURL("complexLoad/a.html"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b-onCompleted",
@@ -574,6 +590,7 @@ runTests([
           details: {
             url: getURL("complexLoad/b.jpg"),
             statusCode: 200
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -611,7 +628,8 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("does_not_exist.html"),
-            error: "net::ERR_FILE_NOT_FOUND"
+            error: "net::ERR_FILE_NOT_FOUND",
+            // Request to chrome-extension:// url has no IP.
           }
         },
       ],
@@ -643,30 +661,31 @@ runTests([
           },
           retval: {requestHeaders: [{name: "User-Agent", value: "FoobarUA"}]}
         },
-        { label: "onRequestSent",
-          event: "onRequestSent",
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
           details: {
-            url: URL_ECHO_USER_AGENT,
-            ip: "127.0.0.1"
+            url: URL_ECHO_USER_AGENT
           }
         },
         { label: "onResponseStarted",
           event: "onResponseStarted",
           details: {
             url: URL_ECHO_USER_AGENT,
-            statusCode: 200
+            statusCode: 200,
+            ip: "127.0.0.1"
           }
         },
         { label: "onCompleted",
           event: "onCompleted",
           details: {
             url: URL_ECHO_USER_AGENT,
-            statusCode: 200
+            statusCode: 200,
+            ip: "127.0.0.1"
           }
         },
       ],
       [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onRequestSent",
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
          "onResponseStarted", "onCompleted"]
       ],
       {}, ["blocking"]);

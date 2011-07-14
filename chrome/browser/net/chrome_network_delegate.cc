@@ -82,13 +82,11 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
 }
 
-void ChromeNetworkDelegate::OnRequestSent(
-    uint64 request_id,
-    const net::HostPortPair& socket_address,
+void ChromeNetworkDelegate::OnSendHeaders(
+    net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnRequestSent(
-      profile_, extension_info_map_.get(), request_id,
-      socket_address, headers);
+  ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
+      profile_, extension_info_map_.get(), request, headers);
 }
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
@@ -132,11 +130,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request) {
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
       profile_, request);
-}
-
-void ChromeNetworkDelegate::OnHttpTransactionDestroyed(uint64 request_id) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnHttpTransactionDestroyed(
-      profile_, request_id);
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,

@@ -4135,9 +4135,9 @@
         }
       },
       {
-        "name": "onRequestSent",
+        "name": "onSendHeaders",
         "type": "function",
-        "description": "Fires when a request is sent to the server.",
+        "description": "Fires just before a request is going to be sent to the server (modifications of prvious onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).",
         "parameters": [
           {
             "type": "object",
@@ -4145,7 +4145,6 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
-              "ip": {"type": "string", "description": "The server IP address that is actually connected to. Note that it may be a literal IPv6 address."},
               "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."},
               "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."}
             }
@@ -4181,6 +4180,7 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
@@ -4218,6 +4218,7 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "redirectUrl": {"type": "string", "description": "The new URL."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to make the redirect, in milliseconds since the epoch."},
@@ -4256,6 +4257,7 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
@@ -4293,6 +4295,7 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
+              "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
             }
