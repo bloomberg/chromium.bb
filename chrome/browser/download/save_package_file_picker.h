@@ -18,7 +18,7 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
   SavePackageFilePicker(SavePackage* save_package,
                         const FilePath& suggested_path,
                         bool can_save_as_complete);
-  ~SavePackageFilePicker();
+  virtual ~SavePackageFilePicker();
 
   // Used to disable prompting the user for a directory/filename of the saved
   // web page.  This is available for testing.
