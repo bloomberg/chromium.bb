@@ -561,18 +561,12 @@
   fun:ProcessSingleton::LinuxWatcher::HandleMessage
 }
 {
-  bug_89141_a
+  bug_89141
   ThreadSanitizer:Race
   fun:base::Thread::message_loop
   fun:BrowserThread::IsMessageLoopValid
   fun:ThreadWatcherList::StartWatching
   fun:ThreadWatcherList::InitializeAndStartWatching
-}
-{
-  bug_89141_b
-  ThreadSanitizer:Race
-  fun::base::Thread::ThreadMain
-  fun::base::::ThreadFunc
 }
 
 ############################
