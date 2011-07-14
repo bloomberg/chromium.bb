@@ -379,7 +379,8 @@ class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
   def __init__(self, upload_location, acl, binhost_base_url,
-               pkg_indexes, build_path, packages, skip_upload, debug):
+               pkg_indexes, build_path, packages, skip_upload,
+               binhost_conf_dir, debug):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
@@ -395,6 +396,9 @@ class PrebuiltUploader(object):
           uploading duplicate files, we just link to the old files.
       build_path: The path to the directory containing the chroot.
       packages: Packages to upload.
+      skip_upload: Don't actually upload the tarballs.
+      binhost_conf_dir: Directory where to store binhost.conf files.
+      debug: Don't push or upload prebuilts.
     """
     self._upload_location = upload_location
     self._acl = acl
@@ -403,6 +407,7 @@ class PrebuiltUploader(object):
     self._build_path = build_path
     self._packages = set(packages)
     self._skip_upload = skip_upload
+    self._binhost_conf_dir = binhost_conf_dir
     self._debug = debug
 
   def _ShouldFilterPackage(self, pkg):
@@ -529,7 +534,7 @@ class PrebuiltUploader(object):
           _PREBUILT_MAKE_CONF[_HOST_TARGET])
       RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
     if sync_binhost_conf:
-      binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+      binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
           'host', '%s-%s.conf' % (_HOST_TARGET, key))
       UpdateBinhostConfFile(binhost_conf, key, url_value)
 
@@ -570,7 +575,7 @@ class PrebuiltUploader(object):
         assert tar_process.exitcode == 0
         # TODO(zbehan): This should be done cleaner.
         if board == 'amd64-host':
-          sdk_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+          sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                   'host/sdk_version.conf')
           RevGitFile(sdk_conf, version.strip('chroot-'),
                      key='SDK_LATEST_VERSION', dryrun=self._debug)
@@ -582,7 +587,7 @@ class PrebuiltUploader(object):
       git_file = DeterminePrebuiltConfFile(self._build_path, board)
       RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
     if sync_binhost_conf:
-      binhost_conf = os.path.join(self._build_path, _BINHOST_CONF_DIR,
+      binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
           'target', '%s-%s.conf' % (board, key))
       UpdateBinhostConfFile(binhost_conf, key, url_value)
 
@@ -633,6 +638,10 @@ def ParseOptions():
   parser.add_option('', '--sync-binhost-conf', dest='sync_binhost_conf',
                     default=False, action='store_true',
                     help='Update binhost.conf')
+  parser.add_option('', '--binhost-conf-dir', dest='binhost_conf_dir',
+                    default=_BINHOST_CONF_DIR,
+                    help='Directory to commit binhost config with '
+                         '--sync-binhost-conf.')
   parser.add_option('-P', '--private', dest='private', action='store_true',
                     default=False, help='Mark gs:// uploads as private.')
   parser.add_option('', '--skip-upload', dest='skip_upload',
@@ -712,7 +721,7 @@ def main():
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
                               options.packages, options.skip_upload,
-                              options.debug)
+                              options.binhost_conf_dir, options.debug)
 
   if options.sync_host:
     uploader._SyncHostPrebuilts(version, options.key, options.git_sync,

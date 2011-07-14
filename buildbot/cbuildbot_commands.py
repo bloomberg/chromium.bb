@@ -22,6 +22,8 @@ _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FULL_BINHOST = 'FULL_BINHOST'
+_PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
+                             'chromeos/binhost')
 
 
 # =========================== Command Helpers =================================
@@ -472,6 +474,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     cmd.extend(['--upload', 'gs://%s/%s/%d/prebuilts/' %
                     (upload_bucket, category, buildnumber),
                 '--private',
+                '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR
                ])
 
   if category == 'chroot':

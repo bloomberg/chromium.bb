@@ -893,13 +893,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     elif prebuilt_type != 'full':
       assert prebuilt_type in ('binary', 'chrome')
 
-      # TODO(davidjames): Implement preflight prebuilt uploading for private
-      # bots.
-      if overlay_config != 'public':
-        return
-
       push_overlays = self._build_config['push_overlays']
-      if self._build_config['master'] and push_overlays == 'public':
+      if self._build_config['master']:
         extra_args.append('--sync-binhost-conf')
 
         # Update binhost conf files for slaves.
@@ -916,7 +911,7 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
                   self._options.buildnumber, extra_args + ['--skip-upload'])
 
         # Master binary bot should upload host preflight prebuilts.
-        if prebuilt_type == 'binary':
+        if prebuilt_type == 'binary' and push_overlays == 'public':
           extra_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.

@@ -364,7 +364,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
-        'public-read', uri, [], '/', [], False, False)
+        'public-read', uri, [], '/', [], False, 'foo', False)
     uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
@@ -379,7 +379,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
-                                         False, False)
+                                         False, 'foo', False)
     uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
@@ -422,7 +422,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, False)
+        self.build_path, [], False, 'foo', False)
     uploader._SyncHostPrebuilts(self.version, self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
@@ -452,7 +452,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, False)
+        self.build_path, [], False, 'foo', False)
     uploader._SyncBoardPrebuilts(board, self.version, self.key, True,
         True, True)
 
@@ -486,6 +486,7 @@ class TestMain(unittest.TestCase):
     options.skip_upload = False
     options.filters = True
     options.key = 'PORTAGE_BINHOST'
+    options.binhost_conf_dir = 'foo'
     options.sync_binhost_conf = True
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
     prebuilt.ParseOptions().AndReturn(options)
@@ -501,7 +502,7 @@ class TestMain(unittest.TestCase):
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
-                                       False, False)
+                                       False, options.binhost_conf_dir, False)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
     prebuilt.PrebuiltUploader._SyncHostPrebuilts(mox.IgnoreArg(), options.key,
         options.git_sync, options.sync_binhost_conf)
