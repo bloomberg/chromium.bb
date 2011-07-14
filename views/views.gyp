@@ -255,8 +255,6 @@
         'focus/accelerator_handler_win.cc',
         'focus/external_focus_tracker.cc',
         'focus/external_focus_tracker.h',
-        'focus/focus_manager_gtk.cc',
-        'focus/focus_manager_win.cc',
         'focus/focus_manager.cc',
         'focus/focus_manager.h',
         'focus/focus_search.cc',

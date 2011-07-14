@@ -437,6 +437,9 @@ class Widget : public internal::NativeWidgetDelegate,
   // Clear native focus set to the Widget's NativeWidget.
   void ClearNativeFocus();
 
+  // Sets the focus to |native_view|.
+  void FocusNativeView(gfx::NativeView native_view);
+
   // Updates the frame after an event caused it to be changed.
   virtual void UpdateFrameAfterFrameChange();
 

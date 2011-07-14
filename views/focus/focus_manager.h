@@ -269,16 +269,16 @@ class FocusManager {
   AcceleratorTarget* GetCurrentTargetForAccelerator(
       const Accelerator& accelertor) const;
 
-  // Convenience method that returns true if the passed |key_event| should
-  // trigger tab traversal (if it is a TAB key press with or without SHIFT
-  // pressed).
-  static bool IsTabTraversalKeyEvent(const KeyEvent& key_event);
-
   // Sets the focus to the specified native view.
   virtual void FocusNativeView(gfx::NativeView native_view);
 
   // Clears the native view having the focus.
   virtual void ClearNativeFocus();
+
+  // Convenience method that returns true if the passed |key_event| should
+  // trigger tab traversal (if it is a TAB key press with or without SHIFT
+  // pressed).
+  static bool IsTabTraversalKeyEvent(const KeyEvent& key_event);
 
   // Retrieves the FocusManager associated with the passed native view.
   static FocusManager* GetFocusManagerForNativeView(

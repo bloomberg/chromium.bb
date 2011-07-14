@@ -1088,6 +1088,12 @@ void NativeWidgetWin::ClearNativeFocus() {
   ::SetFocus(GetNativeView());
 }
 
+void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
+  // Only reset focus if hwnd is not already focused.
+  if (native_view && ::GetFocus() != native_view)
+    ::SetFocus(native_view);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 

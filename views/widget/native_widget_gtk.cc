@@ -1326,6 +1326,11 @@ void NativeWidgetGtk::ClearNativeFocus() {
   gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
 }
 
+void NativeWidgetGtk::FocusNativeView(gfx::NativeView native_view) {
+  if (native_view && !gtk_widget_is_focus(native_view))
+    gtk_widget_grab_focus(native_view);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, protected:
 

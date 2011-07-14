@@ -221,6 +221,7 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
+  virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
 
  protected:
   // Modifies event coordinates to the targeted widget contained by this widget.

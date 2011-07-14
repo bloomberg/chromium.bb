@@ -459,6 +459,10 @@ void NativeWidgetViews::ClearNativeFocus() {
   GetParentNativeWidget()->ClearNativeFocus();
 }
 
+void NativeWidgetViews::FocusNativeView(gfx::NativeView native_view) {
+  GetParentNativeWidget()->FocusNativeView(native_view);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetViews, private:
 

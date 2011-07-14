@@ -633,6 +633,10 @@ void Widget::ClearNativeFocus() {
   native_widget_->ClearNativeFocus();
 }
 
+void Widget::FocusNativeView(gfx::NativeView native_view) {
+  native_widget_->FocusNativeView(native_view);
+}
+
 void Widget::UpdateFrameAfterFrameChange() {
   native_widget_->UpdateFrameAfterFrameChange();
 }
