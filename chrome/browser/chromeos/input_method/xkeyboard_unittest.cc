@@ -12,6 +12,7 @@
 #include <X11/Xlib.h>
 
 #include "base/logging.h"
+#include "ui/base/x/x11_util.h"
 
 namespace chromeos {
 namespace input_method {
@@ -50,12 +51,7 @@ bool CheckMap(const ModifierMap& modifier_map,
 
 // Returns true if X display is available.
 bool DisplayAvailable() {
-  Display* display = XOpenDisplay(NULL);
-  if (!display) {
-    return false;
-  }
-  XCloseDisplay(display);
-  return true;
+  return ui::GetXDisplay() ? true : false;
 }
 
 }  // namespace

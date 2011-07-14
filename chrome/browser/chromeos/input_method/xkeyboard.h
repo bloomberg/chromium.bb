@@ -57,10 +57,12 @@ bool ReapplyCurrentKeyboardLayout();
 bool RemapModifierKeys(const ModifierMap& modifier_map);
 
 // Turns on and off the auto-repeat of the keyboard. Returns true on success.
+// Do not call the function from non-UI threads.
 bool SetAutoRepeatEnabled(bool enabled);
 
 // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
-// interval in ms.  Returns true on success.
+// interval in ms.  Returns true on success. Do not call the function from
+// non-UI threads.
 bool SetAutoRepeatRate(const AutoRepeatRate& rate);
 
 //
@@ -95,10 +97,12 @@ inline std::string ModifierKeyToString(ModifierKey key) {
 std::string CreateFullXkbLayoutName(const std::string& layout_name,
                                     const ModifierMap& modifire_map);
 
-// Returns true if caps lock is enabled.
+// Returns true if caps lock is enabled. Do not call the function from non-UI
+// threads.
 bool CapsLockIsEnabled();
 
-// Sets the caps lock status to |enable_caps_lock|.
+// Sets the caps lock status to |enable_caps_lock|. Do not call the function
+// from non-UI threads.
 void SetCapsLockEnabled(bool enabled);
 
 // Returns true if |key| is in |modifier_map| as replacement.
