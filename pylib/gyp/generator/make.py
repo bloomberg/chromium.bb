@@ -596,6 +596,182 @@ target_outputs = {}
 target_link_deps = {}
 
 
+class XcodeSettings(object):
+  """A class that understands the gyp 'xcode_settings' object."""
+
+  def __init__(self, config):
+    self.config = config
+
+    # 'xcode_settings' is pushed down into configs.
+    self.xcode_settings = self.config.get('xcode_settings', {})
+
+  def _Test(self, test_key, cond_key, default):
+    return self.xcode_settings.get(test_key, default) == cond_key
+
+  def _Appendf(self, lst, test_key, format_str):
+    if test_key in self.xcode_settings:
+      lst.append(format_str % str(self.xcode_settings[test_key]))
+
+  def _WarnUnimplemented(self, test_key):
+    if test_key in self.xcode_settings:
+      print 'Warning: Ignoring not yet implemented key "%s".' % test_key
+
+  def GetCflags(self):
+    """Returns flags that need to be added to .c, .cc, .m, and .mm
+    compilations."""
+    # This functions (and the similar ones below) do not offer complete
+    # emulation of all xcode_settings keys. They're implemented on demand.
+
+    cflags = []
+
+    sdk_root = 'Mac10.5'
+    if 'SDKROOT' in self.xcode_settings:
+      sdk_root = self.xcode_settings['SDKROOT']
+      cflags.append('-isysroot /Developer/SDKs/%s.sdk' % sdk_root)
+    sdk_root_dir = '/Developer/SDKs/%s.sdk' % sdk_root
+
+    if self._Test('GCC_CW_ASM_SYNTAX', 'YES', default='YES'):
+      cflags.append('-fasm-blocks')
+
+    if 'GCC_DYNAMIC_NO_PIC' in self.xcode_settings:
+      if self.xcode_settings['GCC_DYNAMIC_NO_PIC'] == 'YES':
+        cflags.append('-mdynamic-no-pic')
+    else:
+      pass
+      # TODO: In this case, it depends on the target. xcode passes
+      # mdynamic-no-pic by default for executable and possibly static lib
+      # according to mento
+
+    if self._Test('GCC_ENABLE_PASCAL_STRINGS', 'YES', default='YES'):
+      cflags.append('-mpascal-strings')
+
+    self._Appendf(cflags, 'GCC_OPTIMIZATION_LEVEL', '-O%s')
+
+    dbg_format = self.xcode_settings.get('DEBUG_INFORMATION_FORMAT', 'dwarf')
+    if dbg_format == 'none':
+      pass
+    elif dbg_format == 'dwarf':
+      cflags.append('-gdwarf-2')
+    elif dbg_format == 'stabs':
+      raise NotImplementedError('stabs debug format is not supported yet.')
+    elif dbg_format == 'dwarf-with-dsym':
+      # TODO(thakis): this is needed for mac_breakpad chromium builds, but not
+      # for regular chromium builds.
+      # -gdwarf-2 as well, but needs to invoke dsymutil after linking too:
+      #   dsymutil build/Default/TestAppGyp.app/Contents/MacOS/TestAppGyp \
+      #       -o build/Default/TestAppGyp.app.dSYM
+      raise NotImplementedError('dsym debug format is not supported yet.')
+    else:
+      raise NotImplementedError('Unknown debug format %s' % dbg_format)
+
+    if self._Test('GCC_SYMBOLS_PRIVATE_EXTERN', 'NO', default='YES'):
+      cflags.append('-fvisibility=hidden')
+
+    if self._Test('GCC_TREAT_WARNINGS_AS_ERRORS', 'YES', default='NO'):
+      cflags.append('-Werror')
+
+    if self._Test('GCC_WARN_ABOUT_MISSING_NEWLINE', 'YES', default='NO'):
+      cflags.append('-Wnewline-eof')
+
+    self._Appendf(cflags, 'MACOSX_DEPLOYMENT_TARGET', '-mmacosx-version-min=%s')
+
+    # TODO:
+    self._WarnUnimplemented('ARCHS')
+    self._WarnUnimplemented('COPY_PHASE_STRIP')
+    self._WarnUnimplemented('DEPLOYMENT_POSTPROCESSING')
+    self._WarnUnimplemented('DYLIB_COMPATIBILITY_VERSION')
+    self._WarnUnimplemented('DYLIB_CURRENT_VERSION')
+    self._WarnUnimplemented('DYLIB_INSTALL_NAME_BASE')
+    self._WarnUnimplemented('DYLIB_INSTALL_NAME_BASE')
+    self._WarnUnimplemented('INFOPLIST_PREPROCESS')
+    self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
+    self._WarnUnimplemented('LD_DYLIB_INSTALL_NAME')
+    self._WarnUnimplemented('STRIPFLAGS')
+    self._WarnUnimplemented('STRIP_INSTALLED_PRODUCT')
+
+    # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
+    cflags.append('-arch i386')
+
+    cflags += self.xcode_settings.get('OTHER_CFLAGS', [])
+    cflags += self.xcode_settings.get('WARNING_CFLAGS', [])
+
+    framework_dirs = self.config.get('mac_framework_dirs', [])
+    for directory in framework_dirs:
+      cflags.append('-F ' + os.path.join(sdk_root_dir, directory))
+
+    return cflags
+
+  def GetCflagsC(self):
+    """Returns flags that need to be added to .c, and .m compilations."""
+    cflags_c = []
+    self._Appendf(cflags_c, 'GCC_C_LANGUAGE_STANDARD', '-std=%s')
+    return cflags_c
+
+  def GetCflagsCC(self):
+    """Returns flags that need to be added to .cc, and .mm compilations."""
+    cflags_cc = []
+    if self._Test('GCC_ENABLE_CPP_RTTI', 'NO', default='YES'):
+      cflags_cc.append('-fno-rtti')
+    if self._Test('GCC_ENABLE_CPP_EXCEPTIONS', 'NO', default='YES'):
+      cflags_cc.append('-fno-exceptions')
+    if self._Test('GCC_INLINES_ARE_PRIVATE_EXTERN', 'NO', default='YES'):
+      cflags_cc.append('-fvisibility-inlines-hidden')
+    if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
+      cflags_cc.append('-fno-threadsafe-statics')
+    return cflags_cc
+
+  def GetCflagsObjC(self):
+    """Returns flags that need to be added to .m compilations."""
+    return []
+
+  def GetCflagsObjCC(self):
+    """Returns flags that need to be added to .mm compilations."""
+    cflags_objcc = []
+    if self._Test('GCC_OBJC_CALL_CXX_CDTORS', 'YES', default='NO'):
+      cflags_objcc.append('-fobjc-call-cxx-cdtors')
+    return cflags_objcc
+
+  def GetLdflags(self, target):
+    """Returns flags that need to be passed to the linker."""
+    ldflags = []
+
+    # The xcode build is relative to a gyp file's directory, and OTHER_LDFLAGS
+    # contains two entries that depend on this. Explicitly absolutify for these
+    # two cases.
+    def AbsolutifyPrefix(flag, prefix):
+      if flag.startswith(prefix):
+        flag = prefix + target.Absolutify(flag[len(prefix):])
+      return flag
+    for ldflag in self.xcode_settings.get('OTHER_LDFLAGS', []):
+      # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
+      # TODO(thakis): Update ffmpeg.gyp):
+      ldflag = AbsolutifyPrefix(ldflag, '-L')
+      # Required for the nacl plugin:
+      ldflag = AbsolutifyPrefix(ldflag, '-Wl,-exported_symbols_list ')
+      ldflags.append(ldflag)
+
+    if self._Test('PREBINDING', 'YES', default='NO'):
+      ldflags.append('-Wl,-prebind')
+
+    for library_path in self.xcode_settings.get('LIBRARY_SEARCH_PATHS', []):
+      ldflags.append('-L' + library_path)
+
+    if 'ORDER_FILE' in self.xcode_settings:
+      ldflags.append(
+          '-Wl,-order_file ' +
+          '-Wl,' + target.Absolutify(self.xcode_settings['ORDER_FILE']))
+
+    # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
+    ldflags.append('-arch i386')
+
+    # Xcode adds the product directory by default. It writes static libraries
+    # into the product directory. So add both.
+    ldflags.append('-L' + generator_default_variables['LIB_DIR'])
+    ldflags.append('-L' + generator_default_variables['PRODUCT_DIR'])
+
+    return ldflags
+
+
 class MakefileWriter:
   """MakefileWriter packages up the writing of one target-specific foobar.mk.
 
@@ -946,11 +1122,18 @@ class MakefileWriter:
       self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D',
           quoter=EscapeCppDefine)
 
-      cflags = config.get('cflags')
-      cflags_c = config.get('cflags_c')
-      cflags_cc = config.get('cflags_cc')
-      cflags_objc = []
-      cflags_objcc = []
+
+      if self.flavor == 'mac':
+        settings = XcodeSettings(config)
+        cflags = settings.GetCflags()
+        cflags_c = settings.GetCflagsC()
+        cflags_cc = settings.GetCflagsCC()
+        cflags_objc = settings.GetCflagsObjC()
+        cflags_objcc = settings.GetCflagsObjCC()
+      else:
+        cflags = config.get('cflags')
+        cflags_c = config.get('cflags_c')
+        cflags_cc = config.get('cflags_cc')
 
       self.WriteLn("# Flags passed to all source files.");
       self.WriteList(cflags, 'CFLAGS_%s' % configname)
@@ -1015,13 +1198,13 @@ class MakefileWriter:
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
                      "$(CFLAGS_$(BUILDTYPE)) "
-                     "$(CFLAGS_C_$(BUILDTYPE))"
+                     "$(CFLAGS_C_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJC_$(BUILDTYPE))")
         self.WriteLn("$(OBJS): GYP_OBJCXXFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
                      "$(CFLAGS_$(BUILDTYPE)) "
-                     "$(CFLAGS_CC_$(BUILDTYPE))"
+                     "$(CFLAGS_CC_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJCC_$(BUILDTYPE))")
 
     # If there are any object files in our input file list, link them into our
@@ -1126,7 +1309,12 @@ class MakefileWriter:
     if self.type not in ('settings', 'none'):
       for configname in sorted(configs.keys()):
         config = configs[configname]
-        self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
+        if self.flavor == 'mac':
+          settings = XcodeSettings(config)
+          ldflags = settings.GetLdflags(self)
+        else:
+          ldflags = config.get('ldflags')
+        self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
       libraries = spec.get('libraries')
       if libraries:
         # Remove duplicate entries
@@ -1610,6 +1798,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
+
+    # The xcode generator special-cases global xcode_settings and does something
+    # that amounts to merging in the global xcode_settings into each local
+    # xcode_settings dict.
+    if flavor == 'mac':
+      global_xcode_settings = data[build_file].get('xcode_settings', {})
+      for configname in configs.keys():
+        config = configs[configname]
+        if 'xcode_settings' in config:
+          new_settings = global_xcode_settings.copy()
+          new_settings.update(config['xcode_settings'])
+          config['xcode_settings'] = new_settings
 
     writer = MakefileWriter(generator_flags, flavor)
     writer.Write(qualified_target, base_path, output_file, spec, configs,
