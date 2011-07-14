@@ -254,7 +254,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
           logging.error(err_msg)
           last_error = err_msg
-          raise
       else:
         raise manifest_version.GenerateBuildSpecException(last_error)
 

@@ -226,6 +226,36 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
     self.mox.VerifyAll()
 
+  def testGetLatestCandidateOneRetry(self):
+    """Makes sure we can get the latest candidate even on retry."""
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
+
+    my_info = manifest_version.VersionInfo('1.2.3.4')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
+
+    lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager._LoadSpecs(my_info)
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
+        mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
+            manifest_version.GitCommandException('Push failed'))
+
+    lkgm_manager.LKGMManager._PrepSpecChanges()
+    lkgm_manager.LKGMManager._SetInFlight()
+    lkgm_manager.LKGMManager._PushSpecChanges(
+        mox.StrContains(most_recent_candidate.VersionString()))
+
+    self.mox.ReplayAll()
+    self.manager.latest_unprocessed = '1.2.3.4-rc12'
+    candidate = self.manager.GetLatestCandidate()
+    self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
+    self.mox.VerifyAll()
+
   def testGetLatestCandidateNone(self):
     """Makes sure we get nothing if there is no work to be done."""
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
