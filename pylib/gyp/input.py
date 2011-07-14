@@ -1947,23 +1947,26 @@ def ProcessListFiltersInDict(name, the_dict):
         [action, pattern] = regex_item
         pattern_re = re.compile(pattern)
 
+        if action == 'exclude':
+          # This item matches an exclude regex, so set its value to 0 (exclude).
+          action_value = 0
+        elif action == 'include':
+          # This item matches an include regex, so set its value to 1 (include).
+          action_value = 1
+        else:
+          # This is an action that doesn't make any sense.
+          raise ValueError, 'Unrecognized action ' + action + ' in ' + name + \
+                            ' key ' + key
+
         for index in xrange(0, len(the_list)):
           list_item = the_list[index]
+          if list_actions[index] == action_value:
+            # Even if the regex matches, nothing will change so continue (regex
+            # searches are expensive).
+            continue
           if pattern_re.search(list_item):
             # Regular expression match.
-
-            if action == 'exclude':
-              # This item matches an exclude regex, so set its value to 0
-              # (exclude).
-              list_actions[index] = 0
-            elif action == 'include':
-              # This item matches an include regex, so set its value to 1
-              # (include).
-              list_actions[index] = 1
-            else:
-              # This is an action that doesn't make any sense.
-              raise ValueError, 'Unrecognized action ' + action + ' in ' + \
-                                name + ' key ' + key
+            list_actions[index] = action_value
 
       # The "whatever/" list is no longer needed, dump it.
       del the_dict[regex_key]
