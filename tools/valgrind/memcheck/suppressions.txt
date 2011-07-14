@@ -875,7 +875,7 @@
    fun:_ZN4base12LazyInstance*LeakyLazyInstanceTraits*PointerEv
 }
 {
-   bug_87500
+   bug_87500_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -884,6 +884,16 @@
    fun:_ZN10disk_cache11BackendImpl13SyncOpenEntryERKSsPPNS_5EntryE
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
+}
+{
+   bug_87500_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
+   fun:_ZN11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
+   fun:_ZN4base20MessageLoopProxyImpl14PostTaskHelperERKN15tracked_objects8LocationEP4Taskxb
+   fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
 
 #-----------------------------------------------------------------------
@@ -4812,16 +4822,6 @@
    fun:_ZN12invalidation22InvalidationClientImpl34ScheduleStartAfterReadingStateBlobEv
    fun:_ZN12invalidation22InvalidationClientImpl5StartEv
    fun:_ZN13sync_notifier24ChromeInvalidationClient5StartERKSsS2_S2_PNS0_8ListenerEPNS_11StateWriterEN4base7WeakPtrIN9talk_base4TaskEEE
-}
-{
-   bug_89297
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN11MessageLoop15PostDelayedTaskERKN15tracked_objects8LocationEP4Taskx
-   fun:_ZN4base20MessageLoopProxyImpl14PostTaskHelperERKN15tracked_objects8LocationEP4Taskxb
-   fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
-   fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
 {
    bug_89300
