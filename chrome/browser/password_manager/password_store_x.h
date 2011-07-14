@@ -13,7 +13,6 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 
 class LoginDatabase;
-class PrefService;
 class Profile;
 class WebDataService;
 
@@ -56,17 +55,6 @@ class PasswordStoreX : public PasswordStoreDefault {
                    Profile* profile,
                    WebDataService* web_data_service,
                    NativeBackend* backend);
-
-  // Registers the pref setting used for the methods below.
-  static void RegisterUserPrefs(PrefService* prefs);
-
-  // Returns true if passwords have been tagged with the local profile id.
-  static bool PasswordsUseLocalProfileId(PrefService* prefs);
-
-  // Sets the persistent bit indicating that passwords have been tagged with the
-  // local profile id. This cannot be unset; passwords get migrated only once.
-  // The caller promises that |prefs| will not be deleted any time soon.
-  static void SetPasswordsUseLocalProfileId(PrefService* prefs);
 
  private:
   friend class PasswordStoreXTest;

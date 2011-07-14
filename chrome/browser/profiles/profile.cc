@@ -60,7 +60,16 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN)
+#include "chrome/browser/password_manager/password_store_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/keychain_mac.h"
+#include "chrome/browser/password_manager/password_store_mac.h"
+#elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/password_manager/native_backend_gnome_x.h"
+#include "chrome/browser/password_manager/native_backend_kwallet_x.h"
+#include "chrome/browser/password_manager/password_store_x.h"
+#elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
@@ -94,12 +103,6 @@ Profile::Profile()
 
 // static
 const char* Profile::kProfileKey = "__PROFILE__";
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// static
-const LocalProfileId Profile::kInvalidLocalProfileId =
-    static_cast<LocalProfileId>(0);
-#endif
 
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {

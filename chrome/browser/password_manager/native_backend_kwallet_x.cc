@@ -11,37 +11,27 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "content/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using std::string;
 using std::vector;
 using webkit_glue::PasswordForm;
 
-// We could localize this string, but then changing your locale would cause
+// We could localize these strings, but then changing your locale would cause
 // you to lose access to all your stored passwords. Maybe best not to do that.
-const char NativeBackendKWallet::kKWalletFolder[] = "Chrome Form Data";
+const char* NativeBackendKWallet::kAppId = "Chrome";
+const char* NativeBackendKWallet::kKWalletFolder = "Chrome Form Data";
 
-const char NativeBackendKWallet::kKWalletServiceName[] = "org.kde.kwalletd";
-const char NativeBackendKWallet::kKWalletPath[] = "/modules/kwalletd";
-const char NativeBackendKWallet::kKWalletInterface[] = "org.kde.KWallet";
-const char NativeBackendKWallet::kKLauncherServiceName[] = "org.kde.klauncher";
-const char NativeBackendKWallet::kKLauncherPath[] = "/KLauncher";
-const char NativeBackendKWallet::kKLauncherInterface[] = "org.kde.KLauncher";
+const char* NativeBackendKWallet::kKWalletServiceName = "org.kde.kwalletd";
+const char* NativeBackendKWallet::kKWalletPath = "/modules/kwalletd";
+const char* NativeBackendKWallet::kKWalletInterface = "org.kde.KWallet";
+const char* NativeBackendKWallet::kKLauncherServiceName = "org.kde.klauncher";
+const char* NativeBackendKWallet::kKLauncherPath = "/KLauncher";
+const char* NativeBackendKWallet::kKLauncherInterface = "org.kde.KLauncher";
 
-NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
-                                           PrefService* prefs)
-    : profile_id_(id), prefs_(prefs),
-      error_(NULL), connection_(NULL), proxy_(NULL),
-      app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
-  if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
-    folder_name_ = GetProfileSpecificFolderName();
-    // We already did the migration previously. Don't try again.
-    migrate_tried_ = true;
-  } else {
-    folder_name_ = kKWalletFolder;
-    migrate_tried_ = false;
-  }
+NativeBackendKWallet::NativeBackendKWallet()
+    : error_(NULL),
+      connection_(NULL),
+      proxy_(NULL) {
 }
 
 NativeBackendKWallet::~NativeBackendKWallet() {
@@ -212,8 +202,8 @@ bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
   char** realm_list = NULL;
   dbus_g_proxy_call(proxy_, "entryList", &error_,
                     G_TYPE_INT,     wallet_handle,             // handle
-                    G_TYPE_STRING,  folder_name_.c_str(),      // folder
-                    G_TYPE_STRING,  app_name_.c_str(),         // appid
+                    G_TYPE_STRING,  kKWalletFolder,            // folder
+                    G_TYPE_STRING,  kAppId,                    // appid
                     G_TYPE_INVALID,
                     G_TYPE_STRV,    &realm_list,
                     G_TYPE_INVALID);
@@ -225,9 +215,9 @@ bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
     GArray* byte_array = NULL;
     dbus_g_proxy_call(proxy_, "readEntry", &error_,
                       G_TYPE_INT,     wallet_handle,           // handle
-                      G_TYPE_STRING,  folder_name_.c_str(),    // folder
+                      G_TYPE_STRING,  kKWalletFolder,          // folder
                       G_TYPE_STRING,  *realm,                  // key
-                      G_TYPE_STRING,  app_name_.c_str(),       // appid
+                      G_TYPE_STRING,  kAppId,                  // appid
                       G_TYPE_INVALID,
                       DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                       G_TYPE_INVALID);
@@ -300,9 +290,9 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
   gboolean has_entry = false;
   dbus_g_proxy_call(proxy_, "hasEntry", &error_,
                     G_TYPE_INT,     wallet_handle,         // handle
-                    G_TYPE_STRING,  folder_name_.c_str(),  // folder
+                    G_TYPE_STRING,  kKWalletFolder,        // folder
                     G_TYPE_STRING,  signon_realm.c_str(),  // key
-                    G_TYPE_STRING,  app_name_.c_str(),     // appid
+                    G_TYPE_STRING,  kAppId,                // appid
                     G_TYPE_INVALID,
                     G_TYPE_BOOLEAN, &has_entry,
                     G_TYPE_INVALID);
@@ -317,9 +307,9 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
   GArray* byte_array = NULL;
   dbus_g_proxy_call(proxy_, "readEntry", &error_,
                     G_TYPE_INT,     wallet_handle,         // handle
-                    G_TYPE_STRING,  folder_name_.c_str(),  // folder
+                    G_TYPE_STRING,  kKWalletFolder,        // folder
                     G_TYPE_STRING,  signon_realm.c_str(),  // key
-                    G_TYPE_STRING,  app_name_.c_str(),     // appid
+                    G_TYPE_STRING,  kAppId,                // appid
                     G_TYPE_INVALID,
                     DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                     G_TYPE_INVALID);
@@ -389,8 +379,8 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
   char** realm_list = NULL;
   dbus_g_proxy_call(proxy_, "entryList", &error_,
                     G_TYPE_INT,     wallet_handle,             // handle
-                    G_TYPE_STRING,  folder_name_.c_str(),      // folder
-                    G_TYPE_STRING,  app_name_.c_str(),         // appid
+                    G_TYPE_STRING,  kKWalletFolder,            // folder
+                    G_TYPE_STRING,  kAppId,                    // appid
                     G_TYPE_INVALID,
                     G_TYPE_STRV,    &realm_list,
                     G_TYPE_INVALID);
@@ -401,9 +391,9 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
     GArray* byte_array = NULL;
     dbus_g_proxy_call(proxy_, "readEntry", &error_,
                       G_TYPE_INT,     wallet_handle,           // handle
-                      G_TYPE_STRING,  folder_name_.c_str(),    // folder
+                      G_TYPE_STRING,  kKWalletFolder,          // folder
                       G_TYPE_STRING,  *realm,                  // key
-                      G_TYPE_STRING,  app_name_.c_str(),       // appid
+                      G_TYPE_STRING,  kAppId,                  // appid
                       G_TYPE_INVALID,
                       DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                       G_TYPE_INVALID);
@@ -429,9 +419,9 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
     int ret = 0;
     dbus_g_proxy_call(proxy_, "removeEntry", &error_,
                       G_TYPE_INT,     wallet_handle,         // handle
-                      G_TYPE_STRING,  folder_name_.c_str(),  // folder
+                      G_TYPE_STRING,  kKWalletFolder,        // folder
                       G_TYPE_STRING,  signon_realm.c_str(),  // key
-                      G_TYPE_STRING,  app_name_.c_str(),     // appid
+                      G_TYPE_STRING,  kAppId,                // appid
                       G_TYPE_INVALID,
                       G_TYPE_INT,     &ret,
                       G_TYPE_INVALID);
@@ -454,10 +444,10 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
   int ret = 0;
   dbus_g_proxy_call(proxy_, "writeEntry", &error_,
                     G_TYPE_INT,           wallet_handle,         // handle
-                    G_TYPE_STRING,        folder_name_.c_str(),  // folder
+                    G_TYPE_STRING,        kKWalletFolder,        // folder
                     G_TYPE_STRING,        signon_realm.c_str(),  // key
                     DBUS_TYPE_G_UCHAR_ARRAY, byte_array,         // value
-                    G_TYPE_STRING,        app_name_.c_str(),     // appid
+                    G_TYPE_STRING,        kAppId,                // appid
                     G_TYPE_INVALID,
                     G_TYPE_INT,           &ret,
                     G_TYPE_INVALID);
@@ -602,12 +592,11 @@ bool NativeBackendKWallet::CheckError() {
 int NativeBackendKWallet::WalletHandle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Open the wallet.
-  // TODO(mdm): Are we leaking these handles? Find out.
   int handle = kInvalidKWalletHandle;
   dbus_g_proxy_call(proxy_, "open", &error_,
-                    G_TYPE_STRING, wallet_name_.c_str(),    // wallet
-                    G_TYPE_INT64,  0LL,                     // wid
-                    G_TYPE_STRING, app_name_.c_str(),       // appid
+                    G_TYPE_STRING, wallet_name_.c_str(),  // wallet
+                    G_TYPE_INT64,  0LL,                   // wid
+                    G_TYPE_STRING, kAppId,                // appid
                     G_TYPE_INVALID,
                     G_TYPE_INT,    &handle,
                     G_TYPE_INVALID);
@@ -617,9 +606,9 @@ int NativeBackendKWallet::WalletHandle() {
   // Check if our folder exists.
   gboolean has_folder = false;
   dbus_g_proxy_call(proxy_, "hasFolder", &error_,
-                    G_TYPE_INT,    handle,                  // handle
-                    G_TYPE_STRING, folder_name_.c_str(),    // folder
-                    G_TYPE_STRING, app_name_.c_str(),       // appid
+                    G_TYPE_INT,    handle,          // handle
+                    G_TYPE_STRING, kKWalletFolder,  // folder
+                    G_TYPE_STRING, kAppId,          // appid
                     G_TYPE_INVALID,
                     G_TYPE_BOOLEAN, &has_folder,
                     G_TYPE_INVALID);
@@ -630,9 +619,9 @@ int NativeBackendKWallet::WalletHandle() {
   if (!has_folder) {
     gboolean success = false;
     dbus_g_proxy_call(proxy_, "createFolder", &error_,
-                      G_TYPE_INT,    handle,                // handle
-                      G_TYPE_STRING, folder_name_.c_str(),  // folder
-                      G_TYPE_STRING, app_name_.c_str(),     // appid
+                      G_TYPE_INT,    handle,          // handle
+                      G_TYPE_STRING, kKWalletFolder,  // folder
+                      G_TYPE_STRING, kAppId,          // appid
                       G_TYPE_INVALID,
                       G_TYPE_BOOLEAN, &success,
                       G_TYPE_INVALID);
@@ -640,63 +629,5 @@ int NativeBackendKWallet::WalletHandle() {
       return kInvalidKWalletHandle;
   }
 
-  // Successful initialization. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
-
   return handle;
-}
-
-std::string NativeBackendKWallet::GetProfileSpecificFolderName() const {
-  // Originally, the folder name was always just "Chrome Form Data".
-  // Now we use it to distinguish passwords for different profiles.
-  return StringPrintf("%s (%d)", kKWalletFolder, profile_id_);
-}
-
-void NativeBackendKWallet::MigrateToProfileSpecificLogins() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  DCHECK(!migrate_tried_);
-  DCHECK_EQ(folder_name_, kKWalletFolder);
-
-  // Record the fact that we've attempted migration already right away, so that
-  // we don't get recursive calls back to MigrateToProfileSpecificLogins().
-  migrate_tried_ = true;
-
-  // First get all the logins, using the old folder name.
-  int wallet_handle = WalletHandle();
-  if (wallet_handle == kInvalidKWalletHandle)
-    return;
-  PasswordFormList forms;
-  if (!GetAllLogins(&forms, wallet_handle))
-    return;
-
-  // Now switch to a profile-specific folder name.
-  folder_name_ = GetProfileSpecificFolderName();
-
-  // Try to add all the logins with the new folder name.
-  // This could be done more efficiently by grouping by signon realm and using
-  // SetLoginsList(), but we do this for simplicity since it is only done once.
-  // Note, however, that we do need another call to WalletHandle() to create
-  // this folder if necessary.
-  bool ok = true;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (!AddLogin(*forms[i]))
-      ok = false;
-    delete forms[i];
-  }
-
-  if (ok) {
-    // All good! Keep the new app string and set a persistent pref.
-    // NOTE: We explicitly don't delete the old passwords yet. They are
-    // potentially shared with other profiles and other user data dirs!
-    // Each other profile must be able to migrate the shared data as well,
-    // so we must leave it alone. After a few releases, we'll add code to
-    // delete them, and eventually remove this migration code.
-    // TODO(mdm): follow through with the plan above.
-    PasswordStoreX::SetPasswordsUseLocalProfileId(prefs_);
-  } else {
-    // We failed to migrate for some reason. Use the old folder name.
-    folder_name_ = kKWalletFolder;
-  }
 }

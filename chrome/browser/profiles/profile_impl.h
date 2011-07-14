@@ -160,10 +160,6 @@ class ProfileImpl : public Profile,
   void CreateWebDataService();
   FilePath GetPrefFilePath();
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  LocalProfileId GetLocalProfileId();
-#endif
-
   void CreatePasswordStore();
 
   void StopCreateSessionServiceTimer();

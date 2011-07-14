@@ -713,16 +713,6 @@ const char kEnableHyperlinkAuditing[] = "enable_a_ping";
 // Whether to enable sending referrers.
 const char kEnableReferrers[] = "enable_referrers";
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// The local profile id for this profile.
-const char kLocalProfileId[] = "profile.local_profile_id";
-
-// Whether passwords in external services (e.g. GNOME Keyring) have been tagged
-// with the local profile id yet. (Used for migrating to tagged passwords.)
-const char kPasswordsUseLocalProfileId[] =
-    "profile.passwords_use_local_profile_id";
-#endif
-
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

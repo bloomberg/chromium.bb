@@ -11,8 +11,6 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
@@ -263,39 +261,4 @@ ssize_t PasswordStoreX::MigrateLogins() {
   ssize_t result = ok ? forms.size() : -1;
   STLDeleteElements(&forms);
   return result;
-}
-
-// static
-void PasswordStoreX::RegisterUserPrefs(PrefService* prefs) {
-  // Normally we should be on the UI thread here, but in tests we might not.
-  prefs->RegisterBooleanPref(prefs::kPasswordsUseLocalProfileId,
-                             false,  // default: passwords don't use local ids
-                             PrefService::UNSYNCABLE_PREF);
-}
-
-// static
-bool PasswordStoreX::PasswordsUseLocalProfileId(PrefService* prefs) {
-  // Normally we should be on the UI thread here, but in tests we might not.
-  return prefs->GetBoolean(prefs::kPasswordsUseLocalProfileId);
-}
-
-namespace {
-// This function is a hack to do something not entirely thread safe: the pref
-// service comes from the UI thread, but it's not ref counted. We keep a pointer
-// to it on the DB thread, and need to invoke a method on the UI thread. This
-// function does that for us without requiring ref counting the pref service.
-// TODO(mdm): Fix this if it becomes a problem. Given that this function will
-// be called once ever per profile, it probably will not cause a problem...
-void UISetPasswordsUseLocalProfileId(PrefService* prefs) {
-  prefs->SetBoolean(prefs::kPasswordsUseLocalProfileId, true);
-}
-}  // anonymous namespace
-
-// static
-void PasswordStoreX::SetPasswordsUseLocalProfileId(PrefService* prefs) {
-  // This method should work on any thread, but we expect the DB thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableFunction(UISetPasswordsUseLocalProfileId,
-                                              prefs));
 }
