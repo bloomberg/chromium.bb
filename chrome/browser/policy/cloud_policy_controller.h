@@ -53,7 +53,6 @@ class CloudPolicyController
   // CloudPolicyDataStore::Observer implementation:
   virtual void OnDeviceTokenChanged() OVERRIDE;
   virtual void OnCredentialsChanged() OVERRIDE;
-  virtual void OnDataStoreGoingAway() OVERRIDE;
 
  private:
   // Indicates the current state the controller is in.

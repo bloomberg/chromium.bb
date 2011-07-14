@@ -183,10 +183,6 @@ void CloudPolicyController::OnCredentialsChanged() {
   }
 }
 
-void CloudPolicyController::OnDataStoreGoingAway() {
-  NOTREACHED();
-}
-
 CloudPolicyController::CloudPolicyController(
     DeviceManagementService* service,
     CloudPolicyCacheBase* cache,

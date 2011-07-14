@@ -20,8 +20,8 @@ namespace policy {
 
 const char kTestToken[] = "device_token_fetcher_test_auth_token";
 
-using testing::_;
 using testing::Mock;
+using testing::_;
 
 class MockTokenAvailableObserver : public CloudPolicyDataStore::Observer {
  public:
@@ -30,7 +30,6 @@ class MockTokenAvailableObserver : public CloudPolicyDataStore::Observer {
 
   MOCK_METHOD0(OnDeviceTokenChanged, void());
   MOCK_METHOD0(OnCredentialsChanged, void());
-  MOCK_METHOD0(OnDataStoreGoingAway, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTokenAvailableObserver);

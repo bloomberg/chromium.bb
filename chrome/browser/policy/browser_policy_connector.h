@@ -137,7 +137,7 @@ class BrowserPolicyConnector : public NotificationObserver {
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 #endif
 
-  scoped_refptr<UserPolicyTokenCache> user_policy_token_cache_;
+  scoped_ptr<UserPolicyTokenCache> user_policy_token_cache_;
   scoped_ptr<CloudPolicyDataStore> user_data_store_;
   scoped_ptr<CloudPolicySubsystem> user_cloud_policy_subsystem_;
 

@@ -22,6 +22,8 @@ const char kMachineInfoSerialNumber[] = "serial_number";
 
 namespace policy {
 
+CloudPolicyDataStore::~CloudPolicyDataStore() {}
+
 // static
 CloudPolicyDataStore* CloudPolicyDataStore::CreateForUserPolicies() {
   return new CloudPolicyDataStore(em::DeviceRegisterRequest::USER,
@@ -60,16 +62,7 @@ CloudPolicyDataStore::CloudPolicyDataStore(
       policy_type_(policy_type),
       machine_model_(machine_model),
       machine_id_(machine_id),
-      token_cache_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
-
-CloudPolicyDataStore::~CloudPolicyDataStore() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDataStoreGoingAway());
-}
-
-base::WeakPtr<CloudPolicyDataStore> CloudPolicyDataStore::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
+      token_cache_loaded_(false) {}
 
 void CloudPolicyDataStore::SetDeviceToken(const std::string& device_token,
                                           bool from_cache) {

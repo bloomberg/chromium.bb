@@ -32,38 +32,36 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-UserPolicyTokenCache::UserPolicyTokenCache(
-    const base::WeakPtr<CloudPolicyDataStore>& data_store,
-    const FilePath& cache_file)
-    : data_store_(data_store),
-      cache_file_(cache_file) {
-  data_store_->AddObserver(this);
-}
+UserPolicyTokenLoader::Delegate::~Delegate() {}
 
-void UserPolicyTokenCache::Load() {
+UserPolicyTokenLoader::UserPolicyTokenLoader(
+    const base::WeakPtr<Delegate>& delegate,
+    const FilePath& cache_file)
+    : delegate_(delegate),
+      cache_file_(cache_file) {}
+
+void UserPolicyTokenLoader::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserPolicyTokenCache::LoadOnFileThread));
+      NewRunnableMethod(this, &UserPolicyTokenLoader::LoadOnFileThread));
 }
 
-void UserPolicyTokenCache::Store(const std::string& token,
+void UserPolicyTokenLoader::Store(const std::string& token,
                                  const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
-                        &UserPolicyTokenCache::StoreOnFileThread,
+                        &UserPolicyTokenLoader::StoreOnFileThread,
                         token,
                         device_id));
 }
 
-UserPolicyTokenCache::~UserPolicyTokenCache() {
-  if (data_store_)
-    data_store_->RemoveObserver(this);
+UserPolicyTokenLoader::~UserPolicyTokenLoader() {
 }
 
-void UserPolicyTokenCache::LoadOnFileThread() {
+void UserPolicyTokenLoader::LoadOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::string device_token;
   std::string device_id;
@@ -84,22 +82,20 @@ void UserPolicyTokenCache::LoadOnFileThread() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
-                        &UserPolicyTokenCache::NotifyOnUIThread,
+                        &UserPolicyTokenLoader::NotifyOnUIThread,
                         device_token,
                         device_id));
 }
 
-void UserPolicyTokenCache::NotifyOnUIThread(const std::string& token,
-                                            const std::string& device_id) {
+void UserPolicyTokenLoader::NotifyOnUIThread(const std::string& token,
+                                             const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (data_store_) {
-    data_store_->set_device_id(device_id);
-    data_store_->SetDeviceToken(token, true);
-  }
+  if (delegate_.get())
+    delegate_->OnTokenLoaded(token, device_id);
 }
 
-void UserPolicyTokenCache::StoreOnFileThread(const std::string& token,
-                                             const std::string& device_id) {
+void UserPolicyTokenLoader::StoreOnFileThread(const std::string& token,
+                                              const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   em::DeviceCredentials device_credentials;
   device_credentials.set_device_token(token);
@@ -129,19 +125,46 @@ void UserPolicyTokenCache::StoreOnFileThread(const std::string& token,
   SampleUMA(kMetricTokenStoreSucceeded);
 }
 
+UserPolicyTokenCache::UserPolicyTokenCache(
+    CloudPolicyDataStore* data_store,
+    const FilePath& cache_file)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      data_store_(data_store) {
+  loader_ = new UserPolicyTokenLoader(weak_ptr_factory_.GetWeakPtr(),
+                                      cache_file);
+  data_store_->AddObserver(this);
+}
+
+UserPolicyTokenCache::~UserPolicyTokenCache() {
+  if (data_store_)
+    data_store_->RemoveObserver(this);
+}
+
+void UserPolicyTokenCache::Load() {
+  loader_->Load();
+}
+
+void UserPolicyTokenCache::OnTokenLoaded(const std::string& token,
+                                         const std::string& device_id) {
+  token_ = token;
+  if (data_store_) {
+    data_store_->set_device_id(device_id);
+    data_store_->SetDeviceToken(token, true);
+  }
+}
+
 void UserPolicyTokenCache::OnDeviceTokenChanged() {
-  if (!data_store_->device_token().empty() &&
-      !data_store_->device_id().empty()) {
-    // This will also happen after loading the cache.
-    Store(data_store_->device_token(), data_store_->device_id());
+  const std::string& new_token(data_store_->device_token());
+  if (!new_token.empty() && !data_store_->device_id().empty()) {
+    if (token_ == new_token)
+      return;
+
+    token_ = new_token;
+    loader_->Store(new_token, data_store_->device_id());
   }
 }
 
 void UserPolicyTokenCache::OnCredentialsChanged() {
-}
-
-void UserPolicyTokenCache::OnDataStoreGoingAway() {
-  data_store_->RemoveObserver(this);
 }
 
 }  // namespace policy

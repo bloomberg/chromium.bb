@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
@@ -33,10 +32,9 @@ class CloudPolicyDataStore {
     // Authentication credentials for talking to the device management service
     // (gaia_token_) changed.
     virtual void OnCredentialsChanged() = 0;
-
-    // Called from the destructor of CloudPolicyData.
-    virtual void OnDataStoreGoingAway() = 0;
   };
+
+  ~CloudPolicyDataStore();
 
   // Create CloudPolicyData with constants initialized for fetching user
   // policies.
@@ -45,10 +43,6 @@ class CloudPolicyDataStore {
   // Create CloudPolicyData with constants initialized for fetching device
   // policies.
   static CloudPolicyDataStore* CreateForDevicePolicies();
-
-  virtual ~CloudPolicyDataStore();
-
-  base::WeakPtr<CloudPolicyDataStore> GetWeakPtr();
 
   // Sets the device token, and token_policy_cache_loaded and sends out
   // notifications. Also ensures that setting the token should first happen
@@ -115,8 +109,6 @@ class CloudPolicyDataStore {
   bool token_cache_loaded_;
 
   ObserverList<Observer, true> observer_list_;
-
-  base::WeakPtrFactory<CloudPolicyDataStore> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyDataStore);
 };

@@ -114,8 +114,8 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   if (user_cloud_policy_subsystem_.get())
     user_cloud_policy_subsystem_->Shutdown();
   user_cloud_policy_subsystem_.reset();
+  user_policy_token_cache_.reset();
   user_data_store_.reset();
-  user_policy_token_cache_ = NULL;
 }
 
 ConfigurationPolicyProvider*
@@ -239,8 +239,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
 
   // Throw away the old backend.
   user_cloud_policy_subsystem_.reset();
+  user_policy_token_cache_.reset();
   user_data_store_.reset();
-  user_policy_token_cache_ = NULL;
   registrar_.RemoveAll();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -254,9 +254,9 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
     UserPolicyCache* user_policy_cache =
         new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile));
     user_data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
-    user_policy_token_cache_ = new UserPolicyTokenCache(
-        user_data_store_->GetWeakPtr(),
-        policy_cache_dir.Append(kTokenCacheFile));
+    user_policy_token_cache_.reset(
+        new UserPolicyTokenCache(user_data_store_.get(),
+                                 policy_cache_dir.Append(kTokenCacheFile)));
 
     // Prepending user caches meaning they will take precedence of device policy
     // caches.
