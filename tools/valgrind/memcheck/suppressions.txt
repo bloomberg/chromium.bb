@@ -2544,7 +2544,7 @@
    fun:_ZNK8chromeos22SystemSettingsProvider3GetERKSsPP5Value
    fun:_ZNK8chromeos12CrosSettings3GetERKSsPP5Value
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler9FetchPrefERKSs
-   fun:_ZN18CoreOptionsHandler16HandleFetchPrefs*Value
+   fun:_ZN18CoreOptionsHandler16HandleFetchPrefs*Value*
 }
 {
    bug_52371_b
@@ -2552,7 +2552,7 @@
    fun:_Znw*
    fun:_ZN8chromeos12CrosSettings19AddSettingsObserverEPKcP20NotificationObserver
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler11ObservePrefERKSs
-   fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value
+   fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value*
 }
 {
    bug_52825
