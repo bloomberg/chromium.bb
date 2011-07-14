@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" Nodes for PPAPI IDL AST """
+"""Nodes for PPAPI IDL AST"""
 
 #
 # IDL Node
@@ -17,13 +17,15 @@
 # as the source data by the various generators.
 #
 
-import re
-import sys
 import hashlib
+import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
+from idl_propertynode import IDLPropertyNode
+from idl_namespace import IDLNamespace
+from idl_version import IDLVersion
 
-#
+
 # IDLAttribute
 #
 # A temporary object used by the parsing process to hold an Extended Attribute
@@ -35,94 +37,93 @@ class IDLAttribute(object):
     self.name = name
     self.value = value
 
-# Set of object IDLNode types which have a name and belong in the namespace.
-NamedSet = set(['Enum', 'EnumItem', 'Function', 'Interface', 'Member', 'Param',
-               'Struct', 'Type', 'Typedef'])
+  def __str__(self):
+    return '%s=%s' % (self.name, self.value)
+
 
 #
 # IDLNode
 #
-# A node in the AST.  The Node is composed of children, implemented as a
-# dictionary of lists of child types and a dictionary of local properties,
-# a.k.a. ExtendedAttributes.
+# This class implements the AST tree, providing the associations between
+# parents and children.  It also contains a namepsace and propertynode to
+# allow for look-ups.  IDLNode is derived from IDLVersion, so it is
+# version aware.
 #
-class IDLNode(object):
-  # Regular expression to parse property keys in a string such that a string
-  #  "My string #NAME#" will find the key "NAME".
-  regex_var = re.compile("(?P<src>[^\\$]+)|(?P<key>\\$\\w+\\$)")
+class IDLNode(IDLVersion):
 
-  def __init__(self, cls, name, filename, lineno, pos, children):
+  # Set of object IDLNode types which have a name and belong in the namespace.
+  NamedSet = set(['Enum', 'EnumItem', 'File', 'Function', 'Interface',
+                  'Member', 'Param', 'Struct', 'Type', 'Typedef'])
+
+  show_versions = False
+  def __init__(self, cls, filename, lineno, pos, children=None):
+    # Initialize with no starting or ending Version
+    IDLVersion.__init__(self, None, None)
+
     self.cls = cls
-    self.name = name
     self.lineno = lineno
     self.pos = pos
     self.filename = filename
-
-    # Dictionary of type to in order child list
-    self.children = {}
-
-    # Dictionary of child name to child object
-    self.namespace = {}
-
-    # Dictionary of properties (ExtAttributes)
-    self.properties = { 'NAME' : name }
-
-    self.hash = None
-    self.typeref = None
+    self.hashes = {}
+    self.deps = {}
+    self.errors = 0
+    self.namespace = None
+    self.typelist = None
     self.parent = None
-    self.childlist = children
+    self.property_node = IDLPropertyNode()
+    # self.children is a list of children ordered as defined
+    self.children = []
+    # Process the passed in list of children, placing ExtAttributes into the
+    # property dictionary, and nodes into the local child list in order.  In
+    # addition, add nodes to the namespace if the class is in the NamedSet.
+    if not children: children = []
+    for child in children:
+      if child.cls == 'ExtAttribute':
+        self.SetProperty(child.name, child.value)
+      else:
+        child.SetParent(self)
+        self.children.append(child)
 
-    if children:
-      for child in children:
-        #
-        # Copy children into local dictionary such that children of the
-        # same class are added in order to the per key list.  All
-        # ExtAttributes are filtered and applied to a property dictionary
-        # instead of becoming children of IDLNode
-        #
-        if child.cls == 'ExtAttribute':
-          self.properties[child.name] =  child.value
-        else:
-          if child.cls in self.children:
-            self.children[child.cls].append(child)
-          else:
-            self.children[child.cls] = [child]
+#
+# String related functions
+#
+#
 
   # Return a string representation of this node
   def __str__(self):
-    return "%s(%s)" % (self.cls, self.name)
+    name = self.GetName()
+    ver = IDLVersion.__str__(self)
+    if name is None: name = ''
+    if not IDLNode.show_versions: ver = ''
+    return '%s(%s%s)' % (self.cls, name, ver)
+
+  # Return file and line number for where node was defined
+  def Location(self):
+    return '%s(%d)' % (self.filename, self.lineno)
 
   # Log an error for this object
   def Error(self, msg):
-    ErrOut.LogLine(self.filename, self.lineno, 0, " %s %s" %
+    self.errors += 1
+    ErrOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
                    (str(self), msg))
+    if self.lineno == 46: raise Exception("huh?")
 
   # Log a warning for this object
   def Warning(self, msg):
-    WarnOut.LogLine(self.filename, self.lineno, 0, " %s %s" %
+    WarnOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
                     (str(self), msg))
 
-  # Get a list of objects for this key
-  def GetListOf(self, key):
-    return self.children.get(key, [])
+  def GetName(self):
+    return self.GetProperty('NAME')
 
-  def GetOneOf(self, key):
-    children = self.children.get(key, None)
-    if children:
-      assert(len(children) == 1)
-      return children[0]
-    return None
-
-  # Get a list of all objects
-  def Children(self):
-    out = []
-    for key in sorted(self.children.keys()):
-      out.extend(self.children[key])
-    return out
+  def GetNameVersion(self):
+    name = self.GetProperty('NAME', default='')
+    ver = IDLVersion.__str__(self)
+    return '%s%s' % (name, ver)
 
   # Dump this object and its children
   def Dump(self, depth=0, comments=False, out=sys.stdout):
-    if self.cls == 'Comment' or self.cls == 'Copyright':
+    if self.cls in ['Comment', 'Copyright']:
       is_comment = True
     else:
       is_comment = False
@@ -130,128 +131,230 @@ class IDLNode(object):
     # Skip this node if it's a comment, and we are not printing comments
     if not comments and is_comment: return
 
-    tab = ""
-    for t in range(depth):
-      tab += '    '
+    tab = ''.rjust(depth * 2)
 
     if is_comment:
-      for line in self.name.split('\n'):
-        out.write("%s%s\n" % (tab, line))
+      for line in self.GetName().split('\n'):
+        out.write('%s%s\n' % (tab, line))
     else:
-      out.write("%s%s\n" % (tab, self))
+      out.write('%s%s\n' % (tab, self))
+    properties = self.property_node.GetProperyList()
+    if properties:
+      out.write('%s  Properties\n' % tab)
+      for p in properties:
+        out.write('%s    %s : %s\n' % (tab, p, self.GetProperty(p)))
+    for child in self.children:
+      child.Dump(depth+1, comments=comments, out=out)
 
-    if self.properties:
-      out.write("%s  Properties\n" % tab)
-      for p in self.properties:
-        out.write("%s    %s : %s\n" % (tab, p, self.properties[p]))
+#
+# Search related functions
+#
 
-    for cls in sorted(self.children.keys()):
-      # Skip comments
-      if (cls == 'Comment' or cls == 'Copyright') and not comments: continue
+  # Check if node is of a given type
+  def IsA(self, *typelist):
+    if self.cls in typelist: return True
+    return False
 
-      out.write("%s  %ss\n" % (tab, cls))
-      for c in self.children[cls]:
-        c.Dump(depth + 1, comments=comments, out=out)
+  # Get a list of objects for this key
+  def GetListOf(self, *keys):
+    out = []
+    for child in self.children:
+      if child.cls in keys: out.append(child)
+    return out
 
-  # Link the parents and add the object to the parent's namespace
-  def BuildTree(self, parent):
-    self.parent = parent
-    for child in self.Children():
-      child.BuildTree(self)
-      name = child.name
-
-      # Add this child to the local namespace if it's a 'named' type
-      if child.cls in NamedSet:
-        if name in self.namespace:
-          other = self.namespace[name]
-          child.Error('Attempting to add %s to namespace of %s when already '
-                      'declared in %s' % (name, str(self), str(other)))
-        self.namespace[name] = child
-
-  def Resolve(self):
-    errs = 0
-    typename = self.properties.get('TYPEREF', None)
-
-    if typename:
-      if typename in self.namespace:
-        self.Error('Type collision in local namespace')
-        errs += 1
-
-      typeinfo = self.parent.Find(typename)
-      if not typeinfo:
-        self.Error('Unable to resolve typename %s.' % typename)
-        errs += 1
-        sys.exit(-1)
-      self.typeinfo = typeinfo
-    else:
-      self.typeinfo = None
-
-    for child in self.Children():
-      errs += child.Resolve()
-
-    return errs
-
-  def Find(self, name):
-    if name in self.namespace: return self.namespace[name]
-    if self.parent: return self.parent.Find(name)
+  def GetOneOf(self, *keys):
+    out = self.GetListOf(*keys)
+    if out: return out[0]
     return None
 
-  def Hash(self):
-    hash = hashlib.sha1()
-    for key, val in self.properties.iteritems():
-      hash.update('%s=%s' % (key, str(val)))
-    for child in self.Children():
-      hash.update(child.Hash())
-    if self.typeref: hash.update(self.typeref.hash)
-    self.hash = hash.hexdigest()
-    return self.hash
+  def SetParent(self, parent):
+    self.property_node.AddParent(parent)
+    self.parent = parent
 
-  def GetProperty(self, name):
-    return self.properties.get(name, None)
+  # Get a list of all children
+  def GetChildren(self):
+    return self.children
 
-  # Recursively expands text keys in the form of $KEY$ with the value
-  # of the property of the same name.  Since this is done recursively
-  # one property can be defined in tems of another.
-  def Replace(self, text):
-    itr = IDLNode.regex_var.finditer(text)
-    out = ""
-    for m in itr:
-      (min,max) = m.span()
-      if m.lastgroup == "src":
-        out += text[min:max]
-      if m.lastgroup == "key":
-        key = text[min+1:max-1]
-        val = self.properties.get(key, None)
-        if not val:
-          self.Error("No property '%s'" % key)
-        out += self.Replace(str(val))
+  # Get a list of all children of a given version
+  def GetChildrenVersion(self, version):
+    out = []
+    for child in self.children:
+      if child.IsVersion(version): out.append(child)
     return out
-#
-# IDL Predefined types
-#
-BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t',
-              'uint32_t', 'uint64_t', 'double_t', 'float_t', 'handle_t',
-              'mem_t', 'str_t', 'void', 'enum', 'struct', 'bool'])
+
+  # Get a list of all children in a given range
+  def GetChildrenRange(self, vmin, vmax):
+    out = []
+    for child in self.children:
+      if child.IsRange(vmin, vmax): out.append(child)
+    return out
+
+  def FindVersion(self, name, version):
+    node = self.namespace.FindNode(name, version)
+    if not node and self.parent:
+      node = self.parent.FindVersion(name, version)
+    return node
+
+  def FindRange(self, name, vmin, vmax):
+    nodes = self.namespace.FindNodes(name, vmin, vmax)
+    if not nodes and self.parent:
+      nodes = self.parent.FindVersion(name, vmin, vmax)
+    return nodes
+
+  def IsRelease(self, release):
+    label = self.GetLabel()
+    # Assume object is always available if there is no Label
+    if not label:
+      return True
+
+    version = label.GetVersion(release)
+    out =  self.IsVersion(version)
+    return out
+
+  def GetLabel(self):
+    label = self.GetProperty('LABEL')
+    if not label:
+      self.Error('No label availible.')
+      return None
+    return label
+
+  def GetType(self, release):
+    label = self.GetLabel()
+    if not label: return None
+    if not self.typelist: return None
+    version = label.GetVersion(release)
+    return self.typelist.FindVersion(version)
+
+  def GetHash(self, release):
+    hashval = self.hashes.get(release, None)
+    if hashval is None:
+      hashval = hashlib.sha1()
+      hashval.update(self.cls)
+      for key in self.property_node.GetPropertyList():
+        val = self.GetProperty(key)
+        hashval.update('%s=%s' % (key, str(val)))
+      typeref = self.GetType(release)
+      if typeref:
+        hashval.update(typeref.GetHash(release))
+      for child in self.GetChildren():
+        if child.IsA('Copyright', 'Comment', 'Label'): continue
+        if not child.IsRelease(release):
+          continue
+        hashval.update( child.GetHash(release) )
+      self.hashes[release] = hashval
+    return hashval.hexdigest()
+
+  def GetDeps(self, release):
+    deps = self.deps.get(release, None)
+    if deps is None:
+      deps = set([self])
+      for child in self.GetChildren():
+        deps |= child.GetDeps(release)
+      typeref = self.GetType(release)
+      if typeref: deps |= typeref.GetDeps(release)
+      self.deps[release] = deps
+    return deps
+
+  def GetRelease(self, version):
+    label = self.GetLabel()
+    if not label: return None
+    return label.GetRelease(version)
+
+  def GetVersion(self, release):
+    label = self.GetLabel()
+    if not label: return None
+    return label.GetVersion(release)
+
+  def SetProperty(self, name, val):
+    self.property_node.SetProperty(name, val)
+
+  def GetProperty(self, name, default=None):
+    return self.property_node.GetProperty(name, default)
+
+  def Traverse(self, data, func):
+    func(self, data)
+    for child in self.children:
+      child.Traverse(data, func)
+
 
 #
-# IDLAst
+# IDLFile
 #
-# A specialized version of the IDLNode for containing the whole of the
-# AST.  The specialized BuildTree function pulls the per file namespaces
-# into the global AST namespace and checks for collisions.
+# A specialized version of IDLNode which tracks errors and warnings.
 #
-class IDLAst(IDLNode):
-  def __init__(self, children):
-    objs = [IDLNode('Type', name, 'BuiltIn', 1, 0, None) for name in BuiltIn]
-    IDLNode.__init__(self, 'AST', 'PPAPI', 'BuiltIn', 1, 0, objs + children)
+class IDLFile(IDLNode):
+  def __init__(self, name, children, errors=0):
+    attrs = [IDLAttribute('NAME', name),
+             IDLAttribute('ERRORS', errors)]
+    if not children: children = []
+    IDLNode.__init__(self, 'File', name, 1, 0, attrs + children)
 
-  def BuildTree(self, parent):
-    IDLNode.BuildTree(self, parent)
-    for fileobj in self.GetListOf('File'):
-      for name, val in fileobj.namespace.iteritems():
-        if name in self.namespace:
-          other = self.namespace[name]
-          val.Error('Attempting to add %s to namespace of %s when already '
-                    'declared in %s' % (name, str(self), str(other)))
-        self.namespace[name] = val
+
+#
+# Tests
+#
+def StringTest():
+  errors = 0
+  name_str = 'MyName'
+  text_str = 'MyNode(%s)' % name_str
+  name_node = IDLAttribute('NAME', name_str)
+  node = IDLNode('MyNode', 'no file', 1, 0, [name_node])
+  if node.GetName() != name_str:
+    ErrOut.Log('GetName returned >%s< not >%s<' % (node.GetName(), name_str))
+    errors += 1
+  if node.GetProperty('NAME') != name_str:
+    ErrOut.Log('Failed to get name property.')
+    errors += 1
+  if str(node) != text_str:
+    ErrOut.Log('str() returned >%s< not >%s<' % (str(node), text_str))
+    errors += 1
+  if not errors: InfoOut.Log('Passed StringTest')
+  return errors
+
+
+def ChildTest():
+  errors = 0
+  child = IDLNode('child', 'no file', 1, 0)
+  parent = IDLNode('parent', 'no file', 1, 0, [child])
+
+  if child.parent != parent:
+    ErrOut.Log('Failed to connect parent.')
+    errors += 1
+
+  if [child] != parent.GetChildren():
+    ErrOut.Log('Failed GetChildren.')
+    errors += 1
+
+  if child != parent.GetOneOf('child'):
+    ErrOut.Log('Failed GetOneOf(child)')
+    errors += 1
+
+  if parent.GetOneOf('bogus'):
+    ErrOut.Log('Failed GetOneOf(bogus)')
+    errors += 1
+
+  if not parent.IsA('parent'):
+    ErrOut.Log('Expecting parent type')
+    errors += 1
+
+  parent = IDLNode('parent', 'no file', 1, 0, [child, child])
+  if [child, child] != parent.GetChildren():
+    ErrOut.Log('Failed GetChildren2.')
+    errors += 1
+
+  if not errors: InfoOut.Log('Passed ChildTest')
+  return errors
+
+
+def Main():
+  errors = StringTest()
+  errors += ChildTest()
+
+  if errors:
+    ErrOut.Log('IDLNode failed with %d errors.' % errors)
+    return  -1
+  return 0
+
+if __name__ == '__main__':
+  sys.exit(Main())
 
