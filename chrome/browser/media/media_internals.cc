@@ -19,6 +19,7 @@ static const char kSendEverythingFunction[] = "onReceiveEverything";
 MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
+  DCHECK(CalledOnValidThread());
   std::string stream = base::StringPrintf("audio_streams.%p:%d",
                                           host, stream_id);
   DeleteItem(stream);
@@ -26,36 +27,41 @@ void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
 
 void MediaInternals::OnSetAudioStreamPlaying(
     void* host, int stream_id, bool playing) {
+  DCHECK(CalledOnValidThread());
   UpdateAudioStream(host, stream_id,
                     "playing", Value::CreateBooleanValue(playing));
 }
 
 void MediaInternals::OnSetAudioStreamStatus(
     void* host, int stream_id, const std::string& status) {
+  DCHECK(CalledOnValidThread());
   UpdateAudioStream(host, stream_id,
                     "status", Value::CreateStringValue(status));
 }
 
 void MediaInternals::OnSetAudioStreamVolume(
     void* host, int stream_id, double volume) {
+  DCHECK(CalledOnValidThread());
   UpdateAudioStream(host, stream_id,
                     "volume", Value::CreateDoubleValue(volume));
 }
 
-void MediaInternals::AddUI(MediaInternalsObserver* ui) {
-  observers_->AddObserver(ui);
+void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observers_.AddObserver(observer);
 }
 
-void MediaInternals::RemoveUI(MediaInternalsObserver* ui) {
-  observers_->RemoveObserver(ui);
+void MediaInternals::RemoveObserver(MediaInternalsObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observers_.RemoveObserver(observer);
 }
 
 void MediaInternals::SendEverything() {
+  DCHECK(CalledOnValidThread());
   SendUpdate(kSendEverythingFunction, &data_);
 }
 
-MediaInternals::MediaInternals()
-    : observers_(new ObserverListThreadSafe<MediaInternalsObserver>()) {}
+MediaInternals::MediaInternals() {}
 
 void MediaInternals::UpdateAudioStream(
     void* host, int stream_id, const std::string& property, Value* value) {
@@ -84,8 +90,11 @@ void MediaInternals::UpdateItem(
 }
 
 void MediaInternals::SendUpdate(const std::string& function, Value* value) {
-  scoped_ptr<std::vector<const Value*> > args(new std::vector<const Value*>());
-  args->push_back(value);
-  string16 update = WebUI::GetJavascriptCall(function, *args.get());
-  observers_->Notify(&MediaInternalsObserver::OnUpdate, update);
+  // Only bother serializing the update to JSON if someone is watching.
+  if (observers_.size()) {
+    std::vector<const Value*> args;
+    args.push_back(value);
+    string16 update = WebUI::GetJavascriptCall(function, args);
+    FOR_EACH_OBSERVER(MediaInternalsObserver, observers_, OnUpdate(update));
+  }
 }

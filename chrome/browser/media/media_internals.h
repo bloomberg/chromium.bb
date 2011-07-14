@@ -7,29 +7,31 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/media/media_observer.h"
 
 class MediaInternalsObserver;
 
 // This class stores information about currently active media.
-class MediaInternals : public MediaObserver {
+// All of its methods are called on the IO thread.
+class MediaInternals : public MediaObserver, public base::NonThreadSafe {
  public:
   virtual ~MediaInternals();
 
-  // MediaObserver implementation. These are called from the IO thread:
+  // MediaObserver implementation.
   virtual void OnDeleteAudioStream(void* host, int stream_id);
   virtual void OnSetAudioStreamPlaying(void* host, int stream_id, bool playing);
   virtual void OnSetAudioStreamStatus(void* host, int stream_id,
                                       const std::string& status);
   virtual void OnSetAudioStreamVolume(void* host, int stream_id, double volume);
 
-  // Methods for observers. Called from the observer's own thread:
-  // UIs should add themselves on construction and remove themselves
+  // Methods for observers.
+  // Observers should add themselves on construction and remove themselves
   // on destruction.
-  void AddUI(MediaInternalsObserver* ui);
-  void RemoveUI(MediaInternalsObserver* ui);
+  void AddObserver(MediaInternalsObserver* observer);
+  void RemoveObserver(MediaInternalsObserver* observer);
   void SendEverything();
 
  private:
@@ -57,7 +59,7 @@ class MediaInternals : public MediaObserver {
 
   static MediaInternals* instance_;
   DictionaryValue data_;
-  scoped_refptr<ObserverListThreadSafe<MediaInternalsObserver> > observers_;
+  ObserverList<MediaInternalsObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };

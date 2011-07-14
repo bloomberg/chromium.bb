@@ -45,11 +45,11 @@ void MediaInternalsProxy::OnUpdate(const string16& update) {
 MediaInternalsProxy::~MediaInternalsProxy() {}
 
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
-  io_thread_->globals()->media.media_internals->AddUI(this);
+  io_thread_->globals()->media.media_internals->AddObserver(this);
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
-  io_thread_->globals()->media.media_internals->RemoveUI(this);
+  io_thread_->globals()->media.media_internals->RemoveObserver(this);
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {

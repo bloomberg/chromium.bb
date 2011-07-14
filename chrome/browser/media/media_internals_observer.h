@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_OBSERVER_H_
 #pragma once
 
-// Implemented by MediaInternalsUI to receive callbacks on media events.
+// Used by MediaInternalsUI to receive callbacks on media events.
+// Callbacks will be on the IO thread.
 class MediaInternalsObserver {
  public:
   // Handle an information update consisting of a javascript function call.

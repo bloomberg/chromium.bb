@@ -71,30 +71,24 @@ TEST_F(MediaInternalsTest, UpdateModifiesExistingItem) {
 }
 
 TEST_F(MediaInternalsTest, ObserversReceiveNotifications) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
   scoped_ptr<MockMediaInternalsObserver> observer(
       new MockMediaInternalsObserver());
-
-  internals_->AddUI(observer.get());
-  SendUpdate("fn", data());
 
   EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(1);
 
-  message_loop.RunAllPending();
+  internals_->AddObserver(observer.get());
+  SendUpdate("fn", data());
 }
 
 TEST_F(MediaInternalsTest, RemovedObserversReceiveNoNotifications) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
   scoped_ptr<MockMediaInternalsObserver> observer(
       new MockMediaInternalsObserver());
 
-  internals_->AddUI(observer.get());
-  internals_->RemoveUI(observer.get());
-  SendUpdate("fn", data());
-
   EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(0);
 
-  message_loop.RunAllPending();
+  internals_->AddObserver(observer.get());
+  internals_->RemoveObserver(observer.get());
+  SendUpdate("fn", data());
 }
 
 TEST_F(MediaInternalsTest, DeleteRemovesItem) {
