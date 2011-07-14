@@ -131,7 +131,7 @@ int main(int argc, const char *argv[]) {
   NaClXMutexLock(&gMutex);
 
   for (tid = 1; tid <= gNumThreads; ++tid) {
-    fprintf(stderr, "Creating thread %d\n", tid);
+    fprintf(stderr, "Creating thread %d\n", (int)tid);
 
     rv = NaClThreadCtor(&threads[tid-1],
                         ThreadMain,
@@ -153,7 +153,7 @@ int main(int argc, const char *argv[]) {
   tmp = gIncrementsPerThread * gNumThreads;
   if (gCounter != tmp) {
     fprintf(stderr, "ERROR: gCounter is wrong. Expected %d, got %d\n",
-           tmp, gCounter);
+           (int)tmp, (int)gCounter);
     exit(EXIT_FAILURE);
   }
 
@@ -161,13 +161,13 @@ int main(int argc, const char *argv[]) {
   if (gExchange + gExchangeSum != tmp) {
     fprintf(stderr,
             "ERROR: gExchange+gExchangeSum is wrong. Expected %d, got %d\n",
-            tmp, gExchange + gExchangeSum);
+            (int)tmp, (int)(gExchange + gExchangeSum));
     exit(EXIT_FAILURE);
   }
 
   if (gSwap != gNumThreads+1) {
     fprintf(stderr, "ERROR: gSwap is wrong. Expected %d, got %d\n",
-           gNumThreads+1, gSwap);
+            (int)(gNumThreads+1), (int)gSwap);
     exit(EXIT_FAILURE);
   }
 

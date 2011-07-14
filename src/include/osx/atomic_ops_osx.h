@@ -33,12 +33,13 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_OSX_ATOMIC_OPS_OSX_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_OSX_ATOMIC_OPS_OSX_H_ 1
 
+#include "native_client/src/include/portability.h"
 #include <libkern/OSAtomic.h>
 #include <stdint.h>
 
 typedef int32_t Atomic32;
 
-static inline Atomic32
+static INLINE Atomic32
 CompareAndSwap(volatile Atomic32 *ptr,
                Atomic32 old_value,
                Atomic32 new_value) {
@@ -53,7 +54,7 @@ CompareAndSwap(volatile Atomic32 *ptr,
   return prev_value;
 }
 
-static inline Atomic32
+static INLINE Atomic32
 AtomicExchange(volatile Atomic32 *ptr,
                Atomic32 new_value) {
   Atomic32 old_value;
@@ -64,7 +65,7 @@ AtomicExchange(volatile Atomic32 *ptr,
   return old_value;
 }
 
-static inline Atomic32
+static INLINE Atomic32
 AtomicIncrement(volatile Atomic32 *ptr, Atomic32 increment) {
   return OSAtomicAdd32(increment, (Atomic32*) ptr);
 }

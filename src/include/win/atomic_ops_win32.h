@@ -33,12 +33,13 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_WIN_ATOMIC_OPS_WIN32_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_WIN_ATOMIC_OPS_WIN32_H_ 1
 
+#include "native_client/src/include/portability.h"
 #include <windows.h>
 
 typedef LONG Atomic32;
 
-__inline
-Atomic32 CompareAndSwap(volatile Atomic32* ptr,
+static INLINE Atomic32
+CompareAndSwap(volatile Atomic32* ptr,
                Atomic32 old_value,
                Atomic32 new_value) {
   return InterlockedCompareExchange(ptr,
@@ -46,14 +47,14 @@ Atomic32 CompareAndSwap(volatile Atomic32* ptr,
                                     old_value);
 }
 
-__inline
-Atomic32 AtomicExchange(volatile Atomic32* ptr,
-                        Atomic32 new_value) {
+static INLINE Atomic32
+AtomicExchange(volatile Atomic32* ptr,
+               Atomic32 new_value) {
   return (Atomic32)InterlockedExchange(ptr, new_value);
 }
 
-__inline
-Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
+static INLINE Atomic32
+AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
   Atomic32 result = InterlockedExchangeAdd(
 #ifdef WINCE
      /* It seems that for WinCE InterlockedExchangeAdd takes LONG* as its first

@@ -41,7 +41,9 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#if NACL_OSX
+#ifdef __native_client__
+#include "native_client/src/include/nacl/atomic_ops.h"
+#elif NACL_OSX
 #include "native_client/src/include/osx/atomic_ops_osx.h"
 #elif NACL_LINUX
 
@@ -68,15 +70,11 @@
  * typedef int32_t Atomic32;
  *
  * Signed type that can hold a pointer and supports the atomic ops below, as
- *  well as atomic loads and stores.  Instances must be naturally-aligned.
+ * well as atomic loads and stores.  Instances must be naturally-aligned.
  */
 
-/*
- *  Atomic32 CompareAndSwap(volatile Atomic32* ptr,
- *                         Atomic32 old_value,
- *                         Atomic32 new_value);
- *
- *  Atomically execute:
+
+/*  Atomically execute:
  *      result = *ptr;
  *      if (*ptr == old_value)
  *          *ptr = new_value;
@@ -86,20 +84,24 @@
  *  Always return the old value of "*ptr"
  *  This routine implies no memory barriers.
  */
+static INLINE Atomic32
+CompareAndSwap(volatile Atomic32* ptr,
+               Atomic32 old_value,
+               Atomic32 new_value);
 
-/*
- *  Atomic32 AtomicExchange(volatile Atomic32* ptr, Atomic32 new_value);
- *
- *  Atomically store new_value into *ptr, returning the previous value held in
- *  *ptr.  This routine implies no memory barriers.
+
+/* Atomically store new_value into *ptr, returning the previous value held
+ * in *ptr.  This routine implies no memory barriers.
  */
+static INLINE Atomic32
+AtomicExchange(volatile Atomic32* ptr, Atomic32 new_value);
 
-/*
- * Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment);
- *
- *   Atomically increment *ptr by "increment".  Returns the new value of
+
+/*   Atomically increment *ptr by "increment".  Returns the new value of
  *   *ptr with the increment applied.  This routine implies no memory
  *   barriers.
  */
+static INLINE Atomic32
+AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment);
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_ATOMIC_OPS_H_ */

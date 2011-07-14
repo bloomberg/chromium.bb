@@ -33,11 +33,12 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_LINUX_ATOMIC_OPS_LINUX_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_LINUX_ATOMIC_OPS_LINUX_H_ 1
 
+#include "native_client/src/include/portability.h"
 #include <stdint.h>
 
 typedef int32_t Atomic32;
 
-static inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
+static INLINE Atomic32 CompareAndSwap(volatile Atomic32* ptr,
                                       Atomic32 old_value,
                                       Atomic32 new_value) {
   Atomic32 prev;
@@ -49,7 +50,7 @@ static inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
 }
 
 
-static inline Atomic32 AtomicExchange(volatile Atomic32* ptr,
+static INLINE Atomic32 AtomicExchange(volatile Atomic32* ptr,
                                       Atomic32 new_value) {
   /* NOTE: The lock prefix is implicit for xchg. */
   __asm__ __volatile__("xchgl %1,%0"
@@ -59,7 +60,7 @@ static inline Atomic32 AtomicExchange(volatile Atomic32* ptr,
   return new_value;  /* Now it's the previous value. */
 }
 
-static inline Atomic32 AtomicIncrement(volatile Atomic32* ptr,
+static INLINE Atomic32 AtomicIncrement(volatile Atomic32* ptr,
                                        Atomic32 increment) {
   Atomic32 temp = increment;
   __asm__ __volatile__("lock; xaddl %0,%1"

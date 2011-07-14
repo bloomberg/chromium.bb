@@ -2643,6 +2643,7 @@ nacl_env.Append(
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
+    'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
     ])

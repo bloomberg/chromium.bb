@@ -35,11 +35,12 @@
 
 // Used only by trusted code.  Untrusted code uses gcc intrinsics.
 
+#include "native_client/src/include/portability.h"
 #include <stdint.h>
 
 typedef int32_t Atomic32;
 
-static inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
+static INLINE Atomic32 CompareAndSwap(volatile Atomic32* ptr,
                                       Atomic32 old_value,
                                       Atomic32 new_value) {
   Atomic32 old, tmp;
@@ -61,7 +62,7 @@ static inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
   return old;
 }
 
-static inline Atomic32 AtomicExchange(volatile Atomic32* ptr,
+static INLINE Atomic32 AtomicExchange(volatile Atomic32* ptr,
                                       Atomic32 new_value) {
   Atomic32 tmp, old;
 
@@ -78,7 +79,7 @@ static inline Atomic32 AtomicExchange(volatile Atomic32* ptr,
   return old;
 }
 
-static inline Atomic32 AtomicIncrement(volatile Atomic32* ptr,
+static INLINE Atomic32 AtomicIncrement(volatile Atomic32* ptr,
                                        Atomic32 increment) {
   Atomic32 tmp, res;
 
