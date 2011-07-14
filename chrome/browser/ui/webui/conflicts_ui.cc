@@ -14,6 +14,7 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -32,79 +33,32 @@
 
 namespace {
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ConflictsUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreateConflictsUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIConflictsHost);
 
-class ConflictsUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  ConflictsUIHTMLSource()
-      : DataSource(chrome::kChromeUIConflictsHost, MessageLoop::current()) {}
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConflictsUIHTMLSource);
-};
-
-void ConflictsUIHTMLSource::StartDataRequest(const std::string& path,
-                                             bool is_incognito,
-                                             int request_id) {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString("loadingMessage",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_LOADING_MESSAGE));
-  localized_strings.SetString("modulesLongTitle",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG));
-  localized_strings.SetString("modulesBlurb",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_EXPLANATION_TEXT));
-  localized_strings.SetString("moduleSuspectedBad",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_WARNING_SUSPECTED));
-  localized_strings.SetString("moduleConfirmedBad",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_WARNING_CONFIRMED));
-  localized_strings.SetString("helpCenterLink",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HELP_CENTER_LINK));
-  localized_strings.SetString("investigatingText",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_INVESTIGATING));
-  localized_strings.SetString("modulesNoneLoaded",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_NO_MODULES_LOADED));
-  localized_strings.SetString("headerSoftware",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_SOFTWARE));
-  localized_strings.SetString("headerSignedBy",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_SIGNED_BY));
-  localized_strings.SetString("headerLocation",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_LOCATION));
-  localized_strings.SetString("headerVersion",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_VERSION));
-  localized_strings.SetString("headerHelpTip",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_HELP_TIP));
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece flags_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_CONFLICTS_HTML));
-  std::string full_html(flags_html.data(), flags_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  source->AddLocalizedString("loadingMessage", IDS_CONFLICTS_LOADING_MESSAGE);
+  source->AddLocalizedString("modulesLongTitle",
+                             IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG);
+  source->AddLocalizedString("modulesBlurb", IDS_CONFLICTS_EXPLANATION_TEXT);
+  source->AddLocalizedString("moduleSuspectedBad",
+                             IDS_CONFLICTS_CHECK_WARNING_SUSPECTED);
+  source->AddLocalizedString("moduleConfirmedBad",
+                     IDS_CONFLICTS_CHECK_WARNING_CONFIRMED);
+  source->AddLocalizedString("helpCenterLink", IDS_CONFLICTS_HELP_CENTER_LINK);
+  source->AddLocalizedString("investigatingText",
+                             IDS_CONFLICTS_CHECK_INVESTIGATING);
+  source->AddLocalizedString("modulesNoneLoaded",
+                             IDS_CONFLICTS_NO_MODULES_LOADED);
+  source->AddLocalizedString("headerSoftware", IDS_CONFLICTS_HEADER_SOFTWARE);
+  source->AddLocalizedString("headerSignedBy", IDS_CONFLICTS_HEADER_SIGNED_BY);
+  source->AddLocalizedString("headerLocation", IDS_CONFLICTS_HEADER_LOCATION);
+  source->AddLocalizedString("headerVersion", IDS_CONFLICTS_HEADER_VERSION);
+  source->AddLocalizedString("headerHelpTip", IDS_CONFLICTS_HEADER_HELP_TIP);
+  source->set_json_path("strings.js");
+  source->add_resource_path("conflicts.js", IDR_ABOUT_CONFLICTS_JS);
+  source->set_default_resource(IDR_ABOUT_CONFLICTS_HTML);
+  return source;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,15 +153,12 @@ void ConflictsDOMHandler::Observe(int type,
 ///////////////////////////////////////////////////////////////////////////////
 
 ConflictsUI::ConflictsUI(TabContents* contents) : ChromeWebUI(contents) {
-  UserMetrics::RecordAction(
-      UserMetricsAction("ViewAboutConflicts"));
-
+  UserMetrics::RecordAction(UserMetricsAction("ViewAboutConflicts"));
   AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
 
-  ConflictsUIHTMLSource* html_source = new ConflictsUIHTMLSource();
-
   // Set up the about:conflicts source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateConflictsUIHTMLSource());
 }
 
 // static

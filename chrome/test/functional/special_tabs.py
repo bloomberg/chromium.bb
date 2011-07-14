@@ -151,7 +151,7 @@ class SpecialTabsTest(pyauto.PyUITest):
   }
 
   win_special_url_tabs = {
-    'chrome://conflicts': { 'CSP': False },
+    'chrome://conflicts': {},
 
     # OVERRIDE - different title for page.
     'chrome://settings': { 'title': 'Options - Basics' },
