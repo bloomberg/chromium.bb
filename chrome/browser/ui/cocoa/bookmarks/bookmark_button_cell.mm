@@ -46,7 +46,7 @@
         cellImage:(NSImage*)cellImage {
   if ((self = [super initTextCell:cellText])) {
     [self configureBookmarkButtonCell];
-    [self setTextColor:[NSColor redColor]];
+    [self setTextColor:[NSColor blackColor]];
     [self setBookmarkNode:node];
 
     if (node) {
