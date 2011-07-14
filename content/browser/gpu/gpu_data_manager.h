@@ -77,6 +77,9 @@ class GpuDataManager {
   // outside GpuDataManager.
   void UpdateGpuBlacklist(GpuBlacklist* updated_list, bool preliminary);
 
+  // This gets called when switching GPU might have happened.
+  void HandleGpuSwitch();
+
  private:
   friend struct DefaultSingletonTraits<GpuDataManager>;
 

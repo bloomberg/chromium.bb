@@ -4,8 +4,13 @@
 
 #include "content/browser/gpu/gpu_data_manager.h"
 
+#if defined(OS_MACOSX)
+#include <CoreGraphics/CGDisplayConfiguration.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_blacklist.h"
@@ -17,6 +22,26 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
 
+namespace {
+
+#if defined(OS_MACOSX)
+void DisplayReconfigCallback(CGDirectDisplayID display,
+                             CGDisplayChangeSummaryFlags flags,
+                             void* gpu_data_manager) {
+  // TODO(zmo): this logging is temporary for crbug 88008 and will be removed.
+  LOG(INFO) << "Display re-configuration: flags = 0x"
+            << base::StringPrintf("%04x", flags);
+  if (flags & kCGDisplayAddFlag) {
+    GpuDataManager* manager =
+        reinterpret_cast<GpuDataManager*>(gpu_data_manager);
+    DCHECK(manager);
+    manager->HandleGpuSwitch();
+  }
+}
+#endif
+
+}  // namespace anonymous
+
 GpuDataManager::GpuDataManager()
     : complete_gpu_info_already_requested_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -24,9 +49,17 @@ GpuDataManager::GpuDataManager()
   GPUInfo gpu_info;
   gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
   UpdateGpuInfo(gpu_info);
+
+#if defined(OS_MACOSX)
+  CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, this);
+#endif
 }
 
-GpuDataManager::~GpuDataManager() { }
+GpuDataManager::~GpuDataManager() {
+#if defined(OS_MACOSX)
+  CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, this);
+#endif
+}
 
 GpuDataManager* GpuDataManager::GetInstance() {
   return Singleton<GpuDataManager>::get();
@@ -190,6 +223,18 @@ void GpuDataManager::UpdateGpuBlacklist(
     preliminary_gpu_feature_flags_ = gpu_feature_flags_;
   VLOG(1) << "Using software rendering list version "
           << updated_version_major << "." << updated_version_minor;
+}
+
+void GpuDataManager::HandleGpuSwitch() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GPUInfo gpu_info;
+  gpu_info_collector::CollectVideoCardInfo(&gpu_info);
+  LOG(INFO) << "Switching to use GPU: vendor_id = 0x"
+            << base::StringPrintf("%04x", gpu_info.vendor_id)
+            << ", device_id = 0x"
+            << base::StringPrintf("%04x", gpu_info.device_id);
+  // TODO(zmo): update gpu_info_, re-run blacklist logic, maybe close and
+  // relaunch GPU process.
 }
 
 void GpuDataManager::RunGpuInfoUpdateCallbacks() {
