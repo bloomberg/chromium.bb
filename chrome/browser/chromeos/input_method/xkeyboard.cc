@@ -9,7 +9,6 @@
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
-#include <gdk/gdkx.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,6 +102,32 @@ bool KeepCapsLock(const std::string& xkb_layout_name) {
   return false;
 }
 
+// This is a wrapper class around Display, that opens and closes X display in
+// the constructor and destructor.
+class ScopedDisplay {
+ public:
+  explicit ScopedDisplay(Display* display) : display_(display) {
+    if (!display_) {
+      LOG(ERROR) << "NULL display_ is passed";
+    }
+  }
+
+  ~ScopedDisplay() {
+    if (display_) {
+      XCloseDisplay(display_);
+    }
+  }
+
+  Display* get() const {
+    return display_;
+  }
+
+ private:
+  Display* display_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisplay);
+};
+
 // A singleton class which wraps the setxkbmap command.
 class XKeyboard {
  public:
@@ -149,11 +174,14 @@ class XKeyboard {
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // TODO(yusukes): Remove this function.
   bool SetAutoRepeatEnabled(bool enabled) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ScopedDisplay display(XOpenDisplay(NULL));
+    if (!display.get()) {
+      return false;
+    }
     if (enabled) {
-      XAutoRepeatOn(GDK_DISPLAY());
+      XAutoRepeatOn(display.get());
     } else {
-      XAutoRepeatOff(GDK_DISPLAY());
+      XAutoRepeatOff(display.get());
     }
     DLOG(INFO) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
     return true;
@@ -161,13 +189,18 @@ class XKeyboard {
 
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success.
+  // TODO(yusukes): Call this function in non-UI thread or in an idle callback.
   bool SetAutoRepeatRate(const AutoRepeatRate& rate) {
     // TODO(yusukes): write auto tests for the function.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ScopedDisplay display(XOpenDisplay(NULL));
+    if (!display.get()) {
+      return false;
+    }
+
     DLOG(INFO) << "Set auto-repeat rate to: "
                << rate.initial_delay_in_ms << " ms delay, "
                << rate.repeat_interval_in_ms << " ms interval";
-    if (XkbSetAutoRepeatRate(GDK_DISPLAY(), XkbUseCoreKbd,
+    if (XkbSetAutoRepeatRate(display.get(), XkbUseCoreKbd,
                              rate.initial_delay_in_ms,
                              rate.repeat_interval_in_ms) != True) {
       LOG(ERROR) << "Failed to set auto-repeat rate";
@@ -369,16 +402,23 @@ std::string CreateFullXkbLayoutName(const std::string& layout_name,
 }
 
 bool CapsLockIsEnabled() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ScopedDisplay display(XOpenDisplay(NULL));
+  if (!display.get()) {
+    return false;
+  }
   XkbStateRec status;
-  XkbGetState(GDK_DISPLAY(), XkbUseCoreKbd, &status);
+  XkbGetState(display.get(), XkbUseCoreKbd, &status);
   return status.locked_mods & LockMask;
 }
 
+// TODO(yusukes): Call this function in non-UI thread or in an idle callback.
 void SetCapsLockEnabled(bool enable_caps_lock) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ScopedDisplay display(XOpenDisplay(NULL));
+  if (!display.get()) {
+    return;
+  }
   XkbLockModifiers(
-      GDK_DISPLAY(), XkbUseCoreKbd, LockMask, enable_caps_lock ? LockMask : 0);
+      display.get(), XkbUseCoreKbd, LockMask, enable_caps_lock ? LockMask : 0);
 }
 
 bool ContainsModifierKeyAsReplacement(
