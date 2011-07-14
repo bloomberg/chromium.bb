@@ -6,12 +6,18 @@
 #define CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_UTILS_H_
 #pragma once
 
+#include "base/bind.h"
+#include "base/callback.h"
+
+class Profile;
+
 namespace toolbar_importer_utils {
 
 // Currently the only configuration information we need is to check whether or
 // not the user currently has their GAIA cookie.  This is done by the function
 // exposed through the ToolbarImportUtils namespace.
-bool IsGoogleGAIACookieInstalled();
+void IsGoogleGAIACookieInstalled(const base::Callback<void(bool)>& callback,
+                                 Profile* profile);
 
 }  // namespace toolbar_importer_utils
 

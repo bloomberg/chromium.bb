@@ -134,6 +134,9 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // complete.
   virtual void InvokeTaskIfDone();
 
+  // Called when IsGoogleGAIACookieInstalled is done.
+  void OnGoogleGAIACookieChecked(bool result);
+
   // BaseBookmarkModelObserver:
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;

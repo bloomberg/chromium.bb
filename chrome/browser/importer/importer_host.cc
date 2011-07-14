@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/importer_host.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
@@ -132,29 +133,38 @@ void ImporterHost::StartImportSettings(
   // For google toolbar import, we need the user to log in and store their GAIA
   // credentials.
   if (source_profile.importer_type == importer::GOOGLE_TOOLBAR5) {
-    if (!toolbar_importer_utils::IsGoogleGAIACookieInstalled()) {
-      ui::MessageBox(
-          NULL,
-          UTF16ToWide(l10n_util::GetStringUTF16(
-              IDS_IMPORTER_GOOGLE_LOGIN_TEXT)).c_str(),
-          L"",
-          MB_OK | MB_TOPMOST);
-
-      GURL url("https://www.google.com/accounts/ServiceLogin");
-      BrowserList::GetLastActiveWithProfile(profile_)->AddSelectedTabWithURL(
-          url, PageTransition::TYPED);
-
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &ImporterHost::OnImportLockDialogEnd, false));
-
-      is_source_readable_ = false;
-    }
+    toolbar_importer_utils::IsGoogleGAIACookieInstalled(
+        base::Bind(&ImporterHost::OnGoogleGAIACookieChecked, this), profile_);
+    is_source_readable_ = false;
   }
 #endif
 
   CheckForLoadedModels(items);
   AddRef();
   InvokeTaskIfDone();
+}
+
+void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
+#if defined(OS_WIN)
+  if (!result) {
+    ui::MessageBox(
+        NULL,
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_IMPORTER_GOOGLE_LOGIN_TEXT)).c_str(),
+        L"",
+        MB_OK | MB_TOPMOST);
+
+    GURL url("https://www.google.com/accounts/ServiceLogin");
+    BrowserList::GetLastActive()->AddSelectedTabWithURL(
+        url, PageTransition::TYPED);
+
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &ImporterHost::OnImportLockDialogEnd, false));
+    } else {
+    is_source_readable_ = true;
+    InvokeTaskIfDone();
+  }
+#endif
 }
 
 void ImporterHost::Cancel() {
