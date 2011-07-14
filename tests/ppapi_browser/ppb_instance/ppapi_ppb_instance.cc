@@ -61,12 +61,9 @@ void TestBindGraphics() {
       pp_instance(), PP_IMAGEDATAFORMAT_RGBA_PREMUL, &size, PP_FALSE);
   EXPECT(image_data != kInvalidResource);
 
-  // TODO(elijahtaylor): Enable this test once fixed in chrome.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1999
-
   // This should fail because the resource is the wrong type.
-  // ret = PPBInstance()->BindGraphics(pp_instance(), image_data);
-  // EXPECT(ret == PP_FALSE);
+  ret = PPBInstance()->BindGraphics(pp_instance(), image_data);
+  EXPECT(ret == PP_FALSE);
 
   TEST_PASSED;
 }
