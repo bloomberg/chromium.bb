@@ -14,6 +14,7 @@
       <include name="IDC_CELL" file="resources\cell.cur" type="CURSOR" />
       <include name="IDC_COLRESIZE" file="resources\col_resize.cur" type="CURSOR" />
       <include name="IDC_COPYCUR" file="resources\copy.cur" type="CURSOR" />
+      <include name="IDC_CURSOR_NONE" file="resources\none.cur" type="CURSOR" />
       <include name="IDR_INPUT_SPEECH" file="resources\input_speech.png" type="BINDATA" />
       <include name="IDR_INPUT_SPEECH_RECORDING" file="resources\input_speech_recording.png" type="BINDATA" />
       <include name="IDR_INPUT_SPEECH_WAITING" file="resources\input_speech_waiting.png" type="BINDATA" />

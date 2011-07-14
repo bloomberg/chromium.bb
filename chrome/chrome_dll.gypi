@@ -101,6 +101,7 @@
                 '../webkit/glue/resources/cell.cur',
                 '../webkit/glue/resources/col_resize.cur',
                 '../webkit/glue/resources/copy.cur',
+                '../webkit/glue/resources/none.cur',
                 '../webkit/glue/resources/row_resize.cur',
                 '../webkit/glue/resources/vertical_text.cur',
                 '../webkit/glue/resources/zoom_in.cur',

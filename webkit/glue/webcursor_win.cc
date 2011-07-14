@@ -89,7 +89,7 @@ static LPCWSTR ToCursorID(WebCursorInfo::Type type) {
     case WebCursorInfo::TypeCopy:
       return MAKEINTRESOURCE(IDC_COPYCUR);
     case WebCursorInfo::TypeNone:
-      return IDC_ARROW;
+      return MAKEINTRESOURCE(IDC_CURSOR_NONE);
     case WebCursorInfo::TypeNotAllowed:
       return IDC_NO;
     case WebCursorInfo::TypeZoomIn:
