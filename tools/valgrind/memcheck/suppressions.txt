@@ -4900,11 +4900,7 @@
    bug_89311
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs12_S_constructEjcRKSaIcE
-   fun:_ZNSsC1EjcRKSaIcE
-   fun:_ZN3net19HttpResponseHeaders5ParseERKSs
-   fun:_ZN3net19HttpResponseHeadersC1ERKSs
+   ...
    fun:_ZN3net16HttpStreamParser22DoParseResponseHeadersEi
    fun:_ZN3net16HttpStreamParser20ParseResponseHeadersEv
    fun:_ZN3net16HttpStreamParser21DoReadHeadersCompleteEi
