@@ -14,7 +14,8 @@ TEST_OBJECTS=\
 	$(OBJDIR)/gestures_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter_unittest.o \
-	$(OBJDIR)/scaling_filter_interpreter_unittest.o
+	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
+	$(OBJDIR)/set_unittest.o
 
 TEST_MAIN=\
 	$(OBJDIR)/test_main.o
