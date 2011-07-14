@@ -750,7 +750,6 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
 
-  dictionary->SetBoolean("gsm", cellular->is_gsm());
   const chromeos::CellularNetwork::Apn& apn = cellular->apn();
   dictionary->SetString("apn", apn.apn);
   dictionary->SetString("apn_network_id", apn.network_id);
@@ -782,6 +781,8 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("imsi", device->imsi());
     dictionary->SetString("esn", device->esn());
     dictionary->SetString("min", device->min());
+    dictionary->SetBoolean("gsm",
+        device->technology_family() == chromeos::TECHNOLOGY_FAMILY_GSM);
     dictionary->SetBoolean("simCardLockEnabled",
         device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED);
 

@@ -94,6 +94,13 @@ enum NetworkRoamingState {
   ROAMING_STATE_ROAMING = 2,
 };
 
+// Device enums (see flimflam/include/device.h)
+enum TechnologyFamily {
+  TECHNOLOGY_FAMILY_UNKNOWN = 0,
+  TECHNOLOGY_FAMILY_CDMA    = 1,
+  TECHNOLOGY_FAMILY_GSM     = 2
+};
+
 // SIMLock states (see gobi-cromo-plugin/gobi_gsm_modem.cc)
 enum SIMLockState {
   SIM_UNKNOWN    = 0,
@@ -242,6 +249,7 @@ class NetworkDevice {
   }
   bool data_roaming_allowed() const { return data_roaming_allowed_; }
   bool support_network_scan() const { return support_network_scan_; }
+  enum TechnologyFamily technology_family() const { return technology_family_; }
 
  private:
   bool ParseValue(int index, const base::Value* value);
@@ -253,6 +261,7 @@ class NetworkDevice {
   ConnectionType type_;
   bool scanning_;
   // Cellular specific device info.
+  TechnologyFamily technology_family_;
   std::string carrier_;
   std::string home_provider_;
   std::string home_provider_code_;
@@ -636,13 +645,6 @@ class CellularNetwork : public WirelessNetwork {
 
   // Returns true if one of the usage_url_ / payment_url_ (or both) is defined.
   bool SupportsDataPlan() const;
-
-  // Misc.
-  bool is_gsm() const {
-    return network_technology_ != NETWORK_TECHNOLOGY_EVDO &&
-        network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
-        network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
-  }
 
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;

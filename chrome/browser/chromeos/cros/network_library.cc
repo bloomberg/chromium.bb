@@ -137,6 +137,7 @@ const char* kStateProperty = "State";
 const char* kTypeProperty = "Type";
 const char* kDeviceProperty = "Device";
 const char* kProfileProperty = "Profile";
+const char* kTechnologyFamilyProperty = "Cellular.Family";
 const char* kActivationStateProperty = "Cellular.ActivationState";
 const char* kNetworkTechnologyProperty = "Cellular.NetworkTechnology";
 const char* kRoamingStateProperty = "Cellular.RoamingState";
@@ -320,6 +321,10 @@ const char* kActivationStateActivating = "activating";
 const char* kActivationStateNotActivated = "not-activated";
 const char* kActivationStatePartiallyActivated = "partially-activated";
 const char* kActivationStateUnknown = "unknown";
+
+// FlimFlam technology family options
+const char* kTechnologyFamilyCdma = "CDMA";
+const char* kTechnologyFamilyGsm = "GSM";
 
 // Flimflam error options.
 const char* kErrorOutOfRange = "out-of-range";
@@ -520,6 +525,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SIM_LOCK,
   PROPERTY_INDEX_STATE,
   PROPERTY_INDEX_SUPPORT_NETWORK_SCAN,
+  PROPERTY_INDEX_TECHNOLOGY_FAMILY,
   PROPERTY_INDEX_TYPE,
   PROPERTY_INDEX_UNKNOWN,
   PROPERTY_INDEX_USAGE_URL,
@@ -611,6 +617,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kStateProperty, PROPERTY_INDEX_STATE },
   { kSupportNetworkScanProperty, PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
+  { kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
   { kTypeProperty, PROPERTY_INDEX_TYPE },
   { kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
   { kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
@@ -848,6 +855,17 @@ static EAPPhase2Auth ParseEAPPhase2Auth(const std::string& auth) {
   return parser.Get(auth);
 }
 
+// NetworkDevice
+static TechnologyFamily ParseTechnologyFamily(const std::string& family) {
+  static StringToEnum<TechnologyFamily>::Pair table[] = {
+    { kTechnologyFamilyCdma, TECHNOLOGY_FAMILY_CDMA },
+    { kTechnologyFamilyGsm, TECHNOLOGY_FAMILY_GSM },
+  };
+  static StringToEnum<TechnologyFamily> parser(
+      table, arraysize(table), TECHNOLOGY_FAMILY_UNKNOWN);
+  return parser.Get(family);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 
@@ -1022,6 +1040,14 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsString(&selected_cellular_network_);
     case PROPERTY_INDEX_SUPPORT_NETWORK_SCAN:
       return value->GetAsBoolean(&support_network_scan_);
+    case PROPERTY_INDEX_TECHNOLOGY_FAMILY: {
+      std::string technology_family_string;
+      if (value->GetAsString(&technology_family_string)) {
+        technology_family_ = ParseTechnologyFamily(technology_family_string);
+        return true;
+      }
+      break;
+    }
     default:
       break;
   }
