@@ -181,15 +181,13 @@ const struct AcceleratorMapping {
 
 AcceleratorsGtk::AcceleratorsGtk() {
   for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
-    int command_id = kAcceleratorMap[i].command_id;
-    ui::AcceleratorGtk accelerator(kAcceleratorMap[i].keyval,
-                                      kAcceleratorMap[i].modifier_type);
-    all_accelerators_.push_back(
-        std::pair<int, ui::AcceleratorGtk>(command_id, accelerator));
+    const AcceleratorMapping& entry = kAcceleratorMap[i];
+    ui::AcceleratorGtk accelerator(entry.keyval, entry.modifier_type);
+    all_accelerators_.push_back(std::make_pair(entry.command_id, accelerator));
 
-    if (primary_accelerators_.find(command_id) ==
+    if (primary_accelerators_.find(entry.command_id) ==
         primary_accelerators_.end()) {
-      primary_accelerators_[command_id] = accelerator;
+      primary_accelerators_[entry.command_id] = accelerator;
     }
   }
 }
