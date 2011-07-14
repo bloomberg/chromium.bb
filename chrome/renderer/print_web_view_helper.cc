@@ -372,7 +372,8 @@ void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
     return;
   }
 
-  if (old_print_pages_params_.get() &&
+  if (print_pages_params_->params.preview_request_id != 0 &&
+      old_print_pages_params_.get() &&
       PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
                                     *print_pages_params_)) {
     PrintHostMsg_DidPreviewDocument_Params preview_params;
