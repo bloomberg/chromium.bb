@@ -18,8 +18,8 @@
 //     EXPECT(my_resource == kInvalidResource);
 //
 //     // async test case
-//     PP_CompletionCallback testable_callback = MakeTestableCompletionCallback(
-//         "MyCallback", MyCallback, NULL);
+//     PP_CompletionCallback testable_callback =
+//         MakeTestableCompletionCallback("MyCallback", MyCallback, NULL);
 //     int32_t pp_error = PPBFoo()->AsyncFunction(testable_callback);
 //     EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
 //
@@ -75,10 +75,16 @@ void RegisterPluginInterface(const char* interface_name,
                              const void* ppp_interface);
 
 // Helper for creating user callbacks whose invocation will be reported to JS.
+// WARNING: Do not reuse this callback if the operation that took it as an arg
+// returned PP_OK_COMPLETIONPENDING. The wrapper allocates data on creation
+// and then deallocates it when the callback is invoked.
 PP_CompletionCallback MakeTestableCompletionCallback(
-    const char* callback_name,  // same as passed JS waitForCallback()
+    const char* callback_name,  // will be postmessage'ed to JS
     PP_CompletionCallback_Func func,
     void* user_data);
+PP_CompletionCallback MakeTestableCompletionCallback(
+    const char* callback_name,  // will be postmessage'ed to JS
+    PP_CompletionCallback_Func func);
 
 // Uses PPB_Messaging interface to post "test_name:message".
 void PostTestMessage(nacl::string test_name, nacl::string message);

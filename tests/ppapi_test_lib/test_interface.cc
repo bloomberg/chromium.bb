@@ -123,3 +123,9 @@ PP_CompletionCallback MakeTestableCompletionCallback(
 
   return PP_MakeCompletionCallback(CallbackWrapper, callback_info);
 }
+
+PP_CompletionCallback MakeTestableCompletionCallback(
+    const char* callback_name,  // Tested for by JS harness.
+    PP_CompletionCallback_Func func) {
+  return MakeTestableCompletionCallback(callback_name, func, NULL);
+}

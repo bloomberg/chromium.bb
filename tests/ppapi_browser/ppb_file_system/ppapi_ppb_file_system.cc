@@ -105,18 +105,17 @@ void TestIsFileSystem() {
 void TestOpen() {
   size_t j = 0;
   PP_Resource file_system = 0;
-  const struct PP_CompletionCallback open_callback =
-      MakeTestableCompletionCallback(
-          "OpenCallback",
-          OpenCallback,
-          NULL);  // user data
+  PP_CompletionCallback nop_callback =
+      MakeTestableCompletionCallback("NopCallback", OpenCallback);
+  PP_CompletionCallback open_callback =
+      MakeTestableCompletionCallback("OpenCallback", OpenCallback);
   const struct PPB_Core* const ppb_core = PPBCore();
   const struct PPB_FileSystem_Dev* const ppb_file_system = PPBFileSystemDev();
 
   /* Test to make sure opening an invalid file system fails. */
   int32_t pp_error = ppb_file_system->Open(kInvalidResource,
                                            1024,  /* Dummy value */
-                                           open_callback);
+                                           nop_callback);
   EXPECT(pp_error == PP_ERROR_BADRESOURCE);
 
   /*
@@ -128,10 +127,9 @@ void TestOpen() {
                                         PP_FILESYSTEMTYPE_EXTERNAL);
   pp_error = ppb_file_system->Open(file_system,
                                    1024,  /* Dummy value */
-                                   open_callback);
+                                   nop_callback);
   ppb_core->ReleaseResource(file_system);
-  EXPECT(pp_error != PP_OK);
-  EXPECT(pp_error != PP_OK_COMPLETIONPENDING);
+  EXPECT(pp_error == PP_ERROR_FAILED);
 
   /* Test local temporary and local persistant file systems */
   for (j = 1; j < kNumFileSystemTypes; ++j) {
@@ -159,6 +157,8 @@ void TestOpen() {
                                      open_callback);
     ppb_core->ReleaseResource(file_system);
     EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
+    open_callback =
+        MakeTestableCompletionCallback("OpenCallback", OpenCallback);
 
     /* Test fail for multiple opens */
     file_system = ppb_file_system->Create(pp_instance(),
@@ -169,9 +169,9 @@ void TestOpen() {
     CHECK(pp_error == PP_OK_COMPLETIONPENDING);  /* Previously tested */
     pp_error = ppb_file_system->Open(file_system,
                                      1024,  /* Dummy value */
-                                     open_callback);
+                                     nop_callback);
     ppb_core->ReleaseResource(file_system);
-    EXPECT(pp_error ==  PP_ERROR_FAILED);
+    EXPECT(pp_error == PP_ERROR_FAILED);
   }
   TEST_PASSED;
 }
