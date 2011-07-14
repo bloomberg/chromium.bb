@@ -85,10 +85,9 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-bool ChromeViewsDelegate::GetSavedWindowBounds(const views::Widget* window,
-                                               const std::wstring& window_name,
+bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
                                                gfx::Rect* bounds) const {
-  PrefService* prefs = GetPrefsForWindow(window);
+  PrefService* prefs = g_browser_process->local_state();
   if (!prefs)
     return false;
 
@@ -107,10 +106,9 @@ bool ChromeViewsDelegate::GetSavedWindowBounds(const views::Widget* window,
 }
 
 bool ChromeViewsDelegate::GetSavedMaximizedState(
-    const views::Widget* window,
     const std::wstring& window_name,
     bool* maximized) const {
-  PrefService* prefs = GetPrefsForWindow(window);
+  PrefService* prefs = g_browser_process->local_state();
   if (!prefs)
     return false;
 

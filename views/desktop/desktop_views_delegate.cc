@@ -38,14 +38,12 @@ void DesktopViewsDelegate::SaveWindowPlacement(const Widget* widget,
                                                bool maximized) {
 }
 
-bool DesktopViewsDelegate::GetSavedWindowBounds(const Widget* widget,
-                                                const std::wstring& window_name,
+bool DesktopViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
                                                 gfx::Rect* bounds) const {
   return false;
 }
 
 bool DesktopViewsDelegate::GetSavedMaximizedState(
-    const Widget* widget,
     const std::wstring& window_name,
     bool* maximized) const {
   return false;

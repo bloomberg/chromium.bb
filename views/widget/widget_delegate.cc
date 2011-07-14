@@ -113,7 +113,7 @@ bool WidgetDelegate::GetSavedWindowBounds(gfx::Rect* bounds) const {
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedWindowBounds(
-      GetWidget(), window_name, bounds);
+      window_name, bounds);
 }
 
 bool WidgetDelegate::GetSavedMaximizedState(bool* maximized) const {
@@ -122,7 +122,7 @@ bool WidgetDelegate::GetSavedMaximizedState(bool* maximized) const {
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedMaximizedState(
-      GetWidget(), window_name, maximized);
+      window_name, maximized);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {

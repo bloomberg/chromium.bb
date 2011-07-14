@@ -1005,8 +1005,7 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
   // state will have been lost. Sadly there's no way to tell on Windows when
   // a window is restored from maximized state, so we can't more accurately
   // track maximized state independently of sizing information.
-  widget_delegate_->GetSavedMaximizedState(
-      &saved_maximized_state_);
+  widget_delegate_->GetSavedMaximizedState(&saved_maximized_state_);
 
   // Restore the window's placement from the controller.
   gfx::Rect saved_bounds = bounds;

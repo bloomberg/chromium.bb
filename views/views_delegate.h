@@ -54,14 +54,12 @@ class ViewsDelegate {
 
   // Retrieves the saved position and size for the window with the specified
   // name.
-  virtual bool GetSavedWindowBounds(const Widget* widget,
-                                    const std::wstring& window_name,
+  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
                                     gfx::Rect* bounds) const = 0;
 
   // Retrieves the saved maximized state for the window with the specified
   // name.
-  virtual bool GetSavedMaximizedState(const Widget* widget,
-                                      const std::wstring& window_name,
+  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
                                       bool* maximized) const = 0;
 
   virtual void NotifyAccessibilityEvent(

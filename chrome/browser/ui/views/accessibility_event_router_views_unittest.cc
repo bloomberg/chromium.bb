@@ -37,13 +37,11 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE {
   }
-  virtual bool GetSavedWindowBounds(const views::Widget* window,
-                                    const std::wstring& window_name,
+  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
                                     gfx::Rect* bounds) const OVERRIDE {
     return false;
   }
-  virtual bool GetSavedMaximizedState(const views::Widget* window,
-                                      const std::wstring& window_name,
+  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
                                       bool* maximized) const OVERRIDE {
     return false;
   }
