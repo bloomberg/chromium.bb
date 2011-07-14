@@ -45,7 +45,7 @@ SHELL=/bin/bash
 #   ORIGIN_URL_CONFIG: http://git.chromium.org
 GIT_BASE_URL=http://git.chromium.org/native_client
 
-CROSSARCH=nacl64
+CROSSARCH=x86_64-nacl
 TOOLCHAINLOC?=out
 SDKLOC?=$(abspath $(TOOLCHAINLOC))
 TOOLCHAINNAME?=nacl-sdk
@@ -65,7 +65,7 @@ include REVISIONS
 PREFIX=$(abspath $(SDKROOT))
 
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
-BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
+BITSPLATFORM=64
 
 LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
 HPREFIX=BUILD/build-nacl-headers

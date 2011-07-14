@@ -123,6 +123,9 @@ def _SetEnvForX86Sdk(env, sdk_path):
   if os.path.exists(os.path.join(sdk_path, 'nacl64')):
     arch = 'nacl64'
     default_subarch = '64'
+  elif os.path.exists(os.path.join(sdk_path, 'x86_64-nacl')):
+    arch = 'x86_64-nacl'
+    default_subarch = '64'
   else:
     # This fallback allows the Scons build to work if we have a
     # 32-bit-by-default toolchain that lacks "nacl64" compatibility
