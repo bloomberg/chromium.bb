@@ -20,9 +20,6 @@ class PanelBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Panel is not supported for ChromeOS and Linux view yet.
-// TODO(dimich): Turn on the test for MacOSX.
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->active_count()); // No panels initially.
@@ -44,4 +41,3 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   panel_browser->window()->Close();
   EXPECT_EQ(0, panel_manager->active_count());
 }
-#endif
