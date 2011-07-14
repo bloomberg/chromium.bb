@@ -513,8 +513,14 @@ void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
   // needlessly looping if sleep times are too short even by small amounts.
   // This results in measurable performance degradation unless we use ceil() to
   // always round up the sleep times.
+#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
+  double intervalSeconds = fire_time - monotonicallyIncreasingTime();
+  int64 interval = static_cast<int64>(
+      ceil(intervalSeconds) * base::Time::kMicrosecondsPerSecond);
+#else
   int64 interval = static_cast<int64>(
       ceil((fire_time - currentTime()) * base::Time::kMicrosecondsPerSecond));
+#endif
   if (interval < 0)
     interval = 0;
 
