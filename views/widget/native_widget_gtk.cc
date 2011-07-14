@@ -966,7 +966,7 @@ void NativeWidgetGtk::ReleaseKeyboardCapture() {
   }
 }
 
-bool NativeWidgetGtk::HasKeyboardCapture() {
+bool NativeWidgetGtk::HasKeyboardCapture() const {
   return has_keyboard_grab_;
 }
 

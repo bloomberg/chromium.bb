@@ -633,7 +633,7 @@ void NativeWidgetWin::ReleaseKeyboardCapture() {
   // Windows doesn't really support keyboard grabs.
 }
 
-bool NativeWidgetWin::HasKeyboardCapture() {
+bool NativeWidgetWin::HasKeyboardCapture() const {
   // Windows doesn't really support keyboard grabs.
   return false;
 }

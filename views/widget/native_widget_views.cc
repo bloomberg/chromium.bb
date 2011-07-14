@@ -218,7 +218,7 @@ void NativeWidgetViews::ReleaseKeyboardCapture() {
   GetParentNativeWidget()->ReleaseKeyboardCapture();
 }
 
-bool NativeWidgetViews::HasKeyboardCapture() {
+bool NativeWidgetViews::HasKeyboardCapture() const {
   return GetParentNativeWidget()->HasKeyboardCapture();
 }
 

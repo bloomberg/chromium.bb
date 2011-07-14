@@ -130,7 +130,7 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual void ReleaseKeyboardCapture() = 0;
 
   // Returns true if this native widget is capturing keyboard events.
-  virtual bool HasKeyboardCapture() = 0;
+  virtual bool HasKeyboardCapture() const = 0;
 
   // Returns the InputMethod for this native widget.
   // Note that all widgets in a widget hierarchy share the same input method.
