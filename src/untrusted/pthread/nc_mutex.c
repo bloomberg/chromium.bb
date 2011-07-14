@@ -28,20 +28,19 @@ static int nc_thread_mutex_init(pthread_mutex_t *mutex) {
 
 int pthread_mutex_validate(pthread_mutex_t *mutex) {
   int rv = 0;
-  nc_spinlock_lock(&mutex->spinlock);
 
-  if (NC_INVALID_HANDLE == mutex->mutex_handle) {
-    /* Mutex_type is set by the initializer */
+  if (nc_token_acquire(&mutex->token)) {
+    /* Mutex_type was set by pthread_mutex_init */
     rv = nc_thread_mutex_init(mutex);
+    nc_token_release(&mutex->token);
   }
 
-  nc_spinlock_unlock(&mutex->spinlock);
   return rv;
 }
 
 int pthread_mutex_init (pthread_mutex_t *mutex,
                         pthread_mutexattr_t *mutex_attr) {
-  mutex->spinlock = 0;
+  nc_token_init(&mutex->token);
   if (mutex_attr != NULL) {
     mutex->mutex_type = mutex_attr->kind;
   } else {

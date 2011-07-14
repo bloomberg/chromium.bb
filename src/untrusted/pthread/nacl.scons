@@ -16,7 +16,7 @@ env.ComponentLibrary('libpthread', ['nc_thread.c',
                                     'nc_mutex.c',
                                     'nc_condvar.c',
                                     'nc_semaphore.c',
-                                    'nc_spinlock.c',
+                                    'nc_token.c',
                                     'nc_hash.c',
                                     valgrind
                                     ])

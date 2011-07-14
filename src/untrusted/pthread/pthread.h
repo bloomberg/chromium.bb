@@ -52,7 +52,6 @@ enum {
   PTHREAD_MUTEX_DEFAULT = PTHREAD_MUTEX_NORMAL
 };
 
-
 /*
  * The layout of pthread_mutex_t and the static initializers are redefined
  * in newlib's sys/lock.h file (including this file from sys/lock.h will
@@ -64,8 +63,8 @@ enum {
  * opaque record; the names of the fields can change anytime.
  */
 typedef struct {
-  /** Initialization spinlock */
-  int spinlock;
+  /** Initialization token **/
+  int token;
 
   /**
    * The kind of mutex:
@@ -102,8 +101,11 @@ typedef struct {
  * opaque record; the names of the fields can change anytime.
  */
 typedef struct {
-  int spinlock; /**< Initialization spinlock */
-  int handle; /**< Handle to the system-side condition variable */
+  /** Initialization token **/
+  int token;
+
+  /**< Handle to the system-side condition variable */
+  int handle;
 } pthread_cond_t;
 
 /**

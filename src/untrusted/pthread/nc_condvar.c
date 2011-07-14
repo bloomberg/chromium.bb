@@ -25,13 +25,10 @@ static int nc_thread_cond_init(pthread_cond_t *cond,
 
 /* TODO(gregoryd): make this static?  */
 void pthread_cond_validate(pthread_cond_t* cond) {
-  nc_spinlock_lock(&cond->spinlock);
-
-  if (NC_INVALID_HANDLE == cond->handle) {
+  if (nc_token_acquire(&cond->token)) {
     nc_thread_cond_init(cond, NULL);
+    nc_token_release(&cond->token);
   }
-
-  nc_spinlock_unlock(&cond->spinlock);
 }
 
 
@@ -41,7 +38,7 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  */
 int pthread_cond_init (pthread_cond_t *cond,
                        pthread_condattr_t *cond_attr) {
-  cond->spinlock = 0;
+  nc_token_init(&cond->token);
   if (0 != nc_thread_cond_init(cond, cond_attr))
     return EAGAIN;
   return 0;
@@ -97,7 +94,7 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
 }
 
 int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
+  nc_token_init(&cond->token);
   cond->handle = NC_INVALID_HANDLE;
-  cond->spinlock = 0;
   return 1;
 }

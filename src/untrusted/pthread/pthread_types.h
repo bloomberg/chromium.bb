@@ -12,16 +12,18 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_ 1
 
-#include "nc_hash.h"
-#include "pthread.h"
+#include "native_client/src/untrusted/pthread/nc_hash.h"
+#include "native_client/src/untrusted/pthread/pthread.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void nc_spinlock_lock(volatile int *lock);
-void nc_spinlock_unlock(volatile int *lock);
+void nc_token_init(volatile int *token);
+int  nc_token_acquire(volatile int *token);
+void nc_token_release(volatile int *token);
+
 int  nc_pthread_condvar_ctor(pthread_cond_t * cond);
 
 typedef enum {
