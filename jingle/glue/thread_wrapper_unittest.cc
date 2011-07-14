@@ -44,11 +44,14 @@ class ThreadWrapperTest : public testing::Test {
   MockMessageHandler handler2_;
 };
 
-MATCHER_P3(MatchMessageAndDeleteData, handler, message_id, data, "") {
-  delete arg->pdata;
+MATCHER_P3(MatchMessage, handler, message_id, data, "") {
   return arg->phandler == handler &&
       arg->message_id == message_id &&
       arg->pdata == data;
+}
+
+ACTION(DeleteMessageData) {
+  delete arg0->pdata;
 }
 
 TEST_F(ThreadWrapperTest, Post) {
@@ -65,46 +68,46 @@ TEST_F(ThreadWrapperTest, Post) {
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage1, data1_)));
+      MatchMessage(&handler1_, kTestMessage1, data1_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage2, data2_)));
+      MatchMessage(&handler1_, kTestMessage2, data2_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data3_)));
+      MatchMessage(&handler2_, kTestMessage1, data3_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data4_)));
+      MatchMessage(&handler2_, kTestMessage1, data4_)))
+      .WillOnce(DeleteMessageData());
 
   message_loop_.RunAllPending();
 }
 
-// Crashes on Win only.  http://crbug.com/86532
-#if defined(OS_WIN)
-#define MAYBE_PostDelayed DISABLED_PostDelayed
-#else
-#define MAYBE_PostDelayed PostDelayed
-#endif
-TEST_F(ThreadWrapperTest, MAYBE_PostDelayed) {
+TEST_F(ThreadWrapperTest, PostDelayed) {
   talk_base::MessageData* data1_ = new talk_base::MessageData();
   talk_base::MessageData* data2_ = new talk_base::MessageData();
   talk_base::MessageData* data3_ = new talk_base::MessageData();
   talk_base::MessageData* data4_ = new talk_base::MessageData();
 
-  // Post messages in reverse order and verify that they are called in
-  // the order of the delays.
-  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, data4_);
-  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, data3_);
-  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, data2_);
   thread()->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, data1_);
+  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, data2_);
+  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, data3_);
+  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, data4_);
 
   InSequence in_seq;
 
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage1, data1_)));
+      MatchMessage(&handler1_, kTestMessage1, data1_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage2, data2_)));
+      MatchMessage(&handler1_, kTestMessage2, data2_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data3_)));
+      MatchMessage(&handler2_, kTestMessage1, data3_)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, data4_)));
+      MatchMessage(&handler2_, kTestMessage1, data4_)))
+      .WillOnce(DeleteMessageData());
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 kMaxTestDelay);
@@ -123,22 +126,23 @@ TEST_F(ThreadWrapperTest, Clear) {
 
   talk_base::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage1, null_data)));
+      MatchMessage(&handler1_, kTestMessage1, null_data)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
+      MatchMessage(&handler2_, kTestMessage1, null_data)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage2, null_data)));
+      MatchMessage(&handler2_, kTestMessage2, null_data)))
+      .WillOnce(DeleteMessageData());
 
   message_loop_.RunAllPending();
 }
 
 TEST_F(ThreadWrapperTest, ClearDelayed) {
-  // Post messages in reverse order and verify that they are called in
-  // the order of the delays.
-  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, NULL);
-  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, NULL);
-  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, NULL);
   thread()->PostDelayed(kTestDelayMs1, &handler1_, kTestMessage1, NULL);
+  thread()->PostDelayed(kTestDelayMs2, &handler1_, kTestMessage2, NULL);
+  thread()->PostDelayed(kTestDelayMs3, &handler2_, kTestMessage1, NULL);
+  thread()->PostDelayed(kTestDelayMs4, &handler2_, kTestMessage1, NULL);
 
   thread()->Clear(&handler1_, kTestMessage2);
 
@@ -146,11 +150,14 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
 
   talk_base::MessageData* null_data = NULL;
   EXPECT_CALL(handler1_, OnMessage(
-      MatchMessageAndDeleteData(&handler1_, kTestMessage1, null_data)));
+      MatchMessage(&handler1_, kTestMessage1, null_data)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
+      MatchMessage(&handler2_, kTestMessage1, null_data)))
+      .WillOnce(DeleteMessageData());
   EXPECT_CALL(handler2_, OnMessage(
-      MatchMessageAndDeleteData(&handler2_, kTestMessage1, null_data)));
+      MatchMessage(&handler2_, kTestMessage1, null_data)))
+      .WillOnce(DeleteMessageData());
 
   message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask(),
                                 kMaxTestDelay);
