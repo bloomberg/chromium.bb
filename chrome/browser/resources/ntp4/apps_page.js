@@ -257,47 +257,6 @@ cr.define('ntp4', function() {
     },
   };
 
-  /**
-   * Creates a new Link object. This is a stub implementation for now.
-   * @param {Object} data The url and title.
-   * @constructor
-   * @extends {HTMLAnchorElement}
-   */
-  function Link(data) {
-    var el = cr.doc.createElement('a');
-    el.__proto__ = Link.prototype;
-    el.data = data;
-    el.initialize();
-
-    return el;
-  };
-
-  Link.prototype = {
-    __proto__: HTMLAnchorElement.prototype,
-
-    initialize: function() {
-      this.className = 'link';
-      var thumbnailDiv = this.ownerDocument.createElement('div');
-      this.appendChild(thumbnailDiv);
-
-      var title = this.ownerDocument.createElement('span');
-      title.textContent = this.data.title;
-      this.appendChild(title);
-    },
-
-    /**
-     * Set the size and position of the link tile.
-     * @param {number} size The total size of |this|.
-     * @param {number} x The x-position.
-     * @param {number} y The y-position.
-     */
-    setBounds: function(size, x, y) {
-      this.style.width = this.style.height = size + 'px';
-      this.style.left = x + 'px';
-      this.style.top = y + 'px';
-    },
-  };
-
   var TilePage = ntp4.TilePage;
 
   // The fraction of the app tile size that the icon uses.
@@ -373,8 +332,7 @@ cr.define('ntp4', function() {
       if (!title)
         title = url;
 
-      var data = {url: url, title: title};
-      this.addTileAt(new Link(data), index);
+      // TODO(estade): synthesize an app.
     },
 
     /** @inheritDoc */
