@@ -15,6 +15,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+#include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
@@ -88,7 +89,7 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
     NaClInstIter* iter;
     struct Gio* gout = NaClLogGetGio();
     NaClSegmentInitialize(mbase, vbase, size, &segment);
-    iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
+    iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
     if (NULL == iter) {
       gprintf(NaClLogGetGio(), "Error: not enough memory\n");
     } else {

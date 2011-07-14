@@ -18,18 +18,13 @@
 #include <assert.h>
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/debugging.h"
+#include "native_client/src/trusted/validator_x86/nc_decode_tables.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-
-#if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_64.h"
-#else
-# include "native_client/src/trusted/validator_x86/gen/nc_opcode_table_32.h"
-#endif
 
 EXTERN_C_BEGIN
 
@@ -39,6 +34,7 @@ EXTERN_C_BEGIN
 static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   NaClMemorySize limit;
   NCInstBytesInit(&state->bytes);
+  state->decoder_tables = iter->decoder_tables;
   state->vpc = iter->segment->vbase + iter->index;
   limit = iter->segment->size - iter->index;
   if (limit > NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
@@ -133,7 +129,7 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
      * with the next byte in the segment, and record it.
      */
     next_byte = NCRemainingMemoryLookahead(state->bytes.memory,0);
-    prefix_form = kNaClPrefixTable[next_byte];
+    prefix_form = state->decoder_tables->prefix_mask[next_byte];
     if (prefix_form == 0) break;
     next_byte = NCInstBytesRead(&state->bytes);
     DEBUG(NaClLog(LOG_INFO,
@@ -786,7 +782,8 @@ static const NaClInst* NaClGetNextInstCandidates(
     (*inst_length) += desc->next_length_adjustment;
     desc->opcode_byte = state->bytes.byte[*inst_length - 1];
   }
-  cand_insts = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
+  cand_insts = (*state->decoder_tables->
+                inst_table)[desc->matched_prefix][desc->opcode_byte];
   DEBUG(NaClLog(LOG_INFO, "Lookup candidates using [%s][%x]\n",
                 NaClInstPrefixName(desc->matched_prefix), desc->opcode_byte));
   switch (desc->matched_prefix) {
@@ -831,7 +828,7 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   /* Cut quick if first byte not applicable. */
   if (state->bytes.length + next_length >= state->length_limit) return FALSE;
   next_byte = NCInstBytesPeek(&state->bytes, next_length);
-  next = g_OpcodeSeq + 0;
+  next = state->decoder_tables->hard_coded;
 
   /* Find maximal match in trie. */
   while (NULL != next) {

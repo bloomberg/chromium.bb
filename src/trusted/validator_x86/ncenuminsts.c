@@ -11,12 +11,13 @@
 #include "native_client/src/trusted/validator_x86/ncenuminsts.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
-#include "native_client/src/trusted/validator_x86/nc_illegal.h"
-#include "native_client/src/trusted/validator_x86/nc_segment.h"
+#include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
+#include "native_client/src/trusted/validator_x86/nc_illegal.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
+#include "native_client/src/trusted/validator_x86/nc_segment.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -96,7 +97,7 @@ Bool NaClInstructionIsLegal(uint8_t* mbase,
   do {
     if (NaClValidatorStateInitializeValidators(state)) {
       NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
-      iter = NaClInstIterCreate(&segment);
+      iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
       if (NULL == iter) break;
       state->cur_inst_state = NaClInstIterGetState(iter);
       state->cur_inst = NaClInstStateInst(state->cur_inst_state);

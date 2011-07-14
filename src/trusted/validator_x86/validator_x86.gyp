@@ -59,6 +59,7 @@
                      'nc_segment.c',
                      'nc_inst_state.c',
                      'nc_inst_trans.c',
+                     'ncdis_decode_tables.c',
                      'ncop_exps.c',
                      'ncvalidate_utils.c',
          ],

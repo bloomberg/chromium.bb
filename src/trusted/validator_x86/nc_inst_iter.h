@@ -11,8 +11,10 @@
  *
  *    NaClSegment segment;
  *    NaClInstIter* iter;
+ *    NaClDecodeTables* tables;
  *    ...
- *    for (iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
+ *    for (iter = NaClInstIterCreate(tables, &segment);
+ *         NaClInstIterHasNext(iter);
  *         NaClInstIterAdvance(iter)) {
  *      NaClInstState* state = NaClInstIterGetState(iter);
  *      ...
@@ -23,8 +25,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_ITER_h_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_ITER_h_
 
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/shared/utils/types.h"
+#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
 EXTERN_C_BEGIN
 
@@ -34,6 +36,8 @@ struct NaClSegment;
 /* Defines the internal state associated with a parsed instruction.*/
 struct NaClInstState;
 
+struct NaClDecodeTables;
+
 /* Defines the structure of an instruction iterator, which walks
  * the code segment, one instruction at a time.
  */
@@ -41,13 +45,15 @@ typedef struct NaClInstIter NaClInstIter;
 
 /* Allocate and initialize an instruction iterator for the given code segment.
  */
-NaClInstIter* NaClInstIterCreate(struct NaClSegment* segment);
+NaClInstIter* NaClInstIterCreate(const struct NaClDecodeTables* decoder_tables,
+                                 struct NaClSegment* segment);
 
 /* Allocate and initialize an instruction iterator for the given code segment.
  * Add internal buffering that will allow one to look back the given number
  * of instructions from the current point of the iterator.
  */
 NaClInstIter* NaClInstIterCreateWithLookback(
+    const struct NaClDecodeTables* decoder_tables,
     struct NaClSegment* segment,
     size_t lookback_size);
 

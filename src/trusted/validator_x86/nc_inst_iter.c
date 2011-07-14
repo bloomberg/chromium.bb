@@ -49,6 +49,7 @@ static void NaClInstIterReportRemainingMemoryError(
 }
 
 NaClInstIter* NaClInstIterCreateWithLookback(
+    const struct NaClDecodeTables* decoder_tables,
     NaClSegment* segment,
     size_t lookback_size) {
   NaClInstIter* iter;
@@ -76,11 +77,14 @@ NaClInstIter* NaClInstIterCreateWithLookback(
       }
     }
   }
+  iter->decoder_tables = (struct NaClDecodeTables*) decoder_tables;
   return iter;
 }
 
-NaClInstIter* NaClInstIterCreate(NaClSegment* segment) {
-  return NaClInstIterCreateWithLookback(segment, 0);
+NaClInstIter* NaClInstIterCreate(
+    const struct NaClDecodeTables* decoder_tables,
+    NaClSegment* segment) {
+  return NaClInstIterCreateWithLookback(decoder_tables, segment, 0);
 }
 
 void NaClInstIterDestroy(NaClInstIter* iter) {

@@ -14,6 +14,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 
 EXTERN_C_BEGIN
 
@@ -23,8 +24,14 @@ struct NaClInst;
 /* Model of a code segment. */
 struct NaClSegment;
 
+/* Decoder tables used to decode instructions. */
+struct NaClDecodeTables;
+
 /* Defines the type used to align OpExprNodes when memory allocating. */
 typedef uint64_t NaClOpExpElement;
+
+/* Defines the decoder tables to use to decode an instruction. */
+struct NaClDecodeTables;
 
 /* Model data needed to decode an x86 instruction. */
 struct NaClInstState {
@@ -91,10 +98,16 @@ struct NaClInstState {
   const NaClInst* inst;
   /* The corresponding expression tree denoted by the matched instruction. */
   NaClExpVector nodes;
+  /* Transient pointer, which is defined each time an instruction is decoded.
+   * It defines the decoder tables to use to decode the instruction.
+   */
+  struct NaClDecodeTables* decoder_tables;
 };
 
 /* Model of an instruction iterator. */
 struct NaClInstIter {
+  /* Defines the decoder table to use to decode the instruction. */
+  struct NaClDecodeTables* decoder_tables;
   /* Defines the segment to process */
   struct NaClSegment* segment;
   /* Defines the remaining memory to iterate over. */

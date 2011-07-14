@@ -84,7 +84,8 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
               DEBUG(NaClLog(LOG_INFO,
                             "NaClConsume immediate byte opcode char: %"
                             NACL_PRIx8"\n", opcode_byte));
-              cand_inst = g_OpcodeTable[Prefix0F0F][opcode_byte];
+              cand_inst = (*state->decoder_tables->inst_table)
+                  [Prefix0F0F][opcode_byte];
               if (NULL != cand_inst) {
                 state->inst = cand_inst;
                 DEBUG(NaClLog(LOG_INFO, "Replace with 3DNOW opcode:\n"));
@@ -117,7 +118,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
 
     /* Can't figure out instruction, give up. */
     NaClClearInstState(state, inst_length);
-    state->inst = &g_Undefined_Opcode;
+    state->inst = state->decoder_tables->undefined;
     if (state->bytes.length == 0 && state->bytes.length < state->length_limit) {
       /* Make sure we eat at least one byte. */
       NCInstBytesRead(&state->bytes);
@@ -160,15 +161,4 @@ uint8_t NaClInstStateOperandSize(NaClInstState* state) {
 
 uint8_t NaClInstStateAddressSize(NaClInstState* state) {
   return state->address_size;
-}
-
-void NaClChangeOpcodesToXedsModel() {
-  /* Changes opcodes to match xed. That is change:
-   * 0f0f..1c: Pf2iw $Pq, $Qq => 0f0f..2c: Pf2iw $Pq, $Qq
-   * 0f0f..1d: Pf2id $Pq, $Qq => 0f0f..2d: Pf2id $Pq, $Qq
-   */
-  g_OpcodeTable[Prefix0F0F][0x2c] = g_OpcodeTable[Prefix0F0F][0x1c];
-  g_OpcodeTable[Prefix0F0F][0x1c] = NULL;
-  g_OpcodeTable[Prefix0F0F][0x2d] = g_OpcodeTable[Prefix0F0F][0x1d];
-  g_OpcodeTable[Prefix0F0F][0x1d] = NULL;
 }

@@ -14,6 +14,7 @@
 // DEBUGGING to 1.
 #define DEBUGGING 0
 
+#include "native_client/src/trusted/validator_x86/ncdis_decode_tables.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "gtest/gtest.h"
@@ -126,7 +127,7 @@ NcInstStateTests::NcInstStateTests() {
 }
 
 void NcInstStateTests::SetUp() {
-  _iter = NaClInstIterCreate(&_segment);
+  _iter = NaClInstIterCreate(kNaClDecoderTables, &_segment);
   _state = NaClInstIterGetUndecodedState(_iter);
   ResetInput();
   ResetState();

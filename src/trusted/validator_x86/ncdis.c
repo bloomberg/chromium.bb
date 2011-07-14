@@ -20,12 +20,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"

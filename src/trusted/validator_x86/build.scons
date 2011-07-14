@@ -262,6 +262,7 @@ env.ComponentLibrary(env.NaClTargetArchSuffix('ncval_reg_sfi'),
                       ncopcode_desc_o,
                       'ncop_exps.c',
                       'ncvalidate_utils.c',
+                      'ncdis_decode_tables.c',
                       ])
 
 # The following are common library components that use elements

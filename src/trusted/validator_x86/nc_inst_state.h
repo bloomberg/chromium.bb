@@ -14,7 +14,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/types_memory_model.h"
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
 EXTERN_C_BEGIN
 
@@ -29,6 +28,8 @@ struct NaClExpVector;
  */
 typedef struct NaClInstState NaClInstState;
 
+struct NaClInst;
+
 /* Returns the address (i.e. program counter) associated with the
  * currently matched instruction.
  */
@@ -38,7 +39,7 @@ NaClPcAddress NaClInstStateVpc(NaClInstState* state);
  * that matches the currently matched instruction of the corresponding
  * instruction iterator.
  */
-const NaClInst* NaClInstStateInst(NaClInstState* state);
+const struct NaClInst* NaClInstStateInst(NaClInstState* state);
 
 /* Given an iterator state, return the corresponding expression tree
  * denoting the currently matched instruction of the corresponding
