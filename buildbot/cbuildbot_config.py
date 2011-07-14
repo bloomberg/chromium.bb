@@ -80,6 +80,7 @@ manifest_version -- URL to git repo to store per-build manifest.
 
 latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
 gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
+use_sdk -- Use cros_sdk to create and manage chroot.
 """
 
 import constants
@@ -311,6 +312,10 @@ add_config('arm-generic-bin', [arm, {
 
 add_config('arm-generic-full', [arm, full, {
   'board' : 'arm-generic',
+
+  # TODO(zbehan): Remove this after sdk becomes the default. crosbug.com/17474
+  'use_sdk' : True,
+  'usepkg_chroot' : True,
 }])
 
 add_config('arm-tegra2-full', [arm, full, {
