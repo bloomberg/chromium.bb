@@ -342,8 +342,8 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   // going to get called once we return.
   job->SetMimeType(source->GetMimeType(path));
 
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      job->request()->context());
+  const ChromeURLRequestContext* context =
+      static_cast<const ChromeURLRequestContext*>(job->request()->context());
 
   // Forward along the request to the data source.
   MessageLoop* target_message_loop = source->MessageLoopForRequestPath(path);
