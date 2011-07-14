@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/logging.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
@@ -17,6 +18,19 @@
 namespace browser_sync {
 
 const char kTypedUrlTag[] = "google_chrome_typed_urls";
+
+static bool CheckVisitOrdering(const history::VisitVector& visits) {
+  int64 previous_visit_time = 0;
+  for (history::VisitVector::const_iterator visit = visits.begin();
+       visit != visits.end(); ++visit) {
+    if (visit != visits.begin() &&
+        previous_visit_time >= visit->visit_time.ToInternalValue()) {
+      return false;
+    }
+    previous_visit_time = visit->visit_time.ToInternalValue();
+  }
+  return true;
+}
 
 TypedUrlModelAssociator::TypedUrlModelAssociator(
     ProfileSyncService* sync_service,
@@ -61,6 +75,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
           ix->id(), ix->last_visit(), 0, PageTransition::TYPED, 0);
       visit_vectors[ix->id()].push_back(visit);
     }
+    DCHECK(CheckVisitOrdering(visit_vectors[ix->id()]));
   }
 
   TypedUrlTitleVector titles;
@@ -483,6 +498,7 @@ int TypedUrlModelAssociator::MergeUrls(
     }
   }
 
+  DCHECK(CheckVisitOrdering(*visits));
   if (different & DIFF_LOCAL_VISITS_ADDED) {
     // Insert new visits into the apropriate place in the visits vector.
     history::VisitVector::iterator visit_ix = visits->begin();
@@ -499,6 +515,7 @@ int TypedUrlModelAssociator::MergeUrls(
       ++visit_ix;
     }
   }
+  DCHECK(CheckVisitOrdering(*visits));
 
   new_url->set_last_visit(visits->back().visit_time);
   return different;
@@ -518,6 +535,7 @@ void TypedUrlModelAssociator::WriteToSyncNode(
   typed_url.set_title(UTF16ToUTF8(url.title()));
   typed_url.set_hidden(url.hidden());
 
+  DCHECK(CheckVisitOrdering(visits));
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
     typed_url.add_visits(visit->visit_time.ToInternalValue());
