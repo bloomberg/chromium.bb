@@ -233,20 +233,14 @@ TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
 
   FetchFileSystems();
 
-  EXPECT_EQ(3UL, file_system_info_list_->size());
-  for (size_t i = 0; i < file_system_info_list_->size(); ++i) {
-    BrowsingDataFileSystemHelper::FileSystemInfo info =
-        file_system_info_list_->at(0);
-    if (info.origin == kOrigin3) {
-      EXPECT_TRUE(info.has_persistent);
-      EXPECT_TRUE(info.has_temporary);
-      EXPECT_EQ(kEmptyFileSystemSize, info.usage_persistent);
-      EXPECT_EQ(kEmptyFileSystemSize, info.usage_temporary);
-    } else {
-      EXPECT_FALSE(info.has_persistent);
-      EXPECT_FALSE(info.has_temporary);
-    }
-  }
+  EXPECT_EQ(1UL, file_system_info_list_->size());
+  BrowsingDataFileSystemHelper::FileSystemInfo info =
+      file_system_info_list_->at(0);
+  EXPECT_EQ(kOrigin3, info.origin);
+  EXPECT_TRUE(info.has_persistent);
+  EXPECT_TRUE(info.has_temporary);
+  EXPECT_EQ(kEmptyFileSystemSize, info.usage_persistent);
+  EXPECT_EQ(kEmptyFileSystemSize, info.usage_temporary);
 }
 
 // Verifies that the CannedBrowsingDataFileSystemHelper correctly reports

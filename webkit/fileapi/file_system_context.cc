@@ -73,17 +73,11 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
   DCHECK(sandbox_provider());
 
   // Delete temporary and persistent data.
-  sandbox_provider()->DeleteOriginDataOnFileThread(
-      quota_manager_proxy(), origin_url, kFileSystemTypeTemporary);
-  sandbox_provider()->DeleteOriginDataOnFileThread(
-      quota_manager_proxy(), origin_url, kFileSystemTypePersistent);
-
-  // Delete the upper level directory.
-  FilePath path_for_origin =
-      sandbox_provider()->GetBaseDirectoryForOrigin(origin_url, false);
-  if (!file_util::PathExists(path_for_origin))
-    return true;
-  return file_util::Delete(path_for_origin, true /* recursive */);
+  return
+      sandbox_provider()->DeleteOriginDataOnFileThread(
+          quota_manager_proxy(), origin_url, kFileSystemTypeTemporary) &&
+      sandbox_provider()->DeleteOriginDataOnFileThread(
+          quota_manager_proxy(), origin_url, kFileSystemTypePersistent);
 }
 
 bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(

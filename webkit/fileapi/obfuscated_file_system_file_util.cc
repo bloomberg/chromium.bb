@@ -22,8 +22,6 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-// TODO(ericu): Make deleting an origin [or a type under the origin, if it's the
-// last type] remove the origin from origin_database_ as well.
 namespace {
 
 const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
@@ -848,8 +846,8 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
 
 bool ObfuscatedFileSystemFileUtil::DeleteDirectoryForOriginAndType(
     const GURL& origin, FileSystemType type) {
-  FilePath path_for_origin = GetDirectoryForOriginAndType(origin, type, false);
-  if (!file_util::PathExists(path_for_origin))
+  FilePath origin_type_path = GetDirectoryForOriginAndType(origin, type, false);
+  if (!file_util::PathExists(origin_type_path))
     return true;
 
   // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
@@ -857,7 +855,23 @@ bool ObfuscatedFileSystemFileUtil::DeleteDirectoryForOriginAndType(
   // 2) it always returns false in Windows because of LevelDB's implementation.
   // Information about failure would be useful for debugging.
   DestroyDirectoryDatabase(origin, type);
-  return file_util::Delete(path_for_origin, true /* recursive */);
+  if (!file_util::Delete(origin_type_path, true /* recursive */))
+    return false;
+
+  FilePath origin_path = origin_type_path.DirName();
+  DCHECK_EQ(origin_path.value(), GetDirectoryForOrigin(origin, false).value());
+
+  // Delete the origin directory if the deleted one was the last remaining
+  // type for the origin.
+  if (file_util::Delete(origin_path, false /* recursive */)) {
+    InitOriginDatabase(false);
+    if (origin_database_.get())
+      origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
+  }
+
+  // At this point we are sure we had successfully deleted the origin/type
+  // directory, so just returning true here.
+  return true;
 }
 
 bool ObfuscatedFileSystemFileUtil::MigrateFromOldSandbox(
