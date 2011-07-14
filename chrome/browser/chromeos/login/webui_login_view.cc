@@ -142,10 +142,6 @@ StatusAreaHost::TextStyle WebUILoginView::GetTextStyle() const {
   return kWhitePlain;
 }
 
-void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {
-  status_area_->ButtonVisibilityChanged(button_view);
-}
-
 void WebUILoginView::OnDialogClosed() {
 }
 

@@ -108,9 +108,4 @@ void StatusAreaView::MakeButtonsActive(bool active) {
   power_view()->set_active(active);
 }
 
-void StatusAreaView::ButtonVisibilityChanged(views::View* button_view) {
-  Layout();
-  PreferredSizeChanged();
-}
-
 }  // namespace chromeos

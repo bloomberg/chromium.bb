@@ -58,9 +58,6 @@ class StatusAreaHost {
   // Returns the type of screen.
   virtual ScreenMode GetScreenMode() const = 0;
 
-  // Invoked when a child button's visibility changes.
-  virtual void ButtonVisibilityChanged(views::View* button_view) = 0;
-
  protected:
   virtual ~StatusAreaHost() {}
 };

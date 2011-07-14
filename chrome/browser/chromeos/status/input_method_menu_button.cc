@@ -75,6 +75,14 @@ InputMethodMenuButton::~InputMethodMenuButton() {}
 ////////////////////////////////////////////////////////////////////////////////
 // views::View implementation:
 
+gfx::Size InputMethodMenuButton::GetPreferredSize() {
+  // If not enabled, then hide this button.
+  if (!IsEnabled()) {
+    return gfx::Size(0, 0);
+  }
+  return StatusAreaButton::GetPreferredSize();
+}
+
 void InputMethodMenuButton::OnLocaleChanged() {
   input_method::OnLocaleChanged();
   UpdateUIFromCurrentInputMethod();
@@ -113,13 +121,18 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   // method is a XKB keyboard layout. We don't hide the button for other
   // types of input methods as these might have intra input method modes,
   // like Hiragana and Katakana modes in Japanese input methods.
-  const bool hide_button =
-      num_active_input_methods == 1 &&
+  if (num_active_input_methods == 1 &&
       input_method::IsKeyboardLayout(input_method_id) &&
-      host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
-  SetVisible(!hide_button);
+      host_->GetScreenMode() == StatusAreaHost::kBrowserMode) {
+    // As the disabled color is set to invisible, disabling makes the
+    // button disappear.
+    SetEnabled(false);
+    SetTooltipText(L"");  // remove tooltip
+  } else {
+    SetEnabled(true);
+    SetTooltipText(tooltip);
+  }
   SetText(name);
-  SetTooltipText(tooltip);
   SetAccessibleName(WideToUTF16(tooltip));
 
   if (WindowIsActive()) {

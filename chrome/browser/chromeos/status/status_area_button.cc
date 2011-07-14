@@ -117,22 +117,6 @@ void StatusAreaButton::OnThemeChanged() {
   UpdateTextStyle();
 }
 
-void StatusAreaButton::SetVisible(bool visible) {
-  if (visible != IsVisible()) {
-    views::MenuButton::SetVisible(visible);
-    host_->ButtonVisibilityChanged(this);
-  }
-}
-
-bool StatusAreaButton::HitTest(const gfx::Point& l) const {
-  // BrowserFrameViewChromeos adds a few pixels of pad to the top of the
-  // status area. For mouse events in this area to activate the button,
-  // hit testing need to be successful. We do this by clamping y to the
-  // position of the menu button view.
-  gfx::Point point(l.x(), std::max(y(), l.y()));
-  return MenuButton::HitTest(point);
-}
-
 int StatusAreaButton::icon_height() {
   return 24;
 }
@@ -161,6 +145,15 @@ void StatusAreaButton::UpdateTextStyle() {
       SetTextShadowOffset(0, 1);
       break;
   }
+}
+
+bool StatusAreaButton::HitTest(const gfx::Point& l) const {
+  // BrowserFrameViewChromeos adds a few pixels of pad to the top of the
+  // status area. For mouse events in this area to activate the button,
+  // hit testing need to be successful. We do this by clamping y to the
+  // position of the menu button view.
+  gfx::Point point(l.x(), std::max(y(), l.y()));
+  return MenuButton::HitTest(point);
 }
 
 }  // namespace chromeos
