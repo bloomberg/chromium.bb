@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
-#define CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
+#define CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 #pragma once
 
 #include <queue>
@@ -16,7 +16,6 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -52,8 +51,7 @@ class Time;
 // by the SavePackage. SaveItems are created when a user initiates a page
 // saving job, and exist for the duration of one tab's life time.
 class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
-                    public TabContentsObserver,
-                    public SelectFileDialog::Listener {
+                    public TabContentsObserver {
  public:
   enum SavePackageType {
     // The value of the save type before its set by the user.
@@ -80,6 +78,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
     // Failed to save page.
     FAILED
   };
+
+  static const FilePath::CharType kDefaultHtmlExtension[];
 
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
@@ -118,19 +118,21 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Show or Open a saved page via the Windows shell.
   void ShowDownloadInShell();
 
+  // Called by the embedder once a path is chosen by the user.
+  void OnPathPicked(const FilePath& final_name, SavePackageType type);
+
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
   SavePackageType save_type() const { return save_type_; }
   int tab_id() const { return tab_id_; }
   int id() const { return unique_id_; }
+  TabContents* tab_contents() const {
+    return TabContentsObserver::tab_contents();
+  }
 
   void GetSaveInfo();
 
   // Statics -------------------------------------------------------------------
-
-  // Used to disable prompting the user for a directory/filename of the saved
-  // web page.  This is available for testing.
-  static void SetShouldPromptUser(bool should_prompt);
 
   // Check whether we can do the saving page operation for the specified URL.
   static bool IsSavableURL(const GURL& url);
@@ -138,10 +140,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Check whether we can do the saving page operation for the contents which
   // have the specified MIME type.
   static bool IsSavableContents(const std::string& contents_mime_type);
-
-  // SelectFileDialog::Listener ------------------------------------------------
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
 
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
@@ -199,7 +197,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
                                    const std::string& mime_type);
   void ContinueGetSaveInfo(const FilePath& suggested_path,
                            bool can_save_as_complete);
-  void ContinueSave(const FilePath& final_name, int index);
 
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
@@ -312,9 +309,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Unique ID for this SavePackage.
   const int unique_id_;
 
-  // For managing select file dialogs.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
-
   friend class SavePackageTest;
   FRIEND_TEST_ALL_PREFIXES(SavePackageTest, TestSuggestedSaveNames);
   FRIEND_TEST_ALL_PREFIXES(SavePackageTest, TestLongSafePureFilename);
@@ -324,4 +318,4 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   DISALLOW_COPY_AND_ASSIGN(SavePackage);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_

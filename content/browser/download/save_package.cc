@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/save_package.h"
+#include "content/browser/download/save_package.h"
 
 #include <algorithm>
 
@@ -22,11 +22,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/download/save_file.h"
-#include "chrome/browser/download/save_file_manager.h"
-#include "chrome/browser/download/save_item.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -41,19 +37,21 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
+#include "content/browser/download/save_file.h"
+#include "content/browser/download/save_file_manager.h"
+#include "content/browser/download/save_item.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
 using WebKit::WebPageSerializerClient;
@@ -66,13 +64,6 @@ int g_save_package_id = 0;
 // Default name which will be used when we can not get proper name from
 // resource URL.
 const char kDefaultSaveName[] = "saved_resource";
-
-const FilePath::CharType kDefaultHtmlExtension[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("htm");
-#else
-    FILE_PATH_LITERAL("html");
-#endif
 
 // Maximum number of file ordinal number. I think it's big enough for resolving
 // name-conflict files which has same base file name.
@@ -91,36 +82,6 @@ const uint32 kMaxFilePathLength = PATH_MAX - 1;
 // maximum 9999 for ordinal number, which means maximum file ordinal number part
 // should be "(9998)", so the value is 6.
 const uint32 kMaxFileOrdinalNumberPartLength = 6;
-
-// If false, we don't prompt the user as to where to save the file.  This
-// exists only for testing.
-bool g_should_prompt_for_filename = true;
-
-// Indexes used for specifying which element in the extensions dropdown
-// the user chooses when picking a save type.
-const int kSelectFileHtmlOnlyIndex = 1;
-const int kSelectFileCompleteIndex = 2;
-
-// Used for mapping between SavePackageType constants and the indexes above.
-const SavePackage::SavePackageType kIndexToSaveType[] = {
-  SavePackage::SAVE_TYPE_UNKNOWN,
-  SavePackage::SAVE_AS_ONLY_HTML,
-  SavePackage::SAVE_AS_COMPLETE_HTML,
-};
-
-// Used for mapping between the IDS_ string identifiers and the indexes above.
-const int kIndexToIDS[] = {
-  0, IDS_SAVE_PAGE_DESC_HTML_ONLY, IDS_SAVE_PAGE_DESC_COMPLETE,
-};
-
-int SavePackageTypeToIndex(SavePackage::SavePackageType type) {
-  for (size_t i = 0; i < arraysize(kIndexToSaveType); ++i) {
-    if (kIndexToSaveType[i] == type)
-      return i;
-  }
-  NOTREACHED();
-  return -1;
-}
 
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
@@ -152,6 +113,13 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
 }
 
 }  // namespace
+
+const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
+#if defined(OS_WIN)
+    FILE_PATH_LITERAL("htm");
+#else
+    FILE_PATH_LITERAL("html");
+#endif
 
 SavePackage::SavePackage(TabContentsWrapper* wrapper,
                          SavePackageType save_type,
@@ -253,11 +221,6 @@ SavePackage::~SavePackage() {
   download_ = NULL;
 
   file_manager_ = NULL;
-
-  // If there's an outstanding save dialog, make sure it doesn't call us back
-  // now that we're gone.
-  if (select_file_dialog_.get())
-    select_file_dialog_->ListenerDestroyed();
 }
 
 // Retrieves the URL to be saved from tab_contents_ variable.
@@ -1123,10 +1086,6 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
   }
 }
 
-void SavePackage::SetShouldPromptUser(bool should_prompt) {
-  g_should_prompt_for_filename = should_prompt;
-}
-
 FilePath SavePackage::GetSuggestedNameForSaveAs(
     bool can_save_as_complete,
     const std::string& contents_mime_type) {
@@ -1314,104 +1273,17 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
-  // The TabContents which owns this SavePackage may have disappeared during
-  // the UI->FILE->UI thread hop of
-  // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
-  if (!tab_contents())
-    return;
-  DownloadPrefs* download_prefs =
-      tab_contents()->profile()->GetDownloadManager()->download_prefs();
-  int file_type_index =
-      SavePackageTypeToIndex(
-          static_cast<SavePackageType>(download_prefs->save_file_type()));
-  DCHECK_NE(-1, file_type_index);
-
-  SelectFileDialog::FileTypeInfo file_type_info;
-  FilePath::StringType default_extension;
-
-  // If the contents can not be saved as complete-HTML, do not show the
-  // file filters.
-  if (can_save_as_complete) {
-    bool add_extra_extension = false;
-    FilePath::StringType extra_extension;
-    if (!suggested_path.Extension().empty() &&
-        suggested_path.Extension().compare(FILE_PATH_LITERAL("htm")) &&
-        suggested_path.Extension().compare(FILE_PATH_LITERAL("html"))) {
-      add_extra_extension = true;
-      extra_extension = suggested_path.Extension().substr(1);
-    }
-
-    file_type_info.extensions.resize(2);
-    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-        FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-        FILE_PATH_LITERAL("html"));
-
-    if (add_extra_extension) {
-      file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-          extra_extension);
-    }
-
-    file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(kIndexToIDS[kSelectFileCompleteIndex - 1]));
-    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-        FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-        FILE_PATH_LITERAL("html"));
-
-    if (add_extra_extension) {
-      file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-          extra_extension);
-    }
-
-    file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(kIndexToIDS[kSelectFileCompleteIndex]));
-    file_type_info.include_all_files = false;
-    default_extension = kDefaultHtmlExtension;
-  } else {
-    file_type_info.extensions.resize(1);
-    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-        suggested_path.Extension());
-
-    if (!file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1][0].empty()) {
-      // Drop the .
-      file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1][0].erase(0, 1);
-    }
-
-    file_type_info.include_all_files = true;
-    file_type_index = 1;
-  }
-
-  if (g_should_prompt_for_filename) {
-    if (!select_file_dialog_.get())
-      select_file_dialog_ = SelectFileDialog::Create(this);
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
-                                    string16(),
-                                    suggested_path,
-                                    &file_type_info,
-                                    file_type_index,
-                                    default_extension,
-                                    tab_contents(),
-                                    platform_util::GetTopLevel(
-                                        tab_contents()->GetNativeView()),
-                                    NULL);
-  } else {
-    // Just use 'suggested_path' instead of opening the dialog prompt.
-    ContinueSave(suggested_path, file_type_index);
-  }
+  content::GetContentClient()->browser()->ChooseSavePath(
+      this, suggested_path, can_save_as_complete); 
 }
 
 // Called after the save file dialog box returns.
-void SavePackage::ContinueSave(const FilePath& final_name,
-                               int index) {
+void SavePackage::OnPathPicked(const FilePath& final_name,
+                               SavePackageType type) {
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   download_util::GenerateSafeFileName(tab_contents()->contents_mime_type(),
                                       &saved_main_file_path_);
-
-  // The option index is not zero-based.
-  DCHECK(index >= kSelectFileHtmlOnlyIndex &&
-         index <= kSelectFileCompleteIndex);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
 
@@ -1430,7 +1302,7 @@ void SavePackage::ContinueSave(const FilePath& final_name,
     save_file_path.SetValue(path_string);
   }
 
-  save_type_ = kIndexToSaveType[index];
+  save_type_ = type;
 
   prefs->SetInteger(prefs::kSaveFileType, save_type_);
 
@@ -1464,13 +1336,4 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
          contents_mime_type == "text/plain" ||
          contents_mime_type == "text/css" ||
          net::IsSupportedJavascriptMimeType(contents_mime_type.c_str());
-}
-
-// SelectFileDialog::Listener interface.
-void SavePackage::FileSelected(const FilePath& path,
-                               int index, void* params) {
-  ContinueSave(path, index);
-}
-
-void SavePackage::FileSelectionCanceled(void* params) {
 }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_ITEM_H__
-#define CHROME_BROWSER_DOWNLOAD_SAVE_ITEM_H__
+#ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_ITEM_H_
+#define CONTENT_BROWSER_DOWNLOAD_SAVE_ITEM_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "chrome/browser/download/save_types.h"
+#include "content/browser/download/save_types.h"
 #include "googleurl/src/gurl.h"
 
 class SavePackage;
@@ -109,4 +109,4 @@ class SaveItem {
   DISALLOW_COPY_AND_ASSIGN(SaveItem);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_ITEM_H__
+#endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_ITEM_H_

@@ -43,7 +43,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/save_package.h"
+#include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -97,6 +97,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/debugger/devtools_window.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -2063,7 +2064,7 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
 
 void TestingAutomationProvider::SavePackageShouldPromptUser(
     bool should_prompt) {
-  SavePackage::SetShouldPromptUser(should_prompt);
+  SavePackageFilePicker::SetShouldPromptUser(should_prompt);
 }
 
 void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {

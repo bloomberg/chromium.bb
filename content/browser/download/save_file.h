@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_FILE_H_
-#define CHROME_BROWSER_DOWNLOAD_SAVE_FILE_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_H_
+#define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/download/base_file.h"
-#include "chrome/browser/download/save_types.h"
+#include "content/browser/download/base_file.h"
+#include "content/browser/download/save_types.h"
 
 // SaveFile ----------------------------------------------------------------
 
@@ -39,4 +39,4 @@ class SaveFile : public BaseFile {
   DISALLOW_COPY_AND_ASSIGN(SaveFile);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_FILE_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_H_

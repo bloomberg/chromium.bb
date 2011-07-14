@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/download/save_package.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class DownloadItem;

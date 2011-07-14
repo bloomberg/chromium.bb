@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-#include "chrome/browser/download/save_file_manager.h"
+#include "content/browser/download/save_file_manager.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -12,14 +12,14 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/download/save_file.h"
-#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/save_file.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"

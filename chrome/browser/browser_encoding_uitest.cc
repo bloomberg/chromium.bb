@@ -5,13 +5,13 @@
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/download/save_package.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");

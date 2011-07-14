@@ -100,8 +100,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                       const std::string& value) OVERRIDE;
   virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
-  virtual void ClearCache(RenderViewHost* rvh);
-  virtual void ClearCookies(RenderViewHost* rvh);
+  virtual void ClearCache(RenderViewHost* rvh) OVERRIDE;
+  virtual void ClearCookies(RenderViewHost* rvh) OVERRIDE;
+  virtual void ChooseSavePath(SavePackage* save_package,
+                              const FilePath& suggested_path,
+                              bool can_save_as_complete) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

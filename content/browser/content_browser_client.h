@@ -25,6 +25,7 @@ class RenderViewHost;
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
+class SavePackage;
 class SkBitmap;
 class TabContents;
 class WorkerProcessHost;
@@ -253,6 +254,13 @@ class ContentBrowserClient {
 
   // Clears browser cookies.
   virtual void ClearCookies(RenderViewHost* rvh) = 0;
+
+  // Asks the user for the path to save a page. The embedder calls
+  // SavePackage::OnPathPicked to give the answer.
+  virtual void ChooseSavePath(SavePackage* save_package,
+                              const FilePath& suggested_path,
+                              bool can_save_as_complete) = 0;
+
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

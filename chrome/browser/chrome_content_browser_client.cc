@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_worker_message_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -708,6 +709,15 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
   remover->Remove(remove_mask);
   // BrowsingDataRemover takes care of deleting itself when done.
+}
+
+void ChromeContentBrowserClient::ChooseSavePath(
+    SavePackage* save_package,
+    const FilePath& suggested_path,
+    bool can_save_as_complete) {
+  // Deletes itself.
+  new SavePackageFilePicker(
+      save_package, suggested_path, can_save_as_complete);
 }
 
 #if defined(OS_LINUX)

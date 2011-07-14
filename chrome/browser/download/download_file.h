@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/download/base_file.h"
 #include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_types.h"
+#include "content/browser/download/base_file.h"
 
 struct DownloadCreateInfo;
 class DownloadManager;

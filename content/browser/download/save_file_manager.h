@@ -55,8 +55,8 @@
 // during saving, the SavePackage will notice the SaveFileManage to
 // cancel all SaveFile job.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
-#define CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
+#ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
+#define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
 #pragma once
 
 #include <string>
@@ -64,7 +64,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/download/save_types.h"
+#include "content/browser/download/save_types.h"
 
 class FilePath;
 class GURL;
@@ -252,4 +252,4 @@ class SaveFileManager
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
+#endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_

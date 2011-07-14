@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/save_file_resource_handler.h"
+#include "content/browser/download/save_file_resource_handler.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/download/save_file_manager.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/save_file_manager.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
 
