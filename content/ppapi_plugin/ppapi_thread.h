@@ -52,6 +52,7 @@ class PpapiThread : public ChildThread,
   void OnMsgLoadPlugin(const FilePath& path);
   void OnMsgCreateChannel(base::ProcessHandle host_process_handle,
                           int renderer_id);
+  void OnMsgSetNetworkState(bool online);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   // Sets up the channel to the given renderer. On success, returns true and

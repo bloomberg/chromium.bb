@@ -114,6 +114,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_ReserveInstanceId,
 IPC_MESSAGE_CONTROL1(PpapiMsg_SetPreferences,
                      ::ppapi::Preferences)
 
+// Network state notification from the browser for implementing
+// PPP_NetworkState_Dev.
+IPC_MESSAGE_CONTROL1(PpapiMsg_SetNetworkState,
+                     bool /* online */)
+
 // Sent in both directions to see if the other side supports the given
 // interface.
 IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,

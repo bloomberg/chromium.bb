@@ -19,9 +19,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
       filter_(new PepperMessageFilter(host_resolver)) {
   AddFilter(filter_.get());
+  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {
+  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
   CancelRequests();
 }
 
@@ -154,6 +156,10 @@ void PpapiPluginProcessHost::CancelRequests() {
                                             IPC::ChannelHandle());
     sent_requests_.pop();
   }
+}
+
+void PpapiPluginProcessHost::OnOnlineStateChanged(bool online) {
+  Send(new PpapiMsg_SetNetworkState(online));
 }
 
 // Called when a new plugin <--> renderer channel has been created.

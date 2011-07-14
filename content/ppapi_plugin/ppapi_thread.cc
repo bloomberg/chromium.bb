@@ -18,6 +18,7 @@
 #include "content/ppapi_plugin/ppapi_webkit_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -77,6 +78,7 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
                                 OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBFlashTCPSocket_WriteACK,
                                 OnPluginDispatcherMessageReceived(msg))
+    IPC_MESSAGE_HANDLER(PpapiMsg_SetNetworkState, OnMsgSetNetworkState)
   IPC_END_MESSAGE_MAP()
   return true;
 }
@@ -218,6 +220,15 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   }
 
   Send(new PpapiHostMsg_ChannelCreated(channel_handle));
+}
+
+void PpapiThread::OnMsgSetNetworkState(bool online) {
+  if (!get_plugin_interface_)
+    return;
+  const PPP_NetworkState_Dev* ns = static_cast<const PPP_NetworkState_Dev*>(
+      get_plugin_interface_(PPP_NETWORK_STATE_DEV_INTERFACE));
+  if (ns)
+    ns->SetOnLine(PP_FromBool(online));
 }
 
 void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
