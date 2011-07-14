@@ -6,15 +6,14 @@
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-struct PP_CompletionCallback;
-struct PP_Point;
-struct PP_Rect;
-struct PP_Size;
 
 #define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
 #define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
@@ -24,7 +23,9 @@ struct PP_Size;
  * @file
  * Defines the <code>PPB_Graphics2D</code> struct representing a 2D graphics
  * context within the browser.
- *
+ */
+
+/**
  * @addtogroup Interfaces
  * @{
  */

@@ -17,7 +17,9 @@
  * This file defines the <code>PPB_Messaging</code> interface implemented
  * by the browser for sending messages to DOM elements associated with a
  * specific module instance.
- *
+ */
+
+/**
  * @addtogroup Interfaces
  * @{
  */

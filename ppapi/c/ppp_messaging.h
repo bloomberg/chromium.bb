@@ -21,7 +21,8 @@ struct PP_Var;
  *
  */
 
-/** @addtogroup Interfaces
+/**
+ * @addtogroup Interfaces
  * @{
  */
 

@@ -6,8 +6,8 @@
 #define PPAPI_C_PPB_FILE_REF_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
@@ -17,14 +17,12 @@
  * file in a file system.
  */
 
-struct PP_CompletionCallback;
-
 #define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
 #define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
 #define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
 
 /**
- * @addtogroup Structs
+ * @addtogroup Interfaces
  * @{
  */
 /**

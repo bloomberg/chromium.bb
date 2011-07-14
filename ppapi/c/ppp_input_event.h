@@ -38,4 +38,4 @@ struct PPP_InputEvent {
   PP_Bool (*HandleInputEvent)(PP_Instance instance, PP_Resource input_event);
 };
 
-#endif  // PPAPI_C_PPP_INPUT_EVENT_H_
+#endif  /* PPAPI_C_PPP_INPUT_EVENT_H_ */
