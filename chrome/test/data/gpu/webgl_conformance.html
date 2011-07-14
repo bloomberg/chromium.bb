@@ -4,34 +4,69 @@
         src="webgl_conformance/resources/webgl-test-harness.js">
 </script>
 <script>
-var reportType = WebGLTestHarnessModule.TestHarness.reportType;
 var running;
 var result;
 var message;
-
-// Report function called by each conformance test.
-function report(type, msg, success) {
-  switch (type) {
-    case reportType.START_PAGE:
-      // Accept every page loaded.
-      return true;
-    case reportType.TEST_RESULT:
-      if (!success) {
-        // If any test fails, the result is false.
-        result = false;
-        message += msg + "\n";
-      }
-      break;
-    case reportType.FINISHED_ALL_TESTS:
-      running = false;
-      break;
-  }
-}
 
 function start(start_url) {
   running = true;
   result = true;
   message = "";
+
+  // Report function called by each conformance test.
+  function report(type, msg, success) {
+    var reportType = WebGLTestHarnessModule.TestHarness.reportType;
+    switch (type) {
+      case reportType.START_PAGE:
+        // Accept every page loaded.
+        return true;
+      case reportType.TEST_RESULT:
+        if (!success) {
+          // If any test fails, the result is false.
+          result = false;
+          message += msg + "\n";
+        }
+        break;
+      case reportType.FINISH_PAGE:
+        if (!success) {
+          // Result is false if a timeout occurs.
+          result = false;
+          message += "Timeout (" + window.webglTestHarness.timeoutDelay +
+                     " ms)\n";
+        }
+      case reportType.FINISHED_ALL_TESTS:
+        running = false;
+        break;
+    }
+  }
+
+  function create3DContext() {
+    var canvas = document.createElement("canvas");
+    var context = null;
+    try {
+      context = canvas.getContext("webgl");
+    } catch(e) {
+    }
+    if (!context) {
+      try {
+        context = canvas.getContext("experimental-webgl");
+      } catch(e) {
+      }
+    }
+    return context;
+  }
+
+  // Assert the WebGL context exists.
+  var context = create3DContext();
+  if (!context) {
+    message += "Unable to fetch WebGL rendering context for Canvas.\n";
+    running = false;
+    result = false;
+    return;
+  }
+  message += "WebGL VENDOR:   " + context.getParameter(context.VENDOR) + "\n";
+  message += "WebGL RENDERER: " + context.getParameter(context.RENDERER) + "\n";
+
   var iframe = document.getElementById("testframe");
   var testHarness = new WebGLTestHarnessModule.TestHarness(
       iframe,
@@ -44,6 +79,5 @@ function start(start_url) {
 </head>
 <body>
 <iframe id="testframe" scrolling="yes" width="100%" height="100%"></iframe>
-</table>
 </body>
 </html>
