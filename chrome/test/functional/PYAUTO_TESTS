@@ -128,6 +128,8 @@
       # crbug.com/86525
       '-popups.PopupsTest.testAllowPopupsFromExternalSite',
       '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
+      # crbug.com/88574
+      '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
     ],
