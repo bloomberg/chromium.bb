@@ -28,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/quota/quota_manager.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -147,12 +148,15 @@ int32 IndexedDBDispatcherHost::Add(WebIDBCursor* idb_cursor) {
   return cursor_dispatcher_host_->map_.Add(idb_cursor);
 }
 
-int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database) {
+int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
+                                   const GURL& origin_url) {
   if (!database_dispatcher_host_.get()) {
     delete idb_database;
     return 0;
   }
-  return database_dispatcher_host_->map_.Add(idb_database);
+  int32 idb_database_id = database_dispatcher_host_->map_.Add(idb_database);
+  database_dispatcher_host_->url_map_[idb_database_id] = origin_url;
+  return idb_database_id;
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBIndex* idb_index) {
@@ -199,13 +203,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   //               return null for them.
   WebSecurityOrigin origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-  GURL url(origin.toString());
+  GURL origin_url(origin.toString());
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(kDefaultQuota == params.maximum_size);
 
   uint64 quota = kDefaultQuota;
-  if (Context()->IsUnlimitedStorageGranted(url) ||
+  if (Context()->IsUnlimitedStorageGranted(origin_url) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUnlimitedQuotaForIndexedDB)) {
       // TODO(jorlow): For the IsUnlimitedStorageGranted case, we need some
@@ -224,8 +228,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   Context()->GetIDBFactory()->open(
       params.name,
-      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id), origin,
-      NULL, webkit_glue::FilePathToWebString(indexed_db_path), quota,
+      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id,
+                                             origin_url),
+      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path), quota,
       backingStoreType);
 }
 
@@ -245,7 +250,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   Context()->GetIDBFactory()->deleteDatabase(
       params.name,
-      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id),
+      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id, url),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path));
 }
@@ -440,6 +445,10 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id);
   database->close();
+  parent_->Context()->quota_manager_proxy()->NotifyStorageAccessed(
+      quota::QuotaClient::kIndexedDatabase, url_map_[idb_database_id],
+      quota::kStorageTypeTemporary);
+  url_map_.erase(idb_database_id);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(

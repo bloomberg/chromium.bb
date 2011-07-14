@@ -53,7 +53,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
   int32 Add(WebKit::WebIDBCursor* idb_cursor);
-  int32 Add(WebKit::WebIDBDatabase* idb_database);
+  int32 Add(WebKit::WebIDBDatabase* idb_database, const GURL& origin_url);
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
   int32 Add(WebKit::WebIDBTransaction* idb_transaction);
@@ -116,6 +116,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
+    typedef std::map<int32, GURL> WebIDBDatabaseIDToURLMap;
+    WebIDBDatabaseIDToURLMap url_map_;
   };
 
   class IndexDispatcherHost {

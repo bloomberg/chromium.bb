@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 
 #include "content/common/indexed_db_messages.h"
+#include "webkit/quota/quota_manager.h"
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
     IndexedDBDispatcherHost* dispatcher_host,
@@ -22,6 +23,18 @@ void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
 
 void IndexedDBCallbacksBase::onBlocked() {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(response_id_));
+}
+
+void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onSuccess(
+    WebKit::WebIDBDatabase* idb_object) {
+  int32 object_id = dispatcher_host()->Add(idb_object, origin_url());
+  if (dispatcher_host()->Context()->quota_manager_proxy()) {
+    dispatcher_host()->Context()->quota_manager_proxy()->NotifyStorageAccessed(
+        quota::QuotaClient::kIndexedDatabase, origin_url(),
+        quota::kStorageTypeTemporary);
+  }
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessIDBDatabase(response_id(), object_id));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

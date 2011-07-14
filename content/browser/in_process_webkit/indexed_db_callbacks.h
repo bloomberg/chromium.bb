@@ -9,22 +9,19 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
-class IndexedDBMsg_CallbacksSuccessIDBDatabase;
 class IndexedDBMsg_CallbacksSuccessIDBIndex;
 class IndexedDBMsg_CallbacksSuccessIDBTransaction;
 
 // Template magic to figure out what message to send to the renderer based on
 // which (overloaded) onSuccess method we expect to be called.
 template <class Type> struct WebIDBToMsgHelper { };
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBDatabase MsgType;
-};
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
   typedef IndexedDBMsg_CallbacksSuccessIDBIndex MsgType;
 };
@@ -72,6 +69,25 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
   }
 
  private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+template <>
+class IndexedDBCallbacks<WebKit::WebIDBDatabase>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
+      const GURL& origin_url)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id),
+        origin_url_(origin_url) {
+  }
+
+  virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
+  const GURL& origin_url() const { return origin_url_; }
+
+ private:
+  GURL origin_url_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 

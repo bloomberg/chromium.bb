@@ -62,7 +62,8 @@ IndexedDBContext::IndexedDBContext(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* webkit_thread_loop)
     : clear_local_state_on_exit_(false),
-      special_storage_policy_(special_storage_policy) {
+      special_storage_policy_(special_storage_policy),
+      quota_manager_proxy_(quota_manager_proxy) {
   data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
@@ -134,4 +135,8 @@ void IndexedDBContext::GetAllOriginIdentifiers(
       origin_ids->push_back(origin_id_webstring);
     }
   }
+}
+
+quota::QuotaManagerProxy* IndexedDBContext::quota_manager_proxy() {
+  return quota_manager_proxy_;
 }
