@@ -70,6 +70,7 @@ int Utterance::next_utterance_id_ = 0;
 Utterance::Utterance(Profile* profile)
     : profile_(profile),
       id_(next_utterance_id_++),
+      src_id_(-1),
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
@@ -97,6 +98,9 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
       desired_event_types_.end()) {
     return;
   }
+
+  if (src_id_ < 0)
+    return;
 
   ListValue args;
   DictionaryValue* event = new DictionaryValue();

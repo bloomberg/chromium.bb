@@ -22,11 +22,11 @@ bool ExtensionTtsSpeakFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<DictionaryValue> options;
+  scoped_ptr<DictionaryValue> options(new DictionaryValue());
   if (args_->GetSize() >= 2) {
     DictionaryValue* temp_options = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &temp_options));
-    options.reset(temp_options->DeepCopy());
+    if (args_->GetDictionary(1, &temp_options))
+      options.reset(temp_options->DeepCopy());
   }
 
   std::string voice_name;
@@ -121,8 +121,10 @@ bool ExtensionTtsSpeakFunction::RunImpl() {
   }
 
   int src_id = -1;
-  EXTENSION_FUNCTION_VALIDATE(
-      options->GetInteger(constants::kSrcIdKey, &src_id));
+  if (options->HasKey(constants::kSrcIdKey)) {
+    EXTENSION_FUNCTION_VALIDATE(
+        options->GetInteger(constants::kSrcIdKey, &src_id));
+  }
 
   // If we got this far, the arguments were all in the valid format, so
   // send the success response to the callback now - this ensures that

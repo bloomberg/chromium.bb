@@ -134,6 +134,31 @@ class TtsApiTest : public ExtensionApiTest {
   StrictMock<MockExtensionTtsPlatformImpl> mock_platform_impl_;
 };
 
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "", _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "Alpha", _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "Bravo", _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "Charlie", _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "Echo", _, _))
+      .WillOnce(Return(true));
+  ASSERT_TRUE(RunExtensionTest("tts/optional_args")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())

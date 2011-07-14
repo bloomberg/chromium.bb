@@ -1010,7 +1010,7 @@ var chrome = chrome || {};
 
     apiFunctions["experimental.tts.speak"].handleRequest = function() {
       var args = arguments;
-      if (args.length > 1 && args[1].onevent) {
+      if (args.length > 1 && args[1] && args[1].onevent) {
         var id = GetNextTtsEventId();
         args[1].srcId = id;
         chromeHidden.tts.handlers[id] = args[1].onevent;
