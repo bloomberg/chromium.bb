@@ -25,6 +25,7 @@ class GLContextGLX : public GLContext {
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval);
   virtual std::string GetExtensions();
+  virtual bool WasAllocatedUsingARBRobustness();
 
  private:
   void* context_;

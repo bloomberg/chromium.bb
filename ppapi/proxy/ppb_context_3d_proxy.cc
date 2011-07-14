@@ -98,6 +98,7 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
+  virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
 
  private:
   bool Send(IPC::Message* msg);
@@ -305,6 +306,11 @@ void PepperCommandBuffer::SetToken(int32 token) {
 }
 
 void PepperCommandBuffer::SetParseError(gpu::error::Error error) {
+  NOTREACHED();
+}
+
+void PepperCommandBuffer::SetContextLostReason(
+    gpu::error::ContextLostReason reason) {
   NOTREACHED();
 }
 

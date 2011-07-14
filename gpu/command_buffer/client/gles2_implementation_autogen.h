@@ -324,6 +324,8 @@ void Disable(GLenum cap) {
   helper_->Disable(cap);
 }
 
+void DrawArrays(GLenum mode, GLint first, GLsizei count);
+
 void DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices);
 

@@ -171,7 +171,6 @@ class GLES2Implementation {
   #include "../client/gles2_implementation_autogen.h"
 
   void DisableVertexAttribArray(GLuint index);
-  void DrawArrays(GLenum mode, GLint first, GLsizei count);
   void EnableVertexAttribArray(GLuint index);
   void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
   void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);

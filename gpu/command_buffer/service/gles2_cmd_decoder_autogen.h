@@ -630,23 +630,6 @@ error::Error GLES2DecoderImpl::HandleDisableVertexAttribArray(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleDrawArrays(
-    uint32 immediate_data_size, const gles2::DrawArrays& c) {
-  GLenum mode = static_cast<GLenum>(c.mode);
-  GLint first = static_cast<GLint>(c.first);
-  GLsizei count = static_cast<GLsizei>(c.count);
-  if (!validators_->draw_mode.IsValid(mode)) {
-    SetGLError(GL_INVALID_ENUM, "glDrawArrays: mode GL_INVALID_ENUM");
-    return error::kNoError;
-  }
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
-    return error::kNoError;
-  }
-  DoDrawArrays(mode, first, count);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleEnable(
     uint32 immediate_data_size, const gles2::Enable& c) {
   GLenum cap = static_cast<GLenum>(c.cap);

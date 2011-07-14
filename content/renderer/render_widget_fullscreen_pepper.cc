@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/render_thread.h"
@@ -471,7 +470,8 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   context_->SwapBuffers();
 }
 
-void RenderWidgetFullscreenPepper::OnLostContext() {
+void RenderWidgetFullscreenPepper::OnLostContext(
+    RendererGLContext::ContextLostReason) {
   if (!context_)
     return;
   // Destroy the context later, in case we got called from InitContext for

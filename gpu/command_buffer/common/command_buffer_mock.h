@@ -36,6 +36,8 @@ class MockCommandBuffer : public CommandBuffer {
                                              int32 id_request));
   MOCK_METHOD1(SetToken, void(int32 token));
   MOCK_METHOD1(SetParseError, void(error::Error error));
+  MOCK_METHOD1(SetContextLostReason,
+               void(error::ContextLostReason context_lost_reason));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

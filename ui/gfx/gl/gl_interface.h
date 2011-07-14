@@ -540,6 +540,8 @@ class GLInterface {
 
   virtual void SetSurfaceCHROMIUM(GLuint id) = 0;
 
+  virtual GLenum GetGraphicsResetStatusARB() = 0;
+
  private:
   static GLInterface* interface_;
 };

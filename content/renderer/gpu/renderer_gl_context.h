@@ -56,6 +56,18 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
     NONE           = 0x3038  // Attrib list = terminator
   };
 
+  // Reasons that a lost context might have been provoked.
+  enum ContextLostReason {
+    // This context definitely provoked the loss of context.
+    kGuilty,
+
+    // This context definitely did not provoke the loss of context.
+    kInnocent,
+
+    // It is unknown whether this context provoked the loss of context.
+    kUnknown
+  };
+
   // Initialize the library. This must have completed before any other
   // functions are invoked.
   static bool Initialize();
@@ -139,7 +151,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // service side.
   void SetSwapBuffersCallback(Callback0::Type* callback);
 
-  void SetContextLostCallback(Callback0::Type* callback);
+  void SetContextLostCallback(Callback1<ContextLostReason>::Type* callback);
 
   // Set the current RendererGLContext for the calling thread.
   static bool MakeCurrent(RendererGLContext* context);
@@ -201,7 +213,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   scoped_refptr<GpuChannelHost> channel_;
   base::WeakPtr<RendererGLContext> parent_;
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
-  scoped_ptr<Callback0::Type> context_lost_callback_;
+  scoped_ptr<Callback1<ContextLostReason>::Type> context_lost_callback_;
   uint32 parent_texture_id_;
   uint32 child_to_parent_latch_;
   uint32 parent_to_child_latch_;

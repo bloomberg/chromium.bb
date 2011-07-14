@@ -28,6 +28,7 @@ class CommandBuffer {
           put_offset(0),
           token(-1),
           error(error::kNoError),
+          context_lost_reason(error::kUnknown),
           generation(0) {
     }
 
@@ -49,6 +50,9 @@ class CommandBuffer {
 
     // Error status.
     error::Error error;
+
+    // Lost context detail information.
+    error::ContextLostReason context_lost_reason;
 
     // Generation index of this state. The generation index is incremented every
     // time a new state is retrieved from the command processor, so that
@@ -118,6 +122,17 @@ class CommandBuffer {
 
   // Allows the reader to set the current parse error.
   virtual void SetParseError(error::Error) = 0;
+
+  // Allows the reader to set the current context lost reason.
+  // NOTE: if calling this in conjunction with SetParseError,
+  // call this first.
+  //
+  // TODO(kbr): this temporarily has a definition (i.e., is not pure
+  // virtual) to work around a difficult interdependency with the NaCl
+  // build. Make this pure virtual and remove the body once this is
+  // defined in CommandBufferNaCl and NaCl has rolled forward. See
+  // http://crbug.com/89127 .
+  virtual void SetContextLostReason(error::ContextLostReason);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);
