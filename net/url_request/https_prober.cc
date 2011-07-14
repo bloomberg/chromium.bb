@@ -23,8 +23,7 @@ bool HTTPSProber::InFlight(const std::string& host) const {
   return inflight_probes_.find(host) != inflight_probes_.end();
 }
 
-bool HTTPSProber::ProbeHost(const std::string& host,
-                            const URLRequestContext* ctx,
+bool HTTPSProber::ProbeHost(const std::string& host, URLRequestContext* ctx,
                             HTTPSProberDelegate* delegate) {
   if (HaveProbed(host) || InFlight(host)) {
     return false;

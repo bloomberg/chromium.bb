@@ -50,7 +50,7 @@ class HTTPSProber : public URLRequest::Delegate {
   // false will be returned, and no other action is taken. Otherwise, a new
   // probe is started, true is returned and the Delegate will be called with the
   // results (true means a successful handshake).
-  bool ProbeHost(const std::string& host, const URLRequestContext* ctx,
+  bool ProbeHost(const std::string& host, URLRequestContext* ctx,
                  HTTPSProberDelegate* delegate);
 
   // Implementation of URLRequest::Delegate
