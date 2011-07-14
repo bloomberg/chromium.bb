@@ -3800,8 +3800,8 @@
    fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
    fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
    ...
-   fun:_ZN4base10JSONWriter5WriteEPK5ValuebPSs
-   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN4base10JSONWriter5WriteEPKNS_5ValueEbPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
    fun:_ZN13JsonPrefStore13SerializeDataEPSs
    fun:_ZN19ImportantFileWriter16DoScheduledWriteEv
 }
@@ -3813,8 +3813,8 @@
    fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
    fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEib
    ...
-   fun:_ZN4base10JSONWriter5WriteEPK5ValuebPSs
-   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN4base10JSONWriter5WriteEPKNS_5ValueEbPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
    fun:_ZN13JsonPrefStore13SerializeDataEPSs
    fun:_ZN19ImportantFileWriter16DoScheduledWriteEv
 }
