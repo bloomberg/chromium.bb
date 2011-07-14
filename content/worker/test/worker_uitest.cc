@@ -577,7 +577,10 @@ TEST_F(WorkerTest, MAYBE_LimitPerPage) {
 // Doesn't crash, but on all platforms, it sometimes fails.
 // Flaky on all platforms: http://crbug.com/28445
 #if defined(OS_LINUX)
-// Hangs on Linux: http://30332
+// Hangs on Linux: http://crbug.com/30332
+#define FLAKY_LimitTotal DISABLED_LimitTotal
+#elif defined(OS_MAC)
+// Possibly causing ui_tests to hang on Mac: http://crbug.com/88958
 #define FLAKY_LimitTotal DISABLED_LimitTotal
 #endif
 TEST_F(WorkerTest, FLAKY_LimitTotal) {
