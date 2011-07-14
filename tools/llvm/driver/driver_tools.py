@@ -75,12 +75,6 @@ INITIAL_ENV = {
                           # TODO(pdox): Disable for SDK version
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
-  'GOLD_FIX'    : '0',    # Use linker script instead of -Ttext for gold.
-                          # Needed for dynamic_code_loading tests which create
-                          # a gap between text and rodata.
-                          # TODO(pdox): Either eliminate gold native linking or
-                          #             figure out why this is broken in the
-                          #             first place.
   'MC_DIRECT'           : '1',
   'USE_EMULATOR'        : '0',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver
@@ -195,7 +189,6 @@ DriverPatterns = [
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
-  ( '--pnacl-gold-fix',                "env.set('GOLD_FIX', '1')"),
   ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),

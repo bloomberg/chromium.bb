@@ -216,7 +216,7 @@ fi
 readonly LLVM_REV=59c8d7c40738
 readonly LLVM_GCC_REV=4143147bce3b
 readonly NEWLIB_REV=9bef47f82918
-readonly BINUTILS_REV=c02b0252b557
+readonly BINUTILS_REV=6c6b03bf78b3
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=867799d6e777
 
@@ -2829,25 +2829,7 @@ newlib-nacl-headers-check() {
 #+ driver                - Install driver scripts.
 driver() {
   StepBanner "DRIVER"
-  # need to prep the dir just in case..
-  prep-install-dir
-  # otherwise linker-install will stomp it.
-  linker-install
   driver-install
-}
-
-# Just in case we're calling this manually
-prep-install-dir() {
-  mkdir -p "${PNACL_ROOT}"
-}
-
-# We need to adjust the start address and aligment of nacl arm modules
-linker-install() {
-   StepBanner "DRIVER" "Installing untrusted ld scripts"
-   mkdir -p "${LDSCRIPTS_DIR}"
-   cp tools/llvm/ld_script_arm_untrusted "${LDSCRIPTS_DIR}"
-   cp tools/llvm/ld_script_x8632_untrusted "${LDSCRIPTS_DIR}"
-   cp tools/llvm/ld_script_x8664_untrusted "${LDSCRIPTS_DIR}"
 }
 
 # The driver is a simple python script which changes its behavior

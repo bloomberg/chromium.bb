@@ -58,11 +58,12 @@ EXTRA_ENV = {
   'LD'          : '${SANDBOXED ? ${LD_SB} ${LD_BFD_FLAGS} ' +
                              ' : ${LD_%WHICH_LD%} ${LD_%WHICH_LD%_FLAGS}}',
 
-  'LD_BFD_FLAGS': '-m ${LD_EMUL} ${SEGMENT_GAP_FLAGS} -T ${LD_SCRIPT}',
+  'LD_BFD_FLAGS': '-m ${LD_EMUL} ${SEGMENT_GAP_FLAGS} ' +
+                  '${#LD_SCRIPT ? -T ${LD_SCRIPT}}',
 
-  'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} '
-                   '${GOLD_FIX ? ${SEGMENT_GAP_FLAGS} -T ${LD_SCRIPT} : '
-                   '-Ttext=0x20000}',
+  'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} ' +
+                   '${SEGMENT_GAP_FLAGS} ' +
+                   '${#LD_SCRIPT ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm ' +
@@ -90,12 +91,8 @@ EXTRA_ENV = {
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
 
-  'LDSCRIPTS_DIR'  : '${BASE}/ldscripts',
-
-  'LD_SCRIPT'      : '${LD_SCRIPT_%ARCH%}',
-  'LD_SCRIPT_ARM'  : '${LDSCRIPTS_DIR}/ld_script_arm_untrusted',
-  'LD_SCRIPT_X8632': '${LDSCRIPTS_DIR}/ld_script_x8632_untrusted',
-  'LD_SCRIPT_X8664': '${LDSCRIPTS_DIR}/ld_script_x8664_untrusted',
+  # For allowing override of the builtin linker script.
+  'LD_SCRIPT'      : '',
 
   'BCLD'      : '${LD_GOLD}',
   'BCLD_FLAGS': '${LD_GOLD_FLAGS} ${!SHARED ? --undef-sym-check} ' +
@@ -432,10 +429,10 @@ def RunLDSRPC():
   assert(main_input != '')
   files = LinkerFiles(all_inputs)
   ld_flags = env.get('LD_FLAGS') + env.get('LD_BFD_FLAGS')
-  ld_script = env.getone('LD_SCRIPT')
 
+  # In this mode, we assume we only use the builtin linker script.
+  assert(env.getone('LD_SCRIPT') == '')
   script = MakeSelUniversalScriptForLD(ld_flags,
-                                       ld_script,
                                        main_input,
                                        files,
                                        outfile)
@@ -460,14 +457,12 @@ def MakeSelUniversalScriptForFile(filename):
 
 
 def MakeSelUniversalScriptForLD(ld_flags,
-                                ld_script,
                                 main_input,
                                 files,
                                 outfile):
   """ Return sel_universal script text for invoking LD.nexe with the
       given ld_flags, main_input (which is treated specially), and
-      other input files. If ld_script is part of the ld_flags, it must be
-      treated it as input file. The output will be written to outfile.  """
+      other input files. The output will be written to outfile.  """
   script = []
 
   # Go through all the arguments and add them.
@@ -476,11 +471,7 @@ def MakeSelUniversalScriptForLD(ld_flags,
   # Omit the "-o" for output so that it will use "a.out" internally.
   # We will take the fd from "a.out" and write it to the proper -o filename.
   for flag in ld_flags:
-    if flag == ld_script:
-      # Virtualize the file.
-      script += MakeSelUniversalScriptForFile(ld_script)
-    else:
-      script.append('rpc AddArg s("%s") *' % flag)
+    script.append('rpc AddArg s("%s") *' % flag)
     script.append('')
 
   # We need to virtualize these files.
