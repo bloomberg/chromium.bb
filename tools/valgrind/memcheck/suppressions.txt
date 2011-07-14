@@ -4844,23 +4844,6 @@
    fun:_ZN3net21HttpStreamFactoryImpl3Job16DoInitConnectionEv
 }
 {
-   bug_89309
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10disk_cache12StorageBlockINS_12RankingsNodeEE12AllocateDataEv
-   fun:_ZN10disk_cache12StorageBlockINS_12RankingsNodeEE4LoadEv
-   fun:_ZN10disk_cache8Rankings10GetRankingEPNS_12StorageBlockINS_12RankingsNodeEEE
-   fun:_ZN10disk_cache8Rankings6RemoveEPNS_12StorageBlockINS_12RankingsNodeEEENS0_4ListE
-   fun:_ZN10disk_cache8Rankings10UpdateRankEPNS_12StorageBlockINS_12RankingsNodeEEEbNS0_4ListE
-   fun:_ZN10disk_cache8Eviction12UpdateRankV2EPNS_9EntryImplEb
-   fun:_ZN10disk_cache8Eviction10UpdateRankEPNS_9EntryImplEb
-   fun:_ZN10disk_cache11BackendImpl10UpdateRankEPNS_9EntryImplEb
-   fun:_ZN10disk_cache9EntryImpl10UpdateRankEb
-   fun:_ZN10disk_cache9EntryImpl16InternalReadDataEiiPN3net8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN10disk_cache9EntryImpl12ReadDataImplEiiPN3net8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN10disk_cache9BackendIO21ExecuteEntryOperationEv
-}
-{
    bug_89311
    Memcheck:Leak
    fun:_Znw*
