@@ -19,7 +19,7 @@ a {
 }
 
 button {
-  width: 80px;
+  min-width: 80px;
   -webkit-margin-start: 15px;
 }
 
@@ -415,11 +415,11 @@ DeviceSelection.prototype = {
     return this.deviceCount;
   },
 
-  deviceAdded: function(device) {
+  deviceAdded: function(device, allowSelect) {
     var selectListDOM = $('device-selection');
     selectListDOM.appendChild(this.createNewDeviceElement(device));
     this.deviceCount++;
-    if (this.deviceCount == 1)
+    if (allowSelect && this.deviceCount == 1)
       this.selectDevice(device.devicePath);
     return this.deviceCount;
   },
@@ -481,15 +481,16 @@ BrowserBridge.prototype = {
   },
 
   deviceAdded: function(device) {
-    var deviceCount = this.devices.deviceAdded(device);
-    if (this.currentState.isInitialState()) 
+    var inInitialState = this.currentState.isInitialState();
+    var deviceCount = this.devices.deviceAdded(device, inInitialState);
+    if (inInitialState) 
       this.currentState.gotoInitialState(deviceCount);
   },
 
   deviceRemoved: function(device) {
     var inInitialState = this.currentState.isInitialState();
     var deviceCount = this.devices.deviceRemoved(device, inInitialState);
-    if (this.currentState.isInitialState()) 
+    if (inInitialState) 
       this.currentState.gotoInitialState(deviceCount);
   },
 
