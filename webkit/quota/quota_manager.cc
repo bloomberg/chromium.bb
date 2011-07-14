@@ -14,6 +14,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
@@ -24,6 +25,11 @@
 #include "webkit/quota/quota_types.h"
 #include "webkit/quota/usage_tracker.h"
 
+#define UMA_HISTOGRAM_MBYTES(name, sample)          \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                      \
+      (name), static_cast<int>((sample) / kMBytes), \
+      1, 10 * 1024 * 1024 /* 10TB */, 100)
+
 using base::ScopedCallbackFactory;
 
 namespace quota {
@@ -31,6 +37,8 @@ namespace quota {
 namespace {
 
 const char kEnableQuotaEviction[] = "enable-quota-eviction";
+const int64 kMBytes = 1024 * 1024;
+const int kMinutesInMilliSeconds = 60 * 1000;
 
 // Returns the initial size of the temporary storage quota.
 // (This just gives a default initial size; once its initial size is determined
@@ -38,6 +46,7 @@ const char kEnableQuotaEviction[] = "enable-quota-eviction";
 int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path,
                                           bool is_incognito) {
   int64 free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
+  UMA_HISTOGRAM_MBYTES("Quota.FreeDiskSpaceForProfile", free_space);
 
   // Returns 0 (disables the temporary storage) if the available space is
   // less than the twice of the default quota size.
@@ -60,9 +69,6 @@ int64 GetInitialTemporaryStorageQuotaSize(const FilePath& path,
   return QuotaManager::kTemporaryStorageQuotaMaxSize;
 }
 
-const int64 kMBytes = 1024 * 1024;
-const int kMinutesInMilliSeconds = 60 * 1000;
-
 }  // anonymous namespace
 
 // TODO(kinuko): We will need to have different sizes for different platforms
@@ -79,6 +85,9 @@ const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
 
 const int QuotaManager::kEvictionIntervalInMilliSeconds =
     30 * kMinutesInMilliSeconds;
+
+const base::TimeDelta QuotaManager::kReportHistogramInterval =
+    base::TimeDelta::FromMilliseconds(60 * 60 * 1000);  // 1 hour
 
 // This class is for posting GetUsage/GetQuota tasks, gathering
 // results and dispatching GetAndQuota callbacks.
@@ -464,6 +473,8 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
       // make up one and store it in the database.
       temporary_storage_quota_ = GetInitialTemporaryStorageQuotaSize(
           profile_path_, is_incognito_);
+      UMA_HISTOGRAM_MBYTES("Quota.InitialTemporaryGlobalStorageQuota",
+                           temporary_storage_quota_);
       if (!database()->SetGlobalQuota(
               kStorageTypeTemporary, temporary_storage_quota_)) {
         set_db_disabled(true);
@@ -476,6 +487,9 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
   virtual void DatabaseTaskCompleted() OVERRIDE {
     manager()->need_initialize_origins_ = need_initialize_origins_;
     manager()->DidInitializeTemporaryGlobalQuota(temporary_storage_quota_);
+    manager()->histogram_timer_.Start(QuotaManager::kReportHistogramInterval,
+                                      manager(),
+                                      &QuotaManager::ReportHistogram);
   }
 
  private:
@@ -724,10 +738,10 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
   scoped_ptr<AvailableSpaceCallback> callback_;
 };
 
-class QuotaManager::UpdateAccesTimeTask
+class QuotaManager::UpdateAccessTimeTask
     : public QuotaManager::DatabaseTaskBase {
  public:
-  UpdateAccesTimeTask(
+  UpdateAccessTimeTask(
       QuotaManager* manager,
       const GURL& origin,
       StorageType type,
@@ -1188,7 +1202,7 @@ void QuotaManager::NotifyStorageAccessedInternal(
 
   if (db_disabled_)
     return;
-  make_scoped_refptr(new UpdateAccesTimeTask(
+  make_scoped_refptr(new UpdateAccessTimeTask(
       this, origin, type, accessed_time))->Start();
 }
 
@@ -1326,6 +1340,40 @@ void QuotaManager::StartEviction() {
   temporary_storage_evictor_.reset(new QuotaTemporaryStorageEvictor(this,
       kEvictionIntervalInMilliSeconds));
   temporary_storage_evictor_->Start();
+}
+
+void QuotaManager::ReportHistogram() {
+  GetGlobalUsage(kStorageTypeTemporary,
+                 callback_factory_.NewCallback(
+                     &QuotaManager::DidGetGlobalUsageForHistogram));
+  GetGlobalUsage(kStorageTypePersistent,
+                 callback_factory_.NewCallback(
+                     &QuotaManager::DidGetGlobalUsageForHistogram));
+}
+
+void QuotaManager::DidGetGlobalUsageForHistogram(StorageType type,
+                                                 int64 usage,
+                                                 int64 unlimited_usage) {
+  const char* histogram_label_usage = NULL;
+  const char* histogram_label_num_origins = NULL;
+  switch (type) {
+    case kStorageTypeTemporary:
+      histogram_label_usage = "Quota.GlobalUsageOfTemporaryStorage";
+      histogram_label_num_origins = "Quota.NumberOfTemporaryStorageOrigins";
+      break;
+    case kStorageTypePersistent:
+      histogram_label_usage = "Quota.GlobalUsageOfPersistentStorage";
+      histogram_label_num_origins = "Quota.NumberOfPersistentStorageOrigins";
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  UMA_HISTOGRAM_MBYTES(histogram_label_usage, usage);
+
+  std::set<GURL> origins;
+  GetCachedOrigins(type, &origins);
+  UMA_HISTOGRAM_COUNTS(histogram_label_num_origins, origins.size());
 }
 
 void QuotaManager::DidInitializeTemporaryGlobalQuota(int64 quota) {

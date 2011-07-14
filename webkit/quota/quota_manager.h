@@ -169,6 +169,7 @@ class QuotaManager : public QuotaTaskObserver,
   static const int kThresholdOfErrorsToBeBlacklisted;
 
   static const int kEvictionIntervalInMilliSeconds;
+  static const base::TimeDelta kReportHistogramInterval;
 
  private:
   class DatabaseTaskBase;
@@ -179,7 +180,7 @@ class QuotaManager : public QuotaTaskObserver,
   class GetLRUOriginTask;
   class DeleteOriginInfo;
   class InitializeTemporaryOriginsInfoTask;
-  class UpdateAccesTimeTask;
+  class UpdateAccessTimeTask;
   class UpdateModifiedTimeTask;
   class GetModifiedSinceTask;
 
@@ -278,8 +279,14 @@ class QuotaManager : public QuotaTaskObserver,
       QuotaStatusCode status,
       StorageType type,
       int64 quota);
-  void DidGetGlobalUsageForEviction(StorageType type, int64 usage,
+  void DidGetGlobalUsageForEviction(StorageType type,
+                                    int64 usage,
                                     int64 unlimited_usage);
+
+  void ReportHistogram();
+  void DidGetGlobalUsageForHistogram(StorageType type,
+                                     int64 usage,
+                                     int64 unlimited_usage);
 
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
@@ -336,6 +343,7 @@ class QuotaManager : public QuotaTaskObserver,
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   base::ScopedCallbackFactory<QuotaManager> callback_factory_;
+  base::RepeatingTimer<QuotaManager> histogram_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };

@@ -46,13 +46,8 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   virtual ~QuotaTemporaryStorageEvictor();
 
   void GetStatistics(std::map<std::string, int64>* statistics);
+  void ReportHistogram();
   void Start();
-
-  static const char kStatsLabelNumberOfErrorsOnEvictingOrigin[];
-  static const char kStatsLabelNumberOfErrorsOnGettingUsageAndQuota[];
-  static const char kStatsLabelNumberOfEvictedOrigins[];
-  static const char kStatsLabelNumberOfEvictionRounds[];
-  static const char kStatsLabelNumberOfSkippedEvictionRounds[];
 
  private:
   friend class QuotaTemporaryStorageEvictorTest;
@@ -76,6 +71,7 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   static const double kUsageRatioToStartEviction;
   static const int64 kDefaultMinAvailableDiskSpaceToStartEviction;
   static const int kThresholdOfErrorsToStopEviction;
+  static const base::TimeDelta kHistogramReportInterval;
 
   const int64 min_available_disk_space_to_start_eviction_;
 
@@ -88,7 +84,12 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   bool repeated_eviction_;
   int num_evicted_origins_in_round_;
 
-  base::OneShotTimer<QuotaTemporaryStorageEvictor> timer_;
+  int64 usage_on_beginning_of_round_;
+  base::Time time_of_beginning_of_round_;
+  base::Time time_of_end_of_last_round_;
+
+  base::OneShotTimer<QuotaTemporaryStorageEvictor> eviction_timer_;
+  base::RepeatingTimer<QuotaTemporaryStorageEvictor> histogram_timer_;
 
   base::ScopedCallbackFactory<QuotaTemporaryStorageEvictor> callback_factory_;
 
