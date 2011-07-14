@@ -73,6 +73,11 @@ const PPB_Core* PPBCoreInterface() {
       GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
 }
 
+const PPB_Memory_Dev* PPBMemoryInterface() {
+  return static_cast<const PPB_Memory_Dev*>(
+      GetBrowserInterfaceSafe(PPB_MEMORY_DEV_INTERFACE));
+}
+
 const PPB_Var* PPBVarInterface() {
   return static_cast<const PPB_Var*>(
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));

@@ -12,6 +12,7 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -96,6 +97,7 @@ const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_Instance* PPBInstanceInterface();
+const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Messaging* PPBMessagingInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();

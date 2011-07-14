@@ -202,6 +202,12 @@ const PPB_Instance* PPBInstanceInterface() {
   return ppb;
 }
 
+const PPB_Memory_Dev* PPBMemoryInterface() {
+  static const PPB_Memory_Dev* ppb = static_cast<const PPB_Memory_Dev*>(
+      GetBrowserInterfaceSafe(PPB_MEMORY_DEV_INTERFACE));
+  return ppb;
+}
+
 const PPB_Messaging* PPBMessagingInterface() {
   static const PPB_Messaging* ppb =
       static_cast<const PPB_Messaging*>(

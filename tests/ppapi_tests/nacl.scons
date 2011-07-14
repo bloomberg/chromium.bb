@@ -27,6 +27,7 @@ ppapi_tests_sources = [
     #'test_file_io.cc',
     #'test_file_ref.cc',
     #'test_file_system.cc',
+    'test_memory.cc',
     'test_graphics_2d.cc',
     'test_image_data.cc',
     'test_paint_aggregator.cc',

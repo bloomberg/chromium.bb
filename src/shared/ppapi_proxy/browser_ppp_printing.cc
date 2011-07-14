@@ -31,11 +31,11 @@ PP_PrintOutputFormat_Dev* QuerySupportedFormats(PP_Instance instance,
   DebugPrintf("PPP_Printing_Dev::QuerySupportedFormats: "
               "instance=%"NACL_PRIu32"\n", instance);
 
-  const PPB_Core* ppb_core = PPBCoreInterface();
+  const PPB_Memory_Dev* ppb_memory = PPBMemoryInterface();
   const nacl_abi_size_t kMaxFormats = 8;
   nacl_abi_size_t formats_bytes = kMaxFormats * kPPPrintOutputFormatBytes;
   char* formats =
-      reinterpret_cast<char*>(ppb_core->MemAlloc(formats_bytes));
+      reinterpret_cast<char*>(ppb_memory->MemAlloc(formats_bytes));
   NaClSrpcError srpc_result =
       PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
           GetMainSrpcChannel(instance),
@@ -49,7 +49,7 @@ PP_PrintOutputFormat_Dev* QuerySupportedFormats(PP_Instance instance,
   if (*format_count > 0)
     return reinterpret_cast<PP_PrintOutputFormat_Dev*>(formats);
 
-  ppb_core->MemFree(formats);
+  ppb_memory->MemFree(formats);
   return NULL;
 }
 

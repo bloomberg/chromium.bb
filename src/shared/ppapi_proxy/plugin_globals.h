@@ -6,6 +6,7 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/ppb.h"
@@ -41,6 +42,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
 const PPB_Core* PPBCoreInterface();  // shared
+const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
 const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPP_Messaging* PPPMessagingInterface();

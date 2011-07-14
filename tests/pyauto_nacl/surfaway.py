@@ -111,6 +111,10 @@ class NaClTest(pyauto.PyUITest):
     self.surfAway('test_case.html?mode=nacl&testcase=ImageData',
                   'Test ImageData')
 
+  def testSurfAwayPPAPITestsMemory(self):
+    self.surfAway('test_case.html?mode=nacl&testcase=Memory',
+                  'Test Memory')
+
   def testSurfAwayPPAPITestsPaintAggregator(self):
     self.surfAway('test_case.html?mode=nacl&testcase=PaintAggregator',
                   'Test PaintAggregator')

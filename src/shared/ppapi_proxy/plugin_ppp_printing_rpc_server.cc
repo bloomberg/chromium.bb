@@ -64,7 +64,7 @@ void PppPrintingRpcServer::PPP_Printing_QuerySupportedFormats(
     } else {
       *format_count = 0;
     }
-    ppapi_proxy::PPBCoreInterface()->MemFree(pp_formats);
+    ppapi_proxy::PPBMemoryInterface()->MemFree(pp_formats);
   }
 
   DebugPrintf("PPP_Printing::QuerySupportedFormats: "

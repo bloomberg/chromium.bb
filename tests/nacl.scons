@@ -51,6 +51,7 @@ example_nexes = [
     'ppapi_ppb_core',        # ppapi_ppb_core.html
     'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html
     'ppapi_ppb_file_system', # ppapi_ppb_file_system.html
+    'ppapi_ppb_memory',      # ppapi_ppb_memory.html
     'ppapi_messaging',       # ppapi_messaging.html
     ]
 
