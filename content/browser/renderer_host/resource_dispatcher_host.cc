@@ -1108,7 +1108,7 @@ bool ResourceDispatcherHost::CanGetCookies(net::URLRequest* request) {
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
     return false;
 
-  net::URLRequestContext* context = request->context();
+  const net::URLRequestContext* context = request->context();
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
   net::CookieList cookie_list =

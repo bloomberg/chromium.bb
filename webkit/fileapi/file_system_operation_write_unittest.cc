@@ -123,18 +123,23 @@ namespace {
 
 class TestURLRequestContext : public net::URLRequestContext {
  public:
-  webkit_blob::BlobStorageController* blob_storage_controller() {
-    return &blob_storage_controller_;
+  TestURLRequestContext()
+      : blob_storage_controller_(new webkit_blob::BlobStorageController) {}
+
+  virtual ~TestURLRequestContext() {}
+
+  webkit_blob::BlobStorageController* blob_storage_controller() const {
+    return blob_storage_controller_.get();
   }
 
  private:
-  webkit_blob::BlobStorageController blob_storage_controller_;
+  scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
 };
 
 static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
                                                     const std::string& scheme) {
   webkit_blob::BlobStorageController* blob_storage_controller =
-      static_cast<TestURLRequestContext*>(request->context())->
+      static_cast<const TestURLRequestContext*>(request->context())->
           blob_storage_controller();
   return new webkit_blob::BlobURLRequestJob(
       request,

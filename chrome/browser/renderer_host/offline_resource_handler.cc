@@ -107,8 +107,8 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
     appcache_completion_callback_ =
         new net::CancelableCompletionCallback<OfflineResourceHandler>(
             this, &OfflineResourceHandler::OnCanHandleOfflineComplete);
-    ChromeURLRequestContext* url_request_context =
-        static_cast<ChromeURLRequestContext*>(request_->context());
+    const ChromeURLRequestContext* url_request_context =
+        static_cast<const ChromeURLRequestContext*>(request_->context());
     url_request_context->appcache_service()->CanHandleMainResourceOffline(
         url, appcache_completion_callback_);
 
