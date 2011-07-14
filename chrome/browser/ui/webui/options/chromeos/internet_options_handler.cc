@@ -421,7 +421,7 @@ void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
   chromeos::CellularNetwork* network =
         cros_->FindCellularNetworkByPath(service_path);
   if (network) {
-    network->SetApn(chromeos::CellularNetwork::Apn(
+    network->SetApn(chromeos::CellularApn(
         apn, network->apn().network_id, username, password));
   }
 }
@@ -750,14 +750,13 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
 
-  const chromeos::CellularNetwork::Apn& apn = cellular->apn();
+  const chromeos::CellularApn& apn = cellular->apn();
   dictionary->SetString("apn", apn.apn);
   dictionary->SetString("apn_network_id", apn.network_id);
   dictionary->SetString("apn_username", apn.username);
   dictionary->SetString("apn_password", apn.password);
 
-  const chromeos::CellularNetwork::Apn& last_good_apn =
-      cellular->last_good_apn();
+  const chromeos::CellularApn& last_good_apn = cellular->last_good_apn();
   dictionary->SetString("last_good_apn", last_good_apn.apn);
   dictionary->SetString("last_good_apn_network_id", last_good_apn.network_id);
   dictionary->SetString("last_good_apn_username", last_good_apn.username);

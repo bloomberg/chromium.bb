@@ -188,8 +188,24 @@ struct FoundCellularNetwork {
   std::string long_name;
   std::string technology;
 };
-
 typedef std::vector<FoundCellularNetwork> CellularNetworkList;
+
+struct CellularApn {
+  std::string apn;
+  std::string network_id;
+  std::string username;
+  std::string password;
+  std::string name;
+  std::string localized_name;
+  std::string language;
+
+  CellularApn();
+  CellularApn(const std::string& apn, const std::string& network_id,
+      const std::string& username, const std::string& password);
+  ~CellularApn();
+  void Set(const DictionaryValue& dict);
+};
+typedef std::vector<CellularApn> CellularApnList;
 
 // Cellular network is considered low data when less than 60 minues.
 static const int kCellularDataLowSecs = 60 * 60;
@@ -250,6 +266,9 @@ class NetworkDevice {
   bool data_roaming_allowed() const { return data_roaming_allowed_; }
   bool support_network_scan() const { return support_network_scan_; }
   enum TechnologyFamily technology_family() const { return technology_family_; }
+  const CellularApnList& provider_apn_list() const {
+    return provider_apn_list_;
+  }
 
  private:
   bool ParseValue(int index, const base::Value* value);
@@ -286,6 +305,7 @@ class NetworkDevice {
   CellularNetworkList found_cellular_networks_;
   bool data_roaming_allowed_;
   bool support_network_scan_;
+  CellularApnList provider_apn_list_;
 
   friend class NetworkLibraryImpl;
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
@@ -593,19 +613,6 @@ class CellularNetwork : public WirelessNetwork {
     DATA_NONE
   };
 
-  struct Apn {
-    std::string apn;
-    std::string network_id;
-    std::string username;
-    std::string password;
-
-    Apn();
-    Apn(const std::string& apn, const std::string& network_id,
-        const std::string& username, const std::string& password);
-    ~Apn();
-    void Set(const base::DictionaryValue& dict);
-  };
-
   explicit CellularNetwork(const std::string& service_path);
   virtual ~CellularNetwork();
 
@@ -635,9 +642,13 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& payment_url() const { return payment_url_; }
   const std::string& usage_url() const { return usage_url_; }
   DataLeft data_left() const { return data_left_; }
-  const Apn& apn() const { return apn_; }
-  const Apn& last_good_apn() const { return last_good_apn_; }
-  void SetApn(const Apn& apn);
+  const CellularApn& apn() const { return apn_; }
+  const CellularApn& last_good_apn() const { return last_good_apn_; }
+  // Sets the APN to use in establishing data connections. Only
+  // the fields of the APN that are needed for making connections
+  // are passed to flimflam. The name, localized_name, and language
+  // fields are ignored.
+  void SetApn(const CellularApn& apn);
 
   // Returns true if network supports activation.
   // Current implementation returns same as SupportsDataPlan().
@@ -671,8 +682,8 @@ class CellularNetwork : public WirelessNetwork {
   std::string usage_url_;
   // Cached values
   DataLeft data_left_;  // Updated when data plans are updated.
-  Apn apn_;
-  Apn last_good_apn_;
+  CellularApn apn_;
+  CellularApn last_good_apn_;
 
  private:
   void set_activation_state(ActivationState state) {
@@ -685,8 +696,8 @@ class CellularNetwork : public WirelessNetwork {
   }
   void set_roaming_state(NetworkRoamingState state) { roaming_state_ = state; }
   void set_data_left(DataLeft data_left) { data_left_ = data_left; }
-  void set_apn(const Apn& apn) { apn_ = apn; }
-  void set_last_good_apn(const Apn& apn) { last_good_apn_ = apn; }
+  void set_apn(const CellularApn& apn) { apn_ = apn; }
+  void set_last_good_apn(const CellularApn& apn) { last_good_apn_ = apn; }
 
   friend class NetworkLibraryImpl;
   friend class NetworkLibraryStubImpl;

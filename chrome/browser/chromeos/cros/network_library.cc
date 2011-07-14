@@ -148,6 +148,7 @@ const char* kPaymentURLProperty = "Cellular.OlpUrl";
 const char* kUsageURLProperty = "Cellular.UsageUrl";
 const char* kCellularApnProperty = "Cellular.APN";
 const char* kCellularLastGoodApnProperty = "Cellular.LastGoodAPN";
+const char* kCellularApnListProperty = "Cellular.APNList";
 const char* kWifiHexSsid = "WiFi.HexSSID";
 const char* kWifiFrequency = "WiFi.Frequency";
 const char* kWifiHiddenSsid = "WiFi.HiddenSSID";
@@ -175,6 +176,7 @@ const char* kLongNameProperty = "long_name";
 const char* kStatusProperty = "status";
 const char* kShortNameProperty = "short_name";
 const char* kTechnologyProperty = "technology";
+const char* kNetworkIdProperty = "network_id";
 
 // Flimflam SIMLock status types.
 const char* kSIMLockPin = "sim-pin";
@@ -182,9 +184,12 @@ const char* kSIMLockPuk = "sim-puk";
 
 // APN info property names.
 const char* kApnProperty = "apn";
-const char* kNetworkIdProperty = "network_id";
-const char* kUsernameProperty = "username";
-const char* kPasswordProperty = "password";
+const char* kApnNetworkIdProperty = "network_id";
+const char* kApnUsernameProperty = "username";
+const char* kApnPasswordProperty = "password";
+const char* kApnNameProperty = "name";
+const char* kApnLocalizedNameProperty = "localized_name";
+const char* kApnLanguageProperty = "language";
 
 // Operator info property names.
 const char* kOperatorNameKey = "name";
@@ -451,6 +456,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_CARRIER,
   PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING,
   PROPERTY_INDEX_CELLULAR_APN,
+  PROPERTY_INDEX_CELLULAR_APN_LIST,
   PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
   PROPERTY_INDEX_CONNECTABLE,
   PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
@@ -543,6 +549,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
   { kCellularAllowRoamingProperty, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING },
   { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
+  { kCellularApnListProperty, PROPERTY_INDEX_CELLULAR_APN_LIST },
   { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
   { kCarrierProperty, PROPERTY_INDEX_CARRIER },
   { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
@@ -802,6 +809,35 @@ static bool ParseFoundNetworksFromList(const ListValue* list,
   return true;
 }
 
+static bool ParseApnList(const ListValue* list,
+                         CellularApnList* apn_list) {
+  apn_list->clear();
+  apn_list->reserve(list->GetSize());
+  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
+      apn_list->resize(apn_list->size() + 1);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
+      dict->GetStringWithoutPathExpansion(
+          kApnProperty, &apn_list->back().apn);
+      dict->GetStringWithoutPathExpansion(
+          kApnNetworkIdProperty, &apn_list->back().network_id);
+      dict->GetStringWithoutPathExpansion(
+          kApnUsernameProperty, &apn_list->back().username);
+      dict->GetStringWithoutPathExpansion(
+          kApnPasswordProperty, &apn_list->back().password);
+      dict->GetStringWithoutPathExpansion(
+          kApnNameProperty, &apn_list->back().name);
+      dict->GetStringWithoutPathExpansion(
+          kApnLocalizedNameProperty, &apn_list->back().localized_name);
+      dict->GetStringWithoutPathExpansion(
+          kApnLanguageProperty, &apn_list->back().language);
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
 static NetworkRoamingState ParseRoamingState(const std::string& roaming_state) {
   static StringToEnum<NetworkRoamingState>::Pair table[] = {
     { kRoamingStateHome, ROAMING_STATE_HOME },
@@ -952,6 +988,12 @@ bool NetworkDevice::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&scanning_);
     case PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING:
       return value->GetAsBoolean(&data_roaming_allowed_);
+    case PROPERTY_INDEX_CELLULAR_APN_LIST:
+      if (value->IsType(Value::TYPE_LIST)) {
+        return ParseApnList(static_cast<const ListValue*>(value),
+                            &provider_apn_list_);
+      }
+      break;
     case PROPERTY_INDEX_NETWORKS:
       if (value->IsType(Value::TYPE_LIST)) {
         // Ignored.
@@ -1771,28 +1813,35 @@ int32 NetworkIPConfig::GetPrefixLength() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CellularNetwork::Apn
+// CellularApn
 
-CellularNetwork::Apn::Apn() {}
+CellularApn::CellularApn() {}
 
-CellularNetwork::Apn::Apn(
+CellularApn::CellularApn(
     const std::string& apn, const std::string& network_id,
     const std::string& username, const std::string& password)
     : apn(apn), network_id(network_id),
       username(username), password(password) {
 }
 
-CellularNetwork::Apn::~Apn() {}
+CellularApn::~CellularApn() {}
 
-void CellularNetwork::Apn::Set(const DictionaryValue& dict) {
+void CellularApn::Set(const DictionaryValue& dict) {
   if (!dict.GetStringWithoutPathExpansion(kApnProperty, &apn))
     apn.clear();
-  if (!dict.GetStringWithoutPathExpansion(kNetworkIdProperty, &network_id))
+  if (!dict.GetStringWithoutPathExpansion(kApnNetworkIdProperty, &network_id))
     network_id.clear();
-  if (!dict.GetStringWithoutPathExpansion(kUsernameProperty, &username))
+  if (!dict.GetStringWithoutPathExpansion(kApnUsernameProperty, &username))
     username.clear();
-  if (!dict.GetStringWithoutPathExpansion(kPasswordProperty, &password))
+  if (!dict.GetStringWithoutPathExpansion(kApnPasswordProperty, &password))
     password.clear();
+  if (!dict.GetStringWithoutPathExpansion(kApnNameProperty, &name))
+    name.clear();
+  if (!dict.GetStringWithoutPathExpansion(kApnLocalizedNameProperty,
+                                          &localized_name))
+    localized_name.clear();
+  if (!dict.GetStringWithoutPathExpansion(kApnLanguageProperty, &language))
+    language.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1906,16 +1955,18 @@ void CellularNetwork::RefreshDataPlansIfNeeded() const {
     chromeos::RequestCellularDataPlanUpdate(service_path().c_str());
 }
 
-void CellularNetwork::SetApn(const Apn& apn) {
+void CellularNetwork::SetApn(const CellularApn& apn) {
   if (!EnsureCrosLoaded())
     return;
 
   if (!apn.apn.empty()) {
     DictionaryValue value;
+    // Only use the fields that are needed for establishing
+    // connections, and ignore the rest.
     value.SetString(kApnProperty, apn.apn);
-    value.SetString(kNetworkIdProperty, apn.network_id);
-    value.SetString(kUsernameProperty, apn.username);
-    value.SetString(kPasswordProperty, apn.password);
+    value.SetString(kApnNetworkIdProperty, apn.network_id);
+    value.SetString(kApnUsernameProperty, apn.username);
+    value.SetString(kApnPasswordProperty, apn.password);
     SetValueProperty(kCellularApnProperty, &value);
   } else {
     ClearProperty(kCellularApnProperty);
