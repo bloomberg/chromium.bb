@@ -224,9 +224,11 @@
       # under virtual X on linux.  The CONTINUOUS suite runs under virtual X
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
+      # crbug.com/85310
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       '-omnibox.OmniboxTest.testFetchHistoryResultItems',
+      '-omnibox.OmniboxTest.testGoogleSearch',
       '-omnibox.OmniboxTest.testInlinAutoComplete',
       '-omnibox.OmniboxTest.testSelect',
       '-omnibox.OmniboxTest.testSuggestPref',
@@ -345,6 +347,7 @@
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
       'omnibox.OmniboxTest.testFetchHistoryResultItems',
+      'omnibox.OmniboxTest.testGoogleSearch',
       'omnibox.OmniboxTest.testInlinAutoComplete',
       'omnibox.OmniboxTest.testSelect',
       'omnibox.OmniboxTest.testSuggestPref',
