@@ -139,7 +139,6 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
   AddPPB(PPB_InputEvent_Proxy::GetInfo());
-  AddPPB(PPB_Instance_Proxy::GetInfo0_4());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
   AddPPB(PPB_Instance_Proxy::GetInfo1_0());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());
@@ -166,7 +165,6 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_Instance_Proxy::GetInfo0_4());
   AddPPP(PPP_Instance_Proxy::GetInfo0_5());
 }
 

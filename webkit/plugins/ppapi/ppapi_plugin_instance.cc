@@ -198,18 +198,6 @@ PluginInstance* PluginInstance::Create0_5(PluginDelegate* delegate,
       new ::ppapi::PPP_Instance_Combined(*interface));
 }
 
-// static
-PluginInstance* PluginInstance::Create0_4(PluginDelegate* delegate,
-                                          PluginModule* module,
-                                          const void* ppp_instance_if_0_4) {
-  const PPP_Instance_0_4* interface =
-      static_cast<const PPP_Instance_0_4*>(ppp_instance_if_0_4);
-  return new PluginInstance(
-      delegate,
-      module,
-      new ::ppapi::PPP_Instance_Combined(*interface));
-}
-
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
     PluginModule* module,
@@ -502,14 +490,10 @@ PP_Var PluginInstance::GetInstanceObject() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
-  // Try the private interface first. If it is not supported, we fall back to
-  // looking in the older version of the PPP_Instance interface for
-  // GetInstanceObject. If all that fails, return an undefined Var.
-  // TODO(dmichael): Remove support for PPP_Instance.GetInstanceObject
+  // If the plugin supports the private instance interface, try to retrieve its
+  // instance object.
   if (LoadPrivateInterface())
     return plugin_private_interface_->GetInstanceObject(pp_instance());
-  else if (instance_interface_->GetInstanceObject_0_4)
-    return instance_interface_->GetInstanceObject_0_4(pp_instance());
   return PP_MakeUndefined();
 }
 

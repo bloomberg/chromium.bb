@@ -29,7 +29,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   PPB_Instance_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Instance_Proxy();
 
-  static const Info* GetInfo0_4();
   static const Info* GetInfo0_5();
   static const Info* GetInfo1_0();
   static const Info* GetInfoMessaging();

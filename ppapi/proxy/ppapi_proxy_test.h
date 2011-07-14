@@ -137,6 +137,8 @@ class PluginProxyTest : public PluginProxyTestHarness, public testing::Test {
   // testing::Test implementation.
   virtual void SetUp();
   virtual void TearDown();
+ private:
+  MessageLoop message_loop_;
 };
 
 class HostProxyTestHarness : public ProxyTestHarnessBase {
@@ -191,6 +193,8 @@ class HostProxyTest : public HostProxyTestHarness, public testing::Test {
   // testing::Test implementation.
   virtual void SetUp();
   virtual void TearDown();
+ private:
+  MessageLoop message_loop_;
 };
 
 // Use this base class to test both sides of a proxy.

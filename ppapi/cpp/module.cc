@@ -132,28 +132,13 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   return PP_FromBool(instance->HandleDocumentLoad(URLLoader(pp_url_loader)));
 }
 
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
-  Module* module_singleton = Module::Get();
-  if (!module_singleton)
-    return Var().Detach();
-  Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
-  if (!instance)
-    return Var().Detach();
-  return instance->GetInstanceObject().Detach();
-}
-#endif
-
 static PPP_Instance instance_interface = {
   &Instance_DidCreate,
   &Instance_DidDestroy,
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
   &Instance_HandleInputEvent,
-  &Instance_HandleDocumentLoad,
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  &Instance_GetInstanceObject
-#endif
+  &Instance_HandleDocumentLoad
 };
 
 // PPP_Messaging implementation ------------------------------------------------

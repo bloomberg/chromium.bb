@@ -47,18 +47,6 @@ PPB_Instance_Proxy::~PPB_Instance_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_4() {
-  static const Info info = {
-    ppapi::thunk::GetPPB_Instance_0_4_Thunk(),
-    PPB_INSTANCE_INTERFACE_0_4,
-    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
-    false,
-    &CreateInstanceProxy,
-  };
-  return &info;
-}
-
-// static
 const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo0_5() {
   static const Info info = {
     ppapi::thunk::GetPPB_Instance_1_0_Thunk(),
@@ -87,7 +75,7 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoMessaging() {
   static const Info info = {
     ppapi::thunk::GetPPB_Messaging_Thunk(),
     PPB_MESSAGING_INTERFACE,
-    INTERFACE_ID_NONE,  // 0_5 is the canonical one.
+    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
     false,
     &CreateInstanceProxy,
   };
@@ -99,7 +87,7 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoPrivate() {
   static const Info info = {
     ppapi::thunk::GetPPB_Instance_Private_Thunk(),
     PPB_INSTANCE_PRIVATE_INTERFACE,
-    INTERFACE_ID_NONE,  // 0_5 is the canonical one.
+    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
     false,
     &CreateInstanceProxy,
   };
@@ -111,7 +99,7 @@ const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfoFullscreen() {
   static const Info info = {
     ppapi::thunk::GetPPB_Fullscreen_Thunk(),
     PPB_FULLSCREEN_DEV_INTERFACE,
-    INTERFACE_ID_NONE,  // 0_5 is the canonical one.
+    INTERFACE_ID_NONE,  // 1_0 is the canonical one.
     false,
     &CreateInstanceProxy,
   };

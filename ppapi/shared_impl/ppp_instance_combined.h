@@ -13,9 +13,6 @@ namespace ppapi {
 struct PPP_Instance_Combined : public PPP_Instance_0_5 {
  public:
   explicit PPP_Instance_Combined(const PPP_Instance_0_5& instance_if);
-  explicit PPP_Instance_Combined(const PPP_Instance_0_4& instance_if);
-
-  PP_Var (*const GetInstanceObject_0_4)(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPP_Instance_Combined);
 };

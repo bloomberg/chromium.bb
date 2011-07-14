@@ -54,14 +54,6 @@ const PPB_Instance_1_0 g_ppb_instance_1_0_thunk = {
   &IsFullFrame
 };
 
-const PPB_Instance_0_4 g_ppb_instance_0_4_thunk = {
-  &GetWindowObject,
-  &GetOwnerElementObject,
-  &BindGraphics,
-  &IsFullFrame,
-  &ExecuteScript
-};
-
 const PPB_Instance_Private g_ppb_instance_private_thunk = {
   &GetWindowObject,
   &GetOwnerElementObject,
@@ -70,9 +62,6 @@ const PPB_Instance_Private g_ppb_instance_private_thunk = {
 
 }  // namespace
 
-const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk() {
-  return &g_ppb_instance_0_4_thunk;
-}
 const PPB_Instance_1_0* GetPPB_Instance_1_0_Thunk() {
   return &g_ppb_instance_1_0_thunk;
 }

@@ -185,20 +185,6 @@ class Instance {
   /// @{
   /// @name PPB_Instance methods for querying the browser:
 
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  /// See PPP_Instance.GetInstanceObject.
-  virtual Var GetInstanceObject();
-
-  /// See PPB_Instance.GetWindowObject.
-  Var GetWindowObject();
-
-  /// See PPB_Instance.GetOwnerElementObject.
-  Var GetOwnerElementObject();
-
-  /// See PPB_Instance.ExecuteScript.
-  Var ExecuteScript(const Var& script, Var* exception = NULL);
-#endif
-
   /// See PPB_Instance.BindGraphics.
   bool BindGraphics(const Graphics2D& graphics);
 

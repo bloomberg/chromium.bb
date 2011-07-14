@@ -91,12 +91,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                                    PluginModule* module,
                                    const void* ppp_instance_if_0_5);
 
-  // Create and return a PluginInstance object which supports the
-  // PPP_Instance_0_4 interface.
-  static PluginInstance* Create0_4(PluginDelegate* delegate,
-                                   PluginModule* module,
-                                   const void* ppp_instance_if_0_4);
-
   // Delete should be called by the WebPlugin before this destructor.
   virtual ~PluginInstance();
 

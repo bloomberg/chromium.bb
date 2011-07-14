@@ -78,37 +78,6 @@ void Instance::HandleMessage(const Var& /*message*/) {
   return;
 }
 
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-Var Instance::GetWindowObject() {
-  if (!has_interface<PPB_Instance>())
-    return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_Instance>()->GetWindowObject(pp_instance()));
-}
-
-Var Instance::GetOwnerElementObject() {
-  if (!has_interface<PPB_Instance>())
-    return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_Instance>()->GetOwnerElementObject(
-                 pp_instance()));
-}
-
-Var Instance::ExecuteScript(const Var& script, Var* exception) {
-  if (!has_interface<PPB_Instance>())
-    return Var();
-  return Var(Var::PassRef(),
-             get_interface<PPB_Instance>()->ExecuteScript(
-                 pp_instance(),
-                 script.pp_var(),
-                 Var::OutException(exception).get()));
-}
-
-Var Instance::GetInstanceObject() {
-  return Var();
-}
-#endif
-
 bool Instance::BindGraphics(const Graphics2D& graphics) {
   if (!has_interface<PPB_Instance>())
     return false;

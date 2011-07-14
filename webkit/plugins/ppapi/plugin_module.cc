@@ -395,12 +395,6 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_VAR_INTERFACE_0_5) == 0)
     return Var::GetInterface();
 
-  // Support the 0.4 version of PPB_Instance that includes scripting, until it
-  // is no longer being used.
-  // TODO(dmichael): Remove this.
-  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_4) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_0_4_Thunk();
-
   // Support the dev interfaces for file io, fileref and file system
   // until relevant tests and examples are migrated over to non-dev interfaces
   // in order to prevent breaking the tests and examples.
@@ -561,11 +555,6 @@ PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5);
   if (ppp_instance) {
     instance = PluginInstance::Create0_5(delegate, this, ppp_instance);
-  } else {
-    // If the 0.5 interface is not supported, try retrieving 0.4.
-    ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_4);
-    if (ppp_instance)
-      instance = PluginInstance::Create0_4(delegate, this, ppp_instance);
   }
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";

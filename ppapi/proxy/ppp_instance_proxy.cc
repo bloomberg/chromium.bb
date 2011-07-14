@@ -112,24 +112,6 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   return result;
 }
 
-PP_Var GetInstanceObject(PP_Instance instance) {
-  Dispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  ReceiveSerializedVarReturnValue result;
-  dispatcher->Send(new PpapiMsg_PPPInstance_GetInstanceObject(
-      INTERFACE_ID_PPP_INSTANCE, instance, &result));
-  return result.Return(dispatcher);
-}
-
-static const PPP_Instance_0_4 instance_interface_0_4 = {
-  &DidCreate,
-  &DidDestroy,
-  &DidChangeView,
-  &DidChangeFocus,
-  &HandleInputEvent,
-  &HandleDocumentLoad,
-  &GetInstanceObject
-};
-
 static const PPP_Instance_0_5 instance_interface_0_5 = {
   &DidCreate,
   &DidDestroy,
@@ -150,18 +132,6 @@ InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher,
 }  // namespace
 
 PPP_Instance_Proxy::~PPP_Instance_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo0_4() {
-  static const Info info = {
-    &instance_interface_0_4,
-    PPP_INSTANCE_INTERFACE_0_4,
-    INTERFACE_ID_PPP_INSTANCE,
-    false,
-    &CreateInstanceProxy<PPP_Instance_0_4>
-  };
-  return &info;
 }
 
 // static
@@ -191,8 +161,6 @@ bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgHandleInputEvent)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_HandleDocumentLoad,
                         OnMsgHandleDocumentLoad)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_GetInstanceObject,
-                        OnMsgGetInstanceObject)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -276,17 +244,6 @@ void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
   // Once all references at the plugin side are released, the renderer side will
   // be notified and release the reference added in HandleDocumentLoad() above.
   PluginResourceTracker::GetInstance()->ReleaseResource(plugin_loader);
-}
-
-void PPP_Instance_Proxy::OnMsgGetInstanceObject(
-    PP_Instance instance,
-    SerializedVarReturnValue result) {
-  // GetInstanceObject_0_4 can be null if we're talking to version 0.5 or later,
-  // however the host side of the proxy should never call this function on an
-  // 0.5 or later version.
-  DCHECK(combined_interface_->GetInstanceObject_0_4);
-  result.Return(dispatcher(),
-                combined_interface_->GetInstanceObject_0_4(instance));
 }
 
 }  // namespace proxy

@@ -296,9 +296,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleDocumentLoad,
                            PP_Instance /* instance */,
                            pp::proxy::HostResource /* url_loader */,
                            PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstance_GetInstanceObject,
-                           PP_Instance /* instance */,
-                           pp::proxy::SerializedVar /* result */)
 
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,

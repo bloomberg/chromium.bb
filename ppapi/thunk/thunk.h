@@ -52,13 +52,7 @@ struct PPB_WheelInputEvent;
 struct PPB_Widget_Dev;
 struct PPB_Zoom_Dev;
 
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-struct PPB_Instance_0_4;
 typedef PPB_Instance PPB_Instance_1_0;
-#else
-struct PPB_Instance_1_0;
-typedef PPB_Instance PPB_Instance_0_4;
-#endif
 
 namespace ppapi {
 namespace thunk {
@@ -92,7 +86,6 @@ const PPB_Graphics3D_Dev* GetPPB_Graphics3D_Thunk();
 const PPB_InputEvent* GetPPB_InputEvent_Thunk();
 const PPB_ImageData* GetPPB_ImageData_Thunk();
 const PPB_ImageDataTrusted* GetPPB_ImageDataTrusted_Thunk();
-const PPB_Instance_0_4* GetPPB_Instance_0_4_Thunk();
 const PPB_Instance_1_0* GetPPB_Instance_1_0_Thunk();
 const PPB_Instance_Private* GetPPB_Instance_Private_Thunk();
 const PPB_KeyboardInputEvent* GetPPB_KeyboardInputEvent_Thunk();

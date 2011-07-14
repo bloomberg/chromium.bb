@@ -35,9 +35,6 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   }
   virtual ~PPP_Instance_Proxy();
 
-  // Return the info for the 0.4 version of the interface.
-  static const Info* GetInfo0_4();
-
   // Return the info for the 0.5 (latest, canonical) version of the interface.
   static const Info* GetInfo0_5();
 
@@ -66,8 +63,6 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   void OnMsgHandleDocumentLoad(PP_Instance instance,
                                const HostResource& url_loader,
                                PP_Bool* result);
-  void OnMsgGetInstanceObject(PP_Instance instance,
-                              SerializedVarReturnValue result);
   scoped_ptr< ::ppapi::PPP_Instance_Combined> combined_interface_;
 };
 

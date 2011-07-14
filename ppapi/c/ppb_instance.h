@@ -8,16 +8,10 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
 
-#define PPB_INSTANCE_INTERFACE_0_4 "PPB_Instance;0.4"
 #define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
 #define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 #define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
-#else
-#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_0_4
-#endif
 
 /**
  * @file
@@ -35,11 +29,7 @@
  *
  */
 
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 struct PPB_Instance {
-#else
-struct PPB_Instance_1_0 {
-#endif
   /**
    * BindGraphics() binds the given graphics as the current drawing surface.
    * The contents of this device is what will be displayed in the module's
@@ -86,25 +76,7 @@ struct PPB_Instance_1_0 {
 
 };
 
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-struct PPB_Instance_0_4 {
-#else
-struct PPB_Instance {
-#endif
-  struct PP_Var (*GetWindowObject)(PP_Instance instance);
-  struct PP_Var (*GetOwnerElementObject)(PP_Instance instance);
-  PP_Bool (*BindGraphics)(PP_Instance instance, PP_Resource device);
-  PP_Bool (*IsFullFrame)(PP_Instance instance);
-  struct PP_Var (*ExecuteScript)(PP_Instance instance,
-                                 struct PP_Var script,
-                                 struct PP_Var* exception);
-};
-
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
 typedef struct PPB_Instance PPB_Instance_1_0;
-#else
-typedef struct PPB_Instance PPB_Instance_0_4;
-#endif
 
 /**
  * @}
