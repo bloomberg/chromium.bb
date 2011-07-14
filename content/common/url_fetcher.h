@@ -259,7 +259,8 @@ class URLFetcher {
   // Get the path to the file containing the response body. Returns false
   // if the response body was not saved to a file. If take_ownership is
   // true, caller takes responsibility for the temp file, and it will not
-  // be removed once the URLFetcher is destroyed.
+  // be removed once the URLFetcher is destroyed.  User should not take
+  // ownership more than once, or call this method after taking ownership.
   virtual bool GetResponseAsFilePath(bool take_ownership,
                                      FilePath* out_response_path) const;
 
@@ -288,10 +289,10 @@ class URLFetcher {
   // be STRING, or this will CHECK.  This method exists to support the
   // old signiture to OnURLFetchComplete(), and will be removed as part
   // of crbug.com/83592 .
-  const std::string& GetResponseStringRef() const;
+  virtual const std::string& GetResponseStringRef() const;
 
-  void SetResponseDestinationForTesting(ResponseDestinationType);
-  ResponseDestinationType GetResponseDestinationForTesting() const;
+  virtual void SetResponseDestinationForTesting(ResponseDestinationType);
+  virtual ResponseDestinationType GetResponseDestinationForTesting() const;
 
  private:
   friend class URLFetcherTest;
