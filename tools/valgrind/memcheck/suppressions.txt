@@ -4861,6 +4861,7 @@
 }
 {
    bug_89300
+   Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN8IOThread31RegisterURLRequestContextGetterEP29ChromeURLRequestContextGetter
