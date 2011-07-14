@@ -290,7 +290,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     // The Cloud Print app should never be displayed in the NTP.
     const Extension* extension = *it;
     DictionaryValue* app_info = GetAppInfo(extension);
-    if (app_info && ((*it)->id() != extension_misc::kCloudPrintAppId))
+    if (app_info)
       list->Append(app_info);
   }
 
@@ -345,7 +345,8 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
   bool ntp3 =
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4);
   if (!extension->is_app() ||
-      (ntp3 && extension->id() == extension_misc::kWebStoreAppId)) {
+      (ntp3 && extension->id() == extension_misc::kWebStoreAppId) ||
+      (extension->id() == extension_misc::kCloudPrintAppId)) {
     return NULL;
   }
 
