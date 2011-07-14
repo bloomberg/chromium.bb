@@ -243,13 +243,6 @@ const PPB_Var* PPBVarInterface() {
   return ppb;
 }
 
-const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
-  static const PPB_Var_Deprecated* ppb =
-      static_cast<const PPB_Var_Deprecated*>(
-          GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
-  return ppb;
-}
-
 // Dev interfaces.
 const PPB_CursorControl_Dev* PPBCursorControlInterface() {
   static const PPB_CursorControl_Dev* ppb =

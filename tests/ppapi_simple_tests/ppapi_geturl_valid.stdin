@@ -27,9 +27,6 @@ set_variable NULL R(8,8:0)
 
 echo
 echo "*** INIT MODULE"
-# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
-#             asking for it.
-replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
 replay 99 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)

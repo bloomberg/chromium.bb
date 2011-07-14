@@ -21,8 +21,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
-#include "native_client/src/shared/ppapi_proxy/object_capability.h"
-#include "native_client/src/shared/ppapi_proxy/object_proxy.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 
 using nacl::scoped_array;
@@ -184,30 +182,6 @@ PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   return PP_FALSE;
 }
 
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-PP_Var GetInstanceObject(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::GetInstanceObject: instance=%"NACL_PRIu32"\n",
-              instance);
-  ObjectCapability capability;
-  uint32_t capability_bytes = static_cast<uint32_t>(sizeof(capability));
-  NaClSrpcChannel* main_channel = GetMainSrpcChannel(instance);
-  NaClSrpcError srpc_result =
-      PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
-          main_channel,
-          instance,
-          &capability_bytes,
-          reinterpret_cast<char*>(&capability));
-  DebugPrintf("PPP_Instance::GetInstanceObject: %s\n",
-              NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK) {
-    return PP_MakeUndefined();
-  }
-  return ObjectProxy::New(capability,
-                          main_channel,
-                          true /* is_instance_object */);
-}
-#endif
-
 }  // namespace
 
 const PPP_Instance* BrowserInstance::GetInterface() {
@@ -217,10 +191,7 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     DidChangeView,
     DidChangeFocus,
     HandleInputEvent,
-    HandleDocumentLoad,
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-    GetInstanceObject
-#endif
+    HandleDocumentLoad
   };
   return &instance_interface;
 }

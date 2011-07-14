@@ -35,9 +35,6 @@ set_variable ERROR R(48,${JS_STR},4:33,"5555: Error: Finish unexpected rv",7:0)
 
 replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;0.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
-#             asking for it.
-replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)

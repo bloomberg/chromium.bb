@@ -18,9 +18,6 @@
 #else
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #endif  // __native_client__
-#include "native_client/src/shared/ppapi_proxy/object.h"
-#include "native_client/src/shared/ppapi_proxy/object_capability.h"
-#include "native_client/src/shared/ppapi_proxy/object_proxy.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/third_party/ppapi/c/pp_bool.h"
 #include "native_client/src/third_party/ppapi/c/pp_var.h"
@@ -66,12 +63,6 @@ struct SerializedString {
   // nearest multiple of kStringRoundBase bytes.
 };
 
-// The structure used for PP_VARTYPE_OBJECT.
-struct SerializedObject {
-  struct SerializedFixed fixed;
-  ObjectCapability capability;
-};
-
 // TODO(sehr): Add a more general compile time assertion package elsewhere.
 #define ASSERT_TYPE_SIZE(struct_name, struct_size) \
     int struct_name##_size_should_be_##struct_size[ \
@@ -81,7 +72,6 @@ struct SerializedObject {
 ASSERT_TYPE_SIZE(SerializedFixed, 8);
 ASSERT_TYPE_SIZE(SerializedDouble, 16);
 ASSERT_TYPE_SIZE(SerializedString, 16);
-ASSERT_TYPE_SIZE(SerializedObject, 24);
 
 //
 // We currently use offsetof to find the start of string storage.
@@ -126,7 +116,7 @@ uint32_t PpVarSize(const PP_Var& var) {
       return sizeof(SerializedDouble);
     case PP_VARTYPE_STRING: {
       uint32_t string_length;
-      (void) PPBVarDeprecatedInterface()->VarToUtf8(var, &string_length);
+      (void) PPBVarInterface()->VarToUtf8(var, &string_length);
       string_length = RoundedStringBytes(string_length);
       if (std::numeric_limits<uint32_t>::max() == string_length ||
           AddWouldOverflow(string_length,
@@ -139,7 +129,6 @@ uint32_t PpVarSize(const PP_Var& var) {
       break;
     }
     case PP_VARTYPE_OBJECT:
-      return sizeof(SerializedObject);
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
       NACL_NOTREACHED();
@@ -210,8 +199,7 @@ bool SerializePpVar(const PP_Var* vars,
       }
       case PP_VARTYPE_STRING: {
         uint32_t string_length;
-        const char* str =
-            PPBVarDeprecatedInterface()->VarToUtf8(vars[i], &string_length);
+        const char* str = PPBVarInterface()->VarToUtf8(vars[i], &string_length);
         SerializedString* ss = reinterpret_cast<SerializedString*>(p);
         ss->fixed.u.string_length = string_length;
         memcpy(reinterpret_cast<void*>(ss->string_bytes),
@@ -224,16 +212,7 @@ bool SerializePpVar(const PP_Var* vars,
             + RoundedStringBytes(string_length);
         break;
       }
-      case PP_VARTYPE_OBJECT: {
-        // Passing objects is done by passing a capability.
-        ObjectCapability capability(GETPID(), vars[i].value.as_id);
-        // TODO(sehr): create/lookup a stub here.
-        // NPObjectStub::CreateStub(npp, object, &capability);
-        SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
-        so->capability = capability;
-        element_size = sizeof(SerializedObject);
-        break;
-      }
+      case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
         NACL_NOTREACHED();
@@ -321,14 +300,10 @@ uint32_t DeserializePpVarSize(char* p,
         return std::numeric_limits<uint32_t>::max();
       }
       break;
-    case PP_VARTYPE_OBJECT:
-      expected_element_size = sizeof(SerializedObject);
-      break;
-      //
       // NB: No default case to trigger -Wswitch-enum, so changes to
       // PP_VarType w/o corresponding changes here will cause a
       // compile-time error.
-      //
+    case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
     case PP_VARTYPE_DICTIONARY:
       NACL_NOTREACHED();
@@ -357,10 +332,9 @@ bool DeserializeString(char* p,
   // memory allocation function, and copies string_length bytes from
   // ss->string_bytes in to that buffer.  The ref count of the returned var is
   // 1.
-  *var = PPBVarDeprecatedInterface()->VarFromUtf8(
-      LookupModuleIdForSrpcChannel(channel),
-      ss->string_bytes,
-      string_length);
+  *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                        ss->string_bytes,
+                                        string_length);
   return true;
 }
 
@@ -400,16 +374,7 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
           return false;
         }
         break;
-      case PP_VARTYPE_OBJECT: {
-        DebugPrintf("Deserializing object.\n");
-        SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
-        ObjectCapability capability = so->capability;
-        vars[i] = ObjectProxy::New(capability,
-                                   channel,
-                                   false /* is_instance_object */);
-        DebugPrintf("DONE deserializing object.\n");
-        break;
-      }
+      case PP_VARTYPE_OBJECT:
       case PP_VARTYPE_ARRAY:
       case PP_VARTYPE_DICTIONARY:
         NACL_NOTREACHED();
@@ -462,7 +427,7 @@ char* Serialize(const PP_Var* vars, uint32_t argc, uint32_t* length) {
     return NULL;
   }
   // Allocate the buffer, if the client didn't pass one.
-  char* bytes = new(std::nothrow) char[tmp_length];
+  char* bytes = new char[tmp_length];
   if (NULL == bytes) {
     return NULL;
   }

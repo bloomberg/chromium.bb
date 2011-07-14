@@ -126,11 +126,6 @@ static PP_Bool HandleDocumentLoad(PP_Instance instance,
   return PP_TRUE;
 }
 
-struct PP_Var GetInstanceObject(PP_Instance instance) {
-  UNREFERENCED_PARAMETER(instance);
-  return PP_MakeNull();
-}
-
 /* Implementations of the PPP entry points expected by the browser. */
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
                                        PPB_GetInterface get_browser_interface) {
@@ -152,9 +147,6 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
       DidChangeFocus,
       HandleInputEvent,
       HandleDocumentLoad
-#ifndef PPAPI_INSTANCE_REMOVE_SCRIPTING
-      , GetInstanceObject
-#endif
     };
     return &instance_interface;
   } else if (0 == strncmp(PPP_MESSAGING_INTERFACE, interface_name,
@@ -166,4 +158,3 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   }
   return NULL;
 }
-

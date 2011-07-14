@@ -27,4 +27,3 @@ void PppMessagingRpcServer::PPP_Messaging_HandleMessage(
   ppp_messaging->HandleMessage(instance, message);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
-

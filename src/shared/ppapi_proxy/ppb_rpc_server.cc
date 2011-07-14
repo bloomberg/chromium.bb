@@ -54,158 +54,6 @@ static void GetFileDescDispatcher(
   );
 }
 
-static void HasPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::HasProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void HasMethodDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::HasMethod(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void GetPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::GetProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void GetAllPropertyNamesDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::GetAllPropertyNames(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr,
-      &(outputs[2]->u.count), outputs[2]->arrays.carr
-  );
-}
-
-static void SetPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::SetProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void RemovePropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::RemoveProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void CallDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::Call(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.ival,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      inputs[4]->u.count, inputs[4]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void ConstructDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::Construct(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.ival,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void DeallocateDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  UNREFERENCED_PARAMETER(outputs);
-  ObjectStubRpcServer::Deallocate(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr
-  );
-}
-
 static void PPB_GetInterfaceDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1179,34 +1027,6 @@ static void PPB_ImageData_DescribeDispatcher(
   );
 }
 
-static void PPB_Instance_GetWindowObjectDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void PPB_Instance_GetOwnerElementObjectDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
 static void PPB_Instance_BindGraphicsDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1233,23 +1053,6 @@ static void PPB_Instance_IsFullFrameDispatcher(
       done,
       inputs[0]->u.ival,
       &(outputs[0]->u.ival)
-  );
-}
-
-static void PPB_Instance_ExecuteScriptDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -2007,15 +1810,6 @@ static void PPB_Zoom_ZoomLimitsChangedDispatcher(
 NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "StreamAsFile:isi:", StreamAsFileDispatcher },
   { "GetFileDesc:is:h", GetFileDescDispatcher },
-  { "HasProperty:CCC:iC", HasPropertyDispatcher },
-  { "HasMethod:CCC:iC", HasMethodDispatcher },
-  { "GetProperty:CCC:CC", GetPropertyDispatcher },
-  { "GetAllPropertyNames:CC:iCC", GetAllPropertyNamesDispatcher },
-  { "SetProperty:CCCC:C", SetPropertyDispatcher },
-  { "RemoveProperty:CCC:C", RemovePropertyDispatcher },
-  { "Call:CCiCC:CC", CallDispatcher },
-  { "Construct:CiCC:CC", ConstructDispatcher },
-  { "Deallocate:C:", DeallocateDispatcher },
   { "PPB_GetInterface:s:i", PPB_GetInterfaceDispatcher },
   { "PPB_Audio_Create:ii:i", PPB_Audio_CreateDispatcher },
   { "PPB_Audio_IsAudio:i:i", PPB_Audio_IsAudioDispatcher },
@@ -2080,11 +1874,8 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_ImageData_Create:iiCi:i", PPB_ImageData_CreateDispatcher },
   { "PPB_ImageData_IsImageData:i:i", PPB_ImageData_IsImageDataDispatcher },
   { "PPB_ImageData_Describe:i:Chii", PPB_ImageData_DescribeDispatcher },
-  { "PPB_Instance_GetWindowObject:i:C", PPB_Instance_GetWindowObjectDispatcher },
-  { "PPB_Instance_GetOwnerElementObject:i:C", PPB_Instance_GetOwnerElementObjectDispatcher },
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
-  { "PPB_Instance_ExecuteScript:iCC:CC", PPB_Instance_ExecuteScriptDispatcher },
   { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },

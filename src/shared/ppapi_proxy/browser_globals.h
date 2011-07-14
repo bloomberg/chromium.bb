@@ -107,7 +107,6 @@ const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();
 const PPB_Var* PPBVarInterface();  // shared
-const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPB_Widget_Dev* PPBWidgetInterface();
 const PPB_Zoom_Dev* PPBZoomInterface();
 

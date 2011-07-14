@@ -46,10 +46,7 @@
         'browser_ppp_zoom.cc',
         'browser_ppp.cc',
         'browser_upcall.cc',
-        'object.cc',
-        'object_proxy.cc',
         'object_serialize.cc',
-        'objectstub_rpc_impl.cc',
         'utility.cc',
         # Autogerated files
         'ppp_rpc_client.cc',

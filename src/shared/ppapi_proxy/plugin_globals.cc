@@ -9,7 +9,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var_deprecated.h"
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -81,11 +80,6 @@ const PPB_Memory_Dev* PPBMemoryInterface() {
 const PPB_Var* PPBVarInterface() {
   return static_cast<const PPB_Var*>(
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
-}
-
-const PPB_Var_Deprecated* PPBVarDeprecatedInterface() {
-  return static_cast<const PPB_Var_Deprecated*>(
-      GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
 }
 
 const PPP_Messaging* PPPMessagingInterface() {

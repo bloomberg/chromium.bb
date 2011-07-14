@@ -93,9 +93,6 @@ output 0:  i(1)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Messaging;0.1")
 output 0:  i(1)
-replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Var(Deprecated\x29;0.3")
-output 0:  i(1)
 replaying PPB_Messaging_PostMessage:iC::
 input 0:  i(5555)
 input 1:  C(104,\x05\x00\x00\x00_\x00\x00\x005555:_Mouse_event:Down_modifier:left-button-down__button:Left_x:264_y:100_click_count:1_time:1\n\x00)

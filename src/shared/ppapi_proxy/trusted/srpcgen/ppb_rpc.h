@@ -38,85 +38,6 @@ class NaClFileRpcServer {
   void operator=(const NaClFileRpcServer);
 };  // class NaClFileRpcServer
 
-class ObjectStubRpcServer {
- public:
-  static void HasProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void HasMethod(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void GetProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* value_bytes, char* value,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void GetAllPropertyNames(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* property_count,
-      nacl_abi_size_t* properties_bytes, char* properties,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void SetProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t value_bytes, char* value,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void RemoveProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Call(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Construct(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Deallocate(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability);
-
- private:
-  ObjectStubRpcServer();
-  ObjectStubRpcServer(const ObjectStubRpcServer&);
-  void operator=(const ObjectStubRpcServer);
-};  // class ObjectStubRpcServer
-
 class PpbRpcServer {
  public:
   static void PPB_GetInterface(
@@ -610,16 +531,6 @@ class PpbImageDataRpcServer {
 
 class PpbInstanceRpcServer {
  public:
-  static void PPB_Instance_GetWindowObject(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t* window_bytes, char* window);
-  static void PPB_Instance_GetOwnerElementObject(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t* owner_bytes, char* owner);
   static void PPB_Instance_BindGraphics(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
@@ -631,14 +542,6 @@ class PpbInstanceRpcServer {
       NaClSrpcClosure* done,
       PP_Instance instance,
       int32_t* is_full_frame);
-  static void PPB_Instance_ExecuteScript(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t script_bytes, char* script,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* result_bytes, char* result,
-      nacl_abi_size_t* exception_bytes, char* exception);
 
  private:
   PpbInstanceRpcServer();

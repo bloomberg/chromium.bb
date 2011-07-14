@@ -17,76 +17,6 @@
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
-class ObjectStubRpcClient {
- public:
-  static NaClSrpcError HasProperty(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError HasMethod(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError GetProperty(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* value_bytes, char* value,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError GetAllPropertyNames(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* property_count,
-      nacl_abi_size_t* properties_bytes, char* properties,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError SetProperty(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t value_bytes, char* value,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError RemoveProperty(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError Call(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError Construct(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static NaClSrpcError Deallocate(
-      NaClSrpcChannel* channel,
-      nacl_abi_size_t capability_bytes, char* capability);
-
- private:
-  ObjectStubRpcClient();
-  ObjectStubRpcClient(const ObjectStubRpcClient&);
-  void operator=(const ObjectStubRpcClient);
-};  // class ObjectStubRpcClient
-
 class CompletionCallbackRpcClient {
  public:
   static NaClSrpcError RunCompletionCallback(
@@ -192,10 +122,6 @@ class PppInstanceRpcClient {
       PP_Instance instance,
       PP_Resource url_loader,
       int32_t* success);
-  static NaClSrpcError PPP_Instance_GetInstanceObject(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      nacl_abi_size_t* capability_bytes, char* capability);
 
  private:
   PppInstanceRpcClient();

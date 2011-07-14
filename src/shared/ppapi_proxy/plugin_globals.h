@@ -44,7 +44,6 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
-const PPB_Var_Deprecated* PPBVarDeprecatedInterface();  // shared
 const PPP_Messaging* PPPMessagingInterface();
 
 // Get thread creation/join functions.

@@ -22,9 +22,6 @@ output 0:  i(1)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Var;0.5")
 output 0:  i(1)
-replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Var(Deprecated\x29;0.3")
-output 0:  i(1)
 rpc call complete PPP_InitializeModule:iihs:ii
 
 

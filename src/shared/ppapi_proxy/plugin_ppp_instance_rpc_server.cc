@@ -10,7 +10,6 @@
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "srpcgen/ppp_rpc.h"
-#include "native_client/src/shared/ppapi_proxy/object_capability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -222,35 +221,4 @@ void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
   DebugPrintf("PPP_Instance::HandleDocumentLoad: handled=%d\n", handled);
   *success = handled ? kMethodSuccess : kMethodFailure;
   rpc->result = NACL_SRPC_RESULT_OK;
-}
-
-void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
-    NaClSrpcRpc* rpc,
-    NaClSrpcClosure* done,
-    // inputs
-    PP_Instance instance,
-    // outputs
-    uint32_t* capability_bytes, char* capability) {
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  NaClSrpcClosureRunner runner(done);
-#ifdef PPAPI_INSTANCE_REMOVE_SCRIPTING
-  NACL_NOTREACHED();
-#else
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL ||
-      instance_interface->GetInstanceObject == NULL ||
-      *capability_bytes < sizeof(ppapi_proxy::ObjectCapability)) {
-    return;
-  }
-  PP_Var instance_var = instance_interface->GetInstanceObject(instance);
-  DebugPrintf("PPP_Instance::GetInstanceObject: type=%d\n", instance_var.type);
-  if (instance_var.type != PP_VARTYPE_OBJECT) {
-    return;
-  }
-  // Create the return capability.
-  ppapi_proxy::ObjectCapability cap(GETPID(), instance_var.value.as_id);
-  *reinterpret_cast<ppapi_proxy::ObjectCapability*>(capability) = cap;
-  *capability_bytes = sizeof(ppapi_proxy::ObjectCapability);
-  rpc->result = NACL_SRPC_RESULT_OK;
-#endif
 }

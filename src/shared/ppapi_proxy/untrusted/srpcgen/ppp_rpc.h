@@ -17,85 +17,6 @@
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
-class ObjectStubRpcServer {
- public:
-  static void HasProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void HasMethod(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* success,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void GetProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* value_bytes, char* value,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void GetAllPropertyNames(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      int32_t* property_count,
-      nacl_abi_size_t* properties_bytes, char* properties,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void SetProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t value_bytes, char* value,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void RemoveProperty(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Call(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      nacl_abi_size_t name_bytes, char* name,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Construct(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability,
-      int32_t argc,
-      nacl_abi_size_t argv_bytes, char* argv,
-      nacl_abi_size_t exception_in_bytes, char* exception_in,
-      nacl_abi_size_t* ret_bytes, char* ret,
-      nacl_abi_size_t* exception_bytes, char* exception);
-  static void Deallocate(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t capability_bytes, char* capability);
-
- private:
-  ObjectStubRpcServer();
-  ObjectStubRpcServer(const ObjectStubRpcServer&);
-  void operator=(const ObjectStubRpcServer);
-};  // class ObjectStubRpcServer
-
 class CompletionCallbackRpcServer {
  public:
   static void RunCompletionCallback(
@@ -215,11 +136,6 @@ class PppInstanceRpcServer {
       PP_Instance instance,
       PP_Resource url_loader,
       int32_t* success);
-  static void PPP_Instance_GetInstanceObject(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t* capability_bytes, char* capability);
 
  private:
   PppInstanceRpcServer();

@@ -23,158 +23,6 @@
 
 namespace {
 
-static void HasPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::HasProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void HasMethodDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::HasMethod(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void GetPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::GetProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void GetAllPropertyNamesDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::GetAllPropertyNames(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      &(outputs[0]->u.ival),
-      &(outputs[1]->u.count), outputs[1]->arrays.carr,
-      &(outputs[2]->u.count), outputs[2]->arrays.carr
-  );
-}
-
-static void SetPropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::SetProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void RemovePropertyDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::RemoveProperty(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void CallDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::Call(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      inputs[2]->u.ival,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      inputs[4]->u.count, inputs[4]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void ConstructDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  ObjectStubRpcServer::Construct(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.ival,
-      inputs[2]->u.count, inputs[2]->arrays.carr,
-      inputs[3]->u.count, inputs[3]->arrays.carr,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.count), outputs[1]->arrays.carr
-  );
-}
-
-static void DeallocateDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  UNREFERENCED_PARAMETER(outputs);
-  ObjectStubRpcServer::Deallocate(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr
-  );
-}
-
 static void RunCompletionCallbackDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -391,20 +239,6 @@ static void PPP_Instance_HandleDocumentLoadDispatcher(
   );
 }
 
-static void PPP_Instance_GetInstanceObjectDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
 static void PPP_Messaging_HandleMessageDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -546,15 +380,6 @@ static void PPP_Zoom_ZoomDispatcher(
 }  // namespace
 
 NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
-  { "HasProperty:CCC:iC", HasPropertyDispatcher },
-  { "HasMethod:CCC:iC", HasMethodDispatcher },
-  { "GetProperty:CCC:CC", GetPropertyDispatcher },
-  { "GetAllPropertyNames:CC:iCC", GetAllPropertyNamesDispatcher },
-  { "SetProperty:CCCC:C", SetPropertyDispatcher },
-  { "RemoveProperty:CCC:C", RemovePropertyDispatcher },
-  { "Call:CCiCC:CC", CallDispatcher },
-  { "Construct:CiCC:CC", ConstructDispatcher },
-  { "Deallocate:C:", DeallocateDispatcher },
   { "RunCompletionCallback:iiC:", RunCompletionCallbackDispatcher },
   { "PPP_InitializeModule:iihs:ii", PPP_InitializeModuleDispatcher },
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
@@ -569,7 +394,6 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Instance_DidChangeFocus:ib:", PPP_Instance_DidChangeFocusDispatcher },
   { "PPP_Instance_HandleInputEvent:iC:i", PPP_Instance_HandleInputEventDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
-  { "PPP_Instance_GetInstanceObject:i:C", PPP_Instance_GetInstanceObjectDispatcher },
   { "PPP_Messaging_HandleMessage:iC:", PPP_Messaging_HandleMessageDispatcher },
   { "PPP_Printing_QuerySupportedFormats:i:Ci", PPP_Printing_QuerySupportedFormatsDispatcher },
   { "PPP_Printing_Begin:iC:i", PPP_Printing_BeginDispatcher },

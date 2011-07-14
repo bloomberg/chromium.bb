@@ -57,12 +57,5 @@
            'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
-          # Gets the instance's scriptable object.
-          {'name': 'PPP_Instance_GetInstanceObject',
-           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
-                     ],
-           'outputs': [['capability', 'char[]'],  # PP_Var
-                      ]
-          },
          ]
 }

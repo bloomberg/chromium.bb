@@ -81,11 +81,6 @@ const PPB_Var* PPBVar() {
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
 }
 
-const PPB_Var_Deprecated* PPBVarDeprecated() {
-  return reinterpret_cast<const PPB_Var_Deprecated*>(
-      GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
-}
-
 // Dev interfaces.
 
 const PPB_Context3D_Dev* PPBContext3DDev() {
