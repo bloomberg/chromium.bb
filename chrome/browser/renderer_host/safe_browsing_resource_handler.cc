@@ -176,9 +176,15 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
     // Continue the request.
     ResumeRequest();
   } else {
+    bool should_show_blocking_page = true;
     const net::URLRequest* request = rdh_->GetURLRequest(
         GlobalRequestID(render_process_host_id_, deferred_request_id_));
-    if (request->load_flags() & net::LOAD_PRERENDERING) {
+    if (request->load_flags() & net::LOAD_PREFETCH) {
+      // Don't prefetch resources that fail safe browsing, disallow
+      // them.
+      rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
+      should_show_blocking_page = false;
+    } else if (request->load_flags() & net::LOAD_PRERENDERING) {
       prerender::PrerenderTracker* prerender_tracker = g_browser_process->
           prerender_tracker();
       if (prerender_tracker->TryCancelOnIOThread(render_process_host_id_,
@@ -186,13 +192,10 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
                     prerender::FINAL_STATUS_SAFE_BROWSING)) {
         rdh_->CancelRequest(render_process_host_id_, deferred_request_id_,
                             false);
+        should_show_blocking_page = false;
       }
     }
-    if (request->load_flags() & net::LOAD_PREFETCH) {
-      // Don't prefetch resources that fail safe browsing, disallow
-      // them.
-      rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
-    } else {
+    if (should_show_blocking_page) {
       StartDisplayingBlockingPage(url, result);
     }
   }
