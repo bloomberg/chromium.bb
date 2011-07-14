@@ -83,7 +83,7 @@ deps = {
     'src/third_party/webdriver/python/selenium':
         Var('git_url') + '/external/selenium/py/selenium.git@f531d35cf99dd456a1e52af343e738635dd755e4',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc.git@a6f54fd726a573f2d229532e4a97df1dbdea02a4',
+        Var('git_url') + '/external/webrtc.git@ba28d7fd4e4376c04bf270009b1e101a3df8071c',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/gyp':
