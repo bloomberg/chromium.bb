@@ -372,7 +372,6 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       transient_to_parent_(false),
       got_initial_focus_in_(false),
       has_focus_(false),
-      focus_on_creation_(true),
       always_on_top_(false),
       is_double_buffered_(false),
       should_handle_menu_key_release_(false),
@@ -522,15 +521,6 @@ void NativeWidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
 
 void NativeWidgetGtk::IsActiveChanged() {
   delegate_->OnNativeWidgetActivationChanged(IsActive());
-}
-
-void NativeWidgetGtk::SetInitialFocus() {
-  if (!focus_on_creation_)
-    return;
-
-  View* v = GetWidget()->widget_delegate()->GetInitiallyFocusedView();
-  if (v)
-    v->RequestFocus();
 }
 
 void NativeWidgetGtk::ResetDropTarget() {
@@ -1658,7 +1648,10 @@ gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
   // See description of got_initial_focus_in_ for details on this.
   if (!got_initial_focus_in_) {
     got_initial_focus_in_ = true;
-    SetInitialFocus();
+    // Sets initial focus here. On X11/Gtk, window creation
+    // is asynchronous and a focus request has to be made after a window
+    // gets created.
+    GetWidget()->SetInitialFocus();
   }
   return false;
 }

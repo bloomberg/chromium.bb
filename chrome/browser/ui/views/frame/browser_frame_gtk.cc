@@ -29,8 +29,6 @@ BrowserFrameGtk::BrowserFrameGtk(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetGtk(browser_frame),
       browser_view_(browser_view) {
-  // Don't focus anything on creation, selecting a tab will set the focus.
-  set_focus_on_creation(false);
 }
 
 BrowserFrameGtk::~BrowserFrameGtk() {
@@ -97,4 +95,3 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     return new BrowserFrameViews(browser_frame, browser_view);
   return new BrowserFrameGtk(browser_frame, browser_view);
 }
-

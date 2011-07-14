@@ -39,8 +39,6 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
     : views::NativeWidgetWin(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
-  // Don't focus anything on creation, selecting a tab will set the focus.
-  set_focus_on_creation(false);
 }
 
 BrowserFrameWin::~BrowserFrameWin() {

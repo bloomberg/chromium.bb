@@ -23,6 +23,18 @@ MockInputMethod::MockInputMethod()
       active_(true) {
 }
 
+MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
+    : composition_changed_(false),
+      focus_changed_(false),
+      text_input_type_changed_(false),
+      caret_bounds_changed_(false),
+      cancel_composition_called_(false),
+      locale_("en-US"),
+      direction_(base::i18n::LEFT_TO_RIGHT),
+      active_(true) {
+  set_delegate(delegate);
+}
+
 MockInputMethod::~MockInputMethod() {
 }
 
@@ -66,19 +78,20 @@ void MockInputMethod::DispatchKeyEvent(const KeyEvent& key) {
 }
 
 void MockInputMethod::OnTextInputTypeChanged(View* view) {
-  DCHECK(IsViewFocused(view));
-  text_input_type_changed_ = true;
+  if (IsViewFocused(view))
+    text_input_type_changed_ = true;
 }
 
 void MockInputMethod::OnCaretBoundsChanged(View* view) {
-  DCHECK(IsViewFocused(view));
-  caret_bounds_changed_ = true;
+  if (IsViewFocused(view))
+    caret_bounds_changed_ = true;
 }
 
 void MockInputMethod::CancelComposition(View* view) {
-  DCHECK(IsViewFocused(view));
-  cancel_composition_called_ = true;
-  ClearResult();
+  if (IsViewFocused(view)) {
+    cancel_composition_called_ = true;
+    ClearResult();
+  }
 }
 
 std::string MockInputMethod::GetInputLocale() {

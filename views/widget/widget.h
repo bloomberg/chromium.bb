@@ -521,6 +521,16 @@ class Widget : public internal::NativeWidgetDelegate,
   // Invoked when the tooltip text changes for the specified views.
   void TooltipTextChanged(View* view);
 
+  // Sets-up the focus manager with the view that should have focus when the
+  // window is shown the first time.  Returns true if the initial focus has been
+  // set or the widget should not set the initial focus, or false if the caller
+  // should set the initial focus (if any).
+  bool SetInitialFocus();
+
+  void set_focus_on_creation(bool focus_on_creation) {
+    focus_on_creation_ = focus_on_creation;
+  }
+
   // Returns a View* that any child Widgets backed by NativeWidgetViews
   // are added to.  The default implementation returns the contents view
   // if it exists and the root view otherwise.
@@ -662,6 +672,11 @@ class Widget : public internal::NativeWidgetDelegate,
 
   // The smallest size the window can be.
   gfx::Size minimum_size_;
+
+  // Focus is automatically set to the view provided by the delegate
+  // when the widget is shown. Set this value to false to override
+  // initial focus for the widget.
+  bool focus_on_creation_;
 
   // Factory used to create Compositors. Settable by tests.
   static ui::Compositor*(*compositor_factory_)();

@@ -30,6 +30,8 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
       browser_view_(browser_view) {
   browser_view_->set_frame(this);
   set_is_secondary_widget(false);
+  // Don't focus anything on creation, selecting a tab will set the focus.
+  set_focus_on_creation(false);
 }
 
 BrowserFrame::~BrowserFrame() {
@@ -132,4 +134,3 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
   }
   Widget::OnNativeWidgetActivationChanged(active);
 }
-

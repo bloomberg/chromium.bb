@@ -36,6 +36,8 @@ class DesktopWindowView : public WidgetDelegateView,
   // is de-activated.
   void ActivateWidget(Widget* widget);
 
+  NativeWidgetViews* active_native_widget() { return active_native_widget_; }
+
   void CreateTestWindow(const std::wstring& title,
                         SkColor color,
                         gfx::Rect initial_bounds,
@@ -65,7 +67,7 @@ class DesktopWindowView : public WidgetDelegateView,
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
 
-  NativeWidgetViews* active_widget_;
+  NativeWidgetViews* active_native_widget_;
   DesktopType type_;
   Widget* widget_;
 

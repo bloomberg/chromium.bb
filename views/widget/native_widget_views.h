@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "ui/gfx/transform.h"
+#include "views/ime/input_method_delegate.h"
 #include "views/widget/native_widget_private.h"
 
 namespace views {
@@ -20,7 +21,8 @@ class NativeWidgetView;
 //
 //  A NativeWidget implementation that uses another View as its native widget.
 //
-class NativeWidgetViews : public internal::NativeWidgetPrivate {
+class NativeWidgetViews : public internal::NativeWidgetPrivate,
+                          public internal::InputMethodDelegate {
  public:
   explicit NativeWidgetViews(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();
@@ -29,7 +31,9 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   View* GetView();
   const View* GetView() const;
 
+  // TODO(oshima): These will be moved to WM API.
   void OnActivate(bool active);
+  bool OnKeyEvent(const KeyEvent& key_event);
 
   void set_delete_native_view(bool delete_native_view) {
     delete_native_view_ = delete_native_view;
@@ -118,13 +122,13 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
 
+  // Overridden from internal::InputMethodDelegate
+  virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
+
  private:
   // These functions may return NULL during Widget destruction.
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
-
-  // Called by the NativeWidgetView when it is deleted.
-  void OnDestroy();
 
   internal::NativeWidgetDelegate* delegate_;
 
@@ -147,6 +151,8 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate {
   Widget::InitParams::Ownership ownership_;
 
   bool delete_native_view_;
+
+  scoped_ptr<InputMethod> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

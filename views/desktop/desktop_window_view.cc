@@ -38,6 +38,12 @@ class DesktopWindow : public Widget {
     return new DesktopWindowRootView(desktop_window_view_, this);
   }
 
+  virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE {
+    NativeWidgetViews* native_widget =
+        desktop_window_view_->active_native_widget();
+    return native_widget ? native_widget->OnKeyEvent(event) : false;
+  }
+
   DesktopWindowView* desktop_window_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindow);
@@ -89,7 +95,7 @@ class TestWindowContentView : public WidgetDelegateView {
 DesktopWindowView* DesktopWindowView::desktop_window_view = NULL;
 
 DesktopWindowView::DesktopWindowView(DesktopType type)
-    : active_widget_(NULL),
+    : active_native_widget_(NULL),
       type_(type) {
   switch (type_) {
     case DESKTOP_DEFAULT:
@@ -132,12 +138,13 @@ void DesktopWindowView::ActivateWidget(Widget* widget) {
   if (widget && widget->IsActive())
     return;
 
-  if (active_widget_)
-    active_widget_->OnActivate(false);
+  if (active_native_widget_)
+    active_native_widget_->OnActivate(false);
   if (widget) {
     widget->MoveToTop();
-    active_widget_ = static_cast<NativeWidgetViews*>(widget->native_widget());
-    active_widget_->OnActivate(true);
+    active_native_widget_ =
+        static_cast<NativeWidgetViews*>(widget->native_widget());
+    active_native_widget_->OnActivate(true);
     if (!widget->HasObserver(this))
       widget->AddObserver(this);
   }
@@ -226,9 +233,9 @@ NonClientFrameView* DesktopWindowView::CreateNonClientFrameView() {
 }
 
 void DesktopWindowView::OnWidgetClosing(Widget* widget) {
-  if (active_widget_ && static_cast<internal::NativeWidgetPrivate*>
-      (active_widget_)->GetWidget() == widget)
-    active_widget_ = NULL;
+  if (active_native_widget_ && static_cast<internal::NativeWidgetPrivate*>
+      (active_native_widget_)->GetWidget() == widget)
+    active_native_widget_ = NULL;
 }
 
 void DesktopWindowView::OnWidgetVisibilityChanged(Widget* widget,

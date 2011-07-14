@@ -369,7 +369,6 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       can_update_layered_window_(true),
-      focus_on_creation_(true),
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
@@ -2141,15 +2140,9 @@ void NativeWidgetWin::OnScreenReaderDetected() {
 }
 
 void NativeWidgetWin::SetInitialFocus() {
-  if (!focus_on_creation_)
-    return;
-
-  // TODO(beng): move to Widget.
-  View* v = GetWidget()->widget_delegate()->GetInitiallyFocusedView();
-  if (v) {
-    v->RequestFocus();
-  } else if (!(GetWindowLong(GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
-             !(GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
+  if (!GetWidget()->SetInitialFocus() &&
+      !(GetWindowLong(GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
+      !(GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
     // The window does not get keyboard messages unless we focus it.
     SetFocus(GetNativeView());
   }

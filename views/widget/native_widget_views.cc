@@ -11,6 +11,12 @@
 #include "views/widget/native_widget_view.h"
 #include "views/widget/root_view.h"
 
+#if defined(HAVE_IBUS)
+#include "views/ime/input_methodc_ibus.h"
+#else
+#include "views/ime/mock_input_method.h"
+#endif
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,8 +49,33 @@ const View* NativeWidgetViews::GetView() const {
 }
 
 void NativeWidgetViews::OnActivate(bool active) {
+  if (active_ == active)
+    return;
   active_ = active;
+  delegate_->OnNativeWidgetActivationChanged(active);
+  InputMethod* input_method = GetInputMethodNative();
+  // TODO(oshima): Focus change should be separated from window activation.
+  // This will be fixed when we have WM API.
+  if (active) {
+    input_method->OnFocus();
+    // See description of got_initial_focus_in_ for details on this.
+    GetWidget()->GetFocusManager()->RestoreFocusedView();
+  } else {
+    input_method->OnBlur();
+    GetWidget()->GetFocusManager()->StoreFocusedView();
+  }
   view_->SchedulePaint();
+}
+
+bool NativeWidgetViews::OnKeyEvent(const KeyEvent& key_event) {
+  GetInputMethodNative()->DispatchKeyEvent(key_event);
+  return true;
+}
+
+void NativeWidgetViews::DispatchKeyEventPostIME(const KeyEvent& key) {
+  // TODO(oshima): GTK impl handles menu_key in special way. This may be
+  // necessary when running under NativeWidgetX.
+  delegate_->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,11 +222,23 @@ bool NativeWidgetViews::HasKeyboardCapture() {
 }
 
 InputMethod* NativeWidgetViews::GetInputMethodNative() {
-  return GetParentNativeWidget()->GetInputMethodNative();
+  if (!input_method_.get()) {
+#if defined(HAVE_IBUS)
+    input_method_.reset(static_cast<InputMethod*>(new InputMethodIBus(this)));
+#else
+    // TODO(suzhe|oshima): Figure out what to do on windows.
+    input_method_.reset(new MockInputMethod(this));
+#endif
+    input_method_->Init(GetWidget());
+  }
+  return input_method_.get();
 }
 
 void NativeWidgetViews::ReplaceInputMethod(InputMethod* input_method) {
-  GetParentNativeWidget()->ReplaceInputMethod(input_method);
+  CHECK(input_method);
+  input_method_.reset(input_method);
+  input_method->set_delegate(this);
+  input_method->Init(GetWidget());
 }
 
 void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
@@ -283,6 +326,8 @@ void NativeWidgetViews::Close() {
 }
 
 void NativeWidgetViews::CloseNow() {
+  // reset input_method before destroying widget.
+  input_method_.reset();
   // TODO(beng): what about the other case??
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
@@ -293,6 +338,7 @@ void NativeWidgetViews::EnableClose(bool enable) {
 
 void NativeWidgetViews::Show() {
   view_->SetVisible(true);
+  GetWidget()->SetInitialFocus();
 }
 
 void NativeWidgetViews::Hide() {

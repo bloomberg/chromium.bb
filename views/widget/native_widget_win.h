@@ -463,18 +463,8 @@ class NativeWidgetWin : public ui::WindowImpl,
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
-  // Sets-up the focus manager with the view that should have focus when the
-  // window is shown the first time.  If NULL is returned, the focus goes to the
-  // button if there is one, otherwise the to the Cancel button.
-  virtual void SetInitialFocus();
-
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
-
-  // Accessors and setters for various properties.
-  void set_focus_on_creation(bool focus_on_creation) {
-    focus_on_creation_ = focus_on_creation;
-  }
 
   // The TooltipManager. This is NULL if there is a problem creating the
   // underlying tooltip window.
@@ -532,6 +522,8 @@ class NativeWidgetWin : public ui::WindowImpl,
 
   void RestoreEnabledIfNecessary();
 
+  void SetInitialFocus();
+
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
@@ -585,10 +577,6 @@ class NativeWidgetWin : public ui::WindowImpl,
   // True if we are allowed to update the layered window from the DIB backing
   // store if necessary.
   bool can_update_layered_window_;
-
-  // Whether we should SetFocus() on a newly created window after
-  // Init(). Defaults to true.
-  bool focus_on_creation_;
 
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.

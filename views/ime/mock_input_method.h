@@ -17,6 +17,7 @@ namespace views {
 class MockInputMethod : public InputMethodBase {
  public:
   MockInputMethod();
+  explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
 
   // Overridden from InputMethod:

@@ -94,11 +94,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // Invoked when the active status changes.
   virtual void IsActiveChanged();
 
-  // Sets initial focus on a new window. On X11/Gtk, window creation
-  // is asynchronous and a focus request has to be made after a window
-  // gets created. This will not be called on a TYPE_CHILD widget.
-  virtual void SetInitialFocus();
-
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.
   void ResetDropTarget();
@@ -146,10 +141,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // or when the widget is re-attached, and expose won't be emitted on
   // detached widget.
   static void RegisterChildExposeHandler(GtkWidget* widget);
-
-  void set_focus_on_creation(bool focus_on_creation) {
-    focus_on_creation_ = focus_on_creation;
-  }
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
@@ -425,10 +416,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // focus-out event. We can get multiple focus-out events in a row, we use
   // this to determine whether we should process the event.
   bool has_focus_;
-
-  // Whether we should SetFocus() on a newly created window after
-  // Init(). Defaults to true.
-  bool focus_on_creation_;
 
   // If true, the window stays on top of the screen. This is only used
   // for types other than TYPE_CHILD.

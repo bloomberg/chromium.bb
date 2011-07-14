@@ -142,7 +142,8 @@ Widget::Widget()
       disable_inactive_rendering_(false),
       widget_closed_(false),
       saved_maximized_state_(false),
-      minimum_size_(100, 100) {
+      minimum_size_(100, 100),
+      focus_on_creation_(true) {
 }
 
 Widget::~Widget() {
@@ -709,6 +710,15 @@ void Widget::TooltipTextChanged(View* view) {
   TooltipManager* manager = native_widget_private()->GetTooltipManager();
   if (manager)
     manager->TooltipTextChanged(view);
+}
+
+bool Widget::SetInitialFocus() {
+  if (!focus_on_creation_)
+    return true;
+  View* v = widget_delegate_->GetInitiallyFocusedView();
+  if (v)
+    v->RequestFocus();
+  return !!v;
 }
 
 View* Widget::GetChildViewParent() {

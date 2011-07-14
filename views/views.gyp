@@ -277,6 +277,8 @@
         'ime/input_method_ibus.h',
         'ime/input_method_win.cc',
         'ime/input_method_win.h',
+        'ime/mock_input_method.cc',
+        'ime/mock_input_method.h',
         'ime/text_input_client.h',
         'ime/text_input_type_tracker.h',
         'ime/text_input_type_tracker.cc',
@@ -429,6 +431,10 @@
           'dependencies': [
             '../build/linux/system.gyp:ibus',
           ],
+          'sources/': [
+            ['exclude', 'ime/mock_input_method.cc'],
+            ['exclude', 'ime/mock_input_method.h'],
+          ],
         }, { # else: use_ibus != 1
           'sources/': [
             ['exclude', 'ime/character_composer.cc'],
@@ -476,8 +482,6 @@
         'events/event_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
-        'ime/mock_input_method.cc',
-        'ime/mock_input_method.h',
         'ime/character_composer_unittest.cc',
         'layout/grid_layout_unittest.cc',
         'layout/box_layout_unittest.cc',
