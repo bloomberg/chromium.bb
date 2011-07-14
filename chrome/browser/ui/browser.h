@@ -291,7 +291,7 @@ class Browser : public TabHandlerDelegate,
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
   static void OpenOptionsWindow(Profile* profile);
-  static void OpenClearBrowingDataDialogWindow(Profile* profile);
+  static void OpenClearBrowsingDataDialogWindow(Profile* profile);
   static void OpenImportSettingsDialogWindow(Profile* profile);
   static void OpenInstantConfirmDialogWindow(Profile* profile);
 #endif
@@ -459,6 +459,13 @@ class Browser : public TabHandlerDelegate,
   // already visible in this browser, it becomes selected. Otherwise a new tab
   // is created.
   void ShowSingletonTab(const GURL& url);
+
+  // As ShowSingletonTab, but if the current tab is the new tab page or
+  // about:blank, then overwrite it with the passed contents.
+  void ShowSingletonTabOverwritingNTP(const browser::NavigateParams& params);
+
+  // Creates a NavigateParams struct for a singleton tab navigation.
+  browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
 
   // Invoked when the fullscreen state of the window changes.
   // BrowserWindow::SetFullscreen invokes this after the window has become
@@ -1108,9 +1115,6 @@ class Browser : public TabHandlerDelegate,
 
   // Opens view-source tab for given tab contents.
   void ViewSource(TabContentsWrapper* tab);
-
-  // Creates a NavigateParams struct for a singleton tab navigation.
-  browser::NavigateParams GetSingletonTabNavigateParams(const GURL& url);
 
   // Opens view-source tab for any frame within given tab contents.
   void ViewSource(TabContentsWrapper* tab,

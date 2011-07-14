@@ -781,7 +781,7 @@ void Browser::OpenOptionsWindow(Profile* profile) {
 }
 
 // static
-void Browser::OpenClearBrowingDataDialogWindow(Profile* profile) {
+void Browser::OpenClearBrowsingDataDialogWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->OpenClearBrowsingDataDialog();
   browser->window()->Show();
@@ -1242,6 +1242,21 @@ browser::NavigateParams Browser::GetSingletonTabNavigateParams(
 void Browser::ShowSingletonTab(const GURL& url) {
   browser::NavigateParams params(GetSingletonTabNavigateParams(url));
   browser::Navigate(&params);
+}
+
+void Browser::ShowSingletonTabOverwritingNTP(
+    const browser::NavigateParams& params) {
+  browser::NavigateParams local_params(params);
+  TabContents* contents = GetSelectedTabContents();
+  const GURL& contents_url = contents->GetURL();
+  if (contents != NULL &&
+      (contents_url == GURL(chrome::kChromeUINewTabURL) ||
+       contents_url == GURL(chrome::kAboutBlankURL)) &&
+      browser::GetIndexOfSingletonTab(&local_params) < 0) {
+    local_params.disposition = CURRENT_TAB;
+  }
+
+  browser::Navigate(&local_params);
 }
 
 void Browser::WindowFullscreenStateChanged() {
@@ -1921,12 +1936,14 @@ void Browser::ShowAppMenu() {
 
 void Browser::ShowBookmarkManagerTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
-  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
+  ShowSingletonTabOverwritingNTP(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL)));
 }
 
 void Browser::ShowHistoryTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowHistory"));
-  ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
+  ShowSingletonTabOverwritingNTP(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryURL)));
 }
 
 void Browser::ShowDownloadsTab() {
@@ -1939,12 +1956,14 @@ void Browser::ShowDownloadsTab() {
       shelf->Close();
   }
 #endif
-  ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL));
+  ShowSingletonTabOverwritingNTP(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIDownloadsURL)));
 }
 
 void Browser::ShowExtensionsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowExtensions"));
-  ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL));
+  ShowSingletonTabOverwritingNTP(
+      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIExtensionsURL)));
 }
 
 void Browser::ShowAboutConflictsTab() {
@@ -1972,14 +1991,7 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
       GURL(chrome::kChromeUISettingsURL + sub_page)));
   params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
 
-  if (GetSelectedTabContents() != NULL &&
-      (GetSelectedTabContents()->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
-       GetSelectedTabContents()->GetURL() == GURL(chrome::kAboutBlankURL)) &&
-      browser::GetIndexOfSingletonTab(&params) < 0) {
-    params.disposition = CURRENT_TAB;
-  }
-
-  browser::Navigate(&params);
+  ShowSingletonTabOverwritingNTP(params);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {

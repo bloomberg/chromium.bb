@@ -45,6 +45,10 @@ class SkBitmap;
 class TabContents;
 class TabContentsWrapper;
 
+namespace browser {
+struct NavigateParams;
+}
+
 namespace gfx {
 class Size;
 }
@@ -84,20 +88,25 @@ void RunAllPendingInMessageLoop();
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 
 // Waits for the current tab to complete the navigation. Returns true on
-// success.
+// success. TODO(gbillock): remove this race hazard.
+// Use WindowedNotificationObserver instead.
 bool WaitForNavigationInCurrentTab(Browser* browser);
 
 // Waits for the current tab to complete the specified number of navigations.
-// Returns true on success.
+// Returns true on success. TODO(gbillock): remove this race hazard.
+// Use WindowedNotificationObserver instead.
 bool WaitForNavigationsInCurrentTab(Browser* browser,
                                     int number_of_navigations);
 
 // Waits for |controller| to complete a navigation. This blocks until
-// the navigation finishes.
+// the navigation finishes. TODO(gbillock): remove this race hazard.
+// Use WindowedNotificationObserver instead.
 void WaitForNavigation(NavigationController* controller);
 
 // Waits for |controller| to complete a navigation. This blocks until
-// the specified number of navigations complete.
+// the specified number of navigations complete. TODO(gbillock): remove this
+// race hazard.
+// Use WindowedNotificationObserver instead.
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations);
 
@@ -119,8 +128,13 @@ Browser* WaitForNewBrowser();
 // browser if a browser with the incognito profile does not exist.
 void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
+// Performs the provided navigation process, blocking until the navigation
+// finishes. May change the params in some cases (i.e. if the navigation
+// opens a new browser window). Uses browser::Navigate.
+void NavigateToURL(browser::NavigateParams* params);
+
 // Navigates the selected tab of |browser| to |url|, blocking until the
-// navigation finishes.
+// navigation finishes. Uses Browser::OpenURL --> browser::Navigate.
 void NavigateToURL(Browser* browser, const GURL& url);
 
 // Navigates the specified tab of |browser| to |url|, blocking until the

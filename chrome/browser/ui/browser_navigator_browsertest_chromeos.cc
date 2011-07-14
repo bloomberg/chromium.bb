@@ -15,6 +15,10 @@
 
 namespace {
 
+GURL GetGoogleURL() {
+  return GURL("http://www.google.com/");
+}
+
 // Subclass that tests navigation while in the Guest session.
 class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
  protected:
