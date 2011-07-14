@@ -77,6 +77,28 @@ int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
     return 0;
   } else {
     struct NaClAppThread *thread = nacl_thread[current_thread_index];
+    /*
+     * Get the address of an arbitrary local, stack-allocated variable,
+     * just for the purpose of doing a sanity check.
+     */
+    void *pointer_into_stack = &thread;
+    /*
+     * Sanity check: Make sure the stack we are running on is not
+     * allocated in untrusted memory.  This checks that the alternate
+     * signal stack is correctly set up, because otherwise, if it is
+     * not set up, the test case would not detect that.
+     *
+     * There is little point in doing a CHECK instead of a DCHECK,
+     * because if we are running off an untrusted stack, we have already
+     * lost.
+     *
+     * We do not do the check on Windows because Windows does not have
+     * an equivalent of sigaltstack() and this signal handler is
+     * insecure there.
+     */
+    if (!NACL_WINDOWS) {
+      DCHECK(!NaClIsUserAddr(thread->nap, (uintptr_t) pointer_into_stack));
+    }
     return NaClIsUserAddr(thread->nap, sigCtx->prog_ctr);
   }
 #else
