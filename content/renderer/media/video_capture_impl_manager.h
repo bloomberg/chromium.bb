@@ -31,14 +31,14 @@ class VideoCaptureImplManager
   // by |id| to VideoCaptureImplManager's list of opened device list.
   // A pointer to VideoCapture is returned to client so that client can
   // operate on that pointer, such as StartCaptrue, StopCapture.
-  media::VideoCapture* AddDevice(
+  virtual media::VideoCapture* AddDevice(
       media::VideoCaptureSessionId id,
       media::VideoCapture::EventHandler* handler);
 
   // Called by video capture client |handler| to remove device referenced
   // by |id| from VideoCaptureImplManager's list of opened device list.
-  void RemoveDevice(media::VideoCaptureSessionId id,
-                    media::VideoCapture::EventHandler* handler);
+  virtual void RemoveDevice(media::VideoCaptureSessionId id,
+                            media::VideoCapture::EventHandler* handler);
 
   VideoCaptureMessageFilter* video_capture_message_filter() const {
     return filter_;

@@ -57,6 +57,7 @@ class FilePath;
 class GeolocationDispatcher;
 class GURL;
 class LoadProgressTracker;
+class MediaStreamImpl;
 class NavigationState;
 class NotificationProvider;
 class P2PSocketDispatcher;
@@ -1073,6 +1074,9 @@ class RenderView : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
+
+  // MediaStreamImpl attached to this view; lazily initialized.
+  scoped_refptr<MediaStreamImpl> media_stream_impl_;
 
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.
