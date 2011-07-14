@@ -17,7 +17,10 @@ replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Core;0.5")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Instance;0.4")
+input 0:  s("PPB_Instance;0.5")
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+input 0:  s("PPB_Var;0.5")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Var(Deprecated\x29;0.3")
@@ -32,11 +35,6 @@ input 1:  I(4,8,79,400,400)
 input 2:  I(4,0,0,400,400)
 rpc call complete PPP_Instance_DidChangeView:iII:
 
-
-"*** GET INSTANCE OBJECT"
-rpc call intiated PPP_Instance_GetInstanceObject:i:C
-input 0:  i(5555)
-rpc call complete PPP_Instance_GetInstanceObject:i:C
 
 
 "*** CALL loadUrl(): url2 as buffer - expected to fail"
@@ -123,17 +121,6 @@ input 0:  i(44)
 input 1:  i(40)
 input 2:  i(1)
 output 0:  i(-7)
-replaying PPB_Instance_GetWindowObject:i:C:
-input 0:  i(5555)
-output 0:  C(24,\x06\x00\x00\x00\x00\x00\x00\x00\x9f\x00\x00\x00\x00\x00\x00\x00\x29_\x00\x00\x00\x00\x00\x00)
-replaying Call:CCiCC:CC:
-input 0:  C(16,\x9f\x00\x00\x00\x00\x00\x00\x00\x29_\x00\x00\x00\x00\x00\x00)
-input 1:  C(24,\x05\x00\x00\x00\f\x00\x00\x00ReportResult\x00\x00\x00\x00)
-input 2:  i(4)
-input 3:  C(104,\x05\x00\x00\x00 \x00\x00\x00http://www.google.com/robots.txt\x02\x00\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00&\x00\x00\x00PPB_URLLoader::Open: PP_ERROR_NOACCESS\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00)
-input 4:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-output 0:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
-output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
 replaying PPB_Core_ReleaseResource:i::
 input 0:  i(40)
 replaying PPB_Core_ReleaseResource:i::

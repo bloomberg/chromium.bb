@@ -27,9 +27,12 @@ set_variable NULL R(8,8:0)
 
 echo
 echo "*** INIT MODULE"
-replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
+# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
+#             asking for it.
 replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
 # the results contain a process id which is non-determinisitic
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
@@ -99,16 +102,6 @@ echo "*** async response part2"
 replay 1 PPB_URLLoader_ReadResponseBody:iii:Ci i(34) i(1024) i(3) * C(0,) i(-1)
 rpc RunCompletionCallback i(2) i(12) C(12,hello\x20world!) *
 
-echo
-echo "*** async response eof - report success"
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(96,${ARG_URL_FULL},${ARG_0},${ARG_SUCC},${ARG_1}) ${NULL} * ${NULL} ${NULL}
-replay 1 PPB_Core_ReleaseResource:i: i(30) *
-replay 1 PPB_Core_ReleaseResource:i: i(34) *
-replay 1 PPB_Core_ReleaseResource:i: i(35) *
-replay 1 PPB_Core_ReleaseResource:i: i(38) *
-rpc RunCompletionCallback i(3) i(0) C(0,) *
-
 ######################################################################
 ## URL (file)
 ######################################################################
@@ -138,8 +131,6 @@ replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(34) * i(0)
 replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(34) * i(0)
 replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(34) * i(0)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(34) * i(1)
-
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
 
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(0) R(40,${ARG_URL}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(30) i(1) R(16,${ARG_GET}) * i(1)

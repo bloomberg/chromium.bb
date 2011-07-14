@@ -33,9 +33,12 @@ set_variable COMPLETE R(24,${JS_STR},4:14,"5555: COMPLETE",2:0)
 # These replays are too common to list them seperately
 # TODO(robertm): make the counts tight, eliminate PPB_Var ASAP
 
+# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
+#             asking for it.
+replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;0.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)

@@ -18,7 +18,7 @@ set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 echo
 echo "*** INIT MODULE"
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_ImageData;0.3") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;0.4") * i(1)
 # The results contain a process id which is non-determinisitic. The
@@ -32,7 +32,7 @@ set_variable VALUES C(5,0xaa\000)
 
 # The PPP_GetInterface() call is probably not necessary, we just emulate what
 # happens in real life
-rpc PPP_GetInterface s("PPP_Instance;0.4") * i(0)
+rpc PPP_GetInterface s("PPP_Instance;0.5") * i(0)
 rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
 
 echo

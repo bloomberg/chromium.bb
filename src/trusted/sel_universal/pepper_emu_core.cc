@@ -36,12 +36,13 @@ bool IsSupportedInterface(string if_name) {
     if_name == "PPB_FileIO(Dev);0.4" ||
     if_name == "PPB_Graphics2D;0.4" ||
     if_name == "PPB_ImageData;0.3" ||
-    if_name == "PPB_Instance;0.4" ||
+    if_name == "PPB_Instance;0.5" ||
     if_name == "PPB_Messaging;0.1" ||
     if_name == "PPB_URLLoader;0.2" ||
     if_name == "PPB_URLRequestInfo;0.2" ||
     if_name == "PPB_URLResponseInfo;0.1" ||
-    if_name == "PPB_Var(Deprecated);0.3";
+    if_name == "PPB_Var(Deprecated);0.3" ||
+    if_name == "PPB_Var;0.5";
 }
 
 // void* PPB_GetInterface(const char* interface_name);

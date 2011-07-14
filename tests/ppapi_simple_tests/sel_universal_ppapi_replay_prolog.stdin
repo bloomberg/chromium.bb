@@ -63,11 +63,8 @@ replay 0 PPB_ImageData_Create:iiCi:i *
 replay 0 PPB_ImageData_IsImageData:i:i *
 replay 0 PPB_ImageData_Describe:i:Chii *
 
-replay 0 PPB_Instance_GetWindowObject:i:C *
-replay 0 PPB_Instance_GetOwnerElementObject:i:C *
 replay 0 PPB_Instance_BindGraphics:ii:i *
 replay 0 PPB_Instance_IsFullFrame:i:i *
-replay 0 PPB_Instance_ExecuteScript:iCC:CC *
 
 replay 0 PPB_URLRequestInfo_Create:i:i *
 replay 0 PPB_URLRequestInfo_IsURLRequestInfo:i:i *

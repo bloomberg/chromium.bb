@@ -54,9 +54,6 @@ class NaClTest(pyauto.PyUITest):
   def disabledTestSurfAwayExampleGLES2(self):
     self.surfAway('ppapi_example_gles2.html', 'PPAPI')
 
-  def testSurfAwayExamplePostMessage(self):
-    self.surfAway('ppapi_example_post_message.html', 'PPAPI')
-
   def testSurfAwayGetURL(self):
     self.surfAway('ppapi_geturl.html', 'PPAPI')
 
@@ -117,10 +114,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayPPAPITestsPaintAggregator(self):
     self.surfAway('test_case.html?mode=nacl&testcase=PaintAggregator',
                   'Test PaintAggregator')
-
-  def testSurfAwayPPAPITestsPostMessage(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=PostMessage',
-                  'Test PostMessage')
 
   def testSurfAwayPPAPITestsScrollbar(self):
     self.surfAway('test_case.html?mode=nacl&testcase=Scrollbar',

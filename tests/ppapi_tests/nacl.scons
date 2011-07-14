@@ -30,7 +30,9 @@ ppapi_tests_sources = [
     'test_graphics_2d.cc',
     'test_image_data.cc',
     'test_paint_aggregator.cc',
-    'test_post_message.cc',
+    # test_post_message.cc relies on synchronous scripting, which is not
+    # available for untrusted tests.
+    #'test_post_message.cc',
     'test_scrollbar.cc',
     #'test_transport.cc',
     #'test_uma.cc',

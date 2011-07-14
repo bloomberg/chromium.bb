@@ -19,7 +19,7 @@ rpc call complete PPP_InitializeModule:iihs:ii
 
 "*** INIT INSTANCE"
 rpc call intiated PPP_GetInterface:s:i
-input 0:  s("PPP_Instance;0.4")
+input 0:  s("PPP_Instance;0.5")
 rpc call complete PPP_GetInterface:s:i
 output 0:  i(1)
 

@@ -66,7 +66,7 @@ set_variable EXCEPTION R(8,8:0)
 echo
 echo "*** INIT MODULE"
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
 # the results contain a process id which is non-determinisitic
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
@@ -102,7 +102,10 @@ rpc PPP_Instance_HandleInputEvent ${INSTANCE} ${EV_KEY_DOWN} * i(0)
 echo
 echo "*** TRIGGER EVENT FLUSH"
 # NOTE: This should not be necessary anymore
+# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
+#             asking for it.
 replay 1 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;0.1") * i(1)
 replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(104,\x05\x00\x00\x00_\x00\x00\x005555:_Mouse_event:Down_modifier:left-button-down__button:Left_x:264_y:100_click_count:1_time:1\n\x00) *
 replay 1 PPB_Messaging_PostMessage:iC: i(5555)  C(112,\x05\x00\x00\x00b\x00\x00\x005555:_Mouse_event:Up_modifier:left-button-down__button:Left_x:264_y:100_click_count:0_time:1.0625\n\x00\x00\x00\x00\x00\x00) *

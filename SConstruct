@@ -299,7 +299,7 @@ def SetUpArgumentBits(env):
       'into hangs on Buildbot, and our test suite includes various crash '
       'tests.')
 
-  BitFromArgument(env, 'pepper_scripting', default=True,
+  BitFromArgument(env, 'pepper_scripting', default=False,
     desc='When pepper_scripting is on, we build with synchronous scripting '
          'functions available and proxied. If scripting is off, we define '
          'PPAPI_INSTANCE_REMOVE_SCRIPTING and PPAPI_VAR_REMOVE_SCRIPTING which '
@@ -2607,7 +2607,9 @@ nacl_env.Append(
     'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
-    'tests/ppapi_example_2d/nacl.scons',
+    # TODO(dmichael): Re-enable this once the version from Chrome that doesn't
+    # have the scripting functions rolls in (r92312, crbug.com/82606)
+    # 'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',

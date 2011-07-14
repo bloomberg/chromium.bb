@@ -13,7 +13,10 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 # REPLAY TESTS
 ######################################################################
 TESTS = [('audio', ('audio',)),
-         ('graphics2d',('graphics2d',)),
+         # TODO(dmichael): Re-enable this once the version from Chrome that
+         # doesn't have the scripting functions rolls in (r92312,
+         # crbug.com/82606)
+         #('graphics2d',('graphics2d',)),
          ('event', ('event',)),
          ('file', ('file1', 'file2')),
          ]

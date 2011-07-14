@@ -29,8 +29,11 @@ set_variable NULL R(8,8:0)
 echo
 echo "*** INIT MODULE"
 replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.4") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
+# TODO(sehr): Remove the replay of PPB_Var(Deprecated) when the proxy stops
+#             asking for it.
 replay 99 PPB_GetInterface:s:i  s("PPB_Var(Deprecated);0.3") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
 # the results contain a process id which is non-determinisitic
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
@@ -38,13 +41,6 @@ echo
 echo "*** TRIGGER REPAINT"
 rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,400,400) I(4,0,0,400,400) *
 # leave time for flush of stdout
-
-echo
-echo "*** GET INSTANCE OBJECT"
-rpc PPP_Instance_GetInstanceObject hide-results ${INSTANCE} * C(16)
-# save result to variable and also register it as non-deterministic
-set_variable OBJECT ${result0}
-nondeterministic ${result0} @THE_OBJECT
 
 ######################################################################
 ## URL
@@ -55,9 +51,6 @@ replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
-
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(104,${ARG_URL},${ARG_0},${ARG_ERR2},${ARG_0}) ${NULL} * ${NULL} ${NULL}
 
 replay 1 PPB_FileIO_Dev_Create:i:i ${INSTANCE} * i(35)
 replay 1 PPB_URLRequestInfo_Create:i:i ${INSTANCE} * i(40)
@@ -83,9 +76,6 @@ replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(40) i(1) R(16,${ARG_GET}) * i(1)
 replay 1 PPB_URLRequestInfo_SetProperty:iiC:i i(40) i(3) R(8,${ARG_0}) * i(1)
 
 replay 1 PPB_URLLoader_Open:iii:i i(44) i(40) i(1) * i(-7)
-
-replay 1 PPB_Instance_GetWindowObject:i:C ${INSTANCE} * ${WINDOW}
-replay 1 Call:CCiCC:CC R(16,8:0x9f,8:0x5f29) R(24,${ARG_ReportResult}) i(4) R(104,${ARG_URL},${ARG_0},${ARG_ERR1},${ARG_0}) ${NULL} * ${NULL} ${NULL}
 
 replay 1 PPB_Core_ReleaseResource:i: i(35) *
 replay 1 PPB_Core_ReleaseResource:i: i(40) *
