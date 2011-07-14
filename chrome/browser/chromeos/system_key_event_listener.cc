@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "content/browser/user_metrics.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
@@ -22,6 +23,7 @@ namespace chromeos {
 
 namespace {
 
+// Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
 }  // namespace
@@ -33,7 +35,8 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      xkb_event_base_code_(-1),
+      waiting_for_shift_for_caps_lock_(false),
+      xkb_event_base_(0),
       audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
 
@@ -43,6 +46,8 @@ SystemKeyEventListener::SystemKeyEventListener()
   key_f8_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F8);
   key_f9_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F9);
   key_f10_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F10);
+  key_left_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_L);
+  key_right_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_R);
 
   if (key_volume_mute_)
     GrabKey(key_volume_mute_, 0);
@@ -58,7 +63,7 @@ SystemKeyEventListener::SystemKeyEventListener()
   int xkb_minor_version = XkbMinorVersion;
   if (!XkbQueryExtension(GDK_DISPLAY(),
                          NULL,  // opcode_return
-                         &xkb_event_base_code_,
+                         &xkb_event_base_,
                          NULL,  // error_return
                          &xkb_major_version,
                          &xkb_minor_version)) {
@@ -201,15 +206,35 @@ void SystemKeyEventListener::OnCapsLock(bool enabled) {
 }
 
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
-  if (xevent->type == xkb_event_base_code_) {
+  if (xevent->type == xkb_event_base_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
       OnCapsLock((xkey_event->state.locked_mods) & LockMask);
       return true;
     }
   } else if (xevent->type == KeyPress) {
-    int32 keycode = xevent->xkey.keycode;
+    const int32 keycode = xevent->xkey.keycode;
     if (keycode) {
+      // Toggle Caps Lock if both Shift keys are pressed simultaneously.
+      if (keycode == key_left_shift_ || keycode == key_right_shift_) {
+        const bool other_shift_is_held = (xevent->xkey.state & ShiftMask);
+        const bool other_mods_are_held =
+            (xevent->xkey.state & ~(ShiftMask | LockMask));
+
+        if (waiting_for_shift_for_caps_lock_ &&
+            other_shift_is_held && !other_mods_are_held) {
+          input_method::SetCapsLockEnabled(!input_method::CapsLockIsEnabled());
+        }
+
+        // Only toggle on the next Shift press if we're seeing the first Shift
+        // key get pressed by itself here.
+        waiting_for_shift_for_caps_lock_ =
+            (!other_shift_is_held && !other_mods_are_held);
+      } else {
+        // If we see a non-Shift key get pressed, start over.
+        waiting_for_shift_for_caps_lock_ = false;
+      }
+
       // Only doing non-Alt/Shift/Ctrl modified keys
       if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
         if ((keycode == key_f8_) ||

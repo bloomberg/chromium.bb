@@ -85,11 +85,19 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   int32 key_f8_;
   int32 key_f9_;
   int32 key_f10_;
+  int32 key_left_shift_;
+  int32 key_right_shift_;
 
   bool stopped_;
 
+  // Are we waiting for a Shift key press event to toggle Caps Lock (i.e. the
+  // last key press event was regarding the other Shift key)?
+  bool waiting_for_shift_for_caps_lock_;
+
   ObserverList<CapsLockObserver> caps_lock_observers_;
-  int xkb_event_base_code_;
+
+  // Base X ID for events from the XKB extension.
+  int xkb_event_base_;
 
   // AudioHandler is a Singleton class we are just caching a pointer to here,
   // and we do not own the pointer.
