@@ -1301,12 +1301,12 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (contents_container_->HasPreview() && state == BookmarkBar::DETACHED)
     state = BookmarkBar::HIDDEN;
 
+  toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
+  PlaceBookmarkBar(state == BookmarkBar::DETACHED);
   bookmark_bar_->SetBookmarkBarState(
       state,
       animate ? BookmarkBar::ANIMATE_STATE_CHANGE :
                 BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-  toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
-  PlaceBookmarkBar(state == BookmarkBar::DETACHED);
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
