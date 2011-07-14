@@ -5,6 +5,8 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -15,7 +17,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -41,7 +42,7 @@ using base::TimeDelta;
 namespace {
 
 // Helper to get a mutable bookmark node.
-static BookmarkNode* AsMutable(const BookmarkNode* node) {
+BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
@@ -50,8 +51,6 @@ void SwapDateAdded(BookmarkNode* n1, BookmarkNode* n2) {
   n1->set_date_added(n2->date_added());
   n2->set_date_added(tmp);
 }
-
-}  // anonymous namespace
 
 class BookmarkModelTest : public TestingBrowserProcessTest,
                           public BookmarkModelObserver {
@@ -65,26 +64,27 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
              const BookmarkNode* node2,
              int index1,
              int index2) {
-      this->node1 = node1;
-      this->node2 = node2;
-      this->index1 = index1;
-      this->index2 = index2;
+      node1_ = node1;
+      node2_ = node2;
+      index1_ = index1;
+      index2_ = index2;
     }
 
-    void AssertEquals(const BookmarkNode* node1,
+    void ExpectEquals(const BookmarkNode* node1,
                       const BookmarkNode* node2,
                       int index1,
                       int index2) {
-      ASSERT_TRUE(this->node1 == node1);
-      ASSERT_TRUE(this->node2 == node2);
-      ASSERT_EQ(index1, this->index1);
-      ASSERT_EQ(index2, this->index2);
+      EXPECT_EQ(node1_, node1);
+      EXPECT_EQ(node2_, node2);
+      EXPECT_EQ(index1_, index1);
+      EXPECT_EQ(index2_, index2);
     }
 
-    const BookmarkNode* node1;
-    const BookmarkNode* node2;
-    int index1;
-    int index2;
+   private:
+    const BookmarkNode* node1_;
+    const BookmarkNode* node2_;
+    int index1_;
+    int index2_;
   };
 
   BookmarkModelTest()
@@ -94,7 +94,7 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
     ClearCounts();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     *CommandLine::ForCurrentProcess() = original_command_line_;
   }
 
@@ -108,35 +108,35 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
                                  int old_index,
                                  const BookmarkNode* new_parent,
                                  int new_index) OVERRIDE {
-    moved_count++;
-    observer_details.Set(old_parent, new_parent, old_index, new_index);
+    ++moved_count_;
+    observer_details_.Set(old_parent, new_parent, old_index, new_index);
   }
 
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
                                  int index) OVERRIDE {
-    added_count++;
-    observer_details.Set(parent, NULL, index, -1);
+    ++added_count_;
+    observer_details_.Set(parent, NULL, index, -1);
   }
 
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node) OVERRIDE {
-    removed_count++;
-    observer_details.Set(parent, NULL, old_index, -1);
+    ++removed_count_;
+    observer_details_.Set(parent, NULL, old_index, -1);
   }
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE {
-    changed_count++;
-    observer_details.Set(node, NULL, -1, -1);
+    ++changed_count_;
+    observer_details_.Set(node, NULL, -1, -1);
   }
 
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
       const BookmarkNode* node) OVERRIDE {
-    reordered_count_++;
+    ++reordered_count_;
   }
 
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -146,8 +146,8 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
   }
 
   void ClearCounts() {
-    reordered_count_ = moved_count = added_count = removed_count =
-        changed_count = 0;
+    added_count_ = moved_count_ = removed_count_ = changed_count_ =
+        reordered_count_ = 0;
   }
 
   void AssertObserverCount(int added_count,
@@ -155,28 +155,27 @@ class BookmarkModelTest : public TestingBrowserProcessTest,
                            int removed_count,
                            int changed_count,
                            int reordered_count) {
-    ASSERT_EQ(added_count, this->added_count);
-    ASSERT_EQ(moved_count, this->moved_count);
-    ASSERT_EQ(removed_count, this->removed_count);
-    ASSERT_EQ(changed_count, this->changed_count);
-    ASSERT_EQ(reordered_count, reordered_count_);
+    EXPECT_EQ(added_count_, added_count);
+    EXPECT_EQ(moved_count_, moved_count);
+    EXPECT_EQ(removed_count_, removed_count);
+    EXPECT_EQ(changed_count_, changed_count);
+    EXPECT_EQ(reordered_count_, reordered_count);
   }
 
+ protected:
   BookmarkModel model_;
+  ObserverDetails observer_details_;
 
+ private:
   CommandLine original_command_line_;
 
-  int moved_count;
-
-  int added_count;
-
-  int removed_count;
-
-  int changed_count;
-
+  int added_count_;
+  int moved_count_;
+  int removed_count_;
+  int changed_count_;
   int reordered_count_;
 
-  ObserverDetails observer_details;
+  DISALLOW_COPY_AND_ASSIGN(BookmarkModelTest);
 };
 
 TEST_F(BookmarkModelTest, InitialState) {
@@ -207,7 +206,7 @@ TEST_F(BookmarkModelTest, AddURL) {
 
   const BookmarkNode* new_node = model_.AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -227,7 +226,7 @@ TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
 
   const BookmarkNode* new_node = model_.AddURL(root, 0, title, url);
   AssertObserverCount(1, 0, 0, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -246,7 +245,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
 
   const BookmarkNode* new_node = model_.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
@@ -260,7 +259,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
   ClearCounts();
   model_.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 }
 
 TEST_F(BookmarkModelTest, RemoveURL) {
@@ -273,7 +272,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   model_.Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
@@ -296,7 +295,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   model_.Remove(root, 0);
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
@@ -313,7 +312,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
   title = ASCIIToUTF16("foo2");
   model_.SetTitle(node, title);
   AssertObserverCount(0, 0, 0, 1, 0);
-  observer_details.AssertEquals(node, NULL, -1, -1);
+  observer_details_.ExpectEquals(node, NULL, -1, -1);
   EXPECT_EQ(title, node->GetTitle());
 }
 
@@ -328,7 +327,7 @@ TEST_F(BookmarkModelTest, SetURL) {
   url = GURL("http://foo2.com");
   model_.SetURL(node, url);
   AssertObserverCount(0, 0, 0, 1, 0);
-  observer_details.AssertEquals(node, NULL, -1, -1);
+  observer_details_.ExpectEquals(node, NULL, -1, -1);
   EXPECT_EQ(url, node->GetURL());
 }
 
@@ -343,7 +342,7 @@ TEST_F(BookmarkModelTest, Move) {
   model_.Move(node, folder1, 0);
 
   AssertObserverCount(0, 1, 0, 0, 0);
-  observer_details.AssertEquals(root, folder1, 1, 0);
+  observer_details_.ExpectEquals(root, folder1, 1, 0);
   EXPECT_TRUE(folder1 == node->parent());
   EXPECT_EQ(1, root->child_count());
   EXPECT_EQ(folder1, root->GetChild(0));
@@ -354,7 +353,7 @@ TEST_F(BookmarkModelTest, Move) {
   ClearCounts();
   model_.Remove(root, 0);
   AssertObserverCount(0, 0, 1, 0, 0);
-  observer_details.AssertEquals(root, NULL, 0, -1);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
   EXPECT_TRUE(model_.GetMostRecentlyAddedNodeForURL(url) == NULL);
   EXPECT_EQ(0, root->child_count());
 }
@@ -542,8 +541,6 @@ TEST_F(BookmarkModelTest, HasBookmarks) {
   EXPECT_TRUE(model_.HasBookmarks());
 }
 
-namespace {
-
 // NotificationObserver implementation used in verifying we've received the
 // NOTIFY_URLS_STARRED method correctly.
 class StarredListener : public NotificationObserver {
@@ -553,9 +550,10 @@ class StarredListener : public NotificationObserver {
                    Source<Profile>(NULL));
   }
 
+  // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
+                       const NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_URLS_STARRED) {
       notification_count_++;
       details_ = *(Details<history::URLsStarredDetails>(details).ptr());
@@ -573,8 +571,6 @@ class StarredListener : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(StarredListener);
 };
-
-}  // namespace
 
 // Makes sure NOTIFY_URLS_STARRED is sent correctly.
 TEST_F(BookmarkModelTest, NotifyURLsStarred) {
@@ -618,16 +614,14 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   EXPECT_TRUE(url == *(listener.details_.changed_urls.begin()));
 }
 
-namespace {
-
 // See comment in PopulateNodeFromString.
 typedef ui::TreeNodeWithValue<BookmarkNode::Type> TestNode;
 
 // Does the work of PopulateNodeFromString. index gives the index of the current
 // element in description to process.
-static void PopulateNodeImpl(const std::vector<std::string>& description,
-                             size_t* index,
-                             TestNode* parent) {
+void PopulateNodeImpl(const std::vector<std::string>& description,
+                      size_t* index,
+                      TestNode* parent) {
   while (*index < description.size()) {
     const std::string& element = description[*index];
     (*index)++;
@@ -675,18 +669,17 @@ static void PopulateNodeImpl(const std::vector<std::string>& description,
 //
 // NOTE: each name must be unique, and folders are assigned a unique title by
 // way of an increasing integer.
-static void PopulateNodeFromString(const std::string& description,
-                                   TestNode* parent) {
+void PopulateNodeFromString(const std::string& description, TestNode* parent) {
   std::vector<std::string> elements;
-  size_t index = 0;
   base::SplitStringAlongWhitespace(description, &elements);
+  size_t index = 0;
   PopulateNodeImpl(elements, &index, parent);
 }
 
 // Populates the BookmarkNode with the children of parent.
-static void PopulateBookmarkNode(TestNode* parent,
-                                 BookmarkModel* model,
-                                 const BookmarkNode* bb_node) {
+void PopulateBookmarkNode(TestNode* parent,
+                          BookmarkModel* model,
+                          const BookmarkNode* bb_node) {
   for (int i = 0; i < parent->child_count(); ++i) {
     TestNode* child = parent->GetChild(i);
     if (child->value == BookmarkNode::FOLDER) {
@@ -700,8 +693,6 @@ static void PopulateBookmarkNode(TestNode* parent,
   }
 }
 
-}  // namespace
-
 // Test class that creates a BookmarkModel with a real history backend.
 class BookmarkModelTestWithProfile : public TestingBrowserProcessTest {
  public:
@@ -709,15 +700,10 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest {
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
 
-  virtual void SetUp() {
-  }
-
-  virtual void TearDown() {
+  // TestingBrowserProcessTest:
+  virtual void TearDown() OVERRIDE {
     profile_.reset(NULL);
   }
-
-  // The profile.
-  scoped_ptr<TestingProfile> profile_;
 
  protected:
   // Verifies the contents of the bookmark bar node match the contents of the
@@ -762,6 +748,8 @@ class BookmarkModelTestWithProfile : public TestingBrowserProcessTest {
     profile_->CreateHistoryService(true, false);
   }
 
+  // The profile.
+  scoped_ptr<TestingProfile> profile_;
   BookmarkModel* bb_model_;
 
  private:
@@ -1053,3 +1041,5 @@ TEST_F(BookmarkModelTest, SyncNodeVisibileWithChildren) {
   model_.AddURL(root, 0, title, url);
   EXPECT_TRUE(model_.synced_node()->IsVisible());
 }
+
+}  // namespace
