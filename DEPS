@@ -18,7 +18,7 @@ vars = {
   "ffmpeg_revision": "90064",
   "skia_revision": "1832",
   "v8_revision": "8640",
-  "webrtc_revision": "90",
+  "webrtc_revision": "108",
 }
 
 deps = {
