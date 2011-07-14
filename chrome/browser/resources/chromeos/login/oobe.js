@@ -35,6 +35,20 @@ cr.define('cr.ui', function() {
     currentStep_: 0,
 
     /**
+     * Appends buttons to the button strip.
+     * @param {Array} buttons Array with the buttons to append.
+     */
+    appendButtons_ : function(buttons) {
+      if (buttons) {
+        var buttonStrip = $('button-strip');
+        for (var i = 0; i < buttons.length; ++i) {
+          var button = buttons[i];
+          buttonStrip.appendChild(button);
+        }
+      }
+    },
+
+    /**
      * Switches to the next OOBE step.
      * @param {number} nextStepIndex Index of the next step.
      */
@@ -70,8 +84,12 @@ cr.define('cr.ui', function() {
           if (nextStepIndex == 0)
             Oobe.refreshNetworkControl();
         });
-      } else if (nextStepIndex == 0) {
-        Oobe.refreshNetworkControl();
+      } else {
+        // First screen on OOBE launch.
+        newHeader.classList.remove('right');
+        if (nextStepIndex == 0) {
+          Oobe.refreshNetworkControl();
+        }
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
@@ -119,13 +137,19 @@ cr.define('cr.ui', function() {
       dot.className = 'progdot';
       $('progress').appendChild(dot);
 
-      var buttons = el.buttons;
-      if (buttons) {
-        var buttonStrip = $('button-strip');
-        for (var i = 0; i < buttons.length; ++i) {
-          var button = buttons[i];
-          buttonStrip.appendChild(button);
-        }
+      this.appendButtons_(el.buttons);
+    },
+
+    /**
+     * Updates headers and buttons of the screens.
+     * Should be executed on language change.
+     */
+    updateHeadersAndButtons_: function() {
+      $('button-strip').innerHTML = "";
+      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+        var screen = $(screenId);
+        $('header-' + screenId).innerText = screen.header;
+        this.appendButtons_(screen.buttons);
       }
     }
   };
@@ -284,13 +308,28 @@ cr.define('cr.ui', function() {
    * @param {!Object} data New dictionary with i18n values.
    */
   Oobe.reloadContent = function(data) {
+    // Reload global local strings, process DOM tree again.
+    templateData = data;
     i18nTemplate.process(document, data);
+
     // Update language and input method menu lists.
     Oobe.setupSelect($('language-select'), data.languageList, '');
     Oobe.setupSelect($('keyboard-select'), data.inputMethodsList, '');
+
+    // Update headers & buttons.
+    Oobe.updateHeadersAndButtons();
+
     // Update the network control position.
     Oobe.refreshNetworkControl();
   }
+
+  /**
+   * Updates headers and buttons of the screens.
+   * Should be executed on language change.
+   */
+  Oobe.updateHeadersAndButtons = function() {
+    Oobe.getInstance().updateHeadersAndButtons_();
+  };
 
   // Export
   return {
