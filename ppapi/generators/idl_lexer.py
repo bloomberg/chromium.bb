@@ -152,6 +152,8 @@ class IDLLexer(object):
     file = self.lexobj.filename
     out = self.ErrorMessage(file, line, pos, msg)
     sys.stderr.write(out + '\n')
+    self.lex_errors += 1
+
 
   def AddLines(self, count):
     # Set the lexer position for the beginning of the next line.  In the case
@@ -184,6 +186,7 @@ class IDLLexer(object):
     self.lines = data.split('\n')
     self.index = [0]
     self.lexobj.input(data)
+    self.lex_errors = 0
 
   def __init__(self):
     self.lexobj = lex.lex(object=self, lextab=None, optimize=0)

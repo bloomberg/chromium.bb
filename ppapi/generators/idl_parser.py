@@ -824,7 +824,7 @@ class IDLParser(IDLLexer):
       srcroot = GetOption('srcroot')
       if srcroot and filename.find(srcroot) == 0:
         filename = filename[len(srcroot) + 1:]
-      return IDLFile(filename, out, self.parse_errors)
+      return IDLFile(filename, out, self.parse_errors + self.lex_errors)
 
     except Exception as e:
       ErrOut.LogLine(filename, self.last.lineno, self.last.lexpos,
@@ -995,8 +995,6 @@ def ParseFiles(filenames):
   for filename in filenames:
     filenode = parser.ParseFile(filename)
     filenodes.append(filenode)
-    if GetOption('verbose'):
-      InfoOut.Log("Parsed %s." % filename)
 
   ast = IDLAst(filenodes)
   if GetOption('dump_tree'): ast.Dump(0)
