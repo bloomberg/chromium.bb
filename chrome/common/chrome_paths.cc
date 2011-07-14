@@ -93,7 +93,7 @@ bool GetInternalPluginsDirectory(FilePath* result) {
 bool GetPepperFlashDirectory(FilePath* result) {
   if (!GetInternalPluginsDirectory(result))
     return false;
-  result->Append(kPepperFlashBaseDirectory);
+  *result = result->Append(kPepperFlashBaseDirectory);
   Version latest("0.0");
   bool found = false;
   file_util::FileEnumerator
