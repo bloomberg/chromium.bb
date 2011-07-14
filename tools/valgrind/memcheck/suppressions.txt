@@ -4859,6 +4859,14 @@
    fun:_ZN4base20MessageLoopProxyImpl8PostTaskERKN15tracked_objects8LocationEP4Task
    fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
+{
+   bug_89300
+   fun:_Znw*
+   ...
+   fun:_ZN8IOThread31RegisterURLRequestContextGetterEP29ChromeURLRequestContextGetter
+   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZL23AddDataSourceOnIOThread13scoped_refptrIN3net23URLRequestContextGetterEES_IN20ChromeURLDataManager10DataSourceEE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
