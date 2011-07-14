@@ -12,7 +12,7 @@
 #include "views/widget/root_view.h"
 
 #if defined(HAVE_IBUS)
-#include "views/ime/input_methodc_ibus.h"
+#include "views/ime/input_method_ibus.h"
 #else
 #include "views/ime/mock_input_method.h"
 #endif
