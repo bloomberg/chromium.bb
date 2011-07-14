@@ -59,7 +59,7 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
             open(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE, 'w').close()
         assert os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
 
-    def run_once(self):
+    def run_once(self, suite='FULL'):
         """Run pyauto functional tests."""
         # Enable chrome testing interface and Login
         deps_dir = os.path.join(self.autodir, 'deps')
@@ -71,8 +71,8 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
                 os.path.join(pyautolib_dir, 'chromeos', 'chromeos_utils.py'))
         utils.system(login_cmd)
 
-        # Run pyauto tests "FULL" suite
+        # Run pyauto tests
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
-            'pyauto_functional.py --suite=FULL -v' % deps_dir)
+            'pyauto_functional.py --suite=%s -v' % (deps_dir, suite))
         utils.system(functional_cmd)
