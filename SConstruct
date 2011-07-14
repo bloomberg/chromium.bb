@@ -287,10 +287,6 @@ def SetUpArgumentBits(env):
       'and we do not open a browser window on the user\'s desktop.  '
       'Unfortunately there is no equivalent on Mac OS X.')
 
-  BitFromArgument(env, 'irt', default=not env.IrtIsBroken(),
-    desc='Use the integrated runtime (IRT) untrusted blob library when '
-      'running tests')
-
   BitFromArgument(env, 'disable_crash_dialog', default=True,
     desc='Disable Windows\' crash dialog box, which Windows pops up when a '
       'process exits with an unhandled fault.  Windows enables this by '
@@ -411,20 +407,6 @@ else:
 
 DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
 pre_base_env.SetBitFromOption('nacl_glibc', False)
-
-def IrtIsBroken(env):
-  if env.Bit('nacl_glibc'):
-    # The glibc startup code is not yet compatible with IRT.
-    return True
-  if env.Bit('use_sandboxed_translator'):
-    # The IRT image doesn't get built.
-    return True
-  if env.Bit('bitcode'):
-    # The pnacl linker doesn't leave a segment gap.
-    return True
-  return False
-
-pre_base_env.AddMethod(IrtIsBroken)
 
 # This function should be called ASAP after the environment is created, but
 # after ExpandArguments.
@@ -875,6 +857,25 @@ def CrossToolsBuild(env):
 
 pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
+# This has to appear after the "platform logic" steps above so it
+# can test target_x86_64.
+def IrtIsBroken(env):
+  if env.Bit('nacl_glibc'):
+    # The glibc startup code is not yet compatible with IRT.
+    return True
+  if env.Bit('bitcode') and env.Bit('target_x86_64'):
+    # The pnacl-built binaries do not match the canonical x86-64 ABI
+    # wrt structure passing.  Since the IRT itself is not built with
+    # pnacl, this mismatch bites some PPAPI calls.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=1902
+    return True
+  return False
+
+pre_base_env.AddMethod(IrtIsBroken)
+
+BitFromArgument(pre_base_env, 'irt', default=not pre_base_env.IrtIsBroken(),
+                desc='Use the integrated runtime (IRT) untrusted blob library '
+                'when running tests')
 
 # ----------------------------------------------------------
 def HasSuffix(item, suffix):
