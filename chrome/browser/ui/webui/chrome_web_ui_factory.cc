@@ -69,6 +69,10 @@
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #endif
 
+#if defined(WEBUI_CERTIFICATE_VIEWER)
+#include "chrome/browser/ui/webui/certificate_viewer_ui.h"
+#endif
+
 namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
@@ -142,6 +146,10 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIBugReportHost)
     return &NewWebUI<BugReportUI>;
+#if defined(WEBUI_CERTIFICATE_VIEWER)
+  if (url.host() == chrome::kChromeUICertificateViewerHost)
+    return &NewWebUI<CertificateViewerUI>;
+#endif
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)

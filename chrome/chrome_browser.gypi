@@ -3359,6 +3359,10 @@
         'browser/ui/webui/bookmarks_ui.h',
         'browser/ui/webui/bug_report_ui.cc',
         'browser/ui/webui/bug_report_ui.h',
+        'browser/ui/webui/certificate_viewer.cc',
+        'browser/ui/webui/certificate_viewer.h',
+        'browser/ui/webui/certificate_viewer_ui.cc',
+        'browser/ui/webui/certificate_viewer_ui.h',
         'browser/ui/webui/chrome_url_data_manager_backend.cc',
         'browser/ui/webui/chrome_url_data_manager_backend.h',
         'browser/ui/webui/chrome_url_data_manager.cc',
@@ -3825,6 +3829,23 @@
           ],
           'include_dirs': [
             '../third_party/angle/include',
+          ],
+        }],
+        ['webui_certificate_viewer==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/webui/certificate_viewer.cc'],
+            ['exclude', '^browser/ui/webui/certificate_viewer.h'],
+            ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
+            ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
+          ],
+        }],
+        ['webui_certificate_viewer==1', {
+          'sources/': [
+            ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
+            ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
+          ],
+          'defines': [
+            'WEBUI_CERTIFICATE_VIEWER',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -4464,6 +4485,14 @@
                 ['exclude', '^browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h'],
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.cc'],
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.h'],
+              ],
+            }],
+            # Exclude the GTK cert viewer again if webui_certificate_viewer is
+            # enabled.
+            ['webui_certificate_viewer==1', {
+              'sources/': [
+                ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
+                ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
               ],
             }],
             # Exclude these toolkit_views specific files again.
