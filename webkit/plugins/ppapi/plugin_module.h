@@ -25,6 +25,7 @@
 class FilePath;
 class MessageLoop;
 struct PPB_Core;
+struct PPB_Memory_Dev;
 typedef void* NPIdentifier;
 
 namespace base {
@@ -99,6 +100,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
 
   static const PPB_Core* GetCore();
+
+  static const PPB_Memory_Dev* GetMemoryDev();
 
   // Returns a pointer to the local GetInterface function for retrieving
   // PPB interfaces.

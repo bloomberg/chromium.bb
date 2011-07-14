@@ -12,8 +12,8 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_CORE_INTERFACE_0_5 "PPB_Core;0.5"
-#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_0_5
+#define PPB_CORE_INTERFACE_1_0 "PPB_Core;1.0"
+#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_1_0
 
 /**
  * @file
@@ -47,24 +47,6 @@ struct PPB_Core {
    * @param[in] config A <code>PP_Resource</code> containing the resource.
    */
   void (*ReleaseResource)(PP_Resource resource);
-
-  /**
-   * MemAlloc() allocates memory.
-   *
-   * @param[in] num_bytes A number of bytes to allocate.
-   *
-   * @return A pointer to the memory if successful, <code>NULL</code> If the
-   * allocation fails.
-   */
-  void* (*MemAlloc)(uint32_t num_bytes);
-
-  /**
-   * <code>MemFree()</code> deallocates memory.
-   *
-   * @param[in] ptr A pointer to the memory to deallocate. It is safe to
-   * pass <code>NULL</code> to this function.
-   */
-  void (*MemFree)(void* ptr);
 
   /**
    * GetTime() returns the "wall clock time" according to the

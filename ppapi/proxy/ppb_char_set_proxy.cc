@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
-#include "ppapi/c/ppb_core.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -19,9 +19,9 @@ namespace proxy {
 
 namespace {
 
-const PPB_Core* GetCoreInterface() {
-  return static_cast<const PPB_Core*>(
-      PluginDispatcher::GetInterfaceFromDispatcher(PPB_CORE_INTERFACE));
+const PPB_Memory_Dev* GetMemoryDevInterface() {
+  return static_cast<const PPB_Memory_Dev*>(
+      PluginDispatcher::GetInterfaceFromDispatcher(PPB_MEMORY_DEV_INTERFACE));
 }
 
 InterfaceProxy* CreateCharSetProxy(Dispatcher* dispatcher,
@@ -63,7 +63,7 @@ char* PPB_CharSet_Proxy::UTF16ToCharSet(
     PP_CharSet_ConversionError on_error,
     uint32_t* output_length) {
   return ppapi::CharSetImpl::UTF16ToCharSet(
-      GetCoreInterface(), utf16, utf16_len, output_char_set, on_error,
+      GetMemoryDevInterface(), utf16, utf16_len, output_char_set, on_error,
       output_length);
 }
 
@@ -74,7 +74,7 @@ uint16_t* PPB_CharSet_Proxy::CharSetToUTF16(
     PP_CharSet_ConversionError on_error,
     uint32_t* output_length) {
   return ppapi::CharSetImpl::CharSetToUTF16(
-      GetCoreInterface(), input, input_len, input_char_set, on_error,
+      GetMemoryDevInterface(), input, input_len, input_char_set, on_error,
       output_length);
 }
 

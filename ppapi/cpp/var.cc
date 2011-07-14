@@ -9,10 +9,11 @@
 
 #include <algorithm>
 
-#include "ppapi/c/pp_var.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #ifndef PPAPI_VAR_REMOVE_SCRIPTING
 #  include "ppapi/c/dev/ppb_var_deprecated.h"
 #endif
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/logging.h"
@@ -274,7 +275,9 @@ void Var::GetAllPropertyNames(std::vector<Var>* properties,
     Var temp(PassRef(), props[i]);
     (*properties)[i] = temp;
   }
-  Module::Get()->core()->MemFree(props);
+  const PPB_Memory_Dev* memory_if = static_cast<const PPB_Memory_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
+  memory_if->MemFree(props);
 }
 
 void Var::SetProperty(const Var& name, const Var& value, Var* exception) {

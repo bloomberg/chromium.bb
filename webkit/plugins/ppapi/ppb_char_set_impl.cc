@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/shared_impl/char_set_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -35,7 +36,7 @@ char* PPB_CharSet_Impl::UTF16ToCharSet(PP_Instance instance,
                                        PP_CharSet_ConversionError on_error,
                                        uint32_t* output_length) {
   return ::ppapi::CharSetImpl::UTF16ToCharSet(
-      PluginModule::GetCore(), utf16, utf16_len, output_char_set, on_error,
+      PluginModule::GetMemoryDev(), utf16, utf16_len, output_char_set, on_error,
       output_length);
 }
 
@@ -46,7 +47,7 @@ uint16_t* PPB_CharSet_Impl::CharSetToUTF16(PP_Instance instance,
                                            PP_CharSet_ConversionError on_error,
                                            uint32_t* output_length) {
   return ::ppapi::CharSetImpl::CharSetToUTF16(
-      PluginModule::GetCore(), input, input_len, input_char_set, on_error,
+      PluginModule::GetMemoryDev(), input, input_len, input_char_set, on_error,
       output_length);
 }
 

@@ -176,8 +176,6 @@ PP_Bool IsMainThread() {
 const PPB_Core core_interface = {
   &AddRefResource,
   &ReleaseResource,
-  &MemAlloc,
-  &MemFree,
   &GetTime,
   &GetTickTime,
   &CallOnMainThread,
@@ -546,6 +544,11 @@ void PluginModule::InitAsProxied(
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
+}
+
+// static
+const PPB_Memory_Dev* PluginModule::GetMemoryDev() {
+  return static_cast<const PPB_Memory_Dev*>(PPB_Memory_Impl::GetInterface());
 }
 
 // static

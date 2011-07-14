@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/private/var_private.h"
 
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/logging.h"
@@ -83,7 +84,9 @@ void VarPrivate::GetAllPropertyNames(std::vector<Var>* properties,
     Var temp(PassRef(), props[i]);
     (*properties)[i] = temp;
   }
-  Module::Get()->core()->MemFree(props);
+  const PPB_Memory_Dev* memory_if = static_cast<const PPB_Memory_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
+  memory_if->MemFree(props);
 }
 
 void VarPrivate::SetProperty(const Var& name, const Var& value,

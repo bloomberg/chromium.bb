@@ -80,8 +80,6 @@ PP_Bool IsMainThread() {
 const PPB_Core core_interface = {
   &AddRefResource,
   &ReleaseResource,
-  &MemAlloc,
-  &MemFree,
   &GetTime,
   &GetTimeTicks,
   &CallOnMainThread,

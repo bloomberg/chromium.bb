@@ -19,6 +19,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -327,12 +328,13 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
   }
 
   // Print interfaces.
+  // TODO(mball,dmichael) Replace this with the PPP_PRINTING_DEV_USE_0_4 version
   virtual PP_PrintOutputFormat_Dev* QuerySupportedPrintOutputFormats(
       uint32_t* format_count) {
+    pp::Memory_Dev memory;
     PP_PrintOutputFormat_Dev* format =
-        reinterpret_cast<PP_PrintOutputFormat_Dev*>(
-            pp::Module::Get()->core()->MemAlloc(
-                sizeof(PP_PrintOutputFormat_Dev)));
+        static_cast<PP_PrintOutputFormat_Dev*>(
+            memory.MemAlloc(sizeof(PP_PrintOutputFormat_Dev)));
     *format = PP_PRINTOUTPUTFORMAT_RASTER;
     *format_count = 1;
     return format;

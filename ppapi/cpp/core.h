@@ -40,24 +40,6 @@ class Core {
     interface_->ReleaseResource(resource);
   }
 
-  /// MemAlloc() allocates memory.
-  ///
-  /// @param[in] num_bytes A number of bytes to allocate.
-  ///
-  /// @return A pointer to the memory if successful, <code>NULL</code> If the
-  /// allocation fails.
-  void* MemAlloc(uint32_t num_bytes) {
-    return interface_->MemAlloc(num_bytes);
-  }
-
-  /// MemFree() deallocates memory.
-  ///
-  /// @param[in] ptr A pointer to the memory to deallocate. It is safe to
-  /// pass <code>NULL</code> to this function.
-  void MemFree(void* ptr) {
-    interface_->MemFree(ptr);
-  }
-
   /// GetTime() returns the "wall clock time" according to the
   /// browser.
   ///

@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -827,7 +828,7 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
         *format = PP_PRINTOUTPUTFORMAT_RASTER_0_4;
       }
     }
-    PluginModule::GetCore()->MemFree(supported_formats);
+    PluginModule::GetMemoryDev()->MemFree(supported_formats);
     return found_supported_format;
   }
   return false;

@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
@@ -70,8 +70,12 @@ void GetAllPropertyNames(void* object,
   if (props.empty())
     return;
   *property_count = static_cast<uint32_t>(props.size());
+
+  const PPB_Memory_Dev* memory_if = static_cast<const PPB_Memory_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
   *properties = static_cast<PP_Var*>(
-      Module::Get()->core()->MemAlloc(sizeof(PP_Var) * props.size()));
+      memory_if->MemAlloc(sizeof(PP_Var) * props.size()));
+
   for (size_t i = 0; i < props.size(); ++i)
     (*properties)[i] = props[i].Detach();
 }
