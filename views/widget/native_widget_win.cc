@@ -1371,6 +1371,15 @@ LRESULT NativeWidgetWin::OnGetObject(UINT uMsg,
 
 void NativeWidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   gfx::Size min_window_size(delegate_->GetMinimumSize());
+  // Add the native frame border size to the minimum size if the view reports
+  // its size as the client size.
+  if (WidgetSizeIsClientSize()) {
+    CRect client_rect, window_rect;
+    GetClientRect(&client_rect);
+    GetWindowRect(&window_rect);
+    window_rect -= client_rect;
+    min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
+  }
   minmax_info->ptMinTrackSize.x = min_window_size.width();
   minmax_info->ptMinTrackSize.y = min_window_size.height();
   SetMsgHandled(FALSE);
@@ -2319,10 +2328,14 @@ void NativeWidgetWin::UnlockUpdates() {
   lock_updates_ = false;
 }
 
+bool NativeWidgetWin::WidgetSizeIsClientSize() const {
+  const Widget* widget = GetWidget()->GetTopLevelWidget();
+  return IsZoomed() || (widget && widget->ShouldUseNativeFrame());
+}
+
 void NativeWidgetWin::ClientAreaSizeChanged() {
   RECT r;
-  Widget* widget = GetWidget()->GetTopLevelWidget();
-  if (IsZoomed() || (widget && widget->ShouldUseNativeFrame()))
+  if (WidgetSizeIsClientSize())
     GetClientRect(&r);
   else
     GetWindowRect(&r);

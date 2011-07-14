@@ -29,6 +29,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -70,6 +71,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Layout various sub-components of this view.
   void LayoutAvatar();
   void LayoutClientView();
+
+  // Returns the insets of the client area.
+  gfx::Insets GetClientAreaInsets() const;
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;

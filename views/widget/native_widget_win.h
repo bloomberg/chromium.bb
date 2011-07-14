@@ -504,6 +504,9 @@ class NativeWidgetWin : public ui::WindowImpl,
   void LockUpdates();
   void UnlockUpdates();
 
+  // Determines whether the delegate expects the client size or the window size.
+  bool WidgetSizeIsClientSize() const;
+
   // Responds to the client area changing size, either at window creation time
   // or subsequently.
   void ClientAreaSizeChanged();

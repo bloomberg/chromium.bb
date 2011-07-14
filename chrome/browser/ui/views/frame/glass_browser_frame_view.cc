@@ -126,10 +126,9 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       tabstrip_x += avatar_bounds_.x();
     minimize_button_offset = width();
   }
-  int maximized_spacing = kNewTabCaptionMaximizedSpacing;
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame_->IsMaximized() ?
-          maximized_spacing : kNewTabCaptionRestoredSpacing);
+          kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
@@ -150,6 +149,32 @@ void GlassBrowserFrameView::UpdateThrobber(bool running) {
   } else if (running) {
     StartThrobber();
   }
+}
+
+gfx::Size GlassBrowserFrameView::GetMinimumSize() {
+  gfx::Size min_size(browser_view_->GetMinimumSize());
+
+  // Account for the client area insets.
+  gfx::Insets insets = GetClientAreaInsets();
+  min_size.Enlarge(insets.width(), insets.height());
+  // Client area insets do not include the shadow thickness.
+  min_size.Enlarge(2 * kContentEdgeShadowThickness, 0);
+
+  // Ensure that the minimum width is enough to hold a tab strip with minimum
+  // width at its usual insets.
+  if (browser_view_->IsTabStripVisible()) {
+    AbstractTabStripView* tabstrip = browser_view_->tabstrip();
+    int min_tabstrip_width = tabstrip->GetMinimumSize().width();
+    if (browser_view_->UseVerticalTabs()) {
+      min_size.Enlarge(min_tabstrip_width, 0);
+    } else {
+      int min_tabstrip_area_width =
+          width() - GetBoundsForTabStrip(tabstrip).width() + min_tabstrip_width;
+      min_size.set_width(std::min(min_tabstrip_area_width, min_size.width()));
+    }
+  }
+
+  return min_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,12 +198,11 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
     return gfx::Rect(rect);
   }
 
-  int top_height = NonClientTopBorderHeight(false, false);
-  int border_thickness = NonClientBorderThickness();
-  return gfx::Rect(std::max(0, client_bounds.x() - border_thickness),
-                   std::max(0, client_bounds.y() - top_height),
-                   client_bounds.width() + (2 * border_thickness),
-                   client_bounds.height() + top_height + border_thickness);
+  gfx::Insets insets = GetClientAreaInsets();
+  return gfx::Rect(std::max(0, client_bounds.x() - insets.left()),
+                   std::max(0, client_bounds.y() - insets.top()),
+                   client_bounds.width() + insets.width(),
+                   client_bounds.height() + insets.height());
 }
 
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -305,7 +329,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                           kNonClientBorderThickness, kNonClientBorderThickness,
                           false);
 
-    // Draw center edge. We need to draw a while line above the toolbar for the
+    // Draw center edge. We need to draw a white line above the toolbar for the
     // image to overlay nicely.
     int center_offset =
         -kContentEdgeShadowThickness + kNonClientBorderThickness;
@@ -456,16 +480,23 @@ void GlassBrowserFrameView::LayoutClientView() {
   client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
+gfx::Insets GlassBrowserFrameView::GetClientAreaInsets() const {
+  if (!browser_view_->IsTabStripVisible())
+    return gfx::Insets();
+
+  const int top_height = NonClientTopBorderHeight(false, false);
+  const int border_thickness = NonClientBorderThickness();
+  return gfx::Insets(top_height,
+                     border_thickness,
+                     border_thickness,
+                     border_thickness);
+}
+
 gfx::Rect GlassBrowserFrameView::CalculateClientAreaBounds(int width,
                                                            int height) const {
-  if (!browser_view_->IsTabStripVisible())
-    return gfx::Rect(0, 0, this->width(), this->height());
-
-  int top_height = NonClientTopBorderHeight(false, false);
-  int border_thickness = NonClientBorderThickness();
-  return gfx::Rect(border_thickness, top_height,
-                   std::max(0, width - (2 * border_thickness)),
-                   std::max(0, height - top_height - border_thickness));
+  gfx::Rect bounds(0, 0, width, height);
+  bounds.Inset(GetClientAreaInsets());
+  return bounds;
 }
 
 void GlassBrowserFrameView::StartThrobber() {
