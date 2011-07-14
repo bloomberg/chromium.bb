@@ -21,14 +21,17 @@ toolchain_libraries = [
     ]
 
 nacl_libraries = [
-    'libppruntime.so',
-    'libimc.so',
     'libplatform.so',
-    'libsrpc.so',
-    'libimc_syscalls.so',
     'libgio.so',
-    'libnacl.so',
     ]
+
+if not env.Bit('irt'):
+  nacl_libraries += [
+      'libppruntime.so',
+      'libimc.so',
+      'libsrpc.so',
+      'libimc_syscalls.so',
+      ]
 
 def make_mappings(libdir, libs):
   return [('lib/%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
