@@ -33,6 +33,10 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual void RegisterMessages();
 
  private:
+
+  // Keeps whether screen should be shown right after initialization.
+  bool show_on_init_;
+
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenHandler);
 };
 

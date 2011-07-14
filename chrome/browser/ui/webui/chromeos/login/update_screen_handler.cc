@@ -10,9 +10,16 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// Update screen ID.
+const char kUpdateScreen[] = "update";
+
+}  // namespace
+
 namespace chromeos {
 
-UpdateScreenHandler::UpdateScreenHandler() {
+UpdateScreenHandler::UpdateScreenHandler() : show_on_init_(false) {
 }
 
 UpdateScreenHandler::~UpdateScreenHandler() {
@@ -29,9 +36,19 @@ void UpdateScreenHandler::GetLocalizedStrings(
 }
 
 void UpdateScreenHandler::Initialize() {
+  if (show_on_init_) {
+    Show();
+    show_on_init_ = false;
+  }
 }
 
 void UpdateScreenHandler::Show() {
+  if (!page_is_ready()) {
+    show_on_init_ = true;
+    return;
+  }
+  StringValue screen(kUpdateScreen);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
 }
 
 void UpdateScreenHandler::Hide() {
