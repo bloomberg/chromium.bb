@@ -88,6 +88,8 @@ def CalculateVariables(default_variables, params):
     global generator_extra_sources_for_rules
     generator_extra_sources_for_rules = getattr(xcode_generator,
         'generator_extra_sources_for_rules', [])
+    global COMPILABLE_EXTENSIONS
+    COMPILABLE_EXTENSIONS.update({'.m': 'objc', '.mm' : 'objcxx'})
   else:
     default_variables.setdefault('OS', 'linux')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
@@ -282,7 +284,7 @@ cmd_cc = $(CC.$(TOOLSET)) $(GYP_CFLAGS) $(DEPFLAGS) $(CFLAGS.$(TOOLSET)) -c -o $
 
 quiet_cmd_cxx = CXX($(TOOLSET)) $@
 cmd_cxx = $(CXX.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
-
+%(objc_commands)s
 quiet_cmd_alink = AR($(TOOLSET)) $@
 cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %%.o,$^)
 
@@ -362,48 +364,34 @@ FORCE_DO_CMD:
 
 """)
 
-ROOT_HEADER_SUFFIX_RULES = ("""\
-# Suffix rules, putting all outputs into $(obj).
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
+SHARED_HEADER_OBJC_COMMANDS = """
+quiet_cmd_objc = CXX($(TOOLSET)) $@
+cmd_objc = $(CC.$(TOOLSET)) $(GYP_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-# Try building from generated source, too.
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cxx FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
+quiet_cmd_objcxx = CXX($(TOOLSET)) $@
+cmd_objcxx = $(CXX.$(TOOLSET)) $(GYP_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+"""
 
-$(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-$(obj).$(TOOLSET)/%.o: $(obj)/%.cxx FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-""")
+
+def WriteRootHeaderSuffixRules(writer):
+  extensions = sorted(COMPILABLE_EXTENSIONS.keys(), key=str.lower)
+
+  writer.write('# Suffix rules, putting all outputs into $(obj).\n')
+  for ext in extensions:
+    writer.write('$(obj).$(TOOLSET)/%%.o: $(srcdir)/%%%s FORCE_DO_CMD\n' % ext)
+    writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
+
+  writer.write('\n# Try building from generated source, too.\n')
+  for ext in extensions:
+    writer.write(
+        '$(obj).$(TOOLSET)/%%.o: $(obj).$(TOOLSET)/%%%s FORCE_DO_CMD\n' % ext)
+    writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
+  writer.write('\n')
+  for ext in extensions:
+    writer.write('$(obj).$(TOOLSET)/%%.o: $(obj)/%%%s FORCE_DO_CMD\n' % ext)
+    writer.write('\t@$(call do_cmd,%s,1)\n' % COMPILABLE_EXTENSIONS[ext])
+  writer.write('\n')
+
 
 SHARED_HEADER_SUFFIX_RULES_COMMENT1 = ("""\
 # Suffix rules, putting all outputs into $(obj).
@@ -434,6 +422,14 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """),
+    '.m': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.m FORCE_DO_CMD
+	@$(call do_cmd,objc,1)
+"""),
+    '.mm': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.mm FORCE_DO_CMD
+	@$(call do_cmd,objcxx,1)
+"""),
 }
 
 SHARED_HEADER_SUFFIX_RULES_COMMENT2 = ("""\
@@ -453,6 +449,14 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """),
+    '.m': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.m FORCE_DO_CMD
+	@$(call do_cmd,objc,1)
+"""),
+    '.mm': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.mm FORCE_DO_CMD
+	@$(call do_cmd,objcxx,1)
+"""),
 }
 
 SHARED_HEADER_SUFFIX_RULES_OBJDIR2 = {
@@ -468,15 +472,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """),
+    '.m': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.m FORCE_DO_CMD
+	@$(call do_cmd,objc,1)
+"""),
+    '.mm': ("""\
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.mm FORCE_DO_CMD
+	@$(call do_cmd,objcxx,1)
+"""),
 }
-
-SHARED_HEADER_SUFFIX_RULES = (
-    SHARED_HEADER_SUFFIX_RULES_COMMENT1 +
-    ''.join(SHARED_HEADER_SUFFIX_RULES_SRCDIR.values()) +
-    SHARED_HEADER_SUFFIX_RULES_COMMENT2 +
-    ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR1.values()) +
-    ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR2.values())
-)
 
 SHARED_FOOTER = """\
 # "all" is a concatenation of the "all" targets from all the included
@@ -510,11 +514,19 @@ header = """\
 
 """
 
+# Maps every compilable file extension to the do_cmd that compiles it.
+COMPILABLE_EXTENSIONS = {
+  '.c': 'cc',
+  '.cc': 'cxx',
+  '.cpp': 'cxx',
+  '.cxx': 'cxx',
+  '.s': 'cc',
+  '.S': 'cc',
+}
 
 def Compilable(filename):
   """Return true if the file is compilable (should be in OBJS)."""
-  for res in (filename.endswith(e) for e
-             in ['.c', '.cc', '.cpp', '.cxx', '.s', '.S']):
+  for res in (filename.endswith(e) for e in COMPILABLE_EXTENSIONS):
     if res:
       return True
   return False
@@ -933,12 +945,24 @@ class MakefileWriter:
       config = configs[configname]
       self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D',
           quoter=EscapeCppDefine)
-      self.WriteLn("# Flags passed to both C and C++ files.");
-      self.WriteList(config.get('cflags'), 'CFLAGS_%s' % configname)
-      self.WriteLn("# Flags passed to only C (and not C++) files.");
-      self.WriteList(config.get('cflags_c'), 'CFLAGS_C_%s' % configname)
-      self.WriteLn("# Flags passed to only C++ (and not C) files.");
-      self.WriteList(config.get('cflags_cc'), 'CFLAGS_CC_%s' % configname)
+
+      cflags = config.get('cflags')
+      cflags_c = config.get('cflags_c')
+      cflags_cc = config.get('cflags_cc')
+      cflags_objc = []
+      cflags_objcc = []
+
+      self.WriteLn("# Flags passed to all source files.");
+      self.WriteList(cflags, 'CFLAGS_%s' % configname)
+      self.WriteLn("# Flags passed to only C files.");
+      self.WriteList(cflags_c, 'CFLAGS_C_%s' % configname)
+      self.WriteLn("# Flags passed to only C++ files.");
+      self.WriteList(cflags_cc, 'CFLAGS_CC_%s' % configname)
+      if self.flavor == 'mac':
+        self.WriteLn("# Flags passed to only ObjC files.");
+        self.WriteList(cflags_objc, 'CFLAGS_OBJC_%s' % configname)
+        self.WriteLn("# Flags passed to only ObjC++ files.");
+        self.WriteList(cflags_objcc, 'CFLAGS_OBJCC_%s' % configname)
       includes = config.get('include_dirs')
       if includes:
         includes = map(Sourceify, map(self.Absolutify, includes))
@@ -986,6 +1010,19 @@ class MakefileWriter:
                    "$(INCS_$(BUILDTYPE)) "
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE))")
+      if self.flavor == 'mac':
+        self.WriteLn("$(OBJS): GYP_OBJCFLAGS := "
+                     "$(DEFS_$(BUILDTYPE)) "
+                     "$(INCS_$(BUILDTYPE)) "
+                     "$(CFLAGS_$(BUILDTYPE)) "
+                     "$(CFLAGS_C_$(BUILDTYPE))"
+                     "$(CFLAGS_OBJC_$(BUILDTYPE))")
+        self.WriteLn("$(OBJS): GYP_OBJCXXFLAGS := "
+                     "$(DEFS_$(BUILDTYPE)) "
+                     "$(INCS_$(BUILDTYPE)) "
+                     "$(CFLAGS_$(BUILDTYPE)) "
+                     "$(CFLAGS_CC_$(BUILDTYPE))"
+                     "$(CFLAGS_OBJCC_$(BUILDTYPE))")
 
     # If there are any object files in our input file list, link them into our
     # output.
@@ -1030,7 +1067,7 @@ class MakefileWriter:
       path = os.path.join('$(builddir)')
     else:
       print ("ERROR: What output file should be generated?",
-             "typ", self.type, "target", target)
+             "type", self.type, "target", target)
 
     path = spec.get('product_dir', path)
     target_prefix = spec.get('product_prefix', target_prefix)
@@ -1392,7 +1429,7 @@ def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
                      build_files_args)})
 
 
-def RunSystemTests():
+def RunSystemTests(flavor):
   """Run tests against the system to compute default settings for commands.
 
   Returns:
@@ -1406,8 +1443,10 @@ def RunSystemTests():
   ar_target = os.environ.get('AR.target', os.environ.get('AR', 'ar'))
   cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
   arflags_target = 'crs'
-  if gyp.system_test.TestArSupportsT(ar_command=ar_target,
-                                     cc_command=cc_target):
+  # ar -T enables thin archives on Linux. OS X's ar supports a -T flag, but it
+  # does something useless (it limits filenames in the archive to 15 chars).
+  if flavor != 'mac' and gyp.system_test.TestArSupportsT(ar_command=ar_target,
+                                                         cc_command=cc_target):
     arflags_target = 'crsT'
 
   ar_host = os.environ.get('AR.host', 'ar')
@@ -1417,7 +1456,8 @@ def RunSystemTests():
   # cross-compiles, but due to quirks of history CC.host defaults to 'gcc'
   # while CC.target defaults to 'cc', so the commands really are different
   # even though they're nearly guaranteed to run the same code underneath.
-  if gyp.system_test.TestArSupportsT(ar_command=ar_host, cc_command=cc_host):
+  if flavor != 'mac' and gyp.system_test.TestArSupportsT(ar_command=ar_host,
+                                                         cc_command=cc_host):
     arflags_host = 'crsT'
 
   link_flags = ''
@@ -1496,20 +1536,22 @@ def GenerateOutput(target_list, target_dicts, data, params):
     srcdir_prefix = '$(srcdir)/'
 
   header_params = {
-      'srcdir': srcdir,
       'builddir': builddir_name,
       'default_configuration': default_configuration,
-      'link_commands': LINK_COMMANDS_LINUX,
       'flock': 'flock',
       'flock_index': 1,
+      'link_commands': LINK_COMMANDS_LINUX,
+      'objc_commands': '',
+      'srcdir': srcdir,
     }
   if flavor == 'mac':
     header_params.update({
-        'link_commands': LINK_COMMANDS_MAC,
         'flock': './gyp-mac-tool flock',
         'flock_index': 2,
+        'link_commands': LINK_COMMANDS_MAC,
+        'objc_commands': SHARED_HEADER_OBJC_COMMANDS,
     })
-  header_params.update(RunSystemTests())
+  header_params.update(RunSystemTests(flavor))
 
   ensure_directory_exists(makefile_path)
   root_makefile = open(makefile_path, 'w')
@@ -1523,7 +1565,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         '\n')
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
-    root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
+    WriteRootHeaderSuffixRules(root_makefile)
 
   # Put mac_tool next to the root Makefile.
   if flavor == 'mac':
