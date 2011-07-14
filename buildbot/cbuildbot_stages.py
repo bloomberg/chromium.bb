@@ -853,7 +853,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     else:
       archive_path = os.path.join(self._build_root, 'trybot_archive')
       # Clear artifacts from previous run
-      shutil.rmtree(archive_path)
+      shutil.rmtree(archive_path, ignore_errors=True)
 
     BuilderStage.archive_url, archive_dir = commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
