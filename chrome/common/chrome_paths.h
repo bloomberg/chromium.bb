@@ -66,6 +66,7 @@ enum {
                                 // contains recorded browser events for
                                 // playback.
   FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
+  FILE_PEPPER_FLASH_PLUGIN,     // Full path to the pepper Flash plugin file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
