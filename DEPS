@@ -9,15 +9,10 @@ vars = {
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
   # After changing nacl_revision, run 'gclient runhooks' to get the new values.
-  "nacl_irt_hash_x86_32": "0695538936c07b0c390ffb39e068531382621689",
-  "nacl_irt_hash_x86_64": "761983249cb5fe1400821834f80e2d1114121bfb",
-  "nacl_revision": "6041",
-  # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
-  # to update other nacl_*_revision's.
-  # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
-  # revisions here, but it makes checkdeps confused. We should fix checkdeps.
-  "nacl_chrome_ppapi_revision": "92230", # native_client/DEPS: chrome_ppapi_rev 
-  "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
+  "nacl_irt_hash_x86_32": "40737ff789c03561a79dc7802f16e84d4dbe3b07",
+  "nacl_irt_hash_x86_64": "8d7d2f6f5ef19467981eb89ab2a138e79aa5926d",
+  "nacl_revision": "5988",  # If you update this, change ppapi below.
+  "nacl_tools_revision": "5360",  # tools_rev in native_client/DEPS
   "libjingle_revision": "73",
   "libvpx_revision": "90416",
   "ffmpeg_revision": "91042",
@@ -90,9 +85,14 @@ deps = {
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
 
   "src/native_client/src/third_party/ppapi":
-    # TODO(brettw) re-enable the From() line instead when checkdeps is fixed.
+    # TODO(brettw) We should use this "From" syntax to avoid hardcoding the
+    # revision here, but it makes checkdeps confused. We should fix checkdeps
+    # and re-enable the From() line.
+    #
+    # Currently, take the revision of PPAPI from the DEPS file of the NaCl
+    # revision you're pulling.
     #From("src/native_client", "native_client/src/third_party/ppapi"),
-    "/trunk/src/ppapi@" + Var("nacl_chrome_ppapi_revision"),
+    "http://src.chromium.org/svn/trunk/src/ppapi@91987",
 
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
@@ -238,8 +238,6 @@ deps = {
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
-    # TODO(brettw) re-enable the From() line instead when checkdeps is fixed.
-    #From("src/native_client", "native_client/src/third_party/pylib"),
     Var("nacl_trunk") + "/src/third_party/pylib@" + Var("nacl_tools_revision"),
   "src/third_party/scons-2.0.1":
     Var("nacl_trunk") + "/src/third_party/scons-2.0.1@" +
