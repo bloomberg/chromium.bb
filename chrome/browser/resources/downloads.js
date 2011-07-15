@@ -37,7 +37,7 @@ function createLink(onclick, value) {
   var link = document.createElement('a');
   link.onclick = onclick;
   link.href = '#';
-  link.innerHTML = value;
+  link.textContent = value;
   link.oncontextmenu = function() { return false; };
   return link;
 }
@@ -111,7 +111,7 @@ Downloads.prototype.updateSummary = function() {
     this.summary_.textContent = localStrings.getStringF('searchresultsfor',
                                                         this.searchText_);
   } else {
-    this.summary_.innerHTML = localStrings.getString('downloads');
+    this.summary_.textContent = localStrings.getString('downloads');
   }
 
   var hasDownloads = false;
@@ -121,7 +121,7 @@ Downloads.prototype.updateSummary = function() {
   }
 
   if (!hasDownloads) {
-    this.node_.innerHTML = localStrings.getString('noresults');
+    this.node_.textContent = localStrings.getString('noresults');
   }
 }
 
@@ -344,10 +344,10 @@ Download.prototype.update = function(download) {
 
   if (this.state_ == Download.States.DANGEROUS) {
     if (this.dangerType_ == Download.DangerType.DANGEROUS_FILE) {
-      this.dangerDesc_.innerHTML = localStrings.getStringF('danger_file_desc',
-                                                           this.fileName_);
+      this.dangerDesc_.textContent = localStrings.getStringF('danger_file_desc',
+                                                             this.fileName_);
     } else {
-      this.dangerDesc_.innerHTML = localStrings.getString('danger_url_desc');
+      this.dangerDesc_.textContent = localStrings.getString('danger_url_desc');
     }
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';
@@ -418,15 +418,15 @@ Download.prototype.update = function(download) {
     showInline(this.controlCancel_, showCancel);
     showInline(this.controlRemove_, !showCancel);
 
-    this.nodeSince_.innerHTML = this.since_;
-    this.nodeDate_.innerHTML = this.date_;
+    this.nodeSince_.textContent = this.since_;
+    this.nodeDate_.textContent = this.date_;
     // Don't unnecessarily update the url, as doing so will remove any
     // text selection the user has started (http://crbug.com/44982).
     if (this.nodeURL_.textContent != this.url_) {
       this.nodeURL_.textContent = this.url_;
       this.nodeURL_.href = this.url_;
     }
-    this.nodeStatus_.innerHTML = this.getStatusText_();
+    this.nodeStatus_.textContent = this.getStatusText_();
 
     this.danger_.style.display = 'none';
     this.safe_.style.display = 'block';
@@ -584,7 +584,6 @@ function clearAll() {
 function downloadsList(results) {
   if (resultsTimeout)
     clearTimeout(resultsTimeout);
-  window.console.log('results');
   fifo_results.length = 0;
   downloads.clear();
   downloadUpdated(results);
