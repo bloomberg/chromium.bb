@@ -4,24 +4,36 @@
 
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 
+#include <algorithm>
+
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_util.h"
 
 AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory)
-      : shared_memory_(shared_memory) {
+    : shared_memory_(shared_memory) {
 }
 
 AudioSyncReader::~AudioSyncReader() {
 }
 
 // media::AudioOutputController::SyncReader implementations.
-void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
-  socket_->Send(&bytes, sizeof(bytes));
+void AudioSyncReader::UpdateBufferState(const AudioBuffersState& buffer_state) {
+  socket_->Send(&buffer_state, sizeof(buffer_state));
 }
 
 uint32 AudioSyncReader::Read(void* data, uint32 size) {
-  uint32 read_size = std::min(size, shared_memory_->created_size());
-  memcpy(data, shared_memory_->memory(), read_size);
+  uint32 read_size =
+      std::min(size,
+               media::GetMaxDataSizeInBytes(shared_memory_->created_size()));
+  read_size = std::min(read_size,
+                       media::GetActualDataSizeInBytes(shared_memory_));
+
+  // Get the data from the buffer.
+  memcpy(data, media::GetDataPointer(shared_memory_), read_size);
+
+  // Zero out the entire buffer.
   memset(shared_memory_->memory(), 0, shared_memory_->created_size());
   return read_size;
 }

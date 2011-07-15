@@ -4,8 +4,12 @@
 
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 
+#include <algorithm>
+
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_util.h"
 
 AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
     : shared_memory_(shared_memory) {
@@ -14,13 +18,24 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
 AudioInputSyncWriter::~AudioInputSyncWriter() {}
 
 void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
-  socket_->Send(&bytes, sizeof(bytes));
+  // Strictly speaking we don't have to create AudioBuffersState and send it,
+  // just sending bytes should be enough for all current clients.
+  // Nevertheless, use AudioBuffersState, so our interface resemble
+  // AudioSyncReader as much as possible.
+  AudioBuffersState buffer_state(bytes, 0);
+  socket_->Send(&buffer_state, sizeof(buffer_state));
 }
 
 uint32 AudioInputSyncWriter::Write(const void* data, uint32 size) {
-  uint32 write_size = std::min(size, shared_memory_->created_size());
+  uint32 write_size =
+      std::min(size,
+               media::GetMaxDataSizeInBytes(shared_memory_->created_size()));
+
   // Copy audio input samples from recorded data to shared memory.
-  memcpy(shared_memory_->memory(), data, write_size);
+  memcpy(media::GetDataPointer(shared_memory_), data, write_size);
+
+  // Set size of data written.
+  media::SetActualDataSizeInBytes(shared_memory_, write_size);
   return write_size;
 }
 

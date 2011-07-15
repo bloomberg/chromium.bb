@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/media/media_observer.h"
 #include "content/browser/resource_context.h"
 #include "content/common/media/audio_messages.h"
+#include "media/audio/audio_util.h"
 #include "ipc/ipc_logging.h"
 
 
@@ -241,7 +242,12 @@ void AudioRendererHost::OnCreateStream(
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
   // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
+  uint32 shared_memory_size = packet_size;
+  if (low_latency) {
+    shared_memory_size =
+        media::TotalSharedMemorySizeInBytes(shared_memory_size);
+  }
+  if (!entry->shared_memory.CreateAndMapAnonymous(shared_memory_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/shared_impl/audio_impl.h"
-
 #include "base/logging.h"
+#include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_util.h"
+#include "ppapi/shared_impl/audio_impl.h"
 
 namespace ppapi {
 
@@ -83,13 +84,15 @@ void AudioImpl::StartThread() {
 }
 
 void AudioImpl::Run() {
-  int pending_data;
-  void* buffer = shared_memory_->memory();
+  uint32 filled_size = media::GetMaxDataSizeInBytes(shared_memory_size_);
+  AudioBuffersState buffer_state;
 
-  while (sizeof(pending_data) ==
-      socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data >= 0) {
-    callback_(buffer, shared_memory_size_, user_data_);
+  while (buffer_state.Receive(socket_.get()) &&
+         (buffer_state.total_bytes() >= 0)) {
+    callback_(media::GetDataPointer(shared_memory_.get()),
+              filled_size,
+              user_data_);
+    media::SetActualDataSizeInBytes(shared_memory_.get(), filled_size);
   }
 }
 

@@ -12,9 +12,7 @@
 #include "media/audio/audio_output_controller.h"
 
 namespace base {
-
 class SharedMemory;
-
 }
 
 // A AudioOutputController::SyncReader implementation using SyncSocket. This
@@ -28,7 +26,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   virtual ~AudioSyncReader();
 
   // media::AudioOutputController::SyncReader implementations.
-  virtual void UpdatePendingBytes(uint32 bytes);
+  virtual void UpdateBufferState(const AudioBuffersState& buffer_state);
   virtual uint32 Read(void* data, uint32 size);
   virtual void Close();
 
