@@ -23,10 +23,10 @@ nacl::string NaClSubprocess::description() {
 nacl::string NaClSubprocess::detailed_description() {
   nacl::stringstream ss;
   ss << description()
-     << " w/ this(" << static_cast<void*>(this)
-     << "), srpc_client(" << static_cast<void*>(srpc_client_.get())
-     << "), service_runtime(" << static_cast<void*>(service_runtime_.get())
-     << ")";
+     << "={ this=" << static_cast<void*>(this)
+     << ", srpc_client=" << static_cast<void*>(srpc_client_.get())
+     << ", service_runtime=" << static_cast<void*>(service_runtime_.get())
+     << " }";
   return ss.str();
 }
 
