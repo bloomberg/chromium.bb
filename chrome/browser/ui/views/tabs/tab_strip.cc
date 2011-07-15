@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -77,8 +76,9 @@ namespace {
 
 class NewTabButton : public views::ImageButton {
  public:
-  explicit NewTabButton(views::ButtonListener* listener)
-      : views::ImageButton(listener) {
+  explicit NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
+      : views::ImageButton(listener),
+        tab_strip_(tab_strip) {
   }
   virtual ~NewTabButton() {}
 
@@ -88,7 +88,7 @@ class NewTabButton : public views::ImageButton {
     // When the button is sized to the top of the tab strip we want the user to
     // be able to click on complete bounds, and so don't return a custom hit
     // mask.
-    return !browser_defaults::kSizeTabButtonToTopOfTabStrip;
+    return !tab_strip_->SizeTabButtonToTopOfTabStrip();
   }
   virtual void GetHitTestMask(gfx::Path* path) const {
     DCHECK(path);
@@ -110,6 +110,9 @@ class NewTabButton : public views::ImageButton {
   }
 
  private:
+  // Tab strip that contains this button.
+  TabStrip* tab_strip_;
+
   DISALLOW_COPY_AND_ASSIGN(NewTabButton);
 };
 
@@ -149,20 +152,12 @@ TabStrip::~TabStrip() {
   RemoveAllChildViews(true);
 }
 
-void TabStrip::InitTabStripButtons() {
-  newtab_button_ = new NewTabButton(this);
-  if (browser_defaults::kSizeTabButtonToTopOfTabStrip) {
-    newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                      views::ImageButton::ALIGN_BOTTOM);
-  }
-  LoadNewTabButtonImage();
-  newtab_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
-  AddChildView(newtab_button_);
-}
-
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
   return newtab_button_->bounds();
+}
+
+bool TabStrip::SizeTabButtonToTopOfTabStrip() {
+  return controller()->SizeTabButtonToTopOfTabStrip();
 }
 
 void TabStrip::MouseMovedOutOfView() {
@@ -481,8 +476,19 @@ void TabStrip::DoLayout() {
   BaseTabStrip::DoLayout();
 
   // It is possible we don't have a new tab button yet.
-  if (newtab_button_)
+  if (newtab_button_) {
+    if (SizeTabButtonToTopOfTabStrip()) {
+      newtab_button_bounds_.set_height(
+          kNewTabButtonHeight + kNewTabButtonVOffset);
+      newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                        views::ImageButton::ALIGN_BOTTOM);
+    } else {
+      newtab_button_bounds_.set_height(kNewTabButtonHeight);
+      newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                        views::ImageButton::ALIGN_TOP);
+    }
     newtab_button_->SetBoundsRect(newtab_button_bounds_);
+  }
 }
 
 void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
@@ -562,16 +568,20 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
 void TabStrip::Init() {
   set_id(VIEW_ID_TAB_STRIP);
   newtab_button_bounds_.SetRect(0, 0, kNewTabButtonWidth, kNewTabButtonHeight);
-  if (browser_defaults::kSizeTabButtonToTopOfTabStrip) {
-    newtab_button_bounds_.set_height(
-        kNewTabButtonHeight + kNewTabButtonVOffset);
-  }
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
     SkBitmap* drop_image = GetDropArrowImage(true);
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
+}
+
+void TabStrip::InitTabStripButtons() {
+  newtab_button_ = new NewTabButton(this, this);
+  LoadNewTabButtonImage();
+  newtab_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
+  AddChildView(newtab_button_);
 }
 
 void TabStrip::LoadNewTabButtonImage() {
@@ -938,8 +948,7 @@ void TabStrip::GenerateIdealBounds() {
 
   // Update bounds of new tab button.
   int new_tab_x;
-  int new_tab_y = browser_defaults::kSizeTabButtonToTopOfTabStrip ?
-      0 : kNewTabButtonVOffset;
+  int new_tab_y = SizeTabButtonToTopOfTabStrip() ? 0 : kNewTabButtonVOffset;
   if (abs(Round(unselected) - Tab::GetStandardSize().width()) > 1 &&
       !in_tab_close_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the

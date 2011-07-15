@@ -65,6 +65,7 @@ class BrowserTabStripController : public TabStripController,
   virtual bool IsCompatibleWith(BaseTabStrip* other) const OVERRIDE;
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
+  virtual bool SizeTabButtonToTopOfTabStrip() OVERRIDE;
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContentsWrapper* contents,

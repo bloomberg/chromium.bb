@@ -42,11 +42,11 @@ class TabStrip : public BaseTabStrip,
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
 
-  // Creates the new tab button.
-  void InitTabStripButtons();
-
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
+
+  // Does he new tab button need to be sized to the top of the tab strip?
+  bool SizeTabButtonToTopOfTabStrip();
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfView() OVERRIDE;
@@ -138,6 +138,9 @@ class TabStrip : public BaseTabStrip,
   };
 
   void Init();
+
+  // Creates the new tab button.
+  void InitTabStripButtons();
 
   // Set the images for the new tab button.
   void LoadNewTabButtonImage();
