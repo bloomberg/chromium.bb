@@ -9,16 +9,25 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/extensions/extension_icon_set.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/chrome_blob_storage_context.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/fileapi/file_system_context.h"
 
 class ChromeURLDataManagerBackend;
 class ChromeURLRequestContextFactory;
 class IOThread;
+class PrefService;
 class Profile;
 class ProfileIOData;
 namespace base {
@@ -44,11 +53,31 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  // Gets the appcache service to be used for requests in this context.
+  // May be NULL if requests for this context aren't subject to appcaching.
+  ChromeAppCacheService* appcache_service() const {
+    return appcache_service_.get();
+  }
+
+  // Gets the blob storage context associated with this context's profile.
+  ChromeBlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_.get();
+  }
+
+  // Gets the file system host context with this context's profile.
+  fileapi::FileSystemContext* file_system_context() const {
+    return file_system_context_.get();
+  }
+
   bool is_incognito() const {
     return is_incognito_;
   }
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
+
+  const ExtensionInfoMap* extension_info_map() const {
+    return extension_info_map_;
+  }
 
   // TODO(willchan): Get rid of the need for this accessor. Really, this should
   // move completely to ProfileIOData.
@@ -57,7 +86,18 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_is_incognito(bool is_incognito) {
     is_incognito_ = is_incognito;
   }
-
+  void set_appcache_service(ChromeAppCacheService* service) {
+    appcache_service_ = service;
+  }
+  void set_blob_storage_context(ChromeBlobStorageContext* context) {
+    blob_storage_context_ = context;
+  }
+  void set_file_system_context(fileapi::FileSystemContext* context) {
+    file_system_context_ = context;
+  }
+  void set_extension_info_map(ExtensionInfoMap* map) {
+    extension_info_map_ = map;
+  }
   void set_chrome_url_data_manager_backend(
       ChromeURLDataManagerBackend* backend);
 
@@ -77,6 +117,13 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.
   // ---------------------------------------------------------------------------
+
+  // TODO(willchan): Make these non-refcounted.
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  // TODO(aa): This should use chrome/common/extensions/extension_set.h.
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   ChromeURLDataManagerBackend* chrome_url_data_manager_backend_;
   bool is_incognito_;

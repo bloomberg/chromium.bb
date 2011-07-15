@@ -4,7 +4,6 @@
 
 #include "chrome/browser/net/view_blob_internals_job_factory.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
@@ -20,8 +19,10 @@ bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
 
 // static.
 net::URLRequestJob* ViewBlobInternalsJobFactory::CreateJobForRequest(
-    net::URLRequest* request,
-    webkit_blob::BlobStorageController* blob_storage_controller) {
+    net::URLRequest* request) {
+  webkit_blob::BlobStorageController* blob_storage_controller =
+      static_cast<const ChromeURLRequestContext*>(request->context())->
+          blob_storage_context()->controller();
   return new webkit_blob::ViewBlobInternalsJob(
       request, blob_storage_controller);
 }

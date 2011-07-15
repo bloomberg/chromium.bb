@@ -12,11 +12,9 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
@@ -35,9 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -51,7 +47,6 @@
 #include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
@@ -308,7 +303,14 @@ ProfileIOData::ProfileIOData(bool is_incognito)
 }
 
 ProfileIOData::~ProfileIOData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // If we have never initialized ProfileIOData, then Handle may hold the only
+  // reference to it. The important thing is to make sure it hasn't been
+  // initialized yet, because the lazily initialized variables are supposed to
+  // live on the IO thread.
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
+    DCHECK(!initialized_);
+  else
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 // static
@@ -338,16 +340,6 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
   }
 
   return IsHandledProtocol(url.scheme());
-}
-
-const content::ResourceContext& ProfileIOData::GetResourceContext() const {
-  return resource_context_;
-}
-
-ChromeURLDataManagerBackend*
-ProfileIOData::GetChromeURLDataManagerBackend() const {
-  LazyInitialize();
-  return chrome_url_data_manager_backend_.get();
 }
 
 scoped_refptr<ChromeURLRequestContext>
@@ -395,6 +387,10 @@ ProfileIOData::GetIsolatedAppRequestContext(
   }
   DCHECK(context);
   return context;
+}
+
+const content::ResourceContext& ProfileIOData::GetResourceContext() const {
+  return resource_context_;
 }
 
 ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
@@ -473,8 +469,7 @@ void ProfileIOData::LazyInitialize() const {
       chrome::kChromeUIScheme,
       ChromeURLDataManagerBackend::CreateProtocolHandler(
           chrome_url_data_manager_backend_.get(),
-          profile_params_->appcache_service,
-          profile_params_->blob_storage_context->controller()));
+          profile_params_->appcache_service));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
@@ -540,6 +535,10 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_transport_security_state(
       profile_params_->transport_security_state);
   context->set_ssl_config_service(profile_params_->ssl_config_service);
+  context->set_appcache_service(profile_params_->appcache_service);
+  context->set_blob_storage_context(profile_params_->blob_storage_context);
+  context->set_file_system_context(profile_params_->file_system_context);
+  context->set_extension_info_map(profile_params_->extension_info_map);
 }
 
 void ProfileIOData::ShutdownOnUIThread() {
@@ -547,7 +546,4 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
-  bool posted = BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                        new ReleaseTask<ProfileIOData>(this));
-  DCHECK(posted);
 }

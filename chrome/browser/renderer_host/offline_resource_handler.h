@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"
 
-class ChromeAppCacheService;
 class MessageLoop;
 class ResourceDispatcherHost;
 
@@ -29,8 +28,7 @@ class OfflineResourceHandler : public ResourceHandler,
                          int host_id,
                          int render_view_id,
                          ResourceDispatcherHost* rdh,
-                         net::URLRequest* request,
-                         ChromeAppCacheService* appcache_service);
+                         net::URLRequest* request);
   virtual ~OfflineResourceHandler();
 
   // ResourceHandler implementation:
@@ -73,7 +71,6 @@ class OfflineResourceHandler : public ResourceHandler,
   int render_view_id_;
   ResourceDispatcherHost* rdh_;
   net::URLRequest* request_;
-  ChromeAppCacheService* const appcache_service_;
 
   // The state for deferred load quest.
   int deferred_request_id_;

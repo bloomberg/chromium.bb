@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
@@ -32,15 +31,16 @@ ChromeURLDataManager::DataSources* ChromeURLDataManager::data_sources_ = NULL;
 
 // Invoked on the IO thread to do the actual adding of the DataSource.
 static void AddDataSourceOnIOThread(
-    const base::Callback<ChromeURLDataManagerBackend*(void)>& backend,
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
     scoped_refptr<ChromeURLDataManager::DataSource> data_source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  backend.Run()->AddDataSource(data_source.get());
+  static_cast<ChromeURLRequestContext*>(
+      context_getter->GetURLRequestContext())->
+      chrome_url_data_manager_backend()->AddDataSource(data_source.get());
 }
 
-ChromeURLDataManager::ChromeURLDataManager(
-      const base::Callback<ChromeURLDataManagerBackend*(void)>& backend)
-    : backend_(backend) {
+ChromeURLDataManager::ChromeURLDataManager(Profile* profile)
+    : profile_(profile) {
 }
 
 ChromeURLDataManager::~ChromeURLDataManager() {
@@ -51,7 +51,7 @@ void ChromeURLDataManager::AddDataSource(DataSource* source) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(AddDataSourceOnIOThread,
-                          backend_,
+                          make_scoped_refptr(profile_->GetRequestContext()),
                           make_scoped_refptr(source)));
 }
 

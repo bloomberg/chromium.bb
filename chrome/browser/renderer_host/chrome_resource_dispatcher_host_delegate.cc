@@ -134,8 +134,7 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
   // We check offline first, then check safe browsing so that we still can block
   // unsafe site after we remove offline page.
   handler = new OfflineResourceHandler(
-      handler, child_id, route_id, resource_dispatcher_host_, request,
-      resource_context.appcache_service());
+      handler, child_id, route_id, resource_dispatcher_host_, request);
 #endif
   return handler;
 }

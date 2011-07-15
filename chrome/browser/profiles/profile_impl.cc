@@ -1518,8 +1518,7 @@ ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
 
 ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {
   if (!chrome_url_data_manager_.get())
-    chrome_url_data_manager_.reset(new ChromeURLDataManager(
-        io_data_.GetChromeURLDataManagerBackendGetter()));
+    chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
   return chrome_url_data_manager_.get();
 }
 

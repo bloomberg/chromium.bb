@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
 #include "content/browser/browser_thread.h"
@@ -141,8 +140,7 @@ class ChromeURLDataManager {
     ChromeURLDataManagerBackend* backend_;
   };
 
-  explicit ChromeURLDataManager(
-      const base::Callback<ChromeURLDataManagerBackend*(void)>& backend);
+  explicit ChromeURLDataManager(Profile* profile);
   ~ChromeURLDataManager();
 
   // Adds a DataSource to the collection of data sources. This *must* be invoked
@@ -173,10 +171,7 @@ class ChromeURLDataManager {
   // was invoked).
   static bool IsScheduledForDeletion(const DataSource* data_source);
 
-  // A callback that returns the ChromeURLDataManagerBackend. Only accessible on
-  // the IO thread. This is necessary because ChromeURLDataManager is created on
-  // the UI thread, but ChromeURLDataManagerBackend lives on the IO thread.
-  const base::Callback<ChromeURLDataManagerBackend*(void)> backend_;
+  Profile* profile_;
 
   // Lock used when accessing |data_sources_|.
   static base::Lock delete_lock_;
