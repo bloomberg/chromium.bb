@@ -11,6 +11,7 @@ def CheckChange(input_api, output_api):
   """Checks the heapcheck suppressions files for bad data."""
   suppressions = {}
   errors = []
+  check_for_heapcheck = False
   skip_next_line = False
   for f in filter(lambda x: x.LocalPath().endswith('.txt'),
                   input_api.AffectedFiles()):
@@ -29,8 +30,14 @@ def CheckChange(input_api, output_api):
                                                      suppressions[line][1]))
         else:
           suppressions[line] = (f, line_num)
+          check_for_heapcheck = True
         skip_next_line = False
         continue
+      if check_for_heapcheck:
+        if not line == 'Heapcheck:Leak':
+          errors.append('"%s" should be "Heapcheck:Leak" in %s line %s' %
+                        (line, f.LocalPath(), line_num))
+        check_for_heapcheck = False;
       if line == '{':
         skip_next_line = True
         continue
