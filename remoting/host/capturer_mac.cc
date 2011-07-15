@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/capturer_helper.h"
 
@@ -46,6 +47,13 @@ scoped_pixel_buffer_object::~scoped_pixel_buffer_object() {
 
 bool scoped_pixel_buffer_object::Init(CGLContextObj cgl_context,
                                       int size_in_bytes) {
+  // The PBO path is only done on 10.6 (SnowLeopard) and above due to
+  // a driver issue that was found on 10.5
+  // (specifically on a NVIDIA GeForce 7300 GT).
+  // http://crbug.com/87283
+  if (base::mac::IsOSLeopardOrEarlier()) {
+    return false;
+  }
   cgl_context_ = cgl_context;
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glGenBuffersARB(1, &pixel_buffer_object_);
@@ -297,6 +305,8 @@ void CapturerMac::CaptureInvalidRects(CaptureCompletedCallback* callback) {
       if (pixel_buffer_object_.get() != 0) {
         GlBlitFast(current_buffer);
       } else {
+        // See comment in scoped_pixel_buffer_object::Init about why the slow
+        // path is always used on 10.5.
         GlBlitSlow(current_buffer);
       }
     } else {
