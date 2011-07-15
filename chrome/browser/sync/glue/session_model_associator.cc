@@ -42,7 +42,9 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
       sync_service_(sync_service),
-      setup_for_test_(false) {
+      setup_for_test_(false),
+      waiting_for_change_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
 }
@@ -52,7 +54,9 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
     : tab_pool_(sync_service),
       local_session_syncid_(sync_api::kInvalidId),
       sync_service_(sync_service),
-      setup_for_test_(setup_for_test) {
+      setup_for_test_(setup_for_test),
+      waiting_for_change_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(test_method_factory_(this)) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
 }
@@ -113,10 +117,15 @@ bool SessionModelAssociator::InitSyncNodeFromChromeId(
 
 void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
   DCHECK(CalledOnValidThread());
+  std::string local_tag = GetCurrentMachineTag();
   sync_pb::SessionSpecifics specifics;
-  specifics.set_session_tag(GetCurrentMachineTag());
+  specifics.set_session_tag(local_tag);
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
+  SyncedSession* current_session =
+      synced_session_tracker_.GetSession(local_tag);
+  current_session->windows.reserve(BrowserList::size());
 
+  size_t window_num = 0;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     // Make sure the browser has tabs and a window. Browsers destructor
@@ -158,6 +167,18 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
       if (found_tabs) {
         sync_pb::SessionWindow* header_window = header_s->add_window();
         *header_window = window_s;
+
+        // Update this window's representation in the synced session tracker.
+        if (window_num >= current_session->windows.size()) {
+          // This a new window, create it.
+          current_session->windows.push_back(new SessionWindow());
+        }
+        PopulateSessionWindowFromSpecifics(
+            local_tag,
+            window_s,
+            base::Time::Now().ToInternalValue(),
+            current_session->windows[window_num++],
+            &synced_session_tracker_);
       }
     }
   }
@@ -169,6 +190,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     return;
   }
   header_node.SetSessionSpecifics(specifics);
+  if (waiting_for_change_) QuitLoopForTest();
 }
 
 // Static.
@@ -186,6 +208,7 @@ void SessionModelAssociator::ReassociateTabs(
        ++i) {
     ReassociateTab(**i);
   }
+  if (waiting_for_change_) QuitLoopForTest();
 }
 
 void SessionModelAssociator::ReassociateTab(const TabContentsWrapper& tab) {
@@ -224,8 +247,10 @@ void SessionModelAssociator::Associate(const TabContentsWrapper* tab,
   SessionID::id_type session_id = tab->restore_tab_helper()->session_id().id();
   Browser* browser = BrowserList::FindBrowserWithID(
       tab->restore_tab_helper()->window_id().id());
-  if (!browser)  // Can happen for weird things like developer console.
+  if (!browser) {  // Can happen for weird things like developer console.
+    tab_pool_.FreeTabNode(sync_id);
     return;
+  }
 
   TabLinks t(sync_id, tab);
   tab_map_[session_id] = t;
@@ -273,7 +298,8 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     if (entry->virtual_url().is_valid()) {
       if (i == max_index - 1) {
         VLOG(1) << "Associating tab " << tab_id << " with sync id " << sync_id
-            << " and url " << entry->virtual_url().possibly_invalid_spec();
+            << ", url " << entry->virtual_url().possibly_invalid_spec()
+            << " and title " << entry->title();
       }
       TabNavigation tab_nav;
       tab_nav.SetFromNavigationEntry(*entry);
@@ -284,6 +310,15 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   tab_s->set_current_navigation_index(current_index);
 
   tab_node.SetSessionSpecifics(session_s);
+
+  // Convert to a local representation and store in synced session tracker.
+  SessionTab* session_tab =
+      synced_session_tracker_.GetSessionTab(GetCurrentMachineTag(),
+                                            tab_s->tab_id(),
+                                            false);
+  PopulateSessionTabFromSpecifics(*tab_s,
+                                  base::Time::Now().ToInternalValue(),
+                                  session_tab);
   return true;
 }
 
@@ -393,7 +428,7 @@ bool SessionModelAssociator::AssociateModels() {
     // Make sure we have a machine tag.
     if (current_machine_tag_.empty())
       InitializeCurrentMachineTag(&trans);
-
+    synced_session_tracker_.SetLocalSessionTag(current_machine_tag_);
     UpdateAssociationsFromSyncModel(root, &trans);
 
     if (local_session_syncid_ == sync_api::kInvalidId) {
@@ -559,7 +594,7 @@ void SessionModelAssociator::DisassociateForeignSession(
 
 // Static
 void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
-    const std::string& foreign_session_tag,
+    const std::string& session_tag,
     const sync_pb::SessionWindow& specifics,
     int64 mtime,
     SessionWindow* session_window,
@@ -581,7 +616,7 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
   for (int i = 0; i < specifics.tab_size(); i++) {
     SessionID::id_type tab_id = specifics.tab(i);
     session_window->tabs[i] =
-        tracker->GetSessionTab(foreign_session_tag, tab_id, true);
+        tracker->GetSessionTab(session_tag, tab_id, true);
   }
 }
 
@@ -759,6 +794,16 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
   tab_syncid_pool_[static_cast<size_t>(++tab_pool_fp_)] = sync_id;
 }
 
+bool SessionModelAssociator::GetLocalSession(
+    const SyncedSession* * local_session) {
+  DCHECK(CalledOnValidThread());
+  if (current_machine_tag_.empty())
+    return false;
+  *local_session =
+      synced_session_tracker_.GetSession(GetCurrentMachineTag());
+  return true;
+}
+
 bool SessionModelAssociator::GetAllForeignSessions(
     std::vector<const SyncedSession*>* sessions) {
   DCHECK(CalledOnValidThread());
@@ -812,7 +857,7 @@ bool SessionModelAssociator::IsValidTab(const TabContents& tab) {
   return false;
 }
 
-// Static
+// Static.
 bool SessionModelAssociator::IsValidSessionTab(const SessionTab& tab) {
   if (tab.navigations.empty())
     return false;
@@ -829,6 +874,28 @@ bool SessionModelAssociator::IsValidSessionTab(const SessionTab& tab) {
     return false;
   }
   return true;
+}
+
+
+void SessionModelAssociator::QuitLoopForTest() {
+  if (waiting_for_change_) {
+    VLOG(1) << "Quitting MessageLoop for test.";
+    waiting_for_change_ = false;
+    test_method_factory_.RevokeAll();
+    MessageLoop::current()->Quit();
+  }
+}
+
+void SessionModelAssociator::BlockUntilLocalChangeForTest(
+    int64 timeout_milliseconds) {
+  if (!test_method_factory_.empty())
+    return;
+  waiting_for_change_ = true;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      test_method_factory_.NewRunnableMethod(
+          &SessionModelAssociator::QuitLoopForTest),
+      timeout_milliseconds);
 }
 
 // ==========================================================================

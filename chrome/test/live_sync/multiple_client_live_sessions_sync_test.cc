@@ -7,8 +7,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/live_sync/live_sessions_sync_test.h"
 
-// http://crbug.com/85294 All session tests having timing issues.
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, FLAKY_AllChanged) {
+IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, AllChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   std::vector<std::vector<SessionWindow*>* > client_windows;
 
@@ -34,9 +33,8 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, FLAKY_AllChanged) {
   }
 }
 
-// http://crbug.com/85294 All session tests having timing issues.
 IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest,
-                       FLAKY_EncryptedAndChanged) {
+                       EncryptedAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   std::vector<std::vector<SessionWindow*>* > client_windows;
 

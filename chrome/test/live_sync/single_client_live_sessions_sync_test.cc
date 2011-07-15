@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveSessionsSyncTest, Sanity) {
   ASSERT_EQ(0U, sessions.size());
 
   // Verify client didn't change.
-  std::vector<SessionWindow*>* new_windows = GetHelper(0)->ReadWindows();
+  std::vector<SessionWindow*>* new_windows = GetLocalWindows(0);
   ASSERT_TRUE(new_windows);
   ASSERT_TRUE(WindowsMatch(*old_windows, *new_windows));
 }

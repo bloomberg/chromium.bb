@@ -70,8 +70,8 @@ void SessionChangeProcessor::Observe(int type,
       if (browser->profile() != profile_) {
         return;
       }
-
       windows_changed = true;
+      VLOG(1) << "Received BROWSER_OPENED for profile " << profile_;
       break;
     }
 
@@ -82,6 +82,19 @@ void SessionChangeProcessor::Observe(int type,
       }
       windows_changed = true;
       modified_tabs.push_back(tab);
+      VLOG(1) << "Received TAB_PARENTED for profile " << profile_;
+      break;
+    }
+
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
+      TabContentsWrapper* tab =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              Source<TabContents>(source).ptr());
+      if (tab->profile() != profile_) {
+        return;
+      }
+      modified_tabs.push_back(tab);
+      VLOG(1) << "Received LOAD_COMPLETED_MAIN_FRAME for profile " << profile_;
       break;
     }
 
@@ -94,6 +107,7 @@ void SessionChangeProcessor::Observe(int type,
       }
       windows_changed = true;
       modified_tabs.push_back(tab);
+      VLOG(1) << "Received TAB_CLOSED for profile " << profile_;
       break;
     }
 
@@ -105,6 +119,7 @@ void SessionChangeProcessor::Observe(int type,
         return;
       }
       modified_tabs.push_back(tab);
+      VLOG(1) << "Received NAV_LIST_PRUNED for profile " << profile_;
       break;
     }
 
@@ -116,6 +131,7 @@ void SessionChangeProcessor::Observe(int type,
         return;
       }
       modified_tabs.push_back(tab);
+      VLOG(1) << "Received NAV_ENTRY_CHANGED for profile " << profile_;
       break;
     }
 
@@ -127,6 +143,7 @@ void SessionChangeProcessor::Observe(int type,
         return;
       }
       modified_tabs.push_back(tab);
+      VLOG(1) << "Received NAV_ENTRY_COMMITTED for profile " << profile_;
       break;
     }
 
@@ -139,19 +156,24 @@ void SessionChangeProcessor::Observe(int type,
       if (extension_tab_helper->extension_app()) {
         modified_tabs.push_back(extension_tab_helper->tab_contents_wrapper());
       }
+      VLOG(1) << "Received TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED "
+              << "for profile " << profile_;
       break;
     }
+
     default:
       LOG(ERROR) << "Received unexpected notification of type "
                   << type;
       break;
   }
 
-  // Associate windows first to ensure tabs have homes.
-  if (windows_changed)
-    session_model_associator_->ReassociateWindows(false);
+  // Associate tabs first so the synced session tracker is aware of them.
   if (!modified_tabs.empty())
     session_model_associator_->ReassociateTabs(modified_tabs);
+  // Note, we always reassociate windows because it's possible a tab became
+  // "interesting" by going to a valid URL, in which case it needs to be added
+  // to the window's tab information.
+  session_model_associator_->ReassociateWindows(false);
 }
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
@@ -212,6 +234,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       // if encryption was turned on. In that case, the data is still the same,
       // so we can ignore.
       LOG(WARNING) << "Dropping modification to local session.";
+      StartObserving();
       return;
     }
     const int64 mtime = sync_node.GetModificationTime();
@@ -259,6 +282,9 @@ void SessionChangeProcessor::StartObserving() {
       NotificationService::AllSources());
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this,
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       NotificationService::AllSources());
 }
 

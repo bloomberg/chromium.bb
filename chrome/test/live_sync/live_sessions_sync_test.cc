@@ -4,9 +4,9 @@
 
 #include "chrome/test/live_sync/live_sessions_sync_test.h"
 
+#include "base/test/test_timeouts.h"
+#include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/test/ui_test_utils.h"
@@ -15,102 +15,11 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
-TestSessionService::TestSessionService()
-    : SessionServiceTestHelper(),
-      done_saving_(false, false),
-      got_windows_(false, false),
-      profile_(NULL),
-      window_bounds_(0, 1, 2, 3) {}
-
-TestSessionService::TestSessionService(SessionService* service,
-                                       Profile* profile)
-    : SessionServiceTestHelper(service),
-      done_saving_(false, false),
-      got_windows_(false, false),
-      profile_(profile),
-      window_bounds_(0, 1, 2, 3) {}
-
-void TestSessionService::SetUp() {
-  ASSERT_TRUE(service()) << "SetUp() called without setting SessionService";
-  ASSERT_TRUE(profile_);
-  service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
-  service()->SetWindowBounds(window_id_, window_bounds_, false);
-}
-
-void TestSessionService::Save() {
-  service()->Save();
-}
-
-std::vector<SessionWindow*>* TestSessionService::ReadWindows() {
-  // The session backend will post the callback as a task to whatever thread
-  // called it. In our case, we don't want the main test thread to have tasks
-  // posted to, so we perform the actual call to session service from the same
-  // thread the work will be done on (backend_thread aka file thread). As a
-  // result, it will directly call back, instead of posting a task, and we can
-  // block on that callback.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      NewRunnableMethod(this, &TestSessionService::DoReadWindows));
-
-  // Wait for callback to happen.
-  got_windows_.Wait();
-
-  // By the time we reach here we've received the windows, so return them.
-  return windows_;
-}
-
-
-void TestSessionService::DoReadWindows() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    LOG(ERROR) << "DoReadWindows called from wrong thread!";
-    windows_ = NULL;
-    got_windows_.Signal();
-    return;
-  }
-  SessionService::SessionCallback* callback =
-      NewCallback(this, &TestSessionService::OnGotSession);
-  service()->GetCurrentSession(&consumer_, callback);
-}
-
-void TestSessionService::OnGotSession(int handle,
-                                      std::vector<SessionWindow*>* windows) {
-  scoped_ptr<SyncedSession> foreign_session(new SyncedSession());
-  for (size_t w = 0; w < windows->size(); ++w) {
-    const SessionWindow& window = *windows->at(w);
-    scoped_ptr<SessionWindow> new_window(new SessionWindow());
-    for (size_t t = 0; t < window.tabs.size(); ++t) {
-      const SessionTab& tab = *window.tabs.at(t);
-      scoped_ptr<SessionTab> new_tab(new SessionTab());
-      new_tab->navigations.resize(tab.navigations.size());
-      std::copy(tab.navigations.begin(), tab.navigations.end(),
-                new_tab->navigations.begin());
-      new_window->tabs.push_back(new_tab.release());
-    }
-    foreign_session->windows.push_back(new_window.release());
-  }
-  windows_ = &(foreign_session->windows);
-  foreign_sessions_.push_back(foreign_session.release());
-  got_windows_.Signal();
-}
-
-TestSessionService::~TestSessionService() {
-  ReleaseService();  // We don't own this, so don't destroy it.
-}
-
 LiveSessionsSyncTest::LiveSessionsSyncTest(TestType test_type)
     : LiveSyncTest(test_type),
       done_closing_(false, false) {}
 
 LiveSessionsSyncTest::~LiveSessionsSyncTest() {}
-
-SessionService* LiveSessionsSyncTest::GetSessionService(int index) {
-  return SessionServiceFactory::GetForProfile(GetProfile(index));
-}
-
-TestSessionService* LiveSessionsSyncTest::GetHelper(int index) {
-  return test_session_services_[index]->get();
-}
 
 Browser* LiveSessionsSyncTest::GetBrowser(int index) {
   return browsers_[index];
@@ -121,47 +30,106 @@ bool LiveSessionsSyncTest::SetupClients() {
     return false;
   }
 
-  // Go through and make the TestSessionServices and Browsers.
+  // Go through and make the Browsers.
   for (int i = 0; i < num_clients(); ++i) {
-    scoped_refptr<TestSessionService>* new_tester =
-        new scoped_refptr<TestSessionService>;
-    *new_tester = new TestSessionService(
-        GetSessionService(i), GetProfile(i));
-    test_session_services_.push_back(new_tester);
-    GetHelper(i)->SetUp();
-
     browsers_.push_back(Browser::Create(GetProfile(i)));
   }
 
   return true;
 }
 
-TabContents* LiveSessionsSyncTest::OpenTab(int index, GURL url) {
-  TabContents* tab = GetBrowser(index)->
-      AddSelectedTabWithURL(url, PageTransition::START_PAGE)->tab_contents();
+bool LiveSessionsSyncTest::ModelAssociatorHasTabWithUrl(int index,
+                                                        const GURL& url) {
+  ui_test_utils::RunAllPendingInMessageLoop();
+  const SyncedSession* local_session;
+  if (!GetProfile(index)->GetProfileSyncService()->
+          GetSessionModelAssociator()->GetLocalSession(&local_session)) {
+    return false;
+  }
+  if (local_session->windows.size() == 0 ||
+      local_session->windows[0]->tabs.size() == 0 ||
+      local_session->windows[0]->tabs[0]->navigations.size() == 0) {
+    VLOG(1) << "Bad vectors!";
+    return false;
+  }
 
-  // Wait for the page to finish loading.
-  ui_test_utils::WaitForNavigation(
-      &GetBrowser(index)->GetSelectedTabContents()->controller());
+  int nav_index =
+      local_session->windows[0]->tabs[0]->current_navigation_index;
+  TabNavigation nav =
+      local_session->windows[0]->tabs[0]->navigations[nav_index];
+  if (nav.virtual_url() != url) {
+    VLOG(1) << "Bad url!";
+    return false;
+  }
+  if (nav.title().empty()) {
+    VLOG(1) << "No title!";
+    return false;
+  }
+  VLOG(1) << "Found tab with url " << url.spec();
+  return true;
+}
 
-  return tab;
+bool LiveSessionsSyncTest::OpenTab(int index, const GURL& url) {
+  static const int timeout_milli = TestTimeouts::action_max_timeout_ms();
+  VLOG(1) << "Opening tab: " << url.spec();
+  GetBrowser(index)->ShowSingletonTab(url);
+  VLOG(1) << "Waiting for session to propagate to associator.";
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  base::TimeTicks end_time = start_time +
+                             base::TimeDelta::FromMilliseconds(timeout_milli);
+  do {
+    if (ModelAssociatorHasTabWithUrl(index, url))
+      return true;
+    GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
+        BlockUntilLocalChangeForTest(timeout_milli);
+    ui_test_utils::RunMessageLoop();
+  } while (base::TimeTicks::Now() < end_time);
+
+  if (ModelAssociatorHasTabWithUrl(index, url))
+    return true;
+
+  LOG(ERROR) << "Failed to find tab after " << timeout_milli/1000.0
+             << " seconds.";
+  return false;
+}
+
+std::vector<SessionWindow*>* LiveSessionsSyncTest::GetLocalWindows(int index) {
+  // The local session provided by GetLocalSession is owned, and has lifetime
+  // controlled, by the model associator, so we must make our own copy.
+  const SyncedSession* local_session;
+  if (!GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
+          GetLocalSession(&local_session)) {
+    return NULL;
+  }
+  scoped_ptr<SyncedSession> session_copy(new SyncedSession());
+  for (size_t w = 0; w < local_session->windows.size(); ++w) {
+    const SessionWindow& window = *local_session->windows.at(w);
+    scoped_ptr<SessionWindow> new_window(new SessionWindow());
+    for (size_t t = 0; t < window.tabs.size(); ++t) {
+      const SessionTab& tab = *window.tabs.at(t);
+      scoped_ptr<SessionTab> new_tab(new SessionTab());
+      new_tab->navigations.resize(tab.navigations.size());
+      std::copy(tab.navigations.begin(), tab.navigations.end(),
+                new_tab->navigations.begin());
+      new_window->tabs.push_back(new_tab.release());
+    }
+    session_copy->windows.push_back(new_window.release());
+  }
+  std::vector<SessionWindow*>* windows = &session_copy->windows;
+  session_copies.push_back(session_copy.release());
+
+  // Sort the windows so their order is deterministic.
+  SortSessionWindows(windows);
+
+  return windows;
 }
 
 std::vector<SessionWindow*>* LiveSessionsSyncTest::InitializeNewWindowWithTab(
-    int index, GURL url) {
+    int index, const GURL& url) {
   if (!OpenTab(index, url)) {
     return NULL;
   }
-  GetHelper(index)->Save();
-  std::vector<SessionWindow*>* windows = GetHelper(index)->ReadWindows();
-  if (windows->size() != 1) {
-    LOG(ERROR) << "InitializeNewWindowWithTab called with open windows!";
-    return NULL;
-  }
-  if (1U != (*windows)[0]->tabs.size())
-    return NULL;
-  SortSessionWindows(windows);
-  return windows;
+  return GetLocalWindows(index);
 }
 
 bool LiveSessionsSyncTest::CheckInitialState(int index) {
@@ -173,15 +141,18 @@ bool LiveSessionsSyncTest::CheckInitialState(int index) {
 }
 
 int LiveSessionsSyncTest::GetNumWindows(int index) {
-  // We don't own windows.
-  std::vector<SessionWindow*>* windows = GetHelper(index)->ReadWindows();
-  return windows->size();
+  const SyncedSession* local_session;
+  if (!GetProfile(index)->GetProfileSyncService()->GetSessionModelAssociator()->
+          GetLocalSession(&local_session)) {
+    return 0;
+  }
+  return local_session->windows.size();
 }
 
 int LiveSessionsSyncTest::GetNumForeignSessions(int index) {
   std::vector<const SyncedSession*> sessions;
   if (!GetProfile(index)->GetProfileSyncService()->
-      GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
+          GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
     return 0;
   return sessions.size();
 }
@@ -190,9 +161,9 @@ bool LiveSessionsSyncTest::GetSessionData(
     int index,
     std::vector<const SyncedSession*>* sessions) {
   if (!GetProfile(index)->GetProfileSyncService()->
-      GetSessionModelAssociator()->GetAllForeignSessions(sessions))
+          GetSessionModelAssociator()->GetAllForeignSessions(sessions))
     return false;
-  SortForeignSessions(sessions);
+  SortSyncedSessions(sessions);
   return true;
 }
 
@@ -220,7 +191,7 @@ void LiveSessionsSyncTest::SortSessionWindows(
 }
 
 // static
-bool LiveSessionsSyncTest::CompareForeignSessions(
+bool LiveSessionsSyncTest::CompareSyncedSessions(
     const SyncedSession* lhs,
     const SyncedSession* rhs) {
   if (!lhs ||
@@ -234,24 +205,34 @@ bool LiveSessionsSyncTest::CompareForeignSessions(
   return CompareSessionWindows(lhs->windows[0], rhs->windows[0]);
 }
 
-void LiveSessionsSyncTest::SortForeignSessions(
+void LiveSessionsSyncTest::SortSyncedSessions(
     std::vector<const SyncedSession*>* sessions) {
   std::sort(sessions->begin(), sessions->end(),
-            LiveSessionsSyncTest::CompareForeignSessions);
+            LiveSessionsSyncTest::CompareSyncedSessions);
 }
 
 bool LiveSessionsSyncTest::NavigationEquals(const TabNavigation& expected,
                                             const TabNavigation& actual) {
-  // crbug.com/85294 - This fails for any URL other than about:foo.
-  //if (expected.virtual_url() != actual.virtual_url())
-  //  return false;
-  if (expected.referrer() != actual.referrer())
+  if (expected.virtual_url() != actual.virtual_url()) {
+    LOG(ERROR) << "Expected url " << expected.virtual_url()
+               << ", actual " << actual.virtual_url();
     return false;
-  // crbug.com/85294 - This fails for any URL other than about:foo.
-  //if (expected.title() != actual.title())
-  //  return false;
-  if (expected.transition() != actual.transition())
+  }
+  if (expected.referrer() != actual.referrer()) {
+    LOG(ERROR) << "Expected referrer " << expected.referrer()
+               << ", actual " << actual.referrer();
     return false;
+  }
+  if (expected.title() != actual.title()) {
+    LOG(ERROR) << "Expected title " << expected.title()
+               << ", actual " << actual.title();
+    return false;
+  }
+  if (expected.transition() != actual.transition()) {
+    LOG(ERROR) << "Expected transition " << expected.transition()
+               << ", actual " << actual.transition();
+    return false;
+  }
   return true;
 }
 

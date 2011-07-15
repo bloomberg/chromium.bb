@@ -143,6 +143,10 @@ class SessionModelAssociator
   // Removes a foreign session from our internal bookkeeping.
   void DisassociateForeignSession(const std::string& foreign_session_tag);
 
+  // Sets |*local_session| to point to the associator's representation of the
+  // local machine. Used primarily for testing.
+  bool GetLocalSession(const SyncedSession* * local_session);
+
   // Builds a list of all foreign sessions.
   // Caller does NOT own ForeignSession objects.
   bool GetAllForeignSessions(std::vector<const SyncedSession*>* sessions);
@@ -176,6 +180,10 @@ class SessionModelAssociator
   // Returns the syncable model type.
   static syncable::ModelType model_type() { return syncable::SESSIONS; }
 
+  // Testing only. Will cause the associator to call MessageLoop::Quit()
+  // when a local change is made, or when timeout_milli occurs, whichever is
+  // first.
+  void BlockUntilLocalChangeForTest(int64 timeout_milli);
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
@@ -385,6 +393,9 @@ class SessionModelAssociator
   void PopulateSessionSpecificsTab(const SessionTab& tab,
                                    sync_pb::SessionTab* session_tab);
 
+  // For testing only.
+  void QuitLoopForTest();
+
   // Local client name.
   std::string current_machine_tag_;
 
@@ -408,6 +419,11 @@ class SessionModelAssociator
 
   // To avoid certain checks not applicable to tests.
   bool setup_for_test_;
+
+  // During integration tests, we sometimes need to block until a local change
+  // is made.
+  bool waiting_for_change_;
+  ScopedRunnableMethodFactory<SessionModelAssociator> test_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

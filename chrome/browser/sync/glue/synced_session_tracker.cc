@@ -15,6 +15,11 @@ SyncedSessionTracker::~SyncedSessionTracker() {
   clear();
 }
 
+void SyncedSessionTracker::SetLocalSessionTag(
+    const std::string& local_session_tag) {
+  local_session_tag_ = local_session_tag;
+}
+
 bool SyncedSessionTracker::LookupAllForeignSessions(
     std::vector<const SyncedSession*>* sessions) {
   DCHECK(sessions);
@@ -105,15 +110,23 @@ SessionTab* SyncedSessionTracker::GetSessionTab(
     tab.reset(iter->second);
     if (has_window)  // This tab is linked to a window, so it's not an orphan.
       unmapped_tabs_.erase(tab.get());
-    VLOG(1) << "Associating " << session_tag << "'s seen tab " <<
-        tab_id  << " at " << tab.get();
+    if (tab->navigations.size() > 0) {
+      VLOG(1) << "Getting "
+              << (session_tag == local_session_tag_ ?
+                  "local session" : session_tag)
+              << "'s seen tab " << tab_id  << " ("
+              << tab->navigations[tab->navigations.size()-1].title()
+              << ")";
+    }
   } else {
     tab.reset(new SessionTab());
     (*synced_tab_map_[session_tag])[tab_id] = tab.get();
     if (!has_window)  // This tab is not linked to a window, it's an orphan.
     unmapped_tabs_.insert(tab.get());
-    VLOG(1) << "Associating " << session_tag << "'s new tab " <<
-        tab_id  << " at " << tab.get();
+    VLOG(1) << "Getting "
+            << (session_tag == local_session_tag_ ?
+                "local session" : session_tag)
+            << "'s new tab " << tab_id  << " at " << tab.get();
   }
   DCHECK(tab.get());
   return tab.release();
@@ -135,6 +148,8 @@ void SyncedSessionTracker::clear() {
   // a SyncedSessionobject.
   STLDeleteContainerPointers(unmapped_tabs_.begin(), unmapped_tabs_.end());
   unmapped_tabs_.clear();
+
+  local_session_tag_.clear();
 }
 
 }  // namespace browser_sync
