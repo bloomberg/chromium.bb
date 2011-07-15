@@ -466,10 +466,6 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
   return (referrer_valid && download_valid);
 }
 
-bool ExtensionService::IsFromWebStore(const std::string& id) const {
-  return extension_prefs_->IsFromWebStore(id);
-}
-
 bool ExtensionService::IsDownloadFromMiniGallery(const GURL& download_url) {
   return StartsWithASCII(download_url.spec(),
                          extension_urls::kMiniGalleryDownloadPrefix,
@@ -1106,6 +1102,8 @@ void ExtensionService::LoadAllExtensions() {
         flags |= Extension::STRICT_ERROR_CHECKS;
       if (extension_prefs_->AllowFileAccess(info->extension_id))
         flags |= Extension::ALLOW_FILE_ACCESS;
+      if (extension_prefs_->IsFromWebStore(info->extension_id))
+        flags |= Extension::FROM_WEBSTORE;
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
@@ -1257,6 +1255,8 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
       flags |= Extension::STRICT_ERROR_CHECKS;
     if (extension_prefs_->AllowFileAccess(info.extension_id))
       flags |= Extension::ALLOW_FILE_ACCESS;
+    if (extension_prefs_->IsFromWebStore(info.extension_id))
+      flags |= Extension::FROM_WEBSTORE;
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,

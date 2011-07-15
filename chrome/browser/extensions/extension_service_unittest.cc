@@ -1897,7 +1897,8 @@ TEST_F(ExtensionServiceTest, Reinstall) {
   ValidateIntegerPref(good_crx, "location", Extension::INTERNAL);
 }
 
-// Test that extension prefs remember if .crx came from web store.
+// Test that we can determine if extensions came from the
+// Chrome web store.
 TEST_F(ExtensionServiceTest, FromWebStore) {
   InitializeEmptyExtensionService();
 
@@ -1911,7 +1912,9 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
   ASSERT_EQ(0u, GetErrors().size());
   ValidatePrefKeyCount(1);
   ValidateBooleanPref(good_crx, "from_webstore", false);
-  ASSERT_FALSE(service_->IsFromWebStore(good_crx));
+
+  const Extension* extension = service_->extensions()->at(0);
+  ASSERT_FALSE(extension->from_webstore());
 
   installed_ = NULL;
   loaded_.clear();
@@ -1926,7 +1929,11 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
   ASSERT_EQ(0u, GetErrors().size());
   ValidatePrefKeyCount(1);
   ValidateBooleanPref(good_crx, "from_webstore", true);
-  ASSERT_TRUE(service_->IsFromWebStore(good_crx));
+
+  // Reload so extension gets reinitialized with new value.
+  service_->ReloadExtensions();
+  extension = service_->extensions()->at(0);
+  ASSERT_TRUE(extension->from_webstore());
 }
 
 // Test upgrading a signed extension.

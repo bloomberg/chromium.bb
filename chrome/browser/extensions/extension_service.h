@@ -166,9 +166,6 @@ class ExtensionService
   bool IsDownloadFromGallery(const GURL& download_url,
                              const GURL& referrer_url);
 
-  // Returns true if the extension was installed from the web store.
-  bool IsFromWebStore(const std::string& id) const;
-
   // Determine if the downloaded extension came from the theme mini-gallery,
   // Used to test if we need to show the "Loading" dialog for themes.
   static bool IsDownloadFromMiniGallery(const GURL& download_url);

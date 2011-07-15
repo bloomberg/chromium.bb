@@ -175,6 +175,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // to have file access. If it's not present, then permissions and content
     // scripts that match file:/// URLs will be filtered out.
     ALLOW_FILE_ACCESS = 1 << 2,
+
+    // |FROM_WEBSTORE| indicates that the extension was installed from the
+    // Chrome Web Store.
+    FROM_WEBSTORE = 1 << 3,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -503,6 +507,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
 
   bool wants_file_access() const { return wants_file_access_; }
+  bool from_webstore() const { return from_webstore_; }
 
   const std::string& content_security_policy() const {
     return content_security_policy_;
@@ -788,6 +793,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // imply access to file:/// scheme URLs (the user may not have actually
   // granted it that access).
   bool wants_file_access_;
+
+  // Whether the extension was installed from the web store.
+  bool from_webstore_;
 
   // The Content-Security-Policy for this extension.  Extensions can use
   // Content-Security-Policies to mitigate cross-site scripting and other
