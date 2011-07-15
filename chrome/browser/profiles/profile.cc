@@ -18,11 +18,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
@@ -679,7 +681,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ChromeURLDataManager* GetChromeURLDataManager() {
     if (!chrome_url_data_manager_.get())
-      chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
+      chrome_url_data_manager_.reset(new ChromeURLDataManager(
+          io_data_.GetChromeURLDataManagerBackendGetter()));
     return chrome_url_data_manager_.get();
   }
 

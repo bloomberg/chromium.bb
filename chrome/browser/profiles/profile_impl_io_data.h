@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -36,6 +37,8 @@ class ProfileImplIOData : public ProfileIOData {
               const FilePath& extensions_cookie_path,
               const FilePath& app_path);
 
+    base::Callback<ChromeURLDataManagerBackend*(void)>
+        GetChromeURLDataManagerBackendGetter() const;
     const content::ResourceContext& GetResourceContext() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMainRequestContextGetter() const;
@@ -72,7 +75,7 @@ class ProfileImplIOData : public ProfileIOData {
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         extensions_request_context_getter_;
     mutable ChromeURLRequestContextGetterMap app_request_context_getter_map_;
-    const scoped_refptr<ProfileImplIOData> io_data_;
+    scoped_refptr<ProfileImplIOData> io_data_;
 
     Profile* const profile_;
 

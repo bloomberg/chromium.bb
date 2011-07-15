@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -26,13 +27,16 @@ OfflineResourceHandler::OfflineResourceHandler(
     int host_id,
     int route_id,
     ResourceDispatcherHost* rdh,
-    net::URLRequest* request)
+    net::URLRequest* request,
+    ChromeAppCacheService* appcache_service)
     : next_handler_(handler),
       process_host_id_(host_id),
       render_view_id_(route_id),
       rdh_(rdh),
       request_(request),
+      appcache_service_(appcache_service),
       deferred_request_id_(-1) {
+  DCHECK(appcache_service_);
 }
 
 OfflineResourceHandler::~OfflineResourceHandler() {
@@ -40,8 +44,8 @@ OfflineResourceHandler::~OfflineResourceHandler() {
 }
 
 bool OfflineResourceHandler::OnUploadProgress(int request_id,
-                                               uint64 position,
-                                               uint64 size) {
+                                              uint64 position,
+                                              uint64 size) {
   return next_handler_->OnUploadProgress(request_id, position, size);
 }
 
@@ -107,9 +111,7 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
     appcache_completion_callback_ =
         new net::CancelableCompletionCallback<OfflineResourceHandler>(
             this, &OfflineResourceHandler::OnCanHandleOfflineComplete);
-    const ChromeURLRequestContext* url_request_context =
-        static_cast<const ChromeURLRequestContext*>(request_->context());
-    url_request_context->appcache_service()->CanHandleMainResourceOffline(
+    appcache_service_->CanHandleMainResourceOffline(
         url, appcache_completion_callback_);
 
     *defer = true;

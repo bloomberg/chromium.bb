@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "build/build_config.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -44,7 +46,17 @@ OffTheRecordProfileIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
-  io_data_->ShutdownOnUIThread();
+  io_data_->AddRef();
+  io_data_.release()->ShutdownOnUIThread();
+}
+
+base::Callback<ChromeURLDataManagerBackend*(void)>
+OffTheRecordProfileIOData::Handle::
+GetChromeURLDataManagerBackendGetter() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LazyInitialize();
+  return base::Bind(&ProfileIOData::GetChromeURLDataManagerBackend,
+                    base::Unretained(io_data_.get()));
 }
 
 const content::ResourceContext&

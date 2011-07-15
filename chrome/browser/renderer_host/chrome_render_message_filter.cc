@@ -13,6 +13,7 @@
 #include "chrome/browser/download/mhtml_generation_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -83,6 +84,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     : render_process_id_(render_process_id),
       profile_(profile),
       request_context_(request_context),
+      extension_info_map_(profile->GetExtensionInfoMap()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile_->GetPrefs(), NULL);
@@ -298,11 +300,8 @@ void ChromeRenderMessageFilter::OpenChannelToTabOnUIThread(
 
 void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext());
-
   const Extension* extension =
-      context->extension_info_map()->extensions().GetByID(extension_id);
+      extension_info_map_->extensions().GetByID(extension_id);
   FilePath extension_path;
   std::string default_locale;
   if (extension) {
@@ -382,10 +381,8 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
     const ExtensionHostMsg_Request_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext());
   ExtensionFunctionDispatcher::DispatchOnIOThread(
-      context->extension_info_map(), profile_, render_process_id_,
+      extension_info_map_, profile_, render_process_id_,
       weak_ptr_factory_.GetWeakPtr(), routing_id, params);
 }
 
@@ -497,22 +494,18 @@ void ChromeRenderMessageFilter::OnGetPluginContentSetting(
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardRead(const GURL& url,
                                                           bool* allowed) {
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext());
   const Extension* extension =
-      context->extension_info_map()->extensions().GetByURL(url);
+      extension_info_map_->extensions().GetByURL(url);
   *allowed = extension &&
       extension->HasAPIPermission(ExtensionAPIPermission::kClipboardRead);
 }
 
 void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(const GURL& url,
                                                            bool* allowed) {
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      request_context_->GetURLRequestContext());
   // Since all extensions could historically write to the clipboard, preserve it
   // for compatibility.
   const Extension* extension =
-      context->extension_info_map()->extensions().GetByURL(url);
+      extension_info_map_->extensions().GetByURL(url);
   *allowed = url.SchemeIs(chrome::kExtensionScheme) ||
       (extension &&
        extension->HasAPIPermission(ExtensionAPIPermission::kClipboardWrite));
