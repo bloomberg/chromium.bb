@@ -3326,6 +3326,57 @@ int Browser::GetExtraRenderViewHeight() const {
   return window_->GetExtraRenderViewHeight();
 }
 
+void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(source);
+  TabContentsWrapper* constrained = GetConstrainingContentsWrapper(wrapper);
+  if (constrained != wrapper) {
+    // Download in a constrained popup is shown in the tab that opened it.
+    TabContents* constrained_tab = constrained->tab_contents();
+    constrained_tab->delegate()->OnStartDownload(constrained_tab, download);
+    return;
+  }
+
+  if (!window())
+    return;
+
+#if defined(OS_CHROMEOS)
+  // Don't show content browser for extension/theme downloads from gallery.
+  if (download->is_extension_install()) {
+    ExtensionService* service = profile_->GetExtensionService();
+    if (service && service->IsDownloadFromGallery(download->GetURL(),
+                                                  download->referrer_url())) {
+      return;
+    }
+  }
+  // Open the Active Downloads ui for chromeos.
+  ActiveDownloadsUI::OpenPopup(profile_);
+#else
+  // GetDownloadShelf creates the download shelf if it was not yet created.
+  window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
+
+  // Don't show the animation for "Save file" downloads.
+  if (download->total_bytes() <= 0)
+    return;
+
+  // For non-theme extensions, we don't show the download animation.
+  if (download->is_extension_install() &&
+      !ExtensionService::IsDownloadFromMiniGallery(download->GetURL()))
+    return;
+
+  TabContents* current_tab = GetSelectedTabContents();
+  // We make this check for the case of minimized windows, unit tests, etc.
+  if (platform_util::IsVisible(current_tab->GetNativeView()) &&
+      ui::Animation::ShouldRenderRichAnimation()) {
+    DownloadStartedAnimation::Show(current_tab);
+  }
+#endif
+
+  // If the download occurs in a new tab, close it.
+  if (source->controller().IsInitialNavigation() && tab_count() > 1)
+    CloseContents(source);
+}
+
 void Browser::ShowPageInfo(Profile* profile,
                            const GURL& url,
                            const NavigationEntry::SSLStatus& ssl,
@@ -3484,56 +3535,6 @@ TabContentsWrapper* Browser::GetConstrainingContentsWrapper(
 void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
   if (source == GetSelectedTabContentsWrapper())
     window_->SetStarredState(starred);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, DownloadTabHelperDelegate implementation:
-
-bool Browser::CanDownload(int request_id) {
-  return true;
-}
-
-void Browser::OnStartDownload(DownloadItem* download, TabContentsWrapper* tab) {
-  if (!window())
-    return;
-
-#if defined(OS_CHROMEOS)
-  // Don't show content browser for extension/theme downloads from gallery.
-  if (download->is_extension_install()) {
-    ExtensionService* service = profile_->GetExtensionService();
-    if (service && service->IsDownloadFromGallery(download->GetURL(),
-                                                  download->referrer_url())) {
-      return;
-    }
-  }
-  // Open the Active Downloads ui for chromeos.
-  ActiveDownloadsUI::OpenPopup(profile_);
-#else
-  // GetDownloadShelf creates the download shelf if it was not yet created.
-  window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
-
-  // Don't show the animation for "Save file" downloads.
-  if (download->total_bytes() <= 0)
-    return;
-
-  // For non-theme extensions, we don't show the download animation.
-  if (download->is_extension_install() &&
-      !ExtensionService::IsDownloadFromMiniGallery(download->GetURL()))
-    return;
-
-  TabContents* current_tab = GetSelectedTabContents();
-  // We make this check for the case of minimized windows, unit tests, etc.
-  if (platform_util::IsVisible(current_tab->GetNativeView()) &&
-      ui::Animation::ShouldRenderRichAnimation()) {
-    DownloadStartedAnimation::Show(current_tab);
-  }
-#endif
-
-  // If the download occurs in a new tab, close it.
-  if (tab->tab_contents()->controller().IsInitialNavigation() &&
-      GetConstrainingContentsWrapper(tab) == tab && tab_count() > 1) {
-    CloseContents(tab->tab_contents());
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4506,7 +4507,6 @@ void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->bookmark_tab_helper()->set_delegate(delegate);
-  tab->download_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 

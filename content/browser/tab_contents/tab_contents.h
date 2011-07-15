@@ -37,6 +37,7 @@ namespace gfx {
 class Rect;
 }
 
+class DownloadItem;
 class Extension;
 class LoadNotificationDetails;
 class Profile;
@@ -341,6 +342,13 @@ class TabContents : public PageNavigator,
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh);
 
   // Toolbars and such ---------------------------------------------------------
+
+  // Notifies the delegate that a download is about to be started.
+  // This notification is fired before a local temporary file has been created.
+  bool CanDownload(int request_id);
+
+  // Notifies the delegate that a download started.
+  void OnStartDownload(DownloadItem* download);
 
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);

@@ -179,7 +179,6 @@ class BrowserProcess {
   virtual const std::string& GetApplicationLocale() = 0;
   virtual void SetApplicationLocale(const std::string& locale) = 0;
 
-  DownloadRequestLimiter* download_request_limiter();
   virtual DownloadStatusUpdater* download_status_updater() = 0;
 
   // Returns a reference to the user-data-dir based profiles vector.

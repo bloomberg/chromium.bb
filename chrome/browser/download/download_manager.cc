@@ -34,8 +34,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -1248,24 +1246,20 @@ void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
   // get this start completion event. If it does, tell the origin TabContents
   // to display its download shelf.
   DownloadRequestHandle request_handle = download->request_handle();
-  TabContents* contents = request_handle.GetTabContents();
-  TabContentsWrapper* wrapper = NULL;
-  if (contents)
-      wrapper = TabContentsWrapper::GetCurrentWrapperForContents(contents);
-
+  TabContents* content = request_handle.GetTabContents();
   // If the contents no longer exists, we start the download in the last active
   // browser. This is not ideal but better than fully hiding the download from
   // the user.
-  if (!wrapper) {
+  if (!content) {
     Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
     if (last_active)
-      wrapper = last_active->GetSelectedTabContentsWrapper();
+      content = last_active->GetSelectedTabContents();
   }
 
-  if (!wrapper)
+  if (!content)
     return;
 
-  wrapper->download_tab_helper()->OnStartDownload(download);
+  content->OnStartDownload(download);
 }
 
 // Clears the last download path, used to initialize "save as" dialogs.

@@ -565,16 +565,16 @@ class Profile {
 };
 
 #if defined(COMPILER_GCC)
- namespace __gnu_cxx {
+namespace __gnu_cxx {
 
- template<>
- struct hash<Profile*> {
-   std::size_t operator()(Profile* const& p) const {
-     return reinterpret_cast<std::size_t>(p);
-   }
- };
+template<>
+struct hash<Profile*> {
+  std::size_t operator()(Profile* const& p) const {
+    return reinterpret_cast<std::size_t>(p);
+  }
+};
 
- }  // namespace __gnu_cxx
- #endif
+}  // namespace __gnu_cxx
+#endif
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_H_

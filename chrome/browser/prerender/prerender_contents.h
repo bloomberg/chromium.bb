@@ -13,7 +13,6 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
-#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
@@ -44,8 +43,7 @@ class PrerenderTracker;
 // programatically view window.location.href) or RenderViewHostManager because
 // it is never allowed to navigate across a SiteInstance boundary.
 class PrerenderContents : public NotificationObserver,
-                          public TabContentsObserver,
-                          public DownloadTabHelperDelegate {
+                          public TabContentsObserver {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -136,11 +134,6 @@ class PrerenderContents : public NotificationObserver,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
-
-  // DownloadTabHelperDelegate implementation.
-  virtual bool CanDownload(int request_id) OVERRIDE;
-  virtual void OnStartDownload(DownloadItem* download,
-                               TabContentsWrapper* tab) OVERRIDE;
 
   // Adds an alias URL, for one of the many redirections. If the URL can not
   // be prerendered - for example, it's an ftp URL - |this| will be destroyed

@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -24,6 +25,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -677,6 +679,19 @@ bool TabContents::FocusLocationBarByDefault() {
 void TabContents::SetFocusToLocationBar(bool select_all) {
   if (delegate())
     delegate()->SetFocusToLocationBar(select_all);
+}
+
+bool TabContents::CanDownload(int request_id) {
+  TabContentsDelegate* d = delegate();
+  if (d)
+    return d->CanDownload(this, request_id);
+  return true;
+}
+
+void TabContents::OnStartDownload(DownloadItem* download) {
+  TabContentsDelegate* d = delegate();
+  if (d)
+    d->OnStartDownload(this, download);
 }
 
 void TabContents::WillClose(ConstrainedWindow* window) {
@@ -1643,6 +1658,11 @@ WebPreferences TabContents::GetWebkitPrefs() {
 void TabContents::OnUserGesture() {
   // Notify observers.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetUserGesture());
+
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+  if (rdh)  // NULL in unittests.
+    rdh->download_request_limiter()->OnUserGesture(this);
 }
 
 void TabContents::OnIgnoredUIEvent() {

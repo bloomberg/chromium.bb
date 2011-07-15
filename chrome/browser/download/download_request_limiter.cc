@@ -15,8 +15,6 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/common/notification_source.h"
 
 // TabDownloadState ------------------------------------------------------------
@@ -269,7 +267,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // FYI: Chrome Frame overrides CanDownload in ExternalTabContainer in order
   // to cancel the download operation in chrome and let the host browser
   // take care of it.
-  if (!originating_tab->download_tab_helper()->CanDownload(request_id)) {
+  if (!originating_tab->tab_contents()->CanDownload(request_id)) {
     ScheduleNotification(callback, false);
     return;
   }

@@ -88,6 +88,17 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
+  bool CanDownload(TabContents* source, int request_id) OVERRIDE {
+    prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
+    // Cancel the download.
+    return false;
+  }
+
+  void OnStartDownload(TabContents* source, DownloadItem* download) OVERRIDE {
+    // Prerendered pages should never be able to download files.
+    NOTREACHED();
+  }
+
   // Commits the History of Pages to the given TabContents.
   void CommitHistory(TabContentsWrapper* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
@@ -150,7 +161,6 @@ void PrerenderContents::StartPrerendering(
                                               NULL, NULL);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   TabContentsObserver::Observe(new_contents);
-  prerender_contents_->download_tab_helper()->set_delegate(this);
 
   gfx::Rect tab_bounds;
   if (source_render_view_host) {
@@ -517,18 +527,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
     render_view_host_observer_->set_prerender_contents(NULL);
 }
 
-bool PrerenderContents::CanDownload(int request_id) {
-  Destroy(FINAL_STATUS_DOWNLOAD);
-  // Cancel the download.
-  return false;
-}
-
-void PrerenderContents::OnStartDownload(DownloadItem* download,
-                                        TabContentsWrapper* tab) {
-  // Prerendered pages should never be able to download files.
-  NOTREACHED();
-}
-
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
@@ -564,7 +562,6 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->tab_contents()->set_delegate(NULL);
   render_view_host_observer_.reset();
-  prerender_contents_->download_tab_helper()->set_delegate(NULL);
   TabContentsObserver::Observe(NULL);
   return prerender_contents_.release();
 }

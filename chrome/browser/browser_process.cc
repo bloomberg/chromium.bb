@@ -4,15 +4,8 @@
 
 #include "chrome/browser/browser_process.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-
 BrowserProcess* g_browser_process = NULL;
 
 BrowserProcess::BrowserProcess() {}
 
 BrowserProcess::~BrowserProcess() {}
-
-DownloadRequestLimiter* BrowserProcess::download_request_limiter() {
-  ResourceDispatcherHost* rdh = resource_dispatcher_host();
-  return rdh ? rdh->download_request_limiter() : NULL;
-}

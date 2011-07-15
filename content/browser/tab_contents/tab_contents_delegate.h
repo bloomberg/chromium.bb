@@ -31,6 +31,7 @@ class HistoryAddPageArgs;
 }
 
 struct ContextMenuParams;
+class DownloadItem;
 class GURL;
 class HtmlDialogUIDelegate;
 struct NativeWebKeyboardEvent;
@@ -189,6 +190,12 @@ class TabContentsDelegate {
 
   // Notification that |tab_contents| has gained focus.
   virtual void TabContentsFocused(TabContents* tab_content);
+
+  // Asks the delegate if the given tab can download.
+  virtual bool CanDownload(TabContents* source, int request_id);
+
+  // Notifies the delegate that a download is starting.
+  virtual void OnStartDownload(TabContents* source, DownloadItem* download);
 
   // Return much extra vertical space should be allotted to the
   // render view widget during various animations (e.g. infobar closing).

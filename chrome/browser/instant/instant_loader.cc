@@ -22,8 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/download/download_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -148,8 +146,7 @@ class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
       public TabContentsWrapperDelegate,
       public NotificationObserver,
-      public TabContentsObserver,
-      public DownloadTabHelperDelegate {
+      public TabContentsObserver {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader);
 
@@ -198,6 +195,7 @@ class InstantLoader::TabContentsDelegateImpl
   // instant result when the drag ends, so that during the drag the page won't
   // move around.
   virtual void DragEnded() OVERRIDE;
+  virtual bool CanDownload(TabContents* source, int request_id) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
@@ -211,11 +209,6 @@ class InstantLoader::TabContentsDelegateImpl
 
   // TabContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // DownloadTabHelperDelegate:
-  virtual bool CanDownload(int request_id) OVERRIDE;
-  virtual void OnStartDownload(DownloadItem* download,
-                               TabContentsWrapper* tab) OVERRIDE;
 
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
@@ -471,6 +464,12 @@ void InstantLoader::TabContentsDelegateImpl::DragEnded() {
   CommitFromMouseReleaseIfNecessary();
 }
 
+bool InstantLoader::TabContentsDelegateImpl::CanDownload(TabContents* source,
+                                                         int request_id) {
+  // Downloads are disabled.
+  return false;
+}
+
 void InstantLoader::TabContentsDelegateImpl::HandleMouseUp() {
   CommitFromMouseReleaseIfNecessary();
 }
@@ -515,16 +514,6 @@ bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-bool InstantLoader::TabContentsDelegateImpl::CanDownload(int request_id) {
-  // Downloads are disabled.
-  return false;
-}
-
-void InstantLoader::TabContentsDelegateImpl::OnStartDownload(
-    DownloadItem* download, TabContentsWrapper* tab) {
-  // Downloads are disabled.
 }
 
 void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
@@ -753,7 +742,6 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
 #endif
     }
     preview_contents_->tab_contents()->set_delegate(NULL);
-    preview_contents_->download_tab_helper()->set_delegate(NULL);
     ready_ = false;
   }
   update_bounds_timer_.Stop();
@@ -949,7 +937,6 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   SetupPreviewContents(old_tc);
 
   // Cleanup the old preview contents.
-  old_tc->download_tab_helper()->set_delegate(NULL);
   old_tc->tab_contents()->set_delegate(NULL);
   old_tc->set_delegate(NULL);
 
@@ -982,9 +969,6 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
   if (max_page_id != -1)
     preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
-
-  preview_contents_->download_tab_helper()->set_delegate(
-      preview_tab_contents_delegate_.get());
 
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call
