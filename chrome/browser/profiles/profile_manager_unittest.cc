@@ -182,7 +182,7 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
 }
 
 // Tests asynchronous profile creation mechanism.
-TEST_F(ProfileManagerTest, CreateProfileAsync) {
+TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
   FilePath dest_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile"));
 
