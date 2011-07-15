@@ -248,8 +248,6 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 		goto out;
 	}
 
-	printf("info: set hardware cursor\n");
-
 out:
 	pixman_region32_fini(&cursor_region);
 	if (ret)
