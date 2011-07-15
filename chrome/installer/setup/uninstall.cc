@@ -16,7 +16,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -33,6 +32,7 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/common/result_codes.h"
 #include "rlz/win/lib/rlz_lib.h"
 
 // Build-time generated include file.
@@ -138,9 +138,9 @@ void CloseAllChromeProcesses() {
       if (!SendMessageTimeout(tmpWnd, WM_CLOSE, 0, 0, SMTO_BLOCK, 3000, NULL) &&
           (GetLastError() == ERROR_TIMEOUT)) {
         base::CleanupProcesses(installer::kChromeExe, 0,
-                               content::RESULT_CODE_HUNG, NULL);
+                               ResultCodes::HUNG, NULL);
         base::CleanupProcesses(installer::kNaClExe, 0,
-                               content::RESULT_CODE_HUNG, NULL);
+                               ResultCodes::HUNG, NULL);
         return;
       }
     }
@@ -150,9 +150,9 @@ void CloseAllChromeProcesses() {
   // chrome.exe. This check is just in case Chrome is ignoring WM_CLOSE
   // messages.
   base::CleanupProcesses(installer::kChromeExe, 15000,
-                         content::RESULT_CODE_HUNG, NULL);
+                         ResultCodes::HUNG, NULL);
   base::CleanupProcesses(installer::kNaClExe, 15000,
-                         content::RESULT_CODE_HUNG, NULL);
+                         ResultCodes::HUNG, NULL);
 }
 
 // Attempts to close the Chrome Frame helper process by sending WM_CLOSE
@@ -187,7 +187,7 @@ void CloseChromeFrameHelperProcess() {
   if (kill) {
     VLOG(1) << installer::kChromeFrameHelperExe << " hung.  Killing.";
     base::CleanupProcesses(installer::kChromeFrameHelperExe, 0,
-                           content::RESULT_CODE_HUNG, NULL);
+                           ResultCodes::HUNG, NULL);
   }
 }
 
@@ -440,7 +440,7 @@ DeleteResult DeleteFilesAndFolders(const InstallerState& installer_state,
 InstallStatus IsChromeActiveOrUserCancelled(
     const InstallerState& installer_state,
     const Product& product) {
-  int32 exit_code = content::RESULT_CODE_NORMAL_EXIT;
+  int32 exit_code = ResultCodes::NORMAL_EXIT;
   CommandLine options(CommandLine::NO_PROGRAM);
   options.AppendSwitch(installer::switches::kUninstall);
 
@@ -457,12 +457,12 @@ InstallStatus IsChromeActiveOrUserCancelled(
                                   &exit_code)) {
     VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
             << exit_code;
-    if ((exit_code == chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||
-        (exit_code == chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) ||
-        (exit_code == chrome::RESULT_CODE_HUNG))
+    if ((exit_code == ResultCodes::UNINSTALL_CHROME_ALIVE) ||
+        (exit_code == ResultCodes::UNINSTALL_USER_CANCEL) ||
+        (exit_code == ResultCodes::HUNG))
       return installer::UNINSTALL_CANCELLED;
 
-    if (exit_code == chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE)
+    if (exit_code == ResultCodes::UNINSTALL_DELETE_PROFILE)
       return installer::UNINSTALL_DELETE_PROFILE;
   } else {
     PLOG(ERROR) << "Failed to launch chrome.exe for uninstall confirmation.";

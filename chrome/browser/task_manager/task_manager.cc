@@ -957,7 +957,7 @@ void TaskManager::KillProcess(int index) {
   base::ProcessHandle process = model_->GetResourceProcessHandle(index);
   DCHECK(process);
   if (process != base::GetCurrentProcessHandle())
-    base::KillProcess(process, content::RESULT_CODE_KILLED, false);
+    base::KillProcess(process, ResultCodes::KILLED, false);
 }
 
 void TaskManager::ActivateProcess(int index) {

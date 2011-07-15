@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,8 +92,7 @@ bool BrowserMessageFilter::DispatchMessage(const IPC::Message& message) {
 }
 
 void BrowserMessageFilter::BadMessageReceived() {
-  base::KillProcess(peer_handle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
-                    false);
+  base::KillProcess(peer_handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
 }
 
 bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,

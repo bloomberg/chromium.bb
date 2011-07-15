@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/uninstall_view.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -33,6 +32,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/common/main_function_params.h"
+#include "content/common/result_codes.h"
 #include "crypto/nss_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -99,7 +99,7 @@ void RecordBrowserStartupTime() {
 }
 
 int AskForUninstallConfirmation() {
-  int ret = content::RESULT_CODE_NORMAL_EXIT;
+  int ret = ResultCodes::NORMAL_EXIT;
   views::Widget::CreateWindow(new UninstallView(ret))->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
@@ -120,15 +120,15 @@ int DoUninstallTasks(bool chrome_still_running) {
   // check once again after user acknowledges Uninstall dialog.
   if (chrome_still_running) {
     ShowCloseBrowserFirstMessageBox();
-    return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;
+    return ResultCodes::UNINSTALL_CHROME_ALIVE;
   }
   int ret = AskForUninstallConfirmation();
   if (browser_util::IsBrowserAlreadyRunning()) {
     ShowCloseBrowserFirstMessageBox();
-    return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;
+    return ResultCodes::UNINSTALL_CHROME_ALIVE;
   }
 
-  if (ret != chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) {
+  if (ret != ResultCodes::UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
     VLOG(1) << "Executing uninstall actions";
     if (!FirstRun::RemoveSentinel())
@@ -225,7 +225,7 @@ int HandleIconsCommands(const CommandLine& parsed_command_line) {
     } else if (version >= base::win::VERSION_XP) {
       cp_applet.assign(L"Add/Remove Programs");  // Windows XP.
     } else {
-      return chrome::RESULT_CODE_UNSUPPORTED_PARAM;  // Not supported
+      return ResultCodes::UNSUPPORTED_PARAM;  // Not supported
     }
 
     const string16 msg =
@@ -234,12 +234,10 @@ int HandleIconsCommands(const CommandLine& parsed_command_line) {
     const UINT flags = MB_OKCANCEL | MB_ICONWARNING | MB_TOPMOST;
     if (IDOK == ui::MessageBox(NULL, msg, caption, flags))
       ShellExecute(NULL, NULL, L"appwiz.cpl", NULL, NULL, SW_SHOWNORMAL);
-
-    // Exit as we are not launching the browser.
-    return content::RESULT_CODE_NORMAL_EXIT;
+    return ResultCodes::NORMAL_EXIT;  // Exit as we are not launching browser.
   }
   // We don't hide icons so we shouldn't do anything special to show them
-  return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
+  return ResultCodes::UNSUPPORTED_PARAM;
 }
 
 // Check if there is any machine level Chrome installed on the current

@@ -28,7 +28,6 @@
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -39,6 +38,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
+#include "content/common/result_codes.h"
 #include "google_update_idl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -184,7 +184,7 @@ class ImportProcessRunner : public base::win::ObjectWatcher::Delegate {
   // the import_process handle.
   explicit ImportProcessRunner(base::ProcessHandle import_process)
       : import_process_(import_process),
-        exit_code_(content::RESULT_CODE_NORMAL_EXIT) {
+        exit_code_(ResultCodes::NORMAL_EXIT) {
     watcher_.StartWatching(import_process, this);
     MessageLoop::current()->Run();
   }
@@ -246,7 +246,7 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
     // while the other process still not pumping messages.
     HWND active_window = ::GetLastActivePopup(owner_window_);
     if (::IsHungAppWindow(active_window) || ::IsHungAppWindow(owner_window_)) {
-      ::TerminateProcess(import_process_, chrome::RESULT_CODE_IMPORTER_HUNG);
+      ::TerminateProcess(import_process_, ResultCodes::IMPORTER_HUNG);
       import_process_ = NULL;
     }
   }
@@ -356,7 +356,7 @@ bool FirstRun::ImportSettings(Profile* profile,
   if (profile)
     profile->GetPrefs()->ReloadPersistentPrefs();
 
-  return (import_runner.exit_code() == content::RESULT_CODE_NORMAL_EXIT);
+  return (import_runner.exit_code() == ResultCodes::NORMAL_EXIT);
 }
 
 // static

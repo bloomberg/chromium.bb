@@ -231,7 +231,7 @@ class Zygote {
       // Assume that if we can't find the child in the sandbox, then
       // it terminated normally.
       status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      exit_code = content::RESULT_CODE_NORMAL_EXIT;
+      exit_code = ResultCodes::NORMAL_EXIT;
     }
 
     Pickle write_pickle;

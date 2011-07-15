@@ -8,39 +8,39 @@
 // Native Client binary for 64-bit Windows can run only the NaCl loader or
 // the sandbox broker processes. Other process types are not supported.
 int BrowserMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int RendererMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int PluginMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int PpapiPluginMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int PpapiBrokerMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int WorkerMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int UtilityMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int ProfileImportMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int ZygoteMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int DiagnosticsMain(const CommandLine& command_line) {
@@ -48,9 +48,9 @@ int DiagnosticsMain(const CommandLine& command_line) {
 }
 
 int GpuMain(const MainFunctionParams&) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }
 
 int ServiceProcessMain(const MainFunctionParams& parameters) {
-  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+  return ResultCodes::BAD_PROCESS_TYPE;
 }

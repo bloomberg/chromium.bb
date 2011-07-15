@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   // We restarted because of a previous crash. Ask user if we should relaunch.
   if (ShowRestartDialogIfCrashed(&exit_now)) {
     if (exit_now)
-      return content::RESULT_CODE_NORMAL_EXIT;
+      return ResultCodes::NORMAL_EXIT;
   }
 
   // Initialize the commandline singleton from the environment.

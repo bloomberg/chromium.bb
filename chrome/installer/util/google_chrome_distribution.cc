@@ -24,7 +24,6 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/attrition_experiments.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/channel_info.h"
@@ -37,6 +36,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/common/json_value_serializer.h"
+#include "content/common/result_codes.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -776,13 +776,13 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   // The chrome process has exited, figure out what happened.
   const wchar_t* outcome = NULL;
   switch (exit_code) {
-    case content::RESULT_CODE_NORMAL_EXIT:
+    case ResultCodes::NORMAL_EXIT:
       outcome = kToastExpTriesOkGroup;
       break;
-    case chrome::RESULT_CODE_NORMAL_EXIT_CANCEL:
+    case ResultCodes::NORMAL_EXIT_CANCEL:
       outcome = kToastExpCancelGroup;
       break;
-    case chrome::RESULT_CODE_NORMAL_EXIT_EXP2:
+    case ResultCodes::NORMAL_EXIT_EXP2:
       outcome = kToastExpUninstallGroup;
       break;
     default:

@@ -9,9 +9,9 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
+#include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/checkbox.h"
@@ -97,9 +97,9 @@ void UninstallView::SetupControls() {
 }
 
 bool UninstallView::Accept() {
-  user_selection_ = content::RESULT_CODE_NORMAL_EXIT;
+  user_selection_ = ResultCodes::NORMAL_EXIT;
   if (delete_profile_->checked())
-    user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
+    user_selection_ = ResultCodes::UNINSTALL_DELETE_PROFILE;
   if (change_default_browser_ && change_default_browser_->checked()) {
     int index = browsers_combo_->selected_item();
     BrowsersMap::const_iterator it = browsers_->begin();
@@ -110,7 +110,7 @@ bool UninstallView::Accept() {
 }
 
 bool UninstallView::Cancel() {
-  user_selection_ = chrome::RESULT_CODE_UNINSTALL_USER_CANCEL;
+  user_selection_ = ResultCodes::UNINSTALL_USER_CANCEL;
   return true;
 }
 

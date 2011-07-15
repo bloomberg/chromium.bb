@@ -8,7 +8,7 @@
 #include "content/common/result_codes.h"
 
 FirstRunImportObserver::FirstRunImportObserver()
-    : loop_running_(false), import_result_(content::RESULT_CODE_NORMAL_EXIT) {
+    : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
 }
 
 FirstRunImportObserver::~FirstRunImportObserver() {
@@ -25,6 +25,6 @@ void FirstRunImportObserver::Finish() {
 }
 
 void FirstRunImportObserver::ImportCompleted() {
-  import_result_ = content::RESULT_CODE_NORMAL_EXIT;
+  import_result_ = ResultCodes::NORMAL_EXIT;
   Finish();
 }

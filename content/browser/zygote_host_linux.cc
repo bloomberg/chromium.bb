@@ -335,7 +335,7 @@ base::TerminationStatus ZygoteHost::GetTerminationStatus(
 
   // Set this now to handle the early termination cases.
   if (exit_code)
-    *exit_code = content::RESULT_CODE_NORMAL_EXIT;
+    *exit_code = ResultCodes::NORMAL_EXIT;
 
   static const unsigned kMaxMessageLength = 128;
   char buf[kMaxMessageLength];

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
   TabContents* tab = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab != NULL);
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
-                    content::RESULT_CODE_KILLED, true);
+                    ResultCodes::KILLED, true);
 
   tab->controller().Reload(true);
   EXPECT_EQ(

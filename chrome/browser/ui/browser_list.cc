@@ -538,9 +538,9 @@ void BrowserList::SessionEnding() {
 #if defined(OS_WIN)
   // At this point the message loop is still running yet we've shut everything
   // down. If any messages are processed we'll likely crash. Exit now.
-  ExitProcess(content::RESULT_CODE_NORMAL_EXIT);
+  ExitProcess(ResultCodes::NORMAL_EXIT);
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-  _exit(content::RESULT_CODE_NORMAL_EXIT);
+  _exit(ResultCodes::NORMAL_EXIT);
 #else
   NOTIMPLEMENTED();
 #endif
