@@ -203,19 +203,20 @@ all_deps :=
 #
 # Note, the flock is used to seralize linking. Linking is a memory-intensive
 # process so running parallel links can often lead to thrashing.  To disable
-# the serialization, override LINK via an envrionment variable as follows:
+# the serialization, override FLOCK via an envrionment variable as follows:
 #
-#   export LINK="$(CXX)"
+#   export FLOCK=
 #
 # This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= %(flock)s $(builddir)/linker.lock $(CXX) %(LINK_flags)s
+FLOCK ?= %(flock)s $(builddir)/linker.lock
+LINK ?= $(FLOCK) $(CXX)
 
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
 CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= $(LINK)
-LDFLAGS.target ?= $(LDFLAGS)
+LDFLAGS.target ?= $(LDFLAGS) %(LINK_flags)s
 AR.target ?= $(AR)
 ARFLAGS.target ?= %(ARFLAGS.target)s
 
