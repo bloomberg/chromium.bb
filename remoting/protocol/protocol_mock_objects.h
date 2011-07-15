@@ -112,10 +112,6 @@ class MockSession : public Session {
   virtual ~MockSession();
 
   MOCK_METHOD1(SetStateChangeCallback, void(StateChangeCallback* callback));
-  MOCK_METHOD2(CreateStreamChannel, void(
-      const std::string& name, const StreamChannelCallback& callback));
-  MOCK_METHOD2(CreateDatagramChannel, void(
-      const std::string& name, const DatagramChannelCallback& callback));
   MOCK_METHOD0(control_channel, net::Socket*());
   MOCK_METHOD0(event_channel, net::Socket*());
   MOCK_METHOD0(video_channel, net::Socket*());

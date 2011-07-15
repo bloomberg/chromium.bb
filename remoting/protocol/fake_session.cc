@@ -140,18 +140,6 @@ void FakeSession::SetStateChangeCallback(
   callback_.reset(callback);
 }
 
-void FakeSession::CreateStreamChannel(
-    const std::string& name, const StreamChannelCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(name, NULL);
-}
-
-void FakeSession::CreateDatagramChannel(
-    const std::string& name, const DatagramChannelCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(name, NULL);
-}
-
 FakeSocket* FakeSession::control_channel() {
   return &control_channel_;
 }
