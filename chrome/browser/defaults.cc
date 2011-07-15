@@ -74,12 +74,6 @@ const bool kBrowserAliveWithNoWindows = true;
 const bool kBrowserAliveWithNoWindows = false;
 #endif
 
-bool bookmarks_enabled = true;
-
-bool skip_restore = false;
-
-bool enable_help_app = true;
-
 #ifdef TOUCH_UI
 const int kBookmarkBarHeight = 50;
 const int kNewtabBookmarkBarHeight = 72;
@@ -95,5 +89,17 @@ const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
 #endif
+
+#ifdef TOUCH_UI
+const int kInfoBarBorderPaddingVertical = 12;
+#else
+const int kInfoBarBorderPaddingVertical = 5;
+#endif
+
+bool bookmarks_enabled = true;
+
+bool skip_restore = false;
+
+bool enable_help_app = true;
 
 }  // namespace browser_defaults

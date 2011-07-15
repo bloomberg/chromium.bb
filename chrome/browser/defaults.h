@@ -69,6 +69,17 @@ extern const bool kAlwaysOpenIncognitoWindow;
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
+// Preferred height of the bookmarks bar when shown on every page and
+// when shown only on the new tab page.
+extern const int kBookmarkBarHeight;
+extern const int kNewtabBookmarkBarHeight;
+
+// ChromiumOS network menu font
+extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
+
+// Preferred infobar border padding in pixels.
+extern const int kInfoBarBorderPaddingVertical;
+
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.
@@ -82,14 +93,6 @@ extern bool skip_restore;
 // Whether HelpApp is enabled. True by default. This is only used by Chrome OS
 // today.
 extern bool enable_help_app;
-
-// Preferred height of the bookmarks bar when shown on every page and
-// when shown only on the new tab page.
-extern const int kBookmarkBarHeight;
-extern const int kNewtabBookmarkBarHeight;
-
-// ChromiumOS network menu font
-extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 
 }  // namespace browser_defaults
 

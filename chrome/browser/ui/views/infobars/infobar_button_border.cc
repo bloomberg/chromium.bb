@@ -4,17 +4,14 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 
+#include "chrome/browser/defaults.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 
 InfoBarButtonBorder::InfoBarButtonBorder() {
-#ifdef TOUCH_UI
-  // The vertical padding would be 5 without the code below.
-  static const int kPreferredPaddingVertical = 12;
-  set_vertical_padding(kPreferredPaddingVertical);
-#endif
+  set_vertical_padding(browser_defaults::kInfoBarBorderPaddingVertical);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   BorderImageSet normal_set = {
