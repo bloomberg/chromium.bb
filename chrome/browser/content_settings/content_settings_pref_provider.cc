@@ -971,6 +971,8 @@ void PrefProvider::MigrateObsoleteContentSettingsPatternPref() {
          i != all_settings_dictionary->end_keys();
          ++i) {
       const std::string& key(*i);
+      if (key.empty())
+        continue;
 
       // Validate pattern string and skip it if it is invalid.
       std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
