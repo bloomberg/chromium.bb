@@ -62,12 +62,15 @@ void RunRemoteCallback(void* user_data, int32_t result) {
   if (result > 0 && remote_callback->read_buffer != NULL)
     read_buffer_size = static_cast<nacl_abi_size_t>(result);
 
-  CompletionCallbackRpcClient::RunCompletionCallback(
-      remote_callback->srpc_channel,
-      remote_callback->callback_id,
-      result,
-      read_buffer_size,
-      read_buffer.get());
+  NaClSrpcError srpc_result =
+      CompletionCallbackRpcClient::RunCompletionCallback(
+          remote_callback->srpc_channel,
+          remote_callback->callback_id,
+          result,
+          read_buffer_size,
+          read_buffer.get());
+  DebugPrintf("RunRemoteCallback: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 }  // namespace

@@ -24,42 +24,48 @@ namespace ppapi_proxy {
 namespace {
 
 void AddRef(PP_Var var) {
-  DebugPrintf("PPB_Var::AddRef(%"NACL_PRId64")\n", var.value.as_id);
+  DebugPrintf("PPB_Var::AddRef: var=PPB_Var(%s)\n",
+              PluginVar::DebugString(var).c_str());
   ProxyVarCache::GetInstance().RetainProxyVar(var);
 }
 
 void Release(PP_Var var) {
-  DebugPrintf("PPB_Var::Release(%"NACL_PRId64")\n", var.value.as_id);
+  DebugPrintf("PPB_Var::Release: var=PPB_Var(%s)\n",
+              PluginVar::DebugString(var).c_str());
   ProxyVarCache::GetInstance().ReleaseProxyVar(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
+  DebugPrintf("PPB_Var::VarFromUtf8: data='%.*s'\n", len, data);
   UNREFERENCED_PARAMETER(module_id);
   if (!StringIsUtf8(data, len)) {
-    DebugPrintf("PPB_Var::VarFromUtf8: string '%.*s' is not UTF8\n",
-                len, data);
+    DebugPrintf("PPB_Var::VarFromUtf8: not UTF8\n");
     return PP_MakeNull();
   }
   SharedProxyVar proxy_var(new StringProxyVar(data, len));
   ProxyVarCache::GetInstance().RetainSharedProxyVar(proxy_var);
-  PP_Var result;
-  result.type = PP_VARTYPE_STRING;
-  result.value.as_id = proxy_var->id();
-  return result;
+  PP_Var var;
+  var.type = PP_VARTYPE_STRING;
+  var.value.as_id = proxy_var->id();
+  DebugPrintf("PPB_Var::VarFromUtf8: as_id=%"NACL_PRId64"\n", var.value.as_id);
+  return var;
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
+  DebugPrintf("PPB_Var::VarToUtf8: as_id=%"NACL_PRId64"\n", var.value.as_id);
   SharedStringProxyVar string_var = StringProxyVar::CastFromProxyVar(
       ProxyVarCache::GetInstance().SharedProxyVarForVar(var));
+  const char* data = NULL;
   if (string_var == NULL) {
     *len = 0;
-    return NULL;
   } else {
     *len = static_cast<uint32_t>(string_var->contents().size());
     // Mimics PPAPI implementation: as long as SharedStringProxyVar is alive,
     // the return value can be validly used.
-    return string_var->contents().c_str();
+    data = string_var->contents().c_str();
   }
+  DebugPrintf("PPB_Var::VarToUtf8: data='%.*s'\n", *len, data);
+  return data;
 }
 
 int64_t GetVarId(PP_Var var) {

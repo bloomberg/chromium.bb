@@ -19,7 +19,7 @@ namespace ppapi_proxy {
 namespace {
 
 void PostMessage(PP_Instance instance, struct PP_Var message) {
-  DebugPrintf("PPB_Messaging::PostMessage: instance=%"NACL_PRIu32"",
+  DebugPrintf("PPB_Messaging::PostMessage: instance=%"NACL_PRIu32"\n",
               instance);
   if (!ppapi_proxy::PPBCoreInterface()->IsMainThread())
     return;  // Only supported on main thread.
@@ -47,4 +47,3 @@ const PPB_Messaging* PluginMessaging::GetInterface() {
 }
 
 }  // namespace ppapi_proxy
-
