@@ -18,7 +18,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_api.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
@@ -27,7 +28,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/clientRedirect")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_clientRedirect.html"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
@@ -36,7 +39,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/forwardBack")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_forwardBack.html"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
@@ -45,7 +50,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/iframe")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
@@ -54,7 +60,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/openTab")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
@@ -63,7 +70,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/referenceFragment")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_referenceFragment.html"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
@@ -72,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
@@ -81,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
 
   FrameNavigationState::set_allow_extension_scheme(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/failures")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
@@ -91,18 +102,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/userAction")) << message_;
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const Extension* extension =
       service->GetExtensionById(last_loaded_extension_id_, false);
-  GURL url = extension->GetResourceURL("a.html");
+  GURL url = extension->GetResourceURL("userAction/a.html");
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  url = extension->GetResourceURL("b.html");
+  url = extension->GetResourceURL("userAction/b.html");
   // This corresponds to "Open link in new tab".
   browser()->GetSelectedTabContents()->OpenURL(
       url, GURL(), NEW_BACKGROUND_TAB, PageTransition::LINK);

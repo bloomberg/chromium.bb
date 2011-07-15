@@ -8,6 +8,7 @@ var nextFrameId;
 var frameIds;
 var nextTabId;
 var tabIds;
+var initialized = false;
 
 function expect(data) {
   expectedEventData = data;
@@ -16,6 +17,7 @@ function expect(data) {
   frameIds = {};
   nextTabId = 0;
   tabIds = {};
+  initListeners();
 }
 
 function checkExpectations() {
@@ -54,31 +56,32 @@ function captureEvent(name, details) {
   checkExpectations();
 }
 
-chrome.experimental.webNavigation.onBeforeNavigate.addListener(
-  function(details) {
+function initListeners() {
+  if (initialized)
+    return;
+  initialized = true;
+  chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+      function(details) {
     captureEvent("onBeforeNavigate", details);
-});
-
-chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
-  captureEvent("onCommitted", details);
-});
-
-chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
-  function(details) {
+  });
+  chrome.experimental.webNavigation.onCommitted.addListener(
+      function(details) {
+    captureEvent("onCommitted", details);
+  });
+  chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
+      function(details) {
     captureEvent("onDOMContentLoaded", details);
-});
-
-chrome.experimental.webNavigation.onCompleted.addListener(
-  function(details) {
+  });
+  chrome.experimental.webNavigation.onCompleted.addListener(
+      function(details) {
     captureEvent("onCompleted", details);
-});
-
-chrome.experimental.webNavigation.onBeforeRetarget.addListener(
-  function(details) {
+  });
+  chrome.experimental.webNavigation.onBeforeRetarget.addListener(
+      function(details) {
     captureEvent("onBeforeRetarget", details);
-});
-
-chrome.experimental.webNavigation.onErrorOccurred.addListener(
-  function(details) {
+  });
+  chrome.experimental.webNavigation.onErrorOccurred.addListener(
+      function(details) {
     captureEvent("onErrorOccurred", details);
-});
+  });
+}

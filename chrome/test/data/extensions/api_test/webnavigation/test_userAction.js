@@ -4,7 +4,7 @@
 
 function runTests() {
   var getURL = chrome.extension.getURL;
-  chrome.tabs.getSelected(null, function(tab) {
+  chrome.tabs.create({"url": "about:blank"}, function(tab) {
     var tabId = tab.id;
 
     chrome.test.runTests([
@@ -16,52 +16,52 @@ function runTests() {
               requestId: "0",
               tabId: 0,
               timeStamp: 0,
-              url: getURL('a.html') }],
+              url: getURL('userAction/a.html') }],
           [ "onCommitted",
             { frameId: 0,
               tabId: 0,
               timeStamp: 0,
               transitionQualifiers: [],
               transitionType: "typed",
-              url: getURL('a.html') }],
+              url: getURL('userAction/a.html') }],
           [ "onDOMContentLoaded",
             { frameId: 0,
               tabId: 0,
               timeStamp: 0,
-              url: getURL('a.html') }],
+              url: getURL('userAction/a.html') }],
           [ "onCompleted",
             { frameId: 0,
               tabId: 0,
               timeStamp: 0,
-              url: getURL('a.html') }],
+              url: getURL('userAction/a.html') }],
           [ "onBeforeRetarget",
             { sourceTabId: 0,
-              sourceUrl: getURL('a.html'),
+              sourceUrl: getURL('userAction/a.html'),
               timeStamp: 0,
-              url: getURL('b.html') }],
+              url: getURL('userAction/b.html') }],
           [ "onBeforeNavigate",
             { frameId: 0,
               requestId: "0",
               tabId: 1,
               timeStamp: 0,
-              url: getURL('b.html') }],
+              url: getURL('userAction/b.html') }],
           [ "onCommitted",
             { frameId: 0,
               tabId: 1,
               timeStamp: 0,
               transitionQualifiers: [],
               transitionType: "link",
-              url: getURL('b.html') }],
+              url: getURL('userAction/b.html') }],
           [ "onDOMContentLoaded",
             { frameId: 0,
               tabId: 1,
               timeStamp: 0,
-              url: getURL('b.html') }],
+              url: getURL('userAction/b.html') }],
           [ "onCompleted",
             { frameId: 0,
               tabId: 1,
               timeStamp: 0,
-              url: getURL('b.html') }]]);
+              url: getURL('userAction/b.html') }]]);
 
         // Notify the api test that we're waiting for the user.
         chrome.test.notifyPass();
