@@ -9,11 +9,11 @@
 
 #include "native_client/src/include/nacl_string.h"
 
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb.h"
+#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "native_client/src/third_party/ppapi/c/pp_module.h"
+#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/ppb.h"
 
 void set_ppb_get_interface(PPB_GetInterface get_interface);
 void set_pp_instance(PP_Instance instance);

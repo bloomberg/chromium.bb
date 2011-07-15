@@ -18,16 +18,16 @@
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
 
-#include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppp.h"
-#include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/ppp_messaging.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "native_client/src/third_party/ppapi/c/pp_module.h"
+#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "native_client/src/third_party/ppapi/c/ppb.h"
+#include "native_client/src/third_party/ppapi/c/ppb_var.h"
+#include "native_client/src/third_party/ppapi/c/ppp.h"
+#include "native_client/src/third_party/ppapi/c/ppp_instance.h"
+#include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin interface registration
