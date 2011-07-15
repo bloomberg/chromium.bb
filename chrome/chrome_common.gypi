@@ -95,9 +95,6 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '..',
-          #  Allow other targets to depend on common for the SafeBrowsing
-          # protobuf generated targets.
-          '<(protoc_out_dir)',
         ],
       },
       'dependencies': [
@@ -225,7 +222,7 @@
         'common/random.h',
         'common/render_messages.cc',
         'common/render_messages.h',
-	'common/scoped_co_mem.h',
+        'common/scoped_co_mem.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.cc',
         '<(protoc_out_dir)/chrome/common/safe_browsing/client_model.pb.h',
         '<(protoc_out_dir)/chrome/common/safe_browsing/csd.pb.cc',
@@ -346,6 +343,10 @@
           ],
         }],
       ],
+      # This target exports a hard_dependency because its include files
+      # include generated header files from safe_browsing_csd_proto and
+      # safe_browsing_proto.
+      'hard_dependency': 1,
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -461,7 +462,6 @@
       'export_dependent_settings': [
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
-      'hard_dependency': 1,
     },
     {
       # Protobuf compiler / generator for the safebrowsing client-side detection
@@ -509,7 +509,6 @@
       'export_dependent_settings': [
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
-      'hard_dependency': 1,
     },
   ],
   'conditions': [
