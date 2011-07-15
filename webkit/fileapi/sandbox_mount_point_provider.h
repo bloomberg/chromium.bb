@@ -98,13 +98,6 @@ class SandboxMountPointProvider
   OriginEnumerator* CreateOriginEnumerator() const;
 
   // Gets a base directory path of the sandboxed filesystem that is
-  // specified by |origin_url|.
-  // (The path is similar to the origin's root path but doesn't contain
-  // the 'unique' and 'type' part.)
-  // This method can only be called on the file thread.
-  FilePath GetBaseDirectoryForOrigin(const GURL& origin_url, bool create) const;
-
-  // Gets a base directory path of the sandboxed filesystem that is
   // specified by |origin_url| and |type|.
   // (The path is similar to the origin's root path but doesn't contain
   // the 'unique' part.)

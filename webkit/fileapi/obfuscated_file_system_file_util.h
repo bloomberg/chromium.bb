@@ -135,10 +135,6 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   FilePath GetDirectoryForOriginAndType(
       const GURL& origin, FileSystemType type, bool create);
 
-  // Gets the topmost directory specific to this origin.  This will
-  // contain both the filesystem type subdirectories.
-  FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
-
   // Deletes the topmost directory specific to this origin and type.  This will
   // delete its directory database.
   bool DeleteDirectoryForOriginAndType(const GURL& origin, FileSystemType type);
@@ -228,6 +224,9 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // For read operations |create| should be false.
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type, bool create);
+  // Gets the topmost directory specific to this origin.  This will
+  // contain both the filesystem type subdirectories.
+  FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
   void MarkUsed();
   void DropDatabases();
   bool InitOriginDatabase(bool create);

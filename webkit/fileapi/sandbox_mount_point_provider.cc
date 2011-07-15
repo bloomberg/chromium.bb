@@ -459,14 +459,6 @@ SandboxMountPointProvider::ValidateFileSystemRootAndGetPathOnFileThread(
       origin_url, type, create);
 }
 
-FilePath SandboxMountPointProvider::GetBaseDirectoryForOrigin(
-    const GURL& origin_url, bool create) const {
-
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
-
-  return sandbox_file_util_->GetDirectoryForOrigin(origin_url, create);
-}
-
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) const {
 

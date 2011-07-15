@@ -827,23 +827,6 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOriginAndType(
   return path;
 }
 
-FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
-    const GURL& origin, bool create) {
-  if (!InitOriginDatabase(create))
-    return FilePath();
-  FilePath directory_name;
-  std::string id = GetOriginIdentifierFromURL(origin);
-  if (!create && !origin_database_->HasOriginPath(id))
-    return FilePath();
-  if (!origin_database_->GetPathForOrigin(id, &directory_name))
-    return FilePath();
-  FilePath path = file_system_directory_.Append(directory_name);
-  if (!file_util::DirectoryExists(path) &&
-      (!create || !file_util::CreateDirectory(path)))
-    return FilePath();
-  return path;
-}
-
 bool ObfuscatedFileSystemFileUtil::DeleteDirectoryForOriginAndType(
     const GURL& origin, FileSystemType type) {
   FilePath origin_type_path = GetDirectoryForOriginAndType(origin, type, false);
@@ -1009,6 +992,23 @@ FileSystemDirectoryDatabase* ObfuscatedFileSystemFileUtil::GetDirectoryDatabase(
   FileSystemDirectoryDatabase* database = new FileSystemDirectoryDatabase(path);
   directories_[key] = database;
   return database;
+}
+
+FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
+    const GURL& origin, bool create) {
+  if (!InitOriginDatabase(create))
+    return FilePath();
+  FilePath directory_name;
+  std::string id = GetOriginIdentifierFromURL(origin);
+  if (!create && !origin_database_->HasOriginPath(id))
+    return FilePath();
+  if (!origin_database_->GetPathForOrigin(id, &directory_name))
+    return FilePath();
+  FilePath path = file_system_directory_.Append(directory_name);
+  if (!file_util::DirectoryExists(path) &&
+      (!create || !file_util::CreateDirectory(path)))
+    return FilePath();
+  return path;
 }
 
 void ObfuscatedFileSystemFileUtil::MarkUsed() {

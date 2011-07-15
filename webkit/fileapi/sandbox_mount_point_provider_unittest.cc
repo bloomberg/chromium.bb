@@ -27,7 +27,7 @@ namespace fileapi {
 
 class MockFileSystemPathManager : public FileSystemPathManager {
  public:
-  MockFileSystemPathManager(const FilePath& profile_path)
+  explicit MockFileSystemPathManager(const FilePath& profile_path)
       : FileSystemPathManager(base::MessageLoopProxy::CreateForCurrentThread(),
                               profile_path, NULL, false, true) {}
 };
@@ -129,7 +129,7 @@ const MigrationTestCaseRecord kMigrationTestRecords[] = {
 
 class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
-  TestSpecialStoragePolicy(bool unlimited_quota)
+  explicit TestSpecialStoragePolicy(bool unlimited_quota)
       : unlimited_quota_(unlimited_quota) {}
 
   virtual bool IsStorageProtected(const GURL& origin) {
@@ -321,8 +321,8 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
           origin_url, type, FilePath(), create);
       break;
     case 2:
-      sandbox_provider()->GetBaseDirectoryForOrigin(
-          origin_url, create);
+      sandbox_provider()->GetBaseDirectoryForOriginAndType(
+          origin_url, type, create);
       break;
     case 3:
       sandbox_provider()->DeleteOriginDataOnFileThread(
