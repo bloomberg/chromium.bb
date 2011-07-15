@@ -3,44 +3,44 @@
 // found in the LICENSE file.
 
 #include "content/common/main_function_params.h"
-#include "content/common/result_codes.h"
+#include "chrome/common/chrome_result_codes.h"
 
 // Native Client binary for 64-bit Windows can run only the NaCl loader or
 // the sandbox broker processes. Other process types are not supported.
 int BrowserMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int RendererMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int PluginMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int PpapiPluginMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int PpapiBrokerMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int WorkerMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int UtilityMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int ProfileImportMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int ZygoteMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int DiagnosticsMain(const CommandLine& command_line) {
@@ -48,9 +48,9 @@ int DiagnosticsMain(const CommandLine& command_line) {
 }
 
 int GpuMain(const MainFunctionParams&) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
 
 int ServiceProcessMain(const MainFunctionParams& parameters) {
-  return content::RESULT_CODE_BAD_PROCESS_TYPE;
+  return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 }
