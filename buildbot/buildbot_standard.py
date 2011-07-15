@@ -183,13 +183,10 @@ def BuildScript(status, context):
   ### BEGIN tests ###
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])
-
-  # Skip these because they don't work, yet.
-  if not context['use_glibc']:
-    with Step('medium_tests', status, halt_on_fail=False):
-      SCons(context, args=['medium_tests'])
-    with Step('large_tests', status, halt_on_fail=False):
-      SCons(context, args=['large_tests'])
+  with Step('medium_tests', status, halt_on_fail=False):
+    SCons(context, args=['medium_tests'])
+  with Step('large_tests', status, halt_on_fail=False):
+    SCons(context, args=['large_tests'])
 
   if do_integration_tests:
     with Step('chrome_browser_tests', status, halt_on_fail=False):
