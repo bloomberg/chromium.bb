@@ -525,7 +525,7 @@ bool FileSystemDirectoryDatabase::RemoveFileInfoHelper(
     // TODO(ericu): Make a faster is-the-directory-empty check.
     if (!ListChildren(file_id, &children))
       return false;
-    if(children.size()) {
+    if (children.size()) {
       LOG(ERROR) << "Can't remove a directory with children.";
       return false;
     }
