@@ -67,7 +67,9 @@ std::string TestFileSystem::TestMultipleOpens() {
   int32_t rv_2 = file_system.Open(1024, callback_2);
   if (force_async_ && rv_2 != PP_OK_COMPLETIONPENDING)
     return ReportError("FileSystem::Open2 force_async", rv_2);
-  if (rv_2 == PP_OK_COMPLETIONPENDING || rv_2 == PP_OK)
+  if (rv_2 == PP_OK_COMPLETIONPENDING)
+    rv_2 = callback_2.WaitForResult();
+  if (rv_2 == PP_OK)
     return "FileSystem::Open2 should not allow multiple opens.";
 
   if (rv_1 == PP_OK_COMPLETIONPENDING)
@@ -79,7 +81,9 @@ std::string TestFileSystem::TestMultipleOpens() {
   int32_t rv_3 = file_system.Open(1024, callback_3);
   if (force_async_ && rv_3 != PP_OK_COMPLETIONPENDING)
     return ReportError("FileSystem::Open3 force_async", rv_3);
-  if (rv_3 == PP_OK_COMPLETIONPENDING || rv_3 == PP_OK)
+  if (rv_3 == PP_OK_COMPLETIONPENDING)
+    rv_3 = callback_3.WaitForResult();
+  if (rv_3 == PP_OK)
     return "FileSystem::Open3 should not allow multiple opens.";
 
   PASS();

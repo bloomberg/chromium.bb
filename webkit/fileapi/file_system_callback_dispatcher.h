@@ -55,6 +55,7 @@ class FileSystemCallbackDispatcher {
 
   // Callback for OpenFile.  This isn't in WebFileSystemCallbacks, as it's just
   // for Pepper.
+  // The method will be responsible for closing |file|.
   virtual void DidOpenFile(
       base::PlatformFile file,
       base::ProcessHandle peer_handle);

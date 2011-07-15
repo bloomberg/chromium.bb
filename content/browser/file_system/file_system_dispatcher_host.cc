@@ -77,19 +77,10 @@ class BrowserFileSystemCallbackDispatcher
       base::PlatformFile file,
       base::ProcessHandle peer_handle) {
     IPC::PlatformFileForTransit file_for_transit =
-        IPC::InvalidPlatformFileForTransit();
-    if (file != base::kInvalidPlatformFileValue) {
-#if defined(OS_WIN)
-      if (!::DuplicateHandle(::GetCurrentProcess(), file, peer_handle,
-                             &file_for_transit, 0, false,
-                             DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE))
-        file_for_transit = IPC::InvalidPlatformFileForTransit();
-#elif defined(OS_POSIX)
-      file_for_transit = base::FileDescriptor(file, true);
-#else
-  #error Not implemented.
-#endif
-    }
+        file != base::kInvalidPlatformFileValue ?
+            IPC::GetFileHandleForProcess(file, peer_handle, true) :
+            IPC::InvalidPlatformFileForTransit();
+
     dispatcher_host_->Send(new FileSystemMsg_DidOpenFile(
         request_id_, file_for_transit));
   }

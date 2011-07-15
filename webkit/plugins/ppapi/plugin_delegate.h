@@ -294,7 +294,7 @@ class PluginDelegate {
       WebKit::WebFileChooserCompletion* chooser_completion) = 0;
 
   // Sends an async IPC to open a file.
-  typedef Callback2<base::PlatformFileError, base::PlatformFile
+  typedef Callback2<base::PlatformFileError, base::PassPlatformFile
                     >::Type AsyncOpenFileCallback;
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,

@@ -115,7 +115,7 @@ class PPB_FileIO_Impl : public Resource,
 
   void StatusCallback(base::PlatformFileError error_code);
   void AsyncOpenFileCallback(base::PlatformFileError error_code,
-                             base::PlatformFile file);
+                             base::PassPlatformFile file);
   void QueryInfoCallback(base::PlatformFileError error_code,
                          const base::PlatformFileInfo& file_info);
   void ReadCallback(base::PlatformFileError error_code,

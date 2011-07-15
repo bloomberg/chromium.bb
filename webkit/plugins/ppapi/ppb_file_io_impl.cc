@@ -304,14 +304,14 @@ void PPB_FileIO_Impl::StatusCallback(base::PlatformFileError error_code) {
 
 void PPB_FileIO_Impl::AsyncOpenFileCallback(
     base::PlatformFileError error_code,
-    base::PlatformFile file) {
+    base::PassPlatformFile file) {
   if (pending_op_ != OPERATION_EXCLUSIVE || callbacks_.empty()) {
     NOTREACHED();
     return;
   }
 
   DCHECK(file_ == base::kInvalidPlatformFileValue);
-  file_ = file;
+  file_ = file.ReleaseValue();
   RunAndRemoveFirstPendingCallback(PlatformFileErrorToPepperError(error_code));
 }
 

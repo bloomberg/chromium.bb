@@ -15,6 +15,9 @@ void FileSystemCallbackDispatcher::DidOpenFile(
     base::PlatformFile file,
     base::ProcessHandle peer_handle) {
   NOTREACHED();
+
+  if (file != base::kInvalidPlatformFileValue)
+    base::ClosePlatformFile(file);
 }
 
 }  // namespace fileapi

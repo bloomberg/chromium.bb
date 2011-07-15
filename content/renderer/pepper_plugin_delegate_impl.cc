@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
@@ -914,7 +915,10 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
       messages_waiting_replies_.Lookup(message_id);
   DCHECK(callback);
   messages_waiting_replies_.Remove(message_id);
-  callback->Run(error_code, file);
+  callback->Run(error_code, base::PassPlatformFile(&file));
+  // Make sure we won't leak file handle if the requester has died.
+  if (file != base::kInvalidPlatformFileValue)
+    base::FileUtilProxy::Close(GetFileThreadMessageLoopProxy(), file, NULL);
   delete callback;
 }
 
@@ -1024,7 +1028,8 @@ class AsyncOpenFileSystemURLCallbackTranslator
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
-    callback_->Run(error_code, base::kInvalidPlatformFileValue);
+    base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
+    callback_->Run(error_code, base::PassPlatformFile(&invalid_file));
   }
 
   virtual void DidWrite(int64 bytes, bool complete) {
@@ -1034,7 +1039,12 @@ class AsyncOpenFileSystemURLCallbackTranslator
   virtual void DidOpenFile(
       base::PlatformFile file,
       base::ProcessHandle unused) {
-    callback_->Run(base::PLATFORM_FILE_OK, file);
+    callback_->Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
+    // Make sure we won't leak file handle if the requester has died.
+    if (file != base::kInvalidPlatformFileValue) {
+      base::FileUtilProxy::Close(
+          RenderThread::current()->GetFileThreadMessageLoopProxy(), file, NULL);
+    }
   }
 
 private:  // TODO(ericu): Delete this?
