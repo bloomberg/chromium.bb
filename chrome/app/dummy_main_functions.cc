@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/main_function_params.h"
-#include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/result_codes.h"
 
 // Native Client binary for 64-bit Windows can run only the NaCl loader or
 // the sandbox broker processes. Other process types are not supported.
