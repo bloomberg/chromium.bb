@@ -105,6 +105,11 @@ class FakeSession : public Session {
 
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
+  virtual void CreateStreamChannel(
+      const std::string& name, const StreamChannelCallback& callback);
+  virtual void CreateDatagramChannel(
+      const std::string& name, const DatagramChannelCallback& callback);
+
   virtual FakeSocket* control_channel();
   virtual FakeSocket* event_channel();
   virtual FakeSocket* video_channel();
