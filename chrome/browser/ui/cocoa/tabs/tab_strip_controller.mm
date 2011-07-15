@@ -844,19 +844,12 @@ private:
       BrowserWindowController* controller =
           (BrowserWindowController*)[[tabStripView_ window] windowController];
 
-      // Account for the widths of the new tab button, the avatar, and the
-      // fullscreen button if any/all are present.
+      // Account for the widths of the new tab button or the avatar, if any/all
+      // are present.
       availableSpace -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
       if ([controller respondsToSelector:@selector(shouldShowAvatar)] &&
           [controller shouldShowAvatar]) {
         availableSpace -= kAvatarTabStripShrink;
-      }
-      if ([[tabStripView_ window]
-          respondsToSelector:@selector(toggleFullScreen:)]) {
-        NSButton* fullscreenButton = [[tabStripView_ window]
-            standardWindowButton:NSWindowFullScreenButton];
-        if (fullscreenButton)
-          availableSpace -= [fullscreenButton frame].size.width;
       }
     }
     availableSpace -= [self indentForControls];
