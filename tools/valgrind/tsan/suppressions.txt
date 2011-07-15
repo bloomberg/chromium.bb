@@ -107,23 +107,6 @@
   fun:JSC::Yarr::interpret*
 }
 
-{
-  bug_83564a
-  ThreadSanitizer:Race
-  fun:base::Thread::message_loop
-  fun:BrowserThread::IsMessageLoopValid
-  fun:ThreadWatcherList::StartWatchingAll
-}
-
-{
-  bug_83564b
-  ThreadSanitizer:Race
-  fun:base::Thread::message_loop
-  fun:BrowserThread::PostTaskHelper
-  fun:BrowserThread::PostTask
-  fun:ThreadWatcher::PostPingMessage
-}
-
 ############################
 # Benign races in Chromium
 {
@@ -559,14 +542,6 @@
   fun:ProcessSingleton::LinuxWatcher::RemoveSocketReader
   fun:ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK
   fun:ProcessSingleton::LinuxWatcher::HandleMessage
-}
-{
-  bug_89141
-  ThreadSanitizer:Race
-  fun:base::Thread::message_loop
-  fun:BrowserThread::IsMessageLoopValid
-  fun:ThreadWatcherList::StartWatching
-  fun:ThreadWatcherList::InitializeAndStartWatching
 }
 {
   bug_89295_a
