@@ -17,7 +17,7 @@ set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 
 echo
 echo "*** INIT MODULE"
-replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Core;1.0") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Instance;1.0") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_ImageData;1.0") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Graphics2D;1.0") * i(1)

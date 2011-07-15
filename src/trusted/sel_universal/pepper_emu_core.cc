@@ -32,7 +32,7 @@ bool IsSupportedInterface(string if_name) {
   return
     if_name == "PPB_Audio;1.0" ||
     if_name == "PPB_AudioConfig;1.0" ||
-    if_name == "PPB_Core;0.5" ||
+    if_name == "PPB_Core;1.0" ||
     if_name == "PPB_FileIO;1.0" ||
     if_name == "PPB_Graphics2D;1.0" ||
     if_name == "PPB_ImageData;1.0" ||

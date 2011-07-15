@@ -298,12 +298,6 @@ def SetUpArgumentBits(env):
       'into hangs on Buildbot, and our test suite includes various crash '
       'tests.')
 
-  BitFromArgument(env, 'pepper_scripting', default=False,
-    desc='When pepper_scripting is on, we build with synchronous scripting '
-         'functions available and proxied. If scripting is off, we define '
-         'PPAPI_INSTANCE_REMOVE_SCRIPTING and PPAPI_VAR_REMOVE_SCRIPTING which '
-         'removes synchronous scripting functions from PPAPI for NaCl modules.')
-
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -1913,14 +1907,6 @@ def MakeBaseTrustedEnv():
           'src/trusted/validator_arm/build.scons',
         ])
 
-  # TODO(dmichael): Remove this flag when all tests are migrated from scripting.
-  if not base_env.Bit('pepper_scripting'):
-    base_env.Append(
-        CPPDEFINES = [
-          'PPAPI_INSTANCE_REMOVE_SCRIPTING',
-          'PPAPI_VAR_REMOVE_SCRIPTING',
-        ])
-
   base_env.Replace(
       NACL_BUILD_FAMILY = 'TRUSTED',
 
@@ -2429,11 +2415,6 @@ if nacl_env.Bit('bitcode'):
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
 
-# TODO(dmichael): Remove this flag when all tests are migrated from scripting.
-if not nacl_env.Bit('pepper_scripting'):
-  nacl_env.Append(CPPDEFINES = ['PPAPI_INSTANCE_REMOVE_SCRIPTING',
-                                'PPAPI_VAR_REMOVE_SCRIPTING'])
-
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone
 # it from nacl_env here, before too much other cruft has been added.
@@ -2609,9 +2590,7 @@ nacl_env.Append(
     'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
-    # TODO(dmichael): Re-enable this once the version from Chrome that doesn't
-    # have the scripting functions rolls in (r92312, crbug.com/82606)
-    # 'tests/ppapi_example_2d/nacl.scons',
+    'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',

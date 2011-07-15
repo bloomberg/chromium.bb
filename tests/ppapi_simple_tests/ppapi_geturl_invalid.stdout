@@ -14,7 +14,7 @@ input 1:  i(4444)
 input 2:  h(pepper_desc)
 input 3:  @LENGTHY_SERIVE_STRING
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Core;0.5")
+input 0:  s("PPB_Core;1.0")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Instance;1.0")

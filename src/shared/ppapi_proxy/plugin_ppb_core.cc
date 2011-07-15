@@ -59,17 +59,6 @@ void ReleaseResource(PP_Resource resource) {
   }
 }
 
-void* MemAlloc(uint32_t num_bytes) {
-  DebugPrintf("PPB_Core::MemAlloc: num_bytes=%"NACL_PRIuS"\n",
-              num_bytes);
-  return malloc(num_bytes);
-}
-
-void MemFree(void* ptr) {
-  DebugPrintf("PPB_Core::MemFree: ptr=%p\n", ptr);
-  free(ptr);
-}
-
 PP_TimeTicks GetTime() {
   DebugPrintf("PPB_Core::GetTime\n");
   double time;
@@ -133,8 +122,6 @@ const PPB_Core* PluginCore::GetInterface() {
   static const PPB_Core core_interface = {
     AddRefResource,
     ReleaseResource,
-    MemAlloc,
-    MemFree,
     GetTime,
     GetTimeTicks,
     CallOnMainThread,
