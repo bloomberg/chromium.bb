@@ -585,6 +585,10 @@ StatusAreaHost::TextStyle BrowserView::GetTextStyle() const {
       StatusAreaHost::kWhitePlain : StatusAreaHost::kGrayEmbossed;
 }
 
+void BrowserView::ButtonVisibilityChanged(views::View* button_view) {
+  status_area_->ButtonVisibilityChanged(button_view);
+}
+
 // BrowserView, MessageLoopForUI::Observer implementation.
 
 void BrowserView::DidProcessEvent(GdkEvent* event) {

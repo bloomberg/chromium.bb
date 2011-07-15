@@ -37,8 +37,8 @@ IN_PROC_BROWSER_TEST_F(CapsLockMenuButtonTest, InitialIndicatorTest) {
   CapsLockMenuButton* caps_lock = GetCapsLockMenuButton();
   ASSERT_TRUE(caps_lock != NULL);
 
-  // By default, the indicator should be disabled.
-  EXPECT_FALSE(caps_lock->IsEnabled());
+  // By default, the indicator shouldn't be shown.
+  EXPECT_FALSE(caps_lock->IsVisible());
 }
 
 }  // namespace chromeos

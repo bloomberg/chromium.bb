@@ -25,7 +25,6 @@ class InputMethodMenuButton : public StatusAreaButton,
   virtual ~InputMethodMenuButton();
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize();
   virtual void OnLocaleChanged();
 
   // views::ViewMenuDelegate implementation.

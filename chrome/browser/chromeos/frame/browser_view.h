@@ -88,6 +88,7 @@ class BrowserView : public ::BrowserView,
   virtual void OpenButtonOptions(const views::View* button_view) OVERRIDE;
   virtual ScreenMode GetScreenMode() const OVERRIDE;
   virtual TextStyle GetTextStyle() const OVERRIDE;
+  virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // MessageLoopForUI::Observer overrides.
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}

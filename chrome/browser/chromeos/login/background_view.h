@@ -117,6 +117,7 @@ class BackgroundView : public views::View,
   virtual void OpenButtonOptions(const views::View* button_view) OVERRIDE;
   virtual ScreenMode GetScreenMode() const OVERRIDE;
   virtual TextStyle GetTextStyle() const OVERRIDE;
+  virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // Overridden from LoginHtmlDialog::Delegate:
   virtual void OnDialogClosed() OVERRIDE {}
