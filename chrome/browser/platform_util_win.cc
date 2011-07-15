@@ -17,7 +17,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/scoped_co_mem.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/message_box_win.h"
 #include "ui/base/win/shell.h"
@@ -190,14 +189,6 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
                     const string16& message) {
   return ui::MessageBox(parent, message.c_str(), title.c_str(),
       MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND) == IDYES;
-}
-
-bool CanSetAsDefaultBrowser() {
-  return BrowserDistribution::GetDistribution()->CanSetAsDefault();
-}
-
-bool CanSetAsDefaultProtocolClient(const std::string& protocol) {
-  return CanSetAsDefaultBrowser();
 }
 
 }  // namespace platform_util

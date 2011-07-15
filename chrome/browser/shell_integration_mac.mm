@@ -6,14 +6,19 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/foundation_util.h"
-#include "chrome/browser/platform_util.h"
+#include "chrome/common/chrome_version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
+
+bool ShellIntegration::CanSetAsDefaultBrowser() {
+  return chrome::VersionInfo::GetChannel() !=
+      chrome::VersionInfo::CHANNEL_CANARY;
+}
 
 // Sets Chromium as default browser to be used by the operating system. This
 // applies only for the current user. Returns false if this cannot be done, or
 // if the operation fails.
 bool ShellIntegration::SetAsDefaultBrowser() {
-  if (!platform_util::CanSetAsDefaultBrowser())
+  if (!CanSetAsDefaultBrowser())
     return false;
 
   // We really do want the main bundle here, not base::mac::MainAppBundle(),
@@ -33,7 +38,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
     return false;
 
-  if (!platform_util::CanSetAsDefaultProtocolClient(protocol))
+  if (!CanSetAsDefaultProtocolClient(protocol))
     return false;
 
   // We really do want the main bundle here, not base::mac::MainAppBundle(),

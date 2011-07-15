@@ -16,7 +16,6 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -176,7 +175,7 @@ void BrowserOptionsHandler::SetHomePage(const ListValue* args) {
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
   // Check for side-by-side first.
-  if (!platform_util::CanSetAsDefaultBrowser()) {
+  if (!ShellIntegration::CanSetAsDefaultBrowser()) {
     SetDefaultBrowserUIString(IDS_OPTIONS_DEFAULTBROWSER_SXS);
     return;
   }

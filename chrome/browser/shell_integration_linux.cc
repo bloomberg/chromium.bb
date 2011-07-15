@@ -359,6 +359,11 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
 } // namespace
 
 // static
+bool ShellIntegration::CanSetAsDefaultBrowser() {
+  return true;
+}
+
+// static
 bool ShellIntegration::SetAsDefaultBrowser() {
   return SetDefaultWebClient("");
 }

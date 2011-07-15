@@ -15,6 +15,13 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 
+bool ShellIntegration::CanSetAsDefaultProtocolClient(
+    const std::string& protocol) {
+  // Allowed as long as the browser can become the operating system default
+  // browser.
+  return CanSetAsDefaultBrowser();
+}
+
 ShellIntegration::ShortcutInfo::ShortcutInfo()
     : create_on_desktop(false),
       create_in_applications_menu(false),

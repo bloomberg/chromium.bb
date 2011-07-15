@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -179,15 +178,6 @@ bool SimpleYesNoBox(gfx::NativeWindow parent,
 
   NSInteger result = [alert runModal];
   return result == NSAlertFirstButtonReturn;
-}
-
-bool CanSetAsDefaultBrowser() {
-  return chrome::VersionInfo::GetChannel() !=
-      chrome::VersionInfo::CHANNEL_CANARY;
-}
-
-bool CanSetAsDefaultProtocolClient(const std::string& protocol) {
-  return CanSetAsDefaultBrowser();
 }
 
 }  // namespace platform_util

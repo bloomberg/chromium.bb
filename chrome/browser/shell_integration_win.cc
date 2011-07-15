@@ -269,6 +269,10 @@ bool MigrateChromiumShortcutsTask::GetShortcutAppId(
 
 };
 
+bool ShellIntegration::CanSetAsDefaultBrowser() {
+  return BrowserDistribution::GetDistribution()->CanSetAsDefault();
+}
+
 bool ShellIntegration::SetAsDefaultBrowser() {
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {

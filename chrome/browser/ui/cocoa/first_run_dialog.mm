@@ -12,10 +12,10 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/shell_integration.h"
 #import "chrome/browser/ui/cocoa/search_engine_dialog_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -28,7 +28,6 @@
 #import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
@@ -173,7 +172,7 @@ void ShowFirstRunDialog(Profile* profile,
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Bound to the dialog checkboxes.
-    makeDefaultBrowser_ = platform_util::CanSetAsDefaultBrowser();
+    makeDefaultBrowser_ = ShellIntegration::CanSetAsDefaultBrowser();
     statsEnabled_ = StatsCheckboxDefault();
   }
   return self;
@@ -199,7 +198,7 @@ void ShowFirstRunDialog(Profile* profile,
 - (void)show {
   NSWindow* win = [self window];
 
-  if (!platform_util::CanSetAsDefaultBrowser()) {
+  if (!ShellIntegration::CanSetAsDefaultBrowser()) {
     [setAsDefaultCheckbox_ setHidden:YES];
   }
 

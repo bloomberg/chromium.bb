@@ -31,7 +31,6 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -281,7 +280,7 @@ CheckDefaultBrowserTask::~CheckDefaultBrowserTask() {
 
 void CheckDefaultBrowserTask::Run() {
   if (ShellIntegration::IsDefaultBrowser() ||
-      !platform_util::CanSetAsDefaultBrowser()) {
+      !ShellIntegration::CanSetAsDefaultBrowser()) {
     return;
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

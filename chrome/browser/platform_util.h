@@ -56,14 +56,6 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 bool SimpleYesNoBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message);
-
-// Returns true if the running browser can be set as the default browser.
-bool CanSetAsDefaultBrowser();
-
-// Returns true if the running browser can be set as the default client
-// application for the given protocol.
-bool CanSetAsDefaultProtocolClient(const std::string& protocol);
-
 }
 
 #endif  // CHROME_BROWSER_PLATFORM_UTIL_H_
