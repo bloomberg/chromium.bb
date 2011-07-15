@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ bool DragClipboardContainsBookmarks();
 void StartDrag(Profile* profile, const std::vector<const BookmarkNode*>& nodes,
                gfx::NativeView view);
 
-}
+}  // namespace bookmark_pasteboard_helper_mac
 
 #ifdef __OBJC__
 @class NSString;

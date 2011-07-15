@@ -6,8 +6,8 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -85,7 +85,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
-  EXPECT_EQ(title, WideToUTF16Hack(drag_data.elements[0].title));
+  EXPECT_EQ(title, drag_data.elements[0].title);
   ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
@@ -127,7 +127,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
-  EXPECT_EQ(g12->GetTitle(), WideToUTF16Hack(drag_data.elements[0].title));
+  EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
   EXPECT_FALSE(drag_data.elements[0].is_url);
 
   ui::OSExchangeData data;
@@ -139,7 +139,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
-  EXPECT_EQ(g12->GetTitle(), WideToUTF16Hack(read_data.elements[0].title));
+  EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
   EXPECT_FALSE(read_data.elements[0].is_url);
 
   // We should get back the same node when asking for the same profile.
@@ -181,7 +181,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
       read_data.elements[0].children[0];
 
   EXPECT_TRUE(read_child.is_url);
-  EXPECT_EQ(title, WideToUTF16Hack(read_child.title));
+  EXPECT_EQ(title, read_child.title);
   EXPECT_EQ(url, read_child.url);
   EXPECT_TRUE(read_child.is_url);
 
@@ -228,7 +228,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
 
   const BookmarkNodeData::Element& read_url = read_data.elements[1];
   EXPECT_TRUE(read_url.is_url);
-  EXPECT_EQ(title, WideToUTF16Hack(read_url.title));
+  EXPECT_EQ(title, read_url.title);
   EXPECT_EQ(0, read_url.children.size());
 
   // And make sure we get the node back.

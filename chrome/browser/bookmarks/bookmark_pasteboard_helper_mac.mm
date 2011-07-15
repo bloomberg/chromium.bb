@@ -145,7 +145,7 @@ NSArray* GetPlistForBookmarkList(
     if (element.is_url) {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
-      int64 elementId = element.get_id();
+      int64 elementId = element.id();
       NSNumber* idNum = [NSNumber numberWithLongLong:elementId];
       NSDictionary* uriDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
               title, @"title", nil];
@@ -159,7 +159,7 @@ NSArray* GetPlistForBookmarkList(
     } else {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSArray* children = GetPlistForBookmarkList(element.children);
-      int64 elementId = element.get_id();
+      int64 elementId = element.id();
       NSNumber* idNum = [NSNumber numberWithLongLong:elementId];
       NSDictionary* object = [NSDictionary dictionaryWithObjectsAndKeys:
           title, @"Title",
@@ -262,7 +262,7 @@ bool ClipboardContainsBookmarksPrivate(NSPasteboard* pb) {
   return [pb availableTypeFromArray:availableTypes] != nil;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace bookmark_pasteboard_helper_mac {
 
