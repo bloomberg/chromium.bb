@@ -23,12 +23,12 @@ namespace {
 // TODO(polina): when we have unit tests, move this there.
 void TestIsInterface(std::string test_interface,
                      PP_Resource resource,
-                     const PPB_FileIO_Dev* ppb_fileio,
+                     const PPB_FileIO* ppb_fileio,
                      const PPB_URLRequestInfo* ppb_url_request_info,
                      const PPB_URLResponseInfo* ppb_url_response_info,
                      const PPB_URLLoader* ppb_url_loader) {
   printf("--- TestIsInterface: %s\n", test_interface.c_str());
-  if (test_interface == PPB_FILEIO_DEV_INTERFACE) {
+  if (test_interface == PPB_FILEIO_INTERFACE) {
     CHECK(ppb_fileio->IsFileIO(resource) == PP_TRUE);
     CHECK(ppb_url_request_info->IsURLRequestInfo(resource) == PP_FALSE);
     CHECK(ppb_url_response_info->IsURLResponseInfo(resource) == PP_FALSE);
@@ -212,15 +212,15 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     return false;
   }
 
-  fileio_interface_ = static_cast<const PPB_FileIO_Dev*>(
-      module->GetBrowserInterface(PPB_FILEIO_DEV_INTERFACE));
+  fileio_interface_ = static_cast<const PPB_FileIO*>(
+      module->GetBrowserInterface(PPB_FILEIO_INTERFACE));
   if (NULL == fileio_interface_) {
-    *error = "Failed to get browser interface '" PPB_FILEIO_DEV_INTERFACE;
+    *error = "Failed to get browser interface '" PPB_FILEIO_INTERFACE;
     return false;
   }
   fileio_ = fileio_interface_->Create(instance_);
   if (0 == fileio_) {
-    *error = "PPB_FileIO_Dev::Create: failed";
+    *error = "PPB_FileIO::Create: failed";
     return false;
   }
 
@@ -230,7 +230,7 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
   TestIsInterface(PPB_URLLOADER_INTERFACE, loader_,
                   fileio_interface_, request_interface_, response_interface_,
                   loader_interface_);
-  TestIsInterface(PPB_FILEIO_DEV_INTERFACE, fileio_,
+  TestIsInterface(PPB_FILEIO_INTERFACE, fileio_,
                   fileio_interface_, request_interface_, response_interface_,
                   loader_interface_);
 

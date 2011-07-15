@@ -7,19 +7,19 @@
 #include <string>
 #include <vector>
 
-#include "ppapi/c/dev/ppb_file_io_dev.h"
-#if __native_client__
-// TODO(polina): add file_io_nacl include
-#else
-#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
-#endif
-#include "ppapi/c/dev/ppb_file_ref_dev.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#if __native_client__
+// TODO(polina): add file_io_nacl include
+#else
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
+#endif
 
 
 class UrlLoadRequest {
@@ -69,7 +69,7 @@ class UrlLoadRequest {
   const PPB_URLRequestInfo* request_interface_;
   const PPB_URLResponseInfo* response_interface_;
   const PPB_URLLoader* loader_interface_;
-  const PPB_FileIO_Dev* fileio_interface_;
+  const PPB_FileIO* fileio_interface_;
 
   char buffer_[1024];
   std::string url_body_;
