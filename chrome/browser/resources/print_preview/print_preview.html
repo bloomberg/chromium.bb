@@ -16,6 +16,7 @@
 <script src="print_preview_utils.js"></script>
 <script src="page_settings.js"></script>
 <script src="copies_settings.js"></script>
+<script src="layout_settings.js"></script>
 </head>
 <body>
   <div id="sidebar">
@@ -38,19 +39,7 @@
       <hr id="hr-before-copies" class="invisible">
       <include src="copies_settings.html"></include>
       <hr>
-      <div id="landscape-option" class="two-column option visible">
-        <h1 i18n-content="layoutLabel"></h1>
-        <div>
-          <div>
-            <input id="portrait" type="radio" name="layout" checked/>
-            <label for="portrait" i18n-content="optionPortrait"></label>
-          </div>
-          <div>
-            <input id="landscape" type="radio" name="layout"/>
-            <label for="landscape" i18n-content="optionLandscape"></label>
-          </div>
-        </div>
-      </div>
+      <include src="layout_settings.html"></include>
       <hr>
       <div id="color-options" class="two-column option" aria-hidden="true"
           aria-live="polite">

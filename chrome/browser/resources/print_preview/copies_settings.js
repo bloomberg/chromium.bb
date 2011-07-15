@@ -10,6 +10,7 @@ cr.define('print_preview', function() {
    * @constructor
    */
   function CopiesSettings() {
+    this.copiesOption_ = $('copies-option');
     this.textfield_ = $('copies');
     this.incrementButton_ = $('increment');
     this.decrementButton_ = $('decrement');
@@ -18,6 +19,7 @@ cr.define('print_preview', function() {
     // Maximum allowed value for number of copies.
     this.maxValue_ = 999;
     this.collateOption_ = $('collate-option');
+    this.collateCheckbox_ = $('collate');
     this.hint_ = $('copies-hint');
     this.twoSidedCheckbox_ = $('two-sided');
   }
@@ -54,11 +56,31 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Gets the duplex mode for printing.
+     * @return {number} duplex mode.
+     */
+     get duplexMode() {
+      // Constant values matches printing::DuplexMode enum. Not using const
+      // keyword because it is not allowed by JS strict mode.
+      var SIMPLEX = 0;
+      var LONG_EDGE = 1;
+      return !this.twoSidedCheckbox_.checked ? SIMPLEX : LONG_EDGE;
+    },
+
+    /**
      * @return {boolean} true if |this.textfield_| is empty, or represents a
      *     positive integer value.
      */
     isValid: function() {
       return !this.textfield_.value || isPositiveInteger(this.textfield_.value);
+    },
+
+    /**
+     * Checks whether the preview collate setting value is set or not.
+     * @return {boolean} true if collate option is enabled and checked.
+     */
+    isCollated: function() {
+      return !this.collateOption_.hidden && this.collateCheckbox_.checked;
     },
 
     /**
@@ -120,6 +142,23 @@ cr.define('print_preview', function() {
       }
       document.addEventListener('PDFLoaded',
                                 this.updateButtonsState_.bind(this));
+      document.addEventListener('printerCapabilitiesUpdated',
+                                this.onPrinterCapabilitiesUpdated_.bind(this));
+    },
+
+    /**
+     * Listener triggered when a printerCapabilitiesUpdated event occurs.
+     * @private
+     */
+    onPrinterCapabilitiesUpdated_: function(e) {
+      if (e.printerCapabilities.disableCopiesOption) {
+        fadeOutElement(this.copiesOption_);
+        $('hr-before-copies').classList.remove('invisible');
+      } else {
+        fadeInElement(this.copiesOption_);
+        $('hr-before-copies').classList.add('invisible');
+      }
+      this.twoSidedCheckbox_.checked = e.printerCapabilities.setDuplexAsDefault;
     },
 
     /**

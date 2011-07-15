@@ -48,6 +48,9 @@ var pageSettings;
 // Object holding all the copies related settings.
 var copiesSettings;
 
+// Object holding all the layout related settings.
+var layoutSettings;
+
 // True if the user has click 'Advanced...' in order to open the system print
 // dialog.
 var showingSystemDialog = false;
@@ -83,8 +86,10 @@ function onLoad() {
 
   pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
+  layoutSettings = print_preview.LayoutSettings.getInstance();
   pageSettings.addEventListeners();
   copiesSettings.addEventListeners();
+  layoutSettings.addEventListeners();
 
   showLoadingAnimation();
   chrome.send('getDefaultPrinter');
@@ -95,8 +100,6 @@ function onLoad() {
  */
 function addEventListeners() {
   // Controls that require preview rendering.
-  $('landscape').onclick = onLayoutModeToggle;
-  $('portrait').onclick = onLayoutModeToggle;
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   // Controls that do not require preview rendering.
@@ -112,8 +115,6 @@ function removeEventListeners() {
     clearTimeout(pageSettings.timerId_);
 
   // Controls that require preview rendering
-  $('landscape').onclick = null;
-  $('portrait').onclick = null;
   $('printer-list').onchange = null;
 
   // Controls that don't require preview rendering.
@@ -246,28 +247,15 @@ function doUpdateCloudPrinterCapabilities(printer) {
  * @param {Object} settingInfo printer setting information.
  */
 function updateWithPrinterCapabilities(settingInfo) {
+  var customEvent = new cr.Event("printerCapabilitiesUpdated");
+  customEvent.printerCapabilities = settingInfo;
+  document.dispatchEvent(customEvent);
+
   var disableColorOption = settingInfo.disableColorOption;
-  var disableCopiesOption = settingInfo.disableCopiesOption;
   var setColorAsDefault = settingInfo.setColorAsDefault;
-  var disableLandscapeOption = settingInfo.disableLandscapeOption;
-  var setDuplexAsDefault = settingInfo.setDuplexAsDefault;
   var color = $('color');
   var bw = $('bw');
   var colorOptions = $('color-options');
-
-  if (disableCopiesOption) {
-    fadeOutElement($('copies-option'));
-    $('hr-before-copies').classList.remove('invisible');
-  } else {
-    fadeInElement($('copies-option'));
-    $('hr-before-copies').classList.add('invisible');
-  }
-
-  if (disableLandscapeOption) {
-    fadeOutElement($('landscape-option'));
-  } else {
-    fadeInElement($('landscape-option'));
-  }
 
   disableColorOption ? fadeOutElement(colorOptions) :
       fadeInElement(colorOptions);
@@ -277,7 +265,6 @@ function updateWithPrinterCapabilities(settingInfo) {
     color.checked = setColorAsDefault;
     bw.checked = !setColorAsDefault;
   }
-  copiesSettings.twoSidedCheckbox.checked = setDuplexAsDefault;
 }
 
 /**
@@ -307,41 +294,12 @@ function finishedCloudPrinting() {
 }
 
 /**
- * Checks whether the preview layout setting is set to 'landscape' or not.
- *
- * @return {boolean} true if layout is 'landscape'.
- */
-function isLandscape() {
-  return $('landscape').checked;
-}
-
-/**
  * Checks whether the preview color setting is set to 'color' or not.
  *
  * @return {boolean} true if color is 'color'.
  */
 function isColor() {
   return $('color').checked;
-}
-
-/**
- * Checks whether the preview collate setting value is set or not.
- *
- * @return {boolean} true if collate setting is enabled and checked.
- */
-function isCollated() {
-  return !copiesSettings.collateOption.hidden && $('collate').checked;
-}
-
-/**
- * Gets the duplex mode for printing.
- * @return {number} duplex mode.
- */
-function getDuplexMode() {
-  // Constants values matches printing::DuplexMode enum.
-  const SIMPLEX = 0;
-  const LONG_EDGE = 1;
-  return !copiesSettings.twoSidedCheckbox.checked ? SIMPLEX : LONG_EDGE;
 }
 
 /**
@@ -357,10 +315,10 @@ function getSettings() {
       {'deviceName': deviceName,
        'pageRange': pageSettings.selectedPageRanges,
        'printAll': pageSettings.allPagesRadioButton.checked,
-       'duplex': getDuplexMode(),
+       'duplex': copiesSettings.duplexMode,
        'copies': copiesSettings.numberOfCopies,
-       'collate': isCollated(),
-       'landscape': isLandscape(),
+       'collate': copiesSettings.isCollated(),
+       'landscape': layoutSettings.isLandscape(),
        'color': isColor(),
        'printToPDF': printToPDF,
        'requestID': 0};
@@ -782,8 +740,6 @@ function onPDFLoad() {
   setColor($('color').checked);
   hideLoadingAnimation();
 
-  if (!previewModifiable)
-    fadeOutElement($('landscape-option'));
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
 }
 
@@ -976,19 +932,6 @@ function updatePrintSummary() {
 }
 
 /**
- * When the user switches printing orientation mode the page field selection is
- * reset to "all pages selected". After the change the number of pages will be
- * different and currently selected page numbers might no longer be valid.
- * Even if they are still valid the content of these pages will be different.
- */
-function onLayoutModeToggle() {
-  // If the chosen layout is same as before, nothing needs to be done.
-  if (printSettings.isLandscape == isLandscape())
-    return;
-  setDefaultValuesAndRegeneratePreview();
-}
-
-/**
  * Sets the default values and sends a request to regenerate preview data.
  */
 function setDefaultValuesAndRegeneratePreview() {
@@ -1009,6 +952,6 @@ function PrintSettings() {
  */
 PrintSettings.prototype.save = function() {
   this.deviceName = getSelectedPrinterName();
-  this.isLandscape = isLandscape();
+  this.isLandscape = layoutSettings.isLandscape();
 }
 

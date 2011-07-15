@@ -140,7 +140,7 @@ cr.define('print_preview', function() {
      */
     resetState: function() {
       this.selectedPagesTextfield.classList.remove('invalid');
-      fadeOutElement(this.selectedPagesHint);
+      fadeOutElement(this.selectedPagesHint_);
       this.invalidateTotalPageCount_();
       this.invalidatePreviouslySelectedPages_();
     },
