@@ -511,6 +511,7 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   PepperEmuInitCore(ncl, Global.sdl_engine);
   PepperEmuInitFileIO(ncl, Global.sdl_engine);
   PepperEmuInitPostMessage(ncl, Global.sdl_engine);
+  PepperEmuInit3D(ncl, Global.sdl_engine);
   return true;
 }
 

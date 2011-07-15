@@ -38,6 +38,9 @@ bool IsSupportedInterface(string if_name) {
     if_name == "PPB_ImageData;1.0" ||
     if_name == "PPB_Instance;1.0" ||
     if_name == "PPB_Messaging;1.0" ||
+    if_name == "PPB_OpenGLES(Dev);2.0" ||
+    if_name == "PPB_Context3D(Dev);0.1" ||
+    if_name == "PPB_Surface3D(Dev);0.2" ||
     if_name == "PPB_URLLoader;1.0" ||
     if_name == "PPB_URLRequestInfo;1.0" ||
     if_name == "PPB_URLResponseInfo;1.0" ||
@@ -92,6 +95,16 @@ void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
   GlobalMultiMediaInterface->PushDelayedUserEvent(delay, &event);
 }
 
+// PPB_Core_AddRefResource:i:
+void PPB_Core_AddRefResource(SRPC_PARAMS) {
+  UNREFERENCED_PARAMETER(outs);
+  const int handle = ins[0]->u.ival;
+  NaClLog(1, "PPB_Core_AddRefResource(%d)\n",
+          handle);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
 // This appears to have no equivalent in the ppapi world
 // ReleaseResourceMultipleTimes:ii:
 void ReleaseResourceMultipleTimes(SRPC_PARAMS) {
@@ -113,6 +126,7 @@ void PepperEmuInitCore(NaClCommandLoop* ncl, IMultimedia* im) {
   ncl->AddUpcallRpc(TUPLE(PPB_GetInterface, :s:i));
   ncl->AddUpcallRpc(TUPLE(ReleaseResourceMultipleTimes, :ii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Core_CallOnMainThread, :iii:));
+  ncl->AddUpcallRpc(TUPLE(PPB_Core_AddRefResource, :i:));
   // This is the only rpc for now that can be called from
   // a nexe thread other than main
   // c.f. src/shared/ppapi_proxy/upcall_server.cc
