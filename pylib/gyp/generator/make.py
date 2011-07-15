@@ -934,6 +934,15 @@ class MakefileWriter:
     self.type = spec['type']
     self.toolset = spec['toolset']
 
+    # Bundles are directories with a certain subdirectory structure, instead of
+    # just a single file. Bundle rules do not produce a binary but also package
+    # resources into that directory.
+    # Due to an accident (gpu_demo_framework_ppapi has mac_bundle: 1 in its
+    # direct_dependent_settings and all.gyp somehow depends on that), all.gyp
+    # has a mac_bundle: 1, type: none target. TODO(thakis): Fix this.
+    self.is_mac_bundle = (int(spec.get('mac_bundle', 0)) != 0 and
+        self.type != 'none' and self.flavor == 'mac')
+
     deps, link_deps = self.ComputeDeps(spec)
 
     # Some of the generation below can add extra output, sources, or
@@ -942,6 +951,8 @@ class MakefileWriter:
     extra_outputs = []
     extra_sources = []
     extra_link_deps = []
+    extra_mac_bundle_resources = []
+    mac_bundle_deps = []
 
     self.output = self.ComputeOutput(spec)
     self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
@@ -959,14 +970,22 @@ class MakefileWriter:
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
       self.WriteActions(spec['actions'], extra_sources, extra_outputs,
-                        part_of_all)
+                        extra_mac_bundle_resources, part_of_all)
 
     # Rules must be early like actions.
     if 'rules' in spec:
-      self.WriteRules(spec['rules'], extra_sources, extra_outputs, part_of_all)
+      self.WriteRules(spec['rules'], extra_sources, extra_outputs,
+                      extra_mac_bundle_resources, part_of_all)
 
     if 'copies' in spec:
       self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
+
+    # Bundle resources.
+    all_mac_bundle_resources = (
+        spec.get('mac_bundle_resources', []) + extra_mac_bundle_resources)
+    if self.is_mac_bundle and all_mac_bundle_resources:
+      self.WriteMacBundleResources(
+          all_mac_bundle_resources, mac_bundle_deps, spec)
 
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
@@ -1035,7 +1054,8 @@ class MakefileWriter:
     self.fp.close()
 
 
-  def WriteActions(self, actions, extra_sources, extra_outputs, part_of_all):
+  def WriteActions(self, actions, extra_sources, extra_outputs,
+                   extra_mac_bundle_resources, part_of_all):
     """Write Makefile code for any 'actions' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
@@ -1060,6 +1080,8 @@ class MakefileWriter:
           dirs.add(dir)
       if int(action.get('process_outputs_as_sources', False)):
         extra_sources += outputs
+      if int(action.get('process_outputs_as_mac_bundle_resources', False)):
+        extra_mac_bundle_resources.append(out)
 
       # Write the actual command.
       command = gyp.common.EncodePOSIXShellList(action['action'])
@@ -1105,7 +1127,8 @@ class MakefileWriter:
     self.WriteLn()
 
 
-  def WriteRules(self, rules, extra_sources, extra_outputs, part_of_all):
+  def WriteRules(self, rules, extra_sources, extra_outputs,
+                 extra_mac_bundle_resources, part_of_all):
     """Write Makefile code for any 'rules' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
@@ -1135,6 +1158,8 @@ class MakefileWriter:
             dirs.add(dir)
           if int(rule.get('process_outputs_as_sources', False)):
             extra_sources.append(out)
+          if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
+            extra_mac_bundle_resources.append(out)
         all_outputs += outputs
         inputs = map(Sourceify, map(self.Absolutify, [rule_source] +
                                     rule.get('inputs', [])))
@@ -1223,6 +1248,39 @@ class MakefileWriter:
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
     extra_outputs.append('$(%s)' % variable)
     self.WriteLn()
+
+
+  def WriteMacBundleResources(self, resources, bundle_deps, spec):
+    """Writes Makefile code for 'mac_bundle_resources'."""
+    self.WriteLn('### Generated for mac_bundle_resources')
+    variable = self.target + '_mac_bundle_resources'
+    if self.type == 'shared_library':
+      dest = os.path.join(
+          self.output, 'Versions', self.GetFrameworkVersion(spec), 'Resources')
+    else:
+      # Suprisingly, loadable_modules have a 'Contents' folder like executables.
+      dest = os.path.join(self.output, 'Contents', 'Resources')
+    for res in resources:
+      output = dest
+
+      # Split into (path,file).
+      path = Sourceify(self.Absolutify(res))
+      path_parts = os.path.split(path)
+
+      # Now split the path into (prefix,maybe.lproj).
+      lproj_parts = os.path.split(path_parts[0])
+      # If the resource lives in a .lproj bundle, add that to the destination.
+      if lproj_parts[1].endswith('.lproj'):
+        output = os.path.join(output, lproj_parts[1])
+
+      output = Sourceify(self.Absolutify(os.path.join(output, path_parts[1])))
+      # Compiled XIB files are referred to by .nib.
+      if output.endswith('.xib'):
+        output = output[0:-3] + 'nib'
+
+      self.WriteDoCmd([output], [path], 'mac_tool,,copy-bundle-resource',
+                      part_of_all=True)
+      bundle_deps.append(output)
 
 
   def WriteSources(self, configs, deps, sources,
@@ -1680,6 +1738,16 @@ class MakefileWriter:
 
   def WriteLn(self, text=''):
     self.fp.write(text + '\n')
+
+
+  def GetFrameworkVersion(self, spec):
+    """Returns the framework version of the current target. Only valid for
+    bundles."""
+    assert self.is_mac_bundle
+    version = XcodeSettings.GetPerTargetSetting(spec, 'FRAMEWORK_VERSION')
+    if not version:
+      version = 'A'
+    return version
 
 
   def Objectify(self, path):
