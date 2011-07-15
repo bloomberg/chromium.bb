@@ -285,7 +285,7 @@ cmd_cc = $(CC.$(TOOLSET)) $(GYP_CFLAGS) $(DEPFLAGS) $(CFLAGS.$(TOOLSET)) -c -o $
 
 quiet_cmd_cxx = CXX($(TOOLSET)) $@
 cmd_cxx = $(CXX.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
-%(objc_commands)s
+%(mac_commands)s
 quiet_cmd_alink = AR($(TOOLSET)) $@
 cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %%.o,$^)
 
@@ -365,12 +365,22 @@ FORCE_DO_CMD:
 
 """)
 
-SHARED_HEADER_OBJC_COMMANDS = """
+SHARED_HEADER_MAC_COMMANDS = """
 quiet_cmd_objc = CXX($(TOOLSET)) $@
 cmd_objc = $(CC.$(TOOLSET)) $(GYP_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 quiet_cmd_objcxx = CXX($(TOOLSET)) $@
 cmd_objcxx = $(CXX.$(TOOLSET)) $(GYP_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+# Commands for precompiled header files.
+quiet_cmd_pch_c = CXX($(TOOLSET)) $@
+cmd_pch_c = $(CC.$(TOOLSET)) $(GYP_PCH_CFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
+quiet_cmd_pch_cc = CXX($(TOOLSET)) $@
+cmd_pch_cc = $(CC.$(TOOLSET)) $(GYP_PCH_CCFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
+quiet_cmd_pch_m = CXX($(TOOLSET)) $@
+cmd_pch_m = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
+quiet_cmd_pch_mm = CXX($(TOOLSET)) $@
+cmd_pch_mm = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 """
 
 
@@ -772,6 +782,108 @@ class XcodeSettings(object):
 
     return ldflags
 
+  @staticmethod
+  def GetPerTargetSetting(spec, setting):
+    """Tries to get xcode_settings.setting from spec. Assumes that the setting
+       has the same value in all configurations and throws otherwise."""
+    first_pass = True
+    result = None
+    configs = spec['configurations']
+    for configname in sorted(configs.keys()):
+      config = configs[configname]
+      if first_pass:
+        result = config.get('xcode_settings', {}).get(setting, None)
+        first_pass = False
+      else:
+        assert result == config.get('xcode_settings', {}).get(setting, None)
+    return result
+
+
+class MacPrefixHeader(object):
+  """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature."""
+
+  def __init__(self, spec, path_provider):
+    # This doesn't support per-configuration prefix headers. Good enough
+    # for now.
+    self.header = XcodeSettings.GetPerTargetSetting(spec, 'GCC_PREFIX_HEADER')
+    self.compiled_headers = {}
+    if self.header:
+      self.header = path_provider.Absolutify(self.header)
+      for lang in ['c', 'cc', 'm', 'mm']:
+        self.compiled_headers[lang] = path_provider.Pchify(self.header, lang)
+
+  def _Gch(self, lang):
+    """Returns the actual file name of the prefix header for language |lang|."""
+    return self.compiled_headers[lang] + '.gch'
+
+  def WriteObjDependencies(self, compilable, objs, writer):
+    """Writes dependencies from the object files in |objs| to the corresponding
+    precompiled header file. |compilable[i]| has to be the source file belonging
+    to |objs[i]|."""
+    if not self.header:
+      return
+
+    writer.WriteLn('# Dependencies from obj files to their precompiled headers')
+    for source, obj in zip(compilable, objs):
+      ext = os.path.splitext(source)[1]
+      lang = {
+        '.c': 'c',
+        '.cpp': 'cc', '.cc': 'cc', '.cxx': 'cc',
+        '.m': 'm',
+        '.mm': 'mm',
+      }.get(ext, None)
+      if lang:
+        writer.WriteLn('%s: %s' % (obj, self._Gch(lang)))
+    writer.WriteLn('# End precompiled header dependencies')
+
+  def GetInclude(self, lang):
+    """Gets the cflags to include the prefix header for language |lang|."""
+    if lang not in self.compiled_headers:
+      return ''
+    return '-include %s ' % self.compiled_headers[lang]
+
+  def WritePchTargets(self, writer):
+    """Writes make rules to compile the prefix headers."""
+    if not self.header:
+      return
+
+    writer.WriteLn(self._Gch('c') + ": GYP_PCH_CFLAGS := "
+                 "-x c-header "
+                 "$(DEFS_$(BUILDTYPE)) "
+                 "$(INCS_$(BUILDTYPE)) "
+                 "$(CFLAGS_$(BUILDTYPE)) "
+                 "$(CFLAGS_C_$(BUILDTYPE))")
+
+    writer.WriteLn(self._Gch('cc') + ": GYP_PCH_CCFLAGS := "
+                 "-x c++-header "
+                 "$(DEFS_$(BUILDTYPE)) "
+                 "$(INCS_$(BUILDTYPE)) "
+                 "$(CFLAGS_$(BUILDTYPE)) "
+                 "$(CFLAGS_CC_$(BUILDTYPE))")
+
+    writer.WriteLn(self._Gch('m') + ": GYP_PCH_OBJCFLAGS := "
+                 "-x objective-c-header "
+                 "$(DEFS_$(BUILDTYPE)) "
+                 "$(INCS_$(BUILDTYPE)) "
+                 "$(CFLAGS_$(BUILDTYPE)) "
+                 "$(CFLAGS_C_$(BUILDTYPE)) "
+                 "$(CFLAGS_OBJC_$(BUILDTYPE))")
+
+    writer.WriteLn(self._Gch('mm') + ": GYP_PCH_OBJCXXFLAGS := "
+                 "-x objective-c++-header "
+                 "$(DEFS_$(BUILDTYPE)) "
+                 "$(INCS_$(BUILDTYPE)) "
+                 "$(CFLAGS_$(BUILDTYPE)) "
+                 "$(CFLAGS_CC_$(BUILDTYPE)) "
+                 "$(CFLAGS_OBJCC_$(BUILDTYPE))")
+
+    for lang in self.compiled_headers:
+      writer.WriteLn('%s: %s FORCE_DO_CMD' % (self._Gch(lang), self.header))
+      writer.WriteLn('\t@$(call do_cmd,pch_%s,1)' % lang)
+      writer.WriteLn('')
+      writer.WriteLn('all_deps += %s' % self._Gch(lang))
+      writer.WriteLn('')
+
 
 class MakefileWriter:
   """MakefileWriter packages up the writing of one target-specific foobar.mk.
@@ -847,10 +959,12 @@ class MakefileWriter:
     if 'copies' in spec:
       self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
 
+    # Sources.
     all_sources = spec.get('sources', []) + extra_sources
     if all_sources:
-      self.WriteSources(configs, deps, all_sources,
-                        extra_outputs, extra_link_deps, part_of_all)
+      self.WriteSources(
+          configs, deps, all_sources, extra_outputs,
+          extra_link_deps, part_of_all, MacPrefixHeader(spec, self))
       sources = filter(Compilable, all_sources)
       if sources:
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
@@ -866,7 +980,6 @@ class MakefileWriter:
           if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR2:
             self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
         self.WriteLn('# End of this set of suffix rules')
-
 
     self.WriteTarget(spec, configs, deps,
                      extra_link_deps + link_deps, extra_outputs, part_of_all)
@@ -1105,7 +1218,7 @@ class MakefileWriter:
 
   def WriteSources(self, configs, deps, sources,
                    extra_outputs, extra_link_deps,
-                   part_of_all):
+                   part_of_all, precompiled_header):
     """Write Makefile code for any 'sources' from the gyp input.
     These are source files necessary to build the current target.
 
@@ -1122,7 +1235,6 @@ class MakefileWriter:
       config = configs[configname]
       self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D',
           quoter=EscapeCppDefine)
-
 
       if self.flavor == 'mac':
         settings = XcodeSettings(config)
@@ -1178,6 +1290,8 @@ class MakefileWriter:
                                    'before any of us.',
                          order_only = True)
 
+    precompiled_header.WriteObjDependencies(compilable, objs, self)
+
     if objs:
       extra_link_deps.append('$(OBJS)')
       self.WriteLn("""\
@@ -1187,26 +1301,32 @@ class MakefileWriter:
       self.WriteLn("$(OBJS): GYP_CFLAGS := "
                    "$(DEFS_$(BUILDTYPE)) "
                    "$(INCS_$(BUILDTYPE)) "
+                   "%s" % precompiled_header.GetInclude('c') +
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_C_$(BUILDTYPE))")
       self.WriteLn("$(OBJS): GYP_CXXFLAGS := "
                    "$(DEFS_$(BUILDTYPE)) "
                    "$(INCS_$(BUILDTYPE)) "
+                   "%s" % precompiled_header.GetInclude('cc') +
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE))")
       if self.flavor == 'mac':
         self.WriteLn("$(OBJS): GYP_OBJCFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
+                     "%s" % precompiled_header.GetInclude('m') +
                      "$(CFLAGS_$(BUILDTYPE)) "
                      "$(CFLAGS_C_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJC_$(BUILDTYPE))")
         self.WriteLn("$(OBJS): GYP_OBJCXXFLAGS := "
                      "$(DEFS_$(BUILDTYPE)) "
                      "$(INCS_$(BUILDTYPE)) "
+                     "%s" % precompiled_header.GetInclude('mm') +
                      "$(CFLAGS_$(BUILDTYPE)) "
                      "$(CFLAGS_CC_$(BUILDTYPE)) "
                      "$(CFLAGS_OBJCC_$(BUILDTYPE))")
+
+    precompiled_header.WritePchTargets(self)
 
     # If there are any object files in our input file list, link them into our
     # output.
@@ -1561,6 +1681,15 @@ class MakefileWriter:
     return '$(obj).%s/$(TARGET)/%s' % (self.toolset, path)
 
 
+  def Pchify(self, path, lang):
+    """Convert a prefix header path to its output directory form."""
+    if '$(' in path:
+      path = path.replace('$(obj)/', '$(obj).%s/$(TARGET)/pch-%s' %
+                          (self.toolset, lang))
+      return path
+    return '$(obj).%s/$(TARGET)/pch-%s/%s' % (self.toolset, lang, path)
+
+
   def Absolutify(self, path):
     """Convert a subdirectory-relative path into a base-relative path.
     Skips over paths that contain variables."""
@@ -1738,7 +1867,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'flock': './gyp-mac-tool flock',
         'flock_index': 2,
         'link_commands': LINK_COMMANDS_MAC,
-        'objc_commands': SHARED_HEADER_OBJC_COMMANDS,
+        'mac_commands': SHARED_HEADER_MAC_COMMANDS,
     })
   header_params.update(RunSystemTests(flavor))
 
