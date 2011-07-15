@@ -37,6 +37,7 @@ class RunCommandError(Exception):
     self.cmd = cmd
     self.error_code = error_code
     Exception.__init__(self, msg)
+    self.args = (msg, cmd, error_code)
 
   def __eq__(self, other):
     return (type(self) == type(other) and
@@ -548,6 +549,7 @@ class RunCommandException(Exception):
   def __init__(self, msg, cmd):
     self.cmd = cmd
     Exception.__init__(self, msg)
+    self.args = (msg, cmd)
 
   def __eq__(self, other):
     return (type(self) == type(other) and

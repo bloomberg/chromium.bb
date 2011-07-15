@@ -25,6 +25,7 @@ if __name__ == '__main__':
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import cbuildbot_background_stages as bg_stages
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -198,8 +199,8 @@ def RunBuildStages(bot_id, options, build_config):
 
   build_success = False
   build_and_test_success = False
-  already_uploaded_prebuilts = False
   prebuilts = options.prebuilts and build_config['prebuilts']
+  bg = bg_stages.BackgroundStages()
 
   try:
     if options.sync:
@@ -223,11 +224,16 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
 
-    if prebuilts and build_config['build_type'] == 'full':
-      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
-      already_uploaded_prebuilts = True
-
     build_success = True
+
+    if prebuilts:
+      bg.AddStage(stages.UploadPrebuiltsStage(bot_id, options, build_config))
+
+    if options.archive:
+      bg.AddStage(stages.ArchiveStage(bot_id, options, build_config))
+
+    if not bg.Empty():
+      bg.start()
 
     if options.tests:
       stages.TestStage(bot_id, options, build_config).Run()
@@ -237,10 +243,12 @@ def RunBuildStages(bot_id, options, build_config):
     if options.remote_test_status:
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
 
-    build_and_test_success = True
+    # Wait for prebuilts to finish uploading.
+    if prebuilts:
+      build_and_test_success = not bg.WaitForStage()
+    else:
+      build_and_test_success = True
 
-    if prebuilts and not already_uploaded_prebuilts:
-      stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
   except stages.BuildException:
     # We skipped out of this build block early, all we need to do.
     pass
@@ -251,16 +259,13 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
 
-  if not build_config['master'] and completion_stage:
-    # Report success or failure to the master.
+  if completion_stage:
     completion_stage.Run()
 
-  if build_success and options.archive:
-    stages.ArchiveStage(bot_id, options, build_config).Run()
-
-  if build_config['master'] and completion_stage:
-    # Wait for slave builds to complete.
-    completion_stage.Run()
+  # Wait for remaining stages to finish. Ignore any errors.
+  while not bg.Empty():
+    bg.WaitForStage()
+  bg.join()
 
   if (options.buildbot and build_config['master'] and build_and_test_success
       and (not completion_stage or
