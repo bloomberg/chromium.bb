@@ -78,6 +78,7 @@
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
@@ -94,7 +95,6 @@
 #include "content/common/content_client.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
-#include "content/common/result_codes.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1428,12 +1428,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
     TryChromeDialogView::Result answer =
         TryChromeDialogView::Show(try_chrome_int, &process_singleton);
     if (answer == TryChromeDialogView::NOT_NOW)
-      return ResultCodes::NORMAL_EXIT_CANCEL;
+      return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
     if (answer == TryChromeDialogView::UNINSTALL_CHROME)
-      return ResultCodes::NORMAL_EXIT_EXP2;
+      return chrome::RESULT_CODE_NORMAL_EXIT_EXP2;
 #else
     // We don't support retention experiments on Mac or Linux.
-    return ResultCodes::NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 #endif  // defined(OS_WIN)
   }
 
@@ -1564,7 +1564,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return HandleIconsCommands(parsed_command_line);
   if (parsed_command_line.HasSwitch(switches::kMakeDefaultBrowser)) {
     return ShellIntegration::SetAsDefaultBrowser() ?
-        ResultCodes::NORMAL_EXIT : ResultCodes::SHELL_INTEGRATION_FAILED;
+        static_cast<int>(content::RESULT_CODE_NORMAL_EXIT) :
+        static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
   }
 
   // If the command line specifies --pack-extension, attempt the pack extension
@@ -1572,9 +1573,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kPackExtension)) {
     ExtensionsStartupUtil extension_startup_util;
     if (extension_startup_util.PackExtension(parsed_command_line)) {
-      return ResultCodes::NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
     } else {
-      return ResultCodes::PACK_EXTENSION_ERROR;
+      return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
     }
   }
 
@@ -1600,10 +1601,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
         printf("%s\n", base::SysWideToNativeMB(UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
 #endif
-        return ResultCodes::NORMAL_EXIT;
+        return content::RESULT_CODE_NORMAL_EXIT;
 
       case ProcessSingleton::PROFILE_IN_USE:
-        return ResultCodes::PROFILE_IN_USE;
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
 
       case ProcessSingleton::LOCK_ERROR:
         LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
@@ -1611,7 +1612,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
                       "would start multiple browser processes rather than "
                       "opening a new window in the existing process. Aborting "
                       "now to avoid profile corruption.";
-        return ResultCodes::PROFILE_IN_USE;
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
 
       default:
         NOTREACHED();
@@ -1659,7 +1660,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   Profile* profile = CreateProfile(parameters, user_data_dir);
   if (!profile)
-    return ResultCodes::NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 
   // Post-profile init ---------------------------------------------------------
 
@@ -1701,7 +1702,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line))
-    return ResultCodes::NORMAL_EXIT;
+    return content::RESULT_CODE_NORMAL_EXIT;
 #endif
 
   // Check if there is any machine level Chrome installed on the current
@@ -1714,7 +1715,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Do not allow this to occur for Chrome Frame user-to-system handoffs.
   if (!parsed_command_line.HasSwitch(switches::kChromeFrame) &&
       CheckMachineLevelInstall())
-    return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
+    return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
 
   // Create the TranslateManager singleton.
   TranslateManager* translate_manager = TranslateManager::GetInstance();
@@ -1727,7 +1728,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     if (MaybeInstallFromDiskImage()) {
       // The application was installed and the installed copy has been
       // launched.  This process is now obsolete.  Exit.
-      return ResultCodes::NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
     }
   }
 #endif
@@ -1919,9 +1920,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
     ExtensionsStartupUtil ext_startup_util;
     if (ext_startup_util.UninstallExtension(parsed_command_line, profile)) {
-      return ResultCodes::NORMAL_EXIT;
+      return content::RESULT_CODE_NORMAL_EXIT;
     } else {
-      return ResultCodes::UNINSTALL_EXTENSION_ERROR;
+      return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
     }
   }
 
@@ -1966,7 +1967,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line);
 
-  int result_code = ResultCodes::NORMAL_EXIT;
+  int result_code = content::RESULT_CODE_NORMAL_EXIT;
   if (parameters.ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
     if (pool)

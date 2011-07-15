@@ -194,7 +194,7 @@ void HungRendererDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
       // Kill the process.
       if (contents_ && contents_->GetRenderProcessHost()) {
         base::KillProcess(contents_->GetRenderProcessHost()->GetHandle(),
-                          ResultCodes::HUNG, false);
+                          content::RESULT_CODE_HUNG, false);
       }
       break;
 

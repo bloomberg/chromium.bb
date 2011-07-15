@@ -25,12 +25,12 @@
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
-#include "content/common/result_codes.h"
 #include "policy/policy_constants.h"
 
 namespace {
@@ -396,7 +396,7 @@ bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
     *exit_now = (IDOK != ::MessageBoxW(NULL, text, caption, flags));
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Its not safe to continue executing, exit silently here.
-    ::ExitProcess(ResultCodes::RESPAWN_FAILED);
+    ::ExitProcess(chrome::RESULT_CODE_RESPAWN_FAILED);
   }
 
   return true;
@@ -445,7 +445,7 @@ extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
     g_breakpad->WriteMinidumpForException(info);
-    ::ExitProcess(ResultCodes::KILLED);
+    ::ExitProcess(content::RESULT_CODE_KILLED);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }

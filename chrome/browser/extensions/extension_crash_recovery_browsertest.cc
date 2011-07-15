@@ -73,7 +73,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
 
     RenderProcessHost* extension_rph =
         extension_host->render_view_host()->process();
-    base::KillProcess(extension_rph->GetHandle(), ResultCodes::KILLED, false);
+    base::KillProcess(extension_rph->GetHandle(), content::RESULT_CODE_KILLED,
+                      false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
     ASSERT_FALSE(
         GetExtensionProcessManager()->GetBackgroundHostForExtension(extension));

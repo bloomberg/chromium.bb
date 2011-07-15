@@ -52,7 +52,7 @@ class TimerExpiredTask : public Task,
     // terminates.  We just care that it eventually terminates, and that's what
     // TerminateProcess should do for us. Don't check for the result code since
     // it fails quite often. This should be investigated eventually.
-    base::KillProcess(process_, ResultCodes::HUNG, false);
+    base::KillProcess(process_, content::RESULT_CODE_HUNG, false);
 
     // Now, just cleanup as if the process exited normally.
     OnObjectSignaled(process_);

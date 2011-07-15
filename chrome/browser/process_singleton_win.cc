@@ -155,7 +155,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   }
 
   // Time to take action. Kill the browser process.
-  base::KillProcessById(process_id, ResultCodes::HUNG, true);
+  base::KillProcessById(process_id, content::RESULT_CODE_HUNG, true);
   remote_window_ = NULL;
   return PROCESS_NONE;
 }

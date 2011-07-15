@@ -86,7 +86,7 @@ HungRendererController* g_instance = NULL;
 - (IBAction)kill:(id)sender {
   if (hungContents_)
     base::KillProcess(hungContents_->GetRenderProcessHost()->GetHandle(),
-                      ResultCodes::HUNG, false);
+                      content::RESULT_CODE_HUNG, false);
   // Cannot call performClose:, because the close button is disabled.
   [self close];
 }

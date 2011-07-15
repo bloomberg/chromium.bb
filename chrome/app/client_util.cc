@@ -18,6 +18,7 @@
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -25,7 +26,6 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
-#include "content/common/result_codes.h"
 
 namespace {
 // The entry point signature of chrome.dll.
@@ -238,7 +238,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   std::wstring file;
   dll_ = Load(&version, &file);
   if (!dll_)
-    return ResultCodes::MISSING_DATA;
+    return chrome::RESULT_CODE_MISSING_DATA;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
@@ -249,7 +249,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   DLL_MAIN entry_point =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
   if (!entry_point)
-    return ResultCodes::BAD_PROCESS_TYPE;
+    return content::RESULT_CODE_BAD_PROCESS_TYPE;
 
   int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
   return OnBeforeExit(rc, file);
@@ -287,7 +287,7 @@ class ChromeDllLoader : public MainDllLoader {
     // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
     // so we need to reset the did_run signal so omaha does not count
     // this run as active usage.
-    if (ResultCodes::NORMAL_EXIT_CANCEL == return_code) {
+    if (content::RESULT_CODE_NORMAL_EXIT_CANCEL == return_code) {
       ClearDidRun(dll_path);
     }
     return return_code;

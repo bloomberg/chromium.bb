@@ -112,7 +112,8 @@ void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
     NOTREACHED();
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
     if (process)
-      base::KillProcess(process, ResultCodes::KILLED_BAD_MESSAGE, false);
+      base::KillProcess(process, content::RESULT_CODE_KILLED_BAD_MESSAGE,
+                        false);
   }
 }
 UIThreadExtensionFunction::UIThreadExtensionFunction()

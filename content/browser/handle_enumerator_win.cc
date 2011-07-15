@@ -156,7 +156,7 @@ void HandleEnumerator::FindProcessOnUIThread() {
 void HandleEnumerator::EnumerateHandlesAndTerminateProcess() {
   HandleEnumerator::EnumerateHandles();
   base::Process process(handle_);
-  process.Terminate(ResultCodes::NORMAL_EXIT);
+  process.Terminate(content::RESULT_CODE_NORMAL_EXIT);
   process.Close();
 }
 

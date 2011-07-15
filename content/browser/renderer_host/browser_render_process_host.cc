@@ -441,7 +441,8 @@ void BrowserRenderProcessHost::ReceivedBadMessage() {
     CHECK(false);
   }
   NOTREACHED();
-  base::KillProcess(GetHandle(), ResultCodes::KILLED_BAD_MESSAGE, false);
+  base::KillProcess(GetHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
+                    false);
 }
 
 void BrowserRenderProcessHost::WidgetRestored() {
