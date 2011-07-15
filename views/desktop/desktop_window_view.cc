@@ -177,6 +177,14 @@ void DesktopWindowView::CreateTestWindow(const std::wstring& title,
 void DesktopWindowView::Layout() {
 }
 
+void DesktopWindowView::ViewHierarchyChanged(
+    bool is_add, View* parent, View* child) {
+  if (!is_add &&
+      active_native_widget_ &&
+      active_native_widget_->GetView() == child)
+    active_native_widget_ = NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowView, WidgetDelegate implementation:
 
