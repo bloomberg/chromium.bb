@@ -663,8 +663,12 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString("date_string",
       base::TimeFormatShortDate(download->start_time()));
   file_value->SetInteger("id", id);
-  file_value->Set("file_path",
-                  base::CreateFilePathValue(download->GetTargetFilePath()));
+
+  FilePath download_path(download->GetTargetFilePath());
+  file_value->Set("file_path", base::CreateFilePathValue(download_path));
+  file_value->SetString("file_url",
+                        net::FilePathToFileURL(download_path).spec());
+
   // Keep file names as LTR.
   string16 file_name = download->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);

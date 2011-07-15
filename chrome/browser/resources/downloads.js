@@ -38,6 +38,7 @@ function createLink(onclick, value) {
   link.onclick = onclick;
   link.href = '#';
   link.innerHTML = value;
+  link.oncontextmenu = function() { return false; };
   return link;
 }
 
@@ -326,6 +327,7 @@ Download.Progress = {
 Download.prototype.update = function(download) {
   this.id_ = download.id;
   this.filePath_ = download.file_path;
+  this.fileUrl_ = download.file_url;
   this.fileName_ = download.file_name;
   this.url_ = download.url;
   this.state_ = download.state;
@@ -354,10 +356,11 @@ Download.prototype.update = function(download) {
 
     if (this.state_ == Download.States.COMPLETE &&
         !this.fileExternallyRemoved_) {
-      this.nodeFileLink_.innerHTML = this.fileName_;
-      this.nodeFileLink_.href = this.filePath_;
+      this.nodeFileLink_.textContent = this.fileName_;
+      this.nodeFileLink_.href = this.fileUrl_;
+      this.nodeFileLink_.oncontextmenu = null;
     } else {
-      this.nodeFileName_.innerHTML = this.fileName_;
+      this.nodeFileName_.textContent = this.fileName_;
     }
 
     showInline(this.nodeFileLink_,
@@ -620,8 +623,10 @@ function tryDownloadUpdatedPeriodically() {
 
 // Add handlers to HTML elements.
 document.body.onload = load;
-document.body.oncontextmenu = function() { return false; }
-$('clear-all').onclick = function () { clearAll(''); };
+var clearAllLink = $('clear-all');
+clearAllLink.onclick = function () { clearAll(''); };
+clearAllLink.oncontextmenu = function() { return false; };
+
 $('search-link').onclick = function () {
   setSearch('');
   return false;
