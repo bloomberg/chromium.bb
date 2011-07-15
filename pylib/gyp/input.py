@@ -1591,7 +1591,23 @@ def MakePathRelative(to_file, fro_file, item):
     return ret
 
 def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
+  def is_hashable(x):
+    try:
+      hash(x)
+    except TypeError:
+      return False
+    return True
+  # If x is hashable, returns whether x is in s. Else returns whether x is in l.
+  def is_in_set_or_list(x, s, l):
+    if is_hashable(x):
+      return x in s
+    return x in l
+
   prepend_index = 0
+
+  # Make membership testing of hashables in |to| (in particular, strings)
+  # faster.
+  hashable_to_set = set([x for x in to if is_hashable(x)])
 
   for item in fro:
     singleton = False
@@ -1629,8 +1645,10 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
     if append:
       # If appending a singleton that's already in the list, don't append.
       # This ensures that the earliest occurrence of the item will stay put.
-      if not singleton or not to_item in to:
+      if not singleton or not is_in_set_or_list(to_item, hashable_to_set, to):
         to.append(to_item)
+        if is_hashable(to_item):
+          hashable_to_set.add(to_item)
     else:
       # If prepending a singleton that's already in the list, remove the
       # existing instance and proceed with the prepend.  This ensures that the
@@ -1642,6 +1660,8 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
       # items to the list in reverse order, which would be an unwelcome
       # surprise.
       to.insert(prepend_index, to_item)
+      if is_hashable(to_item):
+        hashable_to_set.add(to_item)
       prepend_index = prepend_index + 1
 
 
