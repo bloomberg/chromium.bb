@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 struct ExtensionHostMsg_Request_Params;
+class ExtensionInfoMap;
 class FilePath;
 class GURL;
 class HostContentSettingsMap;
@@ -132,6 +133,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   // accessed on the UI thread!
   Profile* profile_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 

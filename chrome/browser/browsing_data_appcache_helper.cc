@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@
 using appcache::AppCacheDatabase;
 
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
-    : request_context_getter_(profile->GetRequestContext()),
-      is_fetching_(false) {
+    : is_fetching_(false),
+      appcache_service_(profile->GetAppCacheService()) {
 }
 
 void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
@@ -34,8 +34,8 @@ void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
   appcache_info_callback_ =
       new net::CancelableCompletionCallback<BrowsingDataAppCacheHelper>(
           this, &BrowsingDataAppCacheHelper::OnFetchComplete);
-  GetAppCacheService()->GetAllAppCacheInfo(info_collection_,
-                                           appcache_info_callback_);
+  appcache_service_->GetAllAppCacheInfo(info_collection_,
+                                        appcache_info_callback_);
 }
 
 void BrowsingDataAppCacheHelper::CancelNotification() {
@@ -58,7 +58,7 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
         manifest_url));
     return;
   }
-  GetAppCacheService()->DeleteAppCacheGroup(manifest_url, NULL);
+  appcache_service_->DeleteAppCacheGroup(manifest_url, NULL);
 }
 
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
@@ -90,15 +90,6 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
     completion_callback_->Run();
     completion_callback_.reset();
   }
-}
-
-ChromeAppCacheService* BrowsingDataAppCacheHelper::GetAppCacheService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ChromeURLRequestContext* request_context =
-      reinterpret_cast<ChromeURLRequestContext*>(
-          request_context_getter_->GetURLRequestContext());
-  return request_context ? request_context->appcache_service()
-                         : NULL;
 }
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(

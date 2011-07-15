@@ -37,6 +37,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
   ProfileManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_),
         profile_manager_(new ProfileManagerWithoutInit),
         local_state_(testing_browser_process_.get()) {
 #if defined(OS_MACOSX)
@@ -52,6 +53,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
 
   virtual void TearDown() {
     profile_manager_.reset();
+    message_loop_.RunAllPending();
   }
 
   class MockObserver : public ProfileManagerObserver {
@@ -65,6 +67,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
+  BrowserThread io_thread_;
 
   scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
 

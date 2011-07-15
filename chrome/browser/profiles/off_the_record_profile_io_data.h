@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +37,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
     explicit Handle(Profile* profile);
     ~Handle();
 
+    base::Callback<ChromeURLDataManagerBackend*(void)>
+        GetChromeURLDataManagerBackendGetter() const;
     const content::ResourceContext& GetResourceContext() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetMainRequestContextGetter() const;
@@ -69,7 +72,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
         extensions_request_context_getter_;
     mutable ChromeURLRequestContextGetterMap
         app_request_context_getter_map_;
-    const scoped_refptr<OffTheRecordProfileIOData> io_data_;
+    scoped_refptr<OffTheRecordProfileIOData> io_data_;
 
     Profile* const profile_;
 
