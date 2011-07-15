@@ -667,3 +667,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   loginScreenObj.initialize();
 }, false);
+
+// Disable text selection.
+document.onselectstart = function(e) {
+  e.preventDefault();
+}
