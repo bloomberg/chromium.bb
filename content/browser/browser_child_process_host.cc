@@ -127,7 +127,7 @@ void BrowserChildProcessHost::OnChildDied() {
   // This may be called by both the channel's OnChannelError handler
   // as well as the process launcher's OnProcessLaunched handler, so
   // we need to be careful about the state of the process launcher here.
-  if (!child_process_->IsStarting())
+  if (child_process_.get() && !child_process_->IsStarting())
     set_handle(child_process_->GetHandle());
   if (handle() != base::kNullProcessHandle) {
     int exit_code;
