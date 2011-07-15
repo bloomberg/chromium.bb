@@ -12,6 +12,7 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 
 namespace {
 
@@ -99,11 +100,9 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
 }
 
 bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
-  GdkDisplay* gdisp = gdk_display_get_default();
-  if (!gdisp || !GetDispatcher())
+  Display* display = MessageLoopForUI::current()->GetDisplay();
+  if (!display || !GetDispatcher())
     return g_main_context_iteration(context, block);
-
-  Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
 
   if (XPending(display)) {
     XEvent xev;
@@ -153,7 +152,7 @@ GdkFilterReturn MessagePumpX::GdkEventFilter(GdkXEvent* gxevent,
     pump->ProcessXEvent(xev);
     return GDK_FILTER_REMOVE;
   }
-
+  CHECK(use_gtk_message_pump) << "GdkEvent:" << gevent->type;
   return GDK_FILTER_CONTINUE;
 }
 
@@ -169,7 +168,7 @@ bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
 
 void MessagePumpX::EventDispatcherX(GdkEvent* event, gpointer data) {
   MessagePumpX* pump_x = reinterpret_cast<MessagePumpX*>(data);
-  CHECK(use_gtk_message_pump);
+  CHECK(use_gtk_message_pump) << "GdkEvent:" << event->type;
 
   if (!pump_x->gdksource_) {
     pump_x->gdksource_ = g_main_current_source();
@@ -210,21 +209,20 @@ void MessagePumpX::InitializeEventsToCapture(void) {
 
 #if defined(HAVE_XINPUT2)
 void MessagePumpX::InitializeXInput2(void) {
-  GdkDisplay* display = gdk_display_get_default();
+  Display* display = MessageLoopForUI::current()->GetDisplay();
   if (!display)
     return;
 
-  Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
   int event, err;
 
-  if (!XQueryExtension(xdisplay, "XInputExtension", &xiopcode_, &event, &err)) {
+  if (!XQueryExtension(display, "XInputExtension", &xiopcode_, &event, &err)) {
     VLOG(1) << "X Input extension not available.";
     xiopcode_ = -1;
     return;
   }
 
   int major = 2, minor = 0;
-  if (XIQueryVersion(xdisplay, &major, &minor) == BadRequest) {
+  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
     VLOG(1) << "XInput2 not supported in the server.";
     xiopcode_ = -1;
     return;
