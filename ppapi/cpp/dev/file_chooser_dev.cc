@@ -7,7 +7,7 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -41,10 +41,10 @@ int32_t FileChooser_Dev::Show(const CompletionCallback& cc) {
       pp_resource(), cc.pp_completion_callback());
 }
 
-FileRef_Dev FileChooser_Dev::GetNextChosenFile() const {
+FileRef FileChooser_Dev::GetNextChosenFile() const {
   if (!has_interface<PPB_FileChooser_Dev>())
-    return FileRef_Dev();
-  return FileRef_Dev(FileRef_Dev::PassRef(),
+    return FileRef();
+  return FileRef(FileRef::PassRef(),
       get_interface<PPB_FileChooser_Dev>()->GetNextChosenFile(pp_resource()));
 }
 

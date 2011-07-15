@@ -6,7 +6,7 @@
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/var_private.h"
@@ -56,7 +56,7 @@ class MyInstance : public pp::InstancePrivate {
     if (!file_chooser)
       return;
 
-    pp::FileRef_Dev file_ref = file_chooser->GetNextChosenFile();
+    pp::FileRef file_ref = file_chooser->GetNextChosenFile();
     while (!file_ref.is_null()) {
       Log(file_ref.GetName());
       file_ref = file_chooser->GetNextChosenFile();

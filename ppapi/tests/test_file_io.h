@@ -10,7 +10,7 @@
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
-class FileSystem_Dev;
+class FileSystem;
 }  // namespace pp
 
 class TestFileIO : public TestCase {
@@ -50,7 +50,7 @@ class TestFileIO : public TestCase {
   // 1) INVALID_FLAG_COMBINATION
   // 2) (DONT_)?CREATE_IF_DOESNT_EXIST | (DONT_)?OPEN_IF_EXISTS |
   //    (DONT_)?TRUNCATE_IF_EXISTS
-  std::string MatchOpenExpectations(pp::FileSystem_Dev* file_system,
+  std::string MatchOpenExpectations(pp::FileSystem* file_system,
                                     size_t open_flags,
                                     size_t expectations);
 };

@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/dev/file_system_dev.h"
+#include "ppapi/cpp/file_system.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -26,7 +26,7 @@ std::string TestFileSystem::TestOpen() {
   TestCompletionCallback callback(instance_->pp_instance(), force_async_);
 
   // Open.
-  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = callback.WaitForResult();
@@ -35,7 +35,7 @@ std::string TestFileSystem::TestOpen() {
 
   // Open aborted (see the DirectoryReader test for comments).
   callback.reset_run_count();
-  rv = pp::FileSystem_Dev(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+  rv = pp::FileSystem(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY)
       .Open(1024, callback);
   if (callback.run_count() > 0)
     return "FileSystem::Open ran callback synchronously.";
@@ -56,7 +56,7 @@ std::string TestFileSystem::TestMultipleOpens() {
   // Should not allow multiple opens, no matter the first open has completed or
   // not.
   TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
-  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv_1 = file_system.Open(1024, callback_1);
   if (callback_1.run_count() > 0)
     return "FileSystem::Open1 ran callback synchronously.";

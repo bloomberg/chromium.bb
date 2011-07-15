@@ -12,7 +12,7 @@ struct PP_FileChooserOptions_Dev;
 namespace pp {
 
 class CompletionCallback;
-class FileRef_Dev;
+class FileRef;
 class Instance;
 
 class FileChooser_Dev : public Resource {
@@ -27,7 +27,7 @@ class FileChooser_Dev : public Resource {
 
   // PPB_FileChooser methods:
   int32_t Show(const CompletionCallback& cc);
-  FileRef_Dev GetNextChosenFile() const;
+  FileRef GetNextChosenFile() const;
 };
 
 }  // namespace pp
