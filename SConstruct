@@ -506,16 +506,6 @@ nacl_glibc_skiplist = set([
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
     'run_gc_instrumentation_test',
-    # The tests below run ncval.  ncval does not pass on
-    # dynamically-linked executables because, to reduce executable
-    # size, the code segment is not page-aligned, and ncval rejects
-    # such executables.  See
-    # http://code.google.com/p/nativeclient/issues/detail?id=1183
-    'run_earth',
-    'run_mandel_nav',
-    'run_ncval_annotate_test',
-    'run_whole_archive_test',
-    'validate_ppapi_example_audio',
     # run_srpc_sysv_shm_test fails because:
     # 1) it uses fstat(), while we only have an fstat64() wrapper;
     # 2) the test needs an explicit fflush(stdout) call because the
