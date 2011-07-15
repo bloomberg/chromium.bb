@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
 
 // See crbug.com/89392
 #if defined(OS_LINUX)
-#define MAYBE_Timeout FLAKY_Timeout
+#define MAYBE_Timeout DISABLED_Timeout
 #else
 #define MAYBE_Timeout Timeout
 #endif
