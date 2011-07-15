@@ -24,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -163,7 +164,7 @@ void GetExtensionAndQuery(const std::string& url,
                           std::string* extension,
                           std::string* query) {
   // We receive the url with chrome://fileicon/ stripped but GURL expects it.
-  const GURL gurl("chrome://fileicon/" + url);
+  const GURL gurl("chrome://fileicon/" + EscapePath(url));
   const std::string path = gurl.path();
   *extension = StringToLowerASCII(FilePath(path).Extension());
   *query = gurl.query();
