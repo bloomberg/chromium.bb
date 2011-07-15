@@ -77,6 +77,8 @@ namespace npapi {
 
 namespace {
 
+static const char kFlashMimeType[] = "application/x-shockwave-flash";
+
 // This class handles individual multipart responses. It is instantiated when
 // we receive HTTP status code 206 in the HTTP response. This indicates
 // that the response could have multiple parts each separated by a boundary
@@ -223,7 +225,7 @@ struct WebPluginImpl::ClientInfo {
   bool pending_failure_notification;
   linked_ptr<WebKit::WebURLLoader> loader;
   bool notify_redirects;
-  bool check_mixed_scripting;
+  bool is_plugin_src_load;
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -649,7 +651,7 @@ WebPluginDelegate* WebPluginImpl::delegate() {
 
 bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
   if (referrer_flag == PLUGIN_SRC &&
-      mime_type_ == "application/x-shockwave-flash" &&
+      mime_type_ == kFlashMimeType &&
       url.GetOrigin() != plugin_url_.GetOrigin()) {
     // Do url check to make sure that there are no @, ;, \ chars in between url
     // scheme and url path.
@@ -851,7 +853,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
     // loading the main plugin src URL. Longer term, we could investigate
     // firing mixed diplay or scripting issues for subresource loads
     // initiated by plug-ins.
-    if (client_info->check_mixed_scripting &&
+    if (client_info->is_plugin_src_load &&
         webframe_ &&
         !webframe_->checkIfRunInsecureContent(request.url())) {
       loader->cancel();
@@ -899,6 +901,28 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
 
   ResponseInfo response_info;
   GetResponseInfo(response, &response_info);
+
+  ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (!client_info)
+    return;
+
+  // Defend against content confusion by the Flash plug-in.
+  if (client_info->is_plugin_src_load &&
+      mime_type_ == kFlashMimeType) {
+    std::string sniff =
+        response.httpHeaderField("X-Content-Type-Options").utf8();
+    std::string content_type =
+        response.httpHeaderField("Content-Type").utf8();
+    StringToLowerASCII(&sniff);
+    StringToLowerASCII(&content_type);
+    if (sniff.find("nosniff") != std::string::npos &&
+        !content_type.empty() &&
+        content_type != kFlashMimeType) {
+      loader->cancel();
+      client_info->client->DidFail();
+      return;
+    }
+  }
 
   bool request_is_seekable = true;
   if (client->IsMultiByteResponseExpected()) {
@@ -1072,7 +1096,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
                                              bool popups_allowed,
                                              Referrer referrer_flag,
                                              bool notify_redirects,
-                                             bool check_mixed_scripting) {
+                                             bool is_plugin_src_load) {
   // For this request, we either route the output to a frame
   // because a target has been specified, or we handle the request
   // here, i.e. by executing the script if it is a javascript url
@@ -1132,7 +1156,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
 
   InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
                       len, NULL, referrer_flag, notify_redirects,
-                      check_mixed_scripting);
+                      is_plugin_src_load);
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -1153,7 +1177,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
                                         const char* range_info,
                                         Referrer referrer_flag,
                                         bool notify_redirects,
-                                        bool check_mixed_scripting) {
+                                        bool is_plugin_src_load) {
   if (!client) {
     NOTREACHED();
     return false;
@@ -1171,7 +1195,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.request.setHTTPMethod(WebString::fromUTF8(method));
   info.pending_failure_notification = false;
   info.notify_redirects = notify_redirects;
-  info.check_mixed_scripting = check_mixed_scripting;
+  info.is_plugin_src_load = is_plugin_src_load;
 
   if (range_info) {
     info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
