@@ -225,11 +225,17 @@ readonly GOOGLE_PERFTOOLS_REV=867799d6e777
 # version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
-readonly LLVM_MQ_REV=2b2a4c101299      ## patches for svn124151
-readonly LLVM_GCC_MQ_REV=00eb50705e47  ## patches for svn124444
+#readonly LLVM_MQ_REV=2b2a4c101299      ## patches for svn124151
+#readonly LLVM_GCC_MQ_REV=00eb50705e47  ## patches for svn124444
+readonly LLVM_MQ_REV=97487e15f5d3    ## patches for nacl6036-svn128002
+readonly LLVM_GCC_MQ_REV=bb0dc99d5b4a  ## patches for nacl6036-svn126872
+
+
 # Vendor Revs of llvm and llvm-gcc to which the qeues apply
-readonly LLVM_QPARENT_REV=4ca8cbf6756b      # svn124151
-readonly LLVM_GCC_QPARENT_REV=b5bd5728d7a2  # svn124444
+# readonly LLVM_QPARENT_REV=4ca8cbf6756b      # svn124151
+# readonly LLVM_GCC_QPARENT_REV=b5bd5728d7a2  # svn124444
+readonly LLVM_QPARENT_REV=dc3938cfe844      # svn128002
+readonly LLVM_GCC_QPARENT_REV=261494c15c49  # svn126872
 
 
 # Repositories
@@ -3194,6 +3200,7 @@ check-hg-vers() {
   fi;
 }
 
+#@ setup-hg-mq - resets llvm and llvm-gcc repos to use MQ instead
 setup-hg-mq() {
   check-hg-vers
   if [ -e "${TC_SRC_LLVM}/.hg/patches" ]; then
@@ -3212,6 +3219,11 @@ setup-hg-mq() {
   hg-checkout-llvm-mq-patches
   hg-checkout-llvm-gcc-mq-patches
 
+  hg-update-nosfi "llvm" ${LLVM_QPARENT_REV}    "${TC_SRC_LLVM}"
+  hg-update-nosfi "llvm-gcc" ${LLVM_GCC_QPARENT_REV} "${TC_SRC_LLVM_GCC}"
+  hg-update-llvm-mq-patches
+  hg-update-llvm-gcc-mq-patches
+
   StepBanner "Forcing symlink to appropriate queue "
   ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
   ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
@@ -3221,9 +3233,8 @@ setup-hg-mq() {
   (cd "${TC_SRC_LLVM_GCC}"; hg qpush -a)
 
   StepBanner "Patch Queues have been applied against vendor"
-  StepBanner "Cleaning the llvm and llvm-gcc build directories"
-  llvm-clean
-  llvm-gcc-clean arm
+  StepBanner "Cleaning all build directories"
+  clean
   StepBanner "You may now execute utman.sh everything-post-hg"
 }
 
