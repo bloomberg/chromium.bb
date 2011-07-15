@@ -296,7 +296,7 @@ void ShowImportProgressDialog(HWND parent_window,
       importer_host,
       importer_observer,
       source_profile.importer_name,
-      source_profile.importer_type == importer::BOOKMARKS_HTML);
+      source_profile.importer_type == importer::TYPE_BOOKMARKS_FILE);
 
   views::Widget* window =
       views::Widget::CreateWindowWithParent(progress_view, parent_window);

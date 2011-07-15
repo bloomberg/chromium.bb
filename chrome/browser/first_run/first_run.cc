@@ -441,7 +441,7 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   importer_host->set_headless();
 
   importer::SourceProfile source_profile;
-  source_profile.importer_type = importer::BOOKMARKS_HTML;
+  source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = file_path;
 
   FirstRunImportObserver importer_observer;

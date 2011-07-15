@@ -7,7 +7,7 @@
 namespace importer {
 
 SourceProfile::SourceProfile()
-    : importer_type(NONE_IMPORTER),
+    : importer_type(TYPE_UNKNOWN),
       services_supported(0) {
 }
 

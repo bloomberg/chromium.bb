@@ -132,7 +132,7 @@ void ImporterHost::StartImportSettings(
 #if defined(OS_WIN)
   // For google toolbar import, we need the user to log in and store their GAIA
   // credentials.
-  if (source_profile.importer_type == importer::GOOGLE_TOOLBAR5) {
+  if (source_profile.importer_type == importer::TYPE_GOOGLE_TOOLBAR5) {
     toolbar_importer_utils::IsGoogleGAIACookieInstalled(
         base::Bind(&ImporterHost::OnGoogleGAIACookieChecked, this), profile_);
     is_source_readable_ = false;
@@ -186,8 +186,8 @@ void ImporterHost::CheckForFirefoxLock(
     const importer::SourceProfile& source_profile,
     uint16 items,
     bool first_run) {
-  if (source_profile.importer_type == importer::FIREFOX2 ||
-      source_profile.importer_type == importer::FIREFOX3) {
+  if (source_profile.importer_type == importer::TYPE_FIREFOX2 ||
+      source_profile.importer_type == importer::TYPE_FIREFOX3) {
     DCHECK(!firefox_lock_.get());
     firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
     if (!firefox_lock_->HasAcquired()) {

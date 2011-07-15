@@ -24,21 +24,21 @@ namespace importer {
 Importer* CreateImporterByType(ImporterType type) {
   switch (type) {
 #if defined(OS_WIN)
-    case MS_IE:
+    case TYPE_IE:
       return new IEImporter();
 #endif
-    case BOOKMARKS_HTML:
-    case FIREFOX2:
+    case TYPE_BOOKMARKS_FILE:
+    case TYPE_FIREFOX2:
       return new Firefox2Importer();
-    case FIREFOX3:
+    case TYPE_FIREFOX3:
       return new Firefox3Importer();
-    case GOOGLE_TOOLBAR5:
-      return new Toolbar5Importer();
 #if defined(OS_MACOSX)
-    case SAFARI:
+    case TYPE_SAFARI:
       return new SafariImporter(base::mac::GetUserLibraryPath());
-#endif  // OS_MACOSX
-    case NONE_IMPORTER:
+#endif
+    case TYPE_GOOGLE_TOOLBAR5:
+      return new Toolbar5Importer();
+    default:
       NOTREACHED();
       return NULL;
   }

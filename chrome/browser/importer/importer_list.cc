@@ -6,8 +6,8 @@
 
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/shell_integration.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,9 +24,9 @@ namespace {
 #if defined(OS_WIN)
 void DetectIEProfiles(std::vector<importer::SourceProfile*>* profiles) {
     // IE always exists and doesn't have multiple profiles.
-  importer::SourceProfile* ie = new importer::SourceProfile();
+  importer::SourceProfile* ie = new importer::SourceProfile;
   ie->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
-  ie->importer_type = importer::MS_IE;
+  ie->importer_type = importer::TYPE_IE;
   ie->source_path.clear();
   ie->app_path.clear();
   ie->services_supported = importer::HISTORY | importer::FAVORITES |
@@ -41,9 +41,9 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
   if (!SafariImporter::CanImport(base::mac::GetUserLibraryPath(), &items))
     return;
 
-  importer::SourceProfile* safari = new importer::SourceProfile();
+  importer::SourceProfile* safari = new importer::SourceProfile;
   safari->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_SAFARI);
-  safari->importer_type = importer::SAFARI;
+  safari->importer_type = importer::TYPE_SAFARI;
   safari->source_path.clear();
   safari->app_path.clear();
   safari->services_supported = items;
@@ -67,15 +67,15 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
     GetFirefoxVersionAndPathFromProfile(profile_path, &version, &app_path);
 
   if (version == 2) {
-    firefox_type = importer::FIREFOX2;
+    firefox_type = importer::TYPE_FIREFOX2;
   } else if (version >= 3) {
-    firefox_type = importer::FIREFOX3;
+    firefox_type = importer::TYPE_FIREFOX3;
   } else {
     // Ignores other versions of firefox.
     return;
   }
 
-  importer::SourceProfile* firefox = new importer::SourceProfile();
+  importer::SourceProfile* firefox = new importer::SourceProfile;
   firefox->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);
   firefox->importer_type = firefox_type;
   firefox->source_path = profile_path;
@@ -94,10 +94,10 @@ void DetectGoogleToolbarProfiles(
   if (FirstRun::IsChromeFirstRun())
     return;
 
-  importer::SourceProfile* google_toolbar = new importer::SourceProfile();
+  importer::SourceProfile* google_toolbar = new importer::SourceProfile;
   google_toolbar->importer_name =
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_GOOGLE_TOOLBAR);
-  google_toolbar->importer_type = importer::GOOGLE_TOOLBAR5;
+  google_toolbar->importer_type = importer::TYPE_GOOGLE_TOOLBAR5;
   google_toolbar->source_path.clear();
   google_toolbar->app_path.clear();
   google_toolbar->services_supported = importer::FAVORITES;
@@ -153,7 +153,7 @@ const importer::SourceProfile& ImporterList::GetSourceProfileForImporterType(
       return *source_profiles_[i];
   }
   NOTREACHED();
-  return *(new importer::SourceProfile());
+  return *(new importer::SourceProfile);
 }
 
 void ImporterList::DetectSourceProfilesWorker() {

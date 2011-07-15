@@ -17,18 +17,18 @@ namespace importer {
 // NOTE: Numbers added so that data can be reliably cast to ints and passed
 // across IPC.
 enum ImporterType {
-  NONE_IMPORTER = -1,
+  TYPE_UNKNOWN         = -1,
 #if defined(OS_WIN)
-  MS_IE = 0,
+  TYPE_IE              = 0,
 #endif
-  FIREFOX2 = 1,
-  FIREFOX3 = 2,  // Firefox 3 and later.
+  TYPE_FIREFOX2        = 1,
+  TYPE_FIREFOX3        = 2,  // Firefox 3 and later.
 #if defined(OS_MACOSX)
-  SAFARI = 3,
+  TYPE_SAFARI          = 3,
 #endif
-  GOOGLE_TOOLBAR5 = 4,
+  TYPE_GOOGLE_TOOLBAR5 = 4,
   // Identifies a 'bookmarks.html' file.
-  BOOKMARKS_HTML = 5
+  TYPE_BOOKMARKS_FILE  = 5
 };
 
 Importer* CreateImporterByType(ImporterType type);
