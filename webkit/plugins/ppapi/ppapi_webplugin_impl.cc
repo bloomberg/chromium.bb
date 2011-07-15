@@ -96,6 +96,11 @@ void WebPluginImpl::destroy() {
 NPObject* WebPluginImpl::scriptableObject() {
   scoped_refptr<ObjectVar> object(
       ObjectVar::FromPPVar(instance_->GetInstanceObject()));
+  // GetInstanceObject talked to the plugin which may have removed the instance
+  // from the DOM, in which case instance_ would be NULL now.
+  if (!instance_)
+    return NULL;
+
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
   if (object) {
