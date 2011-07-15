@@ -2585,6 +2585,7 @@ nacl_env.Append(
     'tests/ppapi_browser/ppb_core/nacl.scons',
     'tests/ppapi_browser/ppb_file_system/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
+    'tests/ppapi_browser/ppb_image_data/nacl.scons',
     'tests/ppapi_browser/ppb_instance/nacl.scons',
     'tests/ppapi_browser/ppb_memory/nacl.scons',
     'tests/ppapi_browser/ppb_scrollbar/nacl.scons',
