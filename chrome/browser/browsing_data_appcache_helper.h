@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class Profile;
 
@@ -38,9 +39,10 @@ class BrowsingDataAppCacheHelper
 
  private:
   void OnFetchComplete(int rv);
+  ChromeAppCacheService* GetAppCacheService();
 
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   bool is_fetching_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<net::CancelableCompletionCallback<BrowsingDataAppCacheHelper> >
       appcache_info_callback_;
 

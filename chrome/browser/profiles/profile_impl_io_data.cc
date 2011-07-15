@@ -4,7 +4,6 @@
 
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -49,7 +47,7 @@ ProfileImplIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
-  io_data_.release()->ShutdownOnUIThread();
+  io_data_->ShutdownOnUIThread();
 }
 
 void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
@@ -74,14 +72,6 @@ void ProfileImplIOData::Handle::Init(const FilePath& cookie_path,
 
   // Keep track of isolated app path separately so we can use it on demand.
   io_data_->app_path_ = app_path;
-}
-
-base::Callback<ChromeURLDataManagerBackend*(void)>
-ProfileImplIOData::Handle::GetChromeURLDataManagerBackendGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LazyInitialize();
-  return base::Bind(&ProfileIOData::GetChromeURLDataManagerBackend,
-                    base::Unretained(io_data_.get()));
 }
 
 const content::ResourceContext&

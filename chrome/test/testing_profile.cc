@@ -765,9 +765,7 @@ PromoCounter* TestingProfile::GetInstantPromoCounter() {
 
 ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
   if (!chrome_url_data_manager_.get())
-    chrome_url_data_manager_.reset(
-        new ChromeURLDataManager(
-            base::Callback<ChromeURLDataManagerBackend*(void)>()));
+    chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
   return chrome_url_data_manager_.get();
 }
 
