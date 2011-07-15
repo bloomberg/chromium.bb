@@ -170,7 +170,7 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() {
     } else {
       int min_tabstrip_area_width =
           width() - GetBoundsForTabStrip(tabstrip).width() + min_tabstrip_width;
-      min_size.set_width(std::min(min_tabstrip_area_width, min_size.width()));
+      min_size.set_width(std::max(min_tabstrip_area_width, min_size.width()));
     }
   }
 
