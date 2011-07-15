@@ -438,8 +438,8 @@ cr.define('ntp4', function() {
   function updatePageSwitchers() {
     var page = cardSlider.currentCardValue;
 
-    pageSwitcherStart.hidden = page && (cardSlider.currentCard == 0);
-    pageSwitcherEnd.hidden = page &&
+    pageSwitcherStart.hidden = !page || (cardSlider.currentCard == 0);
+    pageSwitcherEnd.hidden = !page ||
         (cardSlider.currentCard == cardSlider.cardCount - 1);
 
     if (!page)

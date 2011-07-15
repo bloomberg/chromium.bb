@@ -38,6 +38,10 @@ cr.define('ntp4', function() {
       this.page_ = page;
       this.title_ = title;
 
+      var selectionBar = this.ownerDocument.createElement('div');
+      selectionBar.className = 'selection-bar';
+      this.appendChild(selectionBar);
+
       // TODO(estade): should there be some limit to the number of characters?
       this.input_ = this.ownerDocument.createElement('input');
       this.input_.setAttribute('spellcheck', false);

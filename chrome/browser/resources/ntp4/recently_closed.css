@@ -17,6 +17,8 @@
 
 .recent-menu {
   padding: 6px 8px;
+  /* Needs to be above #footer. */
+  z-index: 10;
 }
 
 .recent-menu-item {

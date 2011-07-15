@@ -46,6 +46,11 @@
   -webkit-transition: opacity 0.15s;
 }
 
+html[dir=rtl] .most-visited .close-button {
+  left: 0;
+  right: auto;
+}
+
 .most-visited:hover .close-button {
   opacity: 1;
   -webkit-transition-delay: 0.5s;

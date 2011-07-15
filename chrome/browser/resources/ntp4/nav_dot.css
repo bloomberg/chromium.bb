@@ -20,20 +20,25 @@
 
 /* TODO(estade): improve focus indicator. */
 .dot {
-  border-top: 5px solid;
   box-sizing: border-box;
   cursor: pointer;
-  font-size: 9pt;
-  margin: 12px 10px 12px 0;
+  margin-right: 10px;
   text-align: left;
   width: 80px;
   -webkit-padding-start: 2px;
-  -webkit-transition: border-color 0.2s, width 0.25s, margin-right 0.25s;
+  -webkit-transition: width 0.25s, margin-right 0.25s;
 }
 
 .dot.small {
   margin-right: 0;
   width: 0;
+}
+
+.dot .selection-bar {
+  border-bottom: 5px solid;
+  border-color: rgba(0, 0, 0, 0.1);
+  height: 10px;
+  -webkit-transition: border-color 0.2s;
 }
 
 .dot input {
@@ -56,24 +61,18 @@
 /* Everything below here should be themed but we don't have appropriate colors
  * yet.
  */
-.dot {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.dot:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.dot.selected {
-  border-color: rgba(0, 0, 0, 0.4);
-}
-
 .dot input {
-  color: rgba(0, 0, 0, 0.2);
+  color: #b2b2b2;
 }
 
-.dot.selected input,
-.dot:hover input {
-  color: rgba(0, 0, 0, 0.4);
+.dot:hover input, .dot.selected input {
+  color: #7f7f7f;
 }
 
+.dot:hover .selection-bar {
+  border-color: #b2b2b2;
+}
+
+.dot.selected .selection-bar {
+  border-color: #7f7f7f;
+}
