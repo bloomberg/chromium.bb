@@ -73,8 +73,8 @@ class ChooseMobileNetworkHandler
   virtual void RegisterMessages();
 
   // NetworkDeviceObserver implementation.
-  virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
-                                      const NetworkDevice* device);
+  virtual void OnNetworkDeviceFoundNetworks(NetworkLibrary* cros,
+                                            const NetworkDevice* device);
 
  private:
   // Handlers for JS WebUI messages.
@@ -166,7 +166,7 @@ void ChooseMobileNetworkHandler::RegisterMessages() {
       NewCallback(this, &ChooseMobileNetworkHandler::HandlePageReady));
 }
 
-void ChooseMobileNetworkHandler::OnNetworkDeviceChanged(
+void ChooseMobileNetworkHandler::OnNetworkDeviceFoundNetworks(
     NetworkLibrary* cros,
     const NetworkDevice* device) {
   networks_list_.Clear();

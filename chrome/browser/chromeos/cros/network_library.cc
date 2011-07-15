@@ -4561,12 +4561,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  void NotifyNetworkDeviceChanged(NetworkDevice* device) {
+  void NotifyNetworkDeviceChanged(NetworkDevice* device,
+                                  PropertyIndex index) {
     DCHECK(device);
     NetworkDeviceObserverMap::const_iterator iter =
         network_device_observers_.find(device->device_path());
     if (iter != network_device_observers_.end()) {
       NetworkDeviceObserverList* device_observer_list = iter->second;
+      if (index == PROPERTY_INDEX_FOUND_NETWORKS) {
+        FOR_EACH_OBSERVER(NetworkDeviceObserver,
+                          *device_observer_list,
+                          OnNetworkDeviceFoundNetworks(this, device));
+      }
       FOR_EACH_OBSERVER(NetworkDeviceObserver,
                         *device_observer_list,
                         OnNetworkDeviceChanged(this, device));
@@ -4622,11 +4628,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkDevice* device = GetNetworkDeviceByPath(path);
     if (device) {
       VLOG(2) << "UpdateNetworkDeviceStatus: " << device->name() << "." << key;
-      int index = property_index_parser().Get(std::string(key));
+      PropertyIndex index = property_index_parser().Get(std::string(key));
       if (!device->ParseValue(index, value)) {
         VLOG(1) << "UpdateNetworkDeviceStatus: Failed to parse: "
                 << path << "." << key;
-      } else if (strcmp(key, kCellularAllowRoamingProperty) == 0) {
+      } else if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
         bool settings_value =
             UserCrosSettingsProvider::cached_data_roaming_enabled();
         if (device->data_roaming_allowed() != settings_value) {
@@ -4636,10 +4642,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         }
       }
       // Notify only observers on device property change.
-      NotifyNetworkDeviceChanged(device);
+      NotifyNetworkDeviceChanged(device, index);
       // If a device's power state changes, new properties may become
       // defined.
-      if (strcmp(key, kPoweredProperty) == 0) {
+      if (index == PROPERTY_INDEX_POWERED) {
         RequestNetworkDeviceInfo(path, &NetworkDeviceUpdate, this);
       }
     }

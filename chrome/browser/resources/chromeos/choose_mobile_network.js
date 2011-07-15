@@ -16,6 +16,7 @@ cr.define('mobile', function() {
 
       if (networks.length == 0) {
         $('scanning').hidden = true;
+        $('choosing').hidden = true;
         $('no-mobile-networks').hidden = false;
         return;
       }
@@ -43,6 +44,7 @@ cr.define('mobile', function() {
       }
       $('scanning').hidden = true;
       $('choosing').hidden = false;
+      $('no-mobile-networks').hidden = true;
     },
     connect_: function() {
       for (var i in this.networks_) {
