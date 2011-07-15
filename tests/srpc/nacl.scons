@@ -27,7 +27,6 @@ env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
      'srpc_perf.html',
      'srpc_test.nmf'])
-env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
 
 
 srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s' %
@@ -44,7 +43,6 @@ srpc_nrd_server_nexe = env.ComponentProgram(
         'pthread'])
 env.Publish(srpc_nrd_server_nexe_name, 'run',
     ['srpc_nrd_server.nmf'])
-env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
 
 srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s' %
@@ -64,7 +62,6 @@ env.Publish(srpc_nrd_client_nexe_name, 'run',
      'srpc_nrd_client.nmf',
      srpc_nrd_server_nexe,
      'srpc_nrd_server.nmf'])
-env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
 cat_nexe_name = ('cat_%s' % env.get('TARGET_FULLARCH'))

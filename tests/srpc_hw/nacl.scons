@@ -39,8 +39,6 @@ env.Publish(srpc_hw_nexe_name, 'run',
              'srpc_hw_fd.html',
              srpc_hw_undecorated])
 
-env.AddPrebuiltBinaryToRepository(srpc_hw_nexe)
-
 node = env.SelUniversalTest(
     'srpc_hw_test.out',
     srpc_hw_nexe,

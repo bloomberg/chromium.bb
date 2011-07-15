@@ -33,8 +33,6 @@ env.Publish(srpc_ns_nexe_name, 'run',
             ['srpc_nameservice_test.html',
              'srpc_nameservice.nmf'])
 
-env.AddPrebuiltBinaryToRepository(srpc_ns_nexe)
-
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(

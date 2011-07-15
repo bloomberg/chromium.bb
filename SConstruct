@@ -2671,27 +2671,6 @@ if nacl_env.GetOption('download'):
   nacl_sync_env['ENV'] = os.environ
   nacl_sync_env.Execute('gclient runhooks --force')
 
-# ----------------------------------------------------------
-# Update prebuilt nexes
-# ----------------------------------------------------------
-# Contains all binaries that have to be checked in
-nacl_env.Alias('prebuilt_binaries_update', [])
-
-
-def AddPrebuiltBinaryToRepository(env, nodes):
-  platform = GetPlatform('targetplatform')
-  if platform == 'x86-32':
-    path = '${SCONSTRUCT_DIR}/tests/prebuilt/x86/'
-  elif platform == 'x86-64':
-    path = '${SCONSTRUCT_DIR}/tests/prebuilt/x64/'
-  elif platform == 'arm':
-    path = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/'
-  n = env.Replicate(path, nodes)
-  env.Alias('prebuilt_binaries_update', n)
-  return n
-
-nacl_env.AddMethod(AddPrebuiltBinaryToRepository)
-
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
   if not env.Bit('nacl_disable_shared'):
