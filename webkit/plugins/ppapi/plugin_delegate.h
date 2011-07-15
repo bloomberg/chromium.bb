@@ -216,7 +216,7 @@ class PluginDelegate {
   // Interface for PlatformVideoDecoder is directly inherited from general media
   // VideoDecodeAccelerator interface.
   class PlatformVideoDecoder : public media::VideoDecodeAccelerator {
-   public:
+   protected:
     virtual ~PlatformVideoDecoder() {}
   };
 

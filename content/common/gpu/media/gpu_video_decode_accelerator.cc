@@ -163,7 +163,7 @@ void GpuVideoDecodeAccelerator::Initialize(const std::vector<uint32>& configs) {
   omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetDisplay(),
       stub_->scheduler()->decoder()->GetGLContext()->GetHandle());
-  video_decode_accelerator_.reset(omx_decoder);
+  video_decode_accelerator_ = omx_decoder;
   video_decode_accelerator_->Initialize(configs);
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
@@ -248,11 +248,6 @@ void GpuVideoDecodeAccelerator::NotifyFlushDone() {
 void GpuVideoDecodeAccelerator::NotifyResetDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ResetDone(host_route_id_)))
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
-}
-
-void GpuVideoDecodeAccelerator::NotifyDestroyDone() {
-  if (!Send(new AcceleratedVideoDecoderHostMsg_DestroyDone(host_route_id_)))
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_DestroyDone) failed";
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {

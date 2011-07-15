@@ -58,15 +58,12 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
 
   // pp::VideoDecoderClient_Dev implementation.
   virtual void ProvidePictureBuffers(
-      pp::VideoDecoder_Dev decoder, uint32_t req_num_of_bufs,
-      PP_Size dimensions, PP_PictureBufferType_Dev type);
-  virtual void DismissPictureBuffer(
-      pp::VideoDecoder_Dev decoder, int32_t picture_buffer_id);
-  virtual void PictureReady(
-      pp::VideoDecoder_Dev decoder, const PP_Picture_Dev& picture);
-  virtual void EndOfStream(pp::VideoDecoder_Dev decoder);
-  virtual void NotifyError(
-      pp::VideoDecoder_Dev decoder, PP_VideoDecodeError_Dev error);
+      uint32_t req_num_of_bufs, PP_Size dimensions,
+      PP_PictureBufferType_Dev type);
+  virtual void DismissPictureBuffer(int32_t picture_buffer_id);
+  virtual void PictureReady(const PP_Picture_Dev& picture);
+  virtual void EndOfStream();
+  virtual void NotifyError(PP_VideoDecodeError_Dev error);
 
  private:
   enum { kNumConcurrentDecodes = 7 };
@@ -78,7 +75,6 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   void DecoderInitDone(int32_t result);
   void DecoderBitstreamDone(int32_t result, int bitstream_buffer_id);
   void DecoderFlushDone(int32_t result);
-  void DecoderAbortDone(int32_t result);
 
   // Decode helpers.
   void DecodeNextNALUs();
@@ -146,7 +142,7 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
 }
 
 GLES2DemoInstance::~GLES2DemoInstance() {
-  delete video_decoder_;
+  delete video_decoder_;  // May be NULL, which is fine.
   delete surface_;
   delete context_;
 }
@@ -194,9 +190,8 @@ void GLES2DemoInstance::DecoderFlushDone(int32_t result) {
   // Check that each bitstream buffer ID we handed to the decoder got handed
   // back to us.
   assert(bitstream_ids_at_decoder_.empty());
-}
-
-void GLES2DemoInstance::DecoderAbortDone(int32_t result) {
+  delete video_decoder_;
+  video_decoder_ = NULL;
 }
 
 static bool LookingAtNAL(const unsigned char* encoded, size_t pos) {
@@ -256,7 +251,7 @@ void GLES2DemoInstance::DecodeNextNALU() {
 }
 
 void GLES2DemoInstance::ProvidePictureBuffers(
-    pp::VideoDecoder_Dev decoder, uint32_t req_num_of_bufs, PP_Size dimensions,
+    uint32_t req_num_of_bufs, PP_Size dimensions,
     PP_PictureBufferType_Dev type) {
   std::vector<PP_GLESBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; i++) {
@@ -270,16 +265,14 @@ void GLES2DemoInstance::ProvidePictureBuffers(
   video_decoder_->AssignGLESBuffers(buffers);
 }
 
-void GLES2DemoInstance::DismissPictureBuffer(
-    pp::VideoDecoder_Dev decoder, int32_t picture_buffer_id) {
+void GLES2DemoInstance::DismissPictureBuffer(int32_t picture_buffer_id) {
   PictureBufferMap::iterator it = buffers_by_id_.find(picture_buffer_id);
   assert(it != buffers_by_id_.end());
   DeleteTexture(it->second.texture_id);
   buffers_by_id_.erase(it);
 }
 
-void GLES2DemoInstance::PictureReady(
-    pp::VideoDecoder_Dev decoder, const PP_Picture_Dev& picture) {
+void GLES2DemoInstance::PictureReady(const PP_Picture_Dev& picture) {
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
   if (is_painting_) {
@@ -292,11 +285,10 @@ void GLES2DemoInstance::PictureReady(
   Render(it->second);
 }
 
-void GLES2DemoInstance::EndOfStream(pp::VideoDecoder_Dev decoder) {
+void GLES2DemoInstance::EndOfStream() {
 }
 
-void GLES2DemoInstance::NotifyError(
-    pp::VideoDecoder_Dev decoder, PP_VideoDecodeError_Dev error) {
+void GLES2DemoInstance::NotifyError(PP_VideoDecodeError_Dev error) {
 }
 
 // This object is the global object representing this plugin library as long
@@ -366,11 +358,12 @@ void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
               << fps << ", with average ms/swap of: " << ms_per_swap
               << std::endl;
   }
-  video_decoder_->ReusePictureBuffer(picture_buffer_id);
+  if (video_decoder_)
+    video_decoder_->ReusePictureBuffer(picture_buffer_id);
   while (!pictures_pending_paint_.empty() && !is_painting_) {
     PP_Picture_Dev picture = pictures_pending_paint_.front();
     pictures_pending_paint_.pop_front();
-    PictureReady(*video_decoder_, picture);
+    PictureReady(picture);
   }
 }
 

@@ -83,14 +83,12 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void SetNotifyRepaintTask(Task* task);
 
   // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
-  // returns a pointer to a GpuVideoDecodeAcceleratorHost. CommandBufferProxy
-  // owns the GpuVideoDecodeAcceleratorHost and does not transfer ownership to
-  // the caller of this method.
+  // returns a pointer to a GpuVideoDecodeAcceleratorHost.
   // Returns NULL on failure to create the GpuVideoDecodeAcceleratorHost.
   // Note that the GpuVideoDecodeAccelerator may still fail to be created in
   // the GPU process, even if this returns non-NULL. In this case the client is
   // notified of an error later.
-  GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
+  scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
       const std::vector<uint32>& configs,
       gpu::CommandBufferHelper* cmd_buffer_helper,
       media::VideoDecodeAccelerator::Client* client);
@@ -126,7 +124,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // The video decoder host corresponding to the stub's video decoder in the GPU
   // process, if one exists.
-  scoped_ptr<GpuVideoDecodeAcceleratorHost> video_decoder_host_;
+  scoped_refptr<GpuVideoDecodeAcceleratorHost> video_decoder_host_;
 
   // The last cached state received from the service.
   State last_state_;

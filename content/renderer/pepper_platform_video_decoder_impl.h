@@ -25,9 +25,8 @@ class PlatformVideoDecoderImpl
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id,
       gpu::CommandBufferHelper* cmd_buffer_helper);
-  virtual ~PlatformVideoDecoderImpl();
 
-  // PlatformVideoDecoder implementation.
+  // PlatformVideoDecoder (a.k.a. VideoDecodeAccelerator) implementation.
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
@@ -52,9 +51,10 @@ class PlatformVideoDecoderImpl
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyDestroyDone() OVERRIDE;
 
  private:
+  virtual ~PlatformVideoDecoderImpl();
+
   // Client lifetime must exceed lifetime of this class.
   // TODO(vrk/fischman): We should take another look at the overall
   // arcitecture of PPAPI Video Decode to make sure lifetime/ownership makes
@@ -67,10 +67,8 @@ class PlatformVideoDecoderImpl
   // Helper for the command buffer associated with video decoder's context.
   gpu::CommandBufferHelper* cmd_buffer_helper_;
 
-  // Host for GpuVideoDecodeAccelerator.
-  // This is owned by the CommandBufferProxy associated with
-  // |command_buffer_route_id|.
-  media::VideoDecodeAccelerator* decoder_;
+  // Holds a GpuVideoDecodeAcceleratorHost.
+  scoped_refptr<media::VideoDecodeAccelerator> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };

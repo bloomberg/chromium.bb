@@ -32,7 +32,10 @@ VideoDecoder_Dev::VideoDecoder_Dev(const Instance& instance) {
 VideoDecoder_Dev::VideoDecoder_Dev(PP_Resource resource) : Resource(resource) {
 }
 
-VideoDecoder_Dev::~VideoDecoder_Dev() {}
+VideoDecoder_Dev::~VideoDecoder_Dev() {
+  get_interface<PPB_VideoDecoder_Dev>()->Destroy(pp_resource());
+}
+
 
 int32_t VideoDecoder_Dev::Initialize(const PP_VideoConfigElement* config,
                                      const Context3D_Dev& context,
@@ -79,13 +82,6 @@ int32_t VideoDecoder_Dev::Reset(CompletionCallback callback) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_VideoDecoder_Dev>()->Reset(
-      pp_resource(), callback.pp_completion_callback());
-}
-
-int32_t VideoDecoder_Dev::Destroy(CompletionCallback callback) {
-  if (!has_interface<PPB_VideoDecoder_Dev>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_VideoDecoder_Dev>()->Destroy(
       pp_resource(), callback.pp_completion_callback());
 }
 

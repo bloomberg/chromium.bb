@@ -15,7 +15,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "media/video/video_decode_accelerator.h"
@@ -31,12 +33,13 @@
 //
 // This class lives on a single thread and DCHECKs that it is never accessed
 // from any other.  OMX callbacks are trampolined from the OMX component's
-// thread to maintain this invariant.
+// thread to maintain this invariant.  The only exception to thread-unsafety is
+// that references can be added from any thread (practically used only by the
+// OMX thread).
 class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
-  virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
   bool Initialize(const std::vector<uint32>& config) OVERRIDE;
@@ -51,6 +54,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void SetEglState(EGLDisplay egl_display, EGLContext egl_context);
 
  private:
+  virtual ~OmxVideoDecodeAccelerator();
+
   // Because OMX state-transitions are described solely by the "state reached"
   // (3.1.2.9.1, table 3-7 of the spec), we track what transition was requested
   // using this enum.  Note that it is an error to request a transition while
@@ -84,7 +89,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
   // Create the Component for OMX. Handles all OMX initialization.
   bool CreateComponent();
-  void ShutdownComponent();
   // Buffer allocation/free methods for input and output buffers.
   bool AllocateInputBuffers();
   bool AllocateOutputBuffers();
@@ -110,6 +114,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void OnReachedLoadedInDestroying();
   void OnReachedEOSInFlushing();
   void OnReachedInvalidInErroring();
+  void ShutdownComponent();
+  void BusyLoopInDestroying();
 
   // Port-flushing helpers.
   void FlushIOPorts();

@@ -42,7 +42,10 @@ class VideoDecoder_Dev : public Resource {
   void ReusePictureBuffer(int32_t picture_buffer_id);
   int32_t Flush(CompletionCallback callback);
   int32_t Reset(CompletionCallback callback);
-  int32_t Destroy(CompletionCallback callback);
+
+ private:
+  // Disallow copy-construction to ensure Destroy() is called exactly once.
+  VideoDecoder_Dev(const VideoDecoder_Dev&);
 };
 
 }  // namespace pp

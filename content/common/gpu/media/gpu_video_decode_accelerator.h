@@ -47,7 +47,6 @@ class GpuVideoDecodeAccelerator
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyDestroyDone() OVERRIDE;
 
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
@@ -93,7 +92,7 @@ class GpuVideoDecodeAccelerator
   GpuCommandBufferStub* stub_;
 
   // Pointer to the underlying VideoDecodeAccelerator.
-  scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
+  scoped_refptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };

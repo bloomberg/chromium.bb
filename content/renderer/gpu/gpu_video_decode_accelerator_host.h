@@ -67,7 +67,6 @@ class GpuVideoDecodeAcceleratorHost
                       const gfx::Size& decoded_size);
   void OnFlushDone();
   void OnResetDone();
-  void OnDestroyDone();
   void OnEndOfStream();
   void OnErrorNotification(uint32 error);
 

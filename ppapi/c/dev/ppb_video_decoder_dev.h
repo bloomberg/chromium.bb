@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_11 "PPB_VideoDecoder(Dev);0.11"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_11
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_12 "PPB_VideoDecoder(Dev);0.12"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_12
 
 // Video decoder interface.
 //
@@ -27,7 +27,7 @@
 //   callback.
 // - To reset the decoder (e.g. to implement Seek): call Reset() and wait for
 //   NotifyResetDone callback.
-// - To tear down the decoder call Destroy() and wait for NotifyDestroyDone.
+// - To tear down the decoder call Destroy().
 //
 // See PPP_VideoDecoder_Dev for the notifications the decoder may send the
 // plugin.
@@ -132,18 +132,14 @@ struct PPB_VideoDecoder_Dev {
                    struct PP_CompletionCallback callback);
 
   // Tear down the decoder as quickly as possible.  Pending inputs and outputs
-  // are dropped and the decoder frees all of its resources.  When |callback| is
-  // called the plugin is guaranteed not to receive any further callbacks and
-  // must make no further calls on |video_decoder|.
+  // are dropped and the decoder frees all of its resources.  Although resources
+  // may be freed asynchronously, after this method returns no more callbacks
+  // will be made on the client.  Any resources held by the client at that point
+  // may be freed.
   //
   // Parameters:
   //   |video_decoder| is the previously created handle to the decoder resource.
-  //   |callback| is one-time callback that will be called once the destroy
-  //   request has been completed.
-  //
-  // Returns an error code from pp_errors.h.
-  int32_t (*Destroy)(PP_Resource video_decoder,
-                     struct PP_CompletionCallback callback);
+  void (*Destroy)(PP_Resource video_decoder);
 };
 
 #endif  /* PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_ */

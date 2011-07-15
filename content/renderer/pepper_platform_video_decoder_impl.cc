@@ -20,8 +20,7 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
     gpu::CommandBufferHelper* cmd_buffer_helper)
     : client_(client),
       command_buffer_route_id_(command_buffer_route_id),
-      cmd_buffer_helper_(cmd_buffer_helper),
-      decoder_(NULL) {
+      cmd_buffer_helper_(cmd_buffer_helper) {
   DCHECK(client);
 }
 
@@ -132,9 +131,4 @@ void PlatformVideoDecoderImpl::NotifyFlushDone() {
 void PlatformVideoDecoderImpl::NotifyResetDone() {
   DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
   client_->NotifyResetDone();
-}
-
-void PlatformVideoDecoderImpl::NotifyDestroyDone() {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
-  client_->NotifyDestroyDone();
 }

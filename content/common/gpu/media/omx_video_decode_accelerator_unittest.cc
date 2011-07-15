@@ -200,9 +200,9 @@ void RenderingHelper::Initialize(
 
   // Per-window/surface X11 & EGL initialization.
   for (int i = 0; i < num_windows; ++i) {
-    // Arrange X windows side by side whimsically.
-    int top_left_x = (width + 50) * i;
-    int top_left_y = 100 + (i % 2) * 250;
+    // Arrange X windows whimsically, with some padding.
+    int top_left_x = (width + 20) * (i % 4);
+    int top_left_y = (height + 12) * (i % 3);
     Window x_window = XCreateWindow(
       x_display_, DefaultRootWindow(x_display_),
       top_left_x, top_left_y, width_, height_,
@@ -421,7 +421,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id);
   virtual void NotifyFlushDone();
   virtual void NotifyResetDone();
-  virtual void NotifyDestroyDone();
   virtual void NotifyError(VideoDecodeAccelerator::Error error);
 
   // Simple getters for inspecting the state of the Client.
@@ -432,7 +431,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   EGLDisplay egl_display() { return rendering_helper_->egl_display(); }
   EGLContext egl_context() { return rendering_helper_->egl_context(); }
   double frames_per_second();
-  bool decoder_deleted() { return !decoder_.get(); }
+  bool decoder_deleted() { return !decoder_; }
 
  private:
   typedef std::map<int, media::GLESBuffer*> PictureBufferById;
@@ -456,7 +455,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
-  scoped_ptr<OmxVideoDecodeAccelerator> decoder_;
+  scoped_refptr<OmxVideoDecodeAccelerator> decoder_;
   int delete_decoder_state_;
   ClientState state_;
   VideoDecodeAccelerator::Error error_;
@@ -485,17 +484,18 @@ EglRenderingVDAClient::EglRenderingVDAClient(RenderingHelper* rendering_helper,
 }
 
 EglRenderingVDAClient::~EglRenderingVDAClient() {
-  CHECK(!decoder_.get());
+  DeleteDecoder();  // Clean up in case of expected error.
+  CHECK(decoder_deleted());
   STLDeleteValues(&picture_buffers_by_id_);
   SetState(CS_DESTROYED);
 }
 
 void EglRenderingVDAClient::CreateDecoder() {
-  CHECK(!decoder_.get());
-  decoder_.reset(new OmxVideoDecodeAccelerator(this));
+  CHECK(decoder_deleted());
+  decoder_ = new OmxVideoDecodeAccelerator(this);
   decoder_->SetEglState(egl_display(), egl_context());
   SetState(CS_DECODER_SET);
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
 
   // Configure the decoder.
@@ -514,7 +514,7 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions,
     VideoDecodeAccelerator::MemoryType type) {
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   CHECK_EQ(type, VideoDecodeAccelerator::PICTUREBUFFER_MEMORYTYPE_GL_TEXTURE);
   std::vector<media::GLESBuffer> buffers;
@@ -550,7 +550,7 @@ void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // We shouldn't be getting pictures delivered after Reset has completed.
   DCHECK_LT(state_, CS_RESET);
 
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   last_frame_delivered_ticks_ = base::TimeTicks::Now();
 
@@ -587,25 +587,20 @@ void EglRenderingVDAClient::NotifyEndOfBitstreamBuffer(
 }
 
 void EglRenderingVDAClient::NotifyFlushDone() {
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   SetState(CS_FLUSHED);
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   decoder_->Reset();
 }
 
 void EglRenderingVDAClient::NotifyResetDone() {
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   SetState(CS_RESET);
-  if (!decoder_.get())
-    return;
-  decoder_->Destroy();
-}
-
-void EglRenderingVDAClient::NotifyDestroyDone() {
-  SetState(CS_DESTROYED);
+  if (!decoder_deleted())
+    DeleteDecoder();
 }
 
 void EglRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
@@ -622,12 +617,17 @@ static bool LookingAtNAL(const std::string& encoded, size_t pos) {
 void EglRenderingVDAClient::SetState(ClientState new_state) {
   note_->Notify(new_state);
   state_ = new_state;
-  if (new_state == delete_decoder_state_)
+  if (new_state == delete_decoder_state_) {
+    CHECK(!decoder_deleted());
     DeleteDecoder();
+  }
 }
 
 void EglRenderingVDAClient::DeleteDecoder() {
-  decoder_.reset();
+  if (decoder_deleted())
+    return;
+  decoder_->Destroy();
+  decoder_ = NULL;
   // Cascade through the rest of the states to simplify test code below.
   for (int i = state_ + 1; i < CS_MAX; ++i)
     SetState(static_cast<ClientState>(i));
@@ -651,7 +651,7 @@ void EglRenderingVDAClient::GetRangeForNextNALUs(
 }
 
 void EglRenderingVDAClient::DecodeNextNALUs() {
-  if (!decoder_.get())
+  if (decoder_deleted())
     return;
   if (encoded_data_next_pos_to_decode_ == encoded_data_->size()) {
     decoder_->Flush();
@@ -680,7 +680,8 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
 
 double EglRenderingVDAClient::frames_per_second() {
   base::TimeDelta delta = last_frame_delivered_ticks_ - initialize_done_ticks_;
-  CHECK_GT(delta.InSecondsF(), 0);
+  if (delta.InSecondsF() == 0)
+    return 0;
   return num_decoded_frames_ / delta.InSecondsF();
 }
 
@@ -704,6 +705,10 @@ static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
       << "Decoder not deleted but Wait() returned " << state
       << ", instead of " << expected_state;
 }
+
+// We assert the exact number of concurrent decoders we expect to succeed and
+// that one more than that fails initialization.
+enum { kMaxSupportedNumConcurrentDecoders = 5 };
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
@@ -763,9 +768,19 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     ASSERT_EQ(note->Wait(), CS_DECODER_SET);
   }
   // Then wait for all the decodes to finish.
+  bool saw_init_failure = false;
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {
     ClientStateNotification* note = notes[i];
-    ASSERT_EQ(note->Wait(), CS_INITIALIZED);
+    ClientState state = note->Wait();
+    if (state != CS_INITIALIZED) {
+      saw_init_failure = true;
+      // We expect initialization to fail only when more than the supported
+      // number of decoders is instantiated.  Assert here that something else
+      // didn't trigger failure.
+      ASSERT_GT(num_concurrent_decoders, kMaxSupportedNumConcurrentDecoders);
+      continue;
+    }
+    ASSERT_EQ(state, CS_INITIALIZED);
     // InitializeDone kicks off decoding inside the client, so we just need to
     // wait for Flush.
     ASSERT_NO_FATAL_FAILURE(
@@ -777,8 +792,11 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     ASSERT_NO_FATAL_FAILURE(
         AssertWaitForStateOrDeleted(note, clients[i], CS_DESTROYED));
   }
+  ASSERT_EQ(saw_init_failure,
+            num_concurrent_decoders > kMaxSupportedNumConcurrentDecoders)
+      << num_concurrent_decoders;
   // Finally assert that decoding went as expected.
-  for (size_t i = 0; i < num_concurrent_decoders; ++i) {
+  for (size_t i = 0; i < num_concurrent_decoders && !saw_init_failure; ++i) {
     // We can only make performance/correctness assertions if the decoder was
     // allowed to finish.
     if (delete_decoder_state < CS_FLUSHED)
@@ -813,10 +831,8 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
   rendering_thread.Stop();
 };
 
-// TODO(fischman): Remove DISABLED_ prefix when ~OVDA can tear down OMX
-// synchronously (http://crosbug.com/p/4869).
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_TearDownTiming, OmxVideoDecodeAcceleratorTest,
+    TearDownTiming, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
         MakeTuple(1, 1, CS_DECODER_SET), MakeTuple(1, 1, CS_INITIALIZED),
         MakeTuple(1, 1, CS_FLUSHED), MakeTuple(1, 1, CS_RESET),
@@ -824,7 +840,7 @@ INSTANTIATE_TEST_CASE_P(
         MakeTuple(1, 1, static_cast<ClientState>(-10)),
         MakeTuple(1, 1, static_cast<ClientState>(-100))));
 
-// TODO(fischman): using 2nd param of 16 and higher below breaks decode - visual
+// TODO(fischman): using 1st param of 16 and higher below breaks decode - visual
 // artifacts are introduced as well as spurious frames are delivered (more
 // pictures are returned than NALUs are fed to the decoder).  Increase the "15"
 // below when http://code.google.com/p/chrome-os-partner/issues/detail?id=4378
@@ -832,10 +848,19 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, OmxVideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, CS_DESTROYED), MakeTuple(1, 3, CS_DESTROYED),
-        MakeTuple(2, 1, CS_DESTROYED), MakeTuple(3, 1, CS_DESTROYED),
-        MakeTuple(5, 1, CS_DESTROYED), MakeTuple(8, 1, CS_DESTROYED),
-        MakeTuple(15, 1, CS_DESTROYED)));
+        MakeTuple(1, 1, CS_RESET), MakeTuple(1, 3, CS_RESET),
+        MakeTuple(2, 1, CS_RESET), MakeTuple(3, 1, CS_RESET),
+        MakeTuple(5, 1, CS_RESET), MakeTuple(8, 1, CS_RESET),
+        MakeTuple(15, 1, CS_RESET)));
+
+// Find out how many concurrent decoders can go before we exhaust system
+// resources.
+INSTANTIATE_TEST_CASE_P(
+    ResourceExhaustion, OmxVideoDecodeAcceleratorTest,
+    ::testing::Values(
+        // +0 hack below to promote enum to int.
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 0, CS_RESET),
+        MakeTuple(1, kMaxSupportedNumConcurrentDecoders + 1, CS_RESET)));
 
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play/RePlay for a single decoder.

@@ -50,7 +50,7 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (!handled && video_decoder_host_.get())
+  if (!handled && video_decoder_host_)
     handled = video_decoder_host_->OnMessageReceived(message);
 
   DCHECK(handled);
@@ -386,19 +386,20 @@ void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
   notify_repaint_task_.reset(task);
 }
 
-GpuVideoDecodeAcceleratorHost* CommandBufferProxy::CreateVideoDecoder(
+scoped_refptr<GpuVideoDecodeAcceleratorHost>
+CommandBufferProxy::CreateVideoDecoder(
     const std::vector<uint32>& configs,
     gpu::CommandBufferHelper* cmd_buffer_helper,
     media::VideoDecodeAccelerator::Client* client) {
-  video_decoder_host_.reset(new GpuVideoDecodeAcceleratorHost(
-      channel_, route_id_, cmd_buffer_helper, client));
+  video_decoder_host_ = new GpuVideoDecodeAcceleratorHost(
+      channel_, route_id_, cmd_buffer_helper, client);
 
   if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, configs))) {
     LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
-    video_decoder_host_.reset();
+    video_decoder_host_ = NULL;
   }
 
-  return video_decoder_host_.get();
+  return video_decoder_host_;
 }
 
 #if defined(OS_MACOSX)

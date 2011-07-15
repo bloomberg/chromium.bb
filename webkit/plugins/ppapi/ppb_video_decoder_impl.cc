@@ -36,7 +36,6 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
     : Resource(instance),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       context3d_id_(0),
-      destroy_callback_(PP_BlockUntilComplete()),
       flush_callback_(PP_BlockUntilComplete()),
       reset_callback_(PP_BlockUntilComplete()) {
   ppp_videodecoder_ =
@@ -76,11 +75,10 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
   if (command_buffer_route_id == 0)
     return PP_ERROR_FAILED;
 
-  platform_video_decoder_.reset(
-      instance()->delegate()->CreateVideoDecoder(
-          this, command_buffer_route_id, context3d->gles2_impl()->helper()));
+  platform_video_decoder_ = instance()->delegate()->CreateVideoDecoder(
+      this, command_buffer_route_id, context3d->gles2_impl()->helper());
 
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_FAILED;
 
   std::vector<uint32> copied;
@@ -108,7 +106,7 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
 int32_t PPB_VideoDecoder_Impl::Decode(
     const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
     PP_CompletionCallback callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   EnterResourceNoLock<PPB_Buffer_API> enter(bitstream_buffer->data, true);
@@ -129,7 +127,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
 void PPB_VideoDecoder_Impl::AssignGLESBuffers(
     uint32_t no_of_buffers,
     const PP_GLESBuffer_Dev* buffers) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return;
 
   std::vector<media::GLESBuffer> wrapped_buffers;
@@ -145,13 +143,13 @@ void PPB_VideoDecoder_Impl::AssignGLESBuffers(
 }
 
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return;
   platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
 int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   // Store the callback to be called when Flush() is done.
@@ -163,7 +161,7 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
 }
 
 int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
-  if (!platform_video_decoder_.get())
+  if (!platform_video_decoder_)
     return PP_ERROR_BADRESOURCE;
 
   // Store the callback to be called when Reset() is done.
@@ -174,16 +172,10 @@ int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PPB_VideoDecoder_Impl::Destroy(PP_CompletionCallback callback) {
-  if (!platform_video_decoder_.get())
-    return PP_ERROR_BADRESOURCE;
-
-  // Store the callback to be called when Destroy() is done.
-  // TODO(fischman,vrk): consider implications of already-outstanding callback.
-  destroy_callback_ = callback;
-
+void PPB_VideoDecoder_Impl::Destroy() {
+  if (!platform_video_decoder_)
+    return;
   platform_video_decoder_->Destroy();
-  return PP_OK_COMPLETIONPENDING;
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
@@ -198,17 +190,14 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
   PP_PictureBufferType_Dev out_type =
       static_cast<PP_PictureBufferType_Dev>(type);
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
-  ScopedResourceId resource(this);
   ppp_videodecoder_->ProvidePictureBuffers(
-      instance()->pp_instance(), resource.id, requested_num_of_buffers,
-      out_dim, out_type);
+      instance()->pp_instance(), requested_num_of_buffers, out_dim, out_type);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   if (!ppp_videodecoder_)
     return;
 
-  ScopedResourceId resource(this);
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
@@ -216,25 +205,22 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
                                     picture.visible_size().height());
   output.decoded_size = PP_MakeSize(picture.decoded_size().width(),
                                     picture.decoded_size().height());
-  ppp_videodecoder_->PictureReady(
-      instance()->pp_instance(), resource.id, output);
+  ppp_videodecoder_->PictureReady(instance()->pp_instance(), output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
   if (!ppp_videodecoder_)
     return;
 
-  ScopedResourceId resource(this);
   ppp_videodecoder_->DismissPictureBuffer(
-      instance()->pp_instance(), resource.id, picture_buffer_id);
+      instance()->pp_instance(), picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
   if (!ppp_videodecoder_)
     return;
 
-  ScopedResourceId resource(this);
-  ppp_videodecoder_->EndOfStream(instance()->pp_instance(), resource.id);
+  ppp_videodecoder_->EndOfStream(instance()->pp_instance());
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
@@ -242,13 +228,12 @@ void PPB_VideoDecoder_Impl::NotifyError(
   if (!ppp_videodecoder_)
     return;
 
-  ScopedResourceId resource(this);
   // TODO(vrk): This is assuming VideoDecodeAccelerator::Error and
   // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
   // merge these two enums.
-  ppp_videodecoder_->NotifyError(instance()->pp_instance(), resource.id,
-      static_cast<PP_VideoDecodeError_Dev>(error));
+  ppp_videodecoder_->NotifyError(instance()->pp_instance(),
+                                 static_cast<PP_VideoDecodeError_Dev>(error));
 }
 
 void PPB_VideoDecoder_Impl::NotifyResetDone() {
@@ -257,14 +242,6 @@ void PPB_VideoDecoder_Impl::NotifyResetDone() {
 
   // Call the callback that was stored to be called when Reset is done.
   PP_RunAndClearCompletionCallback(&reset_callback_, PP_OK);
-}
-
-void PPB_VideoDecoder_Impl::NotifyDestroyDone() {
-  if (destroy_callback_.func == NULL)
-    return;
-
-  // Call the callback that was stored to be called when Destroy is done.
-  PP_RunAndClearCompletionCallback(&destroy_callback_, PP_OK);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(

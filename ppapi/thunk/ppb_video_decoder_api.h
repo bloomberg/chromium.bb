@@ -24,7 +24,7 @@ class PPB_VideoDecoder_API {
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) = 0;
   virtual int32_t Flush(PP_CompletionCallback callback) = 0;
   virtual int32_t Reset(PP_CompletionCallback callback) = 0;
-  virtual int32_t Destroy(PP_CompletionCallback callback) = 0;
+  virtual void Destroy() = 0;
 };
 
 }  // namespace thunk

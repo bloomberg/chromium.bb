@@ -49,7 +49,7 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
   virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Reset(PP_CompletionCallback callback) OVERRIDE;
-  virtual int32_t Destroy(PP_CompletionCallback callback) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
@@ -65,7 +65,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
-  virtual void NotifyDestroyDone() OVERRIDE;
 
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
@@ -74,7 +73,7 @@ class PPB_VideoDecoder_Impl : public Resource,
 
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
-  scoped_ptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
+  scoped_refptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
 
   // Factory to produce our callbacks.
   base::ScopedCallbackFactory<PPB_VideoDecoder_Impl> callback_factory_;
@@ -84,7 +83,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   PP_Resource context3d_id_;
 
   PP_CompletionCallback initialization_callback_;
-  PP_CompletionCallback destroy_callback_;
   PP_CompletionCallback flush_callback_;
   PP_CompletionCallback reset_callback_;
   CallbackById bitstream_buffer_callbacks_;

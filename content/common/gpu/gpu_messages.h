@@ -496,8 +496,8 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Reset,
                     gpu::ReadWriteTokens) /* tokens */
 
 // Send destroy request to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Destroy,
-                    gpu::ReadWriteTokens) /* tokens */
+IPC_SYNC_MESSAGE_ROUTED1_0(AcceleratedVideoDecoderMsg_Destroy,
+                           gpu::ReadWriteTokens) /* tokens */
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Host Messages
@@ -535,9 +535,6 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)
 
 // Confirm decoder has been reset.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_ResetDone)
-
-// Confirm decoder has been destroyed.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_DestroyDone)
 
 // Decoder has faced end of stream marker in the stream.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_EndOfStream)

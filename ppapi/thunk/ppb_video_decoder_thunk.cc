@@ -81,13 +81,10 @@ int32_t Reset(PP_Resource video_decoder,
   return MayForceCallback(callback, result);
 }
 
-int32_t Destroy(PP_Resource video_decoder,
-                PP_CompletionCallback callback) {
+void Destroy(PP_Resource video_decoder) {
   EnterVideoDecoder enter(video_decoder, true);
-  if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result = enter.object()->Destroy(callback);
-  return MayForceCallback(callback, result);
+  if (enter.succeeded())
+    enter.object()->Destroy();
 }
 
 const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
