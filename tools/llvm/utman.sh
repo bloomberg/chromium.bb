@@ -2081,7 +2081,13 @@ translate-and-install-sb-tool() {
   for tarch in ${arches}; do
     local nexe="${bindir}/${name}.${tarch}.nexe"
     StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}${extra}"
-    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -o "${nexe}" &
+    # Add '-lppapi' to ensure IRT compatiblity.
+    # These aren't exactly ppapi nexes, but see SConstruct
+    # "NON_PPAPI_BROWSER_LIBS" which still uses -lppapi.
+    # We cannot just add '-lppapi' into the llvm and binutils Makefiles,
+    # because that only affects bitcode linking. We need it on the
+    # translation commandline (which is here) to get a segment gap.
+    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -lppapi -o "${nexe}" &
     QueueLastProcess
   done
 
