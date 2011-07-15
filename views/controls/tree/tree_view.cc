@@ -166,11 +166,6 @@ void TreeView::Expand(TreeModelNode* node) {
   TreeView_Expand(tree_view_, GetNodeDetails(node)->tree_item, TVE_EXPAND);
 }
 
-void TreeView::ExpandAll() {
-  DCHECK(model_);
-  ExpandAll(model_->GetRoot());
-}
-
 void TreeView::ExpandAll(TreeModelNode* node) {
   DCHECK(node);
   // Expand the node.
@@ -184,6 +179,8 @@ void TreeView::ExpandAll(TreeModelNode* node) {
 }
 
 bool TreeView::IsExpanded(TreeModelNode* node) {
+  if (!tree_view_)
+    return false;
   TreeModelNode* parent = model_->GetParent(node);
   if (!parent)
     return true;

@@ -105,9 +105,6 @@ class TreeView : public NativeControl, ui::TreeModelObserver {
   // Make sure node and all its parents are expanded.
   void Expand(ui::TreeModelNode* node);
 
-  // Convenience to expand ALL nodes in the tree.
-  void ExpandAll();
-
   // Invoked from ExpandAll(). Expands the supplied node and recursively
   // invokes itself with all children.
   void ExpandAll(ui::TreeModelNode* node);

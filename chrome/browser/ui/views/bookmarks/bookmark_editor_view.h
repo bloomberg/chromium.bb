@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -217,6 +218,11 @@ class BookmarkEditorView : public BookmarkEditor,
   // added to the model and returned. This does NOT start editing. This is used
   // internally by NewFolder and broken into a separate method for testing.
   EditorNode* AddNewFolder(EditorNode* parent);
+
+  // If |editor_node| is expanded it's added to |expanded_nodes| and this is
+  // recursively invoked for all the children.
+  void UpdateExpandedNodes(EditorNode* editor_node,
+                           BookmarkExpandedStateTracker::Nodes* expanded_nodes);
 
   // Profile the entry is from.
   Profile* profile_;

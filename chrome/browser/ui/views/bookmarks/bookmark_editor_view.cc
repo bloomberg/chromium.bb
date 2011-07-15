@@ -496,7 +496,15 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
 }
 
 void BookmarkEditorView::ExpandAndSelect() {
-  tree_view_->ExpandAll();
+  BookmarkExpandedStateTracker::Nodes expanded_nodes =
+      bb_model_->expanded_state_tracker()->GetExpandedNodes();
+  for (BookmarkExpandedStateTracker::Nodes::const_iterator i =
+       expanded_nodes.begin(); i != expanded_nodes.end(); ++i) {
+    EditorNode* editor_node =
+        FindNodeWithID(tree_model_->GetRoot(), (*i)->id());
+    if (editor_node)
+      tree_view_->Expand(editor_node);
+  }
 
   const BookmarkNode* to_select = parent_;
   if (details_.type == EditDetails::EXISTING_NODE)
@@ -586,6 +594,10 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bookmark_utils::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
 
+  BookmarkExpandedStateTracker::Nodes expanded_nodes;
+  UpdateExpandedNodes(tree_model_->GetRoot(), &expanded_nodes);
+  bb_model_->expanded_state_tracker()->SetExpandedNodes(expanded_nodes);
+
   // Remove the folders that were removed. This has to be done after all the
   // other changes have been committed.
   bookmark_utils::DeleteBookmarkFolders(bb_model_, deletes_);
@@ -605,6 +617,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
       // New folder.
       child_bb_node = bb_model_->AddFolder(bb_node,
           bb_node->child_count(), child_b_node->GetTitle());
+      child_b_node->value = child_bb_node->id();
     } else {
       // Existing node, reset the title (BookmarkModel ignores changes if the
       // title is the same).
@@ -621,4 +634,16 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     ApplyNameChangesAndCreateNewFolders(child_bb_node, child_b_node,
                                         parent_b_node, parent_bb_node);
   }
+}
+
+void BookmarkEditorView::UpdateExpandedNodes(
+    EditorNode* editor_node,
+    BookmarkExpandedStateTracker::Nodes* expanded_nodes) {
+  if (!tree_view_->IsExpanded(editor_node))
+    return;
+
+  if (editor_node->value != 0)  // The root is 0
+    expanded_nodes->insert(bb_model_->GetNodeByID(editor_node->value));
+  for (int i = 0; i < editor_node->child_count(); ++i)
+    UpdateExpandedNodes(editor_node->GetChild(i), expanded_nodes);
 }
