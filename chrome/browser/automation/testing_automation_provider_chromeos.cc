@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/chromeos/audio_handler.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -679,6 +682,40 @@ void TestingAutomationProvider::DisconnectFromPrivateNetwork(
 
   network_library->DisconnectFromNetwork(virt);
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::IsEnterpriseDevice(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector) {
+    reply.SendError("Unable to access BrowserPolicyConnector");
+    return;
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("enterprise", connector->IsEnterpriseManaged());
+  reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::FetchEnterprisePolicy(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access BrowserPolicyConnector");
+    return;
+  }
+  policy::CloudPolicySubsystem* policy_subsystem =
+      connector->device_cloud_policy_subsystem();
+  if (policy_subsystem) {
+    new CloudPolicyObserver(this, reply_message, connector, policy_subsystem);
+    connector->FetchDevicePolicy();
+  } else {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access CloudPolicySubsystem");
+  }
 }
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,

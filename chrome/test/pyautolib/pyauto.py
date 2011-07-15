@@ -3401,6 +3401,36 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
+  def IsEnterpriseDevice(self):
+    """Check whether the device is managed by an enterprise.
+
+    Returns:
+      True if the device is managed by an enterprise, False otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'IsEnterpriseDevice',
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return result.get('enterprise')
+
+  def FetchEnterprisePolicy(self):
+    """Fetch enterprise policy from server.
+
+    Triggers a policy fetch and blocks until the policy is fetched or the fetch
+    fails. This is separate from any auto policy fetches the device may perform
+    on its own.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the fetch fails.
+    """
+    cmd_dict = {
+        'command': 'FetchEnterprisePolicy',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.
 

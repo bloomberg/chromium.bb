@@ -270,6 +270,41 @@ chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
   return virt;
 }
 
+CloudPolicyObserver::CloudPolicyObserver(AutomationProvider* automation,
+    IPC::Message* reply_message,
+    policy::BrowserPolicyConnector* browser_policy_connector,
+    policy::CloudPolicySubsystem* policy_subsystem)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  observer_registrar_.reset(
+      new policy::CloudPolicySubsystem::ObserverRegistrar(policy_subsystem,
+                                                          this));
+}
+
+CloudPolicyObserver::~CloudPolicyObserver() {
+}
+
+void CloudPolicyObserver::OnPolicyStateChanged(
+    policy::CloudPolicySubsystem::PolicySubsystemState state,
+    policy::CloudPolicySubsystem::ErrorDetails error_details) {
+  if (state == policy::CloudPolicySubsystem::SUCCESS) {
+    if (automation_)
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
+    delete this;
+  } else if (state == policy::CloudPolicySubsystem::TOKEN_FETCHED) {
+    // fetched the token, now return and wait for a call with state SUCCESS
+    return;
+  } else {
+    // fetch returned an error
+    if (automation_)
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendError(NULL);
+    delete this;
+    return;
+  }
+}
+
 SSIDConnectObserver::SSIDConnectObserver(
     AutomationProvider* automation, IPC::Message* reply_message,
     const std::string& ssid)

@@ -2230,6 +2230,11 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["DisconnectFromPrivateNetwork"] =
       &TestingAutomationProvider::DisconnectFromPrivateNetwork;
 
+  handler_map["IsEnterpriseDevice"] =
+      &TestingAutomationProvider::IsEnterpriseDevice;
+  handler_map["FetchEnterprisePolicy"] =
+      &TestingAutomationProvider::FetchEnterprisePolicy;
+
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;
   handler_map["SetReleaseTrack"] = &TestingAutomationProvider::SetReleaseTrack;

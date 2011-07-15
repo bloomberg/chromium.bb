@@ -32,6 +32,8 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
@@ -882,6 +884,30 @@ class VirtualConnectObserver
   std::string service_name_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualConnectObserver);
+};
+
+// Waits for a cloud policy refresh to complete and returns the status to
+// the automation provider.
+class CloudPolicyObserver : public policy::CloudPolicySubsystem::Observer {
+ public:
+  CloudPolicyObserver(AutomationProvider* automation,
+                      IPC::Message* reply_message,
+                      policy::BrowserPolicyConnector* browser_policy_connector,
+                      policy::CloudPolicySubsystem* policy_subsystem);
+
+  virtual ~CloudPolicyObserver();
+
+  virtual void OnPolicyStateChanged(
+      policy::CloudPolicySubsystem::PolicySubsystemState state,
+      policy::CloudPolicySubsystem::ErrorDetails error_details);
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar>
+      observer_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloudPolicyObserver);
 };
 
 // Waits for a connection success or failure for the specified

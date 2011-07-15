@@ -1187,9 +1187,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisconnectFromWifiNetwork(base::DictionaryValue* args,
                                  IPC::Message* reply_message);
 
-  // VPN automation
-  void AddPrivateNetwork(base::DictionaryValue* args,
-                         IPC::Message* reply_message);
+  void ForgetWifiNetwork(DictionaryValue* args, IPC::Message* reply_message);
+
+  // VPN automation.
+  void AddPrivateNetwork(DictionaryValue* args, IPC::Message* reply_message);
 
   void GetPrivateNetworkInfo(base::DictionaryValue* args,
                              IPC::Message* reply_message);
@@ -1200,8 +1201,12 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisconnectFromPrivateNetwork(base::DictionaryValue* args,
                                     IPC::Message* reply_message);
 
-  void ForgetWifiNetwork(base::DictionaryValue* args,
-                         IPC::Message* reply_message);
+  // Enterprise policy automation.
+  void IsEnterpriseDevice(DictionaryValue* args, IPC::Message* reply_message);
+
+  void FetchEnterprisePolicy(DictionaryValue* args,
+                             IPC::Message* reply_message);
+
 
   void GetUpdateInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
