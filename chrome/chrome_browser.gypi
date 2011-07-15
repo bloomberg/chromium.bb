@@ -3939,6 +3939,8 @@
             '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.m',
             '../third_party/GTM/AppKit/GTMIBArray.h',
             '../third_party/GTM/AppKit/GTMIBArray.m',
+            '../third_party/GTM/AppKit/GTMKeyValueAnimation.h',
+            '../third_party/GTM/AppKit/GTMKeyValueAnimation.m',
             '../third_party/GTM/AppKit/GTMNSAnimation+Duration.h',
             '../third_party/GTM/AppKit/GTMNSAnimation+Duration.m',
             '../third_party/GTM/AppKit/GTMNSBezierPath+CGPath.h',

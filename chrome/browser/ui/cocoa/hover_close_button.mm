@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #include "grit/generated_resources.h"
+#import "third_party/GTM/AppKit/GTMKeyValueAnimation.h"
 #import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -21,27 +22,35 @@ const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
 const CGFloat kXShadowAlpha = 0.75;
 const CGFloat kXShadowCircleAlpha = 0.1;
+const CGFloat kDefaultAnimationDuration = 0.25;
 
 // Images that are used for all close buttons. Set up in +initialize.
-CGImageRef gHoverNoneImage = NULL;
-CGImageRef gHoverMouseOverImage = NULL;
-CGImageRef gHoverMouseDownImage = NULL;
+CIImage* gHoverNoneImage = nil;
+CIImage* gHoverMouseOverImage = nil;
+CIImage* gHoverMouseDownImage = nil;
 
 // Strings that are used for all close buttons. Set up in +initialize.
 NSString* gTooltip = nil;
 NSString* gDescription = nil;
+
+// If this string is changed, the setter (currently setFadeOutValue:) must
+// be changed as well to match.
+NSString const* kFadeOutValueKeyPath = @"fadeOutValue";
 }  // namespace
 
 @interface HoverCloseButton ()
-// Sets up the button's tracking areas and accessibility info when instantiated
-// via initWithFrame or awakeFromNib.
+
+// Common initialization routine called from initWithFrame and awakeFromNib.
 - (void)commonInit;
 
-// Draws the close button into a CGImageRef in a given state.
-+ (CGImageRef)imageForBounds:(NSRect)bounds
-                       xPath:(NSBezierPath*)xPath
-                  circlePath:(NSBezierPath*)circlePath
-                  hoverState:(HoverState)hoverState;
+// Called by |fadeOutAnimation_| when animated value changes.
+- (void)setFadeOutValue:(CGFloat)value;
+
+// Returns a CIImage of the close button in a given state.
++ (CIImage*)imageForBounds:(NSRect)bounds
+                     xPath:(NSBezierPath*)xPath
+                circlePath:(NSBezierPath*)circlePath
+                hoverState:(HoverState)hoverState;
 @end
 
 @implementation HoverCloseButton
@@ -74,21 +83,21 @@ NSString* gDescription = nil;
     [circlePath transformUsingAffineTransform:transform];
     [xPath transformUsingAffineTransform:transform];
 
-    CGImageRef image = [self imageForBounds:bounds
-                                      xPath:xPath
-                                 circlePath:circlePath
-                                 hoverState:kHoverStateNone];
-    gHoverNoneImage = CGImageRetain(image);
+    CIImage* image = [self imageForBounds:bounds
+                                    xPath:xPath
+                               circlePath:circlePath
+                               hoverState:kHoverStateNone];
+    gHoverNoneImage = [image retain];
     image = [self imageForBounds:bounds
                            xPath:xPath
                       circlePath:circlePath
                       hoverState:kHoverStateMouseOver];
-    gHoverMouseOverImage = CGImageRetain(image);
+    gHoverMouseOverImage = [image retain];
     image = [self imageForBounds:bounds
                            xPath:xPath
                       circlePath:circlePath
                       hoverState:kHoverStateMouseDown];
-    gHoverMouseDownImage = CGImageRetain(image);
+    gHoverMouseDownImage = [image retain];
 
     // Grab some strings that are used by all close buttons.
     gDescription = [l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE) copy];
@@ -108,17 +117,89 @@ NSString* gDescription = nil;
   [self commonInit];
 }
 
-- (void)setHoverState:(HoverState)state {
-  [super setHoverState:state];
+- (void)removeFromSuperview {
+  // -stopAnimation will call the animationDidStop: delegate method
+  // which will release our animation.
+  [fadeOutAnimation_ stopAnimation];
+  [super removeFromSuperview];
+}
 
-  // Only animate the HoverStateNone case.
-  scoped_ptr<ScopedCAActionDisabler> disabler;
-  if (state != kHoverStateNone) {
-    disabler.reset(new ScopedCAActionDisabler);
+- (void)animationDidStop:(NSAnimation*)animation {
+  DCHECK(animation == fadeOutAnimation_);
+  [fadeOutAnimation_ setDelegate:nil];
+  [fadeOutAnimation_ release];
+  fadeOutAnimation_ = nil;
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self animationDidStop:animation];
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  NSRect imageRect = NSRectFromCGRect([gHoverMouseOverImage extent]);
+  switch(self.hoverState) {
+    case kHoverStateMouseOver:
+      [gHoverMouseOverImage drawInRect:imageRect
+                              fromRect:imageRect
+                             operation:NSCompositeSourceOver
+                              fraction:1.0];
+      break;
+
+    case kHoverStateMouseDown:
+      [gHoverMouseDownImage drawInRect:imageRect
+                              fromRect:imageRect
+                             operation:NSCompositeSourceOver
+                              fraction:1.0];
+      break;
+
+    default:
+    case kHoverStateNone: {
+      CGFloat value = 1.0;
+      if (fadeOutAnimation_) {
+        value = [fadeOutAnimation_ currentValue];
+        CIImage *previousImage = nil;
+        if (previousState_ == kHoverStateMouseOver) {
+          previousImage = gHoverMouseOverImage;
+        } else {
+          previousImage =  gHoverMouseDownImage;
+        }
+        [previousImage drawInRect:imageRect
+                         fromRect:imageRect
+                        operation:NSCompositeSourceOver
+                         fraction:1.0 - value];
+      }
+      [gHoverNoneImage drawInRect:imageRect
+                         fromRect:imageRect
+                        operation:NSCompositeSourceOver
+                         fraction:value];
+      break;
+    }
   }
-  [hoverNoneLayer_ setHidden:state != kHoverStateNone];
-  [hoverMouseDownLayer_ setHidden:state != kHoverStateMouseDown];
-  [hoverMouseOverLayer_ setHidden:state != kHoverStateMouseOver];
+}
+
+- (void)setFadeOutValue:(CGFloat)value {
+  [self setNeedsDisplay];
+}
+
+- (void)setHoverState:(HoverState)state {
+  if (state != self.hoverState) {
+    previousState_ = self.hoverState;
+    [super setHoverState:state];
+    // Only animate the HoverStateNone case.
+    if (state == kHoverStateNone) {
+      DCHECK(fadeOutAnimation_ == nil);
+      fadeOutAnimation_ =
+          [[GTMKeyValueAnimation alloc] initWithTarget:self
+                                               keyPath:kFadeOutValueKeyPath];
+      [fadeOutAnimation_ setDuration:kDefaultAnimationDuration];
+      [fadeOutAnimation_ setDelegate:self];
+      [fadeOutAnimation_ startAnimation];
+    } else {
+      // -stopAnimation will call the animationDidStop: delegate method
+      // which will clean up the animation.
+      [fadeOutAnimation_ stopAnimation];
+    }
+  }
 }
 
 - (void)commonInit {
@@ -130,58 +211,14 @@ NSString* gDescription = nil;
   // Add a tooltip.
   [self setToolTip:gTooltip];
 
-  // Set up layers
-  CALayer* viewLayer = [self layer];
-
-  // Layers will be contrained to be 0 pixels from left edge horizontally,
-  // and centered vertically.
-  viewLayer.layoutManager = [CAConstraintLayoutManager layoutManager];
-  CAConstraint* xConstraint =
-      [CAConstraint constraintWithAttribute:kCAConstraintMinX
-                                 relativeTo:@"superlayer"
-                                  attribute:kCAConstraintMinX
-                                     offset:0];
-  CAConstraint* yConstraint =
-      [CAConstraint constraintWithAttribute:kCAConstraintMidY
-                                 relativeTo:@"superlayer"
-                                  attribute:kCAConstraintMidY];
-
-  hoverNoneLayer_.reset([[CALayer alloc] init]);
-  [hoverNoneLayer_ setDelegate:self];
-
-  // .get() is being used here (and below) because if it isn't used, the
-  // compiler doesn't realize that the call to setFrame: is being performed
-  // on a CALayer, and assumes that the call is being performed on a NSView.
-  // setFrame: on NSView takes an NSRect, setFrame: on CALayer takes a CGRect.
-  // The difference in arguments causes a compile error.
-  [hoverNoneLayer_.get() setFrame:viewLayer.frame];
-  [viewLayer addSublayer:hoverNoneLayer_];
-  [hoverNoneLayer_ addConstraint:xConstraint];
-  [hoverNoneLayer_ addConstraint:yConstraint];
-  [hoverNoneLayer_ setContents:reinterpret_cast<id>(gHoverNoneImage)];
-  [hoverNoneLayer_ setHidden:NO];
-
-  hoverMouseOverLayer_.reset([[CALayer alloc] init]);
-  [hoverMouseOverLayer_.get() setFrame:viewLayer.frame];
-  [viewLayer addSublayer:hoverMouseOverLayer_];
-  [hoverMouseOverLayer_ addConstraint:xConstraint];
-  [hoverMouseOverLayer_ addConstraint:yConstraint];
-  [hoverMouseOverLayer_ setContents:reinterpret_cast<id>(gHoverMouseOverImage)];
-  [hoverMouseOverLayer_ setHidden:YES];
-
-  hoverMouseDownLayer_.reset([[CALayer alloc] init]);
-  [hoverMouseDownLayer_.get() setFrame:viewLayer.frame];
-  [viewLayer addSublayer:hoverMouseDownLayer_];
-  [hoverMouseDownLayer_ addConstraint:xConstraint];
-  [hoverMouseDownLayer_ addConstraint:yConstraint];
-  [hoverMouseDownLayer_ setContents:reinterpret_cast<id>(gHoverMouseDownImage)];
-  [hoverMouseDownLayer_ setHidden:YES];
+  // Initialize previousState.
+  previousState_ = kHoverStateNone;
 }
 
-+ (CGImageRef)imageForBounds:(NSRect)bounds
-                       xPath:(NSBezierPath*)xPath
-                  circlePath:(NSBezierPath*)circlePath
-                  hoverState:(HoverState)hoverState {
++ (CIImage*)imageForBounds:(NSRect)bounds
+                     xPath:(NSBezierPath*)xPath
+                circlePath:(NSBezierPath*)circlePath
+                hoverState:(HoverState)hoverState {
   gfx::ScopedNSGraphicsContextSaveGState graphicsStateSaver;
 
   scoped_nsobject<NSBitmapImageRep> imageRep(
@@ -228,8 +265,7 @@ NSString* gDescription = nil;
   [shadow setShadowBlurRadius:2.5];
   [xPath fillWithInnerShadow:shadow];
 
-  // CGImage returns an autoreleased CGImageRef.
-  return [imageRep CGImage];
+  return [[[CIImage alloc] initWithBitmapImageRep:imageRep] autorelease];
 }
 
 @end
