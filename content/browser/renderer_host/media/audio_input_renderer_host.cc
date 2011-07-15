@@ -11,7 +11,6 @@
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
-#include "media/audio/audio_util.h"
 
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
@@ -203,8 +202,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
   // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.CreateAndMapAnonymous(
-          media::TotalSharedMemorySizeInBytes(packet_size))) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;

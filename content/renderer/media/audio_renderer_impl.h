@@ -58,7 +58,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
                           public MessageLoop::DestructionObserver {
  public:
   // Methods called on Render thread ------------------------------------------
-  AudioRendererImpl();
+  explicit AudioRendererImpl();
   virtual ~AudioRendererImpl();
 
   // Methods called on IO thread ----------------------------------------------
@@ -105,7 +105,6 @@ class AudioRendererImpl : public media::AudioRendererBase,
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Stop);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest,
                            DestroyedMessageLoop_ConsumeAudioSamples);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, UpdateEarliestEndTime);
   // Helper methods.
   // Convert number of bytes to duration of time using information about the
   // number of channels, sample rate and sample bits.
@@ -139,16 +138,8 @@ class AudioRendererImpl : public media::AudioRendererBase,
   virtual void CreateAudioThread();
 
   // Accessors used by tests.
-  LatencyType latency_type() const {
+  LatencyType latency_type() {
     return latency_type_;
-  }
-
-  base::Time earliest_end_time() const {
-    return earliest_end_time_;
-  }
-
-  uint32 bytes_per_second() const {
-    return bytes_per_second_;
   }
 
   // Should be called before any class instance is created.
@@ -156,11 +147,6 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Helper method for IPC send calls.
   void Send(IPC::Message* message);
-
-  // Estimate earliest time when current buffer can stop playing.
-  void UpdateEarliestEndTime(int bytes_filled,
-                             base::TimeDelta request_delay,
-                             base::Time time_now);
 
   // Used to calculate audio delay given bytes.
   uint32 bytes_per_second_;
@@ -201,22 +187,6 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Remaining bytes for prerolling to complete.
   uint32 preroll_bytes_;
-
-  // We're supposed to know amount of audio data OS or hardware buffered, but
-  // that is not always so -- on my Linux box
-  // AudioBuffersState::hardware_delay_bytes never reaches 0.
-  //
-  // As a result we cannot use it to find when stream ends. If we just ignore
-  // buffered data we will notify host that stream ended before it is actually
-  // did so, I've seen it done ~140ms too early when playing ~150ms file.
-  //
-  // Instead of trying to invent OS-specific solution for each and every OS we
-  // are supporting, use simple workaround: every time we fill the buffer we
-  // remember when it should stop playing, and do not assume that buffer is
-  // empty till that time. Workaround is not bulletproof, as we don't exactly
-  // know when that particular data would start playing, but it is much better
-  // than nothing.
-  base::Time earliest_end_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

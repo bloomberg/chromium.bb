@@ -9,7 +9,6 @@
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_util.h"
 
 AudioDevice::AudioDevice(size_t buffer_size,
@@ -162,8 +161,6 @@ void AudioDevice::OnLowLatencyCreated(
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
 
-  DCHECK_GE(length, buffer_size_ * sizeof(int16) + sizeof(uint32));
-
   socket_.reset(new base::SyncSocket(socket_handle));
   // Allow the client to pre-populate the buffer.
   FireRenderCallback();
@@ -189,17 +186,16 @@ void AudioDevice::Send(IPC::Message* message) {
 void AudioDevice::Run() {
   audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
-  AudioBuffersState buffer_state;
+  int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
-  while (buffer_state.Receive(socket_.get()) &&
-         (buffer_state.total_bytes() >= 0)) {
-    {
-      // Convert the number of pending bytes in the render buffer
-      // into milliseconds.
-      audio_delay_milliseconds_ = buffer_state.total_bytes() / bytes_per_ms;
-    }
+  while (sizeof(pending_data) == socket_->Receive(&pending_data,
+                                                  sizeof(pending_data)) &&
+                                                  pending_data >= 0) {
+    // Convert the number of pending bytes in the render buffer
+    // into milliseconds.
+    audio_delay_milliseconds_ = pending_data / bytes_per_ms;
 
     FireRenderCallback();
   }
@@ -211,13 +207,7 @@ void AudioDevice::FireRenderCallback() {
     callback_->Render(audio_data_, buffer_size_, audio_delay_milliseconds_);
 
     // Interleave, scale, and clip to int16.
-    media::InterleaveFloatToInt16(
-        audio_data_,
-        static_cast<int16*>(media::GetDataPointer(shared_memory())),
-        buffer_size_);
-
-    // Consumer should know how much data was written.
-    media::SetActualDataSizeInBytes(shared_memory(),
-                                    buffer_size_ * sizeof(int16));
+    int16* output_buffer16 = static_cast<int16*>(shared_memory_data());
+    media::InterleaveFloatToInt16(audio_data_, output_buffer16, buffer_size_);
   }
 }

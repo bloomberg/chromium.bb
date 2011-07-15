@@ -9,7 +9,6 @@
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_util.h"
 
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
@@ -55,8 +54,8 @@ bool AudioInputDevice::Start() {
   params.samples_per_packet = buffer_size_;
 
   ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
+    FROM_HERE,
+    NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
 
   return true;
 }
@@ -129,8 +128,6 @@ void AudioInputDevice::OnLowLatencyCreated(
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
 
-  DCHECK_GE(length, buffer_size_ + sizeof(uint32));
-
   socket_.reset(new base::SyncSocket(socket_handle));
 
   audio_thread_.reset(
@@ -155,18 +152,19 @@ void AudioInputDevice::Send(IPC::Message* message) {
 void AudioInputDevice::Run() {
   audio_thread_->SetThreadPriority(base::kThreadPriority_RealtimeAudio);
 
-  AudioBuffersState buffer_state;
+  int pending_data;
   const int samples_per_ms = static_cast<int>(sample_rate_) / 1000;
   const int bytes_per_ms = channels_ * (bits_per_sample_ / 8) * samples_per_ms;
 
-  while (buffer_state.Receive(socket_.get()) &&
-         (buffer_state.total_bytes() >= 0)) {
-    // TODO(henrika): investigate the provided |buffer_state.total_bytes()|
-    // value and ensure that it is actually an accurate delay estimation.
+  while (sizeof(pending_data) == socket_->Receive(&pending_data,
+                                                  sizeof(pending_data)) &&
+                                                  pending_data >= 0) {
+    // TODO(henrika): investigate the provided |pending_data| value
+    // and ensure that it is actually an accurate delay estimation.
 
     // Convert the number of pending bytes in the capture buffer
     // into milliseconds.
-    audio_delay_milliseconds_ = buffer_state.total_bytes() / bytes_per_ms;
+    audio_delay_milliseconds_ = pending_data / bytes_per_ms;
 
     FireCaptureCallback();
   }
@@ -176,14 +174,10 @@ void AudioInputDevice::FireCaptureCallback() {
   if (!callback_)
       return;
 
-  uint32 actual_buffer_size = media::GetActualDataSizeInBytes(shared_memory()) /
-                              sizeof(int16);
-  DCHECK_LE(actual_buffer_size, buffer_size_);
-  const size_t number_of_frames = actual_buffer_size;
+  const size_t number_of_frames = buffer_size_;
 
   // Read 16-bit samples from shared memory (browser writes to it).
-  int16* input_audio = static_cast<int16*>(
-      media::GetDataPointer(shared_memory()));
+  int16* input_audio = static_cast<int16*>(shared_memory_data());
   const int bytes_per_sample = sizeof(input_audio[0]);
 
   // Deinterleave each channel and convert to 32-bit floating-point
