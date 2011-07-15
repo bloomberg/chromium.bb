@@ -113,8 +113,7 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   base::ProcessHandle process_handle;
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_remap;
-  options.process_handle = &process_handle;
-  ASSERT_TRUE(base::LaunchProcess(argv, options));
+  ASSERT_TRUE(base::LaunchProcess(argv, options, &process_handle));
   PCHECK(HANDLE_EINTR(close(fds[1])) == 0);
 
   // Wait until there's some output form top. This is an easy way to tell that

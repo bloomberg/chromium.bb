@@ -59,9 +59,8 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
 
   base::ProcessHandle handle;
   base::LaunchOptions options;
-  options.process_handle = &handle;
   options.fds_to_remap = &no_stdin;
-  if (!base::LaunchProcess(argv, options)) {
+  if (!base::LaunchProcess(argv, options, &handle)) {
     close(devnull);
     return false;
   }

@@ -35,12 +35,10 @@ void XDGUtil(const std::string& util, const std::string& arg) {
     env.push_back(std::make_pair("GNOME_DISABLE_CRASH_DIALOG", ""));
   }
 
-  base::file_handle_mapping_vector no_files;
   base::ProcessHandle handle;
   base::LaunchOptions options;
-  options.process_handle = &handle;
   options.environ = &env;
-  if (base::LaunchProcess(argv, options))
+  if (base::LaunchProcess(argv, options, &handle))
     ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 

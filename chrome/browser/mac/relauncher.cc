@@ -155,7 +155,7 @@ bool RelaunchAppWithHelper(const std::string& helper,
 
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
-  if (!base::LaunchProcess(relaunch_args, options)) {
+  if (!base::LaunchProcess(relaunch_args, options, NULL)) {
     LOG(ERROR) << "base::LaunchProcess failed";
     return false;
   }

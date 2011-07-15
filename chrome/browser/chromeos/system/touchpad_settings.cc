@@ -36,7 +36,7 @@ void SetSensitivity(int value) {
   base::LaunchOptions options;
   options.wait = false;  // Launch asynchronously.
 
-  base::LaunchProcess(CommandLine(argv), options);
+  base::LaunchProcess(CommandLine(argv), options, NULL);
 }
 
 void SetTapToClick(bool enabled) {
@@ -56,7 +56,7 @@ void SetTapToClick(bool enabled) {
   base::LaunchOptions options;
   options.wait = false;  // Launch asynchronously.
 
-  base::LaunchProcess(CommandLine(argv), options);
+  base::LaunchProcess(CommandLine(argv), options, NULL);
 }
 
 }  // namespace touchpad_settings

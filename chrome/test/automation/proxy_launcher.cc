@@ -442,7 +442,6 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
 
   base::LaunchOptions options;
   options.wait = wait;
-  options.process_handle = process;
 
 #if defined(OS_WIN)
   options.start_hidden = !state.show_window;
@@ -464,7 +463,7 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
   options.fds_to_remap = &fds;
 #endif
 
-  return base::LaunchProcess(command_line, options);
+  return base::LaunchProcess(command_line, options, process);
 }
 
 AutomationProxy* ProxyLauncher::automation() const {

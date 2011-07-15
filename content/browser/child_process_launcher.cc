@@ -174,8 +174,7 @@ class ChildProcessLauncher::Context
         base::LaunchOptions options;
         options.environ = &env;
         options.fds_to_remap = &fds_to_map;
-        options.process_handle = &handle;
-        launched = base::LaunchProcess(*cmd_line, options);
+        launched = base::LaunchProcess(*cmd_line, options, &handle);
 
 #if defined(OS_MACOSX)
         if (launched)

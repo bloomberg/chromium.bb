@@ -159,18 +159,14 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
       LOG(ERROR) << "Failed to find executable: " << executable;
     } else {
       CommandLine cmdline = CommandLine::FromString(path);
-      base::LaunchOptions options;
-      options.process_handle = &process;
-      if (!base::LaunchProcess(cmdline, options)) {
+      if (!base::LaunchProcess(cmdline, base::LaunchOptions(), &process)) {
         LOG(ERROR) << "LaunchProcess failed: " << ::GetLastError();
       }
     }
   } else {
     CommandLine cmdline((FilePath(path)));
     cmdline.AppendArgNative(argument);
-    base::LaunchOptions options;
-    options.process_handle = &process;
-    if (!base::LaunchProcess(cmdline, options)) {
+    if (!base::LaunchProcess(cmdline, base::LaunchOptions(), &process)) {
       LOG(ERROR) << "LaunchProcess failed: " << ::GetLastError();
     }
   }
@@ -187,9 +183,7 @@ base::ProcessHandle LaunchChrome(const std::wstring& url) {
   cmd.AppendArgNative(url);
 
   base::ProcessHandle process = NULL;
-  base::LaunchOptions options;
-  options.process_handle = &process;
-  base::LaunchProcess(cmd, options);
+  base::LaunchProcess(cmd, base::LaunchOptions(), &process);
   return process;
 }
 
@@ -596,9 +590,8 @@ base::ProcessHandle StartCrashService() {
   DVLOG(1) << "Starting crash_service.exe so you know if a test crashes!";
 
   FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
-  base::LaunchOptions options;
-  options.process_handle = &crash_service;
-  if (!base::LaunchProcess(crash_service_path.value(), options)) {
+  if (!base::LaunchProcess(crash_service_path.value(), base::LaunchOptions(),
+                           &crash_service)) {
     DLOG(ERROR) << "Couldn't start crash_service.exe";
     return NULL;
   }

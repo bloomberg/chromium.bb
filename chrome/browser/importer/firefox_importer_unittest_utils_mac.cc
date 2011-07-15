@@ -57,8 +57,7 @@ bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
   options.environ = &env;
   options.fds_to_remap = &fds_to_map;
   options.wait = debug_on_start;
-  options.process_handle = handle;
-  return base::LaunchProcess(cl.argv(), options);
+  return base::LaunchProcess(cl.argv(), options, handle);
 }
 
 }  // namespace

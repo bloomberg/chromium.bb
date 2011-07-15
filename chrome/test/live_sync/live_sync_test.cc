@@ -410,8 +410,7 @@ bool LiveSyncTest::SetUpLocalTestServer() {
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  options.process_handle = &test_server_handle_;
-  if (!base::LaunchProcess(server_cmdline, options))
+  if (!base::LaunchProcess(server_cmdline, options, &test_server_handle_))
     LOG(ERROR) << "Could not launch local test server.";
 
   const int kMaxWaitTime = TestTimeouts::live_operation_timeout_ms();

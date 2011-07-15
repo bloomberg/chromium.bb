@@ -38,8 +38,7 @@ static void ShowTokenExpiredNotificationInBrowser() {
     cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   cmd_line.AppendSwitch(switches::kNotifyCloudPrintTokenExpired);
 
-  base::LaunchOptions options;
-  base::LaunchProcess(cmd_line, options);
+  base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
 }
 
 CloudPrintProxy::CloudPrintProxy()

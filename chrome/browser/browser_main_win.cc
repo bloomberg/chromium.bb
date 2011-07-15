@@ -266,7 +266,7 @@ bool CheckMachineLevelInstall() {
         uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
         uninstall_cmd.AppendSwitch(
             installer::switches::kDoNotRemoveSharedItems);
-        base::LaunchProcess(uninstall_cmd, base::LaunchOptions());
+        base::LaunchProcess(uninstall_cmd, base::LaunchOptions(), NULL);
       }
       return true;
     }

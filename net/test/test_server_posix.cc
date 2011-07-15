@@ -124,8 +124,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   // Launch a new testserver process.
   base::LaunchOptions options;
   options.fds_to_remap = &map_write_fd;
-  options.process_handle = &process_handle_;
-  if (!base::LaunchProcess(python_command, options)) {
+  if (!base::LaunchProcess(python_command, options, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << python_command.command_line_string();
     return false;
   }

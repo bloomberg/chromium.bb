@@ -36,9 +36,7 @@ bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
   if (no_sandbox) {
     base::ProcessHandle process = base::kNullProcessHandle;
     cmd_line->AppendSwitch(switches::kNoSandbox);
-    base::LaunchOptions options;
-    options.process_handle = &process;
-    base::LaunchProcess(*cmd_line, options);
+    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     set_handle(process);
   } else {
     set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));

@@ -97,9 +97,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     // Here we don't wait for the app to be terminated because one of the
     // process will stay alive while the others will be restarted. If we would
     // wait here, we would never get a handle to the main process...
-    base::LaunchOptions options;
-    options.process_handle = &process_handle_;
-    base::LaunchProcess(command_line, options);
+    base::LaunchProcess(command_line, base::LaunchOptions(), &process_handle_);
     ASSERT_NE(base::kNullProcessHandle, process_handle_);
 
     // We can wait on the handle here, we should get stuck on one and only

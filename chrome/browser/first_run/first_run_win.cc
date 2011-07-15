@@ -145,9 +145,8 @@ bool FirstRun::LaunchSetupWithParam(const std::string& param,
     cl.AppendSwitch(switches::kChromeFrame);
   }
 
-  base::LaunchOptions options;
-  options.process_handle = &ph;
-  if (!base::LaunchProcess(cl, options))
+  // TODO(evan): should this use options.wait = true?
+  if (!base::LaunchProcess(cl, base::LaunchOptions(), &ph))
     return false;
   DWORD wr = ::WaitForSingleObject(ph, INFINITE);
   if (wr != WAIT_OBJECT_0)
@@ -344,9 +343,7 @@ bool FirstRun::ImportSettings(Profile* profile,
 
   // Time to launch the process that is going to do the import.
   base::ProcessHandle import_process;
-  base::LaunchOptions options;
-  options.process_handle = &import_process;
-  if (!base::LaunchProcess(import_cmd, options))
+  if (!base::LaunchProcess(import_cmd, base::LaunchOptions(), &import_process))
     return false;
 
   // We block inside the import_runner ctor, pumping messages until the

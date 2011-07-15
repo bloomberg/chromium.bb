@@ -43,7 +43,7 @@ bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
   // for the process to return.
   base::LaunchOptions options;
   options.wait = true;
-  return base::LaunchProcess(import_cmd, options);
+  return base::LaunchProcess(import_cmd, options, NULL);
 }
 
 // static

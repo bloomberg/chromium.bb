@@ -282,9 +282,7 @@ class XKeyboard {
     argv.push_back(layout_to_set);
     argv.push_back("-synch");
 
-    base::LaunchOptions options;
-    options.process_handle = &handle;
-    if (!base::LaunchProcess(argv, options)) {
+    if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
       LOG(ERROR) << "Failed to execute setxkbmap: " << layout_to_set;
       execute_queue_ = std::queue<std::string>();  // clear the queue.
       return;

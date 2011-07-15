@@ -62,8 +62,7 @@ HANDLE LaunchCommandViaProcessLauncher(const std::wstring& command_field) {
   if (command_line != NULL) {
     base::LaunchOptions options;
     options.start_hidden = true;
-    options.process_handle = &launched_process;
-    base::LaunchProcess(*command_line, options);
+    base::LaunchProcess(*command_line, options, &launched_process);
   }
 
   return launched_process;

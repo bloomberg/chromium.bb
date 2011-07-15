@@ -762,9 +762,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
     base::SplitString(command_line, ' ', &argv);
 
-    base::LaunchOptions options;
-    options.process_handle = &handle;
-    if (!base::LaunchProcess(argv, options)) {
+    if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
       LOG(ERROR) << "Could not launch: " << command_line;
       return false;
     }

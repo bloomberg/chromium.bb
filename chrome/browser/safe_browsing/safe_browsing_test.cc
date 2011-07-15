@@ -149,8 +149,7 @@ class SafeBrowsingTestServer {
 #if defined(OS_WIN)
     options.start_hidden = true;
 #endif
-    options.process_handle = &server_handle_;
-    if (!base::LaunchProcess(cmd_line, options)) {
+    if (!base::LaunchProcess(cmd_line, options, &server_handle_)) {
       LOG(ERROR) << "Failed to launch server: "
                  << cmd_line.command_line_string();
       return false;

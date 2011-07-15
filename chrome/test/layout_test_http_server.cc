@@ -87,7 +87,7 @@ bool LayoutTestHttpServer::Start() {
   // continuing.
   base::LaunchOptions options;
   options.wait = true;
-  running_ = base::LaunchProcess(cmd_line, options);
+  running_ = base::LaunchProcess(cmd_line, options, NULL);
   return running_;
 }
 
@@ -104,7 +104,7 @@ bool LayoutTestHttpServer::Stop() {
 
   base::LaunchOptions options;
   options.wait = true;
-  bool stopped = base::LaunchProcess(cmd_line, options);
+  bool stopped = base::LaunchProcess(cmd_line, options, NULL);
   running_ = !stopped;
   return stopped;
 }

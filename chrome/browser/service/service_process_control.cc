@@ -316,7 +316,7 @@ void ServiceProcessControl::Launcher::DoRun() {
 #if defined(OS_WIN)
   options.start_hidden = true;
 #endif
-  if (base::LaunchProcess(*cmd_line_, options)) {
+  if (base::LaunchProcess(*cmd_line_, options, NULL)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             NewRunnableMethod(this,
                                               &Launcher::DoDetectLaunched));

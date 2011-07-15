@@ -75,9 +75,7 @@ bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
   for (size_t i = 0; command[i]; ++i)
     argv.push_back(command[i]);
   base::ProcessHandle handle;
-  base::LaunchOptions options;
-  options.process_handle = &handle;
-  if (!base::LaunchProcess(argv, options)) {
+  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command[0];
     return false;
   }

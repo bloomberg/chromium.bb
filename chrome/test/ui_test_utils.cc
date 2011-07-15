@@ -780,7 +780,7 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   SetPythonPath();
   base::LaunchOptions options;
   options.wait = true;
-  if (!base::LaunchProcess(*cmd_line.get(), options)) {
+  if (!base::LaunchProcess(*cmd_line.get(), options, NULL)) {
     LOG(ERROR) << "Unable to launch websocket server.";
     return false;
   }
@@ -834,7 +834,7 @@ TestWebSocketServer::~TestWebSocketServer() {
                             websocket_pid_file_.value());
   base::LaunchOptions options;
   options.wait = true;
-  base::LaunchProcess(*cmd_line.get(), options);
+  base::LaunchProcess(*cmd_line.get(), options, NULL);
 }
 
 TestNotificationObserver::TestNotificationObserver()

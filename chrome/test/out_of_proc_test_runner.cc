@@ -354,7 +354,6 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
 
   base::ProcessHandle process_handle;
   base::LaunchOptions options;
-  options.process_handle = &process_handle;
 
 #if defined(OS_POSIX)
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
@@ -371,7 +370,7 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   options.new_process_group = true;
 #endif
 
-  if (!base::LaunchProcess(new_cmd_line, options))
+  if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
     return false;
 
   int timeout_ms =

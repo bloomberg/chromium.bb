@@ -151,9 +151,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
   base::ProcessHandle process = -1;
   base::LaunchOptions options;
-  options.process_handle = &process;
   options.fds_to_remap = &fds_to_map;
-  base::LaunchProcess(cmd_line.argv(), options);
+  base::LaunchProcess(cmd_line.argv(), options, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
   if (using_suid_sandbox_) {
@@ -305,10 +304,10 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
     adj_oom_score_cmdline.push_back(base::IntToString(score));
 
     base::ProcessHandle sandbox_helper_process;
-    base::LaunchOptions options;
-    options.process_handle = &sandbox_helper_process;
-    if (base::LaunchProcess(adj_oom_score_cmdline, options))
+    if (base::LaunchProcess(adj_oom_score_cmdline, base::LaunchOptions(),
+                            &sandbox_helper_process)) {
       ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
+    }
   } else if (!using_suid_sandbox_) {
     if (!base::AdjustOOMScore(pid, score))
       PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;

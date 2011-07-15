@@ -132,7 +132,7 @@ bool Launchd::RestartJob(Domain domain,
 
   base::LaunchOptions options;
   options.new_process_group = true;
-  return base::LaunchProcess(argv, options);
+  return base::LaunchProcess(argv, options, NULL);
 }
 
 CFMutableDictionaryRef Launchd::CreatePlistFromFile(Domain domain,
