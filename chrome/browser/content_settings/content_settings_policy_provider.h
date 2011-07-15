@@ -25,10 +25,10 @@ class PrefService;
 
 namespace content_settings {
 
-class PolicyDefaultProvider : public DefaultProviderInterface,
+class PolicyDefaultProvider : public ObservableDefaultProvider,
                               public NotificationObserver {
  public:
-  PolicyDefaultProvider(HostContentSettingsMap* map, PrefService* prefs);
+  explicit PolicyDefaultProvider(PrefService* prefs);
   virtual ~PolicyDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
@@ -48,12 +48,6 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
                        const NotificationDetails& details);
 
  private:
-  // Informs observers that content settings have changed. Make sure that
-  // |lock_| is not held when calling this, as listeners will usually call one
-  // of the GetSettings functions in response, which would then lead to a
-  // mutex deadlock.
-  void NotifyObservers(const ContentSettingsDetails& details);
-
   // Reads the policy managed default settings.
   void ReadManagedDefaultSettings();
 
@@ -63,7 +57,6 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings managed_default_content_settings_;
 
-  HostContentSettingsMap* host_content_settings_map_;
   PrefService* prefs_;
 
   // Used around accesses to the managed_default_content_settings_ object to

@@ -78,11 +78,15 @@ HostContentSettingsMap::HostContentSettingsMap(
   // The order in which the default content settings providers are created is
   // critical, as providers that are further down in the list (i.e. added later)
   // override providers further up.
+  content_settings::PrefDefaultProvider* default_provider =
+      new content_settings::PrefDefaultProvider(prefs_, is_off_the_record_);
+  default_provider->AddObserver(this);
   default_content_settings_providers_.push_back(
-      make_linked_ptr(new content_settings::PrefDefaultProvider(
-          this, prefs_, is_off_the_record_)));
-  content_settings::DefaultProviderInterface* policy_default_provider =
-      new content_settings::PolicyDefaultProvider(this, prefs_);
+      make_linked_ptr(default_provider));
+
+  content_settings::PolicyDefaultProvider* policy_default_provider =
+      new content_settings::PolicyDefaultProvider(prefs_);
+  policy_default_provider->AddObserver(this);
   default_content_settings_providers_.push_back(
       make_linked_ptr(policy_default_provider));
 

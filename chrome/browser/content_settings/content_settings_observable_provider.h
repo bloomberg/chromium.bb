@@ -14,6 +14,25 @@
 
 namespace content_settings {
 
+class ObservableDefaultProvider : public DefaultProviderInterface {
+ public:
+  ObservableDefaultProvider();
+  virtual ~ObservableDefaultProvider();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  void NotifyObservers(ContentSettingsPattern primary_pattern,
+                       ContentSettingsPattern secondary_pattern,
+                       ContentSettingsType content_type,
+                       std::string resource_identifier);
+  void RemoveAllObservers();
+
+ private:
+  ObserverList<Observer, true> observer_list_;
+};
+
 class ObservableProvider : public ProviderInterface {
  public:
   ObservableProvider();

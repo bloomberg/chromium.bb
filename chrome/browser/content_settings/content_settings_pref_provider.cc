@@ -12,7 +12,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -149,11 +148,9 @@ ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
 
 namespace content_settings {
 
-PrefDefaultProvider::PrefDefaultProvider(HostContentSettingsMap* map,
-                                         PrefService* prefs,
+PrefDefaultProvider::PrefDefaultProvider(PrefService* prefs,
                                          bool incognito)
-    : host_content_settings_map_(map),
-      prefs_(prefs),
+    : prefs_(prefs),
       is_incognito_(incognito),
       updating_preferences_(false) {
   DCHECK(prefs_);
@@ -217,12 +214,10 @@ void PrefDefaultProvider::UpdateDefaultSetting(
     }
   }
 
-  ContentSettingsDetails details(
-      ContentSettingsPattern(),
-      ContentSettingsPattern(),
-      content_type,
-      std::string());
-  NotifyObservers(details);
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  content_type,
+                  std::string());
 }
 
 bool PrefDefaultProvider::DefaultSettingIsManaged(
@@ -248,11 +243,10 @@ void PrefDefaultProvider::Observe(int type,
       return;
     }
 
-    ContentSettingsDetails details(ContentSettingsPattern(),
-                                   ContentSettingsPattern(),
-                                   CONTENT_SETTINGS_TYPE_DEFAULT,
-                                   std::string());
-    NotifyObservers(details);
+    NotifyObservers(ContentSettingsPattern(),
+                    ContentSettingsPattern(),
+                    CONTENT_SETTINGS_TYPE_DEFAULT,
+                    std::string());
   } else {
     NOTREACHED() << "Unexpected notification";
   }
@@ -261,9 +255,9 @@ void PrefDefaultProvider::Observe(int type,
 void PrefDefaultProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
+  RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
-  host_content_settings_map_ = NULL;
 }
 
 void PrefDefaultProvider::ReadDefaultSettings(bool overwrite) {
@@ -318,17 +312,6 @@ void PrefDefaultProvider::GetSettingsFromDictionary(
   settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
       ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
                        settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
-}
-
-void PrefDefaultProvider::NotifyObservers(
-    const ContentSettingsDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (host_content_settings_map_ == NULL)
-    return;
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(host_content_settings_map_),
-      Details<const ContentSettingsDetails>(&details));
 }
 
 void PrefDefaultProvider::MigrateObsoleteNotificationPref() {

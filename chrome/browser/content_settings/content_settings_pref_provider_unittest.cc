@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
-#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/incognito_user_pref_store.h"
@@ -32,9 +31,7 @@ class PrefDefaultProviderTest : public TestingBrowserProcessTest {
  public:
   PrefDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        provider_(profile_.GetHostContentSettingsMap(),
-                  profile_.GetPrefs(),
-                  false) {
+        provider_(profile_.GetPrefs(), false) {
   }
   ~PrefDefaultProviderTest() {
     provider_.ShutdownOnUIThread();
@@ -61,18 +58,14 @@ TEST_F(PrefDefaultProviderTest, DefaultValues) {
 }
 
 TEST_F(PrefDefaultProviderTest, Observer) {
-  MockSettingsObserver observer;
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(_,
+                                      _,
+                                      CONTENT_SETTINGS_TYPE_IMAGES,
+                                      ""));
+  provider_.AddObserver(&mock_observer);
 
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile_.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_IMAGES, false,
-                                       _, _, true));
-  // Expect a second call because the PrefDefaultProvider in the TestingProfile
-  // also observes the default content settings preference.
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile_.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, _, true));
   provider_.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
 }
@@ -105,8 +98,7 @@ TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
 }
 
 TEST_F(PrefDefaultProviderTest, OffTheRecord) {
-  PrefDefaultProvider otr_provider(profile_.GetHostContentSettingsMap(),
-                                   profile_.GetPrefs(),
+  PrefDefaultProvider otr_provider(profile_.GetPrefs(),
                                    true);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -125,7 +117,7 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
 
   // Changing content settings on the incognito provider should be ignored.
   otr_provider.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
-                                   CONTENT_SETTING_ALLOW);
+                                    CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,

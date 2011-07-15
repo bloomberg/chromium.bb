@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
-#include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -37,7 +36,7 @@ class PolicyDefaultProviderTest : public TestingBrowserProcessTest {
 TEST_F(PolicyDefaultProviderTest, DefaultValues) {
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
-  PolicyDefaultProvider provider(profile.GetHostContentSettingsMap(), prefs);
+  PolicyDefaultProvider provider(prefs);
 
   // By default, policies should be off.
   ASSERT_FALSE(
@@ -64,26 +63,30 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
 // if the managed setting is removed.
 TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
-  MockSettingsObserver observer;
-  // Make sure the content settings map exists.
-  profile.GetHostContentSettingsMap();
   TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyDefaultProvider provider(prefs);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(_,
+                                      _,
+                                      CONTENT_SETTINGS_TYPE_DEFAULT,
+                                      ""));
+  provider.AddObserver(&mock_observer);
 
   // Set the managed default-content-setting.
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, _, true));
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  ::testing::Mock::VerifyAndClearExpectations(&observer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(profile.GetHostContentSettingsMap(),
-                                       CONTENT_SETTINGS_TYPE_DEFAULT, true,
-                                       _, _, true));
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(_,
+                                      _,
+                                      CONTENT_SETTINGS_TYPE_DEFAULT,
+                                      ""));
   // Remove the managed default-content-setting.
   prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
+  provider.ShutdownOnUIThread();
 }
 
 class PolicyProviderTest : public testing::Test {

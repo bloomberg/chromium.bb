@@ -33,11 +33,10 @@ namespace content_settings {
 
 // Content settings provider that provides default content settings based on
 // user prefs.
-class PrefDefaultProvider : public DefaultProviderInterface,
+class PrefDefaultProvider : public ObservableDefaultProvider,
                             public NotificationObserver {
  public:
-  PrefDefaultProvider(HostContentSettingsMap* map,
-                      PrefService* prefs,
+  PrefDefaultProvider(PrefService* prefs,
                       bool incognito);
   virtual ~PrefDefaultProvider();
 
@@ -58,12 +57,6 @@ class PrefDefaultProvider : public DefaultProviderInterface,
                        const NotificationDetails& details);
 
  private:
-  // Informs observers that content settings have changed. Make sure that
-  // |lock_| is not held when calling this, as listeners will usually call one
-  // of the GetSettings functions in response, which would then lead to a
-  // mutex deadlock.
-  void NotifyObservers(const ContentSettingsDetails& details);
-
   // Sets the fields of |settings| based on the values in |dictionary|.
   void GetSettingsFromDictionary(const base::DictionaryValue* dictionary,
                                  ContentSettings* settings);
@@ -81,7 +74,6 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
 
-  HostContentSettingsMap* host_content_settings_map_;
   PrefService* prefs_;
 
   // Whether this settings map is for an Incognito session.

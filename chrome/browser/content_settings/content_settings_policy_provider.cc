@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -99,10 +98,8 @@ const PrefsForManagedContentSettingsMapEntry
 
 namespace content_settings {
 
-PolicyDefaultProvider::PolicyDefaultProvider(HostContentSettingsMap* map,
-                                             PrefService* prefs)
-    : host_content_settings_map_(map),
-      prefs_(prefs) {
+PolicyDefaultProvider::PolicyDefaultProvider(PrefService* prefs)
+    : prefs_(prefs) {
   // Read global defaults.
   DCHECK_EQ(arraysize(kPrefToManageType),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
@@ -172,11 +169,10 @@ void PolicyDefaultProvider::Observe(int type,
       return;
     }
 
-    ContentSettingsDetails details(ContentSettingsPattern(),
-                                   ContentSettingsPattern(),
-                                   CONTENT_SETTINGS_TYPE_DEFAULT,
-                                   std::string());
-    NotifyObservers(details);
+    NotifyObservers(ContentSettingsPattern(),
+                    ContentSettingsPattern(),
+                    CONTENT_SETTINGS_TYPE_DEFAULT,
+                    std::string());
   } else {
     NOTREACHED() << "Unexpected notification";
   }
@@ -185,21 +181,9 @@ void PolicyDefaultProvider::Observe(int type,
 void PolicyDefaultProvider::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
+  RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
   prefs_ = NULL;
-  host_content_settings_map_ = NULL;
-}
-
-
-void PolicyDefaultProvider::NotifyObservers(
-    const ContentSettingsDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (host_content_settings_map_ == NULL)
-    return;
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(host_content_settings_map_),
-      Details<const ContentSettingsDetails>(&details));
 }
 
 void PolicyDefaultProvider::ReadManagedDefaultSettings() {

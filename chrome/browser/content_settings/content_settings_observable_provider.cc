@@ -6,6 +6,45 @@
 
 namespace content_settings {
 
+// ////////////////////////////////////////////////////////////////////////////
+// ObservableDefaultProvider
+//
+ObservableDefaultProvider::ObservableDefaultProvider() {
+}
+
+ObservableDefaultProvider::~ObservableDefaultProvider() {
+}
+
+void ObservableDefaultProvider::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ObservableDefaultProvider::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ObservableDefaultProvider::RemoveAllObservers() {
+  observer_list_.Clear();
+}
+
+void ObservableDefaultProvider::NotifyObservers(
+    ContentSettingsPattern primary_pattern,
+    ContentSettingsPattern secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnContentSettingChanged(
+                        primary_pattern,
+                        secondary_pattern,
+                        content_type,
+                        resource_identifier));
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// ObservableProvider
+//
+
 ObservableProvider::ObservableProvider() {
 }
 
