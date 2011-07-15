@@ -207,6 +207,7 @@ class RenderView : public RenderWidget,
   void OnViewContextSwapBuffersAborted();
 
   int page_id() const { return page_id_; }
+  int history_list_offset() const { return history_list_offset_; }
   PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
   const WebPreferences& webkit_preferences() const {
@@ -633,6 +634,7 @@ class RenderView : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, StaleNavigationsIgnored);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 #if defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
@@ -861,6 +863,11 @@ class RenderView : public RenderWidget,
   // Should only be called if this object wraps a PluginDocument.
   WebKit::WebPlugin* GetWebPluginFromPluginDocument();
 
+  // Returns true if the |params| navigation is to an entry that has been
+  // cropped due to a recent navigation the browser did not know about.
+  bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
+                                 bool is_reload);
+
   // Returns false unless this is a top-level navigation that crosses origins.
   bool IsNonLocalTopLevelNavigation(const GURL& url,
                                     WebKit::WebFrame* frame,
@@ -980,13 +987,26 @@ class RenderView : public RenderWidget,
   // globally unique in the renderer.
   static int32 next_page_id_;
 
+  // The offset of the current item in the history list.
+  int history_list_offset_;
+
+  // The RenderView's current impression of the history length.  This includes
+  // any items that have committed in this process, but because of cross-process
+  // navigations, the history may have some entries that were committed in other
+  // processes.  We won't know about them until the next navigation in this
+  // process.
+  int history_list_length_;
+
+  // The list of page IDs for each history item this RenderView knows about.
+  // Some entries may be -1 if they were rendered by other processes or were
+  // restored from a previous session.  This lets us detect attempts to
+  // navigate to stale entries that have been cropped from our history.
+  std::vector<int32> history_page_ids_;
+
   // Page info -----------------------------------------------------------------
 
   // The last gotten main frame's encoding.
   std::string last_encoding_name_;
-
-  int history_list_offset_;
-  int history_list_length_;
 
   // UI state ------------------------------------------------------------------
 

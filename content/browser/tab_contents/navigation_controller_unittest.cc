@@ -1255,11 +1255,10 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   params.is_post = false;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
-  // This should NOT generate a new entry.
+  // This should NOT generate a new entry, nor prune the list.
   content::LoadCommittedDetails details;
   EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check2AndReset(
-      content::NOTIFICATION_NAV_LIST_PRUNED,
+  EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
   EXPECT_TRUE(details.did_replace_entry);
@@ -1306,12 +1305,11 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.is_post = false;
     params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
-    // This should NOT generate a new entry.
+    // This should NOT generate a new entry, nor prune the list.
     content::LoadCommittedDetails details;
     EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
-    EXPECT_TRUE(notifications.Check2AndReset(
-        content::NOTIFICATION_NAV_LIST_PRUNED,
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
     EXPECT_TRUE(details.is_in_page);
     EXPECT_TRUE(details.did_replace_entry);
     EXPECT_EQ(2, controller().entry_count());

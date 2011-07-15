@@ -197,14 +197,11 @@ void RenderViewFakeResourcesTest::OnRenderViewReady() {
 void RenderViewFakeResourcesTest::GoToOffset(
     int offset,
     const WebKit::WebHistoryItem& history_item) {
-  NavigationState* state = NavigationState::FromDataSource(
-      GetMainFrame()->dataSource());
-
   ViewMsg_Navigate_Params params;
   params.page_id = view_->page_id() + offset;
   params.pending_history_list_offset =
-      state->pending_history_list_offset() + offset;
-  params.current_history_list_offset = state->pending_history_list_offset();
+      view_->history_list_offset() + offset;
+  params.current_history_list_offset = view_->history_list_offset();
   params.current_history_list_length = (view_->historyBackListCount() +
                                         view_->historyForwardListCount() + 1);
   params.url = GURL(history_item.urlString());

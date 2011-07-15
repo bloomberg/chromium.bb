@@ -409,6 +409,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 }
 
 RenderView::~RenderView() {
+  history_page_ids_.clear();
+
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
 
@@ -687,18 +689,28 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (!webview())
     return;
 
+  bool is_reload =
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+
+  // If this is a stale back/forward (due to a recent navigation the browser
+  // didn't know about), ignore it.
+  if (IsBackForwardToStaleEntry(params, is_reload))
+    return;
+
   // Swap this renderer back in if necessary.
   if (is_swapped_out_)
     SetSwappedOut(false);
 
   history_list_offset_ = params.current_history_list_offset;
   history_list_length_ = params.current_history_list_length;
+  if (history_list_length_ >= 0)
+    history_page_ids_.resize(history_list_length_, -1);
+  if (params.pending_history_list_offset >= 0 &&
+      params.pending_history_list_offset < history_list_length_)
+    history_page_ids_[params.pending_history_list_offset] = params.page_id;
 
   content::GetContentClient()->SetActiveURL(params.url);
-
-  bool is_reload =
-      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
-      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
 
   WebFrame* main_frame = webview()->mainFrame();
   if (is_reload && main_frame->currentHistoryItem().isNull()) {
@@ -790,6 +802,35 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   // In case LoadRequest failed before DidCreateDataSource was called.
   pending_navigation_state_.reset();
+}
+
+bool RenderView::IsBackForwardToStaleEntry(
+    const ViewMsg_Navigate_Params& params,
+    bool is_reload) {
+  // Make sure this isn't a back/forward to an entry we have already cropped
+  // or replaced from our history, before the browser knew about it.  If so,
+  // a new navigation has committed in the mean time, and we can ignore this.
+  bool is_back_forward = !is_reload && !params.state.empty();
+
+  // Note: if the history_list_length_ is 0 for a back/forward, we must be
+  // restoring from a previous session.  We'll update our state in OnNavigate.
+  if (!is_back_forward || history_list_length_ <= 0)
+    return false;
+
+  DCHECK_EQ(static_cast<int>(history_page_ids_.size()), history_list_length_);
+
+  // Check for whether the forward history has been cropped due to a recent
+  // navigation the browser didn't know about.
+  if (params.pending_history_list_offset >= history_list_length_)
+    return true;
+
+  // Check for whether this entry has been replaced with a new one.
+  int expected_page_id =
+      history_page_ids_[params.pending_history_list_offset];
+  if (expected_page_id > 0 && params.page_id != expected_page_id)
+    return true;
+
+  return false;
 }
 
 // Stop loading the current page
@@ -2378,6 +2419,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
     if (history_list_offset_ >= content::kMaxSessionHistoryEntries)
       history_list_offset_ = content::kMaxSessionHistoryEntries - 1;
     history_list_length_ = history_list_offset_ + 1;
+    history_page_ids_.resize(history_list_length_, -1);
+    history_page_ids_[history_list_offset_] = page_id_;
   } else {
     // Inspect the navigation_state on this frame to see if the navigation
     // corresponds to a session history navigation...  Note: |frame| may or
@@ -2397,6 +2440,12 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
       page_id_ = navigation_state->pending_page_id();
 
       history_list_offset_ = navigation_state->pending_history_list_offset();
+
+      // If the history list is valid, our list of page IDs should be correct.
+      DCHECK(history_list_length_ <= 0 ||
+             history_list_offset_ < 0 ||
+             history_list_offset_ >= history_list_length_ ||
+             history_page_ids_[history_list_offset_] == page_id_);
     }
   }
 

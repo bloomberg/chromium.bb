@@ -784,16 +784,22 @@ void NavigationController::RendererDidNavigateInPage(
 
   // Reference fragment navigation. We're guaranteed to have the last_committed
   // entry and it will be the same page as the new navigation (minus the
-  // reference fragments, of course).
-  NavigationEntry* new_entry = new NavigationEntry(*existing_entry);
-  new_entry->set_page_id(params.page_id);
-  if (new_entry->update_virtual_url_with_url())
-    UpdateVirtualURLToURL(new_entry, params.url);
-  new_entry->set_url(params.url);
+  // reference fragments, of course).  We'll update the URL of the existing
+  // entry without pruning the forward history.
+  existing_entry->set_url(params.url);
+  if (existing_entry->update_virtual_url_with_url())
+    UpdateVirtualURLToURL(existing_entry, params.url);
 
   // This replaces the existing entry since the page ID didn't change.
   *did_replace_entry = true;
-  InsertOrReplaceEntry(new_entry, true);
+
+  if (pending_entry_)
+    DiscardNonCommittedEntriesInternal();
+
+  // If a transient entry was removed, the indices might have changed, so we
+  // have to query the entry index again.
+  last_committed_entry_index_ =
+      GetEntryIndexWithPageID(tab_contents_->GetSiteInstance(), params.page_id);
 }
 
 void NavigationController::RendererDidNavigateNewSubframe(
