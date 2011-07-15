@@ -800,7 +800,9 @@ class XcodeSettings(object):
 
 
 class MacPrefixHeader(object):
-  """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature."""
+  """A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature. If
+  GCC_PREFIX_HEADER isn't present (in most gyp targets on mac, and always on
+  non-mac systems), all methods of this class are no-ops."""
 
   def __init__(self, spec, path_provider):
     # This doesn't support per-configuration prefix headers. Good enough
@@ -1859,7 +1861,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'flock': 'flock',
       'flock_index': 1,
       'link_commands': LINK_COMMANDS_LINUX,
-      'objc_commands': '',
+      'mac_commands': '',
       'srcdir': srcdir,
     }
   if flavor == 'mac':
