@@ -193,7 +193,7 @@ hg-checkout() {
     # with long filenames during checkout, and to make sure the
     # repo directory only exists if the checkout was successful.
     local TMPDIR="/tmp/hg-${rev}-$RANDOM"
-    hg-clone "https://${repo}.googlecode.com/hg/" "${TMPDIR}"
+    hg-clone "https://code.google.com/p/${repo}" "${TMPDIR}"
     hg-update "${TMPDIR}" -C ${rev}
     mv "${TMPDIR}" "${dest}"
   else

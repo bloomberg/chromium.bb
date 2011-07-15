@@ -239,14 +239,14 @@ readonly LLVM_GCC_QPARENT_REV=261494c15c49  # svn126872
 
 
 # Repositories
-readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
+readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc"
 readonly REPO_LLVM="nacl-llvm-branches"
-readonly REPO_NEWLIB="newlib.nacl-llvm-branches"
-readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
-readonly REPO_COMPILER_RT="compiler-rt.nacl-llvm-branches"
-readonly REPO_GOOGLE_PERFTOOLS="google-perftools.nacl-llvm-branches"
-readonly REPO_LLVM_MQ_PATCHES="llvm-mq-patches.nacl-llvm-branches"
-readonly REPO_LLVM_GCC_MQ_PATCHES="llvm-gcc-mq-patches.nacl-llvm-branches"
+readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
+readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
+readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
+readonly REPO_GOOGLE_PERFTOOLS="nacl-llvm-branches.google-perftools"
+readonly REPO_LLVM_MQ_PATCHES="nacl-llvm-branches.llvm-mq-patches"
+readonly REPO_LLVM_GCC_MQ_PATCHES="nacl-llvm-branches.llvm-gcc-mq-patches"
 
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
