@@ -339,7 +339,7 @@ void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   }
 }
 #elif defined(TOOLKIT_USES_GTK)
-void Bubble::IsActiveChanged() {
+void Bubble::OnActiveChanged() {
   if (!GetWidget()->IsActive())
     GetWidget()->Close();
 }

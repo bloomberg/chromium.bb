@@ -35,7 +35,7 @@ class BubbleWidget : public views::NativeWidgetGtk {
     views::NativeWidgetGtk::Show();
   }
 
-  virtual void Close() {
+  virtual void Close() OVERRIDE {
     if (!bubble_)
       return;  // We have already been closed.
     if (IsActive()) {
@@ -47,7 +47,7 @@ class BubbleWidget : public views::NativeWidgetGtk {
     bubble_ = NULL;
   }
 
-  virtual void Hide() {
+  virtual void Hide() OVERRIDE {
     if (IsActive() && bubble_) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
@@ -56,7 +56,7 @@ class BubbleWidget : public views::NativeWidgetGtk {
     views::NativeWidgetGtk::Hide();
   }
 
-  virtual void IsActiveChanged() {
+  virtual void OnActiveChanged() OVERRIDE {
     if (IsActive() || !bubble_)
       return;
     BrowserBubble::Delegate* delegate = bubble_->delegate();
@@ -72,7 +72,7 @@ class BubbleWidget : public views::NativeWidgetGtk {
     delegate->BubbleLostFocus(bubble_, false);
   }
 
-  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
+  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) OVERRIDE {
     if (bubble_ && bubble_->delegate())
       bubble_->delegate()->BubbleGotFocus(bubble_);
     return views::NativeWidgetGtk::OnFocusIn(widget, event);

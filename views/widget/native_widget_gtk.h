@@ -92,7 +92,7 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   void DoDrag(const OSExchangeData& data, int operation);
 
   // Invoked when the active status changes.
-  virtual void IsActiveChanged();
+  virtual void OnActiveChanged();
 
   // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
   // drop is done.

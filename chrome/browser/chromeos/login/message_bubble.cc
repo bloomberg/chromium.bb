@@ -171,7 +171,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
   return bubble;
 }
 
-void MessageBubble::IsActiveChanged() {
+void MessageBubble::OnActiveChanged() {
   if (parent_ && IsActive()) {
     // Show the parent.
     gtk_window_present_with_time(parent_->GetNativeWindow(),

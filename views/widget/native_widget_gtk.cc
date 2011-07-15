@@ -519,7 +519,7 @@ void NativeWidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   }
 }
 
-void NativeWidgetGtk::IsActiveChanged() {
+void NativeWidgetGtk::OnActiveChanged() {
   delegate_->OnNativeWidgetActivationChanged(IsActive());
 }
 
@@ -561,7 +561,7 @@ void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
              widget_));
   }
   if (was_active != IsActive()) {
-    IsActiveChanged();
+    OnActiveChanged();
     GetWidget()->GetRootView()->SchedulePaint();
   }
 }

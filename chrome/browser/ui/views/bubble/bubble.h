@@ -161,7 +161,7 @@ class Bubble
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #elif defined(TOOLKIT_USES_GTK)
   // Overridden from NativeWidgetGtk:
-  virtual void IsActiveChanged();
+  virtual void OnActiveChanged() OVERRIDE;
 #endif
 
 #if defined(OS_WIN)

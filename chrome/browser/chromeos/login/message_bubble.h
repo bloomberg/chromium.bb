@@ -86,8 +86,8 @@ class MessageBubble : public Bubble,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Overridden from NativeWidgetGtk.
-  virtual void IsActiveChanged();
-  virtual void SetMouseCapture();
+  virtual void OnActiveChanged() OVERRIDE;
+  virtual void SetMouseCapture() OVERRIDE;
 
  private:
   MessageBubble(views::Widget::InitParams::Type type,
