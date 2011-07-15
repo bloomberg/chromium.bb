@@ -30,19 +30,18 @@ IMultimedia* GlobalMultiMediaInterface = 0;
 //       the implementation/emulation needs to be updated as well.
 bool IsSupportedInterface(string if_name) {
   return
-    if_name == "PPB_Audio;0.6" ||
-    if_name == "PPB_AudioConfig;0.5" ||
+    if_name == "PPB_Audio;1.0" ||
+    if_name == "PPB_AudioConfig;1.0" ||
     if_name == "PPB_Core;0.5" ||
-    if_name == "PPB_FileIO(Dev);0.4" ||
-    if_name == "PPB_Graphics2D;0.4" ||
-    if_name == "PPB_ImageData;0.3" ||
-    if_name == "PPB_Instance;0.5" ||
-    if_name == "PPB_Messaging;0.1" ||
-    if_name == "PPB_URLLoader;0.2" ||
-    if_name == "PPB_URLRequestInfo;0.2" ||
-    if_name == "PPB_URLResponseInfo;0.1" ||
-    if_name == "PPB_Var(Deprecated);0.3" ||
-    if_name == "PPB_Var;0.5";
+    if_name == "PPB_FileIO;1.0" ||
+    if_name == "PPB_Graphics2D;1.0" ||
+    if_name == "PPB_ImageData;1.0" ||
+    if_name == "PPB_Instance;1.0" ||
+    if_name == "PPB_Messaging;1.0" ||
+    if_name == "PPB_URLLoader;1.0" ||
+    if_name == "PPB_URLRequestInfo;1.0" ||
+    if_name == "PPB_URLResponseInfo;1.0" ||
+    if_name == "PPB_Var;1.0";
 }
 
 // void* PPB_GetInterface(const char* interface_name);

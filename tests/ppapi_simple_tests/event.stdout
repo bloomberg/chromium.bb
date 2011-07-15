@@ -88,10 +88,10 @@ rpc call intiated PPP_Instance_DidChangeFocus:ib:
 input 0:  i(5555)
 input 1:  b(0)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Var;0.5")
+input 0:  s("PPB_Var;1.0")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Messaging;0.1")
+input 0:  s("PPB_Messaging;1.0")
 output 0:  i(1)
 replaying PPB_Messaging_PostMessage:iC::
 input 0:  i(5555)

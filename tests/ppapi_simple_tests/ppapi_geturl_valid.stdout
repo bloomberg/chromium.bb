@@ -17,10 +17,10 @@ replaying PPB_GetInterface:s:i:
 input 0:  s("PPB_Core;0.5")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Instance;0.5")
+input 0:  s("PPB_Instance;1.0")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Var;0.5")
+input 0:  s("PPB_Var;1.0")
 output 0:  i(1)
 rpc call complete PPP_InitializeModule:iihs:ii
 
@@ -41,27 +41,27 @@ input 2:  i(2)
 input 3:  C(48,\x05\x00\x00\x00\x19\x00\x00\x00ppapi_geturl_success.html\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00)
 input 4:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_URLRequestInfo;0.2")
+input 0:  s("PPB_URLRequestInfo;1.0")
 output 0:  i(1)
 replaying PPB_URLRequestInfo_Create:i:i:
 input 0:  i(5555)
 output 0:  i(30)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_URLResponseInfo;0.1")
+input 0:  s("PPB_URLResponseInfo;1.0")
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_URLLoader;0.2")
+input 0:  s("PPB_URLLoader;1.0")
 output 0:  i(1)
 replaying PPB_URLLoader_Create:i:i:
 input 0:  i(5555)
 output 0:  i(34)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_FileIO(Dev\x29;0.3")
+input 0:  s("PPB_FileIO;1.0")
 output 0:  i(1)
-replaying PPB_FileIO_Dev_Create:i:i:
+replaying PPB_FileIO_Create:i:i:
 input 0:  i(5555)
 output 0:  i(35)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(30)
 output 0:  i(0)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -73,7 +73,7 @@ output 0:  i(0)
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(30)
 output 0:  i(0)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(34)
 output 0:  i(0)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -85,7 +85,7 @@ output 0:  i(0)
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(34)
 output 0:  i(1)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(35)
 output 0:  i(1)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -130,7 +130,7 @@ input 2:  C(0,)
 replaying PPB_URLLoader_GetResponseInfo:i:i:
 input 0:  i(34)
 output 0:  i(38)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(38)
 output 0:  i(0)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -202,10 +202,10 @@ output 0:  i(30)
 replaying PPB_URLLoader_Create:i:i:
 input 0:  i(5555)
 output 0:  i(34)
-replaying PPB_FileIO_Dev_Create:i:i:
+replaying PPB_FileIO_Create:i:i:
 input 0:  i(5555)
 output 0:  i(66)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(30)
 output 0:  i(0)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -217,7 +217,7 @@ output 0:  i(0)
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(30)
 output 0:  i(0)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(34)
 output 0:  i(0)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
@@ -229,7 +229,7 @@ output 0:  i(0)
 replaying PPB_URLLoader_IsURLLoader:i:i:
 input 0:  i(34)
 output 0:  i(1)
-replaying PPB_FileIO_Dev_IsFileIO:i:i:
+replaying PPB_FileIO_IsFileIO:i:i:
 input 0:  i(66)
 output 0:  i(1)
 replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:

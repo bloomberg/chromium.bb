@@ -13,9 +13,10 @@
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_dev.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
 #include "native_client/src/third_party/ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "native_client/src/third_party/ppapi/cpp/dev/file_ref_dev.h"
+#include "native_client/src/third_party/ppapi/cpp/file_io.h"
+#include "native_client/src/third_party/ppapi/cpp/file_ref.h"
 #include "native_client/src/third_party/ppapi/cpp/url_request_info.h"
 #include "native_client/src/third_party/ppapi/cpp/url_response_info.h"
 
@@ -91,9 +92,9 @@ bool FileDownloader::Open(const nacl::string& url,
     url_request.SetURL(url_);
 
     if (streaming_to_file()) {
-      file_reader_ = pp::FileIO_Dev(instance_);
-      file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
-        module->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
+      file_reader_ = pp::FileIO(instance_);
+      file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
+        module->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
       if (file_io_trusted_interface_ == NULL) {
         // Interface not supported by our browser
         pp_error = PP_ERROR_NOINTERFACE;
@@ -259,7 +260,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   url_ = full_url.AsString();
 
   // The file is now fully downloaded.
-  pp::FileRef_Dev file(url_response.GetBodyAsFileRef());
+  pp::FileRef file(url_response.GetBodyAsFileRef());
   if (file.is_null()) {
     PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (file=NULL)\n"));
     file_open_notify_callback_.Run(PP_ERROR_FAILED);

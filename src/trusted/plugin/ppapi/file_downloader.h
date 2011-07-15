@@ -9,9 +9,9 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_trusted_dev.h"
+#include "native_client/src/third_party/ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
-#include "native_client/src/third_party/ppapi/cpp/dev/file_io_dev.h"
+#include "native_client/src/third_party/ppapi/cpp/file_io.h"
 #include "native_client/src/third_party/ppapi/cpp/url_loader.h"
 #include "native_client/src/third_party/ppapi/cpp/instance.h"
 
@@ -38,7 +38,7 @@ class FileDownloader {
   // calling Open(), or Open() will fail.
   FileDownloader()
       : instance_(NULL),
-        file_open_notify_callback_(pp::CompletionCallback::Block()),
+        file_open_notify_callback_(pp::BlockUntilComplete()),
         file_io_trusted_interface_(NULL),
         open_time_(-1) {}
   ~FileDownloader() {}
@@ -106,8 +106,8 @@ class FileDownloader {
   nacl::string url_to_open_;
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
-  pp::FileIO_Dev file_reader_;
-  const PPB_FileIOTrusted_Dev* file_io_trusted_interface_;
+  pp::FileIO file_reader_;
+  const PPB_FileIOTrusted* file_io_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
   int64_t open_time_;

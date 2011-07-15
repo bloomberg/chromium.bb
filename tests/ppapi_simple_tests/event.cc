@@ -9,10 +9,10 @@
 #include <string>
 #include <queue>
 
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/module.h"
-#include "ppapi/cpp/var.h"
+#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/cpp/var.h"
 
 using std::string;
 using std::queue;
@@ -62,18 +62,18 @@ string ModifierToString(uint32_t modifier) {
 
 string MouseButtonToString(PP_InputEvent_MouseButton button) {
   switch (button) {
-   case PP_INPUTEVENT_MOUSEBUTTON_NONE:
-    return "None";
-   case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
-    return "Left";
-   case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
-    return "Middle";
-   case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
-    return "Right";
-   default:
-    ostringstream stream;
-    stream << "Unrecognized (" << static_cast<int32_t>(button) << ")";
-    return stream.str();
+    case PP_INPUTEVENT_MOUSEBUTTON_NONE:
+      return "None";
+    case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
+      return "Left";
+    case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
+      return "Middle";
+    case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
+      return "Right";
+    default:
+      ostringstream stream;
+      stream << "Unrecognized (" << static_cast<int32_t>(button) << ")";
+      return stream.str();
   }
 }
 
@@ -132,31 +132,32 @@ string WheelEvent(PP_InputEvent_Wheel wheel_event, PP_TimeTicks time) {
 string EventToString(const PP_InputEvent& event) {
   ostringstream stream;
   switch (event.type) {
-   default:
-   case PP_INPUTEVENT_TYPE_UNDEFINED:
-    stream << "Unrecognized Event (" << static_cast<int32_t>(event.type) << ")";
-    return stream.str();
+    default:
+    case PP_INPUTEVENT_TYPE_UNDEFINED:
+      stream << "Unrecognized Event (" << static_cast<int32_t>(event.type)
+             << ")";
+      return stream.str();
 
-   case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-    return MouseEvent(event.u.mouse, event.time_stamp, "Down");
-   case PP_INPUTEVENT_TYPE_MOUSEUP:
-    return MouseEvent(event.u.mouse, event.time_stamp, "Up");
-   case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-    return MouseEvent(event.u.mouse, event.time_stamp, "Move");
-   case PP_INPUTEVENT_TYPE_MOUSEENTER:
-    return MouseEvent(event.u.mouse, event.time_stamp, "Enter");
-   case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-    return MouseEvent(event.u.mouse, event.time_stamp, "Leave");
-   case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
-    return WheelEvent(event.u.wheel, event.time_stamp);
-   case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-    return KeyEvent(event.u.key, event.time_stamp, "RawKeyDown");
-   case PP_INPUTEVENT_TYPE_KEYDOWN:
-    return KeyEvent(event.u.key, event.time_stamp, "Down");
-   case PP_INPUTEVENT_TYPE_KEYUP:
-    return KeyEvent(event.u.key, event.time_stamp, "Up");
-   case PP_INPUTEVENT_TYPE_CHAR:
-    return CharEvent(event.u.character, event.time_stamp);
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+      return MouseEvent(event.u.mouse, event.time_stamp, "Down");
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
+      return MouseEvent(event.u.mouse, event.time_stamp, "Up");
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+      return MouseEvent(event.u.mouse, event.time_stamp, "Move");
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+      return MouseEvent(event.u.mouse, event.time_stamp, "Enter");
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      return MouseEvent(event.u.mouse, event.time_stamp, "Leave");
+    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
+      return WheelEvent(event.u.wheel, event.time_stamp);
+    case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
+      return KeyEvent(event.u.key, event.time_stamp, "RawKeyDown");
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+      return KeyEvent(event.u.key, event.time_stamp, "Down");
+    case PP_INPUTEVENT_TYPE_KEYUP:
+      return KeyEvent(event.u.key, event.time_stamp, "Up");
+    case PP_INPUTEVENT_TYPE_CHAR:
+      return CharEvent(event.u.character, event.time_stamp);
   }
 }
 
@@ -178,7 +179,7 @@ void StringReplace(string* input,
   }
 }
 
-} // namespace
+}  // namespace
 
 
 class MyInstance : public pp::Instance {
@@ -230,7 +231,6 @@ class MyInstance : public pp::Instance {
   virtual void DidChangeFocus(bool has_focus) {
     FlushEventBuffer();
   }
-
 };
 
 // standard boilerplate code below

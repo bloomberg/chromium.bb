@@ -19,7 +19,7 @@ rpc call complete PPP_InitializeModule:iihs:ii
 
 "*** INIT INSTANCE"
 rpc call intiated PPP_GetInterface:s:i
-input 0:  s("PPP_Instance;0.5")
+input 0:  s("PPP_Instance;1.0")
 rpc call complete PPP_GetInterface:s:i
 output 0:  i(1)
 
@@ -41,7 +41,7 @@ input 0:  i(5555)
 input 1:  I(4,8,79,400,400)
 input 2:  I(4,0,0,400,400)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Graphics2D;0.4")
+input 0:  s("PPB_Graphics2D;1.0")
 output 0:  i(1)
 replaying PPB_Graphics2D_Create:iCi:i:
 input 0:  i(5555)
@@ -49,14 +49,14 @@ input 1:  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
 input 2:  i(0)
 output 0:  i(8)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_Instance;0.4")
+input 0:  s("PPB_Instance;1.0")
 output 0:  i(1)
 replaying PPB_Instance_BindGraphics:ii:i:
 input 0:  i(5555)
 input 1:  i(8)
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
-input 0:  s("PPB_ImageData;0.3")
+input 0:  s("PPB_ImageData;1.0")
 output 0:  i(1)
 replaying PPB_ImageData_Create:iiCi:i:
 input 0:  i(5555)

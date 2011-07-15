@@ -12,15 +12,15 @@
 #include <nacl/nacl_check.h>
 #include <nacl/nacl_log.h>
 
-#include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/rect.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/c/pp_rect.h"
+#include "native_client/src/third_party/ppapi/c/pp_bool.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/cpp/rect.h"
+#include "native_client/src/third_party/ppapi/cpp/graphics_2d.h"
+#include "native_client/src/third_party/ppapi/cpp/image_data.h"
+#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
 
 const uint32_t kDefaultColor = 0x2266aa;
 

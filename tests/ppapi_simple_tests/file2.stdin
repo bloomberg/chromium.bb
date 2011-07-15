@@ -33,13 +33,13 @@ set_variable ERROR R(48,${JS_STR},4:33,"5555: Error: Finish unexpected rv",7:0)
 # These replays are too common to list them seperately
 # TODO(robertm): make the counts tight, eliminate PPB_Var ASAP
 
-replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;0.1") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Messaging;1.0") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_Var;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_FileIO;1.0") * i(1)
 
 ######################################################################
 

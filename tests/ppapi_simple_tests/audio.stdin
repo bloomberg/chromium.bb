@@ -30,13 +30,13 @@ set_variable TAGS C(10,frequency\000)
 set_variable VALUES C(4,800\000)
 # The PPB_xxx replays below will be triggered as a reaction to
 # PPP_Instance_DidCreate in roughly the order shown
-replay 1 PPB_GetInterface:s:i s("PPB_AudioConfig;0.5") * i(1)
+replay 1 PPB_GetInterface:s:i s("PPB_AudioConfig;1.0") * i(1)
 replay 1 PPB_AudioConfig_RecommendSampleFrameCount:ii:i i(44100) i(${NUM_FRAMES}) * i(${NUM_FRAMES})
 replay 1 PPB_AudioConfig_CreateStereo16Bit:iii:i ${INSTANCE} i(44100) i(${NUM_FRAMES}) * ${HANDLE_CFG}
 # TODO(robertm): explain why these are called three times
 replay 3 PPB_Core_AddRefResource:i: ${HANDLE_CFG} *
 replay 3 PPB_Core_ReleaseResource:i: ${HANDLE_CFG} *
-replay 1 PPB_GetInterface:s:i s("PPB_Audio;0.6") * i(1)
+replay 1 PPB_GetInterface:s:i s("PPB_Audio;1.0") * i(1)
 replay 1 PPB_Audio_Create:ii:i ${INSTANCE} ${HANDLE_CFG} * ${HANDLE_AUDIO}
 replay 1 PPB_AudioConfig_IsAudioConfig:i:i ${HANDLE_CFG} * i(1)
 replay 1 PPB_Audio_IsAudio:i:i ${HANDLE_AUDIO} * i(1)

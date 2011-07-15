@@ -44,10 +44,10 @@ replay 0 PPB_Core_CallOnMainThread:iii: *
 
 replay 0 ReleaseResourceMultipleTimes:ii: *
 
-replay 0 PPB_FileIO_Dev_Create:i:i *
-replay 0 PPB_FileIO_Dev_IsFileIO:i:i *
-replay 0 PPB_FileIO_Dev_Open:iiii:i *
-replay 0 PPB_FileIO_Dev_Read:ilii:Ci *
+replay 0 PPB_FileIO_Create:i:i *
+replay 0 PPB_FileIO_IsFileIO:i:i *
+replay 0 PPB_FileIO_Open:iiii:i *
+replay 0 PPB_FileIO_Read:ilii:Ci *
 
 replay 0 PPB_Graphics2D_Create:iCi:i *
 replay 0 PPB_Graphics2D_IsGraphics2D:i:i *

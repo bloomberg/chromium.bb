@@ -29,8 +29,8 @@ set_variable NULL R(8,8:0)
 echo
 echo "*** INIT MODULE"
 replay 99 PPB_GetInterface:s:i  s("PPB_Core;0.5") * i(1)
-replay 99 PPB_GetInterface:s:i  s("PPB_Instance;0.5") * i(1)
-replay 99 PPB_GetInterface:s:i  s("PPB_Var;0.5") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Instance;1.0") * i(1)
+replay 99 PPB_GetInterface:s:i  s("PPB_Var;1.0") * i(1)
 # the results contain a process id which is non-determinisitic
 rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
 
@@ -44,26 +44,26 @@ rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,400,400) I(4,0,0,400,400) *
 ######################################################################
 echo
 echo "*** CALL loadUrl(): url2 as buffer - expected to fail"
-replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;0.2") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;0.1") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;0.2") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_FileIO(Dev);0.3") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLRequestInfo;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLResponseInfo;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_URLLoader;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_FileIO;1.0") * i(1)
 
-replay 1 PPB_FileIO_Dev_Create:i:i ${INSTANCE} * i(35)
+replay 1 PPB_FileIO_Create:i:i ${INSTANCE} * i(35)
 replay 1 PPB_URLRequestInfo_Create:i:i ${INSTANCE} * i(40)
 replay 1 PPB_URLLoader_Create:i:i  ${INSTANCE} * i(44)
 
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(35) * i(1)
+replay 1 PPB_FileIO_IsFileIO:i:i i(35) * i(1)
 replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(35) * i(0)
 replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(35) * i(0)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(35) * i(0)
 
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(40) * i(0)
+replay 1 PPB_FileIO_IsFileIO:i:i i(40) * i(0)
 replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(40) * i(1)
 replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(40) * i(0)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(40) * i(0)
 
-replay 1 PPB_FileIO_Dev_IsFileIO:i:i i(44) * i(0)
+replay 1 PPB_FileIO_IsFileIO:i:i i(44) * i(0)
 replay 1 PPB_URLRequestInfo_IsURLRequestInfo:i:i i(44) * i(0)
 replay 1 PPB_URLResponseInfo_IsURLResponseInfo:i:i i(44) * i(0)
 replay 1 PPB_URLLoader_IsURLLoader:i:i i(44) * i(1)

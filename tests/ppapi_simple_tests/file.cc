@@ -12,19 +12,18 @@
 
 #include <nacl/nacl_check.h>
 
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
 
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/module.h"
-#include "ppapi/cpp/url_response_info.h"
-#include "ppapi/cpp/url_loader.h"
-#include "ppapi/cpp/url_request_info.h"
-#include "ppapi/cpp/var.h"
-
-#include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/dev/file_io_dev.h"
+#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "native_client/src/third_party/ppapi/cpp/file_ref.h"
+#include "native_client/src/third_party/ppapi/cpp/file_io.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/cpp/url_response_info.h"
+#include "native_client/src/third_party/ppapi/cpp/url_loader.h"
+#include "native_client/src/third_party/ppapi/cpp/url_request_info.h"
+#include "native_client/src/third_party/ppapi/cpp/var.h"
 
 using std::string;
 using std::ostringstream;
@@ -94,8 +93,8 @@ class ReaderStreamAsFile {
   uint32_t chunk_size_;
   char* buffer_;
   pp::URLResponseInfo* response_info_;
-  pp::FileRef_Dev* file_ref_;
-  pp::FileIO_Dev* file_io_;
+  pp::FileRef* file_ref_;
+  pp::FileIO* file_io_;
   MyInstance* instance_;
   pp::URLLoader loader_;
 
@@ -144,10 +143,10 @@ class ReaderStreamAsFile {
   }
 
   void OpenFile() {
-    file_ref_ = new pp::FileRef_Dev(response_info_->GetBodyAsFileRef());
+    file_ref_ = new pp::FileRef(response_info_->GetBodyAsFileRef());
     CHECK(!file_ref_->is_null());
 
-    file_io_ = new  pp::FileIO_Dev(instance_);
+    file_io_ = new  pp::FileIO(instance_);
     CHECK(!file_io_->is_null());
 
     pp::CompletionCallback cc(OpenFileCompleteCallback, this);
