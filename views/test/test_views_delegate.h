@@ -5,30 +5,34 @@
 #ifndef VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 #define VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"
 
-// TODO(beng): this whole file should be in the views namespace.
+namespace ui {
+class Clipboard;
+}
+
 namespace views {
 class View;
 class Widget;
-}
 
-class TestViewsDelegate : public views::ViewsDelegate {
+class TestViewsDelegate : public ViewsDelegate {
  public:
   TestViewsDelegate();
   virtual ~TestViewsDelegate();
 
-  void set_default_parent_view(views::View* view) {
+  void set_default_parent_view(View* view) {
     default_parent_view_ = view;
   }
 
-  // Overridden from views::ViewsDelegate:
+  // Overridden from ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
-  virtual views::View* GetDefaultParentView() OVERRIDE;
-  virtual void SaveWindowPlacement(const views::Widget* window,
+  virtual View* GetDefaultParentView() OVERRIDE;
+  virtual void SaveWindowPlacement(const Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) OVERRIDE {}
@@ -39,7 +43,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
                                       bool* maximized) const OVERRIDE;
 
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
+      View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
 
   virtual void NotifyMenuItemFocused(
       const std::wstring& menu_name,
@@ -59,10 +63,12 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
 
  private:
-  views::View* default_parent_view_;
+  View* default_parent_view_;
   mutable scoped_ptr<ui::Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };
+
+}  // namespace views
 
 #endif  // VIEWS_TEST_TEST_VIEWS_DELEGATE_H_

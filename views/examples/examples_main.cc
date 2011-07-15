@@ -31,8 +31,8 @@
 #include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/layout/grid_layout.h"
-#include "views/widget/widget.h"
 #include "views/test/test_views_delegate.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 // TableView is not yet ported to Linux.
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
   g_type_init();
   gtk_init(&argc, &argv);
 #endif
-  TestViewsDelegate delegate;
+  views::TestViewsDelegate delegate;
 
   CommandLine::Init(argc, argv);
 
