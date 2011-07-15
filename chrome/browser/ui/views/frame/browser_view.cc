@@ -1821,7 +1821,7 @@ void BrowserView::PaintChildren(gfx::Canvas* canvas) {
   // Paint the |infobar_container_| last so that it may paint its
   // overlapping tabs.
   for (int i = 0; i < child_count(); ++i) {
-    View* child = GetChildViewAt(i);
+    View* child = child_at(i);
     if (child != infobar_container_)
       child->Paint(canvas);
   }
@@ -1870,7 +1870,7 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
 
 bool BrowserView::SplitHandleMoved(views::SingleSplitView* view) {
   for (int i = 0; i < view->child_count(); ++i)
-    view->GetChildViewAt(i)->InvalidateLayout();
+    view->child_at(i)->InvalidateLayout();
   SchedulePaint();
   Layout();
   return false;

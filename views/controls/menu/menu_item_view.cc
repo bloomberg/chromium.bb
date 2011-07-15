@@ -289,7 +289,7 @@ void MenuItemView::RemoveMenuItemAt(int index) {
   DCHECK_LE(0, index);
   DCHECK_GT(submenu_->child_count(), index);
 
-  View* item = submenu_->GetChildViewAt(index);
+  View* item = submenu_->child_at(index);
   DCHECK(item);
   submenu_->RemoveChildView(item);
 
@@ -446,7 +446,7 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
   if (!HasSubmenu())
     return NULL;
   for (int i = 0; i < GetSubmenu()->child_count(); ++i) {
-    View* child = GetSubmenu()->GetChildViewAt(i);
+    View* child = GetSubmenu()->child_at(i);
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* result = static_cast<MenuItemView*>(child)->
           GetMenuItemByID(id);
@@ -487,7 +487,7 @@ void MenuItemView::Layout() {
   if (child_count() == 1 && GetTitle().size() == 0) {
     // We only have one child and no title so let the view take over all the
     // space.
-    View* child = GetChildViewAt(0);
+    View* child = child_at(0);
     gfx::Size size = child->GetPreferredSize();
     child->SetBounds(label_start_, GetTopMargin(), size.width(), size.height());
   } else {
@@ -495,7 +495,7 @@ void MenuItemView::Layout() {
     // right align start with the last view and progress to the first.
     for (int i = child_count() - 1, x = width() - item_right_margin_; i >= 0;
          --i) {
-      View* child = GetChildViewAt(i);
+      View* child = child_at(i);
       int width = child->GetPreferredSize().width();
       child->SetBounds(x - width, 0, width, height());
       x -= width - kChildXPadding;
@@ -667,7 +667,7 @@ void MenuItemView::RemoveEmptyMenus() {
   // Iterate backwards as we may end up removing views, which alters the child
   // view count.
   for (int i = submenu_->child_count() - 1; i >= 0; --i) {
-    View* child = submenu_->GetChildViewAt(i);
+    View* child = submenu_->child_at(i);
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
       if (menu_item->HasSubmenu())
@@ -745,7 +745,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
     return gfx::Size();
 
   if (GetTitle().size() == 0 && child_count() == 1) {
-    View* child = GetChildViewAt(0);
+    View* child = child_at(0);
     return child->GetPreferredSize();
   }
 
@@ -753,7 +753,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   for (int i = 0; i < child_count(); ++i) {
     if (i)
       width += kChildXPadding;
-    width += GetChildViewAt(i)->GetPreferredSize().width();
+    width += child_at(i)->GetPreferredSize().width();
   }
   // Return a height of 0 to indicate that we should use the title height
   // instead.

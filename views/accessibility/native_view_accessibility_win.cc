@@ -127,7 +127,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accNavigate(
       if (nav_dir == NAVDIR_LASTCHILD)
         child_id = view_->child_count() - 1;
 
-      views::View* child = view_->GetChildViewAt(child_id);
+      views::View* child = view_->child_at(child_id);
       end->vt = VT_DISPATCH;
       end->pdispVal = child->GetNativeViewAccessible();
       end->pdispVal->AddRef();
@@ -162,7 +162,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accNavigate(
           }
         }
 
-        views::View* child = parent->GetChildViewAt(view_index);
+        views::View* child = parent->child_at(view_index);
         end->pdispVal = child->GetNativeViewAccessible();
         end->vt = VT_DISPATCH;
         end->pdispVal->AddRef();
@@ -224,7 +224,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
     int child_id_as_index = child_id - 1;
     if (child_id_as_index < view_->child_count()) {
       // Note: child_id is a one based index when indexing children.
-      child_view = view_->GetChildViewAt(child_id_as_index);
+      child_view = view_->child_at(child_id_as_index);
     } else {
       // Attempt to retrieve a child view with the specified id.
       child_view = view_->GetViewByID(child_id);

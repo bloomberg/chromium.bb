@@ -101,7 +101,7 @@ class ContentView : public views::View {
 
   virtual void Layout() {
     for (int i = 0; i < child_count(); ++i) {
-      views::View* cur = GetChildViewAt(i);
+      views::View* cur = child_at(i);
       if (cur->IsVisible())
         cur->SetBounds(0, 0, width(), height());
     }

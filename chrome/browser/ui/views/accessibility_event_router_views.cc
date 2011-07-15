@@ -318,7 +318,7 @@ void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
     int* index,
     int* count) {
   for (int i = 0; i < menu->child_count(); ++i) {
-    views::View* child = menu->GetChildViewAt(i);
+    views::View* child = menu->child_at(i);
     int previous_count = *count;
     RecursiveGetMenuItemIndexAndCount(child, item, index, count);
     if (child->GetClassName() == views::MenuItemView::kViewClassName &&
@@ -342,7 +342,7 @@ std::string AccessibilityEventRouterViews::RecursiveGetStaticText(
     return UTF16ToUTF8(state.name);
 
   for (int i = 0; i < view->child_count(); ++i) {
-    views::View* child = view->GetChildViewAt(i);
+    views::View* child = view->child_at(i);
     std::string result = RecursiveGetStaticText(child);
     if (!result.empty())
       return result;

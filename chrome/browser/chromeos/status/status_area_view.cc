@@ -60,7 +60,7 @@ gfx::Size StatusAreaView::GetPreferredSize() {
   int result_h = 0;
 
   for (int i = 0; i < child_count(); i++) {
-    views::View* cur = GetChildViewAt(i);
+    views::View* cur = child_at(i);
     gfx::Size cur_size = cur->GetPreferredSize();
     if (cur->IsVisible() && !cur_size.IsEmpty()) {
       if (result_w == 0)
@@ -78,7 +78,7 @@ gfx::Size StatusAreaView::GetPreferredSize() {
 void StatusAreaView::Layout() {
   int cur_x = kSeparation;
   for (int i = 0; i < child_count(); i++) {
-    views::View* cur = GetChildViewAt(i);
+    views::View* cur = child_at(i);
     gfx::Size cur_size = cur->GetPreferredSize();
     if (cur->IsVisible() && !cur_size.IsEmpty()) {
       int cur_y = (height() - cur_size.height()) / 2;

@@ -37,10 +37,8 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
 
   if (!starting_view) {
     // Default to the first/last child
-    starting_view =
-        reverse ?
-        root_->GetChildViewAt(root_->child_count() - 1) :
-        root_->GetChildViewAt(0);
+    starting_view = reverse ? root_->child_at(root_->child_count() - 1) :
+        root_->child_at(0);
     // If there was no starting view, then the one we select is a potential
     // focus candidate.
     check_starting_view = true;
@@ -159,7 +157,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
   // First let's try the left child.
   if (can_go_down) {
     if (starting_view->has_children()) {
-      View* v = FindNextFocusableViewImpl(starting_view->GetChildViewAt(0),
+      View* v = FindNextFocusableViewImpl(starting_view->child_at(0),
                                           true, false, true, skip_group_id,
                                           focus_traversable,
                                           focus_traversable_view);
@@ -225,7 +223,7 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
 
     if (starting_view->has_children()) {
       View* view =
-          starting_view->GetChildViewAt(starting_view->child_count() - 1);
+          starting_view->child_at(starting_view->child_count() - 1);
       View* v = FindPreviousFocusableViewImpl(view, true, false, true,
                                               skip_group_id,
                                               focus_traversable,

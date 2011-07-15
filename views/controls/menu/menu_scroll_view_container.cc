@@ -150,7 +150,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
 
   // Returns the contents, which is the SubmenuView.
   View* GetContents() {
-    return GetChildViewAt(0);
+    return child_at(0);
   }
 
  private:

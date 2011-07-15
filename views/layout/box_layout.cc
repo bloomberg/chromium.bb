@@ -31,7 +31,7 @@ void BoxLayout::Layout(View* host) {
   int x = child_area.x();
   int y = child_area.y();
   for (int i = 0; i < host->child_count(); ++i) {
-    View* child = host->GetChildViewAt(i);
+    View* child = host->child_at(i);
     if (child->IsVisible()) {
       gfx::Rect bounds(x, y, child_area.width(), child_area.height());
       gfx::Size size(child->GetPreferredSize());
@@ -52,7 +52,7 @@ gfx::Size BoxLayout::GetPreferredSize(View* host) {
   gfx::Rect bounds;
   int position = 0;
   for (int i = 0; i < host->child_count(); ++i) {
-    View* child = host->GetChildViewAt(i);
+    View* child = host->child_at(i);
     if (child->IsVisible()) {
       gfx::Size size(child->GetPreferredSize());
       if (orientation_ == kHorizontal) {

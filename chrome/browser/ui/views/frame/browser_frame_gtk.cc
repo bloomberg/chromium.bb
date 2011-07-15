@@ -53,7 +53,7 @@ int BrowserFrameGtk::GetMinimizeButtonOffset() const {
 void BrowserFrameGtk::TabStripDisplayModeChanged() {
   if (GetWidget()->GetRootView()->has_children()) {
     // Make sure the child of the root view gets Layout again.
-    GetWidget()->GetRootView()->GetChildViewAt(0)->InvalidateLayout();
+    GetWidget()->GetRootView()->child_at(0)->InvalidateLayout();
   }
   GetWidget()->GetRootView()->Layout();
 }

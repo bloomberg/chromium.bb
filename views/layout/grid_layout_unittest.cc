@@ -63,7 +63,7 @@ class GridLayoutTest : public testing::Test {
 
   virtual void RemoveAll() {
     for (int i = host.child_count() - 1; i >= 0; i--)
-      host.RemoveChildView(host.GetChildViewAt(i));
+      host.RemoveChildView(host.child_at(i));
   }
 
   void GetPreferredSize() {
@@ -92,7 +92,7 @@ class GridLayoutAlignmentTest : public testing::Test {
 
   virtual void RemoveAll() {
     for (int i = host.child_count() - 1; i >= 0; i--)
-      host.RemoveChildView(host.GetChildViewAt(i));
+      host.RemoveChildView(host.child_at(i));
   }
 
   void TestAlignment(GridLayout::Alignment alignment, gfx::Rect* bounds) {
@@ -402,7 +402,7 @@ TEST_F(GridLayoutTest, FixedSize) {
 
   for (int i = 0; i < column_count; ++i) {
     for (int row = 0; row < row_count; ++row) {
-      View* view = host.GetChildViewAt(row * column_count + i);
+      View* view = host.child_at(row * column_count + i);
       ExpectViewBoundsEquals(
           2 + title_width * i + (title_width - pref_width) / 2,
           2 + pref_height * row,

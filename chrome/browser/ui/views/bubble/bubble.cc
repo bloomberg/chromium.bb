@@ -335,7 +335,7 @@ void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
     GetWidget()->Close();
   } else if (action == WA_ACTIVE) {
     DCHECK(GetWidget()->GetRootView()->has_children());
-    GetWidget()->GetRootView()->GetChildViewAt(0)->RequestFocus();
+    GetWidget()->GetRootView()->child_at(0)->RequestFocus();
   }
 }
 #elif defined(TOOLKIT_USES_GTK)

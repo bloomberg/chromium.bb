@@ -72,7 +72,7 @@ void RootView::SetContentsView(View* contents_view) {
 }
 
 View* RootView::GetContentsView() {
-  return child_count() > 0 ? GetChildViewAt(0) : NULL;
+  return child_count() > 0 ? child_at(0) : NULL;
 }
 
 void RootView::NotifyNativeViewHierarchyChanged(bool attached,

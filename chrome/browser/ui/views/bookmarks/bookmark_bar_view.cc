@@ -434,7 +434,7 @@ void BookmarkBarView::SetProfile(Profile* profile) {
 
   // Remove any existing bookmark buttons.
   while (GetBookmarkButtonCount())
-    delete GetChildViewAt(0);
+    delete child_at(0);
 
   model_ = profile_->GetBookmarkModel();
   if (model_) {
@@ -496,7 +496,7 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
 
   // Check the buttons first.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-    views::View* child = GetChildViewAt(i);
+    views::View* child = child_at(i);
     if (!child->IsVisible())
       break;
     if (child->bounds().Contains(adjusted_loc))
@@ -528,7 +528,7 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
   int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
   if (index == -1 || !node->is_folder())
     return NULL;
-  return static_cast<views::MenuButton*>(GetChildViewAt(index));
+  return static_cast<views::MenuButton*>(child_at(index));
 }
 
 void BookmarkBarView::GetAnchorPositionForButton(
@@ -966,7 +966,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
 
   // Remove the existing buttons.
   while (GetBookmarkButtonCount()) {
-    views::View* button = GetChildViewAt(0);
+    views::View* button = child_at(0);
     RemoveChildView(button);
     MessageLoop::current()->DeleteSoon(FROM_HERE, button);
   }
@@ -1212,7 +1212,7 @@ int BookmarkBarView::GetBookmarkButtonCount() {
 
 views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
   DCHECK(index >= 0 && index < GetBookmarkButtonCount());
-  return static_cast<views::TextButton*>(GetChildViewAt(index));
+  return static_cast<views::TextButton*>(child_at(index));
 }
 
 int BookmarkBarView::GetFirstHiddenNodeIndex() {
@@ -1349,7 +1349,7 @@ void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
     return;
   }
   DCHECK(index >= 0 && index < GetBookmarkButtonCount());
-  views::View* button = GetChildViewAt(index);
+  views::View* button = child_at(index);
   RemoveChildView(button);
   MessageLoop::current()->DeleteSoon(FROM_HERE, button);
   Layout();
@@ -1554,7 +1554,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
       // Node is hidden, animate the overflow button.
       throbbing_view_ = overflow_button_;
     } else if (!overflow_only) {
-      throbbing_view_ = static_cast<CustomButton*>(GetChildViewAt(index));
+      throbbing_view_ = static_cast<CustomButton*>(child_at(index));
     }
   } else if (!overflow_only) {
     throbbing_view_ = other_bookmarked_button_;
@@ -1584,7 +1584,7 @@ views::CustomButton* BookmarkBarView::DetermineViewToThrobFromRemove(
       // Node is hidden, animate the overflow button.
       return overflow_button_;
     }
-    return static_cast<CustomButton*>(GetChildViewAt(old_index_on_bb));
+    return static_cast<CustomButton*>(child_at(old_index_on_bb));
   }
   // Node wasn't on the bookmark bar, use the other bookmark button.
   return other_bookmarked_button_;
@@ -1674,7 +1674,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
       instructions_->SetVisible(false);
 
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      views::View* child = GetChildViewAt(i);
+      views::View* child = child_at(i);
       gfx::Size pref = child->GetPreferredSize();
       int next_x = x + pref.width() + kButtonPadding;
       if (!compute_bounds_only) {
@@ -1688,7 +1688,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   // Layout the right side of the bar.
   const bool all_visible =
       (GetBookmarkButtonCount() == 0 ||
-       GetChildViewAt(GetBookmarkButtonCount() - 1)->IsVisible());
+       child_at(GetBookmarkButtonCount() - 1)->IsVisible());
 
   // Layout the right side buttons.
   if (!compute_bounds_only)

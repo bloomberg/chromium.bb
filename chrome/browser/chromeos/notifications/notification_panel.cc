@@ -154,7 +154,7 @@ class BalloonSubContainer : public views::View {
     // Layout bottom up
     int height = 0;
     for (int i = child_count() - 1; i >= 0; --i) {
-      views::View* child = GetChildViewAt(i);
+      views::View* child = child_at(i);
       child->SetBounds(0, height, child->width(), child->height());
       height += child->height() + margin_;
     }
@@ -166,7 +166,7 @@ class BalloonSubContainer : public views::View {
     int height = 0;
     int max_width = 0;
     for (int i = child_count() - 1; i >= 0; --i) {
-      views::View* child = GetChildViewAt(i);
+      views::View* child = child_at(i);
       height += child->height() + margin_;
       max_width = std::max(max_width, child->width());
     }
@@ -181,8 +181,7 @@ class BalloonSubContainer : public views::View {
   gfx::Rect GetNewBounds() {
     gfx::Rect rect;
     for (int i = child_count() - 1; i >= 0; --i) {
-      BalloonViewImpl* view =
-          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      BalloonViewImpl* view = static_cast<BalloonViewImpl*>(child_at(i));
       if (!view->stale()) {
         if (rect.IsEmpty()) {
           rect = view->bounds();
@@ -198,8 +197,7 @@ class BalloonSubContainer : public views::View {
   int GetNewCount() {
     int count = 0;
     for (int i = child_count() - 1; i >= 0; --i) {
-      BalloonViewImpl* view =
-          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      BalloonViewImpl* view = static_cast<BalloonViewImpl*>(child_at(i));
       if (!view->stale())
         count++;
     }
@@ -209,24 +207,21 @@ class BalloonSubContainer : public views::View {
   // Make all notifications stale.
   void MakeAllStale() {
     for (int i = child_count() - 1; i >= 0; --i) {
-      BalloonViewImpl* view =
-          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      BalloonViewImpl* view = static_cast<BalloonViewImpl*>(child_at(i));
       view->set_stale();
     }
   }
 
   void DismissAll() {
     for (int i = child_count() - 1; i >= 0; --i) {
-      BalloonViewImpl* view =
-          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      BalloonViewImpl* view = static_cast<BalloonViewImpl*>(child_at(i));
       view->Close(true);
     }
   }
 
   BalloonViewImpl* FindBalloonView(const Notification& notification) {
     for (int i = child_count() - 1; i >= 0; --i) {
-      BalloonViewImpl* view =
-          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      BalloonViewImpl* view = static_cast<BalloonViewImpl*>(child_at(i));
       if (view->IsFor(notification)) {
         return view;
       }
@@ -238,7 +233,7 @@ class BalloonSubContainer : public views::View {
     gfx::Point copy(point);
     ConvertPointFromWidget(this, &copy);
     for (int i = child_count() - 1; i >= 0; --i) {
-      views::View* view = GetChildViewAt(i);
+      views::View* view = child_at(i);
       if (view->bounds().Contains(copy))
         return static_cast<BalloonViewImpl*>(view);
     }

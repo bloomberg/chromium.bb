@@ -27,7 +27,7 @@ class ThrobberView : public views::View {
   }
 
   virtual void Layout() {
-    views::View* child = GetChildViewAt(0);
+    views::View* child = child_at(0);
     gfx::Size ps = child->GetPreferredSize();
     child->SetBounds((width() - ps.width()) / 2,
                      (height() - ps.height()) / 2,

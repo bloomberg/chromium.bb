@@ -351,7 +351,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
     // All buttons are given the same width.
     int width = GetMaxChildViewPreferredWidth();
     for (int i = 0; i < child_count(); ++i)
-      GetChildViewAt(i)->SetBounds(i * width, 0, width, height());
+      child_at(i)->SetBounds(i * width, 0, width, height());
   }
 
   // ButtonListener
@@ -364,7 +364,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   int GetMaxChildViewPreferredWidth() {
     int width = 0;
     for (int i = 0; i < child_count(); ++i)
-      width = std::max(width, GetChildViewAt(i)->GetPreferredSize().width());
+      width = std::max(width, child_at(i)->GetPreferredSize().width());
     return width;
   }
 

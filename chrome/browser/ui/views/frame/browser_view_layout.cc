@@ -546,7 +546,7 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
 
   views::SingleSplitView* sidebar_split = browser_view_->sidebar_split_;
   if (sidebar_split) {
-    DCHECK(sidebar_split == contents_split_->GetChildViewAt(0));
+    DCHECK(sidebar_split == contents_split_->child_at(0));
     sidebar_split->CalculateChildrenBounds(
         sidebar_split_bounds, &contents_bounds, &sidebar_bounds);
   } else {
@@ -599,14 +599,14 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
     return 0;
   }
 
-  if (contents_split_->GetChildViewAt(1) &&
-      contents_split_->GetChildViewAt(1)->IsVisible())
+  if (contents_split_->child_at(1) &&
+      contents_split_->child_at(1)->IsVisible())
     return 0;
 
   if (SidebarManager::IsSidebarAllowed()) {
-    views::View* sidebar_split = contents_split_->GetChildViewAt(0);
-    if (sidebar_split->GetChildViewAt(1) &&
-        sidebar_split->GetChildViewAt(1)->IsVisible())
+    views::View* sidebar_split = contents_split_->child_at(0);
+    if (sidebar_split->child_count() >= 2 &&
+        sidebar_split->child_at(1)->IsVisible())
       return 0;
   }
 

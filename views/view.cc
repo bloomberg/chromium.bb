@@ -223,15 +223,6 @@ void View::RemoveAllChildViews(bool delete_children) {
   UpdateTooltip();
 }
 
-const View* View::GetChildViewAt(int index) const {
-  return index < child_count() ? children_[index] : NULL;
-}
-
-View* View::GetChildViewAt(int index) {
-  return
-      const_cast<View*>(const_cast<const View*>(this)->GetChildViewAt(index));
-}
-
 bool View::Contains(const View* view) const {
   for (const View* v = view; v; v = v->parent_) {
     if (v == this)
@@ -540,7 +531,7 @@ void View::Layout() {
   // just propagate the Layout() call down the hierarchy, so whoever receives
   // the call can take appropriate action.
   for (int i = 0, count = child_count(); i < count; ++i) {
-    View* child = GetChildViewAt(i);
+    View* child = child_at(i);
     if (child->needs_layout_ || !layout_manager_.get()) {
       child->needs_layout_ = false;
       child->Layout();
@@ -588,7 +579,7 @@ const View* View::GetViewByID(int id) const {
     return const_cast<View*>(this);
 
   for (int i = 0, count = child_count(); i < count; ++i) {
-    const View* view = GetChildViewAt(i)->GetViewByID(id);
+    const View* view = child_at(i)->GetViewByID(id);
     if (view)
       return view;
   }
@@ -618,7 +609,7 @@ void View::GetViewsInGroup(int group, Views* views) {
     views->push_back(this);
 
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->GetViewsInGroup(group, views);
+    child_at(i)->GetViewsInGroup(group, views);
 }
 
 View* View::GetSelectedViewForGroup(int group) {
@@ -801,7 +792,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
   for (int i = child_count() - 1; i >= 0; --i) {
-    View* child = GetChildViewAt(i);
+    View* child = child_at(i);
     if (!child->IsVisible())
       continue;
 
@@ -1137,14 +1128,8 @@ void View::NativeViewHierarchyChanged(bool attached,
 // Painting --------------------------------------------------------------------
 
 void View::PaintChildren(gfx::Canvas* canvas) {
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    View* child = GetChildViewAt(i);
-    if (!child) {
-      NOTREACHED() << "Should not have a NULL child View for index in bounds";
-      continue;
-    }
-    child->Paint(canvas);
-  }
+  for (int i = 0, count = child_count(); i < count; ++i)
+    child_at(i)->Paint(canvas);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
@@ -1180,7 +1165,7 @@ void View::PaintComposite() {
   }
 
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->PaintComposite();
+    child_at(i)->PaintComposite();
 }
 
 void View::SchedulePaintInternal(const gfx::Rect& rect) {
@@ -1205,7 +1190,7 @@ void View::PaintToLayer(const gfx::Rect& dirty_region) {
   } else {
     // Forward to all children as a descendant may be dirty and have a layer.
     for (int i = child_count() - 1; i >= 0; --i) {
-      View* child_view = GetChildViewAt(i);
+      View* child_view = child_at(i);
 
       gfx::Rect child_dirty_rect = dirty_region;
       child_dirty_rect.Offset(-child_view->GetMirroredX(), -child_view->y());
@@ -1214,7 +1199,7 @@ void View::PaintToLayer(const gfx::Rect& dirty_region) {
           child_dirty_rect);
 
       if (!child_dirty_rect.IsEmpty())
-        GetChildViewAt(i)->PaintToLayer(child_dirty_rect);
+        child_at(i)->PaintToLayer(child_dirty_rect);
     }
   }
 }
@@ -1292,7 +1277,7 @@ void View::CreateLayerIfNecessary() {
     CreateLayer();
 
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->CreateLayerIfNecessary();
+    child_at(i)->CreateLayerIfNecessary();
 }
 
 void View::MoveLayerToParent(ui::Layer* parent_layer,
@@ -1306,13 +1291,13 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
         gfx::Rect(local_point.x(), local_point.y(), width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i)
-      GetChildViewAt(i)->MoveLayerToParent(parent_layer, local_point);
+      child_at(i)->MoveLayerToParent(parent_layer, local_point);
   }
 }
 
 void View::DestroyLayerRecurse() {
   for (int i = child_count() - 1; i >= 0; --i)
-    GetChildViewAt(i)->DestroyLayerRecurse();
+    child_at(i)->DestroyLayerRecurse();
   DestroyLayer();
 }
 
@@ -1324,7 +1309,7 @@ void View::UpdateLayerBounds(const gfx::Point& offset) {
   } else {
     gfx::Point new_offset(offset.x() + x(), offset.y() + y());
     for (int i = 0, count = child_count(); i < count; ++i)
-      GetChildViewAt(i)->UpdateLayerBounds(new_offset);
+      child_at(i)->UpdateLayerBounds(new_offset);
   }
 }
 
@@ -1482,7 +1467,7 @@ void View::DoRemoveChildView(View* view,
 
 void View::PropagateRemoveNotifications(View* parent) {
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->PropagateRemoveNotifications(parent);
+    child_at(i)->PropagateRemoveNotifications(parent);
 
   for (View* v = this; v; v = v->parent_)
     v->ViewHierarchyChangedImpl(true, false, parent, this);
@@ -1490,7 +1475,7 @@ void View::PropagateRemoveNotifications(View* parent) {
 
 void View::PropagateAddNotifications(View* parent, View* child) {
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->PropagateAddNotifications(parent, child);
+    child_at(i)->PropagateAddNotifications(parent, child);
   ViewHierarchyChangedImpl(true, true, parent, child);
 }
 
@@ -1498,7 +1483,7 @@ void View::PropagateNativeViewHierarchyChanged(bool attached,
                                                gfx::NativeView native_view,
                                                internal::RootView* root_view) {
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->PropagateNativeViewHierarchyChanged(attached,
+    child_at(i)->PropagateNativeViewHierarchyChanged(attached,
                                                            native_view,
                                                            root_view);
   NativeViewHierarchyChanged(attached, native_view, root_view);
@@ -1533,7 +1518,7 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
 
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
   for (int i = 0, count = child_count(); i < count; ++i)
-    GetChildViewAt(i)->PropagateVisibilityNotifications(start, is_visible);
+    child_at(i)->PropagateVisibilityNotifications(start, is_visible);
   VisibilityChangedImpl(start, is_visible);
 }
 
@@ -1608,7 +1593,7 @@ void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->NeedsNotificationWhenVisibleBoundsChange())
     view->RegisterForVisibleBoundsNotification();
   for (int i = 0; i < view->child_count(); ++i)
-    RegisterChildrenForVisibleBoundsNotification(view->GetChildViewAt(i));
+    RegisterChildrenForVisibleBoundsNotification(view->child_at(i));
 }
 
 // static
@@ -1616,7 +1601,7 @@ void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->NeedsNotificationWhenVisibleBoundsChange())
     view->UnregisterForVisibleBoundsNotification();
   for (int i = 0; i < view->child_count(); ++i)
-    UnregisterChildrenForVisibleBoundsNotification(view->GetChildViewAt(i));
+    UnregisterChildrenForVisibleBoundsNotification(view->child_at(i));
 }
 
 void View::RegisterForVisibleBoundsNotification() {
@@ -1958,13 +1943,13 @@ void View::InitFocusSiblings(View* v, int index) {
 
 void View::PropagateThemeChanged() {
   for (int i = child_count() - 1; i >= 0; --i)
-    GetChildViewAt(i)->PropagateThemeChanged();
+    child_at(i)->PropagateThemeChanged();
   OnThemeChanged();
 }
 
 void View::PropagateLocaleChanged() {
   for (int i = child_count() - 1; i >= 0; --i)
-    GetChildViewAt(i)->PropagateLocaleChanged();
+    child_at(i)->PropagateLocaleChanged();
   OnLocaleChanged();
 }
 
@@ -2042,7 +2027,7 @@ std::string View::PrintViewGraph(bool first) {
 
   // Children.
   for (int i = 0, count = child_count(); i < count; ++i)
-    result.append(GetChildViewAt(i)->PrintViewGraph(false));
+    result.append(child_at(i)->PrintViewGraph(false));
 
   if (first)
     result.append("}\n");

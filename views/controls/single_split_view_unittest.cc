@@ -15,8 +15,8 @@ namespace {
 static void VerifySplitViewLayout(const views::SingleSplitView& split) {
   ASSERT_EQ(2, split.child_count());
 
-  const views::View* leading = split.GetChildViewAt(0);
-  const views::View* trailing = split.GetChildViewAt(1);
+  const views::View* leading = split.child_at(0);
+  const views::View* trailing = split.child_at(1);
 
   if (split.bounds().IsEmpty()) {
     EXPECT_TRUE(leading->bounds().IsEmpty());
@@ -113,16 +113,16 @@ TEST(SingleSplitViewTest, Resize) {
     }
 
     // Special cases, one of the child views is hidden.
-    split.GetChildViewAt(0)->SetVisible(false);
+    split.child_at(0)->SetVisible(false);
     split.Layout();
 
-    EXPECT_EQ(split.size(), split.GetChildViewAt(1)->size());
+    EXPECT_EQ(split.size(), split.child_at(1)->size());
 
-    split.GetChildViewAt(0)->SetVisible(true);
-    split.GetChildViewAt(1)->SetVisible(false);
+    split.child_at(0)->SetVisible(true);
+    split.child_at(1)->SetVisible(false);
     split.Layout();
 
-    EXPECT_EQ(split.size(), split.GetChildViewAt(0)->size());
+    EXPECT_EQ(split.size(), split.child_at(0)->size());
   }
 }
 

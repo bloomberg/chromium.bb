@@ -49,11 +49,11 @@ void SingleSplitView::Layout() {
   CalculateChildrenBounds(bounds(), &leading_bounds, &trailing_bounds);
 
   if (has_children()) {
-    if (GetChildViewAt(0)->IsVisible())
-      GetChildViewAt(0)->SetBoundsRect(leading_bounds);
+    if (child_at(0)->IsVisible())
+      child_at(0)->SetBoundsRect(leading_bounds);
     if (child_count() > 1) {
-      if (GetChildViewAt(1)->IsVisible())
-        GetChildViewAt(1)->SetBoundsRect(trailing_bounds);
+      if (child_at(1)->IsVisible())
+        child_at(1)->SetBoundsRect(trailing_bounds);
     }
   }
 
@@ -76,7 +76,7 @@ gfx::Size SingleSplitView::GetPreferredSize() {
   int width = 0;
   int height = 0;
   for (int i = 0; i < 2 && i < child_count(); ++i) {
-    View* view = GetChildViewAt(i);
+    View* view = child_at(i);
     gfx::Size pref = view->GetPreferredSize();
     if (is_horizontal_) {
       width += pref.width();
@@ -110,9 +110,8 @@ void SingleSplitView::CalculateChildrenBounds(
     const gfx::Rect& bounds,
     gfx::Rect* leading_bounds,
     gfx::Rect* trailing_bounds) const {
-  bool is_leading_visible = has_children() && GetChildViewAt(0)->IsVisible();
-  bool is_trailing_visible =
-      child_count() > 1 && GetChildViewAt(1)->IsVisible();
+  bool is_leading_visible = has_children() && child_at(0)->IsVisible();
+  bool is_trailing_visible = child_count() > 1 && child_at(1)->IsVisible();
 
   if (!is_leading_visible && !is_trailing_visible) {
     *leading_bounds = gfx::Rect();
@@ -171,7 +170,7 @@ bool SingleSplitView::OnMouseDragged(const MouseEvent& event) {
   if (is_horizontal_ && base::i18n::IsRTL())
     delta_offset *= -1;
   // Honor the minimum size when resizing.
-  gfx::Size min = GetChildViewAt(0)->GetMinimumSize();
+  gfx::Size min = child_at(0)->GetMinimumSize();
   int new_size = std::max(GetPrimaryAxisSize(min.width(), min.height()),
                           drag_info_.initial_divider_offset + delta_offset);
 
@@ -206,15 +205,15 @@ bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
   if (child_count() < 2)
     return false;
 
-  if (!GetChildViewAt(0)->IsVisible() || !GetChildViewAt(1)->IsVisible())
+  if (!child_at(0)->IsVisible() || !child_at(1)->IsVisible())
     return false;
 
   int divider_relative_offset;
   if (is_horizontal_) {
     divider_relative_offset =
-        p.x() - GetChildViewAt(base::i18n::IsRTL() ? 1 : 0)->width();
+        p.x() - child_at(base::i18n::IsRTL() ? 1 : 0)->width();
   } else {
-    divider_relative_offset = p.y() - GetChildViewAt(0)->height();
+    divider_relative_offset = p.y() - child_at(0)->height();
   }
   return (divider_relative_offset >= 0 &&
       divider_relative_offset < kDividerSize);

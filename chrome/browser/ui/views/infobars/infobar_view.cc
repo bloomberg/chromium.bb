@@ -230,7 +230,7 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     AddChildView(close_button_);
   } else if ((close_button_ != NULL) && (parent == this) &&
       (child != close_button_) && (close_button_->parent() == this) &&
-      (GetChildViewAt(child_count() - 1) != close_button_)) {
+      (child_at(child_count() - 1) != close_button_)) {
     // For accessibility, ensure the close button is the last child view.
     RemoveChildView(close_button_);
     AddChildView(close_button_);

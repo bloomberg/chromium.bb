@@ -82,7 +82,7 @@ static View* GetFirstHotTrackedView(View* view) {
     return view;
 
   for (int i = 0; i < view->child_count(); ++i) {
-    View* hot_view = GetFirstHotTrackedView(view->GetChildViewAt(i));
+    View* hot_view = GetFirstHotTrackedView(view->child_at(i));
     if (hot_view)
       return hot_view;
   }
@@ -97,15 +97,13 @@ static View* GetFirstHotTrackedView(View* view) {
 static View* GetFirstFocusableView(View* view, int start, bool forward) {
   if (forward) {
     for (int i = start == -1 ? 0 : start; i < view->child_count(); ++i) {
-      View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
-                                            forward);
+      View* deepest = GetFirstFocusableView(view->child_at(i), -1, forward);
       if (deepest)
         return deepest;
     }
   } else {
     for (int i = start == -1 ? view->child_count() - 1 : start; i >= 0; --i) {
-      View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
-                                            forward);
+      View* deepest = GetFirstFocusableView(view->child_at(i), -1, forward);
       if (deepest)
         return deepest;
     }

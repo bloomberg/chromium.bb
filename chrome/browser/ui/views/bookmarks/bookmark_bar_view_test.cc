@@ -839,7 +839,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(scroll_container != NULL);
     scroll_container = scroll_container->parent();
     ASSERT_TRUE(scroll_container != NULL);
-    views::View* scroll_down_button = scroll_container->GetChildViewAt(1);
+    views::View* scroll_down_button = scroll_container->child_at(1);
     ASSERT_TRUE(scroll_down_button);
     gfx::Point loc(scroll_down_button->width() / 2,
                    scroll_down_button->height() / 2);
@@ -1188,9 +1188,8 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     views::SubmenuView* submenu = menu->GetSubmenu();
     views::View* separator_view = NULL;
     for (int i = 0; i < submenu->child_count(); ++i) {
-      if (submenu->GetChildViewAt(i)->id() !=
-          views::MenuItemView::kMenuItemViewID) {
-        separator_view = submenu->GetChildViewAt(i);
+      if (submenu->child_at(i)->id() != views::MenuItemView::kMenuItemViewID) {
+        separator_view = submenu->child_at(i);
         break;
       }
     }

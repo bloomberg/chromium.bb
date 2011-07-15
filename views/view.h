@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -136,13 +137,20 @@ class View : public AcceleratorTarget {
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
-  // Returns the child view at |index|.
-  const View* GetChildViewAt(int index) const;
-  View* GetChildViewAt(int index);
-
-  // Returns the number of child views.
+  // STL-style accessors.
+  Views::const_iterator children_begin() { return children_.begin(); }
+  Views::const_iterator children_end() { return children_.end(); }
+  Views::const_reverse_iterator children_rbegin() { return children_.rbegin(); }
+  Views::const_reverse_iterator children_rend() { return children_.rend(); }
   int child_count() const { return static_cast<int>(children_.size()); }
   bool has_children() const { return !children_.empty(); }
+  View* child_at(int index) {
+    DCHECK_LT(index, child_count());
+    return children_[index];
+  }
+  const View* child_at(int index) const {
+    return const_cast<View*>(const_cast<const View*>(this))->child_at(index);
+  }
 
   // Returns the parent view.
   const View* parent() const { return parent_; }

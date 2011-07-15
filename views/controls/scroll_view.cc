@@ -22,7 +22,7 @@ class Viewport : public View {
     if (!has_children() || !parent())
       return;
 
-    View* contents = GetChildViewAt(0);
+    View* contents = child_at(0);
     gfx::Rect scroll_rect(rect);
     scroll_rect.Offset(-contents->x(), -contents->y());
     static_cast<ScrollView*>(parent())->ScrollContentsRegionToBeVisible(

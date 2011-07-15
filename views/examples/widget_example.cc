@@ -21,7 +21,7 @@ class CenterLayout : public views::LayoutManager {
 
   // Overridden from LayoutManager:
   virtual void Layout(views::View* host) {
-    views::View* child = host->GetChildViewAt(0);
+    views::View* child = host->child_at(0);
     gfx::Size size = child->GetPreferredSize();
     child->SetBounds((host->width() - size.width()) / 2,
                      (host->height() - size.height()) / 2,

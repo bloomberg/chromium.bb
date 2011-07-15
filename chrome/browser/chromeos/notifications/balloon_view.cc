@@ -330,7 +330,7 @@ void BalloonViewImpl::Activated() {
 
   // Get the size of Control View.
   gfx::Size size =
-      control_view_host_->GetRootView()->GetChildViewAt(0)->GetPreferredSize();
+      control_view_host_->GetRootView()->child_at(0)->GetPreferredSize();
   control_view_host_->Show();
   control_view_host_->SetBounds(
       gfx::Rect(width() - size.width() - kControlViewRightMargin,

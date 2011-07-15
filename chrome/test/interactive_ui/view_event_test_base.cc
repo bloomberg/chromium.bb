@@ -35,7 +35,7 @@ class TestView : public views::View {
   }
 
   virtual void Layout() {
-    View* child_view = GetChildViewAt(0);
+    View* child_view = child_at(0);
     child_view->SetBounds(0, 0, width(), height());
   }
 

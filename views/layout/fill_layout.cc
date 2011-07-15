@@ -18,13 +18,13 @@ void FillLayout::Layout(View* host) {
   if (!host->has_children())
     return;
 
-  View* frame_view = host->GetChildViewAt(0);
+  View* frame_view = host->child_at(0);
   frame_view->SetBounds(0, 0, host->width(), host->height());
 }
 
 gfx::Size FillLayout::GetPreferredSize(View* host) {
   DCHECK_EQ(1, host->child_count());
-  return host->GetChildViewAt(0)->GetPreferredSize();
+  return host->child_at(0)->GetPreferredSize();
 }
 
 }  // namespace views
