@@ -15,8 +15,8 @@
 
 struct PPB_Context3D_Dev;
 struct PPB_Core;
-struct PPB_FileIO_Dev;
-struct PPB_FileSystem_Dev;
+struct PPB_FileIO;
+struct PPB_FileSystem;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
 struct PPB_Instance;
@@ -55,8 +55,8 @@ const PPB_Var* PPBVar();
 //
 
 const PPB_Context3D_Dev* PPBContext3DDev();
-const PPB_FileIO_Dev* PPBFileIODev();
-const PPB_FileSystem_Dev* PPBFileSystemDev();
+const PPB_FileIO* PPBFileIO();
+const PPB_FileSystem* PPBFileSystem();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Surface3D_Dev* PPBSurface3DDev();

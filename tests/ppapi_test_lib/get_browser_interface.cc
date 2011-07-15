@@ -7,14 +7,14 @@
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_var_deprecated.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_graphics_2d.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
 #include "native_client/src/third_party/ppapi/c/ppb_instance.h"
@@ -39,6 +39,16 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
 const PPB_Core* PPBCore() {
   return reinterpret_cast<const PPB_Core*>(
       GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
+}
+
+const PPB_FileIO* PPBFileIO() {
+  return reinterpret_cast<const PPB_FileIO*>(
+      GetBrowserInterface(PPB_FILEIO_INTERFACE));
+}
+
+const PPB_FileSystem* PPBFileSystem() {
+  return reinterpret_cast<const PPB_FileSystem*>(
+      GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
 }
 
 const PPB_Graphics2D* PPBGraphics2D() {
@@ -86,16 +96,6 @@ const PPB_Var* PPBVar() {
 const PPB_Context3D_Dev* PPBContext3DDev() {
   return reinterpret_cast<const PPB_Context3D_Dev*>(
       GetBrowserInterface(PPB_CONTEXT_3D_DEV_INTERFACE));
-}
-
-const PPB_FileIO_Dev* PPBFileIODev() {
-  return reinterpret_cast<const PPB_FileIO_Dev*>(
-      GetBrowserInterface(PPB_FILEIO_DEV_INTERFACE));
-}
-
-const PPB_FileSystem_Dev* PPBFileSystemDev() {
-  return reinterpret_cast<const PPB_FileSystem_Dev*>(
-      GetBrowserInterface(PPB_FILESYSTEM_DEV_INTERFACE));
 }
 
 const PPB_Memory_Dev* PPBMemoryDev() {

@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_ref.h"
 
@@ -25,7 +25,7 @@ PP_Bool IsFileRef(PP_Resource resource) {
   return PP_FALSE;
 }
 
-PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref) {
+PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
   UNREFERENCED_PARAMETER(file_ref);
   return PP_FILESYSTEMTYPE_EXTERNAL;
 }
@@ -82,8 +82,8 @@ int32_t Rename(PP_Resource file_ref,
 }
 }  // namespace
 
-const PPB_FileRef_Dev* PluginFileRef::GetInterface() {
-  static const PPB_FileRef_Dev file_ref_interface = {
+const PPB_FileRef* PluginFileRef::GetInterface() {
+  static const PPB_FileRef file_ref_interface = {
     Create,
     IsFileRef,
     GetFileSystemType,

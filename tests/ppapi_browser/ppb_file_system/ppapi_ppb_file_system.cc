@@ -5,8 +5,8 @@
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_url_request_info.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 
@@ -15,7 +15,7 @@ namespace {
 void OpenCallback(void* /*data*/, int32_t /*result*/) {
 }
 
-const PP_FileSystemType_Dev kFileSystemTypes[] = {
+const PP_FileSystemType kFileSystemTypes[] = {
   PP_FILESYSTEMTYPE_EXTERNAL,
   PP_FILESYSTEMTYPE_LOCALPERSISTENT,
   PP_FILESYSTEMTYPE_LOCALTEMPORARY
@@ -26,8 +26,8 @@ const size_t kNumFileSystemTypes =
 
 void TestCreate() {
   PP_Resource file_system = kInvalidResource;
-  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
-  // Test to see if PPB_FileSystem_Dev::Create returns PP_Resource value of 0
+  const PPB_FileSystem* ppb_file_system = PPBFileSystem();
+  // Test to see if PPB_FileSystem::Create returns PP_Resource value of 0
   // if the instance parameter is invalid.
   file_system = ppb_file_system->Create(kInvalidInstance,
                                         PP_FILESYSTEMTYPE_EXTERNAL);
@@ -44,9 +44,9 @@ void TestCreate() {
                                         PP_FILESYSTEMTYPE_INVALID);
   EXPECT(file_system == kInvalidResource);
 
-  // Test to see if PPB_FileSystem_Dev::Create returns a valid PP_Resource
+  // Test to see if PPB_FileSystem::Create returns a valid PP_Resource
   // value when given a valid PP_Instance value parameter.  Test for all
-  // three file system types PPB_FileSystem_Dev supports.
+  // three file system types PPB_FileSystem supports.
   for (size_t i = 0; i < kNumFileSystemTypes; ++i) {
     file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
     EXPECT(file_system != kInvalidResource);
@@ -57,7 +57,7 @@ void TestCreate() {
 
 void TestIsFileSystem() {
   const PPB_Core* ppb_core = PPBCore();
-  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
+  const PPB_FileSystem* ppb_file_system = PPBFileSystem();
   PP_Resource file_system = kInvalidResource;
   PP_Bool is_file_system = PP_FALSE;
 
@@ -91,7 +91,7 @@ void TestIsFileSystem() {
 
 void TestOpen() {
   const PPB_Core* ppb_core = PPBCore();
-  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
+  const PPB_FileSystem* ppb_file_system = PPBFileSystem();
   PP_Resource file_system = kInvalidResource;
   PP_CompletionCallback nop_callback =
       MakeTestableCompletionCallback("NopCallback", OpenCallback);
@@ -150,9 +150,9 @@ void TestOpen() {
 
 void TestGetType() {
   const PPB_Core* ppb_core = PPBCore();
-  const PPB_FileSystem_Dev* ppb_file_system = PPBFileSystemDev();
+  const PPB_FileSystem* ppb_file_system = PPBFileSystem();
   PP_Resource file_system = kInvalidResource;
-  PP_FileSystemType_Dev type = PP_FILESYSTEMTYPE_INVALID;
+  PP_FileSystemType type = PP_FILESYSTEMTYPE_INVALID;
 
   // Test for invalid resource.
   EXPECT(PP_FILESYSTEMTYPE_INVALID == ppb_file_system->GetType(0));
