@@ -303,13 +303,12 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
   SkBitmap icon;
-  bool has_icon = false;
   std::wstring label;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
-      has_icon = model->GetIconAt(index, &icon);
+      model->GetIconAt(index, &icon);
       type = MenuItemView::NORMAL;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
@@ -325,6 +324,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       type = MenuItemView::SEPARATOR;
       break;
     case ui::MenuModel::TYPE_SUBMENU:
+      model->GetIconAt(index, &icon);
       type = MenuItemView::SUBMENU;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
@@ -334,7 +334,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       break;
   }
 
-  return AppendMenuItemImpl(id, label, has_icon ? icon : SkBitmap(), type);
+  return AppendMenuItemImpl(id, label, icon, type);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
