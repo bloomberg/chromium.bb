@@ -86,7 +86,7 @@ BASE_API const void* GetProgramCounter() {
 
 //------------------------------------------------------------------------------
 
-#ifndef TRACK_ALL_TASK_OBJECTS
+#if !defined(TRACK_ALL_TASK_OBJECTS)
 
 Tracked::Tracked() : birth_program_counter_(NULL) {}
 Tracked::~Tracked() {}
@@ -99,7 +99,7 @@ const Location Tracked::GetBirthPlace() const {
   static Location kNone("NoFunctionName", "NeedToSetBirthPlace", -1, NULL);
   return kNone;
 }
-bool Tracked::MissingBirthplace() const { return false; }
+bool Tracked::MissingBirthPlace() const { return false; }
 void Tracked::ResetBirthTime() {}
 
 #else
@@ -130,17 +130,18 @@ void Tracked::SetBirthPlace(const Location& from_here) {
 }
 
 const Location Tracked::GetBirthPlace() const {
-  return tracked_births_->location();
+  static Location kNone("UnknownFunctionName", "UnknownFile", -1, NULL);
+  return tracked_births_ ? tracked_births_->location() : kNone;
 }
 
 void Tracked::ResetBirthTime() {
   tracked_birth_time_ = TimeTicks::Now();
 }
 
-bool Tracked::MissingBirthplace() const {
-  return -1 == tracked_births_->location().line_number();
+bool Tracked::MissingBirthPlace() const {
+  return  !tracked_births_ || tracked_births_->location().line_number() == -1;
 }
 
-#endif  // NDEBUG
+#endif  // !defined(TRACK_ALL_TASK_OBJECTS)
 
 }  // namespace tracked_objects

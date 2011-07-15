@@ -112,7 +112,7 @@ class BASE_API Tracked {
   // significant lifetime begins (and its waiting to be woken up has passed).
   void ResetBirthTime();
 
-  bool MissingBirthplace() const;
+  bool MissingBirthPlace() const;
 
 #if defined(TRACK_ALL_TASK_OBJECTS)
   base::TimeTicks tracked_birth_time() const { return tracked_birth_time_; }
