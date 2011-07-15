@@ -249,7 +249,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   DLL_MAIN entry_point =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
   if (!entry_point)
-    return content::RESULT_CODE_BAD_PROCESS_TYPE;
+    return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 
   int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
   return OnBeforeExit(rc, file);
@@ -287,7 +287,7 @@ class ChromeDllLoader : public MainDllLoader {
     // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
     // so we need to reset the did_run signal so omaha does not count
     // this run as active usage.
-    if (content::RESULT_CODE_NORMAL_EXIT_CANCEL == return_code) {
+    if (chrome::RESULT_CODE_NORMAL_EXIT_CANCEL == return_code) {
       ClearDidRun(dll_path);
     }
     return return_code;
