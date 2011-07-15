@@ -498,8 +498,18 @@ void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
   shared_timer_func_ = func;
 }
 
+#ifndef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
 void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
-  shared_timer_fire_time_ = fire_time;
+  setSharedTimerFireInterval(fire_time - currentTime());
+}
+#endif
+
+void WebKitClientImpl::setSharedTimerFireInterval(double interval_seconds) {
+#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
+  shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
+#else
+  shared_timer_fire_time_ = interval_seconds + currentTime();
+#endif
   if (shared_timer_suspended_)
     return;
 
@@ -513,14 +523,10 @@ void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
   // needlessly looping if sleep times are too short even by small amounts.
   // This results in measurable performance degradation unless we use ceil() to
   // always round up the sleep times.
-#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
-  double intervalSeconds = fire_time - monotonicallyIncreasingTime();
   int64 interval = static_cast<int64>(
-      ceil(intervalSeconds) * base::Time::kMicrosecondsPerSecond);
-#else
-  int64 interval = static_cast<int64>(
-      ceil((fire_time - currentTime()) * base::Time::kMicrosecondsPerSecond));
-#endif
+      ceil(interval_seconds * base::Time::kMillisecondsPerSecond)
+      * base::Time::kMicrosecondsPerMillisecond);
+
   if (interval < 0)
     interval = 0;
 
@@ -644,7 +650,12 @@ void WebKitClientImpl::SuspendSharedTimer() {
 void WebKitClientImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
   if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning())
+#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
+    setSharedTimerFireInterval(
+        monotonicallyIncreasingTime() - shared_timer_fire_time_);
+#else
     setSharedTimerFireTime(shared_timer_fire_time_);
+#endif
 }
 
 }  // namespace webkit_glue
