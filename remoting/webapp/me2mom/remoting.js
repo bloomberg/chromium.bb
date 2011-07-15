@@ -5,7 +5,7 @@
 var remoting = remoting || {};
 
 (function() {
-"use strict";
+'use strict';
 
 window.addEventListener('blur', pluginLostFocus_, false);
 
@@ -51,7 +51,7 @@ function retrieveEmail_(access_token) {
   var onResponse = function(xhr) {
     if (xhr.status != 200) {
       // TODO(ajwong): Have a better way of showing an error.
-      window.alert("Unable to get e-mail");
+      window.alert('Unable to get e-mail');
       return;
     }
 
@@ -109,7 +109,7 @@ function setEmail(value) {
 }
 
 /**
- * @return {string}
+ * @return {string} The email address associated with the auth credentials.
  */
 function getEmail() {
   return window.localStorage.getItem(KEY_EMAIL_);
@@ -139,21 +139,18 @@ function setMode_(mode, modes) {
 
 remoting.toggleDebugLog = function() {
   var debugLog = document.getElementById('debug-log');
-  var toggleButton = document.getElementById('debug-log-toggle');
-
-  if (!debugLog.style.display || debugLog.style.display == 'none') {
-    debugLog.style.display = 'block';
-    toggleButton.value = 'Hide Debug Log';
+  if (debugLog.hidden) {
+    debugLog.hidden = false;
   } else {
-    debugLog.style.display = 'none';
-    toggleButton.value = 'Show Debug Log';
+    debugLog.hidden = true;
   }
 }
 
 remoting.init = function() {
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
-  remoting.debug = new remoting.DebugLog(document.getElementById('debug-log'));
+  remoting.debug =
+      new remoting.DebugLog(document.getElementById('debug-messages'));
 
   updateAuthStatus_();
   refreshEmail_();
@@ -298,7 +295,7 @@ function debugInfoCallback_(msg) {
 function showShareError_(errorCode) {
   var errorDiv = document.getElementById(errorCode);
   errorDiv.style.display = 'block';
-  remoting.debug.log("Sharing error: " + errorCode);
+  remoting.debug.log('Sharing error: ' + errorCode);
   remoting.setHostMode('share-failed');
 }
 
@@ -312,13 +309,15 @@ remoting.cancelShare = function() {
  * Show a client message that stays on the screeen until the state changes.
  *
  * @param {string} message The message to display.
+ * @param {string} opt_host The host to display after the message.
  */
-function setClientStateMessage(message) {
-  var msg = document.getElementById('session-status-message');
-  msg.innerText = message;
+function setClientStateMessage(message, opt_host) {
+  document.getElementById('session-status-message').innerText = message;
+  opt_host = opt_host || '';
+  document.getElementById('connected-to').innerText = opt_host;
 }
 
-function updateStatusBarStats() {
+function updateStatistics() {
   if (remoting.session.state != remoting.ClientSession.State.CONNECTED)
     return;
   var stats = remoting.session.stats();
@@ -338,16 +337,17 @@ function updateStatusBarStats() {
     videoBandwidth = videoBandwidth / 1073741824;
   }
 
-  setClientStateMessage(
+  var statistics = document.getElementById('statistics');
+  statistics.innerText =
       'Bandwidth: ' + videoBandwidth.toFixed(2) + units +
       ', Capture: ' + stats['capture_latency'].toFixed(2) + 'ms' +
       ', Encode: ' + stats['encode_latency'].toFixed(2) + 'ms' +
       ', Decode: ' + stats['decode_latency'].toFixed(2) + 'ms' +
       ', Render: ' + stats['render_latency'].toFixed(2) + 'ms' +
-      ', Latency: ' + stats['roundtrip_latency'].toFixed(2) + 'ms');
+      ', Latency: ' + stats['roundtrip_latency'].toFixed(2) + 'ms';
 
   // Update the stats once per second.
-  window.setTimeout(updateStatusBarStats, 1000);
+  window.setTimeout(updateStatistics, 1000);
 }
 
 function onClientStateChange_(state) {
@@ -364,13 +364,19 @@ function onClientStateChange_(state) {
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
     setClientStateMessage('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
-    updateStatusBarStats();
+    var split = remoting.hostJid.split('/');
+    var host = null;
+    if (split.length == 2) {
+      host = split[0];
+    }
+    setClientStateMessage('Connected to', host);
+    updateStatistics();
   } else if (state == remoting.ClientSession.State.CLOSED) {
     setClientStateMessage('Closed');
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
     setClientStateMessage('Failed');
   } else {
-    setClientStateMessage('Bad State!!');
+    setClientStateMessage('Bad State: ' + state);
   }
 }
 
@@ -472,7 +478,7 @@ remoting.cancelPendingOperation = function() {
  * Changes the major-mode of the application (Eg., client or host).
  *
  * @param {remoting.AppMode} mode The mode to shift the application into.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.setAppMode = function(mode) {
   setGlobalMode(mode);
@@ -482,7 +488,7 @@ remoting.setAppMode = function(mode) {
 /**
  * Gets the major-mode that this application should start up in.
  *
- * @return {remoting.AppMode}
+ * @return {remoting.AppMode} The mode (client or host) to start in.
  */
 function getAppStartupMode() {
   var mode = window.localStorage.getItem(KEY_APP_MODE_);
@@ -494,8 +500,6 @@ function getAppStartupMode() {
 
 remoting.toggleScaleToFit = function() {
   remoting.scaleToFit = !remoting.scaleToFit;
-  document.getElementById('scale-to-fit-toggle').value =
-      remoting.scaleToFit ? 'No scaling' : 'Scale to fit';
   remoting.session.toggleScaleToFit(remoting.scaleToFit);
 }
 

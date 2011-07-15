@@ -7,11 +7,9 @@
   background-color: white;
   bottom: 0;
   border-top: 1px solid black;
-  display: none;
   height: 150px;
   margin: 0;
   opacity: 0.85;
-  overflow: auto;
   padding: 0;
   position: fixed;
   width: 100%;
@@ -19,7 +17,13 @@
   -webkit-user-select: text;
 }
 
-#debug-log > p {
+#debug-messages {
+  border-top: 1px solid black;
+  overflow: auto;
+  height: inherit;
+}
+
+#debug-messages > p {
   font-family: monospace;
   font-weight: bold;
   font-size: small;

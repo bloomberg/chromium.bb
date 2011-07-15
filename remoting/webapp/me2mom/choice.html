@@ -14,6 +14,7 @@ found in the LICENSE file.
     <link rel="stylesheet" href="debug_log.css" />
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="choice.css" />
+    <link rel="stylesheet" href="toolbar.css" />
     <script src="client_session.js"></script>
     <script src="debug_log.js"></script>
     <script src="oauth2.js"></script>
@@ -24,13 +25,13 @@ found in the LICENSE file.
   </head>
 
   <body onLoad="remoting.init();">
-    <nav id="control-panel">
+    <div id="control-panel" class="client-element host-element">
       <span id="email-status">
         <span class="auth-status-label">Email:</span>
         <span id="current-email"></span>
       </span> <!-- email-status -->
 
-      <span id="oauth2-entry" class="client-element host-element">
+      <span id="oauth2-entry">
         <form>
           <span class="auth-status-label">OAuth2 Token:</span>
           <input id="oauth2-token-button" type="button"
@@ -42,24 +43,38 @@ found in the LICENSE file.
         </form>
       </span> <!-- oauth2-entry -->
 
-      <span id="session-controls" class="in-session-element">
-        <form id="session-buttons">
-          <input id="scale-to-fit-toggle" type="button"
-                 value="Scale to fit" onclick="remoting.toggleScaleToFit();"/>
-        </form>
-        <span id="session-status-message">Initializing...</span>
-      </span> <!-- session-controls -->
-
       <span id="debug-enable">
         <form>
-          <input id="debug-log-toggle" type="button" value="Debug Log"
+          <input id="debug-log-toggle" type="button" value="Debug log"
                  onclick="remoting.toggleDebugLog();"/>
         </form>
       </span> <!-- debug-enable -->
+    </div> <!-- control-panel -->
 
-    </nav> <!-- control-panel -->
+    <div id="session-toolbar"
+         class="toolbar-container in-session-element"
+         hidden>
+      <div class="toolbar-border">
+        <span id="session-status-message">Initialising...</span>
+        <strong id="connected-to"></strong>
+        <button type="button" disabled>Disconnect</button>
+        <span class="right-align">
+          <button type="button"
+                  onclick="remoting.toggleDebugLog();">
+            Debug log
+          </button>
+          <button type="button"
+                  onclick="remoting.toggleScaleToFit();">
+            Fit screen
+          </button>
+        </span>
+      </div>
+      <div class="toolbar-stub">
+        <img src="toolbar-stub.png">
+      </div>
+    </div> <!-- session-toolbar -->
 
-    <section id="choice-mode" class="mode hidden host-element client-element">
+    <section id="choice-mode" class="mode host-element client-element" hidden>
       <header class="choice-header">
         <img id="icon" src="chromoting128.png">
         <h1 class="icon-label host-element">
@@ -206,17 +221,23 @@ found in the LICENSE file.
       </footer>
     </section> <!-- choice-mode -->
 
-    <section id="session-mode" class="mode in-session-element hidden">
+    <section id="session-mode" class="mode in-session-element">
     </section> <!-- session-mode -->
 
 
     <section id="loading-mode">
       <em>Loading&hellip;</em>
-    </section>
+    </section> <!-- loading-mode -->
 
     <div id="host-plugin-container">
-    </div>
-    <div id="debug-log" class="hidden">
-    </div>
+    </div> <!-- host-plugin-container -->
+
+    <section id="debug-log" hidden>
+      <div id="statistics">
+      </div>
+      <div id="debug-messages">
+      </div>
+    </section> <!-- debug-log -->
+
   </body>
 </html>
