@@ -160,21 +160,6 @@ void ChromotingInstance::Disconnect() {
   GetScriptableObject()->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
 }
 
-void ChromotingInstance::ViewChanged(const pp::Rect& position,
-                                     const pp::Rect& clip) {
-  DCHECK(CurrentlyOnPluginThread());
-
-  // TODO(ajwong): This is going to be a race condition when the view changes
-  // and we're in the middle of a Paint().
-  logger_.VLog(1, "ViewChanged: %d,%d %dx%d",
-                position.x(), position.y(),
-                position.width(), position.height());
-
-  view_->SetViewport(position.x(), position.y(),
-                     position.width(), position.height());
-  view_->Paint();
-}
-
 void ChromotingInstance::DidChangeView(const pp::Rect& position,
                                        const pp::Rect& clip) {
   // This lets |view_| implement scale-to-fit. But it only specifies a

@@ -67,7 +67,6 @@ class ChromotingInstance : public pp::InstancePrivate {
   virtual bool HandleInputEvent(const PP_InputEvent& event);
   virtual void Disconnect();
   virtual pp::Var GetInstanceObject();
-  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip);
 
   // pp::Instance interface.
   virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip)
