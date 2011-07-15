@@ -1836,115 +1836,123 @@ pre_base_env.Append(
         ],
     )
 
-base_env = pre_base_env.Clone()
-base_env.Append(
-  BUILD_SUBTYPE = '',
-  CPPDEFINES = [
-    ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-    ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-    ['NACL_STANDALONE', 1],
-    ],
-  CPPPATH = [
-    # third_party goes first so we get nacl's ppapi in preference to others.
-    '${MAIN_DIR}/src/third_party',
-    '${SOURCE_ROOT}',
-  ],
 
-  EXTRA_CFLAGS = [],
-  EXTRA_CCFLAGS = [],
-  EXTRA_CXXFLAGS = [],
-  EXTRA_LIBS = [],
-  CFLAGS = ['${EXTRA_CFLAGS}'],
-  CCFLAGS = ['${EXTRA_CCFLAGS}'],
-  CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
-)
-
-base_env.Append(
-  BUILD_SCONSCRIPTS = [
-    # KEEP THIS SORTED PLEASE
-    'src/shared/gio/build.scons',
-    'src/shared/imc/build.scons',
-    'src/shared/platform/build.scons',
-    'src/shared/ppapi/build.scons',
-    'src/shared/ppapi_proxy/build.scons',
-    'src/shared/srpc/build.scons',
-    'src/shared/utils/build.scons',
-    'src/third_party_mod/gtest/build.scons',
-    'src/third_party_mod/jsoncpp/build.scons',
-    'src/tools/validator_tools/build.scons',
-    'src/trusted/debug_stub/build.scons',
-    'src/trusted/desc/build.scons',
-    'src/trusted/gdb_rsp/build.scons',
-    'src/trusted/gio/build.scons',
-    'src/trusted/handle_pass/build.scons',
-    'src/trusted/manifest_name_service_proxy/build.scons',
-    'src/trusted/nacl_base/build.scons',
-    'src/trusted/nonnacl_util/build.scons',
-    'src/trusted/perf_counter/build.scons',
-    'src/trusted/platform_qualify/build.scons',
-    'src/trusted/plugin/build.scons',
-    'src/trusted/python_bindings/build.scons',
-    'src/trusted/reverse_service/build.scons',
-    'src/trusted/sel_universal/build.scons',
-    'src/trusted/service_runtime/build.scons',
-    'src/trusted/simple_service/build.scons',
-    'src/trusted/threading/build.scons',
-    'src/trusted/validator/build.scons',
-    'src/trusted/validator/x86/build.scons',
-    'src/trusted/validator_x86/build.scons',
-    'src/trusted/validator/x86/ncval_seg_sfi',
-    'src/trusted/validator/x86/32/build.scons',
-    'src/trusted/validator/x86/64/build.scons',
-    'src/trusted/weak_ref/build.scons',
-    'tests/ppapi_geturl/build.scons',
-    'tests/ppapi_messaging/build.scons',
-    'tests/ppapi_browser/ppb_file_system/build.scons',
-    'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
-    'tests/python_version/build.scons',
-    'tests/tools/build.scons',
-    'tests/unittests/shared/srpc/build.scons',
-    'tests/unittests/shared/imc/build.scons',
-    'tests/unittests/shared/platform/build.scons',
-    'installer/build.scons'
+def MakeBaseTrustedEnv():
+  base_env = pre_base_env.Clone()
+  base_env.Append(
+    BUILD_SUBTYPE = '',
+    CPPDEFINES = [
+      ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
+      ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
+      ['NACL_STANDALONE', 1],
+      ],
+    CPPPATH = [
+      # third_party goes first so we get nacl's ppapi in preference to others.
+      '${MAIN_DIR}/src/third_party',
+      '${SOURCE_ROOT}',
     ],
+
+    EXTRA_CFLAGS = [],
+    EXTRA_CCFLAGS = [],
+    EXTRA_CXXFLAGS = [],
+    EXTRA_LIBS = [],
+    CFLAGS = ['${EXTRA_CFLAGS}'],
+    CCFLAGS = ['${EXTRA_CCFLAGS}'],
+    CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
   )
 
-# TODO(adonovan): re-enable this and test it once the build is fixed.
-# CheckPlatformPreconditions()
-
-# The ARM validator can be built for any target that doesn't use ELFCLASS64.
-if not base_env.Bit('target_x86_64'):
   base_env.Append(
-      BUILD_SCONSCRIPTS = [
-        'src/trusted/validator_arm/build.scons',
-      ])
+    BUILD_SCONSCRIPTS = [
+      # KEEP THIS SORTED PLEASE
+      'src/shared/gio/build.scons',
+      'src/shared/imc/build.scons',
+      'src/shared/platform/build.scons',
+      'src/shared/ppapi/build.scons',
+      'src/shared/ppapi_proxy/build.scons',
+      'src/shared/srpc/build.scons',
+      'src/shared/utils/build.scons',
+      'src/third_party_mod/gtest/build.scons',
+      'src/third_party_mod/jsoncpp/build.scons',
+      'src/tools/validator_tools/build.scons',
+      'src/trusted/debug_stub/build.scons',
+      'src/trusted/desc/build.scons',
+      'src/trusted/gdb_rsp/build.scons',
+      'src/trusted/gio/build.scons',
+      'src/trusted/handle_pass/build.scons',
+      'src/trusted/manifest_name_service_proxy/build.scons',
+      'src/trusted/nacl_base/build.scons',
+      'src/trusted/nonnacl_util/build.scons',
+      'src/trusted/perf_counter/build.scons',
+      'src/trusted/platform_qualify/build.scons',
+      'src/trusted/plugin/build.scons',
+      'src/trusted/python_bindings/build.scons',
+      'src/trusted/reverse_service/build.scons',
+      'src/trusted/sel_universal/build.scons',
+      'src/trusted/service_runtime/build.scons',
+      'src/trusted/simple_service/build.scons',
+      'src/trusted/threading/build.scons',
+      'src/trusted/validator/build.scons',
+      'src/trusted/validator/x86/build.scons',
+      'src/trusted/validator_x86/build.scons',
+      'src/trusted/validator/x86/ncval_seg_sfi',
+      'src/trusted/validator/x86/32/build.scons',
+      'src/trusted/validator/x86/64/build.scons',
+      'src/trusted/weak_ref/build.scons',
+      'tests/ppapi_geturl/build.scons',
+      'tests/ppapi_messaging/build.scons',
+      'tests/ppapi_browser/ppb_file_system/build.scons',
+      'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
+      'tests/python_version/build.scons',
+      'tests/tools/build.scons',
+      'tests/unittests/shared/srpc/build.scons',
+      'tests/unittests/shared/imc/build.scons',
+      'tests/unittests/shared/platform/build.scons',
+      'installer/build.scons'
+      ],
+    )
 
-# TODO(dmichael): Remove this flag when all tests are migrated from scripting.
-if not base_env.Bit('pepper_scripting'):
-  base_env.Append(
-      CPPDEFINES = [
-        'PPAPI_INSTANCE_REMOVE_SCRIPTING',
-        'PPAPI_VAR_REMOVE_SCRIPTING',
-      ])
+  base_env.AddMethod(SDKInstallTrusted)
 
-base_env.Replace(
-    NACL_BUILD_FAMILY = 'TRUSTED',
+  # TODO(adonovan): re-enable this and test it once the build is fixed.
+  # CheckPlatformPreconditions()
 
-    SDL_HERMETIC_LINUX_DIR='${MAIN_DIR}/../third_party/sdl/linux/v1_2_13',
-    SDL_HERMETIC_MAC_DIR='${MAIN_DIR}/../third_party/sdl/osx/v1_2_13',
-    SDL_HERMETIC_WINDOWS_DIR='${MAIN_DIR}/../third_party/sdl/win/v1_2_13',
-)
+  # The ARM validator can be built for any target that doesn't use ELFCLASS64.
+  if not base_env.Bit('target_x86_64'):
+    base_env.Append(
+        BUILD_SCONSCRIPTS = [
+          'src/trusted/validator_arm/build.scons',
+        ])
 
-# Add optional scons files if present in the directory tree.
-if os.path.exists(pre_base_env.subst('${MAIN_DIR}/supplement/build.scons')):
-  base_env.Append(BUILD_SCONSCRIPTS=['${MAIN_DIR}/supplement/build.scons'])
+  # TODO(dmichael): Remove this flag when all tests are migrated from scripting.
+  if not base_env.Bit('pepper_scripting'):
+    base_env.Append(
+        CPPDEFINES = [
+          'PPAPI_INSTANCE_REMOVE_SCRIPTING',
+          'PPAPI_VAR_REMOVE_SCRIPTING',
+        ])
+
+  base_env.Replace(
+      NACL_BUILD_FAMILY = 'TRUSTED',
+
+      SDL_HERMETIC_LINUX_DIR='${MAIN_DIR}/../third_party/sdl/linux/v1_2_13',
+      SDL_HERMETIC_MAC_DIR='${MAIN_DIR}/../third_party/sdl/osx/v1_2_13',
+      SDL_HERMETIC_WINDOWS_DIR='${MAIN_DIR}/../third_party/sdl/win/v1_2_13',
+  )
+
+  # Add optional scons files if present in the directory tree.
+  if os.path.exists(pre_base_env.subst('${MAIN_DIR}/supplement/build.scons')):
+    base_env.Append(BUILD_SCONSCRIPTS=['${MAIN_DIR}/supplement/build.scons'])
+
+  return base_env
+
 
 # Select tests to run under coverage build.
-base_env['COVERAGE_TARGETS'] = ['small_tests', 'medium_tests', 'large_tests',
+pre_base_env['COVERAGE_TARGETS'] = [
+    'small_tests', 'medium_tests', 'large_tests',
     'chrome_browser_tests']
 
 
-base_env.Help("""\
+pre_base_env.Help("""\
 ======================================================================
 Help for NaCl
 ======================================================================
@@ -2043,10 +2051,9 @@ The optional target argument overrides the setting of what that target is."""
     install_node = env.InstallAs(os.path.join(dir, name + '_' + target), node)
     env.Alias('install_bin', install_node)
 
-base_env.AddMethod(SDKInstallTrusted)
-
 
 def MakeWindowsEnv():
+  base_env = MakeBaseTrustedEnv()
   windows_env = base_env.Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-win',
       BUILD_TYPE_DESCRIPTION = 'Windows ${OPTIMIZATION_LEVEL} build',
@@ -2136,7 +2143,7 @@ windows_debug_env.Alias('windows_debug_data_install', n)
 
 
 def MakeUnixLikeEnv():
-  unix_like_env = base_env.Clone()
+  unix_like_env = MakeBaseTrustedEnv()
   # -Wdeclaration-after-statement is desirable because MS studio does
   # not allow declarations after statements in a block, and since much
   # of our code is portable and primarily initially tested on Linux,
