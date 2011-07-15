@@ -381,6 +381,11 @@ quiet_cmd_pch_m = CXX($(TOOLSET)) $@
 cmd_pch_m = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCFLAGS) $(DEPFLAGS) -c -o $@ $<
 quiet_cmd_pch_mm = CXX($(TOOLSET)) $@
 cmd_pch_mm = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+# gyp-mac-tool is written next to the root Makefile by gyp.
+# Use #(3) for the command, since $(2) is used as flag by do_cmd already.
+quiet_cmd_mac_tool = MACTOOL $(3) $<
+cmd_mac_tool = ./gyp-mac-tool $(3) $< "$@"
 """
 
 
