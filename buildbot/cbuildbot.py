@@ -174,10 +174,10 @@ def RunBuildStages(bot_id, options, build_config):
   # Determine the stages to use for syncing and completion.
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
-  if not options.buildbot:
-    # For trybots, always patch to last known good manifest.
-    sync_stage_class = stages.LKGMSyncStage
-  elif build_config['manifest_version'] and options.chrome_rev != 'tot':
+  # Trybots will sync to TOT for now.
+  # TODO(rcui): have trybots patch to LKGM
+  if (options.buildbot and build_config['manifest_version']
+      and options.chrome_rev != 'tot'):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in ('binary', 'chrome'):
       sync_stage_class = stages.LKGMCandidateSyncStage

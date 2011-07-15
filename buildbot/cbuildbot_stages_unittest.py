@@ -136,44 +136,6 @@ class BuilderStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class SyncStageTest(AbstractStageTest):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    AbstractStageTest.setUp(self)
-
-  def ConstructStage(self):
-    return stages.SyncStage(self.bot_id, self.options, self.build_config)
-
-  def testFullSync(self):
-    """Tests whether we can perform a full sync with a missing .repo folder."""
-    self.mox.StubOutWithMock(commands, 'FullCheckout')
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(False)
-    commands.FullCheckout(self.build_root, self.TRACKING_BRANCH,
-                          url=self.url)
-    os.path.isdir(self.overlay).AndReturn(True)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-  def testIncrementalSync(self):
-    """Tests whether we can perform a standard incremental sync."""
-    self.mox.StubOutWithMock(commands, 'IncrementalCheckout')
-    self.mox.StubOutWithMock(stages.BuilderStage, '_GetPortageEnvVar')
-
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
-    commands.IncrementalCheckout(self.build_root)
-    os.path.isdir(self.overlay).AndReturn(True)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
-
-
 class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
@@ -197,24 +159,29 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
       self.tmpdir, self.source_repo, self.manifest_version_url, self.branch,
       self.build_name, self.incr_type, dry_run=True)
 
+    stages.ManifestVersionedSyncStage.manifest_manager = self.manager
+
   def tearDown(self):
     if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
+    self.mox.StubOutWithMock(stages.ManifestVersionedSyncStage,
+                             'InitializeManifestManager')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
     self.mox.StubOutWithMock(commands, 'ManifestCheckout')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(False)
 
+    stages.ManifestVersionedSyncStage.InitializeManifestManager()
     self.manager.GetNextBuildSpec(force_version=None,
         latest=True).AndReturn(self.next_version)
 
     commands.ManifestCheckout(self.build_root,
                               self.TRACKING_BRANCH,
                               self.next_version,
-                              url=self.url)
+                              self.url)
 
     os.path.isdir('/fake_root/src/third_party/'
                   'chromiumos-overlay').AndReturn(True)

@@ -455,13 +455,9 @@ class SyncStage(BuilderStage):
   """Stage that performs syncing for the builder."""
 
   def _PerformStage(self):
-    if self._options.clobber or not os.path.isdir(os.path.join(self._build_root,
-                                                               '.repo')):
-      commands.FullCheckout(self._build_root,
-                            self._tracking_branch,
-                            url=self._build_config['git_url'])
-    else:
-      commands.IncrementalCheckout(self._build_root)
+    commands.ManifestCheckout(self._build_root, self._tracking_branch,
+                              repository.RepoRepository.DEFAULT_MANIFEST,
+                              self._build_config['git_url'])
 
     # Check that all overlays can be found.
     self._ExtractOverlays() # Our list of overlays are from pre-sync, refresh
@@ -547,7 +543,7 @@ class ManifestVersionedSyncStage(BuilderStage):
     commands.ManifestCheckout(self._build_root,
                               self._tracking_branch,
                               next_manifest,
-                              url=self._build_config['git_url'])
+                              self._build_config['git_url'])
 
     # Check that all overlays can be found.
     self._ExtractOverlays()

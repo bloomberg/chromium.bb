@@ -73,31 +73,6 @@ def _CleanUpMountPoints(buildroot):
                            print_cmd=False)
 
 
-def _RepoSync(buildroot, retries=_DEFAULT_RETRIES):
-  """Uses repo to checkout the source code.
-
-  Keyword arguments:
-  retries -- Number of retries to try before failing on the sync.
-  """
-  while retries > 0:
-    try:
-      cros_lib.OldRunCommand(['repo', 'sync', '-q', '--jobs=4'], cwd=buildroot)
-      retries = 0
-    except:
-      retries -= 1
-      if retries > 0:
-        cros_lib.Warning('CBUILDBOT -- Repo Sync Failed, retrying')
-      else:
-        cros_lib.Warning('CBUILDBOT -- Retries exhausted')
-        raise
-
-  repository.FixExternalRepoPushUrls(buildroot)
-
-  repository.DisableInteractiveRepoManifestCommand()
-  cros_lib.OldRunCommand(['repo', 'manifest', '-r', '-o', '/dev/stderr'],
-                         cwd=buildroot)
-
-
 def _GetVMConstants(buildroot):
   """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
   cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
@@ -126,8 +101,7 @@ def PreFlightRinse(buildroot):
   cros_lib.OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
 
-def ManifestCheckout(buildroot, tracking_branch, next_manifest,
-                     retries=_DEFAULT_RETRIES, url=None):
+def ManifestCheckout(buildroot, tracking_branch, next_manifest, url):
   """Performs a manifest checkout and clobbers any previous checkouts."""
 
   print "BUILDROOT: %s" % buildroot
@@ -137,23 +111,6 @@ def ManifestCheckout(buildroot, tracking_branch, next_manifest,
   repo = repository.RepoRepository(url, buildroot, branch=tracking_branch)
   repo.Sync(next_manifest)
   repo.ExportManifest('/dev/stderr')
-
-
-def FullCheckout(buildroot, tracking_branch,
-                 retries=_DEFAULT_RETRIES,
-                 url='http://git.chromium.org/git/manifest'):
-  """Performs a full checkout and clobbers any previous checkouts."""
-  _CleanUpMountPoints(buildroot)
-  repository.ClearBuildRoot(buildroot)
-  branch = tracking_branch.split('/');
-  cros_lib.OldRunCommand(['repo', 'init', '-q', '-u', url, '-b',
-                         '%s' % branch[-1]], cwd=buildroot, input='\n\ny\n')
-  _RepoSync(buildroot, retries)
-
-
-def IncrementalCheckout(buildroot, retries=_DEFAULT_RETRIES):
-  """Performs a checkout without clobbering previous checkout."""
-  _RepoSync(buildroot, retries)
 
 
 def MakeChroot(buildroot, replace, fast, usepkg):
