@@ -5,7 +5,7 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 
-#include "chrome/common/win_safe_util.h"
+#include "content/browser/safe_util_win.h"
 
 #include "base/file_path.h"
 #include "base/logging.h"

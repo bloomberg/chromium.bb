@@ -16,9 +16,9 @@
 #include "content/browser/browser_thread.h"
 
 #if defined(OS_WIN)
-#include "chrome/common/win_safe_util.h"
+#include "content/browser/safe_util_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/mac/file_metadata.h"
+#include "content/browser/file_metadata_mac.h"
 #endif
 
 BaseFile::BaseFile(const FilePath& full_path,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/power_save_blocker.h"
+#include "content/browser/power_save_blocker.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 

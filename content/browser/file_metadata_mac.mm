@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mac/file_metadata.h"
+#include "content/browser/file_metadata_mac.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <Foundation/Foundation.h>

@@ -77,8 +77,6 @@
           'common/switch_utils.h',
           'common/time_format.cc',
           'common/time_format.h',
-          'common/win_safe_util.cc',
-          'common/win_safe_util.h',
         ],
       }],
     ],

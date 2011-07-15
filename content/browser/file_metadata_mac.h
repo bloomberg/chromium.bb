@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_FILE_METADATA_H_
-#define CHROME_BROWSER_MAC_FILE_METADATA_H_
+#ifndef CONTENT_BROWSER_FILE_METADATA_MAC_H_
+#define CONTENT_BROWSER_FILE_METADATA_MAC_H_
 #pragma once
 
 class FilePath;
@@ -26,4 +26,4 @@ void AddQuarantineMetadataToFile(const FilePath& file, const GURL& source,
 
 }  // namespace file_metadata
 
-#endif  // CHROME_BROWSER_MAC_FILE_METADATA_H_
+#endif  // CONTENT_BROWSER_FILE_METADATA_MAC_H_
