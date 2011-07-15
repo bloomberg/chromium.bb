@@ -36,6 +36,7 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
       waiting_for_shift_for_caps_lock_(false),
+      caps_lock_is_on_(input_method::CapsLockIsEnabled()),
       xkb_event_base_(0),
       audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
@@ -209,7 +210,8 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   if (xevent->type == xkb_event_base_) {
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
-      OnCapsLock((xkey_event->state.locked_mods) & LockMask);
+      caps_lock_is_on_ = (xkey_event->state.locked_mods) & LockMask;
+      OnCapsLock(caps_lock_is_on_);
       return true;
     }
   } else if (xevent->type == KeyPress) {
@@ -223,7 +225,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
 
         if (waiting_for_shift_for_caps_lock_ &&
             other_shift_is_held && !other_mods_are_held) {
-          input_method::SetCapsLockEnabled(!input_method::CapsLockIsEnabled());
+          input_method::SetCapsLockEnabled(!caps_lock_is_on_);
         }
 
         // Only toggle on the next Shift press if we're seeing the first Shift

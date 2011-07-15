@@ -94,6 +94,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   // last key press event was regarding the other Shift key)?
   bool waiting_for_shift_for_caps_lock_;
 
+  bool caps_lock_is_on_;
   ObserverList<CapsLockObserver> caps_lock_observers_;
 
   // Base X ID for events from the XKB extension.
