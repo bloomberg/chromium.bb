@@ -11,7 +11,7 @@ chrome.test.runTests([
     chrome.experimental.tts.speak(
         'one two three',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            callbacks++;
            switch(callbacks) {
            case 1:

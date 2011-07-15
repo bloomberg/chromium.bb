@@ -12,7 +12,7 @@ chrome.test.runTests([
         'first try',
         {
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
             chrome.test.assertEq('error', event.type);
             chrome.test.assertEq('epic fail', event.errorMessage);
             callbacks++;
@@ -25,7 +25,7 @@ chrome.test.runTests([
         'second try',
         {
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
             chrome.test.assertEq('end', event.type);
             callbacks++;
             if (callbacks == 2) {

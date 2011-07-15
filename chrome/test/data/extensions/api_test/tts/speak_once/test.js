@@ -13,7 +13,7 @@ chrome.test.runTests([
     }
     chrome.experimental.tts.speak(
         'hello world',
-        {'onevent': eventListener},
+        {'onEvent': eventListener},
         function() {
           chrome.test.assertNoLastError();
         });

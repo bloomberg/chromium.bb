@@ -47,7 +47,7 @@ chrome.test.runTests([
     chrome.tts.speak(
         'extension speech',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            chrome.test.assertEq('error', event.type);
            chrome.test.assertEq('extension tts error', event.errorMessage);
            chrome.ttsEngine.onSpeak.removeListener(speakListener);

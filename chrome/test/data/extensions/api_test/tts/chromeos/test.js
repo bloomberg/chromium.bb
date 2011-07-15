@@ -11,7 +11,7 @@ chrome.test.runTests([
     chrome.experimental.tts.speak(
         'text 1',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            callbacks++;
            chrome.test.assertEq('interrupted', event.type);
          }
@@ -22,7 +22,7 @@ chrome.test.runTests([
     chrome.experimental.tts.speak(
         'text 2',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            chrome.test.assertEq('end', event.type);
            callbacks++;
            if (callbacks == 2) {

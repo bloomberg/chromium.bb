@@ -12,7 +12,7 @@ chrome.test.runTests([
         'text 1',
         {
          'enqueue': false,
-         'onevent': function(event) {
+         'onEvent': function(event) {
             chrome.test.assertEq('interrupted', event.type);
             callbacks++;
          }
@@ -25,7 +25,7 @@ chrome.test.runTests([
         'text 2',
         {
          'enqueue': false,
-         'onevent': function(event) {
+         'onEvent': function(event) {
            chrome.test.assertEq('end', event.type);
            callbacks++;
            if (callbacks == 4) {

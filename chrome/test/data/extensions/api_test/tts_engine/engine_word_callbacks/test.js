@@ -33,7 +33,7 @@ chrome.test.runTests([
     chrome.tts.speak(
         'alpha beta gamma',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            chrome.test.assertNoLastError();
            callbacks++;
            switch(callbacks) {

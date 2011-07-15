@@ -20,7 +20,7 @@ chrome.test.runTests([
     chrome.tts.speak(
         'native speech',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              chrome.test.succeed();
            }
@@ -48,7 +48,7 @@ chrome.test.runTests([
     chrome.tts.speak(
         'extension speech',
         {
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              chrome.test.assertEq(true, calledOurEngine);
              chrome.ttsEngine.onSpeak.removeListener(speakListener);
@@ -84,7 +84,7 @@ chrome.test.runTests([
         {
          'voiceName': 'George',
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              callbacks++;
            }
@@ -97,7 +97,7 @@ chrome.test.runTests([
         {
          'lang': 'fr-FR',
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              callbacks++;
            }
@@ -113,7 +113,7 @@ chrome.test.runTests([
         {
          'voiceName': 'Alice',
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              callbacks++;
            }
@@ -127,7 +127,7 @@ chrome.test.runTests([
          'voiceName': 'Pat',
          'gender': 'male',
          'enqueue': true,
-         'onevent': function(event) {
+         'onEvent': function(event) {
            if (event.type == 'end') {
              callbacks++;
              chrome.ttsEngine.onSpeak.removeListener(speakListener);

@@ -353,7 +353,7 @@ Use the <code>chrome.experimental.tts</code> module to play synthesized
 text-to-speech (TTS) from your extension or packaged app.
 See also the related
 <a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
-module which allows an extension to implement a speech engine.
+module, which allows an extension to implement a speech engine.
 </p>
 
 <p class="note"><b>Give us feedback:</b> If you have suggestions,
@@ -395,14 +395,14 @@ supporting that language (and regional dialect, if applicable) is chosen.</p>
 <pre>chrome.experimental.tts.speak(
     'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
-<p>By default, each call to <code>speak()</code> will interrupt any
-ongoing speech and speak immediately. To determine if a call would be
-interrupting anything, you can call <code>isSpeaking()</code>, or
-you can use the <code>enqueue</code> option to cause this utterance to
-be added to a queue of utterances that will be spoken when the current
-utterance has finished.
+<p>By default, each call to <code>speak()</code> interrupts any
+ongoing speech and speaks immediately. To determine if a call would be
+interrupting anything, you can call <code>isSpeaking()</code>.  In
+addition, you can use the <code>enqueue</code> option to cause this
+utterance to be added to a queue of utterances that will be spoken
+when the current utterance has finished.</p>
 
-</p><pre>chrome.experimental.tts.speak(
+<pre>chrome.experimental.tts.speak(
     'Speak this first.');
 chrome.experimental.tts.speak(
     'Speak this next, when the first sentence is done.', {'enqueue': true});
@@ -427,13 +427,14 @@ to see if there were any errors.</p>
       }
     });</pre>
 
-<p>The callback returns right away, before the speech engine has started
-generating speech. The purpose of the callback is to alert you to syntax
-errors in your use of the TTS API, not all possible errors that might occur
-in the process of synthesizing and outputting speech. To catch these errors
-too, you need to use an event listener, described below.
+<p>The callback returns right away, before the engine has started
+generating speech. The purpose of the callback is to alert you to
+syntax errors in your use of the TTS API, not to catch all possible
+errors that might occur in the process of synthesizing and outputting
+speech. To catch these errors too, you need to use an event listener,
+described below.</p>
 
-</p><h2 id="events">Listening to events</h2>
+<h2 id="events">Listening to events</h2>
 
 <p>To get more real-time information about the status of synthesized speech,
 pass an event listener in the options to <code>speak()</code>, like this:</p>
@@ -441,7 +442,7 @@ pass an event listener in the options to <code>speak()</code>, like this:</p>
 <pre>chrome.experimental.tts.speak(
     utterance,
     {
-      'onevent': function(event) {
+      onEvent: function(event) {
         console.log('Event ' + event.type ' at position ' + event.charIndex);
         if (event.type == 'error') {
           console.log('Error: ' + event.errorMessage);
@@ -455,21 +456,21 @@ speech relative to the utterance, and for error events, an optional
 error message. The event types are:</p>
 
 <ul>
-  <li><code>'start'</code>: the engine has started speaking the utterance.
-  </li><li><code>'word'</code>: a word boundary was reached. Use
+  <li><code>'start'</code>: The engine has started speaking the utterance.
+  </li><li><code>'word'</code>: A word boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'sentence'</code>: a sentence boundary was reached. Use
+  </li><li><code>'sentence'</code>: A sentence boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'marker'</code>: an SSML marker was reached. Use
+  </li><li><code>'marker'</code>: An SSML marker was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'end'</code>: the engine has finished speaking the utterance.
-  </li><li><code>'interrupted'</code>: this utterance was interrupted by another
+  </li><li><code>'end'</code>: The engine has finished speaking the utterance.
+  </li><li><code>'interrupted'</code>: This utterance was interrupted by another
           call to <code>speak()</code> or <code>stop()</code> and did not
           finish.
-  </li><li><code>'cancelled'</code>: this utterance was queued, but then
+  </li><li><code>'cancelled'</code>: This utterance was queued, but then
           cancelled by another call to <code>speak()</code> or
           <code>stop()</code> and never began to speak at all.
   </li><li><code>'error'</code>: An engine-specific error occurred and
@@ -477,30 +478,30 @@ error message. The event types are:</p>
           Check <code>event.errorMessage</code> for details.
 </li></ul>
 
-<p>Four of the event types, <code>'end'</code>, <code>'interrupted'</code>,
-<code>'cancelled'</code>, and <code>'error'</code>, are <i>final</i>. After
-one of those events is received, this utterance will no longer speak and
-no new events from this utterance will be received.</p>
+<p>Four of the event types—<code>'end'</code>, <code>'interrupted'</code>,
+<code>'cancelled'</code>, and <code>'error'</code>—are <i>final</i>.
+After one of those events is received, this utterance will no longer
+speak and no new events from this utterance will be received.</p>
 
-<p>Some TTS engines may not support all event types, and some may not even
-support any events at all. To require that the speech engine used sends
-the events you're interested in, you can pass a list of event types in
-the <code>requiredEventTypes</code> member of the options object, or use
-<code>getVoices</code> to choose a voice that has the events you need.
-Both are documented below.
+<p>Some voices may not support all event types, and some voices may not
+send any events at all. If you do not want to use a voice unless it sends
+certain events, pass the events you require in the
+<code>requiredEventTypes</code> member of the options object, or use
+<code>getVoices()</code> to choose a voice that meets your requirements.
+Both are documented below.</p>
 
-</p><h2 id="ssml">SSML markup</h2>
+<h2 id="ssml">SSML markup</h2>
 
 <p>Utterances used in this API may include markup using the
 <a href="http://www.w3.org/TR/speech-synthesis">Speech Synthesis Markup
 Language (SSML)</a>. If you use SSML, the first argument to
 <code>speak()</code> should be a complete SSML document with an XML
 header and a top-level <code>&lt;speak&gt;</code> tag, not a document
-fragment.
+fragment.</p>
 
-For example:
+<p>For example:</p>
 
-</p><pre>chrome.experimental.tts.speak(
+<pre>chrome.experimental.tts.speak(
     '&lt;?xml version="1.0"?&gt;' +
     '&lt;speak&gt;' +
     '  The &lt;emphasis&gt;second&lt;/emphasis&gt; ' +
@@ -509,18 +510,18 @@ For example:
 
 <p>Not all speech engines will support all SSML tags, and some may not support
 SSML at all, but all engines are required to ignore any SSML they don't
-support and still speak the underlying text.</p>
+support and to still speak the underlying text.</p>
 
 <h2 id="choosing_voice">Choosing a voice</h2>
 
-<p>By default, Chrome will choose the most appropriate voice for each
+<p>By default, Chrome chooses the most appropriate voice for each
 utterance you want to speak, based on the language and gender. On most
 Windows, Mac OS X, and Chrome OS systems, speech synthesis provided by
 the operating system should be able to speak any text in at least one
 language. Some users may have a variety of voices available, though,
 from their operating system and from speech engines implemented by other
 Chrome extensions. In those cases, you can implement custom code to choose
-the appropriate voice, or present the user with a list of choices.</p>
+the appropriate voice, or to present the user with a list of choices.</p>
 
 <p>To get a list of all voices, call <code>getVoices()</code> and pass it
 a function that receives an array of <code>TtsVoice</code> objects as its
@@ -1020,7 +1021,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The text to speak, either plaintext or a complete well-formed SSML document. Speech engines that do not support SSML will strip away the tags and speak the text. The maximum length of the text is 32,768 characters.</dd>
+          <dd>The text to speak, either plain text or a complete, well-formed SSML document. Speech engines that do not support SSML will strip away the tags and speak the text. The maximum length of the text is 32,768 characters.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1269,7 +1270,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The specific extension ID of the speech engine to use, if known.</dd>
+          <dd>The extension ID of the speech engine to use, if known.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1337,7 +1338,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The language to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc.</dd>
+          <dd>The language to be used for synthesis, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1473,7 +1474,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute, 2.0 would be twice as fast, and 0.5 would be half as fast. Values below 0.1 or above 10.0 are strictly disallowed, but many voices will constrain the minimum and maximum rates further - i.e. a particular voice may not actually speak faster than 3 times normal even if you specify a value larger than 3.0.</dd>
+          <dd>Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute. 2.0 is twice as fast, and 0.5 is half as fast. Values below 0.1 or above 10.0 are strictly disallowed, but many voices will constrain the minimum and maximum rates further—for example a particular voice may not actually speak faster than 3 times normal even if you specify a value larger than 3.0.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1541,7 +1542,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 1 being highest, with 1.0 being the default pitch of this particular voice.</dd>
+          <dd>Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 2 being highest. 1.0 corresponds to a voice's default pitch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1688,7 +1689,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The TTS event types the voice must support. If missing, this criteria will not be used to filter voices.</dd>
+          <dd>The TTS event types the voice must support.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1767,7 +1768,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The TTS event types that should be sent. If missing, all event types will be sent.</dd>
+          <dd>The TTS event types that you are interested in listening to. If missing, all event types may be sent.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1807,7 +1808,7 @@ argument:</p>
               </div><div>
                 <div>
           <dt>
-            <var>onevent</var>
+            <var>onEvent</var>
               <em>
 
                 <!-- TYPE -->
@@ -1996,7 +1997,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Called right away, before speech finishes. Check chrome.extension.lastError to make sure there were no errors. Use options.onevent to get more detailed feedback.</dd>
+          <dd>Called right away, before speech finishes. Check chrome.extension.lastError to make sure there were no errors. Use options.onEvent to get more detailed feedback.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2287,7 +2288,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The message can be 'start' when this utterance is begun to be spoken, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, and 'error' when any other error occurs. Clients will always receive 'end', 'cancelled', 'interrupted', or 'error', and other events will depend on the engine.</dd>
+          <dd>The type can be 'start' as soon as speech has started, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, or 'error' when any other error occurs.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2423,7 +2424,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The error message, if the message is 'error'.</dd>
+          <dd>The error description, if the event type is 'error'.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2628,7 +2629,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The language that this voice supports, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc.</dd>
+          <dd>The language that this voice supports, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

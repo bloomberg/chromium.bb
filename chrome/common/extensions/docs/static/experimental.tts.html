@@ -3,7 +3,7 @@ Use the <code>chrome.experimental.tts</code> module to play synthesized
 text-to-speech (TTS) from your extension or packaged app.
 See also the related
 <a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
-module which allows an extension to implement a speech engine.
+module, which allows an extension to implement a speech engine.
 </p>
 
 <p class="note"><b>Give us feedback:</b> If you have suggestions,
@@ -45,12 +45,12 @@ supporting that language (and regional dialect, if applicable) is chosen.</p>
 <pre>chrome.experimental.tts.speak(
     'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
-<p>By default, each call to <code>speak()</code> will interrupt any
-ongoing speech and speak immediately. To determine if a call would be
-interrupting anything, you can call <code>isSpeaking()</code>, or
-you can use the <code>enqueue</code> option to cause this utterance to
-be added to a queue of utterances that will be spoken when the current
-utterance has finished.
+<p>By default, each call to <code>speak()</code> interrupts any
+ongoing speech and speaks immediately. To determine if a call would be
+interrupting anything, you can call <code>isSpeaking()</code>.  In
+addition, you can use the <code>enqueue</code> option to cause this
+utterance to be added to a queue of utterances that will be spoken
+when the current utterance has finished.</p>
 
 <pre>chrome.experimental.tts.speak(
     'Speak this first.');
@@ -77,11 +77,12 @@ to see if there were any errors.</p>
       }
     });</pre>
 
-<p>The callback returns right away, before the speech engine has started
-generating speech. The purpose of the callback is to alert you to syntax
-errors in your use of the TTS API, not all possible errors that might occur
-in the process of synthesizing and outputting speech. To catch these errors
-too, you need to use an event listener, described below.
+<p>The callback returns right away, before the engine has started
+generating speech. The purpose of the callback is to alert you to
+syntax errors in your use of the TTS API, not to catch all possible
+errors that might occur in the process of synthesizing and outputting
+speech. To catch these errors too, you need to use an event listener,
+described below.</p>
 
 <h2 id="events">Listening to events</h2>
 
@@ -91,7 +92,7 @@ pass an event listener in the options to <code>speak()</code>, like this:</p>
 <pre>chrome.experimental.tts.speak(
     utterance,
     {
-      'onevent': function(event) {
+      onEvent: function(event) {
         console.log('Event ' + event.type ' at position ' + event.charIndex);
         if (event.type == 'error') {
           console.log('Error: ' + event.errorMessage);
@@ -105,21 +106,21 @@ speech relative to the utterance, and for error events, an optional
 error message. The event types are:</p>
 
 <ul>
-  <li><code>'start'</code>: the engine has started speaking the utterance.
-  <li><code>'word'</code>: a word boundary was reached. Use
+  <li><code>'start'</code>: The engine has started speaking the utterance.
+  <li><code>'word'</code>: A word boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  <li><code>'sentence'</code>: a sentence boundary was reached. Use
+  <li><code>'sentence'</code>: A sentence boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  <li><code>'marker'</code>: an SSML marker was reached. Use
+  <li><code>'marker'</code>: An SSML marker was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  <li><code>'end'</code>: the engine has finished speaking the utterance.
-  <li><code>'interrupted'</code>: this utterance was interrupted by another
+  <li><code>'end'</code>: The engine has finished speaking the utterance.
+  <li><code>'interrupted'</code>: This utterance was interrupted by another
           call to <code>speak()</code> or <code>stop()</code> and did not
           finish.
-  <li><code>'cancelled'</code>: this utterance was queued, but then
+  <li><code>'cancelled'</code>: This utterance was queued, but then
           cancelled by another call to <code>speak()</code> or
           <code>stop()</code> and never began to speak at all.
   <li><code>'error'</code>: An engine-specific error occurred and
@@ -127,17 +128,17 @@ error message. The event types are:</p>
           Check <code>event.errorMessage</code> for details.
 </ul>
 
-<p>Four of the event types, <code>'end'</code>, <code>'interrupted'</code>,
-<code>'cancelled'</code>, and <code>'error'</code>, are <i>final</i>. After
-one of those events is received, this utterance will no longer speak and
-no new events from this utterance will be received.</p>
+<p>Four of the event types&mdash;<code>'end'</code>, <code>'interrupted'</code>,
+<code>'cancelled'</code>, and <code>'error'</code>&mdash;are <i>final</i>.
+After one of those events is received, this utterance will no longer
+speak and no new events from this utterance will be received.</p>
 
-<p>Some TTS engines may not support all event types, and some may not even
-support any events at all. To require that the speech engine used sends
-the events you're interested in, you can pass a list of event types in
-the <code>requiredEventTypes</code> member of the options object, or use
-<code>getVoices</code> to choose a voice that has the events you need.
-Both are documented below.
+<p>Some voices may not support all event types, and some voices may not
+send any events at all. If you do not want to use a voice unless it sends
+certain events, pass the events you require in the
+<code>requiredEventTypes</code> member of the options object, or use
+<code>getVoices()</code> to choose a voice that meets your requirements.
+Both are documented below.</p>
 
 <h2 id="ssml">SSML markup</h2>
 
@@ -146,9 +147,9 @@ Both are documented below.
 Language (SSML)</a>. If you use SSML, the first argument to
 <code>speak()</code> should be a complete SSML document with an XML
 header and a top-level <code>&lt;speak&gt;</code> tag, not a document
-fragment.
+fragment.</p>
 
-For example:
+<p>For example:</p>
 
 <pre>chrome.experimental.tts.speak(
     '&lt;?xml version="1.0"?&gt;' +
@@ -159,18 +160,18 @@ For example:
 
 <p>Not all speech engines will support all SSML tags, and some may not support
 SSML at all, but all engines are required to ignore any SSML they don't
-support and still speak the underlying text.</p>
+support and to still speak the underlying text.</p>
 
 <h2 id="choosing_voice">Choosing a voice</h2>
 
-<p>By default, Chrome will choose the most appropriate voice for each
+<p>By default, Chrome chooses the most appropriate voice for each
 utterance you want to speak, based on the language and gender. On most
 Windows, Mac OS X, and Chrome OS systems, speech synthesis provided by
 the operating system should be able to speak any text in at least one
 language. Some users may have a variety of voices available, though,
 from their operating system and from speech engines implemented by other
 Chrome extensions. In those cases, you can implement custom code to choose
-the appropriate voice, or present the user with a list of choices.</p>
+the appropriate voice, or to present the user with a list of choices.</p>
 
 <p>To get a list of all voices, call <code>getVoices()</code> and pass it
 a function that receives an array of <code>TtsVoice</code> objects as its

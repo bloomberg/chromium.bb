@@ -272,7 +272,7 @@
                 </li>
               </ol>
             </li><li>
-              <a href="#handling_speech_events">Handling Speech Events</a>
+              <a href="#handling_speech_events">Handling speech events</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -334,7 +334,7 @@
 Use the <code>chrome.experimental.ttsEngine</code> module to
 implement a text-to-speech (TTS) engine using an extension. If your
 extension registers using this API, it will receive events containing
-the intended utterance and other parameters when any extension or packaged
+an utterance to be spoken and other parameters when any extension or packaged
 app uses the
 <a href="experimental.tts.html">experimental.tts</a>
 module to generate speech. Your extension can then use any available
@@ -396,8 +396,8 @@ it provides in the extension manifest, like this:</p>
 <p>The <code>voice_name</code> parameter is required. The name should be
 descriptive enough that it identifies the name of the voice and the
 engine used. In the unlikely event that two extensions register voices
-with the same name, a client can manually specify the extension id it
-wants to do the synthesis.</p>
+with the same name, a client can specify the ID of the extension that
+should do the synthesis.</p>
 
 <p>The <code>gender</code> parameter is optional. If your voice corresponds
 to a male or female voice, you can use this parameter to help clients
@@ -415,30 +415,34 @@ leave out the <code>lang</code> parameter from your extension's manifest.</p>
 <p>Finally, the <code>event_types</code> parameter is required if the engine can
 send events to update the client on the progress of speech synthesis.
 At a minimum, supporting the <code>'end'</code> event type to indicate
-when speech is finished is highly recommend, otherwise it's impossible
-for Chrome to schedule queued utterances.</p>
+when speech is finished is highly recommended, otherwise Chrome cannot
+schedule queued utterances.</p>
 
-<p class="note">If your TTS engine does not support the <code>'end'</code>
-event type, Chrome will pass the <code>enqueue</code> option to
-onSpeak, so that your engine can implement its own queuing. However, this is
-discouraged because it means that users cannot queue utterances that get
-sent to different speech engines.</p>
+<p class="note">
+<strong>Note:</strong> If your TTS engine does not support
+the <code>'end'</code> event type, Chrome cannot queue utterances
+because it has no way of knowing when your utterance has finished. To
+help mitigate this, Chrome passes an additional boolean <code>enqueue</code>
+option to your engine's onSpeak handler, giving you the option of
+implementing your own queueing.  This is discouraged because then
+clients are unable to queue utterances that should get spoken by different
+speech engines.</p>
 
-<p>The possible event types you can send correspond to the event types that
-the <code>speak()</code> method receives:</p>
+<p>The possible event types that you can send correspond to the event types
+that the <code>speak()</code> method receives:</p>
 
 <ul>
-  <li><code>'start'</code>: the engine has started speaking the utterance.
-  </li><li><code>'word'</code>: a word boundary was reached. Use
+  <li><code>'start'</code>: The engine has started speaking the utterance.
+  </li><li><code>'word'</code>: A word boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'sentence'</code>: a sentence boundary was reached. Use
+  </li><li><code>'sentence'</code>: A sentence boundary was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'marker'</code>: an SSML marker was reached. Use
+  </li><li><code>'marker'</code>: An SSML marker was reached. Use
           <code>event.charIndex</code> to determine the current speech
           position.
-  </li><li><code>'end'</code>: the engine has finished speaking the utterance.
+  </li><li><code>'end'</code>: The engine has finished speaking the utterance.
   </li><li><code>'error'</code>: An engine-specific error occurred and
           this utterance cannot be spoken.
           Pass more information in <code>event.errorMessage</code>.
@@ -447,11 +451,12 @@ the <code>speak()</code> method receives:</p>
 <p>The <code>'interrupted'</code> and <code>'cancelled'</code> events are
 not sent by the speech engine; they are generated automatically by Chrome.</p>
 
-<p>The information about your extensions's voices from your manifest
-will be returned to any client that calls <code>getVoices</code>, assuming
-you've also registered speech event listeners as described below.</p>
+<p>Text-to-speech clients can get the voice information from your
+extension's manifest by calling
+<a href="experimental.tts.html#method-getVoices">getVoices()</a>,
+assuming you've registered speech event listeners as described below.</p>
 
-<h2 id="handling_speech_events">Handling Speech Events</h2>
+<h2 id="handling_speech_events">Handling speech events</h2>
 
 <p>To generate speech at the request of clients, your extension must
 register listeners for both <code>onSpeak</code> and <code>onStop</code>,
@@ -472,7 +477,9 @@ var stopListener = function() {
 chrome.experimental.ttsEngine.onSpeak.addListener(speakListener);
 chrome.experimental.ttsEngine.onStop.addListener(stopListener);</pre>
 
-<p class="warning">If an extension does not register listeners for both
+<p class="warning">
+<b>Important:</b>
+If your extension does not register listeners for both
 <code>onSpeak</code> and <code>onStop</code>, it will not intercept any
 speech calls, regardless of what is in the manifest.</p>
 
@@ -481,7 +488,7 @@ extension is based solely on whether the extension supports the given voice
 parameters in its manifest and has registered listeners
 for <code>onSpeak</code> and <code>onStop</code>. In other words,
 there's no way for an extension to receive a speech request and
-dynamically decide whether to handle it or not.</p>
+dynamically decide whether to handle it.</p>
 </div>
 
         <!-- API PAGE -->
@@ -646,7 +653,7 @@ dynamically decide whether to handle it or not.</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Called when the user makes a call to tts.speak and the options matches one of the tts_voices from this extension's manifest.</p>
+                <p>Called when the user makes a call to tts.speak() and one of the voices from this extension's manifest is the first to match the options object.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -683,7 +690,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The text to speak. This may include SSML, so if your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content. This is guaranteed to be no more than 32,768 characters. If this engine does not support speaking that many characters at a time, the utterance should be split into smaller chunks and queued internally without returning an error.</dd>
+          <dd>The text to speak, specified as either plain text or an SSML document. If your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content. The value of this parameter is guaranteed to be no more than 32,768 characters. If this engine does not support speaking that many characters at a time, the utterance should be split into smaller chunks and queued internally without returning an error.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -751,7 +758,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The speak options.</dd>
+          <dd>Options specified to the tts.speak() method.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -864,7 +871,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The language to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc.</region></language></dd>
+          <dd>The language to be used for synthesis, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1000,7 +1007,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute, 2.0 would be twice as fast, and 0.5 would be half as fast.  This value is guaranteed to be between 0.1 and 10.0, inclusive. When a voice does not support this full range of rates, the actual rate should be clipped to the range that is supported without returning an error.</dd>
+          <dd>Speaking rate relative to the default rate for this voice. 1.0 is the default rate, normally around 180 to 220 words per minute. 2.0 is twice as fast, and 0.5 is half as fast. This value is guaranteed to be between 0.1 and 10.0, inclusive. When a voice does not support this full range of rates, don't return an error. Instead, clip the rate to the range the voice supports.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1068,7 +1075,7 @@ dynamically decide whether to handle it or not.</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 1 being highest, with 1.0 being the default pitch of this particular voice.</dd>
+          <dd>Speaking pitch between 0 and 2 inclusive, with 0 being lowest and 2 being highest. 1.0 corresponds to this voice's default pitch.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
