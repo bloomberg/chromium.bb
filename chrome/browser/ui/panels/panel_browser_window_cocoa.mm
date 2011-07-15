@@ -145,3 +145,6 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   controller_ = NULL;
 }
 
+NativePanelTesting* PanelBrowserWindowCocoa::GetNativePanelTesting() {
+  return this;
+}

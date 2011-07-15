@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"
 
+class NativePanelTesting;
 class Panel;
 
 namespace gfx {
@@ -58,6 +59,18 @@ class NativePanel {
   virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void FlashPanelFrame() = 0;
   virtual void DestroyPanelBrowser() = 0;
+
+  // Returns a pointer to the testing interface to the native panel.
+  virtual NativePanelTesting* GetNativePanelTesting() = 0;
+};
+
+// A NativePanel utility interface used for accessing elements of the
+// native panel used only by test automation.
+class NativePanelTesting {
+ public:
+
+ protected:
+  virtual ~NativePanelTesting() {}
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

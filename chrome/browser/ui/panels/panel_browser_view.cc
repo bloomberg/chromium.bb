@@ -249,6 +249,10 @@ void PanelBrowserView::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
+NativePanelTesting* PanelBrowserView::GetNativePanelTesting() {
+  return this;
+}
+
 PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }

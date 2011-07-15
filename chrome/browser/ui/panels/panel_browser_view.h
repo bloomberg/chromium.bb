@@ -22,6 +22,7 @@ class SlideAnimation;
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
                          public NativePanel,
+                         public NativePanelTesting,
                          public ui::AnimationDelegate {
  public:
   PanelBrowserView(Browser* browser, Panel* panel, const gfx::Rect& bounds);
@@ -85,6 +86,7 @@ class PanelBrowserView : public BrowserView,
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void FlashPanelFrame() OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

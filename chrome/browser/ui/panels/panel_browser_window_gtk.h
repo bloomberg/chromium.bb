@@ -11,7 +11,8 @@
 class Panel;
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
-                              public NativePanel {
+                              public NativePanel,
+                              public NativePanelTesting {
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
@@ -53,6 +54,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void FlashPanelFrame() OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
  private:
   void SetBoundsImpl();
