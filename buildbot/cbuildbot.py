@@ -201,6 +201,7 @@ def RunBuildStages(bot_id, options, build_config):
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
   bg = bg_stages.BackgroundStages()
+  bg_started = False
 
   try:
     if options.sync:
@@ -234,6 +235,7 @@ def RunBuildStages(bot_id, options, build_config):
 
     if not bg.Empty():
       bg.start()
+      bg_started = True
 
     if options.tests:
       stages.TestStage(bot_id, options, build_config).Run()
@@ -263,9 +265,10 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage.Run()
 
   # Wait for remaining stages to finish. Ignore any errors.
-  while not bg.Empty():
-    bg.WaitForStage()
-  bg.join()
+  if bg_started:
+    while not bg.Empty():
+      bg.WaitForStage()
+    bg.join()
 
   if (options.buildbot and build_config['master'] and build_and_test_success
       and (not completion_stage or
