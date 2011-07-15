@@ -31,12 +31,9 @@ class ExtensionBrowserTest
   // Same as above, but enables the extension in incognito mode first.
   const Extension* LoadExtensionIncognito(const FilePath& path);
 
-  // By default, unpacked extensions have file access: this loads them with
-  // that permission removed.
-  const Extension* LoadExtensionNoFileAccess(const FilePath& path);
-
-  // Same as above, but enables the extension in incognito mode first.
-  const Extension* LoadExtensionIncognitoNoFileAccess(const FilePath& path);
+  const Extension* LoadExtensionWithOptions(const FilePath& path,
+                                            bool incognito_enabled,
+                                            bool fileaccess_enabled);
 
   // Loads extension and imitates that it is a component extension.
   bool LoadExtensionAsComponent(const FilePath& path);
@@ -144,9 +141,6 @@ class ExtensionBrowserTest
                                 InstallUIType ui_type,
                                 int expected_change,
                                 Profile* profile);
-  const Extension* LoadExtensionImpl(const FilePath& path,
-                                     bool incognito_enabled,
-                                     bool fileaccess_enabled);
 
   bool WaitForExtensionHostsToLoad();
 

@@ -59,7 +59,7 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 #endif
 }
 
-const Extension* ExtensionBrowserTest::LoadExtensionImpl(
+const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     const FilePath& path, bool incognito_enabled, bool fileaccess_enabled) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
@@ -91,20 +91,37 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
   // are set up with the defaults.
   service->extension_prefs()->OnExtensionInstalled(
       extension, Extension::ENABLED, false);
-  service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
 
-  ui_test_utils::WindowedNotificationObserver extension_loaded_signal(
-      chrome::NOTIFICATION_EXTENSION_LOADED,
-      Source<Profile>(browser()->profile()));
-  service->SetAllowFileAccess(extension, fileaccess_enabled);
+  // Toggling incognito or file access will reload the extension, so wait for
+  // the reload and grab the new extension instance. The default state is
+  // incognito disabled and file access enabled, so we don't wait in those
+  // cases.
+  {
+    ui_test_utils::WindowedNotificationObserver load_signal(
+        chrome::NOTIFICATION_EXTENSION_LOADED,
+        Source<Profile>(browser()->profile()));
+    CHECK(!service->IsIncognitoEnabled(extension_id));
 
-  // Disabling file access (it's enabled by default for unpacked extensions)
-  // ends up reloading the extension, so we need to wait for that and make sure
-  // that we have the most up to date extension instance.
-  if (!fileaccess_enabled) {
-    extension_loaded_signal.Wait();
-    extension = service->GetExtensionById(extension_id, false);
-    CHECK(extension) << extension_id << " not found after reloading.";
+    if (incognito_enabled) {
+      service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
+      load_signal.Wait();
+      extension = service->GetExtensionById(extension_id, false);
+      CHECK(extension) << extension_id << " not found after reloading.";
+    }
+  }
+
+  {
+    ui_test_utils::WindowedNotificationObserver load_signal(
+        chrome::NOTIFICATION_EXTENSION_LOADED,
+        Source<Profile>(browser()->profile()));
+    CHECK(service->AllowFileAccess(extension));
+
+    if (!fileaccess_enabled) {
+      service->SetAllowFileAccess(extension, fileaccess_enabled);
+      load_signal.Wait();
+      extension = service->GetExtensionById(extension_id, false);
+      CHECK(extension) << extension_id << " not found after reloading.";
+    }
   }
 
   if (!WaitForExtensionHostsToLoad())
@@ -114,22 +131,12 @@ const Extension* ExtensionBrowserTest::LoadExtensionImpl(
 }
 
 const Extension* ExtensionBrowserTest::LoadExtension(const FilePath& path) {
-  return LoadExtensionImpl(path, false, true);
+  return LoadExtensionWithOptions(path, false, true);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
     const FilePath& path) {
-  return LoadExtensionImpl(path, true, true);
-}
-
-const Extension* ExtensionBrowserTest::LoadExtensionNoFileAccess(
-    const FilePath& path) {
-  return LoadExtensionImpl(path, false, false);
-}
-
-const Extension* ExtensionBrowserTest::LoadExtensionIncognitoNoFileAccess(
-    const FilePath& path) {
-  return LoadExtensionImpl(path, true, false);
+  return LoadExtensionWithOptions(path, true, true);
 }
 
 bool ExtensionBrowserTest::LoadExtensionAsComponent(const FilePath& path) {

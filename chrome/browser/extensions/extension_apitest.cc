@@ -152,20 +152,12 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 
   if (!std::string(extension_name).empty()) {
     bool loaded = false;
+    FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
     if (load_as_component) {
-      loaded =
-          LoadExtensionAsComponent(test_data_dir_.AppendASCII(extension_name));
+      loaded = LoadExtensionAsComponent(extension_path);
     } else {
-      if (enable_incognito) {
-        loaded = enable_fileaccess ?
-          LoadExtensionIncognito(test_data_dir_.AppendASCII(extension_name)) :
-          LoadExtensionIncognitoNoFileAccess(
-              test_data_dir_.AppendASCII(extension_name));
-      } else {
-        loaded = enable_fileaccess ?
-          LoadExtension(test_data_dir_.AppendASCII(extension_name)) :
-          LoadExtensionNoFileAccess(test_data_dir_.AppendASCII(extension_name));
-      }
+      loaded = LoadExtensionWithOptions(extension_path,
+                                        enable_incognito, enable_fileaccess);
     }
     if (!loaded) {
       message_ = "Failed to load extension.";
