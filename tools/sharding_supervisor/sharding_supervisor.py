@@ -14,6 +14,7 @@ is started for that shard and the output is identical to gtest's output.
 """
 
 
+from collections import deque
 import optparse
 import os
 import pty
@@ -21,12 +22,13 @@ import Queue
 import subprocess
 import sys
 import threading
+import time
 
 
-USAGE = "Usage: python %prog [options] path/to/test [gtest_args]"
-DEFAULT_NUM_CORES = 4
-DEFAULT_SHARDS_PER_CORE = 5 # num_shards = cores * SHARDS_PER_CORE
-DEFAULT_RUNS_PER_CORE = 1 # num_workers = cores * RUNS_PER_CORE
+SS_USAGE = "Usage: python %prog [options] path/to/test [gtest_args]"
+SS_DEFAULT_NUM_CORES = 4
+SS_DEFAULT_SHARDS_PER_CORE = 5 # num_shards = cores * SHARDS_PER_CORE
+SS_DEFAULT_RUNS_PER_CORE = 1 # num_workers = cores * RUNS_PER_CORE
 
 
 def DetectNumCores():
@@ -48,7 +50,7 @@ def DetectNumCores():
     # Windows
     return int(os.environ["NUMBER_OF_PROCESSORS"])
   except ValueError:
-    return DEFAULT_NUM_CORES
+    return SS_DEFAULT_NUM_CORES
 
 
 def RunShard(test, num_shards, index, gtest_args, stdout, stderr):
@@ -74,11 +76,12 @@ class ShardRunner(threading.Thread):
     counter: Called to get the next shard index to run.
   """
 
-  def __init__(self, supervisor, counter):
+  def __init__(self, supervisor, counter, redirect_output):
     """Inits ShardRunner with a supervisor and counter."""
     threading.Thread.__init__(self)
     self.supervisor = supervisor
     self.counter = counter
+    self.redirect_output = redirect_output
 
   def run(self):
     """Runs shards and outputs the results.
@@ -105,7 +108,12 @@ class ShardRunner(threading.Thread):
         if (line.find("FAIL", 0, 20) >= 0 and line.find(".") >= 0 and
             line.find("ms)")) < 0:
           self.supervisor.LogLineFailure(line)
-        sys.stdout.write(line)
+        if self.redirect_output:
+          self.supervisor.LogOutputLine(index, line)
+        else:
+          sys.stdout.write(line)
+      if self.redirect_output:
+        self.supervisor.ShardIndexCompleted(index)
       if shard.returncode != 0:
         self.supervisor.LogShardFailure(index)
 
@@ -124,15 +132,21 @@ class ShardingSupervisor(object):
   """
 
   def __init__(
-      self, test, num_shards, num_runs, color, gtest_args):
+      self, test, num_shards, num_runs, color, reorder, gtest_args):
     """Inits ShardingSupervisor with given options and gtest arguments."""
     self.test = test
     self.num_shards = num_shards
     self.num_runs = num_runs
     self.color = color
+    self.reorder = reorder
     self.gtest_args = gtest_args
     self.failure_log = []
     self.failed_shards = []
+    if reorder:
+      self.shard_output = {}
+      self.shards_completed = {}
+      for i in range(num_shards):
+        self.shard_output[i] = deque()
 
   def ShardTest(self):
     """Runs the test and manages the worker threads.
@@ -150,11 +164,14 @@ class ShardingSupervisor(object):
     for i in range(self.num_shards):
       counter.put(i)
     for i in range(self.num_runs):
-      worker = ShardRunner(self, counter)
+      worker = ShardRunner(self, counter, self.reorder)
       worker.start()
       workers.append(worker)
-    for worker in workers:
-      worker.join()
+    if self.reorder:
+      self.WaitForShards()
+    else:
+      for worker in workers:
+        worker.join()
     return self.PrintSummary()
 
   def LogLineFailure(self, line):
@@ -172,6 +189,22 @@ class ShardingSupervisor(object):
       index: The index of the failing shard.
     """
     self.failed_shards.append(index)
+
+  def WaitForShards(self):
+    shard_index = 0
+    while shard_index < self.num_shards:
+      current_shard_output = self.shard_output.get(shard_index)
+      if self.shards_completed.get(shard_index):
+        shard_index += 1
+      while current_shard_output:
+        sys.stdout.write(current_shard_output.popleft())
+      time.sleep(1)
+
+  def LogOutputLine(self, index, line):
+    self.shard_output.get(index).append(line)
+
+  def ShardIndexCompleted(self, index):
+    self.shards_completed[index] = True
 
   def PrintSummary(self):
     """Prints a summary of the test results.
@@ -207,12 +240,12 @@ class ShardingSupervisor(object):
 
 
 def main():
-  parser = optparse.OptionParser(usage=USAGE)
+  parser = optparse.OptionParser(usage=SS_USAGE)
   parser.add_option(
-      "-n", "--shards_per_core", type="int", default=DEFAULT_SHARDS_PER_CORE,
+      "-n", "--shards_per_core", type="int", default=SS_DEFAULT_SHARDS_PER_CORE,
       help="number of shards to generate per CPU")
   parser.add_option(
-      "-r", "--runs_per_core", type="int", default=DEFAULT_RUNS_PER_CORE,
+      "-r", "--runs_per_core", type="int", default=SS_DEFAULT_RUNS_PER_CORE,
       help="number of shards to run in parallel per CPU")
   parser.add_option(
       "-c", "--color", action="store_true", default=sys.stdout.isatty(),
@@ -223,6 +256,10 @@ def main():
       help="disable color output")
   parser.add_option(
       "-s", "--runshard", type="int", help="single shard index to run")
+  parser.add_option(
+      "--reorder", action="store_true",
+      help="ensure that all output from an earlier shard is printed before"
+      " output from a later shard")
   parser.disable_interspersed_args()
   (options, args) = parser.parse_args()
 
@@ -254,8 +291,8 @@ def main():
     return shard.poll()
 
   # shard and run the whole test
-  ss = ShardingSupervisor(
-      args[0], num_shards, num_runs, options.color, gtest_args)
+  ss = ShardingSupervisor(args[0], num_shards, num_runs, options.color,
+                          options.reorder, gtest_args)
   return ss.ShardTest()
 
 
