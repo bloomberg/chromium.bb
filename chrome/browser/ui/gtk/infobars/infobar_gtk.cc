@@ -188,6 +188,10 @@ void InfoBarGtk::UpdateBorderColor() {
 }
 
 void InfoBarGtk::OnCloseButton(GtkWidget* button) {
+  // If we're not owned, we're already closing, so don't call
+  // InfoBarDismissed(), since this can lead to us double-recording dismissals.
+  if (delegate() && owned())
+    delegate()->InfoBarDismissed();
   RemoveInfoBar();
 }
 

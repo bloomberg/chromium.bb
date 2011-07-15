@@ -80,8 +80,8 @@ class InfoBar : public ui::AnimationDelegate {
   // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-  // Called when the user closes the infobar, notifies the delegate we've been
-  // dismissed and forwards a removal request to our owner.
+  // Called when the user closes the infobar, forwards a removal request to our
+  // owner.
   void RemoveInfoBar();
 
   // Changes the target height of the main ("bar") portion of the infobar.
@@ -92,6 +92,7 @@ class InfoBar : public ui::AnimationDelegate {
   // out) as we animate open and closed.
   int OffsetY(const gfx::Size& prefsize) const;
 
+  bool owned() const { return !!owner_; }
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
   ui::SlideAnimation* animation() { return &animation_; }

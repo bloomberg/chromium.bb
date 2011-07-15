@@ -101,15 +101,10 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void InfoBar::RemoveInfoBar() {
-  // If the user clicks the close button when the infobar is already closing
-  // (e.g. because this is the second click of a double-click on the button),
-  // |owner_| can be NULL here, in which case we don't want to call
-  // InfoBarDismissed() either (since this can lead to us double-recording
-  // dismissals).
-  if (!delegate_ || !owner_)
-    return;
-  delegate_->InfoBarDismissed();
-  owner_->RemoveInfoBar(delegate_);
+  // |owner_| can be NULL here, e.g. because the user clicks the close button
+  // when the infobar is already closing.
+  if (delegate_ && owner_)
+    owner_->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {

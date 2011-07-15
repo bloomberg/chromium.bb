@@ -255,8 +255,14 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  if (sender == close_button_)
+  if (sender == close_button_) {
+    // If we're not owned, we're already closing, so don't call
+    // InfoBarDismissed(), since this can lead to us double-recording
+    // dismissals.
+    if (delegate() && owned())
+      delegate()->InfoBarDismissed();
     RemoveInfoBar();
+  }
 }
 
 int InfoBarView::ContentMinimumWidth() const {
