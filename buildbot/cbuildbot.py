@@ -195,7 +195,8 @@ def RunBuildStages(bot_id, options, build_config):
 
   if _IsIncrementalBuild(options.buildroot, options.clobber):
     _CheckBuildRootBranch(options.buildroot, tracking_branch)
-    commands.PreFlightRinse(options.buildroot)
+    if options.clean:
+      commands.PreFlightRinse(options.buildroot)
 
   build_success = False
   build_and_test_success = False
@@ -517,6 +518,9 @@ def _CreateParser():
   group.add_option('--nobuild', action='store_false', dest='build',
                     default=True,
                     help="Don't actually build (for cbuildbot dev")
+  group.add_option('--noclean', action='store_false', dest='clean',
+                    default=True,
+                    help="Don't clean the buildroot")
   group.add_option('--noprebuilts', action='store_false', dest='prebuilts',
                     default=True,
                     help="Don't upload prebuilts.")
