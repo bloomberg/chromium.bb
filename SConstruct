@@ -2136,6 +2136,8 @@ def MakeUnixLikeEnv():
       '-Wswitch-enum',
       '-Wsign-compare',
       '-fvisibility=hidden',
+      '-fstack-protector',
+      '--param', 'ssp-buffer-size=4',
     ] + werror_flags,
     CXXFLAGS=['-std=c++98'],
     LIBPATH=['/usr/lib'],
@@ -2242,15 +2244,18 @@ def MakeLinuxEnv():
 
   if linux_env.Bit('build_x86_32'):
     linux_env.Prepend(
+        CPPDEFINES = [['-D_FORTIFY_SOURCE', '2']],
         ASFLAGS = ['-m32', ],
         CCFLAGS = ['-m32', ],
-        LINKFLAGS = ['-m32', '-L/usr/lib32'],
+        LINKFLAGS = ['-m32', '-L/usr/lib32', '-Wl,-z,relro', '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_x86_64'):
     linux_env.Prepend(
+        CPPDEFINES = [['-D_FORTIFY_SOURCE', '2']],
         ASFLAGS = ['-m64', ],
-        CCFLAGS = ['-m64', ],
-        LINKFLAGS = ['-m64', '-L/usr/lib64'],
+        CCFLAGS = ['-m64', '-fPIE', ],
+        LINKFLAGS = ['-m64', '-L/usr/lib64', '-pie', '-Wl,-z,relro',
+                     '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_arm'):
     linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
