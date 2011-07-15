@@ -35,7 +35,7 @@ NSString* gDescription = nil;
 
 // If this string is changed, the setter (currently setFadeOutValue:) must
 // be changed as well to match.
-NSString const* kFadeOutValueKeyPath = @"fadeOutValue";
+NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }  // namespace
 
 @interface HoverCloseButton ()
