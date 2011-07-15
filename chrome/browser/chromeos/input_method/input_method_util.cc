@@ -38,14 +38,11 @@ typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 // Map from input method ID to associated input method descriptor.
 typedef std::map<std::string, InputMethodDescriptor>
     InputMethodIdToDescriptorMap;
-// Map from layout name to associated overlay ID
-typedef std::map<std::string, std::string> InputMethodNameToOverlayIdMap;
 
 struct IdMaps {
   scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
   scoped_ptr<InputMethodIdToDescriptorMap> id_to_descriptor;
-  scoped_ptr<std::map<std::string, std::string> > name_to_overlay_id;
 
   // Returns the singleton instance.
   static IdMaps* GetInstance() {
@@ -64,7 +61,6 @@ struct IdMaps {
     language_code_to_ids->clear();
     id_to_language_code->clear();
     id_to_descriptor->clear();
-    name_to_overlay_id->clear();
 
     for (size_t i = 0; i < supported_input_methods->size(); ++i) {
       const InputMethodDescriptor& input_method =
@@ -99,8 +95,7 @@ struct IdMaps {
  private:
   IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
              id_to_language_code(new std::map<std::string, std::string>),
-             id_to_descriptor(new InputMethodIdToDescriptorMap),
-             name_to_overlay_id(new std::map<std::string, std::string>) {
+             id_to_descriptor(new InputMethodIdToDescriptorMap) {
     ReloadMaps();
   }
 
@@ -495,24 +490,6 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
       "" : iter->second.keyboard_layout();
-}
-
-std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    if (kIBusEngines[i].input_method_id == input_method_id) {
-      return kIBusEngines[i].keyboard_overlay_id;
-    }
-  }
-  return "";
-}
-
-std::string GetKeyboardOverlayIdFromXkb(const std::string& xkb_layout_id) {
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    if (kIBusEngines[i].xkb_layout_id == xkb_layout_id) {
-      return kIBusEngines[i].keyboard_overlay_id;
-    }
-  }
-  return "";
 }
 
 std::string GetInputMethodDisplayNameFromId(

@@ -91,6 +91,77 @@ LABEL_MAP = {
   'glyph_volume_up': 'vol. up',
 };
 
+INPUT_METHOD_ID_TO_OVERLAY_ID = {
+  'hangul': 'ko',
+  'm17n:ar:kbd': 'ar',
+  'm17n:fa:isiri': 'ar',
+  'm17n:hi:itrans': 'hi',
+  'm17n:th:kesmanee': 'th',
+  'm17n:th:pattachote': 'th',
+  'm17n:th:tis820': 'th',
+  'm17n:vi:tcvn': 'vi',
+  'm17n:vi:telex': 'vi',
+  'm17n:vi:viqr': 'vi',
+  'm17n:vi:vni': 'vi',
+  'm17n:zh:cangjie': 'zh_TW',
+  'm17n:zh:quick': 'zh_TW',
+  'mozc': 'en_US',
+  'mozc-chewing': 'zh_TW',
+  'mozc-dv': 'en_US_dvorak',
+  'mozc-jp': 'ja',
+  'pinyin': 'zh_CN',
+  'pinyin-dv': 'en_US_dvorak',
+  'xkb:be::fra': 'fr',
+  'xkb:be::ger': 'de',
+  'xkb:be::nld': 'nl',
+  'xkb:bg::bul': 'bg',
+  'xkb:bg:phonetic:bul': 'bg',
+  'xkb:br::por': 'pt_BR',
+  'xkb:ca::fra': 'fr_CA',
+  'xkb:ca:eng:eng': 'ca',
+  'xkb:ch::ger': 'de',
+  'xkb:ch:fr:fra': 'fr',
+  'xkb:cz::cze': 'cs',
+  'xkb:de::ger': 'de',
+  'xkb:de:neo:ger': 'de_neo',
+  'xkb:dk::dan': 'da',
+  'xkb:ee::est': 'et',
+  'xkb:es::spa': 'es',
+  'xkb:es:cat:cat': 'ca',
+  'xkb:fi::fin': 'fi',
+  'xkb:fr::fra': 'fr',
+  'xkb:gb:dvorak:eng': 'en_GB_dvorak',
+  'xkb:gb:extd:eng': 'en_GB',
+  'xkb:gr::gre': 'el',
+  'xkb:hr::scr': 'hr',
+  'xkb:hu::hun': 'hu',
+  'xkb:il::heb': 'iw',
+  'xkb:it::ita': 'it',
+  'xkb:jp::jpn': 'ja',
+  'xkb:kr:kr104:kor': 'ko',
+  'xkb:latam::spa': 'es_419',
+  'xkb:lt::lit': 'lt',
+  'xkb:lv:apostrophe:lav': 'lv',
+  'xkb:no::nob': 'no',
+  'xkb:pl::pol': 'pl',
+  'xkb:pt::por': 'pt_PT',
+  'xkb:ro::rum': 'ro',
+  'xkb:rs::srp': 'sr',
+  'xkb:ru::rus': 'ru',
+  'xkb:ru:phonetic:rus': 'ru',
+  'xkb:se::swe': 'sv',
+  'xkb:si::slv': 'sl',
+  'xkb:sk::slo': 'sk',
+  'xkb:tr::tur': 'tr',
+  'xkb:ua::ukr': 'uk',
+  'xkb:us::eng': 'en_US',
+  'xkb:us:altgr-intl:eng': 'en_US_altgr_intl',
+  'xkb:us:colemak:eng': 'en_US_colemak',
+  'xkb:us:dvorak:eng': 'en_US_dvorak',
+  'xkb:us:intl:eng': 'en_US_intl',
+  'zinnia-japanese': 'ja',
+}
+
 COPYRIGHT_HEADER_TEMPLATE=(
 """// Copyright (c) %s The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -107,9 +178,9 @@ GRD_SNIPPET_TEMPLATE="""      <message name="%s" desc="%s">
 CC_SNIPPET_TEMPLATE="""  { "%s", %s },
 """
 
-ALTGR_TEMPLATE="""// These are the overlay names of layouts that shouldn't
-// remap the right alt key.
-const char* kKeepRightAltOverlays[] = {
+ALTGR_TEMPLATE=(
+"""// These are the input method IDs that shouldn't remap the right alt key.
+const char* kKeepRightAltInputMethods[] = {
 %s
 };
 
@@ -119,7 +190,7 @@ const char* kCapsLockRemapped[] = {
 };
 
 
-"""
+""")
 
 def SplitBehavior(behavior):
   """Splits the behavior to compose a message or i18n-content value.
@@ -272,17 +343,11 @@ def FetchSpreadsheetFeeds(client, key, sheets, cols):
 
 def FetchKeyboardGlyphData(client):
   """Fetches the keyboard glyph data from the spreadsheet."""
-  languages = ['en_US', 'en_US_colemak', 'en_US_dvorak', 'en_US_intl',
-               'en_US_altgr_intl', 'ar', 'ar_fr', 'bg', 'ca', 'cs', 'da',
-               'de', 'de_neo', 'el', 'en_fr_hybrid_CA', 'en_GB', 'en_GB_dvorak',
-               'es', 'es_419', 'et', 'fi', 'fil', 'fr', 'fr_CA', 'hi',
-               'hr', 'hu', 'id', 'it', 'iw', 'ja', 'ko', 'lt', 'lv', 'nl', 'no',
-               'pl', 'pt_BR', 'pt_PT', 'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th',
-               'tr', 'uk', 'vi', 'zh_CN', 'zh_TW']
   glyph_cols = ['scancode', 'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7',
                 'p8', 'p9', 'label', 'format', 'notes']
   keyboard_glyph_data = FetchSpreadsheetFeeds(
-      client, KEYBOARD_GLYPH_SPREADSHEET_KEY, languages, glyph_cols)
+      client, KEYBOARD_GLYPH_SPREADSHEET_KEY,
+      INPUT_METHOD_ID_TO_OVERLAY_ID.values(), glyph_cols)
   ret = {}
   for lang in keyboard_glyph_data:
     ret[lang] = {}
@@ -374,7 +439,8 @@ def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outdir):
     action_to_id[action] = i18nContent
   data = {'keyboardGlyph': keyboard_glyph_data,
           'shortcut': action_to_id,
-          'layouts': layouts}
+          'layouts': layouts,
+          'inputMethodIdToOverlayId': INPUT_METHOD_ID_TO_OVERLAY_ID}
   if outdir:
     outpath = os.path.join(outdir, JS_FILENAME)
   else:
@@ -441,21 +507,21 @@ def OutputAltGr(keyboard_glyph_data, outdir):
   altgr_output = []
   caps_lock_output = []
 
-  for layout in keyboard_glyph_data.keys():
+  for input_method_id, layout in INPUT_METHOD_ID_TO_OVERLAY_ID.iteritems():
     try:
       # If left and right alt have different values, this layout to the list of
       # layouts that don't remap the right alt key.
       right_alt = keyboard_glyph_data[layout]["keys"]["E0 38"]["label"].strip()
       left_alt = keyboard_glyph_data[layout]["keys"]["38"]["label"].strip()
       if right_alt.lower() != left_alt.lower():
-        altgr_output.append('  "%s",' % layout)
+        altgr_output.append('  "%s",' % input_method_id)
     except KeyError:
       pass
 
     try:
       caps_lock = keyboard_glyph_data[layout]["keys"]["E0 5B"]["label"].strip()
       if caps_lock.lower() != "search":
-        caps_lock_output.append('  "%s",' % layout)
+        caps_lock_output.append('  "%s",' % input_method_id)
     except KeyError:
       pass
   snippet = ALTGR_TEMPLATE % ("\n".join(altgr_output),

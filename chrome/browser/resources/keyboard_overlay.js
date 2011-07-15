@@ -433,19 +433,24 @@ function initIdentifierMap(remap) {
       console.error('Invalid label map element: ' + key + ', ' + val);
     }
   }
-  chrome.send('getKeyboardOverlayId');
+  chrome.send('getInputMethodId');
 }
 
 /**
  * Initializes the global keyboad overlay ID and the layout of keys.
- * Called after sending the 'getKeyboardOverlayId' message.
+ * Called after sending the 'getInputMethodId' message.
  */
-function initKeyboardOverlayId(overlayId) {
+function initKeyboardOverlayId(inputMethodId) {
   // Libcros returns an empty string when it cannot find the keyboard overlay ID
   // corresponding to the current input method.
   // In such a case, fallback to the default ID (en_US).
-  if (overlayId) {
-    keyboardOverlayId = overlayId;
+  var inputMethodIdToOverlayId = keyboardOverlayData['inputMethodIdToOverlayId']
+  if (inputMethodId) {
+    keyboardOverlayId = inputMethodIdToOverlayId[inputMethodId];
+  }
+  if (!keyboardOverlayId) {
+    console.error('No keyboard overlay ID for ' + inputMethodId);
+    keyboardOverlayId = 'en_US';
   }
   while(document.body.firstChild) {
     document.body.removeChild(document.body.firstChild);

@@ -28,119 +28,127 @@
 #
 # 1) The input method ID used by IBus. (ex. "xkb:ca::fra")
 # 2) The keyboard layout ID used by XKB. (ex. "ca", "handwriting-vk,jp")
-# 3) The keyboard overlay ID. (ex. "fra_CA") *1
-# 4) The language code (ex. "fra")
-# 5) [optional] The #if condition for the input method.
+# 3) The language code (ex. "fra")
+# 4) [optional] The #if condition for the input method.
 #    (ex. "defined(A)", "!defined(A)||defined(B)")
 #
 # Notes:
-# *1 For some complicated reason, we use different IDs for 2) and 3). Ask
-#    mazda for why.
+#   When adding a line to this list, please also add a mapping from the input
+#   method ID to the keyboard overlay ID to INPUT_METHOD_ID_TO_OVERLAY_ID in
+#
+#    * tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
+#
+#   and update the following files by running this script.
+#
+#    * chrome/app/generated_resources.grd
+#    * chrome/browser/chromeos/input_method/xkeyboard.cc
+#    * chrome/browser/resources/keyboard_overlay_data.js
+#    * chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.cc
 
 # U.S. English
-xkb:us::eng	us	en_US	eng
-xkb:us:intl:eng	us(intl)	en_US_intl	eng
-xkb:us:altgr-intl:eng	us(altgr-intl)	en_US_altgr_intl	eng
-xkb:us:dvorak:eng	us(dvorak)	en_US_dvorak	eng
-xkb:us:colemak:eng	us(colemak)	en_US_colemak	eng
+xkb:us::eng	us	eng
+xkb:us:intl:eng	us(intl)	eng
+xkb:us:altgr-intl:eng	us(altgr-intl)	eng
+xkb:us:dvorak:eng	us(dvorak)	eng
+xkb:us:colemak:eng	us(colemak)	eng
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nl	nld
+xkb:be::nld	be	nld
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
-xkb:fr::fra	fr	fr	fra
-xkb:be::fra	be	fr	fra
-xkb:ca::fra	ca	fr_CA	fra
-xkb:ch:fr:fra	ch(fr)	fr	fra
+xkb:fr::fra	fr	fra
+xkb:be::fra	be	fra
+xkb:ca::fra	ca	fra
+xkb:ch:fr:fra	ch(fr)	fra
 
 # German
-xkb:de::ger	de	de	ger
-xkb:de:neo:ger	de(neo)	de_neo	ger
-xkb:be::ger	be	de	ger
-xkb:ch::ger	ch	de	ger
+xkb:de::ger	de	ger
+xkb:de:neo:ger	de(neo)	ger
+xkb:be::ger	be	ger
+xkb:ch::ger	ch	ger
 
 # Japanese
-mozc	us	en_US	ja
-mozc-jp	jp	ja	ja
-mozc-dv	us(dvorak)	en_US_dvorak	ja
-xkb:jp::jpn	jp	ja	jpn
-zinnia-japanese	handwriting-vk,jp	ja	ja	defined(TOUCH_UI)
+mozc	us	ja
+mozc-jp	jp	ja
+mozc-dv	us(dvorak)	ja
+xkb:jp::jpn	jp	jpn
+zinnia-japanese	handwriting-vk,jp	ja	defined(TOUCH_UI)
 
 # Russian
-xkb:ru::rus	ru	ru	rus
-xkb:ru:phonetic:rus	ru(phonetic)	ru	rus
+xkb:ru::rus	ru	rus
+xkb:ru:phonetic:rus	ru(phonetic)	rus
 
 # Thai
-m17n:th:kesmanee	us	th	th
-m17n:th:pattachote	us	th	th
-m17n:th:tis820	us	th	th
+m17n:th:kesmanee	us	th
+m17n:th:pattachote	us	th
+m17n:th:tis820	us	th
 
 # Simplified Chinese
-pinyin	us	zh_CN	zh-CN
-pinyin-dv	us(dvorak)	en_US_dvorak	zh-CN
+pinyin	us	zh-CN
+pinyin-dv	us(dvorak)	zh-CN
 # TODO(yusukes): Define zh_CN_dvorak if it's *really* necessary.
 
 # Traditional Chinese
-mozc-chewing	us	zh_TW	zh_TW
-m17n:zh:cangjie	us	zh_TW	zh
-m17n:zh:quick	us	zh_TW	zh
+mozc-chewing	us	zh_TW
+m17n:zh:cangjie	us	zh
+m17n:zh:quick	us	zh
 # TODO(suzhe): Add CantonHK and Stroke5 if (it's really) necessary.
 
 # Vietnamese
-m17n:vi:tcvn	us	vi	vi
-m17n:vi:telex	us	vi	vi
-m17n:vi:viqr	us	vi	vi
-m17n:vi:vni	us	vi	vi
+m17n:vi:tcvn	us	vi
+m17n:vi:telex	us	vi
+m17n:vi:viqr	us	vi
+m17n:vi:vni	us	vi
 # Note: Since ibus-m17n does not support "get-surrounding-text" feature yet,
 # Vietnames input methods, except 4 input methods above, in m17n-db should
 # not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
 # feature.
 
 # Other languages
-hangul	kr(kr104)	ko	ko
+hangul	kr(kr104)	ko
 
 # ibus-m17n input methods.
-m17n:ar:kbd	us	ar	ar
-m17n:hi:itrans	us	hi	hi
+m17n:ar:kbd	us	ar
+m17n:hi:itrans	us	hi
 # Note: the m17n-contrib package has some more Hindi definitions.
-m17n:fa:isiri	us	ar	fa
+m17n:fa:isiri	us	fa
 # TODO(yusukes,jshin): Check if we can use ibux-xkb-layouts for these languages.
 
 # ibux-xkb-layouts input methods (keyboard layouts).
-xkb:br::por	br	pt_BR	por
-xkb:bg::bul	bg	bg	bul
-xkb:bg:phonetic:bul	bg(phonetic)	bg	bul
-xkb:ca:eng:eng	ca(eng)	ca	eng
-xkb:cz::cze	cz	cs	cze
-xkb:ee::est	ee	et	est
-xkb:es::spa	es	es	spa
-xkb:es:cat:cat	es(cat)	ca	cat
-xkb:dk::dan	dk	da	dan
-xkb:gr::gre	gr	el	gre
-xkb:il::heb	il	iw	heb
-xkb:kr:kr104:kor	kr(kr104)	ko	kor
-xkb:latam::spa	latam	es_419	spa
-xkb:lt::lit	lt	lt	lit
-xkb:lv:apostrophe:lav	lv(apostrophe)	lv	lav
-xkb:hr::scr	hr	hr	scr
-xkb:gb:extd:eng	gb(extd)	en_GB	eng
-xkb:gb:dvorak:eng	gb(dvorak)	en_GB_dvorak	eng
-xkb:fi::fin	fi	fi	fin
-xkb:hu::hun	hu	hu	hun
-xkb:it::ita	it	it	ita
-xkb:no::nob	no	no	nob
-xkb:pl::pol	pl	pl	pol
-xkb:pt::por	pt	pt_PT	por
-xkb:ro::rum	ro	ro	rum
-xkb:se::swe	se	sv	swe
-xkb:sk::slo	sk	sk	slo
-xkb:si::slv	si	sl	slv
-xkb:rs::srp	rs	sr	srp
-xkb:tr::tur	tr	tr	tur
-xkb:ua::ukr	ua	uk	ukr
+xkb:br::por	br	por
+xkb:bg::bul	bg	bul
+xkb:bg:phonetic:bul	bg(phonetic)	bul
+xkb:ca:eng:eng	ca(eng)	eng
+xkb:cz::cze	cz	cze
+xkb:ee::est	ee	est
+xkb:es::spa	es	spa
+xkb:es:cat:cat	es(cat)	cat
+xkb:dk::dan	dk	dan
+xkb:gr::gre	gr	gre
+xkb:il::heb	il	heb
+xkb:kr:kr104:kor	kr(kr104)	kor
+xkb:latam::spa	latam	spa
+xkb:lt::lit	lt	lit
+xkb:lv:apostrophe:lav	lv(apostrophe)	lav
+xkb:hr::scr	hr	scr
+xkb:gb:extd:eng	gb(extd)	eng
+xkb:gb:dvorak:eng	gb(dvorak)	eng
+xkb:fi::fin	fi	fin
+xkb:hu::hun	hu	hun
+xkb:it::ita	it	ita
+xkb:no::nob	no	nob
+xkb:pl::pol	pl	pol
+xkb:pt::por	pt	por
+xkb:ro::rum	ro	rum
+xkb:se::swe	se	swe
+xkb:sk::slo	sk	slo
+xkb:si::slv	si	slv
+xkb:rs::srp	rs	srp
+xkb:tr::tur	tr	tur
+xkb:ua::ukr	ua	ukr
 
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.
