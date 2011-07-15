@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -19,46 +20,9 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
 
-namespace {
-
-// We pin the first context that the Compositor class creates with ref counting.
-// This hosts the shaders that are shared between all Compositor contexts.
-scoped_refptr<gfx::GLContext> g_share_context;
-
-GLuint CompileShader(GLenum type, const GLchar* source) {
-  GLuint shader = glCreateShader(type);
-  if (!shader)
-    return 0;
-
-  glShaderSource(shader, 1, &source, 0);
-  glCompileShader(shader);
-
-  GLint compiled;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-  if (!compiled) {
-    GLint info_len = 0;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
-
-    if (info_len > 0) {
-      scoped_array<char> info_log(new char[info_len]);
-      glGetShaderInfoLog(shader, info_len, NULL, info_log.get());
-      LOG(ERROR) << "Compile error: " <<  info_log.get();
-      return 0;
-    }
-  }
-  return shader;
-}
-
-}  // namespace (anonymous)
-
-
-namespace ui {
-
-TextureProgramGL* CompositorGL::program_swizzle_ = NULL;
-TextureProgramGL* CompositorGL::program_no_swizzle_ = NULL;
-
 // Wraps a simple GL program for drawing textures to the screen.
-class TextureProgramGL {
+// Need the declaration before the subclasses in the anonymous namespace below.
+class ui::TextureProgramGL {
  public:
   TextureProgramGL();
   virtual ~TextureProgramGL() {}
@@ -101,7 +65,9 @@ class TextureProgramGL {
   GLuint u_mat_loc_;
 };
 
-class TextureProgramNoSwizzleGL : public TextureProgramGL {
+namespace {
+
+class TextureProgramNoSwizzleGL : public ui::TextureProgramGL {
  public:
   TextureProgramNoSwizzleGL() {}
   virtual bool Initialize();
@@ -109,13 +75,163 @@ class TextureProgramNoSwizzleGL : public TextureProgramGL {
   DISALLOW_COPY_AND_ASSIGN(TextureProgramNoSwizzleGL);
 };
 
-class TextureProgramSwizzleGL : public TextureProgramGL {
+class TextureProgramSwizzleGL : public ui::TextureProgramGL {
  public:
   TextureProgramSwizzleGL() {}
   virtual bool Initialize();
  private:
   DISALLOW_COPY_AND_ASSIGN(TextureProgramSwizzleGL);
 };
+
+// We share between compositor contexts so that we don't have to compile
+// shaders if they have already been compiled in another context.
+class SharedResources {
+ public:
+  static SharedResources* GetInstance();
+
+  // Creates a context with shaders active.
+  scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);
+  void ContextDestroyed();
+
+  ui::TextureProgramGL* program_no_swizzle() {
+    return program_no_swizzle_.get();
+  }
+
+  ui::TextureProgramGL* program_swizzle() { return program_swizzle_.get(); }
+
+ private:
+  friend struct DefaultSingletonTraits<SharedResources>;
+
+  SharedResources();
+  virtual ~SharedResources();
+
+  scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_ptr<ui::TextureProgramGL> program_swizzle_;
+  scoped_ptr<ui::TextureProgramGL> program_no_swizzle_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedResources);
+};
+
+GLuint CompileShader(GLenum type, const GLchar* source) {
+  GLuint shader = glCreateShader(type);
+  if (!shader)
+    return 0;
+
+  glShaderSource(shader, 1, &source, 0);
+  glCompileShader(shader);
+
+  GLint compiled;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+  if (!compiled) {
+    GLint info_len = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
+
+    if (info_len > 0) {
+      scoped_array<char> info_log(new char[info_len]);
+      glGetShaderInfoLog(shader, info_len, NULL, info_log.get());
+      LOG(ERROR) << "Compile error: " <<  info_log.get();
+      return 0;
+    }
+  }
+  return shader;
+}
+
+bool TextureProgramNoSwizzleGL::Initialize() {
+  const GLchar* frag_shader_source =
+      "#ifdef GL_ES\n"
+      "precision mediump float;\n"
+      "#endif\n"
+      "uniform sampler2D u_tex;"
+      "varying vec2 v_texCoord;"
+      "void main()"
+      "{"
+      "  gl_FragColor = texture2D(u_tex, v_texCoord);"
+      "}";
+
+  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  if (!frag_shader_)
+    return false;
+
+  return InitializeCommon();
+}
+
+bool TextureProgramSwizzleGL::Initialize() {
+  const GLchar* frag_shader_source =
+      "#ifdef GL_ES\n"
+      "precision mediump float;\n"
+      "#endif\n"
+      "uniform sampler2D u_tex;"
+      "varying vec2 v_texCoord;"
+      "void main()"
+      "{"
+      "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
+      "}";
+
+  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
+  if (!frag_shader_)
+    return false;
+
+  return InitializeCommon();
+}
+
+SharedResources::SharedResources() {
+}
+
+SharedResources::~SharedResources() {
+}
+
+// static
+SharedResources* SharedResources::GetInstance() {
+  return Singleton<SharedResources>::get();
+}
+
+scoped_refptr<gfx::GLContext> SharedResources::CreateContext(
+    gfx::GLSurface* surface) {
+  if (share_group_.get()) {
+    return gfx::GLContext::CreateGLContext(share_group_.get(), surface);
+  } else {
+    scoped_refptr<gfx::GLContext> context(
+        gfx::GLContext::CreateGLContext(NULL, surface));
+    context->MakeCurrent(surface);
+
+    if (!program_no_swizzle_.get()) {
+      scoped_ptr<ui::TextureProgramGL> temp_program(
+          new TextureProgramNoSwizzleGL());
+      if (!temp_program->Initialize()) {
+        LOG(ERROR) << "Unable to initialize shaders (context = "
+                   << static_cast<void*>(context.get()) << ")";
+        return NULL;
+      }
+      program_no_swizzle_.swap(temp_program);
+    }
+
+    if (!program_swizzle_.get()) {
+      scoped_ptr<ui::TextureProgramGL> temp_program(
+          new TextureProgramSwizzleGL());
+      if (!temp_program->Initialize()) {
+        LOG(ERROR) << "Unable to initialize shaders (context = "
+                   << static_cast<void*>(context.get()) << ")";
+        return NULL;
+      }
+      program_swizzle_.swap(temp_program);
+    }
+
+    share_group_ = context->share_group();
+    return context;
+  }
+}
+
+void SharedResources::ContextDestroyed() {
+  if (share_group_.get() && share_group_->GetHandle() == NULL) {
+    share_group_ = NULL;
+    program_no_swizzle_.reset();
+    program_swizzle_.reset();
+  }
+}
+
+}  // namespace
+
+namespace ui {
 
 TextureProgramGL::TextureProgramGL()
     : program_(0),
@@ -156,44 +272,6 @@ bool TextureProgramGL::InitializeCommon() {
   u_mat_loc_ = glGetUniformLocation(program_, "u_matViewProjection");
 
   return true;
-}
-
-bool TextureProgramNoSwizzleGL::Initialize() {
-  const GLchar* frag_shader_source =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform sampler2D u_tex;"
-      "varying vec2 v_texCoord;"
-      "void main()"
-      "{"
-      "  gl_FragColor = texture2D(u_tex, v_texCoord);"
-      "}";
-
-  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
-  if (!frag_shader_)
-    return false;
-
-  return InitializeCommon();
-}
-
-bool TextureProgramSwizzleGL::Initialize() {
-  const GLchar* frag_shader_source =
-      "#ifdef GL_ES\n"
-      "precision mediump float;\n"
-      "#endif\n"
-      "uniform sampler2D u_tex;"
-      "varying vec2 v_texCoord;"
-      "void main()"
-      "{"
-      "  gl_FragColor = texture2D(u_tex, v_texCoord).zyxw;"
-      "}";
-
-  frag_shader_ = CompileShader(GL_FRAGMENT_SHADER, frag_shader_source);
-  if (!frag_shader_)
-    return false;
-
-  return InitializeCommon();
 }
 
 TextureGL::TextureGL(CompositorGL* compositor) : texture_id_(0),
@@ -303,24 +381,17 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
     : started_(false),
       size_(size) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
-  if (g_share_context.get()) {
-    gl_context_ = gfx::GLContext::CreateGLContext(
-        g_share_context->share_group(), gl_surface_.get());
-  } else {
-    gl_context_ = gfx::GLContext::CreateGLContext(
-        NULL, gl_surface_.get());
-    g_share_context = gl_context_;
-  }
+  gl_context_ = SharedResources::GetInstance()->
+      CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
-  if (!InitShaders())
-    LOG(ERROR) << "Unable to initialize shaders (context = "
-               << static_cast<void*>(gl_context_.get()) << ")";
   glColorMask(true, true, true, true);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 CompositorGL::~CompositorGL() {
+  gl_context_ = NULL;
+  SharedResources::GetInstance()->ContextDestroyed();
 }
 
 void CompositorGL::MakeCurrent() {
@@ -332,11 +403,11 @@ gfx::Size CompositorGL::GetSize() {
 }
 
 TextureProgramGL* CompositorGL::program_no_swizzle() {
-  return program_no_swizzle_;
+  return SharedResources::GetInstance()->program_no_swizzle();
 }
 
 TextureProgramGL* CompositorGL::program_swizzle() {
-  return program_swizzle_;
+  return SharedResources::GetInstance()->program_swizzle();
 }
 
 Texture* CompositorGL::CreateTexture() {
@@ -379,24 +450,6 @@ void CompositorGL::SchedulePaint() {
 
 void CompositorGL::OnWidgetSizeChanged(const gfx::Size& size) {
   size_ = size;
-}
-
-bool CompositorGL::InitShaders() {
-  if (!program_no_swizzle_) {
-    scoped_ptr<TextureProgramGL> temp_program(new TextureProgramNoSwizzleGL());
-    if (!temp_program->Initialize())
-      return false;
-    program_no_swizzle_ = temp_program.release();
-  }
-
-  if (!program_swizzle_) {
-    scoped_ptr<TextureProgramGL> temp_program(new TextureProgramSwizzleGL());
-    if (!temp_program->Initialize())
-      return false;
-    program_swizzle_ = temp_program.release();
-  }
-
-  return true;
 }
 
 // static

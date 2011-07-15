@@ -68,15 +68,9 @@ class CompositorGL : public Compositor {
   virtual void SchedulePaint() OVERRIDE;
   virtual void OnWidgetSizeChanged(const gfx::Size& size) OVERRIDE;
 
-  // Specific to CompositorGL.
-  bool InitShaders();
-
   // The GL context used for compositing.
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_refptr<gfx::GLContext> gl_context_;
-
-  static TextureProgramGL* program_swizzle_;
-  static TextureProgramGL* program_no_swizzle_;
 
   gfx::Size size_;
 
