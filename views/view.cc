@@ -1169,7 +1169,7 @@ void View::PaintComposite() {
 }
 
 void View::SchedulePaintInternal(const gfx::Rect& rect) {
-  if (parent_) {
+  if (parent_ && parent_->IsVisible()) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
     parent_->SchedulePaintInternal(ConvertRectToParent(rect));
