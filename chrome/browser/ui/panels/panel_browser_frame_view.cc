@@ -51,6 +51,10 @@ const int kIconSize = 16;
 // The spacing in pixels between buttons or the button and the adjacent control.
 const int kButtonSpacing = 6;
 
+// Colors used in painting the title bar for drawing attention.
+const SkColor kBackgroundColorForAttention = 0xfffa983a;
+const SkColor kTitleTextColorForAttention = SK_ColorWHITE;
+
 struct ButtonResources {
   SkBitmap* normal_image;
   SkBitmap* mask_image;
@@ -98,6 +102,7 @@ EdgeResources frame_edges;
 EdgeResources client_edges;
 gfx::Font* active_font = NULL;
 gfx::Font* inactive_font = NULL;
+SkBitmap* background_bitmap_for_attention = NULL;
 
 void LoadImageResources() {
   settings_button_resources.SetResources(
@@ -128,6 +133,13 @@ void EnsureResourcesInitialized() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   active_font = new gfx::Font(rb.GetFont(ResourceBundle::BoldFont));
   inactive_font = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
+
+  // Creates a bitmap of the specified color.
+  background_bitmap_for_attention = new SkBitmap();
+  background_bitmap_for_attention->setConfig(
+      SkBitmap::kARGB_8888_Config, 16, 16);
+  background_bitmap_for_attention->allocPixels();
+  background_bitmap_for_attention->eraseColor(kBackgroundColorForAttention);
 
   LoadImageResources();
 }
@@ -316,10 +328,16 @@ void PanelBrowserFrameView::UpdateWindowIcon() {
 }
 
 void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
-  // The font and color need to be updated when the panel becomes active or
-  // inactive.
-  UpdateControlStyles(browser_view_->focused() ?
-                      PAINT_AS_ACTIVE : PAINT_AS_INACTIVE);
+  // The font and color need to be updated depending on the panel's state.
+  PaintState paint_state;
+  if (browser_view_->is_drawing_attention())
+    paint_state = PAINT_FOR_ATTENTION;
+  else if (browser_view_->focused())
+    paint_state = PAINT_AS_ACTIVE;
+  else
+    paint_state = PAINT_AS_INACTIVE;
+
+  UpdateControlStyles(paint_state);
   PaintFrameBorder(canvas);
   PaintClientEdge(canvas);
 }
@@ -531,6 +549,48 @@ int PanelBrowserFrameView::NonClientTopBorderHeight() const {
   return kFrameBorderThickness + kTitleBarHeight + kClientEdgeThickness;
 }
 
+SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE:
+      return GetThemeProvider()->GetColor(
+          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+    case PAINT_AS_ACTIVE:
+      return GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
+    case PAINT_FOR_ATTENTION:
+      return kTitleTextColorForAttention;
+    default:
+      NOTREACHED();
+      return SkColor();
+  }
+}
+
+gfx::Font* PanelBrowserFrameView::GetTitleFont(PaintState paint_state) const {
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE:
+    case PAINT_FOR_ATTENTION:
+      return inactive_font;
+    case PAINT_AS_ACTIVE:
+      return active_font;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
+SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE:
+      return GetThemeProvider()->GetBitmapNamed(IDR_THEME_TAB_BACKGROUND);
+    case PAINT_AS_ACTIVE:
+      return GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
+    case PAINT_FOR_ATTENTION:
+      return background_bitmap_for_attention;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
 void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
   DCHECK(paint_state != NOT_PAINTED);
 
@@ -538,13 +598,9 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
     return;
   paint_state_ = paint_state;
 
-  SkColor title_color = GetThemeProvider()->
-      GetColor(paint_state == PAINT_AS_ACTIVE ?
-          ThemeService::COLOR_TAB_TEXT :
-          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+  SkColor title_color = GetTitleColor(paint_state_);
   title_label_->SetColor(title_color);
-  title_label_->SetFont(
-      paint_state == PAINT_AS_ACTIVE ? *active_font : *inactive_font);
+  title_label_->SetFont(*GetTitleFont(paint_state_));
 
   close_button_->SetBackground(title_color,
                                close_button_resources.normal_image,
@@ -552,9 +608,7 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
 }
 
 void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
-  SkBitmap* theme_frame = GetThemeProvider()->GetBitmapNamed(
-      (paint_state_ == PAINT_AS_ACTIVE) ? IDR_THEME_TOOLBAR
-                                       : IDR_THEME_TAB_BACKGROUND);
+  SkBitmap* theme_frame = GetFrameTheme(paint_state_);
 
   // Draw the theme frame.
   canvas->TileImageInt(*theme_frame, 0, 0, width(), height());

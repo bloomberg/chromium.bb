@@ -359,6 +359,61 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     panel3->Close();
     EXPECT_FALSE(IsMouseWatcherStarted());
   }
+
+  void TestDrawAttention() {
+    PanelBrowserView* browser_view = CreatePanelBrowserView("PanelTest",
+                                                            SHOW_AS_ACTIVE);
+    PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
+    Panel* panel = browser_view->panel_.get();
+    SkColor attention_color = frame_view->GetTitleColor(
+        PanelBrowserFrameView::PAINT_FOR_ATTENTION);
+
+    // Test that the attention should not be drawn if the expanded panel is in
+    // focus.
+    browser_view->DrawAttention();
+    EXPECT_FALSE(browser_view->is_drawing_attention());
+    MessageLoop::current()->RunAllPending();
+    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+
+    // Test that the attention is drawn when the expanded panel is not in focus.
+    panel->Deactivate();
+    browser_view->DrawAttention();
+    EXPECT_TRUE(browser_view->is_drawing_attention());
+    MessageLoop::current()->RunAllPending();
+    EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
+
+    // Test that the attention is cleared.
+    browser_view->StopDrawingAttention();
+    EXPECT_FALSE(browser_view->is_drawing_attention());
+    MessageLoop::current()->RunAllPending();
+    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+
+    // Test that the attention is drawn and the title-bar is brought up when the
+    // minimized panel is not in focus.
+    panel->Deactivate();
+    panel->SetExpansionState(Panel::MINIMIZED);
+    EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+    browser_view->DrawAttention();
+    EXPECT_TRUE(browser_view->is_drawing_attention());
+    EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+    MessageLoop::current()->RunAllPending();
+    EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
+
+    // Test that we cannot bring up other minimized panel if the mouse is over
+    // the panel that draws attension.
+    EXPECT_FALSE(PanelManager::GetInstance()->
+        ShouldBringUpTitleBarForAllMinimizedPanels(
+            panel->GetBounds().x(), panel->GetBounds().y()));
+
+    // Test that the attention is cleared.
+    browser_view->StopDrawingAttention();
+    EXPECT_FALSE(browser_view->is_drawing_attention());
+    EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+    MessageLoop::current()->RunAllPending();
+    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+
+    panel->Close();
+  }
 };
 
 // Panel is not supported for Linux view yet.
@@ -672,5 +727,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreateSettingsMenu) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, MinimizeAndRestore) {
   TestMinimizeAndRestore();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, DrawAttention) {
+  TestDrawAttention();
 }
 #endif

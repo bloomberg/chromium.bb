@@ -136,7 +136,7 @@ void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowCocoa::FlashPanelFrame() {
+void PanelBrowserWindowCocoa::DrawAttention() {
   NOTIMPLEMENTED();
 }
 

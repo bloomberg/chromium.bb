@@ -57,7 +57,7 @@ class NativePanel {
   virtual void UpdatePanelTitleBar() = 0;
   virtual void ShowTaskManagerForPanel() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
-  virtual void FlashPanelFrame() = 0;
+  virtual void DrawAttention() = 0;
   virtual void DestroyPanelBrowser() = 0;
 
   // Returns a pointer to the testing interface to the native panel.

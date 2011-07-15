@@ -101,7 +101,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   enum PaintState {
     NOT_PAINTED,
     PAINT_AS_INACTIVE,
-    PAINT_AS_ACTIVE
+    PAINT_AS_ACTIVE,
+    PAINT_FOR_ATTENTION
   };
 
   enum {
@@ -149,6 +150,11 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Called by MouseWatcher to notify if the mouse enters or leaves the window.
   void OnMouseEnterOrLeaveWindow(bool mouse_entered);
+
+  // Retrieves the drawing metrics based on the current painting state.
+  SkColor GetTitleColor(PaintState paint_state) const;
+  gfx::Font* GetTitleFont(PaintState paint_state) const;
+  SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
   // Make settings button visible if either of the conditions is met:
   // 1) The panel is active, i.e. having focus.

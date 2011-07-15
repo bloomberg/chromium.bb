@@ -21,6 +21,11 @@ const int kSetBoundsAnimationMs = 200;
 
 // The panel can be fully minimized to 3-pixel lines.
 const int kFullyMinimizedHeight = 3;
+
+// Delay before click-to-minimize is allowed after the attention has been
+// cleared.
+const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
+    base::TimeDelta::FromMilliseconds(500);
 }
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -39,7 +44,8 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     closed_(false),
     focused_(false),
     mouse_pressed_(false),
-    mouse_dragging_(false) {
+    mouse_dragging_(false),
+    is_drawing_attention_(false) {
 }
 
 PanelBrowserView::~PanelBrowserView() {
@@ -128,6 +134,10 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
   focused_ = focused;
 
   GetFrameView()->OnFocusChanged(focused);
+
+  // Clear the attention state if the panel is on focus.
+  if (is_drawing_attention_ && focused_)
+    StopDrawingAttention();
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -205,6 +215,11 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
 
 bool PanelBrowserView::ShouldBringUpPanelTitleBar(int mouse_x,
                                                   int mouse_y) const {
+  // We do not want to bring up other minimized panels if the mouse is over the
+  // panel that pops up the title-bar to attract attention.
+  if (is_drawing_attention_)
+    return false;
+
   return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
          mouse_y >= bounds_.y();
 }
@@ -241,12 +256,42 @@ void PanelBrowserView::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
-void PanelBrowserView::FlashPanelFrame() {
-  FlashFrame();
+void PanelBrowserView::DrawAttention() {
+  // Don't draw attention for active panel.
+  if (is_drawing_attention_ || focused_)
+    return;
+  is_drawing_attention_ = true;
+
+  // Bring up the title bar to get people's attention.
+  if (panel_->expansion_state() == Panel::MINIMIZED)
+    panel_->SetExpansionState(Panel::TITLE_ONLY);
+
+  SchedulePaint();
 }
 
 void PanelBrowserView::DestroyPanelBrowser() {
   DestroyBrowser();
+}
+
+void PanelBrowserView::StopDrawingAttention() {
+  if (!is_drawing_attention_)
+    return;
+  is_drawing_attention_ = false;
+
+  // This function is called from OnWidgetActivationChanged to clear the
+  // attention, per one of the following user interactions:
+  // 1) clicking on the title-bar
+  // 2) clicking on the client area
+  // 3) switching to the panel via keyboard
+  // For case 1, we do not want the expanded panel to be minimized since the
+  // user clicks on it to mean to clear the attention.
+  attention_cleared_time_ = base::TimeTicks::Now();
+
+  // Bring down the title bar.
+  if (panel_->expansion_state() == Panel::TITLE_ONLY)
+    panel_->SetExpansionState(Panel::MINIMIZED);
+
+  SchedulePaint();
 }
 
 NativePanelTesting* PanelBrowserView::GetNativePanelTesting() {
@@ -284,6 +329,15 @@ bool PanelBrowserView::OnTitleBarMouseDragged(const views::MouseEvent& event) {
 bool PanelBrowserView::OnTitleBarMouseReleased(const views::MouseEvent& event) {
   if (mouse_dragging_)
     return EndDragging(false);
+
+  // Do not minimize the panel when we just clear the attention state. This is
+  // a hack to prevent the panel from being minimized when the user clicks on
+  // the title-bar to clear the attention.
+  if (panel_->expansion_state() == Panel::EXPANDED &&
+      base::TimeTicks::Now() < attention_cleared_time_ +
+                               kSuspendMinimizeOnClickIntervalMs) {
+    return true;
+  }
 
   Panel::ExpansionState new_expansion_state =
     (panel_->expansion_state() != Panel::EXPANDED) ? Panel::EXPANDED

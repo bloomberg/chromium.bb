@@ -43,7 +43,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
-  virtual void FlashPanelFrame() OVERRIDE;
+  virtual void DrawAttention() OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
   virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 

@@ -134,8 +134,8 @@ void PanelBrowserWindowGtk::NotifyPanelOnUserChangedTheme() {
   UserChangedTheme();
 }
 
-void PanelBrowserWindowGtk::FlashPanelFrame() {
-  FlashFrame();
+void PanelBrowserWindowGtk::DrawAttention() {
+  NOTIMPLEMENTED();
 }
 
 void PanelBrowserWindowGtk::DestroyPanelBrowser() {

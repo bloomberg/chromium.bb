@@ -8,6 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -31,6 +32,7 @@ class PanelBrowserView : public BrowserView,
   Panel* panel() const { return panel_.get(); }
   bool closed() const { return closed_; }
   bool focused() const { return focused_; }
+  bool is_drawing_attention() const { return is_drawing_attention_; }
 
   PanelBrowserFrameView* GetFrameView() const;
 
@@ -84,14 +86,16 @@ class PanelBrowserView : public BrowserView,
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
-  virtual void FlashPanelFrame() OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
+  virtual void DrawAttention() OVERRIDE;
   virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   bool EndDragging(bool cancelled);
+
+  void StopDrawingAttention();
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
@@ -119,6 +123,13 @@ class PanelBrowserView : public BrowserView,
   // Used to animate the bounds change.
   scoped_ptr<ui::SlideAnimation> bounds_animator_;
   gfx::Rect animation_start_bounds_;
+
+  // Is the panel in highlighted state to draw people's attention?
+  bool is_drawing_attention_;
+
+  // Timestamp to prevent minimizing the panel when the user clicks the titlebar
+  // to clear the attension state.
+  base::TimeTicks attention_cleared_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };

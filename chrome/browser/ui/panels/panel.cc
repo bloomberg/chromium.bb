@@ -46,6 +46,7 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 void Panel::SetExpansionState(ExpansionState new_expansion_state) {
   if (expansion_state_ == new_expansion_state)
     return;
+
   expansion_state_ = new_expansion_state;
 
   native_panel_->OnPanelExpansionStateChanged(expansion_state_);
@@ -93,7 +94,7 @@ bool Panel::IsActive() const {
 }
 
 void Panel::FlashFrame() {
-  native_panel_->FlashPanelFrame();
+  native_panel_->DrawAttention();
 }
 
 gfx::NativeWindow Panel::GetNativeHandle() {
