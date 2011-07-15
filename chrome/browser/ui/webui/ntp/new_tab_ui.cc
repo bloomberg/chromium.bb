@@ -200,7 +200,10 @@ class MetricsHandler : public WebUIMessageHandler {
   // Callback which records a user action.
   void HandleRecordAction(const ListValue* args);
 
-  // Callback which records into a histogram.
+  // Callback which records into a histogram. |args| contains the histogram
+  // name, the value to record, and the maximum allowed value, which can be at
+  // most 4000.  The histogram will use at most 100 buckets, one for each 1,
+  // 10, or 100 different values, depending on the maximum value.
   void HandleRecordInHistogram(const ListValue* args);
 
   // Callback for the "logEventTime" message.
@@ -237,13 +240,21 @@ void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
   double boundary_value;
   CHECK(args->GetDouble(2, &boundary_value));
   int int_boundary_value = static_cast<int>(boundary_value);
-  CHECK_LE(int_boundary_value, 200);
+
+  CHECK_LE(int_boundary_value, 4000);
+  CHECK_LE(int_value, int_boundary_value);
+  CHECK_LE(0, int_value);
+
+  int bucket_count = int_boundary_value;
+  while (bucket_count >= 100) {
+    bucket_count /= 10;
+  }
 
   // As |histogram_name| may change between calls, the UMA_HISTOGRAM_ENUMERATION
   // macro cannot be used here.
   base::Histogram* counter =
       base::LinearHistogram::FactoryGet(
-          histogram_name, 1, int_boundary_value, int_boundary_value + 1,
+          histogram_name, 1, int_boundary_value, bucket_count + 1,
           base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(int_value);
 }
