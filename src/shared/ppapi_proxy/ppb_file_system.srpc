@@ -2,26 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# RPC methods used to implement PPB_FileSystem_Dev calls from the plugin.
-# See ppapi/c/dev/ppb_file_system_dev.h for interface details.
+# RPC methods used to implement PPB_FileSystem calls from the plugin.
+# See ppapi/c/ppb_file_system.h for interface details.
 
 {
-  'name': 'PpbFileSystemDevRpc',
+  'name': 'PpbFileSystemRpc',
   'rpcs': [
-          {'name': 'PPB_FileSystem_Dev_Create',
+          {'name': 'PPB_FileSystem_Create',
            'inputs': [['instance', 'PP_Instance'],
-                      ['file_system_type', 'int32_t'],   # PP_FileSystemType_Dev
+                      ['file_system_type', 'int32_t'],   # PP_FileSystemType
                       ],
            'outputs': [['resource', 'PP_Resource'],
                        ]
           },
-          {'name': 'PPB_FileSystem_Dev_IsFileSystem',
+          {'name': 'PPB_FileSystem_IsFileSystem',
            'inputs': [['resource', 'PP_Resource'],
                       ],
            'outputs': [['success', 'int32_t'],  # PP_Bool
                        ]
           },
-          {'name': 'PPB_FileSystem_Dev_Open',
+          {'name': 'PPB_FileSystem_Open',
            'inputs': [['file_system', 'PP_Resource'],
                       ['expected_size', 'int64_t'],
                       ['callback_id', 'int32_t']
@@ -29,10 +29,10 @@
            'outputs': [['pp_error', 'int32_t'],
                        ]
           },
-          {'name': 'PPB_FileSystem_Dev_GetType',
+          {'name': 'PPB_FileSystem_GetType',
            'inputs': [['file_system', 'PP_Resource'],
                       ],
-           'outputs': [['type', 'int32_t'],  # PP_FileSystemType_Dev
+           'outputs': [['type', 'int32_t'],  # PP_FileSystemType
                        ],
           }
           ]

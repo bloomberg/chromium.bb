@@ -251,17 +251,17 @@ const PPB_CursorControl_Dev* PPBCursorControlInterface() {
   return ppb;
 }
 
-const PPB_FileIO_Dev* PPBFileIOInterface() {
-  static const PPB_FileIO_Dev* ppb =
-      static_cast<const PPB_FileIO_Dev*>(
-        GetBrowserInterfaceSafe(PPB_FILEIO_DEV_INTERFACE));
+const PPB_FileIO* PPBFileIOInterface() {
+  static const PPB_FileIO* ppb =
+      static_cast<const PPB_FileIO*>(
+        GetBrowserInterfaceSafe(PPB_FILEIO_INTERFACE));
   return ppb;
 }
 
-const PPB_FileSystem_Dev* PPBFileSystemInterface() {
-  static const PPB_FileSystem_Dev* ppb =
-      static_cast<const PPB_FileSystem_Dev*>(
-        GetBrowserInterfaceSafe(PPB_FILESYSTEM_DEV_INTERFACE));
+const PPB_FileSystem* PPBFileSystemInterface() {
+  static const PPB_FileSystem* ppb =
+      static_cast<const PPB_FileSystem*>(
+        GetBrowserInterfaceSafe(PPB_FILESYSTEM_INTERFACE));
   return ppb;
 }
 

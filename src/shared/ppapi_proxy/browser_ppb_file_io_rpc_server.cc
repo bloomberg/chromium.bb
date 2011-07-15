@@ -8,10 +8,10 @@
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/dev/pp_file_info_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_dev.h"
+#include "native_client/src/third_party/ppapi/c/pp_file_info.h"
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
@@ -19,7 +19,7 @@ using ppapi_proxy::DeleteRemoteCallbackInfo;
 using ppapi_proxy::MakeRemoteCompletionCallback;
 using ppapi_proxy::PPBFileIOInterface;
 
-void PpbFileIODevRpcServer::PPB_FileIO_Dev_Create(
+void PpbFileIORpcServer::PPB_FileIO_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       // input
@@ -30,12 +30,12 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Create(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *resource = PPBFileIOInterface()->Create(instance);
-  DebugPrintf("PPB_FileIO_Dev::Create: resource=%"NACL_PRIu32"\n", *resource);
+  DebugPrintf("PPB_FileIO::Create: resource=%"NACL_PRIu32"\n", *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbFileIODevRpcServer::PPB_FileIO_Dev_Open(
+void PpbFileIORpcServer::PPB_FileIO_Open(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
@@ -59,14 +59,14 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Open(
       open_flags,
       remote_callback);
 
-  DebugPrintf("PPB_FileIO_Dev::Open: pp_error=%"NACL_PRId32"\n", *pp_error);
+  DebugPrintf("PPB_FileIO::Open: pp_error=%"NACL_PRId32"\n", *pp_error);
   if (*pp_error != PP_OK_COMPLETIONPENDING)  // Async error.
     DeleteRemoteCallbackInfo(remote_callback);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbFileIODevRpcServer::PPB_FileIO_Dev_IsFileIO(
+void PpbFileIORpcServer::PPB_FileIO_IsFileIO(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
@@ -77,13 +77,13 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_IsFileIO(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_success = PPBFileIOInterface()->IsFileIO(resource);
-  DebugPrintf("PPB_FileIO_Dev::IsFileIO: pp_success=%d\n", pp_success);
+  DebugPrintf("PPB_FileIO::IsFileIO: pp_success=%d\n", pp_success);
 
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
+void PpbFileIORpcServer::PPB_FileIO_Read(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       // inputs
@@ -112,7 +112,7 @@ void PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
       callback_buffer,
       bytes_to_read,
       remote_callback);
-  DebugPrintf("PPB_FileIO_Dev::Read: pp_error_or_bytes=%"NACL_PRId32"\n",
+  DebugPrintf("PPB_FileIO::Read: pp_error_or_bytes=%"NACL_PRId32"\n",
               *pp_error_or_bytes);
   CHECK(*pp_error_or_bytes <= bytes_to_read);
 

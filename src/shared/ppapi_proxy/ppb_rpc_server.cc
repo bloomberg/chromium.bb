@@ -372,13 +372,13 @@ static void PPB_CursorControl_CanLockCursorDispatcher(
   );
 }
 
-static void PPB_FileIO_Dev_CreateDispatcher(
+static void PPB_FileIO_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileIODevRpcServer::PPB_FileIO_Dev_Create(
+  PpbFileIORpcServer::PPB_FileIO_Create(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -386,13 +386,13 @@ static void PPB_FileIO_Dev_CreateDispatcher(
   );
 }
 
-static void PPB_FileIO_Dev_IsFileIODispatcher(
+static void PPB_FileIO_IsFileIODispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileIODevRpcServer::PPB_FileIO_Dev_IsFileIO(
+  PpbFileIORpcServer::PPB_FileIO_IsFileIO(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -400,13 +400,13 @@ static void PPB_FileIO_Dev_IsFileIODispatcher(
   );
 }
 
-static void PPB_FileIO_Dev_OpenDispatcher(
+static void PPB_FileIO_OpenDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileIODevRpcServer::PPB_FileIO_Dev_Open(
+  PpbFileIORpcServer::PPB_FileIO_Open(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -417,13 +417,13 @@ static void PPB_FileIO_Dev_OpenDispatcher(
   );
 }
 
-static void PPB_FileIO_Dev_ReadDispatcher(
+static void PPB_FileIO_ReadDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
+  PpbFileIORpcServer::PPB_FileIO_Read(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -435,13 +435,13 @@ static void PPB_FileIO_Dev_ReadDispatcher(
   );
 }
 
-static void PPB_FileSystem_Dev_CreateDispatcher(
+static void PPB_FileSystem_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_Create(
+  PpbFileSystemRpcServer::PPB_FileSystem_Create(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -450,13 +450,13 @@ static void PPB_FileSystem_Dev_CreateDispatcher(
   );
 }
 
-static void PPB_FileSystem_Dev_IsFileSystemDispatcher(
+static void PPB_FileSystem_IsFileSystemDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_IsFileSystem(
+  PpbFileSystemRpcServer::PPB_FileSystem_IsFileSystem(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -464,13 +464,13 @@ static void PPB_FileSystem_Dev_IsFileSystemDispatcher(
   );
 }
 
-static void PPB_FileSystem_Dev_OpenDispatcher(
+static void PPB_FileSystem_OpenDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_Open(
+  PpbFileSystemRpcServer::PPB_FileSystem_Open(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -480,13 +480,13 @@ static void PPB_FileSystem_Dev_OpenDispatcher(
   );
 }
 
-static void PPB_FileSystem_Dev_GetTypeDispatcher(
+static void PPB_FileSystem_GetTypeDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbFileSystemDevRpcServer::PPB_FileSystem_Dev_GetType(
+  PpbFileSystemRpcServer::PPB_FileSystem_GetType(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -1832,14 +1832,14 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_CursorControl_UnlockCursor:i:i", PPB_CursorControl_UnlockCursorDispatcher },
   { "PPB_CursorControl_HasCursorLock:i:i", PPB_CursorControl_HasCursorLockDispatcher },
   { "PPB_CursorControl_CanLockCursor:i:i", PPB_CursorControl_CanLockCursorDispatcher },
-  { "PPB_FileIO_Dev_Create:i:i", PPB_FileIO_Dev_CreateDispatcher },
-  { "PPB_FileIO_Dev_IsFileIO:i:i", PPB_FileIO_Dev_IsFileIODispatcher },
-  { "PPB_FileIO_Dev_Open:iiii:i", PPB_FileIO_Dev_OpenDispatcher },
-  { "PPB_FileIO_Dev_Read:ilii:Ci", PPB_FileIO_Dev_ReadDispatcher },
-  { "PPB_FileSystem_Dev_Create:ii:i", PPB_FileSystem_Dev_CreateDispatcher },
-  { "PPB_FileSystem_Dev_IsFileSystem:i:i", PPB_FileSystem_Dev_IsFileSystemDispatcher },
-  { "PPB_FileSystem_Dev_Open:ili:i", PPB_FileSystem_Dev_OpenDispatcher },
-  { "PPB_FileSystem_Dev_GetType:i:i", PPB_FileSystem_Dev_GetTypeDispatcher },
+  { "PPB_FileIO_Create:i:i", PPB_FileIO_CreateDispatcher },
+  { "PPB_FileIO_IsFileIO:i:i", PPB_FileIO_IsFileIODispatcher },
+  { "PPB_FileIO_Open:iiii:i", PPB_FileIO_OpenDispatcher },
+  { "PPB_FileIO_Read:ilii:Ci", PPB_FileIO_ReadDispatcher },
+  { "PPB_FileSystem_Create:ii:i", PPB_FileSystem_CreateDispatcher },
+  { "PPB_FileSystem_IsFileSystem:i:i", PPB_FileSystem_IsFileSystemDispatcher },
+  { "PPB_FileSystem_Open:ili:i", PPB_FileSystem_OpenDispatcher },
+  { "PPB_FileSystem_GetType:i:i", PPB_FileSystem_GetTypeDispatcher },
   { "PPB_Find_NumberOfFindResultsChanged:iii:", PPB_Find_NumberOfFindResultsChangedDispatcher },
   { "PPB_Find_SelectedFindResultChanged:ii:", PPB_Find_SelectedFindResultChangedDispatcher },
   { "PPB_Font_GetFontFamilies:i:C", PPB_Font_GetFontFamiliesDispatcher },

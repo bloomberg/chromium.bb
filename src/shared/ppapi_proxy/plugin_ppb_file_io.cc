@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 
@@ -8,7 +8,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "srpcgen/ppb_rpc.h"
@@ -18,32 +17,32 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  DebugPrintf("Plugin::PPB_FileIO_Dev::Create: instance=%"NACL_PRIu32"\n",
+  DebugPrintf("Plugin::PPB_FileIO::Create: instance=%"NACL_PRIu32"\n",
               instance);
   PP_Resource resource = kInvalidResourceId;
   NaClSrpcError srpc_result =
-      PpbFileIODevRpcClient::PPB_FileIO_Dev_Create(
+      PpbFileIORpcClient::PPB_FileIO_Create(
           GetMainSrpcChannel(),
           instance,
           &resource);
-  DebugPrintf("PPB_FileIO_Dev::Create: %s\n", NaClSrpcErrorString(srpc_result));
+  DebugPrintf("PPB_FileIO::Create: %s\n", NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK)
     return resource;
   return kInvalidResourceId;
 }
 
 PP_Bool IsFileIO(PP_Resource resource) {
-  DebugPrintf("PPB_FileIO_Dev::IsFileIO: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_FileIO::IsFileIO: resource=%"NACL_PRIu32"\n",
               resource);
 
   int32_t is_fileio = 0;
   NaClSrpcError srpc_result =
-      PpbFileIODevRpcClient::PPB_FileIO_Dev_IsFileIO(
+      PpbFileIORpcClient::PPB_FileIO_IsFileIO(
           GetMainSrpcChannel(),
           resource,
           &is_fileio);
 
-  DebugPrintf("Plugin::PPB_FileIO_Dev::IsFileIO: %s\n",
+  DebugPrintf("Plugin::PPB_FileIO::IsFileIO: %s\n",
               NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK && is_fileio)
@@ -55,7 +54,7 @@ int32_t Open(PP_Resource file_io,
              PP_Resource file_ref,
              int32_t open_flags,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("Plugin::PPB_FileIO_Dev::Open: file_io=%"NACL_PRIx32"\n",
+  DebugPrintf("Plugin::PPB_FileIO::Open: file_io=%"NACL_PRIx32"\n",
               file_io);
 
   int32_t callback_id =
@@ -65,14 +64,14 @@ int32_t Open(PP_Resource file_io,
 
   int32_t pp_error;
   NaClSrpcError srpc_result =
-      PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
+      PpbFileIORpcClient::PPB_FileIO_Open(
           GetMainSrpcChannel(),
           file_io,
           file_ref,
           open_flags,
           callback_id,
           &pp_error);
-  DebugPrintf("PPB_FileIO_Dev::Open: %s\n", NaClSrpcErrorString(srpc_result));
+  DebugPrintf("PPB_FileIO::Open: %s\n", NaClSrpcErrorString(srpc_result));
 
   if (srpc_result != NACL_SRPC_RESULT_OK)
     pp_error = PP_ERROR_FAILED;
@@ -80,7 +79,7 @@ int32_t Open(PP_Resource file_io,
 }
 
 int32_t Query(PP_Resource file_io,
-              PP_FileInfo_Dev* info,
+              PP_FileInfo* info,
               struct PP_CompletionCallback callback) {
   UNREFERENCED_PARAMETER(file_io);
   UNREFERENCED_PARAMETER(info);
@@ -106,7 +105,7 @@ int32_t Read(PP_Resource file_io,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("Plugin::PPB_FileIO_Dev::Read: file_io=%"NACL_PRIx32"\n",
+  DebugPrintf("Plugin::PPB_FileIO::Read: file_io=%"NACL_PRIx32"\n",
               file_io);
 
   if (bytes_to_read < 0)
@@ -120,7 +119,7 @@ int32_t Read(PP_Resource file_io,
 
   int32_t pp_error_or_bytes;
   NaClSrpcError srpc_result =
-      PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
+      PpbFileIORpcClient::PPB_FileIO_Read(
           GetMainSrpcChannel(),
           file_io,
           offset,
@@ -129,7 +128,7 @@ int32_t Read(PP_Resource file_io,
           &buffer_size,
           buffer,
           &pp_error_or_bytes);
-  DebugPrintf("PPB_FileIO_Dev::Read: %s\n", NaClSrpcErrorString(srpc_result));
+  DebugPrintf("PPB_FileIO::Read: %s\n", NaClSrpcErrorString(srpc_result));
   if (srpc_result != NACL_SRPC_RESULT_OK)
     pp_error_or_bytes = PP_ERROR_FAILED;
   return MayForceCallback(callback, pp_error_or_bytes);
@@ -172,8 +171,8 @@ void Close(PP_Resource file_io) {
 
 }  // namespace
 
-const PPB_FileIO_Dev* PluginFileIO::GetInterface() {
-  static const PPB_FileIO_Dev file_io_interface = {
+const PPB_FileIO* PluginFileIO::GetInterface() {
+  static const PPB_FileIO file_io_interface = {
     Create,
     IsFileIO,
     Open,

@@ -53,8 +53,8 @@ InterfaceMapElement interface_map[] = {
   { PPB_CURSOR_CONTROL_DEV_INTERFACE, PluginCursorControl::GetInterface(),
     true },
   { PPB_CONTEXT_3D_DEV_INTERFACE, PluginContext3D::GetInterface(), true },
-  { PPB_FILEIO_DEV_INTERFACE, PluginFileIO::GetInterface(), true },
-  { PPB_FILESYSTEM_DEV_INTERFACE, PluginFileSystem::GetInterface(), true },
+  { PPB_FILEIO_INTERFACE, PluginFileIO::GetInterface(), true },
+  { PPB_FILESYSTEM_INTERFACE, PluginFileSystem::GetInterface(), true },
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
@@ -75,6 +75,10 @@ InterfaceMapElement interface_map[] = {
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
   { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },
   { PPB_ZOOM_DEV_INTERFACE, PluginZoom::GetInterface(), true },
+  // TODO(sanga): Remove once tests are updated to non-dev FileIO
+  { "PPB_FileIO(Dev);0.4", PluginFileIO::GetInterface(), true },
+  // TODO(sanga): Remove once tests are updated to non-dev FileSystem
+  { "PPB_FileSystem(Dev);0.6", PluginFileSystem::GetInterface(), true },
 };
 
 }  // namespace

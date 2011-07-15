@@ -8,8 +8,6 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_cursor_control_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_io_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_system_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
@@ -23,6 +21,8 @@
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/ppb.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_graphics_2d.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
 #include "native_client/src/third_party/ppapi/c/ppb_instance.h"
@@ -89,8 +89,8 @@ const PPB_Context3D_Dev* PPBContext3DInterface();
 const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface();
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_CursorControl_Dev* PPBCursorControlInterface();
-const PPB_FileIO_Dev* PPBFileIOInterface();
-const PPB_FileSystem_Dev* PPBFileSystemInterface();
+const PPB_FileIO* PPBFileIOInterface();
+const PPB_FileSystem* PPBFileSystemInterface();
 const PPB_Find_Dev* PPBFindInterface();
 const PPB_Font_Dev* PPBFontInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();

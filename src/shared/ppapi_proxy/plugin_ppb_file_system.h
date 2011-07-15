@@ -6,14 +6,14 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_FILE_SYSTEM_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_file_system_dev.h"
+#include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 
 namespace ppapi_proxy {
 
-// Implements the untrusted side of the PPB_FileSystem_Dev interface.
+// Implements the untrusted side of the PPB_FileSystem interface.
 class PluginFileSystem {
  public:
-  static const PPB_FileSystem_Dev* GetInterface();
+  static const PPB_FileSystem* GetInterface();
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginFileSystem);
 };

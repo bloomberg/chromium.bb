@@ -2,25 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# RPC methods used to implement PPB_FileIO_Dev calls from the plugin.
-# See ppapi/c/ppb_file_io_dev.h for interface details.
+# RPC methods used to implement PPB_FileIO calls from the plugin.
+# See ppapi/c/ppb_file_io.h for interface details.
 
 {
-  'name': 'PpbFileIODevRpc',
+  'name': 'PpbFileIORpc',
   'rpcs': [
-          {'name': 'PPB_FileIO_Dev_Create',
+          {'name': 'PPB_FileIO_Create',
            'inputs': [['instance', 'PP_Instance'],
                       ],
            'outputs': [['resource', 'PP_Resource'],
                        ]
           },
-          {'name': 'PPB_FileIO_Dev_IsFileIO',
+          {'name': 'PPB_FileIO_IsFileIO',
            'inputs': [['resource', 'PP_Resource'],
                       ],
            'outputs': [['success', 'int32_t'],  # PP_Bool
                        ]
           },
-          {'name': 'PPB_FileIO_Dev_Open',
+          {'name': 'PPB_FileIO_Open',
            'inputs': [['file_io', 'PP_Resource'],
                       ['file_ref', 'PP_Resource'],
                       ['open_flags', 'int32_t'],
@@ -29,7 +29,7 @@
            'outputs': [['pp_error', 'int32_t'],
                        ]
           },
-          {'name': 'PPB_FileIO_Dev_Read',
+          {'name': 'PPB_FileIO_Read',
            'inputs': [['file_io', 'PP_Resource'],
                       ['offset', 'int64_t'],
                       ['bytes_to_read', 'int32_t'],

@@ -197,19 +197,19 @@ class PpbCursorControlRpcServer {
   void operator=(const PpbCursorControlRpcServer);
 };  // class PpbCursorControlRpcServer
 
-class PpbFileIODevRpcServer {
+class PpbFileIORpcServer {
  public:
-  static void PPB_FileIO_Dev_Create(
+  static void PPB_FileIO_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,
       PP_Resource* resource);
-  static void PPB_FileIO_Dev_IsFileIO(
+  static void PPB_FileIO_IsFileIO(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource,
       int32_t* success);
-  static void PPB_FileIO_Dev_Open(
+  static void PPB_FileIO_Open(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource file_io,
@@ -217,7 +217,7 @@ class PpbFileIODevRpcServer {
       int32_t open_flags,
       int32_t callback_id,
       int32_t* pp_error);
-  static void PPB_FileIO_Dev_Read(
+  static void PPB_FileIO_Read(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource file_io,
@@ -228,42 +228,42 @@ class PpbFileIODevRpcServer {
       int32_t* pp_error_or_bytes);
 
  private:
-  PpbFileIODevRpcServer();
-  PpbFileIODevRpcServer(const PpbFileIODevRpcServer&);
-  void operator=(const PpbFileIODevRpcServer);
-};  // class PpbFileIODevRpcServer
+  PpbFileIORpcServer();
+  PpbFileIORpcServer(const PpbFileIORpcServer&);
+  void operator=(const PpbFileIORpcServer);
+};  // class PpbFileIORpcServer
 
-class PpbFileSystemDevRpcServer {
+class PpbFileSystemRpcServer {
  public:
-  static void PPB_FileSystem_Dev_Create(
+  static void PPB_FileSystem_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,
       int32_t file_system_type,
       PP_Resource* resource);
-  static void PPB_FileSystem_Dev_IsFileSystem(
+  static void PPB_FileSystem_IsFileSystem(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource,
       int32_t* success);
-  static void PPB_FileSystem_Dev_Open(
+  static void PPB_FileSystem_Open(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource file_system,
       int64_t expected_size,
       int32_t callback_id,
       int32_t* pp_error);
-  static void PPB_FileSystem_Dev_GetType(
+  static void PPB_FileSystem_GetType(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource file_system,
       int32_t* type);
 
  private:
-  PpbFileSystemDevRpcServer();
-  PpbFileSystemDevRpcServer(const PpbFileSystemDevRpcServer&);
-  void operator=(const PpbFileSystemDevRpcServer);
-};  // class PpbFileSystemDevRpcServer
+  PpbFileSystemRpcServer();
+  PpbFileSystemRpcServer(const PpbFileSystemRpcServer&);
+  void operator=(const PpbFileSystemRpcServer);
+};  // class PpbFileSystemRpcServer
 
 class PpbFindRpcServer {
  public:

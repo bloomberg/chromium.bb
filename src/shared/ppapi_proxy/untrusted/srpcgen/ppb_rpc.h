@@ -173,24 +173,24 @@ class PpbCursorControlRpcClient {
   void operator=(const PpbCursorControlRpcClient);
 };  // class PpbCursorControlRpcClient
 
-class PpbFileIODevRpcClient {
+class PpbFileIORpcClient {
  public:
-  static NaClSrpcError PPB_FileIO_Dev_Create(
+  static NaClSrpcError PPB_FileIO_Create(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       PP_Resource* resource);
-  static NaClSrpcError PPB_FileIO_Dev_IsFileIO(
+  static NaClSrpcError PPB_FileIO_IsFileIO(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* success);
-  static NaClSrpcError PPB_FileIO_Dev_Open(
+  static NaClSrpcError PPB_FileIO_Open(
       NaClSrpcChannel* channel,
       PP_Resource file_io,
       PP_Resource file_ref,
       int32_t open_flags,
       int32_t callback_id,
       int32_t* pp_error);
-  static NaClSrpcError PPB_FileIO_Dev_Read(
+  static NaClSrpcError PPB_FileIO_Read(
       NaClSrpcChannel* channel,
       PP_Resource file_io,
       int64_t offset,
@@ -200,38 +200,38 @@ class PpbFileIODevRpcClient {
       int32_t* pp_error_or_bytes);
 
  private:
-  PpbFileIODevRpcClient();
-  PpbFileIODevRpcClient(const PpbFileIODevRpcClient&);
-  void operator=(const PpbFileIODevRpcClient);
-};  // class PpbFileIODevRpcClient
+  PpbFileIORpcClient();
+  PpbFileIORpcClient(const PpbFileIORpcClient&);
+  void operator=(const PpbFileIORpcClient);
+};  // class PpbFileIORpcClient
 
-class PpbFileSystemDevRpcClient {
+class PpbFileSystemRpcClient {
  public:
-  static NaClSrpcError PPB_FileSystem_Dev_Create(
+  static NaClSrpcError PPB_FileSystem_Create(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       int32_t file_system_type,
       PP_Resource* resource);
-  static NaClSrpcError PPB_FileSystem_Dev_IsFileSystem(
+  static NaClSrpcError PPB_FileSystem_IsFileSystem(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* success);
-  static NaClSrpcError PPB_FileSystem_Dev_Open(
+  static NaClSrpcError PPB_FileSystem_Open(
       NaClSrpcChannel* channel,
       PP_Resource file_system,
       int64_t expected_size,
       int32_t callback_id,
       int32_t* pp_error);
-  static NaClSrpcError PPB_FileSystem_Dev_GetType(
+  static NaClSrpcError PPB_FileSystem_GetType(
       NaClSrpcChannel* channel,
       PP_Resource file_system,
       int32_t* type);
 
  private:
-  PpbFileSystemDevRpcClient();
-  PpbFileSystemDevRpcClient(const PpbFileSystemDevRpcClient&);
-  void operator=(const PpbFileSystemDevRpcClient);
-};  // class PpbFileSystemDevRpcClient
+  PpbFileSystemRpcClient();
+  PpbFileSystemRpcClient(const PpbFileSystemRpcClient&);
+  void operator=(const PpbFileSystemRpcClient);
+};  // class PpbFileSystemRpcClient
 
 class PpbFindRpcClient {
  public:

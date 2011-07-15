@@ -369,35 +369,35 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_CanLockCursor(
   return retval;
 }
 
-NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Create(
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
     PP_Resource* resource)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileIO_Dev_Create:i:i",
+      "PPB_FileIO_Create:i:i",
       instance,
       resource
   );
   return retval;
 }
 
-NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_IsFileIO(
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_IsFileIO(
     NaClSrpcChannel* channel,
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileIO_Dev_IsFileIO:i:i",
+      "PPB_FileIO_IsFileIO:i:i",
       resource,
       success
   );
   return retval;
 }
 
-NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Open(
     NaClSrpcChannel* channel,
     PP_Resource file_io,
     PP_Resource file_ref,
@@ -407,7 +407,7 @@ NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileIO_Dev_Open:iiii:i",
+      "PPB_FileIO_Open:iiii:i",
       file_io,
       file_ref,
       open_flags,
@@ -417,7 +417,7 @@ NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
   return retval;
 }
 
-NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Read(
     NaClSrpcChannel* channel,
     PP_Resource file_io,
     int64_t offset,
@@ -428,7 +428,7 @@ NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileIO_Dev_Read:ilii:Ci",
+      "PPB_FileIO_Read:ilii:Ci",
       file_io,
       offset,
       bytes_to_read,
@@ -439,7 +439,7 @@ NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
   return retval;
 }
 
-NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Create(
+NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
     int32_t file_system_type,
@@ -447,7 +447,7 @@ NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileSystem_Dev_Create:ii:i",
+      "PPB_FileSystem_Create:ii:i",
       instance,
       file_system_type,
       resource
@@ -455,21 +455,21 @@ NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Create(
   return retval;
 }
 
-NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_IsFileSystem(
+NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_IsFileSystem(
     NaClSrpcChannel* channel,
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileSystem_Dev_IsFileSystem:i:i",
+      "PPB_FileSystem_IsFileSystem:i:i",
       resource,
       success
   );
   return retval;
 }
 
-NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Open(
+NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_Open(
     NaClSrpcChannel* channel,
     PP_Resource file_system,
     int64_t expected_size,
@@ -478,7 +478,7 @@ NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Open(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileSystem_Dev_Open:ili:i",
+      "PPB_FileSystem_Open:ili:i",
       file_system,
       expected_size,
       callback_id,
@@ -487,14 +487,14 @@ NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_Open(
   return retval;
 }
 
-NaClSrpcError PpbFileSystemDevRpcClient::PPB_FileSystem_Dev_GetType(
+NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_GetType(
     NaClSrpcChannel* channel,
     PP_Resource file_system,
     int32_t* type)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_FileSystem_Dev_GetType:i:i",
+      "PPB_FileSystem_GetType:i:i",
       file_system,
       type
   );
