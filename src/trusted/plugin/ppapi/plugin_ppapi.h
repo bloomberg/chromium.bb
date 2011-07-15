@@ -206,7 +206,8 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
 
   // Logs timing information to a UMA histogram, and also logs the same timing
   // information divided by the size of the nexe to another histogram.
-  void HistogramStartupTime(const std::string& name, float dt);
+  void HistogramStartupTimeSmall(const std::string& name, float dt);
+  void HistogramStartupTimeMedium(const std::string& name, float dt);
 
   // Determines the appropriate nexe for the sandbox and requests a load.
   void RequestNexeLoad();
@@ -273,6 +274,7 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
 
   int64_t init_time_;
+  int64_t ready_time_;
   size_t nexe_size_;
 };
 

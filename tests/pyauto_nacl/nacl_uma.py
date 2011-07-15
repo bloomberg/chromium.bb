@@ -149,7 +149,8 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
       unpredictable = [
           # Anything that occurs at shutdown is at the mercy of the garbage
           # collector, so we don't know when it will show up in the histograms.
-          'NaCl.Perf.ShutdownTime.Total']
+          'NaCl.Perf.ShutdownTime.Total',
+          'NaCl.ModuleUptime']
 
       # Make sure we get everything expected, and nothing that we don't.
       for name in hists.keys():

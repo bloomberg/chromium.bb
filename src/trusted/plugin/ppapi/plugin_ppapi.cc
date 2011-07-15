@@ -111,9 +111,20 @@ bool GetLastError(void* obj, SrpcParams* params) {
   return true;
 }
 
+// Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
 const uint32_t kTimeSmallBuckets = 100;
+
+// Up to 3 minutes, 20 seconds
+const int64_t kTimeMediumMin = 10;         // in ms
+const int64_t kTimeMediumMax = 200000;     // in ms
+const uint32_t kTimeMediumBuckets = 100;
+
+// Up to 33 minutes.
+const int64_t kTimeLargeMin = 100;         // in ms
+const int64_t kTimeLargeMax = 2000000;     // in ms
+const uint32_t kTimeLargeBuckets = 100;
 
 const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
@@ -136,6 +147,30 @@ void HistogramTimeSmall(const std::string& name, int64_t ms) {
                             ms,
                             kTimeSmallMin, kTimeSmallMax,
                             kTimeSmallBuckets);
+}
+
+void HistogramTimeMedium(const std::string& name, int64_t ms) {
+  if (ms < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
+                            ms,
+                            kTimeMediumMin, kTimeMediumMax,
+                            kTimeMediumBuckets);
+}
+
+void HistogramTimeLarge(const std::string& name, int64_t ms) {
+  if (ms < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
+                            ms,
+                            kTimeLargeMin, kTimeLargeMax,
+                            kTimeLargeBuckets);
 }
 
 void HistogramSizeKB(const std::string& name, int32_t sample) {
@@ -607,6 +642,14 @@ PluginPpapi::~PluginPpapi() {
                  static_cast<void*>(this),
                  static_cast<void*>(scriptable_handle())));
 
+  // If the proxy has been shutdown before now, it's likely the plugin suffered
+  // an error while loading.
+  if (ppapi_proxy_ != NULL) {
+    HistogramTimeLarge(
+        "NaCl.ModuleUptime",
+        (shutdown_start-ready_time_) / NACL_MICROS_PER_MILLI);
+  }
+
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassBrowserDtor();
 #endif
@@ -711,14 +754,20 @@ pp::Var PluginPpapi::GetInstanceObject() {
   return *handle_var;  // make a copy
 }
 
-void PluginPpapi::HistogramStartupTime(const std::string& name, float dt) {
-  // TODO(elijahtaylor) nexe_size_ should never be zero (or less), revisit
-  // when dynamic loading is more mature.
-  // http://code.google.com/p/nativeclient/issues/detail?id=1534
+void PluginPpapi::HistogramStartupTimeSmall(const std::string& name, float dt) {
   if (nexe_size_ > 0) {
     float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
     HistogramTimeSmall(name, static_cast<int64_t>(dt));
     HistogramTimeSmall(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
+  }
+}
+
+void PluginPpapi::HistogramStartupTimeMedium(const std::string& name,
+                                             float dt) {
+  if (nexe_size_ > 0) {
+    float size_in_MB = static_cast<float>(nexe_size_) / (1024.f * 1024.f);
+    HistogramTimeMedium(name, static_cast<int64_t>(dt));
+    HistogramTimeMedium(name + "PerMB", static_cast<int64_t>(dt / size_in_MB));
   }
 }
 
@@ -757,7 +806,7 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   nexe_size_ = nexe_bytes_read;
   HistogramSizeKB("NaCl.Perf.Size.Nexe",
                   static_cast<int32_t>(nexe_size_ / 1024));
-  HistogramStartupTime(
+  HistogramStartupTimeMedium(
       "NaCl.Perf.StartupTime.NexeDownload",
       static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
 
@@ -772,13 +821,13 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
   if (was_successful) {
-    int64_t done_time = NaClGetTimeOfDayMicroseconds();
-    HistogramStartupTime(
+    ready_time_ = NaClGetTimeOfDayMicroseconds();
+    HistogramStartupTimeSmall(
         "NaCl.Perf.StartupTime.LoadModule",
-        static_cast<float>(done_time - load_start) / NACL_MICROS_PER_MILLI);
-    HistogramStartupTime(
+        static_cast<float>(ready_time_ - load_start) / NACL_MICROS_PER_MILLI);
+    HistogramStartupTimeMedium(
         "NaCl.Perf.StartupTime.Total",
-        static_cast<float>(done_time - init_time_) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
 
     ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_bytes_read, nexe_bytes_read);
   } else {
@@ -795,7 +844,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   // Log the amound of time that has passed between the trusted plugin being
   // initialized and the untrusted plugin being initialized.  This is (roughly)
   // the cost of using NaCl, in terms of startup time.
-  HistogramStartupTime(
+  HistogramStartupTimeMedium(
       "NaCl.Perf.StartupTime.NaClOverhead",
       static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
           / NACL_MICROS_PER_MILLI);
