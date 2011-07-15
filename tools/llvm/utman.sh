@@ -76,6 +76,7 @@ readonly LIBMODE_GLIBC
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
+readonly NACL64_TARGET=x86_64-nacl
 
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
 readonly PNACL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
@@ -751,10 +752,10 @@ glibc() {
   mkdir -p "${PNACL_X8664_ROOT}"
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
-  # Files in: lib/gcc/nacl64/4.4.3/[32]/
+  # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
   local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
-  # Files in: nacl64/lib[32]/
+  # Files in: ${NACL64_TARGET}/lib[32]/
   local LIBS2="crt1.o crti.o crtn.o \
                libc.a libc_nonshared.a \
                libc-2.9.so libc.so libc.so.6 \
@@ -766,38 +767,40 @@ glibc() {
                ld-2.9.so"
 
   for lib in ${LIBS1} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/32/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/32/${lib}" \
        "${PNACL_X8632_ROOT}"
-    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/nacl64/4.4.3/${lib}" \
+    cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/${lib}" \
        "${PNACL_X8664_ROOT}"
   done
 
   for lib in ${LIBS2} ; do
-    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib32/${lib}" "${PNACL_X8632_ROOT}"
-    cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/${lib}" "${PNACL_X8664_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/${lib}" \
+          "${PNACL_X8632_ROOT}"
+    cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/${lib}" \
+          "${PNACL_X8664_ROOT}"
   done
 
   # Copy linker scripts
   # We currently only depend on elf[64]_nacl.x,
   # elf[64]_nacl.xs, and elf[64]_nacl.x.static.
-  cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/ldscripts/elf_nacl.x"* \
+  cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf_nacl.x"* \
         "${PNACL_X8632_ROOT}"
-  cp -a "${NNACL_GLIBC_ROOT}/nacl64/lib/ldscripts/elf64_nacl.x"* \
+  cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf64_nacl.x"* \
         "${PNACL_X8664_ROOT}"
 
   # ld-linux has different sonames across 32/64.
   # Create symlinks to make them look the same.
   # TODO(pdox): Can this be fixed in glibc?
-  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib32/ld-linux.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.2 \
      "${PNACL_X8632_ROOT}"
   ln -sf ld-linux.so.2 "${PNACL_X8632_ROOT}"/ld-linux-x86-64.so.2
 
-  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/lib/ld-linux-x86-64.so.2 \
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.2 \
      "${PNACL_X8664_ROOT}"
   ln -sf ld-linux-x86-64.so.2 "${PNACL_X8664_ROOT}"/ld-linux.so.2
 
   # Copy the glibc headers
-  cp -a "${NNACL_GLIBC_ROOT}"/nacl64/include \
+  cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
         "${GLIBC_INSTALL_DIR}"
 
   # We build our own C++, so we have our own headers.
