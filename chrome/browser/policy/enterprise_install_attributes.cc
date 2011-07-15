@@ -25,7 +25,7 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
         LOCK_SUCCESS : LOCK_WRONG_USER;
   }
 
-  if (!cryptohome_->InstallAttributesIsReady())
+  if (!cryptohome_ || !cryptohome_->InstallAttributesIsReady())
     return LOCK_NOT_READY;
 
   // Clearing the TPM password seems to be always a good deal.

@@ -839,7 +839,8 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
 
 void StorePolicyOp::RequestStorePolicy() {
   std::string serialized;
-  if (policy_->SerializeToString(&serialized)) {
+  if (policy_->SerializeToString(&serialized) &&
+      CrosLibrary::Get()->EnsureLoaded()) {
     CrosLibrary::Get()->GetLoginLibrary()->RequestStorePolicy(
         serialized,
         &StorePolicyOp::OnBoolComplete,
@@ -862,8 +863,12 @@ RetrievePolicyOp::RetrievePolicyOp(
 RetrievePolicyOp::~RetrievePolicyOp() {}
 
 void RetrievePolicyOp::Execute() {
-  CrosLibrary::Get()->GetLoginLibrary()->RequestRetrievePolicy(
-      &RetrievePolicyOp::OnStringComplete, this);
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    CrosLibrary::Get()->GetLoginLibrary()->RequestRetrievePolicy(
+        &RetrievePolicyOp::OnStringComplete, this);
+  } else {
+    Fail(OPERATION_FAILED);
+  }
 }
 
 void RetrievePolicyOp::Fail(SignedSettings::ReturnCode code) {

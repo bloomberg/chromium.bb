@@ -305,8 +305,10 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
     device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
-    install_attributes_.reset(new EnterpriseInstallAttributes(
-        chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()));
+    chromeos::CryptohomeLibrary* cryptohome = NULL;
+    if (chromeos::CrosLibrary::Get()->EnsureLoaded())
+      cryptohome = chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+    install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
     DevicePolicyCache* device_policy_cache =
         new DevicePolicyCache(device_data_store_.get(),
                               install_attributes_.get());
