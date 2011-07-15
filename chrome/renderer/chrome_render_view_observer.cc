@@ -91,6 +91,9 @@ static const int kThumbnailHeight = 132;
 static const char kSSLInsecureContent[] = "SSL.InsecureContent";
 static const char kDotGoogleDotCom[] = ".google.com";
 static const char kWWWDotGoogleDotCom[] = "www.google.com";
+static const char kMailDotGoogleDotCom[] = "mail.google.com";
+static const char kPlusDotGoogleDotCom[] = "plus.google.com";
+static const char kDocsDotGoogleDotCom[] = "docs.google.com";
 static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
 static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
 static const char kDotJS[] = ".js";
@@ -112,6 +115,12 @@ enum {
   INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
   INSECURE_CONTENT_RUN_HOST_YOUTUBE,
   INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
+  INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
   INSECURE_CONTENT_NUM_EVENTS
 };
 
@@ -436,23 +445,38 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
                             INSECURE_CONTENT_DISPLAY,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
-  if (EndsWith(host, kDotGoogleDotCom, false))
+  if (EndsWith(host, kDotGoogleDotCom, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  if (host == kWWWDotGoogleDotCom)
+  }
+  if (host == kWWWDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  else if (host == kWWWDotYoutubeDotCom)
+  } else if (host == kMailDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kPlusDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kDocsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
+  }
   GURL gurl(url);
-  if (EndsWith(gurl.path(), kDotHTML, false))
+  if (EndsWith(gurl.path(), kDotHTML, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HTML,
                               INSECURE_CONTENT_NUM_EVENTS);
+  }
 
   if (allowed_per_settings || allow_displaying_insecure_content_)
     return true;
@@ -470,39 +494,55 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
                             INSECURE_CONTENT_RUN,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
-  if (EndsWith(host, kDotGoogleDotCom, false))
+  if (EndsWith(host, kDotGoogleDotCom, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  if (host == kWWWDotGoogleDotCom)
+  }
+  if (host == kWWWDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  else if (host == kWWWDotYoutubeDotCom)
+  } else if (host == kMailDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kPlusDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kDocsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  else if (EndsWith(host, kDotGoogleUserContentDotCom, false))
+  } else if (EndsWith(host, kDotGoogleUserContentDotCom, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,
                               INSECURE_CONTENT_NUM_EVENTS);
+  }
   GURL gurl(url);
-  if (gurl.host() == kWWWDotYoutubeDotCom)
+  if (gurl.host() == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_TARGET_YOUTUBE,
                               INSECURE_CONTENT_NUM_EVENTS);
-  if (EndsWith(gurl.path(), kDotJS, false))
+  }
+  if (EndsWith(gurl.path(), kDotJS, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_JS,
                               INSECURE_CONTENT_NUM_EVENTS);
-  else if (EndsWith(gurl.path(), kDotCSS, false))
+  } else if (EndsWith(gurl.path(), kDotCSS, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_CSS,
                               INSECURE_CONTENT_NUM_EVENTS);
-  else if (EndsWith(gurl.path(), kDotSWF, false))
+  } else if (EndsWith(gurl.path(), kDotSWF, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_SWF,
                               INSECURE_CONTENT_NUM_EVENTS);
+  }
 
   if (allowed_per_settings || allow_running_insecure_content_)
     return true;
