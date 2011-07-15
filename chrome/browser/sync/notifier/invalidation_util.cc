@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/invalidation_util.h"
-#include "google/cacheinvalidation/v2/types.h"
 
 #include <sstream>
+
+#include "google/cacheinvalidation/v2/types.h"
+#include "google/cacheinvalidation/v2/types.pb.h"
 
 namespace sync_notifier {
 

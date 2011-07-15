@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -137,6 +137,7 @@
         'files/src/google/cacheinvalidation/v2/proto-converter.cc',
         'files/src/google/cacheinvalidation/v2/proto-converter.h',
         'files/src/google/cacheinvalidation/v2/proto-helpers.h',
+        'files/src/google/cacheinvalidation/v2/proto-helpers.cc',
         'files/src/google/cacheinvalidation/v2/protocol-handler.cc',
         'files/src/google/cacheinvalidation/v2/protocol-handler.h',
         'files/src/google/cacheinvalidation/v2/registration-manager.cc',
@@ -150,7 +151,10 @@
         'files/src/google/cacheinvalidation/v2/statistics.h',
         'files/src/google/cacheinvalidation/v2/string_util.h',
         'files/src/google/cacheinvalidation/v2/system-resources.h',
+        'files/src/google/cacheinvalidation/v2/throttle.cc',
+        'files/src/google/cacheinvalidation/v2/throttle.h',
         'files/src/google/cacheinvalidation/v2/ticl-message-validator.h',
+        'files/src/google/cacheinvalidation/v2/ticl-message-validator.cc',
         'files/src/google/cacheinvalidation/v2/time.h',
         'files/src/google/cacheinvalidation/v2/types.h',
       ],
@@ -184,6 +188,8 @@
       'type': 'executable',
       'sources': [
         '../../base/test/run_all_unittests.cc',
+        'files/src/google/cacheinvalidation/v2/test/deterministic-scheduler.h',
+        'files/src/google/cacheinvalidation/v2/test/throttle_test.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',

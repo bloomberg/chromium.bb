@@ -44,12 +44,13 @@ const buzz::QName kQnChannelContext("", "channelContext");
 class CacheInvalidationListenTask : public buzz::XmppTask {
  public:
   // Takes ownership of callback.
-  CacheInvalidationListenTask(Task* parent,
-                              std::string* channel_context,
-                              Callback1<const std::string&>::Type* callback)
+  CacheInvalidationListenTask(
+      Task* parent,
+      Callback1<const std::string&>::Type* callback,
+      Callback1<const std::string&>::Type* context_change_callback)
       : XmppTask(parent, buzz::XmppEngine::HL_TYPE),
-        channel_context_(channel_context),
-        callback_(callback) {}
+        callback_(callback),
+        context_change_callback_(context_change_callback) {}
   virtual ~CacheInvalidationListenTask() {}
 
   virtual int ProcessStart() {
@@ -79,10 +80,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
 
   virtual bool HandleStanza(const buzz::XmlElement* stanza) {
     VLOG(1) << "Stanza received: "
-              << notifier::XmlElementToString(*stanza);
-    if (stanza->HasAttr(kQnChannelContext)) {
-      *channel_context_ = stanza->Attr(kQnChannelContext);
-    }
+            << notifier::XmlElementToString(*stanza);
     if (IsValidCacheInvalidationIqPacket(stanza)) {
       VLOG(2) << "Queueing stanza";
       QueueStanza(stanza);
@@ -100,7 +98,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   }
 
   bool GetCacheInvalidationIqPacketData(const buzz::XmlElement* stanza,
-                            std::string* data) {
+                                        std::string* data) {
     DCHECK(IsValidCacheInvalidationIqPacket(stanza));
     const buzz::XmlElement* cache_invalidation_iq_packet =
         stanza->FirstNamed(kQnData);
@@ -108,12 +106,19 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
       LOG(ERROR) << "Could not find cache invalidation IQ packet element";
       return false;
     }
+    // Look for a channelContext attribute in the content of the stanza.  If
+    // present, remember it so it can be echoed back.
+    if (cache_invalidation_iq_packet->HasAttr(kQnChannelContext)) {
+      context_change_callback_->Run(
+          cache_invalidation_iq_packet->Attr(kQnChannelContext));
+    }
     *data = cache_invalidation_iq_packet->BodyText();
     return true;
   }
 
   std::string* channel_context_;
   scoped_ptr<Callback1<const std::string&>::Type> callback_;
+  scoped_ptr<Callback1<const std::string&>::Type> context_change_callback_;
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationListenTask);
 };
 
@@ -142,7 +147,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
         MakeCacheInvalidationIqPacket(to_jid_, task_id(), msg_,
                                       seq_, sid_, channel_context_));
     VLOG(1) << "Sending message: "
-              << notifier::XmlElementToString(*stanza.get());
+            << notifier::XmlElementToString(*stanza.get());
     if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
       VLOG(2) << "Error when sending message";
       return STATE_ERROR;
@@ -157,14 +162,14 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
       return STATE_BLOCKED;
     }
     VLOG(2) << "CacheInvalidationSendMessageTask response received: "
-              << notifier::XmlElementToString(*stanza);
+            << notifier::XmlElementToString(*stanza);
     // TODO(akalin): Handle errors here.
     return STATE_DONE;
   }
 
   virtual bool HandleStanza(const buzz::XmlElement* stanza) {
     VLOG(1) << "Stanza received: "
-              << notifier::XmlElementToString(*stanza);
+            << notifier::XmlElementToString(*stanza);
     if (!MatchResponseIq(stanza, to_jid_, task_id())) {
       VLOG(2) << "Stanza skipped";
       return false;
@@ -179,7 +184,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
       const buzz::Jid& to_jid,
       const std::string& task_id,
       const std::string& msg,
-      int seq, const std::string& sid, const std::string channel_context) {
+      int seq, const std::string& sid, const std::string& channel_context) {
     buzz::XmlElement* iq = MakeIq(buzz::STR_SET, to_jid, task_id);
     buzz::XmlElement* cache_invalidation_iq_packet =
         new buzz::XmlElement(kQnData, true);
@@ -201,7 +206,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
   std::string msg_;
   int seq_;
   std::string sid_;
-  std::string channel_context_;
+  const std::string channel_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationSendMessageTask);
 };
@@ -223,8 +228,10 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
   // Owned by base_task.  Takes ownership of the callback.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
-          base_task_, &channel_context_, scoped_callback_factory_.NewCallback(
-              &CacheInvalidationPacketHandler::HandleInboundPacket));
+          base_task_, scoped_callback_factory_.NewCallback(
+              &CacheInvalidationPacketHandler::HandleInboundPacket),
+          scoped_callback_factory_.NewCallback(
+              &CacheInvalidationPacketHandler::HandleChannelContextChange));
   listen_task->Start();
 }
 
@@ -269,6 +276,12 @@ void CacheInvalidationPacketHandler::HandleInboundPacket(
     return;
   }
   incoming_receiver_->Run(decoded_message);
+}
+
+void CacheInvalidationPacketHandler::HandleChannelContextChange(
+    const std::string& context) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  channel_context_ = context;
 }
 
 }  // namespace sync_notifier

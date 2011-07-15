@@ -49,6 +49,7 @@ class CacheInvalidationPacketHandler {
   FRIEND_TEST(CacheInvalidationPacketHandlerTest, Basic);
 
   void HandleInboundPacket(const std::string& packet);
+  void HandleChannelContextChange(const std::string& context);
 
   base::NonThreadSafe non_thread_safe_;
   base::ScopedCallbackFactory<CacheInvalidationPacketHandler>

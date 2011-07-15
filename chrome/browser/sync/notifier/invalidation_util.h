@@ -12,8 +12,13 @@
 
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/callback.h"
-#include "google/cacheinvalidation/v2/invalidation-client.h"
-#include "google/cacheinvalidation/v2/types.pb.h"
+
+namespace invalidation {
+
+class Invalidation;
+class ObjectId;
+
+}  // namespace invalidation
 
 namespace sync_notifier {
 

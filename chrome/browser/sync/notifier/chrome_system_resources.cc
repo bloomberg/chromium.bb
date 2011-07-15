@@ -42,7 +42,7 @@ void ChromeLogger::Log(LogLevel level, const char* file, int line,
   // We treat LOG(INFO) as VLOG(1).
   if ((log_severity >= logging::GetMinLogLevel()) &&
       ((log_severity != logging::LOG_INFO) ||
-       (1 <= logging::GetVlogLevelHelper(file, ::strlen(file))))) {
+      (1 <= logging::GetVlogLevelHelper(file, ::strlen(file))))) {
     va_list ap;
     va_start(ap, format);
     std::string result;
@@ -94,11 +94,11 @@ void ChromeScheduler::Schedule(
       FROM_HERE, task_to_post, delay.InMillisecondsRoundedUp());
 }
 
-bool ChromeScheduler::IsRunningOnThread() {
+bool ChromeScheduler::IsRunningOnThread() const {
   return created_on_loop_ == MessageLoop::current();
 }
 
-invalidation::Time ChromeScheduler::GetCurrentTime() {
+invalidation::Time ChromeScheduler::GetCurrentTime() const {
   CHECK_EQ(created_on_loop_, MessageLoop::current());
   return base::Time::Now();
 }
@@ -187,7 +187,9 @@ void ChromeStorage::RunAndDeleteReadKeyCallback(
   delete callback;
 }
 
-ChromeNetwork::ChromeNetwork() : packet_handler_(NULL) {}
+ChromeNetwork::ChromeNetwork()
+    : packet_handler_(NULL),
+      scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 ChromeNetwork::~ChromeNetwork() {
   STLDeleteElements(&network_status_receivers_);
@@ -214,8 +216,8 @@ void ChromeNetwork::UpdatePacketHandler(
   packet_handler_ = packet_handler;
   if (packet_handler_ != NULL) {
     packet_handler_->SetMessageReceiver(
-        invalidation::NewPermanentCallback(
-            this, &ChromeNetwork::HandleInboundMessage));
+        scoped_callback_factory_.NewCallback(
+            &ChromeNetwork::HandleInboundMessage));
   }
 }
 
@@ -248,7 +250,7 @@ void ChromeSystemResources::Stop() {
   listener_scheduler_->Stop();
 }
 
-bool ChromeSystemResources::IsStarted() {
+bool ChromeSystemResources::IsStarted() const {
   return is_started_;
 }
 
@@ -256,7 +258,7 @@ void ChromeSystemResources::set_platform(const std::string& platform) {
   platform_ = platform;
 }
 
-std::string ChromeSystemResources::platform() {
+std::string ChromeSystemResources::platform() const {
   return platform_;
 }
 

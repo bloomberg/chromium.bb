@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "google/cacheinvalidation/v2/invalidation-client.h"
 
 namespace sync_notifier {
 
@@ -81,9 +82,10 @@ void RegistrationManager::SetRegisteredTypes(
 void RegistrationManager::MarkRegistrationLost(
     syncable::ModelType model_type) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  registration_statuses_[model_type].state =
-      invalidation::InvalidationListener::UNREGISTERED;
-  TryRegisterType(model_type, true /* is_retry */);
+  RegistrationStatus* status = &registration_statuses_[model_type];
+  status->state = invalidation::InvalidationListener::UNREGISTERED;
+  bool is_retry = !status->last_registration_request.is_null();
+  TryRegisterType(model_type, is_retry);
 }
 
 void RegistrationManager::MarkAllRegistrationsLost() {

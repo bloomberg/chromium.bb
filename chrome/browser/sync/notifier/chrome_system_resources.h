@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -31,8 +33,9 @@ class ChromeLogger : public invalidation::Logger {
 
   virtual ~ChromeLogger();
 
+  // invalidation::Logger implementation.
   virtual void Log(LogLevel level, const char* file, int line,
-                   const char* format, ...);
+                   const char* format, ...) OVERRIDE;
 };
 
 class ChromeScheduler : public invalidation::Scheduler {
@@ -42,16 +45,16 @@ class ChromeScheduler : public invalidation::Scheduler {
   virtual ~ChromeScheduler();
 
   // Start and stop the scheduler.
-  virtual void Start();
-  virtual void Stop();
+  void Start();
+  void Stop();
 
-  // Overrides.
+  // invalidation::Scheduler implementation.
   virtual void Schedule(invalidation::TimeDelta delay,
-                        invalidation::Closure* task);
+                        invalidation::Closure* task) OVERRIDE;
 
-  virtual bool IsRunningOnThread();
+  virtual bool IsRunningOnThread() const OVERRIDE;
 
-  virtual invalidation::Time GetCurrentTime();
+  virtual invalidation::Time GetCurrentTime() const OVERRIDE;
 
  private:
   scoped_ptr<ScopedRunnableMethodFactory<ChromeScheduler> >
@@ -59,7 +62,6 @@ class ChromeScheduler : public invalidation::Scheduler {
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
 
-  // TODO(tim): Trying to debug bug crbug.com/64652.
   const MessageLoop* created_on_loop_;
   bool is_started_;
   bool is_stopped_;
@@ -83,17 +85,18 @@ class ChromeStorage : public invalidation::Storage {
     cached_state_ = value;
   }
 
-  // invalidation::Storage overrides.
+  // invalidation::Storage implementation.
   virtual void WriteKey(const std::string& key, const std::string& value,
-                        invalidation::WriteKeyCallback* done);
+                        invalidation::WriteKeyCallback* done) OVERRIDE;
 
   virtual void ReadKey(const std::string& key,
-                       invalidation::ReadKeyCallback* done);
+                       invalidation::ReadKeyCallback* done) OVERRIDE;
 
   virtual void DeleteKey(const std::string& key,
-                         invalidation::DeleteKeyCallback* done);
+                         invalidation::DeleteKeyCallback* done) OVERRIDE;
 
-  virtual void ReadAllKeys(invalidation::ReadAllKeysCallback* key_callback);
+  virtual void ReadAllKeys(
+      invalidation::ReadAllKeysCallback* key_callback) OVERRIDE;
 
  private:
   // Runs the given storage callback with SUCCESS status and deletes it.
@@ -117,14 +120,14 @@ class ChromeNetwork : public invalidation::NetworkChannel {
 
   void UpdatePacketHandler(CacheInvalidationPacketHandler* packet_handler);
 
-  // Overrides.
-  virtual void SendMessage(const std::string& outgoing_message);
+  // invalidation::NetworkChannel implementation.
+  virtual void SendMessage(const std::string& outgoing_message) OVERRIDE;
 
   virtual void SetMessageReceiver(
-      invalidation::MessageCallback* incoming_receiver);
+      invalidation::MessageCallback* incoming_receiver) OVERRIDE;
 
   virtual void AddNetworkStatusReceiver(
-      invalidation::NetworkStatusCallback* network_status_receiver);
+      invalidation::NetworkStatusCallback* network_status_receiver) OVERRIDE;
 
  private:
   void HandleInboundMessage(const std::string& incoming_message);
@@ -132,6 +135,7 @@ class ChromeNetwork : public invalidation::NetworkChannel {
   CacheInvalidationPacketHandler* packet_handler_;
   scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
   std::vector<invalidation::NetworkStatusCallback*> network_status_receivers_;
+  base::ScopedCallbackFactory<ChromeNetwork> scoped_callback_factory_;
 };
 
 class ChromeSystemResources : public invalidation::SystemResources {
@@ -141,16 +145,16 @@ class ChromeSystemResources : public invalidation::SystemResources {
   virtual ~ChromeSystemResources();
 
   // invalidation::SystemResources implementation.
-  virtual void Start();
-  virtual void Stop();
-  virtual bool IsStarted();
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
+  virtual bool IsStarted() const OVERRIDE;
   virtual void set_platform(const std::string& platform);
-  virtual std::string platform();
-  virtual ChromeLogger* logger();
-  virtual ChromeStorage* storage();
-  virtual ChromeNetwork* network();
-  virtual ChromeScheduler* internal_scheduler();
-  virtual ChromeScheduler* listener_scheduler();
+  virtual std::string platform() const OVERRIDE;
+  virtual ChromeLogger* logger() OVERRIDE;
+  virtual ChromeStorage* storage() OVERRIDE;
+  virtual ChromeNetwork* network() OVERRIDE;
+  virtual ChromeScheduler* internal_scheduler() OVERRIDE;
+  virtual ChromeScheduler* listener_scheduler() OVERRIDE;
 
  private:
   bool is_started_;
