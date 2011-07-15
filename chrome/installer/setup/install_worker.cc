@@ -667,10 +667,22 @@ void AddInstallWorkItems(const InstallationState& original_state,
   FilePath new_chrome_exe(target_path.Append(installer::kChromeNewExe));
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
-  install_list->AddCopyTreeWorkItem(
-      src_path.Append(installer::kChromeExe).value(),
-      target_path.Append(installer::kChromeExe).value(),
-      temp_path.value(), WorkItem::NEW_NAME_IF_IN_USE, new_chrome_exe.value());
+
+  if (installer_state.is_chrome_frame_running()) {
+    VLOG(1) << "Chrome Frame in use. Copying to new_chrome.exe";
+    install_list->AddCopyTreeWorkItem(
+        src_path.Append(installer::kChromeExe).value(),
+        new_chrome_exe.value(),
+        temp_path.value(),
+        WorkItem::ALWAYS);
+  } else {
+    install_list->AddCopyTreeWorkItem(
+        src_path.Append(installer::kChromeExe).value(),
+        target_path.Append(installer::kChromeExe).value(),
+        temp_path.value(),
+        WorkItem::NEW_NAME_IF_IN_USE,
+        new_chrome_exe.value());
+  }
 
   // Extra executable for 64 bit systems.
   // NOTE: We check for "not disabled" so that if the API call fails, we play it

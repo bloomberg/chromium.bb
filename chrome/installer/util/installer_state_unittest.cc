@@ -47,6 +47,9 @@ class MockInstallerState : public InstallerState {
   void set_target_path(const FilePath& target_path) {
     target_path_ = target_path;
   }
+  static bool IsFileInUse(const FilePath& file) {
+    return InstallerState::IsFileInUse(file);
+  }
 };
 
 // Simple function to dump some text into a new file.
@@ -456,4 +459,31 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
   // Is the Chrome version picked up?
   scoped_ptr<Version> version(installer_state.GetCurrentVersion(machine_state));
   EXPECT_TRUE(version.get() != NULL);
+}
+
+TEST_F(InstallerStateTest, IsFileInUse) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
+
+  EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
+
+  {
+    // Open a handle to the file with the same access mode and sharing options
+    // as the loader.
+    base::win::ScopedHandle temp_handle(
+        CreateFile(temp_file.value().c_str(),
+                   SYNCHRONIZE | FILE_EXECUTE,
+                   FILE_SHARE_DELETE | FILE_SHARE_READ,
+                   NULL, OPEN_EXISTING, 0, 0));
+    ASSERT_TRUE(temp_handle != NULL);
+
+    // The file should now be in use.
+    EXPECT_TRUE(MockInstallerState::IsFileInUse(temp_file));
+  }
+
+  // And once the handle is gone, it should no longer be in use.
+  EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 }

@@ -15,10 +15,12 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -84,24 +86,51 @@ bool SwapNewChromeExeIfPresent() {
   if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
     return false;
 
-  // First try to rename exe by launching rename command ourselves.
+  // Open up the registry key containing current version and rename information.
   bool user_install =
       InstallUtil::IsPerUserInstall(cur_chrome_exe.value().c_str());
   HKEY reg_root = user_install ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   base::win::RegKey key;
-  std::wstring rename_cmd;
-  if ((key.Open(reg_root, dist->GetVersionKey().c_str(),
-                KEY_READ) == ERROR_SUCCESS) &&
-      (key.ReadValue(google_update::kRegRenameCmdField,
-                     &rename_cmd) == ERROR_SUCCESS)) {
-    base::ProcessHandle handle;
-    if (base::LaunchApp(rename_cmd, true, true, &handle)) {
-      DWORD exit_code;
-      ::GetExitCodeProcess(handle, &exit_code);
-      ::CloseHandle(handle);
-      if (exit_code == installer::RENAME_SUCCESSFUL)
-        return true;
+  if (key.Open(reg_root, dist->GetVersionKey().c_str(),
+               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+
+    // Having just ascertained that we can swap, now check that we should: if
+    // we are given an explicit --chrome-version flag, don't rename unless the
+    // specified version matches the "pv" value. In practice, this is used to
+    // defer Chrome Frame updates until the current version of the Chrome Frame
+    // DLL component is loaded.
+    const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+    if (cmd_line.HasSwitch(switches::kChromeVersion)) {
+      std::string version_string =
+          cmd_line.GetSwitchValueASCII(switches::kChromeVersion);
+      scoped_ptr<Version> cmd_version(
+          Version::GetVersionFromString(version_string));
+
+      std::wstring pv_value;
+      if (key.ReadValue(google_update::kRegVersionField,
+                        &pv_value) == ERROR_SUCCESS) {
+        scoped_ptr<Version> pv_version(
+            Version::GetVersionFromString(WideToASCII(pv_value)));
+        if (cmd_version.get() && pv_version.get() &&
+            !cmd_version->Equals(*pv_version.get())) {
+          return false;
+        }
+      }
+    }
+
+    // First try to rename exe by launching rename command ourselves.
+    std::wstring rename_cmd;
+    if (key.ReadValue(google_update::kRegRenameCmdField,
+                      &rename_cmd) == ERROR_SUCCESS) {
+      base::ProcessHandle handle;
+      if (base::LaunchApp(rename_cmd, true, true, &handle)) {
+        DWORD exit_code;
+        ::GetExitCodeProcess(handle, &exit_code);
+        ::CloseHandle(handle);
+        if (exit_code == installer::RENAME_SUCCESSFUL)
+          return true;
+      }
     }
   }
 

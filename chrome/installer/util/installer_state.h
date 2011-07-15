@@ -105,6 +105,11 @@ class InstallerState {
   // TODO(grt): Eradicate the bool in favor of the enum.
   bool is_multi_install() const;
 
+  // Returns whether or not there is currently a Chrome Frame instance running.
+  // Note that there isn't a mechanism to lock Chrome Frame in place, so Chrome
+  // Frame may either exit or start up after this is called.
+  bool is_chrome_frame_running() const { return is_chrome_frame_running_; }
+
   // The full path to the place where the operand resides.
   const FilePath& target_path() const { return target_path_; }
 
@@ -180,6 +185,8 @@ class InstallerState {
                             const std::wstring* launch_cmd) const;
 
  protected:
+  static bool IsFileInUse(const FilePath& file);
+
   FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
   bool CanAddProduct(const Product& product, const FilePath* product_dir) const;
   Product* AddProductInDirectory(const FilePath* product_dir,
@@ -190,6 +197,7 @@ class InstallerState {
       const InstallationState& machine_state);
   bool IsMultiInstallUpdate(const MasterPreferences& prefs,
                             const InstallationState& machine_state);
+  bool DetectChromeFrameInUse(const InstallationState& machine_state);
 
   // Sets this object's level and updates the root_key_ accordingly.
   void set_level(Level level);
@@ -211,6 +219,7 @@ class InstallerState {
 #endif
   bool msi_;
   bool verbose_logging_;
+  bool is_chrome_frame_running_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);

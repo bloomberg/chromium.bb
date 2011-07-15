@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -75,7 +76,8 @@ InstallerState::InstallerState()
       state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      is_chrome_frame_running_(false) {
 }
 
 InstallerState::InstallerState(Level level)
@@ -86,7 +88,8 @@ InstallerState::InstallerState(Level level)
       state_type_(BrowserDistribution::CHROME_BROWSER),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      is_chrome_frame_running_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -155,6 +158,8 @@ void InstallerState::Initialize(const CommandLine& command_line,
 
   state_key_ = operand->GetStateKey();
   state_type_ = operand->GetType();
+
+  is_chrome_frame_running_ = DetectChromeFrameInUse(machine_state);
 }
 
 void InstallerState::set_level(Level level) {
@@ -415,6 +420,32 @@ Version* InstallerState::GetCurrentVersion(
 FilePath InstallerState::GetInstallerDirectory(const Version& version) const {
   return target_path().Append(ASCIIToWide(version.GetString()))
       .Append(kInstallerDir);
+}
+
+// static
+bool InstallerState::IsFileInUse(const FilePath& file) {
+  // Call CreateFile with a share mode of 0 which should cause this to fail
+  // with ERROR_SHARING_VIOLATION if the file exists and is in-use.
+  return !base::win::ScopedHandle(CreateFile(file.value().c_str(),
+                                             GENERIC_WRITE, 0, NULL,
+                                             OPEN_EXISTING, 0, 0)).IsValid();
+}
+
+bool InstallerState::DetectChromeFrameInUse(
+    const InstallationState& machine_state) {
+  // We check only for the current version (e.g. the version we are upgrading
+  // _from_). We don't need to check interstitial versions if any (as would
+  // occur in the case of multiple updates) since if they are in use, we are
+  // guaranteed that the current version is in use too.
+  bool in_use = false;
+  scoped_ptr<Version> current_version(GetCurrentVersion(machine_state));
+  if (current_version != NULL) {
+    FilePath cf_install_path(
+        target_path().AppendASCII(current_version->GetString())
+                     .Append(kChromeFrameDll));
+    in_use = IsFileInUse(cf_install_path);
+  }
+  return in_use;
 }
 
 void InstallerState::RemoveOldVersionDirectories(
