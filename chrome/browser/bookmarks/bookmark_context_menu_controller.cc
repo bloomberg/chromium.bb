@@ -188,16 +188,22 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       bookmark_utils::ToggleWhenVisible(profile_);
       break;
 
-    case IDC_BOOKMARK_MANAGER:
+    case IDC_BOOKMARK_MANAGER: {
       UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-      {
-        Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-        if (browser)
-          browser->OpenBookmarkManager();
-        else
-          NOTREACHED();
-      }
+      Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+      if (!browser) NOTREACHED();
+
+      if (selection_.size() != 1)
+        browser->OpenBookmarkManager();
+      else if (selection_[0]->is_folder())
+        browser->OpenBookmarkManagerForNode(selection_[0]->id());
+      else if (parent_)
+        browser->OpenBookmarkManagerForNode(parent_->id());
+      else
+        browser->OpenBookmarkManager();
       break;
+    }
+
 
     case IDC_CUT:
       bookmark_utils::CopyToClipboard(model_, selection_, true);

@@ -18,6 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -747,7 +748,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 // static
 void Browser::OpenBookmarkManagerWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowBookmarkManagerTab();
+  browser->OpenBookmarkManager();
   browser->window()->Show();
 }
 
@@ -1926,18 +1927,22 @@ void Browser::ToggleBookmarkBar() {
 
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-  ShowBookmarkManagerTab();
+  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
+  ShowSingletonTabOverwritingNTP(
+    GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL)));
+}
+
+void Browser::OpenBookmarkManagerForNode(int64 node_id) {
+  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"));
+  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
+  ShowSingletonTabOverwritingNTP(
+    GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL).Resolve(
+      StringPrintf("/#%s", base::Int64ToString(node_id).c_str()))));
 }
 
 void Browser::ShowAppMenu() {
   // We record the user metric for this event in WrenchMenu::RunMenu.
   window_->ShowAppMenu();
-}
-
-void Browser::ShowBookmarkManagerTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"));
-  ShowSingletonTabOverwritingNTP(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIBookmarksURL)));
 }
 
 void Browser::ShowHistoryTab() {

@@ -1124,7 +1124,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-    browser()->ShowBookmarkManagerTab();
+    browser()->OpenBookmarkManager();
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());

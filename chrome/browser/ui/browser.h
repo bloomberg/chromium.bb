@@ -564,8 +564,8 @@ class Browser : public TabHandlerDelegate,
   void ToggleBookmarkBar();
 
   void OpenBookmarkManager();
+  void OpenBookmarkManagerForNode(int64 node_id);
   void ShowAppMenu();
-  void ShowBookmarkManagerTab();
   void ShowHistoryTab();
   void ShowDownloadsTab();
   void ShowExtensionsTab();
