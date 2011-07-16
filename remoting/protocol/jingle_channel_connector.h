@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_CHANNEL_CONNECTOR_H_
 #define REMOTING_PROTOCOL_JINGLE_CHANNEL_CONNECTOR_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -16,10 +18,6 @@ namespace crypto {
 class RSAPrivateKey;
 }  // namespace crypto
 
-namespace net {
-class X509Certificate;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 
@@ -29,8 +27,8 @@ class JingleChannelConnector : public base::NonThreadSafe {
   virtual ~JingleChannelConnector() { }
 
   virtual void Connect(bool initiator,
-                       net::X509Certificate* local_cert,
-                       net::X509Certificate* remote_cert,
+                       const std::string& local_cert,
+                       const std::string& remote_cert,
                        crypto::RSAPrivateKey* local_private_key,
                        cricket::TransportChannel* raw_channel) = 0;
 

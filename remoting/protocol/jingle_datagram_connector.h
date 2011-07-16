@@ -33,8 +33,8 @@ class JingleDatagramConnector : public JingleChannelConnector {
   // owned by the caller, and must exist until this object is
   // destroyed.
   virtual void Connect(bool initiator,
-                       net::X509Certificate* local_cert,
-                       net::X509Certificate* remote_cert,
+                       const std::string& local_cert,
+                       const std::string& remote_cert,
                        crypto::RSAPrivateKey* local_private_key,
                        cricket::TransportChannel* raw_channel) OVERRIDE;
 

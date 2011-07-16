@@ -94,11 +94,15 @@ crypto::RSAPrivateKey* HostKeyPair::CopyPrivateKey() const {
   return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes);
 }
 
-net::X509Certificate* HostKeyPair::GenerateCertificate() const {
-  return net::X509Certificate::CreateSelfSigned(
-      key_.get(), "CN=chromoting",
-      base::RandInt(1, std::numeric_limits<int>::max()),
-      base::TimeDelta::FromDays(1));
+std::string HostKeyPair::GenerateCertificate() const {
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateSelfSigned(
+          key_.get(), "CN=chromoting",
+          base::RandInt(1, std::numeric_limits<int>::max()),
+          base::TimeDelta::FromDays(1));
+  std::string result;
+  CHECK(cert->GetDEREncoded(&result));
+  return result;
 }
 
 }  // namespace remoting

@@ -86,20 +86,20 @@ bool GetChannelKey(const std::string& channel_name,
 // static
 JingleSession* JingleSession::CreateClientSession(
     JingleSessionManager* manager, const std::string& host_public_key) {
-  return new JingleSession(manager, NULL, NULL, host_public_key);
+  return new JingleSession(manager, "", NULL, host_public_key);
 }
 
 // static
 JingleSession* JingleSession::CreateServerSession(
     JingleSessionManager* manager,
-    scoped_refptr<net::X509Certificate> certificate,
+    const std::string& certificate,
     crypto::RSAPrivateKey* key) {
   return new JingleSession(manager, certificate, key, "");
 }
 
 JingleSession::JingleSession(
     JingleSessionManager* jingle_session_manager,
-    scoped_refptr<net::X509Certificate> local_cert,
+    const std::string& local_cert,
     crypto::RSAPrivateKey* local_private_key,
     const std::string& peer_public_key)
     : jingle_session_manager_(jingle_session_manager),
@@ -261,7 +261,7 @@ void JingleSession::set_candidate_config(
   candidate_config_.reset(candidate_config);
 }
 
-scoped_refptr<net::X509Certificate> JingleSession::local_certificate() const {
+const std::string& JingleSession::local_certificate() const {
   DCHECK(CalledOnValidThread());
   return local_cert_;
 }
@@ -405,7 +405,8 @@ bool JingleSession::InitializeConfigFromDescription(
       static_cast<const protocol::ContentDescription*>(content->description);
   CHECK(content_description);
 
-  remote_cert_ = content_description->certificate();  if (!remote_cert_) {
+  remote_cert_ = content_description->certificate();
+  if (remote_cert_.empty()) {
     LOG(ERROR) << "Connection response does not specify certificate";
     return false;
   }

@@ -154,7 +154,7 @@ ContentDescription::ContentDescription(
     const CandidateSessionConfig* candidate_config,
     const std::string& auth_token,
     const std::string& master_key,
-    scoped_refptr<net::X509Certificate> certificate)
+    const std::string& certificate)
     : candidate_config_(candidate_config),
       auth_token_(auth_token),
       master_key_(master_key),
@@ -209,21 +209,16 @@ XmlElement* ContentDescription::ToXml() const {
                               config()->initial_resolution().height));
   root->AddElement(resolution_tag);
 
-  if (certificate() || !auth_token().empty()) {
+  if (!certificate().empty() || !auth_token().empty()) {
     XmlElement* authentication_tag = new XmlElement(
         QName(kChromotingXmlNamespace, kAuthenticationTag));
 
-    if (certificate()) {
+    if (!certificate().empty()) {
       XmlElement* certificate_tag = new XmlElement(
           QName(kChromotingXmlNamespace, kCertificateTag));
 
-      std::string der_cert;
-      if (!certificate()->GetDEREncoded(&der_cert)) {
-        LOG(DFATAL) << "Cannot obtain DER encoded certificate";
-      }
-
       std::string base64_cert;
-      if (!base::Base64Encode(der_cert, &base64_cert)) {
+      if (!base::Base64Encode(certificate(), &base64_cert)) {
         LOG(DFATAL) << "Cannot perform base64 encode on certificate";
       }
 
@@ -318,7 +313,7 @@ cricket::ContentDescription* ContentDescription::ParseXml(
     *config->mutable_initial_resolution() = resolution;
 
     // Parse authentication information.
-    scoped_refptr<net::X509Certificate> certificate;
+    std::string certificate;
     std::string auth_token;
     std::string master_key;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
@@ -329,16 +324,8 @@ cricket::ContentDescription* ContentDescription::ParseXml(
           child->FirstNamed(QName(kChromotingXmlNamespace, kCertificateTag));
       if (cert_tag) {
         std::string base64_cert = cert_tag->BodyText();
-        std::string der_cert;
-        if (!base::Base64Decode(base64_cert, &der_cert)) {
+        if (!base::Base64Decode(base64_cert, &certificate)) {
           LOG(ERROR) << "Failed to decode certificate received from the peer.";
-          return NULL;
-        }
-
-        certificate = net::X509Certificate::CreateFromBytes(der_cert.data(),
-                                                            der_cert.length());
-        if (!certificate) {
-          LOG(ERROR) << "Failed to create platform-specific certificate handle";
           return NULL;
         }
       }

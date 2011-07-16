@@ -13,10 +13,6 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 
-namespace net {
-class X509Certificate;
-}  // namespace net
-
 namespace remoting {
 
 namespace protocol {
@@ -71,19 +67,19 @@ class JingleSession : public protocol::Session,
   // TODO(sergeyu): Remove |certificate| and |key| when we stop using TLS.
   static JingleSession* CreateServerSession(
       JingleSessionManager* manager,
-      scoped_refptr<net::X509Certificate> certificate,
+      const std::string& certificate,
       crypto::RSAPrivateKey* key);
 
   // TODO(sergeyu): Change type of |peer_public_key| to RSAPublicKey.
   JingleSession(JingleSessionManager* jingle_session_manager,
-                scoped_refptr<net::X509Certificate> local_cert,
+                const std::string& local_cert,
                 crypto::RSAPrivateKey* local_private_key,
                 const std::string& peer_public_key);
   virtual ~JingleSession();
 
   // Called by JingleSessionManager.
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
-  scoped_refptr<net::X509Certificate> local_certificate() const;
+  const std::string& local_certificate() const;
   void Init(cricket::Session* cricket_session);
   std::string GetEncryptedMasterKey() const;
 
@@ -142,8 +138,8 @@ class JingleSession : public protocol::Session,
 
   // Certificates used for connection. Currently only receiving side
   // has a certificate.
-  scoped_refptr<net::X509Certificate> local_cert_;
-  scoped_refptr<net::X509Certificate> remote_cert_;
+  std::string local_cert_;
+  std::string remote_cert_;
 
   // Private key used in SSL server sockets.
   scoped_ptr<crypto::RSAPrivateKey> local_private_key_;

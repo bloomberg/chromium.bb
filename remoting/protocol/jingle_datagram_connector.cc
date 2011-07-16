@@ -25,8 +25,8 @@ JingleDatagramConnector::~JingleDatagramConnector() {
 
 void JingleDatagramConnector::Connect(
     bool initiator,
-    net::X509Certificate* local_cert,
-    net::X509Certificate* remote_cert,
+    const std::string& local_cert,
+    const std::string& remote_cert,
     crypto::RSAPrivateKey* local_private_key,
     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());

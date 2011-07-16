@@ -58,10 +58,6 @@ namespace crypto {
 class RSAPrivateKey;
 }  // namespace base
 
-namespace net {
-class X509Certificate;
-}  // namespace net
-
 namespace remoting {
 
 class SignalStrategy;
@@ -104,7 +100,7 @@ class SessionManager : public base::NonThreadSafe {
                     SignalStrategy* signal_strategy,
                     IncomingSessionCallback* incoming_session_callback,
                     crypto::RSAPrivateKey* private_key,
-                    scoped_refptr<net::X509Certificate> certificate) = 0;
+                    const std::string& certificate) = 0;
 
   // Tries to create a session to the host |jid|.
   //

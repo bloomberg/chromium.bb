@@ -15,10 +15,6 @@ namespace crypto {
 class RSAPrivateKey;
 }  // namespace base
 
-namespace net {
-class X509Certificate;
-}  // namespace net
-
 namespace remoting {
 
 class HostConfig;
@@ -39,7 +35,7 @@ class HostKeyPair {
 
   // Make a new copy of private key. Caller will own the generated private key.
   crypto::RSAPrivateKey* CopyPrivateKey() const;
-  net::X509Certificate* GenerateCertificate() const;
+  std::string GenerateCertificate() const;
 
  private:
   scoped_ptr<crypto::RSAPrivateKey> key_;

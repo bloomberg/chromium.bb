@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/x509_certificate.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessiondescription.h"
 
@@ -30,7 +29,7 @@ class ContentDescription : public cricket::ContentDescription {
   explicit ContentDescription(const CandidateSessionConfig* config,
                               const std::string& auth_token,
                               const std::string& master_key,
-                              scoped_refptr<net::X509Certificate> certificate);
+                              const std::string& certificate);
   virtual ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
@@ -39,9 +38,7 @@ class ContentDescription : public cricket::ContentDescription {
 
   const std::string& auth_token() const { return auth_token_; }
   const std::string& master_key() const { return master_key_; }
-  scoped_refptr<net::X509Certificate> certificate() const {
-    return certificate_;
-  }
+  const std::string& certificate() const { return certificate_; }
 
   buzz::XmlElement* ToXml() const;
 
@@ -57,7 +54,7 @@ class ContentDescription : public cricket::ContentDescription {
   // Master key used for the session encrypted with the hosts key.
   std::string master_key_;
 
-  scoped_refptr<net::X509Certificate> certificate_;
+  std::string certificate_;
 };
 
 }  // namespace protocol

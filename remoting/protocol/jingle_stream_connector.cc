@@ -28,14 +28,15 @@ const int kTcpAckDelayMilliseconds = 10;
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
-    net::StreamSocket* socket, scoped_refptr<net::X509Certificate> cert,
+    net::StreamSocket* socket, const std::string& cert_der,
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
 
   // Certificate provided by the host doesn't need authority.
   net::SSLConfig::CertAndStatus cert_and_status;
   cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
-  cert_and_status.cert = cert;
+  cert_and_status.cert = net::X509Certificate::CreateFromBytes(
+      cert_der.data(), cert_der.length());
   ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
   // SSLClientSocket takes ownership of the adapter.
@@ -68,8 +69,8 @@ JingleStreamConnector::~JingleStreamConnector() {
 }
 
 void JingleStreamConnector::Connect(bool initiator,
-                                    net::X509Certificate* local_cert,
-                                    net::X509Certificate* remote_cert,
+                                    const std::string& local_cert,
+                                    const std::string& remote_cert,
                                     crypto::RSAPrivateKey* local_private_key,
                                     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
@@ -125,10 +126,19 @@ bool JingleStreamConnector::EstablishSSLConnection() {
 
     result = ssl_client_socket->Connect(&ssl_connect_callback_);
   } else {
+    scoped_refptr<net::X509Certificate> cert =
+        net::X509Certificate::CreateFromBytes(
+            local_cert_.data(), local_cert_.length());
+    if (!cert) {
+      LOG(ERROR) << "Failed to parse X509Certificate";
+      return false;
+    }
+
     // Create server SSL socket.
     net::SSLConfig ssl_config;
+
     net::SSLServerSocket* ssl_server_socket =
-        net::CreateSSLServerSocket(socket_.release(), local_cert_,
+        net::CreateSSLServerSocket(socket_.release(), cert,
                                    local_private_key_, ssl_config);
     socket_.reset(ssl_server_socket);
 

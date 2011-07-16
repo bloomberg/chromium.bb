@@ -155,10 +155,6 @@ class JingleSessionTest : public testing::Test {
     std::string cert_der;
     ASSERT_TRUE(file_util::ReadFileToString(cert_path, &cert_der));
 
-    scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                              cert_der.size());
-
     FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
     std::string key_string;
     ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
@@ -181,7 +177,7 @@ class JingleSessionTest : public testing::Test {
         NewCallback(&host_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
         private_key.release(),
-        cert);
+        cert_der);
 
     client_server_.reset(JingleSessionManager::CreateNotSandboxed());
     client_server_->set_allow_local_ips(true);
@@ -189,7 +185,7 @@ class JingleSessionTest : public testing::Test {
         kClientJid, client_signal_strategy_.get(),
         NewCallback(&client_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
-        NULL, NULL);
+        NULL, "");
   }
 
   void CloseSessionManager() {
@@ -607,10 +603,6 @@ class UDPChannelTester : public ChannelTesterBase {
   int broken_packets_;
 };
 
-// Mac needs to implement X509Certificate::CreateSelfSigned to enable these
-// tests.
-#if defined(USE_NSS) || defined(OS_WIN)
-
 // Verify that we can create and destory server objects without a connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
   CreateServerPair();
@@ -748,8 +740,6 @@ TEST_F(JingleSessionTest, DISABLED_TestSpeed) {
   // Connections must be closed while |tester| still exists.
   CloseSessions();
 }
-
-#endif
 
 }  // namespace protocol
 }  // namespace remoting

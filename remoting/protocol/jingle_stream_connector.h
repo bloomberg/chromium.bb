@@ -40,10 +40,10 @@ class JingleStreamConnector : public JingleChannelConnector {
   // owned by the caller, and must exist until this object is
   // destroyed.
   virtual void Connect(bool initiator,
-                       net::X509Certificate* local_cert,
-                       net::X509Certificate* remote_cert,
+                       const std::string& local_cert,
+                       const std::string& remote_cert,
                        crypto::RSAPrivateKey* local_private_key,
-                        cricket::TransportChannel* raw_channel) OVERRIDE;
+                       cricket::TransportChannel* raw_channel) OVERRIDE;
 
  private:
   bool EstablishTCPConnection(net::Socket* socket);
@@ -62,8 +62,8 @@ class JingleStreamConnector : public JingleChannelConnector {
   Session::StreamChannelCallback callback_;
 
   bool initiator_;
-  scoped_refptr<net::X509Certificate> local_cert_;
-  scoped_refptr<net::X509Certificate> remote_cert_;
+  std::string local_cert_;
+  std::string remote_cert_;
   crypto::RSAPrivateKey* local_private_key_;
 
   cricket::TransportChannel* raw_channel_;

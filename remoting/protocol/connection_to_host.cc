@@ -111,7 +111,7 @@ void ConnectionToHost::InitSession() {
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
       local_jid_, signal_strategy_.get(),
-      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, NULL);
+      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, "");
   session_manager_.reset(session_manager);
 
   CandidateSessionConfig* candidate_config =

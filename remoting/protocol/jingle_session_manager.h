@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "net/base/x509_certificate.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/session_manager.h"
@@ -50,7 +49,7 @@ class JingleSessionManager
                     SignalStrategy* signal_strategy,
                     IncomingSessionCallback* incoming_session_callback,
                     crypto::RSAPrivateKey* private_key,
-                    scoped_refptr<net::X509Certificate> certificate) OVERRIDE;
+                    const std::string& certificate) OVERRIDE;
   virtual Session* Connect(
       const std::string& host_jid,
       const std::string& host_public_key,
@@ -108,7 +107,7 @@ class JingleSessionManager
   // Creates session description for incoming session.
   static cricket::SessionDescription* CreateHostSessionDescription(
       const CandidateSessionConfig* candidate_config,
-      scoped_refptr<net::X509Certificate> certificate);
+      const std::string& certificate);
 
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
@@ -117,7 +116,7 @@ class JingleSessionManager
   std::string local_jid_;  // Full jid for the local side of the session.
   SignalStrategy* signal_strategy_;
   scoped_ptr<IncomingSessionCallback> incoming_session_callback_;
-  scoped_refptr<net::X509Certificate> certificate_;
+  std::string certificate_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
 
   // This must be set to true to enable NAT traversal. STUN/Relay

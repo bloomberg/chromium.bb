@@ -64,7 +64,7 @@ void JingleSessionManager::Init(
     SignalStrategy* signal_strategy,
     IncomingSessionCallback* incoming_session_callback,
     crypto::RSAPrivateKey* private_key,
-    scoped_refptr<net::X509Certificate> certificate) {
+    const std::string& certificate) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(signal_strategy);
@@ -171,7 +171,7 @@ void JingleSessionManager::OnSessionCreate(
 
   // If this is an outcoming session the session object is already created.
   if (incoming) {
-    DCHECK(certificate_);
+    DCHECK(!certificate_.empty());
     DCHECK(private_key_.get());
 
     JingleSession* jingle_session = JingleSession::CreateServerSession(
@@ -327,14 +327,14 @@ JingleSessionManager::CreateClientSessionDescription(
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
       JingleSession::kChromotingContentName, kChromotingXmlNamespace,
-      new ContentDescription(config, auth_token, master_key, NULL));
+      new ContentDescription(config, auth_token, master_key, ""));
   return desc;
 }
 
 // static
 cricket::SessionDescription* JingleSessionManager::CreateHostSessionDescription(
     const CandidateSessionConfig* config,
-    scoped_refptr<net::X509Certificate> certificate) {
+    const std::string& certificate) {
   cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(
       JingleSession::kChromotingContentName, kChromotingXmlNamespace,
