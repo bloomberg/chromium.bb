@@ -160,6 +160,7 @@ struct wlsc_compositor {
 	struct wl_compositor compositor;
 
 	struct wl_shm *shm;
+	struct wlsc_xserver *wxs;
 
 	EGLDisplay display;
 	EGLContext context;
@@ -397,6 +398,8 @@ void
 wlsc_watch_process(struct wlsc_process *process);
 
 int
-wlsc_xserver_init(struct wl_display *display);
+wlsc_xserver_init(struct wlsc_compositor *compositor);
+void
+wlsc_xserver_destroy(struct wlsc_compositor *compositor);
 
 #endif

@@ -549,8 +549,9 @@ static const struct xserver_interface xserver_implementation = {
 };
 
 int
-wlsc_xserver_init(struct wl_display *display)
+wlsc_xserver_init(struct wlsc_compositor *compositor)
 {
+	struct wl_display *display = compositor->wl_display;
 	struct wlsc_xserver *mxs;
 	char lockfile[256], pid[16], *end;
 	socklen_t size, name_size;
@@ -656,5 +657,22 @@ wlsc_xserver_init(struct wl_display *display)
 	wl_display_add_global(display,
 			      &mxs->xserver.object, wlsc_xserver_bind);
 
+	compositor->wxs = mxs;
+
 	return 0;
+}
+
+void
+wlsc_xserver_destroy(struct wlsc_compositor *compositor)
+{
+	struct wlsc_xserver *wxs = compositor->wxs;
+	char path[256];
+
+	snprintf(path, sizeof path, "/tmp/.X%d-lock", wxs->display);
+	unlink(path);
+	snprintf(path, sizeof path, "/tmp/.X11-unix/X%d", wxs->display);
+	unlink(path);
+	close(wxs->fd);
+	wl_event_source_remove(wxs->source);
+	free(wxs);
 }

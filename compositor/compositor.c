@@ -1961,6 +1961,7 @@ static int on_term_signal(int signal_number, void *data)
 {
 	struct wlsc_compositor *ec = data;
 
+	fprintf(stderr, "caught signal %d\n", signal_number);
 	wl_display_terminate(ec->wl_display);
 
 	return 1;
@@ -2089,7 +2090,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	if (xserver)
-		wlsc_xserver_init(display);
+		wlsc_xserver_init(ec);
 
 	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
@@ -2099,11 +2100,15 @@ int main(int argc, char *argv[])
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
 	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
+	wl_event_loop_add_signal(loop, SIGQUIT, on_term_signal, ec);
 
 	wl_list_init(&child_process_list);
 	wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler, NULL);
 
 	wl_display_run(display);
+
+	if (xserver)
+		wlsc_xserver_destroy(ec);
 
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);
