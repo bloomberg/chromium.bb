@@ -26,11 +26,6 @@ xserver_launcher_sources =			\
 	xserver-server-protocol.h
 endif
 
-udevrulesddir = $(sysconfdir)/udev/rules.d
-
-dist_udevrulesd_DATA =				\
-	70-wayland.rules
-
 moduledir = @libdir@/wayland
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\

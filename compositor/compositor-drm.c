@@ -730,14 +730,17 @@ vt_func(struct wlsc_compositor *compositor, int event)
 	};
 }
 
+static const char default_seat[] = "seat0";
+
 static struct wlsc_compositor *
-drm_compositor_create(struct wl_display *display, int connector)
+drm_compositor_create(struct wl_display *display,
+		      int connector, const char *seat)
 {
 	struct drm_compositor *ec;
 	struct udev_enumerate *e;
         struct udev_list_entry *entry;
-	struct udev_device *device;
-	const char *path;
+	struct udev_device *device, *drm_device;
+	const char *path, *device_seat;
 	struct wl_event_loop *loop;
 
 	ec = malloc(sizeof *ec);
@@ -753,26 +756,37 @@ drm_compositor_create(struct wl_display *display, int connector)
 
 	e = udev_enumerate_new(ec->udev);
 	udev_enumerate_add_match_subsystem(e, "drm");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
+
         udev_enumerate_scan_devices(e);
-	device = NULL;
+	drm_device = NULL;
         udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(ec->udev, path);
-		break;
+                device_seat =
+			udev_device_get_property_value(device, "ID_SEAT");
+		if (!device_seat)
+			device_seat = default_seat;
+		if (strcmp(device_seat, seat) == 0) {
+			drm_device = device;
+			break;
+		}
+		udev_device_unref(device);
 	}
+
         udev_enumerate_unref(e);
 
-	if (device == NULL) {
+	if (drm_device == NULL) {
 		fprintf(stderr, "no drm device found\n");
 		return NULL;
 	}
 
 	ec->base.wl_display = display;
-	if (init_egl(ec, device) < 0) {
+	if (init_egl(ec, drm_device) < 0) {
 		fprintf(stderr, "failed to initialize egl\n");
 		return NULL;
 	}
+
+	udev_device_unref(drm_device);
 
 	ec->base.destroy = drm_destroy;
 	ec->base.create_cursor_image = drm_compositor_create_cursor_image;
@@ -825,18 +839,23 @@ WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;
+	const char *seat;
 	char *p, *value;
 
-	static char * const tokens[] = { "connector", NULL };
+	static char * const tokens[] = { "connector", "seat", NULL };
 	
 	p = options;
+	seat = default_seat;
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
 		switch (i) {
 		case 0:
 			connector = strtol(value, NULL, 0);
 			break;
+		case 1:
+			seat = value;
+			break;
 		}
 	}
 
-	return drm_compositor_create(display, connector);
+	return drm_compositor_create(display, connector, seat);
 }
