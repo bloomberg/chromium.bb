@@ -169,7 +169,6 @@ extern const char kFocusExistingTabOnOpen[];
 extern const char kFirstRun[];
 extern const char kForceAppsPromoVisible[];
 extern const char kForceCompositingMode[];
-extern const char kForceStubLibcros[];
 extern const char kGaiaHost[];
 extern const char kGSSAPILibraryName[];
 extern const char kHelp[];
@@ -281,6 +280,7 @@ extern const char kWinHttpProxyResolver[];
 
 #if defined(OS_CHROMEOS)
 extern const char kWebUILogin[];
+extern const char kWebUIGaiaLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
@@ -302,6 +302,10 @@ extern const char kGuestSession[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
+#ifndef NDEBUG
+extern const char kOobeSkipPostLogin[];
+extern const char kAuthExtensionPath[];
+#endif
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

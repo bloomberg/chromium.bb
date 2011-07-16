@@ -68,6 +68,15 @@ void OobeMessageHandler::InitializeBase() {
   Initialize();
 }
 
+void OobeMessageHandler::ShowScreen(const char* screen_name,
+                                    const char* data) {
+  DictionaryValue screen_params;
+  screen_params.SetString("id", screen_name);
+  if (data)
+    screen_params.SetString("data", data);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
+}
+
 // CoreOobeHandler -------------------------------------------------------------
 
 // The core handler for Javascript messages related to the "oobe" view.

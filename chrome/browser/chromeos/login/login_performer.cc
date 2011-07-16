@@ -43,6 +43,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       password_changed_(false),
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
+      auth_mode_(AUTH_MODE_INTERNAL),
       method_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
@@ -201,7 +202,11 @@ void LoginPerformer::OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
                                                const std::string& email) {
   if (code == SignedSettings::SUCCESS) {
     // Whitelist check passed, continue with authentication.
-    StartAuthentication();
+    if (auth_mode_ == AUTH_MODE_EXTENSION) {
+      StartLoginCompletion();
+    } else {
+      StartAuthentication();
+    }
   } else {
     if (delegate_)
       delegate_->WhiteListCheckFailed(email);
@@ -233,9 +238,56 @@ void LoginPerformer::Observe(int type,
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
+void LoginPerformer::CompleteLogin(const std::string& username,
+                                   const std::string& password) {
+  auth_mode_ = AUTH_MODE_EXTENSION;
+  username_ = username;
+  password_ = password;
+  // Whitelist check is always performed during initial login and
+  // should not be performed when ScreenLock is active (pending online auth).
+  if (!ScreenLocker::default_screen_locker()) {
+    // Must not proceed without signature verification.
+    UserCrosSettingsProvider user_settings;
+    bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
+        method_factory_.NewRunnableMethod(&LoginPerformer::CompleteLogin,
+                                          username,
+                                          password));
+    if (!trusted_setting_available) {
+      // Value of AllowNewUser setting is still not verified.
+      // Another attempt will be invoked after verification completion.
+      return;
+    }
+  }
+
+  if (ScreenLocker::default_screen_locker() ||
+      UserCrosSettingsProvider::cached_allow_new_user()) {
+    // Starts authentication if guest login is allowed or online auth pending.
+    StartLoginCompletion();
+  } else {
+    // Otherwise, do whitelist check first.
+    PrefService* local_state = g_browser_process->local_state();
+    CHECK(local_state);
+    if (local_state->IsManagedPreference(kAccountsPrefUsers)) {
+      if (UserCrosSettingsProvider::IsEmailInCachedWhitelist(username)) {
+        StartLoginCompletion();
+      } else {
+        if (delegate_)
+          delegate_->WhiteListCheckFailed(username);
+        else
+          NOTREACHED();
+      }
+    } else {
+      // In case of signed settings: with current implementation we do not
+      // trust whitelist returned by PrefService.  So make separate check.
+      SignedSettingsHelper::Get()->StartCheckWhitelistOp(
+          username, this);
+    }
+  }
+}
 
 void LoginPerformer::Login(const std::string& username,
                            const std::string& password) {
+  auth_mode_ = AUTH_MODE_INTERNAL;
   username_ = username;
   password_ = password;
 
@@ -459,6 +511,21 @@ void LoginPerformer::ResolveScreenUnlocked() {
   registrar_.RemoveAll();
   // If screen was unlocked that was for a reason, should delete itself now.
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void LoginPerformer::StartLoginCompletion() {
+  DVLOG(1) << "Login completion started";
+  BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
+
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::CompleteLogin,
+                        username_,
+                        password_));
+
+  password_.clear();
 }
 
 void LoginPerformer::StartAuthentication() {

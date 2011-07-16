@@ -90,8 +90,7 @@ void NetworkScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  StringValue screen(kNetworkScreen);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
+  ShowScreen(kNetworkScreen, NULL);
 }
 
 void NetworkScreenHandler::Hide() {

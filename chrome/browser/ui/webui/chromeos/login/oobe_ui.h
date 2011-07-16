@@ -37,6 +37,10 @@ class OobeMessageHandler : public WebUIMessageHandler {
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 
+  // Show selected WebUI |screen|. Optionally it can pass screen initialization
+  // data via |data| parameter.
+  void ShowScreen(const char* screen, const char* data);
+
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }
 

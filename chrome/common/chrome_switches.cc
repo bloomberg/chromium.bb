@@ -1028,6 +1028,9 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // Enable WebUI based login screens.
 const char kWebUILogin[]                    = "webui-login";
 
+// Enable WebUI login screen hosted by GAIA authentication extension.
+const char kWebUIGaiaLogin[]                    = "webui-gaia-login";
+
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";
 
@@ -1093,12 +1096,16 @@ const char kScreenSaverUrl[]                = "screen-saver-url";
 // Flag to trigger ChromeOS system log compression during feedback submit.
 const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 
-// Forces usage of libcros stub implementation. For testing purposes, this
-// switch separates chrome code from the rest of ChromeOS.
-const char kForceStubLibcros[]              = "force-stub-libcros";
-
 // Enables Advanced File System.
 const char kEnableAdvancedFileSystem[]      = "enable-advanced-fs";
+
+#ifndef NDEBUG
+// Skips all other OOBE pages after user login.
+const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
+
+// Enables overriding the path for the default authentication extension.
+const char kAuthExtensionPath[]             = "auth-ext-path";
+#endif
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

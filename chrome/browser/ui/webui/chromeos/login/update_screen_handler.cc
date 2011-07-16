@@ -47,8 +47,7 @@ void UpdateScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  StringValue screen(kUpdateScreen);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
+  ShowScreen(kUpdateScreen, NULL);
 }
 
 void UpdateScreenHandler::Hide() {

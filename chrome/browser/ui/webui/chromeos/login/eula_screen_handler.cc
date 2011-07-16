@@ -42,8 +42,7 @@ void EulaScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  StringValue screen(kEulaScreen);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
+  ShowScreen(kEulaScreen, NULL);
 }
 
 void EulaScreenHandler::Hide() {

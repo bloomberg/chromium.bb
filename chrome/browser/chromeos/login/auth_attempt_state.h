@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace chromeos {
 
 class AuthAttemptState {
  public:
-  // Used to initalize for a login attempt.
+  // Used to initialize for a login attempt.
   AuthAttemptState(const std::string& username,
                    const std::string& password,
                    const std::string& ascii_hash,
@@ -27,7 +27,12 @@ class AuthAttemptState {
                    const std::string& login_captcha,
                    const bool user_is_new);
 
-  // Used to initalize for a screen unlock attempt.
+  // Used to initialize for a externally authenticated login.
+  AuthAttemptState(const std::string& username,
+                   const std::string& ascii_hash,
+                   const bool user_is_new);
+
+  // Used to initialize for a screen unlock attempt.
   AuthAttemptState(const std::string& username, const std::string& ascii_hash);
 
   virtual ~AuthAttemptState();

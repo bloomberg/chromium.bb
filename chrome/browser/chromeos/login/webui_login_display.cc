@@ -126,6 +126,12 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
 // WebUILoginDisplay, LoginUIHandlerDelegate implementation: -------------------
 
+void WebUILoginDisplay::CompleteLogin(const std::string& username,
+                                      const std::string& password) {
+  DCHECK(delegate_);
+  delegate_->CompleteLogin(username, password);
+}
+
 void WebUILoginDisplay::Login(const std::string& username,
                               const std::string& password) {
   DCHECK(delegate_);

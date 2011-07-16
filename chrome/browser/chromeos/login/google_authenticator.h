@@ -40,6 +40,15 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   explicit GoogleAuthenticator(LoginStatusConsumer* consumer);
   virtual ~GoogleAuthenticator();
 
+  // Given externally authenticated |username| and |password|, this method
+  // attempts to complete authentication process. The ultimate result is either
+  // a callback to consumer_->OnLoginSuccess() with the |username| and a vector
+  // of authentication cookies or a callback to consumer_->OnLoginFailure() with
+  // an error message.
+  // Returns true if the attempt gets sent successfully and false if not.
+  virtual bool CompleteLogin(const std::string& username,
+                             const std::string& password);
+
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers.  The ultimate result is either a callback to
   // consumer_->OnLoginSuccess() with the |username| and a vector of

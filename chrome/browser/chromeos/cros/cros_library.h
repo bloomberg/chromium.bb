@@ -128,7 +128,7 @@ class CrosLibrary {
       if (!library_) {
         own_ = true;
         if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kForceStubLibcros))
+            switches::kStubCros))
           use_stub_impl = true;
         library_ = L::GetImpl(use_stub_impl);
       }

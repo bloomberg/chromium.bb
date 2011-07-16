@@ -249,6 +249,17 @@ button {
   text-align: center;
 }
 
+#gaia-signin > iframe {
+  bottom: 0;
+  display: -webkit-box;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
 #email,
 #password {
   display: block;

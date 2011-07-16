@@ -29,6 +29,12 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   explicit Authenticator(LoginStatusConsumer* consumer);
   virtual ~Authenticator();
 
+  // Given externally authenticated |username| and |password|, this method
+  // attempts to complete authentication process.
+  // Returns true if the attempt gets sent successfully and false if not.
+  virtual bool CompleteLogin(const std::string& username,
+                             const std::string& password) = 0;
+
   // Given a |username| and |password|, this method attempts to authenticate
   // to login.
   // Optionally |login_token| and |login_captcha| could be provided.

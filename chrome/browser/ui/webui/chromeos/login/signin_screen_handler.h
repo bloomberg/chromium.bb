@@ -41,6 +41,9 @@ class SigninScreenHandler : public OobeMessageHandler,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
+  // Handles confirmation message of user authentication that was performed by
+  // the authentication extension.
+  void HandleCompleteLogin(const base::ListValue* args);
   // Handles authenticate user request from javascript.
   void HandleAuthenticateUser(const base::ListValue* args);
 
@@ -49,6 +52,9 @@ class SigninScreenHandler : public OobeMessageHandler,
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  // True if new user sign in flow is driven by the extension.
+  bool extension_driven_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

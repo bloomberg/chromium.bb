@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -13,6 +15,11 @@ namespace {
 
 // Sign in screen id.
 const char kSigninScreen[] = "signin";
+// Sign in screen id for GAIA extension hosted content.
+const char kGaiaSigninScreen[] = "gaia-signin";
+// Start page of GAIA authentication extension.
+const char kGaiaExtStartPage[] =
+    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
 
 }  // namespace
 
@@ -20,7 +27,10 @@ namespace chromeos {
 
 SigninScreenHandler::SigninScreenHandler()
     : delegate_(WebUILoginDisplay::GetInstance()),
-      show_on_init_(false) {
+      show_on_init_(false),
+      extension_driven_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kWebUIGaiaLogin)) {
   delegate_->set_login_handler(this);
 }
 
@@ -34,6 +44,11 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   localized_strings->SetString("signinButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
+
+  if (extension_driven_)
+    localized_strings->SetString("authType", "ext");
+  else
+    localized_strings->SetString("authType", "webui");
 }
 
 void SigninScreenHandler::Show() {
@@ -41,9 +56,11 @@ void SigninScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-
-  StringValue screen(kSigninScreen);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUIGaiaLogin)) {
+    ShowScreen(kGaiaSigninScreen, kGaiaExtStartPage);
+  } else {
+    ShowScreen(kSigninScreen, NULL);
+  }
 }
 
 void SigninScreenHandler::Initialize() {
@@ -54,6 +71,8 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("completeLogin",
+      NewCallback(this, &SigninScreenHandler::HandleCompleteLogin));
   web_ui_->RegisterMessageCallback("authenticateUser",
       NewCallback(this, &SigninScreenHandler::HandleAuthenticateUser));
 }
@@ -69,11 +88,24 @@ void SigninScreenHandler::ShowError(const std::string& error_text,
   ClearAndEnablePassword();
 }
 
+void SigninScreenHandler::HandleCompleteLogin(const ListValue* args) {
+  std::string username;
+  std::string password;
+  if (!args->GetString(0, &username) ||
+      !args->GetString(1, &password)) {
+    NOTREACHED();
+    return;
+  }
+
+  delegate_->CompleteLogin(username, password);
+}
+
 void SigninScreenHandler::HandleAuthenticateUser(const ListValue* args) {
   std::string username;
   std::string password;
   if (!args->GetString(0, &username) ||
       !args->GetString(1, &password)) {
+    NOTREACHED();
     return;
   }
 

@@ -69,6 +69,8 @@ class WebUILoginDisplay : public LoginDisplay,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
   // LoginUIHandlerDelegate
+  virtual void CompleteLogin(const std::string& username,
+                             const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;

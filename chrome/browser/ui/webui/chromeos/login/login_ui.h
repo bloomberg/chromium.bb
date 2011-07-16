@@ -56,6 +56,11 @@ class LoginUIHandlerDelegate {
   virtual void Login(const std::string& username,
                      const std::string& password) = 0;
 
+  // Confirms sign up by provided |username| and |password| specified.
+  // Used for new user login via GAIA extension.
+  virtual void CompleteLogin(const std::string& username,
+                             const std::string& password) = 0;
+
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 

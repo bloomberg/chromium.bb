@@ -117,6 +117,19 @@ void GoogleAuthenticator::ClearClientLoginAttempt() {
   login_token_.clear();
   login_captcha_.clear();
 }
+bool GoogleAuthenticator::CompleteLogin(const std::string& username,
+                                        const std::string& password) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  username_.assign(Canonicalize(username));
+  ascii_hash_.assign(HashPassword(password));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &GoogleAuthenticator::OnLoginSuccess,
+                        GaiaAuthConsumer::ClientLoginResult(), false));
+  return true;
+}
 
 bool GoogleAuthenticator::AuthenticateToLogin(
     Profile* profile,

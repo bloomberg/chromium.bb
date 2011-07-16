@@ -188,7 +188,11 @@ void WebUILoginView::InitStatusArea() {
 
 bool WebUILoginView::HandleContextMenu(const ContextMenuParams& params) {
   // Do not show the context menu.
+#ifndef NDEBUG
+  return false;
+#else
   return true;
+#endif
 }
 
 }  // namespace chromeos

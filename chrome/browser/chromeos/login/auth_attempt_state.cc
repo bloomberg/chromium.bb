@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,22 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       credentials_(GaiaAuthConsumer::ClientLoginResult()),
       hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       is_first_time_user_(false),
+      cryptohome_complete_(false),
+      cryptohome_outcome_(false),
+      cryptohome_code_(kCryptohomeMountErrorNone) {
+}
+
+AuthAttemptState::AuthAttemptState(const std::string& username,
+                                   const std::string& ascii_hash,
+                                   const bool user_is_new)
+    : username(username),
+      ascii_hash(ascii_hash),
+      unlock(true),
+      online_complete_(true),
+      online_outcome_(LoginFailure::NONE),
+      credentials_(GaiaAuthConsumer::ClientLoginResult()),
+      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
+      is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
       cryptohome_code_(kCryptohomeMountErrorNone) {

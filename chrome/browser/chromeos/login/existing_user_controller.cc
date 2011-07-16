@@ -158,6 +158,23 @@ void ExistingUserController::FixCaptivePortal() {
   LoginAsGuest();
 }
 
+void ExistingUserController::CompleteLogin(const std::string& username,
+                                           const std::string& password) {
+  GaiaAuthConsumer::ClientLoginResult credentials;
+  if (!login_performer_.get()) {
+    LoginPerformer::Delegate* delegate = this;
+    if (login_performer_delegate_.get())
+      delegate = login_performer_delegate_.get();
+    // Only one instance of LoginPerformer should exist at a time.
+    login_performer_.reset(new LoginPerformer(delegate));
+  }
+
+  login_performer_->CompleteLogin(username, password);
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN).c_str(),
+      false, true);
+}
+
 void ExistingUserController::Login(const std::string& username,
                                    const std::string& password) {
   if (username.empty() || password.empty())
@@ -383,9 +400,20 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginURL);
     }
 
-    ActivateWizard(WizardController::IsDeviceRegistered() ?
-        WizardController::kUserImageScreenName :
-        WizardController::kRegistrationScreenName);
+#ifndef NDEBUG
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOobeSkipPostLogin)) {
+      ready_for_browser_launch_ = true;
+      LoginUtils::DoBrowserLaunch(profile, host_);
+      host_ = NULL;
+    } else {
+#endif
+      ActivateWizard(WizardController::IsDeviceRegistered() ?
+          WizardController::kUserImageScreenName :
+          WizardController::kRegistrationScreenName);
+#ifndef NDEBUG
+    }
+#endif
   } else {
     LoginUtils::DoBrowserLaunch(profile, host_);
     host_ = NULL;

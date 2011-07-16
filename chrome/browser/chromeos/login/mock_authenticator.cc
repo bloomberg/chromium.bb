@@ -25,6 +25,11 @@ bool MockAuthenticator::AuthenticateToLogin(Profile* profile,
   return false;
 }
 
+bool MockAuthenticator::CompleteLogin(const std::string& username,
+                                      const std::string& password) {
+  return false;
+}
+
 bool MockAuthenticator::AuthenticateToUnlock(const std::string& username,
                                   const std::string& password) {
   return AuthenticateToLogin(NULL /* not used */, username, password,

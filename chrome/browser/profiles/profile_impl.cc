@@ -513,6 +513,25 @@ void ProfileImpl::RegisterComponentExtensions() {
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
         IDR_MOBILE_MANIFEST));
 
+#ifndef NDEBUG
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
+      FilePath auth_extension_path =
+          command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
+      component_extensions.push_back(std::make_pair(
+          auth_extension_path.value(),
+          IDR_GAIA_AUTH_MANIFEST));
+    } else {
+      component_extensions.push_back(std::make_pair(
+          FILE_PATH_LITERAL("/usr/share/chromeos-assets/gaia_auth"),
+          IDR_GAIA_AUTH_MANIFEST));
+    }
+#else
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("/usr/share/chromeos-assets/gaia_auth"),
+        IDR_GAIA_AUTH_MANIFEST));
+#endif
+
 #if defined(OFFICIAL_BUILD)
     if (browser_defaults::enable_help_app) {
       component_extensions.push_back(std::make_pair(

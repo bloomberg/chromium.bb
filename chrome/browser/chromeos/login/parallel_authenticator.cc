@@ -95,6 +95,37 @@ bool ParallelAuthenticator::AuthenticateToLogin(
   return true;
 }
 
+bool ParallelAuthenticator::CompleteLogin(const std::string& username,
+                                          const std::string& password) {
+  std::string canonicalized = Authenticator::Canonicalize(username);
+  current_state_.reset(
+      new AuthAttemptState(canonicalized,
+                           HashPassword(password),
+                           !UserManager::Get()->IsKnownUser(canonicalized)));
+  mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
+                                              this,
+                                              false /* don't create */);
+  // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
+
+  // For login completion, we just need to resolve the current auth,
+  // attempt state.
+  // TODO(zelidrag): Investigate if this business be moved to UI thread instead.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &ParallelAuthenticator::ResolveLoginCompletionStatus));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &ParallelAuthenticator::LoadLocalaccount,
+                        std::string(kLocalaccountFile)));
+  return true;
+}
+
 bool ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                  const std::string& password) {
   current_state_.reset(
@@ -623,6 +654,13 @@ bool ParallelAuthenticator::BinaryToHex(
   for (uint i = 0, j = 0; i < binary_len; i++, j+=2)
     snprintf(hex_string + j, len - j, "%02x", binary[i]);
   return true;
+}
+
+void ParallelAuthenticator::ResolveLoginCompletionStatus() {
+  // Shortcut online state resolution process.
+  current_state_->RecordOnlineLoginStatus(GaiaAuthConsumer::ClientLoginResult(),
+                                          LoginFailure::None());
+  Resolve();
 }
 
 }  // namespace chromeos

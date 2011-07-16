@@ -52,13 +52,16 @@ cr.define('cr.ui', function() {
      * Switches to the next OOBE step.
      * @param {number} nextStepIndex Index of the next step.
      */
-    toggleStep_: function(nextStepIndex) {
+    toggleStep_: function(nextStepIndex, screenData) {
       var currentStepId = this.screens_[this.currentStep_];
       var nextStepId = this.screens_[nextStepIndex];
       var oldStep = $(currentStepId);
       var oldHeader = $('header-' + currentStepId);
       var newStep = $(nextStepId);
       var newHeader = $('header-' + nextStepId);
+
+      if (newStep.onBeforeShow)
+        newStep.onBeforeShow(screenData);
 
       newStep.classList.remove('hidden');
 
@@ -99,10 +102,12 @@ cr.define('cr.ui', function() {
      * Show screen of given screen id.
      * @param {string} screenId Id of the screen to show.
      */
-    showScreen: function(screenId) {
+    showScreen: function(screen) {
+      var screenId = screen.id;
+      var data = screen.data;
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
-        this.toggleStep_(index);
+        this.toggleStep_(index, data);
     },
 
     /**
@@ -200,7 +205,10 @@ cr.define('cr.ui', function() {
     oobe.NetworkScreen.register();
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
-    login.SigninScreen.register();
+    if (localStrings.getString('authType') == 'webui')
+      login.SigninScreen.register();
+    else
+      login.GaiaSigninScreen.register();
 
     $('security-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened', []);
@@ -211,14 +219,6 @@ cr.define('cr.ui', function() {
     });
 
     chrome.send('screenStateInitialize', []);
-  };
-
-  /**
-   * Switches to the next OOBE step.
-   * @param {number} nextStepIndex Index of the next step.
-   */
-  Oobe.toggleStep = function(nextStepIndex) {
-    Oobe.getInstance().toggleStep_(nextStepIndex);
   };
 
   /**

@@ -31,6 +31,8 @@ class MockAuthenticator : public Authenticator {
         expected_password_(expected_password) {
   }
 
+  bool CompleteLogin(const std::string& username, const std::string& password);
+
   // Returns true after posting task to UI thread to call OnLoginSuccess().
   // This is called on the FILE thread now, so we need to do this.
   virtual bool AuthenticateToLogin(Profile* profile,

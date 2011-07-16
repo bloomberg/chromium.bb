@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -78,6 +79,10 @@ class ParallelAuthenticator : public Authenticator,
   explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
   virtual ~ParallelAuthenticator();
 
+  // Authenticator overrides.
+  virtual bool CompleteLogin(const std::string& username,
+                             const std::string& password) OVERRIDE;
+
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers and your Chrome OS device simultaneously.
   // As soon as we have successfully mounted the encrypted home directory for
@@ -109,50 +114,52 @@ class ParallelAuthenticator : public Authenticator,
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
-                                   const std::string& login_captcha);
+                                   const std::string& login_captcha) OVERRIDE;
 
   // Given a |username| and |password|, this method attempts to
   // authenticate to the cached credentials. This will never contact
   // the server even if it's online. The auth result is sent to
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
   virtual bool AuthenticateToUnlock(const std::string& username,
-                                    const std::string& password);
+                                    const std::string& password) OVERRIDE;
 
   // Initiates incognito ("browse without signing in") login.
   // Mounts tmpfs and notifies consumer on the success/failure.
-  virtual void LoginOffTheRecord();
+  virtual void LoginOffTheRecord() OVERRIDE;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool request_pending);
-  void OnOffTheRecordLoginSuccess();
-  void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
-  virtual void OnLoginFailure(const LoginFailure& error);
+      bool request_pending)  OVERRIDE;
 
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
       const std::string& old_password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void ResyncEncryptedData(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void RetryAuth(Profile* profile,
                          const std::string& username,
                          const std::string& password,
                          const std::string& login_token,
-                         const std::string& login_captcha);
+                         const std::string& login_captcha) OVERRIDE;
 
-  // Call this on the FILE thread.
-  void CheckLocalaccount(const LoginFailure& error);
-
+  // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
   // the state we have gathered at the time of call.  If a decision
   // can't be made, defers until the next time this is called.
   // When a decision is made, will call back to |consumer_| on the UI thread.
   //
   // Must be called on the IO thread.
-  virtual void Resolve();
+  virtual void Resolve() OVERRIDE;
+
+  // Call this on the FILE thread.
+  void CheckLocalaccount(const LoginFailure& error);
+
+  void OnOffTheRecordLoginSuccess();
+  void OnPasswordChangeDetected(
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
  private:
   // Returns the AuthState we're in, given the status info we have at
@@ -228,7 +235,11 @@ class ParallelAuthenticator : public Authenticator,
                           char* hex_string,
                           const unsigned int len);
 
-  // Name of a file, next to chrome, that contains a local account username.
+  // Signal login completion status for cases when a new user is added via
+  // an external authentication provider (i.e. GAIA extension).
+  void ResolveLoginCompletionStatus();
+
+    // Name of a file, next to chrome, that contains a local account username.
   static const char kLocalaccountFile[];
 
   // Milliseconds until we timeout our attempt to hit ClientLogin.

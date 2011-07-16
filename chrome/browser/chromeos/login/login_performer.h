@@ -93,6 +93,10 @@ class LoginPerformer : public LoginStatusConsumer,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Completes login process that has already been authenticated with
+  // provided |username| and |password|.
+  void CompleteLogin(const std::string& username, const std::string& password);
+
   // Performs login with the |username| and |password| specified.
   void Login(const std::string& username, const std::string& password);
 
@@ -119,6 +123,13 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
+  typedef enum AuthorizationMode {
+    // Authorization performed internally by Chrome.
+    AUTH_MODE_INTERNAL,
+    // Authorization performed by an extension.
+    AUTH_MODE_EXTENSION
+  } AuthorizationMode;
+
   // ProfileManager::Observer implementation:
   virtual void OnProfileCreated(Profile* profile);
 
@@ -142,6 +153,9 @@ class LoginPerformer : public LoginStatusConsumer,
   // Resolve ScreenLock changed state.
   void ResolveScreenLocked();
   void ResolveScreenUnlocked();
+
+  // Starts login completion of externally authenticated user.
+  void StartLoginCompletion();
 
   // Starts authentication.
   void StartAuthentication();
@@ -189,6 +203,9 @@ class LoginPerformer : public LoginStatusConsumer,
   bool initial_online_auth_pending_;
 
   GaiaAuthConsumer::ClientLoginResult credentials_;
+
+  // Current authorization mode type.
+  AuthorizationMode auth_mode_;
 
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 
