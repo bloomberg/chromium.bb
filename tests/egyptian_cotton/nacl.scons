@@ -129,5 +129,5 @@ nodes = [ ThreadTestNode(name, args) for name, args in tests ]
 
 is_broken = env.Bit('target_arm') and env.UsingEmulator()
 for p, n in zip(tests, nodes):
-  env.AddNodeToTestSuite(n, ['small_tests', 'sel_ldr_tests'], 'run_' + p[0],
+  env.AddNodeToTestSuite(n, ['medium_tests', 'sel_ldr_tests'], 'run_' + p[0],
                          is_broken=is_broken)
