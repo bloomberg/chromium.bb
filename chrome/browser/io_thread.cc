@@ -671,6 +671,9 @@ net::SSLConfigService* IOThread::GetSSLConfigService() {
 void IOThread::InitSystemRequestContext() {
   if (system_url_request_context_getter_)
     return;
+  // If we're in unit_tests, IOThread may not be run.
+  if (!message_loop())
+    return;
   system_proxy_config_service_.reset(
       ProxyServiceFactory::CreateProxyConfigService(
           pref_proxy_config_tracker_));

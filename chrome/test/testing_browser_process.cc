@@ -19,7 +19,8 @@
 TestingBrowserProcess::TestingBrowserProcess()
     : module_ref_count_(0),
       app_locale_("en"),
-      local_state_(NULL) {
+      local_state_(NULL),
+      io_thread_(NULL) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -38,7 +39,7 @@ MetricsService* TestingBrowserProcess::metrics_service() {
 }
 
 IOThread* TestingBrowserProcess::io_thread() {
-  return NULL;
+  return io_thread_;
 }
 
 base::Thread* TestingBrowserProcess::file_thread() {
@@ -246,6 +247,10 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
 void TestingBrowserProcess::SetGoogleURLTracker(
     GoogleURLTracker* google_url_tracker) {
   google_url_tracker_.reset(google_url_tracker);
+}
+
+void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
+  io_thread_ = io_thread;
 }
 
 ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {

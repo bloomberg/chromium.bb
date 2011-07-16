@@ -10,6 +10,8 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,14 +37,18 @@ Profile* g_created_profile;
 class ProfileManagerTest : public TestingBrowserProcessTest {
  protected:
   ProfileManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
+      : local_state_(testing_browser_process_.get()),
+        extension_event_router_forwarder_(new ExtensionEventRouterForwarder),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_manager_(new ProfileManagerWithoutInit),
-        local_state_(testing_browser_process_.get()) {
+        io_thread_(local_state_.Get(), NULL, extension_event_router_forwarder_),
+        profile_manager_(new ProfileManagerWithoutInit) {
 #if defined(OS_MACOSX)
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif
     system_monitor_dummy_.reset(new base::SystemMonitor);
+    testing_browser_process_.get()->SetIOThread(&io_thread_);
   }
 
   virtual void SetUp() {
@@ -52,6 +58,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
 
   virtual void TearDown() {
     profile_manager_.reset();
+    message_loop_.RunAllPending();
   }
 
   class MockObserver : public ProfileManagerObserver {
@@ -61,17 +68,20 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
 
   // The path to temporary directory used to contain the test operations.
   ScopedTempDir temp_dir_;
+  ScopedTestingLocalState local_state_;
+  scoped_refptr<ExtensionEventRouterForwarder>
+      extension_event_router_forwarder_;
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
+  BrowserThread db_thread_;
   BrowserThread file_thread_;
+  IOThread io_thread_;
 
   scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
 
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;
-
-  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {

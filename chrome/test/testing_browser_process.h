@@ -121,6 +121,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetLocalState(PrefService* local_state);
   void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
   void SetProfileManager(ProfileManager* profile_manager);
+  void SetIOThread(IOThread* io_thread);
 
  private:
   NotificationService notification_service_;
@@ -136,6 +137,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
+  IOThread* io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

@@ -8,7 +8,6 @@
 
 #include <set>
 #include "base/basictypes.h"
-#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -80,6 +79,10 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // net::URLRequest.
   static bool IsHandledURL(const GURL& url);
 
+  // Called by Profile.
+  const content::ResourceContext& GetResourceContext() const;
+  ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend() const;
+
   // These should only be called at most once each. Ownership is reversed when
   // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
   // versa.
@@ -89,7 +92,6 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   scoped_refptr<ChromeURLRequestContext> GetIsolatedAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
-  const content::ResourceContext& GetResourceContext() const;
 
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for

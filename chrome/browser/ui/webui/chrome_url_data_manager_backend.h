@@ -27,6 +27,9 @@ namespace net {
 class URLRequest;
 class URLRequestJob;
 }
+namespace webkit_blob {
+class BlobStorageController;
+}
 
 // ChromeURLDataManagerBackend is used internally by ChromeURLDataManager on the
 // IO thread. In most cases you can use the API in ChromeURLDataManager and
@@ -42,7 +45,8 @@ class ChromeURLDataManagerBackend {
   // Invoked to create the protocol handler for chrome://.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
       ChromeURLDataManagerBackend* backend,
-      ChromeAppCacheService* appcache_service);
+      ChromeAppCacheService* appcache_service,
+      webkit_blob::BlobStorageController* blob_storage_controller);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(ChromeURLDataManager::DataSource* source);
