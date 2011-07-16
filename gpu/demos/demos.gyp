@@ -59,6 +59,7 @@
     },
     {
       'target_name': 'gpu_demo_framework_ppapi',
+      'suppress_wildcard': 1,  # So that 'all' doesn't end up being a bundle.
       'type': 'static_library',
       'dependencies': [
         'gpu_demo_framework',
