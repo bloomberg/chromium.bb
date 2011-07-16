@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #pragma once
 
 // This is a list of sandbox IPC methods which the renderer may send to the
-// sandbox host. See http://code.google.com/p/chromium/LinuxSandboxIPC
+// sandbox host. See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 // This isn't the full list, values < 32 are reserved for methods called from
 // Skia.
 class LinuxSandbox {

@@ -75,6 +75,10 @@
 #include <signal.h>
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include "content/common/zygote_fork_delegate_linux.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -113,7 +117,10 @@ extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
-extern int ZygoteMain(const MainFunctionParams&);
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+extern int ZygoteMain(const MainFunctionParams&,
+                      ZygoteForkDelegate* forkdelegate);
+#endif
 #if defined(_WIN64)
 extern int NaClBrokerMain(const MainFunctionParams&);
 #endif
@@ -451,7 +458,7 @@ int RunZygote(const MainFunctionParams& main_function_params) {
     media::InitializeMediaLibrary(media_path);
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params))
+  if (!ZygoteMain(main_function_params, NULL))
     return 1;
 
   // Zygote::HandleForkRequest may have reallocated the command
