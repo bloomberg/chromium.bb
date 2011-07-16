@@ -631,6 +631,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
   nexe_downloader_.Initialize(this);
+  pnacl_.Initialize(this);
   callback_factory_.Initialize(this);
 }
 
@@ -810,7 +811,7 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
       "NaCl.Perf.StartupTime.NexeDownload",
       static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
 
-  // Inform JavaScript that we successfully loaded the manifest file.
+  // Inform JavaScript that we successfully downloaded the nacl module.
   EnqueueProgressEvent("progress",
                        LENGTH_IS_COMPUTABLE,
                        nexe_bytes_read,
@@ -835,6 +836,31 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   }
 }
 
+void PluginPpapi::BitcodeDidTranslate(int32_t pp_error) {
+  PLUGIN_PRINTF(("PluginPpapi::BitcodeDidTranslate (pp_error=%"NACL_PRId32")\n",
+                 pp_error));
+  if (pp_error != PP_OK) {
+    // Error should have been reported by pnacl. Just return.
+    PLUGIN_PRINTF(("PluginPpapi::BitcodeDidTranslate error in Pnacl\n"));
+    return;
+  }
+  // Inform JavaScript that we successfully translated the bitcode to a nexe.
+  EnqueueProgressEvent("progress",
+                       LENGTH_IS_NOT_COMPUTABLE,
+                       kUnknownBytes,
+                       kUnknownBytes);
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(pnacl_.ReleaseTranslatedFD());
+  ErrorInfo error_info;
+  bool was_successful = LoadNaClModule(wrapper.get(), &error_info);
+  if (was_successful) {
+    ReportLoadSuccess(LENGTH_IS_NOT_COMPUTABLE,
+                      kUnknownBytes,
+                      kUnknownBytes);
+  } else {
+    ReportLoadError(error_info);
+  }
+}
 
 bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
                                         ErrorInfo* error_info) {
@@ -1073,27 +1099,46 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
 void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_json.length() / 1024));
-
-  nacl::string nexe_url;
+  nacl::string program_url;
+  bool is_portable;
   ErrorInfo error_info;
   if (!SetManifestObject(manifest_json, &error_info)) {
     ReportLoadError(error_info);
     return;
   }
-  if (!SelectNexeURLFromManifest(&nexe_url, &error_info)) {
-    ReportLoadError(error_info);
-    return;
+
+  if (SelectProgramURLFromManifest(&program_url, &error_info, &is_portable)) {
+    set_nacl_ready_state(LOADING);
+    // Inform JavaScript that we found a nexe URL to load.
+    EnqueueProgressEvent("progress",
+                         LENGTH_IS_NOT_COMPUTABLE,
+                         kUnknownBytes,
+                         kUnknownBytes);
+    if (is_portable) {
+      // TODO(jvoung): Do we want to check an ENV var if pnacl is enabled first?
+      nacl::string llc_url;
+      nacl::string ld_url;
+      if (SelectLLCURLFromManifest(&llc_url, &error_info) &&
+          SelectLDURLFromManifest(&ld_url, &error_info)) {
+        pp::CompletionCallback translate_callback =
+            callback_factory_.NewCallback(&PluginPpapi::BitcodeDidTranslate);
+        // Will always call the callback on success or failure.
+        pnacl_.BitcodeToNative(program_url,
+                               llc_url,
+                               ld_url,
+                               translate_callback);
+        return;
+      }
+    } else {
+      pp::CompletionCallback open_callback =
+          callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+      // Will always call the callback on success or failure.
+      nexe_downloader_.Open(program_url, DOWNLOAD_TO_FILE, open_callback);
+      return;
+    }
   }
-  set_nacl_ready_state(LOADING);
-  // Inform JavaScript that we found a nexe URL to load.
-  EnqueueProgressEvent("progress",
-                       LENGTH_IS_NOT_COMPUTABLE,
-                       kUnknownBytes,
-                       kUnknownBytes);
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
-  // Will always call the callback on success or failure.
-  nexe_downloader_.Open(nexe_url, DOWNLOAD_TO_FILE, open_callback);
+  // Failed to select the program and/or the translator.
+  ReportLoadError(error_info);
 }
 
 void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
@@ -1157,15 +1202,35 @@ bool PluginPpapi::SetManifestObject(const nacl::string& manifest_json,
   return true;
 }
 
-bool PluginPpapi::SelectNexeURLFromManifest(nacl::string* result,
-                                            ErrorInfo* error_info) {
+bool PluginPpapi::SelectProgramURLFromManifest(nacl::string* result,
+                                               ErrorInfo* error_info,
+                                               bool* is_portable) {
   const nacl::string sandbox_isa(GetSandboxISA());
-  PLUGIN_PRINTF(("PluginPpapi::SelectNexeURLFromManifest(): sandbox='%s'.\n",
-       sandbox_isa.c_str()));
+  PLUGIN_PRINTF(("PluginPpapi::SelectProgramURLFromManifest(): sandbox='%s'.\n",
+                 sandbox_isa.c_str()));
   if (result == NULL || error_info == NULL || manifest_ == NULL)
     return false;
-  return manifest_->GetNexeURL(result, error_info);
+  return manifest_->GetProgramURL(result, error_info, is_portable);
 }
+
+// TODO(jvoung): get rid of these when we have a better hosting solution
+// for PNaCl's nexes.
+bool PluginPpapi::SelectLLCURLFromManifest(nacl::string* result,
+                                           ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("PluginPpapi::SelectLLCURLFromManifest()\n"));
+  if (result == NULL || error_info == NULL || manifest_ == NULL)
+    return false;
+  return manifest_->GetLLCURL(result, error_info);
+}
+
+bool PluginPpapi::SelectLDURLFromManifest(nacl::string* result,
+                                          ErrorInfo* error_info) {
+  PLUGIN_PRINTF(("PluginPpapi::SelectLDURLFromManifest()\n"));
+  if (result == NULL || error_info == NULL || manifest_ == NULL)
+    return false;
+  return manifest_->GetLDURL(result, error_info);
+}
+// end TODO(jvoung)
 
 
 void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
@@ -1229,7 +1294,6 @@ void PluginPpapi::UrlDidOpenForStreamAsFile(int32_t pp_error,
   }
 }
 
-
 int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::GetFileDesc (url=%s)\n", url.c_str()));
   int32_t file_desc_ok_to_close = NACL_NO_FILE_DESC;
@@ -1291,7 +1355,6 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
   // Will always call the callback on success or failure.
   return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
 }
-
 
 void PluginPpapi::ReportLoadSuccess(LengthComputable length_computable,
                                     uint64_t loaded_bytes,

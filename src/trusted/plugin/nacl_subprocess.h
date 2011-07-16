@@ -17,7 +17,6 @@
 
 namespace plugin {
 
-class ConnectedSocket;
 class Plugin;
 class ServiceRuntime;
 
@@ -48,20 +47,20 @@ class NaClSubprocess {
   void set_socket(SrpcClient* srpc_client) { srpc_client_.reset(srpc_client); }
 
   // A basic description of the subprocess.
-  nacl::string description();
+  nacl::string description() const;
 
   // A detailed description of the subprocess that may contain addresses.
   // Only use for debugging, but do not expose this to untrusted webapps.
-  nacl::string detailed_description();
+  nacl::string detailed_description() const;
 
   // Start up interfaces.
   bool StartSrpcServices();
   bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
 
   // Interact.
-  bool HasMethod(uintptr_t method_id);
-  bool InitParams(uintptr_t method_id, SrpcParams* params);
-  bool Invoke(uintptr_t method_id, SrpcParams* params);
+  bool HasMethod(uintptr_t method_id) const;
+  bool InitParams(uintptr_t method_id, SrpcParams* params) const;
+  bool Invoke(uintptr_t method_id, SrpcParams* params) const;
 
   // Fully shut down the subprocess.
   void Shutdown();

@@ -37,13 +37,13 @@ const char* const kUrlKey =         "url";
 //   "program": {
 //     "x86-32": {"url": "myprogram_x86-32.nexe"},
 //     "x86-64": {"url": "myprogram_x86-64.nexe"},
-//     "arm": {"url": myprogram_arm.nexe"},
-//     "portable": {"url": myprogram.pexe"}
+//     "arm": {"url": "myprogram_arm.nexe"},
+//     "portable": {"url": "myprogram.pexe"}
 //   },
 //   "interpreter": {
 //     "x86-32": {"url": "interpreter_x86-32.nexe"},
 //     "x86-64": {"url": "interpreter_x86-64.nexe"},
-//     "arm": {"url": interpreter_arm.nexe"}
+//     "arm": {"url": "interpreter_arm.nexe"}
 //   },
 //   "files": {
 //     "foo.txt": {
@@ -55,6 +55,10 @@ const char* const kUrlKey =         "url";
 //     }
 //   }
 // }
+
+// TODO(jvoung): Remove these when we find a better way to store/install them.
+const char* const kPnaclLlcKey = "pnacl-llc";
+const char* const kPnaclLdKey = "pnacl-ld";
 
 // Looks up |property_name| in the vector |valid_names| with length
 // |valid_name_count|.  Returns true if |property_name| is found.
@@ -157,7 +161,8 @@ bool IsValidISADictionary(const Json::Value& dictionary,
 bool GetURLFromISADictionary(const Json::Value& dictionary,
                              const nacl::string& sandbox_isa,
                              nacl::string* url,
-                             nacl::string* error_string) {
+                             nacl::string* error_string,
+                             bool* is_portable) {
   if (url == NULL || error_string == NULL)
     return false;
 
@@ -166,6 +171,7 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
 
   bool has_isa = dictionary.isMember(sandbox_isa);
   const char *isa_string = has_isa ? sandbox_isa.c_str() : kPortableKey;
+  *is_portable = !has_isa;
 
   const Json::Value& json_url = dictionary[isa_string][kUrlKey];
   *url = json_url.asString();
@@ -296,7 +302,9 @@ bool Manifest::ResolveURL(const nacl::string& relative_url,
   return true;
 }
 
-bool Manifest::GetNexeURL(nacl::string* full_url, ErrorInfo* error_info) {
+bool Manifest::GetProgramURL(nacl::string* full_url,
+                             ErrorInfo* error_info,
+                             bool* is_portable) {
   if (full_url == NULL || error_info == NULL)
     return false;
 
@@ -308,10 +316,74 @@ bool Manifest::GetNexeURL(nacl::string* full_url, ErrorInfo* error_info) {
   if (!GetURLFromISADictionary(program,
                                sandbox_isa_,
                                &nexe_url,
-                               &error_string)) {
+                               &error_string,
+                               is_portable)) {
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           nacl::string("program:") + sandbox_isa_ +
                           error_string);
+    return false;
+  }
+
+  return ResolveURL(nexe_url, full_url, error_info);
+}
+
+// TODO(jvoung): We won't need these if we figure out how to install llc and ld.
+bool Manifest::GetLLCURL(nacl::string* full_url, ErrorInfo* error_info) {
+  if (full_url == NULL || error_info == NULL)
+    return false;
+
+  Json::Value pnacl_llc = dictionary_[kPnaclLlcKey];
+
+  nacl::string nexe_url;
+  nacl::string error_string;
+  bool is_portable;
+  if (!GetURLFromISADictionary(pnacl_llc,
+                               sandbox_isa_,
+                               &nexe_url,
+                               &error_string,
+                               &is_portable)) {
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          nacl::string(kPnaclLlcKey) + ":" + sandbox_isa_ +
+                          error_string);
+    return false;
+  }
+
+  if (is_portable) {
+    // Bootstrap problem -- we need this to translate portable programs!
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          nacl::string(kPnaclLlcKey) +
+                          " must be pre-translated for " + sandbox_isa_ + "!");
+    return false;
+  }
+
+  return ResolveURL(nexe_url, full_url, error_info);
+}
+
+bool Manifest::GetLDURL(nacl::string* full_url, ErrorInfo* error_info) {
+  if (full_url == NULL || error_info == NULL)
+    return false;
+
+  Json::Value pnacl_ld = dictionary_[kPnaclLdKey];
+
+  nacl::string nexe_url;
+  nacl::string error_string;
+  bool is_portable;
+  if (!GetURLFromISADictionary(pnacl_ld,
+                               sandbox_isa_,
+                               &nexe_url,
+                               &error_string,
+                               &is_portable)) {
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          nacl::string(kPnaclLdKey) + ":" + sandbox_isa_ +
+                          error_string);
+    return false;
+  }
+
+  if (is_portable) {
+    // Bootstrap problem -- we need this to translate portable programs!
+    error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
+                          nacl::string(kPnaclLdKey) +
+                          " must be pre-translated for " + sandbox_isa_ + "!");
     return false;
   }
 

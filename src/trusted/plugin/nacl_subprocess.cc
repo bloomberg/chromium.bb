@@ -10,7 +10,7 @@
 
 namespace plugin {
 
-nacl::string NaClSubprocess::description() {
+nacl::string NaClSubprocess::description() const {
   nacl::stringstream ss;
   if (assigned_id_ == kMainSubprocessId) {
     ss << "main subprocess";
@@ -20,10 +20,10 @@ nacl::string NaClSubprocess::description() {
   return ss.str();
 }
 
-nacl::string NaClSubprocess::detailed_description() {
+nacl::string NaClSubprocess::detailed_description() const {
   nacl::stringstream ss;
   ss << description()
-     << "={ this=" << static_cast<void*>(this)
+     << "={ this=" << static_cast<const void*>(this)
      << ", srpc_client=" << static_cast<void*>(srpc_client_.get())
      << ", service_runtime=" << static_cast<void*>(service_runtime_.get())
      << " }";
@@ -52,21 +52,21 @@ bool NaClSubprocess::StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
   return srpc_client_->StartJSObjectProxy(plugin, error_info);
 }
 
-bool NaClSubprocess::HasMethod(uintptr_t method_id) {
+bool NaClSubprocess::HasMethod(uintptr_t method_id) const {
   if (NULL == srpc_client_.get()) {
     return false;
   }
   return srpc_client_->HasMethod(method_id);
 }
 
-bool NaClSubprocess::InitParams(uintptr_t method_id, SrpcParams* params) {
+bool NaClSubprocess::InitParams(uintptr_t method_id, SrpcParams* params) const {
   if (NULL == srpc_client_.get()) {
     return false;
   }
   return srpc_client_->InitParams(method_id, params);
 }
 
-bool NaClSubprocess::Invoke(uintptr_t method_id, SrpcParams* params) {
+bool NaClSubprocess::Invoke(uintptr_t method_id, SrpcParams* params) const {
   if (NULL == srpc_client_.get()) {
     return false;
   }
