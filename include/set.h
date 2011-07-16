@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+#include "gestures/include/logging.h"
+
 // This is a set class that doesn't call out to malloc/free. Many of the
 // names were chosen to mirror std::set.
 
@@ -15,7 +17,6 @@
 // of Elt objects.
 
 // Differences from std::set:
-// - erase() returns void here (would be easy to make match std::set)
 // - Many methods are unimplemented
 // - insert()/erase() invalidate existing iterators
 // - Currently, the Elt type should be a POD type or aggregate of PODs,
@@ -31,8 +32,7 @@ class set {
 
   set() : size_(0) {}
   set(const set<Elt, kMaxSize>& that) {
-    size_ = that.size_;
-    std::copy(that.begin(), that.end(), begin());
+    *this = that;
   }
 
   const_iterator begin() const { return buffer_; }
@@ -63,13 +63,18 @@ class set {
   }
 
   // Unlike std::set, invalidates iterators.
-  void insert(const Elt& value) {  // TODO(adlr): return pair<iterator, bool>
-    if (size_ == kMaxSize)
-      return;  // TODO(adlr): log error
-    if (find(value) != end())
-      return;  // already in set
-    buffer_[size_] = value;
+  std::pair<iterator, bool> insert(const Elt& value) {
+    iterator it = find(value);
+    if (it != end())
+      return std::make_pair(it, false);
+    if (size_ == kMaxSize) {
+      Log("set::insert: out of space!");
+      return std::make_pair(end(), false);
+    }
+    iterator new_elt = &buffer_[size_];
+    new (new_elt) Elt(value);
     ++size_;
+    return std::make_pair(new_elt, true);
   }
 
   // Returns number of elements removed (0 or 1).
@@ -78,18 +83,31 @@ class set {
     iterator ptr = find(value);
     if (ptr == end())
       return 0;
-    std::copy(ptr + 1, end(), ptr);
-    --size_;
+    erase(ptr);
     return 1;
   }
-  void clear() { size_ = 0; }
+  void erase(iterator it) {
+    std::copy(it + 1, end(), it);
+    (*(end() - 1)).~Elt();
+    --size_;
+  }
+  void clear() {
+    for (iterator it = begin(), e = end(); it != e; ++it)
+      (*it).~Elt();
+    size_ = 0;
+  }
 
   template<int kThatSize>
   set<Elt, kMaxSize>& operator=(const set<Elt, kThatSize>& that) {
-    if (that.size() > kMaxSize)
+    if (that.size() > kMaxSize) {
       // Uh oh, that won't fit into this
-      return *this;  // TODO(adlr): Log error
+      Log("set::operator=: out of space!");
+      return *this;
+    }
     std::copy(that.begin(), that.end(), begin());
+    if (size_ > that.size())
+      for (iterator it = begin() + that.size(), e = end(); it != e; ++it)
+        (*it).~Elt();
     size_ = that.size();
     return *this;
   }
