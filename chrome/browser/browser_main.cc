@@ -1052,11 +1052,9 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
-#if defined(TOOLKIT_USES_GTK)
   // TODO(beng): Move to WidgetImpl and implement on Windows too!
   if (parameters.command_line_.HasSwitch(switches::kDebugViewsPaint))
-    views::NativeWidgetGtk::EnableDebugPaint();
-#endif
+    views::Widget::SetDebugPaintEnabled(true);
 #endif
 
 #if defined(OS_WIN)

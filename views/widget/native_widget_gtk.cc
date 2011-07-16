@@ -610,11 +610,6 @@ bool NativeWidgetGtk::SuppressFreezeUpdates() {
 }
 
 // static
-void NativeWidgetGtk::EnableDebugPaint() {
-  gdk_window_set_debug_updates(true);
-}
-
-// static
 void NativeWidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window,
                                                   bool enable) {
   if (!GTK_WIDGET_REALIZED(GTK_WIDGET(window)))
@@ -1377,6 +1372,8 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
 }
 
 gboolean NativeWidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
+  gdk_window_set_debug_updates(Widget::IsDebugPaintEnabled());
+
   if (transparent_ && child_) {
     // Clear the background before drawing any view and native components.
     DrawTransparentBackground(widget, event);

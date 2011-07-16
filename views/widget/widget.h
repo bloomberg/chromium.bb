@@ -220,6 +220,10 @@ class Widget : public internal::NativeWidgetDelegate,
   static gfx::Size GetLocalizedContentsSize(int col_resource_id,
                                             int row_resource_id);
 
+  // Enable/Disable debug paint.
+  static void SetDebugPaintEnabled(bool enabled);
+  static bool IsDebugPaintEnabled();
+
   void Init(const InitParams& params);
 
   // Returns the gfx::NativeView associated with this Widget.

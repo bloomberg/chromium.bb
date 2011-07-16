@@ -117,9 +117,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // FREEZE_UPDATES property is removed, or false otherwise.
   bool SuppressFreezeUpdates();
 
-  // Enables debug painting. See |debug_paint_enabled_| for details.
-  static void EnableDebugPaint();
-
   // Sets and deletes FREEZE_UPDATES property on given |window|.
   // It adds the property when |enable| is true and remove if false.
   // Calling this method will realize the window if it's not realized yet.

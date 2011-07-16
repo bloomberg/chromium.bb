@@ -25,6 +25,9 @@ namespace views {
 namespace {
 // Set to true if a pure Views implementation is preferred
 bool use_pure_views = false;
+
+// True to enable debug paint that indicates where to be painted.
+bool debug_paint = false;
 }
 
 // This class is used to keep track of the event a Widget is processing, and
@@ -256,6 +259,16 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
                                            int row_resource_id) {
   return gfx::Size(GetLocalizedContentsWidth(col_resource_id),
                    GetLocalizedContentsHeight(row_resource_id));
+}
+
+// static
+void Widget::SetDebugPaintEnabled(bool enabled) {
+  debug_paint = enabled;
+}
+
+// static
+bool Widget::IsDebugPaintEnabled() {
+  return debug_paint;
 }
 
 void Widget::Init(const InitParams& params) {
