@@ -702,10 +702,13 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
+#ifdef HAVE_CAIRO_EGL
 	struct egl_window_surface_data *data;
+#endif
 	int32_t x, y;
 
 	switch (window->buffer_type) {
+#ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
 		data = cairo_surface_get_user_data(window->cairo_surface,
 						   &surface_data_key);
@@ -716,6 +719,7 @@ window_attach_surface(struct window *window)
 				&window->server_allocation.height);
 		break;
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
+#endif
 	case WINDOW_BUFFER_TYPE_SHM:
 		window_get_resize_dx_dy(window, &x, &y);
 
@@ -734,6 +738,8 @@ window_attach_surface(struct window *window)
 		wl_display_sync_callback(display->display, free_surface,
 					 window);
 		break;
+	default:
+		return;
 	}
 
 	if (window->fullscreen)
@@ -781,6 +787,7 @@ window_set_surface(struct window *window, cairo_surface_t *surface)
 	window->cairo_surface = surface;
 }
 
+#ifdef HAVE_CAIRO_EGL
 static void
 window_resize_cairo_window_surface(struct window *window)
 {
@@ -800,6 +807,7 @@ window_resize_cairo_window_surface(struct window *window)
 				  window->allocation.width,
 				  window->allocation.height);
 }
+#endif
 
 void
 window_create_surface(struct window *window)
@@ -1508,8 +1516,12 @@ window_create_internal(struct display *display, struct window *parent,
 	window->transparent = 1;
 
 	if (display->dpy)
+#ifdef HAVE_CAIRO_EGL
 		/* FIXME: make TYPE_EGL_IMAGE choosable for testing */
 		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
+#else
+		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
+#endif
 	else
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
@@ -2011,6 +2023,7 @@ display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx)
 {
+#ifdef HAVE_CAIRO_EGL
 	struct egl_window_surface_data *data;
 
 	if (!window->cairo_surface)
@@ -2025,6 +2038,7 @@ display_acquire_window_surface(struct display *display,
 	cairo_device_acquire(display->device);
 	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
 		fprintf(stderr, "failed to make surface current\n");
+#endif
 }
 
 void
