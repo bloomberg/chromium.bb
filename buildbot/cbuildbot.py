@@ -230,9 +230,6 @@ def RunBuildStages(bot_id, options, build_config):
     if prebuilts:
       bg.AddStage(stages.UploadPrebuiltsStage(bot_id, options, build_config))
 
-    if options.archive:
-      bg.AddStage(stages.ArchiveStage(bot_id, options, build_config))
-
     if not bg.Empty():
       bg.start()
       bg_started = True
@@ -261,7 +258,15 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
 
-  if completion_stage:
+  if not build_config['master'] and completion_stage:
+    # Report success or failure to the master.
+    completion_stage.Run()
+
+  if build_success and options.archive:
+    stages.ArchiveStage(bot_id, options, build_config).Run()
+
+  if build_config['master'] and completion_stage:
+    # Wait for slave builds to complete.
     completion_stage.Run()
 
   # Wait for remaining stages to finish. Ignore any errors.
