@@ -45,6 +45,9 @@ class HistoryQuickProvider : public HistoryProvider {
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Spans);
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Relevance);
 
+  // The initial maximum allowable score for a match which cannot be inlined.
+  static const int kMaxNonInliningScore;
+
   // Creates an AutocompleteMatch from |history_match|. |max_match_score| gives
   // the maximum possible score for the match.
   AutocompleteMatch QuickMatchToACMatch(

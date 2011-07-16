@@ -32,9 +32,6 @@ using history::InMemoryURLIndex;
 using history::ScoredHistoryMatch;
 using history::ScoredHistoryMatches;
 
-// The initial maximum allowable score for a match which cannot be inlined.
-const int kMaxNonInliningScore = 1199;
-
 HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
                                            Profile* profile)
     : HistoryProvider(listener, profile, "HistoryQuickProvider"),
@@ -122,6 +119,10 @@ void HistoryQuickProvider::DoAutocomplete() {
     }
   }
 }
+
+// static
+const int HistoryQuickProvider::kMaxNonInliningScore =
+    AutocompleteResult::kLowestDefaultScore - 1;
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     const ScoredHistoryMatch& history_match,

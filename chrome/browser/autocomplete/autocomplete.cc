@@ -559,6 +559,7 @@ string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
 
 // static
 const size_t AutocompleteResult::kMaxMatches = 6;
+const int AutocompleteResult::kLowestDefaultScore = 1200;
 
 void AutocompleteResult::Selection::Clear() {
   destination_url = GURL();

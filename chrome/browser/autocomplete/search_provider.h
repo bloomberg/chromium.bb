@@ -171,6 +171,10 @@ class SearchProvider : public AutocompleteProvider,
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
   typedef std::map<string16, AutocompleteMatch> MatchMap;
+  typedef std::pair<string16, int> ScoredTerm;
+  typedef std::vector<ScoredTerm> ScoredTerms;
+
+  class CompareScoredTerms;
 
   // Called when timer_ expires.
   void Run();
@@ -224,6 +228,13 @@ class SearchProvider : public AutocompleteProvider,
                               int did_not_accept_suggestion,
                               MatchMap* map);
 
+  // Calculates relevance scores for all |results|.
+  ScoredTerms ScoreHistoryTerms(const HistoryResults& results,
+                                bool base_prevent_inline_autocomplete,
+                                bool input_multiple_words,
+                                const string16& input_text,
+                                bool is_keyword);
+
   // Adds a match for each result in |suggest_results| to |map|. |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
   // provider.
@@ -235,12 +246,13 @@ class SearchProvider : public AutocompleteProvider,
   // Determines the relevance for a particular match.  We use different scoring
   // algorithms for the different types of matches.
   int CalculateRelevanceForWhatYouTyped() const;
-  // |time| is the time at which this query was last seen. |is_keyword| is true
-  // if the search is from the keyword provider. |looks_like_url| is true if the
-  // search term would be treated as a URL if typed into the omnibox.
+  // |time| is the time at which this query was last seen.  |is_keyword|
+  // indicates whether the results correspond to the keyword provider or default
+  // provider. |prevent_inline_autocomplete| is true if we should not inline
+  // autocomplete this query.
   int CalculateRelevanceForHistory(const base::Time& time,
-                                   bool looks_like_url,
-                                   bool is_keyword) const;
+                                   bool is_keyword,
+                                   bool prevent_inline_autocomplete) const;
   // |result_number| is the index of the suggestion in the result set from the
   // server; the best suggestion is suggestion number 0.  |is_keyword| is true
   // if the search is from the keyword provider.

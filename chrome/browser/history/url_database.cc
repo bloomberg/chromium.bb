@@ -477,7 +477,7 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
 
   DCHECK(!prefix.empty());
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT DISTINCT kv.term, u.last_visit_time "
+      "SELECT DISTINCT kv.term, u.visit_count, u.last_visit_time "
       "FROM keyword_search_terms kv "
       "JOIN urls u ON kv.url_id = u.id "
       "WHERE kv.keyword_id = ? AND kv.lower_term >= ? AND kv.lower_term < ? "
@@ -499,7 +499,8 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
   KeywordSearchTermVisit visit;
   while (statement.Step()) {
     visit.term = statement.ColumnString16(0);
-    visit.time = base::Time::FromInternalValue(statement.ColumnInt64(1));
+    visit.visits = statement.ColumnInt(1);
+    visit.time = base::Time::FromInternalValue(statement.ColumnInt64(2));
     matches->push_back(visit);
   }
 }

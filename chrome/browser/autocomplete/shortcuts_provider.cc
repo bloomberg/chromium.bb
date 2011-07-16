@@ -72,10 +72,11 @@ class RemoveMatchPredicate {
 
 }  // namespace
 
-// A match needs to score at least 1200 to be default, so set the max below
-// this. For ease of unit testing, make it divisible by 4 (since some tests
-// check for half or quarter of the max score).
-const int ShortcutsProvider::kMaxScore = 1196;
+// For ease of unit testing, make the clamp value divisible by 4 (since some
+// tests check for half or quarter of the max score).
+// static
+const int ShortcutsProvider::kMaxScore =
+    (AutocompleteResult::kLowestDefaultScore - 1) & ~3;
 
 ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
                                      Profile* profile)

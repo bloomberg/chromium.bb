@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/callback.h"
+#include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
@@ -36,6 +37,25 @@
 
 using base::Time;
 using base::TimeDelta;
+
+namespace {
+
+bool HasMultipleWords(const string16& text) {
+  base::i18n::BreakIterator i(text, base::i18n::BreakIterator::BREAK_WORD);
+  bool found_word = false;
+  if (i.Init()) {
+    while (i.Advance()) {
+      if (i.IsWord()) {
+        if (found_word)
+          return true;
+        found_word = true;
+      }
+    }
+  }
+  return false;
+}
+
+};
 
 // static
 const int SearchProvider::kDefaultProviderURLFetcherID = 1;
@@ -187,6 +207,14 @@ void SearchProvider::Start(const AutocompleteInput& input,
   ConvertResultsToAutocompleteMatches();
 }
 
+class SearchProvider::CompareScoredTerms {
+ public:
+  bool operator()(const ScoredTerm& a, const ScoredTerm& b) {
+    // Sort in descending relevance order.
+    return a.second > b.second;
+  }
+};
+
 void SearchProvider::Run() {
   // Start a new request with the current input.
   DCHECK(!done_);
@@ -281,20 +309,23 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   if (!url_db)
     return;
 
-  // Request history for both the keyword and default provider.
+  // Request history for both the keyword and default provider.  We grab many
+  // more matches than we'll ultimately clamp to so that if there are several
+  // recent multi-word matches who scores are lowered (see
+  // AddHistoryResultsToMap()), they won't crowd out older, higher-scoring
+  // matches.  Note that this doesn't fix the problem entirely, but merely
+  // limits it to cases with a very large number of such multi-word matches; for
+  // now, this seems OK compared with the complexity of a real fix, which would
+  // require multiple searches and tracking of "single- vs. multi-word" in the
+  // database.
+  int num_matches = kMaxMatches * 5;
   if (providers_.valid_keyword_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(
-        providers_.keyword_provider().id(),
-        keyword_input_text_,
-        static_cast<int>(kMaxMatches),
-        &keyword_history_results_);
+    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider().id(),
+        keyword_input_text_, num_matches, &keyword_history_results_);
   }
   if (providers_.valid_default_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(
-        providers_.default_provider().id(),
-        input_.text(),
-        static_cast<int>(kMaxMatches),
-        &default_history_results_);
+    url_db->GetMostRecentKeywordSearchTerms(providers_.default_provider().id(),
+        input_.text(), num_matches, &default_history_results_);
   }
 }
 
@@ -587,50 +618,98 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                             bool is_keyword,
                                             int did_not_accept_suggestion,
                                             MatchMap* map) {
-  int last_relevance = 0;
+  if (results.empty())
+    return;
+
+  bool base_prevent_inline_autocomplete =
+      (input_.type() == AutocompleteInput::URL) ||
+      input_.prevent_inline_autocomplete();
+  const string16& input_text(
+      is_keyword ? keyword_input_text_ : input_.text());
+  bool input_multiple_words = HasMultipleWords(input_text);
+
+  ScoredTerms scored_terms;
+  if (!base_prevent_inline_autocomplete && input_multiple_words) {
+    // ScoreHistoryTerms() allows autocompletion of multi-word, 1-visit queries
+    // if the input also has multiple words.  But if we were already
+    // autocompleting a multi-word, multi-visit query, and the current input is
+    // still a prefix of it, then changing the autocompletion suddenly feels
+    // wrong.  To detect this case, first score as if only one word has been
+    // typed, then check for a best result that is an autocompleted, multi-word
+    // query.  If we find one, then just keep that score set.
+    scored_terms = ScoreHistoryTerms(results, base_prevent_inline_autocomplete,
+                                     false, input_text, is_keyword);
+    if ((scored_terms[0].second < AutocompleteResult::kLowestDefaultScore) ||
+        !HasMultipleWords(scored_terms[0].first))
+      scored_terms.clear();  // Didn't detect the case above, score normally.
+  }
+  if (scored_terms.empty())
+    scored_terms = ScoreHistoryTerms(results, base_prevent_inline_autocomplete,
+                                     input_multiple_words, input_text,
+                                     is_keyword);
+  for (ScoredTerms::const_iterator i(scored_terms.begin());
+       i != scored_terms.end(); ++i) {
+    AddMatchToMap(i->first, input_text, i->second,
+                  AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
+                  is_keyword, input_.prevent_inline_autocomplete(), map);
+  }
+}
+
+SearchProvider::ScoredTerms SearchProvider::ScoreHistoryTerms(
+    const HistoryResults& results,
+    bool base_prevent_inline_autocomplete,
+    bool input_multiple_words,
+    const string16& input_text,
+    bool is_keyword) {
   AutocompleteClassifier* classifier = profile_->GetAutocompleteClassifier();
+  ScoredTerms scored_terms;
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {
-    // History returns results sorted for us. We force the relevance to decrease
-    // so that the sort from history is honored. We should never end up with a
-    // match having a relevance greater than the previous, but they might be
-    // equal. If we didn't force the relevance to decrease and we ended up in a
-    // situation where the relevance was equal, then which was shown first would
-    // be random.
-    // This uses >= to handle the case where 3 or more results have the same
-    // relevance.
-    bool term_looks_like_url = false;
+    // Don't autocomplete multi-word queries that have only been seen once
+    // unless the user has typed more than one word.
+    bool prevent_inline_autocomplete = base_prevent_inline_autocomplete ||
+        (!input_multiple_words && (i->visits < 2) && HasMultipleWords(i->term));
+
     // Don't autocomplete search terms that would normally be treated as URLs
-    // when typed. For example, if the user searched for google.com and types
-    // goog, don't autocomplete to the search term google.com. Otherwise, the
-    // input will look like a URL but act like a search, which is confusing.
+    // when typed. For example, if the user searched for "google.com" and types
+    // "goog", don't autocomplete to the search term "google.com". Otherwise,
+    // the input will look like a URL but act like a search, which is confusing.
     // NOTE: We don't check this in the following cases:
     //  * When inline autocomplete is disabled, we won't be inline
     //    autocompleting this term, so we don't need to worry about confusion as
     //    much.  This also prevents calling Classify() again from inside the
     //    classifier (which will corrupt state and likely crash), since the
-    //    classifier always disabled inline autocomplete.
+    //    classifier always disables inline autocomplete.
     //  * When the user has typed the whole term, the "what you typed" history
     //    match will outrank us for URL-like inputs anyway, so we need not do
     //    anything special.
-    if (!input_.prevent_inline_autocomplete() && classifier &&
-        i->term != input_.text()) {
+    if (!prevent_inline_autocomplete && classifier && (i->term != input_text)) {
       AutocompleteMatch match;
       classifier->Classify(i->term, string16(), false, false, &match, NULL);
-      term_looks_like_url = match.transition == PageTransition::TYPED;
+      prevent_inline_autocomplete = match.transition == PageTransition::TYPED;
     }
-    int relevance = CalculateRelevanceForHistory(i->time, term_looks_like_url,
-                                                 is_keyword);
-    if (i != results.begin() && relevance >= last_relevance)
-      relevance = last_relevance - 1;
-    last_relevance = relevance;
-    AddMatchToMap(i->term,
-                  is_keyword ? keyword_input_text_ : input_.text(),
-                  relevance,
-                  AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
-                  is_keyword, input_.prevent_inline_autocomplete(),
-                  map);
+
+    int relevance = CalculateRelevanceForHistory(i->time, is_keyword,
+                                                 prevent_inline_autocomplete);
+    scored_terms.push_back(std::make_pair(i->term, relevance));
   }
+
+  // History returns results sorted for us.  However, we may have docked some
+  // results' scores, so things are no longer in order.  Do a stable sort to get
+  // things back in order without otherwise disturbing results with equal
+  // scores, then force the scores to be unique, so that the order in which
+  // they're shown is deterministic.
+  std::stable_sort(scored_terms.begin(), scored_terms.end(),
+                   CompareScoredTerms());
+  int last_relevance = 0;
+  for (ScoredTerms::iterator i(scored_terms.begin()); i != scored_terms.end();
+       ++i) {
+    if ((i != scored_terms.begin()) && (i->second >= last_relevance))
+      i->second = last_relevance - 1;
+    last_relevance = i->second;
+  }
+
+  return scored_terms;
 }
 
 void SearchProvider::AddSuggestResultsToMap(
@@ -671,22 +750,21 @@ int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
   }
 }
 
-int SearchProvider::CalculateRelevanceForHistory(const Time& time,
-                                                 bool looks_like_url,
-                                                 bool is_keyword) const {
+int SearchProvider::CalculateRelevanceForHistory(
+    const Time& time,
+    bool is_keyword,
+    bool prevent_inline_autocomplete) const {
   // The relevance of past searches falls off over time. There are two distinct
   // equations used. If the first equation is used (searches to the primary
-  // provider with a type other than URL that don't autocomplete to a url) the
-  // score starts at 1399 and falls to 1300. If the second equation is used the
-  // relevance of a search 15 minutes ago is discounted about 50 points, while
-  // the relevance of a search two weeks ago is discounted about 450 points.
+  // provider that we want to inline autocomplete), the score starts at 1399 and
+  // falls to 1300. If the second equation is used the relevance of a search 15
+  // minutes ago is discounted 50 points, while the relevance of a search two
+  // weeks ago is discounted 450 points.
   double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
-
-  if (providers_.is_primary_provider(is_keyword) &&
-      input_.type() != AutocompleteInput::URL &&
-      !input_.prevent_inline_autocomplete() && !looks_like_url) {
+  bool is_primary_provider = providers_.is_primary_provider(is_keyword);
+  if (is_primary_provider && !prevent_inline_autocomplete) {
     // Searches with the past two days get a different curve.
-    const double autocomplete_time= 2 * 24 * 60 * 60;
+    const double autocomplete_time = 2 * 24 * 60 * 60;
     if (elapsed_time < autocomplete_time) {
       return (is_keyword ? 1599 : 1399) - static_cast<int>(99 *
           std::pow(elapsed_time / autocomplete_time, 2.5));
@@ -700,10 +778,10 @@ int SearchProvider::CalculateRelevanceForHistory(const Time& time,
   // Don't let scores go below 0.  Negative relevance scores are meaningful in
   // a different way.
   int base_score;
-  if (!providers_.is_primary_provider(is_keyword))
-    base_score = 200;
-  else
+  if (is_primary_provider)
     base_score = (input_.type() == AutocompleteInput::URL) ? 750 : 1050;
+  else
+    base_score = 200;
   return std::max(0, base_score - score_discount);
 }
 

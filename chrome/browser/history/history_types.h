@@ -528,11 +528,9 @@ struct KeywordSearchTermVisit {
   KeywordSearchTermVisit();
   ~KeywordSearchTermVisit();
 
-  // The time of the visit.
-  base::Time time;
-
-  // The search term that was used.
-  string16 term;
+  string16 term;    // The search term that was used.
+  int visits;       // The visit count.
+  base::Time time;  // The time of the most recent visit.
 };
 
 // KeywordSearchTermRow --------------------------------------------------------
@@ -542,14 +540,9 @@ struct KeywordSearchTermRow {
   KeywordSearchTermRow();
   ~KeywordSearchTermRow();
 
-  // ID of the keyword.
-  TemplateURLID keyword_id;
-
-  // ID of the url.
-  URLID url_id;
-
-  // The search term that was used.
-  string16 term;
+  TemplateURLID keyword_id;  // ID of the keyword.
+  URLID url_id;              // ID of the url.
+  string16 term;             // The search term that was used.
 };
 
 // MostVisitedURL --------------------------------------------------------------

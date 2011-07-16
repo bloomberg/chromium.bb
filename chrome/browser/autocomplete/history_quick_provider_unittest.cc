@@ -364,43 +364,49 @@ TEST_F(HistoryQuickProviderTest, Relevance) {
   next_score = 1500;
   match.raw_score = 1425;
   match.can_inline = false;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
-  EXPECT_EQ(next_score, 1198);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 1);
 
   // Can inline, clamped.
-  next_score = 1199;
+  next_score = HistoryQuickProvider::kMaxNonInliningScore;
   match.raw_score = 1425;
   match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
-  EXPECT_EQ(next_score, 1198);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 1);
 
   // Can't inline, clamped.
-  next_score = 1199;
+  next_score = HistoryQuickProvider::kMaxNonInliningScore;
   match.raw_score = 1425;
   match.can_inline = false;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
-  EXPECT_EQ(next_score, 1198);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 1);
 
   // Score just above the clamped limit.
-  next_score = 1199;
-  match.raw_score = 1200;
+  next_score = HistoryQuickProvider::kMaxNonInliningScore;
+  match.raw_score = AutocompleteResult::kLowestDefaultScore;
   match.can_inline = false;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
-  EXPECT_EQ(next_score, 1198);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 1);
 
   // Score right at the clamped limit.
-  next_score = 1199;
-  match.raw_score = 1199;
+  next_score = HistoryQuickProvider::kMaxNonInliningScore;
+  match.raw_score = HistoryQuickProvider::kMaxNonInliningScore;
   match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1199);
-  EXPECT_EQ(next_score, 1198);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 1);
 
   // Score just below the clamped limit.
-  next_score = 1199;
-  match.raw_score = 1198;
+  next_score = HistoryQuickProvider::kMaxNonInliningScore;
+  match.raw_score = HistoryQuickProvider::kMaxNonInliningScore - 1;
   match.can_inline = true;
-  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score), 1198);
-  EXPECT_EQ(next_score, 1197);
+  EXPECT_EQ(HistoryQuickProvider::CalculateRelevance(match, &next_score),
+            HistoryQuickProvider::kMaxNonInliningScore - 1);
+  EXPECT_EQ(next_score, HistoryQuickProvider::kMaxNonInliningScore - 2);
 
   // Low score, can inline, not clamped.
   next_score = 1500;

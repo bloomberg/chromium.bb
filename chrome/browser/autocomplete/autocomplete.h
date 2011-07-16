@@ -490,6 +490,13 @@ class AutocompleteResult {
     bool is_history_what_you_typed_match;
   };
 
+  // Max number of matches we'll show from the various providers.
+  static const size_t kMaxMatches;
+
+  // The lowest score a match can have and still potentially become the default
+  // match for the result set.
+  static const int kLowestDefaultScore;
+
   AutocompleteResult();
   ~AutocompleteResult();
 
@@ -543,9 +550,6 @@ class AutocompleteResult {
   // Does a data integrity check on this result.
   void Validate() const;
 #endif
-
-  // Max number of matches we'll show from the various providers.
-  static const size_t kMaxMatches;
 
  private:
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
