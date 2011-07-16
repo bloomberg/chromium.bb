@@ -290,7 +290,6 @@ int GetCodeMask(bool folder) {
   int rv = ui::CHROME_BOOKMARK_ITEM;
   if (!folder) {
     rv |= ui::TEXT_URI_LIST |
-          ui::TEXT_HTML |
           ui::TEXT_PLAIN |
           ui::NETSCAPE_URL;
   }
@@ -350,18 +349,6 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
 
       gtk_selection_data_set_uris(selection_data, uris);
       free(uris);
-      break;
-    }
-    case ui::TEXT_HTML: {
-      std::string utf8_title = UTF16ToUTF8(nodes[0]->GetTitle());
-      std::string utf8_html = StringPrintf("<a href=\"%s\">%s</a>",
-                                           nodes[0]->GetURL().spec().c_str(),
-                                           utf8_title.c_str());
-      gtk_selection_data_set(selection_data,
-                             GetAtomForTarget(ui::TEXT_HTML),
-                             kBitsInAByte,
-                             reinterpret_cast<const guchar*>(utf8_html.data()),
-                             utf8_html.size());
       break;
     }
     case ui::TEXT_PLAIN: {
