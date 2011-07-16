@@ -1108,6 +1108,7 @@ def PPAPIBrowserTester(env,
                        args=(),
                        # list of "--flag=value" pairs (no spaces!)
                        browser_flags=(),
+                       python_tester_script=None,
                        **extra):
   if 'TRUSTED_ENV' not in env:
     return []
@@ -1119,9 +1120,11 @@ def PPAPIBrowserTester(env,
   if 'scale_timeout' in ARGUMENTS:
     timeout = timeout * int(ARGUMENTS['scale_timeout'])
 
+  if python_tester_script is None:
+    python_tester_script = env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
+                             '/browser_tester.py')
   command = GetHeadlessPrefix(env) + [
-      '${PYTHON}', env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
-                            '/browser_tester.py'),
+      '${PYTHON}', python_tester_script,
       '--browser_path', ARGUMENTS.get('chrome_browser_path',
                                       env.DownloadedChromeBinary()),
       '--url', url,
@@ -2562,6 +2565,7 @@ nacl_env.Append(
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
+    'tests/inbrowser_crash_test/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/longjmp/nacl.scons',

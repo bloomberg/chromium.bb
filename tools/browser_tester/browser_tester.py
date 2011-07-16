@@ -107,6 +107,8 @@ def ProcessToolLogs(options, logs_dir):
 
 
 def Run(url, options):
+  options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
+
   # Create server
   server = browsertester.server.Create('localhost', options.port)
 
@@ -184,9 +186,6 @@ def RunFromCommandLine():
   url = options.url
   if url is None:
     parser.error('Must specify a URL')
-
-  # Look for files in the browserdata directory as a last resort
-  options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
 
   return Run(url, options)
 

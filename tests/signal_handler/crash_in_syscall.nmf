@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "crash_in_syscall_x86-32.nexe"},
+    "x86-64": {"url": "crash_in_syscall_x86-64.nexe"},
+    "arm": {"url": "crash_in_syscall_arm.nexe"}
+  }
+}
