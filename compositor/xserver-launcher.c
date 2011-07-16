@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <xcb/xcb.h>
 
@@ -551,8 +552,9 @@ int
 wlsc_xserver_init(struct wl_display *display)
 {
 	struct wlsc_xserver *mxs;
-	char lockfile[256], pid[16];
+	char lockfile[256], pid[16], *end;
 	socklen_t size, name_size;
+	pid_t other;
 	int fd;
 
 	mxs = malloc(sizeof *mxs);
@@ -574,15 +576,44 @@ wlsc_xserver_init(struct wl_display *display)
 		fd = open(lockfile,
 			  O_WRONLY | O_CLOEXEC | O_CREAT | O_EXCL, 0444);
 		if (fd < 0 && errno == EEXIST) {
-			fprintf(stderr, "server %d exists\n", mxs->display);
+			fd = open(lockfile, O_CLOEXEC, O_RDONLY);
+			if (fd < 0 || read(fd, pid, 11) != 11) {
+				fprintf(stderr,
+					"can't read lock file %s: %s\n",
+					lockfile, strerror(errno));
+				mxs->display++;
+				continue;
+			}
+
+			other = strtol(pid, &end, 0);
+			if (end != pid + 10) {
+				fprintf(stderr, "can't parse lock file %s\n",
+					lockfile);
+				mxs->display++;
+				continue;
+			}
+
+			if (kill(other, 0) < 0 && errno == ESRCH) {
+				/* stale lock file; unlink and try again */
+				fprintf(stderr,
+					"unlinking stale lock file %s\n",
+					lockfile);
+				unlink(lockfile);
+				continue;
+			}
+
 			mxs->display++;
 			continue;
 		} else if (fd < 0) {
+			fprintf(stderr, "failed to create lock file %s: %s\n",
+				lockfile, strerror(errno));
 			close(mxs->fd);
 			free(mxs);
 			return -1;
 		}
 
+		/* Subtle detail: we use the pid of the wayland
+		 * compositor, not the xserver in the lock file. */
 		size = snprintf(pid, sizeof pid, "%10d\n", getpid());
 		write(fd, pid, size);
 		close(fd);
@@ -591,9 +622,10 @@ wlsc_xserver_init(struct wl_display *display)
 				     sizeof mxs->addr.sun_path,
 				     "/tmp/.X11-unix/X%d", mxs->display) + 1;
 		size = offsetof(struct sockaddr_un, sun_path) + name_size;
+		unlink(mxs->addr.sun_path);
 		if (bind(mxs->fd, (struct sockaddr *) &mxs->addr, size) < 0) {
-			fprintf(stderr, "failed to bind to %s (%m)\n",
-				mxs->addr.sun_path);
+			fprintf(stderr, "failed to bind to %s (%s)\n",
+				mxs->addr.sun_path, strerror(errno));
 			unlink(lockfile);
 			close(mxs->fd);
 			free(mxs);
@@ -602,7 +634,7 @@ wlsc_xserver_init(struct wl_display *display)
 		break;
 	} while (errno != 0);
 
-	fprintf(stderr, "listening on display %d\n", mxs->display);
+	fprintf(stderr, "xserver listening on display :%d\n", mxs->display);
 
 	if (listen(mxs->fd, 1) < 0) {
 		unlink(mxs->addr.sun_path);
