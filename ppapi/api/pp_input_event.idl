@@ -3,59 +3,13 @@
  * found in the LICENSE file.
  */
 
-/* This file defines the API used to handle mouse and keyboard input events. */
+/**
+ * This file defines the API used to handle mouse and keyboard input events.
+ */
 
-/* This enumeration contains constants representing each mouse button. */
-enum PP_InputEvent_MouseButton {
-  PP_INPUTEVENT_MOUSEBUTTON_NONE   = -1,
-  PP_INPUTEVENT_MOUSEBUTTON_LEFT   = 0,
-  PP_INPUTEVENT_MOUSEBUTTON_MIDDLE = 1,
-  PP_INPUTEVENT_MOUSEBUTTON_RIGHT  = 2
-};
-
-/* This enumeration contains mouse and keyboard event constants. */
-enum PP_InputEvent_Type {
-  PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_MOUSEDOWN   = 0,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_MOUSEUP     = 1,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_MOUSEMOVE   = 2,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_MOUSEENTER  = 3,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_MOUSELEAVE  = 4,
-  /* PP_InputEvent_Wheel */
-  PP_INPUTEVENT_TYPE_MOUSEWHEEL  = 5,
-  /* PP_InputEvent_Key */
-  PP_INPUTEVENT_TYPE_RAWKEYDOWN  = 6,
-  /* PP_InputEvent_Key */
-  PP_INPUTEVENT_TYPE_KEYDOWN     = 7,
-  /* PP_InputEvent_Key */
-  PP_INPUTEVENT_TYPE_KEYUP       = 8,
-  /* PP_InputEvent_Character */
-  PP_INPUTEVENT_TYPE_CHAR        = 9,
-  /* PP_InputEvent_Mouse */
-  PP_INPUTEVENT_TYPE_CONTEXTMENU = 10
-};
-
-/* This enumeration contains event modifier constants. */
-enum PP_InputEvent_Modifier {
-  PP_INPUTEVENT_MODIFIER_SHIFTKEY         = 1 << 0,
-  PP_INPUTEVENT_MODIFIER_CONTROLKEY       = 1 << 1,
-  PP_INPUTEVENT_MODIFIER_ALTKEY           = 1 << 2,
-  PP_INPUTEVENT_MODIFIER_METAKEY          = 1 << 3,
-  PP_INPUTEVENT_MODIFIER_ISKEYPAD         = 1 << 4,
-  PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT     = 1 << 5,
-  PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN   = 1 << 6,
-  PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN = 1 << 7,
-  PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN  = 1 << 8,
-  PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY      = 1 << 9,
-  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10
-};
-
-/* The PP_InputEvent_Key struct represents a key up or key down event.
+/**
+ * The <code>PP_InputEvent_Key</code> struct represents a key up or key down
+ * event.
  *
  * Key up and key down events correspond to physical keys on the keyboard. The
  * actual character that the user typed (if any) will be delivered in a
@@ -70,17 +24,22 @@ enum PP_InputEvent_Modifier {
  * If your module depends on receiving key up events, it should also handle
  * "lost focus" as the equivalent of "all keys up."
  */
+[assert_size(8)]
 struct PP_InputEvent_Key {
-  /* This value is a bit field combination of the EVENT_MODIFIER flags. */
+  /** This value is a bit field combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
-  /* The key code.
-   *
-   * TODO(brettw) define what these actually are.
+
+  /**
+   * This value reflects the DOM KeyboardEvent <code>keyCode</code> field.
+   * Chrome populates this with the Windows-style Virtual Key code of the key.
    */
+
   uint32_t key_code;
 };
 
-/* The PP_InputEvent_Character struct represents a typed character event.
+/**
+ * The <code>PP_InputEvent_Character</code> struct represents a typed character
+ * event.
  *
  * Normally, the program will receive a key down event, followed by a character
  * event, followed by a key up event. The character event will have any
@@ -99,8 +58,9 @@ struct PP_InputEvent_Key {
  * character (can't combine it with 'R', so just send the raw unlaut so it
  * isn't lost"), 'R' character event, 'R' key up.
  */
+[assert_size(12)]
 struct PP_InputEvent_Character {
-  /** A combination of the EVENT_MODIFIER flags. */
+  /** A combination of the <code>PP_InputEvent_Modifier</code> flags. */
   uint32_t modifier;
 
   /**
@@ -112,19 +72,27 @@ struct PP_InputEvent_Character {
   char[5] text;
 };
 
-/* The PP_InputEvent_Mouse struct represents all mouse events except
- * mouse wheel events.
+/**
+ * The <code>PP_InputEvent_Mouse</code> struct represents all mouse events
+ * except mouse wheel events.
  */
+[assert_size(20)]
 struct PP_InputEvent_Mouse {
-  /* This value is a bit field combination of the EVENT_MODIFIER flags. */
+  /**
+   * This value is a bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   */
   uint32_t modifier;
-  /* This value represents the button that changed for mouse down or up events.
-   *
-   * This value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and
-   * leave events.
+
+  /**
+   * This value represents the button that changed for mouse down or up events.
+   * This value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for mouse move,
+   * enter, and leave events.
    */
   PP_InputEvent_MouseButton button;
-  /* This values represents the x coordinate of the mouse when the event
+
+  /**
+   * This values represents the x coordinate of the mouse when the event
    * occurred.
    *
    * In most, but not all, cases these coordinates will just be integers.
@@ -133,7 +101,8 @@ struct PP_InputEvent_Mouse {
    * plugin will give non-integer values.
    */
   float_t x;
-  /* This values represents the y coordinate of the mouse when the event
+  /**
+   * This values represents the y coordinate of the mouse when the event
    * occurred.
    *
    * In most, but not all, cases these coordinates will just be integers.
@@ -142,15 +111,24 @@ struct PP_InputEvent_Mouse {
    * plugin will give non-integer values.
    */
   float_t y;
-  /* TODO(brettw) figure out exactly what this means. */
+
+  // TODO(brettw) figure out exactly what this means.
   int32_t click_count;
 };
 
-/* The PP_InputEvent_Wheel struct represents all mouse wheel events. */
-struct PP_InputEvent_Wheel {
-  /* This value represents a combination of the EVENT_MODIFIER flags. */
+/**
+ * The <code>PP_InputEvent_Wheel</code> struct represents all mouse wheel
+ * events.
+ */
+[assert_size(24)] struct PP_InputEvent_Wheel {
+  /**
+   * This value represents a combination of the <code>EVENT_MODIFIER</code>
+   * flags.
+   */
   uint32_t modifier;
-  /* Indicates the amount vertically and horizontally the user has requested
+
+  /**
+   * Indicates the amount vertically and horizontally the user has requested
    * to scroll by with their mouse wheel. A scroll down or to the right (where
    * the content moves up or left) is represented as positive values, and
    * a scroll up or to the left (where the content moves down or right) is
@@ -171,12 +149,15 @@ struct PP_InputEvent_Wheel {
    * "clicks".
    */
   float_t delta_x;
-  /* See delta_x. */
+
+  /** This value represents */
   float_t delta_y;
-  /* The number of "clicks" of the scroll wheel that have produced the
+
+  /**
+   * The number of "clicks" of the scroll wheel that have produced the
    * event. The value may have system-specific acceleration applied to it,
    * depending on the device. The positive and negative meanings are the same
-   * as for |delta|.
+   * as for <code>delta_x</code> and <code>delta_y</code>.
    *
    * If you are scrolling, you probably want to use the delta values above.
    * These tick events can be useful if you aren't doing actual scrolling and
@@ -191,31 +172,39 @@ struct PP_InputEvent_Wheel {
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
   float_t wheel_ticks_x;
-  /* See wheel_ticks_x. */
+
+  /** This value represents */
   float_t wheel_ticks_y;
-  /* Indicates if the scroll delta_x/delta_y indicates pages or lines to
-   * scroll by. When true, the user is requesting to scroll by pages.
+
+  /**
+   * Indicates if the scroll <code>delta_x</code>/<code>delta_y</code>
+   * indicates pages or lines to scroll by. When true, the user is requesting
+   * to scroll by pages.
    */
   PP_Bool scroll_by_page;
 };
 
-/* Event's data.
- * 
- * Padding allows new events to be added without changing the size of this
- * struct.
+/**
+ * The PP_InputEventData union represents all input event data types.
  */
-[union, pad=64] struct PP_InputEventData {
-  /* Data for key events. */
-  PP_InputEvent_Key key;
-  /* Data for characted events. */
-  PP_InputEvent_Character character;
-  /* Data for mouse events. */
-  PP_InputEvent_Mouse mouse;
-  /* Data for wheel events. */
-  PP_InputEvent_Wheel wheel;
+[union] struct PP_InputEventData {
+  [wcomment] PP_InputEvent_Key key;
+  [wcomment] PP_InputEvent_Character character;
+  [wcomment] PP_InputEvent_Mouse mouse;
+  [wcomment] PP_InputEvent_Wheel wheel;
+
+  /**
+   * This value allows new events to be added without changing the size of
+   * this struct.
+   */
+  char[64] padding;
+
 };
 
-/* The PP_InputEvent struct represents all input events. */
+/**
+ * The PP_InputEvent struct represents all input events.
+ */
+[assert_size(80)]
 struct PP_InputEvent {
   /** This value represents the type of the event. */
   PP_InputEvent_Type type;
@@ -233,6 +222,9 @@ struct PP_InputEvent {
    */
   PP_TimeTicks time_stamp;
 
-  /** This value represents the event type and its specific data. */
+  /**
+   * This value represents the event type and its specific data.
+   */
   PP_InputEventData u;
 };
+

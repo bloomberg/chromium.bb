@@ -3,70 +3,101 @@
  * found in the LICENSE file.
  */
 
-/* Defines the core API. */
-
-/*
- * The PPB_Core interface contains pointers to functions related to memory
- * management, time, and threads on the browser.
+/**
+ * This file defines the <code>PPB_Core</code> interface defined by the browser
+ * and containing pointers to functions related to memory management, time, and
+ * threads.
  */
-interface PPB_Core_0_3 {
-  /* Same as AddRefVar for Resources. */
-  void AddRefResource(
-      [in] PP_Resource resource);
 
-  /* Same as ReleaseVar for Resources. */
-  void ReleaseResource(
-      [in] PP_Resource resource);
+label Chrome {
+  M14 = 1.0
+};
 
-  /* Allocate memory.
+/**
+ * The <code>PPB_Core</code> interface contains pointers to functions related
+ * to memory management, time, and threads on the browser.
+ *
+ */
+interface PPB_Core {
+  /**
    *
-   * Returns NULL If the allocation fails.
+   * AddRefResource() adds a reference to a resource.
+   *
+   * @param[in] config A <code>PP_Resource</code> containing the resource.
    */
-  mem_t MemAlloc(
-      [in] uint32_t num_bytes);
+  void AddRefResource([in] PP_Resource resource);
 
-  /* Free memory; it's safe to pass NULL. */
-  void MemFree(
-      [inout] mem_t ptr);
-
-  /* Returns the "wall clock time" according to the browser.
+  /**
+   * ReleaseResource() removes a reference from a resource.
    *
-   * See the definition of PP_Time.
+   * @param[in] config A <code>PP_Resource</code> containing the resource.
+   */
+  void ReleaseResource([in] PP_Resource resource);
+
+  /**
+   * GetTime() returns the "wall clock time" according to the
+   * browser.
+   *
+   * @return A <code>PP_Time</code> containing the "wall clock time" according
+   * to the browser.
    */
   PP_Time GetTime();
 
-  /* Returns the "tick time" according to the browser. This clock is used by
-   * the browser when passing some event times to the plugin (e.g., via the
-   * PP_InputEvent::time_stamp_seconds field). It is not correlated to any
-   * actual wall clock time (like GetTime()). Because of this, it will not run
-   * change if the user changes their computer clock.
+  /**
+   * GetTimeTicks() returns the "tick time" according to the browser.
+   * This clock is used by the browser when passing some event times to the
+   * module (e.g. using the <code>PP_InputEvent::time_stamp_seconds</code>
+   * field). It is not correlated to any actual wall clock time
+   * (like GetTime()). Because of this, it will not run change if the user
+   * changes their computer clock.
    *
-   * TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-   * This currently does change with wall clock time, but will be fixed in
-   * a future release.
+   * @return A <code>PP_TimeTicks</code> containing the "tick time" according
+   * to the browser.
    */
+
+// TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
+// This currently does change with wall clock time, but will be fixed in
+// a future release.
   PP_TimeTicks GetTimeTicks();
 
-  /* Schedules work to be executed on the main plugin thread after the
-   * specified delay. The delay may be 0 to specify a call back as soon as
-   * possible.
+  /**
+   * CallOnMainThread() schedules work to be executed on the main module thread
+   * after the specified delay. The delay may be 0 to specify a call back as
+   * soon as possible.
    *
-   * The |result| parameter will just be passed as the second argument as the
-   * callback. Many applications won't need this, but it allows a plugin to
-   * emulate calls of some callbacks which do use this value.
+   * The <code>result</code> parameter will just be passed as the second
+   * argument to the callback. Many applications won't need this, but it allows
+   * a module to emulate calls of some callbacks which do use this value.
    *
-   * NOTE: If the browser is shutting down or if the plugin has no instances,
-   * then the callback function may not be called.
+   * <strong>Note:</strong> CallOnMainThread, even when used from the main
+   * thread with a delay of 0 milliseconds, will never directly invoke the
+   * callback.  Even in this case, the callback will be scheduled
+   * asynchronously.
+   *
+   * <strong>Note:</strong> If the browser is shutting down or if the module
+   * has no instances, then the callback function may not be called.
+   *
+   * @param[in] delay_in_milliseconds An int32_t delay in milliseconds.
+   * @param[in] callback A <code>PP_CompletionCallback</code> callback function
+   * that the browser will call after the specified delay.
+   * @param[in] result An int32_t that the browser will pass to the given
+   * <code>PP_CompletionCallback</code>.
    */
   void CallOnMainThread(
       [in] int32_t delay_in_milliseconds,
       [in] PP_CompletionCallback callback,
       [in] int32_t result);
 
-  /* Returns true if the current thread is the main pepper thread.
+  /**
+   * IsMainThread() returns true if the current thread is the main pepper
+   * thread.
    *
-   * This is useful for implementing sanity checks, and deciding if dispatching
-   * via CallOnMainThread() is required.
+   * This function is useful for implementing sanity checks, and deciding if
+   * dispatching using CallOnMainThread() is required.
+   *
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the
+   * current thread is the main pepper thread, otherwise <code>PP_FALSE</code>.
    */
   PP_Bool IsMainThread();
 };
+

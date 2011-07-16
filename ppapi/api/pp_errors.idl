@@ -3,61 +3,85 @@
  * found in the LICENSE file.
  */
 
-/* This file defines an enumeration of all PPAPI error codes. */
+/**
+ * This file defines an enumeration of all PPAPI error codes.
+ */
 
-/* This enumeration contains enumerators of all PPAPI error codes.
+/**
+ * This enumeration contains enumerators of all PPAPI error codes.
  * Errors are negative valued.
  */
-enum PP_Error {
- /**
+[unnamed] enum PP_Error {
+  /**
    * This value is returned by a function on successful synchronous completion
    * or is passed as a result to a PP_CompletionCallback_Func on successful
    * asynchronous completion.
    */
   PP_OK                   = 0,
- /**
+  /**
    * This value is returned by a function that accepts a PP_CompletionCallback
-   * and cannot complete synchronously.  This code indicates that the given
+   * and cannot complete synchronously. This code indicates that the given
    * callback will be asynchronously notified of the final result once it is
    * available.
    */
   PP_OK_COMPLETIONPENDING = -1,
-  PP_ERROR_WOULDBLOCK     = -1,  /* DEPRECATED: DO NOT USE */
-  /* This value indicates failure for unspecified reasons. */
+
+  /** This value indicates failure for unspecified reasons. */
   PP_ERROR_FAILED         = -2,
-  /* This value indicates failure due to an asynchronous operation being
-   * interrupted, typically as a result of user action. */
+  /**
+   * This value indicates failure due to an asynchronous operation being
+   * interrupted, typically as a result of user action.
+   */
   PP_ERROR_ABORTED        = -3,
-  /* This value indicates failure due to an invalid argument. */
+
+  /** This value indicates failure due to an invalid argument. */
   PP_ERROR_BADARGUMENT    = -4,
-  /* This value indicates failure due to an invalid PP_Resource. */
+
+  /** This value indicates failure due to an invalid PP_Resource. */
   PP_ERROR_BADRESOURCE    = -5,
-  /* This value indicates failure due to an unavailable PPAPI interface. */
+
+  /** This value indicates failure due to an unavailable PPAPI interface. */
   PP_ERROR_NOINTERFACE    = -6,
-  /* This value indicates failure due to insufficient privileges. */
+
+  /** This value indicates failure due to insufficient privileges. */
   PP_ERROR_NOACCESS       = -7,
-  /* This value indicates failure due to insufficient memory. */
+
+  /** This value indicates failure due to insufficient memory. */
   PP_ERROR_NOMEMORY       = -8,
-  /* This value indicates failure due to insufficient storage space. */
+
+  /** This value indicates failure due to insufficient storage space. */
   PP_ERROR_NOSPACE        = -9,
-  /* This value indicates failure due to insufficient storage quota. */
+
+  /** This value indicates failure due to insufficient storage quota. */
   PP_ERROR_NOQUOTA        = -10,
-  /* This value indicates failure due to an action already being in progress. */
+
+  /**
+   * This value indicates failure due to an action already being in
+   * progress.
+   */
   PP_ERROR_INPROGRESS     = -11,
-  /* This value indicates failure due to a file that does not exist. */
+  /** This value indicates failure due to a file that does not exist. */
+
+  /**
+   * The requested command is not supported by the browser.
+   */
+  PP_ERROR_NOTSUPPORTED = -12,
+
   PP_ERROR_FILENOTFOUND   = -20,
-  /* This value indicates failure due to a file that already exists. */
+  /** This value indicates failure due to a file that already exists. */
   PP_ERROR_FILEEXISTS     = -21,
-  /* This value indicates failure due to a file that is too big. */
+  /** This value indicates failure due to a file that is too big. */
   PP_ERROR_FILETOOBIG     = -22,
-  /* This value indicates failure due to a file having been modified
+  /**
+   * This value indicates failure due to a file having been modified
    * unexpectedly.
    */
   PP_ERROR_FILECHANGED    = -23,
-  /* This value indicates failure due to a time limit being exceeded. */
+  /** This value indicates failure due to a time limit being exceeded. */
   PP_ERROR_TIMEDOUT       = -30,
-  /* This value indicates that the user cancelled rather than providing expected
-   * input.
+  /**
+   * This value indicates that the user cancelled rather than providing
+   * expected input.
    */
   PP_ERROR_USERCANCEL     = -40
 };

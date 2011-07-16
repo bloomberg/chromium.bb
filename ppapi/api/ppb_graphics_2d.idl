@@ -3,64 +3,117 @@
  * found in the LICENSE file.
  */
 
-/* Defines the PPB_Graphics2D struct. */
+/**
+ * Defines the <code>PPB_Graphics2D</code> struct representing a 2D graphics
+ * context within the browser.
+ */
 
-/* TODO(neb): Describe PPB_Graphics2D. */
-interface PPB_Graphics2D_0_3 {
-  /* The returned graphics context will not be bound to the plugin instance on
-   * creation (call BindGraphics on the plugin instance to do that).
+label Chrome {
+  M13 = 0.4,
+  M14 = 1.0
+};
+
+/**
+ * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
+ */
+[macro="PPB_GRAPHICS_2D_INTERFACE"]
+interface PPB_Graphics2D {
+  /**
+   * Create() creates a 2D graphics context. The returned graphics context will
+   * not be bound to the module instance on creation (call BindGraphics() on
+   * the module instance to bind the returned graphics context to the module
+   * instance).
    *
-   * Set the is_always_opaque flag if you know that you will be painting only
-   * opaque data to this context. This will disable blending when compositing
-   * the plugin with the web page, which will give slightly higher performance.
+   * @param[in] instance The module instance.
+   * @param[in] size The size of the graphic context.
+   * @param[in] is_always_opaque Set the <code>is_always_opaque</code> flag to
+   * <code>PP_TRUE</code> if you know that you will be painting only opaque
+   * data to this context. This option will disable blending when compositing
+   * the module with the web page, which might give higher performance on some
+   * computers.
    *
-   * If you set is_always_opaque, your alpha channel should always be set to
-   * 0xFF or there may be painting artifacts. Being opaque will allow the
-   * browser to do a memcpy rather than a blend to paint the plugin, and this
-   * means your alpha values will get set on the page backing store. If these
-   * values are incorrect, it could mess up future blending.
+   * If you set <code>is_always_opaque</code>, your alpha channel should always
+   * be set to 0xFF or there may be painting artifacts. The alpha values
+   * overwrite the destination alpha values without blending when
+   * <code>is_always_opaque</code> is true.
    *
-   * If you aren't sure, it is always correct to specify that it it not opaque.
+   * @return A <code>PP_Resource</code> containing the 2D graphics context if
+   * successful or 0 if unsuccessful.
    */
   PP_Resource Create(
       [in] PP_Instance instance,
       [in] PP_Size size,
       [in] PP_Bool is_always_opaque);
 
-  /* Returns PP_TRUE if the given resource is a valid Graphics2D, PP_FALSE if it
-   * is an invalid resource or is a resource of another type.
+  /**
+   * IsGraphics2D() determines if the given resource is a valid
+   * <code>Graphics2D</code>.
+   *
+   * @param[in] resource A <code>Graphics2D</code> context resource.
+   *
+   * @return PP_TRUE if the given resource is a valid <code>Graphics2D</code>,
+   * <code>PP_FALSE</code> if it is an invalid resource or is a resource of
+   * another type.
    */
   PP_Bool IsGraphics2D(
       [in] PP_Resource resource);
 
-  /* Retrieves the configuration for the given graphics context, filling the
-   * given values (which must not be NULL). On success, returns PP_TRUE. If the
-   * resource is invalid, the output parameters will be set to 0 and it will
-   * return PP_FALSE.
+  /**
+   * Describe() retrieves the configuration for the given graphics context,
+   * filling the given values (which must not be <code>NULL</code>).
+   *
+   * @param[in] resource The 2D Graphics resource.
+   * @param[in,out] size The size of the 2D graphics context in the browser.
+   * @param[in,out] is_always_opaque Identifies whether only opaque data
+   * will be painted.
+   *
+   * @return Returns <code>PP_TRUE</code> on succes or <code>PP_FALSE</code> if
+   * the resource is invalid. The output parameters will be set to 0 on a
+   * <code>PP_FALSE</code>.
    */
   PP_Bool Describe(
       [in] PP_Resource graphics_2d,
       [out] PP_Size size,
       [out] PP_Bool is_always_opqaue);
 
-  /* Enqueues a paint of the given image into the context. THIS HAS NO EFFECT
-   * UNTIL YOU CALL Flush(). As a result, what counts is the contents of the
-   * bitmap when you call Flush, not when you call this function.
+  /**
+   * PaintImageData() enqueues a paint of the given image into the context.
+   * This function has no effect until you call Flush() As a result, what
+   * counts is the contents of the bitmap when you call Flush(), not when
+   * you call this function.
    *
-   * The given image will be placed at |top_left| from the top left of the
-   * context's internal backing store. Then the src_rect will be copied into the
-   * backing store. This parameter may not be NULL.
+   * The provided image will be placed at <code>top_left</code> from the top
+   *  left of the context's internal backing store. Then the pixels contained
+   * in <code>src_rect</code> will be copied into the backing store. This
+   * means that the rectangle being painted will be at <code>src_rect</code>
+   * offset by <code>top_left</code>.
    *
-   * The src_rect is specified in the coordinate system of the image being
-   * painted, not the context. For the common case of copying the entire image,
-   * you may specify a NULL |src_rect| pointer. If you are frequently updating
-   * the entire image, consider using ReplaceContents which will give slightly
-   * higher performance.
+   * The <code>src_rect</code> is specified in the coordinate system of the
+   * image being painted, not the context. For the common case of copying the
+   * entire image, you may specify an empty <code>src_rect</code>.
    *
    * The painted area of the source bitmap must fall entirely within the
    * context. Attempting to paint outside of the context will result in an
    * error. However, the source bitmap may fall outside the context, as long
-   * as the src_rect subset of it falls entirely within the context.
+   * as the <code>src_rect</code> subset of it falls entirely within the
+   * context.
+   *
+   * There are two methods most modules will use for painting. The first
+   * method is to generate a new <code>ImageData</code> and then paint it. In
+   * this case, you'll set the location of your painting to
+   * <code>top_left</code> and set <code>src_rect</code> to <code>NULL</code>.
+   * The second is that you're generating small invalid regions out of a larger
+   * bitmap representing your entire instance. In this case, you would set the
+   * location of your image to (0,0) and then set <code>src_rect</code> to the
+   * pixels you changed.
+   *
+   * @param[in] resource The 2D Graphics resource.
+   * @param[in] image The <code>ImageData</code> to be painted.
+   * @param[in] top_left A <code>Point</code> representing the
+   * <code>top_left</code> location where the <code>ImageData</code> will be
+   * painted.
+   * @param[in] src_rect The rectangular area where the <code>ImageData</code>
+   * will be painted.
    */
   void PaintImageData(
       [in] PP_Resource graphics_2d,
@@ -68,39 +121,47 @@ interface PPB_Graphics2D_0_3 {
       [in] PP_Point top_left,
       [in] PP_Rect src_rect);
 
-  /* Enqueues a scroll of the context's backing store. THIS HAS NO EFFECT UNTIL
-   * YOU CALL Flush(). The data within the given clip rect (you may specify
-   * NULL to scroll the entire region) will be shifted by (dx, dy) pixels.
+  /**
+   * Scroll() enqueues a scroll of the context's backing store. This
+   * function has no effect until you call Flush(). The data within the
+   * provided clipping rectangle will be shifted by (dx, dy) pixels.
    *
-   * This will result in some exposed region which will have undefined
-   * contents. The plugin should call PaintImageData on these exposed regions
+   * This function will result in some exposed region which will have undefined
+   * contents. The module should call PaintImageData() on these exposed regions
    * to give the correct contents.
    *
-   * The scroll can be larger than the area of the clip rect, which means the
-   * current image will be scrolled out of the rect. This is not an error but
-   * will be a no-op.
+   * The scroll can be larger than the area of the clipping rectangle, which
+   * means the current image will be scrolled out of the rectangle. This
+   * scenario is not an error but will result in a no-op.
+   *
+   * @param[in] graphics_2d The 2D Graphics resource.
+   * @param[in] clip The clipping rectangle.
+   * @param[in] amount The amount the area in the clipping rectangle will
+   * shifted.
    */
   void Scroll(
       [in] PP_Resource graphics_2d,
       [in] PP_Rect clip_rect,
       [in] PP_Point amount);
 
-  /* This function provides a slightly more efficient way to paint the entire
-   * plugin's image. Normally, calling PaintImageData requires that the browser
-   * copy the pixels out of the image and into the graphics context's backing
-   * store. This function replaces the graphics context's backing store with the
-   * given image, avoiding the copy.
+  /**
+   * ReplaceContents() provides a slightly more efficient way to paint the
+   * entire module's image. Normally, calling PaintImageData() requires that
+   * the browser copy the pixels out of the image and into the graphics
+   * context's backing store. This function replaces the graphics context's
+   * backing store with the given image, avoiding the copy.
    *
    * The new image must be the exact same size as this graphics context. If the
    * new image uses a different image format than the browser's native bitmap
-   * format (use PPB_ImageData.GetNativeImageDataFormat to retrieve this), then
-   * a conversion will be done inside the browser which may slow the performance
-   * a little bit.
+   * format (use <code>PPB_ImageData.GetNativeImageDataFormat()</code> to
+   * retrieve the format), then a conversion will be done inside the browser
+   * which may slow the performance a little bit.
    *
-   * THE NEW IMAGE WILL NOT BE PAINTED UNTIL YOU CALL FLUSH.
+   * <strong>Note:</strong> The new image will not be painted until you call
+   * Flush().
    *
    * After this call, you should take care to release your references to the
-   * image. If you paint to the image after ReplaceContents, there is the
+   * image. If you paint to the image after ReplaceContents(), there is the
    * possibility of significant painting artifacts because the page might use
    * partially-rendered data when copying out of the backing store.
    *
@@ -111,86 +172,86 @@ interface PPB_Graphics2D_0_3 {
    * the sizes match). In the optimal case, this means no bitmaps are allocated
    * during the animation, and the backing store and "front buffer" (which the
    * plugin is painting into) are just being swapped back and forth.
+   *
+   * @param[in] graphics_2d The 2D Graphics resource.
+   * @param[in] image The <code>ImageData</code> to be painted.
    */
   void ReplaceContents(
       [in] PP_Resource graphics_2d,
       [in] PP_Resource image_data);
 
-  /* Flushes any enqueued paint, scroll, and replace commands for the backing
-   * store. This actually executes the updates, and causes a repaint of the
-   * webpage, assuming this graphics context is bound to a plugin instance. This
-   * can run in two modes:
+  /**
+   * Flush() flushes any enqueued paint, scroll, and replace commands to the
+   * backing store. This function actually executes the updates, and causes a
+   * repaint of the webpage, assuming this graphics context is bound to a module
+   * instance.
    *
-   * - In synchronous mode, you specify NULL for the callback and the callback
-   *   data. This function will block the calling thread until the image has
-   *   been painted to the screen. It is not legal to block the main thread of
-   *   the plugin, you can use synchronous mode only from background threads.
-   *
-   * - In asynchronous mode, you specify a callback function and the argument
-   *   for that callback function. The callback function will be executed on
-   *   the calling thread when the image has been painted to the screen. While
-   *   you are waiting for a Flush callback, additional calls to Flush will
-   *   fail.
+   * Flush() runs in asynchronous mode. Specify a callback function and the
+   * argument for that callback function. The callback function will be
+   * executed on the calling thread when the image has been painted to the
+   * screen. While you are waiting for a flush callback, additional calls to
+   * Flush() will fail.
    *
    * Because the callback is executed (or thread unblocked) only when the
-   * plugin's current state is actually on the screen, this function provides a
-   * way to rate limit animations. By waiting until the image is on the screen
-   * before painting the next frame, you can ensure you're not generating
-   * updates faster than the screen can be updated.
+   * instance's image is actually on the screen, this function provides
+   * a way to rate limit animations. By waiting until the image is on the
+   * screen before painting the next frame, you can ensure you're not
+   * flushing 2D graphics faster than the screen can be updated.
    *
-   * <dl>
-   * <dt>Unbound contexts</dt>
-   * <dd>
-   *   If the context is not bound to a plugin instance, you will
-   *   still get a callback. It will execute after the Flush function returns
-   *   to avoid reentrancy. Of course, it will not wait until anything is
-   *   painted to the screen because there will be nothing on the screen. The
-   *   timing of this callback is not guaranteed and may be deprioritized by
-   *   the browser because it is not affecting the user experience.
-   * </dd>
+   * <strong>Unbound contexts</strong>
+   * If the context is not bound to a module instance, you will
+   * still get a callback. The callback will execute after Flush() returns
+   * to avoid reentrancy. The callback will not wait until anything is
+   * painted to the screen because there will be nothing on the screen. The
+   * timing of this callback is not guaranteed and may be deprioritized by
+   * the browser because it is not affecting the user experience.
    *
-   * <dt>Off-screen instances</dt>
-   * <dd>
-   *   If the context is bound to an instance that is
-   *   currently not visible (for example, scrolled out of view) it will behave
-   *   like the "unbound context" case.
-   * </dd>
+   * <strong>Off-screen instances</strong>
+   * If the context is bound to an instance that is currently not visible (for
+   * example, scrolled out of view) it will behave like the "unbound context"
+   * case.
    *
-   * <dt>Detaching a context</dt>
-   * <dd>
-   *   If you detach a context from a plugin instance, any
-   *   pending flush callbacks will be converted into the "unbound context"
-   *   case.
-   * </dd>
+   * <strong>Detaching a context</strong>
+   * If you detach a context from a module instance, any pending flush
+   * callbacks will be converted into the "unbound context" case.
    *
-   * <dt>Released contexts</dt>
-   * <dd>
-   *   A callback may or may not still get called even if you have released all
-   *   of your references to the context. This can occur if there are internal
-   *   references to the context that means it has not been internally
-   *   destroyed (for example, if it is still bound to an instance) or due to
-   *   other implementation details. As a result, you should be careful to
-   *   check that flush callbacks are for the context you expect and that
-   *   you're capable of handling callbacks for context that you may have
-   *   released your reference to.
-   * </dd>
+   * <strong>Released contexts</strong>
+   * A callback may or may not get called even if you have released all
+   * of your references to the context. This scenario can occur if there are
+   * internal references to the context suggesting it has not been internally
+   * destroyed (for example, if it is still bound to an instance) or due to
+   * other implementation details. As a result, you should be careful to
+   * check that flush callbacks are for the context you expect and that
+   * you're capable of handling callbacks for unreferenced contexts.
    *
-   * <dt>Shutdown</dt>
-   * <dd>
-   *   If a plugin instance is removed when a Flush is pending, the
-   *   callback will not be executed.
-   * </dd>
-   * </dl>
+   * <strong>Shutdown</strong>
+   * If a module instance is removed when a flush is pending, the
+   * callback will not be executed.
    *
-   * Returns PP_OK on success, PP_Error_BadResource if the graphics context is
-   * invalid, PP_Error_BadArgument if the callback is null and Flush is being
-   * called from the main thread of the plugin, or PP_Error_InProgress if a
-   * Flush is already pending that has not issued its callback yet.  In the
-   * failure case, nothing will be updated and no callback will be scheduled.
+   * @param[in] graphics_2d The 2D Graphics resource.
+   * @param[in] callback A <code>CompletionCallback</code> to be called when
+   * the image has been painted on the screen.
+   *
+   * @return Returns <code>PP_OK</code> on success or
+   * <code>PP_Error_BadResource</code> if the graphics context is invalid,
+   * <code>PP_Error_BadArgument</code> if the callback is null and flush is
+   * being called from the main thread of the module, or
+   * <code>PP_Error_InProgress</code> if a flush is already pending that has
+   * not issued its callback yet.  In the failure case, nothing will be updated
+   * and no callback will be scheduled.
+   */
+
+  /*
    * TODO(darin): We should ensure that the completion callback always runs, so
    * that it is easier for consumers to manage memory referenced by a callback.
+   */
+
+  /*
+   * TODO(): Add back in the synchronous mode description once we have support
+   * for it.
    */
   int32_t Flush(
       [in] PP_Resource graphics_2d,
       [in] PP_CompletionCallback callback);
 };
+

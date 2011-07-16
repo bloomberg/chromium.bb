@@ -5,24 +5,32 @@
 
 /* URL loader trusted interfaces. */
 
-/* Callback that indicates the status of the download and upload for the
+label Chrome {
+  M14 = 0.3
+};
+
+/**
+ * Callback that indicates the status of the download and upload for the
  * given URLLoader resource.
  */
 typedef void PP_URLLoaderTrusted_StatusCallback(
-      PP_Instance pp_instance,
-      PP_Resource pp_resource,
-      int64_t bytes_sent,
-      int64_t total_bytes_to_be_sent,
-      int64_t bytes_received,
-      int64_t total_bytes_to_be_received);
+      [in] PP_Instance pp_instance,
+      [in] PP_Resource pp_resource,
+      [in] int64_t bytes_sent,
+      [in] int64_t total_bytes_to_be_sent,
+      [in] int64_t bytes_received,
+      [in] int64_t total_bytes_to_be_received);
 
 /* Available only to trusted implementations. */
-interface PPB_URLLoaderTrusted_0_3 {
-  /* Grant this URLLoader the capability to make unrestricted cross-origin
-   * requests. */
-  void GrantUniversalAccess(PP_Resource loader);
+interface PPB_URLLoaderTrusted {
+  /**
+   * Grant this URLLoader the capability to make unrestricted cross-origin
+   * requests.
+   */
+  void GrantUniversalAccess([in] PP_Resource loader);
 
-  /* Registers that the given function will be called when the upload or
+  /**
+   * Registers that the given function will be called when the upload or
    * downloaded byte count has changed. This is not exposed on the untrusted
    * interface because it can be quite chatty and encourages people to write
    * feedback UIs that update as frequently as the progress updates.
@@ -38,3 +46,4 @@ interface PPB_URLLoaderTrusted_0_3 {
       [in] PP_Resource loader,
       [in] PP_URLLoaderTrusted_StatusCallback cb);
 };
+

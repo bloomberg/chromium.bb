@@ -3,19 +3,28 @@
  * found in the LICENSE file.
  */
 
-/* This file defines the trusted audio interface. */
+/**
+ * This file defines the trusted audio interface.
+ */
 
-/* This interface is to be used by proxy implementations.  All
+label Chrome {
+  M14 = 0.6
+};
+
+/**
+ * This interface is to be used by proxy implementations.  All
  * functions should be called from the main thread only.  The
  * resource returned is an Audio resource; most of the PPB_Audio
  * interface is also usable on this resource.
  */
-[mainthread] interface PPB_AudioTrusted_0_5 {
-  /* Returns an audio resource. */
+[mainthread, macro="PPB_AUDIO_TRUSTED_INTERFACE"]
+interface PPB_AudioTrusted {
+  /** Returns an audio resource. */
   PP_Resource CreateTrusted(
       [in] PP_Instance instance);
 
-  /* Opens a paused audio interface, used by trusted side of proxy.
+  /**
+   * Opens a paused audio interface, used by trusted side of proxy.
    * Returns PP_ERROR_WOULD_BLOCK on success, and invokes
    * the |create_callback| asynchronously to complete.
    * As this function should always be invoked from the main thread,
@@ -26,14 +35,16 @@
       [in] PP_Resource config,
       [in] PP_CompletionCallback create_callback);
 
-  /* Get the sync socket.  Use once Open has completed.
+  /**
+   * Get the sync socket.  Use once Open has completed.
    * Returns PP_OK on success.
    */
   int32_t GetSyncSocket(
       [in] PP_Resource audio,
       [out] handle_t sync_socket);
 
-  /* Get the shared memory interface.  Use once Open has completed.
+  /**
+   * Get the shared memory interface.  Use once Open has completed.
    * Returns PP_OK on success.
    */
   int32_t GetSharedMemory(
@@ -41,3 +52,4 @@
       [out] handle_t shm_handle,
       [out] uint32_t shm_size);
 };
+
