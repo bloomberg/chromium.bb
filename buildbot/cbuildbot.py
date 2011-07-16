@@ -236,8 +236,9 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.tests:
       stages.TestStage(bot_id, options, build_config).Run()
-      if options.hw_tests:
-        stages.TestHWStage(bot_id, options, build_config).Run()
+
+    if options.hw_tests:
+      stages.TestHWStage(bot_id, options, build_config).Run()
 
     if options.remote_test_status:
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()
