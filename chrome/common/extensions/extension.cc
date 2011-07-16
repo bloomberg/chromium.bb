@@ -2218,9 +2218,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
-      source.HasKey(keys::kContentSecurityPolicy)) {
+  if (source.HasKey(keys::kContentSecurityPolicy)) {
     std::string content_security_policy;
     if (!source.GetString(keys::kContentSecurityPolicy,
                           &content_security_policy)) {
