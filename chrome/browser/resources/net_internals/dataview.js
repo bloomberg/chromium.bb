@@ -26,6 +26,7 @@ function DataView(mainBoxId,
                   dumpDataDivId,
                   loadedDivId,
                   loadedClientInfoTextId,
+                  loadLogFileDropTargetId,
                   loadLogFileId,
                   dataViewLoadStatusTextId,
                   capturingTextSpanId,
@@ -64,6 +65,11 @@ function DataView(mainBoxId,
   this.loadFileElement_ = document.getElementById(loadLogFileId);
   this.loadFileElement_.onchange = this.logFileChanged.bind(this);
   this.loadStatusText_ = document.getElementById(dataViewLoadStatusTextId);
+
+  var dropTarget = document.getElementById(loadLogFileDropTargetId);
+  dropTarget.ondragenter = this.onDrag.bind(this);
+  dropTarget.ondragover = this.onDrag.bind(this);
+  dropTarget.ondrop = this.onDrop.bind(this);
 
   this.updateEventCounts_();
 
@@ -144,12 +150,48 @@ DataView.prototype.onSecurityStrippingChanged = function() {
 };
 
 /**
+ * Called when something is dragged over the drop target.
+ *
+ * Returns false to cancel default browser behavior when a single file is being
+ * dragged.  When this happens, we may not receive a list of files for security
+ * reasons, which is why we allow the |files| array to be empty.
+ */
+DataView.prototype.onDrag = function(event) {
+  return event.dataTransfer.types.indexOf('Files') == -1 ||
+         event.dataTransfer.files.length > 1;
+};
+
+/**
+ * Called when something is dropped onto the drop target.  If it's a single
+ * file, tries to load it as a log file.
+ */
+DataView.prototype.onDrop = function(event) {
+  if (event.dataTransfer.types.indexOf('Files') == -1 ||
+      event.dataTransfer.files.length != 1) {
+    return;
+  }
+  event.preventDefault();
+
+  // Loading a log file may hide the currently active tab.  Switch to the data
+  // tab to prevent this.
+  document.location.hash = 'data';
+
+  this.loadLogFile(event.dataTransfer.files[0]);
+};
+
+/**
  * Called when a log file is selected.
  *
  * Gets the log file from the input element and tries to read from it.
  */
 DataView.prototype.logFileChanged = function() {
-  var logFile = this.loadFileElement_.files[0];
+  this.loadLogFile(this.loadFileElement_.files[0]);
+};
+
+/**
+ * Attempts to read from the File |logFile|.
+ */
+DataView.prototype.loadLogFile = function(logFile) {
   if (logFile) {
     this.setLoadFileStatus('Loading log...', true);
     var fileReader = new FileReader();

@@ -35,7 +35,7 @@ found in the LICENSE file.
     <script src="logsview.js"></script>
     <script src="prerenderview.js"></script>
   </head>
-  <body onload="onLoaded()">
+  <body onload="onLoaded()" id=dataViewDropTarget>
     <!-- Tab switcher for main categories. -->
     <div id=categoryTabHandles>
       <ul>
@@ -295,6 +295,9 @@ found in the LICENSE file.
         <p><input type=file value="Load log from file" id=dataViewLoadLogFile /></p>
         <pre id=dataViewLoadStatusText></pre>
         <div style="margin: 8px">
+          <p>Either press the button above and select a file or drag a file onto
+             this window to load it.
+          </p>
           <p>Works for both log dumps generated from this page with Chrome 14
              and later, and with log files created with
               "--log-net-log=file_name".  "--net-log-level=#" will set the

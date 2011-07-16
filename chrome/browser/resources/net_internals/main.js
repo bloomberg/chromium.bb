@@ -84,6 +84,7 @@ function onLoaded() {
                               'dataViewDumpDataDiv',
                               'dataViewLoadedDiv',
                               'dataViewLoadedClientInfoText',
+                              'dataViewDropTarget',
                               'dataViewLoadLogFile', 'dataViewLoadStatusText',
                               'dataViewCapturingTextSpan',
                               'dataViewLoggingTextSpan');
