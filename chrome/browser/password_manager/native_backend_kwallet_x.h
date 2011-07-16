@@ -14,14 +14,19 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "chrome/browser/password_manager/password_store_x.h"
-#include "webkit/glue/password_form.h"
+#include "chrome/browser/profiles/profile.h"
 
 class Pickle;
+class PrefService;
+
+namespace webkit_glue {
+struct PasswordForm;
+}
 
 // NativeBackend implementation using KWallet.
 class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
  public:
-  NativeBackendKWallet();
+  NativeBackendKWallet(LocalProfileId id, PrefService* prefs);
 
   virtual ~NativeBackendKWallet();
 
@@ -109,21 +114,37 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // read old pickles. (Note: do not eat old pickles past the expiration date.)
   static const int kPickleVersion = 0;
 
-  // Name of the application - will appear in kwallet's dialogs.
-  static const char* kAppId;
   // Name of the folder to store passwords in.
-  static const char* kKWalletFolder;
+  static const char kKWalletFolder[];
 
   // DBus stuff.
-  static const char* kKWalletServiceName;
-  static const char* kKWalletPath;
-  static const char* kKWalletInterface;
-  static const char* kKLauncherServiceName;
-  static const char* kKLauncherPath;
-  static const char* kKLauncherInterface;
+  static const char kKWalletServiceName[];
+  static const char kKWalletPath[];
+  static const char kKWalletInterface[];
+  static const char kKLauncherServiceName[];
+  static const char kKLauncherPath[];
+  static const char kKLauncherInterface[];
 
   // Invalid handle returned by WalletHandle().
   static const int kInvalidKWalletHandle = -1;
+
+  // Generates a profile-specific folder name based on profile_id_.
+  std::string GetProfileSpecificFolderName() const;
+
+  // Migrates non-profile-specific logins to be profile-specific.
+  void MigrateToProfileSpecificLogins();
+
+  // The local profile id, used to generate the folder name.
+  const LocalProfileId profile_id_;
+
+  // The pref service to use for persistent migration settings.
+  PrefService* prefs_;
+
+  // The KWallet folder name, possibly based on the local profile id.
+  std::string folder_name_;
+
+  // True once MigrateToProfileSpecificLogins() has been attempted.
+  bool migrate_tried_;
 
   // Error from the last DBus call. NULL when there's no error. Freed and
   // cleared by CheckError().
@@ -135,6 +156,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
 
   // The name of the wallet we've opened. Set during Init().
   std::string wallet_name_;
+  // The application name (e.g. "Chromium"), shown in KWallet auth dialogs.
+  const std::string app_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBackendKWallet);
 };

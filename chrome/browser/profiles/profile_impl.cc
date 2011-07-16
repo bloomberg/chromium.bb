@@ -270,6 +270,14 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
                              false,
                              PrefService::SYNCABLE_PREF);
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+  prefs->RegisterIntegerPref(prefs::kLocalProfileId,
+                             kInvalidLocalProfileId,
+                             PrefService::UNSYNCABLE_PREF);
+  // Notice that the preprocessor conditions above are exactly those that will
+  // result in using PasswordStoreX in CreatePasswordStore() below.
+  PasswordStoreX::RegisterUserPrefs(prefs);
+#endif
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path,
@@ -1091,6 +1099,28 @@ PasswordStore* ProfileImpl::GetPasswordStore(ServiceAccessType sat) {
   return password_store_.get();
 }
 
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+LocalProfileId ProfileImpl::GetLocalProfileId() {
+  PrefService* prefs = GetPrefs();
+  LocalProfileId id = prefs->GetInteger(prefs::kLocalProfileId);
+  if (id == kInvalidLocalProfileId) {
+    // Note that there are many more users than this. Thus, by design, this is
+    // not a unique id. However, it is large enough that it is very unlikely
+    // that it would be repeated twice on a single machine. It is still possible
+    // for that to occur though, so the potential results of it actually
+    // happening should be considered when using this value.
+    static const LocalProfileId kLocalProfileIdMask =
+        static_cast<LocalProfileId>((1 << 24) - 1);
+    do {
+      id = rand() & kLocalProfileIdMask;
+      // TODO(mdm): scan other profiles to make sure they are not using this id?
+    } while (id == kInvalidLocalProfileId);
+    prefs->SetInteger(prefs::kLocalProfileId, id);
+  }
+  return id;
+}
+#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+
 void ProfileImpl::CreatePasswordStore() {
   DCHECK(!created_password_store_ && password_store_.get() == NULL);
   created_password_store_ = true;
@@ -1140,7 +1170,7 @@ void ProfileImpl::CreatePasswordStore() {
   if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
     // KDE3 didn't use DBus, which our KWallet store uses.
     VLOG(1) << "Trying KWallet for password storage.";
-    backend.reset(new NativeBackendKWallet());
+    backend.reset(new NativeBackendKWallet(GetLocalProfileId(), GetPrefs()));
     if (backend->Init())
       VLOG(1) << "Using KWallet for password storage.";
     else
@@ -1149,7 +1179,7 @@ void ProfileImpl::CreatePasswordStore() {
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_GNOME_KEYRING)
     VLOG(1) << "Trying GNOME keyring for password storage.";
-    backend.reset(new NativeBackendGnome());
+    backend.reset(new NativeBackendGnome(GetLocalProfileId(), GetPrefs()));
     if (backend->Init())
       VLOG(1) << "Using GNOME keyring for password storage.";
     else

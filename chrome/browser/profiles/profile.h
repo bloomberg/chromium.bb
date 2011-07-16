@@ -102,6 +102,14 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+// Local profile ids are used to associate resources stored outside the profile
+// directory, like saved passwords in GNOME Keyring / KWallet, with a profile.
+// With high probability, they are unique on the local machine. They are almost
+// certainly not unique globally, by design. Do not send them over the network.
+typedef int LocalProfileId;
+#endif
+
 class Profile {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -137,6 +145,11 @@ class Profile {
 
   // Key used to bind profile to the widget with which it is associated.
   static const char* kProfileKey;
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+  // Value that represents no local profile id.
+  static const LocalProfileId kInvalidLocalProfileId;
+#endif
 
   Profile();
   virtual ~Profile() {}

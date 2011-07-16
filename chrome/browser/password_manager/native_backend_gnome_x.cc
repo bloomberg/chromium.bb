@@ -13,7 +13,9 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -44,12 +46,7 @@ namespace {
   F(store_password)                             \
   F(delete_password)                            \
   F(find_itemsv)                                \
-  F(result_to_message)                          \
-  F(list_keyring_names)                         \
-  F(list_item_ids)                              \
-  F(item_get_attributes)                        \
-  F(item_get_info)                              \
-  F(item_info_get_secret)
+  F(result_to_message)
 
 // Define the actual function pointers that we'll use in application code.
 #define GNOME_KEYRING_DEFINE_WRAPPER(name) \
@@ -83,16 +80,6 @@ const struct {
     wrap_gnome_keyring_find_itemsv
 #define gnome_keyring_result_to_message \
     wrap_gnome_keyring_result_to_message
-#define gnome_keyring_list_keyring_names \
-    wrap_gnome_keyring_list_keyring_names
-#define gnome_keyring_list_item_ids \
-    wrap_gnome_keyring_list_item_ids
-#define gnome_keyring_item_get_attributes \
-  wrap_gnome_keyring_item_get_attributes
-#define gnome_keyring_item_get_info \
-  wrap_gnome_keyring_item_get_info
-#define gnome_keyring_item_info_get_secret \
-  wrap_gnome_keyring_item_info_get_secret
 
 /* Load the library and initialize the function pointers. */
 bool LoadGnomeKeyring() {
@@ -123,14 +110,13 @@ bool LoadGnomeKeyring() {
 #else  // !defined(DLOPEN_GNOME_KEYRING)
 
 bool LoadGnomeKeyring() {
-  // We don't need to do anything here. When linking directly, we also assume
-  // that whoever is compiling this code has checked that the version is OK.
+  // We don't need to do anything here.
   return true;
 }
 
 #endif  // !defined(DLOPEN_GNOME_KEYRING)
 
-#define GNOME_KEYRING_APPLICATION_CHROME "chrome"
+const char kGnomeKeyringAppString[] = "chrome";
 
 // Convert the attributes of a given keyring entry into a new PasswordForm.
 // Note: does *not* get the actual password, as that is not a key attribute!
@@ -147,7 +133,8 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
       uint_attr_map[attr.name] = attr.value.integer;
   }
   // Check to make sure this is a password we care about.
-  if (string_attr_map["application"] != GNOME_KEYRING_APPLICATION_CHROME)
+  const std::string& app_value = string_attr_map["application"];
+  if (!base::StringPiece(app_value).starts_with(kGnomeKeyringAppString))
     return NULL;
 
   PasswordForm* form = new PasswordForm();
@@ -241,13 +228,14 @@ class GKRMethod {
   GKRMethod() : event_(false, false), result_(GNOME_KEYRING_RESULT_CANCELLED) {}
 
   // Action methods. These call gnome_keyring_* functions. Call from UI thread.
-  void AddLogin(const PasswordForm& form);
-  void AddLoginSearch(const PasswordForm& form);
-  void UpdateLoginSearch(const PasswordForm& form);
-  void RemoveLogin(const PasswordForm& form);
-  void GetLogins(const PasswordForm& form);
-  void GetLoginsList(uint32_t blacklisted_by_user);
-  void GetAllLogins();
+  // See GetProfileSpecificAppString() for more information on the app string.
+  void AddLogin(const PasswordForm& form, const char* app_string);
+  void AddLoginSearch(const PasswordForm& form, const char* app_string);
+  void UpdateLoginSearch(const PasswordForm& form, const char* app_string);
+  void RemoveLogin(const PasswordForm& form, const char* app_string);
+  void GetLogins(const PasswordForm& form, const char* app_string);
+  void GetLoginsList(uint32_t blacklisted_by_user, const char* app_string);
+  void GetAllLogins(const char* app_string);
 
   // Use after AddLogin, RemoveLogin.
   GnomeKeyringResult WaitResult();
@@ -268,7 +256,7 @@ class GKRMethod {
   NativeBackendGnome::PasswordFormList forms_;
 };
 
-void GKRMethod::AddLogin(const PasswordForm& form) {
+void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   time_t date_created = form.date_created.ToTimeT();
   // If we are asked to save a password with 0 date, use the current time.
@@ -295,11 +283,12 @@ void GKRMethod::AddLogin(const PasswordForm& form) {
       "date_created", base::Int64ToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,
       "scheme", form.scheme,
-      "application", GNOME_KEYRING_APPLICATION_CHROME,
+      "application", app_string,
       NULL);
 }
 
-void GKRMethod::AddLoginSearch(const PasswordForm& form) {
+void GKRMethod::AddLoginSearch(const PasswordForm& form,
+                               const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords to update.
   gnome_keyring_find_itemsv(
@@ -320,11 +309,12 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form) {
       "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       form.signon_realm.c_str(),
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
+      app_string,
       NULL);
 }
 
-void GKRMethod::UpdateLoginSearch(const PasswordForm& form) {
+void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
+                                  const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords to update.
   gnome_keyring_find_itemsv(
@@ -343,11 +333,11 @@ void GKRMethod::UpdateLoginSearch(const PasswordForm& form) {
       "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       form.signon_realm.c_str(),
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
+      app_string,
       NULL);
 }
 
-void GKRMethod::RemoveLogin(const PasswordForm& form) {
+void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We find forms using the same fields as LoginDatabase::RemoveLogin().
   gnome_keyring_delete_password(
@@ -365,7 +355,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form) {
       NULL);
 }
 
-void GKRMethod::GetLogins(const PasswordForm& form) {
+void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
   gnome_keyring_find_itemsv(
@@ -376,11 +366,12 @@ void GKRMethod::GetLogins(const PasswordForm& form) {
       "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
       form.signon_realm.c_str(),
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
+      app_string,
       NULL);
 }
 
-void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
+void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
+                              const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
   gnome_keyring_find_itemsv(
@@ -391,11 +382,11 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
       "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32,
       blacklisted_by_user,
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
+      app_string,
       NULL);
 }
 
-void GKRMethod::GetAllLogins() {
+void GKRMethod::GetAllLogins(const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
@@ -405,7 +396,7 @@ void GKRMethod::GetAllLogins() {
       this,  // data
       NULL,  // destroy_data
       "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
+      app_string,
       NULL);
 }
 
@@ -450,7 +441,16 @@ struct RunnableMethodTraits<GKRMethod> {
   void ReleaseCallee(GKRMethod*) {}
 };
 
-NativeBackendGnome::NativeBackendGnome() {
+NativeBackendGnome::NativeBackendGnome(LocalProfileId id, PrefService* prefs)
+    : profile_id_(id), prefs_(prefs) {
+  if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
+    app_string_ = GetProfileSpecificAppString();
+    // We already did the migration previously. Don't try again.
+    migrate_tried_ = true;
+  } else {
+    app_string_ = kGnomeKeyringAppString;
+    migrate_tried_ = false;
+  }
 }
 
 NativeBackendGnome::~NativeBackendGnome() {
@@ -466,13 +466,16 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
                                             &GKRMethod::AddLogin,
-                                            form));
+                                            form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring save failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  // Successful write. Try migration if necessary.
+  if (!migrate_tried_)
+    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -485,9 +488,9 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::AddLoginSearch,
-                                           form));
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::AddLoginSearch,
+                                            form, app_string_.c_str()));
   PasswordFormList forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK &&
@@ -498,9 +501,15 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
   }
   if (forms.size() > 0) {
     if (forms.size() > 1) {
-      LOG(WARNING) << "Adding login when there are " << forms.size() <<
-                   " matching logins already! Will replace only the first.";
+      LOG(WARNING) << "Adding login when there are " << forms.size()
+                   << " matching logins already! Will replace only the first.";
     }
+
+    // We try migration before updating the existing logins, since otherwise
+    // we'd do it after making some but not all of the changes below.
+    if (forms.size() > 0 && !migrate_tried_)
+      MigrateToProfileSpecificLogins();
+
     RemoveLogin(*forms[0]);
     for (size_t i = 0; i < forms.size(); ++i)
       delete forms[i];
@@ -521,7 +530,7 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                          NewRunnableMethod(&method,
                                            &GKRMethod::UpdateLoginSearch,
-                                           form));
+                                           form, app_string_.c_str()));
   PasswordFormList forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -529,6 +538,12 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
+
+  // We try migration before updating the existing logins, since otherwise
+  // we'd do it after making some but not all of the changes below.
+  if (forms.size() > 0 && !migrate_tried_)
+    MigrateToProfileSpecificLogins();
+
   bool ok = true;
   for (size_t i = 0; i < forms.size(); ++i) {
     if (forms[i]->action != form.action ||
@@ -561,13 +576,18 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
                                             &GKRMethod::RemoveLogin,
-                                            form));
+                                            form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  // Successful write. Try migration if necessary. Note that presumably if we've
+  // been asked to delete a login, it's because we returned it previously; thus,
+  // this will probably never happen since we'd have already tried migration.
+  if (!migrate_tried_)
+    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -581,6 +601,7 @@ bool NativeBackendGnome::RemoveLoginsCreatedBetween(
   PasswordFormList forms;
   if (!GetAllLogins(&forms))
     return false;
+  // No need to try migration here: GetAllLogins() does it.
 
   for (size_t i = 0; i < forms.size(); ++i) {
     if (delete_begin <= forms[i]->date_created &&
@@ -597,10 +618,10 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                                    PasswordFormList* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableMethod(&method, &GKRMethod::GetLogins, form));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::GetLogins,
+                                            form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -609,6 +630,9 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  // Successful read of actual data. Try migration if necessary.
+  if (!migrate_tried_)
+    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -621,6 +645,7 @@ bool NativeBackendGnome::GetLoginsCreatedBetween(const base::Time& get_begin,
   PasswordFormList all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
+  // No need to try migration here: GetAllLogins() does it.
 
   forms->reserve(forms->size() + all_forms.size());
   for (size_t i = 0; i < all_forms.size(); ++i) {
@@ -653,7 +678,8 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
                                             &GKRMethod::GetLoginsList,
-                                            blacklisted_by_user));
+                                            blacklisted_by_user,
+                                            app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -662,6 +688,9 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  // Successful read of actual data. Try migration if necessary.
+  if (!migrate_tried_)
+    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -669,7 +698,8 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           NewRunnableMethod(&method,
-                                            &GKRMethod::GetAllLogins));
+                                            &GKRMethod::GetAllLogins,
+                                            app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -678,5 +708,56 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
+  // Successful read of actual data. Try migration if necessary.
+  if (!migrate_tried_)
+    MigrateToProfileSpecificLogins();
   return true;
+}
+
+std::string NativeBackendGnome::GetProfileSpecificAppString() const {
+  // Originally, the application string was always just "chrome" and used only
+  // so that we had *something* to search for since GNOME Keyring won't search
+  // for nothing. Now we use it to distinguish passwords for different profiles.
+  return StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id_);
+}
+
+void NativeBackendGnome::MigrateToProfileSpecificLogins() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  DCHECK(!migrate_tried_);
+  DCHECK_EQ(app_string_, kGnomeKeyringAppString);
+
+  // Record the fact that we've attempted migration already right away, so that
+  // we don't get recursive calls back to MigrateToProfileSpecificLogins().
+  migrate_tried_ = true;
+
+  // First get all the logins, using the old app string.
+  PasswordFormList forms;
+  if (!GetAllLogins(&forms))
+    return;
+
+  // Now switch to a profile-specific app string.
+  app_string_ = GetProfileSpecificAppString();
+
+  // Try to add all the logins with the new app string.
+  bool ok = true;
+  for (size_t i = 0; i < forms.size(); ++i) {
+    if (!RawAddLogin(*forms[i]))
+      ok = false;
+    delete forms[i];
+  }
+
+  if (ok) {
+    // All good! Keep the new app string and set a persistent pref.
+    // NOTE: We explicitly don't delete the old passwords yet. They are
+    // potentially shared with other profiles and other user data dirs!
+    // Each other profile must be able to migrate the shared data as well,
+    // so we must leave it alone. After a few releases, we'll add code to
+    // delete them, and eventually remove this migration code.
+    // TODO(mdm): follow through with the plan above.
+    PasswordStoreX::SetPasswordsUseLocalProfileId(prefs_);
+  } else {
+    // We failed to migrate for some reason. Use the old app string.
+    app_string_ = kGnomeKeyringAppString;
+  }
 }
