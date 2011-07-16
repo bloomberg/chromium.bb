@@ -6,8 +6,11 @@
      The 'unsafe-eval' is required for jstemplate_compiled.js.
      TODO(tsepez) rename when Content-security-policy is done.
 -->
-<meta http-equiv="X-WebKit-CSP" content="object-src 'none';
-    script-src chrome://resources 'self' 'unsafe-eval'">
+<meta http-equiv="X-WebKit-CSP"
+      content="object-src 'none';
+               script-src chrome://resources
+                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                          'self' 'unsafe-eval'">
 <link rel="stylesheet" href="flags.css"/>
 <script src="chrome://flags/flags.js"></script>
 <script src="chrome://flags/strings.js"></script>
@@ -113,4 +116,3 @@
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>
-

@@ -410,7 +410,9 @@ void AppendHeader(std::string* output, int refresh,
   }
   output->append(
       "<meta charset=\"utf-8\">\n<meta http-equiv=\"X-WebKit-CSP\" "
-      "content=\"object-src 'none'; script-src 'self' 'unsafe-eval'\">\n");
+      "content=\"object-src 'none'; "
+      "script-src chrome-extension://mndnfokpggljbaajbnioimlmbfngpief "
+      " 'self' 'unsafe-eval'\">\n");
   if (refresh > 0) {
     output->append("<meta http-equiv=\"refresh\" content=\"");
     output->append(base::IntToString(refresh));

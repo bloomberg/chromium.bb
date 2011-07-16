@@ -6,7 +6,11 @@
      The 'unsafe-eval' is required for jstemplate_compiled.js.
      TODO(tsepez) rename when Content-security-policy is done.
 -->
-<meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self' 'unsafe-eval'">
+<meta http-equiv="X-WebKit-CSP"
+      content="object-src 'none';
+               script-src chrome://resources
+                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                          'self' 'unsafe-eval'">
 <title i18n-content="pluginsTitle"></title>
 <style>
 body {

@@ -2,7 +2,7 @@
 <html i18n-values="dir:textdirection">
 <!--
 
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 
@@ -12,7 +12,11 @@ found in the LICENSE file.
 <!-- X-WebKit-CSP is our development name for Content-Security-Policy.
      TODO(abarth): Change the name to Content-Security-Policy once CSP is done.
  -->
-<meta http-equiv="X-WebKit-CSP" content="object-src 'none'; script-src chrome://resources 'self'">
+<meta http-equiv="X-WebKit-CSP"
+      content="object-src 'none';
+               script-src chrome://resources
+                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                          'self'">
 <title i18n-content="title"></title>
 
 <link rel="stylesheet" href="chrome://resources/css/list.css">
