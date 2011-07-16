@@ -9,18 +9,18 @@ one csv file, in preparation for uploading to a Google Docs spreadsheet.
 
 import optparse
 import os
+import re
 import sys
 
-import cros_portage_upgrade
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-import chromite.lib.table as table
 import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.table as table
+import chromite.lib.upgrade_table as utable
 
-COL_PACKAGE = cros_portage_upgrade.UpgradeTable.COL_PACKAGE
-COL_SLOT = cros_portage_upgrade.UpgradeTable.COL_SLOT
-COL_TARGET = cros_portage_upgrade.UpgradeTable.COL_TARGET
-COL_OVERLAY = cros_portage_upgrade.UpgradeTable.COL_OVERLAY
+COL_PACKAGE = utable.UpgradeTable.COL_PACKAGE
+COL_SLOT = utable.UpgradeTable.COL_SLOT
+COL_TARGET = utable.UpgradeTable.COL_TARGET
+COL_OVERLAY = utable.UpgradeTable.COL_OVERLAY
 ID_COLS = [COL_PACKAGE, COL_SLOT]
 
 # A bit of hard-coding with knowledge of how cros targets work.
@@ -40,7 +40,7 @@ def _GetCrosTargetRank(target):
       return ix + 1 # Avoid a 0 (non-true) result
   return None
 
-def _ProcessTargets(targets, reverse_cros=False):
+def ProcessTargets(targets, reverse_cros=False):
   """Process a list of |targets| to smaller, sorted list.
 
   For example:
@@ -75,24 +75,15 @@ def _ProcessTargets(targets, reverse_cros=False):
 
     return final_targets
 
-def _ProcessRowTargetValue(row):
-  """Condense targets like 'chromeos chromeos-dev' to just 'chromeos-dev'."""
-  targets = row[COL_TARGET].split()
-  if targets:
-    processed_targets = _ProcessTargets(targets)
-    row[COL_TARGET] = ' '.join(processed_targets)
-
 def LoadTable(filepath):
   """Load the csv file at |filepath| into a table.Table object."""
-  csv_table = table.Table.LoadFromCSV(filepath)
+  table_name = os.path.basename(filepath)
+  if table_name.endswith('.csv'):
+    table_name = table_name[:-4]
+  return table.Table.LoadFromCSV(filepath, name=table_name)
 
-  # Process the Target column now.
-  csv_table.ProcessRows(_ProcessRowTargetValue)
-
-  return csv_table
-
-def LoadTables(args):
-  """Load all csv files in |args| into one merged table.  Return table."""
+def MergeTables(tables):
+  """Merge all |tables| into one merged table.  Return table."""
   def TargetMerger(col, val, other_val):
     """Function to merge two values in Root Target column from two tables."""
     targets = []
@@ -101,20 +92,32 @@ def LoadTables(args):
     if other_val:
       targets.extend(other_val.split())
 
-    processed_targets = _ProcessTargets(targets, reverse_cros=True)
+    processed_targets = ProcessTargets(targets, reverse_cros=True)
     return ' '.join(processed_targets)
 
   def DefaultMerger(col, val, other_val):
     """Merge |val| and |other_val| in column |col| for some row."""
     # This function is registered as the default merge function,
     # so verify that the column is a supported one.
-    prfx = cros_portage_upgrade.UpgradeTable.COL_DEPENDS_ON.replace('ARCH', '')
+    prfx = utable.UpgradeTable.COL_DEPENDS_ON.replace('ARCH', '')
     if col.startswith(prfx):
       # Merge dependencies by taking the superset.
       deps = set(val.split())
       other_deps = set(other_val.split())
       all_deps = deps.union(other_deps)
       return ' '.join(sorted(dep for dep in all_deps))
+
+    regexp = utable.UpgradeTable.COL_UPGRADED.replace('ARCH', '\S+')
+    if re.search(regexp, col):
+      return MergeWithAND(col, val, other_val)
+
+    # For any column, if one value is missing just accept the other value.
+    # For example, when one table has an entry for 'arm version' but
+    # the other table does not.
+    if val == table.Table.EMPTY_CELL and other_val != table.Table.EMPTY_CELL:
+      return other_val
+    if other_val == table.Table.EMPTY_CELL and val != table.Table.EMPTY_CELL:
+      return val
 
     # Raise a generic ValueError, which MergeTable function will clarify.
     # The effect should be the same as having no merge_rule for this column.
@@ -136,15 +139,13 @@ def LoadTables(args):
                  '__DEFAULT__': DefaultMerger,
                  }
 
-  # Load and merge the files.
-  print "Loading csv table from '%s'." % (args[0])
-  csv_table = LoadTable(args[0])
-  if len(args) > 1:
-    for arg in args[1:]:
-      print "Loading csv table from '%s'." % (arg)
-      tmp_table = LoadTable(arg)
-
-      print "Merging tables into one."
+  # Merge each table one by one.
+  csv_table = tables[0]
+  if len(tables) > 1:
+    print "Merging tables into one."
+    for tmp_table in tables[1:]:
+      print("Merging '%s' and '%s'." %
+            (csv_table.GetName(), tmp_table.GetName()))
       csv_table.MergeTable(tmp_table, ID_COLS,
                            merge_rules=merge_rules, allow_new_columns=True)
 
@@ -155,13 +156,23 @@ def LoadTables(args):
 
   return csv_table
 
+def LoadAndMergeTables(args):
+  """Load all csv files in |args| into one merged table.  Return table."""
+  tables = []
+  for arg in args:
+    print "Loading csv table from '%s'." % arg
+    tables.append(LoadTable(arg))
+
+  return MergeTables(tables)
+
+# Used by upload_package_status.
 def FinalizeTable(csv_table):
   """Process the table to prepare it for upload to online spreadsheet."""
   print "Processing final table to prepare it for upload."
 
-  col_ver = cros_portage_upgrade.UpgradeTable.COL_CURRENT_VER
-  col_arm_ver = cros_portage_upgrade.UpgradeTable.GetColumnName(col_ver, 'arm')
-  col_x86_ver = cros_portage_upgrade.UpgradeTable.GetColumnName(col_ver, 'x86')
+  col_ver = utable.UpgradeTable.COL_CURRENT_VER
+  col_arm_ver = utable.UpgradeTable.GetColumnName(col_ver, 'arm')
+  col_x86_ver = utable.UpgradeTable.GetColumnName(col_ver, 'x86')
 
   # Insert new columns
   col_cros_target = "ChromeOS Root Target"
@@ -236,8 +247,9 @@ def main():
     parser.print_help()
     cros_lib.Die("At least one input_csv_file is required.")
 
-  csv_table = LoadTables(args)
+  csv_table = LoadAndMergeTables(args)
 
+  # TODO(mtennant): Remove this option and let upload script handle it.
   if options.finalize:
     FinalizeTable(csv_table)
 

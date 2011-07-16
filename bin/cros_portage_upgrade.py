@@ -17,124 +17,38 @@ import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
-import chromite.lib.table as table
+import chromite.lib.upgrade_table as utable
+import merge_package_status as mps
 
 # TODO(mtennant): I see comments next to cros_build_lib.Info,Warning,Die that
 # they are deprecated and to be replaced by those in operation module.
 
-class UpgradeTable(table.Table):
-  """Class to represent upgrade data in memory, can be written to csv/html."""
+# TODO(mtennant): Use this class to replace the 'info' dictionary used
+# throughout. In the meantime, it simply serves as documentation for
+# the values in that dictionary.
+class PInfo(object):
+  """Class to accumulate package info during upgrade process.
 
-  # Column names.  Note that 'ARCH' is replaced with a real arch name when
-  # these are accessed as attributes off an UpgradeTable object.
-  COL_PACKAGE = 'Package'
-  COL_SLOT = 'Slot'
-  COL_OVERLAY = 'Overlay'
-  COL_CURRENT_VER = 'Current ARCH Version'
-  COL_STABLE_UPSTREAM_VER = 'Stable Upstream ARCH Version'
-  COL_LATEST_UPSTREAM_VER = 'Latest Upstream ARCH Version'
-  COL_STATE = 'State On ARCH'
-  COL_DEPENDS_ON = 'Dependencies On ARCH'
-  COL_TARGET = 'Root Target'
-  COL_ACTION_TAKEN = 'Action Taken'
+  This class is basically a formalized dictionary."""
 
-  # COL_STATE values should be one of the following:
-  STATE_UNKNOWN = 'unknown'
-  STATE_NEEDS_UPGRADE = 'needs upgrade'
-  STATE_PATCHED = 'patched locally'
-  STATE_DUPLICATED = 'duplicated locally'
-  STATE_NEEDS_UPGRADE_AND_PATCHED = 'needs upgrade and patched locally'
-  STATE_NEEDS_UPGRADE_AND_DUPLICATED = 'needs upgrade and duplicated locally'
-  STATE_CURRENT = 'current'
-
-  @staticmethod
-  def GetColumnName(col, arch=None):
-    """Translate from generic column name to specific given |arch|."""
-    if arch:
-      return col.replace('ARCH', arch)
-
-  def __init__(self, arch):
-    self._arch = arch
-
-    # These constants serve two roles, for both csv and html table output:
-    # 1) Restrict which column names are valid.
-    # 2) Specify the order of those columns.
-    columns = [self.COL_PACKAGE,
-               self.COL_SLOT,
-               self.COL_OVERLAY,
-               self.COL_CURRENT_VER,
-               self.COL_STABLE_UPSTREAM_VER,
-               self.COL_LATEST_UPSTREAM_VER,
-               self.COL_STATE,
-               self.COL_DEPENDS_ON,
-               self.COL_TARGET,
-               self.COL_ACTION_TAKEN,
-               ]
-
-    table.Table.__init__(self, columns)
-
-  def __getattribute__(self, name):
-    """When accessing self.COL_*, substitute ARCH name."""
-    if name.startswith('COL_'):
-      text = getattr(UpgradeTable, name)
-      return UpgradeTable.GetColumnName(text, arch=self._arch)
-    else:
-      return object.__getattribute__(self, name)
-
-  def WriteHTML(self, filehandle):
-    """Write table out as a custom html table to |filehandle|."""
-    # Basic HTML, up to and including start of table and table headers.
-    filehandle.write('<html>\n')
-    filehandle.write('  <table border="1" cellspacing="0" cellpadding="3">\n')
-    filehandle.write('    <caption>Portage Package Status</caption>\n')
-    filehandle.write('    <thead>\n')
-    filehandle.write('      <tr>\n')
-    filehandle.write('        <th>%s</th>\n' %
-             '</th>\n        <th>'.join(self._columns))
-    filehandle.write('      </tr>\n')
-    filehandle.write('    </thead>\n')
-    filehandle.write('    <tbody>\n')
-
-    # Now write out the rows.
-    for row in self._rows:
-      filehandle.write('      <tr>\n')
-      for col in self._columns:
-        val = row.get(col, "")
-
-        # Add color to the text in specific cases.
-        if val and col == self.COL_STATE:
-          # Add colors for state column.
-          if val == self.STATE_NEEDS_UPGRADE or val == self.STATE_UNKNOWN:
-            val = '<span style="color:red">%s</span>' % val
-          elif (val == self.STATE_NEEDS_UPGRADE_AND_DUPLICATED or
-                val == self.STATE_NEEDS_UPGRADE_AND_PATCHED):
-            val = '<span style="color:red">%s</span>' % val
-          elif val == self.STATE_CURRENT:
-            val = '<span style="color:green">%s</span>' % val
-        if val and col == self.COL_DEPENDS_ON:
-          # Add colors for dependencies column.  If a dependency is itself
-          # out of date, then make it red.
-          vallist = []
-          for cpv in val.split(' '):
-            # Get category/packagename from cpv, in order to look up row for
-            # the dependency.  Then see if that pkg is red in its own row.
-            catpkg = Upgrader._GetCatPkgFromCpv(cpv)
-            deprow = self.GetRowsByValue({self.COL_PACKAGE: catpkg})[0]
-            if (deprow[self.COL_STATE] == self.STATE_NEEDS_UPGRADE or
-                deprow[self.COL_STATE] == self.STATE_UNKNOWN):
-              vallist.append('<span style="color:red">%s</span>' % cpv)
-            else:
-              vallist.append(cpv)
-          val = ' '.join(vallist)
-
-        filehandle.write('        <td>%s</td>\n' % val)
-
-      filehandle.write('      </tr>\n')
-
-    # Finish the table and html
-    filehandle.write('    </tbody>\n')
-    filehandle.write('  </table>\n')
-    filehandle.write('</html>\n')
+  __slots__ = [
+      'category',            # Package category only
+      'cpv',                 # Current full cpv (revision included)
+      'emerge_ok',           # True if upgraded_cpv is emergeable
+      'emerge_output',       # Output from pretend emerge of upgraded_cpv
+      'emerge_stable',       # TODO: get rid of this one
+      'latest_upstream_cpv', # Latest (non-stable ok) upstream cpv
+      'overlay',             # Overlay package currently in
+      'package',             # category/package_name
+      'package_name',        # The 'p' in 'cpv'
+      'package_ver',         # The 'pv' in 'cpv'
+      'slot',                # Current package slot
+      'stable_upstream_cpv', # Latest stable upstream cpv
+      'state',               # One of utable.UpgradeTable.STATE_*
+      'upgraded_cpv',        # If upgraded, it is to this cpv
+      'upstream_cpv',        # latest/stable upstream cpv according to request
+      'version_rev',         # Just revision (e.g. 'r1').  '' if no revision
+      ]
 
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
@@ -143,24 +57,30 @@ class Upgrader(object):
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'board', 'csv_file', 'html_file', 'rdeps',
-               'stable_only', 'upgrade', 'upgrade_deep', 'upstream', 'verbose']
+  OPT_SLOTS = ['amend', 'csv_file', 'html_file', 'rdeps', 'stable_only',
+               'upgrade', 'upgrade_deep', 'upstream', 'verbose']
 
   __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
-               '_arch',         # Architecture for current board
-               '_args',         # Commandline arguments (portage targets)
-               '_board',        # Board for current run
+               '_args',         # Commandline arguments (all portage targets)
+               '_curr_arch',    # Architecture for current board run
+               '_curr_board',   # Board for current board run
+               '_curr_table',   # Package status for current board run
                '_cros_overlay', # Path to chromiumos-overlay repo
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
                '_emptydir',     # Path to temporary empty directory
                '_html_file',    # File path for writing html output
+               '_master_archs', # Set. Archs of tables merged into master_table
+               '_master_cnt',   # Number of tables merged into master_table
+               '_master_table', # Merged table from all board runs
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
                '_stable_only',  # Boolean to require only stable upstream
                '_stable_repo',  # Path to portage-stable
-               '_table',        # chromite.lib.table holding package status
+               '_stable_repo_status', # git status report at start of run
+               '_targets',      # Processed list of portage targets
                '_upgrade',      # Boolean indicating upgrade requested
+               '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
                '_upgrade_deep', # Boolean indicating upgrade_deep requested
                '_upstream',     # User-provided path to upstream repo
                '_upstream_repo',# Path to upstream portage repo
@@ -169,6 +89,12 @@ class Upgrader(object):
 
   def __init__(self, options=None, args=None):
     self._args = args
+    self._targets = mps.ProcessTargets(args)
+
+    self._master_table = None
+    self._master_cnt = 0
+    self._master_archs = set()
+    self._upgrade_cnt = 0
 
     self._stable_repo = os.path.join(options.srcroot, 'third_party',
                                      self.STABLE_OVERLAY_NAME)
@@ -183,13 +109,6 @@ class Upgrader(object):
     for opt in self.OPT_SLOTS:
       setattr(self, '_' + opt, getattr(options, opt, None))
 
-    # TODO(mtennant): Attributes below are specific to one run with a specific
-    # board and should be cleared before each run when multiple boards are
-    # supported at once.
-    self._board = options.board
-    self._arch = Upgrader._FindBoardArch(self._board)
-    self._table = UpgradeTable(self._arch)
-
     self._porttree = None
     self._emptydir = None
     self._deps_graph = None
@@ -198,8 +117,31 @@ class Upgrader(object):
     """Return the path to the package.keywords file in chromiumos-overlay."""
     return '%s/profiles/targets/chromeos/package.keywords' % self._cros_overlay
 
+  def _SaveStatusOnStableRepo(self):
+    """Get the 'git status' for everything in |self._stable_repo|.
+
+    The results are saved in a dict at self._stable_repo_status where each key
+    is a file path rooted at |self._stable_repo|, and the value is the status
+    for that file as returned by 'git status -s'.  (e.g. 'A' for 'Added').
+    """
+    result = self._RunGit(self._stable_repo, 'status -s', redirect_stdout=True)
+    if result.returncode == 0:
+      statuses = {}
+      for line in result.output.strip().split('\n'):
+        if not line:
+          continue
+
+        linesplit = line.split()
+        (status, path) = linesplit[0], linesplit[1]
+        statuses[path] = status
+
+      self._stable_repo_status = statuses
+    else:
+      self._stable_repo_status = None
+
   def _CheckStableRepoOnBranch(self):
-    """Raise exception if stable repo is not on a branch now."""
+    """Raise exception if |self._stable_repo| is not on a branch now."""
+    # TODO(mtennant): Create the branch as needed instead.
     result = self._RunGit(self._stable_repo, 'branch', redirect_stdout=True)
     if result.returncode == 0:
       for line in result.output.split('\n'):
@@ -385,11 +327,11 @@ class Upgrader(object):
     [0] True if |cpv| can be emerged.
     [1] Output from the emerge command.
     """
-    envvars = self._GenPortageEnvvars(self._arch, not stable_only)
+    envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
 
     emerge = 'emerge'
-    if self._board != self.HOST_BOARD:
-      emerge = 'emerge-%s' % self._board
+    if self._curr_board != self.HOST_BOARD:
+      emerge = 'emerge-%s' % self._curr_board
 
     cmd = [emerge, '-p', '=' + cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
@@ -398,7 +340,7 @@ class Upgrader(object):
                                  combine_stdout_stderr=True,
                                  )
 
-    return (result.returncode == 0, result.output)
+    return (result.returncode == 0, ' '.join(cmd), result.output)
 
   def _VerifyEbuildOverlay(self, cpv, overlay, stable_only):
     """Raises exception if ebuild for |cpv| is not from |overlay|.
@@ -411,11 +353,11 @@ class Upgrader(object):
     # if the copy/upgrade from upstream did not work and
     # src/third-party/portage is being used as temporary upstream copy via
     # 'git checkout cros/gentoo'.  This is just a sanity check.
-    envvars = self._GenPortageEnvvars(self._arch, not stable_only)
+    envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
 
     equery = 'equery'
-    if self._board != self.HOST_BOARD:
-      equery = 'equery-%s' % self._board
+    if self._curr_board != self.HOST_BOARD:
+      equery = 'equery-%s' % self._curr_board
 
     cmd = [equery, 'which', cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
@@ -429,6 +371,21 @@ class Upgrader(object):
       raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s' %
                          (cpv, overlay, ebuild_path))
 
+  def _PkgUpgradeStaged(self, upstream_cpv):
+    """Return True if package upgrade is already staged."""
+    if not upstream_cpv:
+      return False
+
+    (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
+    ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
+    ebuild_relative_path = os.path.join(cat, pkgname, ebuild)
+
+    status = self._stable_repo_status.get(ebuild_relative_path, None)
+    if status and 'A' == status:
+      return True
+
+    return False
+
   def _CopyUpstreamPackage(self, upstream_cpv):
     """Upgrades package in |upstream_cpv| to the version in |upstream_cpv|.
 
@@ -439,18 +396,35 @@ class Upgrader(object):
       return None
 
     (cat, pkgname, version, rev) = portage.versions.catpkgsplit(upstream_cpv)
-    catpkgname = os.path.join(cat, pkgname)
-    pkgdir = os.path.join(self._stable_repo, catpkgname)
-    if os.path.exists(pkgdir):
-      shutil.rmtree(pkgdir)
+    ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
+    catpkgsubdir = os.path.join(cat, pkgname)
+    pkgdir = os.path.join(self._stable_repo, catpkgsubdir)
     upstream_pkgdir = os.path.join(self._upstream_repo, cat, pkgname)
-    # Copy the whole package except the ebuilds.
-    shutil.copytree(upstream_pkgdir, pkgdir,
-                    ignore=shutil.ignore_patterns('*.ebuild'))
-    # Copy just the ebuild that will be used in the build.
-    shutil.copy2(os.path.join(upstream_pkgdir,
-                              upstream_cpv.split('/')[1] + '.ebuild'), pkgdir)
-    self._RunGit(self._stable_repo, 'add ' + catpkgname)
+
+    # If pkgdir already exists, remove everything except ebuilds that
+    # correspond to ebuilds that are also upstream.
+    if os.path.exists(pkgdir):
+      items = os.listdir(pkgdir)
+      for item in items:
+        src = os.path.join(upstream_pkgdir, item)
+        if not item.endswith('.ebuild') or not os.path.exists(src):
+          self._RunGit(pkgdir, 'rm -rf ' + item, redirect_stdout=True)
+    else:
+      os.makedirs(pkgdir)
+
+    # Grab all non-ebuilds from upstream plus the specific ebuild requested.
+    if os.path.exists(upstream_pkgdir):
+      items = os.listdir(upstream_pkgdir)
+      for item in items:
+        src = os.path.join(upstream_pkgdir, item)
+        dst = os.path.join(pkgdir, item)
+        if not item.endswith('.ebuild') or item == ebuild:
+          if os.path.isdir(src):
+            shutil.copytree(src, dst)
+          else:
+            shutil.copy2(src, dst)
+    self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
+
     return upstream_cpv
 
   def _GetPackageUpgradeState(self, info, cpv_cmp_upstream):
@@ -462,7 +436,7 @@ class Upgrader(object):
     """
     # See whether this specific cpv exists upstream.
     cpv = info['cpv']
-    cpv_exists_upstream = bool(self._FindUpstreamCPV(cpv, self._arch,
+    cpv_exists_upstream = bool(self._FindUpstreamCPV(cpv, self._curr_arch,
                                                      unstable_ok=True))
 
     # Convention is that anything not in portage overlay has been altered.
@@ -476,23 +450,24 @@ class Upgrader(object):
 
     # Gather status details for this package
     if cpv_cmp_upstream is None:
-      state = UpgradeTable.STATE_UNKNOWN
+      state = utable.UpgradeTable.STATE_UNKNOWN
     elif cpv_cmp_upstream > 0:
       if locally_duplicated:
-        state = UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED
+        state = utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED
       elif locally_patched:
-        state = UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED
+        state = utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED
       else:
-        state = UpgradeTable.STATE_NEEDS_UPGRADE
+        state = utable.UpgradeTable.STATE_NEEDS_UPGRADE
     elif locally_duplicated:
-      state = UpgradeTable.STATE_DUPLICATED
+      state = utable.UpgradeTable.STATE_DUPLICATED
     elif locally_patched:
-      state = UpgradeTable.STATE_PATCHED
+      state = utable.UpgradeTable.STATE_PATCHED
     else:
-      state = UpgradeTable.STATE_CURRENT
+      state = utable.UpgradeTable.STATE_CURRENT
 
     return state
 
+  # TODO(mtennant): Generate output from finished table instead.
   def _PrintPackageLine(self, info):
     """Print a brief one-line report of package status."""
     upstream_cpv = info['upstream_cpv']
@@ -503,15 +478,15 @@ class Upgrader(object):
         action_stat = ' (UPGRADED, BUT EMERGE FAILS)'
     else:
       action_stat = ''
-    up_stat = {UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
-               UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % upstream_cpv,
-               UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED:
+    up_stat = {utable.UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
+               utable.UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % upstream_cpv,
+               utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED:
                ' <-> %s' % upstream_cpv,
-               UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED:
+               utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED:
                ' (locally duplicated) <-> %s' % upstream_cpv,
-               UpgradeTable.STATE_PATCHED: ' <- %s' % upstream_cpv,
-               UpgradeTable.STATE_DUPLICATED: ' (locally duplicated)',
-               UpgradeTable.STATE_CURRENT: ' (current)',
+               utable.UpgradeTable.STATE_PATCHED: ' <- %s' % upstream_cpv,
+               utable.UpgradeTable.STATE_DUPLICATED: ' (locally duplicated)',
+               utable.UpgradeTable.STATE_CURRENT: ' (current)',
                }[info['state']]
     print '[%s] %s%s%s' % (info['overlay'], info['cpv'],
                            up_stat, action_stat)
@@ -523,13 +498,13 @@ class Upgrader(object):
     upstream_ver = Upgrader._GetVerRevFromCpv(upstream_cpv)
     upgraded_cpv = info['upgraded_cpv']
 
-    # Prepare defaults for columns without values for this row.
-    action_taken = ''
+    upgraded_ver = ''
     if upgraded_cpv:
       if info['emerge_ok']:
-        action_taken = 'upgraded to %s' % upstream_ver
+        upgraded_ver = upstream_ver
       else:
-        action_taken = 'upgraded to %s (but emerge fails)' % upstream_ver
+        upgraded_ver = '(emerge fails)' + upstream_ver
+
     depslist = sorted(self._deps_graph[cpv]['needs'].keys()) # dependencies
     stable_up_ver = Upgrader._GetVerRevFromCpv(info['stable_upstream_cpv'])
     if not stable_up_ver:
@@ -537,18 +512,24 @@ class Upgrader(object):
     latest_up_ver = Upgrader._GetVerRevFromCpv(info['latest_upstream_cpv'])
     if not latest_up_ver:
       latest_up_ver = 'N/A'
-    row = {self._table.COL_PACKAGE: info['package'],
-           self._table.COL_SLOT: info['slot'],
-           self._table.COL_OVERLAY: info['overlay'],
-           self._table.COL_CURRENT_VER: info['version_rev'],
-           self._table.COL_STABLE_UPSTREAM_VER: stable_up_ver,
-           self._table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
-           self._table.COL_STATE: info['state'],
-           self._table.COL_DEPENDS_ON: ' '.join(depslist),
-           self._table.COL_TARGET: ' '.join(self._args),
-           self._table.COL_ACTION_TAKEN: action_taken,
+
+    row = {self._curr_table.COL_PACKAGE: info['package'],
+           self._curr_table.COL_SLOT: info['slot'],
+           self._curr_table.COL_OVERLAY: info['overlay'],
+           self._curr_table.COL_CURRENT_VER: info['version_rev'],
+           self._curr_table.COL_STABLE_UPSTREAM_VER: stable_up_ver,
+           self._curr_table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
+           self._curr_table.COL_STATE: info['state'],
+           self._curr_table.COL_DEPENDS_ON: ' '.join(depslist),
+           self._curr_table.COL_TARGET: ' '.join(self._targets),
            }
-    self._table.AppendRow(row)
+
+    # Only include if upgrade was involved.  Table may not have this column
+    # if upgrade was not requested.
+    if upgraded_ver:
+      row[self._curr_table.COL_UPGRADED] = upgraded_ver
+
+    self._curr_table.AppendRow(row)
 
   def _UpgradePackage(self, info):
     """Gathers upgrade status for pkg, performs upgrade if requested.
@@ -564,8 +545,8 @@ class Upgrader(object):
     """
     cpv = info['cpv']
     catpkg = Upgrader._GetCatPkgFromCpv(cpv)
-    info['stable_upstream_cpv'] = self._FindUpstreamCPV(catpkg, self._arch)
-    info['latest_upstream_cpv'] = self._FindUpstreamCPV(catpkg, self._arch,
+    info['stable_upstream_cpv'] = self._FindUpstreamCPV(catpkg, self._curr_arch)
+    info['latest_upstream_cpv'] = self._FindUpstreamCPV(catpkg, self._curr_arch,
                                                         unstable_ok=True)
 
     # The upstream version can be either latest stable or latest overall.
@@ -577,26 +558,40 @@ class Upgrader(object):
 
     # Perform the actual upgrade, if requested.
     cpv_cmp_upstream = None
-    info['upgraded_cpv'] = False
+    info['upgraded_cpv'] = None
     if upstream_cpv:
       # cpv_cmp_upstream values: 0 = current, >0 = outdated, <0 = futuristic!
       cpv_cmp_upstream = Upgrader._CmpCpv(upstream_cpv, cpv)
 
       # Determine whether upgrade of this package is requested.
-      if cpv_cmp_upstream > 0 and self._PkgUpgradeRequested(info):
-        info['upgraded_cpv'] = self._CopyUpstreamPackage(upstream_cpv)
+      if self._PkgUpgradeRequested(info):
+        if self._PkgUpgradeStaged(upstream_cpv):
+          cros_lib.Info('Determined that %s is already staged.' % upstream_cpv)
+          info['upgraded_cpv'] = upstream_cpv
+        elif cpv_cmp_upstream > 0:
+          cros_lib.Info('Copying %s from upstream.' % upstream_cpv)
+          info['upgraded_cpv'] = self._CopyUpstreamPackage(upstream_cpv)
 
+      if info['upgraded_cpv']:
         # Verify that upgraded package can be emerged and save results.
         # Prefer stable if possible, otherwise remember that a keyword
         # change will be needed.
-        (em_ok_stable, em_out_stable) = self._IsEmergeable(upstream_cpv, True)
-        (em_ok_all, em_out_all) = self._IsEmergeable(upstream_cpv, False)
+        # TODO(mtennant): Can trim to one emerge by determining whether
+        # upstream_cpv is stable or not (compare to latest/stable columns).
+        (em_ok_stable,
+         em_cmd_stable,
+         em_out_stable) = self._IsEmergeable(upstream_cpv, True)
+        (em_ok_all,
+         em_cmd_all,
+         em_out_all) = self._IsEmergeable(upstream_cpv, False)
         if em_ok_stable or not em_ok_all:
           info['emerge_ok'] = em_ok_stable
+          info['emerge_cmd'] = em_cmd_stable
           info['emerge_output'] = em_out_stable
           info['emerge_stable'] = True
         else:
           info['emerge_ok'] = em_ok_all
+          info['emerge_cmd'] = em_cmd_all
           info['emerge_output'] = em_out_all
           info['emerge_stable'] = False
         if info['emerge_ok']:
@@ -611,39 +606,9 @@ class Upgrader(object):
     # Add a row to status table for this package
     self._AppendPackageRow(info)
 
-  def _OpenFileForWrite(self, filepath):
-    """If |file| not None, open for writing."""
-    try:
-      if filepath:
-        return open(filepath, 'w')
-    except IOError as ex:
-      print("Unable to open %s for write: %s" % (filepath, str(ex)))
-      return None
+    return bool(info['upgraded_cpv'])
 
-  def _WriteTableFiles(self, csv=None, html=None):
-    """Write table to |csv| and/or |html| files, if requested."""
-    # Sort the table by package name, then slot
-    def PkgSlotSort(row):
-      return (row[self._table.COL_PACKAGE], row[self._table.COL_SLOT])
-    self._table.Sort(PkgSlotSort)
-
-    if csv:
-      filehandle = self._OpenFileForWrite(csv)
-      if filehandle:
-        print "Writing package status as csv to %s" % csv
-        hiddencols = None
-        if not self._upgrade_deep and not self._upgrade:
-          hiddencols = set([self._table.COL_ACTION_TAKEN])
-        self._table.WriteCSV(filehandle, hiddencols)
-        filehandle.close()
-    if html:
-      filehandle = self._OpenFileForWrite(html)
-      if filehandle:
-        print "Writing package status as html to %s" % html
-        self._table.WriteHTML(filehandle)
-        filehandle.close()
-
-  def _CreateCommitMessage(self, upgrade_lines):
+  def _CreateCommitMessage(self, upgrade_lines, bug_num=None):
     """Create appropriate git commit message for upgrades in |upgrade_lines|."""
     message = ''
     upgrade_count = len(upgrade_lines)
@@ -656,7 +621,10 @@ class Upgrader(object):
 
     # The space before <fill-in> (at least for TEST=) fails pre-submit check,
     # which is the intention here.
-    message += '\nBUG= <fill-in>'
+    if bug_num:
+      message += '\nBUG=chromium-os:%s' % bug_num
+    else:
+      message += '\nBUG= <fill-in>'
     message += '\nTEST= <fill-in>'
 
     return message
@@ -679,91 +647,51 @@ class Upgrader(object):
 
     return self._CreateCommitMessage(upgrade_lines)
 
+  def _GiveEmergeResults(self, infolist):
+    """Summarize emerge checks, raise RuntimeError if there was a problem."""
+    emerge_ok = True
+    for info in infolist:
+      if info['upgraded_cpv']:
+        if info['emerge_ok']:
+          cros_lib.Info('Confirmed %s can be emerged on %s after upgrade.' %
+                        (info['upgraded_cpv'], self._curr_board))
+        else:
+          emerge_ok = False
+          cros_lib.Warning('Unable to emerge %s after upgrade.\n'
+                           'The output of "%s" follows:\n' %
+                           (info['upgraded_cpv'], info['emerge_cmd']))
+          print info['emerge_output']
+
+    if not emerge_ok:
+      raise RuntimeError("One or more emerge failures after upgrade.")
+
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the upstream cpv to the infos."""
-    # An empty directory is needed to trick equery later.
-    self._emptydir = tempfile.mkdtemp()
+    self._curr_table.Clear()
 
-    self._table.Clear()
-    dash_q = ''
-    if not self._verbose: dash_q = '-q'
+    for info in infolist:
+      if self._UpgradePackage(info):
+        self._upgrade_cnt += 1
+
     try:
-      # TODO(petkov): Currently portage's master branch is stale so we need to
-      # checkout latest upstream. At some point portage's master branch will be
-      # upstream so there will be no need to chdir/checkout. At that point we
-      # can also fuse this loop into the caller and avoid generating a separate
-      # list.
-      if not self._upstream:
-        cros_lib.Info('Checking out cros/gentoo at %s as upstream reference.' %
-                      self._upstream_repo)
-        self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
-      upgrade_lines = []
-      for info in infolist:
-        self._UpgradePackage(info)
-        if info['upgraded_cpv']:
-          upgrade_lines.append('Upgrade %s to %s' %
-                               (info['cpv'], info['upgraded_cpv']))
-
-      # Give warnings for those that cannot be emerged after upgrade.
-      emerge_ok = True
-      pkg_keywords_needed = []
-      for info in infolist:
-        if info['upgraded_cpv']:
-          if info['emerge_ok']:
-            cros_lib.Info('Confirmed that %s can be emerged after upgrade.' %
-                          info['upgraded_cpv'])
-            if not info['emerge_stable']:
-              pkg_keywords_needed.append('=%s %s' %
-                                         (info['upgraded_cpv'], self._arch))
-          else:
-            emerge_ok = False
-            cros_lib.Warning('Unable to emerge %s after upgrade.\n'
-                             'The emerge output follows:\n' %
-                             info['upgraded_cpv'])
-            print info['emerge_output']
-
-      if not emerge_ok:
-        cros_lib.Die('Failed to complete upgrades (see above).  Suggest'
-                     ' adding additional packages to upgrade as needed.\n'
-                     'For now, you probably want to reset your changes:\n'
-                     ' cd %s; git reset --hard; cd -' %
-                     self._stable_repo)
-        # TODO(mtennant): On second thought, it's probably cleaner to reset the
-        # changes automatically.  Will do this in another changelist.
-      elif upgrade_lines:
-        if self._amend:
-          message = self._AmendCommitMessage(upgrade_lines)
-          self._RunGit(self._stable_repo, "commit --amend -am '%s'" % message)
-        else:
-          message = self._CreateCommitMessage(upgrade_lines)
-          self._RunGit(self._stable_repo, "commit -am '%s'" % message)
-
-        cros_lib.Info('Upgrade changes committed (see above),'
-                      ' but message needs edit:\n'
-                      ' cd %s; git commit --amend; cd -' %
-                      self._stable_repo)
-        if pkg_keywords_needed:
-          cros_lib.Info('However, note that line(s) like the following'
-                        ' must be added to\n %s:\n%s\n'
-                        'You should push this change first.' %
-                        (self._GetPkgKeywordsFile(),
-                         '\n'.join(pkg_keywords_needed)))
-        cros_lib.Info('If you wish to undo these changes instead:\n'
-                      ' cd %s; git reset --hard HEAD^; cd -' %
-                      self._stable_repo)
-
-    finally:
-      if not self._upstream:
-        cros_lib.Info('Undoing checkout of cros/gentoo at %s.' %
-                      self._upstream_repo)
-        self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
-      os.rmdir(self._emptydir)
+      self._GiveEmergeResults(infolist)
+    except RuntimeError:
+      # Failure to emerge the upgraded package(s) must stop the upgrade, or
+      # else the later logic will merrily commit the upgrade changes.
+      cros_lib.Die('Failed to complete upgrades on %s (see above).  Address'
+                   ' the emerge errors before continuing.\n'
+                   'To reset your changes instead::\n'
+                   ' cd %s; git reset --hard; cd -' %
+                   (self._curr_board, self._stable_repo))
+      # Allow the changes to stay staged so that the user can attempt to address
+      # the issue (perhaps an edit to package.mask is required, or another
+      # package must also be upgraded).
 
   def _GenParallelEmergeArgv(self):
     """Creates an argv for parallel_emerge based on current options."""
     argv = ['--emptytree', '--pretend']
-    if self._board and self._board != self.HOST_BOARD:
-      argv.append('--board=%s' % self._board)
+    if self._curr_board and self._curr_board != self.HOST_BOARD:
+      argv.append('--board=%s' % self._curr_board)
     if not self._verbose:
       argv.append('--quiet')
     if self._rdeps:
@@ -822,21 +750,189 @@ class Upgrader(object):
 
     return infolist
 
-  def Run(self):
-    """Runs the upgrader based on the supplied options and arguments.
+  def PrepareToRun(self):
+    """Checkout upstream gentoo if necessary, and any other prep steps."""
+    # TODO(petkov): Currently portage's master branch is stale so we need to
+    # checkout latest upstream. At some point portage's master branch will be
+    # upstream so there will be no need to chdir/checkout. At that point we
+    # can also fuse this loop into the caller and avoid generating a separate
+    # list.
+    if not self._upstream:
+      dash_q = '-q' if not self._verbose else ''
+      cros_lib.Info('Checking out cros/gentoo at %s as upstream reference.' %
+                    self._upstream_repo)
+      self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
 
-    Currently just lists all package dependencies in pre-order along with
-    potential upgrades."""
+    # An empty directory is needed to trick equery later.
+    self._emptydir = tempfile.mkdtemp()
+
+  def RunCompleted(self):
+    """Undo any checkout of upstream gentoo that was done."""
+    if not self._upstream:
+      dash_q = '-q' if not self._verbose else ''
+      cros_lib.Info('Undoing checkout of cros/gentoo at %s.' %
+                    self._upstream_repo)
+      self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
+
+    os.rmdir(self._emptydir)
+
+  def CommitIsStaged(self):
+    """Return True if upgrades are staged and ready for a commit."""
+    return bool(self._upgrade_cnt)
+
+  def Commit(self):
+    """Commit whatever has been prepared in the stable repo."""
+    # Trying to create commit message body lines that look like these:
+    # Upgraded foo/bar-1.2.3 to version 1.2.4
+    # Upgraded foo/bar-1.2.3 to version 1.2.4 (arm) AND version 1.2.4-r1 (x86)
+    # Upgraded foo/bar-1.2.3 to version 1.2.4 (but emerge fails)
+
+    commit_lines = [] # Lines for the body of the commit message
+    key_lines = []    # Lines needed in package.keywords
+
+    # Assemble hash of COL_UPGRADED column names by arch.
+    upgraded_cols = {}
+    for arch in self._master_archs:
+      tmp_col = utable.UpgradeTable.COL_UPGRADED
+      col = utable.UpgradeTable.GetColumnName(tmp_col, arch)
+      upgraded_cols[arch] = col
+
+    table = self._master_table
+    for row in table:
+      pkg = row[table.COL_PACKAGE]
+      pkg_commit_line = None
+      pkg_keys = {} # key=cpv, value=set of arches that need keyword overwrite
+
+      # First determine how many unique upgraded versions there are.
+      upgraded_vers = set()
+      for arch in self._master_archs:
+        upgraded_ver = row[upgraded_cols[arch]]
+        if upgraded_ver:
+          upgraded_vers.add(upgraded_ver)
+
+          # Is this upgraded version unstable for this arch?  If so, save
+          # arch under upgraded_cpv as one that will need a package.keywords
+          # entry.  Check by comparing against stable upstream version.
+          tmp_col = utable.UpgradeTable.COL_STABLE_UPSTREAM_VER
+          upstream_stable_col = utable.UpgradeTable.GetColumnName(tmp_col, arch)
+          upstream_stable_ver = row[upstream_stable_col]
+          if upgraded_ver != upstream_stable_ver:
+            upgraded_cpv = pkg + '-' + upgraded_ver
+            cpv_key = pkg_keys.get(upgraded_cpv, set())
+            cpv_key.add(arch)
+            pkg_keys[upgraded_cpv] = cpv_key
+
+      if len(upgraded_vers) == 1:
+        # Upgrade is the same across all archs.
+        upgraded_ver = upgraded_vers.pop()
+        arch_str = ', '.join(sorted(self._master_archs))
+        pkg_commit_line = ('Upgraded %s to version %s on %s' %
+                           (pkg, upgraded_ver, arch_str))
+      elif len(upgraded_vers) > 1:
+        # Iterate again, and specify arch for each upgraded version.
+        tokens = []
+        for arch in self._master_archs:
+          upgraded_ver = row[upgraded_cols[arch]]
+          if upgraded_ver:
+            tokens.append('%s on %s' % (upgraded_ver, arch))
+        pkg_commit_line = ('Upgraded %s to versions %s' %
+                           (pkg, ' AND '.join(tokens)))
+
+      if pkg_commit_line:
+        commit_lines.append(pkg_commit_line)
+      if len(pkg_keys):
+        for upgraded_cpv in pkg_keys:
+          cpv_key = pkg_keys[upgraded_cpv]
+          key_lines.append('=%s %s' %
+                           (upgraded_cpv,
+                            ' '.join(cpv_key)))
+
+    if commit_lines:
+      if self._amend:
+        message = self._AmendCommitMessage(commit_lines)
+        self._RunGit(self._stable_repo, "commit --amend -am '%s'" % message)
+      else:
+        message = self._CreateCommitMessage(commit_lines)
+        self._RunGit(self._stable_repo, "commit -am '%s'" % message)
+
+      cros_lib.Warning('Upgrade changes committed (see above),'
+                       ' but message needs edit BY YOU:\n'
+                       ' cd %s; git commit --amend; cd -' %
+                       self._stable_repo)
+
+      if key_lines:
+        cros_lib.Warning('Because one or more unstable versions are involved'
+                         ' you must add line(s) like the following to\n'
+                         ' %s:\n%s\n'
+                         'This is needed before testing, and should be pushed'
+                         ' in a separate changelist BEFORE the\n'
+                         'the changes in portage-stable.' %
+                         (self._GetPkgKeywordsFile(),
+                          '\n'.join(key_lines)))
+      cros_lib.Info('If you wish to undo these changes instead:\n'
+                    ' cd %s; git reset --hard HEAD^; cd -' %
+                    self._stable_repo)
+
+  def PreRunChecks(self):
+    """Run any board-independent validation checks before Run is called."""
     # Upfront check(s) if upgrade is requested.
     if self._upgrade or self._upgrade_deep:
       # Stable source must be on branch.
       self._CheckStableRepoOnBranch()
 
+  def RunBoard(self, board):
+    """Runs the upgrader based on the supplied options and arguments.
+
+    Currently just lists all package dependencies in pre-order along with
+    potential upgrades."""
+    # Preserve status report for entire stable repo (output of 'git status -s').
+    self._SaveStatusOnStableRepo()
+
+    self._porttree = None
+    self._deps_graph = None
+
+    self._curr_board = board
+    self._curr_arch = Upgrader._FindBoardArch(board)
+    upgrade_mode = self._upgrade or self._upgrade_deep
+    self._curr_table = utable.UpgradeTable(self._curr_arch,
+                                           upgrade=upgrade_mode,
+                                           name=board)
+
     cpvlist = self._GetCurrentVersions()
     infolist = self._GetInfoListWithOverlays(cpvlist)
     self._UpgradePackages(infolist)
-    self._WriteTableFiles(csv=self._csv_file,
-                          html=self._html_file)
+
+    # Merge tables together after each run.
+    self._master_cnt += 1
+    self._master_archs.add(self._curr_arch)
+    if self._master_table:
+      tables = [self._master_table, self._curr_table]
+      self._master_table = mps.MergeTables(tables)
+    else:
+      self._master_table = self._curr_table
+      self._master_table._arch = None
+
+  def WriteTableFiles(self, csv=None, html=None):
+    """Write |table| to |csv| and/or |html| files, if requested."""
+
+    # Sort the table by package name, then slot
+    def PkgSlotSort(row):
+      return (row[self._master_table.COL_PACKAGE],
+              row[self._master_table.COL_SLOT])
+    self._master_table.Sort(PkgSlotSort)
+
+    if csv:
+      filehandle = open(csv, 'w')
+      # TODO(mtennant): change to cros_lib.Info
+      print "Writing package status as csv to %s" % csv
+      self._master_table.WriteCSV(filehandle)
+      filehandle.close()
+    if html:
+      filehandle = open(html, 'w')
+      # TODO(mtennant): change to cros_lib.Info
+      print "Writing package status as html to %s" % html
+      self._master_table.WriteHTML(filehandle)
+      filehandle.close()
 
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
@@ -884,7 +980,10 @@ def main():
                     default=False,
                     help="Amend existing commit when doing upgrade.")
   parser.add_option('--board', dest='board', type='string', action='store',
-                    default=None, help="Target board [default: '%default']")
+                    default=None, help="Target board")
+  parser.add_option('--host', dest='host', action='store_true',
+                    default=False,
+                    help="Host target pseudo-board")
   parser.add_option('--rdeps', dest='rdeps', action='store_true',
                     default=False,
                     help="Use runtime dependencies only")
@@ -916,13 +1015,13 @@ def main():
 
   if (options.verbose): logging.basicConfig(level=logging.DEBUG)
 
-  if not options.board:
+  if not options.board and not options.host:
     parser.print_help()
-    cros_lib.Die('board is required')
+    cros_lib.Die('Board (or host) is required.')
 
   if not args:
     parser.print_help()
-    cros_lib.Die('no packages provided')
+    cros_lib.Die('No packages provided.')
 
   # The --upgrade and --upgrade-deep options are mutually exclusive.
   if options.upgrade_deep and options.upgrade:
@@ -933,16 +1032,51 @@ def main():
   # If upstream portage is provided, verify that it is a valid directory.
   if options.upstream and not os.path.isdir(options.upstream):
     parser.print_help()
-    cros_lib.Die('argument to --upstream must be a valid directory')
+    cros_lib.Die('Argument to --upstream must be a valid directory.')
 
-  # If a board is given, verify that the board is already set up.
-  if (options.board and options.board != Upgrader.HOST_BOARD and
-      not _BoardIsSetUp(options.board)):
+  # If --to-csv or --to-html given, verify file can be opened for write.
+  if options.csv_file and not os.access(options.csv_file, os.W_OK):
     parser.print_help()
-    cros_lib.Die('You must setup the %s board first.' % options.board)
+    cros_lib.Die('Unable to open %s for writing.' % options.csv_file)
+  if options.html_file and not os.access(options.html_file, os.W_OK):
+    parser.print_help()
+    cros_lib.Die('Unable to open %s for writing.' % options.html_file)
 
   upgrader = Upgrader(options, args)
-  upgrader.Run()
+  upgrader.PreRunChecks()
+
+  # Automatically handle board 'host' as 'amd64-host'.
+  boards = []
+  if options.board:
+    boards = options.board.split(':')
+    boards = [Upgrader.HOST_BOARD if b == 'host' else b for b in boards]
+  if options.host and Upgrader.HOST_BOARD not in boards:
+    boards.append(Upgrader.HOST_BOARD)
+
+  # Check that all boards have been setup first.
+  for board in boards:
+    if (board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board)):
+      parser.print_help()
+      cros_lib.Die('You must setup the %s board first.' % board)
+
+  try:
+    upgrader.PrepareToRun()
+
+    for board in boards:
+      cros_lib.Info('Running with board %s' % board)
+      upgrader.RunBoard(board)
+
+  finally:
+    upgrader.RunCompleted()
+
+  if upgrader.CommitIsStaged():
+    upgrader.Commit()
+
+  # TODO(mtennant): Move stdout output to here, rather than as-we-go.  That
+  # way it won't come out for each board.  Base it on contents of final table.
+  # Make verbose-dependent?
+
+  upgrader.WriteTableFiles(csv=options.csv_file, html=options.html_file)
 
 
 if __name__ == '__main__':

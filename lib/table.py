@@ -14,6 +14,7 @@ class Table(object):
 
   __slots__ = ['_column_set',  # Set of column headers (for faster lookup)
                '_columns',     # List of column headers in order
+               '_name',        # Name to associate with table
                '_rows',        # List of row dicts
                ]
 
@@ -81,7 +82,7 @@ class Table(object):
     return vals
 
   @staticmethod
-  def LoadFromCSV(csv_file):
+  def LoadFromCSV(csv_file, name=None):
     """Create a new Table object by loading contents of |csv_file|."""
     if type(csv_file) is file:
       file_handle = csv_file
@@ -97,7 +98,7 @@ class Table(object):
 
       if not table:
         # Read headers
-        table = Table(vals)
+        table = Table(vals, name=name)
 
       else:
         # Read data row
@@ -105,10 +106,11 @@ class Table(object):
 
     return table
 
-  def __init__(self, columns):
+  def __init__(self, columns, name=None):
     self._columns = columns
     self._column_set = set(columns)
     self._rows = []
+    self._name = name
 
   def __str__(self):
     """Return a table-like string representation of this table."""
@@ -153,6 +155,14 @@ class Table(object):
   def __iter__(self):
     """Declare that this class supports iteration (over rows)."""
     return self._rows.__iter__()
+
+  def GetName(self):
+    """Return name associated with table, None if not available."""
+    return self._name
+
+  def SetName(self, name):
+    """Set the name associated with table."""
+    self._name = name
 
   def Clear(self):
     """Remove all row data."""
@@ -306,7 +316,8 @@ class Table(object):
       row_processor(row)
 
   def MergeTable(self, other_table, id_columns, merge_rules=None,
-                 allow_new_columns=False, key=None, reverse=False):
+                 allow_new_columns=False, key=None, reverse=False,
+                 new_name=None):
     """Merge |other_table| into this table, identifying rows by |id_columns|.
 
     The |id_columns| argument can either be a list of identifying columns names
@@ -355,6 +366,11 @@ class Table(object):
     # Optionally re-sort the merged table.
     if key:
       self.Sort(key, reverse=reverse)
+
+    if new_name:
+      self.SetName(new_name)
+    elif self.GetName() and other_table.GetName():
+      self.SetName(self.GetName() + ' + ' + other_table.GetName())
 
   def _GetIdValuesForRow(self, row, id_columns):
     """Return a dict with values from |row| in |id_columns|."""
@@ -425,8 +441,8 @@ class Table(object):
       if match:
         return match.group(1).join(v for v in (val, other_val) if v)
 
-    raise ValueError("Unknown merge rule for merging column values: %s" %
-                     merge_rule)
+    raise ValueError("Invalid merge rule (%s) for values '%s' and '%s'." %
+                     (merge_rule, val, other_val))
 
   def Sort(self, key, reverse=False):
     """Sort the rows using the given |key| function."""

@@ -243,6 +243,8 @@ class UpgraderTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
+  TODO(mtennant): Upgrader does not have a sense of _board anymore,
+  only for each call to runBoard.  Test setup must change.
   def _MockUpgrader(self, board='test_board', package='test_package',
                     verbose=False, rdeps=None, srcroot=None,
                     stable_repo=None, upstream_repo=None, csv_file=None):
@@ -250,7 +252,7 @@ class UpgraderTest(mox.MoxTestBase):
     upgrader = self.mox.CreateMock(cpu.Upgrader)
 
     upgrader._args = [package]
-    upgrader._board = board
+    upgrader._curr_board = board
     upgrader._verbose = verbose
     upgrader._rdeps = rdeps
     upgrader._stable_repo = stable_repo
@@ -434,8 +436,6 @@ class UpgraderTest(mox.MoxTestBase):
     self._SetUpEmerge()
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
-    cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
 
     # Replay script, if any
     self.mox.ReplayAll()
@@ -575,13 +575,13 @@ class MainTest(mox.MoxTestBase):
     self.assertTrue("ERROR:" in stderr)
 
   def testUpgraderRun(self):
-    """Verify that running main method launches Upgrader.Run"""
+    """Verify that running main method launches Upgrader.RunBoard"""
     self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
     self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
-    self.mox.StubOutWithMock(cpu.Upgrader, 'Run')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
     cpu._BoardIsSetUp('any-board').AndReturn(True)
     cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
-    cpu.Upgrader.Run()
+    cpu.Upgrader.RunBoard()
     self.mox.ReplayAll()
 
     self._PrepareArgv("--board=any-board", "any-package")

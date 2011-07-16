@@ -13,11 +13,14 @@ import sys
 
 import gdata.spreadsheet.service
 
-import cros_portage_upgrade
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.table as table
 import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.upgrade_table as utable
+import merge_package_status as mps
+
+REAL_SS_KEY='tJuuSuHmrEMqdL5b8dkgBIA'
+TEST_SS_KEY='t3RE08XLO2f1vTiV4N-w2ng'
 
 def _PrepColForSS(col):
   """Translate a column name for spreadsheet "list" interface."""
@@ -59,7 +62,7 @@ class Uploader(object):
                '_ws_key',     # Worksheet key (string)
                ]
 
-  ID_COL = cros_portage_upgrade.UpgradeTable.COL_PACKAGE
+  ID_COL = utable.UpgradeTable.COL_PACKAGE
   SOURCE = "Uploaded from CSV"
 
   def __init__(self, table, verbose=False):
@@ -308,6 +311,9 @@ def main():
   parser.add_option('--password', dest='password', type='string',
                     action='store', default=None,
                     help="Password for Google Doc user")
+  parser.add_option('--ss-key', dest='ss_key', type='string',
+                    action='store', default=None,
+                    help="Key of spreadsheet to upload to")
   parser.add_option('--test-spreadsheet', dest='test_ss',
                     action='store_true', default=False,
                     help="Upload to the testing spreadsheet.")
@@ -344,8 +350,16 @@ def main():
     cros_lib.Die("Without email/password, both cred-file and token-file " +
                  "is ambiguous.")
 
+  # --ss-key and --test-spreadsheet are mutually exclusive.
+  if options.ss_key and options.test_ss:
+    parser.print_help()
+    cros_lib.Die("Cannot specify --ss-key and --test-spreadsheet together.")
+
   # Load the given csv file.
   csv_table = LoadTable(args[0])
+
+  # Prepare table for upload.
+  mps.FinalizeTable(csv_table)
 
   # Prepare the Google Doc client for uploading.
   uploader = Uploader(csv_table, verbose=options.verbose)
@@ -372,10 +386,12 @@ def main():
     uploader.LoadDocsToken(options.token_file)
     uploader.LoginDocsWithToken()
 
-  # Only two spreadsheets are supported now, with keys hard-coded below.
-  ss_key = 'tJuuSuHmrEMqdL5b8dkgBIA' # The real spreadsheet
-  if options.test_ss:
-    ss_key = 't3RE08XLO2f1vTiV4N-w2ng' # For testing with backup spreadsheet
+  ss_key = options.ss_key
+  if not ss_key:
+    if options.test_ss:
+      ss_key = TEST_SS_KEY # For testing with backup spreadsheet
+    else:
+      ss_key = REAL_SS_KEY
   uploader.Upload(ss_key)
 
 if __name__ == '__main__':

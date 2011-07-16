@@ -44,13 +44,10 @@ class MergeTest(unittest.TestCase):
           mps.COL_OVERLAY: 'portage',
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '1.2.3',
-          mps.COL_TARGET: 'chromeos chromeos-dev hard-host-depends'}
-  ROW0_PROCESSED_TARGETS = 'chromeos-dev hard-host-depends'
-  ROW0_OUT = dict(ROW0)
-  ROW0_OUT[mps.COL_TARGET] = ROW0_PROCESSED_TARGETS
+          mps.COL_TARGET: 'chromeos-dev hard-host-depends'}
   ROW0_FINAL = dict(ROW0)
   ROW0_FINAL[mps.COL_PACKAGE] = ROW0[mps.COL_PACKAGE] + ':' + ROW0[mps.COL_SLOT]
-  ROW0_FINAL[COL_CROS_TARGET] = 'chromeos chromeos-dev'
+  ROW0_FINAL[COL_CROS_TARGET] = 'chromeos-dev'
   ROW0_FINAL[COL_HOST_TARGET] = 'hard-host-depends'
   ROW0_FINAL[COL_CMP_ARCH] = 'same'
 
@@ -60,9 +57,6 @@ class MergeTest(unittest.TestCase):
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '1.2.3-r1',
           mps.COL_TARGET: 'chromeos'}
-  ROW1_PROCESSED_TARGETS = 'chromeos'
-  ROW1_OUT = dict(ROW1)
-  ROW1_OUT[mps.COL_TARGET] = ROW1_PROCESSED_TARGETS
   ROW1_FINAL = dict(ROW1)
   ROW1_FINAL[COL_CROS_TARGET] = 'chromeos'
   ROW1_FINAL[COL_HOST_TARGET] = ''
@@ -73,13 +67,10 @@ class MergeTest(unittest.TestCase):
           mps.COL_OVERLAY: 'portage',
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '',
-          mps.COL_TARGET: 'chromeos chromeos-dev world'}
-  ROW2_PROCESSED_TARGETS = 'chromeos-dev world'
-  ROW2_OUT = dict(ROW2)
-  ROW2_OUT[mps.COL_TARGET] = ROW2_PROCESSED_TARGETS
+          mps.COL_TARGET: 'chromeos-dev world'}
   ROW2_FINAL = dict(ROW2)
   ROW2_FINAL[mps.COL_PACKAGE] = ROW2[mps.COL_PACKAGE] + ':' + ROW2[mps.COL_SLOT]
-  ROW2_FINAL[COL_CROS_TARGET] = 'chromeos chromeos-dev'
+  ROW2_FINAL[COL_CROS_TARGET] = 'chromeos-dev'
   ROW2_FINAL[COL_HOST_TARGET] = 'world'
   ROW2_FINAL[COL_CMP_ARCH] = ''
 
@@ -141,42 +132,29 @@ class MergeTest(unittest.TestCase):
         ]
 
     for input, good_out, rev_out in zip(test_in, test_out, test_rev_out):
-      output = mps._ProcessTargets(input)
+      output = mps.ProcessTargets(input)
       self.assertEquals(output, good_out)
-      output = mps._ProcessTargets(input, reverse_cros=True)
+      output = mps.ProcessTargets(input, reverse_cros=True)
       self.assertEquals(output, rev_out)
-
-  def testProcessRowTargetValue(self):
-    for in_row in (self.ROW0, self.ROW1, self.ROW2):
-      tmp_row = dict(in_row)
-      mps._ProcessRowTargetValue(tmp_row)
-      for col in in_row:
-        if col == mps.COL_TARGET:
-          proc_targ = ' '.join(mps._ProcessTargets(in_row[col].split()))
-          self.assertEquals(proc_targ, tmp_row[col])
-        else:
-          self.assertEquals(in_row[col], tmp_row[col])
 
   def testLoadTable(self):
     path = self._CreateTmpCsvFile(self._table)
     csv_table = mps.LoadTable(path)
-    for ix, row_out in enumerate((self.ROW0_OUT, self.ROW1_OUT, self.ROW2_OUT)):
-      self.assertRowsEqual(row_out, csv_table[ix])
-
+    self.assertEquals(self._table, csv_table)
     os.unlink(path)
 
-  def testLoadTables(self):
+  def testLoadAndMergeTables(self):
     # Create a second table to merge with standard table.
     row0_2 = {mps.COL_PACKAGE: 'lib/foo',
               mps.COL_SLOT: '1',
               mps.COL_OVERLAY: 'portage',
               self.COL_VER_arm: '1.2.4',
-              mps.COL_TARGET: 'chromeos chromeos-dev world'}
+              mps.COL_TARGET: 'chromeos-dev world'}
     row1_2 = {mps.COL_PACKAGE: 'dev/bar',
               mps.COL_SLOT: '0',
               mps.COL_OVERLAY: 'chromiumos-overlay',
               self.COL_VER_arm: '1.2.3-r1',
-              mps.COL_TARGET: 'chromeos chromeos-dev chromeos-test'}
+              mps.COL_TARGET: 'chromeos-test'}
     row2_2 = {mps.COL_PACKAGE: 'dev/newby',
               mps.COL_SLOT: '2',
               mps.COL_OVERLAY: 'chromiumos-overlay',
@@ -192,7 +170,8 @@ class MergeTest(unittest.TestCase):
     path1 = self._CreateTmpCsvFile(self._table)
     path2 = self._CreateTmpCsvFile(table_2)
 
-    combined_table = mps.LoadTables([path1, path2])
+    combined_table1 = mps.MergeTables([self._table, table_2])
+    combined_table2 = mps.LoadAndMergeTables([path1, path2])
 
     final_row0 = {mps.COL_PACKAGE: 'dev/bar',
                   mps.COL_SLOT: '0',
@@ -221,7 +200,8 @@ class MergeTest(unittest.TestCase):
 
     final_rows = (final_row0, final_row1, final_row2, final_row3)
     for ix, row_out in enumerate(final_rows):
-      self.assertRowsEqual(row_out, combined_table[ix])
+      self.assertRowsEqual(row_out, combined_table1[ix])
+      self.assertRowsEqual(row_out, combined_table2[ix])
 
     os.unlink(path1)
     os.unlink(path2)
@@ -330,10 +310,13 @@ class MainTest(mox.MoxTestBase):
     self.assertTrue("ERROR:" in stderr)
 
   def testMain(self):
-    """Verify that running main method runs LoadTables, WriteTable."""
-    self.mox.StubOutWithMock(mps, 'LoadTables')
+    """Verify that running main method runs expected functons.
+
+    Expected: LoadAndMergeTables, WriteTable.
+    """
+    self.mox.StubOutWithMock(mps, 'LoadAndMergeTables')
     self.mox.StubOutWithMock(mps, 'WriteTable')
-    mps.LoadTables(mox.IgnoreArg()).AndReturn('csv_table')
+    mps.LoadAndMergeTables(mox.IgnoreArg()).AndReturn('csv_table')
     mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
     self.mox.ReplayAll()
 
@@ -342,11 +325,14 @@ class MainTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
   def testMainWithFinalize(self):
-    """Verify that running main method runs LoadTables, WriteTable."""
-    self.mox.StubOutWithMock(mps, 'LoadTables')
+    """Verify that running main method runs expected functions.
+
+    Expected: LoadAndMergeTables, WriteTable.
+    """
+    self.mox.StubOutWithMock(mps, 'LoadAndMergeTables')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(mps, 'WriteTable')
-    mps.LoadTables(mox.IgnoreArg()).AndReturn('csv_table')
+    mps.LoadAndMergeTables(mox.IgnoreArg()).AndReturn('csv_table')
     mps.FinalizeTable(mox.Regex(r'csv_table'))
     mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
     self.mox.ReplayAll()
