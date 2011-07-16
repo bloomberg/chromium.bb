@@ -658,6 +658,11 @@ void RenderWidgetHostViewMac::ShowingContextMenu(bool showing) {
   DCHECK_NE(is_showing_context_menu_, showing);
   is_showing_context_menu_ = showing;
 
+  // If the menu was closed, restore the cursor to the saved version initially,
+  // as the renderer will not re-send it if there was no change.
+  if (!showing)
+    UpdateCursorIfNecessary();
+
   // Create a fake mouse event to inform the render widget that the mouse
   // left or entered.
   NSWindow* window = [cocoa_view_ window];
