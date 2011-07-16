@@ -56,11 +56,7 @@ AutofillAgent::AutofillAgent(
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-#if defined(CRBUG_72758_FIXED)
   render_view->webview()->setAutofillClient(this);
-#else
-  render_view->webview()->setAutoFillClient(this);
-#endif
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -122,11 +118,7 @@ bool AutofillAgent::InputElementClicked(const WebInputElement& element,
   return false;
 }
 
-#if defined(CRBUG_72758_FIXED)
 void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
-#else
-void AutofillAgent::didAcceptAutoFillSuggestion(const WebNode& node,
-#endif
                                                 const WebString& value,
                                                 const WebString& label,
                                                 int unique_id,
@@ -162,11 +154,7 @@ void AutofillAgent::didAcceptAutoFillSuggestion(const WebNode& node,
   suggestions_options_index_ = -1;
 }
 
-#if defined(CRBUG_72758_FIXED)
 void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
-#else
-void AutofillAgent::didSelectAutoFillSuggestion(const WebNode& node,
-#endif
                                                 const WebString& value,
                                                 const WebString& label,
                                                 int unique_id) {
@@ -174,19 +162,11 @@ void AutofillAgent::didSelectAutoFillSuggestion(const WebNode& node,
   if (password_autofill_manager_->DidSelectAutofillSuggestion(node))
     return;
 
-#if defined(CRBUG_72758_FIXED)
   didClearAutofillSelection(node);
-#else
-  didClearAutoFillSelection(node);
-#endif
   FillAutofillFormData(node, unique_id, AUTOFILL_PREVIEW);
 }
 
-#if defined(CRBUG_72758_FIXED)
 void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
-#else
-void AutofillAgent::didClearAutoFillSelection(const WebNode& node) {
-#endif
   form_manager_.ClearPreviewedFormWithNode(node, was_query_node_autofilled_);
 }
 
@@ -303,11 +283,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
   // Send to WebKit for display.
   if (!v.empty() && !autofill_query_node_.isNull() &&
       autofill_query_node_.isFocusable()) {
-#if defined(CRBUG_72758_FIXED)
     web_view->applyAutofillSuggestions(
-#else
-    web_view->applyAutoFillSuggestions(
-#endif
         autofill_query_node_, v, l, i, ids, separator_index);
   }
 
