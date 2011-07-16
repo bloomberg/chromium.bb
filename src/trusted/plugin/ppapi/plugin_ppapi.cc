@@ -646,7 +646,7 @@ PluginPpapi::~PluginPpapi() {
   // an error while loading.
   if (ppapi_proxy_ != NULL) {
     HistogramTimeLarge(
-        "NaCl.ModuleUptime",
+        "NaCl.ModuleUptime.Normal",
         (shutdown_start-ready_time_) / NACL_MICROS_PER_MILLI);
   }
 
@@ -855,7 +855,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
                                  "PPP_InitializeModule:iihs:ii") ==
       kNaClSrpcInvalidMethodIndex) {
     error_info->SetReport(
-        ERROR_START_PROXY,
+        ERROR_START_PROXY_CHECK_PPP,
         "could not find PPP_InitializeModule() - toolchain version mismatch?");
     PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%s)\n",
                    error_info->message().c_str()));
@@ -866,7 +866,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy.get())));
   if (ppapi_proxy.get() == NULL) {
-    error_info->SetReport(ERROR_START_PROXY,
+    error_info->SetReport(ERROR_START_PROXY_ALLOC,
                           "could not allocate proxy memory.");
     return false;
   }
@@ -880,7 +880,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    error_info->SetReport(ERROR_START_PROXY,
+    error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
   }
@@ -897,7 +897,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (did_create=%d)\n",
                  did_create));
   if (did_create == PP_FALSE) {
-    error_info->SetReport(ERROR_START_PROXY,
+    error_info->SetReport(ERROR_START_PROXY_INSTANCE,
                           "could not create instance.");
     return false;
   }
@@ -933,7 +933,7 @@ void PluginPpapi::ShutdownProxy() {
   if (ppapi_proxy_ != NULL) {
     // TODO(polina): put this back when we figure out why pyauto_reload_test
     // is unhappy about it.
-    //ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
+    // ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
     ppapi_proxy_->ShutdownModule();
     delete ppapi_proxy_;
     ppapi_proxy_ = NULL;

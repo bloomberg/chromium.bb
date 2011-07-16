@@ -91,7 +91,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
                  static_cast<void*>(subprocess_.get())));
   // Create the command channel to the sel_ldr and load the nexe from nacl_desc.
   if (!subprocess_->SetupCommandAndLoad(&command_channel_, nacl_desc)) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION,
+    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                           "ServiceRuntime: command channel creation failed");
     return false;
   }
@@ -104,7 +104,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
                                 &out_conn_cap);
 
   if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION,
+    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
                           "ServiceRuntime: reverse setup rpc failed");
     return false;
   }
@@ -115,14 +115,14 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);
   if (conn_cap == NULL) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION,
+    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
                           "ServiceRuntime: wrapper allocation failure");
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION,
+    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
                           "ServiceRuntime: starting reverse services failed");
     return false;
   }
