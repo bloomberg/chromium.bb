@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
 #include "ppapi/cpp/dev/directory_reader_dev.h"
 #include "ppapi/cpp/file_io.h"

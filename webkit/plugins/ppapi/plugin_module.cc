@@ -395,23 +395,6 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_VAR_INTERFACE_0_5) == 0)
     return Var::GetInterface();
 
-  // Support the dev interfaces for file io, fileref and file system
-  // until relevant tests and examples are migrated over to non-dev interfaces
-  // in order to prevent breaking the tests and examples.
-  // TODO(sanga): Remove support for these dev interfaces once the relevant
-  // tests and examples are migrated to non-dev interfaces.
-  const bool support_dev_file_interfaces = true;
-  if (support_dev_file_interfaces) {
-    if (strcmp(name, "PPB_FileIO(Dev);0.4") == 0)
-      return ::ppapi::thunk::GetPPB_FileIO_Thunk();
-    if (strcmp(name, "PPB_FileIOTrusted(Dev);0.3") == 0)
-      return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
-    if (strcmp(name, "PPB_FileRef(Dev);0.8") == 0)
-      return ::ppapi::thunk::GetPPB_FileRef_Thunk();
-    if (strcmp(name, "PPB_FileSystem(Dev);0.6") == 0)
-      return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
-  }
-
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
