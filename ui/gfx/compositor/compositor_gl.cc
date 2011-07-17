@@ -378,8 +378,8 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
-    : started_(false),
-      size_(size) {
+    : size_(size),
+      started_(false) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
   gl_context_ = SharedResources::GetInstance()->
       CreateContext(gl_surface_.get());
