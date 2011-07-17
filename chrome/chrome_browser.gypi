@@ -2177,6 +2177,8 @@
         'browser/ui/app_modal_dialogs/message_box_handler.cc',
         'browser/ui/app_modal_dialogs/message_box_handler.h',
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
+        'browser/ui/autologin_infobar_delegate.h',
+        'browser/ui/autologin_infobar_delegate.cc',
         'browser/ui/blocked_content/blocked_content_container.cc',
         'browser/ui/blocked_content/blocked_content_container.h',
         'browser/ui/blocked_content/blocked_content_tab_helper.cc',

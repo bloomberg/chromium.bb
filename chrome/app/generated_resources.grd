@@ -7920,6 +7920,14 @@ ls' lab.">
         Reload
       </message>
 
+      <!-- Auto-login infobar -->
+      <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
+        Automated login is available for this page using <ph name="EMAIL_ADDRESS">%ls</ph>
+      </message>
+      <message name="IDS_AUTOLOGIN_INFOBAR_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
+        Login
+      </message>
+
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and Other Data

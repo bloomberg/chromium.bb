@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -205,9 +205,11 @@ TEST_F(TokenServiceTest, ResetComplex) {
   service_.ResetCredentialsInMemory();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
+  EXPECT_FALSE(service_.HasLsid());
 
   // Now start using it again.
   service_.UpdateCredentials(credentials_);
+  EXPECT_TRUE(service_.HasLsid());
   service_.StartFetchingTokens();
 
   service_.OnIssueAuthTokenSuccess(GaiaConstants::kSyncService, "token");
@@ -314,7 +316,7 @@ TEST_F(TokenServiceTest, WebDBLoadIntegration) {
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
-  EXPECT_FALSE(service_.HasLsid());
+  EXPECT_TRUE(service_.HasLsid());
 }
 
 TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
@@ -323,6 +325,7 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   service_.ResetCredentialsInMemory();
   success_tracker_.Reset();
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
+  EXPECT_FALSE(service_.HasLsid());
 
   service_.LoadTokensFromDB();
   WaitForDBLoadCompletion();
@@ -333,7 +336,7 @@ TEST_F(TokenServiceTest, MultipleLoadResetIntegration) {
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
-  EXPECT_FALSE(service_.HasLsid());
+  EXPECT_TRUE(service_.HasLsid());
 
   // Reset it one more time so there's no surprises.
   service_.ResetCredentialsInMemory();

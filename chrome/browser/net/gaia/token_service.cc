@@ -94,6 +94,9 @@ void TokenService::UpdateCredentials(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   credentials_ = credentials;
 
+  SaveAuthTokenToDB(GaiaConstants::kGaiaLsid, credentials.lsid);
+  SaveAuthTokenToDB(GaiaConstants::kGaiaSid, credentials.sid);
+
   // Cancels any currently running requests.
   for (int i = 0; i < kNumServices; i++) {
     fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
@@ -251,6 +254,26 @@ void TokenService::LoadTokensIntoMemory(
         FireTokenAvailableNotification(kServices[i], db_token);
         // Failures are only for network errors.
       }
+    }
+  }
+
+  if (credentials_.lsid.empty() && credentials_.sid.empty()) {
+    // Look for GAIA SID and LSID tokens.  If we have both, and the current
+    // crendentials are empty, update the credentials.
+    std::string lsid;
+    std::string sid;
+
+    if (db_tokens.count(GaiaConstants::kGaiaLsid) > 0)
+      lsid = db_tokens.find(GaiaConstants::kGaiaLsid)->second;
+
+    if (db_tokens.count(GaiaConstants::kGaiaSid) > 0)
+      sid = db_tokens.find(GaiaConstants::kGaiaSid)->second;
+
+    if (!lsid.empty() && !sid.empty()) {
+      UpdateCredentials(GaiaAuthConsumer::ClientLoginResult(sid,
+                                                            lsid,
+                                                            std::string(),
+                                                            std::string()));
     }
   }
 }

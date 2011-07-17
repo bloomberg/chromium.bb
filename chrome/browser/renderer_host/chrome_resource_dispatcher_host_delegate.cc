@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ui/autologin_infobar_delegate.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
@@ -257,6 +258,12 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   filter->Send(new ViewMsg_SetContentSettingsForLoadingURL(
       info->route_id(), request->url(),
       map->GetContentSettings(request->url(), request->url())));
+
+  // See if the response contains the X-Auto-Login header.  If so, this was
+  // a request for a login page, and the server is allowing the browser to
+  // suggest auto-login, if available.
+  AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(request, info->child_id(),
+                                                     info->route_id());
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
