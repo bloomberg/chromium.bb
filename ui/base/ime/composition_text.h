@@ -9,11 +9,12 @@
 #include "base/string16.h"
 #include "ui/base/ime/composition_underline.h"
 #include "ui/base/range/range.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
 // A struct represents the status of an ongoing composition text.
-struct CompositionText {
+struct UI_API CompositionText {
   CompositionText();
   ~CompositionText();
 

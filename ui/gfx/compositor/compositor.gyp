@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'target_defaults': {
     'sources/': [
       ['exclude', '_(gl|win)\\.(cc?)$'],
@@ -24,7 +27,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/ui.gyp:ui_gfx',
+        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'sources': [
         'compositor.cc',

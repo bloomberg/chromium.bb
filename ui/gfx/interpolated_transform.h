@@ -23,7 +23,7 @@ namespace ui {
 // scale from 0.3 to 1 from between times 0.75 and 1.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class InterpolatedTransform {
+class UI_API InterpolatedTransform {
  public:
   InterpolatedTransform();
   // The interpolated transform varies only when t in (start_time, end_time).
@@ -72,7 +72,7 @@ class InterpolatedTransform {
 // Represents an animated rotation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class InterpolatedRotation : public InterpolatedTransform {
+class UI_API InterpolatedRotation : public InterpolatedTransform {
  public:
   InterpolatedRotation(float start_degrees, float end_degrees);
   InterpolatedRotation(float start_degrees,
@@ -97,7 +97,7 @@ class InterpolatedRotation : public InterpolatedTransform {
 // Represents an animated scale.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class InterpolatedScale : public InterpolatedTransform {
+class UI_API InterpolatedScale : public InterpolatedTransform {
  public:
   InterpolatedScale(float start_scale, float end_scale);
   InterpolatedScale(float start_scale,
@@ -116,7 +116,7 @@ class InterpolatedScale : public InterpolatedTransform {
   DISALLOW_COPY_AND_ASSIGN(InterpolatedScale);
 };
 
-class InterpolatedTranslation : public InterpolatedTransform {
+class UI_API InterpolatedTranslation : public InterpolatedTransform {
  public:
   InterpolatedTranslation(const gfx::Point& start_pos,
                           const gfx::Point& end_pos);
@@ -145,7 +145,7 @@ class InterpolatedTranslation : public InterpolatedTransform {
 // See InterpolatedTransformAboutPivot for an example of its usage.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class InterpolatedConstantTransform : public InterpolatedTransform {
+class UI_API InterpolatedConstantTransform : public InterpolatedTransform {
  public:
   InterpolatedConstantTransform(const ui::Transform& transform);
   virtual ~InterpolatedConstantTransform();
@@ -167,7 +167,7 @@ class InterpolatedConstantTransform : public InterpolatedTransform {
 // P * T * P^-1 where P is a constant transform to the new origin.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class InterpolatedTransformAboutPivot : public InterpolatedTransform {
+class UI_API InterpolatedTransformAboutPivot : public InterpolatedTransform {
  public:
   // Takes ownership of the passed transform.
   InterpolatedTransformAboutPivot(const gfx::Point& pivot,

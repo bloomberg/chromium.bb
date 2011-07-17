@@ -8,10 +8,12 @@
 #define UI_BASE_UI_BASE_SWITCHES_H_
 #pragma once
 
+#include "ui/ui_api.h"
+
 namespace switches {
 
-extern const char kLang[];
-extern const char kLocalePak[];
+UI_API extern const char kLang[];
+UI_API extern const char kLocalePak[];
 
 }  // namespace switches
 

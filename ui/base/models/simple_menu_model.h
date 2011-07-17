@@ -20,9 +20,9 @@ class ButtonMenuItemModel;
 // items. This makes it easy to construct fixed menus. Menus populated by
 // dynamic data sources may be better off implementing MenuModel directly.
 // The breadth of MenuModel is not exposed through this API.
-class SimpleMenuModel : public MenuModel {
+class UI_API SimpleMenuModel : public MenuModel {
  public:
-  class Delegate {
+  class UI_API Delegate {
    public:
     // Methods for determining the state of specific command ids.
     virtual bool IsCommandIdChecked(int command_id) const = 0;

@@ -117,6 +117,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       return *found->second;
   }
 
+  DCHECK(resources_data_) << "Missing call to SetResourcesDataDLL?";
   scoped_ptr<SkBitmap> bitmap(LoadBitmap(resources_data_, resource_id));
   if (bitmap.get()) {
     // Check if there's a large version of the image as well.

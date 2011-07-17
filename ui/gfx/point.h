@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 
 #include <iosfwd>
 
+#include "ui/ui_api.h"
+
 #if defined(OS_WIN)
 typedef unsigned long DWORD;
 typedef struct tagPOINT POINT;
@@ -20,7 +22,7 @@ typedef struct tagPOINT POINT;
 namespace gfx {
 
 // A point has an x and y coordinate.
-class Point {
+class UI_API Point {
  public:
   Point();
   Point(int x, int y);
@@ -94,7 +96,7 @@ class Point {
   int y_;
 };
 
-std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
+UI_API std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
 
 }  // namespace gfx
 

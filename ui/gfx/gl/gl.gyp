@@ -14,8 +14,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/ui/ui.gyp:ui_base',
-        '<(DEPTH)/ui/ui.gyp:ui_gfx',
+        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'variables': {
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gl',

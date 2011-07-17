@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 
@@ -18,7 +19,7 @@ class PlatformFont;
 
 // Font provides a wrapper around an underlying font. Copy and assignment
 // operators are explicitly allowed, and cheap.
-class Font {
+class UI_API Font {
  public:
   // The following constants indicate the font style.
   enum FontStyle {

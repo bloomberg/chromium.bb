@@ -7,10 +7,12 @@
 
 #include <gtk/gtk.h>
 
+#include "ui/ui_api.h"
+
 namespace ui {
 
 // Stacks a |popup| window directly on top of a |toplevel| window.
-void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
+UI_API void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
 
 }  // namespace ui
 

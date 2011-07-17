@@ -6,13 +6,12 @@
 #define UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
-class DragDropTypes {
+class UI_API DragDropTypes {
  public:
   enum DragOperation {
     DRAG_NONE = 0,

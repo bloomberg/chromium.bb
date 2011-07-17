@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 typedef void (*GCallback) (void);
 typedef struct _GObject GObject;
@@ -37,7 +38,7 @@ namespace ui {
 //
 // When |signals_| goes down, it will disconnect the handlers connected via
 // Connect.
-class GtkSignalRegistrar {
+class UI_API GtkSignalRegistrar {
  public:
   GtkSignalRegistrar();
   ~GtkSignalRegistrar();

@@ -12,12 +12,13 @@
 #define UI_GFX_NATIVE_THEME_WIN_H_
 #pragma once
 
-#include "ui/gfx/native_theme.h"
-#include "ui/gfx/size.h"
 #include <windows.h>
 #include <uxtheme.h>
+
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/native_theme.h"
+#include "ui/gfx/size.h"
 
 class SkCanvas;
 
@@ -29,7 +30,7 @@ namespace gfx {
 // of several PaintXXX methods to an API, inherited from the NativeTheme base
 // class, that consists of a single Paint() method with a argument to indicate
 // what kind of part to paint.
-class NativeThemeWin : public NativeTheme {
+class UI_API NativeThemeWin : public NativeTheme {
  public:
   enum ThemeName {
     BUTTON,

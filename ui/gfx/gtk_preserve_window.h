@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+
+#include "ui/ui_api.h"
 
 // GtkFixed creates an X window when realized and destroys an X window
 // when unrealized. GtkPreserveWindow allows overrides this
@@ -45,7 +47,7 @@ struct _GtkPreserveWindowClass {
 };
 
 GType gtk_preserve_window_get_type() G_GNUC_CONST;
-GtkWidget* gtk_preserve_window_new();
+UI_API GtkWidget* gtk_preserve_window_new();
 
 // Whether or not we should preserve associated windows as the widget
 // is realized or unrealized.
@@ -56,8 +58,8 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* widget,
 // Whether or not someone else will gdk_window_resize the GdkWindow associated
 // with this widget (needed by the GPU process to synchronize resizing
 // with swapped between front and back buffer).
-void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
-                                         gboolean delegate);
+UI_API void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
+                                                gboolean delegate);
 
 G_END_DECLS
 

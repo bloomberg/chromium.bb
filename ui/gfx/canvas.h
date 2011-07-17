@@ -12,6 +12,7 @@
 // TODO(beng): remove this include when we no longer depend on SkTypes.
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 class Transform;
@@ -28,7 +29,7 @@ class Point;
 class Rect;
 
 // TODO(beng): documentation.
-class Canvas {
+class UI_API Canvas {
  public:
   // Specifies the alignment for text rendered with the DrawStringInt method.
   enum {
@@ -229,7 +230,7 @@ class Canvas {
   virtual const CanvasSkia* AsCanvasSkia() const;
 };
 
-class CanvasPaint {
+class UI_API CanvasPaint {
  public:
   virtual ~CanvasPaint() {}
 

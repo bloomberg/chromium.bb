@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
@@ -26,7 +27,7 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
 
 // Creates the proper sequence of key events for a key press + release.
 // Ownership of the events in the vector is passed to the caller.
-void SynthesizeKeyPressEvents(
+UI_API void SynthesizeKeyPressEvents(
     GdkWindow* window,
     KeyboardCode key,
     bool control, bool shift, bool alt,

@@ -16,7 +16,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/ui/ui.gyp:ui_gfx',
+        '<(DEPTH)/ui/ui.gyp:ui',
         'appcache',
         'blob',
         'database',
@@ -46,7 +46,6 @@
         'test_webplugin_page_delegate.h',
         'webkit_support.cc',
         'webkit_support.h',
-        'webkit_support_gfx.h',
         'webkit_support_glue.cc',
         'weburl_loader_mock.cc',
         'weburl_loader_mock.h',
@@ -81,7 +80,7 @@
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/ui/ui.gyp:ui_base',
+        '<(DEPTH)/ui/ui.gyp:ui',
         'glue',
       ],
       'export_dependent_settings': [
@@ -113,6 +112,8 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
         'simple_database_system.cc',
         'simple_database_system.h',
+        'webkit_support_gfx.h',
+        'webkit_support_gfx.cc',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

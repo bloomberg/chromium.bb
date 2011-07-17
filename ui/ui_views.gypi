@@ -10,7 +10,7 @@
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        'ui_gfx',
+        'ui',
       ],
       'sources': [
         'views/events/accelerator.cc',

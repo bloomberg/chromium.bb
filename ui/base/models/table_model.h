@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/ui_api.h"
 #include "unicode/coll.h"
 
 class SkBitmap;
@@ -18,7 +19,7 @@ namespace ui {
 class TableModelObserver;
 
 // The model driving the TableView.
-class TableModel {
+class UI_API TableModel {
  public:
   // See HasGroups, get GetGroupID for details as to how this is used.
   struct Group {
@@ -89,7 +90,7 @@ class TableModel {
 };
 
 // TableColumn specifies the title, alignment and size of a particular column.
-struct TableColumn {
+struct UI_API TableColumn {
   enum Alignment {
     LEFT, RIGHT, CENTER
   };

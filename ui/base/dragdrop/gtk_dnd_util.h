@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/ui_api.h"
 
 class GURL;
 
@@ -42,7 +43,7 @@ enum {
 
 // Get the atom for a given target (of the above enum type). Will return NULL
 // for non-custom targets, such as CHROME_TEXT_PLAIN.
-GdkAtom GetAtomForTarget(int target);
+UI_API GdkAtom GetAtomForTarget(int target);
 
 // Creates a target list from the given mask. The mask should be an OR of
 // CHROME_* values. The target list is returned with ref count 1; the caller
@@ -51,18 +52,18 @@ GdkAtom GetAtomForTarget(int target);
 // Since the MIME type for WEBDROP_FILE_CONTENTS depends on the file's
 // contents, that flag is ignored by this function. It is the responsibility
 // of the client code to do the right thing.
-GtkTargetList* GetTargetListFromCodeMask(int code_mask);
+UI_API GtkTargetList* GetTargetListFromCodeMask(int code_mask);
 
 // Set the drag target list for |source| with the target list that
 // corresponds to |code_mask|.
-void SetSourceTargetListFromCodeMask(GtkWidget* source, int code_mask);
+UI_API void SetSourceTargetListFromCodeMask(GtkWidget* source, int code_mask);
 
 // Set the accepted targets list for |dest|. The |target_codes| array should
 // be sorted in preference order and should be terminated with -1.
-void SetDestTargetList(GtkWidget* dest, const int* target_codes);
+UI_API void SetDestTargetList(GtkWidget* dest, const int* target_codes);
 
 // Write a URL to the selection in the given type.
-void WriteURLWithName(GtkSelectionData* selection_data,
+UI_API void WriteURLWithName(GtkSelectionData* selection_data,
                       const GURL& url,
                       string16 title,
                       int type);
@@ -70,18 +71,18 @@ void WriteURLWithName(GtkSelectionData* selection_data,
 // Extracts data of type CHROME_NAMED_URL from |selection_data| into
 // |url| and |title|. Returns true if the url/title were safely extracted
 // and the url is valid.
-bool ExtractNamedURL(GtkSelectionData* selection_data,
-                     GURL* url,
-                     string16* title);
+UI_API bool ExtractNamedURL(GtkSelectionData* selection_data,
+                            GURL* url,
+                            string16* title);
 
 // Extracts data of type TEXT_URI_LIST from |selection_data| into |urls|.
-bool ExtractURIList(GtkSelectionData* selection_data,
-                    std::vector<GURL>* urls);
+UI_API bool ExtractURIList(GtkSelectionData* selection_data,
+                           std::vector<GURL>* urls);
 
 // Extracts a Netscape URL (url\ntitle) from |selection_data|.
-bool ExtractNetscapeURL(GtkSelectionData* selection_data,
-                        GURL* url,
-                        string16* title);
+UI_API bool ExtractNetscapeURL(GtkSelectionData* selection_data,
+                               GURL* url,
+                               string16* title);
 
 }  // namespace ui
 

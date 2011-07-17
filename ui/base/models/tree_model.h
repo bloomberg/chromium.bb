@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "ui/ui_api.h"
 
 class SkBitmap;
 
@@ -53,7 +54,7 @@ class TreeModelObserver {
 // TreeModel ------------------------------------------------------------------
 
 // The model for TreeView.
-class TreeModel {
+class UI_API TreeModel {
  public:
   // Returns the root of the tree. This may or may not be shown in the tree,
   // see SetRootShown for details.

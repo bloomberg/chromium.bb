@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 class SkBitmap;
 
@@ -23,7 +24,7 @@ class Size;
 // isn't as robust as would be required for a browser (see Decode() for more).
 // WebKit has its own more complicated PNG decoder which handles, among other
 // things, partially downloaded data.
-class PNGCodec {
+class UI_API PNGCodec {
  public:
   enum ColorFormat {
     // 3 bytes per pixel (packed), in RGB order regardless of endianness.
@@ -43,7 +44,7 @@ class PNGCodec {
   };
 
   // Represents a comment in the tEXt ancillary chunk of the png.
-  struct Comment {
+  struct UI_API Comment {
     Comment(const std::string& k, const std::string& t);
     ~Comment();
 

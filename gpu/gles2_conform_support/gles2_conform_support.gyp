@@ -72,6 +72,7 @@
       'type': 'executable',
       'dependencies': [
         'egl_native',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib_nocheck',
         '<(DEPTH)/third_party/expat/expat.gyp:expat',
       ],

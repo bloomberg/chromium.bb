@@ -23,8 +23,8 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "build/build_config.h"
-#include "ui/gfx/native_widget_types.h"  // Forward-declares GdkPixbuf and NSImage.
+#include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 class SkBitmap;
 
@@ -40,7 +40,7 @@ class ImageRep;
 class ImageStorage;
 }
 
-class Image {
+class UI_API Image {
  public:
   enum RepresentationType {
     kImageRepGdk,

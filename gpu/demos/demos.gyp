@@ -42,6 +42,8 @@
         '../gpu.gyp:command_buffer_client',
         '../gpu.gyp:command_buffer_service',
         '../../base/base.gyp:base',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../../ui/ui.gyp:ui',
       ],
       'sources': [
         'framework/main_exe.cc',

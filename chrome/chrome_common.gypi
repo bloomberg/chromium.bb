@@ -529,7 +529,7 @@
             '../base/base.gyp:base_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../third_party/libxml/libxml.gyp:libxml',
-            '../ui/ui.gyp:ui_base_nacl_win64',
+            '../ui/ui.gyp:ui_nacl_win64',
             '../ui/ui.gyp:ui_resources',
           ],
           'include_dirs': [

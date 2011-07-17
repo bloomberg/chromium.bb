@@ -1189,7 +1189,7 @@
           'dependencies': [
             'chrome_strings',
             '../base/base.gyp:base',
-            '../ui/ui.gyp:ui_base',
+            '../ui/ui.gyp:ui',
           ],
           'include_dirs': [
             '<(grit_out_dir)',

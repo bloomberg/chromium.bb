@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "build/build_config.h"
+#include "ui/ui_api.h"
 
 // This file provides cross platform typedefs for native widget types.
 //   NativeWindow: this is a handle to a native, top-level window
@@ -147,7 +147,7 @@ static inline NativeViewId IdFromNativeView(NativeView view) {
 }
 #elif defined(USE_X11)
 // Not inlined because it involves pulling too many headers.
-NativeViewId IdFromNativeView(NativeView view);
+UI_API NativeViewId IdFromNativeView(NativeView view);
 #endif  // defined(USE_X11)
 
 

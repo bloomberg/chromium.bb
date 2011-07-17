@@ -57,4 +57,8 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return string16();
 }
 
+// static
+void ResourceBundle::SetResourcesDataDLL(HINSTANCE handle) {
+}
+
 }  // namespace ui

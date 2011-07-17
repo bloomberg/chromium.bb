@@ -8,10 +8,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/platform_font.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 
-class PlatformFontWin : public PlatformFont {
+class UI_API PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
   explicit PlatformFontWin(const Font& other);

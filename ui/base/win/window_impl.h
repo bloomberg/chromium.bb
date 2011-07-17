@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
@@ -40,7 +41,7 @@ class MessageMapInterface {
 //  Windows.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class WindowImpl : public MessageMapInterface {
+class UI_API WindowImpl : public MessageMapInterface {
  public:
   WindowImpl();
   virtual ~WindowImpl();

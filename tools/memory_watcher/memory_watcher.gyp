@@ -9,7 +9,7 @@
       'type': 'shared_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../ui/ui.gyp:ui_base',
+        '../../ui/ui.gyp:ui',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',

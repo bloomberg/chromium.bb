@@ -23,6 +23,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 class SkBitmap;
 typedef uint32 SkColor;
@@ -56,7 +57,7 @@ class DataPack;
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics.
 // Every resource is loaded only once.
-class ResourceBundle {
+class UI_API ResourceBundle {
  public:
   // An enumeration of the various font styles used throughout Chrome.
   // The following holds true for the font sizes:
@@ -142,6 +143,10 @@ class ResourceBundle {
   void ReloadFonts();
 
 #if defined(OS_WIN)
+  // NOTE: This needs to be called before initializing the shared instance if
+  // your resources are not stored in the executable.
+  static void SetResourcesDataDLL(HINSTANCE handle);
+
   // Loads and returns an icon from the app module.
   HICON LoadThemeIcon(int icon_id);
 

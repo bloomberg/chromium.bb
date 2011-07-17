@@ -6,6 +6,8 @@
 #define UI_BASE_UI_BASE_PATHS_H_
 #pragma once
 
+#include "ui/ui_api.h"
+
 // This file declares path keys for the app module.  These can be used with
 // the PathService to access various special directories and files.
 
@@ -26,7 +28,7 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-void RegisterPathProvider();
+UI_API void RegisterPathProvider();
 
 }  // namespace ui
 

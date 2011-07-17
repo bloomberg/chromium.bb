@@ -12,9 +12,11 @@
 #include <string>
 #include <vector>
 
+#include "ui/ui_api.h"
+
 namespace ui {
 
-class ClipboardUtil {
+class UI_API ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////
   // Clipboard formats.

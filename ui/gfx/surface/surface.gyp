@@ -24,7 +24,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/ui.gyp:ui_gfx',
+        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'sources': [
         'accelerated_surface_linux.cc',

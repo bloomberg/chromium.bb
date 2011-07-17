@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,16 +7,17 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/ui_api.h"
 
 typedef struct _GdkColor GdkColor;
 
 namespace gfx {
 
 // Converts GdkColors to the ARGB layout Skia expects.
-SkColor GdkColorToSkColor(GdkColor color);
+UI_API SkColor GdkColorToSkColor(GdkColor color);
 
 // Converts ARGB to GdkColor.
-GdkColor SkColorToGdkColor(SkColor color);
+UI_API GdkColor SkColorToGdkColor(SkColor color);
 
 }  // namespace gfx
 

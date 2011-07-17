@@ -18,7 +18,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/ui.gyp:ui_base',  # Only required for Font support.
+        '../ui/ui.gyp:ui',  # Only required for Font support.
       ],
       'include_dirs': [
         '..',

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 class Image;
@@ -18,12 +19,13 @@ namespace gfx {
 
 // Creates an image from the given PNG-encoded input.  The caller owns the
 // returned Image.  If there was an error creating the image, returns NULL.
-Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size);
+UI_API Image* ImageFromPNGEncodedData(const unsigned char* input,
+                                      size_t input_size);
 
 // Fills the |dst| vector with PNG-encoded bytes based on the given Image.
 // Returns true if the Image was encoded successfully.
-bool PNGEncodedDataFromImage(const Image& image,
-                             std::vector<unsigned char>* dst);
+UI_API bool PNGEncodedDataFromImage(const Image& image,
+                                    std::vector<unsigned char>* dst);
 
 }
 

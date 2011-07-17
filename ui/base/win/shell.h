@@ -9,6 +9,7 @@
 #include <windows.h>
 
 #include "base/string16.h"
+#include "ui/ui_api.h"
 
 class FilePath;
 
@@ -19,12 +20,12 @@ namespace win {
 // default application registered for the file specified by 'full_path',
 // ask the user, via the Windows "Open With" dialog.
 // Returns 'true' on successful open, 'false' otherwise.
-bool OpenItemViaShell(const FilePath& full_path);
+UI_API bool OpenItemViaShell(const FilePath& full_path);
 
 // The download manager now writes the alternate data stream with the
 // zone on all downloads. This function is equivalent to OpenItemViaShell
 // without showing the zone warning dialog.
-bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
+UI_API bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
 
 // Ask the user, via the Windows "Open With" dialog, for an application to use
 // to open the file specified by 'full_path'.
@@ -34,7 +35,7 @@ bool OpenItemWithExternalApp(const string16& full_path);
 // Sets the application id given as the Application Model ID for the window
 // specified.  This method is used to insure that different web applications
 // do not group together on the Win7 task bar.
-void SetAppIdForWindow(const string16& app_id, HWND hwnd);
+UI_API void SetAppIdForWindow(const string16& app_id, HWND hwnd);
 
 }  // namespace win
 }  // namespace ui

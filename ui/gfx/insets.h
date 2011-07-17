@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,14 @@
 #define UI_GFX_INSETS_H_
 #pragma once
 
+#include <string>
+
 #include "build/build_config.h"
+#include "ui/ui_api.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <gtk/gtkstyle.h>
 #endif
-
-#include <string>
 
 namespace gfx {
 
@@ -21,7 +22,7 @@ namespace gfx {
 // leave at each of its edges).
 //
 
-class Insets {
+class UI_API Insets {
  public:
   Insets() : top_(0), left_(0), bottom_(0), right_(0) {}
   Insets(int top, int left, int bottom, int right)

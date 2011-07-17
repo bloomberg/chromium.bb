@@ -231,7 +231,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:ui',
         '../net/net.gyp:net',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/libvpx/libvpx.gyp:libvpx_include',
@@ -679,7 +679,7 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../media/media.gyp:media',
-        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:ui',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],

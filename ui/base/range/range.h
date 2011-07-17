@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 #if defined(OS_MACOSX)
 #if __OBJC__
@@ -29,7 +30,7 @@ namespace ui {
 // position; when they are the same, the Range is akin to a caret. Note that
 // |start_| can be greater than |end_| to respect the directionality of the
 // range.
-class Range {
+class UI_API Range {
  public:
   // Creates an empty range {0,0}.
   Range();
@@ -105,7 +106,7 @@ class Range {
   size_t end_;
 };
 
-std::ostream& operator<<(std::ostream& out, const ui::Range& range);
+UI_API std::ostream& operator<<(std::ostream& out, const ui::Range& range);
 
 }  // namespace gfx
 

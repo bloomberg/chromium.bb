@@ -13,14 +13,16 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "ui/ui_api.h"
 #include "unicode/coll.h"
 
 namespace l10n_util {
 
 // Compares the two strings using the specified collator.
-UCollationResult CompareString16WithCollator(const icu::Collator* collator,
-                                             const string16& lhs,
-                                             const string16& rhs);
+UI_API UCollationResult CompareString16WithCollator(
+    const icu::Collator* collator,
+    const string16& lhs,
+    const string16& rhs);
 
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using a collator.
@@ -110,7 +112,7 @@ class StringComparator : public std::binary_function<const Element&,
 };
 
 // Specialization of operator() method for string16 version.
-template <>
+template <> UI_API
 bool StringComparator<string16>::operator()(const string16& lhs,
                                             const string16& rhs);
 

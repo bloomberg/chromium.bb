@@ -21,6 +21,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/dragdrop/download_file_interface.h"
+#include "ui/ui_api.h"
 
 class GURL;
 class Pickle;
@@ -41,7 +42,7 @@ namespace ui {
 // TabContentsViewGtk uses a different class to handle drag support that does
 // not use OSExchangeData. As such, file contents and html support is only
 // compiled on windows.
-class OSExchangeData {
+class UI_API OSExchangeData {
  public:
   // CustomFormats are used for non-standard data types. For example, bookmark
   // nodes are written using a CustomFormat.
@@ -64,7 +65,7 @@ class OSExchangeData {
   };
 
   // Encapsulates the info about a file to be downloaded.
-  struct DownloadFileInfo {
+  struct UI_API DownloadFileInfo {
     DownloadFileInfo(const FilePath& filename,
                      DownloadFileProvider* downloader);
     ~DownloadFileInfo();
@@ -75,7 +76,7 @@ class OSExchangeData {
 
   // Provider defines the platform specific part of OSExchangeData that
   // interacts with the native system.
-  class Provider {
+  class UI_API Provider {
    public:
     Provider() {}
     virtual ~Provider() {}

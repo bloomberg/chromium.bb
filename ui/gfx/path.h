@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/gfx/native_widget_types.h"
-
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 
-class Path : public SkPath {
+class UI_API Path : public SkPath {
  public:
   // Used by Path(Point,size_t) constructor.
   struct Point {

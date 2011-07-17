@@ -16,6 +16,7 @@
 
 #include "base/string16.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/ui_api.h"
 
 class Pickle;
 
@@ -25,7 +26,7 @@ namespace ui {
 // into a Clipboard::ObjectMap.
 // NB: You should probably NOT be using this class if you include
 // webkit_glue.h. Use ScopedClipboardWriterGlue instead.
-class ScopedClipboardWriter {
+class UI_API ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around clipboard.
   explicit ScopedClipboardWriter(Clipboard* clipboard);

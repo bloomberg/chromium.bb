@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_GFX_GFX_PATHS_H_
 #define UI_GFX_GFX_PATHS_H_
 #pragma once
+
+#include "ui/ui_api.h"
 
 // This file declares path keys for the app module.  These can be used with
 // the PathService to access various special directories and files.
@@ -21,7 +23,7 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-void RegisterPathProvider();
+UI_API void RegisterPathProvider();
 
 }  // namespace gfx
 

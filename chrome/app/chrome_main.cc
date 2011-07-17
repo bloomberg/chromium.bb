@@ -49,6 +49,7 @@
 
 #if defined(OS_WIN)
 #include <algorithm>
+#include <atlbase.h>
 #include <malloc.h>
 #include "base/string_util.h"
 #include "base/win/registry.h"
@@ -772,6 +773,11 @@ int ChromeMain(int argc, char** argv) {
   // happen before we process any URLs with the affected schemes, and must be
   // done in all processes that work with these URLs (i.e. including renderers).
   chrome::RegisterChromeSchemes();
+
+#if defined(OS_WIN)
+  // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
+  ResourceBundle::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
+#endif
 
   if (SubprocessNeedsResourceBundle(process_type)) {
     // Initialize ResourceBundle which handles files loaded from external

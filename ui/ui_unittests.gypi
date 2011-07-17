@@ -10,11 +10,11 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        'ui_base',
-        'ui_gfx',
+        'ui',
         'gfx_resources',
       ],
       'sources': [

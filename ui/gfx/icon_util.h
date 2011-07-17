@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include <windows.h>
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 class Size;
@@ -48,7 +50,7 @@ class SkBitmap;
 //   ::DestroyIcon(icon);
 //
 ///////////////////////////////////////////////////////////////////////////////
-class IconUtil {
+class UI_API IconUtil {
  public:
   // Given an SkBitmap object, the function converts the bitmap to a Windows
   // icon and returns the corresponding HICON handle. If the function cannot

@@ -17,7 +17,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/gl/gl.gyp:gl',
-        '../ui/ui.gyp:ui_base',
+        '../ui/ui.gyp:ui',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',

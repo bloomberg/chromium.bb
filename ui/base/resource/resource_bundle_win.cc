@@ -24,6 +24,8 @@ namespace ui {
 
 namespace {
 
+HINSTANCE resources_data_dll;
+
 // Returns the flags that should be passed to LoadLibraryEx.
 DWORD GetDataDllLoadFlags() {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA)
@@ -45,7 +47,12 @@ ResourceBundle::~ResourceBundle() {
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, set resources_data_ to the current resource module.
   DCHECK(NULL == resources_data_) << "common resources already loaded";
-  resources_data_ = _AtlBaseModule.GetResourceInstance();
+
+  if (resources_data_dll) {
+    resources_data_ = resources_data_dll;
+  } else {
+    resources_data_ = GetModuleHandle(NULL);
+  }
 }
 
 std::string ResourceBundle::LoadLocaleResources(
@@ -106,6 +113,11 @@ RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
   }
 }
 
+// static
+void ResourceBundle::SetResourcesDataDLL(HINSTANCE handle) {
+  resources_data_dll = handle;
+}
+
 HICON ResourceBundle::LoadThemeIcon(int icon_id) {
   return ::LoadIcon(resources_data_, MAKEINTRESOURCE(icon_id));
 }
@@ -113,7 +125,7 @@ HICON ResourceBundle::LoadThemeIcon(int icon_id) {
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   void* data_ptr;
   size_t data_size;
-  if (base::GetDataResourceFromModule(_AtlBaseModule.GetModuleInstance(),
+  if (base::GetDataResourceFromModule(resources_data_,
                                       resource_id,
                                       &data_ptr,
                                       &data_size)) {
@@ -137,8 +149,7 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
 
 // Loads and returns a cursor from the current module.
 HCURSOR ResourceBundle::LoadCursor(int cursor_id) {
-  return ::LoadCursor(_AtlBaseModule.GetModuleInstance(),
-                      MAKEINTRESOURCE(cursor_id));
+  return ::LoadCursor(resources_data_, MAKEINTRESOURCE(cursor_id));
 }
 
 string16 ResourceBundle::GetLocalizedString(int message_id) {
@@ -159,8 +170,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   if (!image) {
     // Fall back on the current module (shouldn't be any strings here except
     // in unittests).
-    image = AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(),
-                                      message_id);
+    image = AtlGetStringResourceImage(resources_data_, message_id);
     if (!image) {
       // See http://crbug.com/21925.
       base::debug::StackTrace().PrintBacktrace();

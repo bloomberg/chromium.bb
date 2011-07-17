@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 #define UI_GFX_WIN_UTIL_H_
 #pragma once
 
+#include "ui/ui_api.h"
+
 namespace gfx {
 
 // Returns true if Direct2d is available, false otherwise.
-bool Direct2dIsAvailable();
+UI_API bool Direct2dIsAvailable();
 
 // Returns true if DirectWrite is available, false otherwise.
 bool DirectWriteIsAvailable();

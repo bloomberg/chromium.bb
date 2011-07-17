@@ -45,7 +45,7 @@ namespace ui {
 //  private:
 //   scoped_ptr<SlideAnimation> animation_;
 // }
-class SlideAnimation : public LinearAnimation {
+class UI_API SlideAnimation : public LinearAnimation {
  public:
   explicit SlideAnimation(AnimationDelegate* target);
   virtual ~SlideAnimation();

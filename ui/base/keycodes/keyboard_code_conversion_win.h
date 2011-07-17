@@ -7,12 +7,13 @@
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
 // Methods to convert ui::KeyboardCode/Windows virtual key type methods.
-WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
-KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
+UI_API WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
+UI_API KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
 
 }  // namespace ui
 

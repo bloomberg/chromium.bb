@@ -8,6 +8,7 @@
 
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ui_api.h"
 
 namespace gfx {
 
@@ -29,7 +30,7 @@ class Size;
 //
 // NativeTheme also supports getting the default size of a given part with
 // the GetPartSize() method.
-class NativeTheme {
+class UI_API NativeTheme {
  public:
   // The part to be painted / sized.
   enum Part {

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/ui_api.h"
 
 typedef unsigned long Atom;
 typedef struct _GdkDrawable GdkWindow;
@@ -36,9 +37,9 @@ namespace ui {
 // These functions cache their results ---------------------------------
 
 // Check if there's an open connection to an X server.
-bool XDisplayExists();
+UI_API bool XDisplayExists();
 // Return an X11 connection for the current, primary display.
-Display* GetXDisplay();
+UI_API Display* GetXDisplay();
 
 // X shared memory comes in three flavors:
 // 1) No SHM support,
@@ -50,10 +51,10 @@ enum SharedMemorySupport {
   SHARED_MEMORY_PIXMAP
 };
 // Return the shared memory type of our X connection.
-SharedMemorySupport QuerySharedMemorySupport(Display* dpy);
+UI_API SharedMemorySupport QuerySharedMemorySupport(Display* dpy);
 
 // Return true iff the display supports Xrender
-bool QueryRenderSupport(Display* dpy);
+UI_API bool QueryRenderSupport(Display* dpy);
 
 // Return the default screen number for the display
 int GetDefaultScreen(Display* display);
@@ -61,31 +62,31 @@ int GetDefaultScreen(Display* display);
 // These functions do not cache their results --------------------------
 
 // Get the X window id for the default root window
-XID GetX11RootWindow();
+UI_API XID GetX11RootWindow();
 // Returns the user's current desktop.
 bool GetCurrentDesktop(int* desktop);
 // Get the X window id for the given GTK widget.
-XID GetX11WindowFromGtkWidget(GtkWidget* widget);
+UI_API XID GetX11WindowFromGtkWidget(GtkWidget* widget);
 XID GetX11WindowFromGdkWindow(GdkWindow* window);
 // Get a Visual from the given widget. Since we don't include the Xlib
 // headers, this is returned as a void*.
-void* GetVisualFromGtkWidget(GtkWidget* widget);
+UI_API void* GetVisualFromGtkWidget(GtkWidget* widget);
 // Return the number of bits-per-pixel for a pixmap of the given depth
-int BitsPerPixelForPixmapDepth(Display* display, int depth);
+UI_API int BitsPerPixelForPixmapDepth(Display* display, int depth);
 // Returns true if |window| is visible.
-bool IsWindowVisible(XID window);
+UI_API bool IsWindowVisible(XID window);
 // Returns the bounds of |window|.
-bool GetWindowRect(XID window, gfx::Rect* rect);
+UI_API bool GetWindowRect(XID window, gfx::Rect* rect);
 // Return true if |window| has any property with |property_name|.
-bool PropertyExists(XID window, const std::string& property_name);
+UI_API bool PropertyExists(XID window, const std::string& property_name);
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
 bool GetIntProperty(XID window, const std::string& property_name, int* value);
 bool GetIntArrayProperty(XID window, const std::string& property_name,
                          std::vector<int>* value);
-bool GetAtomArrayProperty(XID window, const std::string& property_name,
-                          std::vector<Atom>* value);
-bool GetStringProperty(
+UI_API bool GetAtomArrayProperty(XID window, const std::string& property_name,
+                                 std::vector<Atom>* value);
+UI_API bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value);
 
 // Get |window|'s parent window, or None if |window| is the root window.
@@ -113,11 +114,12 @@ class EnumerateWindowsDelegate {
 
 // Enumerates all windows in the current display.  Will recurse into child
 // windows up to a depth of |max_depth|.
-bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth);
+UI_API bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate,
+                                int max_depth);
 
 // Returns all children windows of a given window in top-to-bottom stacking
 // order.
-bool GetXWindowStack(XID window, std::vector<XID>* windows);
+UI_API bool GetXWindowStack(XID window, std::vector<XID>* windows);
 
 // Restack a window in relation to one of its siblings.  If |above| is true,
 // |window| will be stacked directly above |sibling|; otherwise it will stacked
@@ -127,36 +129,38 @@ void RestackWindow(XID window, XID sibling, bool above);
 
 // Return a handle to a X ShmSeg. |shared_memory_key| is a SysV
 // IPC key. The shared memory region must contain 32-bit pixels.
-XSharedMemoryId AttachSharedMemory(Display* display, int shared_memory_support);
-void DetachSharedMemory(Display* display, XSharedMemoryId shmseg);
+UI_API XSharedMemoryId AttachSharedMemory(Display* display,
+                                          int shared_memory_support);
+UI_API void DetachSharedMemory(Display* display, XSharedMemoryId shmseg);
 
 // Return a handle to an XRender picture where |pixmap| is a handle to a
 // pixmap containing Skia ARGB data.
-XID CreatePictureFromSkiaPixmap(Display* display, XID pixmap);
+UI_API XID CreatePictureFromSkiaPixmap(Display* display, XID pixmap);
 
 // Draws ARGB data on the given pixmap using the given GC, converting to the
 // server side visual depth as needed.  Destination is assumed to be the same
 // dimensions as |data| or larger.  |data| is also assumed to be in row order
 // with each line being exactly |width| * 4 bytes long.
-void PutARGBImage(Display* display, void* visual, int depth, XID pixmap,
-                  void* pixmap_gc, const uint8* data, int width, int height);
+UI_API void PutARGBImage(Display* display, void* visual, int depth, XID pixmap,
+                         void* pixmap_gc, const uint8* data, int width,
+                         int height);
 
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
 // Get the window manager name.
-bool GetWindowManagerName(std::string* name);
+UI_API bool GetWindowManagerName(std::string* name);
 
 // Change desktop for |window| to the desktop of |destination| window.
-bool ChangeWindowDesktop(XID window, XID destination);
+UI_API bool ChangeWindowDesktop(XID window, XID destination);
 
 // Enable the default X error handlers. These will log the error and abort
 // the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h
 // to set your own error handlers.
-void SetDefaultX11ErrorHandlers();
+UI_API void SetDefaultX11ErrorHandlers();
 
 // Return true if a given window is in full-screen mode.
-bool IsX11WindowFullScreen(XID window);
+UI_API bool IsX11WindowFullScreen(XID window);
 
 }  // namespace ui
 

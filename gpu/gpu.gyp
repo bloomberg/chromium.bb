@@ -186,7 +186,7 @@
         '../base/base.gyp:base',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/gfx/surface/surface.gyp:surface',
-        '../ui/ui.gyp:ui_gfx',
+        '../ui/ui.gyp:ui',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [
@@ -254,6 +254,7 @@
       'target_name': 'gpu_unittests',
       'type': 'executable',
       'dependencies': [
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gmock.gyp:gmock_main',
         '../testing/gtest.gyp:gtest',
@@ -371,6 +372,7 @@
             'target_name': 'gles2_demo',
             'type': 'executable',
             'dependencies': [
+              '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
               'command_buffer_service',
               'gles2_demo_lib',
             ],
