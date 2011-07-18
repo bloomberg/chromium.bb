@@ -21,6 +21,10 @@ class PatchException(Exception):
   """Exception thrown by GetGerritPatchInfo."""
   pass
 
+class ApplyPatchException(Exception):
+  """Exception thrown if we fail to apply a patch."""
+  pass
+
 
 class Patch(object):
   def __init__(self, project, tracking_branch):
@@ -72,13 +76,21 @@ class GerritPatch(Patch):
 
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
 
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
-    cros_lib.RunCommand(['git', 'checkout', '--no-track',
-                         '-b', constants.PATCH_BRANCH,
-                         'FETCH_HEAD'], cwd=project_dir)
+    try:
+      cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
+      cros_lib.RunCommand(['git', 'checkout', '--no-track',
+                           '-b', constants.PATCH_BRANCH,
+                           'FETCH_HEAD'], cwd=project_dir)
 
-    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'rebase', manifest_branch], cwd=project_dir)
+      manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
+      cros_lib.RunCommand(['git', 'rebase', manifest_branch], cwd=project_dir)
+    except cros_lib.RunCommandError as e:
+      raise ApplyPatchException(e)
+
+  def __str__(self):
+    """Returns custom string to identify this patch."""
+    return '%s:%s' % (self.project, self.id)
+
 
 
 def RemovePatchRoot(patch_root):
@@ -121,10 +133,13 @@ class LocalPatch(Patch):
                               manifest_branch))
 
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
-    cros_lib.RunCommand(['repo', 'start', constants.PATCH_BRANCH, '.'],
-                        cwd=project_dir)
-    cros_lib.RunCommand(['git', 'am', '--3way'] + self._GetFileList(),
-                        cwd=project_dir)
+    try:
+      cros_lib.RunCommand(['repo', 'start', constants.PATCH_BRANCH, '.'],
+                          cwd=project_dir)
+      cros_lib.RunCommand(['git', 'am', '--3way'] + self._GetFileList(),
+                          cwd=project_dir)
+    except cros_lib.RunCommandError as e:
+      raise ApplyPatchException(e)
 
 
 def GetGerritPatchInfo(patches):
@@ -200,7 +215,7 @@ def PrepareLocalPatches(patches, manifest_branch):
     project, branch = patches[id].split(':')
     project_dir = cros_lib.GetProjectDir('.', project)
 
-    patch_dir =  os.path.join(patch_root, str(id))
+    patch_dir = os.path.join(patch_root, str(id))
     cmd = ['git', 'format-patch', '%s..%s' % ('m/' + manifest_branch, branch),
            '-o', patch_dir]
     cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
