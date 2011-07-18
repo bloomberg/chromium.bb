@@ -29,7 +29,7 @@ class WorkersUITest : public InProcessBrowserTest {
 
 // The test fails on Mac OS X, see crbug.com/89583
 #if defined(OS_MACOSX)
-#define MAYBE_SharedWorkersList FAILS_SharedWorkersList
+#define MAYBE_SharedWorkersList DISABLED_SharedWorkersList
 #else
 #define MAYBE_SharedWorkersList SharedWorkersList
 #endif
