@@ -7,14 +7,6 @@ Import('env')
 
 import sys
 
-# browser_debug disabled:
-# http://code.google.com/p/nativeclient/issues/detail?id=1956
-# TODO(elijahtaylor) This test can't run on our bots if we don't register
-# the plugin we just built.  Depends on:
-# http://code.google.com/p/chromium/issues/detail?id=85070
-# http://code.google.com/p/nativeclient/issues/detail?id=1917
-Return()
-
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
@@ -48,10 +40,21 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('debug_stub_test.py'), '-v'],
     osenv=env_vars,
     extra_deps=dependencies)
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test')
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
+                       # TODO(mseaborn): Make this work with dynamic linking.
+                       is_broken=not env.Bit('nacl_static_link'))
+
 
 # Test debug_stub in Chrome -- currently this ONLY works on Windows
-is_broken = not env.Bit('host_windows')
+#is_broken = not env.Bit('host_windows')
+
+# browser_debug disabled:
+# http://code.google.com/p/nativeclient/issues/detail?id=1956
+# TODO(elijahtaylor) This test can't run on our bots if we don't register
+# the plugin we just built.  Depends on:
+# http://code.google.com/p/chromium/issues/detail?id=85070
+# http://code.google.com/p/nativeclient/issues/detail?id=1917
+is_broken = True
 
 # Build .nexe to be used with debug_in_browswer test
 browser_test_target = 'debug_browser_test_%s' % env.get('TARGET_FULLARCH')
