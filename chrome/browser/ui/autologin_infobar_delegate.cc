@@ -190,10 +190,17 @@ void AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded(const std::string& account,
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
 
   // Make sure that the account specified matches the logged in user.
-  // However, account is usually empty.
+  // However, account is usually empty.  In an incognito window, there may
+  // not be a profile sync service and/or signin manager.
+  if (!tab_contents_wrapper->tab_contents()->profile()->HasProfileSyncService())
+    return;
+
   SigninManager* signin_manager =
       tab_contents_wrapper->tab_contents()->profile()->
           GetProfileSyncService()->signin();
+  if (!signin_manager)
+    return;
+
   const std::string& username = signin_manager->GetUsername();
   if (!account.empty() && (username != account))
     return;
