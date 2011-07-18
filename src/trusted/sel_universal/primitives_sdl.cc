@@ -325,7 +325,8 @@ class JobSdlEventPoll: public Job {
 // is that SDL requires certain calls to be made from the same thread
 class MultimediaSDL : public IMultimedia {
  public:
-  MultimediaSDL(int width, int heigth, const char* title) {
+  MultimediaSDL(int width, int heigth, const char* title)
+    : video_width_(width), video_height_(heigth) {
     NaClLog(2, "MultimediaSDL::Constructor\n");
     sdl_workqueue_.StartInAnotherThread();
     JobSdlInit job(&sdl_info_, width, heigth, title);
@@ -337,6 +338,14 @@ class MultimediaSDL : public IMultimedia {
     JobSdlQuit job(&sdl_info_);
     sdl_workqueue_.JobPut(&job);
     job.Wait();
+  }
+
+  virtual int VideoWidth() {
+    return video_width_;
+  }
+
+  virtual int VideoHeight() {
+    return video_height_;
   }
 
   virtual int VideoBufferSize() {
@@ -423,6 +432,8 @@ class MultimediaSDL : public IMultimedia {
   }
 
  private:
+  int video_width_;
+  int video_height_;
   ThreadedWorkQueue sdl_workqueue_;
   SDLInfo sdl_info_;
 };

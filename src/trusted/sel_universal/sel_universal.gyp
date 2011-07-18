@@ -16,6 +16,7 @@
                     'pepper_emu_handler.cc',
                     'pepper_emu_helper.cc',
                     'pepper_emu_postmessage.cc',
+                    'pepper_emu_2d.cc',
                     'pepper_emu_3d_stub.cc',
                     'primitives_simple.cc',
                     'replay_handler.cc',

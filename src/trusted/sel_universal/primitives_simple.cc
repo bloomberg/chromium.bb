@@ -43,9 +43,8 @@ class ScopedMutexLock {
 
 class EmuPrimitivesSimple : public IMultimedia {
  public:
-  EmuPrimitivesSimple(int width, int heigth, const char* title) {
-    UNREFERENCED_PARAMETER(width);
-    UNREFERENCED_PARAMETER(heigth);
+  EmuPrimitivesSimple(int width, int heigth, const char* title)
+    : video_width_(width), video_height_(heigth) {
     UNREFERENCED_PARAMETER(title);
     NaClLog(2, "PrimitivesSimpleL::Constructor\n");
     NaClXMutexCtor(&mutex_);
@@ -53,6 +52,14 @@ class EmuPrimitivesSimple : public IMultimedia {
   }
 
   virtual ~EmuPrimitivesSimple() {
+  }
+
+  virtual int VideoWidth() {
+    return video_width_;
+  }
+
+  virtual int VideoHeight() {
+    return video_height_;
   }
 
   virtual int VideoBufferSize() {
@@ -119,6 +126,8 @@ class EmuPrimitivesSimple : public IMultimedia {
   }
 
  private:
+  int video_width_;
+  int video_height_;
   NaClMutex mutex_;
   NaClSemaphore sem_;
   std::queue<PP_InputEvent> queue_;

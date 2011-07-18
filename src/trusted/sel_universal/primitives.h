@@ -58,6 +58,8 @@ class IMultimedia {
   virtual ~IMultimedia() {}
 
   virtual int VideoBufferSize() = 0;
+  virtual int VideoWidth() = 0;
+  virtual int VideoHeight() = 0;
   // Trigger a frame update in the multimedia system
   virtual void VideoUpdate(const void* data) = 0;
   // Inject a userevent into the event buffer.

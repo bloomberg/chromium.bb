@@ -4,9 +4,10 @@
  * found in the LICENSE file.
  */
 
-// initialize post-message sub-system for use with sel_universal
-// for now we just print the post-message content on the screen for debugging
-
+// This file defines hooks for all pepper related srpc calls
+// involving images and 2d graphicss.
+// TODO(robertm): This is for experimentation and testing. We are not
+// concerned about descriptor and memory leaks
 
 #include <string.h>
 #include <string>
@@ -17,6 +18,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/common/gles2_cmd_ids_autogen.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 #include "ppapi/c/pp_input_event.h"
@@ -58,6 +60,15 @@ Resource<DataContext3dTrusted> GlobalContext3dTrustedResources(
 Resource<DataSurface3D> GlobalSurface3DResources(
   kFirstSurface3dHandle, "surface3d");
 
+const char* GetCommandName(int command_id) {
+  if (gpu::gles2::kStartPoint < command_id &&
+      command_id < gpu::gles2::kNumCommands) {
+    return gpu::gles2::GetCommandName(
+      static_cast<gpu::gles2::CommandId>(command_id));
+  }
+
+  return gpu::cmd::GetCommandName(static_cast<gpu::cmd::CommandId>(command_id));
+}
 
 static int DumpBuffers(gpu::CommandBufferService* command_buffer, int start) {
   gpu::Buffer ring_buffer = command_buffer->GetRingBuffer();
@@ -66,15 +77,13 @@ static int DumpBuffers(gpu::CommandBufferService* command_buffer, int start) {
     reinterpret_cast<gpu::CommandBufferEntry *>(ring_buffer.ptr);
   int num_entries = ring_buffer.size / 4;
   int i = start;
-  while (i < num_entries) {
+  while (1) {
     gpu::CommandHeader header = buffer[i].value_header;
-    gpu::gles2::CommandId id =
-      static_cast<gpu::gles2::CommandId>(header.command);
-    printf("[%d] %d %d %s\n",
+    printf("[%3d] %3d %3d %s\n",
            i,
            header.command,
            header.size,
-           gpu::gles2::GetCommandName(id));
+           GetCommandName(header.command));
     if (header.size == 0) {
       return i;
     }
@@ -107,7 +116,7 @@ void PPB_Context3DTrusted_Initialize(SRPC_PARAMS) {
 
   NaClLog(1, "PPB_Context3DTrusted_Initialize(%d, %d)\n", handle, size);
   DataContext3dTrusted* context3d =
-   GlobalContext3dTrustedResources.GetDataForHandle(handle);
+    GlobalContext3dTrustedResources.GetDataForHandle(handle);
   base::SharedMemory* shmem = new base::SharedMemory();
   shmem->CreateAnonymous(size);
   context3d->command_buffer = new gpu::CommandBufferService();
@@ -267,12 +276,24 @@ void PPB_Surface3D_Create(SRPC_PARAMS) {
 void PPB_Context3D_BindSurfaces(SRPC_PARAMS) {
   const int handle = ins[0]->u.ival;
   const int draw = ins[1]->u.ival;
-  const int read = ins[1]->u.ival;
+  const int read = ins[2]->u.ival;
   NaClLog(1, "PPB_Context3D_BindSurfaces(%d, %d, %d)\n",
           handle, draw, read);
 
   outs[0]->u.ival = 1;
   NaClLog(1, "PPB_Context3D_BindSurfaces -> %d\n", outs[0]->u.ival);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
+}
+
+
+// PPB_Surface3D_SwapBuffers:ii:i
+void PPB_Surface3D_SwapBuffers(SRPC_PARAMS) {
+  const int buf1 = ins[0]->u.ival;
+  const int buf2 = ins[1]->u.ival;
+
+  NaClLog(1, "PPB_Surface3D_SwapBuffers(%d, %d)\n", buf1, buf2);
+  outs[0]->u.ival = 1;
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -295,11 +316,11 @@ void PepperEmuInit3D(NaClCommandLoop* ncl, IMultimedia* im) {
   ncl->AddUpcallRpc(TUPLE(PPB_Context3D_BindSurfaces, :iii:i));
 
   ncl->AddUpcallRpc(TUPLE(PPB_Surface3D_Create, :iiI:i));
+  ncl->AddUpcallRpc(TUPLE(PPB_Surface3D_SwapBuffers, :ii:i));
 
 #if 0
   // NYI
   ncl->AddUpcallRpc(TUPLE(PPB_Context3DTrusted_Flush, :ii:));
   ncl->AddUpcallRpc(TUPLE(PPB_Context3DTrusted_DestroyTransferBuffer, :ii:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Surface3D_SwapBuffers, :ii:i));
 #endif
 }

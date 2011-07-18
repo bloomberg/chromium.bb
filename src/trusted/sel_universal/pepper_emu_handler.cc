@@ -32,7 +32,7 @@
 #include "native_client/src/third_party/ppapi/c/pp_size.h"
 #include "native_client/src/third_party/ppapi/c/ppb_audio.h"
 #include "native_client/src/third_party/ppapi/c/ppb_audio_config.h"
-#include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
+
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -52,15 +52,12 @@ using nacl::DescWrapper;
 // ======================================================================
 const int kInvalidInstance = 0;
 const int kInvalidHandle = 0;
-const int kFirstImageDataHandle = 100;
-const int kFirstGraphicsHandle = 200;
 const int kFirstAudioHandle = 300;
 const int kFirstAudioConfigHandle = 400;
 const int kBytesPerSample = 4;  // 16-bit stereo
 
 const int kRecommendSampleFrameCount = 2048;
 const int kMaxAudioBufferSize = 0x10000;
-const int kBytesPerPixel = 4;
 
 // ======================================================================
 
@@ -68,17 +65,6 @@ const int kBytesPerPixel = 4;
 // we expect them to be zero initialized.
 static struct {
   int instance;
-
-  // video stuff
-  int screen_width;
-  int screen_height;
-
-  int handle_graphics;
-  int handle_image_data;
-  int image_data_size;
-
-  nacl::DescWrapper* desc_video_shmem;
-  void* addr_video;
 
   // audio stuff
   int handle_audio;
@@ -117,178 +103,6 @@ static void AudioCallBack(void* data, unsigned char* buffer, int length) {
   // ping sync socket
   int value = 0;
   Global.desc_audio_sync_in->Write(&value, sizeof value);
-}
-
-// From the ImageData API
-// PP_Resource Create(PP_Instance instance,
-//                    PP_ImageDataFormat format,
-//                    const struct PP_Size* size,
-//                    PP_Bool init_to_zero);
-// PPB_ImageData_Create:iiCi:i
-//
-// TODO(robertm) this function can currently be called only once
-//               and the dimension must match the global values
-//               and the format is fixed.
-static void PPB_ImageData_Create(SRPC_PARAMS) {
-  const int instance = ins[0]->u.ival;
-  const int format = ins[1]->u.ival;
-  CHECK(ins[2]->u.count == sizeof(PP_Size));
-  PP_Size* img_size = (PP_Size*) ins[2]->arrays.carr;
-  NaClLog(1, "PPB_ImageData_Create(%d, %d, %d, %d)\n",
-          instance, format, img_size->width, img_size->height);
-
-  CHECK(Global.handle_image_data == kInvalidHandle);
-  Global.handle_image_data = kFirstImageDataHandle;
-  CHECK(Global.instance != kInvalidInstance);
-  CHECK(instance == Global.instance);
-  CHECK(format == PP_IMAGEDATAFORMAT_BGRA_PREMUL);
-
-  CHECK(Global.screen_width == img_size->width);
-  CHECK(Global.screen_height == img_size->height);
-  Global.image_data_size = kBytesPerPixel * img_size->width * img_size->height;
-
-  nacl::DescWrapperFactory factory;
-  Global.desc_video_shmem = factory.MakeShm(Global.image_data_size);
-  size_t dummy_size;
-
-  if (Global.desc_video_shmem->Map(&Global.addr_video, &dummy_size)) {
-    NaClLog(LOG_FATAL, "cannot map video shmem\n");
-  }
-
-  if (ins[3]->u.ival) {
-    memset(Global.addr_video, 0, Global.image_data_size);
-  }
-
-  outs[0]->u.ival = Global.handle_image_data;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the ImageData API
-// PP_Bool Describe(PP_Resource image_data,
-//                  struct PP_ImageDataDesc* desc);
-// PPB_ImageData_Describe:i:Chii
-static void PPB_ImageData_Describe(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_ImageData_Describe(%d)\n", handle);
-  CHECK(handle == Global.handle_image_data);
-
-  PP_ImageDataDesc d;
-  d.format = PP_IMAGEDATAFORMAT_BGRA_PREMUL;
-  d.size.width =  Global.screen_width;
-  d.size.height = Global.screen_height;
-  // we handle only rgba data -> each pixel is 4 bytes.
-  d.stride = Global.screen_width * kBytesPerPixel;
-  outs[0]->u.count = sizeof(d);
-  outs[0]->arrays.carr = reinterpret_cast<char*>(calloc(1, sizeof(d)));
-  memcpy(outs[0]->arrays.carr, &d, sizeof(d));
-
-  outs[1]->u.hval = Global.desc_video_shmem->desc();
-  outs[2]->u.ival = Global.image_data_size;
-  outs[3]->u.ival = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Graphics2D API
-// PP_Resource Create(PP_Instance instance,
-//                    const struct PP_Size* size,
-//                    PP_Bool is_always_opaque);
-// PPB_Graphics2D_Create:iCi:i
-//
-// TODO(robertm) This function can currently be called only once
-//               The size must be the same as the one provided via
-//                HandlerSDLInitialize()
-static void PPB_Graphics2D_Create(SRPC_PARAMS) {
-  int instance = ins[0]->u.ival;
-  NaClLog(1, "PPB_Graphics2D_Create(%d)\n", instance);
-  CHECK(Global.handle_graphics == kInvalidHandle);
-  Global.handle_graphics = kFirstGraphicsHandle;
-  CHECK(instance == Global.instance);
-  PP_Size* img_size = reinterpret_cast<PP_Size*>(ins[1]->arrays.carr);
-  CHECK(Global.screen_width == img_size->width);
-  CHECK(Global.screen_height == img_size->height);
-  // TODO(robertm):  is_always_opaque is currently ignored
-  outs[0]->u.ival = Global.handle_graphics;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// PP_Bool BindGraphics(PP_Instance instance, PP_Resource device);
-// PPB_Instance_BindGraphics:ii:i
-static void PPB_Instance_BindGraphics(SRPC_PARAMS) {
-  int instance = ins[0]->u.ival;
-  int handle = ins[1]->u.ival;
-  NaClLog(1, "PPB_Instance_BindGraphics(%d, %d)\n",
-          instance, handle);
-  CHECK(instance == Global.instance);
-  CHECK(handle == Global.handle_graphics);
-  outs[0]->u.ival = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Graphics2D API
-// void ReplaceContents(PP_Resource graphics_2d,
-//                      PP_Resource image_data);
-// PPB_Graphics2D_ReplaceContents:ii:
-//
-// NOTE: this is completely ignored and we postpone all action to "Flush"
-static void PPB_Graphics2D_ReplaceContents(SRPC_PARAMS) {
-  int handle_graphics = ins[0]->u.ival;
-  int handle_image_data = ins[1]->u.ival;
-  UNREFERENCED_PARAMETER(outs);
-  NaClLog(1, "PPB_Graphics2D_ReplaceContents(%d, %d)\n",
-          handle_graphics, handle_image_data);
-  CHECK(handle_graphics == Global.handle_graphics);
-  CHECK(handle_image_data == Global.handle_image_data);
-
-  // For now assume this will be immediately followed by a Flush
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Graphics2D API
-// void PaintImageData(PP_Resource graphics_2d,
-//                     PP_Resource image_data,
-//                     const struct PP_Point* top_left,
-//                     const struct PP_Rect* src_rect);
-// PPB_Graphics2D_PaintImageData:iiCC:
-//
-// NOTE: this is completely ignored and we postpone all action to "Flush"
-//       Furhermore we assume that entire image is painted
-static void PPB_Graphics2D_PaintImageData(SRPC_PARAMS) {
-  int handle_graphics = ins[0]->u.ival;
-  int handle_image_data = ins[1]->u.ival;
-  UNREFERENCED_PARAMETER(outs);
-  NaClLog(1, "PPB_Graphics2D_PaintImageData(%d, %d)\n",
-          handle_graphics, handle_image_data);
-  CHECK(handle_graphics == Global.handle_graphics);
-  CHECK(handle_image_data == Global.handle_image_data);
-
-  // For now assume this will be immediately followed by a Flush
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the Graphics2D API
-// int32_t Flush(PP_Resource graphics_2d,
-//               struct PP_CompletionCallback callback);
-// PPB_Graphics2D_Flush:ii:i
-static void PPB_Graphics2D_Flush(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  int callback_id = ins[1]->u.ival;
-  NaClLog(1, "PPB_Graphics2D_Flush(%d, %d)\n", handle, callback_id);
-  CHECK(handle == Global.handle_graphics);
-  outs[0]->u.ival = -1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-
-  Global.sdl_engine->VideoUpdate(Global.addr_video);
-  NaClLog(1, "pushing user event for callback (%d)\n", callback_id);
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_FLUSH_CALLBACK, callback_id, 0, 0, 0);
-  Global.sdl_engine->PushUserEvent(&event);
 }
 
 // From the PPB_Audio API
@@ -488,30 +302,18 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleRate, :i:i));
   ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleFrameCount, :i:i));
 
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Create, :iCi:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_ReplaceContents, :ii:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_PaintImageData, :iiCC:));
-  ncl->AddUpcallRpc(TUPLE(PPB_Graphics2D_Flush, :ii:i));
-
-  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Describe, :i:Chii));
-  ncl->AddUpcallRpc(TUPLE(PPB_ImageData_Create, :iiCi:i));
-
-  ncl->AddUpcallRpc(TUPLE(PPB_Instance_BindGraphics, :ii:i));
-
-
   Global.instance = ExtractInt32(args[1]);
-  Global.screen_width = ExtractInt32(args[2]);
-  Global.screen_height = ExtractInt32(args[3]);
   Global.title = args[4];
 
   // NOTE: we decide at linktime which incarnation to use here
-  Global.sdl_engine = MakeEmuPrimitives(Global.screen_width,
-                                        Global.screen_height,
+  Global.sdl_engine = MakeEmuPrimitives(ExtractInt32(args[2]),
+                                        ExtractInt32(args[3]),
                                         Global.title.c_str());
   PepperEmuInitCore(ncl, Global.sdl_engine);
   PepperEmuInitFileIO(ncl, Global.sdl_engine);
   PepperEmuInitPostMessage(ncl, Global.sdl_engine);
   PepperEmuInit3D(ncl, Global.sdl_engine);
+  PepperEmuInit2D(ncl, Global.sdl_engine);
   return true;
 }
 
