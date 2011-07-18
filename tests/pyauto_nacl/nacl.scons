@@ -71,6 +71,7 @@ ppapi_gles_book_texture_wrap_files = [
 ppapi_ppb_core_files = CreateDefaultDeps('ppapi_ppb_core')
 ppapi_ppb_file_system_files = CreateDefaultDeps('ppapi_ppb_file_system')
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
+ppapi_ppb_image_data_files = CreateDefaultDeps('ppapi_ppb_image_data')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
 ppapi_test_example_files = CreateDefaultDeps('ppapi_test_example')
@@ -123,6 +124,7 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_ppb_core_files +
                    ppapi_ppb_file_system_files +
                    ppapi_ppb_graphics2d_files +
+                   ppapi_ppb_image_data_files +
                    ppapi_progress_events_files +
                    ppapi_tests_files +
                    srpc_basic_files +

@@ -100,6 +100,9 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayPPBGraphics2D(self):
     self.surfAway('ppapi_ppb_graphics2d.html', 'PPAPI')
 
+  def testSurfAwayPPBImageData(self):
+    self.surfAway('ppapi_ppb_image_data.html', 'PPAPI')
+
   def testSurfAwayPPBFileSystem(self):
     self.surfAway('ppapi_ppb_file_system.html', 'PPAPI')
 

@@ -38,6 +38,7 @@ class NaClTest(pyauto.PyUITest):
            ('ppapi_ppb_core.html', 1),
            ('ppapi_ppb_file_system.html', 1),
            ('ppapi_ppb_graphics2d.html', 1),
+           ('ppapi_ppb_image_data.html', 1),
            ('srpc_basic.html', 1),
            ('srpc_hw.html', 1),
            ('srpc_nrd_xfer.html', 2),
