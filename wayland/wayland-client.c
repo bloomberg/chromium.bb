@@ -521,6 +521,11 @@ handle_event(struct wl_display *display,
 	closure = wl_connection_demarshal(display->connection,
 					  size, display->objects, message);
 
+	if (closure == NULL) {
+		fprintf(stderr, "Error demarshalling event: %m\n");
+		abort();
+	}
+
 	if (wl_debug)
 		wl_closure_print(closure, &proxy->object, false);
 
