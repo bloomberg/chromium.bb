@@ -798,24 +798,6 @@ else:
                                                                 TARGET_NAME)
 pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
 
-# TODO(robertm): eliminate this for the trust env
-def FixupArmEnvironment():
-  """ Glean settings by invoking setup scripts and capturing environment."""
-  nacl_dir = Dir('#/').abspath
-  sys.path.append('tools/llvm')
-  from setup_arm_trusted_toolchain import arm_env, shell_exports
-  sys.path.pop()
-
-  for key, value in arm_env.iteritems():
-    if key in shell_exports:
-      os.environ[key] = value
-
-# Source setup bash scripts and glean the settings.
-if (pre_base_env.Bit('target_arm') and
-    not pre_base_env.Bit('built_elsewhere') and
-    ARGUMENTS.get('naclsdk_mode') != 'manual'):
-  FixupArmEnvironment()
-
 # Valgrind
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
                        'IsRunningUnderValgrind')
@@ -1790,16 +1772,6 @@ if pre_base_env.Bit('dangerous_debug_disable_inner_sandbox'):
       CPPDEFINES=['DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX'],
       )
 
-# ----------------------------------------------------------
-def CheckPlatformPreconditions():
-  "Check and fail fast if platform-specific preconditions are unmet."
-
-  if base_env.Bit('target_arm') and (base_env.Bit('build_x86_32') or
-                                     base_env.Bit('build_x86_64')):
-      assert os.getenv('NACL_SDK_CC'), (
-          "NACL_SDK_CC undefined. "
-          "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
-
 
 # ----------------------------------------------------------
 def GetAbsDirArg(env, argument, target):
@@ -1899,9 +1871,6 @@ def MakeBaseTrustedEnv():
     )
 
   base_env.AddMethod(SDKInstallTrusted)
-
-  # TODO(adonovan): re-enable this and test it once the build is fixed.
-  # CheckPlatformPreconditions()
 
   # The ARM validator can be built for any target that doesn't use ELFCLASS64.
   if not base_env.Bit('target_x86_64'):
@@ -2261,14 +2230,25 @@ def MakeLinuxEnv():
                      '-Wl,-z,now'],
         )
   elif linux_env.Bit('build_arm'):
-    linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
-                      CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
-                      LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                      EMULATOR=os.getenv('ARM_EMU', ''),
+    if not linux_env.Bit('built_elsewhere'):
+      # TODO(mseaborn): It would be clearer just to inline
+      # setup_arm_trusted_toolchain.py here.
+      sys.path.append('tools/llvm')
+      from setup_arm_trusted_toolchain import arm_env
+      sys.path.pop()
+    else:
+      arm_env = {}
+    # Allow env vars to override these settings, for what it's worth.
+    arm_env = arm_env.copy()
+    arm_env.update(os.environ)
+    linux_env.Replace(CC=arm_env.get('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
+                      CXX=arm_env.get('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
+                      LD=arm_env.get('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
+                      EMULATOR=arm_env.get('ARM_EMU', ''),
                       ASFLAGS=[],
                       LIBPATH=['${LIB_DIR}',
-                               os.getenv('ARM_LIB_DIR', '').split()],
-                      LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
+                               arm_env.get('ARM_LIB_DIR', '').split()],
+                      LINKFLAGS=arm_env.get('ARM_LINKFLAGS', ''),
                       )
 
     linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'],
