@@ -553,6 +553,15 @@ ACCEPTABLE_TEST_SUITES = set([
   'performance_tests',
   ])
 
+# Under --mode=nacl_irt_test we build variants of numerous tests normally
+# built under --mode=nacl.  The test names and suite names for these
+# variants are set (in IrtTestAddNodeToTestSuite, below) by appending _irt
+# to the names used for the --mode=nacl version of the same tests.
+MAJOR_TEST_SUITES |= set([name + '_irt'
+                          for name in MAJOR_TEST_SUITES])
+ACCEPTABLE_TEST_SUITES |= set([name + '_irt'
+                               for name in ACCEPTABLE_TEST_SUITES])
+
 # The major test suites are also acceptable names.  Suite names are checked
 # against this set in order to catch typos.
 ACCEPTABLE_TEST_SUITES.update(MAJOR_TEST_SUITES)
@@ -1394,6 +1403,8 @@ def ShouldUseVerboseOptions(extra):
           'log_golden' in extra)
 
 # ----------------------------------------------------------
+DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
+
 def CommandSelLdrTestNacl(env, name, nexe,
                           args = None,
                           log_verbosity=2,
@@ -1447,7 +1458,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     # Enable file access.
     sel_ldr_flags += ['-a']
 
-  if env.Bit('irt') and uses_ppapi:
+  if env.Bit('tests_use_irt') or (env.Bit('irt') and uses_ppapi):
     sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
   command = [sel_ldr] + sel_ldr_flags + ['--'] + command
@@ -1455,7 +1466,10 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
-  return CommandTest(env, name, command, size, posix_path=True, **extra)
+  node = CommandTest(env, name, command, size, posix_path=True, **extra)
+  if env.Bit('tests_use_irt'):
+    env.Alias('irt_tests', node)
+  return node
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
@@ -2517,6 +2531,11 @@ nacl_env.Append(
     'src/untrusted/nacl/nacl.scons',
     'src/untrusted/ppapi/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
+    ####  ALPHABETICALLY SORTED ####
+    ])
+
+non_browser_tests = [
+    #### ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',
@@ -2525,14 +2544,12 @@ nacl_env.Append(
     'tests/browser_startup_time/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
-    'tests/chrome_extension/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/debug_stub/nacl.scons',
     'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/dynamic_linking/nacl.scons',
-    'tests/earth/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
     'tests/fake_browser/nacl.scons',
@@ -2543,10 +2560,7 @@ nacl_env.Append(
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
-    'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
-    'tests/inbrowser_crash_test/nacl.scons',
-    'tests/inbrowser_test_runner/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',
@@ -2555,7 +2569,6 @@ nacl_env.Append(
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
-    'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nameservice/nacl.scons',
     'tests/nanosleep/nacl.scons',
@@ -2568,6 +2581,37 @@ nacl_env.Append(
     'tests/plugin_async_messaging/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_client_translator/nacl.scons',
+    'tests/redir/nacl.scons',
+    'tests/rodata_not_writable/nacl.scons',
+    'tests/signal_handler/nacl.scons',
+    'tests/srpc/nacl.scons',
+    'tests/srpc_hw/nacl.scons',
+    'tests/srpc_message/nacl.scons',
+    'tests/stack_alignment/nacl.scons',
+    'tests/startup_message/nacl.scons',
+    'tests/stubout_mode/nacl.scons',
+    'tests/sysbasic/nacl.scons',
+    'tests/syscall_return_sandboxing/nacl.scons',
+    'tests/syscalls/nacl.scons',
+    'tests/threads/nacl.scons',
+    'tests/time/nacl.scons',
+    'tests/tls/nacl.scons',
+    'tests/toolchain/nacl.scons',
+    'tests/unittests/shared/imc/nacl.scons',
+    'tests/unittests/shared/platform/nacl.scons',
+    'tests/unittests/shared/srpc/nacl.scons',
+    'tests/untrusted_check/nacl.scons',
+    #### ALPHABETICALLY SORTED ####
+    ]
+
+browser_tests = [
+    #### ALPHABETICALLY SORTED ####
+    'tests/chrome_extension/nacl.scons',
+    'tests/earth/nacl.scons',
+    'tests/imc_shm_mmap/nacl.scons',
+    'tests/inbrowser_crash_test/nacl.scons',
+    'tests/inbrowser_test_runner/nacl.scons',
+    'tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
@@ -2594,28 +2638,10 @@ nacl_env.Append(
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
-    'tests/redir/nacl.scons',
-    'tests/rodata_not_writable/nacl.scons',
-    'tests/signal_handler/nacl.scons',
-    'tests/srpc/nacl.scons',
-    'tests/srpc_hw/nacl.scons',
-    'tests/srpc_message/nacl.scons',
-    'tests/stack_alignment/nacl.scons',
-    'tests/startup_message/nacl.scons',
-    'tests/stubout_mode/nacl.scons',
-    'tests/sysbasic/nacl.scons',
-    'tests/syscall_return_sandboxing/nacl.scons',
-    'tests/syscalls/nacl.scons',
-    'tests/threads/nacl.scons',
-    'tests/time/nacl.scons',
-    'tests/tls/nacl.scons',
-    'tests/toolchain/nacl.scons',
-    'tests/unittests/shared/imc/nacl.scons',
-    'tests/unittests/shared/srpc/nacl.scons',
-    'tests/unittests/shared/platform/nacl.scons',
-    'tests/untrusted_check/nacl.scons',
-    ####  ALPHABETICALLY SORTED ####
-    ])
+    #### ALPHABETICALLY SORTED ####
+    ]
+
+nacl_env.Append(BUILD_SCONSCRIPTS=non_browser_tests + browser_tests)
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it
@@ -2830,6 +2856,51 @@ nacl_irt_env.Append(
 
 environment_list.append(nacl_irt_env)
 
+# Since browser_tests already use the IRT normally, those are fully covered
+# in nacl_env.  But the non_browser_tests don't use the IRT in nacl_env.
+# We want additional variants of those tests with the IRT, so we make
+# another environment and repeat them with that adjustment.
+nacl_irt_test_env = nacl_env.Clone(
+    BUILD_TYPE = 'nacl_irt_test',
+    BUILD_TYPE_DESCRIPTION = 'NaCl tests build with IRT',
+    NACL_BUILD_FAMILY = 'UNTRUSTED_IRT_TESTS',
+
+    INCLUDE_DIR = nacl_env.Dir('${INCLUDE_DIR}'),
+    LIB_DIR = nacl_env.Dir('${LIB_DIR}'),
+
+    BUILD_SCONSCRIPTS = non_browser_tests
+    )
+nacl_irt_test_env.SetBits('irt')
+nacl_irt_test_env.SetBits('tests_use_irt')
+nacl_irt_test_env.Append(_LIBFLAGS=['-lppapi'])
+if nacl_env.Bit('nacl_static_link'):
+  nacl_env['BROWSER_LIB'] = 'libppapi.a'
+else:
+  nacl_env['BROWSER_LIB'] = 'libppapi.so'
+if 'IMPLICIT_LIBS' not in nacl_irt_test_env:
+  nacl_irt_test_env['IMPLICIT_LIBS'] = []
+nacl_irt_test_env['IMPLICIT_LIBS'].append(
+    nacl_env.File(os.path.join('${LIB_DIR}', '${BROWSER_LIB}'))
+    )
+
+# If a tests/.../nacl.scons file builds a library, we will just use
+# the one already built in nacl_env instead.
+def IrtTestDummyLibrary(*args, **kwargs):
+  pass
+nacl_irt_test_env.AddMethod(IrtTestDummyLibrary, 'ComponentLibrary')
+
+def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
+                              is_broken=False, is_flaky=False):
+  if node_name is not None:
+    node_name += '_irt'
+  suite_name = [name + '_irt' for name in suite_name]
+  return AddNodeToTestSuite(env, node, suite_name, node_name,
+                            is_broken, is_flaky)
+nacl_irt_test_env.AddMethod(IrtTestAddNodeToTestSuite, 'AddNodeToTestSuite')
+
+environment_list.append(nacl_irt_test_env)
+
+
 windows_coverage_env = MakeWindowsEnv().Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-win',
@@ -3005,6 +3076,10 @@ selected_envs = FilterEnvironments(environment_list)
 # changed to list '...,nacl,nacl_irt' explicitly.
 if nacl_env in selected_envs:
   selected_envs.append(nacl_irt_env)
+
+# The nacl_irt_test_env requires nacl_env to build things correctly.
+if nacl_irt_test_env in selected_envs and nacl_env not in selected_envs:
+  selected_envs.append(nacl_env)
 
 DumpEnvironmentInfo(selected_envs)
 LinkTrustedEnv(selected_envs)
