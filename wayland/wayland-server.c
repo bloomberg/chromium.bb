@@ -313,7 +313,7 @@ wl_client_post_global(struct wl_client *client, struct wl_object *object)
 	wl_client_post_event(client,
 			     &client->display->object,
 			     WL_DISPLAY_GLOBAL,
-			     object,
+			     object->id,
 			     object->interface->name,
 			     object->interface->version);
 }
