@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,26 @@
 
 namespace webkit_blob {
 
+namespace {
+
+// We can't use GURL directly for these hash fragment manipulations
+// since it doesn't have specific knowlege of the BlobURL format. GURL
+// treats BlobURLs as if they were PathURLs which don't support hash
+// fragments.
+
+bool BlobUrlHasRef(const GURL& url) {
+  return url.spec().find('#') != std::string::npos;
+}
+
+GURL ClearBlobUrlRef(const GURL& url) {
+  size_t hash_pos = url.spec().find('#');
+  if (hash_pos == std::string::npos)
+    return url;
+  return GURL(url.spec().substr(0, hash_pos));
+}
+
+}  // namespace
+
 BlobStorageController::BlobStorageController() {
 }
 
@@ -19,6 +39,9 @@ BlobStorageController::~BlobStorageController() {
 
 void BlobStorageController::RegisterBlobUrl(
     const GURL& url, const BlobData* blob_data) {
+  DCHECK(url.SchemeIs("blob"));
+  DCHECK(!BlobUrlHasRef(url));
+
   scoped_refptr<BlobData> target_blob_data(new BlobData());
   target_blob_data->set_content_type(blob_data->content_type());
   target_blob_data->set_content_disposition(blob_data->content_disposition());
@@ -66,6 +89,9 @@ void BlobStorageController::RegisterBlobUrl(
 
 void BlobStorageController::RegisterBlobUrlFrom(
     const GURL& url, const GURL& src_url) {
+  DCHECK(url.SchemeIs("blob"));
+  DCHECK(!BlobUrlHasRef(url));
+
   BlobData* blob_data = GetBlobDataFromUrl(src_url);
   DCHECK(blob_data);
   if (!blob_data)
@@ -79,7 +105,8 @@ void BlobStorageController::UnregisterBlobUrl(const GURL& url) {
 }
 
 BlobData* BlobStorageController::GetBlobDataFromUrl(const GURL& url) {
-  BlobMap::iterator found = blob_map_.find(url.spec());
+  BlobMap::iterator found = blob_map_.find(
+      BlobUrlHasRef(url) ? ClearBlobUrlRef(url).spec() : url.spec());
   return (found != blob_map_.end()) ? found->second : NULL;
 }
 
