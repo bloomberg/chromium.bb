@@ -131,7 +131,7 @@
       margin: 0 10px 0 0;
     }
 
-    input[type="number"] {
+    input.port {
       width: 50px;
       margin: 2px 10px 0 5px;
     }
@@ -235,7 +235,7 @@
             <input type="text" name="proxyHostHttp" id="proxyHostHttp">
 
             <label for="proxyPortHttp">Port</label>
-            <input type="number" min="1" step="1" name="proxyPortHttp" id="proxyPortHttp">
+            <input type="text" name="proxyPortHttp" id="proxyPortHttp" class="port">
 
             <input type="checkbox" name="singleProxyForEverything" id="singleProxyForEverything">
             <label for="singleProxyForEverything">Use the same proxy server for all protocols</label>
@@ -252,7 +252,7 @@
             <input type="text" name="proxyHostHttps" id="proxyHostHttps">
 
             <label for="proxyPortHttps">Port</label>
-            <input type="number" min="1" step="1" name="proxyPortHttps" id="proxyPortHttps">
+            <input type="text" name="proxyPortHttps" id="proxyPortHttps" class="port">
           </fieldset>
           <fieldset>
             <legend>FTP</legend>
@@ -266,7 +266,7 @@
             <input type="text" name="proxyHostFtp" id="proxyHostFtp">
 
             <label for="proxyPortFtp">Port</label>
-            <input type="number" min="1" step="1" name="proxyPortFtp" id="proxyPortFtp">
+            <input type="text" name="proxyPortFtp" id="proxyPortFtp" class="port">
           </fieldset>
           <fieldset>
             <legend>Fallback</legend>
@@ -280,7 +280,7 @@
             <input type="text" name="proxyHostFallback" id="proxyHostFallback">
 
             <label for="proxyPortFallback">Port</label>
-            <input type="number" min="1" step="1" name="proxyPortFallback" id="proxyPortFallback">
+            <input type="text" name="proxyPortFallback" id="proxyPortFallback" class="port">
           </fieldset>
           <fieldset>
             <label for="bypassList">Bypass proxy for these hosts:</label>
