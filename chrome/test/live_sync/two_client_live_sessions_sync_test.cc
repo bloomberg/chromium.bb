@@ -156,8 +156,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
+// Flaky (number of conflicting nodes is off). http://crbug.com/89604.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FirstChangesWhileSecondWaitingForPassphrase) {
+                       FLAKY_FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
