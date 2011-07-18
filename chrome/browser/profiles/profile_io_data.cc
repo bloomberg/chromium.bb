@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -548,6 +549,12 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ResourceDispatcherHost::CancelRequestsForContext,
+          base::Unretained(g_browser_process->resource_dispatcher_host()),
+          &resource_context_));
   bool posted = BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                                         new ReleaseTask<ProfileIOData>(this));
   if (!posted)

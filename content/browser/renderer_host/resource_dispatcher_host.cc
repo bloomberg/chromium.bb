@@ -947,6 +947,82 @@ void ResourceDispatcherHost::CancelRequestsForRoute(int child_id,
   }
 }
 
+void ResourceDispatcherHost::CancelRequestsForContext(
+    const content::ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(context);
+
+  // Note that request cancellation has side effects. Therefore, we gather all
+  // the requests to cancel first, and then we start cancelling. We assert at
+  // the end that there are no more to cancel since the context is about to go
+  // away.
+  std::vector<net::URLRequest*> requests_to_cancel;
+  for (PendingRequestList::iterator i = pending_requests_.begin();
+       i != pending_requests_.end();) {
+    ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
+    if (info->context() == context) {
+      requests_to_cancel.push_back(i->second);
+      pending_requests_.erase(i++);
+    } else {
+      ++i;
+    }
+  }
+
+  for (BlockedRequestMap::iterator i = blocked_requests_map_.begin();
+       i != blocked_requests_map_.end();) {
+    BlockedRequestsList* requests = i->second;
+    DCHECK(!requests->empty());
+    ResourceDispatcherHostRequestInfo* info =
+        InfoForRequest(requests->front());
+    if (info->context() == context) {
+      blocked_requests_map_.erase(i++);
+      for (BlockedRequestsList::const_iterator it = requests->begin();
+           it != requests->end(); ++it) {
+        net::URLRequest* request = *it;
+        info = InfoForRequest(request);
+        // We make the assumption that all requests on the list have the same
+        // ResourceContext.
+        DCHECK_EQ(context, info->context());
+        IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
+                                               info->child_id());
+        requests_to_cancel.push_back(request);
+      }
+      delete requests;
+    } else {
+      ++i;
+    }
+  }
+
+  for (std::vector<net::URLRequest*>::iterator i = requests_to_cancel.begin();
+       i != requests_to_cancel.end(); ++i) {
+    net::URLRequest* request = *i;
+    ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
+    // There is no strict requirement that this be the case, but currently
+    // downloads are the only requests that aren't cancelled when the associated
+    // processes go away. It may be OK for this invariant to change in the
+    // future, but if this assertion fires without the invariant changing, then
+    // it's indicative of a leak.
+    DCHECK(info->is_download());
+    delete request;
+  }
+
+  // Validate that no more requests for this context were added.
+  for (PendingRequestList::const_iterator i = pending_requests_.begin();
+       i != pending_requests_.end(); ++i) {
+    ResourceDispatcherHostRequestInfo* info = InfoForRequest(i->second);
+    DCHECK_NE(info->context(), context);
+  }
+
+  for (BlockedRequestMap::const_iterator i = blocked_requests_map_.begin();
+       i != blocked_requests_map_.end(); ++i) {
+    BlockedRequestsList* requests = i->second;
+    DCHECK(!requests->empty());
+    ResourceDispatcherHostRequestInfo* info =
+        InfoForRequest(requests->front());
+    DCHECK_NE(info->context(), context);
+  }
+}
+
 // Cancels the request and removes it from the list.
 void ResourceDispatcherHost::RemovePendingRequest(int child_id,
                                                   int request_id) {

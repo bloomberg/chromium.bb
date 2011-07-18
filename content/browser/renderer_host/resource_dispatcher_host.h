@@ -166,6 +166,11 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // acts like CancelRequestsForProcess when route_id is -1.
   void CancelRequestsForRoute(int process_unique_id, int route_id);
 
+  // Force cancels any pending requests for the given |context|. This is
+  // necessary to ensure that before |context| goes away, all requests
+  // for it are dead.
+  void CancelRequestsForContext(const content::ResourceContext* context);
+
   // net::URLRequest::Delegate
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
