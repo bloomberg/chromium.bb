@@ -388,6 +388,9 @@ cmd_pch_mm = $(CC.$(TOOLSET)) $(GYP_PCH_OBJCXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 # Use #(3) for the command, since $(2) is used as flag by do_cmd already.
 quiet_cmd_mac_tool = MACTOOL $(3) $<
 cmd_mac_tool = ./gyp-mac-tool $(3) $< "$@"
+
+quiet_cmd_mac_package_framework = PACKAGE FRAMEWORK $@
+cmd_mac_package_framework = ./gyp-mac-tool package-framework "$@" $(3)
 """
 
 
@@ -790,7 +793,7 @@ class XcodeSettings(object):
     return ldflags
 
   @staticmethod
-  def GetPerTargetSetting(spec, setting):
+  def GetPerTargetSetting(spec, setting, default=None):
     """Tries to get xcode_settings.setting from spec. Assumes that the setting
        has the same value in all configurations and throws otherwise."""
     first_pass = True
@@ -802,7 +805,11 @@ class XcodeSettings(object):
         result = config.get('xcode_settings', {}).get(setting, None)
         first_pass = False
       else:
-        assert result == config.get('xcode_settings', {}).get(setting, None)
+        assert result == config.get('xcode_settings', {}).get(setting, None), (
+            "Expected per-target setting for '%s', got per-config setting "
+            "(target %s" % (setting, spec['target_name']))
+    if result is None:
+      return default
     return result
 
 
@@ -956,7 +963,12 @@ class MakefileWriter:
     extra_mac_bundle_resources = []
     mac_bundle_deps = []
 
-    self.output = self.ComputeOutput(spec)
+    if self.is_mac_bundle:
+      self.output = self.ComputeMacBundleOutput(spec)
+      self.output_binary = self.ComputeMacBundleBinaryOutput(spec)
+    else:
+      self.output = self.output_binary = self.ComputeOutput(spec)
+
     self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
                                  'shared_library')
     if self.type in self._INSTALLABLE_TARGETS:
@@ -1014,15 +1026,19 @@ class MakefileWriter:
             self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
         self.WriteLn('# End of this set of suffix rules')
 
-    self.WriteTarget(spec, configs, deps,
-                     extra_link_deps + link_deps, extra_outputs, part_of_all)
+        # Add dependency from bundle to bundle binary.
+        if self.is_mac_bundle:
+          mac_bundle_deps.append(self.output_binary)
+
+    self.WriteTarget(spec, configs, deps, extra_link_deps + link_deps,
+                     mac_bundle_deps, extra_outputs, part_of_all)
 
     # Update global list of target outputs, used in dependency tracking.
     target_outputs[qualified_target] = install_path
 
     # Update global list of link dependencies.
     if self.type in ('static_library', 'shared_library'):
-      target_link_deps[qualified_target] = self.output
+      target_link_deps[qualified_target] = self.output_binary
 
     # Currently any versions have the same effect, but in future the behavior
     # could be different.
@@ -1429,7 +1445,8 @@ class MakefileWriter:
     E.g., the loadable module 'foobar' in directory 'baz' will produce
       '$(obj)/baz/libfoobar.so'
     """
-    output = None
+    assert not self.is_mac_bundle
+
     target = spec['target_name']
     target_prefix = ''
     target_ext = ''
@@ -1471,6 +1488,35 @@ class MakefileWriter:
     return os.path.join(path, target_prefix + target + target_ext)
 
 
+  def ComputeMacBundleOutput(self, spec):
+    """Return the 'output' (full output path) to a bundle output directory."""
+    assert self.is_mac_bundle
+    path = generator_default_variables['PRODUCT_DIR']
+    if self.type in ('loadable_module', 'shared_library'):
+      wrapper_extension = XcodeSettings.GetPerTargetSetting(
+          spec, 'WRAPPER_EXTENSION', default='framework')
+      extension = spec.get('product_extension', wrapper_extension)
+      path = os.path.join(path,
+          spec.get('product_name', self.target) + '.' + extension)
+    elif self.type == 'executable':
+      path = os.path.join(path, spec.get('product_name', self.target) + '.app')
+    else:
+      print ("ERROR: Cannot bundle type", self.type, "for target", self.target)
+    return path
+
+
+  def ComputeMacBundleBinaryOutput(self, spec):
+    """Return the 'output' (full output path) to the binary in a bundle."""
+    assert self.is_mac_bundle
+    assert self.output, "Must be called after ComputeMacBundleOutput"
+    if self.type in ('loadable_module', 'shared_library'):
+      version = self.GetFrameworkVersion(spec)
+      path = os.path.join(self.output, 'Versions', version)
+    elif self.type == 'executable':
+      path = os.path.join(self.output, 'Contents', 'MacOS')
+    return os.path.join(path, spec.get('product_name', self.target))
+
+
   def ComputeDeps(self, spec):
     """Compute the dependencies of a gyp spec.
 
@@ -1493,8 +1539,14 @@ class MakefileWriter:
     return (gyp.common.uniquer(deps), gyp.common.uniquer(link_deps))
 
 
-  def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs,
-                  part_of_all):
+  def WriteDependencyOnExtraOutputs(self, target, extra_outputs):
+    self.WriteMakeRule([self.output_binary], extra_outputs,
+                       comment = 'Build our special outputs first.',
+                       order_only = True)
+
+
+  def WriteTarget(self, spec, configs, deps, link_deps, bundle_deps,
+                  extra_outputs, part_of_all):
     """Write Makefile code to produce the final target of the gyp spec.
 
     spec, configs: input from gyp.
@@ -1506,9 +1558,7 @@ class MakefileWriter:
     self.WriteLn('### Rules for final target.')
 
     if extra_outputs:
-      self.WriteMakeRule([self.output], extra_outputs,
-                         comment = 'Build our special outputs first.',
-                         order_only = True)
+      self.WriteDependencyOnExtraOutputs(self.output_binary, extra_outputs)
       self.WriteMakeRule(extra_outputs, deps,
                          comment=('Preserve order dependency of '
                                   'special output on deps.'),
@@ -1535,20 +1585,48 @@ class MakefileWriter:
               if library.endswith('.framework') else library
               for library in libraries]
       self.WriteList(libraries, 'LIBS')
-      self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output)
-      self.WriteLn('%s: LIBS := $(LIBS)' % self.output)
+      self.WriteLn(
+          '%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output_binary)
+      self.WriteLn('%s: LIBS := $(LIBS)' % self.output_binary)
+
+    # A bundle directory depends on its dependencies such as bundle resources
+    # and bundle binary. When all dependencies have been built, the bundle
+    # needs to be packaged.
+    if self.is_mac_bundle:
+      # If the framework doesn't contain a binary, then nothing depends
+      # on the actions -- make the framework depend on them directly too.
+      self.WriteDependencyOnExtraOutputs(self.output, extra_outputs)
+
+      # Bundle dependencies. Note that the code below adds actions to this
+      # target, so if you move these two lines, move the lines below as well.
+      self.WriteList(bundle_deps, 'BUNDLE_DEPS')
+      self.WriteLn('%s: $(BUNDLE_DEPS)' % self.output)
+
+      # After the framework is built, package it. Needs to happen before
+      # postbuilds, since postbuilds depend on this.
+      if self.type in ['shared_library', 'loadable_module']:
+        self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
+            self.GetFrameworkVersion(spec))
+
+      # Since this target depends on binary and resources which are in
+      # nested subfolders, the framework directory will be older than
+      # its dependencies usually. To prevent this rule from executing
+      # on every build (expensive, especially with postbuilds), expliclity
+      # update the time on the framework directory.
+      self.WriteLn('\t@touch %s' % self.output)
 
     if self.type == 'executable':
-      self.WriteDoCmd([self.output], link_deps, 'link', part_of_all)
+      self.WriteDoCmd([self.output_binary], link_deps, 'link', part_of_all)
     elif self.type == 'static_library':
-      self.WriteDoCmd([self.output], link_deps, 'alink', part_of_all)
+      self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all)
     elif self.type == 'shared_library':
-      self.WriteDoCmd([self.output], link_deps, 'solink', part_of_all)
+      self.WriteDoCmd([self.output_binary], link_deps, 'solink', part_of_all)
     elif self.type == 'loadable_module':
-      self.WriteDoCmd([self.output], link_deps, 'solink_module', part_of_all)
+      self.WriteDoCmd(
+          [self.output_binary], link_deps, 'solink_module', part_of_all)
     elif self.type == 'none':
       # Write a stamp line.
-      self.WriteDoCmd([self.output], deps, 'touch', part_of_all)
+      self.WriteDoCmd([self.output_binary], deps, 'touch', part_of_all)
     elif self.type == 'settings':
       # Only used for passing flags around.
       pass
@@ -1577,10 +1655,16 @@ class MakefileWriter:
         file_desc = 'executable'
       install_path = self._InstallableTargetInstallPath()
       installable_deps = [self.output]
+      if self.is_mac_bundle:
+        # Bundles are created in their install_path location immediately.
+        assert install_path == self.output, '%s != %s' % (
+            install_path, self.output)
+
       # Point the target alias to the final binary output.
       self.WriteMakeRule([self.target], [install_path],
                          comment='Add target alias', phony = True)
       if install_path != self.output:
+        assert not self.is_mac_bundle  # See comment a few lines above.
         self.WriteDoCmd([install_path], [self.output], 'copy',
                         comment = 'Copy this to the %s output path.' %
                         file_desc, part_of_all=part_of_all)
@@ -1771,9 +1855,8 @@ class MakefileWriter:
     """Returns the framework version of the current target. Only valid for
     bundles."""
     assert self.is_mac_bundle
-    version = XcodeSettings.GetPerTargetSetting(spec, 'FRAMEWORK_VERSION')
-    if not version:
-      version = 'A'
+    version = XcodeSettings.GetPerTargetSetting(
+        spec, 'FRAMEWORK_VERSION', default='A')
     return version
 
 
