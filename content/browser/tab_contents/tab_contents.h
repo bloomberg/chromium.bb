@@ -39,7 +39,6 @@ class Rect;
 }
 
 class DownloadItem;
-class Extension;
 class LoadNotificationDetails;
 class Profile;
 struct RendererPreferences;
@@ -107,13 +106,8 @@ class TabContents : public PageNavigator,
   // NavigationController).
   Profile* profile() const { return controller_.profile(); }
 
-  // Returns true if contains content rendered by an extension.
-  bool HostsExtension() const;
-
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
-
-  // Returns the SavePackage which manages the page saving job. May be NULL.
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.

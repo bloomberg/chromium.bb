@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -215,8 +216,13 @@ bool TaskManagerTabContentsResource::IsPrerendering() const {
              tab_contents_->tab_contents());
 }
 
+bool TaskManagerTabContentsResource::HostsExtension() const {
+  return tab_contents_->tab_contents()->GetURL().SchemeIs(
+      chrome::kExtensionScheme);
+}
+
 TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
-  return tab_contents_->tab_contents()->HostsExtension() ? EXTENSION : RENDERER;
+  return HostsExtension() ? EXTENSION : RENDERER;
 }
 
 string16 TaskManagerTabContentsResource::GetTitle() const {
@@ -251,7 +257,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
 
   int message_id = GetMessagePrefixID(
       is_app,
-      contents->HostsExtension(),
+      HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord(),
       IsPrerendering());
   return l10n_util::GetStringFUTF16(message_id, tab_title);
@@ -268,7 +274,7 @@ TabContentsWrapper* TaskManagerTabContentsResource::GetTabContents() const {
 }
 
 const Extension* TaskManagerTabContentsResource::GetExtension() const {
-  if (tab_contents_->tab_contents()->HostsExtension()) {
+  if (HostsExtension()) {
     ExtensionService* extensions_service =
         tab_contents_->profile()->GetExtensionService();
     return extensions_service->GetExtensionByURL(

@@ -303,11 +303,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-// Returns true if contains content rendered by an extension.
-bool TabContents::HostsExtension() const {
-  return GetURL().SchemeIs(chrome::kExtensionScheme);
-}
-
 RenderProcessHost* TabContents::GetRenderProcessHost() const {
   return render_manager_.current_host()->process();
 }

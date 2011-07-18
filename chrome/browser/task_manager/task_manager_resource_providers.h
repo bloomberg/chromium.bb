@@ -103,6 +103,9 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  private:
   bool IsPrerendering() const;
 
+  // Returns true if contains content rendered by an extension.
+  bool HostsExtension() const;
+
   static SkBitmap* prerender_icon_;
   TabContentsWrapper* tab_contents_;
 
