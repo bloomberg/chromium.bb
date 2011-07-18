@@ -6,7 +6,7 @@
 #define NET_BASE_NET_API_H_
 #pragma once
 
-// Defines NET_API so that funtionality implemented by the net module can be
+// Defines NET_API so that functionality implemented by the net module can be
 // exported to consumers, and NET_TEST that allows unit tests to access features
 // not intended to be used directly by real consumers.
 
