@@ -9,8 +9,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-#include <vector>
-
 class ImporterBridge;
 
 namespace importer {
@@ -38,13 +36,6 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
 
   Importer();
   virtual ~Importer();
-
-  // Given raw image data, decodes the icon, re-sampling to the correct size as
-  // necessary, and re-encodes as PNG data in the given output vector. Returns
-  // true on success.
-  static bool ReencodeFavicon(const unsigned char* src_data,
-                              size_t src_len,
-                              std::vector<unsigned char>* png_data);
 
   scoped_refptr<ImporterBridge> bridge_;
 

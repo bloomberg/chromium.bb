@@ -19,6 +19,7 @@
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_util.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
@@ -569,7 +570,7 @@ void Firefox3Importer::LoadFavicons(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!importer::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;

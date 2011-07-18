@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
+#include "chrome/browser/importer/importer_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -179,7 +180,7 @@ void SafariImporter::LoadFaviconData(
       if (data.empty())
         continue;  // Data definitely invalid.
 
-      if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+      if (!importer::ReencodeFavicon(&data[0], data.size(), &usage.png_data))
         continue;  // Unable to decode.
 
       usage.urls = i->second;
