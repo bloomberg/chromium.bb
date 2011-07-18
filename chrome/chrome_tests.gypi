@@ -3570,6 +3570,9 @@
       # Executable that contains all the tests to be run on the GPU bots.
       'target_name': 'gpu_tests',
       'type': 'executable',
+      'variables': {
+        'test_list_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome/test/gpu',
+      },
       'dependencies': [
         'browser',
         'chrome',
@@ -3590,6 +3593,7 @@
       ],
       'include_dirs': [
         '..',
+        '<(test_list_out_dir)',
       ],
       'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
       'sources': [
@@ -3597,6 +3601,29 @@
         'browser/gpu_crash_browsertest.cc',
         'test/out_of_proc_test_runner.cc',
         'test/gpu/webgl_conformance_tests.cc',
+        '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
+      ],
+      # hard_dependency is necessary for this target because it has actions
+      # that generate a header file included by dependent targets. The header
+      # file must be generated before the dependents are compiled. The usual
+      # semantics are to allow the two targets to build concurrently.
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'generate_webgl_conformance_test_list',
+          'inputs': [
+            'test/gpu/generate_webgl_conformance_test_list.py',
+            '<!@(python test/gpu/generate_webgl_conformance_test_list.py --input)',
+          ],
+          'outputs': [
+            '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
+          ],
+          'action': [
+            'python',
+            'test/gpu/generate_webgl_conformance_test_list.py',
+            '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
+          ],
+        },
       ],
       'conditions': [
         ['OS=="win"', {
