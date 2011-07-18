@@ -16,7 +16,8 @@
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : ChromeWebUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()),
-      request_count_(0U) {
+      request_count_(0U),
+      document_cookie_(0) {
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
   AddMessageHandler(handler_->Attach(this));
@@ -54,8 +55,10 @@ void PrintPreviewUI::OnPrintPreviewRequest() {
   request_count_++;
 }
 
-void PrintPreviewUI::OnDidGetPreviewPageCount(int page_count) {
+void PrintPreviewUI::OnDidGetPreviewPageCount(int document_cookie,
+                                              int page_count) {
   DCHECK_GT(page_count, 0);
+  document_cookie_ = document_cookie;
   FundamentalValue count(page_count);
   CallJavascriptFunction("onDidGetPreviewPageCount", count);
 }
@@ -116,7 +119,10 @@ PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
 }
 
 void PrintPreviewUI::DecrementRequestCount() {
-  DCHECK_GT(request_count_, 0U);
   if (request_count_ > 0)
     request_count_--;
+}
+
+int PrintPreviewUI::document_cookie() {
+  return document_cookie_;
 }

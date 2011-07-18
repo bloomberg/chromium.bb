@@ -170,6 +170,11 @@ IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
 // Tells a renderer to stop blocking script initiated printing.
 IPC_MESSAGE_ROUTED0(PrintMsg_ResetScriptedPrintCount)
 
+// Tells a renderer to continue generating the print preview.
+IPC_MESSAGE_ROUTED0(PrintMsg_ContinuePreview)
+
+// Tells a renderer to abort the print preview and reset all state.
+IPC_MESSAGE_ROUTED0(PrintMsg_AbortPreview)
 
 // Messages sent from the renderer to the browser.
 
@@ -234,19 +239,19 @@ IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
 IPC_MESSAGE_ROUTED0(PrintHostMsg_RequestPrintPreview)
 
 // Notify the browser the number of pages in the print preview document.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,
+IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPreviewPageCount,
+                    int  /* document cookie */,
                     int  /* page count */)
 
 // Notify the browser a print preview page has been rendered. Give the browser
 // a chance to cancel the print preview as needed. Page number is zero-based,
 // and can be -1 if it is just a check.
-IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPreviewPage,
-                           int  /* page number */,
-                           bool /* print preview cancelled */)
+IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,
+                    int  /* page number */)
 
-// Sends back to the browser the rendered "printed document" for preview that
-// was requested by a PrintMsg_PrintPreview message. The memory handle in this
-// message is already valid in the browser process.
+// Sends back to the browser the complete rendered document for print preview
+// that was requested by a PrintMsg_PrintPreview message. The memory handle in
+// this message is already valid in the browser process.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_PagesReadyForPreview,
                     PrintHostMsg_DidPreviewDocument_Params /* params */)
 
@@ -256,8 +261,4 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintingFailed,
 
 // Tell the browser print preview failed.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewFailed,
-                    int /* document cookie */)
-
-// Tell the browser print preview was cancelled.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewCancelled,
                     int /* document cookie */)

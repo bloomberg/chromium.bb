@@ -123,93 +123,23 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-bool PrintWebViewHelper::CreatePreviewDocument(
-    const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
-    WebKit::WebNode* node) {
-  if (!PreviewPageRendered(-1))
-    return false;
-
-  PrintMsg_Print_Params print_params = params.params;
-  UpdatePrintableSizeInPrintParameters(frame, node, &print_params);
-  PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node,
-                                              frame->view());
-  if (!PreviewPageRendered(-1))
-    return false;
-
-  preview_page_count_ = prep_frame_view.GetExpectedPageCount();
-  if (!preview_page_count_)
-    return false;
-  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(),
-                                               preview_page_count_));
-
-  scoped_ptr<Metafile> metafile(new printing::PreviewMetafile);
-  metafile->Init();
-
+void PrintWebViewHelper::RenderPreviewPage(int page_number) {
+  PrintMsg_Print_Params print_params = print_preview_context_.print_params();
   // Calculate the dpi adjustment.
-  float shrink = static_cast<float>(print_params.desired_dpi /
-                                    print_params.dpi);
+  float scale_factor = static_cast<float>(print_params.desired_dpi /
+                                          print_params.dpi);
+  // Needed for RenderPage() below.
+  // Not taking ownership with intent to reset().
+  scoped_ptr<Metafile> metafile(print_preview_context_.metafile());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  base::TimeTicks page_begin_time = begin_time;
-
-  if (params.pages.empty()) {
-    for (int i = 0; i < preview_page_count_; ++i) {
-      float scale_factor = shrink;
-      RenderPage(print_params, &scale_factor, i, true, frame, &metafile);
-      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
-      if (!PreviewPageRendered(i))
-        return false;
-    }
-  } else {
-    for (size_t i = 0; i < params.pages.size(); ++i) {
-      if (params.pages[i] >= preview_page_count_)
-        break;
-      float scale_factor = shrink;
-      RenderPage(print_params, &scale_factor, params.pages[i], true, frame,
-                 &metafile);
-      page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
-      if (!PreviewPageRendered(params.pages[i]))
-        return false;
-    }
-  }
-
-  base::TimeDelta render_time = base::TimeTicks::Now() - begin_time;
-
-  // Ensure that printing has finished before we start cleaning up and
-  // allocating buffers; this causes prep_frame_view to flush anything pending
-  // into the metafile. Then we can get the final size and copy it into a
-  // shared segment.
-  prep_frame_view.FinishPrinting();
-
-  if (!metafile->FinishDocument())
-    NOTREACHED();
-
-  ReportTotalPreviewGenerationTime(params.pages.size(),
-                                   preview_page_count_,
-                                   render_time,
-                                   base::TimeTicks::Now() - begin_time);
-
-  // Get the size of the compiled metafile.
-  uint32 buf_size = metafile->GetDataSize();
-  DCHECK_GT(buf_size, 128u);
-
-  PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.reuse_existing_data = false;
-  preview_params.data_size = buf_size;
-  preview_params.document_cookie = params.params.document_cookie;
-  preview_params.expected_pages_count = preview_page_count_;
-  preview_params.modifiable = IsModifiable(frame, node);
-  preview_params.preview_request_id = params.params.preview_request_id;
-
-  if (!CopyMetafileDataToSharedMem(metafile.get(),
-                                   &(preview_params.metafile_data_handle))) {
-    return false;
-  }
-  Send(new PrintHostMsg_DuplicateSection(routing_id(),
-                                         preview_params.metafile_data_handle,
-                                         &preview_params.metafile_data_handle));
-  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
-  return true;
+  RenderPage(print_params, &scale_factor, page_number, true,
+             print_preview_context_.frame(), &metafile);
+  // Release since |print_preview_context_| is the real owner.
+  metafile.release();
+  print_preview_context_.RenderedPreviewPage(
+      base::TimeTicks::Now() - begin_time);
+  PreviewPageRendered(page_number);
 }
 
 void PrintWebViewHelper::RenderPage(

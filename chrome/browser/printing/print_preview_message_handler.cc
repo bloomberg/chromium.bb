@@ -63,7 +63,8 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview() {
   PrintPreviewTabController::PrintPreview(tab_contents());
 }
 
-void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int page_count) {
+void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
+                                                          int page_count) {
   if (page_count <= 0)
     return;
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -72,33 +73,38 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int page_count) {
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->OnDidGetPreviewPageCount(page_count);
+  print_preview_ui->OnDidGetPreviewPageCount(document_cookie, page_count);
 }
 
-void PrintPreviewMessageHandler::OnDidPreviewPage(int page_number,
-                                                  bool* cancel) {
+void PrintPreviewMessageHandler::OnDidPreviewPage(int page_number) {
+  RenderViewHost* rvh = tab_contents()->render_view_host();
   TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab) {
-    // Can't find print preview tab means we should cancel.
-    *cancel = true;
+  if (!(print_preview_tab && print_preview_tab->web_ui())) {
+    // Can't find print preview tab means we should abort.
+    rvh->Send(new PrintMsg_AbortPreview(rvh->routing_id()));
     return;
   }
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   bool has_pending = print_preview_ui->HasPendingRequests();
-  if (!has_pending && page_number >= 0)
+  if (has_pending) {
+    // Cancel. Next print preview request will cancel the current one.
+    // Just do the required maintainance work here.
+    StopWorker(print_preview_ui->document_cookie());
+    print_preview_ui->OnPrintPreviewCancelled();
+    return;
+  }
+
+  // Continue
+  if (page_number >= 0)
     print_preview_ui->OnDidPreviewPage(page_number);
-  *cancel = has_pending;
+  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id()));
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
-  // Always need to stop the worker and send PrintMsg_PrintingDone.
   StopWorker(params.document_cookie);
-
-  RenderViewHost* rvh = tab_contents()->render_view_host();
-  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(), true));
 
   // Get the print preview tab.
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -114,7 +120,8 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
-    print_preview_ui->OnDidGetPreviewPageCount(params.expected_pages_count);
+    print_preview_ui->OnDidGetPreviewPageCount(params.document_cookie,
+                                               params.expected_pages_count);
 
     print_preview_ui->OnPreviewDataIsAvailable(
         params.expected_pages_count,
@@ -175,19 +182,6 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   }
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
-  // Always need to stop the worker.
-  StopWorker(document_cookie);
-
-  TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab)
-    return;
-
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->OnPrintPreviewCancelled();
-}
-
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -202,8 +196,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPagesReadyForPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
-                        OnPrintPreviewCancelled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

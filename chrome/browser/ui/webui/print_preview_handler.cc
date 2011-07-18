@@ -827,6 +827,11 @@ void PrintPreviewHandler::OnNavigation() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
   wrapper->print_view_manager()->set_observer(NULL);
+
+  // Tell the initiator tab to stop rendering the print preview, if any,
+  // since the preview tab is gone.
+  RenderViewHost* rvh = initiator_tab->render_view_host();
+  rvh->Send(new PrintMsg_AbortPreview(rvh->routing_id()));
 }
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,

@@ -18,7 +18,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
-#include "printing/metafile.h"
+#include "printing/metafile_impl.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -97,10 +97,9 @@ bool PrintMsg_Print_Params_IsEqual(
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const PrintMsg_Print_Params& print_params,
     WebFrame* frame,
-    WebNode* node,
-    WebView* web_view)
+    WebNode* node)
         : frame_(frame),
-          web_view_(web_view),
+          web_view_(frame->view()),
           expected_pages_count_(0),
           use_browser_overlays_(true),
           finished_(false) {
@@ -124,9 +123,9 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 
   if (WebFrame* web_frame = web_view_->mainFrame())
     prev_scroll_offset_ = web_frame->scrollOffset();
-  prev_view_size_ = web_view->size();
+  prev_view_size_ = web_view_->size();
 
-  web_view->resize(print_layout_size);
+  web_view_->resize(print_layout_size);
 
   WebNode node_to_print;
   if (node)
@@ -154,11 +153,8 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
-      script_initiated_preview_frame_(NULL),
-      context_menu_preview_node_(NULL),
       user_cancelled_scripted_print_count_(0),
-      notify_browser_of_print_failure_(true),
-      preview_page_count_(0) {
+      notify_browser_of_print_failure_(true) {
   is_preview_ = switches::IsPrintPreviewEnabled();
 }
 
@@ -179,8 +175,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
   IncrementScriptedPrintCount();
 
   if (is_preview_) {
-    script_initiated_preview_frame_ = frame;
-    context_menu_preview_node_.reset();
+    print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview();
   } else {
     Print(frame, NULL);
@@ -191,16 +186,16 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
-    IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview,
-                        OnInitiatePrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview,
-                        OnPrintForPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview, OnPrintForPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
+    IPC_MESSAGE_HANDLER(PrintMsg_ContinuePreview, OnContinuePreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_AbortPreview, OnAbortPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PreviewPrintingRequestCancelled,
                         DisplayPrintJobError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -268,21 +263,115 @@ void PrintWebViewHelper::OnPrintPages() {
 
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_);
-  DCHECK(!context_menu_preview_node_.get() || !script_initiated_preview_frame_);
+  print_preview_context_.OnPrintPreview();
 
-  if (script_initiated_preview_frame_) {
-    // Script initiated print preview.
-    PrintPreview(script_initiated_preview_frame_, NULL, settings);
-  } else if (context_menu_preview_node_.get()) {
-    // User initiated - print node under context menu.
-    PrintPreview(context_menu_preview_node_->document().frame(),
-                 context_menu_preview_node_.get(), settings);
-  } else {
-    // User initiated - normal print preview.
-    WebFrame* frame;
-    if (GetPrintFrame(&frame))
-      PrintPreview(frame, NULL, settings);
+  if (!InitPrintSettings(print_preview_context_.frame(),
+                         print_preview_context_.node())) {
+    NOTREACHED();
+    return;
   }
+
+  if (!UpdatePrintSettings(settings)) {
+    DidFinishPrinting(FAIL_PREVIEW);
+    return;
+  }
+
+  if (print_pages_params_->params.preview_request_id != 0 &&
+      old_print_pages_params_.get() &&
+      PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
+                                    *print_pages_params_)) {
+    PrintHostMsg_DidPreviewDocument_Params preview_params;
+    preview_params.reuse_existing_data = true;
+    preview_params.data_size = 0;
+    preview_params.document_cookie =
+        print_pages_params_->params.document_cookie;
+    preview_params.expected_pages_count =
+        print_preview_context_.total_page_count();
+    preview_params.modifiable = print_preview_context_.IsModifiable();
+    preview_params.preview_request_id =
+        print_pages_params_->params.preview_request_id;
+
+    Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+    return;
+  }
+
+  // PDF printer device supports alpha blending.
+  print_pages_params_->params.supports_alpha_blend = true;
+  if (!CreatePreviewDocument())
+    DidFinishPrinting(FAIL_PREVIEW);
+}
+
+bool PrintWebViewHelper::CreatePreviewDocument() {
+  PrintMsg_Print_Params printParams = print_pages_params_->params;
+  UpdatePrintableSizeInPrintParameters(print_preview_context_.frame(),
+                                       print_preview_context_.node(),
+                                       &printParams);
+
+  const std::vector<int>& pages = print_pages_params_->pages;
+  if (!print_preview_context_.CreatePreviewDocument(printParams, pages))
+    return false;
+  int page_count = print_preview_context_.total_page_count();
+  int document_cookie = print_pages_params_->params.document_cookie;
+  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), document_cookie,
+                                               page_count));
+  PreviewPageRendered(-1);
+  return true;
+}
+
+void PrintWebViewHelper::OnContinuePreview() {
+  // Spurious message. We already finished/cancelled/aborted the print preview.
+  if (!print_preview_context_.IsBusy())
+    return;
+
+  int page_number = print_preview_context_.GetNextPageNumber();
+  if (page_number >= 0) {
+    // Continue generating the print preview.
+    RenderPreviewPage(page_number);
+    return;
+  }
+
+  // Finished generating preview. Finalize the document.
+  if (FinalizePreviewDocument())
+    DidFinishPrinting(OK);
+  else
+    DidFinishPrinting(FAIL_PREVIEW);
+}
+
+void PrintWebViewHelper::OnAbortPreview() {
+  DidFinishPrinting(ABORT_PREVIEW);
+  return;
+}
+
+bool PrintWebViewHelper::FinalizePreviewDocument() {
+  print_preview_context_.FinalizePreviewDocument();
+
+  // Get the size of the resulting metafile.
+  printing::Metafile* metafile = print_preview_context_.metafile();
+  uint32 buf_size = metafile->GetDataSize();
+  DCHECK_GT(buf_size, 0u);
+
+  PrintHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.reuse_existing_data = false;
+  preview_params.data_size = buf_size;
+  preview_params.document_cookie = print_pages_params_->params.document_cookie;
+  preview_params.expected_pages_count =
+      print_preview_context_.total_page_count();
+  preview_params.modifiable = print_preview_context_.IsModifiable();
+  preview_params.preview_request_id =
+      print_pages_params_->params.preview_request_id;
+
+  // Ask the browser to create the shared memory for us.
+  if (!CopyMetafileDataToSharedMem(metafile,
+                                   &(preview_params.metafile_data_handle))) {
+    return false;
+  }
+#if defined(OS_WIN)
+  Send(new PrintHostMsg_DuplicateSection(routing_id(),
+                                         preview_params.metafile_data_handle,
+                                         &preview_params.metafile_data_handle));
+#endif
+  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  return true;
 }
 
 void PrintWebViewHelper::OnPrintingDone(bool success) {
@@ -300,8 +389,7 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
   // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
   // its |context_menu_node_|.
   if (is_preview_) {
-    context_menu_preview_node_.reset(new WebNode(context_menu_node));
-    script_initiated_preview_frame_ = NULL;
+    print_preview_context_.InitWithNode(context_menu_node);
     RequestPrintPreview();
   } else {
     WebNode duplicate_node(context_menu_node);
@@ -311,9 +399,11 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
 
 void PrintWebViewHelper::OnInitiatePrintPreview() {
   DCHECK(is_preview_);
-  script_initiated_preview_frame_ = NULL;
-  context_menu_preview_node_.reset();
-  RequestPrintPreview();
+  WebFrame* frame;
+  if (GetPrintFrame(&frame)) {
+    print_preview_context_.InitWithFrame(frame);
+    RequestPrintPreview();
+  }
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
@@ -332,7 +422,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
   // a scope for itself (see comments on PrepareFrameAndViewForPrint).
   {
     PrepareFrameAndViewForPrint prep_frame_view(
-        print_pages_params_->params, frame, node, frame->view());
+        print_pages_params_->params, frame, node);
     expected_pages_count = prep_frame_view.GetExpectedPageCount();
     if (expected_pages_count)
       use_browser_overlays = prep_frame_view.ShouldUseBrowserOverlays();
@@ -357,44 +447,6 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
   ResetScriptedPrintCount();
 }
 
-void PrintWebViewHelper::PrintPreview(WebKit::WebFrame* frame,
-                                      WebKit::WebNode* node,
-                                      const DictionaryValue& settings) {
-  DCHECK(is_preview_);
-
-  if (!InitPrintSettings(frame, node)) {
-    NOTREACHED() << "Failed to initialize print page settings";
-    return;
-  }
-
-  if (!UpdatePrintSettings(settings)) {
-    DidFinishPrinting(FAIL_PREVIEW);
-    return;
-  }
-
-  if (print_pages_params_->params.preview_request_id != 0 &&
-      old_print_pages_params_.get() &&
-      PrintMsg_Print_Params_IsEqual(*old_print_pages_params_,
-                                    *print_pages_params_)) {
-    PrintHostMsg_DidPreviewDocument_Params preview_params;
-    preview_params.reuse_existing_data = true;
-    preview_params.data_size = 0;
-    preview_params.document_cookie =
-        print_pages_params_->params.document_cookie;
-    preview_params.expected_pages_count = preview_page_count_;
-    preview_params.modifiable = IsModifiable(frame, node);
-    preview_params.preview_request_id =
-        print_pages_params_->params.preview_request_id;
-
-    Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
-    return;
-  }
-
-  // Render Pages for preview.
-  if (!RenderPagesForPreview(frame, node))
-    DidFinishPrinting(FAIL_PREVIEW);
-}
-
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   bool store_print_pages_params = true;
   if (result == FAIL_PRINT) {
@@ -405,13 +457,17 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
       Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
     }
   } else if (result == FAIL_PREVIEW) {
-    int cookie = print_pages_params_->params.document_cookie;
+    DCHECK(is_preview_);
     store_print_pages_params = false;
-    if (notify_browser_of_print_failure_) {
-      Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
-    } else {
-      Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
-    }
+    int cookie = print_pages_params_->params.document_cookie;
+    Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+    print_preview_context_.Abort();
+  } else if (result == ABORT_PREVIEW) {
+    DCHECK(is_preview_);
+    store_print_pages_params = false;
+    print_preview_context_.Abort();
+  } else if (result == OK && is_preview_) {
+    print_preview_context_.Finished();
   }
 
   if (print_web_view_) {
@@ -462,10 +518,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   PrintMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
-  PrepareFrameAndViewForPrint prep_frame_view(printParams,
-                                              frame,
-                                              node,
-                                              frame->view());
+  PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node);
   int page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)
     return false;
@@ -575,16 +628,6 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
         ConvertPixelsToPointDouble(margin_left_in_pixels);
 }
 
-bool PrintWebViewHelper::IsModifiable(WebKit::WebFrame* frame,
-                                      WebKit::WebNode* node) {
-  if (node)
-    return false;
-  std::string mime(frame->dataSource()->response().mimeType().utf8());
-  if (mime == "application/pdf")
-    return false;
-  return true;
-}
-
 void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame,
     WebNode* node,
@@ -595,7 +638,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
   double margin_right_in_points;
   double margin_bottom_in_points;
   double margin_left_in_points;
-  PrepareFrameAndViewForPrint prepare(*params, frame, node, frame->view());
+  PrepareFrameAndViewForPrint prepare(*params, frame, node);
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
       &content_width_in_points, &content_height_in_points,
       &margin_top_in_points, &margin_right_in_points,
@@ -626,6 +669,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
 
 bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
                                            WebKit::WebNode* node) {
+  DCHECK(frame);
   PrintMsg_PrintPages_Params settings;
 
   // TODO(abodenha@chromium.org) It doesn't make sense to do this if our
@@ -751,42 +795,6 @@ bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
   }
 }
 
-bool PrintWebViewHelper::RenderPagesForPreview(WebKit::WebFrame* frame,
-                                               WebKit::WebNode* node) {
-  PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
-  // PDF printer device supports alpha blending.
-  print_settings.params.supports_alpha_blend = true;
-  // TODO(kmadhusu): Handle print selection.
-  return CreatePreviewDocument(print_settings, frame, node);
-}
-
-base::TimeTicks PrintWebViewHelper::ReportPreviewPageRenderTime(
-    base::TimeTicks start_time) {
-  base::TimeTicks now = base::TimeTicks::Now();
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderPDFPageTime", now - start_time);
-  return now;
-}
-
-void PrintWebViewHelper::ReportTotalPreviewGenerationTime(
-        int selected_pages_length, int total_pages,
-        base::TimeDelta render_time, base::TimeDelta total_time) {
-  if (selected_pages_length == 0)
-    selected_pages_length = total_pages;
-
-  if (selected_pages_length <= 0) {
-    // This shouldn't happen, but this makes sure it doesn't affect the
-    // statistics if it does.
-    return;
-  }
-
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderToPDFTime",
-                             render_time);
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
-                             total_time);
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
-                             total_time / selected_pages_length);
-}
-
 #if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     printing::Metafile* metafile,
@@ -812,6 +820,7 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
     WebKit::WebFrame* frame) {
   const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
   const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 32;
+  bool too_frequent = false;
 
   // Check if there is script repeatedly trying to print and ignore it if too
   // frequent.  The first 3 times, we use a constant wait time, but if this
@@ -829,15 +838,21 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
           kMaxSecondsToIgnoreJavascriptInitiatedPrint);
     }
     if (diff.InSeconds() < min_wait_seconds) {
-      WebString message(WebString::fromUTF8(
-          "Ignoring too frequent calls to print()."));
-      frame->addMessageToConsole(WebConsoleMessage(
-          WebConsoleMessage::LevelWarning,
-          message));
-      return true;
+      too_frequent = true;
     }
   }
-  return false;
+
+  if (!too_frequent && print_preview_context_.IsBusy())
+    too_frequent = true;
+
+  if (!too_frequent)
+    return false;
+
+  WebString message(WebString::fromUTF8(
+      "Ignoring too frequent calls to print()."));
+  frame->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelWarning,
+                                               message));
+  return true;
 }
 
 void PrintWebViewHelper::ResetScriptedPrintCount() {
@@ -865,10 +880,184 @@ void PrintWebViewHelper::RequestPrintPreview() {
   Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
 
-bool PrintWebViewHelper::PreviewPageRendered(int page_number) {
-  bool cancel = false;
-  Send(new PrintHostMsg_DidPreviewPage(routing_id(), page_number, &cancel));
-  if (cancel)
-    notify_browser_of_print_failure_ = false;
-  return !cancel;
+void PrintWebViewHelper::PreviewPageRendered(int page_number) {
+  Send(new PrintHostMsg_DidPreviewPage(routing_id(), page_number));
+}
+
+PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
+    : frame_(NULL),
+      total_page_count_(0),
+      actual_page_count_(0),
+      current_page_number_(0),
+      state_(UNINITIALIZED) {
+}
+
+PrintWebViewHelper::PrintPreviewContext::~PrintPreviewContext() {
+}
+
+void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
+    WebKit::WebFrame* web_frame) {
+  DCHECK(web_frame);
+  if (IsReadyToRender())
+    return;
+  state_ = INITIALIZED;
+  frame_ = web_frame;
+  node_.reset();
+}
+
+void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
+    const WebKit::WebNode& web_node) {
+  DCHECK(!web_node.isNull());
+  if (IsReadyToRender())
+    return;
+  state_ = INITIALIZED;
+  frame_ = web_node.document().frame();
+  node_.reset(new WebNode(web_node));
+}
+
+void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
+  DCHECK(IsReadyToRender());
+  ClearContext();
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
+    const PrintMsg_Print_Params& printParams,
+    const std::vector<int>& pages) {
+  DCHECK(IsReadyToRender());
+  state_ = RENDERING;
+
+  print_params_.reset(new PrintMsg_Print_Params(printParams));
+
+  metafile_.reset(new printing::PreviewMetafile);
+  if (!metafile_->Init())
+    return false;
+
+  // Need to make sure old object gets destroyed first.
+  prep_frame_view_.reset(new PrepareFrameAndViewForPrint(printParams, frame(),
+                                                         node()));
+  total_page_count_ = prep_frame_view_->GetExpectedPageCount();
+  if (total_page_count_ == 0)
+    return false;
+
+  current_page_number_ = 0;
+  if (pages.empty()) {
+    actual_page_count_ = total_page_count_;
+    rendered_pages_ = std::vector<bool>(total_page_count_, false);
+  } else {
+    actual_page_count_ = pages.size();
+    rendered_pages_ = std::vector<bool>(total_page_count_, true);
+    for (int i = 0; i < actual_page_count_; ++i) {
+      int page_number = pages[i];
+      if (page_number < 0 || page_number >= total_page_count_)
+        return false;
+      rendered_pages_[page_number] = false;
+    }
+  }
+
+  document_render_time_ = base::TimeDelta();
+  begin_time_ = base::TimeTicks::Now();
+
+  return true;
+}
+
+void PrintWebViewHelper::PrintPreviewContext::RenderedPreviewPage(
+    const base::TimeDelta& page_time) {
+  DCHECK_EQ(RENDERING, state_);
+  document_render_time_ += page_time;
+  UMA_HISTOGRAM_TIMES("PrintPreview.RenderPDFPageTime", page_time);
+}
+
+void PrintWebViewHelper::PrintPreviewContext::FinalizePreviewDocument() {
+  DCHECK_EQ(RENDERING, state_);
+  state_ = DONE;
+
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
+  prep_frame_view_->FinishPrinting();
+  metafile_->FinishDocument();
+
+  if (actual_page_count_ <= 0) {
+    NOTREACHED();
+    return;
+  }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderToPDFTime",
+                             document_render_time_);
+  base::TimeDelta total_time = (base::TimeTicks::Now() - begin_time) +
+                               document_render_time_;
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
+                             total_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
+                             total_time / actual_page_count_);
+}
+
+void PrintWebViewHelper::PrintPreviewContext::Finished() {
+  DCHECK_EQ(DONE, state_);
+  ClearContext();
+}
+
+void PrintWebViewHelper::PrintPreviewContext::Abort() {
+  state_ = UNINITIALIZED;
+  ClearContext();
+  frame_ = NULL;
+  node_.reset();
+}
+
+int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
+  DCHECK_EQ(RENDERING, state_);
+  while (current_page_number_ < total_page_count_ &&
+         rendered_pages_[current_page_number_]) {
+    ++current_page_number_;
+  }
+  if (current_page_number_ == total_page_count_)
+    return -1;
+  rendered_pages_[current_page_number_] = true;
+  return current_page_number_++;
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::IsReadyToRender() const {
+  return state_ != UNINITIALIZED;
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::IsBusy() const {
+  return state_ == INITIALIZED || state_ == RENDERING;
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
+  if (node())
+    return false;
+  std::string mime(frame()->dataSource()->response().mimeType().utf8());
+  return mime != "application/pdf";
+}
+
+WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
+  return frame_;
+}
+
+WebKit::WebNode* PrintWebViewHelper::PrintPreviewContext::node() const {
+  return node_.get();
+}
+
+int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
+  return total_page_count_;
+}
+
+printing::Metafile* PrintWebViewHelper::PrintPreviewContext::metafile() const {
+  return metafile_.get();
+}
+
+const PrintMsg_Print_Params&
+PrintWebViewHelper::PrintPreviewContext::print_params() const {
+  return *print_params_;
+}
+
+const gfx::Size&
+PrintWebViewHelper::PrintPreviewContext::GetPrintCanvasSize() const {
+  return prep_frame_view_->GetPrintCanvasSize();
+}
+
+void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
+  prep_frame_view_.reset();
+  metafile_.reset();
+  rendered_pages_.clear();
 }

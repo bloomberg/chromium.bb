@@ -25,38 +25,19 @@
 using WebKit::WebFrame;
 using WebKit::WebNode;
 
-bool PrintWebViewHelper::CreatePreviewDocument(
-    const PrintMsg_PrintPages_Params& params, WebKit::WebFrame* frame,
-    WebKit::WebNode* node) {
-  if (!PreviewPageRendered(-1))
-    return false;
+void PrintWebViewHelper::RenderPreviewPage(int page_number) {
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = print_preview_context_.print_params();
+  page_params.page_number = page_number;
 
-  printing::PreviewMetafile metafile;
-  if (!metafile.Init())
-    return false;
-
-  preview_page_count_ = 0;
-  if (!RenderPages(params, frame, node, &preview_page_count_, &metafile, true))
-    return false;
-
-  // Get the size of the resulting metafile.
-  uint32 buf_size = metafile.GetDataSize();
-  DCHECK_GT(buf_size, 0u);
-
-  PrintHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.reuse_existing_data = false;
-  preview_params.data_size = buf_size;
-  preview_params.document_cookie = params.params.document_cookie;
-  preview_params.expected_pages_count = preview_page_count_;
-  preview_params.modifiable = IsModifiable(frame, node);
-  preview_params.preview_request_id = params.params.preview_request_id;
-
-  if (!CopyMetafileDataToSharedMem(&metafile,
-                                   &(preview_params.metafile_data_handle))) {
-    return false;
-  }
-  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
-  return true;
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+  PrintPageInternal(page_params,
+                    print_preview_context_.GetPrintCanvasSize(),
+                    print_preview_context_.frame(),
+                    print_preview_context_.metafile());
+  print_preview_context_.RenderedPreviewPage(
+      base::TimeTicks::Now() - begin_time);
+  PreviewPageRendered(page_number);
 }
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
@@ -67,7 +48,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
     return false;
 
   int page_count = 0;
-  if (!RenderPages(params, frame, node, &page_count, &metafile, false))
+  if (!RenderPages(params, frame, node, &page_count, &metafile))
     return false;
 
   // Get the size of the resulting metafile.
@@ -142,29 +123,21 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
                                      WebKit::WebNode* node,
                                      int* page_count,
-                                     printing::Metafile* metafile,
-                                     bool is_preview) {
+                                     printing::Metafile* metafile) {
   PrintMsg_Print_Params printParams = params.params;
 
   UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
 
-  PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node,
-                                              frame->view());
-  if (is_preview && !PreviewPageRendered(-1))
-    return false;
-
+  PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node);
   *page_count = prep_frame_view.GetExpectedPageCount();
   if (!*page_count)
     return false;
-  if (is_preview) {
-    Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), *page_count));
-  } else {
+
 #if !defined(OS_CHROMEOS)
     Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                   printParams.document_cookie,
                                                   *page_count));
 #endif
-  }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::TimeTicks page_begin_time = begin_time;
@@ -176,21 +149,11 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
     for (int i = 0; i < *page_count; ++i) {
       page_params.page_number = i;
       PrintPageInternal(page_params, canvas_size, frame, metafile);
-      if (is_preview) {
-        page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
-        if (!PreviewPageRendered(i))
-          return false;
-      }
     }
   } else {
     for (size_t i = 0; i < params.pages.size(); ++i) {
       page_params.page_number = params.pages[i];
       PrintPageInternal(page_params, canvas_size, frame, metafile);
-      if (is_preview) {
-        page_begin_time = ReportPreviewPageRenderTime(page_begin_time);
-        if (!PreviewPageRendered(params.pages[i]))
-          return false;
-      }
     }
   }
 
@@ -198,12 +161,6 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
 
   prep_frame_view.FinishPrinting();
   metafile->FinishDocument();
-
-  if (is_preview) {
-    ReportTotalPreviewGenerationTime(params.pages.size(), *page_count,
-                                     render_time,
-                                     base::TimeTicks::Now() - begin_time);
-  }
   return true;
 }
 

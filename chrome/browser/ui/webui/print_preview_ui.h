@@ -36,7 +36,7 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnPrintPreviewRequest();
 
   // Notify the Web UI that the print preview will have |page_count| pages.
-  void OnDidGetPreviewPageCount(int page_count);
+  void OnDidGetPreviewPageCount(int document_cookie_, int page_count);
 
   // Notify the Web UI that the 0-based page |page_number| has been rendered.
   void OnDidPreviewPage(int page_number);
@@ -75,6 +75,8 @@ class PrintPreviewUI : public ChromeWebUI {
   // Return true if there are pending requests.
   bool HasPendingRequests();
 
+  int document_cookie();
+
  private:
   // Helper function
   PrintPreviewDataService* print_preview_data_service();
@@ -91,6 +93,9 @@ class PrintPreviewUI : public ChromeWebUI {
 
   // The number of print preview requests in flight.
   uint32 request_count_;
+
+  // Document cookie from the initiator renderer.
+  int document_cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

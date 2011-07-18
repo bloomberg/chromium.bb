@@ -311,13 +311,6 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   }
 
  protected:
-  void VerifyPrintPreviewCancelled(bool did_cancel) {
-    bool print_preview_cancelled =
-        (render_thread_.sink().GetUniqueMessageMatching(
-            PrintHostMsg_PrintPreviewCancelled::ID) != NULL);
-    EXPECT_EQ(did_cancel, print_preview_cancelled);
-  }
-
   void VerifyPrintPreviewFailed(bool did_fail) {
     bool print_preview_failed = (render_thread_.sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintPreviewFailed::ID) != NULL);
@@ -353,32 +346,20 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   LoadHTML(kHelloWorldHTML);
 
+  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
 
-  VerifyPrintPreviewCancelled(false);
+  // Need to finish simulating print preview.
+  // Generate the page and finalize it.
+  PrintWebViewHelper::Get(view_)->OnContinuePreview();
+  PrintWebViewHelper::Get(view_)->OnContinuePreview();
+
+  EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
-  VerifyPagesPrinted(false);
-}
-
-// Tests that cancelling a print preview works correctly.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
-  LoadHTML(kPrintPreviewHTML);
-
-  // Cancel the print preview.
-  render_thread_.set_cancel_print_preview(true);
-
-  // Fill in some dummy values.
-  DictionaryValue dict;
-  CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
-
-  VerifyPrintPreviewCancelled(true);
-  VerifyPrintPreviewFailed(false);
-  VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);
 }
 
@@ -387,11 +368,12 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
+  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // An empty dictionary should fail.
   DictionaryValue empty_dict;
   PrintWebViewHelper::Get(view_)->OnPrintPreview(empty_dict);
 
-  VerifyPrintPreviewCancelled(false);
+  EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewFailed(true);
   VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);

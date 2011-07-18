@@ -25,7 +25,7 @@ MockRenderThread::MockRenderThread()
       reply_deserializer_(NULL),
       printer_(new MockPrinter),
       print_dialog_user_response_(true),
-      cancel_print_preview_(false) {
+      print_preview_pages_remaining_(0) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -61,7 +61,7 @@ bool MockRenderThread::IsIncognitoProcess() const {
 }
 
 // Called by the Widget. Used to send messages to the browser.
-// We short-circuit the mechanim and handle the messages right here on this
+// We short-circuit the mechanism and handle the messages right here on this
 // class.
 bool MockRenderThread::Send(IPC::Message* msg) {
   // We need to simulate a synchronous channel, thus we are going to receive
@@ -103,15 +103,14 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint,
-                        OnScriptedPrint)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings,
-                        OnUpdatePrintSettings)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_UpdatePrintSettings, OnUpdatePrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
-                        OnDidPreviewPage)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
+                        OnDidGetPreviewPageCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
@@ -212,8 +211,15 @@ void MockRenderThread::OnDidPrintPage(
     printer_->PrintPage(params);
 }
 
-void MockRenderThread::OnDidPreviewPage(int page_number, bool* cancel) {
-  *cancel = cancel_print_preview_;
+void MockRenderThread::OnDidGetPreviewPageCount(int document_cookie,
+                                                int number_pages) {
+  print_preview_pages_remaining_ = number_pages;
+}
+
+void MockRenderThread::OnDidPreviewPage(int page_number) {
+  if (page_number < 0)
+    return;
+  print_preview_pages_remaining_--;
 }
 
 void MockRenderThread::OnUpdatePrintSettings(
@@ -242,6 +248,6 @@ void MockRenderThread::set_print_dialog_user_response(bool response) {
   print_dialog_user_response_ = response;
 }
 
-void MockRenderThread::set_cancel_print_preview(bool cancel) {
-  cancel_print_preview_ = cancel;
+int MockRenderThread::print_preview_pages_remaining() {
+  return print_preview_pages_remaining_;
 }
