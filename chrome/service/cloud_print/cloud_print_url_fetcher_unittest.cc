@@ -46,7 +46,7 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
  private:
-  ~TestURLRequestContextGetter() {
+  virtual ~TestURLRequestContextGetter() {
     g_request_context_getter_instances--;
   }
 
