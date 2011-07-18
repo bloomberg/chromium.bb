@@ -163,11 +163,16 @@ class DownloadItem : public NotificationObserver {
   // Received a new chunk of data
   void Update(int64 bytes_so_far);
 
-  // Cancel the download operation.  This may be called at any time; if
-  // it is called before all download attributes have been finalized and
-  // the download entered into the history, it will remove the download from
-  // the system.
-  void Cancel();
+  // Cancel the download operation. We need to distinguish between cancels at
+  // exit (DownloadManager destructor) from user interface initiated cancels
+  // because at exit, the history system may not exist, and any updates to it
+  // require AddRef'ing the DownloadManager in the destructor which results in
+  // a DCHECK failure. Set 'update_history' to false when canceling from at
+  // exit to prevent this crash. This may result in a difference between the
+  // downloaded file's size on disk, and what the history system's last record
+  // of it is. At worst, we'll end up re-downloading a small portion of the file
+  // when resuming a download (assuming the server supports byte ranges).
+  void Cancel(bool update_history);
 
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
@@ -179,14 +184,10 @@ class DownloadItem : public NotificationObserver {
   // Called when the downloaded file is removed.
   void OnDownloadedFileRemoved();
 
-  // Download operation had an error; call to interrupt the processing.
-  // Note that if the download attributes haven't yet been finalized and
-  // the download entered into the history (which implies that it hasn't
-  // yet been made visible in the UI), this call will remove the
-  // download from the system.
+  // Download operation had an error.
   // |size| is the amount of data received so far, and |os_error| is the error
   // code that the operation received.
-  void Interrupt(int64 size, int os_error);
+  void Interrupted(int64 size, int os_error);
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -351,10 +352,6 @@ class DownloadItem : public NotificationObserver {
 
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);
-
-  // Internal function to do the main work of cancelling or
-  // interrupting a download.
-  void StopInternal(DownloadState target_state);
 
   // Called when the entire download operation (including renaming etc)
   // is completed.

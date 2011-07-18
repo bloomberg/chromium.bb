@@ -165,9 +165,6 @@ enum DownloadCountTypes {
   // Downloads that were interrupted by the OS.
   INTERRUPTED_COUNT,
 
-  // Downloads that were removed by the user.
-  REMOVED_COUNT,
-
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

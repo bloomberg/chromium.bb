@@ -123,22 +123,9 @@ class DownloadManager
   void OnResponseCompleted(int32 download_id, int64 size, int os_error,
                            const std::string& hash);
 
-  // Called to initiate download cancel on behalf of an off-thread portion
-  // of the download system; redirects to DownloadItem.
-  void CancelDownload(int32 download_handle);
-
-  // This routine is called from the DownloadItem when a
-  // request is cancelled or interrupted.  It removes the download
-  // from all internal queues holding in-progress work, and takes care
-  // of the off-thread aspects of the cancel (stopping the request,
-  // cancelling the download on the file thread).
-  void DownloadStopped(int32 download_id);
-
-  // Called from DownloadItem when the download is being removed.
-  // Takes care of all history operations, modifying internal queues,
-  // and notifying DownloadManager observers, and actually deletes
-  // the DownloadItem.
-  void RemoveDownload(DownloadItem* download);
+  // Called from a view when a user clicks a UI button or link.
+  void DownloadCancelled(int32 download_id);
+  void RemoveDownload(int64 download_handle);
 
   // Determine if the download is ready for completion, i.e. has had
   // all data saved, and completed the filename determination and
@@ -280,6 +267,10 @@ class DownloadManager
   DownloadItem* GetDownloadItem(int id);
 
  private:
+  // For testing.
+  friend class DownloadManagerTest;
+  friend class MockDownloadManager;
+
   // This class is used to let an incognito DownloadManager observe changes to
   // a normal DownloadManager, to propagate ModelChanged() calls from the parent
   // DownloadManager to the observers of the incognito DownloadManager.
@@ -304,11 +295,6 @@ class DownloadManager
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
   friend class OtherDownloadManagerObserver;
-
-  // For testing.
-  friend class DownloadManagerTest;
-  friend class MockDownloadManager;
-  friend class DownloadTest;
 
   virtual ~DownloadManager();
 
@@ -338,6 +324,10 @@ class DownloadManager
   void ContinueDownloadWithPath(DownloadItem* download,
                                 const FilePath& chosen_file);
 
+  // Download cancel helper function.
+  void DownloadCancelledInternal(int download_id,
+                                 const DownloadRequestHandle& request_handle);
+
   // All data has been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
   // is not available.
@@ -351,16 +341,6 @@ class DownloadManager
 
   // Inform observers that the model has changed.
   void NotifyModelChanged();
-
-  // Return all in progress downloads.  This includes downloads that
-  // have not yet been entered into the history (all other accessors
-  // only return downloads that have been entered into the history).
-  // This is intended to be used for testing only.
-  void GetInProgressDownloads(std::vector<DownloadItem*>* result);
-
-  // Replace the file selection dialog used for the download manager.
-  // This is intended to be used for testing only.
-  void SetSelectFileDialog(scoped_refptr<SelectFileDialog> file_dialog);
 
   // Get the download item from the active map.  Useful when the item is not
   // yet in the history map.
