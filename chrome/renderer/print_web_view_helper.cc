@@ -331,10 +331,12 @@ void PrintWebViewHelper::OnContinuePreview() {
   }
 
   // Finished generating preview. Finalize the document.
-  if (FinalizePreviewDocument())
+  if (FinalizePreviewDocument()) {
+    print_preview_context_.Finished();
     DidFinishPrinting(OK);
-  else
+  } else {
     DidFinishPrinting(FAIL_PREVIEW);
+  }
 }
 
 void PrintWebViewHelper::OnAbortPreview() {
@@ -466,8 +468,6 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     DCHECK(is_preview_);
     store_print_pages_params = false;
     print_preview_context_.Abort();
-  } else if (result == OK && is_preview_) {
-    print_preview_context_.Finished();
   }
 
   if (print_web_view_) {
