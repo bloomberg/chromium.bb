@@ -38,8 +38,9 @@ class ImmediateInterpreter : public Interpreter {
   // Returns true iff the fingers in hwstate are the same ones in prev_state_
   bool SameFingers(const HardwareState& hwstate) const;
 
-  // Reset the member variables corresponding to same-finger state.
-  void ResetSameFingersState();
+  // Reset the member variables corresponding to same-finger state and
+  // updates changed_time_ to |now|.
+  void ResetSameFingersState(stime_t now);
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
@@ -57,6 +58,9 @@ class ImmediateInterpreter : public Interpreter {
   HardwareState prev_state_;
   HardwareProperties hw_props_;
   Gesture result_;
+
+  // When fingers change, we record the time
+  stime_t changed_time_;
 
   // Same fingers state. This state is accumulated as fingers remain the same
   // and it's reset when fingers change.

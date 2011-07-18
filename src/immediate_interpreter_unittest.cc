@@ -218,7 +218,7 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   EXPECT_TRUE(ii.pending_palm_.end() == ii.pending_palm_.find(2));
   EXPECT_TRUE(ii.palm_.end() != ii.palm_.find(2));
 
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   EXPECT_TRUE(ii.pointing_.empty());
   EXPECT_TRUE(ii.pending_palm_.empty());
   EXPECT_TRUE(ii.palm_.empty());
@@ -259,32 +259,32 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   };
 
   // few pointing fingers
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[0]);
   EXPECT_TRUE(ii.GetGesturingFingers(hardware_state[0]).empty());
 
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[1]);
   set<short, kMaxGesturingFingers> ids =
       ii.GetGesturingFingers(hardware_state[1]);
   EXPECT_EQ(1, ids.size());
   EXPECT_TRUE(ids.end() != ids.find(91));
 
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[2]);
   ids = ii.GetGesturingFingers(hardware_state[2]);
   EXPECT_EQ(2, ids.size());
   EXPECT_TRUE(ids.end() != ids.find(91));
   EXPECT_TRUE(ids.end() != ids.find(92));
 
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[3]);
   ids = ii.GetGesturingFingers(hardware_state[3]);
   EXPECT_EQ(2, ids.size());
   EXPECT_TRUE(ids.end() != ids.find(92));
   EXPECT_TRUE(ids.end() != ids.find(93));
 
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[4]);
   ids = ii.GetGesturingFingers(hardware_state[4]);
   EXPECT_EQ(2, ids.size());
@@ -294,7 +294,7 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   // T5R2 test
   hwprops.supports_t5r2 = 1;
   ii.SetHardwareProperties(hwprops);
-  ii.ResetSameFingersState();
+  ii.ResetSameFingersState(0);
   ii.UpdatePalmState(hardware_state[3]);
   ids = ii.GetGesturingFingers(hardware_state[3]);
   EXPECT_EQ(3, ids.size());

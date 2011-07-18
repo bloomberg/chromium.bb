@@ -68,10 +68,11 @@ bool ImmediateInterpreter::SameFingers(const HardwareState& hwstate) const {
   return true;
 }
 
-void ImmediateInterpreter::ResetSameFingersState() {
+void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
   palm_.clear();
   pending_palm_.clear();
   pointing_.clear();
+  changed_time_ = now;
 }
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
