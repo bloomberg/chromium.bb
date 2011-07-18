@@ -95,6 +95,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
       version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
 
   std::wstring version, product;
+  std::wstring special_build;
   if (version_info.get()) {
     // Get the information from the file.
     version = version_info->product_version();
@@ -107,6 +108,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
     } else {
       product = version_info->product_short_name();
     }
+
+    special_build = version_info->special_build();
   } else {
     // No version info found. Make up the values.
      product = L"Chrome";
@@ -126,6 +129,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
+
+  if (!special_build.empty())
+    g_custom_entries->push_back(
+        google_breakpad::CustomInfoEntry(L"special", special_build.c_str()));
 
   g_num_of_extensions_offset = g_custom_entries->size();
   g_custom_entries->push_back(
