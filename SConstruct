@@ -96,6 +96,12 @@ ACCEPTABLE_ARGUMENTS = set([
     'chrome_binaries_dir',
     # used for chrome_browser_tests: path to the browser
     'chrome_browser_path',
+    # A comma-separated list of test names to disable by excluding the
+    # tests from a test suite.  For example, 'small_tests
+    # disable_tests=run_hello_world_test' will run small_tests without
+    # including hello_world_test.  Note that if a test listed here
+    # does not exist you will not get an error or a warning.
+    'disable_tests',
     # used for chrome_browser_tests: path to a pre-built browser plugin.
     'force_ppapi_plugin',
     # force emulator use by tests
@@ -613,12 +619,20 @@ def GetPlatformString(env):
   return build + '-' + subarch
 
 
+tests_to_disable = set()
+if ARGUMENTS.get('disable_tests', '') != '':
+  tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
+
+
 def ShouldSkipTest(env, node_name):
   # There are no known-to-fail tests any more, but this code is left
   # in so that if/when we port to a new architecture or add a test
   # that is known to fail on some platform(s), we can continue to have
   # a central location to disable tests from running.  NB: tests that
   # don't *build* on some platforms need to be omitted in another way.
+
+  if node_name in tests_to_disable:
+    return True
 
   # Retrieve list of tests to skip on this platform
   skiplist = bad_build_lists.get(GetPlatformString(env), [])

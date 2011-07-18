@@ -118,6 +118,8 @@ def BuildAndTest(options):
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)
 
+  scons.append('disable_tests=%s' % options.disable_tests)
+
   if options.buildbot is not None:
     scons.append('buildbot=%s' % (options.buildbot,))
 
@@ -155,6 +157,9 @@ def MakeCommandLineParser():
                     help='Debug/Release mode')
   parser.add_option('-j', dest='jobs', default=1, type='int',
                     help='Number of parallel jobs')
+  parser.add_option('--disable_tests', dest='disable_tests',
+                    type='string', default='',
+                    help='Comma-separated list of tests to omit')
 
   # Not used on the bots, but handy for running the script manually.
   parser.add_option('--bits', dest='bits', action='store',
