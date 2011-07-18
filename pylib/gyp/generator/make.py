@@ -988,6 +988,9 @@ class MakefileWriter:
     if self.is_mac_bundle and all_mac_bundle_resources:
       self.WriteMacBundleResources(
           all_mac_bundle_resources, mac_bundle_deps, spec)
+    info_plist = XcodeSettings.GetPerTargetSetting(spec, 'INFOPLIST_FILE')
+    if self.is_mac_bundle and info_plist:
+      self.WriteMacInfoPlist(info_plist, mac_bundle_deps, spec)
 
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
@@ -1283,6 +1286,22 @@ class MakefileWriter:
       self.WriteDoCmd([output], [path], 'mac_tool,,copy-bundle-resource',
                       part_of_all=True)
       bundle_deps.append(output)
+
+
+  def WriteMacInfoPlist(self, info_plist, bundle_deps, spec):
+    """Write Makefile code for bundle Info.plist files."""
+    info_plist = self.Absolutify(info_plist)
+    assert self.type != 'loadable_modules', (
+        "Info.plist files for loadable_modules not yet supported by the "
+        "make generator (target %s)" % self.target)
+    if self.type == 'executable':
+      folder = 'Contents'
+    else:
+      folder = 'Versions/%s/Resources' % self.GetFrameworkVersion(spec)
+    dest_plist = os.path.join(self.output, folder, 'Info.plist')
+    self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,copy-info-plist',
+                    part_of_all=True)
+    bundle_deps.append(dest_plist)
 
 
   def WriteSources(self, configs, deps, sources,
