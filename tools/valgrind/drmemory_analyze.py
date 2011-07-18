@@ -47,6 +47,7 @@ class DrMemoryAnalyze:
   def ReadSection(self):
     FILE_PREFIXES_TO_CUT = [
         "build\\src\\",
+        "chromium\\src\\",
         "crt_bld\\self_x86\\",
     ]
     CUT_STACK_BELOW = ".*testing.*Test.*Run.*"
@@ -69,7 +70,7 @@ class DrMemoryAnalyze:
       # access address in the UNADDRESSABLE ACCESS reports like this:
       # Note: next higher malloc: <address range>
       # Note: prev lower malloc:  <address range>
-      match_malloc_info = re.search("Note: .* malloc: 0x.*", tmp_line)
+      match_malloc_info = re.search("Note: .* malloc: +0x.*", tmp_line)
       if match_malloc_info:
         result.append(tmp_line)
         self.ReadLine()

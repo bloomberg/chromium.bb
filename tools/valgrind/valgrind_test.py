@@ -789,12 +789,23 @@ class DrMemory(BaseTool):
     # Un-comment to dump Dr.Memory events on error
     #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
 
+    # Un-comment to debug Dr.Memory
+    #proc += ["-dr_ops", "-no_hide -msgbox_mask 15"]
+
     if self._options.use_debug:
       proc += ["-debug"]
 
     proc += ["-logdir", self.log_dir]
     proc += ["-batch", "-quiet"]
+
+    # Increase some Dr. Memory constants
+    proc += ["-redzone_size", "16"]
     proc += ["-callstack_max_frames", "30"]
+
+    # Un-comment to ignore uninitialized accesses
+    #proc += ["-no_check_uninitialized"]
+
+    # Un-comment to ignore leaks
     #proc += ["-no_check_leaks", "-no_count_leaks"]
 
     # Dr.Memory requires -- to separate tool flags from the executable name.
