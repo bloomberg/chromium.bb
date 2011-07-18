@@ -13,7 +13,7 @@ it will ask you whether it is good or bad before continuing the search.
 """
 
 # The root URL for storage.
-BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-continuous'
+BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
 
 # URL to the ViewVC commit page.
 BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
@@ -84,8 +84,8 @@ class PathContext(object):
 
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
-    return BASE_URL + '/' + self._listing_platform_dir + str(revision) + '/' + \
-        self.archive_name
+    return "%s/%s%d/%s" % (
+        BASE_URL, self._listing_platform_dir, revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
@@ -149,7 +149,7 @@ def ParseDirectoryIndex(context):
 
     # Find the prefix (_listing_platform_dir) and whether or not the list is
     # truncated.
-    prefix = document.find(namespace + 'Prefix').text
+    prefix_len = len(document.find(namespace + 'Prefix').text)
     next_marker = None
     is_truncated = document.find(namespace + 'IsTruncated')
     if is_truncated is not None and is_truncated.text.lower() == 'true':
@@ -161,7 +161,14 @@ def ParseDirectoryIndex(context):
     # The <Prefix> nodes have content of the form of
     # |_listing_platform_dir/revision/|. Strip off the platform dir and the
     # trailing slash to just have a number.
-    revisions = map(lambda x: x.text[len(prefix):-1], all_prefixes)
+    revisions = []
+    for prefix in all_prefixes:
+      revnum = prefix.text[prefix_len:-1]
+      try:
+        revnum = int(revnum)
+        revisions.append(revnum)
+      except ValueError:
+        pass
     return (revisions, next_marker)
 
   # Fetch the first list of revisions.
@@ -244,6 +251,54 @@ def AskIsGoodBuild(rev):
       return response == 'g'
 
 
+def Bisect(good,
+           bad,
+           revlist,
+           context,
+           try_args=(),
+           profile='profile',
+           predicate=AskIsGoodBuild):
+  """Tries to find the exact commit where a regression was introduced by
+  running a binary search on all archived builds in a given revision range.
+
+  @param good The index in revlist of the last known good revision.
+  @param bad The index in revlist of the first known bad revision.
+  @param revlist A list of chromium revision numbers to check.
+  @param context A PathContext object.
+  @param try_args A tuple of arguments to pass to the predicate function.
+  @param profile The user profile with which to run chromium.
+  @param predicate A predicate function which returns True iff the argument
+                   chromium revision is good.
+  """
+
+  last_known_good_rev = revlist[good]
+  first_known_bad_rev = revlist[bad]
+
+  # Binary search time!
+  while good < bad:
+    candidates = revlist[good:bad]
+    num_poss = len(candidates)
+    if num_poss > 10:
+      print('%d candidates. %d tries left.' %
+          (num_poss, round(math.log(num_poss, 2))))
+    else:
+      print('Candidates: %s' % revlist[good:bad])
+
+    # Cut the problem in half...
+    test = int((bad - good) / 2) + good
+    test_rev = revlist[test]
+
+    # Let the user give this rev a spin (in her own profile, if she wants).
+    TryRevision(context, test_rev, profile, try_args)
+    if predicate(test_rev):
+      last_known_good_rev = revlist[good]
+      good = test + 1
+    else:
+      bad = test
+
+  return (last_known_good_rev, first_known_bad_rev)
+
+
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
            'Perform binary search on the snapshot builds.\n'
@@ -263,7 +318,7 @@ def main():
                     help = 'The last known good revision to bisect from.')
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
-                    'Defaults to a clean profile.')
+                    'Defaults to a clean profile.', default = 'profile')
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -326,39 +381,16 @@ def main():
   # These are indexes of |revlist|.
   good = 0
   bad = len(revlist) - 1
-  last_known_good_rev = revlist[good]
 
-  # Binary search time!
-  while good < bad:
-    candidates = revlist[good:bad]
-    num_poss = len(candidates)
-    if num_poss > 10:
-      print('%d candidates. %d tries left.' %
-          (num_poss, round(math.log(num_poss, 2))))
-    else:
-      print('Candidates: %s' % revlist[good:bad])
-
-    # Cut the problem in half...
-    test = int((bad - good) / 2) + good
-    test_rev = revlist[test]
-
-    # Let the user give this rev a spin (in her own profile, if she wants).
-    profile = opts.profile
-    if not profile:
-      profile = 'profile'  # In a temp dir.
-    TryRevision(context, test_rev, profile, args)
-    if AskIsGoodBuild(test_rev):
-      last_known_good_rev = revlist[good]
-      good = test + 1
-    else:
-      bad = test
+  (last_known_good_rev, first_known_bad_rev) = Bisect(
+      good, bad, revlist, context, args, opts.profile)
 
   # We're done. Let the user know the results in an official manner.
-  print('You are probably looking for build %d.' % revlist[bad])
+  print('You are probably looking for build %d.' % first_known_bad_rev)
   print('CHANGELOG URL:')
-  print(CHANGELOG_URL % (last_known_good_rev, revlist[bad]))
+  print(CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev))
   print('Built at revision:')
-  print(BUILD_VIEWVC_URL % revlist[bad])
+  print(BUILD_VIEWVC_URL % first_known_bad_rev)
 
 if __name__ == '__main__':
   sys.exit(main())
