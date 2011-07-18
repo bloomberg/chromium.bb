@@ -220,7 +220,7 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
 void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->Cancel(true);
+    file->Cancel();
 }
 
 void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {

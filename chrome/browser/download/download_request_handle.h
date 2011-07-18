@@ -37,11 +37,15 @@ class DownloadRequestHandle {
   TabContents* GetTabContents() const;
   DownloadManager* GetDownloadManager() const;
 
-  // Pause or resume the matching URL request.
+  // Pause or resume the matching URL request.  Note that while these
+  // do not modify the DownloadRequestHandle, they do modify the
+  // request the handle refers to.
   void PauseRequest() const;
   void ResumeRequest() const;
 
-  // Cancel the request
+  // Cancel the request.  Note that while this does not
+  // modify the DownloadRequestHandle, it does modify the
+  // request the handle refers to.
   void CancelRequest() const;
 
   std::string DebugString() const;

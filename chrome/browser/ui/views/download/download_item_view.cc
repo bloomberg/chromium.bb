@@ -654,7 +654,7 @@ void DownloadItemView::ButtonPressed(
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);
     if (download_->IsPartialDownload())
-      download_->Cancel(true);
+      download_->Cancel();
     download_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
     // WARNING: we are deleted at this point.  Don't access 'this'.
   } else if (sender == save_button_) {

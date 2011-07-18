@@ -643,7 +643,7 @@ void SavePackage::Stop() {
   wait_state_ = FAILED;
 
   // Inform the DownloadItem we have canceled whole save page job.
-  download_->Cancel(false);
+  download_->Cancel();
 }
 
 void SavePackage::CheckFinish() {

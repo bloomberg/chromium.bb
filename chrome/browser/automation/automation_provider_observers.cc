@@ -1463,7 +1463,7 @@ void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
   // download is cancelled.
   if (interrupted_) {
     // |Cancel()| does nothing if |download| is already interrupted.
-    download->Cancel(true);
+    download->Cancel();
     RemoveAndCleanupOnLastEntry(download);
   }
 
