@@ -396,22 +396,28 @@ function startSession_() {
 }
 
 function showConnectError_(responseCode, responseString) {
-  var invalid = document.getElementById('invalid-access-code');
-  var other = document.getElementById('other-connect-error');
-  if (responseCode == 404) {
-    invalid.style.display = 'block';
-    other.style.display = 'none';
+  var errors = [
+    document.getElementById('no-response'),
+    document.getElementById('invalid-access-code'),
+    document.getElementById('other-connect-error')
+  ];
+  var showError = null;
+  if (responseCode == 0) {
+    showError = errors[0];
+  } else if (responseCode == 404) {
+    showError = errors[1];
   } else {
-    invalid.style.display = 'none';
-    other.style.display = 'block';
+    showError = errors[2];
     var responseNode = document.getElementById('server-response');
     responseNode.innerText = responseString + ' (' + responseCode + ')';
   }
+  setMode_(showError.id, errors);
   remoting.accessCode = '';
   remoting.setClientMode('connect-failed');
 }
 
 function parseServerResponse_(xhr) {
+  remoting.debug.log('parseServerResponse: status = ' + xhr.status);
   if (xhr.status == 200) {
     var host = JSON.parse(xhr.responseText);
     if (host.data && host.data.jabberId) {
@@ -443,17 +449,7 @@ function resolveSupportId(supportId) {
       headers);
 }
 
-remoting.tryConnect = function() {
-  if (remoting.oauth2.needsNewAccessToken()) {
-    remoting.oauth2.refreshAccessToken(function() {
-      if (remoting.oauth2.needsNewAccessToken()) {
-        // If we still need it, we're going to infinite loop.
-        throw 'Unable to get access token.';
-      }
-      remoting.tryConnect();
-    });
-    return;
-  }
+remoting.doTryConnect = function() {
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.accessCode = normalizeAccessCode_(accessCode);
   // At present, only 12-digit access codes are supported, of which the first
@@ -464,6 +460,21 @@ remoting.tryConnect = function() {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
     remoting.setClientMode('connecting');
     resolveSupportId(supportId);
+  }
+}
+
+remoting.tryConnect = function() {
+  if (remoting.oauth2.needsNewAccessToken()) {
+    remoting.oauth2.refreshAccessToken(function(xhr) {
+      if (remoting.oauth2.needsNewAccessToken()) {
+        // Failed to get access token
+        showConnectError_(xhr.status);
+        return;
+      }
+      remoting.doTryConnect();
+    });
+  } else {
+    remoting.doTryConnect();
   }
 }
 

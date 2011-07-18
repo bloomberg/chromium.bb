@@ -177,7 +177,8 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
  *
  * Will throw if !isAuthenticated().
  *
- * @param {function(): void} onDone Callback to invoke on completion.
+ * @param {function(XMLHttpRequest): void} onDone Callback to invoke on
+ *     completion.
  * @return {void}
  */
 remoting.OAuth2.prototype.refreshAccessToken = function(onDone) {
@@ -196,7 +197,7 @@ remoting.OAuth2.prototype.refreshAccessToken = function(onDone) {
   remoting.xhr.post(this.OAUTH2_TOKEN_ENDPOINT_,
                     function(xhr) {
                       that.processTokenResponse_(xhr);
-                      onDone();
+                      onDone(xhr);
                     },
                     parameters);
 }
@@ -221,7 +222,8 @@ remoting.OAuth2.prototype.doAuthRedirect = function() {
  * Asynchronously exchanges an authorization code for a refresh token.
  *
  * @param {string} code The new refresh token.
- * @param {function():void} onDone Callback to invoke on completion.
+ * @param {function(XMLHttpRequest):void} onDone Callback to invoke on
+ *     completion.
  * @return {void}
  */
 remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
@@ -237,7 +239,7 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
   remoting.xhr.post(this.OAUTH2_TOKEN_ENDPOINT_,
                     function(xhr) {
                       that.processTokenResponse_(xhr);
-                      onDone();
+                      onDone(xhr);
                     },
                     parameters);
 }
