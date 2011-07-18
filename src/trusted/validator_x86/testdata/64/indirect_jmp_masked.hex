@@ -1,5 +1,5 @@
 # Model a case where an indirect jump is properly masked.
 83 e2 e0
-4D8D0C17
-41FFE1
+4D 8D 0C 17
+41 FF E1
 

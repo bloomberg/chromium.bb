@@ -1,5 +1,5 @@
 # Models a jump to the begining of an atomic instruction sequence.
 EB 00
 83 e2 e0
-4D8D0C17
-41FFE1
+4D 8D 0C 17
+41 FF E1

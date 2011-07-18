@@ -1,2 +1,2 @@
 # Example of assigning a value to a segment register, which should be illegal.
-8e00
+8e 00
