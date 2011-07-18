@@ -15,11 +15,14 @@
 
 
 const char kBodyTextKey[] = "bodyText";
+const char kExtensionIdKey[] = "extensionId";
 const char kIconDataKey[] = "iconData";
 const char kLinkTextKey[] = "linkText";
 const char kLinkUrlKey[] = "linkUrl";
 const char kTitleKey[] = "title";
 
+const char kInvalidExtensionIdError[] =
+    "Invalid extension id";
 const char kMissingLinkTextError[] =
     "You must specify linkText if you use linkUrl";
 
@@ -84,7 +87,18 @@ bool AppNotifyFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(details != NULL);
 
   scoped_ptr<AppNotification> item(new AppNotification());
-  item->extension_id = extension_id();
+
+  // TODO(asargent) remove this before the API leaves experimental.
+  std::string id = extension_id();
+  if (details->HasKey(kExtensionIdKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kExtensionIdKey, &id));
+    if (!profile()->GetExtensionService()->GetExtensionById(id, true)) {
+      error_ = kInvalidExtensionIdError;
+      return false;
+    }
+  }
+
+  item->extension_id = id;
 
   if (details->HasKey(kTitleKey))
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kTitleKey, &item->title));
@@ -127,18 +141,28 @@ bool AppNotifyFunction::RunImpl() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       Source<Profile>(profile_),
-      Details<const std::string>(&extension_id()));
+      Details<const std::string>(&id));
 
   return true;
 }
 
 bool AppClearAllNotificationsFunction::RunImpl() {
+  std::string id = extension_id();
+  DictionaryValue* details = NULL;
+  if (args_->GetDictionary(0, &details) && details->HasKey(kExtensionIdKey)) {
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kExtensionIdKey, &id));
+    if (!profile()->GetExtensionService()->GetExtensionById(id, true)) {
+      error_ = kInvalidExtensionIdError;
+      return false;
+    }
+  }
+
   AppNotificationManager* manager =
       profile()->GetExtensionService()->app_notification_manager();
-  manager->ClearAll(extension_id());
+  manager->ClearAll(id);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
       Source<Profile>(profile_),
-      Details<const std::string>(&extension_id()));
+      Details<const std::string>(&id));
   return true;
 }

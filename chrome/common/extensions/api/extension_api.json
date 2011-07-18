@@ -6368,10 +6368,10 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "passive": {
-                "type": "boolean",
-                "optional": "true",
-                "description": "Whether the notification should be passive (true) or active (false). The default value is true."
+              "extensionId": {
+                "type": "string",
+                "optional": true,
+                "description": "An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable."
               },
               "title": {
                 "type": "string",
@@ -6394,6 +6394,7 @@
                 "description": "If a linkUrl is provided, this is required and will be used as the linkified text. It should be relatively short."
               },
               "iconData": {
+                "nodoc": true,
                 "type": "object",
                 "isInstanceOf": "ImageData",
                 "optional": true,
@@ -6418,6 +6419,18 @@
         "description": "Clears all previously sent notifications.",
         "parameters": [
           {
+            "type": "object",
+            "name": "details",
+            "optional": true,
+            "properties": {
+              "extensionId": {
+                "type": "string",
+                "optional": true,
+                "description": "An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable."
+              }
+            }
+          },
+          {
             "type": "function",
             "name": "callback",
             "optional": true,
@@ -6427,8 +6440,21 @@
       },
       {
         "name": "setLaunchIcon",
+        "nodoc": true,
         "type": "function",
         "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "optional": true,
+            "properties": {
+              "extensionId": {
+                "type": "string",
+                "optional": true,
+                "description": "An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable."
+              }
+            }
+          },
           {
             "type": "object",
             "name": "iconData",
@@ -6448,9 +6474,22 @@
       },
       {
         "name": "resetLaunchIcon",
+        "nodoc": true,
         "type": "function",
         "description": "Resets the app's launch icon to its default value as specified in the manifest.json file.",
         "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "optional": true,
+            "properties": {
+              "extensionId": {
+                "type": "string",
+                "optional": true,
+                "description": "An optional id to do notifications for an app other than the calling app. This is just to allow prototyping with an extension that sends notifications on behalf of apps that don't support notifications yet; this will be removed before the API becomes stable."
+              }
+            }
+          },
           {
             "type": "function",
             "name": "callback",
