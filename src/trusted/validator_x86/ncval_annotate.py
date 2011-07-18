@@ -24,7 +24,7 @@ addr2line_regexp = re.compile(r"(.*):(\d+)$")
 def check(obj_file, output_fh):
   def disassemble_address(addr):
     proc = subprocess.Popen(
-      ["nacl-objdump", "-d", obj_file,
+      ["x86_64-nacl-objdump", "-d", obj_file,
        "--start-address", "0x" + addr,
        "--stop-address", "0x%x" % (int(addr, 16) + 16)],
     stdout=subprocess.PIPE)
@@ -40,7 +40,8 @@ def check(obj_file, output_fh):
     # does not tell us when the output ends for each input
     # address.
     proc = subprocess.Popen(
-      ["nacl-addr2line", "--functions", "--inlines", "-e", obj_file, addr],
+      ["x86_64-nacl-addr2line", "--functions", "--inlines",
+       "-e", obj_file, addr],
       stdout=subprocess.PIPE)
     for info in proc.stdout:
       match = addr2line_regexp.match(info.rstrip())

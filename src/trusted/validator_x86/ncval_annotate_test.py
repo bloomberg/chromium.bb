@@ -39,7 +39,7 @@ void _start() {
     temp_dir = self.make_temp_dir()
     source_file = os.path.join(temp_dir, "code.c")
     write_file(source_file, source)
-    testutils.check_call(["nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
+    testutils.check_call(["x86_64-nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
                           source_file,
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
@@ -103,7 +103,7 @@ VALIDATOR: ADDRESS: Illegal assignment to RSP
     temp_dir = self.make_temp_dir()
     source_file = os.path.join(temp_dir, "code.c")
     write_file(source_file, source)
-    testutils.check_call(["nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
+    testutils.check_call(["x86_64-nacl-gcc", "-g", "-nostartfiles", "-nostdlib",
                           source_file,
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
