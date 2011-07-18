@@ -4852,6 +4852,20 @@
    fun:_ZN3net16HttpStreamParser20ParseResponseHeadersEv
    fun:_ZN3net16HttpStreamParser21DoReadHeadersCompleteEi
 }
+{
+   bug_89596
+   Memcheck:Addr4
+   fun:_ZNK5views4View8ContainsEPKS0_
+   fun:_ZN5views12FocusManager11ViewRemovedEPNS_4ViewE
+   fun:_ZN5views6Widget20ViewHierarchyChangedEbPNS_4ViewES2_
+   fun:_ZN5views8internal8RootView20ViewHierarchyChangedEbPNS_4ViewES3_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   ...
+   fun:_ZN5views4View28PropagateRemoveNotificationsEPS0_
+   fun:_ZN5views4View17DoRemoveChildViewEPS0_bbb
+   fun:_ZN5views4View19RemoveAllChildViewsEb
+   fun:_ZN5views8internal8RootViewD0Ev
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
