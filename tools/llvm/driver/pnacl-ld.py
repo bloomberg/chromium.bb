@@ -34,6 +34,7 @@ EXTRA_ENV = {
   'SHARED'   : '0',
   'STATIC'   : '0',
   'PIC'      : '0',
+  'STDLIB'   : '1',
 
   'BAREBONES_LINK' : '0',
 
@@ -75,11 +76,34 @@ EXTRA_ENV = {
   'WRAP_SYMBOLS': '',
 
   # Common to both GOLD and BFD.
-  'LD_FLAGS'       : '-nostdlib ${LD_SEARCH_DIRS} ' +
-                     '${SHARED ? -shared} ${STATIC ? -static}',
+  'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
+                     '${SHARED ? -shared} ${STATIC ? -static} ' +
+                     '${LIBMODE_GLIBC && ' +
+                     '!STATIC ? ${@AddPrefix:-rpath-link=:SEARCH_DIRS}}',
 
-  'LD_SEARCH_DIRS' : '',
-  'SEARCH_DIRS'    : '',
+
+
+  'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
+  'SEARCH_DIRS_USER'   : '',
+  'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
+                         '${LIBS_SDK_BC}/ ${LIBS_SDK_ARCH}/ ' +
+                         '${LIBS_ARCH}/ ${LIBS_BC}/}',
+
+  # Standard Library Directories
+  'LIBS_BC'          : '${BASE}/lib',
+
+  'LIBS_ARCH'        : '${LIBS_%ARCH%}',
+  'LIBS_ARM'         : '${BASE}/lib-arm',
+  'LIBS_X8632'       : '${BASE}/lib-x86-32',
+  'LIBS_X8664'       : '${BASE}/lib-x86-64',
+
+  'LIBS_SDK_BC'      : '${BASE_SDK}/lib',
+
+  'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
+  'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
+  'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
+  'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
+
 
   'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
   'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
@@ -91,8 +115,17 @@ EXTRA_ENV = {
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
 
-  # For allowing override of the builtin linker script.
-  'LD_SCRIPT'      : '',
+  'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
+
+  'LD_SCRIPT'      : '${LD_SCRIPT_%LIBMODE%_%EMITMODE%}',
+
+  # For newlib, omit the -T flag (the builtin linker script works fine).
+  'LD_SCRIPT_newlib_static': '',
+
+  # For glibc, the linker script is always explicitly specified.
+  'LD_SCRIPT_glibc_static' : '${LD_EMUL}.x.static',
+  'LD_SCRIPT_glibc_shared' : '${LD_EMUL}.xs',
+  'LD_SCRIPT_glibc_dynamic': '${LD_EMUL}.x',
 
   'BCLD'      : '${LD_GOLD}',
   'BCLD_FLAGS': '${LD_GOLD_FLAGS} ${!SHARED ? --undef-sym-check} ' +
@@ -122,13 +155,12 @@ LDPatterns = [
 
   ( '-static',         "env.set('STATIC', '1')\n"
                        "env.set('SHARED', '0')"),
+  ( '-nostdlib',       "env.set('STDLIB', '0')"),
 
   ( ('-L', '(.+)'),
-    "env.append('SEARCH_DIRS', pathtools.normalize($0))\n"
-    "env.append('LD_SEARCH_DIRS', '-L'+pathtools.normalize($0))"),
+    "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
   ( '-L(.+)',
-    "env.append('SEARCH_DIRS', pathtools.normalize($0))\n"
-    "env.append('LD_SEARCH_DIRS', '-L'+pathtools.normalize($0))"),
+    "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
 
   ( ('(-rpath)','(.*)'),
     "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
@@ -142,7 +174,9 @@ LDPatterns = [
 
   ( ('(-Ttext)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
   ( ('(-Ttext=.*)'),     "env.append('LD_FLAGS', $0)"),
-  ( ('-T', '(.*)'),    "env.set('LD_SCRIPT', pathtools.normalize($0))"),
+
+  # This overrides the builtin linker script.
+  ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', pathtools.normalize($0))"),
 
   ( ('-e','(.*)'),     "env.append('LD_FLAGS', '-e', $0)"),
   ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
@@ -196,6 +230,11 @@ LDPatterns = [
 def main(argv):
   ParseArgs(argv, LDPatterns)
 
+  if env.getbool('LIBMODE_NEWLIB'):
+    if env.getbool('SHARED'):
+      Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
+    env.set('STATIC', '1')
+
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
@@ -204,6 +243,19 @@ def main(argv):
 
   # If the user passed -arch, then they want native output.
   arch_flag_given = GetArch() is not None
+
+  if not arch_flag_given:
+    # If the arch flag was not given, we must auto-detect the link arch.
+    # This is for two reasons:
+    # 1) gold (for bitcode linking) requires an architecture
+    # 2) we don't know which standard search directories to use
+    #    until ARCH is correctly set. (see SEARCH_DIRS_BUILTIN)
+    DetectArch(inputs)
+
+  assert(GetArch() is not None)
+
+  # If there's a linker script which needs to be searched for, find it.
+  LocateLinkerScript()
 
   # Expand all -l flags
   ExpandLibFlags(inputs)
@@ -223,16 +275,6 @@ def main(argv):
   # END NATIVE HACK
 
   has_native, has_bitcode = AnalyzeInputs(inputs)
-
-  # There is an architecture bias here. To link the bitcode together,
-  # we need to specify the native libraries to be used in the final linking,
-  # just so the linker can resolve the symbols.
-  # TODO(pdox): This is a bias that we should try to remove.
-  if GetArch() is None:
-    env.set('ARCH', 'X8632')
-
-  if env.getbool('SHARED') and env.getbool('LIBMODE_NEWLIB'):
-    Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
 
   # If there is bitcode, we do a bitcode link. If -arch is also specified,
   # we invoke pnacl-translate afterwards.
@@ -300,7 +342,24 @@ def ExpandLibFlags(inputs):
     if IsLib(f):
       inputs[i] = FindLib(f)
 
-def FindLinkerScript(inputs):
+def LocateLinkerScript():
+  ld_script = env.getone('LD_SCRIPT')
+  if not ld_script:
+    # No linker script specified
+    return
+
+  if ld_script.startswith('/'):
+    # Already absolute path
+    return
+
+  search_dirs = env.get('SEARCH_DIRS')
+  path = FindFile([ld_script], search_dirs)
+  if not path:
+    Log.Fatal("Unable to find linker script '%s'", ld_script)
+
+  env.set('LD_SCRIPT', path)
+
+def FindFirstLinkerScriptInput(inputs):
   for i in xrange(len(inputs)):
     f = inputs[i]
     if IsFlag(f):
@@ -313,7 +372,7 @@ def FindLinkerScript(inputs):
 def ExpandLinkerScripts(inputs):
   while True:
     # Find a ldscript in the input list
-    i, path = FindLinkerScript(inputs)
+    i, path = FindFirstLinkerScriptInput(inputs)
 
     # If none, we are done.
     if path is None:
@@ -353,7 +412,9 @@ def ForceSegmentGap(inputs):
 def IsBitcodeInput(f):
   if IsFlag(f):
     return False
-  return FileType(f) in ['bclib','po']
+  # .pso files are not considered bitcode input because
+  # they are translated to .so before invoking ld
+  return IsBitcodeArchive(f) or FileType(f) == 'po'
 
 def RemoveBitcode(inputs):
   # Library order is important. We need to reinsert the
@@ -376,7 +437,7 @@ def RemoveBitcode(inputs):
 # Determine the kind of input files.
 # Make sure the input files are valid.
 # Make sure the input files have matching architectures.
-# Returns (has_native, has_bitcode, arch)
+# Returns (has_native, has_bitcode)
 def AnalyzeInputs(inputs):
   has_native = False
   has_bitcode = False
@@ -385,28 +446,54 @@ def AnalyzeInputs(inputs):
   for f in inputs:
     if IsFlag(f):
       continue
-
-    intype = FileType(f)
-
-    if intype in ['o','so']:
+    elif IsBitcodeInput(f):
+      has_bitcode |= True
+    elif IsNative(f):
       ArchMerge(f, True)
       has_native |= True
-    elif intype in ['nlib']:
-      # TODO(pdox): Pull ARCH info from inside native archives
+    elif IsNativeArchive(f):
+      ArchMerge(f, True)
       has_native |= True
-    elif intype in ['pso']:
+    elif FileType(f) == 'pso':
       pass
-    elif intype in ['bclib','po']:
-      has_bitcode |= True
     else:
       Log.Fatal("%s: Unexpected type of file for linking (%s)",
-                pathtools.touser(f), intype)
+                pathtools.touser(f), FileType(f))
     count += 1
 
   if count == 0:
     Log.Fatal("no input files")
 
   return (has_native, has_bitcode)
+
+def DetectArch(inputs):
+  # Scan the inputs looking for a native file (.o or .so).
+  # At this point, library searches can only use the directories passed in
+  # with -L. Since we can't search the arch-specific standard search
+  # directories, there may be missing libraries, which we must ignore.
+  search_dirs = env.get('SEARCH_DIRS_USER')
+
+  for f in inputs:
+    if IsFlag(f):
+      continue
+    if IsLib(f):
+      f = FindLib(f, search_dirs, must_find = False)
+      if not f:
+        # Ignore missing libraries
+        continue
+
+    # TODO(pdox): If needed, we could also grab ARCH from linker scripts,
+    # either directly (using OUTPUT_ARCH or OUTPUT_FORMAT) or
+    # indirectly by expanding the linker script's INPUTS/GROUP.
+    if IsNative(f) or IsNativeArchive(f):
+      ArchMerge(f, True)
+      return
+
+  # If we've reached here, there are no externally-specified native objects.
+  # It should be safe to assume the default neutral architecture.
+  SetArch('X8632')
+  return
+
 
 def RunLDSRPC():
   CheckPresenceSelUniversal()
@@ -709,18 +796,28 @@ def LinkNative(inputs, output):
   env.pop()
   return
 
-def FindLib(arg):
+def FindFile(search_names, search_dirs):
+  for curdir in search_dirs:
+    for name in search_names:
+      path = pathtools.join(curdir, name)
+      if pathtools.exists(path):
+        return path
+  return None
+
+def FindLib(arg, searchdirs = None, must_find = True):
   """Returns the full pathname for the library input.
      For example, name might be "-lc" or "-lm".
      Returns None if the library is not found.
   """
   assert(IsLib(arg))
   name = arg[len('-l'):]
+  is_whole_name = (name[0] == ':')
 
-  searchdirs = env.get('SEARCH_DIRS')
+  if searchdirs is None:
+    searchdirs = env.get('SEARCH_DIRS')
+
   searchnames = []
-
-  if name[0] == ':':
+  if is_whole_name:
     # -l:filename  (search for the filename)
     name = name[1:]
     searchnames.append(name)
@@ -740,13 +837,18 @@ def FindLib(arg):
     for ext in extensions:
       searchnames.append('lib' + name + '.' + ext)
 
-  for curdir in searchdirs:
-    for name in searchnames:
-      guess = pathtools.join(curdir, name)
-      if pathtools.exists(guess):
-        return guess
+  foundpath = FindFile(searchnames, searchdirs)
+  if foundpath:
+    return foundpath
 
-  Log.Fatal("Unable to find library '%s'", arg)
+  if must_find:
+    if is_whole_name:
+      label = name
+    else:
+      label = arg
+    Log.Fatal("Cannot find '%s'", label)
+
+  return None
 
 # Given linker arguments (including -L, -l, and filenames),
 # returns the list of files which are pulled by the linker.

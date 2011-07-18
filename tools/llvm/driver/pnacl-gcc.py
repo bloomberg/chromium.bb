@@ -66,13 +66,6 @@ EXTRA_ENV = {
                   '-nostdinc -DNACL_LINUX=1 -D__native_client__=1 ' +
                   '-D__pnacl__=1 ${BIAS_%BIAS%}',
 
-
-  'PREFIXES'        : '${PREFIXES_USER} ${PREFIXES_BUILTIN}',
-  'PREFIXES_BUILTIN': '${STDLIB ? ' +
-                      '${LIBS_SDK}/ ${LIBS_SDK_ARCH}/ ' +
-                      '${LIBS_ARCH}/ ${LIBS_BC}/}',
-  'PREFIXES_USER'   : '', # System prefixes specified by using the -B flag.
-
   'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
   'ISYSTEM_BUILTIN': '${STDINC ? ${ISYSTEM_%LIBMODE%}}',
   'ISYSTEM_USER'   : '',  # System include directories specified by
@@ -97,82 +90,52 @@ EXTRA_ENV = {
     '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
     '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
 
-  # ${LIBS_ARCH} must come before ${LIBS_BC} so that the native glibc/libnacl
-  # takes precedence over bitcode libc.
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
-               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
-               '${LIBMODE_GLIBC && ' +
-                 '!STATIC ? ${@AddPrefix:-rpath-link=:SEARCH_DIRS}}',
+               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
 
   'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
   'SEARCH_DIRS_USER' : '', # Directories specified using -L
+  'PREFIXES'         : '', # Prefixes specified by using the -B flag.
 
   # Library Strings
   'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
 
-  # Standard Library Directories
-  'LIBS_BC'          : '${BASE}/lib',
-
-  'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE}/lib-arm',
-  'LIBS_X8632'       : '${BASE}/lib-x86-32',
-  'LIBS_X8664'       : '${BASE}/lib-x86-64',
-
-  'LIBS_SDK'         : '${BASE_SDK}/lib',
-
-  'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
-  'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
-  'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
-  'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
-
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_%LIBMODE%_%EMITMODE%}' +
                       ' : ${LD_ARGS_nostdlib}}',
 
-  # This information is also in pnacl-ld.
-  # This is currently needed here because we have to manually specify a linker
-  # script for glibc linking.
-  # TODO(pdox): Fix binutils so that the built-in linker scripts are correct.
-  'EMUL'        : '${EMUL_%ARCH%}',
-  'EMUL_ARM'    : 'armelf_nacl',
-  'EMUL_X8632'  : 'elf_nacl',
-  'EMUL_X8664'  : 'elf64_nacl',
-
   # ${ld_inputs} signifies where to place the objects and libraries
   # provided on the command-line.
-  'LD_ARGS_nostdlib': '-barebones-link ${ld_inputs}',
+  'LD_ARGS_nostdlib': '-barebones-link -nostdlib ${ld_inputs}',
 
   'LD_ARGS_newlib_static':
-    '-static ${@FindObj:crt1.o} ${@FindObj:nacl_startup.bc} ${ld_inputs} ' +
+    '-l:crt1.o -l:nacl_startup.bc ${ld_inputs} ' +
     '--start-group -lgcc_eh -lgcc -lehsupport -lc -lnacl ' +
-    '${LIBSTDCPP} ${@FindObj:libcrt_platform.a} --end-group',
+    '${LIBSTDCPP} -l:libcrt_platform.a --end-group',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
-    '-T ${@FindLinkerScript:.x.static} ' +
-    '${@FindObj:crt1.o} ${@FindObj:crti.o} ${@FindObj:crtbeginT.o} ' +
+    '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '--start-group -lgcc -lgcc_eh -lehsupport -lc ' +
-    '--end-group ${@FindObj:crtend.o} ${@FindObj:crtn.o}',
+    '--end-group -l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared':
-    '-T ${@FindLinkerScript:.xs} ' +
-    '--eh-frame-hdr -shared ${@FindObj:crti.o} ${@FindObj:crtbeginS.o} ' +
+    '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${@FindObj:crtendS.o} ${@FindObj:crtn.o}',
+    '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
-    '-T ${@FindLinkerScript:.x} ' +
-    '--eh-frame-hdr ${@FindObj:crt1.o} ${@FindObj:crti.o} ' +
-    '${@FindObj:crtbegin.o} ${ld_inputs} ${LIBSTDCPP} ' +
+    '--eh-frame-hdr -l:crt1.o -l:crti.o ' +
+    '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
     '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -lehsupport ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '${@FindObj:crtend.o} ${@FindObj:crtn.o}',
+    '-l:crtend.o -l:crtn.o',
 
   'LIBSTDCPP'       : '${USE_GXX ? -lstdc++ -lm }',
 
@@ -198,7 +161,7 @@ def AddBPrefix(prefix):
   if pathtools.isdir(prefix) and not prefix.endswith('/'):
     prefix += '/'
 
-  env.append('PREFIXES_USER', prefix)
+  env.append('PREFIXES', prefix)
 
   # Add prefix/include to isystem if it exists
   include_dir = prefix + 'include'
@@ -350,15 +313,8 @@ def main(argv):
   if len(inputs) == 0:
     Log.Fatal('No input files')
 
-  # Was -arch specified?
-  arch_flag_given = GetArch() is not None
-
-  if not arch_flag_given:
-    # There's an architecture bias here: ARCH needs to be set
-    # since we may have to link against native objects during
-    # bitcode linking.
-    env.set('ARCH', 'X8632')
-    env.set('ARCH_LOCKED', '0')
+  # If -arch was given, we are compiling directly to native code
+  compiling_to_native = GetArch() is not None
 
   gcc_mode = env.getone('GCC_MODE')
 
@@ -371,16 +327,16 @@ def main(argv):
 
   output_type_map = {
     ('-E', False) : 'pp',
-    ('-E', True): 'pp',
+    ('-E', True)  : 'pp',
     ('-c', False) : 'po',
-    ('-c', True): 'o',
+    ('-c', True)  : 'o',
     ('-S', False) : 'll',
-    ('-S', True): 's',
+    ('-S', True)  : 's',
     ('',   False) : bclink_output,
-    ('',   True): link_output
+    ('',   True)  : link_output
   }
 
-  output_type = output_type_map[(gcc_mode, arch_flag_given)]
+  output_type = output_type_map[(gcc_mode, compiling_to_native)]
   needs_linking = (gcc_mode == '')
 
   # There are multiple input files and no linking is being done.
@@ -440,15 +396,11 @@ def main(argv):
     if f.startswith('-'):
       continue
     intype = FileType(f)
-    if intype in ('o','nlib','s','S'):
+    if intype in ('o','s','S') or IsNativeArchive(f):
       if not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
                   'Use --pnacl-allow-native to override.', pathtools.touser(f))
-      assert(intype in ('o','nlib'))
-      # ARCH must match
-      if IsELF(f):
-        ArchMerge(f, True)
-    assert(intype in ('po','o','bclib','nlib','so','pso','ldscript'))
+    assert(intype in ('po','o','so','pso','ldscript') or IsArchive(f))
 
   # Fix the user-specified linker arguments
   ld_inputs = []
@@ -463,39 +415,11 @@ def main(argv):
   # Invoke the linker
   env.set('ld_inputs', *ld_inputs)
 
-  # Note: The evaluation of LD_ARGS may have the side effect of
-  # changing the ARCH if it is not already locked. (See FindObj)
   ld_args = env.get('LD_ARGS')
   ld_flags = env.get('LD_FLAGS')
 
   RunDriver('pnacl-ld', ld_flags + ld_args + ['-o', output])
   return 0
-
-@env.register
-def FindLinkerScript(suffix):
-  name = env.getone('EMUL') + suffix
-  return FindObj(name)
-
-@env.register
-def FindObj(name):
-  # This is needed because ${A ? B : C} always evaluates both B and C.
-  # (See the definition of LD_ARG)
-  # TODO(pdox): Fix the evaluator so that short-circuiting evaluation is used.
-  if not env.getbool('STDLIB'):
-    return name
-
-  prefixes = env.get('PREFIXES')
-
-  for prefix in prefixes:
-    guess = prefix + name
-    if pathtools.exists(guess):
-      # If the file is ELF, check ARCH.
-      if IsELF(guess):
-        if not ArchMerge(guess, False):
-          continue
-      return guess
-
-  Log.Fatal("Cannot find %s", name)
 
 def CompileOne(input, output_type, namegen, output = None):
   if output is None:

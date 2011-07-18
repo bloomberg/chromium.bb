@@ -41,9 +41,11 @@ def GetArchiveType(filename):
     data = fp.read(member.size)
     if member.is_regular_file:
       if data.startswith('BC'):
-        found_type = 'bclib'
-      elif driver_tools.DecodeELFHeader(data, filename):
-        found_type = 'nlib'
+        found_type = 'archive-bc'
+      else:
+        elf_header = driver_tools.DecodeELFHeader(data, filename)
+        if elf_header:
+          found_type = 'archive-%s' % elf_header.arch
 
   if not found_type:
     driver_tools.Log.Fatal("%s: Unable to determine archive type", filename)

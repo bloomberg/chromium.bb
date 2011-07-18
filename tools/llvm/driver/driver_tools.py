@@ -61,12 +61,6 @@ INITIAL_ENV = {
 
   # Driver settings
   'ARCH'        : '',     # Target architecture
-  'ARCH_LOCKED' : '0',    # If 1, ARCH cannot be changed.
-                          # This is true when we've seen actual objects
-                          # of that arch in the link, or if -arch was specified.
-                          # In pnacl-gcc, if -arch was not specified, then ARCH
-                          # will default to X8632, but may be changed if we
-                          # encounter a native object of a different arch.
 
   'DRY_RUN'     : '0',
   'DEBUG'       : '0',    # Print out internal actions
@@ -184,8 +178,7 @@ DriverPatterns = [
   ( '--pnacl-driver-recurse',             "env.set('RECURSE', '1')"),
   ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
-  ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))\n"
-                                       "env.set('ARCH_LOCKED', '1');"),
+  ( ('-arch', '(.+)'),                 "SetArch($0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
@@ -774,6 +767,10 @@ def SimpleCache(f):
   return wrapper
 
 @SimpleCache
+def IsNative(filename):
+  return FileType(filename) in ['o','so']
+
+@SimpleCache
 def IsBitcode(filename):
   fp = DriverOpen(filename, 'rb')
   header = fp.read(2)
@@ -781,6 +778,19 @@ def IsBitcode(filename):
   if header == 'BC':
     return True
   return False
+
+@SimpleCache
+def IsArchive(filename):
+  return artools.IsArchive(filename)
+
+@SimpleCache
+def IsBitcodeArchive(filename):
+  filetype = FileType(filename)
+  return filetype == 'archive-bc'
+
+@SimpleCache
+def IsNativeArchive(filename):
+  return IsArchive(filename) and not IsBitcodeArchive(filename)
 
 class ELFHeader(object):
   ELF_MAGIC = '\x7fELF'
@@ -919,7 +929,7 @@ def FileType(filename):
   #             up to 4 times, when we only need to do it once. The
   #             OS cache prevents us from hitting the disk, but this
   #             is still slower than it needs to be.
-  if artools.IsArchive(filename):
+  if IsArchive(filename):
     return artools.GetArchiveType(filename)
 
   if IsELF(filename):
@@ -1555,10 +1565,13 @@ def DriverMain(main):
   tokens = pathtools.basename(DriverPath()).split('-')
   if len(tokens) > 2:
     arch = FixArch(tokens[-2])
-    env.set('ARCH', arch)
+    SetArch(arch)
 
   ret = main(main_args)
   DriverExit(ret)
+
+def SetArch(arch):
+  env.set('ARCH', FixArch(arch))
 
 def GetArch(required = False):
   arch = env.getone('ARCH')
@@ -1570,9 +1583,9 @@ def GetArch(required = False):
 
   return arch
 
-# Read an ELF file to determine the machine type. If ARCH is already set and
-# locked, make sure the file has the same architecture. If ARCH is not locked,
-# set and lock ARCH to the file's architecture.
+# Read an ELF file to determine the machine type. If ARCH is already set,
+# make sure the file has the same architecture. If ARCH is not set,
+# set the ARCH to the file's architecture.
 #
 # Returns True if the file matches ARCH.
 #
@@ -1580,28 +1593,32 @@ def GetArch(required = False):
 # must_match is False. If must_match is True, then a fatal error is generated
 # instead.
 def ArchMerge(filename, must_match):
-  elfheader = GetELFHeader(filename)
-  if not elfheader:
-    Log.Fatal("%s: Cannot read ELF header", filename)
+  filetype = FileType(filename)
+  if filetype in ('o','so'):
+    elfheader = GetELFHeader(filename)
+    if not elfheader:
+      Log.Fatal("%s: Cannot read ELF header", filename)
+    new_arch = elfheader.arch
+  elif IsNativeArchive(filename):
+    new_arch = filetype[len('archive-'):]
+  else:
+    Log.Fatal('%s: Unexpected file type in ArchMerge', filename)
 
-  arch_locked = env.getbool('ARCH_LOCKED')
   existing_arch = GetArch()
-  arch = elfheader.arch
 
-  if not arch_locked:
-    env.set('ARCH', arch)
-    env.set('ARCH_LOCKED', '1')
+  if not existing_arch:
+    SetArch(new_arch)
     return True
-  elif arch_locked and arch != existing_arch:
+  elif new_arch != existing_arch:
     if must_match:
       msg = "%s: Incompatible object file (%s != %s)"
       logfunc = Log.Fatal
     else:
       msg = "%s: Skipping incompatible object file (%s != %s)"
       logfunc = Log.Warning
-    logfunc(msg, filename, arch, existing_arch)
+    logfunc(msg, filename, new_arch, existing_arch)
     return False
-  else: # archlocked and arch == existing_arch
+  else: # existing_arch and new_arch == existing_arch
     return True
 
 
