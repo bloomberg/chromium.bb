@@ -276,6 +276,9 @@ const char kOutdatedPluginLearnMoreURL[] =
 const char kBlockedPluginLearnMoreURL[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=1247383";
 
+const char kLearnMoreRegisterProtocolHandlerURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=1382847";
+
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.

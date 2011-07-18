@@ -245,6 +245,9 @@ extern const char kOutdatedPluginLearnMoreURL[];
 // The URL for the "Learn more" page for the blocked plugin infobar.
 extern const char kBlockedPluginLearnMoreURL[];
 
+// The URL for the "Learn more" page for register protocol handler infobars.
+extern const char kLearnMoreRegisterProtocolHandlerURL[];
+
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();

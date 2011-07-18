@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -62,11 +64,13 @@ bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
-  // TODO(koz): Make this a 'learn more' link.
-  return string16();
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  // Ignore the click dispostion and always open in a new top level tab.
+  tab_contents_->OpenURL(GURL(chrome::kLearnMoreRegisterProtocolHandlerURL),
+                         GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   return false;
 }
