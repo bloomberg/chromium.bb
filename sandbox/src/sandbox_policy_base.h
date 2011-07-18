@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,15 @@
 
 #include <windows.h>
 #include <list>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
-#include "sandbox/src/crosscall_server.h"
-#include "sandbox/src/handle_closer.h"
 #include "sandbox/src/ipc_tags.h"
-#include "sandbox/src/policy_engine_opcodes.h"
-#include "sandbox/src/policy_engine_params.h"
 #include "sandbox/src/sandbox_policy.h"
 #include "sandbox/src/win_utils.h"
+#include "sandbox/src/crosscall_server.h"
+
+#include "sandbox/src/policy_engine_params.h"
+#include "sandbox/src/policy_engine_opcodes.h"
 
 namespace sandbox {
 
@@ -102,11 +100,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
     return SBOX_ALL_OK;
   }
 
-  virtual ResultCode AddKernelObjectToClose(const char16* handle_type,
-                                            const char16* handle_name) {
-    return handle_closer_.AddHandle(handle_type, handle_name);
-  }
-
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel(). Returns the standard windows of ::GetLastError().
   DWORD MakeJobObject(HANDLE* job);
@@ -141,9 +134,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   // Sets up interceptions for a new target.
   bool SetupAllInterceptions(TargetProcess* target);
 
-  // Sets up the handle closer for a new target.
-  bool SetupHandleCloser(TargetProcess* target);
-
   // This lock synchronizes operations on the targets_ collection.
   CRITICAL_SECTION lock_;
   // Maintains the list of target process associated with this policy.
@@ -173,10 +163,6 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   bool relaxed_interceptions_;
   // The list of dlls to unload in the target process.
   std::vector<std::wstring> blacklisted_dlls_;
-  // This is a map of handle-types to names that we need to close in the
-  // target process. A null set means we need to close all handles of the
-  // given type.
-  HandleCloser handle_closer_;
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;
