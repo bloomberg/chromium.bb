@@ -2,17 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From trusted/ppp_broker.idl modified Sat Jul 16 16:51:03 2011. */
+
 #ifndef PPAPI_C_TRUSTED_PPP_BROKER_H_
 #define PPAPI_C_TRUSTED_PPP_BROKER_H_
 
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_stdint.h"
-
-#if __GNUC__ >= 4
-#define PP_EXPORT __attribute__ ((visibility("default")))
-#elif defined(_MSC_VER)
-#define PP_EXPORT __declspec(dllexport)
-#endif
+#include "ppapi/c/pp_macros.h"
 
 /**
  * @file
@@ -20,7 +16,20 @@
  * broker.
  */
 
+
 // {PENDING: undefine PP_EXPORT?}
+
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_stdint.h"
+
+
+#if __GNUC__ >= 4
+
+#define PP_EXPORT __attribute__ ((visibility("default")))
+#elif defined(_MSC_VER)
+#define PP_EXPORT __declspec(dllexport)
+#endif
+
 
 
 /* We don't want name mangling for these external functions.  We only need
@@ -90,3 +99,4 @@ PP_EXPORT void PPP_ShutdownBroker();
 #endif
 
 #endif  /* PPAPI_C_TRUSTED_PPP_BROKER_H_ */
+

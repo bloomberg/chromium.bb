@@ -2,13 +2,28 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From trusted/ppb_buffer_trusted.idl modified Fri Jul 15 13:34:45 2011. */
+
 #ifndef PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_
 
-#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
 
-#define PPB_BUFFER_TRUSTED_INTERFACE "PPB_BufferTrusted;0.1"
+/**
+ * @file
+ * This file defines the trusted buffer interface.
+ */
+
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
+#define PPB_BUFFER_TRUSTED_INTERFACE_0_1 "PPB_BufferTrusted;0.1"
+#define PPB_BUFFER_TRUSTED_INTERFACE PPB_BUFFER_TRUSTED_INTERFACE_0_1
 
 struct PPB_BufferTrusted {
   /**
@@ -20,5 +35,9 @@ struct PPB_BufferTrusted {
    */
   int32_t (*GetSharedMemory)(PP_Resource buffer, int* handle);
 };
+/**
+ * @}
+ */
 
-#endif  // PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_
+#endif  /* PPAPI_C_TRUSTED_PPB_BUFFER_TRUSTED_H_ */
+
