@@ -61,6 +61,7 @@ extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUITextfieldsURL[];
 extern const char kChromeUIVersionURL[];
+extern const char kChromeUIWorkersURL[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessage[];

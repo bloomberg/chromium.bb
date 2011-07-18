@@ -65,6 +65,7 @@ const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 const char kChromeUIVersionURL[] = "chrome://version/";
+const char kChromeUIWorkersURL[] = "chrome://workers";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
