@@ -81,9 +81,10 @@ UI_API bool GetWindowRect(XID window, gfx::Rect* rect);
 UI_API bool PropertyExists(XID window, const std::string& property_name);
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
-bool GetIntProperty(XID window, const std::string& property_name, int* value);
-bool GetIntArrayProperty(XID window, const std::string& property_name,
-                         std::vector<int>* value);
+UI_API bool GetIntProperty(XID window, const std::string& property_name,
+                           int* value);
+UI_API bool GetIntArrayProperty(XID window, const std::string& property_name,
+                                std::vector<int>* value);
 UI_API bool GetAtomArrayProperty(XID window, const std::string& property_name,
                                  std::vector<Atom>* value);
 UI_API bool GetStringProperty(

@@ -20,10 +20,10 @@
 namespace ui {
 
 // Creates and returns a key event. Passes ownership to the caller.
-GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
-                             bool press,
-                             guint gdk_key,
-                             guint state);
+UI_API GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
+                                    bool press,
+                                    guint gdk_key,
+                                    guint state);
 
 // Creates the proper sequence of key events for a key press + release.
 // Ownership of the events in the vector is passed to the caller.

@@ -48,7 +48,7 @@ UI_API KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
 UI_API int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 
-KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
+UI_API KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
 
 } // namespace ui
 
