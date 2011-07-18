@@ -95,10 +95,15 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     }
   }
 
+  virtual const net::BoundNetLog& NetLog() const {
+    return net_log_;
+  }
+
  private:
   net::IPEndPoint address_;
   std::deque<UDPPacket>* sent_packets_;
   std::deque<UDPPacket> incoming_packets_;
+  net::BoundNetLog net_log_;
 
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint* recv_address_;
