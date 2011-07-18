@@ -1789,11 +1789,14 @@ void Browser::FindPrevious() {
 }
 
 void Browser::Zoom(PageZoom::Function zoom_function) {
+  if (is_devtools())
+    return;
+
   static const UserMetricsAction kActions[] = {
-      UserMetricsAction("ZoomMinus"),
-      UserMetricsAction("ZoomNormal"),
-      UserMetricsAction("ZoomPlus")
-      };
+    UserMetricsAction("ZoomMinus"),
+    UserMetricsAction("ZoomNormal"),
+    UserMetricsAction("ZoomPlus")
+  };
 
   UserMetrics::RecordAction(kActions[zoom_function - PageZoom::ZOOM_OUT]);
   TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
