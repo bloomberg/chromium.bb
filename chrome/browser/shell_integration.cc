@@ -15,8 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 
-bool ShellIntegration::CanSetAsDefaultProtocolClient(
-    const std::string& protocol) {
+bool ShellIntegration::CanSetAsDefaultProtocolClient() {
   // Allowed as long as the browser can become the operating system default
   // browser.
   return CanSetAsDefaultBrowser();

@@ -38,7 +38,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
     return false;
 
-  if (!CanSetAsDefaultProtocolClient(protocol))
+  if (!CanSetAsDefaultProtocolClient())
     return false;
 
   // We really do want the main bundle here, not base::mac::MainAppBundle(),

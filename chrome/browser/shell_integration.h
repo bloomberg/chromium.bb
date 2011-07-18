@@ -38,8 +38,8 @@ class ShellIntegration {
   static bool CanSetAsDefaultBrowser();
 
   // Returns true if the running browser can be set as the default client
-  // application for the given protocol.
-  static bool CanSetAsDefaultProtocolClient(const std::string& protocol);
+  // application for specific protocols.
+  static bool CanSetAsDefaultProtocolClient();
 
   // On Linux, it may not be possible to determine or set the default browser
   // on some desktop environments or configurations. So, we use this enum and
