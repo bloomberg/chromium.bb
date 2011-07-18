@@ -58,7 +58,8 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CommandBufferProxy::OnChannelError() {
-  video_decoder_host_->OnChannelError();
+  if (video_decoder_host_)
+    video_decoder_host_->OnChannelError();
   OnDestroyed(gpu::error::kUnknown);
 }
 
