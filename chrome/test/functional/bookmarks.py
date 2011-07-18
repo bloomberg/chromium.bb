@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -465,6 +465,16 @@ class BookmarksTest(pyauto.PyUITest):
     self.assertEqual(bmb_child['name'],'MS')
     self._VerifyBookmarkURL(bmb_child['children'][0],
                             'BING', 'http://www.bing.com/')
+
+  def testBookmarksManager(self):
+    """Verify bookmark title is displayed in bookmarks manager"""
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, 'GoogleNews', 'http://www.news.google.com/')
+    self.NavigateToURL('chrome://bookmarks/')
+    self.assertTrue(self.WaitUntil(
+        lambda: self.FindInPage('GoogleNews', tab_index=0)['match_count'],
+                expect_retval=1))
 
 
 if __name__ == '__main__':
