@@ -92,7 +92,7 @@ class DownloadObserver : public DownloadManager::Observer {
 
 // Verify that the download shelf is opened in the existing tabbed browser
 // when a download is started in a Panel.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, Download) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_Download) {
   Profile* profile = browser()->profile();
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  "PanelTest",
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, Download) {
 // Verify that a new tabbed browser is created to display a download
 // shelf when a download is started in a Panel and there is no existing
 // tabbed browser.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DownloadNoTabbedBrowser) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  "PanelTest",
