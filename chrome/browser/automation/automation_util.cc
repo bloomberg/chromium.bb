@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -28,13 +28,28 @@
 
 namespace {
 
+void GetCookiesCallback(base::WaitableEvent* event,
+                        std::string* cookies,
+                        const std::string& cookie_line) {
+  *cookies = cookie_line;
+  event->Signal();
+}
+
 void GetCookiesOnIOThread(
     const GURL& url,
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     std::string* cookies) {
-  *cookies =
-      context_getter->GetURLRequestContext()->cookie_store()->GetCookies(url);
+  context_getter->GetURLRequestContext()->cookie_store()->
+      GetCookiesAsync(url,
+                      base::Bind(&GetCookiesCallback, event, cookies));
+}
+
+void GetCanonicalCookiesCallback(
+    base::WaitableEvent* event,
+    net::CookieList* cookie_list,
+    const net::CookieList& cookies) {
+  *cookie_list = cookies;
   event->Signal();
 }
 
@@ -43,9 +58,16 @@ void GetCanonicalCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     net::CookieList* cookie_list) {
-  *cookie_list =
-      context_getter->GetURLRequestContext()->cookie_store()->
-      GetCookieMonster()->GetAllCookiesForURL(url);
+  context_getter->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster()->GetAllCookiesForURLAsync(
+          url,
+          base::Bind(&GetCanonicalCookiesCallback, event, cookie_list));
+}
+
+void SetCookieCallback(base::WaitableEvent* event,
+                       bool* success,
+                       bool result) {
+  *success = result;
   event->Signal();
 }
 
@@ -55,10 +77,10 @@ void SetCookieOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
     bool* success) {
-  *success =
-      context_getter->GetURLRequestContext()->cookie_store()->
-      SetCookie(url, value);
-  event->Signal();
+  context_getter->GetURLRequestContext()->cookie_store()->
+      SetCookieWithOptionsAsync(
+          url, value, net::CookieOptions(),
+          base::Bind(&SetCookieCallback, event, success));
 }
 
 void SetCookieWithDetailsOnIOThread(
@@ -71,10 +93,14 @@ void SetCookieWithDetailsOnIOThread(
   net::CookieMonster* cookie_monster =
       context_getter->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
-  *success = cookie_monster->SetCookieWithDetails(
+  cookie_monster->SetCookieWithDetailsAsync(
       url, cookie.Name(), cookie.Value(), original_domain,
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
-      cookie.IsHttpOnly());
+      cookie.IsHttpOnly(),
+      base::Bind(&SetCookieCallback, event, success));
+}
+
+void DeleteCookieCallback(base::WaitableEvent* event) {
   event->Signal();
 }
 
@@ -84,8 +110,8 @@ void DeleteCookieOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event) {
   context_getter->GetURLRequestContext()->cookie_store()->
-      DeleteCookie(url, name);
-  event->Signal();
+      DeleteCookieAsync(url, name,
+                        base::Bind(&DeleteCookieCallback, event));
 }
 
 }  // namespace
