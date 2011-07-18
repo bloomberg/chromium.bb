@@ -104,7 +104,9 @@ bool UninstallView::Accept() {
     int index = browsers_combo_->selected_item();
     BrowsersMap::const_iterator it = browsers_->begin();
     std::advance(it, index);
-    base::LaunchApp((*it).second, false, true, NULL);
+    base::LaunchOptions options;
+    options.start_hidden = true;
+    base::LaunchProcess((*it).second, options, NULL);
   }
   return true;
 }

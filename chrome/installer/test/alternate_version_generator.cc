@@ -195,7 +195,10 @@ bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
                        int* exit_code) {
   bool result = true;
   base::ProcessHandle process;
-  if (base::LaunchApp(cmdline, true, true, &process)) {
+  base::LaunchOptions options;
+  options.wait = true;
+  options.start_hidden = true;
+  if (base::LaunchProcess(cmdline, options, &process)) {
     if (exit_code) {
       if (!GetExitCodeProcess(process,
                               reinterpret_cast<DWORD*>(exit_code))) {

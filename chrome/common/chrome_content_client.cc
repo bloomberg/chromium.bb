@@ -227,7 +227,9 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
                          rundll.value().c_str(),
                          short_path);
   base::ProcessHandle process;
-  if (!base::LaunchApp(cmd_final, false, true, &process))
+  base::LaunchOptions options;
+  options.start_hidden = true;
+  if (!base::LaunchProcess(cmd_final, options, &process))
     return false;
 
   cmd_line->AppendSwitchASCII("flash-broker",

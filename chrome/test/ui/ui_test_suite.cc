@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,8 +117,8 @@ void UITestSuite::LoadCrashService() {
   }
 
   FilePath crash_service = exe_dir.Append(L"crash_service.exe");
-  if (!base::LaunchApp(crash_service.value(), false, false,
-                       &crash_service_)) {
+  if (!base::LaunchProcess(crash_service.value(), base::LaunchOptions(),
+                           &crash_service_)) {
     printf("Couldn't start crash_service.exe, so this ui_test run won't tell " \
            "you if any test crashes!\n");
     return;

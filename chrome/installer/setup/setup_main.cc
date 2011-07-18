@@ -504,7 +504,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
           cmd.AppendSwitch(switches::kFirstRun);
           installer_state->WriteInstallerResult(*status, 0, NULL);
           VLOG(1) << "Launching existing system-level chrome instead.";
-          base::LaunchApp(cmd, false, false, NULL);
+          base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
         }
         return false;
       }

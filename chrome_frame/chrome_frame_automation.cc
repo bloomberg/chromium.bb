@@ -299,7 +299,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
 
   automation_server_launch_start_time_ = base::TimeTicks::Now();
 
-  if (!base::LaunchApp(command_line_string, false, false, NULL)) {
+  if (!base::LaunchProcess(command_line_string, base::LaunchOptions(), NULL)) {
     // We have no code for launch failure.
     launch_result_ = AUTOMATION_LAUNCH_RESULT_INVALID;
   } else {

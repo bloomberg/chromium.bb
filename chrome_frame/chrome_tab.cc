@@ -385,7 +385,9 @@ void SetupUserLevelHelper() {
                                    helper_path_cmd);
 
     // Start new instance.
-    bool launched = base::LaunchApp(helper_path.value(), false, true, NULL);
+    base::LaunchOptions options;
+    options.start_hidden = true;
+    bool launched = base::LaunchProcess(helper_path.value(), options, NULL);
     if (!launched) {
       NOTREACHED();
       LOG(ERROR) << "Could not launch helper process.";

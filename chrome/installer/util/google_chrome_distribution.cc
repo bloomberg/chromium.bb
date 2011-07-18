@@ -144,8 +144,7 @@ bool LaunchSetup(CommandLine cmd_line, bool system_level_toast) {
     }
   }
 
-  return base::LaunchApp(cmd_line.command_line_string(),
-                         false, false, NULL);
+  return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
 }
 
 // For System level installs, setup.exe lives in the system temp, which

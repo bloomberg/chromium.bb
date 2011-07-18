@@ -41,7 +41,9 @@ HANDLE LaunchCommandDirectly(const std::wstring& command_field) {
       if (version_key.ReadValue(command_field.c_str(),
                                 &command_line) == ERROR_SUCCESS) {
         HANDLE launched_process = NULL;
-        if (base::LaunchApp(command_line, false, true, &launched_process)) {
+        base::LaunchOptions options;
+        options.start_hidden = true;
+        if (base::LaunchProcess(command_line, options, &launched_process)) {
           return launched_process;
         }
       }

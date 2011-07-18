@@ -124,7 +124,10 @@ bool SwapNewChromeExeIfPresent() {
     if (key.ReadValue(google_update::kRegRenameCmdField,
                       &rename_cmd) == ERROR_SUCCESS) {
       base::ProcessHandle handle;
-      if (base::LaunchApp(rename_cmd, true, true, &handle)) {
+      base::LaunchOptions options;
+      options.wait = true;
+      options.start_hidden = true;
+      if (base::LaunchProcess(rename_cmd, options, &handle)) {
         DWORD exit_code;
         ::GetExitCodeProcess(handle, &exit_code);
         ::CloseHandle(handle);

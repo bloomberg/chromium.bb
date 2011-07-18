@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,7 @@ void CFProxyTraits::CloseChannel(IPC::Message::Sender* s) {
 }
 
 bool CFProxyTraits::LaunchApp(const std::wstring& cmd_line) {
-  bool ok = base::LaunchApp(cmd_line, false, false, NULL);
-  return ok;
+  return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
 }
 
 //////////////////////////////////////////////////////////

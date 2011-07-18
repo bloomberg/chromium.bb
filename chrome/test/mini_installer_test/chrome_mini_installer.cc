@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,9 @@ void ChromeMiniInstaller::InstallStandaloneInstaller() {
   std::wstring tag_installer_command;
   ASSERT_TRUE(MiniInstallerTestUtil::GetCommandForTagging(
       &tag_installer_command));
-  base::LaunchApp(tag_installer_command, true, false, NULL);
+  base::LaunchOptions options;
+  options.wait = true;
+  base::LaunchProcess(tag_installer_command, options, NULL);
   std::wstring installer_path = MiniInstallerTestUtil::GetFilePath(
       mini_installer_constants::kStandaloneInstaller);
   InstallMiniInstaller(false, installer_path);
@@ -276,7 +278,7 @@ void ChromeMiniInstaller::UnInstall() {
     uninstall_args = uninstall_args + L" --system-level";
 
   base::ProcessHandle setup_handle;
-  base::LaunchApp(uninstall_args, false, false, &setup_handle);
+  base::LaunchProcess(uninstall_args, base::LaunchOptions(), &setup_handle);
 
   if (is_chrome_frame_)
     ASSERT_TRUE(CloseUninstallWindow());
@@ -323,7 +325,7 @@ void ChromeMiniInstaller::UnInstallChromeFrameWithIERunning() {
     uninstall_args = uninstall_args + L" --system-level";
 
   base::ProcessHandle setup_handle;
-  base::LaunchApp(uninstall_args, false, false, &setup_handle);
+  base::LaunchProcess(uninstall_args, base::LaunchOptions(), &setup_handle);
 
   ASSERT_TRUE(CloseUninstallWindow());
   ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessHandleClosed(setup_handle));
@@ -602,8 +604,8 @@ void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
   }
 
   base::ProcessHandle app_handle;
-  base::LaunchApp(L"\"" + path + L"\"" + launch_args, false, false,
-                  &app_handle);
+  base::LaunchProcess(L"\"" + path + L"\"" + launch_args, base::LaunchOptions(),
+                      &app_handle);
 
   printf("Waiting while this process is running  %ls ....\n", process_name);
   MiniInstallerTestUtil::VerifyProcessLaunch(process_name, true);
@@ -691,7 +693,7 @@ void ChromeMiniInstaller::LaunchIE(const std::wstring& navigate_url) {
   CommandLine cmd_line(browser_path);
   cmd_line.AppendArgNative(navigate_url);
 
-  base::LaunchApp(cmd_line, false, false, NULL);
+  base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
 }
 
 // This method will launch any requested browser.
@@ -699,8 +701,8 @@ void ChromeMiniInstaller::LaunchBrowser(const std::wstring& launch_path,
                                         const std::wstring& launch_args,
                                         const std::wstring& process_name,
                                         bool expected_status) {
-  base::LaunchApp(L"\"" + launch_path + L"\"" + L" " + launch_args,
-      false, false, NULL);
+  base::LaunchProcess(L"\"" + launch_path + L"\"" + L" " + launch_args,
+                      base::LaunchOptions(), NULL);
   base::PlatformThread::Sleep(1000);
   MiniInstallerTestUtil::VerifyProcessLaunch(process_name.c_str(),
                                              expected_status);

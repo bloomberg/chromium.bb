@@ -1369,7 +1369,7 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
   cmd_line.AppendSwitchASCII("gtest_filter", test_name);
 
   base::ProcessHandle process_handle;
-  if (!base::LaunchApp(cmd_line, false, false, &process_handle))
+  if (!base::LaunchProcess(cmd_line, base::LaunchOptions(), &process_handle))
     return false;
 
   int test_terminate_timeout_ms = 60 * 1000;

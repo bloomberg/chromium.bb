@@ -92,21 +92,23 @@ HRESULT RegisterPortMonitor(bool install) {
     LOG(ERROR) << "Can't find regsvr32.exe.";
     return result;
   }
+
   CommandLine command_line(regsvr32_path);
   command_line.AppendArg("/s");
   if (!install) {
     command_line.AppendArg("/u");
   }
   command_line.AppendArgPath(source_path);
+
+  base::LaunchOptions options;
   HANDLE process_handle;
-  if (!base::LaunchApp(command_line.command_line_string(),
-                       true,
-                       false,
-                       &process_handle)) {
+  options.wait = true;
+  if (!base::LaunchProcess(command_line, options, &process_handle)) {
     LOG(ERROR) << "Unable to launch regsvr32.exe.";
     return ERROR_NOT_SUPPORTED;
   }
   base::win::ScopedHandle scoped_process_handle(process_handle);
+
   DWORD exit_code = S_OK;
   if (!GetExitCodeProcess(scoped_process_handle, &exit_code)) {
     HRESULT result = cloud_print::GetLastHResult();
