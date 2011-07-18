@@ -28,7 +28,7 @@ class NET_TEST DnsResponse {
 
   // Parses response of size nbytes and puts address into |ip_addresses|,
   // returns net_error code in case of failure.
-  int Parse(int nbytes, std::vector<IPAddressNumber>* ip_addresses);
+  int Parse(int nbytes, IPAddressList* ip_addresses);
 
  private:
   // The matching query; |this| is the response for |query_|.  We do not

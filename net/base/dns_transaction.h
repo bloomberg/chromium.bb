@@ -6,9 +6,12 @@
 #define NET_BASE_DNS_TRANSACTION_H_
 #pragma once
 
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -31,23 +34,51 @@ class DatagramClientSocket;
 // parsing and returning the IP addresses that it matches.
 class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
+  typedef std::pair<std::string, uint16> Key;
+
+  // Interface that should implemented by DnsTransaction consumer and
+  // passed to |Start| method to be notified when the transaction has
+  // completed.
+  class NET_TEST Delegate {
+   public:
+    Delegate();
+    virtual ~Delegate();
+
+    // A consumer of DnsTransaction should override |OnTransactionComplete|
+    // and call |set_delegate(this)|.  The method will be called once the
+    // resolution has completed, results passed in as arguments.
+    virtual void OnTransactionComplete(
+        int result,
+        const DnsTransaction* transaction,
+        const IPAddressList& ip_addresses);
+
+   private:
+    friend class DnsTransaction;
+
+    void Attach(DnsTransaction* transaction);
+    void Detach(DnsTransaction* transaction);
+
+    std::set<DnsTransaction*> registered_transactions_;
+
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   // |dns_server| is the address of the DNS server, |dns_name| is the
   // hostname (in DNS format) to be resolved, |query_type| is the type of
-  // the query, either kDNS_A or kDNS_AAAA, |results| is where the IPs in
-  // the response are stored, |rand_int| is the PRNG used for generating
-  // DNS query IDs.
+  // the query, either kDNS_A or kDNS_AAAA, |rand_int| is the PRNG used for
+  // generating DNS query.
   DnsTransaction(const IPEndPoint& dns_server,
                  const std::string& dns_name,
                  uint16 query_type,
-                 std::vector<IPAddressNumber>* results,
                  const RandIntCallback& rand_int,
                  ClientSocketFactory* socket_factory);
   ~DnsTransaction();
+  void SetDelegate(Delegate* delegate);
+  const Key& key() const { return key_; }
 
   // Starts the resolution process.  Will return ERR_IO_PENDING and will
-  // notify the caller via |callback| once the resolution is complete.
-  // Should only be called once.
-  int Start(CompletionCallback* callback);
+  // notify the caller via |delegate|.  Should only be called once.
+  int Start();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DnsTransactionTest, FirstTimeoutTest);
@@ -85,8 +116,9 @@ class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   void set_timeouts_ms(const std::vector<base::TimeDelta>& timeouts_ms);
 
   const IPEndPoint dns_server_;
-  std::vector<IPAddressNumber>* results_;
-  CompletionCallback* user_callback_;
+  Key key_;
+  IPAddressList ip_addresses_;
+  Delegate* delegate_;
 
   scoped_ptr<DnsQuery> query_;
   scoped_ptr<DnsResponse> response_;

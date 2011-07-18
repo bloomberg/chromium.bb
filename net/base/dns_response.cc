@@ -22,7 +22,7 @@ DnsResponse::DnsResponse(DnsQuery* query)
 DnsResponse::~DnsResponse() {
 }
 
-int DnsResponse::Parse(int nbytes, std::vector<IPAddressNumber>* ip_addresses) {
+int DnsResponse::Parse(int nbytes, IPAddressList* ip_addresses) {
   // Response includes query, it should be at least that size.
   if (nbytes < query_->io_buffer()->size() || nbytes > kMaxResponseSize)
     return ERR_DNS_MALFORMED_RESPONSE;
@@ -65,7 +65,7 @@ int DnsResponse::Parse(int nbytes, std::vector<IPAddressNumber>* ip_addresses) {
   if (answer_count < 1)
     return ERR_NAME_NOT_RESOLVED;
 
-  std::vector<IPAddressNumber> rdatas;
+  IPAddressList rdatas;
   while (answer_count--) {
     uint32 ttl;
     uint16 rdlength, qtype, qclass;

@@ -80,7 +80,7 @@ TEST(DnsResponseTest, ResponseWithCnameA) {
     0x4a, 0x7d, 0x5f, 0x79    // 74.125.95.121
   };
 
-  std::vector<IPAddressNumber> expected_ips;
+  IPAddressList expected_ips;
   expected_ips.push_back(IPAddressNumber(ip, ip + arraysize(ip)));
 
   uint8 response_data[] = {
@@ -133,7 +133,7 @@ TEST(DnsResponseTest, ResponseWithCnameA) {
 
   // Verify resolved IPs.
   int response_size = arraysize(response_data);
-  std::vector<IPAddressNumber> actual_ips;
+  IPAddressList actual_ips;
   EXPECT_EQ(OK, r1.Parse(response_size, &actual_ips));
   EXPECT_EQ(expected_ips, actual_ips);
 }
