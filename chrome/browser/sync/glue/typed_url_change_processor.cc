@@ -329,6 +329,7 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   pending_updated_urls_.clear();
   pending_new_visits_.clear();
   pending_deleted_visits_.clear();
+  pending_deleted_urls_.clear();
 
   StartObserving();
 }
