@@ -202,6 +202,11 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     pp::proxy::HostResource /* graphics_2d */,
                     int32_t /* pp_error */)
 
+// PPB_Graphics3D.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
+                    pp::proxy::HostResource /* graphics_3d */,
+                    int32_t /* pp_error */)
+
 // PPB_Surface3D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBSurface3D_SwapBuffersACK,
                     pp::proxy::HostResource /* surface_3d */,
@@ -632,6 +637,50 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
                     pp::proxy::HostResource /* image_data */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
                     pp::proxy::HostResource /* graphics_2d */)
+
+// PPB_Graphics3D.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
+                           PP_Instance /* instance */,
+                           int32_t /* config */,
+                           std::vector<int32_t> /* attrib_list */,
+                           pp::proxy::HostResource /* result */)
+
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* size */,
+                           base::SharedMemoryHandle /* ring_buffer */)
+
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_GetState,
+                           pp::proxy::HostResource /* context */,
+                           gpu::CommandBuffer::State /* state */)
+
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Flush,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* put_offset */,
+                           int32 /* last_known_get */,
+                           gpu::CommandBuffer::State /* state */)
+
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_AsyncFlush,
+                    pp::proxy::HostResource /* context */,
+                    int32 /* put_offset */)
+
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* size */,
+                           int32 /* id */)
+
+IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* id */)
+
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* id */,
+                           base::SharedMemoryHandle /* transfer_buffer */,
+                           uint32 /* size */)
+
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
+                    pp::proxy::HostResource /* graphics_3d */)
 
 // PPB_Instance.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,

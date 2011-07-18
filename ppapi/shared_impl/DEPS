@@ -1,5 +1,6 @@
 include_rules = [
   "+base",
+  "+gpu",
   "+skia",
   "+webkit/glue",
 
