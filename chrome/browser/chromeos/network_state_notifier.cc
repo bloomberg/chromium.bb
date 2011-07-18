@@ -48,7 +48,6 @@ NetworkStateNotifier::~NetworkStateNotifier() {
 }
 
 void NetworkStateNotifier::OnNetworkManagerChanged(NetworkLibrary* cros) {
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
   // Update the state 500ms later using UI thread.
   // See http://crosbug.com/4558
   BrowserThread::PostDelayedTask(
@@ -77,7 +76,7 @@ void NetworkStateNotifier::UpdateNetworkState(
 
 // static
 NetworkStateDetails::State NetworkStateNotifier::RetrieveState() {
-  // Running on desktop means always connected, for now.
+  // If CrosLibrary isn't loaded yet, assume connected.
   if (!CrosLibrary::Get()->EnsureLoaded())
     return NetworkStateDetails::CONNECTED;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();

@@ -18,6 +18,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MockNetworkLibrary();
   virtual ~MockNetworkLibrary();
 
+  MOCK_METHOD0(Init, void(void));
+  MOCK_CONST_METHOD0(IsCros, bool(void));
+
   MOCK_METHOD1(AddNetworkManagerObserver, void(NetworkManagerObserver*));
   MOCK_METHOD1(RemoveNetworkManagerObserver, void(NetworkManagerObserver*));
   MOCK_METHOD2(AddNetworkObserver, void(const std::string&, NetworkObserver*));
@@ -96,7 +99,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_CONST_METHOD1(CanConnectToNetwork, bool(const Network*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
-  MOCK_METHOD1(ConnectToWifiNetwork, void(const std::string&));
   MOCK_METHOD3(ConnectToWifiNetwork, void(const std::string&,
                                           ConnectionSecurity security,
                                           const std::string&));
