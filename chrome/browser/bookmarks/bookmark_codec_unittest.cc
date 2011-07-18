@@ -31,9 +31,11 @@ const char kFolder1Title[] = "folder1";
 const char kFolder2Title[] = "folder2";
 
 // Helper to get a mutable bookmark node.
-BookmarkNode* AsMutable(const BookmarkNode* node) {
+static BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
+
+}  // anonymous namespace
 
 class BookmarkCodecTest : public testing::Test {
  protected:
@@ -334,5 +336,3 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutSyncedBookmarks) {
 
   ASSERT_TRUE(decoded_model.synced_node() != NULL);
 }
-
-}  // namespace
