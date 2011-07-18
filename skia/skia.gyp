@@ -762,14 +762,6 @@
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
         }],
-        ['clang==1', {
-          'defines': [
-            # Remove all use of __restrict__ -- skia uses it incorrectly,
-            # and clang is more strict about it.
-            # http://code.google.com/p/skia/issues/detail?id=63
-            'SK_RESTRICT=',
-          ],
-        }],
         [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
