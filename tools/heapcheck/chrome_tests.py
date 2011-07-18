@@ -96,6 +96,7 @@ class ChromeTests(object):
       "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
       "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
+      "views": self.TestViews,          "views_unittests": self.TestViews,
       "sql": self.TestSql,              "sql_unittests": self.TestSql,
       "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "gfx": self.TestGfx,              "gfx_unittests": self.TestGfx,
@@ -294,6 +295,9 @@ class ChromeTests(object):
 
   def TestUnit(self):
     return self.SimpleTest("chrome", "unit_tests")
+
+  def TestViews(self):
+    return self.SimpleTest("views", "views_unittests")
 
   def TestSql(self):
     return self.SimpleTest("chrome", "sql_unittests")
