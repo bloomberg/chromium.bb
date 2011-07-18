@@ -109,29 +109,22 @@ void FFmpegVideoDecodeEngine::Initialize(
   info.stream_info.surface_height = config.surface_height();
 
   // If we do not have enough buffers, we will report error too.
-  bool buffer_allocated = true;
   frame_queue_available_.clear();
 
   // Create output buffer pool when direct rendering is not used.
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    scoped_refptr<VideoFrame> video_frame;
-    VideoFrame::CreateFrame(VideoFrame::YV12,
-                            config.width(),
-                            config.height(),
-                            kNoTimestamp,
-                            kNoTimestamp,
-                            &video_frame);
-    if (!video_frame.get()) {
-      buffer_allocated = false;
-      break;
-    }
+    scoped_refptr<VideoFrame> video_frame =
+        VideoFrame::CreateFrame(VideoFrame::YV12,
+                                config.width(),
+                                config.height(),
+                                kNoTimestamp,
+                                kNoTimestamp);
     frame_queue_available_.push_back(video_frame);
   }
   codec_context_->thread_count = decode_threads;
   if (codec &&
       avcodec_open(codec_context_, codec) >= 0 &&
-      av_frame_.get() &&
-      buffer_allocated) {
+      av_frame_.get()) {
     info.success = true;
   }
   event_handler_ = event_handler;

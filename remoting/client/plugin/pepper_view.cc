@@ -430,13 +430,11 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
                                Task* done) {
   DCHECK(CurrentlyOnPluginThread());
 
-  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                 width, height,
-                                 base::TimeDelta(), base::TimeDelta(),
-                                 frame_out);
-  if (*frame_out) {
-    (*frame_out)->AddRef();
-  }
+  *frame_out = media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                              width, height,
+                                              base::TimeDelta(),
+                                              base::TimeDelta());
+  (*frame_out)->AddRef();
   done->Run();
   delete done;
 }

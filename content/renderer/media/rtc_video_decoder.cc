@@ -131,37 +131,7 @@ void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   // Create output buffer pool and pass the frames to renderer
   // so that the renderer can complete the seeking
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    scoped_refptr<VideoFrame> video_frame;
-    VideoFrame::CreateFrame(VideoFrame::YV12,
-                            width_,
-                            height_,
-                            kNoTimestamp,
-                            kNoTimestamp,
-                            &video_frame);
-    if (!video_frame.get()) {
-      break;
-    }
-
-    // Create black frame
-    const uint8 kBlackY = 0x00;
-    const uint8 kBlackUV = 0x80;
-    // Fill the Y plane.
-    uint8* y_plane = video_frame->data(VideoFrame::kYPlane);
-    for (size_t i = 0; i < height_; ++i) {
-      memset(y_plane, kBlackY, width_);
-      y_plane += video_frame->stride(VideoFrame::kYPlane);
-    }
-    // Fill the U and V planes.
-    uint8* u_plane = video_frame->data(VideoFrame::kUPlane);
-    uint8* v_plane = video_frame->data(VideoFrame::kVPlane);
-    for (size_t i = 0; i < (height_ / 2); ++i) {
-      memset(u_plane, kBlackUV, width_ / 2);
-      memset(v_plane, kBlackUV, width_ / 2);
-      u_plane += video_frame->stride(VideoFrame::kUPlane);
-      v_plane += video_frame->stride(VideoFrame::kVPlane);
-    }
-
-    VideoFrameReady(video_frame);
+    VideoFrameReady(VideoFrame::CreateBlackFrame(width_, height_));
   }
 
   state_ = kNormal;
@@ -220,19 +190,18 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
 
   // Check if there's a size change
   if (video_frame->width() != width_ || video_frame->height() != height_) {
-    video_frame.release();
     // Allocate new buffer based on the new size
-    VideoFrame::CreateFrame(VideoFrame::YV12,
-                            width_,
-                            height_,
-                            kNoTimestamp,
-                            kNoTimestamp,
-                            &video_frame);
+    video_frame = VideoFrame::CreateFrame(VideoFrame::YV12,
+                                          width_,
+                                          height_,
+                                          kNoTimestamp,
+                                          kNoTimestamp);
   }
 
   video_frame->SetTimestamp(host()->GetTime());
   video_frame->SetDuration(base::TimeDelta::FromMilliseconds(30));
 
+  // TODO(scherkus): deduplicate YUV copying code.
   uint8* y_plane = video_frame->data(VideoFrame::kYPlane);
   const uint8* y_plane_src = frame->GetYPlane();
   for (size_t row = 0; row < video_frame->height(); ++row) {

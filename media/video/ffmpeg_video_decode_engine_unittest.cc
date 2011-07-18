@@ -68,12 +68,11 @@ class FFmpegVideoDecodeEngineTest
 
     test_engine_.reset(new FFmpegVideoDecodeEngine());
 
-    VideoFrame::CreateFrame(VideoFrame::YV12,
-                            kWidth,
-                            kHeight,
-                            kNoTimestamp,
-                            kNoTimestamp,
-                            &video_frame_);
+    video_frame_ = VideoFrame::CreateFrame(VideoFrame::YV12,
+                                           kWidth,
+                                           kHeight,
+                                           kNoTimestamp,
+                                           kNoTimestamp);
   }
 
   ~FFmpegVideoDecodeEngineTest() {

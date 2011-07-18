@@ -33,9 +33,8 @@ static double BenchmarkSkia() {
   std::vector<scoped_refptr<VideoFrame> > source_frames;
   ScopedVector<SkBitmap> dest_frames;
   for (int i = 0; i < num_buffers; i++) {
-    scoped_refptr<VideoFrame> source_frame;
-    VideoFrame::CreateBlackFrame(source_width, source_height, &source_frame);
-    source_frames.push_back(source_frame);
+    source_frames.push_back(
+        VideoFrame::CreateBlackFrame(source_width, source_height));
 
     SkBitmap* bitmap = new SkBitmap();
     bitmap->setConfig(SkBitmap::kARGB_8888_Config,
@@ -118,18 +117,15 @@ static double BenchmarkFilter(media::ScaleFilter filter) {
   std::vector<scoped_refptr<VideoFrame> > dest_frames;
 
   for (int i = 0; i < num_buffers; i++) {
-    scoped_refptr<VideoFrame> source_frame;
-    VideoFrame::CreateBlackFrame(source_width, source_height, &source_frame);
-    source_frames.push_back(source_frame);
+    source_frames.push_back(
+        VideoFrame::CreateBlackFrame(source_width, source_height));
 
-    scoped_refptr<VideoFrame> dest_frame;
-    VideoFrame::CreateFrame(VideoFrame::RGB32,
-                            dest_width,
-                            dest_height,
-                            TimeDelta::FromSeconds(0),
-                            TimeDelta::FromSeconds(0),
-                            &dest_frame);
-    dest_frames.push_back(dest_frame);
+    dest_frames.push_back(
+        VideoFrame::CreateFrame(VideoFrame::RGB32,
+                                dest_width,
+                                dest_height,
+                                TimeDelta::FromSeconds(0),
+                                TimeDelta::FromSeconds(0)));
   }
 
   TimeTicks start = TimeTicks::HighResNow();

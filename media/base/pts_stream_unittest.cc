@@ -11,7 +11,7 @@ namespace media {
 class PtsStreamTest : public testing::Test {
  public:
   PtsStreamTest() {
-    VideoFrame::CreateBlackFrame(16, 16, &video_frame_);
+    video_frame_ = VideoFrame::CreateBlackFrame(16, 16);
 
     // Use typical frame rate of 25 fps.
     base::TimeDelta frame_duration = base::TimeDelta::FromMicroseconds(40000);

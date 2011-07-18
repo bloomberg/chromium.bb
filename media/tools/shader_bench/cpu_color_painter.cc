@@ -63,13 +63,12 @@ void CPUColorPainter::Initialize(int width, int height) {
 
 void CPUColorPainter::Paint(scoped_refptr<media::VideoFrame> video_frame) {
   // Convert to RGBA frame.
-  scoped_refptr<media::VideoFrame> rgba_frame;
-  media::VideoFrame::CreateFrame(media::VideoFrame::RGBA,
-                             video_frame->width(),
-                             video_frame->height(),
-                             base::TimeDelta(),
-                             base::TimeDelta(),
-                             &rgba_frame);
+  scoped_refptr<media::VideoFrame> rgba_frame =
+      media::VideoFrame::CreateFrame(media::VideoFrame::RGBA,
+                                     video_frame->width(),
+                                     video_frame->height(),
+                                     base::TimeDelta(),
+                                     base::TimeDelta());
 
   media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
                            video_frame->data(media::VideoFrame::kUPlane),

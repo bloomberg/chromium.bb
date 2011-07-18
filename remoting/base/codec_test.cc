@@ -121,10 +121,10 @@ class DecoderTester {
   DecoderTester(Decoder* decoder)
       : strict_(false),
         decoder_(decoder) {
-    media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                   kWidth, kHeight,
-                                   base::TimeDelta(),
-                                   base::TimeDelta(), &frame_);
+    frame_ = media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                            kWidth, kHeight,
+                                            base::TimeDelta(),
+                                            base::TimeDelta());
     EXPECT_TRUE(frame_.get());
     decoder_->Initialize(frame_);
   }

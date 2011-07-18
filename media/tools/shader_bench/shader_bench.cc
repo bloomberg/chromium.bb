@@ -52,14 +52,12 @@ void GetFrames(std::string file_name,
   long frame_size = CalculateYUVFrameSize(file_handle, num_frames);
 
   for (int i = 0; i < num_frames; i++) {
-    scoped_refptr<media::VideoFrame> video_frame;
-
-    media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                   width,
-                                   height,
-                                   base::TimeDelta(),
-                                   base::TimeDelta(),
-                                   &video_frame);
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                       width,
+                                       height,
+                                       base::TimeDelta(),
+                                       base::TimeDelta());
     long bytes_read =
         fread(video_frame->data(0), 1, frame_size, file_handle);
 
