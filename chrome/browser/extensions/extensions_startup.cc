@@ -43,7 +43,7 @@ void ExtensionsStartupUtil::ShowPackExtensionMessage(
   out_text.append("\n\n");
   out_text.append(WideToASCII(message));
   out_text.append("\n");
-  base::StringPrintf("%s", out_text.c_str());
+  printf("%s", out_text.c_str());
 #endif
 }
 
