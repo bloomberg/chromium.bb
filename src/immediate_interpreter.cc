@@ -46,6 +46,9 @@ const float kScrollStationaryFingerMaxDist = 1.0;
 // Height of the bottom zone in millimeters
 const float kBottomZoneSize = 10;
 
+// Time to evaluate left vs right click, 30ms
+const stime_t kButtonEvaluationTimeout = 0.03;
+
 float MaxMag(float a, float b) {
   if (fabsf(a) > fabsf(b))
     return a;
@@ -59,8 +62,11 @@ float MinMag(float a, float b) {
 
 }  // namespace {}
 
-ImmediateInterpreter::ImmediateInterpreter() {
-  prev_state_.fingers = NULL;
+ImmediateInterpreter::ImmediateInterpreter()
+  : button_type_(0),
+    sent_button_down_(false),
+    button_down_timeout_(0.0) {
+  memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
 ImmediateInterpreter::~ImmediateInterpreter() {
@@ -76,17 +82,18 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
     return 0;
   }
 
+  result_.type = kGestureTypeNull;
   if (!SameFingers(*hwstate)) {
     // Fingers changed, do nothing this time
     ResetSameFingersState(hwstate->timestamp);
     FillStartPositions(*hwstate);
-    result_.type = kGestureTypeNull;
   } else {
     UpdatePalmState(*hwstate);
     set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
     UpdateCurrentGestureType(*hwstate, gs_fingers);
     FillResultGesture(*hwstate, gs_fingers);
   }
+  UpdateButtons(*hwstate);
   SetPrevState(*hwstate);
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
@@ -167,6 +174,10 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
+  if (sent_button_down_) {
+    current_gesture_type_ = kGestureTypeMove;
+    return;
+  }
   if (hw_props_.supports_t5r2 && gs_fingers.size() > 2) {
     current_gesture_type_ = kGestureTypeScroll;
     return;
@@ -268,6 +279,7 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
 
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
   prev_state_.timestamp = hwstate.timestamp;
+  prev_state_.buttons_down = hwstate.buttons_down;
   prev_state_.finger_cnt = min(hwstate.finger_cnt, hw_props_.max_finger_cnt);
   memcpy(prev_state_.fingers,
          hwstate.fingers,
@@ -285,6 +297,81 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
   for (short i = 0; i < hwstate.finger_cnt; i++)
     start_positions_[hwstate.fingers[i].tracking_id] =
         make_pair(hwstate.fingers[i].position_x, hwstate.fingers[i].position_y);
+}
+
+int ImmediateInterpreter::EvaluateButtonType(
+    const HardwareState& hwstate) {
+  if (hw_props_.supports_t5r2 && hwstate.finger_cnt > 2)
+    return GESTURES_BUTTON_RIGHT;
+  int num_pointing = pointing_.size();
+  if (num_pointing <= 1)
+    return GESTURES_BUTTON_LEFT;
+  if (current_gesture_type_ == kGestureTypeScroll)
+    return GESTURES_BUTTON_RIGHT;
+  if (num_pointing > 2) {
+    Log("TODO: handle more advanced touchpads.");
+    return GESTURES_BUTTON_LEFT;
+  }
+
+  // If we get to here, then:
+  // pointing_.size() == 2 && current_gesture_type_ != kGestureTypeScroll.
+  // Find which two fingers are performing the gesture.
+  const FingerState* finger1 = hwstate.GetFingerState(*pointing_.begin());
+  const FingerState* finger2 = hwstate.GetFingerState(*(pointing_.begin() + 1));
+
+  return TwoFingersGesturing(*finger1, *finger2) ?
+      GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+}
+
+void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
+  // Current hardware will only ever send a physical left-button down.
+  bool prev_button_down = prev_state_.buttons_down;
+  bool button_down = hwstate.buttons_down;
+  if (!prev_button_down && !button_down)
+    return;
+  bool phys_down_edge = button_down && !prev_button_down;
+  bool phys_up_edge = !button_down && prev_button_down;
+
+  if (phys_down_edge) {
+    button_type_ = GESTURES_BUTTON_LEFT;
+    sent_button_down_ = false;
+    button_down_timeout_ = hwstate.timestamp + kButtonEvaluationTimeout;
+  }
+  if (!sent_button_down_) {
+    button_type_ = EvaluateButtonType(hwstate);
+    // We send non-left buttons immediately, but delay left incase future
+    // packets indicate non-left button.
+    if (button_type_ != GESTURES_BUTTON_LEFT ||
+        (button_type_ == GESTURES_BUTTON_LEFT &&
+         button_down_timeout_ >= hwstate.timestamp) ||
+        phys_up_edge) {
+      // Send button down
+      if (result_.type != kGestureTypeButtonsChange) {
+        Log("Gesture type already button?!");
+      }
+      result_ = Gesture(kGestureButtonsChange,
+                        prev_state_.timestamp,
+                        hwstate.timestamp,
+                        button_type_,
+                        0);
+      sent_button_down_ = true;
+    }
+  }
+  if (phys_up_edge) {
+    // Send button up
+    if (result_.type != kGestureTypeButtonsChange)
+      result_ = Gesture(kGestureButtonsChange,
+                        prev_state_.timestamp,
+                        hwstate.timestamp,
+                        0,
+                        button_type_);
+    else
+      result_.details.buttons.up = button_type_;
+    // Reset button state
+    button_type_ = 0;
+    button_down_timeout_ = 0;
+    sent_button_down_ = false;
+  }
 }
 
 void ImmediateInterpreter::FillResultGesture(

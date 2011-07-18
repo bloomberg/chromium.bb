@@ -80,6 +80,14 @@ class ImmediateInterpreter : public Interpreter {
   // Called when fingers have changed to fill start_positions_.
   void FillStartPositions(const HardwareState& hwstate);
 
+  // Updates the internal button state based on the passed in |hwstate|.
+  void UpdateButtons(const HardwareState& hwstate);
+
+  // By looking at |hwstate| and internal state, determins if a button down
+  // at this time would correspond to a left/middle/right click. Returns
+  // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
+  int EvaluateButtonType(const HardwareState& hwstate);
+
   // Precondition: current_mode_ is set to the mode based on |hwstate|.
   // Computes the resulting gesture, storing it in result_.
   void FillResultGesture(const HardwareState& hwstate,
@@ -88,6 +96,16 @@ class ImmediateInterpreter : public Interpreter {
   HardwareState prev_state_;
   HardwareProperties hw_props_;
   Gesture result_;
+
+  // Button data
+  // Which button we are going to send/have sent for the physical btn press
+  int button_type_;  // left, middle, or right
+
+  // If we have sent button down for the currently down button
+  bool sent_button_down_;
+
+  // If we haven't sent a button down by this time, send one
+  stime_t button_down_timeout_;
 
   // When fingers change, we record the time
   stime_t changed_time_;

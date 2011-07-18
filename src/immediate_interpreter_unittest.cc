@@ -35,7 +35,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     {0, 0, 0, 0, 1, 0, 20, 20, 1}
   };
   HardwareState hardware_states[] = {
-    // time, finger count, finger states pointer
+    // time, buttons down, finger count, finger states pointer
     { 200000, 0, 1, &finger_states[0] },
     { 210000, 0, 1, &finger_states[1] },
     { 220000, 0, 1, &finger_states[2] },
@@ -101,7 +101,7 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
     {0, 0, 0, 0, 1, 0, 405, 700, 2},
   };
   HardwareState hardware_states[] = {
-    // time, finger count, finger states pointer
+    // time, buttons down, finger count, finger states pointer
     { 0.200000, 0, 2, &finger_states[0] },
     { 0.210000, 0, 2, &finger_states[2] },
     { 0.220000, 0, 2, &finger_states[4] }
