@@ -221,12 +221,6 @@ def BuildScript(status, context):
                 'SILENT=1',
                 'chrome_browser_tests'])
 
-    # TODO(mcgrathr): Drop support for non-IRT builds and remove this entirely.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1691
-    with Step('chrome_browser_tests without IRT', status, halt_on_fail=False):
-      SCons(context, browser_test=True,
-            args=['SILENT=1', 'irt=0', 'chrome_browser_tests'])
-
     with Step('pyauto_tests', status, halt_on_fail=False):
       SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
 
