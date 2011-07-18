@@ -153,7 +153,7 @@ cr.define('options', function() {
       }
 
       // Enable if not a managed pref.
-      if (!element.managed)
+      if (!element.controlledBy)
         element.disabled = false;
     }
   };

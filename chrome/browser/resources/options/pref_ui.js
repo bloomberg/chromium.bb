@@ -13,12 +13,12 @@ cr.define('options', function() {
    * @param {!Event} event The pref change event.
    */
   function updateElementState_(el, event) {
-    el.managed = false;
+    el.controlledBy = null;
 
     if (!event.value)
       return;
 
-    el.managed = event.value['managed'];
+    el.controlledBy = event.value['controlledBy'];
 
     // Disable UI elements if the backend says so.
     // |reenable| is a flag that tells us if the element is disabled because the
@@ -30,6 +30,8 @@ cr.define('options', function() {
 
     el.disabled = event.value['disabled'];
     el.notUserModifiable = event.value['disabled'];
+
+    OptionsPage.updateManagedBannerVisibility();
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -102,6 +104,13 @@ cr.define('options', function() {
   cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
 
   /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefCheckbox, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
    * The user metric string.
    * @type {string}
    */
@@ -161,6 +170,13 @@ cr.define('options', function() {
   cr.defineProperty(PrefRadio, 'pref', cr.PropertyKind.ATTR);
 
   /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefRadio, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
    * The user metric string.
    * @type {string}
    */
@@ -205,6 +221,13 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefNumeric, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefNumeric, 'controlledBy', cr.PropertyKind.ATTR);
 
   /**
    * The user metric string.
@@ -353,6 +376,13 @@ cr.define('options', function() {
   cr.defineProperty(PrefRange, 'pref', cr.PropertyKind.ATTR);
 
   /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefRange, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
    * The user metric string.
    * @type {string}
    */
@@ -443,6 +473,13 @@ cr.define('options', function() {
   cr.defineProperty(PrefSelect, 'pref', cr.PropertyKind.ATTR);
 
   /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefSelect, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
    * The user metric string.
    * @type {string}
    */
@@ -508,6 +545,13 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefTextField, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefTextField, 'controlledBy', cr.PropertyKind.ATTR);
 
   /**
    * The user metric string.

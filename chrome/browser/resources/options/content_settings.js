@@ -82,8 +82,9 @@ cr.define('options', function() {
       var radios = document.querySelectorAll('input[type=radio][name=' +
                                              group + ']');
       for (var i = 0, len = radios.length; i < len; i++) {
-        radios[i].disabled = dict[group]['managed'];
-        radios[i].managed = dict[group]['managed'];
+        var managed = dict[group]['managed'];
+        radios[i].disabled = managed;
+        radios[i].controlledBy = managed ? 'policy': null;
       }
     }
     OptionsPage.updateManagedBannerVisibility();

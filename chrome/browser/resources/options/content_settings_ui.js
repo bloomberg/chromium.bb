@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,13 @@ cr.define('options', function() {
           });
     },
   };
+
+  /**
+   * Whether the content setting is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(ContentSettingsRadio, 'controlledBy', cr.PropertyKind.ATTR);
 
   //////////////////////////////////////////////////////////////////////////////
   // HandlersEnabledRadio class:

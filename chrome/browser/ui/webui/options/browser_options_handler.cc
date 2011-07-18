@@ -23,7 +23,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -147,12 +146,6 @@ void BrowserOptionsHandler::Initialize() {
   pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
 
   UpdateSearchEngines();
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("BrowserOptions"),
-                                      OPTIONS_PAGE_GENERAL));
-#endif
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
 }

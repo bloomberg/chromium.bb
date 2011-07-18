@@ -14,8 +14,6 @@
 #include "content/common/notification_registrar.h"
 #endif
 
-class OptionsManagedBannerHandler;
-
 // Chrome personal options page UI handler.
 class PersonalOptionsHandler : public OptionsPageUIHandler,
                                public ProfileSyncServiceObserver,
@@ -54,8 +52,6 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   void LoadAccountPicture(const ListValue* args);
   NotificationRegistrar registrar_;
 #endif
-
-  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   // True if the multiprofiles switch is enabled.
   bool multiprofile_;

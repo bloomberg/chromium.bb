@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -349,13 +348,6 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 }
 
 void PersonalOptionsHandler::Initialize() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("PersonalOptions"),
-                                      OPTIONS_PAGE_CONTENT));
-#endif
-
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());

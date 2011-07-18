@@ -222,7 +222,7 @@ cr.define('options', function() {
      */
     shouldEnableCustomStartupPageControls: function(pages) {
       return $('startupShowPagesButton').checked &&
-          !this.startup_pages_pref_.managed;
+          !this.startup_pages_pref_.controlledBy;
     },
 
     /**
@@ -275,9 +275,10 @@ cr.define('options', function() {
      */
     handleHomepageChange_: function(event) {
       this.homepage_pref_.value = event.value['value'];
-      this.homepage_pref_.managed = event.value['managed'];
-      if (this.isHomepageURLNewTabPageURL_() && !this.homepage_pref_.managed &&
-          !this.homepage_is_newtabpage_pref_.managed) {
+      this.homepage_pref_.controlledBy = event.value['controlledBy'];
+      if (this.isHomepageURLNewTabPageURL_() &&
+          !this.homepage_pref_.controlledBy &&
+          !this.homepage_is_newtabpage_pref_.controlledBy) {
         var useNewTabPage = this.isHomepageIsNewTabPageChoiceSelected_();
         Preferences.setStringPref(this.homepage_pref_.name, '')
         Preferences.setBooleanPref(this.homepage_is_newtabpage_pref_.name,
@@ -293,7 +294,8 @@ cr.define('options', function() {
      */
     handleHomepageIsNewTabPageChange_: function(event) {
       this.homepage_is_newtabpage_pref_.value = event.value['value'];
-      this.homepage_is_newtabpage_pref_.managed = event.value['managed'];
+      this.homepage_is_newtabpage_pref_.controlledBy =
+          event.value['controlledBy'];
       this.updateHomepageControlStates_();
     },
 
@@ -368,8 +370,8 @@ cr.define('options', function() {
     isHomepageIsNewTabPageChoiceSelected_: function() {
       return (this.homepage_is_newtabpage_pref_.value ||
               (this.isHomepageURLNewTabPageURL_() &&
-               (this.homepage_pref_.managed ||
-                !this.homepage_is_newtabpage_pref_.managed)));
+               (this.homepage_pref_.controlledBy ||
+                !this.homepage_is_newtabpage_pref_.controlledBy)));
     },
 
     /**
@@ -378,8 +380,8 @@ cr.define('options', function() {
      * @private
      */
     isHomepageChoiceEnabled_: function() {
-      return (!this.homepage_is_newtabpage_pref_.managed &&
-              !(this.homepage_pref_.managed &&
+      return (!this.homepage_is_newtabpage_pref_.controlledBy &&
+              !(this.homepage_pref_.controlledBy &&
                 this.isHomepageURLNewTabPageURL_()));
     },
 
@@ -390,9 +392,9 @@ cr.define('options', function() {
      */
     isHomepageURLFieldEnabled_: function() {
       return (!this.homepage_is_newtabpage_pref_.value &&
-              !this.homepage_pref_.managed &&
+              !this.homepage_pref_.controlledBy &&
               !(this.isHomepageURLNewTabPageURL_() &&
-                !this.homepage_is_newtabpage_pref_.managed));
+                !this.homepage_is_newtabpage_pref_.controlledBy));
     },
 
     /**
@@ -418,7 +420,7 @@ cr.define('options', function() {
      * @private
      */
     handleStartupPageListChange_: function(event) {
-      this.startup_pages_pref_.managed = event.value['managed'];
+      this.startup_pages_pref_.controlledBy = event.value['controlledBy'];
       this.updateCustomStartupPageControlStates_();
     },
 

@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/ui/options/options_util.h"
-#include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -203,12 +202,6 @@ void AdvancedOptionsHandler::Initialize() {
   SetupBackgroundModeSettings();
 #endif
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  banner_handler_.reset(
-      new OptionsManagedBannerHandler(web_ui_,
-                                      ASCIIToUTF16("AdvancedOptions"),
-                                      OPTIONS_PAGE_ADVANCED));
-#endif
 }
 
 WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {

@@ -21,7 +21,6 @@ cr.define('options', function() {
     this.pageDivName = pageDivName;
     this.pageDiv = $(this.pageDivName);
     this.tab = null;
-    this.managed = false;
   }
 
   const SUBPAGE_SHEET_COUNT = 2;
@@ -808,16 +807,6 @@ cr.define('options', function() {
     initializePage: function() {},
 
     /**
-     * Sets managed banner visibility state.
-     */
-    setManagedBannerVisibility: function(visible) {
-      this.managed = visible;
-      if (this.visible) {
-        this.updateManagedBannerVisibility();
-      }
-    },
-
-    /**
      * Updates managed banner visibility state. This function iterates over
      * all input fields of a window and if any of these is marked as managed
      * it triggers the managed banner to be visible. The banner can be enforced
@@ -827,23 +816,32 @@ cr.define('options', function() {
     updateManagedBannerVisibility: function() {
       var bannerDiv = $('managed-prefs-banner');
 
-      var hasManaged = this.managed;
-      if (!hasManaged) {
-        var inputElements = this.pageDiv.querySelectorAll('input');
-        for (var i = 0, len = inputElements.length; i < len; i++) {
-          if (inputElements[i].managed) {
-            hasManaged = true;
-            break;
-          }
-        }
+      var controlledByPolicy = false;
+      var controlledByExtension = false;
+      var inputElements = this.pageDiv.querySelectorAll('input[controlledBy]');
+      for (var i = 0, len = inputElements.length; i < len; i++) {
+        if (inputElements[i].controlledBy == 'policy')
+          controlledByPolicy = true;
+        else if (inputElements[i].controlledBy == 'extension')
+          controlledByExtension = true;
       }
-      if (hasManaged) {
-        bannerDiv.hidden = false;
-        var height = window.getComputedStyle($('managed-prefs-banner')).height;
-        $('subpage-backdrop').style.top = height;
-      } else {
+      if (!controlledByPolicy && !controlledByExtension) {
         bannerDiv.hidden = true;
         $('subpage-backdrop').style.top = '0';
+      } else {
+        bannerDiv.hidden = false;
+        var height = window.getComputedStyle(bannerDiv).height;
+        $('subpage-backdrop').style.top = height;
+        if (controlledByPolicy && !controlledByExtension) {
+          $('managed-prefs-text').textContent =
+              templateData.policyManagedPrefsBannerText;
+        } else if (!controlledByPolicy && controlledByExtension) {
+          $('managed-prefs-text').textContent =
+              templateData.extensionManagedPrefsBannerText;
+        } else if (controlledByPolicy && controlledByExtension) {
+          $('managed-prefs-text').textContent =
+              templateData.policyAndExtensionManagedPrefsBannerText;
+        }
       }
     },
 

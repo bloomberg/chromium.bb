@@ -16,7 +16,6 @@
 
 class AutocompleteController;
 class CustomHomePagesTableModel;
-class OptionsManagedBannerHandler;
 class TemplateURLService;
 
 // Chrome browser options page UI handler.
@@ -126,7 +125,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // CustomHomePagesTableModel, consider changing it to something more like
   // TemplateURLService.
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
-  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 

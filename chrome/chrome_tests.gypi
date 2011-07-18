@@ -1518,7 +1518,6 @@
         'browser/policy/logging_work_scheduler.cc',
         'browser/policy/logging_work_scheduler.h',
         'browser/policy/logging_work_scheduler_unittest.cc',
-        'browser/policy/managed_prefs_banner_base_unittest.cc',
         'browser/policy/mock_configuration_policy_provider.cc',
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/mock_configuration_policy_store.cc',
