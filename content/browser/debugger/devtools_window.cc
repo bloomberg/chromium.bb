@@ -77,7 +77,7 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  return new DevToolsWindow(profile, NULL, false);
+  return new DevToolsWindow(profile, NULL, false, true);
 }
 
 // static
@@ -106,13 +106,15 @@ void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
 
 DevToolsWindow::DevToolsWindow(Profile* profile,
                                RenderViewHost* inspected_rvh,
-                               bool docked)
+                               bool docked,
+                               bool shared_worker_frontend)
     : profile_(profile),
       inspected_tab_(NULL),
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE),
+      shared_worker_frontend_(shared_worker_frontend) {
   // Create TabContents with devtools.
   tab_contents_ =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
@@ -470,11 +472,12 @@ GURL DevToolsWindow::GetDevToolsUrl() {
       tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
 
   std::string url_string = StringPrintf(
-      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s",
+      "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s%s",
       chrome::kChromeUIDevToolsURL,
       docked_ ? "true" : "false",
       SkColorToRGBAString(color_toolbar).c_str(),
-      SkColorToRGBAString(color_tab_text).c_str());
+      SkColorToRGBAString(color_tab_text).c_str(),
+      shared_worker_frontend_ ? "&isSharedWorker=true" : "");
   return GURL(url_string);
 }
 
@@ -550,7 +553,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   if (!window) {
     Profile* profile = inspected_rvh->process()->profile();
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
-    window = new DevToolsWindow(profile, inspected_rvh, docked);
+    window = new DevToolsWindow(profile, inspected_rvh, docked, false);
     manager->RegisterDevToolsClientHostFor(inspected_rvh, window);
     do_open = true;
   }

@@ -62,7 +62,8 @@ class DevToolsWindow
   bool is_docked() { return docked_; }
 
  private:
-  DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked);
+  DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked,
+                 bool shared_worker_frontend);
 
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
@@ -114,6 +115,7 @@ class DevToolsWindow
   bool docked_;
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
+  const bool shared_worker_frontend_;
   NotificationRegistrar registrar_;
   typedef std::vector<DevToolsWindow*> DevToolsWindowList;
   static DevToolsWindowList instances_;
