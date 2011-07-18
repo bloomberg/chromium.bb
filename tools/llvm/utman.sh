@@ -217,7 +217,7 @@ fi
 readonly LLVM_REV=2c5d50edfa14
 readonly LLVM_GCC_REV=4143147bce3b
 readonly NEWLIB_REV=9bef47f82918
-readonly BINUTILS_REV=6c6b03bf78b3
+readonly BINUTILS_REV=14dd509248e5
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=867799d6e777
 
@@ -227,7 +227,7 @@ readonly GOOGLE_PERFTOOLS_REV=867799d6e777
 # todo(jasonwkim): figure out why hg tag can not be pushed!
 #readonly LLVM_MQ_REV=2b2a4c101299      ## patches for svn124151
 #readonly LLVM_GCC_MQ_REV=00eb50705e47  ## patches for svn124444
-readonly LLVM_MQ_REV=187b1a858ef8    ## patches for nacl6074-svn128002
+readonly LLVM_MQ_REV=50103aa675b9       ## patches for nacl6074-svn128002
 readonly LLVM_GCC_MQ_REV=bb0dc99d5b4a  ## patches for nacl6036-svn126872
 
 
