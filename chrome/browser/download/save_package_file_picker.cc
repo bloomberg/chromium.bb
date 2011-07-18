@@ -47,21 +47,13 @@ const int kIndexToIDS[] = {
 
 }
 
-SavePackageFilePicker::SavePackageFilePicker(SavePackage* save_package,
-                                             const FilePath& suggested_path,
-                                             bool can_save_as_complete)
+SavePackageFilePicker::SavePackageFilePicker(
+    const base::WeakPtr<SavePackage>& save_package,
+    const FilePath& suggested_path,
+    bool can_save_as_complete)
     : save_package_(save_package) {
-  // The TabContents which owns this SavePackage may have disappeared during
-  // the UI->FILE->UI thread hop of
-  // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
-  TabContents* tab_contents = save_package->tab_contents();
-  if (!tab_contents) {
-    delete this;
-    return;
-  }
-
-  DownloadPrefs* download_prefs =
-      tab_contents->profile()->GetDownloadManager()->download_prefs();
+  DownloadPrefs* download_prefs = save_package->tab_contents()->profile()->
+      GetDownloadManager()->download_prefs();
   int file_type_index = SavePackageTypeToIndex(
       static_cast<SavePackage::SavePackageType>(
           download_prefs->save_file_type()));
@@ -125,6 +117,7 @@ SavePackageFilePicker::SavePackageFilePicker(SavePackage* save_package,
 
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = SelectFileDialog::Create(this);
+    TabContents* tab_contents = save_package_->tab_contents();
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                     string16(),
                                     suggested_path,
@@ -156,7 +149,8 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
   DCHECK(index >= kSelectFileHtmlOnlyIndex &&
          index <= kSelectFileCompleteIndex);
 
-  save_package_->OnPathPicked(path, kIndexToSaveType[index]);
+  if (save_package_)
+    save_package_->OnPathPicked(path, kIndexToSaveType[index]);
   delete this;
 }
 

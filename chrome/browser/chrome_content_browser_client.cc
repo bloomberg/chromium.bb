@@ -712,7 +712,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
 void ChromeContentBrowserClient::ChooseSavePath(
-    SavePackage* save_package,
+    const base::WeakPtr<SavePackage>& save_package,
     const FilePath& suggested_path,
     bool can_save_as_complete) {
   // Deletes itself.

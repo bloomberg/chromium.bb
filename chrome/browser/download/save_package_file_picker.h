@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 
 class FilePath;
@@ -15,7 +16,7 @@ class SavePackage;
 // Handles showing a dialog to the user to ask for the filename to save a page.
 class SavePackageFilePicker : public SelectFileDialog::Listener {
  public:
-  SavePackageFilePicker(SavePackage* save_package,
+  SavePackageFilePicker(const base::WeakPtr<SavePackage>& save_package,
                         const FilePath& suggested_path,
                         bool can_save_as_complete);
   virtual ~SavePackageFilePicker();
@@ -29,7 +30,7 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
   virtual void FileSelected(const FilePath& path, int index, void* params);
   virtual void FileSelectionCanceled(void* params);
 
-  scoped_refptr<SavePackage> save_package_;
+  base::WeakPtr<SavePackage> save_package_;
 
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

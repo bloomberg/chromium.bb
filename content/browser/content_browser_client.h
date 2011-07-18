@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_old.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_client.h"
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
@@ -255,9 +256,9 @@ class ContentBrowserClient {
   // Clears browser cookies.
   virtual void ClearCookies(RenderViewHost* rvh) = 0;
 
-  // Asks the user for the path to save a page. The embedder calls
+  // Asks the user for the path to save a page. The embedder calls the tab's
   // SavePackage::OnPathPicked to give the answer.
-  virtual void ChooseSavePath(SavePackage* save_package,
+  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,
                               bool can_save_as_complete) = 0;
 

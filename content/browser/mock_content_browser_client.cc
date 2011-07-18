@@ -206,9 +206,10 @@ void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
-void MockContentBrowserClient::ChooseSavePath(SavePackage* save_package,
-                                              const FilePath& suggested_path,
-                                              bool can_save_as_complete) {
+void MockContentBrowserClient::ChooseSavePath(
+    const base::WeakPtr<SavePackage>& save_package,
+    const FilePath& suggested_path,
+    bool can_save_as_complete) {
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

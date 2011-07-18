@@ -1263,8 +1263,14 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
+  // The TabContents which owns this SavePackage may have disappeared during
+  // the UI->FILE->UI thread hop of
+  // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.
+  if (!tab_contents())
+    return;
+
   content::GetContentClient()->browser()->ChooseSavePath(
-      this, suggested_path, can_save_as_complete); 
+      AsWeakPtr(), suggested_path, can_save_as_complete);
 }
 
 // Called after the save file dialog box returns.
