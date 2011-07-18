@@ -278,22 +278,30 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
 
-  if (orig_mime_type == actual_mime_type)
+  if (orig_mime_type == actual_mime_type) {
     UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
                               PLUGIN_TYPE_MISMATCH_NONE,
                               PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  else if (orig_mime_type.empty())
+  } else if (orig_mime_type.empty()) {
     UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
                               PLUGIN_TYPE_MISMATCH_ORIG_EMPTY,
                               PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  else if (orig_mime_type == kApplicationOctetStream)
+  } else if (orig_mime_type == kApplicationOctetStream) {
     UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
                               PLUGIN_TYPE_MISMATCH_ORIG_OCTETSTREAM,
                               PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
-  else
+  } else {
     UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,
                               PLUGIN_TYPE_MISMATCH_ORIG_OTHER,
                               PLUGIN_TYPE_MISMATCH_NUM_EVENTS);
+    // We do not permit URL-sniff based plug-in MIME type overrides aside from
+    // the case where the "type" was initially missing or generic
+    // (application/octet-stream).
+    // We collected stats to determine this approach isn't a major compat issue,
+    // and we defend against content confusion attacks in various cases, such
+    // as when the user doesn't have the Flash plug-in enabled.
+    return NULL;
+  }
 
   const webkit::npapi::PluginGroup* group =
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
