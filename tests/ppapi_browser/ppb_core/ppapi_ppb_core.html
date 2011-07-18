@@ -9,38 +9,19 @@
     <script type="application/x-javascript">
       //<![CDATA[
       function setupTests(tester, plugin) {
-        // This function takes an array of messages and asserts that the nexe
-        // calls PostMessage with each of these messages, in order.
-        function expectMessages(test, plugin, messages) {
-          test.assert(messages.length > 0, 'Must provide at least one message');
-          var listener = test.wrap(function(message) {
-            plugin.removeEventListener('message', listener, false);
-            test.assertEqual(message.data, messages.shift());
-            if (messages.length == 0) {
-              test.pass();
-            } else {
-              plugin.addEventListener('message', listener, false);
-            }
-          });
-          plugin.addEventListener('message', listener, false);
-        }
-
         function addTest(test_name, responses) {
           if (responses === undefined) {
             responses = [];
           }
           var expected_messages = [test_name + ':PASSED'].concat(responses);
           tester.addAsyncTest('PPB_Core::' + test_name, function(test) {
-            expectMessages(test, plugin, expected_messages);
+            test.expectMessageSequence(plugin, expected_messages);
             plugin.postMessage(test_name)
           });
         }
 
         addTest('TestGetTime');
-        // TODO(dmichael): Re-enable this test when the fix from Chrome rolls
-        //     through. GetTimeTicks regressed to have 1 second time resolution
-        //     in chromium r91860.  crbug.com/88935
-        // addTest('TestGetTimeTicks');
+        addTest('TestGetTimeTicks');
         addTest('TestIsMainThread_FromMainThread');
         addTest('TestIsMainThread_FromNonMainThread');
         addTest('TestAddRefAndReleaseResource');

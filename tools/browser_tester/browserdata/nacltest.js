@@ -653,6 +653,22 @@ function TestStatus(tester, name, async) {
     // async test.
     haltAsyncTest();
   }
+
+  // This function takes an array of messages and asserts that the nexe
+  // calls PostMessage with each of these messages, in order.
+  this.expectMessageSequence = function(plugin, messages) {
+    this.assert(messages.length > 0, 'Must provide at least one message');
+    var listener = this.wrap(function(message) {
+      plugin.removeEventListener('message', listener, false);
+      this_.assertEqual(message.data, messages.shift());
+      if (messages.length == 0) {
+        this_.pass();
+      } else {
+        plugin.addEventListener('message', listener, false);
+      }
+    });
+    plugin.addEventListener('message', listener, false);
+  }
 }
 
 
