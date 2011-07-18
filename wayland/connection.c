@@ -509,13 +509,17 @@ wl_connection_demarshal(struct wl_connection *connection,
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {
 		printf("too many args (%d)\n", count);
-		assert(0);
+		errno = EINVAL;
+		wl_connection_consume(connection, size);
+		return NULL;
 	}
 
 	extra_space = wl_message_size_extra(message);
 	if (sizeof closure->buffer < size + extra_space) {
 		printf("request too big, should malloc tmp buffer here\n");
-		assert(0);
+		errno = ENOMEM;
+		wl_connection_consume(connection, size);
+		return NULL;
 	}
 
 	closure->message = message;
