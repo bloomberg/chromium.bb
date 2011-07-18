@@ -1711,3 +1711,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
+
+// TODO(zea): Add first time sync functionality testing. In particular, when
+// there are encrypted types in first time sync we need to ensure we don't
+// duplicate bookmarks.

@@ -377,6 +377,55 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
+  EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+}
+
+TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
+  // Storing the cryptographer separately is bad, but for this test we
+  // know it's safe.
+  Cryptographer* cryptographer;
+  syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::PASSWORDS);
+  {
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
+    ASSERT_TRUE(dir.good());
+    ReadTransaction trans(FROM_HERE, dir);
+    cryptographer =
+        session()->context()->directory_manager()->GetCryptographer(&trans);
+    EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
+  }
+
+  // Nigori node updates should update the Cryptographer.
+  Cryptographer other_cryptographer;
+  KeyParams params = {"localhost", "dummy", "foobar"};
+  other_cryptographer.AddKey(params);
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::NigoriSpecifics* nigori =
+      specifics.MutableExtension(sync_pb::nigori);
+  other_cryptographer.GetKeys(nigori->mutable_encrypted());
+  nigori->set_encrypt_sessions(true);
+  nigori->set_encrypt_themes(true);
+  encrypted_types.insert(syncable::SESSIONS);
+  encrypted_types.insert(syncable::THEMES);
+  CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
+                         specifics, true);
+  EXPECT_FALSE(cryptographer->has_pending_keys());
+
+  apply_updates_command_.ExecuteImpl(session());
+
+  sessions::StatusController* status = session()->status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
+      << "All updates should have been attempted";
+  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
+      << "The nigori update shouldn't be in conflict";
+  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
+      << "The nigori update should be applied";
+
+  EXPECT_FALSE(cryptographer->is_ready());
+  EXPECT_TRUE(cryptographer->has_pending_keys());
+  EXPECT_EQ(encrypted_types, cryptographer->GetEncryptedTypes());
 }
 
 TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {

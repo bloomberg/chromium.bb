@@ -191,8 +191,6 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithoutNigori) {
             GetPrefs(1)->GetBoolean(prefs::kShowHomeButton));
 }
 
-// Fails because the client doesn't know how to not sync NIGORI.
-// TODO(timsteele): Fix http://crbug.com/80333 and re-enable.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
                        MigrationHellWithNigori) {
   if (!ServerSupportsErrorTriggering()) {

@@ -2489,52 +2489,27 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // Check to see if we need to notify the frontend that we have newly
       // encrypted types or that we require a passphrase.
       sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
-      syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
-      syncable::ModelTypeSet encrypted_and_enabled_types;
-      for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
-           iter != encrypted_types.end();
-           ++iter) {
-        if (enabled_types.count(*iter) > 0)
-          encrypted_and_enabled_types.insert(*iter);
+      Cryptographer* cryptographer = trans.GetCryptographer();
+      // If we've completed a sync cycle and the cryptographer isn't ready
+      // yet, prompt the user for a passphrase.
+      if (cryptographer->has_pending_keys()) {
+        VLOG(1) << "OnPassPhraseRequired Sent";
+        ObserverList<SyncManager::Observer> temp_obs_list;
+        CopyObservers(&temp_obs_list);
+        FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                          OnPassphraseRequired(sync_api::REASON_DECRYPTION));
+      } else if (!cryptographer->is_ready()) {
+        VLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
+                << "ready";
+        ObserverList<SyncManager::Observer> temp_obs_list;
+        CopyObservers(&temp_obs_list);
+        FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                          OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
       }
-      if (!encrypted_and_enabled_types.empty()) {
-        Cryptographer* cryptographer = trans.GetCryptographer();
-        // TODO(lipalani) : confirm from zea and tim this could be hit only for
-        // the first sync ever on this profile.
-        if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
-          sync_api::ReadNode node(&trans);
-          if (!node.InitByTagLookup(kNigoriTag)) {
-            DCHECK(!event.snapshot->is_share_usable);
-            return;
-          }
-          const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
-          if (!nigori.encrypted().blob().empty()) {
-            DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
-            cryptographer->SetPendingKeys(nigori.encrypted());
-          }
-        }
-
-        // If we've completed a sync cycle and the cryptographer isn't ready
-        // yet, prompt the user for a passphrase.
-        if (cryptographer->has_pending_keys()) {
-          VLOG(1) << "OnPassPhraseRequired Sent";
-          ObserverList<SyncManager::Observer> temp_obs_list;
-          CopyObservers(&temp_obs_list);
-          FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                            OnPassphraseRequired(sync_api::REASON_DECRYPTION));
-        } else if (!cryptographer->is_ready()) {
-          VLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
-                  << "ready";
-          ObserverList<SyncManager::Observer> temp_obs_list;
-          CopyObservers(&temp_obs_list);
-          FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                            OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
-        }
-        // If everything is in order(we have the passphrase) then there is no
-        // need to inform the listeners. They will just wait for sync
-        // completion event and if no errors have been raised it means
-        // encryption was succesful.
-      }
+      // If everything is in order(we have the passphrase) then there is no
+      // need to inform the listeners. They will just wait for sync
+      // completion event and if no errors have been raised it means
+      // encryption was succesful.
     }
 
     if (!initialized_) {

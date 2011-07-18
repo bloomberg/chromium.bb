@@ -122,6 +122,16 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
     return;
   }
 
+  if (state_ == CONFIGURED &&
+      last_requested_types_ == desired_types &&
+      reason == sync_api::CONFIGURE_REASON_RECONFIGURATION) {
+    // If we're already configured and the types haven't changed, we can exit
+    // out early.
+    NotifyStart();
+    NotifyDone(OK, FROM_HERE);
+    return;
+  }
+
   last_requested_types_ = desired_types;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {

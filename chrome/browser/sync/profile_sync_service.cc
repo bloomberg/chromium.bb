@@ -836,10 +836,6 @@ void ProfileSyncService::ShowConfigure(bool sync_everything) {
     wizard_.ShowSyncSetup(SyncSetupWizard::CONFIGURE);
 }
 
-void ProfileSyncService::PromptForExistingPassphrase() {
-  wizard_.ShowSyncSetup(SyncSetupWizard::ENTER_PASSPHRASE);
-}
-
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
   if (backend_.get() && backend_initialized_)
     return backend_->GetStatusSummary();
