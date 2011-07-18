@@ -76,24 +76,19 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate) {
     return 0;
   }
 
-  bool have_gesture = false;
-
-  if (prev_state_.finger_cnt && prev_state_.fingers[0].pressure &&
-      hwstate->finger_cnt && hwstate->fingers[0].pressure) {
-    // This and the previous frame has pressure, so create a gesture
-
-    // For now, simple: only one possible gesture
-    result_ = Gesture(kGestureMove,
-                      prev_state_.timestamp,
-                      hwstate->timestamp,
-                      hwstate->fingers[0].position_x -
-                      prev_state_.fingers[0].position_x,
-                      hwstate->fingers[0].position_y -
-                      prev_state_.fingers[0].position_y);
-    have_gesture = true;
+  if (!SameFingers(*hwstate)) {
+    // Fingers changed, do nothing this time
+    ResetSameFingersState(hwstate->timestamp);
+    FillStartPositions(*hwstate);
+    result_.type = kGestureTypeNull;
+  } else {
+    UpdatePalmState(*hwstate);
+    set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
+    UpdateCurrentGestureType(*hwstate, gs_fingers);
+    FillResultGesture(*hwstate, gs_fingers);
   }
   SetPrevState(*hwstate);
-  return have_gesture ? &result_ : NULL;
+  return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
 // For now, require fingers to be in the same slots

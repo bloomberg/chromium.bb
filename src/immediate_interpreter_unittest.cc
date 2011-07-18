@@ -30,19 +30,17 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    {0, 0, 0, 0, 1, 0, 10, 10, 0},
-    {0, 0, 0, 0, 1, 0, 10, 20, 0},
-    {0, 0, 0, 0, 1, 0, 20, 20, 0},
-    {0, 0, 0, 0, 0, 0,  0,  0, 0},
-    {0, 0, 0, 0, 0, 0,  0,  0, 0}
+    {0, 0, 0, 0, 1, 0, 10, 10, 1},
+    {0, 0, 0, 0, 1, 0, 10, 20, 1},
+    {0, 0, 0, 0, 1, 0, 20, 20, 1}
   };
   HardwareState hardware_states[] = {
     // time, finger count, finger states pointer
     { 200000, 0, 1, &finger_states[0] },
     { 210000, 0, 1, &finger_states[1] },
     { 220000, 0, 1, &finger_states[2] },
-    { 230000, 0, 1, &finger_states[3] },
-    { 240000, 0, 1, &finger_states[4] }
+    { 230000, 0, 0, NULL },
+    { 240000, 0, 0, NULL }
   };
 
   // Should fail w/o hardware props set
@@ -72,6 +70,62 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
             ii.SyncInterpret(&hardware_states[3]));
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL),
             ii.SyncInterpret(&hardware_states[4]));
+}
+
+TEST(ImmediateInterpreterTest, ScrollUpTest) {
+  ImmediateInterpreter ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    20,  // pixels/TP width
+    20,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 1, 0, 400, 900, 1},
+    {0, 0, 0, 0, 1, 0, 405, 900, 2},
+
+    {0, 0, 0, 0, 1, 0, 400, 800, 1},
+    {0, 0, 0, 0, 1, 0, 405, 800, 2},
+
+    {0, 0, 0, 0, 1, 0, 400, 700, 1},
+    {0, 0, 0, 0, 1, 0, 405, 700, 2},
+  };
+  HardwareState hardware_states[] = {
+    // time, finger count, finger states pointer
+    { 0.200000, 0, 2, &finger_states[0] },
+    { 0.210000, 0, 2, &finger_states[2] },
+    { 0.220000, 0, 2, &finger_states[4] }
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0]));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1]);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(-100, gs->details.move.dy);
+  EXPECT_EQ(0.200000, gs->start_time);
+  EXPECT_EQ(0.210000, gs->end_time);
+
+  gs = ii.SyncInterpret(&hardware_states[2]);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  EXPECT_EQ(0, gs->details.move.dx);
+  EXPECT_EQ(-100, gs->details.move.dy);
+  EXPECT_EQ(0.210000, gs->start_time);
+  EXPECT_EQ(0.220000, gs->end_time);
 }
 
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
