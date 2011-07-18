@@ -166,13 +166,13 @@ int main(int argc, char* argv[]) {
   muxer_segment.OutputCues(output_cues);
 
   // Set SegmentInfo element attributes
-  mkvmuxer::SegmentInfo* info = muxer_segment.GetSegmentInfo();
+  mkvmuxer::SegmentInfo* const info = muxer_segment.GetSegmentInfo();
   info->set_timecode_scale(timeCodeScale);
   info->set_writing_app("sample_muxer");
 
   // Set Tracks element attributes
   enum { kVideoTrack = 1, kAudioTrack = 2 };
-  const mkvparser::Tracks* parser_tracks = parser_segment->GetTracks();
+  const mkvparser::Tracks* const parser_tracks = parser_segment->GetTracks();
   unsigned long i = 0;
   uint64 vid_track = 0; // no track added
   uint64 aud_track = 0; // no track added
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
       continue;
 
     // TODO(fgalligan): Add support for language to parser.
-    const char* track_name = parser_track->GetNameAsUTF8();
+    const char* const track_name = parser_track->GetNameAsUTF8();
 
     const long long track_type = parser_track->GetType();
 
@@ -208,9 +208,9 @@ int main(int argc, char* argv[]) {
         return -1;
       }
 
-      mkvmuxer::VideoTrack* video =
+      mkvmuxer::VideoTrack* const video =
           static_cast<mkvmuxer::VideoTrack*>(
-            muxer_segment.GetTrackByNumber(vid_track));
+              muxer_segment.GetTrackByNumber(vid_track));
       if (!video) {
         printf("\n Could not get video track.\n");
         return -1;
@@ -245,9 +245,9 @@ int main(int argc, char* argv[]) {
         return -1;
       }
 
-      mkvmuxer::AudioTrack* audio =
+      mkvmuxer::AudioTrack* const audio =
           static_cast<mkvmuxer::AudioTrack*>(
-            muxer_segment.GetTrackByNumber(aud_track));
+              muxer_segment.GetTrackByNumber(aud_track));
       if (!audio) {
         printf("\n Could not get audio track.\n");
         return -1;
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
         audio->set_name(track_name);
 
       size_t private_size;
-      const unsigned char* private_data =
+      const unsigned char* const private_data =
           pAudioTrack->GetCodecPrivate(private_size);
       if (private_size > 0) {
         if (!audio->SetCodecPrivate(private_data, private_size)) {
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Set Cues element attributes
-  mkvmuxer::Cues* cues = muxer_segment.GetCues();
+  mkvmuxer::Cues* const cues = muxer_segment.GetCues();
   cues->set_output_block_number(output_cues_block_number);
   if (cues_on_video_track) {
     if (vid_track)
@@ -297,7 +297,7 @@ int main(int argc, char* argv[]) {
       const long long trackNum = block->GetTrackNumber();
       const mkvparser::Track* const parser_track =
           parser_tracks->GetTrackByNumber(
-            static_cast<unsigned long>(trackNum));
+              static_cast<unsigned long>(trackNum));
       const long long track_type = parser_track->GetType();
 
       if ((track_type == kAudioTrack && output_audio) ||
@@ -345,6 +345,10 @@ int main(int argc, char* argv[]) {
 
   delete [] data;
   delete parser_segment;
+
+  writer.Close();
+  reader.Close();
+
   return 0;
 }
 
