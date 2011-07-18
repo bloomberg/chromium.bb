@@ -401,6 +401,11 @@ RPCRT4.dll!I_RpcBCacheFree
 ...
 RPCRT4.dll!NdrClientCall2
 
+UNINITIALIZED READ
+msdmo.dll!*
+msdmo.dll!*
+DEVENUM.DLL!*
+
 # http://code.google.com/p/drmemory/issues/detail?id=426
 UNINITIALIZED READ
 ...
@@ -520,6 +525,13 @@ CRYPT32.dll!CryptDecodeObjectEx
 CRYPT32.dll!CertGetCRLContextProperty
 ...
 CRYPT32.dll!CertGetCertificateChain
+
+# http://code.google.com/p/drmemory/issues/detail?id=499
+UNINITIALIZED READ
+system call NtUserGetClassInfo WNDCLASSEX*
+
+UNADDRESSABLE ACCESS
+system call NtUserGetClassInfo WNDCLASSEX
 
 ############################
 # TODO(timurrrr): investigate these
