@@ -161,6 +161,7 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
   int64 size_64;
   if (!file_util::GetFileSize(filter_name, &size_64))
     return NULL;
+  using base::MD5Digest;
   if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
     return NULL;
 
@@ -189,9 +190,9 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
     return NULL;
 
   // The file looks valid, start building the digest.
-  MD5Context context;
-  MD5Init(&context);
-  MD5Update(&context, &header, sizeof(header));
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, &header, sizeof(header));
 
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
@@ -200,19 +201,19 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
   read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
   if (read != index.size())
     return NULL;
-  MD5Update(&context, &(index[0]), index_bytes);
+  base::MD5Update(&context, &(index[0]), index_bytes);
 
   // Read vector of deltas.
   deltas.resize(header.deltas_size);
   read = fread(&(deltas[0]), sizeof(deltas[0]), deltas.size(), file.get());
   if (read != deltas.size())
     return NULL;
-  MD5Update(&context, &(deltas[0]), deltas_bytes);
+  base::MD5Update(&context, &(deltas[0]), deltas_bytes);
 
-  MD5Digest calculated_digest;
-  MD5Final(&calculated_digest, &context);
+  base::MD5Digest calculated_digest;
+  base::MD5Final(&calculated_digest, &context);
 
-  MD5Digest file_digest;
+  base::MD5Digest file_digest;
   read = fread(&file_digest, sizeof(file_digest), 1, file.get());
   if (read != 1)
     return NULL;
@@ -242,15 +243,15 @@ bool PrefixSet::WriteFile(const FilePath& filter_name) const {
   if (!file.get())
     return false;
 
-  MD5Context context;
-  MD5Init(&context);
+  base::MD5Context context;
+  base::MD5Init(&context);
 
   // TODO(shess): The I/O code in safe_browsing_store_file.cc would
   // sure be useful about now.
   size_t written = fwrite(&header, sizeof(header), 1, file.get());
   if (written != 1)
     return false;
-  MD5Update(&context, &header, sizeof(header));
+  base::MD5Update(&context, &header, sizeof(header));
 
   // As for reads, the standard guarantees the ability to access the
   // contents of the vector by a pointer to an element.
@@ -258,17 +259,17 @@ bool PrefixSet::WriteFile(const FilePath& filter_name) const {
   written = fwrite(&(index_[0]), sizeof(index_[0]), index_.size(), file.get());
   if (written != index_.size())
     return false;
-  MD5Update(&context, &(index_[0]), index_bytes);
+  base::MD5Update(&context, &(index_[0]), index_bytes);
 
   const size_t deltas_bytes = sizeof(deltas_[0]) * deltas_.size();
   written = fwrite(&(deltas_[0]), sizeof(deltas_[0]), deltas_.size(),
                    file.get());
   if (written != deltas_.size())
     return false;
-  MD5Update(&context, &(deltas_[0]), deltas_bytes);
+  base::MD5Update(&context, &(deltas_[0]), deltas_bytes);
 
-  MD5Digest digest;
-  MD5Final(&digest, &context);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
   written = fwrite(&digest, sizeof(digest), 1, file.get());
   if (written != 1)
     return false;

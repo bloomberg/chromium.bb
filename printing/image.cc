@@ -50,8 +50,8 @@ Image::Image(const Image& image)
 Image::~Image() {}
 
 std::string Image::checksum() const {
-  MD5Digest digest;
-  MD5Sum(&data_[0], data_.size(), &digest);
+  base::MD5Digest digest;
+  base::MD5Sum(&data_[0], data_.size(), &digest);
   return base::HexEncode(&digest, sizeof(digest));
 }
 

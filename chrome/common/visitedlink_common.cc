@@ -79,13 +79,13 @@ VisitedLinkCommon::Fingerprint VisitedLinkCommon::ComputeURLFingerprint(
     const uint8 salt[LINK_SALT_LENGTH]) {
   DCHECK(url_len > 0) << "Canonical URLs should not be empty";
 
-  MD5Context ctx;
-  MD5Init(&ctx);
-  MD5Update(&ctx, salt, LINK_SALT_LENGTH * sizeof(uint8));
-  MD5Update(&ctx, canonical_url, url_len * sizeof(char));
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  base::MD5Update(&ctx, salt, LINK_SALT_LENGTH * sizeof(uint8));
+  base::MD5Update(&ctx, canonical_url, url_len * sizeof(char));
 
-  MD5Digest digest;
-  MD5Final(&digest, &ctx);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
 
   // This is the same as "return *(Fingerprint*)&digest.a;" but if we do that
   // direct cast the alignment could be wrong, and we can't access a 64-bit int

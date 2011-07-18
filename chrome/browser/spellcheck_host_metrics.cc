@@ -52,10 +52,10 @@ void SpellCheckHostMetrics::RecordCheckedWordStats(const string16& word,
   UMA_HISTOGRAM_PERCENTAGE("SpellCheck.MisspellRatio", percentage);
 
   // Collects actual number of checked words, excluding duplication.
-  MD5Digest digest;
-  MD5Sum(reinterpret_cast<const unsigned char*>(word.c_str()),
+  base::MD5Digest digest;
+  base::MD5Sum(reinterpret_cast<const unsigned char*>(word.c_str()),
          word.size() * sizeof(char16), &digest);
-  checked_word_hashes_.insert(MD5DigestToBase16(digest));
+  checked_word_hashes_.insert(base::MD5DigestToBase16(digest));
 
   RecordWordCounts();
 }

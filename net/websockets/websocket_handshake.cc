@@ -260,8 +260,8 @@ void WebSocketHandshake::Parameter::GetExpectedResponse(uint8 *expected) const {
   SetChallengeNumber(&challenge[0], number_1_);
   SetChallengeNumber(&challenge[4], number_2_);
   memcpy(&challenge[8], key_3_.data(), kKey3Size);
-  MD5Digest digest;
-  MD5Sum(challenge, kExpectedResponseSize, &digest);
+  base::MD5Digest digest;
+  base::MD5Sum(challenge, kExpectedResponseSize, &digest);
   memcpy(expected, digest.a, kExpectedResponseSize);
 }
 

@@ -329,7 +329,7 @@ void MostVisitedHandler::BlacklistURL(const GURL& url) {
 }
 
 std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {
-  return MD5String(url);
+  return base::MD5String(url);
 }
 
 // static

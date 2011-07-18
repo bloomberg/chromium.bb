@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ TEST(MetricsServiceTest, SingleElementLogList) {
 
   ++it;
   (*it)->GetAsString(&str);  // MD5 for encoded "Hello world!" string.
-  EXPECT_TRUE(MD5String(encoded) == str);
+  EXPECT_TRUE(base::MD5String(encoded) == str);
 
   ++it;
   EXPECT_TRUE(it == list.end());  // Reached end of list.

@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/callback.h"
-#include "base/metrics/histogram.h"
 #include "base/md5.h"
+#include "base/metrics/histogram.h"
 
 namespace {
 
@@ -53,13 +53,13 @@ bool FileSkip(size_t bytes, FILE* fp) {
 // input data into the checksum in |context|, if non-NULL.  Return
 // true on success.
 template <class T>
-bool ReadArray(T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
+bool ReadArray(T* ptr, size_t nmemb, FILE* fp, base::MD5Context* context) {
   const size_t ret = fread(ptr, sizeof(T), nmemb, fp);
   if (ret != nmemb)
     return false;
 
   if (context)
-    MD5Update(context, ptr, sizeof(T) * nmemb);
+    base::MD5Update(context, ptr, sizeof(T) * nmemb);
   return true;
 }
 
@@ -67,13 +67,14 @@ bool ReadArray(T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
 // output data into the checksum in |context|, if non-NULL.  Return
 // true on success.
 template <class T>
-bool WriteArray(const T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
+bool WriteArray(const T* ptr, size_t nmemb, FILE* fp,
+                base::MD5Context* context) {
   const size_t ret = fwrite(ptr, sizeof(T), nmemb, fp);
   if (ret != nmemb)
     return false;
 
   if (context)
-    MD5Update(context, ptr, sizeof(T) * nmemb);
+    base::MD5Update(context, ptr, sizeof(T) * nmemb);
 
   return true;
 }
@@ -82,8 +83,8 @@ bool WriteArray(const T* ptr, size_t nmemb, FILE* fp, MD5Context* context) {
 // |fp| and fold them into the checksum in |context|.  Returns true on
 // success.
 template <class T>
-bool ReadToVector(std::vector<T>* values, size_t count,
-                  FILE* fp, MD5Context* context) {
+bool ReadToVector(std::vector<T>* values, size_t count, FILE* fp,
+                  base::MD5Context* context) {
   // Pointers into an empty vector may not be valid.
   if (!count)
     return true;
@@ -107,7 +108,8 @@ bool ReadToVector(std::vector<T>* values, size_t count,
 // Write all of |values| to |fp|, and fold the data into the checksum
 // in |context|, if non-NULL.  Returns true on succsess.
 template <class T>
-bool WriteVector(const std::vector<T>& values, FILE* fp, MD5Context* context) {
+bool WriteVector(const std::vector<T>& values, FILE* fp,
+                 base::MD5Context* context) {
   // Pointers into empty vectors may not be valid.
   if (values.empty())
     return true;
@@ -120,8 +122,8 @@ bool WriteVector(const std::vector<T>& values, FILE* fp, MD5Context* context) {
 
 // Read an array of |count| integers and add them to |values|.
 // Returns true on success.
-bool ReadToChunkSet(std::set<int32>* values, size_t count,
-                    FILE* fp, MD5Context* context) {
+bool ReadToChunkSet(std::set<int32>* values, size_t count, FILE* fp,
+                    base::MD5Context* context) {
   if (!count)
     return true;
 
@@ -135,8 +137,8 @@ bool ReadToChunkSet(std::set<int32>* values, size_t count,
 
 // Write the contents of |values| as an array of integers.  Returns
 // true on success.
-bool WriteChunkSet(const std::set<int32>& values,
-                   FILE* fp, MD5Context* context) {
+bool WriteChunkSet(const std::set<int32>& values, FILE* fp,
+                   base::MD5Context* context) {
   if (values.empty())
     return true;
 
@@ -171,7 +173,7 @@ bool FileHeaderSanityCheck(const FilePath& filename,
   expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
   expected_size += header.add_hash_count * sizeof(SBAddFullHash);
   expected_size += header.sub_hash_count * sizeof(SBSubFullHash);
-  expected_size += sizeof(MD5Digest);
+  expected_size += sizeof(base::MD5Digest);
   if (size != expected_size)
     return false;
 
@@ -183,7 +185,7 @@ bool FileHeaderSanityCheck(const FilePath& filename,
 bool ReadAndVerifyHeader(const FilePath& filename,
                          FILE* fp,
                          FileHeader* header,
-                         MD5Context* context) {
+                         base::MD5Context* context) {
   if (!ReadArray(header, 1, fp, context))
     return false;
   if (header->magic != kFileMagic || header->version != kFileVersion)
@@ -493,8 +495,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (!FileRewind(file_.get()))
       return OnCorruptDatabase();
 
-    MD5Context context;
-    MD5Init(&context);
+    base::MD5Context context;
+    base::MD5Init(&context);
 
     // Read the file header and make sure it looks right.
     FileHeader header;
@@ -521,11 +523,11 @@ bool SafeBrowsingStoreFile::DoUpdate(
       return OnCorruptDatabase();
 
     // Calculate the digest to this point.
-    MD5Digest calculated_digest;
-    MD5Final(&calculated_digest, &context);
+    base::MD5Digest calculated_digest;
+    base::MD5Final(&calculated_digest, &context);
 
     // Read the stored checksum and verify it.
-    MD5Digest file_digest;
+    base::MD5Digest file_digest;
     if (!ReadArray(&file_digest, 1, file_.get(), NULL))
       return OnCorruptDatabase();
 
@@ -612,8 +614,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
   if (!FileRewind(new_file_.get()))
     return false;
 
-  MD5Context context;
-  MD5Init(&context);
+  base::MD5Context context;
+  base::MD5Init(&context);
 
   // Write a file header.
   FileHeader header;
@@ -638,8 +640,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
     return false;
 
   // Write the checksum at the end.
-  MD5Digest digest;
-  MD5Final(&digest, &context);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
   if (!WriteArray(&digest, 1, new_file_.get(), NULL))
     return false;
 

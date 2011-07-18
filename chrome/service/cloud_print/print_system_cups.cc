@@ -23,8 +23,8 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
@@ -224,7 +224,7 @@ class PrintServerWatcherCUPS
     for (size_t i = 0; i < printers.size(); i++)
       to_hash += printers[i];
 
-    return MD5String(to_hash);
+    return base::MD5String(to_hash);
   }
 
   scoped_refptr<PrintSystemCUPS> print_system_;
@@ -329,7 +329,7 @@ class PrinterWatcherCUPS
     to_hash += caps.printer_defaults;
     to_hash += caps.defaults_mime_type;
 
-    return MD5String(to_hash);
+    return base::MD5String(to_hash);
   }
 
   std::string printer_name_;
@@ -818,4 +818,3 @@ void PrintSystemCUPS::RunCapsCallback(
 }
 
 }  // namespace cloud_print
-

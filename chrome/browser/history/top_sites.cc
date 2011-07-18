@@ -766,7 +766,7 @@ std::string TopSites::GetURLString(const GURL& url) {
 std::string TopSites::GetURLHash(const GURL& url) {
   // We don't use canonical URLs here to be able to blacklist only one of
   // the two 'duplicate' sites, e.g. 'gmail.com' and 'mail.google.com'.
-  return MD5String(url.spec());
+  return base::MD5String(url.spec());
 }
 
 base::TimeDelta TopSites::GetUpdateDelay() {

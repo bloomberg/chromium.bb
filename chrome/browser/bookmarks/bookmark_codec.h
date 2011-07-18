@@ -159,7 +159,7 @@ class BookmarkCodec {
   std::set<int64> ids_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
-  MD5Context md5_context_;
+  base::MD5Context md5_context_;
 
   // Checksums.
   std::string computed_checksum_;

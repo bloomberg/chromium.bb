@@ -99,12 +99,13 @@ class PrefixSetTest : public PlatformTest {
   // Helper function to re-generated |fp|'s checksum to be correct for
   // the file's contents.  |fp| should be opened in r+ mode.
   static void CleanChecksum(FILE* fp) {
-    MD5Context context;
-    MD5Init(&context);
+    base::MD5Context context;
+    base::MD5Init(&context);
 
     ASSERT_NE(-1, fseek(fp, 0, SEEK_END));
     long file_size = ftell(fp);
 
+    using base::MD5Digest;
     size_t payload_size = static_cast<size_t>(file_size) - sizeof(MD5Digest);
     size_t digested_size = 0;
     ASSERT_NE(-1, fseek(fp, 0, SEEK_SET));
@@ -112,14 +113,14 @@ class PrefixSetTest : public PlatformTest {
       char buf[1024];
       size_t nitems = std::min(payload_size - digested_size, sizeof(buf));
       ASSERT_EQ(nitems, fread(buf, 1, nitems, fp));
-      MD5Update(&context, &buf, nitems);
+      base::MD5Update(&context, &buf, nitems);
       digested_size += nitems;
     }
     ASSERT_EQ(digested_size, payload_size);
     ASSERT_EQ(static_cast<long>(digested_size), ftell(fp));
 
-    MD5Digest new_digest;
-    MD5Final(&new_digest, &context);
+    base::MD5Digest new_digest;
+    base::MD5Final(&new_digest, &context);
     ASSERT_NE(-1, fseek(fp, digested_size, SEEK_SET));
     ASSERT_EQ(1U, fwrite(&new_digest, sizeof(new_digest), 1, fp));
     ASSERT_EQ(file_size, ftell(fp));
@@ -409,7 +410,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
   int64 size_64;
   ASSERT_TRUE(file_util::GetFileSize(filename, &size_64));
   file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
-  long digest_offset = static_cast<long>(size_64 - sizeof(MD5Digest));
+  long digest_offset = static_cast<long>(size_64 - sizeof(base::MD5Digest));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));
   file.reset();
   scoped_ptr<safe_browsing::PrefixSet>

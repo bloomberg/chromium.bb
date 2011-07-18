@@ -10,9 +10,9 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
@@ -682,7 +682,7 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
     // later to check if the capabilities have changed
     CloudPrintHelpers::AddMultipartValueForUpload(
         kPrinterCapsHashValue,
-        MD5String(last_uploaded_printer_info_.printer_capabilities),
+        base::MD5String(last_uploaded_printer_info_.printer_capabilities),
         mime_boundary, std::string(), &post_data);
     GURL post_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
         cloud_print_server_url_);

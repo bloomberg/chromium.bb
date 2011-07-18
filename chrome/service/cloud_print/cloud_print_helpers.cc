@@ -218,7 +218,7 @@ std::string CloudPrintHelpers::GenerateHashOfStringMap(
     values_list.append(it->first);
     values_list.append(it->second);
   }
-  return MD5String(values_list);
+  return base::MD5String(values_list);
 }
 
 void CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
@@ -251,7 +251,7 @@ void CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
     AddMultipartValueForUpload(kPrinterTagValue, msg, mime_boundary,
                                std::string(), post_data);
   }
-  std::string tags_hash = MD5String(tags_list);
+  std::string tags_hash = base::MD5String(tags_list);
   std::string tags_hash_msg(kTagsHashTagName);
   tags_hash_msg += "=";
   tags_hash_msg += tags_hash;

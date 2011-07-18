@@ -272,7 +272,7 @@ const int32 kInvalidHash = 0xFFFFFFFF;
 // We use 10 bits of data from the MD5 digest as the hash.
 const int32 kHashMask = 0x3FF;
 
-int32 GetHashFromDigest(MD5Digest& digest) {
+int32 GetHashFromDigest(base::MD5Digest& digest) {
   int32 hash = 0;
   int32 mask = kHashMask;
   for (size_t i = 0; i < sizeof(digest.a); ++i) {
@@ -355,12 +355,12 @@ void UserSettings::StoreHashedPassword(const string& email,
   base::RandBytes(binary_salt, sizeof(binary_salt));
 
   const string salt = APEncode(string(binary_salt, sizeof(binary_salt)));
-  MD5Context md5_context;
-  MD5Init(&md5_context);
-  MD5Update(&md5_context, salt.data(), salt.size());
-  MD5Update(&md5_context, password.data(), password.size());
-  MD5Digest md5_digest;
-  MD5Final(&md5_digest, &md5_context);
+  base::MD5Context md5_context;
+  base::MD5Init(&md5_context);
+  base::MD5Update(&md5_context, salt.data(), salt.size());
+  base::MD5Update(&md5_context, password.data(), password.size());
+  base::MD5Digest md5_digest;
+  base::MD5Final(&md5_digest, &md5_context);
 
   ScopedDBHandle dbhandle(this);
   SQLTransaction transaction(dbhandle.get());
@@ -418,12 +418,12 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
   CHECK(SQLITE_DONE == query_result);
   if (salt.empty() || hash == kInvalidHash)
     return false;
-  MD5Context md5_context;
-  MD5Init(&md5_context);
-  MD5Update(&md5_context, salt.data(), salt.size());
-  MD5Update(&md5_context, password.data(), password.size());
-  MD5Digest md5_digest;
-  MD5Final(&md5_digest, &md5_context);
+  base::MD5Context md5_context;
+  base::MD5Init(&md5_context);
+  base::MD5Update(&md5_context, salt.data(), salt.size());
+  base::MD5Update(&md5_context, password.data(), password.size());
+  base::MD5Digest md5_digest;
+  base::MD5Final(&md5_digest, &md5_context);
   return hash == GetHashFromDigest(md5_digest);
 }
 

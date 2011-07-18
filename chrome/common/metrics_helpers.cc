@@ -11,15 +11,15 @@
 #endif
 
 #include "base/base64.h"
-#include "base/time.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/perftimer.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/logging_chrome.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/xmlwriter.h"
@@ -175,12 +175,12 @@ int MetricsLogBase::GetElapsedSeconds() {
 }
 
 std::string MetricsLogBase::CreateHash(const std::string& value) {
-  MD5Context ctx;
-  MD5Init(&ctx);
-  MD5Update(&ctx, value.data(), value.length());
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  base::MD5Update(&ctx, value.data(), value.length());
 
-  MD5Digest digest;
-  MD5Final(&digest, &ctx);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
 
   uint64 reverse_uint64;
   // UMA only uses first 8 chars of hash. We use the above uint64 instead

@@ -1122,8 +1122,8 @@ MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
       list.GetSize() - kChecksumEntryCount)
     return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION);
 
-  MD5Context ctx;
-  MD5Init(&ctx);
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
   std::string encoded_log;
   std::string decoded_log;
   for (ListValue::const_iterator it = list.begin() + 1;
@@ -1134,7 +1134,7 @@ MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
       return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
     }
 
-    MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+    base::MD5Update(&ctx, encoded_log.data(), encoded_log.length());
 
     if (!base::Base64Decode(encoded_log, &decoded_log)) {
       local_list->clear();
@@ -1144,8 +1144,8 @@ MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
   }
 
   // Verify checksum.
-  MD5Digest digest;
-  MD5Final(&digest, &ctx);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
   std::string recovered_md5;
   // We store the hash at the end of the list.
   valid = (*(list.end() - 1))->GetAsString(&recovered_md5);
@@ -1153,7 +1153,7 @@ MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
     local_list->clear();
     return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION);
   }
-  if (recovered_md5 != MD5DigestToBase16(digest)) {
+  if (recovered_md5 != base::MD5DigestToBase16(digest)) {
     local_list->clear();
     return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION);
   }
@@ -1188,8 +1188,8 @@ void MetricsService::StoreUnsentLogsHelper(
   // Store size at the beginning of the list.
   list->Append(Value::CreateIntegerValue(local_list.size() - start));
 
-  MD5Context ctx;
-  MD5Init(&ctx);
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
   std::string encoded_log;
   for (std::vector<std::string>::const_iterator it = local_list.begin() + start;
        it != local_list.end(); ++it) {
@@ -1200,14 +1200,14 @@ void MetricsService::StoreUnsentLogsHelper(
       list->Clear();
       return;
     }
-    MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+    base::MD5Update(&ctx, encoded_log.data(), encoded_log.length());
     list->Append(Value::CreateStringValue(encoded_log));
   }
 
   // Append hash to the end of the list.
-  MD5Digest digest;
-  MD5Final(&digest, &ctx);
-  list->Append(Value::CreateStringValue(MD5DigestToBase16(digest)));
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
+  list->Append(Value::CreateStringValue(base::MD5DigestToBase16(digest)));
   DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
   MakeStoreStatusHistogram(STORE_SUCCESS);
 }

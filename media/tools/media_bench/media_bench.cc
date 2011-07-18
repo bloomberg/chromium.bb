@@ -200,12 +200,11 @@ int main(int argc, const char** argv) {
     hash_djb2 = true;
   }
 
-  MD5Context ctx;  // Intermediate MD5 data: do not use
-  MD5Init(&ctx);
+  base::MD5Context ctx;  // Intermediate MD5 data: do not use
+  base::MD5Init(&ctx);
   bool hash_md5 = false;
-  if (cmd_line->HasSwitch(switches::kMd5)) {
+  if (cmd_line->HasSwitch(switches::kMd5))
     hash_md5 = true;
-  }
 
   int skip = 0;
   if (cmd_line->HasSwitch(switches::kSkip)) {
@@ -427,9 +426,8 @@ int main(int argc, const char** argv) {
           if (hash_djb2) {
             hash_value = DJB2Hash(u8_samples, size_out, hash_value);
           }
-          if (hash_md5) {
-            MD5Update(&ctx, u8_samples, size_out);
-          }
+          if (hash_md5)
+            base::MD5Update(&ctx, u8_samples, size_out);
         }
       } else if (target_codec == AVMEDIA_TYPE_VIDEO) {
         int got_picture = 0;
@@ -489,8 +487,8 @@ int main(int argc, const char** argv) {
             }
             if (hash_md5) {
               for (size_t i = 0; i < copy_lines; ++i) {
-                MD5Update(&ctx, reinterpret_cast<const uint8*>(source),
-                          bytes_per_line);
+                base::MD5Update(&ctx, reinterpret_cast<const uint8*>(source),
+                                bytes_per_line);
                 source += source_stride;
               }
             }
@@ -575,9 +573,9 @@ int main(int argc, const char** argv) {
              << "  " << in_path.value() << std::endl;
   }
   if (hash_md5) {
-    MD5Digest digest;  // The result of the computation.
-    MD5Final(&digest, &ctx);
-    *log_out << "   MD5 Hash: " << MD5DigestToBase16(digest)
+    base::MD5Digest digest;  // The result of the computation.
+    base::MD5Final(&digest, &ctx);
+    *log_out << "   MD5 Hash: " << base::MD5DigestToBase16(digest)
              << " " << in_path.value() << std::endl;
   }
 #if defined(ENABLE_WINDOWS_EXCEPTIONS)
