@@ -60,7 +60,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
@@ -964,9 +963,6 @@ void AutomationProvider::GetExtensionProperty(
 void AutomationProvider::SaveAsAsync(int tab_handle) {
   NavigationController* tab = NULL;
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
-  if (tab_contents) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-    wrapper->download_tab_helper()->OnSavePage();
-  }
+  if (tab_contents)
+    tab_contents->OnSavePage();
 }

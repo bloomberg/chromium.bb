@@ -14,8 +14,6 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/save_file.h"
@@ -187,11 +185,8 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
     int render_process_id, int render_view_id) {
   TabContents* contents = tab_util::GetTabContentsByID(render_process_id,
                                                        render_view_id);
-  if (contents) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(contents);
-    return wrapper->download_tab_helper()->save_package();
-  }
+  if (contents)
+    return contents->save_package();
 
   return NULL;
 }

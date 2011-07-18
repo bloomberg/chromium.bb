@@ -2656,8 +2656,6 @@
         'browser/ui/crypto_module_password_dialog.h',
         'browser/ui/crypto_module_password_dialog_nss.cc',
         'browser/ui/crypto_module_password_dialog_openssl.cc',
-        'browser/ui/download/download_tab_helper.cc',
-        'browser/ui/download/download_tab_helper.h',
         'browser/ui/find_bar/find_bar.h',
         'browser/ui/find_bar/find_bar_controller.cc',
         'browser/ui/find_bar/find_bar_controller.h',

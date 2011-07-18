@@ -9,10 +9,10 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +62,7 @@ bool HasOrdinalNumber(const FilePath::StringType& filename) {
 
 }  // namespace
 
-class SavePackageTest : public TabContentsWrapperTestHarness {
+class SavePackageTest : public RenderViewHostTestHarness {
  public:
   SavePackageTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
@@ -96,13 +96,13 @@ class SavePackageTest : public TabContentsWrapperTestHarness {
 
  protected:
   virtual void SetUp() {
-    TabContentsWrapperTestHarness::SetUp();
+    RenderViewHostTestHarness::SetUp();
 
     // Do the initialization in SetUp so contents() is initialized by
-    // TabContentsWrapperTestHarness::SetUp.
+    // RenderViewHostTestHarness::SetUp.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    save_package_success_ = new SavePackage(contents_wrapper(),
+    save_package_success_ = new SavePackage(contents(),
         temp_dir_.path().AppendASCII("testfile" HTML_EXTENSION),
         temp_dir_.path().AppendASCII("testfile_files"));
 
@@ -113,7 +113,7 @@ class SavePackageTest : public TabContentsWrapperTestHarness {
     long_file_name.resize(
         kMaxFilePathLength - 9 - temp_dir_.path().value().length());
 
-    save_package_fail_ = new SavePackage(contents_wrapper(),
+    save_package_fail_ = new SavePackage(contents(),
         temp_dir_.path().AppendASCII(long_file_name + HTML_EXTENSION),
         temp_dir_.path().AppendASCII(long_file_name + "_files"));
   }
@@ -387,7 +387,7 @@ static const struct SuggestedSaveNameTestCase {
 TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
   for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
     scoped_refptr<SavePackage> save_package(
-        new SavePackage(contents_wrapper(), FilePath(), FilePath()));
+        new SavePackage(contents(), FilePath(), FilePath()));
     save_package->page_url_ = GURL(kSuggestedSaveNames[i].page_url);
     save_package->title_ = kSuggestedSaveNames[i].page_title;
 

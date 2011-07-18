@@ -13,7 +13,9 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -289,6 +291,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -707,6 +710,45 @@ void TabContents::WillClose(ConstrainedWindow* window) {
       child_windows_[0]->ShowConstrainedWindow();
     BlockTabContent(true);
   }
+}
+
+void TabContents::OnSavePage() {
+  // If we can not save the page, try to download it.
+  if (!SavePackage::IsSavableContents(contents_mime_type())) {
+    DownloadManager* dlm = profile()->GetDownloadManager();
+    const GURL& current_page_url = GetURL();
+    if (dlm && current_page_url.is_valid()) {
+      dlm->DownloadUrl(current_page_url, GURL(), "", this);
+      download_util::RecordDownloadCount(
+          download_util::INITIATED_BY_SAVE_PACKAGE_FAILURE_COUNT);
+      return;
+    }
+  }
+
+  Stop();
+
+  // Create the save package and possibly prompt the user for the name to save
+  // the page as. The user prompt is an asynchronous operation that runs on
+  // another thread.
+  save_package_ = new SavePackage(this);
+  save_package_->GetSaveInfo();
+}
+
+// Used in automated testing to bypass prompting the user for file names.
+// Instead, the names and paths are hard coded rather than running them through
+// file name sanitation and extension / mime checking.
+bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
+                           SavePackage::SavePackageType save_type) {
+  // Stop the page from navigating.
+  Stop();
+
+  save_package_ = new SavePackage(this, save_type, main_file, dir_path);
+  return save_package_->Init();
+}
+
+void TabContents::OnSaveURL(const GURL& url) {
+  DownloadManager* dlm = profile()->GetDownloadManager();
+  dlm->DownloadUrl(url, GetURL(), "", this);
 }
 
 bool TabContents::IsActiveEntry(int32 page_id) {

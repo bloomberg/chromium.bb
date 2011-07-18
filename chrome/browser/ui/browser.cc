@@ -79,7 +79,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -1689,7 +1688,7 @@ void Browser::SavePage() {
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab && current_tab->contents_mime_type() == "application/pdf")
     UserMetrics::RecordAction(UserMetricsAction("PDF.SavePage"));
-  GetSelectedTabContentsWrapper()->download_tab_helper()->OnSavePage();
+  GetSelectedTabContents()->OnSavePage();
 }
 
 void Browser::ViewSelectedSource() {

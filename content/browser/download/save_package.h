@@ -25,12 +25,12 @@ class GURL;
 class MessageLoop;
 class PrefService;
 class Profile;
-struct SaveFileCreateInfo;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
+class TabContents;
+struct SaveFileCreateInfo;
 struct SavePackageParam;
-class TabContentsWrapper;
 
 namespace base {
 class Thread;
@@ -84,12 +84,12 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(TabContentsWrapper* wrapper);
+  explicit SavePackage(TabContents* tab_contents);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
-  SavePackage(TabContentsWrapper* wrapper,
+  SavePackage(TabContents* tab_contents,
               SavePackageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
@@ -100,6 +100,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // shutdown.
   bool Init();
 
+  // Cancel all in progress request, might be called by user or internal error.
   void Cancel(bool user_action);
 
   void Finish();
@@ -145,7 +146,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   friend class base::RefCountedThreadSafe<SavePackage>;
 
   // For testing only.
-  SavePackage(TabContentsWrapper* wrapper,
+  SavePackage(TabContents* tab_contents,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -186,10 +187,13 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // which contain all resource links that have local copy.
   void GetSerializedHtmlDataForCurrentPageWithLocalLinks();
 
+  // Look up SaveItem by save id from in progress map.
   SaveItem* LookupItemInProcessBySaveId(int32 save_id);
+
+  // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
 
-  // Retrieves the URL to be saved from tab_contents_ variable.
+  // Retrieves the URL to be saved from the TabContents.
   GURL GetUrlToBeSaved();
 
   void CreateDirectoryOnFileThread(const FilePath& website_save_dir,
@@ -248,9 +252,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // it returns "txt").
   static const FilePath::CharType* ExtensionForMimeType(
       const std::string& contents_mime_type);
-
-  // Owning TabContentsWrapper.
-  TabContentsWrapper* wrapper_;
 
   typedef std::queue<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.

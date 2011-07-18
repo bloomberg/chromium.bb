@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/tab_contents/constrained_window.h"
@@ -108,6 +109,11 @@ class TabContents : public PageNavigator,
 
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
+
+  // Returns the SavePackage which manages the page saving job. May be NULL.
+  SavePackage* save_package() const { return save_package_.get(); }
+
+  // Returns the SavePackage which manages the page saving job. May be NULL.
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
@@ -380,6 +386,19 @@ class TabContents : public PageNavigator,
   }
 
   // Misc state & callbacks ----------------------------------------------------
+
+  // Prepare for saving the current web page to disk.
+  void OnSavePage();
+
+  // Save page with the main HTML file path, the directory for saving resources,
+  // and the save type: HTML only or complete web page. Returns true if the
+  // saving process has been initiated successfully.
+  bool SavePage(const FilePath& main_file, const FilePath& dir_path,
+                SavePackage::SavePackageType save_type);
+
+  // Prepare for saving the URL to disk.
+  // URL may refer to the iframe on the page.
+  void OnSaveURL(const GURL& url);
 
   // Returns true if the active NavigationEntry's page_id equals page_id.
   bool IsActiveEntry(int32 page_id);
@@ -721,6 +740,9 @@ class TabContents : public PageNavigator,
 
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;
+
+  // SavePackage, lazily created.
+  scoped_refptr<SavePackage> save_package_;
 
   // Data for loading state ----------------------------------------------------
 

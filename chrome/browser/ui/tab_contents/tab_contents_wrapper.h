@@ -31,7 +31,6 @@ class AutofillManager;
 class AutomationTabHelper;
 class BlockedContentTabHelper;
 class BookmarkTabHelper;
-class DownloadTabHelper;
 class Extension;
 class ExtensionTabHelper;
 class ExtensionWebNavigationTabObserver;
@@ -134,10 +133,6 @@ class TabContentsWrapper : public TabContentsObserver,
 
   BookmarkTabHelper* bookmark_tab_helper() {
     return bookmark_tab_helper_.get();
-  }
-
-  DownloadTabHelper* download_tab_helper() {
-    return download_tab_helper_.get();
   }
 
   ExtensionTabHelper* extension_tab_helper() {
@@ -293,7 +288,6 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
-  scoped_ptr<DownloadTabHelper> download_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;

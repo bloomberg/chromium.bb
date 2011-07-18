@@ -10,8 +10,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -87,13 +85,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
       FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContentsWrapper* current_tab = browser()->GetSelectedTabContentsWrapper();
+  TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
   FilePath full_file_name = save_dir_.path().Append(file_name);
   FilePath dir = save_dir_.path().AppendASCII("a_files");
-  ASSERT_TRUE(current_tab->download_tab_helper()->SavePage(
-      full_file_name, dir, SavePackage::SAVE_AS_ONLY_HTML));
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_ONLY_HTML));
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
@@ -114,14 +112,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
       FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), view_source_url);
 
-  TabContentsWrapper* current_tab = browser()->GetSelectedTabContentsWrapper();
+  TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
   FilePath full_file_name = save_dir_.path().Append(file_name);
   FilePath dir = save_dir_.path().AppendASCII("a_files");
 
-  ASSERT_TRUE(current_tab->download_tab_helper()->SavePage(
-      full_file_name, dir, SavePackage::SAVE_AS_ONLY_HTML));
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_ONLY_HTML));
 
   EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
 
@@ -140,13 +138,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
       FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContentsWrapper* current_tab = browser()->GetSelectedTabContentsWrapper();
+  TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
   FilePath full_file_name = save_dir_.path().Append(file_name);
   FilePath dir = save_dir_.path().AppendASCII("b_files");
-  ASSERT_TRUE(current_tab->download_tab_helper()->SavePage(
-      full_file_name, dir, SavePackage::SAVE_AS_COMPLETE_HTML));
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_COMPLETE_HTML));
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
@@ -183,11 +181,11 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   FilePath dir = save_dir_.path().AppendASCII(
       "Test page for saving page feature_files");
 
-  TabContentsWrapper* current_tab = browser()->GetSelectedTabContentsWrapper();
+  TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
-  ASSERT_TRUE(current_tab->download_tab_helper()->SavePage(
-      full_file_name, dir, SavePackage::SAVE_AS_COMPLETE_HTML));
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
+                                    SavePackage::SAVE_AS_COMPLETE_HTML));
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 

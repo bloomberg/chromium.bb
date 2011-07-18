@@ -12,7 +12,6 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/save_package.h"
@@ -244,7 +243,7 @@
   // Scripter has not specifed the location at which to save, so we prompt for
   // it.
   if (!fileURL) {
-    tabContents_->download_tab_helper()->OnSavePage();
+    tabContents_->tab_contents()->OnSavePage();
     return;
   }
 
@@ -270,9 +269,9 @@
     }
   }
 
-  tabContents_->download_tab_helper()->SavePage(mainFile,
-                                                directoryPath,
-                                                savePackageType);
+  tabContents_->tab_contents()->SavePage(mainFile,
+                                         directoryPath,
+                                         savePackageType);
 }
 
 - (void)handlesCloseScriptCommand:(NSScriptCommand*)command {

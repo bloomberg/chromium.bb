@@ -40,7 +40,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
@@ -1425,15 +1424,9 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       source_tab_contents_->controller().GoForward();
       break;
 
-    case IDC_SAVE_PAGE: {
-      TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              source_tab_contents_);
-      if (!tab_contents_wrapper)
-        break;
-      tab_contents_wrapper->download_tab_helper()->OnSavePage();
+    case IDC_SAVE_PAGE:
+      source_tab_contents_->OnSavePage();
       break;
-    }
 
     case IDC_RELOAD:
       // Prevent the modal "Resubmit form post" dialog from appearing in the

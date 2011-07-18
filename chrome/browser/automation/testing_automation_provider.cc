@@ -77,7 +77,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/download/download_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -97,7 +96,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/debugger/devtools_window.h"
-#include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -1575,9 +1573,7 @@ void TestingAutomationProvider::SavePage(int tab_handle,
     return;
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(nav->tab_contents());
-  wrapper->download_tab_helper()->SavePage(file_name, dir_path, save_type);
+  nav->tab_contents()->SavePage(file_name, dir_path, save_type);
   *success = true;
 }
 
@@ -3459,7 +3455,7 @@ void TestingAutomationProvider::SaveTabContents(
   int tab_index = 0;
   FilePath::StringType filename;
   FilePath::StringType parent_directory;
-  TabContentsWrapper* tab_contents = NULL;
+  TabContents* tab_contents = NULL;
 
   if (!args->GetInteger("tab_index", &tab_index) ||
       !args->GetString("filename", &filename)) {
@@ -3467,7 +3463,7 @@ void TestingAutomationProvider::SaveTabContents(
         .SendError("tab_index or filename param missing");
     return;
   } else {
-    tab_contents = browser->GetTabContentsWrapperAt(tab_index);
+    tab_contents = browser->GetTabContentsAt(tab_index);
     if (!tab_contents) {
       AutomationJSONReply(this, reply_message).SendError("no tab at tab_index");
       return;
@@ -3476,7 +3472,7 @@ void TestingAutomationProvider::SaveTabContents(
   // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
   // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
   parent_directory = FilePath(filename).DirName().value();
-  if (!tab_contents->download_tab_helper()->SavePage(
+  if (!tab_contents->SavePage(
           FilePath(filename),
           FilePath(parent_directory),
           SavePackage::SAVE_AS_ONLY_HTML)) {
@@ -3486,7 +3482,7 @@ void TestingAutomationProvider::SaveTabContents(
   }
   // The observer will delete itself when done.
   new SavePackageNotificationObserver(
-      tab_contents->download_tab_helper()->save_package(), this, reply_message);
+      tab_contents->save_package(), this, reply_message);
 }
 
 // Refer to ImportSettings() in chrome/test/pyautolib/pyauto.py for sample

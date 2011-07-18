@@ -29,7 +29,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -120,25 +119,24 @@ const FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
     FILE_PATH_LITERAL("html");
 #endif
 
-SavePackage::SavePackage(TabContentsWrapper* wrapper,
+SavePackage::SavePackage(TabContents* tab_contents,
                          SavePackageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(wrapper->tab_contents()),
-      wrapper_(wrapper),
+    : TabContentsObserver(tab_contents),
       file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
-      title_(tab_contents()->GetTitle()),
+      title_(tab_contents->GetTitle()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents()->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents->GetRenderProcessHost()->id()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -151,20 +149,19 @@ SavePackage::SavePackage(TabContentsWrapper* wrapper,
   InternalInit();
 }
 
-SavePackage::SavePackage(TabContentsWrapper* wrapper)
-    : TabContentsObserver(wrapper->tab_contents()),
-      wrapper_(wrapper),
+SavePackage::SavePackage(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents),
       file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
-      title_(tab_contents()->GetTitle()),
+      title_(tab_contents->GetTitle()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents()->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents->GetRenderProcessHost()->id()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -174,11 +171,10 @@ SavePackage::SavePackage(TabContentsWrapper* wrapper)
 // This is for testing use. Set |finished_| as true because we don't want
 // method Cancel to be be called in destructor in test mode.
 // We also don't call InternalInit().
-SavePackage::SavePackage(TabContentsWrapper* wrapper,
+SavePackage::SavePackage(TabContents* tab_contents,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : TabContentsObserver(wrapper->tab_contents()),
-      wrapper_(wrapper),
+    : TabContentsObserver(tab_contents),
       file_manager_(NULL),
       download_(NULL),
       saved_main_file_path_(file_full_path),
@@ -222,7 +218,6 @@ SavePackage::~SavePackage() {
   file_manager_ = NULL;
 }
 
-// Retrieves the URL to be saved from tab_contents_ variable.
 GURL SavePackage::GetUrlToBeSaved() {
   // Instead of using tab_contents_.GetURL here, we use url()
   // (which is the "real" url of the page)
@@ -234,7 +229,6 @@ GURL SavePackage::GetUrlToBeSaved() {
   return active_entry->url();
 }
 
-// Cancel all in progress request, might be called by user or internal error.
 void SavePackage::Cancel(bool user_action) {
   if (!canceled()) {
     if (user_action)
@@ -261,7 +255,6 @@ void SavePackage::InternalInit() {
   }
 }
 
-// Initialize the SavePackage.
 bool SavePackage::Init() {
   // Set proper running state.
   if (wait_state_ != INITIALIZE)
@@ -553,7 +546,6 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   }
 }
 
-// Look up SaveItem by save id from in progress map.
 SaveItem* SavePackage::LookupItemInProcessBySaveId(int32 save_id) {
   if (in_process_count()) {
     for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
@@ -567,7 +559,6 @@ SaveItem* SavePackage::LookupItemInProcessBySaveId(int32 save_id) {
   return NULL;
 }
 
-// Remove SaveItem from in progress map and put it to saved map.
 void SavePackage::PutInProgressItemToSavedMap(SaveItem* save_item) {
   SaveUrlItemMap::iterator it = in_progress_items_.find(
       save_item->url().spec());
