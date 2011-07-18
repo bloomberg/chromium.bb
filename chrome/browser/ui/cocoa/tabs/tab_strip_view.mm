@@ -14,7 +14,6 @@
 
 @implementation TabStripView
 
-@synthesize profileMenuButton = profileMenuButton_;
 @synthesize dropArrowShown = dropArrowShown_;
 @synthesize dropArrowPosition = dropArrowPosition_;
 

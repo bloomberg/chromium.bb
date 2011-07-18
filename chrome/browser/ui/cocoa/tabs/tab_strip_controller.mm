@@ -171,8 +171,6 @@ private:
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
-- (BOOL)shouldShowProfileMenuButton;
-- (void)updateProfileMenuButton;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
