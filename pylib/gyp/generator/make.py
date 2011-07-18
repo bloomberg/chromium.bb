@@ -1102,7 +1102,7 @@ class MakefileWriter:
       if int(action.get('process_outputs_as_sources', False)):
         extra_sources += outputs
       if int(action.get('process_outputs_as_mac_bundle_resources', False)):
-        extra_mac_bundle_resources.append(out)
+        extra_mac_bundle_resources += outputs
 
       # Write the actual command.
       command = gyp.common.EncodePOSIXShellList(action['action'])
@@ -1177,10 +1177,10 @@ class MakefileWriter:
           dir = os.path.dirname(out)
           if dir:
             dirs.add(dir)
-          if int(rule.get('process_outputs_as_sources', False)):
-            extra_sources.append(out)
-          if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
-            extra_mac_bundle_resources.append(out)
+        if int(rule.get('process_outputs_as_sources', False)):
+          extra_sources += outputs
+        if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
+          extra_mac_bundle_resources += outputs
         all_outputs += outputs
         inputs = map(Sourceify, map(self.Absolutify, [rule_source] +
                                     rule.get('inputs', [])))
