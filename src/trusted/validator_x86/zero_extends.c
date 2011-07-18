@@ -11,7 +11,11 @@
  * Programmer's Manual, Volume 3: General-Purpose and System Instructions.
  *
  * Note: This is used by the x86-64 validator to decide what operations can
- * be used for control/memory access.
+ * be used to mask control/memory accesses. Therefore, not all instructions
+ * listed in table B-1 (above) are defined to zero-extend. In particular,
+ * this is a NaCl-specific flag that is used to whitelist instructions
+ * that can be used to zero-extend (mask) 32-bit addresses. As such, although
+ * some instruction can zero-extend, we don't necessarily allow them here.
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
@@ -24,55 +28,70 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
-/* List of instruction nmemonics that zero extend 32 bit results.
- *
- * Note: Instructions commented out are not (yet) implemented by
- * the validator, and hence not defined. They have been added here
- * so that they can (easily) be added as necessary.
- */
+/* List of instruction mnemonics that zero extend 32 bit results. */
 static const NaClMnemonic kZeroExtend32Op[] = {
-  InstAdc,            /* 11, 13, 15, 81/2, 83/2 */
+  /* Note: The following instructions are listed in table B-1 (above), but are
+   * not included for the following reasons:
+   *
+   * Bsf and Bsr instructions are not included because they conditionally
+   * write the destination. See
+   * http://code.google.com/p/nativeclient/issues/detail?id=2010
+   *
+   * Cmovcc instructions (0f40 through 0f4f) are not included out of caution.
+   * Table B-1 (above) states that these instrucitons always zero extends 32 bit
+   * register results to 64 bits, and that this occurs even if the condition
+   * is false. However, we decided to be safe and omit these instructions
+   * anyway.
+   *
+   * Cmpxchg is not included because it conditionally writes to
+   * different destinations.
+   *
+   * Bswap is not included because we don't really think that
+   * swapping the bottom bytes is a good thing to do to mask a memory
+   * reference.
+   *
+   * Bt, Btc, Btr, Bts, Rcl, Rcr, Rol, Rol, Sar, Shl, Shld, Shr, and
+   * Shrd instructions are not included out of caution. We assume that
+   * these instructions are used for bit manipulation rather than
+   * computing viable addresses.
+   *
+   * Adc and Sbb are not included since borrows/carries should not be
+   * need when calculating an address.
+   *
+   * Cpuid, In, and Lar instructions are not included just because they
+   * shouldn't be.
+   *
+   * Div, Idiv, and Mul instructions are not included because we never
+   * allowed them.
+   *
+   * Lfs, Lgs, Lss, and Lsl instructions are not included because segment
+   * addresses shouldn't be used.
+   *
+   * Lzcnt is not included because it is unlikely to be useful for
+   * computing an address based on the number of leading zeros of a value.
+   *
+   * Pextrb is not included because you shouldn't use MMX registers
+   * to hold addresses.
+   *
+   * Popcnt is not included because it is unlikely to be useful for computing
+   * an address based on the number of ones in a value.
+   *
+   * Rdmsr is not included, because you shouldn't be reading model specific
+   * registers.
+   *
+   * Rdpmc is not included because you shouldn't be basing addresses on
+   * the performance-monitor counter.
+   *
+   * Rdtsc and Rdtscp are not included because you shouldn't be basing
+   * addresses on the time-stamp counter or the processor id.
+   *
+   * Smsw is not included since you shouldn't be basing addresses on the
+   * machine status word.
+   */
   InstAdd,            /* 01, 03, 05, 81/0, 83/0 */
   InstAnd,            /* 21, 23, 25, 81/4, 83/4 */
-  /* Bsf and Bsr have been removed, because they write to the
-   * destination conditionally. See
-   * http://code.google.com/p/nativeclient/issues/detail?id=2010
-   */
-  InstBswap,          /* OF C* through OF CF */
-  InstBt,             /* OF A3, 0F BA/4 */
-  InstBtc,            /* OF BB, OF BA/7 */
-  InstBtr,            /* OF B3, OF BA/6 */
-  InstBts,            /* OF AB, OF BA /5 */
-  InstCwde,
-  InstCmovo,          /* All CMovcc ops: 0F 40 through 0F 4F. */
-  InstCmovno,
-  InstCmovb,
-  InstCmovnb,
-  InstCmovz,
-  InstCmovnz,
-  InstCmovbe,
-  InstCmovnbe,
-  InstCmovs,
-  InstCmovns,
-  InstCmovp,
-  InstCmovnp,
-  InstCmovl,
-  InstCmovnl,
-  InstCmovle,
-  InstCmovnle,
-  InstCmpxchg,        /* 0F B1 */
-  InstCpuid,          /* OF A2 */
-  InstDiv,            /* f7/6 */
-  InstIdiv,           /* f7/7 */
   InstImul,           /* f7/5 , 0f af , 69 , 6b */
-  InstIn,             /* E5 , ED */
-  InstLar,            /* 0F , 02 */
   InstLea,            /* 8D */
-  /* InstLfs,            ** 0f b4 */
-  /* InstLgs,            ** 0f b5 */
-  InstLsl,            /* 0f 03 */
-  /* InstLss,            ** 0f b2 */
-  /* InstLzcnt,          ** f3 0f bd */
   InstMov,            /* 89, 8b, c7, b8 through bf, a1 (moffset),
                          a3 (moffset)
                       */
@@ -80,27 +99,9 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstMovsx,          /* 0f be, 0f bf */
   InstMovsxd,         /* 63 */
   InstMovzx,          /* 0f b6, 0f b7 */
-  InstMul,            /* f7/4 */
   InstNeg,            /* f7/3 */
   InstNot,            /* f7/2 */
   InstOr,             /* 09, 0b, 0d, 81/1, 83/1 */
-  InstPextrb,         /* 66 0f 3a 14 */
-  /* InstPopcnt,         ** f3 0f b8 */
-  InstRcl,            /* D1/2, D3/2, C1/2 */
-  InstRcr,            /* D1/3, D3/3, c1/3 */
-  InstRdmsr,          /* 0f 32 */
-  /* InstRdpmc,          ** 0f 33 */
-  InstRdtsc,          /* 0f 31 */
-  InstRdtscp,         /* 0f 01 f9 */
-  InstRol,            /* D1/0, D3/0, C1/0 */
-  InstRor,            /* D1/1, D3/1, C1/1 */
-  InstSar,            /* D1/7, D3/7, C1/7 */
-  InstSbb,            /* 19, 1b, 1d, 81/3, 83/3 */
-  InstShl,            /* D1/4, D3/4, C1/4 */
-  InstShld,           /* 0f a4, 0f a5 */
-  InstShr,            /* D1/5, D3/5, C1/5 */
-  InstShrd,           /* 0f ac, 0f ad */
-  InstSmsw,           /* 0f 01/4 */
   InstSub,            /* 29, 2b, 2d, 81/5, 83/5 */
   InstXadd,           /* 0f c1 */
   InstXchg,           /* 87, 90 through 97 */
@@ -122,6 +123,11 @@ static void AddZeroExtendToOpDestArgs(NaClModeledInst* inst) {
   if (inst->flags & NACL_IFLAG(OperandSize_v)) {
     int i;
     for (i = 0; i < inst->num_operands; ++i) {
+      /* Note: we currently don't allow zero extends for
+       * implicit arguments. This is done just to be extra
+       * cautious on what we allow to be masks in the
+       * NaCl x64-64 validator.
+       */
       if ((inst->operands[i].flags & NACL_OPFLAG(OpSet)) &&
           (NACL_EMPTY_OPFLAGS ==
            (inst->operands[i].flags & NACL_OPFLAG(OpImplicit)))) {

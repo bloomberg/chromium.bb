@@ -22,6 +22,10 @@ OperandFar
 # When jump address, the jump is relative (rather than absolute.
 OperandRelative
 # Operand zero-extends 32-bit register results to 64-bits.
+# NOTE: This is a NaCl x86-64, validator specific, flag that is used to
+# mark operands that can be used for address masking since
+# they zero extend. It is added only if NaCl allows it for
+# this context. See zero_extends.c for more details on this.
 OperandZeroExtends_v
 # Operand sign-extends 32-bit register results to 64-bits.
 OperandSignExtends_v

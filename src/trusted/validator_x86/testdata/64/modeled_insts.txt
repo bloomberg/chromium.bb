@@ -152,7 +152,7 @@ Target: x86-64 bit mode
   --- 11 ---
   11                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Adc $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 12 ---
   12                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
@@ -162,7 +162,7 @@ Target: x86-64 bit mode
   --- 13 ---
   13                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Adc $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 14 ---
   14                          386 OpcodeHasImmed_b OpcodeLockable
@@ -172,7 +172,7 @@ Target: x86-64 bit mode
   --- 15 ---
   15                          386 OpcodeHasImmed_z OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Adc $rAXv, $Iz
-      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpUse OpSet OpDest
       I_Operand               OpUse
   --- 16 ---
   16                          INVALID NaClIllegal
@@ -186,7 +186,7 @@ Target: x86-64 bit mode
   --- 19 ---
   19                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sbb $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- 1a ---
   1a                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
@@ -196,7 +196,7 @@ Target: x86-64 bit mode
   --- 1b ---
   1b                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sbb $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
   --- 1c ---
   1c                          386 OpcodeHasImmed_b OpcodeLockable
@@ -206,7 +206,7 @@ Target: x86-64 bit mode
   --- 1d ---
   1d                          386 OpcodeHasImmed_z OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sbb $rAXv, $Iz
-      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpUse OpSet OpDest
       I_Operand               OpUse
   --- 1e ---
   1e                          INVALID NaClIllegal
@@ -621,11 +621,11 @@ Target: x86-64 bit mode
       I_Operand               OpUse
   81 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Adc $Ev, $Iz
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   81 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sbb $Ev, $Iz
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   81 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     And $Ev, $Iz
@@ -663,11 +663,11 @@ Target: x86-64 bit mode
       I_Operand               OpUse
   83 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Adc $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   83 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sbb $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   83 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     And $Ev, $Ib
@@ -1079,35 +1079,35 @@ Target: x86-64 bit mode
   --- c1 ---
   c1 / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rol $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Ror $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcl $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcr $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 5                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shr $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   c1 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sar $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   --- c2 ---
   c2                          386 OpcodeHasImmed_w NaClIllegal OperandSizeDefaultIs64
@@ -1218,35 +1218,35 @@ Target: x86-64 bit mode
   --- d1 ---
   d1 / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rol $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Ror $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcl $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcr $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 5                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shr $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   d1 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sar $Ev, 1
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       Const_1                 OpUse
   --- d2 ---
   d2 / 0                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b
@@ -1284,35 +1284,35 @@ Target: x86-64 bit mode
   --- d3 ---
   d3 / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rol $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Ror $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcl $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Rcr $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 5                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shr $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 6                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shl $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   d3 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sar $Ev, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       RegCL                   OpUse
   --- d4 ---
   d4                          INVALID NaClIllegal
@@ -1604,7 +1604,7 @@ Target: x86-64 bit mode
   --- e5 ---
   e5                          386 OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     In $rAXv, $Ib
-      RegREAX                 OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpSet OpDest
       I_Operand               OpUse
   --- e6 ---
   e6                          386 OpcodeHasImmed_b NaClIllegal
@@ -1645,7 +1645,7 @@ Target: x86-64 bit mode
   --- ed ---
   ed                          386 OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     In $rAXv, %dx
-      RegREAX                 OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpSet OpDest
       RegDX                   OpUse
   --- ee ---
   ee                          386 NaClIllegal
@@ -1875,7 +1875,7 @@ Target: x86-64 bit mode
       RegECX                  OpUse
   0f 01 / 4                   SYSTEM OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Smsw $Mw/Rv
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OpDest
   0f 01 / 5                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   0f 01 / 6                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   0f 01 / 7                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
@@ -2184,82 +2184,82 @@ Target: x86-64 bit mode
   --- 40 ---
   0f 40                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovo $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 41 ---
   0f 41                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovno $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 42 ---
   0f 42                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovb $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 43 ---
   0f 43                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnb $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 44 ---
   0f 44                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovz $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 45 ---
   0f 45                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnz $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 46 ---
   0f 46                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovbe $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 47 ---
   0f 47                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnbe $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 48 ---
   0f 48                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovs $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 49 ---
   0f 49                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovns $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4a ---
   0f 4a                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovp $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4b ---
   0f 4b                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnp $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4c ---
   0f 4c                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovl $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4d ---
   0f 4d                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnl $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4e ---
   0f 4e                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovle $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 4f ---
   0f 4f                       CMOV OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmovnle $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OpDest
       E_Operand               OpUse
   --- 50 ---
   0f 50                       SSE ModRmModIs0x3 OpcodeUsesModRm
@@ -2689,13 +2689,13 @@ Target: x86-64 bit mode
   --- a4 ---
   0f a4                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shld $Ev, $Gv, $Ib
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OpDest
       G_Operand               OpUse
       I_Operand               OpUse
   --- a5 ---
   0f a5                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shld $Ev, $Gv, %cl
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OpDest
       G_Operand               OpUse
       RegCL                   OpUse
   --- a6 ---
@@ -2718,18 +2718,18 @@ Target: x86-64 bit mode
   --- ab ---
   0f ab                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Bts $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- ac ---
   0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shrd $Ev, $Gv, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
       I_Operand               OpUse
   --- ad ---
   0f ad                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Shrd $Ev, $Gv, %cl
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
       RegCL                   OpUse
   --- ae ---
@@ -2812,8 +2812,8 @@ Target: x86-64 bit mode
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Cmpxchg {$rAXv}, $Ev, $Gv
       RegREAX                 OpUse OpSet OpImplicit
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse OpSet OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse OpSet
   --- b2 ---
   0f b2                       386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Lss $SGz, $Mp
@@ -2822,7 +2822,7 @@ Target: x86-64 bit mode
   --- b3 ---
   0f b3                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btr $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- b4 ---
   0f b4                       386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
@@ -2855,21 +2855,21 @@ Target: x86-64 bit mode
       I_Operand               OpUse
   0f ba / 5                   386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bts $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   0f ba / 6                   386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Btr $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   0f ba / 7                   386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Btc $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       I_Operand               OpUse
   0f ba                       INVALID OpcodeUsesModRm NaClIllegal
   --- bb ---
   0f bb                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o NaClIllegal
     Btc $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- bc ---
   0f bc                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
@@ -2945,35 +2945,35 @@ Target: x86-64 bit mode
   --- c8 ---
   0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- c9 ---
   0f c9 - r1                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- ca ---
   0f ca - r2                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- cb ---
   0f cb - r3                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- cc ---
   0f cc - r4                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- cd ---
   0f cd - r5                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- ce ---
   0f ce - r6                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- cf ---
   0f cf - r7                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Bswap $r8v
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OpDest
   --- d0 ---
   0f d0                       INVALID NaClIllegal
   --- d1 ---
