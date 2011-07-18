@@ -70,7 +70,6 @@
         'c/dev/ppb_font_dev.h',
         'c/dev/ppb_fullscreen_dev.h',
         'c/dev/ppb_graphics_3d_dev.h',
-        'c/dev/ppb_graphics_3d_trusted_dev.h',
         'c/dev/ppb_memory_dev.h',
         'c/dev/ppb_opengles_dev.h',
         'c/dev/ppb_scrollbar_dev.h',

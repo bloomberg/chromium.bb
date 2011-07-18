@@ -25,7 +25,6 @@
 #include "ppapi/proxy/ppb_flash_tcp_socket_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
-#include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
@@ -194,17 +193,7 @@ PP_Resource ResourceCreationProxy::CreateGraphics3D(
     PP_Config3D_Dev config,
     PP_Resource share_context,
     const int32_t* attrib_list) {
-  return PPB_Graphics3D_Proxy::CreateProxyResource(
-      instance, config, share_context, attrib_list);
-}
-
-PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  // Not proxied. The raw creation function is used only in the implementation
-  // of the proxy on the host side.
+  NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
 

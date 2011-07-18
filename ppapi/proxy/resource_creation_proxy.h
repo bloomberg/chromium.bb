@@ -76,10 +76,6 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
                                        PP_Config3D_Dev config,
                                        PP_Resource share_context,
                                        const int32_t* attrib_list) OVERRIDE;
-  virtual PP_Resource CreateGraphics3DRaw(PP_Instance instance,
-                                          PP_Config3D_Dev config,
-                                          PP_Resource share_context,
-                                          const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,

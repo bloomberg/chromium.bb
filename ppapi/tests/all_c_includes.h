@@ -25,7 +25,6 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
-#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"

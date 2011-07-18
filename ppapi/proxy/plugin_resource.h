@@ -26,7 +26,6 @@
   F(FlashNetConnector) \
   F(Font) \
   F(Graphics2D) \
-  F(Graphics3D) \
   F(ImageData) \
   F(MockResource) \
   F(PrivateFontFile) \
