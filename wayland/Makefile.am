@@ -16,14 +16,14 @@ libwayland_util_la_SOURCES =			\
 	wayland-util.h				\
 	wayland-hash.c
 
-libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la
+libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt
 libwayland_server_la_SOURCES =			\
 	wayland-protocol.c			\
 	wayland-server.c			\
 	wayland-shm.c				\
 	event-loop.c
 
-libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la
+libwayland_client_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt
 libwayland_client_la_SOURCES =			\
 	wayland-protocol.c			\
 	wayland-client.c
