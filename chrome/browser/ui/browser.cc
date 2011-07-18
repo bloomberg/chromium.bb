@@ -3360,7 +3360,8 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
   ActiveDownloadsUI::OpenPopup(profile_);
 #else
   // GetDownloadShelf creates the download shelf if it was not yet created.
-  window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
+  DownloadShelf* shelf = window()->GetDownloadShelf();
+  shelf->AddDownload(new DownloadItemModel(download));
 
   // Don't show the animation for "Save file" downloads.
   if (download->total_bytes() <= 0)
@@ -3371,11 +3372,14 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
       !ExtensionService::IsDownloadFromMiniGallery(download->GetURL()))
     return;
 
-  TabContents* current_tab = GetSelectedTabContents();
+  // Show animation in same window as the download shelf. Download shelf
+  // may not be in the same window that initiated the download, e.g. Panels.
+  TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
+
   // We make this check for the case of minimized windows, unit tests, etc.
-  if (platform_util::IsVisible(current_tab->GetNativeView()) &&
+  if (platform_util::IsVisible(shelf_tab->GetNativeView()) &&
       ui::Animation::ShouldRenderRichAnimation()) {
-    DownloadStartedAnimation::Show(current_tab);
+    DownloadStartedAnimation::Show(shelf_tab);
   }
 #endif
 

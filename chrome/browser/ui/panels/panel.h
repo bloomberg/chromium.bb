@@ -171,6 +171,8 @@ class Panel : public BrowserWindow {
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
+  Browser* browser_;  // Weak, owned by native_panel.
+
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.

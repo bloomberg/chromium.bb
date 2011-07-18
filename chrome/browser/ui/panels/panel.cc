@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
 #include "ui/gfx/rect.h"
@@ -26,7 +27,8 @@ const Extension* Panel::GetExtension(Browser* browser) {
 }
 
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
-    : native_panel_(NULL),
+    : browser_(browser),
+      native_panel_(NULL),
       expansion_state_(EXPANDED) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
 }
@@ -261,13 +263,28 @@ void Panel::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 }
 
 bool Panel::IsDownloadShelfVisible() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 DownloadShelf* Panel::GetDownloadShelf() {
-  NOTIMPLEMENTED();
-  return NULL;
+  Profile* profile = browser_->GetProfile();
+  Browser* browser = Browser::GetTabbedBrowser(profile, true);
+
+  if (!browser) {
+    // Set initial bounds so window will not be positioned at an offset
+    // to this panel as panels are at the bottom of the screen.
+    gfx::Rect window_bounds;
+    bool maximized;
+    WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
+                                        browser_, &window_bounds, &maximized);
+    Browser::CreateParams params(Browser::TYPE_TABBED, profile);
+    params.initial_bounds = window_bounds;
+    browser = Browser::CreateWithParams(params);
+    browser->NewTab();
+  }
+
+  browser->window()->Show();  // Ensure download shelf is visible.
+  return browser->window()->GetDownloadShelf();
 }
 
 void Panel::ShowRepostFormWarningDialog(TabContents* tab_contents) {
