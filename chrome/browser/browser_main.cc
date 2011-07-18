@@ -2006,6 +2006,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
       UMA_HISTOGRAM_MEDIUM_TIMES("Startup.BrowserOpenTabs",
                                  base::TimeTicks::Now() - browser_open_start);
 
+      // TODO(mad): Move this call in a proper place on CrOS.
+      // http://crosbug.com/17687
+#if !defined(OS_CHROMEOS)
       // If we're running tests (ui_task is non-null), then we don't want to
       // call FetchLanguageListFromTranslateServer
       if (parameters.ui_task == NULL && translate_manager != NULL) {
@@ -2016,6 +2019,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
         profile->GetRequestContext();
         translate_manager->FetchLanguageListFromTranslateServer(user_prefs);
       }
+#endif
 
       RunUIMessageLoop(browser_process.get());
     }
