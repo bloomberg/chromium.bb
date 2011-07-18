@@ -368,9 +368,9 @@ int RelauncherMain(const MainFunctionParams& main_parameters) {
     NULL   // initialEvent
   };
 
-  OSStatus err = LSOpenApplication(&ls_parameters, NULL);
-  if (err != noErr) {
-    LOG(ERROR) << "LSOpenApplication: " << err;
+  OSStatus status = LSOpenApplication(&ls_parameters, NULL);
+  if (status != noErr) {
+    LOG(ERROR) << "LSOpenApplication: " << status;
     return 1;
   }
 

@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_MAC_LAUNCHD_H_
 #pragma once
 
+#include <sys/types.h>
+
 #include <string>
 
 namespace launchd {
 
-// Sends a signal to the job at |job_label|.
-void SignalJob(const std::string& job_label, int signal);
+// Returns the process ID for |job_label|, or -1 on error.
+pid_t PIDForJob(const std::string& job_label);
 
 }  // namespace launchd
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/mac/launchd.h"
 
 #include <launch.h>
-#include <signal.h>
 
 #include "base/logging.h"
 #include "chrome/browser/mac/scoped_launch_data.h"
@@ -46,15 +45,21 @@ launch_data_t MessageForJob(const std::string& job_label,
   return launch_msg(message);
 }
 
-// Returns the process ID for |job_label|, or -1 on error.
+}  // namespace
+
 pid_t PIDForJob(const std::string& job_label) {
   ScopedLaunchData response(MessageForJob(job_label, LAUNCH_KEY_GETJOB));
   if (!response) {
     return -1;
   }
 
-  if (launch_data_get_type(response) != LAUNCH_DATA_DICTIONARY) {
-    LOG(ERROR) << "PIDForJob: expected dictionary";
+  launch_data_type_t response_type = launch_data_get_type(response);
+  if (response_type != LAUNCH_DATA_DICTIONARY) {
+    if (response_type == LAUNCH_DATA_ERRNO) {
+      LOG(ERROR) << "PIDForJob: error " << launch_data_get_errno(response);
+    } else {
+      LOG(ERROR) << "PIDForJob: expected dictionary, got " << response_type;
+    }
     return -1;
   }
 
@@ -71,17 +76,6 @@ pid_t PIDForJob(const std::string& job_label) {
   }
 
   return launch_data_get_integer(pid_data);
-}
-
-}  // namespace
-
-void SignalJob(const std::string& job_name, int signal) {
-  pid_t pid = PIDForJob(job_name);
-  if (pid <= 0) {
-    return;
-  }
-
-  kill(pid, signal);
 }
 
 }  // namespace launchd

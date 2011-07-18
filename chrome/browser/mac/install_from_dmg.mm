@@ -27,10 +27,10 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/authorization_util.h"
+#include "chrome/browser/mac/dock.h"
 #include "chrome/browser/mac/scoped_authorizationref.h"
 #include "chrome/browser/mac/scoped_ioobject.h"
 #import "chrome/browser/mac/keystone_glue.h"
-#include "chrome/browser/mac/launchd.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
@@ -48,11 +48,6 @@
 #undef catch
 
 namespace {
-
-NSString* const kDockTileDataKey = @"tile-data";
-NSString* const kDockFileDataKey = @"file-data";
-NSString* const kDockCFURLStringKey = @"_CFURLString";
-NSString* const kDockCFURLStringTypeKey = @"_CFURLStringType";
 
 // Given an io_service_t (expected to be of class IOMedia), walks the ancestor
 // chain, returning the closest ancestor that implements class IOHDIXHDDrive,
@@ -139,7 +134,7 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
         observed_type.assign(", observed ");
         observed_type.append(base::SysCFStringRefToUTF8(observed_type_cf));
       }
-      LOG(ERROR) << "image-path: expected CFData" << observed_type;
+      LOG(ERROR) << "image-path: expected CFData, observed " << observed_type;
       return true;
     }
 
@@ -347,294 +342,6 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
   return true;
 }
 
-// Returns an array parallel to |persistent_apps| containing only the
-// pathnames of the Dock tiles contained therein. Returns nil on failure, such
-// as when the structure of |persistent_apps| is not understood.
-NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
-  NSMutableArray* app_paths =
-      [NSMutableArray arrayWithCapacity:[persistent_apps count]];
-
-  for (NSDictionary* app in persistent_apps) {
-    if (![app isKindOfClass:[NSDictionary class]]) {
-      LOG(ERROR) << "app not NSDictionary";
-      return nil;
-    }
-
-    NSDictionary* tile_data = [app objectForKey:kDockTileDataKey];
-    if (![tile_data isKindOfClass:[NSDictionary class]]) {
-      LOG(ERROR) << "tile_data not NSDictionary";
-      return nil;
-    }
-
-    NSDictionary* file_data = [tile_data objectForKey:kDockFileDataKey];
-    if (![file_data isKindOfClass:[NSDictionary class]]) {
-      LOG(ERROR) << "file_data not NSDictionary";
-      return nil;
-    }
-
-    NSNumber* type = [file_data objectForKey:kDockCFURLStringTypeKey];
-    if (![type isKindOfClass:[NSNumber class]]) {
-      LOG(ERROR) << "type not NSNumber";
-      return nil;
-    }
-    if ([type intValue] != 0) {
-      LOG(ERROR) << "type not 0";
-      return nil;
-    }
-
-    NSString* path = [file_data objectForKey:kDockCFURLStringKey];
-    if (![path isKindOfClass:[NSString class]]) {
-      LOG(ERROR) << "path not NSString";
-      return nil;
-    }
-
-    [app_paths addObject:path];
-  }
-
-  return app_paths;
-}
-
-// Adds an icon to the Dock pointing to |installed_path| if one is not already
-// present. |dmg_app_path| is the path to the install source. Its tile will be
-// removed if present. If any changes are made to the Dock's configuration,
-// the Dock process is restarted to reflect those changes.
-//
-// Various heruistics are used to determine where to place the new icon
-// relative to other items already present in the Dock:
-//  - If installed_path is already in the Dock, no new tiles for this path
-//    will be added.
-//  - If dmg_app_path is present in the Dock, it will be removed. If
-//    installed_path is not already present, the new tile referencing
-//    installed_path will be placed where the dmg_app_path tile was. This
-//    keeps the tile where a user expects it if they dragged the application
-//    icon from a disk image into the Dock and then clicked on the new icon
-//    in the Dock.
-//  - The new tile will precede any application with the same name already
-//    in the Dock.
-//  - In an official build, a new tile for Google Chrome will be placed
-//    immediately before the first existing tile for Google Chrome Canary,
-//    and a new tile for Google Chrome Canary will be placed immediately after
-//    the last existing tile for Google Chrome.
-//  - The new tile will be placed immediately after the last tile for another
-//    browser application already in the Dock.
-//  - The new tile will be placed last in the Dock.
-// For the purposes of these comparisons, applications are identified by the
-// last component in their path. For example, any application named Safari.app
-// will be treated as a browser. If the user renames an application on disk,
-// it will alter the result. Looking up the bundle ID could be slightly more
-// robust in the presence of such alterations, but it's not thought to be a
-// large enough problem to warrant such lookups.
-//
-// The changes made to the Dock's configuration are the minimal changes
-// necessary to cause the desired behavior. Although it's possible to set
-// additional properties on the dock tile added to the Dock's plist, this
-// is not done. Upon relaunch, Dock.app will determine the correct values for
-// the properties it requires and add them to its configuration.
-//
-// ApplicationServices.framework/Frameworks/HIServices.framework contains an
-// undocumented function, CoreDockAddFileToDock, that is able to add items to
-// the Dock "live" without requiring a Dock restart. Under the hood, it
-// communicates with the Dock via Mach IPC. It is available as of Mac OS X
-// 10.6. AddDockIcon could call CoreDockAddFileToDock if available, but
-// CoreDockAddFileToDock seems to always to add the new Dock icon last, where
-// AddDockIcon takes care to position the icon appropriately. Based on
-// disassembly, the signature of the undocumented function appears to be
-//    extern "C" OSStatus CoreDockAddFileToDock(CFURLRef url, int);
-// The int argument doesn't appear to have any effect. It's not used as the
-// position to place the icon as hoped.
-void AddDockIcon(NSString* installed_path, NSString* dmg_app_path) {
-  // There's enough potential allocation in this function to justify a
-  // distinct pool.
-  base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-  NSString* const kDockDomain = @"com.apple.dock";
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-
-  NSDictionary* dock_plist_const =
-      [user_defaults persistentDomainForName:kDockDomain];
-  if (![dock_plist_const isKindOfClass:[NSDictionary class]]) {
-    LOG(ERROR) << "dock_plist_const not NSDictionary";
-    return;
-  }
-  NSMutableDictionary* dock_plist =
-      [NSMutableDictionary dictionaryWithDictionary:dock_plist_const];
-
-  NSString* const kDockPersistentAppsKey = @"persistent-apps";
-  NSArray* persistent_apps_const =
-      [dock_plist objectForKey:kDockPersistentAppsKey];
-  if (![persistent_apps_const isKindOfClass:[NSArray class]]) {
-    LOG(ERROR) << "persistent_apps_const not NSArray";
-    return;
-  }
-  NSMutableArray* persistent_apps =
-      [NSMutableArray arrayWithArray:persistent_apps_const];
-
-  NSMutableArray* persistent_app_paths = PersistentAppPaths(persistent_apps);
-  if (!persistent_app_paths) {
-    return;
-  }
-
-  // Directories in the Dock's plist are given with trailing slashes. Since
-  // installed_path and dmg_app_path both refer to application bundles,
-  // they're directories and will show up with trailing slashes. This is an
-  // artifact of the Dock's internal use of CFURL. Look for paths that match,
-  // and when adding an item to the Dock's plist, keep it in the form that the
-  // Dock likes.
-  NSString* installed_path_dock = [installed_path stringByAppendingString:@"/"];
-  NSString* dmg_app_path_dock = [dmg_app_path stringByAppendingString:@"/"];
-
-  NSUInteger already_installed_app_index = NSNotFound;
-  NSUInteger app_index = NSNotFound;
-  for (NSUInteger index = 0; index < [persistent_apps count]; ++index) {
-    NSString* app_path = [persistent_app_paths objectAtIndex:index];
-    if ([app_path isEqualToString:installed_path_dock]) {
-      // If the Dock already contains a reference to the newly installed
-      // application, don't add another one.
-      already_installed_app_index = index;
-    } else if ([app_path isEqualToString:dmg_app_path_dock]) {
-      // If the Dock contains a reference to the application on the disk
-      // image, replace it with a reference to the newly installed
-      // application. However, if the Dock contains a reference to both the
-      // application on the disk image and the newly installed application,
-      // just remove the one referencing the disk image.
-      //
-      // This case is only encountered when the user drags the icon from the
-      // disk image volume window in the Finder directly into the Dock.
-      app_index = index;
-    }
-  }
-
-  bool made_change = false;
-
-  if (app_index != NSNotFound) {
-    // Remove the Dock's reference to the application on the disk image.
-    [persistent_apps removeObjectAtIndex:app_index];
-    [persistent_app_paths removeObjectAtIndex:app_index];
-    made_change = true;
-  }
-
-  if (already_installed_app_index == NSNotFound) {
-    // The Dock doesn't yet have a reference to the icon at the
-    // newly installed path. Figure out where to put the new icon.
-    NSString* app_name = [installed_path lastPathComponent];
-
-    if (app_index == NSNotFound) {
-      // If an application with this name is already in the Dock, put the new
-      // one right before it.
-      for (NSUInteger index = 0; index < [persistent_apps count]; ++index) {
-        NSString* dock_app_name =
-            [[persistent_app_paths objectAtIndex:index] lastPathComponent];
-        if ([dock_app_name isEqualToString:app_name]) {
-          app_index = index;
-          break;
-        }
-      }
-    }
-
-#if defined(GOOGLE_CHROME_BUILD)
-    if (app_index == NSNotFound) {
-      // If this is an officially-branded Chrome (including Canary) and an
-      // application matching the "other" flavor is already in the Dock, put
-      // them next to each other. Google Chrome will precede Google Chrome
-      // Canary in the Dock.
-      NSString* chrome_name = @"Google Chrome.app";
-      NSString* canary_name = @"Google Chrome Canary.app";
-      for (NSUInteger index = 0; index < [persistent_apps count]; ++index) {
-        NSString* dock_app_name =
-            [[persistent_app_paths objectAtIndex:index] lastPathComponent];
-        if ([dock_app_name isEqualToString:canary_name] &&
-            [app_name isEqualToString:chrome_name]) {
-          app_index = index;
-
-          // Break: put Google Chrome.app before the first Google Chrome
-          // Canary.app.
-          break;
-        } else if ([dock_app_name isEqualToString:chrome_name] &&
-                   [app_name isEqualToString:canary_name]) {
-          app_index = index + 1;
-
-          // No break: put Google Chrome Canary.app after the last Google
-          // Chrome.app.
-        }
-      }
-    }
-#endif  // GOOGLE_CHROME_BUILD
-
-    if (app_index == NSNotFound) {
-      // Put the new application after the last browser application already
-      // present in the Dock.
-      NSArray* other_browser_app_names =
-          [NSArray arrayWithObjects:
-#if defined(GOOGLE_CHROME_BUILD)
-                                    @"Chromium.app",  // Unbranded Google Chrome
-#else
-                                    @"Google Chrome.app",
-                                    @"Google Chrome Canary.app",
-#endif
-                                    @"Safari.app",
-                                    @"Firefox.app",
-                                    @"Camino.app",
-                                    @"Opera.app",
-                                    @"OmniWeb.app",
-                                    @"WebKit.app",    // Safari nightly
-                                    @"Aurora.app",    // Firefox dev
-                                    @"Nightly.app",   // Firefox nightly
-                                    nil];
-      for (NSUInteger index = 0; index < [persistent_apps count]; ++index) {
-        NSString* dock_app_name =
-            [[persistent_app_paths objectAtIndex:index] lastPathComponent];
-        if ([other_browser_app_names containsObject:dock_app_name]) {
-          app_index = index + 1;
-        }
-      }
-    }
-
-    if (app_index == NSNotFound) {
-      // Put the new application last in the Dock.
-      app_index = [persistent_apps count];
-    }
-
-    // Set up the new Dock tile.
-    NSDictionary* new_tile_file_data =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-            installed_path_dock, kDockCFURLStringKey,
-            [NSNumber numberWithInt:0], kDockCFURLStringTypeKey,
-            nil];
-    NSDictionary* new_tile_data =
-        [NSDictionary dictionaryWithObject:new_tile_file_data
-                                    forKey:kDockFileDataKey];
-    NSDictionary* new_tile =
-        [NSDictionary dictionaryWithObject:new_tile_data
-                                    forKey:kDockTileDataKey];
-
-    // Add the new tile to the Dock.
-    [persistent_apps insertObject:new_tile atIndex:app_index];
-    [persistent_app_paths insertObject:installed_path_dock atIndex:app_index];
-    made_change = true;
-  }
-
-  // Verify that the arrays are still parallel.
-  DCHECK_EQ([persistent_apps count], [persistent_app_paths count]);
-
-  if (!made_change) {
-    // If no changes were made, there's no point in rewriting the Dock's
-    // plist or restarting the Dock.
-    return;
-  }
-
-  // Rewrite the plist.
-  [dock_plist setObject:persistent_apps forKey:kDockPersistentAppsKey];
-  [user_defaults setPersistentDomain:dock_plist forName:kDockDomain];
-
-  // Restart the Dock. Doing this via launchd using the proper job label is
-  // the safest way to handle the restart. Unlike "killall Dock", looking this
-  // up via launchd guarantees that only the right process will be targeted.
-  // Sending a SIGHUP to the Dock seems to be a more reliable way to get the
-  // replacement Dock process to read the newly written plist than using the
-  // equivalent of "launchctl stop" (even if followed by "launchctl start.")
-  launchd::SignalJob("com.apple.Dock.agent", SIGHUP);
-}
-
 // Launches the application at installed_path. The helper application
 // contained within install_path will be used for the relauncher process. This
 // keeps Launch Services from ever having to see or think about the helper
@@ -748,7 +455,12 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
-  AddDockIcon(target_path, source_path);
+  dock::AddIcon(target_path, source_path);
+
+  if (dmg_bsd_device_name.empty()) {
+    // Not fatal, just diagnostic.
+    LOG(ERROR) << "Could not determine disk image BSD device name";
+  }
 
   if (!LaunchInstalledApp(target_path, dmg_bsd_device_name)) {
     ShowErrorDialog();
