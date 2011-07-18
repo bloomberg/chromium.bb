@@ -12,9 +12,9 @@
 #include "content/browser/webui/web_ui.h"
 
 // The names of the javascript functions to call with updates.
-static const char kDeleteItemFunction[] = "onItemDeleted";
-static const char kAudioUpdateFunction[] = "onAudioUpdate";
-static const char kSendEverythingFunction[] = "onReceiveEverything";
+static const char kDeleteItemFunction[] = "media.onItemDeleted";
+static const char kAudioUpdateFunction[] = "media.addAudioStream";
+static const char kSendEverythingFunction[] = "media.onReceiveEverything";
 
 MediaInternals::~MediaInternals() {}
 
