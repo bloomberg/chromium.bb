@@ -73,8 +73,9 @@ namespace content {
 class ResourceContext;
 }  // namespace content
 
-class AudioRendererHost : public BrowserMessageFilter,
-                          public media::AudioOutputController::EventHandler {
+class AudioRendererHost
+    : public BrowserMessageFilter,
+      public media::AudioOutputController::EventHandler {
  public:
   struct AudioEntry {
     AudioEntry();

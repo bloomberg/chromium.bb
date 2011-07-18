@@ -29,8 +29,9 @@ class WebMediaPlayerDelegateImpl;
 
 namespace webkit_glue {
 
-class SimpleDataSource : public WebDataSource,
-                         public WebKit::WebURLLoaderClient {
+class SimpleDataSource
+    : public WebDataSource,
+      public WebKit::WebURLLoaderClient {
  public:
   // Creates a DataSourceFactory for building SimpleDataSource objects.
   static media::DataSourceFactory* CreateFactory(

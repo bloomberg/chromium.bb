@@ -52,10 +52,11 @@
 
 class AudioMessageFilter;
 
-class AudioRendererImpl : public media::AudioRendererBase,
-                          public AudioMessageFilter::Delegate,
-                          public base::DelegateSimpleThread::Delegate,
-                          public MessageLoop::DestructionObserver {
+class AudioRendererImpl
+    : public media::AudioRendererBase,
+      public AudioMessageFilter::Delegate,
+      public base::DelegateSimpleThread::Delegate,
+      public MessageLoop::DestructionObserver {
  public:
   // Methods called on Render thread ------------------------------------------
   explicit AudioRendererImpl();

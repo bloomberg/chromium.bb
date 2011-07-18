@@ -35,8 +35,9 @@
 class AudioManager;
 struct AudioParameters;
 
-class AudioInputRendererHost : public BrowserMessageFilter,
-    public media::AudioInputController::EventHandler {
+class AudioInputRendererHost
+    : public BrowserMessageFilter,
+      public media::AudioInputController::EventHandler {
  public:
   struct AudioEntry {
     AudioEntry();

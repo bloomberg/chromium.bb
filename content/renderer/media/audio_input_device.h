@@ -59,9 +59,10 @@ struct AudioParameters;
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
-class AudioInputDevice : public AudioInputMessageFilter::Delegate,
-                         public base::DelegateSimpleThread::Delegate,
-                         public base::RefCountedThreadSafe<AudioInputDevice> {
+class AudioInputDevice
+    : public AudioInputMessageFilter::Delegate,
+      public base::DelegateSimpleThread::Delegate,
+      public base::RefCountedThreadSafe<AudioInputDevice> {
  public:
   class CaptureCallback {
    public:

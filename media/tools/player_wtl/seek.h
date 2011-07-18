@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_TOOLS_PLAYER_WTL_SEEK_H_
 #define MEDIA_TOOLS_PLAYER_WTL_SEEK_H_
@@ -10,9 +10,10 @@
 // Movie seek dialog.
 // TODO(fbachard): Frame properties only work for images, so
 // this tab is removed until movie frame properties can be added.
-class CSeek : public CSimpleDialog<IDD_SEEK>,
-              public CMessageFilter,
-              public CIdleHandler {
+class CSeek
+    : public CSimpleDialog<IDD_SEEK>,
+      public CMessageFilter,
+      public CIdleHandler {
  public:
   CSeek() {
   }

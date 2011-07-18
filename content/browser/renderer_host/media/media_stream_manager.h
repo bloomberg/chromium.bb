@@ -38,8 +38,9 @@ class VideoCaptureManager;
 // start the media flow.
 // The classes requesting new media streams are answered using
 // MediaStreamManager::Listener.
-class MediaStreamManager : public MediaStreamProviderListener,
-                           public SettingsRequester {
+class MediaStreamManager
+    : public MediaStreamProviderListener,
+      public SettingsRequester {
  public:
   typedef MediaStreamManager* (AccessorMethod)();
   static MediaStreamManager* Get();

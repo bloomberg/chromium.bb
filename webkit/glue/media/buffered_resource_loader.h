@@ -32,9 +32,9 @@ const char kDataScheme[] = "data";
 // WebURLLoader and does the actual resource loading. This object does
 // buffering internally, it defers the resource loading if buffer is full
 // and un-defers the resource loading if it is under buffered.
-class BufferedResourceLoader :
-    public base::RefCountedThreadSafe<BufferedResourceLoader>,
-    public WebKit::WebURLLoaderClient {
+class BufferedResourceLoader
+    : public base::RefCountedThreadSafe<BufferedResourceLoader>,
+      public WebKit::WebURLLoaderClient {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.
   // kReadThenDefer - Request only enough data to fulfill read requests.

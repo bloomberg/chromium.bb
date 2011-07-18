@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_TOOLS_PLAYER_WTL_MAINFRM_H_
 #define MEDIA_TOOLS_PLAYER_WTL_MAINFRM_H_
@@ -20,10 +20,12 @@ const wchar_t* const g_lpcstrApp = L"MediaPlayer";
 
 // Interface of the CMainFrame class
 // TODO(fbarchard): Remove hungarian notation.
-class CMainFrame : public CFrameWindowImpl<CMainFrame>,
-    public CUpdateUI<CMainFrame>,
-    public CMessageFilter, public CIdleHandler,
-    public CPrintJobInfo {
+class CMainFrame
+    : public CFrameWindowImpl<CMainFrame>,
+      public CUpdateUI<CMainFrame>,
+      public CMessageFilter,
+      public CIdleHandler,
+      public CPrintJobInfo {
  public:
   DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 

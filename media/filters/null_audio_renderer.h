@@ -27,8 +27,9 @@
 
 namespace media {
 
-class NullAudioRenderer : public AudioRendererBase,
-                          public base::PlatformThread::Delegate {
+class NullAudioRenderer
+    : public AudioRendererBase,
+      public base::PlatformThread::Delegate {
  public:
   NullAudioRenderer();
   virtual ~NullAudioRenderer();

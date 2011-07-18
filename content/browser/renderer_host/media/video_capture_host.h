@@ -43,8 +43,9 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "ipc/ipc_message.h"
 
-class VideoCaptureHost : public BrowserMessageFilter,
-                         public VideoCaptureControllerEventHandler {
+class VideoCaptureHost
+    : public BrowserMessageFilter,
+      public VideoCaptureControllerEventHandler {
  public:
   VideoCaptureHost();
 

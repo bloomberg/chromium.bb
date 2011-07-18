@@ -43,8 +43,8 @@ class DemuxerCallbackAsPipelineStatusCallback : public PipelineStatusCallback {
 };
 
 // See comments on DemuxerCallbackAsPipelineStatusCallback above.
-class DemuxerCallbackAsDataSourceCallback :
-    public DataSourceFactory::BuildCallback {
+class DemuxerCallbackAsDataSourceCallback
+    : public DataSourceFactory::BuildCallback {
  public:
   DemuxerCallbackAsDataSourceCallback(DemuxerFactory::BuildCallback* cb,
                                       MessageLoop* loop)

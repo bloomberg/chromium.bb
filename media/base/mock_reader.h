@@ -17,8 +17,8 @@ namespace media {
 // Ref counted object so we can create callbacks for asynchronous Read()
 // methods for any filter type.
 template <class FilterType, class BufferType>
-class MockReader :
-    public base::RefCountedThreadSafe<MockReader<FilterType, BufferType> > {
+class MockReader
+    : public base::RefCountedThreadSafe<MockReader<FilterType, BufferType> > {
  public:
   MockReader()
       : called_(false),

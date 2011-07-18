@@ -48,8 +48,9 @@ ACTION_P(SaveInitializeResult, engine) {
   engine->set_video_codec_info(arg0);
 }
 
-class FFmpegVideoDecodeEngineTest : public testing::Test,
-                                    public VideoDecodeEngine::EventHandler {
+class FFmpegVideoDecodeEngineTest
+    : public testing::Test,
+      public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
       : config_(kCodecH264, kWidth, kHeight, kSurfaceWidth, kSurfaceHeight,

@@ -57,9 +57,10 @@
 
 struct AudioParameters;
 
-class AudioDevice : public AudioMessageFilter::Delegate,
-                    public base::DelegateSimpleThread::Delegate,
-                    public base::RefCountedThreadSafe<AudioDevice> {
+class AudioDevice
+    : public AudioMessageFilter::Delegate,
+      public base::DelegateSimpleThread::Delegate,
+      public base::RefCountedThreadSafe<AudioDevice> {
  public:
   class RenderCallback {
    public:
