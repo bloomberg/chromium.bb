@@ -43,7 +43,6 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
-  'SHARED_LIB_DIR': '$(builddir)/lib.$(TOOLSET)',
   'LIB_DIR': '$(obj).$(TOOLSET)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$(abspath $<)',
@@ -75,6 +74,8 @@ def CalculateVariables(default_variables, params):
   if GetFlavor(params) == 'mac':
     default_variables.setdefault('OS', 'mac')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.dylib')
+    default_variables.setdefault('SHARED_LIB_DIR',
+                                 generator_default_variables['PRODUCT_DIR'])
 
     # Copy additional generator configuration data from Xcode, which is shared
     # by the Mac Make generator.
@@ -93,6 +94,7 @@ def CalculateVariables(default_variables, params):
   else:
     default_variables.setdefault('OS', 'linux')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
+    default_variables.setdefault('SHARED_LIB_DIR','$(builddir)/lib.$(TOOLSET)')
 
 
 def CalculateGeneratorInputInfo(params):
@@ -1800,7 +1802,9 @@ class MakefileWriter:
 
   def _InstallableTargetInstallPath(self):
     """Returns the location of the final output for an installable target."""
-    if self.type == 'shared_library':
+    # Xcode puts shared_library results into PRODUCT_DIR, and some gyp files
+    # rely on this. Emulate this behavior for mac.
+    if self.type == 'shared_library' and self.flavor != 'mac':
       # Install all shared libs into a common directory (per toolset) for
       # convenient access with LD_LIBRARY_PATH.
       return '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)

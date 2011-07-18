@@ -385,7 +385,7 @@ class TestGypMake(TestGypBase):
     result.extend(['out', configuration])
     if type == self.STATIC_LIB:
       result.append(kw.get('libdir', 'obj.target'))
-    elif type == self.SHARED_LIB:
+    elif type == self.SHARED_LIB and sys.platform != 'darwin':
       result.append(kw.get('libdir', 'lib.target'))
     result.append(self.built_file_basename(name, type, **kw))
     return self.workpath(*result)
