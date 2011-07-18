@@ -222,7 +222,7 @@
       'filepath': 'chrome/browser/ui/views/accelerator_table_gtk.cc',
     },
     'downloads_ui': {
-      'filepath': 'chrome/browser/resources/downloads\..*' \
+      'filepath': 'chrome/browser/resources/.*downloads\..*' \
                   '|chrome/browser/ui/webui/.*downloads.*' \
                   '|chrome/browser/ui/views/download/.*' \
                   '|chrome/browser/ui/cocoa/download/.*' \
@@ -311,7 +311,7 @@
     'importer': ['tfarina@chromium.org'],
     'views': ['dhollowa@chromium.org'],
     'accelerator_table_gtk': ['mazda@chromium.org', 'derat+watch@chromium.org'],
-    'downloads_ui': ['rdsmith@chromium.org'],
+    'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
     'x11': ['derat+watch@chromium.org'],
   },
 }
