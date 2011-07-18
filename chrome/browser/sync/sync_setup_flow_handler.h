@@ -26,6 +26,7 @@ class SyncSetupFlowHandler {
   virtual void ShowSetupDone(const std::wstring& user) = 0;
   virtual void SetFlow(SyncSetupFlow* flow) = 0;
   virtual void Focus() = 0;
+  virtual void ShowSyncSetup() = 0;
 
  protected:
   virtual ~SyncSetupFlowHandler() {}

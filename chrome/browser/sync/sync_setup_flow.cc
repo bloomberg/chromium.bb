@@ -206,6 +206,10 @@ void SyncSetupFlow::Focus() {
     flow_handler_->Focus();
 }
 
+void SyncSetupFlow::ShowSyncSetup() {
+  flow_handler_->ShowSyncSetup();
+}
+
 // A callback to notify the delegate that the dialog closed.
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());

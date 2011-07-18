@@ -262,8 +262,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void PromptForExistingPassphrase();
 
-  void ShowSyncSetup(SyncSetupWizard::State state);
-
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
       const browser_sync::SyncBackendHost::StatusSummary& summary);
