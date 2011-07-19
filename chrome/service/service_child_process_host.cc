@@ -21,7 +21,7 @@ ServiceChildProcessHost::ServiceChildProcessHost(ProcessType type)
 
 ServiceChildProcessHost::~ServiceChildProcessHost() {
   // We need to kill the child process when the host dies.
-  base::KillProcess(handle(), ResultCodes::NORMAL_EXIT, false);
+  base::KillProcess(handle(), content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,

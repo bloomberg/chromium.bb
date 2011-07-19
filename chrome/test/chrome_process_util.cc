@@ -29,7 +29,7 @@ void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
       continue;
     }
 
-    base::KillProcess(handle, ResultCodes::KILLED, true);
+    base::KillProcess(handle, content::RESULT_CODE_KILLED, true);
     base::CloseProcessHandle(handle);
   }
 }

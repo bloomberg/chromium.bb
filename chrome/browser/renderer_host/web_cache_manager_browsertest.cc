@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, DISABLED_CrashOnceOnly) {
   TabContents* tab = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab != NULL);
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
-                    ResultCodes::KILLED, true);
+                    content::RESULT_CODE_KILLED, true);
 
   browser()->ActivateTabAt(0, true);
   browser()->NewTab();

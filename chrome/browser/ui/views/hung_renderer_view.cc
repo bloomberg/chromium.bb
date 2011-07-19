@@ -339,7 +339,7 @@ void HungRendererDialogView::ButtonPressed(
     if (contents_ && contents_->GetRenderProcessHost()) {
       // Kill the process.
       TerminateProcess(contents_->GetRenderProcessHost()->GetHandle(),
-                       ResultCodes::HUNG);
+                       content::RESULT_CODE_HUNG);
     }
   }
 }

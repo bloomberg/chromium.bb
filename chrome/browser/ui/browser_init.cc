@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -64,7 +65,6 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -550,7 +550,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   if (!launched) {
     LOG(ERROR) << "launch error";
     if (return_code)
-      *return_code = ResultCodes::INVALID_CMDLINE_URL;
+      *return_code = chrome::RESULT_CODE_INVALID_CMDLINE_URL;
     return false;
   }
 

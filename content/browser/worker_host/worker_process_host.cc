@@ -316,7 +316,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   if (!msg_is_ok) {
     NOTREACHED();
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
-    base::KillProcess(handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
+    base::KillProcess(handle(), content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
   }
 
   if (handled)
