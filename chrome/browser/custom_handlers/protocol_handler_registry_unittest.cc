@@ -379,21 +379,23 @@ TEST_F(ProtocolHandlerRegistryTest, TestGetHandlersFor) {
 
   ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       registry()->GetHandlersFor("test");
-  ASSERT_EQ(ph1, handlers[0]);
+  ASSERT_EQ(static_cast<size_t>(3), handlers.size());
+
+  ASSERT_EQ(ph3, handlers[0]);
   ASSERT_EQ(ph2, handlers[1]);
-  ASSERT_EQ(ph3, handlers[2]);
+  ASSERT_EQ(ph1, handlers[2]);
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestGetRegisteredProtocols) {
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
-  ASSERT_EQ((size_t) 0, protocols.size());
+  ASSERT_EQ(static_cast<size_t>(0), protocols.size());
 
   registry()->GetHandlersFor("test");
 
   protocols.clear();
   registry()->GetRegisteredProtocols(&protocols);
-  ASSERT_EQ((size_t) 0, protocols.size());
+  ASSERT_EQ(static_cast<size_t>(0), protocols.size());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocol) {
@@ -435,7 +437,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestProtocolsWithNoDefaultAreHandled) {
   registry()->ClearDefault("test");
   std::vector<std::string> handled_protocols;
   registry()->GetRegisteredProtocols(&handled_protocols);
-  ASSERT_EQ((size_t) 1, handled_protocols.size());
+  ASSERT_EQ(static_cast<size_t>(1), handled_protocols.size());
   ASSERT_EQ("test", handled_protocols[0]);
 }
 
@@ -499,6 +501,42 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocolWorksOnIOThread) {
       BrowserThread::IO,
       FROM_HERE,
       NewRunnableFunction(CheckIsHandled, scheme, true, r));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto", "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("mailto", "test3");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+
+  ASSERT_TRUE(registry()->IsDefault(ph3));
+  registry()->RemoveHandler(ph3);
+  ASSERT_TRUE(registry()->IsDefault(ph2));
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+  ASSERT_TRUE(registry()->IsDefault(ph3));
+  registry()->RemoveHandler(ph2);
+  ASSERT_TRUE(registry()->IsDefault(ph3));
+  registry()->RemoveHandler(ph3);
+  ASSERT_TRUE(registry()->IsDefault(ph1));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultDoesntChangeHandlers) {
+  ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("mailto", "test2");
+  ProtocolHandler ph3 = CreateProtocolHandler("mailto", "test3");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+  registry()->OnAcceptRegisterProtocolHandler(ph2);
+  registry()->OnAcceptRegisterProtocolHandler(ph3);
+  registry()->RemoveHandler(ph3);
+
+  ProtocolHandlerRegistry::ProtocolHandlerList handlers =
+      registry()->GetHandlersFor("mailto");
+  ASSERT_EQ(static_cast<size_t>(2), handlers.size());
+
+  ASSERT_EQ(ph2, handlers[0]);
+  ASSERT_EQ(ph1, handlers[1]);
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {

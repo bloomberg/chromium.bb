@@ -160,6 +160,10 @@ class ProtocolHandlerRegistry
  private:
   friend class base::RefCountedThreadSafe<ProtocolHandlerRegistry>;
 
+  // Puts the given handler at the top of the list of handlers for its
+  // protocol.
+  void PromoteHandler(const ProtocolHandler& handler);
+
   // Clears the default for the provided protocol.
   // Should be called only from the IO thread.
   void ClearDefaultIO(const std::string& scheme);

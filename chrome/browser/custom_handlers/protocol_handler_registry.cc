@@ -324,11 +324,17 @@ void ProtocolHandlerRegistry::RemoveHandler(
   }
   ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
   if (q != default_handlers_.end() && q->second == handler) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &ProtocolHandlerRegistry::ClearDefaultIO,
-                          q->second.protocol()));
-    default_handlers_.erase(q);
+    // Make the new top handler in the list the default.
+    if (!handlers.empty()) {
+      // NOTE We pass a copy because SetDefault() modifies handlers.
+      SetDefault(ProtocolHandler(handlers[0]));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(this, &ProtocolHandlerRegistry::ClearDefaultIO,
+                            q->second.protocol()));
+      default_handlers_.erase(q);
+    }
   }
 
   if (!IsHandledProtocol(handler.protocol())) {
@@ -427,6 +433,7 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
       delegate_->RegisterWithOSAsDefaultClient(handler.protocol());
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
+  PromoteHandler(handler);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -473,6 +480,16 @@ int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
       return i;
   }
   return -1;
+}
+
+void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsRegistered(handler));
+  ProtocolHandlerMultiMap::iterator p =
+      protocol_handlers_.find(handler.protocol());
+  ProtocolHandlerList& list = p->second;
+  list.erase(std::find(list.begin(), list.end(), handler));
+  list.insert(list.begin(), handler);
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {
