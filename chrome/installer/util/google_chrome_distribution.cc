@@ -231,9 +231,10 @@ bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
     return false;
   // Note: Handle inheritance must be true in order for the child process to be
   // able to use the duplicated handle above (Google Update results).
-  bool launched = base::LaunchAppAsUser(user_token,
-                                        cmd_line.command_line_string(),
-                                        false, NULL, true, true);
+  base::LaunchOptions options;
+  options.as_user = user_token;
+  options.inherit_handles = true;
+  bool launched = base::LaunchProcess(cmd_line, options, NULL);
   ::CloseHandle(user_token);
   return launched;
 }

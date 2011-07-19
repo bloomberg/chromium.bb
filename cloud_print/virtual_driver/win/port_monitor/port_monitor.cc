@@ -230,10 +230,9 @@ bool LaunchPrintDialog(const string16& xps_path,
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle,
                                   job_title);
   command_line.AppendSwitch(switches::kCloudPrintDeleteFile);
-  base::LaunchAppAsUser(primary_token_scoped,
-                        command_line.command_line_string(),
-                        false,
-                        NULL);
+  base::LaunchOptions options;
+  options.as_user = primary_token_scoped;
+  base::LaunchProcess(command_line, options, NULL);
   return true;
 }
 
