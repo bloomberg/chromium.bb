@@ -114,6 +114,19 @@ def ensure_directory_exists(path):
     os.makedirs(dir)
 
 
+# The .d checking code below uses these functions:
+# wildcard, sort, foreach, shell, wordlist
+# wildcard can handle spaces, the rest can't.
+# Since I could find no way to make foreach work with spaces in filenames
+# correctly, the .d files have spaces replaced with another character. The .d
+# file for
+#     Chromium\ Framework.framework/foo
+# is for example
+#     out/Release/.deps/out/Release/Chromium?Framework.framework/foo
+# This is the replacement character.
+SPACE_REPLACEMENT = '?'
+
+
 LINK_COMMANDS_LINUX = """\
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
@@ -146,12 +159,12 @@ cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSE
 
 LINK_COMMANDS_MAC = """\
 quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(filter-out FORCE_DO_CMD, $^) $(LIBS)
 
 # TODO(thakis): Find out and document the difference between shared_library and
 # loadable_module on mac.
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(filter-out FORCE_DO_CMD, $^) $(LIBS)
 
 # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
 # -bundle -single_module here (for osmesa.so).
@@ -235,11 +248,23 @@ LDFLAGS.host ?=
 AR.host ?= ar
 ARFLAGS.host := %(ARFLAGS.host)s
 
+# Define a dir function that can handle spaces.
+# http://www.gnu.org/software/make/manual/make.html#Syntax-of-Functions
+# "leading spaces cannot appear in the text of the first argument as written.
+# These characters can be put into the argument value by variable substitution."
+empty :=
+space := $(empty) $(empty)
+
+# http://stackoverflow.com/questions/1189781/using-make-dir-or-notdir-on-a-path-with-spaces
+replace_spaces = $(subst $(space),""" + SPACE_REPLACEMENT + """,$1)
+unreplace_spaces = $(subst """ + SPACE_REPLACEMENT + """,$(space),$1)
+dirx = $(call unreplace_spaces,$(dir $(call replace_spaces,$1)))
+
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
 # We write to a dep file on the side first and then rename at the end
 # so we can't end up with a broken dep file.
-depfile = $(depsdir)/$@.d
+depfile = $(depsdir)/$(call replace_spaces,$@).d
 DEPFLAGS = -MMD -MF $(depfile).raw
 
 # We have to fixup the deps output in a few ways.
@@ -259,7 +284,9 @@ DEPFLAGS = -MMD -MF $(depfile).raw
 #   DEP3:
 # so if the files are missing, they're just considered phony rules.
 # We have to do some pretty insane escaping to get those backslashes
-# and dollar signs past make, the shell, and sed at the same time."""
+# and dollar signs past make, the shell, and sed at the same time.
+# Doesn't work with spaces, but that's fine: .d files have spaces in
+# their names replaced with other characters."""
 r"""
 define fixup_dep
 # The depfile may not exist if the input file didn't have any #includes.
@@ -328,8 +355,10 @@ exact_echo = printf '%%s\n' '$(call escape_quotes,$(1))'
 #                       $(filter-out $(cmd_$@), $(cmd_$(1))))
 # We instead substitute each for the empty string into the other, and
 # say they're equal if both substitutions produce the empty string.
-command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$@)),\\
-                       $(subst $(cmd_$@),,$(cmd_$(1))))
+# .d files contain """ + SPACE_REPLACEMENT + \
+                   """ instead of spaces, take that into account.
+command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$(call replace_spaces,$@))),\\
+                       $(subst $(cmd_$(call replace_spaces,$@)),,$(cmd_$(1))))
 
 # Helper that is non-empty when a prerequisite changes.
 # Normally make does this implicitly, but we force rules to always run
@@ -341,16 +370,20 @@ prereq_changed = $(filter-out $|,$?)
 # do_cmd: run a command via the above cmd_foo names, if necessary.
 # Should always run for a given target to handle command-line changes.
 # Second argument, if non-zero, makes it do asm/C/C++ dependency munging.
+# Note: We intentionally do NOT call dirx for depfile, since it contains """ + \
+                                                     SPACE_REPLACEMENT + """ for
+# spaces already and dirx strips the """ + SPACE_REPLACEMENT + \
+                                     """ characters.
 define do_cmd
 $(if $(or $(command_changed),$(prereq_changed)),
   @$(call exact_echo,  $($(quiet)cmd_$(1)))
-  @mkdir -p $(dir $@) $(dir $(depfile))
+  @mkdir -p "$(call dirx,$@)" "$(dir $(depfile))"
   $(if $(findstring flock,$(word %(flock_index)d,$(cmd_$1))),
     @$(cmd_$(1))
     @echo "  $(quiet_cmd_$(1)): Finished",
     @$(cmd_$(1))
   )
-  @$(call exact_echo,$(call escape_vars,cmd_$@ := $(cmd_$(1)))) > $(depfile)
+  @$(call exact_echo,$(call escape_vars,cmd_$(call replace_spaces,$@) := $(cmd_$(1)))) > $(depfile)
   @$(if $(2),$(fixup_dep))
 )
 endef
@@ -509,10 +542,7 @@ SHARED_FOOTER = """\
 all:
 
 # Add in dependency-tracking rules.  $(all_deps) is the list of every single
-# target in our tree.  First, only consider targets that already have been
-# built, as unbuilt targets will be built regardless of dependency info:
-all_deps := $(wildcard $(sort $(all_deps)))
-# Of those, only consider the ones with .d (dependency) info:
+# target in our tree. Only consider the ones with .d (dependency) info:
 d_files := $(wildcard $(foreach f,$(all_deps),$(depsdir)/$(f).d))
 ifneq ($(d_files),)
   # Rather than include each individual .d file, concatenate them into a
@@ -606,6 +636,14 @@ def Sourceify(path):
   if os.path.isabs(path):
     return path
   return srcdir_prefix + path
+
+
+def QuoteSpaces(s):
+  return s.replace(' ', r'\ ')
+
+
+def ReplaceQuotedSpaces(s):
+  return s.replace(r'\ ', SPACE_REPLACEMENT)
 
 
 # Map from qualified target to path to output.
@@ -899,6 +937,8 @@ class MacPrefixHeader(object):
       writer.WriteLn('%s: %s FORCE_DO_CMD' % (self._Gch(lang), self.header))
       writer.WriteLn('\t@$(call do_cmd,pch_%s,1)' % lang)
       writer.WriteLn('')
+      assert ' ' not in self._Gch(lang), (
+          "Spaces in gch filenames not supported (%s)"  % self._Gch(lang))
       writer.WriteLn('all_deps += %s' % self._Gch(lang))
       writer.WriteLn('')
 
@@ -968,6 +1008,9 @@ class MakefileWriter:
       self.output_binary = self.ComputeMacBundleBinaryOutput(spec)
     else:
       self.output = self.output_binary = self.ComputeOutput(spec)
+
+    self.output = QuoteSpaces(self.output)
+    self.output_binary = QuoteSpaces(self.output_binary)
 
     self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
                                  'shared_library')
@@ -1136,6 +1179,14 @@ class MakefileWriter:
       # writing duplicate dummy rules for those outputs.
       self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
       self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
+
+      for input in inputs:
+        assert ' ' not in input, (
+            "Spaces in action input filenames not supported (%s)"  % input)
+      for output in outputs:
+        assert ' ' not in output, (
+            "Spaces in action output filenames not supported (%s)"  % output)
+
       self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
                       part_of_all=part_of_all, command=name)
 
@@ -1201,6 +1252,9 @@ class MakefileWriter:
         self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
         self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
+        for output in outputs:
+          assert ' ' not in output, (
+              "Spaces in rule filenames not yet supported (%s)"  % output)
         self.WriteLn('all_deps += %s' % ' '.join(outputs))
         self._num_outputs += len(outputs)
 
@@ -1264,6 +1318,11 @@ class MakefileWriter:
         filename = os.path.split(path)[1]
         output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
                                                         filename)))
+        assert ' ' not in path, (
+          "Spaces in copy src filenames not supported (%s)"  % path)
+        assert ' ' not in path, (
+          "Spaces in copy dest filenames not supported (%s)"  % output)
+
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
@@ -1283,6 +1342,9 @@ class MakefileWriter:
       dest = os.path.join(self.output, 'Contents', 'Resources')
     for res in resources:
       output = dest
+
+      assert ' ' not in res, (
+        "Spaces in resource filenames not supported (%s)"  % res)
 
       # Split into (path,file).
       path = Sourceify(self.Absolutify(res))
@@ -1306,6 +1368,8 @@ class MakefileWriter:
 
   def WriteMacInfoPlist(self, info_plist, bundle_deps, spec):
     """Write Makefile code for bundle Info.plist files."""
+    assert ' ' not in info_plist, (
+      "Spaces in resource filenames not supported (%s)"  % info_plist)
     info_plist = self.Absolutify(info_plist)
     assert self.type != 'loadable_modules', (
         "Info.plist files for loadable_modules not yet supported by the "
@@ -1372,6 +1436,9 @@ class MakefileWriter:
     objs = map(self.Objectify, map(self.Absolutify, map(Target, compilable)))
     self.WriteList(objs, 'OBJS')
 
+    for obj in objs:
+      assert ' ' not in obj, (
+          "Spaces in object filenames not supported (%s)"  % obj)
     self.WriteLn('# Add to the list of files we specially track '
                  'dependencies for.')
     self.WriteLn('all_deps += $(OBJS)')
@@ -1707,6 +1774,10 @@ class MakefileWriter:
                        comment = comment,
                        force = True)
     # Add our outputs to the list of targets we read depfiles from.
+    # all_deps is only used for deps file reading, and for deps files we replace
+    # spaces with ? because escaping doesn't work with make's $(sort) and
+    # other functions.
+    outputs = [ReplaceQuotedSpaces(o) for o in outputs]
     self.WriteLn('all_deps += %s' % ' '.join(outputs))
     self._num_outputs += len(outputs)
 

@@ -20,26 +20,27 @@ if sys.platform == 'darwin':
   test.build('framework.gyp', test.ALL, chdir='framework')
 
   # Binary
-  test.built_file_must_exist('TestFramework.framework/Versions/A/TestFramework',
-                             chdir='framework')
+  test.built_file_must_exist(
+      'Test Framework.framework/Versions/A/Test Framework',
+      chdir='framework')
 
   # Info.plist
   test.built_file_must_exist(
-      'TestFramework.framework/Versions/A/Resources/Info.plist',
+      'Test Framework.framework/Versions/A/Resources/Info.plist',
       chdir='framework')
 
   # Resources
   test.built_file_must_exist(
-      'TestFramework.framework/Versions/A/Resources/English.lproj/'
+      'Test Framework.framework/Versions/A/Resources/English.lproj/'
       'InfoPlist.strings',
       chdir='framework')
 
   # Symlinks created by packaging process
-  test.built_file_must_exist('TestFramework.framework/Versions/Current',
+  test.built_file_must_exist('Test Framework.framework/Versions/Current',
                              chdir='framework')
-  test.built_file_must_exist('TestFramework.framework/Resources',
+  test.built_file_must_exist('Test Framework.framework/Resources',
                              chdir='framework')
-  test.built_file_must_exist('TestFramework.framework/TestFramework',
+  test.built_file_must_exist('Test Framework.framework/Test Framework',
                              chdir='framework')
 
   test.pass_test()

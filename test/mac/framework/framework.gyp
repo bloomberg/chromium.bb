@@ -5,7 +5,7 @@
   'targets': [
     {    
       'target_name': 'test_framework',
-      'product_name': 'TestFramework',
+      'product_name': 'Test Framework',
       'type': 'shared_library',
       'mac_bundle': 1,
       'sources': [

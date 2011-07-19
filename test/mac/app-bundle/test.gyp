@@ -5,7 +5,7 @@
   'targets': [
     {
       'target_name': 'test_app',
-      'product_name': 'TestAppGyp',
+      'product_name': 'Test App Gyp',
       'type': 'executable',
       'mac_bundle': 1,
       'sources': [

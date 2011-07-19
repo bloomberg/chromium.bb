@@ -20,23 +20,23 @@ if sys.platform == 'darwin':
   test.build('test.gyp', test.ALL, chdir='app-bundle')
 
   # Binary
-  test.built_file_must_exist('TestAppGyp.app/Contents/MacOS/TestAppGyp',
+  test.built_file_must_exist('Test App Gyp.app/Contents/MacOS/Test App Gyp',
                              chdir='app-bundle')
 
   # Info.plist
-  test.built_file_must_exist('TestAppGyp.app/Contents/Info.plist',
+  test.built_file_must_exist('Test App Gyp.app/Contents/Info.plist',
                              chdir='app-bundle')
 
   # Resources
   test.built_file_must_exist(
-      'TestAppGyp.app/Contents/Resources/English.lproj/InfoPlist.strings',
+      'Test App Gyp.app/Contents/Resources/English.lproj/InfoPlist.strings',
       chdir='app-bundle')
   test.built_file_must_exist(
-      'TestAppGyp.app/Contents/Resources/English.lproj/MainMenu.nib',
+      'Test App Gyp.app/Contents/Resources/English.lproj/MainMenu.nib',
       chdir='app-bundle')
 
   # Packaging
-  test.built_file_must_exist('TestAppGyp.app/Contents/PkgInfo',
+  test.built_file_must_exist('Test App Gyp.app/Contents/PkgInfo',
                              chdir='app-bundle')
 
   test.pass_test()
