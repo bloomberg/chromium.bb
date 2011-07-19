@@ -136,6 +136,16 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   NSImage* image = gfx::SkBitmapToNSImage(icon_);
   [iconView_ setImage:image];
 
+  // Reisze |titleField_| to fit title
+  CGFloat originalTitleWidth = [titleField_ frame].size.width;
+  [titleField_ sizeToFit];
+  CGFloat newTitleWidth = [titleField_ frame].size.width;
+  if (newTitleWidth > originalTitleWidth) {
+    NSRect frame = [[self window] frame];
+    frame.size.width += newTitleWidth - originalTitleWidth;
+    [[self window] setFrame:frame display:NO];
+  }
+
   // Make sure we're the window's delegate as set in the nib.
   DCHECK_EQ(self, static_cast<ExtensionInstallDialogController*>(
                       [[self window] delegate]));
