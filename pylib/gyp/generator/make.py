@@ -685,7 +685,7 @@ class XcodeSettings(object):
     else:
       raise NotImplementedError('Unknown debug format %s' % dbg_format)
 
-    if self._Test('GCC_SYMBOLS_PRIVATE_EXTERN', 'NO', default='YES'):
+    if self._Test('GCC_SYMBOLS_PRIVATE_EXTERN', 'YES', default='NO'):
       cflags.append('-fvisibility=hidden')
 
     if self._Test('GCC_TREAT_WARNINGS_AS_ERRORS', 'YES', default='NO'):
@@ -735,7 +735,7 @@ class XcodeSettings(object):
       cflags_cc.append('-fno-rtti')
     if self._Test('GCC_ENABLE_CPP_EXCEPTIONS', 'NO', default='YES'):
       cflags_cc.append('-fno-exceptions')
-    if self._Test('GCC_INLINES_ARE_PRIVATE_EXTERN', 'NO', default='YES'):
+    if self._Test('GCC_INLINES_ARE_PRIVATE_EXTERN', 'YES', default='NO'):
       cflags_cc.append('-fvisibility-inlines-hidden')
     if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
       cflags_cc.append('-fno-threadsafe-statics')
