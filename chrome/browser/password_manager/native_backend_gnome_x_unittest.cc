@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "base/basictypes.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
