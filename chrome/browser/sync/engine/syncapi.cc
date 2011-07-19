@@ -1979,9 +1979,33 @@ void SyncManager::SyncInternal::SetPassphrase(
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams params = {"localhost", "dummy", passphrase};
 
+  WriteNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
+    NOTREACHED();
+    return;
+  }
+
   if (cryptographer->has_pending_keys()) {
-    if (!cryptographer->DecryptPendingKeys(params)) {
-      VLOG(1) << "Passphrase failed to decrypt pending keys.";
+    bool suceeded = false;
+
+    // See if the explicit flag matches what is set in nigori. If not we dont
+    // even try the passphrase. Note: This could mean that we wont try setting
+    // the gaia password as passphrase if custom is elected by the user. Which
+    // is fine because nigori node has all the old passwords in it.
+    if (node.GetNigoriSpecifics().using_explicit_passphrase() == is_explicit) {
+      if (cryptographer->DecryptPendingKeys(params)) {
+        suceeded = true;
+      } else {
+        VLOG(1) << "Passphrase failed to decrypt pending keys.";
+      }
+    } else {
+      VLOG(1) << "Not trying the passphrase because the explicit flags dont "
+              << "match. Nigori node's explicit flag is "
+              << node.GetNigoriSpecifics().using_explicit_passphrase();
+    }
+
+    if (!suceeded) {
       ObserverList<SyncManager::Observer> temp_obs_list;
       CopyObservers(&temp_obs_list);
       FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
@@ -1994,12 +2018,6 @@ void SyncManager::SyncInternal::SetPassphrase(
     RequestNudge(FROM_HERE);
   } else {
     VLOG(1) << "No pending keys, adding provided passphrase.";
-    WriteNode node(&trans);
-    if (!node.InitByTagLookup(kNigoriTag)) {
-      // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
-      NOTREACHED();
-      return;
-    }
 
     // Prevent an implicit SetPassphrase request from changing an explicitly
     // set passphrase.
