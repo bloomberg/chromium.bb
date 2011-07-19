@@ -10,6 +10,7 @@
 #pragma once
 
 #include <deque>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -26,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 
 class MalwareDetails;
+class PrefChangeRegistrar;
 class PrefService;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
@@ -227,9 +229,6 @@ class SafeBrowsingService
   void OnNewMacKeys(const std::string& client_key,
                     const std::string& wrapped_key);
 
-  // Notification on the UI thread from the advanced options UI.
-  void OnEnable(bool enabled);
-
   bool enabled() const { return enabled_; }
 
   bool download_protection_enabled() const {
@@ -418,6 +417,16 @@ class SafeBrowsingService
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // Starts following the safe browsing preference on |pref_service|.
+  void AddPrefService(PrefService* pref_service);
+
+  // Stop following the safe browsing preference on |pref_service|.
+  void RemovePrefService(PrefService* pref_service);
+
+  // Checks if any profile is currently using the safe browsing service, and
+  // starts or stops the service accordingly.
+  void RefreshState();
+
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -480,7 +489,16 @@ class SafeBrowsingService
   // Similar to |download_urlcheck_timeout_ms_|, but for download hash checks.
   int64 download_hashcheck_timeout_ms_;
 
+  // Used to track purge memory notifications. Lives on the IO thread.
   NotificationRegistrar registrar_;
+
+  // Tracks existing PrefServices, and the safe browsing preference on each.
+  // This is used to determine if any profile is currently using the safe
+  // browsing service, and to start it up or shut it down accordingly.
+  std::map<PrefService*, PrefChangeRegistrar*> prefs_map_;
+
+  // Used to track creation and destruction of profiles on the UI thread.
+  NotificationRegistrar prefs_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

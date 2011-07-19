@@ -273,12 +273,14 @@ enum {
   // updated.
   NOTIFICATION_FAVICON_UPDATED,
 
-  // Sent after an incognito profile has been created. The details are none
-  // and the source is the new profile.
-  NOTIFICATION_OTR_PROFILE_CREATED,
+  // Sent after a Profile has been created. This notification is sent both for
+  // normal and OTR profiles.
+  // The details are none and the source is the new profile.
+  NOTIFICATION_PROFILE_CREATED,
 
-  // Sent before a Profile is destroyed. The details are
-  // none and the source is a Profile*.
+  // Sent before a Profile is destroyed. This notification is sent both for
+  // normal and OTR profiles.
+  // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_DESTROYED,
 
   // TopSites ----------------------------------------------------------------

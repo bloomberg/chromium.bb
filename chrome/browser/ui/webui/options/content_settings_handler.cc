@@ -269,7 +269,7 @@ void ContentSettingsHandler::GetLocalizedValues(
 void ContentSettingsHandler::Initialize() {
   const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   notification_registrar_.Add(
-      this, chrome::NOTIFICATION_OTR_PROFILE_CREATED,
+      this, chrome::NOTIFICATION_PROFILE_CREATED,
       NotificationService::AllSources());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -301,16 +301,16 @@ void ContentSettingsHandler::Observe(int type,
                                      const NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = static_cast<Source<Profile> >(source).ptr();
-      if (profile->IsOffTheRecord()) {
+      if (Source<Profile>(source).ptr()->IsOffTheRecord()) {
         web_ui_->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
       }
       break;
     }
 
-    case chrome::NOTIFICATION_OTR_PROFILE_CREATED: {
-      UpdateAllOTRExceptionsViewsFromModel();
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      if (Source<Profile>(source).ptr()->IsOffTheRecord())
+        UpdateAllOTRExceptionsViewsFromModel();
       break;
     }
 

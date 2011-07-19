@@ -9,15 +9,19 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_temp_dir.h"
 #include "crypto/sha2.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -251,6 +255,19 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   TestProtocolManager* pm_;
 };
 
+namespace {
+
+void QuitUIThread() {
+  MessageLoopForUI::current()->Quit();
+}
+
+void QuitFromIOThread() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, NewRunnableFunction(&QuitUIThread));
+}
+
+}  // namespace
+
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
@@ -360,6 +377,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   void SetDownloadHashCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
     sb_service->download_hashcheck_timeout_ms_ = ms;
+  }
+
+  // Waits for pending tasks on the IO thread to complete. This is useful
+  // to wait for the SafeBrowsingService to finish loading/stopping.
+  void WaitForIOThread() {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, NewRunnableFunction(&QuitFromIOThread));
+    ui_test_utils::RunMessageLoop();  // Will stop from |QuitUIThread|.
   }
 
  private:
@@ -640,6 +665,49 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
 
   // Need to set the timeout back to the default value.
   SetDownloadHashCheckTimeout(sb_service, default_hashcheck_timeout);
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
+
+  // SBS might still be starting, make sure this doesn't flake.
+  WaitForIOThread();
+  EXPECT_TRUE(sb_service->enabled());
+
+  // Add a new Profile. SBS should keep running.
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_ptr<Profile> profile2(Profile::CreateProfile(temp_dir.path()));
+  ASSERT_TRUE(profile2.get() != NULL);
+  PrefService* pref_service2 = profile2->GetPrefs();
+  EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));
+  // We don't expect the state to have changed, but if it did, wait for it.
+  WaitForIOThread();
+  EXPECT_TRUE(sb_service->enabled());
+
+  // Change one of the prefs. SBS should keep running.
+  pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  WaitForIOThread();
+  EXPECT_TRUE(sb_service->enabled());
+
+  // Change the other pref. SBS should stop now.
+  pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  WaitForIOThread();
+  EXPECT_FALSE(sb_service->enabled());
+
+  // Turn it back on. SBS comes back.
+  pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  WaitForIOThread();
+  EXPECT_TRUE(sb_service->enabled());
+
+  // Delete the Profile. SBS stops again.
+  pref_service2 = NULL;
+  profile2.reset();
+  WaitForIOThread();
+  EXPECT_FALSE(sb_service->enabled());
 }
 
 }  // namespace

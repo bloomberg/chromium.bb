@@ -13,20 +13,24 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -164,11 +168,24 @@ SafeBrowsingService::SafeBrowsingService()
 }
 
 void SafeBrowsingService::Initialize() {
-  // Always initialize the safe browsing service. Each profile will decide
-  // whether to use it based on per-user preferences. TODO(mirandac): in
-  // follow-up CL, only initialize if a profile is launched for which safe
-  // browsing is enabled. see http://crbug.com/88661
-  Start();
+  // Track the safe browsing preference of existing profiles.
+  // The SafeBrowsingService will be started if any existing profile has the
+  // preference enabled. It will also listen for updates to the preferences.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+    for (size_t i = 0; i < profiles.size(); ++i) {
+      if (profiles[i]->IsOffTheRecord())
+        continue;
+      AddPrefService(profiles[i]->GetPrefs());
+    }
+  }
+
+  // Track profile creation and destruction.
+  prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                       NotificationService::AllSources());
+  prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                       NotificationService::AllSources());
 }
 
 void SafeBrowsingService::ShutDown() {
@@ -447,13 +464,6 @@ void SafeBrowsingService::OnNewMacKeys(const std::string& client_key,
   }
 }
 
-void SafeBrowsingService::OnEnable(bool enabled) {
-  if (enabled)
-    Start();
-  else
-    ShutDown();
-}
-
 // static
 void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kSafeBrowsingClientKey, "");
@@ -472,7 +482,11 @@ void SafeBrowsingService::LogPauseDelay(base::TimeDelta time) {
 }
 
 SafeBrowsingService::~SafeBrowsingService() {
-  // We should have already been shut down.  If we're still enabled, then the
+  // Deletes the PrefChangeRegistrars, whose dtors also unregister |this| as an
+  // observer of the preferences.
+  STLDeleteValues(&prefs_map_);
+
+  // We should have already been shut down. If we're still enabled, then the
   // database isn't going to be closed properly, which could lead to corruption.
   DCHECK(!enabled_);
 }
@@ -482,6 +496,12 @@ void SafeBrowsingService::OnIOInitialize(
     const std::string& wrapped_key,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (enabled_)
+    return;
+  DCHECK(!safe_browsing_thread_.get());
+  safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
+  if (!safe_browsing_thread_->Start())
+    return;
   enabled_ = true;
 
   registrar_.Add(this, content::NOTIFICATION_PURGE_MEMORY,
@@ -836,10 +856,6 @@ void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
 
 void SafeBrowsingService::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!safe_browsing_thread_.get());
-  safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
-  if (!safe_browsing_thread_->Start())
-    return;
 
   // Retrieve client MAC keys.
   PrefService* local_state = g_browser_process->local_state();
@@ -1203,9 +1219,35 @@ void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
 void SafeBrowsingService::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(type == content::NOTIFICATION_PURGE_MEMORY);
-  CloseDatabase();
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      Profile* profile = Source<Profile>(source).ptr();
+      if (!profile->IsOffTheRecord())
+        AddPrefService(profile->GetPrefs());
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      Profile* profile = Source<Profile>(source).ptr();
+      if (!profile->IsOffTheRecord())
+        RemovePrefService(profile->GetPrefs());
+      break;
+    }
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      std::string* pref = Details<std::string>(details).ptr();
+      DCHECK(*pref == prefs::kSafeBrowsingEnabled);
+      RefreshState();
+      break;
+    }
+    case content::NOTIFICATION_PURGE_MEMORY:
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+      CloseDatabase();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {
@@ -1232,4 +1274,40 @@ bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {
     }
   }
   return false;
+}
+
+void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
+  DCHECK(prefs_map_.find(pref_service) == prefs_map_.end());
+  PrefChangeRegistrar* registrar = new PrefChangeRegistrar();
+  registrar->Init(pref_service);
+  registrar->Add(prefs::kSafeBrowsingEnabled, this);
+  prefs_map_[pref_service] = registrar;
+  RefreshState();
+}
+
+void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
+  if (prefs_map_.find(pref_service) != prefs_map_.end()) {
+    delete prefs_map_[pref_service];
+    prefs_map_.erase(pref_service);
+    RefreshState();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void SafeBrowsingService::RefreshState() {
+  // Check if any profile requires the service to be active.
+  bool enable = false;
+  std::map<PrefService*, PrefChangeRegistrar*>::iterator iter;
+  for (iter = prefs_map_.begin(); iter != prefs_map_.end(); ++iter) {
+    if (iter->first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+      enable = true;
+      break;
+    }
+  }
+
+  if (enable)
+    Start();
+  else
+    ShutDown();
 }

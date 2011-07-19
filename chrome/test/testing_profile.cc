@@ -165,6 +165,11 @@ TestingProfile::TestingProfile()
   SessionServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      Source<Profile>(static_cast<Profile*>(this)),
+      NotificationService::NoDetails());
 }
 
 TestingProfile::~TestingProfile() {

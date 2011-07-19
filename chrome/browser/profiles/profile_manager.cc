@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -409,7 +410,7 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
       observers_to_delete.push_back(observers[i]);
   }
 
-  observers_to_delete.clear();
+  STLDeleteElements(&observers_to_delete);
 }
 
 // static

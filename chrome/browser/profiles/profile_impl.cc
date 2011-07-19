@@ -250,7 +250,7 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 }
 
 // static
-Profile* Profile::CreateProfileAsync(const FilePath&path,
+Profile* Profile::CreateProfileAsync(const FilePath& path,
                                      Profile::Delegate* delegate) {
   DCHECK(delegate);
   // This is safe while all file operations are done on the FILE thread.
@@ -435,6 +435,11 @@ void ProfileImpl::DoFinalInit() {
   // Creation has been finished.
   if (delegate_)
     delegate_->OnProfileCreated(this, true);
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      Source<Profile>(this),
+      NotificationService::NoDetails());
 }
 
 void ProfileImpl::InitExtensions(bool extensions_enabled) {
@@ -736,7 +741,7 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
     off_the_record_profile_.swap(p);
 
     NotificationService::current()->Notify(
-        chrome::NOTIFICATION_OTR_PROFILE_CREATED,
+        chrome::NOTIFICATION_PROFILE_CREATED,
         Source<Profile>(off_the_record_profile_.get()),
         NotificationService::NoDetails());
   }
