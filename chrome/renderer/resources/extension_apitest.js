@@ -122,13 +122,22 @@ var chrome = chrome || {};
     }
   };
 
-  chrome.test.checkDeepEq = function(expected, actual) {
-    var expected_defined = typeof(expected) != 'undefined';
-    var actual_defined = typeof(actual) != 'undefined';
-    if (!expected_defined && !actual_defined)
+  chrome.test.checkDeepEq = function (expected, actual) {
+    if (expected === actual)
       return true;
-    if (expected_defined != actual_defined)
+
+    if (typeof(expected) !== typeof(actual))
       return false;
+
+    for (var p in actual) {
+      if (actual.hasOwnProperty(p) && !expected.hasOwnProperty(p))
+        return false;
+    }
+    for (var p in expected) {
+      if (expected.hasOwnProperty(p) && !actual.hasOwnProperty(p))
+        return false;
+    }
+
     for (var p in expected) {
       var eq = true;
       switch (typeof(expected[p])) {
@@ -145,10 +154,6 @@ var chrome = chrome || {};
           break;
       }
       if (!eq)
-        return false;
-    }
-    for (var p in actual) {
-      if (typeof(expected[p]) == 'undefined')
         return false;
     }
     return true;
