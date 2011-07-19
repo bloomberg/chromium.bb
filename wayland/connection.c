@@ -692,20 +692,16 @@ void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 {
 	union wl_value *value;
-	char buffer[4] = "\0";
 	int i;
 	struct timespec tp;
 	unsigned int time;
-
-	if (send)
-		sprintf(buffer, " -> ");
 
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
 	fprintf(stderr, "[%10.3f] %s%s@%d.%s(",
 		time / 1000.0,
-		buffer,
+		send ? " -> " : "",
 		target->interface->name, target->id,
 		closure->message->name);
 
