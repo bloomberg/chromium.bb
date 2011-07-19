@@ -11,12 +11,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/ui/webui/options/language_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -218,7 +219,11 @@ void NetworkScreenHandler::HandleOnInputMethodChanged(const ListValue* args) {
 
 ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
-  ListValue* languages_list = LanguageOptionsHandler::GetLanguageList();
+  // GetSupportedInputMethods() never returns NULL.
+  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
+      input_method::GetSupportedInputMethods());
+  ListValue* languages_list =
+      CrosLanguageOptionsHandler::GetLanguageList(*descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
     DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))
