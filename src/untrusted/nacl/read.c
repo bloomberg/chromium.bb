@@ -11,7 +11,7 @@
 
 int read(int desc, void *buf, size_t count) {
   size_t nread;
-  int error = __libnacl_irt_file.read(desc, buf, count, &nread);
+  int error = __libnacl_irt_fdio.read(desc, buf, count, &nread);
   if (error) {
     errno = error;
     return -1;

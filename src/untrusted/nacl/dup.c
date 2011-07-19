@@ -15,7 +15,7 @@
 
 int dup(int fd) {
   int newfd;
-  int error = __libnacl_irt_file.dup(fd, &newfd);
+  int error = __libnacl_irt_fdio.dup(fd, &newfd);
   if (error) {
     errno = error;
     return -1;
@@ -24,7 +24,7 @@ int dup(int fd) {
 }
 
 int dup2(int oldfd, int newfd) {
-  int error = __libnacl_irt_file.dup2(oldfd, newfd);
+  int error = __libnacl_irt_fdio.dup2(oldfd, newfd);
   if (error) {
     errno = error;
     return -1;

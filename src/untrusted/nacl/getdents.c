@@ -11,7 +11,7 @@
 
 int getdents(int desc, struct dirent *buf, size_t count) {
   size_t nread;
-  int error = __libnacl_irt_file.getdents(desc, buf, count, &nread);
+  int error = __libnacl_irt_fdio.getdents(desc, buf, count, &nread);
   if (error) {
     errno = error;
     return -1;

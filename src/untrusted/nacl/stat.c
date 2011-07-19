@@ -10,7 +10,7 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int stat(const char *file, struct stat *st) {
-  int error = __libnacl_irt_file.stat(file, st);
+  int error = __libnacl_irt_filename.stat(file, st);
   if (error) {
     errno = error;
     return -1;

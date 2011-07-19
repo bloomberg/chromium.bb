@@ -59,18 +59,22 @@ struct nacl_irt_basic {
   int (*sysconf)(int name, int *value);
 };
 
-#define NACL_IRT_FILE_v0_1      "nacl-irt-file-0.1"
-struct nacl_irt_file {
-  int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
+#define NACL_IRT_FDIO_v0_1      "nacl-irt-fdio-0.1"
+struct nacl_irt_fdio {
   int (*close)(int fd);
+  int (*dup)(int fd, int *newfd);
+  int (*dup2)(int fd, int newfd);
   int (*read)(int fd, void *buf, size_t count, size_t *nread);
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
   int (*seek)(int fd, off_t offset, int whence, off_t *new_offset);
-  int (*dup)(int fd, int *newfd);
-  int (*dup2)(int fd, int newfd);
   int (*fstat)(int fd, struct stat *);
-  int (*stat)(const char *pathname, struct stat *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
+};
+
+#define NACL_IRT_FILENAME_v0_1      "nacl-irt-filename-0.1"
+struct nacl_irt_filename {
+  int (*open)(const char *pathname, int oflag, mode_t cmode, int *newfd);
+  int (*stat)(const char *pathname, struct stat *);
 };
 
 #define NACL_IRT_MEMORY_v0_1    "nacl-irt-memory-0.1"

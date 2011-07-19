@@ -65,7 +65,8 @@ else:
 # IRT is available.  To simplify build matters, we just include them
 # here and the IRT itself gets them from linking with libnacl.
 irt_interface_sources = ['irt_basic.c',
-                         'irt_file.c',
+                         'irt_fdio.c',
+                         'irt_filename.c',
                          'irt_memory.c',
                          'irt_dyncode.c',
                          'irt_thread.c',

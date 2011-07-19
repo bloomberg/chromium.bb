@@ -20,7 +20,7 @@ int open(char const *pathname, int flags, ...) {
   mode = va_arg(ap, mode_t);
   va_end(ap);
 
-  error = __libnacl_irt_file.open(pathname, flags, mode, &fd);
+  error = __libnacl_irt_filename.open(pathname, flags, mode, &fd);
   if (error) {
     errno = error;
     return -1;

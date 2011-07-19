@@ -11,7 +11,7 @@
 
 off_t lseek(int desc, off_t offset, int whence) {
   off_t result;
-  int error = __libnacl_irt_file.seek(desc, offset, whence, &result);
+  int error = __libnacl_irt_fdio.seek(desc, offset, whence, &result);
   if (error) {
     errno = error;
     return (off_t) -1;

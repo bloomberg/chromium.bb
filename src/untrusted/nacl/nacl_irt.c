@@ -13,7 +13,8 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 struct nacl_irt_basic __libnacl_irt_basic;
-struct nacl_irt_file __libnacl_irt_file;
+struct nacl_irt_fdio __libnacl_irt_fdio;
+struct nacl_irt_filename __libnacl_irt_filename;
 struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
@@ -55,7 +56,8 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   grok_auxv(auxv);
 
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
-  DO_QUERY(NACL_IRT_FILE_v0_1, file);
+  DO_QUERY(NACL_IRT_FDIO_v0_1, fdio);
+  DO_QUERY(NACL_IRT_FILENAME_v0_1, filename);
   DO_QUERY(NACL_IRT_MEMORY_v0_1, memory);
   DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);

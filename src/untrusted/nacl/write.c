@@ -11,7 +11,7 @@
 
 int write(int desc, const void *buf, size_t count) {
   size_t nwrote;
-  int error = __libnacl_irt_file.write(desc, buf, count, &nwrote);
+  int error = __libnacl_irt_fdio.write(desc, buf, count, &nwrote);
   if (error) {
     errno = error;
     return -1;

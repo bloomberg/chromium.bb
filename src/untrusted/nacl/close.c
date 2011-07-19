@@ -10,7 +10,7 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int close(int desc) {
-  int error = __libnacl_irt_file.close(desc);
+  int error = __libnacl_irt_fdio.close(desc);
   if (error) {
     errno = error;
     return -1;

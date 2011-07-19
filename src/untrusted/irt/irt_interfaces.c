@@ -18,7 +18,8 @@ struct nacl_interface_table {
 
 static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic) },
-  { NACL_IRT_FILE_v0_1, &nacl_irt_file, sizeof(nacl_irt_file) },
+  { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio) },
+  { NACL_IRT_FILENAME_v0_1, &nacl_irt_filename, sizeof(nacl_irt_filename) },
   { NACL_IRT_MEMORY_v0_1, &nacl_irt_memory, sizeof(nacl_irt_memory) },
   { NACL_IRT_DYNCODE_v0_1, &nacl_irt_dyncode, sizeof(nacl_irt_dyncode) },
   { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread) },

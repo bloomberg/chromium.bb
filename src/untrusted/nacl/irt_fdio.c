@@ -7,15 +7,6 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-static int nacl_irt_open(const char *pathname, int oflag, mode_t cmode,
-                         int *newfd) {
-  int rv = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(open)(pathname, oflag, cmode));
-  if (rv < 0)
-    return -rv;
-  *newfd = rv;
-  return 0;
-}
-
 static int nacl_irt_close(int fd) {
   return -NACL_SYSCALL(close)(fd);
 }
@@ -64,10 +55,6 @@ static int nacl_irt_fstat(int fd, struct stat *st) {
   return -NACL_SYSCALL(fstat)(fd, st);
 }
 
-static int nacl_irt_stat(const char *pathname, struct stat *st) {
-  return -NACL_SYSCALL(stat)(pathname, st);
-}
-
 static int nacl_irt_getdents(int fd, struct dirent *buf, size_t count,
                              size_t *nread) {
   int rv = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(getdents)(fd, buf, count));
@@ -77,15 +64,13 @@ static int nacl_irt_getdents(int fd, struct dirent *buf, size_t count,
   return 0;
 }
 
-const struct nacl_irt_file nacl_irt_file = {
-  nacl_irt_open,
+const struct nacl_irt_fdio nacl_irt_fdio = {
   nacl_irt_close,
+  nacl_irt_dup,
+  nacl_irt_dup2,
   nacl_irt_read,
   nacl_irt_write,
   nacl_irt_seek,
-  nacl_irt_dup,
-  nacl_irt_dup2,
   nacl_irt_fstat,
-  nacl_irt_stat,
   nacl_irt_getdents,
 };

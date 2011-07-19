@@ -10,7 +10,8 @@ extern size_t nacl_irt_interface(const char *interface_ident,
                                  void *table, size_t tablesize);
 
 extern const struct nacl_irt_basic nacl_irt_basic;
-extern const struct nacl_irt_file nacl_irt_file;
+extern const struct nacl_irt_fdio nacl_irt_fdio;
+extern const struct nacl_irt_filename nacl_irt_filename;
 extern const struct nacl_irt_memory nacl_irt_memory;
 extern const struct nacl_irt_dyncode nacl_irt_dyncode;
 extern const struct nacl_irt_thread nacl_irt_thread;

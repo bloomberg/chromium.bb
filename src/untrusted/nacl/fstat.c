@@ -10,7 +10,7 @@
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 int fstat(int fd, struct stat *st) {
-  int error = __libnacl_irt_file.fstat(fd, st);
+  int error = __libnacl_irt_fdio.fstat(fd, st);
   if (error) {
     errno = error;
     return -1;
