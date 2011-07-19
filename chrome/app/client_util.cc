@@ -105,17 +105,21 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   dir->append(installer::kChromeDll);
 #endif
 
+#ifndef WIN_DISABLE_PREREAD
 #ifdef NDEBUG
   // Experimental pre-reading optimization
-  // The idea is to pre read significant portion of chrome.dll in advance
+  // The idea is to pre-read a significant portion of chrome.dll in advance
   // so that subsequent hard page faults are avoided.
+  //
+  // Pre-read may be disabled at compile time by defining WIN_DISABLE_PREREAD,
+  // but by default it is enabled in release builds. The ability to disable it
+  // is useful for evaluating competing optimization techniques.
   if (!cmd_line.HasSwitch(switches::kProcessType)) {
     // The kernel brings in 8 pages for the code section at a time and 4 pages
     // for other sections. We can skip over these pages to avoid a soft page
     // fault which may not occur during code execution. However skipping 4K at
     // a time still has better performance over 32K and 16K according to data.
-    // TODO(ananta)
-    // Investigate this and tune.
+    // TODO(ananta): Investigate this and tune.
     const size_t kStepSize = 4 * 1024;
 
     DWORD pre_read_size = 0;
@@ -137,6 +141,7 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     }
   }
 #endif  // NDEBUG
+#endif  // WIN_DISABLE_PREREAD
 
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
