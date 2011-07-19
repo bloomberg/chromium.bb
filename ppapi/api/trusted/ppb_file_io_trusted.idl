@@ -22,9 +22,11 @@ interface PPB_FileIOTrusted {
    */
   int32_t GetOSFileDescriptor([in] PP_Resource file_io);
 
-  // Notifies the browser that underlying file will be modified.  This gives
-  // the browser the opportunity to apply quota restrictions and possibly
-  // return an error to indicate that the write is not allowed.
+  /**
+   * Notifies the browser that underlying file will be modified.  This gives
+   * the browser the opportunity to apply quota restrictions and possibly
+   * return an error to indicate that the write is not allowed.
+   */
   int32_t WillWrite([in] PP_Resource file_io,
                     [in] int64_t offset,
                     [in] int32_t bytes_to_write,

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_core.idl modified Mon Jul 18 12:14:19 2011. */
+/* From ppb_core.idl modified Tue Jul 19 13:37:04 2011. */
 
 #ifndef PPAPI_C_PPB_CORE_H_
 #define PPAPI_C_PPB_CORE_H_
@@ -68,9 +68,6 @@ struct PPB_Core {
    * @return A <code>PP_TimeTicks</code> containing the "tick time" according
    * to the browser.
    */
-  /* TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-   * This currently does change with wall clock time, but will be fixed in
-   * a future release. */
   PP_TimeTicks (*GetTimeTicks)();
   /**
    * CallOnMainThread() schedules work to be executed on the main module thread
