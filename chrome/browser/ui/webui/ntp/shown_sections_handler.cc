@@ -62,8 +62,6 @@ ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
 }
 
 void ShownSectionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getShownSections",
-      NewCallback(this, &ShownSectionsHandler::HandleGetShownSections));
   web_ui_->RegisterMessageCallback("setShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleSetShownSections));
 }
@@ -80,12 +78,6 @@ void ShownSectionsHandler::Observe(int type,
   } else {
     NOTREACHED();
   }
-}
-
-void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
-  int sections = GetShownSections(pref_service_);
-  FundamentalValue sections_value(sections);
-  web_ui_->CallJavascriptFunction("onShownSections", sections_value);
 }
 
 void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {

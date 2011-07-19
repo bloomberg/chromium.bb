@@ -21,10 +21,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/sessions/tab_restore_service_delegate.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -38,7 +34,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
-#include "chrome/browser/ui/webui/ntp/value_helper.h"
+#include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -70,115 +66,6 @@ const int kTimeoutMs = 2000;
 // HTML document based on locale.
 const char kRTLHtmlTextDirection[] = "rtl";
 const char kDefaultHtmlTextDirection[] = "ltr";
-
-///////////////////////////////////////////////////////////////////////////////
-// RecentlyClosedTabsHandler
-
-class RecentlyClosedTabsHandler : public WebUIMessageHandler,
-                                  public TabRestoreServiceObserver {
- public:
-  RecentlyClosedTabsHandler() : tab_restore_service_(NULL) {}
-  virtual ~RecentlyClosedTabsHandler();
-
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Callback for the "reopenTab" message. Rewrites the history of the
-  // currently displayed tab to be the one in TabRestoreService with a
-  // history of a session passed in through the content pointer.
-  void HandleReopenTab(const ListValue* args);
-
-  // Callback for the "getRecentlyClosedTabs" message.
-  void HandleGetRecentlyClosedTabs(const ListValue* args);
-
-  // Observer callback for TabRestoreServiceObserver. Sends data on
-  // recently closed tabs to the javascript side of this page to
-  // display to the user.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service);
-
-  // Observer callback to notice when our associated TabRestoreService
-  // is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
-
- private:
-  // TabRestoreService that we are observing.
-  TabRestoreService* tab_restore_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecentlyClosedTabsHandler);
-};
-
-void RecentlyClosedTabsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getRecentlyClosedTabs",
-      NewCallback(this,
-                  &RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs));
-  web_ui_->RegisterMessageCallback("reopenTab",
-      NewCallback(this, &RecentlyClosedTabsHandler::HandleReopenTab));
-}
-
-RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
-  if (tab_restore_service_)
-    tab_restore_service_->RemoveObserver(this);
-}
-
-void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
-  TabRestoreServiceDelegate* delegate =
-      TabRestoreServiceDelegate::FindDelegateForController(
-      &web_ui_->tab_contents()->controller(), NULL);
-  if (!delegate || !tab_restore_service_)
-    return;
-
-  int session_to_restore;
-  if (!ExtractIntegerValue(args, &session_to_restore))
-    return;
-
-  const TabRestoreService::Entries& entries = tab_restore_service_->entries();
-  int index = 0;
-  for (TabRestoreService::Entries::const_iterator iter = entries.begin();
-       iter != entries.end(); ++iter, ++index) {
-    if (session_to_restore == (*iter)->id)
-      break;
-  }
-  // There are actually less than 20 restore tab items displayed in the UI.
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore", index, 20);
-
-  tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
-  // The current tab has been nuked at this point; don't touch any member
-  // variables.
-}
-
-void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
-    const ListValue* args) {
-  if (!tab_restore_service_) {
-    tab_restore_service_ =
-        TabRestoreServiceFactory::GetForProfile(web_ui_->GetProfile());
-
-    // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
-    // Off the Record mode)
-    if (tab_restore_service_) {
-      // This does nothing if the tabs have already been loaded or they
-      // shouldn't be loaded.
-      tab_restore_service_->LoadTabsFromLastSession();
-
-      tab_restore_service_->AddObserver(this);
-    }
-  }
-
-  if (tab_restore_service_)
-    TabRestoreServiceChanged(tab_restore_service_);
-}
-
-void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
-    TabRestoreService* service) {
-  ListValue list_value;
-  NewTabUI::AddRecentlyClosedEntries(service->entries(), &list_value);
-
-  web_ui_->CallJavascriptFunction("recentlyClosedTabs", list_value);
-}
-
-void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
-  tab_restore_service_ = NULL;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // MetricsHandler
@@ -605,57 +492,6 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   }
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);
-}
-
-namespace {
-
-bool IsTabUnique(const DictionaryValue* tab,
-                 std::set<std::string>* unique_items) {
-  DCHECK(unique_items);
-  std::string title;
-  std::string url;
-  if (tab->GetString("title", &title) &&
-      tab->GetString("url", &url)) {
-    // TODO(viettrungluu): this isn't obviously reliable, since different
-    // combinations of titles/urls may conceivably yield the same string.
-    std::string unique_key = title + url;
-    if (unique_items->find(unique_key) != unique_items->end())
-      return false;
-    else
-      unique_items->insert(unique_key);
-  }
-  return true;
-}
-
-}  // namespace
-
-// static
-void NewTabUI::AddRecentlyClosedEntries(
-    const TabRestoreService::Entries& entries, ListValue* entry_list_value) {
-  const int max_count = 10;
-  int added_count = 0;
-  std::set<std::string> unique_items;
-  // We filter the list of recently closed to only show 'interesting' entries,
-  // where an interesting entry is either a closed window or a closed tab
-  // whose selected navigation is not the new tab ui.
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
-       it != entries.end() && added_count < max_count; ++it) {
-    TabRestoreService::Entry* entry = *it;
-    scoped_ptr<DictionaryValue> entry_dict(new DictionaryValue());
-    if ((entry->type == TabRestoreService::TAB &&
-         ValueHelper::TabToValue(
-             *static_cast<TabRestoreService::Tab*>(entry),
-             entry_dict.get()) &&
-         IsTabUnique(entry_dict.get(), &unique_items)) ||
-        (entry->type == TabRestoreService::WINDOW &&
-         ValueHelper::WindowToValue(
-             *static_cast<TabRestoreService::Window*>(entry),
-             entry_dict.get()))) {
-      entry_dict->SetInteger("sessionId", entry->id);
-      entry_list_value->Append(entry_dict.release());
-      added_count++;
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

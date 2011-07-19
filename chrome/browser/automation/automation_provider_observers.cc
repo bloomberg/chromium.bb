@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -2040,8 +2041,8 @@ NTPInfoObserver::NTPInfoObserver(
 
   // Get the info that would be displayed in the recently closed section.
   ListValue* recently_closed_list = new ListValue;
-  NewTabUI::AddRecentlyClosedEntries(service->entries(),
-                                     recently_closed_list);
+  RecentlyClosedTabsHandler::AddRecentlyClosedEntries(service->entries(),
+                                                      recently_closed_list);
   ntp_info_->Set("recently_closed", recently_closed_list);
 
   // Add default site URLs.

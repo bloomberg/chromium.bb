@@ -57,9 +57,6 @@ class ShownSectionsHandler : public WebUIMessageHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Callback for "getShownSections" message.
-  void HandleGetShownSections(const base::ListValue* args);
-
   // Callback for "setShownSections" message.
   void HandleSetShownSections(const base::ListValue* args);
 
