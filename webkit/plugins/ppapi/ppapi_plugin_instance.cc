@@ -1344,20 +1344,22 @@ PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
                                      PP_Resource device) {
-  if (!device) {
+  if (bound_graphics_.get()) {
+    if (bound_graphics_2d()) {
+      bound_graphics_2d()->BindToInstance(NULL);
+    } else if (bound_graphics_.get()) {
+      bound_graphics_3d()->BindToInstance(false);
+    }
     // Special-case clearing the current device.
-    if (bound_graphics_.get()) {
-      if (bound_graphics_2d()) {
-        bound_graphics_2d()->BindToInstance(NULL);
-      } else if (bound_graphics_.get()) {
-        bound_graphics_3d()->BindToInstance(false);
-      }
+    if (!device) {
       setBackingTextureId(0);
       InvalidateRect(gfx::Rect());
     }
-    bound_graphics_ = NULL;
-    return PP_TRUE;
   }
+  bound_graphics_ = NULL;
+
+  if (!device)
+    return PP_TRUE;
 
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
   PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
