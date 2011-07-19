@@ -33,6 +33,12 @@ const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_1,
   IDR_PROFILE_AVATAR_2,
   IDR_PROFILE_AVATAR_3,
+  IDR_PROFILE_AVATAR_4,
+  IDR_PROFILE_AVATAR_5,
+  IDR_PROFILE_AVATAR_6,
+  IDR_PROFILE_AVATAR_7,
+  IDR_PROFILE_AVATAR_8,
+  IDR_PROFILE_AVATAR_9,
 };
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
