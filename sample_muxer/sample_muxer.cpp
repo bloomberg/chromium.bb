@@ -38,6 +38,7 @@ void Usage() {
   printf("  -switch_tracks <int>        >0 switches tracks in output\n");
   printf("  -audio_track_number <int>   >0 Changes the audio track number\n");
   printf("  -video_track_number <int>   >0 Changes the video track number\n");
+  printf("  -chunking <string>          Chunk output\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -68,6 +69,8 @@ int main(int argc, char* argv[]) {
   bool switch_tracks = false;
   int audio_track_number = 0; // 0 tells muxer to decide.
   int video_track_number = 0; // 0 tells muxer to decide.
+  bool chunking = false;
+  const char* chunk_name = NULL;
 
   bool output_cues_block_number = true;
 
@@ -109,6 +112,9 @@ int main(int argc, char* argv[]) {
       audio_track_number = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-video_track_number", argv[i])) {
       video_track_number = strtol(argv[++i], &end, 10);
+    } else if (!strcmp("-chunking", argv[i])) {
+      chunking = true;
+      chunk_name = argv[++i];
     } else if (!strcmp("-display_width", argv[i])) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i])) {
@@ -170,6 +176,9 @@ int main(int argc, char* argv[]) {
     muxer_segment.set_mode(mkvmuxer::Segment::kLive);
   else
     muxer_segment.set_mode(mkvmuxer::Segment::kFile);
+
+  if (chunking)
+    muxer_segment.SetChunking(true, chunk_name);
 
   if (max_cluster_duration > 0)
     muxer_segment.set_max_cluster_duration(max_cluster_duration);
