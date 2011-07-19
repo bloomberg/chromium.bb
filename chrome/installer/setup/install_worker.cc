@@ -125,7 +125,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
   // in the Google Update client state key. We do this even for non-MSI
   // managed installs to avoid breaking the edge case whereby an MSI-managed
   // install is updated by a non-msi installer (which would confuse the MSI
-  // machinery if these strings were not also updated).
+  // machinery if these strings were not also updated). The UninstallString
+  // value placed in the client state key is also used by the mini_installer to
+  // locate the setup.exe instance used for binary patching.
   // Do not quote the command line for the MSI invocation.
   FilePath install_path(installer_state.target_path());
   FilePath installer_path(installer_state.GetInstallerDirectory(new_version));
@@ -209,6 +211,28 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          InstallUtil::GetCurrentDate(),
                                          false);
   }
+}
+
+// Add uninstall-related work items for multi-install scenarios.
+void AddMultiUninstallWorkItems(const InstallerState& installer_state,
+                                const FilePath& setup_path,
+                                const Version& new_version,
+                                WorkItemList* install_list) {
+  DCHECK(installer_state.is_multi_install());
+
+  // The mini_installer needs a reliable way to locate setup.exe for diff
+  // updates. For single-installs, the product's ClientState key is consulted
+  // (Chrome's or Chrome Frame's). For multi-installs, the binaries' key is
+  // used.
+  const HKEY reg_root = installer_state.root_key();
+  std::wstring binaries_state_key(
+      installer_state.multi_package_binaries_distribution()->GetStateKey());
+  FilePath installer_path(
+      installer_state.GetInstallerDirectory(new_version)
+          .Append(setup_path.BaseName()));
+  install_list->AddCreateRegKeyWorkItem(reg_root, binaries_state_key);
+  install_list->AddSetRegValueWorkItem(reg_root, binaries_state_key,
+      installer::kUninstallStringField, installer_path.value(), true);
 }
 
 // Create Version key for a product (if not already present) and sets the new
@@ -743,6 +767,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
   }
 
   if (installer_state.is_multi_install()) {
+    AddMultiUninstallWorkItems(installer_state, setup_path, new_version,
+                               install_list);
+
     AddVersionKeyWorkItems(root,
         installer_state.multi_package_binaries_distribution(), new_version,
         install_list);

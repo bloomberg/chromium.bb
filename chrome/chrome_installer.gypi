@@ -338,6 +338,11 @@
           # below into a separate lib and then link both setup.exe and
           # setup_unittests.exe against that.
           'sources': [
+            'installer/mini_installer/appid.h',
+            'installer/mini_installer/chrome_appid.cc',
+            'installer/mini_installer/configuration.cc',
+            'installer/mini_installer/configuration.h',
+            'installer/mini_installer/configuration_test.cc',
             'installer/mini_installer/decompress.cc',
             'installer/mini_installer/decompress.h',
             'installer/mini_installer/decompress_test.cc',

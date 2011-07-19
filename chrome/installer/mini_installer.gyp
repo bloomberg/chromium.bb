@@ -25,6 +25,8 @@
         ],
         'sources': [
           'mini_installer/appid.h',
+          'mini_installer/configuration.cc',
+          'mini_installer/configuration.h',
           'mini_installer/decompress.cc',
           'mini_installer/decompress.h',
           'mini_installer/mini_installer.cc',

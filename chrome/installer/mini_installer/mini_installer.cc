@@ -25,6 +25,7 @@
 #include <shellapi.h>
 
 #include "chrome/installer/mini_installer/appid.h"
+#include "chrome/installer/mini_installer/configuration.h"
 #include "chrome/installer/mini_installer/decompress.h"
 #include "chrome/installer/mini_installer/mini_installer.h"
 #include "chrome/installer/mini_installer/mini_string.h"
@@ -152,26 +153,23 @@ bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
          (key->Open(root_key, client_state_key.get(), access) == ERROR_SUCCESS);
 }
 
+// This function sets the flag in registry to indicate that Google Update
+// should try full installer next time. If the current installer works, this
+// flag is cleared by setup.exe at the end of install. The flag will by default
+// be written to HKCU, but if --system-level is included in the command line,
+// it will be written to HKLM instead.
 // TODO(grt): Write a unit test for this that uses registry virtualization.
-void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
-  bool multi_install = false;
+void SetInstallerFlags(const Configuration& configuration) {
   RegKey key;
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
-  const wchar_t* app_guid = google_update::kAppGuid;
-  HKEY root_key = HKEY_CURRENT_USER;
+  const HKEY root_key =
+      configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  const wchar_t* app_guid =
+      configuration.has_chrome_frame() ?
+          google_update::kChromeFrameAppGuid :
+          configuration.chrome_app_guid();
   StackString<128> value;
   LONG ret;
-
-  for (int i = 1; i < args_num; ++i) {
-    if (0 == ::lstrcmpi(args[i], L"--chrome-sxs"))
-      app_guid = google_update::kSxSAppGuid;
-    else if (0 == ::lstrcmpi(args[i], L"--chrome-frame"))
-      app_guid = google_update::kChromeFrameAppGuid;
-    else if (0 == ::lstrcmpi(args[i], L"--multi-install"))
-      multi_install = true;
-    else if (0 == ::lstrcmpi(args[i], L"--system-level"))
-      root_key = HKEY_LOCAL_MACHINE;
-  }
 
   // When multi_install is true, we are potentially:
   // 1. Performing a multi-install of some product(s) on a clean machine.
@@ -185,9 +183,9 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   // exists and its "ap" value does not contain "-multi".  This is case 3, so we
   // modify the product's ClientState.  Otherwise, we check the
   // multi-installer's ClientState and modify it if it exists.
-  if (multi_install) {
+  if (configuration.is_multi_install()) {
     if (OpenClientStateKey(root_key, app_guid, key_access, &key)) {
-      // The app is installed.  See if it's a single-install.
+      // The product has a client state key.  See if it's a single-install.
       ret = key.ReadValue(kApRegistryValueName, value.get(), value.capacity());
       if (ret != ERROR_FILE_NOT_FOUND &&
           (ret != ERROR_SUCCESS ||
@@ -212,68 +210,57 @@ void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   }
 
   // The conditions below are handling two cases:
-  // 1. When ap key is present, we want to add the required tags only if they
-  //    are not present.
-  // 2. When ap key is missing, we are going to create it with the required
-  //    tags.
+  // 1. When ap value is present, we want to add the required tag only if it is
+  //    not present.
+  // 2. When ap value is missing, we are going to create it with the required
+  //    tag.
   if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
     if (ret == ERROR_FILE_NOT_FOUND)
       value.clear();
 
-    bool success = true;
-
-    if (multi_install &&
-        !FindTagInStr(value.get(), kMultifailInstallerSuffix, NULL)) {
-      // We want -multifail to immediately precede -full.  Chop off the latter
-      // if it's already present so that we can simply do two appends.
-      if (StrEndsWith(value.get(), kFullInstallerSuffix)) {
-        size_t suffix_len = (arraysize(kFullInstallerSuffix) - 1);
-        size_t value_len = value.length();
-        value.truncate_at(value_len - suffix_len);
-      }
-      success = value.append(kMultifailInstallerSuffix);
-    }
-    if (success && !StrEndsWith(value.get(), kFullInstallerSuffix) &&
-        (value.append(kFullInstallerSuffix))) {
+    if (!StrEndsWith(value.get(), kFullInstallerSuffix) &&
+        value.append(kFullInstallerSuffix)) {
       key.WriteValue(kApRegistryValueName, value.get());
     }
   }
 }
 
-// This function sets the flag in registry to indicate that Google Update
-// should try full installer next time. If the current installer works, this
-// flag is cleared by setup.exe at the end of install. The flag will by default
-// be written to HKCU, but if --system-level is included in the command line,
-// it will be written to HKLM instead.
-void SetInstallerFlags() {
-  int args_num;
-  wchar_t* cmd_line = ::GetCommandLine();
-  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
-
-  SetInstallerFlagsHelper(args_num, args);
-
-  ::LocalFree(args);
-}
-
 // Gets the setup.exe path from Registry by looking the value of Uninstall
-// string, strips the arguments for uninstall and returns only the full path
-// to setup.exe.  |size| is measured in wchar_t units.
-bool GetSetupExePathFromRegistry(wchar_t* path, size_t size) {
-  if (!ReadValueFromRegistry(HKEY_CURRENT_USER, kUninstallRegistryKey,
-      kUninstallRegistryValueName, path, size)) {
-    if (!ReadValueFromRegistry(HKEY_LOCAL_MACHINE, kUninstallRegistryKey,
-        kUninstallRegistryValueName, path, size)) {
-      return false;
-    }
-  }
-  wchar_t* tmp = const_cast<wchar_t*>(SearchStringI(path, L" --"));
-  if (tmp) {
-    *tmp = L'\0';
-  } else {
-    return false;
+// string.  |size| is measured in wchar_t units.
+bool GetSetupExePathFromRegistry(const Configuration& configuration,
+                                 wchar_t* path,
+                                 size_t size) {
+  const HKEY root_key =
+      configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey key;
+  bool succeeded = false;
+
+  // If this is a multi install, first try looking in the binaries for the path.
+  if (configuration.is_multi_install() &&
+      OpenClientStateKey(root_key, google_update::kMultiInstallAppGuid,
+                         KEY_QUERY_VALUE, &key)) {
+    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
+                               size) == ERROR_SUCCESS);
   }
 
-  return true;
+  // Failing that, look in Chrome Frame's client state key --chrome-frame was
+  // specified.
+  if (!succeeded && configuration.has_chrome_frame() &&
+      OpenClientStateKey(root_key, google_update::kChromeFrameAppGuid,
+                         KEY_QUERY_VALUE, &key)) {
+    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
+                               size) == ERROR_SUCCESS);
+  }
+
+  // Make a last-ditch effort to look in Chrome's client state key.
+  if (!succeeded &&
+      OpenClientStateKey(root_key, configuration.chrome_app_guid(),
+                         KEY_QUERY_VALUE, &key)) {
+    succeeded = (key.ReadValue(kUninstallRegistryValueName, path,
+                               size) == ERROR_SUCCESS);
+  }
+
+  return succeeded;
 }
 
 // Calls CreateProcess with good default parameters and waits for the process
@@ -308,7 +295,8 @@ bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
 // Append any command line params passed to mini_installer to the given buffer
 // so that they can be passed on to setup.exe. We do not return any error from
 // this method and simply skip making any changes in case of error.
-void AppendCommandLineFlags(CommandString* buffer) {
+void AppendCommandLineFlags(const Configuration& configuration,
+                            CommandString* buffer) {
   PathString full_exe_path;
   size_t len = ::GetModuleFileName(NULL, full_exe_path.get(),
                                    full_exe_path.capacity());
@@ -319,26 +307,18 @@ void AppendCommandLineFlags(CommandString* buffer) {
   if (exe_name == NULL)
     return;
 
-  int args_num;
-  wchar_t* cmd_line = ::GetCommandLine();
-  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
-  if (args_num <= 0)
-    return;
-
   const wchar_t* cmd_to_append = L"";
-  if (!StrEndsWith(args[0], exe_name)) {
+  if (!StrEndsWith(configuration.program(), exe_name)) {
     // Current executable name not in the command line so just append
     // the whole command line.
-    cmd_to_append = cmd_line;
-  } else if (args_num > 1) {
-    const wchar_t* tmp = SearchStringI(cmd_line, exe_name);
+    cmd_to_append = configuration.command_line();
+  } else if (configuration.argument_count() > 1) {
+    const wchar_t* tmp = SearchStringI(configuration.command_line(), exe_name);
     tmp = SearchStringI(tmp, L" ");
     cmd_to_append = tmp;
   }
 
   buffer->append(cmd_to_append);
-
-  LocalFree(args);
 }
 
 
@@ -390,8 +370,9 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
 // If setup.exe is present in more than one form, the precedence order is
 // BN < BL < B7
 // For more details see chrome/tools/build/win/create_installer_archive.py.
-bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
-                           PathString* archive_path, PathString* setup_path) {
+bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
+                           const wchar_t* base_path, PathString* archive_path,
+                           PathString* setup_path) {
   // Generate the setup.exe path where we patch/uncompress setup resource.
   PathString setup_dest_path;
   if (!setup_dest_path.assign(base_path) ||
@@ -419,7 +400,8 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
     CommandString cmd_line;
     // Get the path to setup.exe first.
     bool success = true;
-    if (!GetSetupExePathFromRegistry(cmd_line.get(), cmd_line.capacity()) ||
+    if (!GetSetupExePathFromRegistry(configuration, cmd_line.get(),
+                                     cmd_line.capacity()) ||
         !cmd_line.append(kCmdUpdateSetupExe) ||
         !cmd_line.append(L"=\"") ||
         !cmd_line.append(setup_path->get()) ||
@@ -435,7 +417,7 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
     // on to setup.exe.  This is important since switches such as
     // --multi-install and --chrome-frame affect where setup.exe will write
     // installer results for consumption by Google Update.
-    AppendCommandLineFlags(&cmd_line);
+    AppendCommandLineFlags(configuration, &cmd_line);
 
     int exit_code = 0;
     if (success &&
@@ -498,8 +480,8 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
 }
 
 // Executes setup.exe, waits for it to finish and returns the exit code.
-bool RunSetup(const wchar_t* archive_path, const wchar_t* setup_path,
-              int* exit_code) {
+bool RunSetup(const Configuration& configuration, const wchar_t* archive_path,
+              const wchar_t* setup_path, int* exit_code) {
   // There could be three full paths in the command line for setup.exe (path
   // to exe itself, path to archive and path to log file), so we declare
   // total size as three + one additional to hold command line options.
@@ -511,7 +493,7 @@ bool RunSetup(const wchar_t* archive_path, const wchar_t* setup_path,
         !cmd_line.append(setup_path) ||
         !cmd_line.append(L"\""))
       return false;
-  } else if (!GetSetupExePathFromRegistry(cmd_line.get(),
+  } else if (!GetSetupExePathFromRegistry(configuration, cmd_line.get(),
                                           cmd_line.capacity())) {
     return false;
   }
@@ -525,7 +507,7 @@ bool RunSetup(const wchar_t* archive_path, const wchar_t* setup_path,
 
   // Get any command line option specified for mini_installer and pass them
   // on to setup.exe
-  AppendCommandLineFlags(&cmd_line);
+  AppendCommandLineFlags(configuration, &cmd_line);
 
   return RunProcessAndWait(NULL, cmd_line.get(), exit_code);
 }
@@ -725,20 +707,19 @@ void DeleteOldChromeTempDirectories() {
 // If the function returns true, the command line has been processed and all
 // required actions taken.  The installer must exit and return the returned
 // |exit_code|.
-bool ProcessMiniInstallerCommandLine(int* exit_code) {
+bool ProcessNonInstallOperations(const Configuration& configuration,
+                                 int* exit_code) {
   bool ret = false;
-  const wchar_t* cmd_line = ::GetCommandLineW();
-  int num_args = 0;
-  wchar_t** args = ::CommandLineToArgvW(cmd_line, &num_args);
-  if (args) {
-    for (int i = 1; i < num_args && !ret; ++i) {
-      // Currently there's only one mini installer specific switch defined.
-      if (lstrcmpiW(args[i], kMiniCmdCleanup) == 0) {
-        *exit_code = 0;
-        ret = true;
-      }
-    }
-    ::LocalFree(args);
+
+  switch (configuration.operation()) {
+    case Configuration::CLEANUP:
+      // Cleanup has already taken place in DeleteOldChromeTempDirectories at
+      // this point, so just tell our caller to exit early.
+      *exit_code = 0;
+      ret = true;
+      break;
+
+    default: break;
   }
 
   return ret;
@@ -772,10 +753,18 @@ int WMain(HMODULE module) {
   // so this could buy us some space.
   DeleteOldChromeTempDirectories();
 
+  // TODO(grt): Make the exit codes more granular so we know where the popular
+  // errors truly are.
+  int exit_code = 101;
+
+  // Parse the command line.
+  Configuration configuration;
+  if (!configuration.Initialize())
+    return exit_code;
+
   // If the --cleanup switch was specified on the command line, then that means
   // we should only do the cleanup and then exit.
-  int exit_code = 101;
-  if (ProcessMiniInstallerCommandLine(&exit_code))
+  if (ProcessNonInstallOperations(configuration, &exit_code))
     return exit_code;
 
   // First get a path where we can extract payload
@@ -788,21 +777,23 @@ int WMain(HMODULE module) {
   // any errors here and we try to set the suffix for user level unless
   // --system-level is on the command line in which case we set it for system
   // level instead. This only applies to the Google Chrome distribution.
-  SetInstallerFlags();
+  SetInstallerFlags(configuration);
 #endif
 
   PathString archive_path;
   PathString setup_path;
-  if (!UnpackBinaryResources(module, base_path.get(), &archive_path,
-                             &setup_path)) {
+  if (!UnpackBinaryResources(configuration, module, base_path.get(),
+                             &archive_path, &setup_path)) {
     exit_code = 102;
   } else {
     // While unpacking the binaries, we paged in a whole bunch of memory that
     // we don't need anymore.  Let's give it back to the pool before running
     // setup.
     ::SetProcessWorkingSetSize(::GetCurrentProcess(), -1, -1);
-    if (!RunSetup(archive_path.get(), setup_path.get(), &exit_code))
+    if (!RunSetup(configuration, archive_path.get(), setup_path.get(),
+                  &exit_code)) {
       exit_code = 103;
+    }
   }
 
   if (ShouldDeleteExtractedFiles())
