@@ -119,9 +119,9 @@ DataView.prototype.onLoadLogFinish = function(data) {
  * Updates the counters showing how many events have been captured.
  */
 DataView.prototype.updateEventCounts_ = function() {
-  this.activelyCapturedCountBox_.innerText =
+  this.activelyCapturedCountBox_.textContent =
       g_browser.getNumActivelyCapturedEvents()
-  this.passivelyCapturedCountBox_.innerText =
+  this.passivelyCapturedCountBox_.textContent =
       g_browser.getNumPassivelyCapturedEvents();
 };
 
@@ -231,8 +231,8 @@ DataView.prototype.onLoadLogFile = function(event) {
 DataView.prototype.setLoadFileStatus = function(text, isLoading) {
   this.enableLoadFileElement_(!isLoading);
   this.enableSaveFileButton_(!isLoading);
-  this.loadStatusText_.innerText = text;
-  this.saveStatusText_.innerText = '';
+  this.loadStatusText_.textContent = text;
+  this.saveStatusText_.textContent = '';
 
   if (!isLoading) {
     // Clear the button, so the same file can be reloaded.  Recreating the
@@ -254,8 +254,8 @@ DataView.prototype.setLoadFileStatus = function(text, isLoading) {
 DataView.prototype.setSaveFileStatus = function(text, isSaving) {
   this.enableSaveFileButton_(!isSaving);
   this.enableLoadFileElement_(!isSaving);
-  this.loadStatusText_.innerText = '';
-  this.saveStatusText_.innerText = text;
+  this.loadStatusText_.textContent = '';
+  this.saveStatusText_.textContent = text;
 };
 
 DataView.prototype.enableSaveFileButton_ = function(enabled) {
@@ -358,7 +358,7 @@ DataView.prototype.onFileError_ = function(errorText, error) {
  * Prints some basic information about the environment when the log was made.
  */
 DataView.prototype.updateLoadedClientInfo = function() {
-  this.loadedClientInfoText_.innerText = '';
+  this.loadedClientInfoText_.textContent = '';
   if (typeof(ClientInfo) != 'object')
     return;
 
@@ -378,5 +378,5 @@ DataView.prototype.updateLoadedClientInfo = function() {
   text.push('OS Type: ' + ClientInfo.os_type);
   text.push('Command line: ' + ClientInfo.command_line);
 
-  this.loadedClientInfoText_.innerText = text.join('\n');
+  this.loadedClientInfoText_.textContent = text.join('\n');
 };

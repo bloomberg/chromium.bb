@@ -224,7 +224,7 @@ cr.define('gpu', function() {
 
     setText_: function(outputElementId, text) {
       var peg = document.getElementById(outputElementId);
-      peg.innerText = text;
+      peg.textContent = text;
     },
 
     setTable_: function(outputElementId, inputData) {

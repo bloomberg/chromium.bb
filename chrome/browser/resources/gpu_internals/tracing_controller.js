@@ -22,7 +22,7 @@ cr.define('gpu', function() {
 
     this.stopButton_ = document.createElement('button');
     this.stopButton_.onclick = this.endTracing.bind(this);
-    this.stopButton_.innerText = 'Stop tracing';
+    this.stopButton_.textContent = 'Stop tracing';
     this.overlay_.appendChild(this.stopButton_);
 
     this.traceEvents_ = [];

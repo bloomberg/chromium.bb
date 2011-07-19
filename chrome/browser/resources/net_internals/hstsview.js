@@ -85,7 +85,7 @@ HSTSView.prototype.onHSTSQueryResult = function(result) {
   if (result.error != undefined) {
     this.queryOutputDiv_.innerHTML = '';
     s = addNode(this.queryOutputDiv_, 'span');
-    s.innerText = result.error;
+    s.textContent = result.error;
     s.style.color = 'red';
     yellowFade(this.queryOutputDiv_);
     return;
@@ -103,27 +103,27 @@ HSTSView.prototype.onHSTSQueryResult = function(result) {
   s.innerHTML = '<b>Found</b>: mode: ';
 
   t = addNode(this.queryOutputDiv_, 'tt');
-  t.innerText = hstsModeToString(result.mode);
+  t.textContent = hstsModeToString(result.mode);
 
   addTextNode(this.queryOutputDiv_, ' include_subdomains:');
 
   t = addNode(this.queryOutputDiv_, 'tt');
-  t.innerText = result.subdomains;
+  t.textContent = result.subdomains;
 
   addTextNode(this.queryOutputDiv_, ' domain:');
 
   t = addNode(this.queryOutputDiv_, 'tt');
-  t.innerText = result.domain;
+  t.textContent = result.domain;
 
   addTextNode(this.queryOutputDiv_, ' is_preloaded:');
 
   t = addNode(this.queryOutputDiv_, 'tt');
-  t.innerText = result.preloaded;
+  t.textContent = result.preloaded;
 
   addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
 
   t = addNode(this.queryOutputDiv_, 'tt');
-  t.innerText = result.public_key_hashes;
+  t.textContent = result.public_key_hashes;
 
   yellowFade(this.queryOutputDiv_);
 }

@@ -107,7 +107,7 @@ function setupCurrentScreenshot(screenshot) {
 
 function setupSavedScreenshots(screenshots) {
   if (screenshots.length == 0) {
-    $('saved-screenshots').innerText =
+    $('saved-screenshots').textContent =
         localStrings.getString('no-saved-screenshots');
 
     // Make sure we make the display the message

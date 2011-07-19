@@ -34,14 +34,14 @@ function IsValidPrerenderInfo(prerenderInfo) {
 }
 
 PrerenderView.prototype.onPrerenderInfoChanged = function(prerenderInfo) {
-  this.prerenderEnabledSpan_.innerText = '';
+  this.prerenderEnabledSpan_.textContent = '';
   this.prerenderHistoryDiv_.innerHTML = '';
   this.prerenderActiveDiv_.innerHTML = '';
 
   if (!IsValidPrerenderInfo(prerenderInfo))
     return false;
 
-  this.prerenderEnabledSpan_.innerText = prerenderInfo.enabled.toString();
+  this.prerenderEnabledSpan_.textContent = prerenderInfo.enabled.toString();
 
   var tabPrinter = PrerenderView.createHistoryTablePrinter(
       prerenderInfo.history);

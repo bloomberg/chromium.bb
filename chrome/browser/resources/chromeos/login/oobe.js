@@ -153,7 +153,7 @@ cr.define('cr.ui', function() {
       $('button-strip').innerHTML = "";
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
-        $('header-' + screenId).innerText = screen.header;
+        $('header-' + screenId).textContent = screen.header;
         this.appendButtons_(screen.buttons);
       }
     }
@@ -280,7 +280,7 @@ cr.define('cr.ui', function() {
    * @param {text} message Message which is shown by the label.
    */
   Oobe.setUpdateMessage = function(message) {
-    $('update-upper-label').innerText = message;
+    $('update-upper-label').textContent = message;
   };
 
   /**
@@ -298,7 +298,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.setTpmPassword = function(password) {
     $('tpm-busy').hidden = true;
-    $('tpm-password').innerText = password;
+    $('tpm-password').textContent = password;
     $('tpm-password').hidden = false;
   }
 

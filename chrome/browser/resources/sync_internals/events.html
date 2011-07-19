@@ -29,16 +29,16 @@
 (function() {
 function makeLogEntryNode(entry) {
   var timeNode = document.createElement('td');
-  timeNode.innerText = entry.date;
+  timeNode.textContent = entry.date;
 
   var submoduleNode = document.createElement('td');
-  submoduleNode.innerText = entry.submodule;
+  submoduleNode.textContent = entry.submodule;
 
   var eventNode = document.createElement('td');
-  eventNode.innerText = entry.event;
+  eventNode.textContent = entry.event;
 
   var details = document.createElement('pre');
-  details.innerText = JSON.stringify(entry.details, null, 2);
+  details.textContent = JSON.stringify(entry.details, null, 2);
   var detailsNode = document.createElement('td');
   detailsNode.appendChild(details);
 

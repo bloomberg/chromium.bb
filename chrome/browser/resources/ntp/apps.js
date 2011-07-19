@@ -831,19 +831,19 @@ var apps = (function() {
         var notification = document.createElement('div')
         container.appendChild(notification);
         var title = document.createElement('span');
-        title.innerText = app.notifications[0].title;
+        title.textContent = app.notifications[0].title;
         notification.appendChild(title);
         notification.appendChild(document.createElement('br'));
 
         var body = document.createElement('span');
         container.appendChild(body);
-        body.innerText = app.notifications[0].body;
+        body.textContent = app.notifications[0].body;
         notification.appendChild(body);
         if (app.notifications[0].linkUrl) {
           notification.appendChild(document.createElement('br'));
           var link = document.createElement('a');
           link.href = app.notifications[0].linkUrl;
-          link.innerText = app.notifications[0].linkText ?
+          link.textContent = app.notifications[0].linkText ?
               app.notifications[0].linkText : "link";
           notification.appendChild(link);
         }

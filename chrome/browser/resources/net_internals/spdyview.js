@@ -71,12 +71,12 @@ SpdyView.prototype.onSpdySessionInfoChanged = function(spdySessionInfo) {
  * Displays information on the global SPDY status.
  */
 SpdyView.prototype.onSpdyStatusChanged = function(spdyStatus) {
-  this.spdyEnabledSpan_.innerText = spdyStatus.spdy_enabled;
-  this.spdyUseAlternateProtocolSpan_.innerText =
+  this.spdyEnabledSpan_.textContent = spdyStatus.spdy_enabled;
+  this.spdyUseAlternateProtocolSpan_.textContent =
       spdyStatus.use_alternate_protocols;
-  this.spdyForceAlwaysSpan_.innerText = spdyStatus.force_spdy_always;
-  this.spdyForceOverSslSpan_.innerText = spdyStatus.force_spdy_over_ssl;
-  this.spdyNextProtocolsSpan_.innerText = spdyStatus.next_protos;
+  this.spdyForceAlwaysSpan_.textContent = spdyStatus.force_spdy_always;
+  this.spdyForceOverSslSpan_.textContent = spdyStatus.force_spdy_over_ssl;
+  this.spdyNextProtocolsSpan_.textContent = spdyStatus.next_protos;
 
   return true;
 };

@@ -50,15 +50,15 @@ cr.define('chrome.sync', function() {
     // Decorate search box.
     queryControl.onsearch = function() {
       var query = queryControl.value;
-      statusControl.innerText = '';
+      statusControl.textContent = '';
       resultsDataModel.splice(0, resultsDataModel.length);
       if (!query) {
         return;
       }
-      statusControl.innerText = 'Searching for ' + query + '...';
+      statusControl.textContent = 'Searching for ' + query + '...';
       var timer = chrome.sync.makeTimer();
       doSearch(query, function(nodeSummaries) {
-        statusControl.innerText =
+        statusControl.textContent =
           'Found ' + nodeSummaries.length + ' nodes in '
           + timer.elapsedSeconds + 's';
         // TODO(akalin): Write a nicer list display.
@@ -78,13 +78,13 @@ cr.define('chrome.sync', function() {
     cr.ui.List.decorate(resultsControl);
     resultsControl.dataModel = resultsDataModel;
     resultsControl.selectionModel.addEventListener('change', function(event) {
-      detailsControl.innerText = '';
+      detailsControl.textContent = '';
       var selected = resultsControl.selectedItem;
       if (selected) {
         chrome.sync.getNodeDetailsById([selected.id], function(nodeDetails) {
           var selectedNodeDetails = nodeDetails[0] || null;
           if (selectedNodeDetails) {
-            detailsControl.innerText =
+            detailsControl.textContent =
               JSON.stringify(selectedNodeDetails, null, 2);
           }
         });

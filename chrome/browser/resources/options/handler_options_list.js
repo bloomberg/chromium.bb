@@ -40,7 +40,7 @@ cr.define('options', function() {
     buildWidget_: function(data, delegate) {
       // Protocol.
       var protocolElement = document.createElement('div');
-      protocolElement.innerText = data.protocol;
+      protocolElement.textContent = data.protocol;
       protocolElement.className = 'handlers-type-column';
       this.appendChild(protocolElement);
 
@@ -49,7 +49,7 @@ cr.define('options', function() {
       var selectElement = document.createElement('select');
       var defaultOptionElement = document.createElement('option');
       defaultOptionElement.selected = data.default_handler == -1;
-      defaultOptionElement.innerText =
+      defaultOptionElement.textContent =
           localStrings.getString('handlers_none_handler');
       defaultOptionElement.value = -1;
       selectElement.appendChild(defaultOptionElement);
@@ -57,7 +57,7 @@ cr.define('options', function() {
       for (var i = 0; i < data.handlers.length; ++i) {
         var optionElement = document.createElement('option');
         optionElement.selected = i == data.default_handler;
-        optionElement.innerText = data.handlers[i][1];
+        optionElement.textContent = data.handlers[i][1];
         optionElement.value = i;
         selectElement.appendChild(optionElement);
       }
@@ -80,7 +80,7 @@ cr.define('options', function() {
 
       // Remove link.
       var removeElement = document.createElement('div');
-      removeElement.innerText =
+      removeElement.textContent =
           localStrings.getString('handlers_remove_link');
       removeElement.addEventListener('click', function (e) {
         var value = selectElement ? selectElement.value : 0;
