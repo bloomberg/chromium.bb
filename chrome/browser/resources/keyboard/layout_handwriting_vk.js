@@ -21,9 +21,8 @@ const HANDWRITING_CANVAS_ELEMENT_ID = 'handwriting-canvas';
  * @constructor
  * @extends {BaseKey}
  */
-function ClearHandwritingKey(aspect, content) {
+function ClearHandwritingKey(content) {
   this.modeElements_ = {}
-  this.aspect_ = aspect;
   this.cellType_ = 'nc';
   this.content_ = content;
 }
@@ -34,10 +33,8 @@ ClearHandwritingKey.prototype = {
   /** @inheritDoc */
   makeDOM: function(mode, height) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].textContent = this.content_;
-    this.modeElements_[mode].className = 'key';
-
-    this.sizeElement(mode, height);
+    this.modeElements_[mode].className = 'key handwriting-clear';
+    addContent(this.modeElements_[mode], this.content_);
 
     this.modeElements_[mode].onclick = function() {
       var canvas = document.getElementById(HANDWRITING_CANVAS_ELEMENT_ID);
@@ -191,17 +188,17 @@ HandwritingCanvas.prototype = {
  */
 var KEYS_HANDWRITING_VK = [
   [
-    new ClearHandwritingKey(5, 'CLEAR')
+    new ClearHandwritingKey('CLEAR')
   ],
   [
-    new SvgKey(5, 'return', 'Enter')
+    new SvgKey('handwriting-return', 'Enter')
   ],
   [
-    new SpecialKey(3.7, 'SPACE', 'Spacebar'),
-    new SvgKey(1.3, 'backspace', 'Backspace')
+    new SpecialKey('handwriting-space', 'SPACE', 'Spacebar'),
+    new SvgKey('handwriting-backspace', 'Backspace')
   ],
   [
-    new SvgKey(3.7, 'mic', ''),
-    new HideKeyboardKey(1.3)
+    new SvgKey('handwriting-mic', ''),
+    new HideKeyboardKey()
   ]
 ];

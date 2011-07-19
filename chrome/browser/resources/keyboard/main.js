@@ -32,18 +32,22 @@ var currentKeyboardLayout = 'us';
  * The keyboard's aspect ratio.
  * @type {number}
  */
-var kKeyboardAspect = 3.3;
+const kKeyboardAspect = 3.15;
 
 /**
- * Calculate the height of the row based on the size of the page.
- * @return {number} The height of each row, in pixels.
+ * The ratio of the row height to the font size.
+ * @type {number}
  */
-function getRowHeight() {
+const kFontSizeRatio = 3.5;
+
+/**
+ * Calculate the height of the keyboard based on the size of the page.
+ * @return {number} The height of the keyboard in pixels.
+ */
+function getKeyboardHeight() {
   var x = window.innerWidth;
   var y = window.innerHeight - ((imeui && imeui.visible) ? IME_HEIGHT : 0);
-  return (x > kKeyboardAspect * y) ?
-      (height = Math.floor(y / 4)) :
-      (height = Math.floor(x / (kKeyboardAspect * 4)));
+  return (x > kKeyboardAspect * y) ? y : Math.floor(x / kKeyboardAspect);
 }
 
 /**
@@ -58,44 +62,19 @@ function setMode(mode) {
   }
 }
 
-var oldHeight = 0;
-var oldX = 0;
-var oldAspect = 0;
-
 /**
  * Resize the keyboard according to the new window size.
  * @return {void}
  */
 window.onresize = function() {
-  var height = getRowHeight();
-  var newX = document.documentElement.clientWidth;
-  // All rows of the current keyboard should have the same aspect, so just use
-  // the first row.
-  var newAspect = KEYBOARDS[currentKeyboardLayout]['rows'][0].aspect;
-
-  if (newX != oldX || height != oldHeight || newAspect != oldAspect) {
-    var totalWidth = Math.floor(height * newAspect);
-    var leftPadding = Math.floor((newX - totalWidth) / 2);
-    document.getElementById('b').style.paddingLeft = leftPadding + 'px';
-  }
-
-  if (height != oldHeight || newAspect != oldAspect) {
-    var rows = KEYBOARDS[currentKeyboardLayout]['rows'];
-    for (var i = 0; i < rows.length; ++i) {
-      rows[i].resize(height);
-    }
-    var canvas = KEYBOARDS[currentKeyboardLayout]['canvas'];
-    if (canvas !== undefined) {
-      var canvasHeight = (height - 2 /* overlapped margin*/) * rows.length;
-      canvas.resize(canvasHeight);
-    }
-  }
-
+  var keyboardDiv = document.getElementById('keyboard');
+  var height = getKeyboardHeight();
+  keyboardDiv.style.height = height + 'px';
+  var mainDiv = document.getElementById('main');
+  mainDiv.style.width = Math.floor(kKeyboardAspect * height) + 'px';
+  var rowsLength = KEYBOARDS[currentKeyboardLayout]['rows'].length;
+  keyboardDiv.style.fontSize = (height / kFontSizeRatio / rowsLength) + 'px';
   updateIme();
-
-  oldHeight = height;
-  oldX = newX;
-  oldAspect = newAspect;
 }
 
 /**
@@ -105,11 +84,12 @@ window.onresize = function() {
 window.onload = function() {
   var body = document.getElementById('b');
 
-  initIme(body);
-
   var mainDiv = document.createElement('div');
   mainDiv.className = 'main';
+  mainDiv.id = 'main';
   body.appendChild(mainDiv);
+
+  initIme(mainDiv);
 
   // TODO(mazda,yusukes): If we support 40+ virtual keyboards, it's not a good
   // idea to create rows (and DOM) for all keyboards inside onload(). We should
@@ -123,35 +103,41 @@ window.onload = function() {
     }
   }
 
-  height = getRowHeight();
+  // A div element which holds rows and canvases
+  var keyboardDiv = document.createElement('div');
+  keyboardDiv.className = 'keyboard';
+  keyboardDiv.id = 'keyboard';
 
   // A div element which holds canvases for all keyboards layouts.
   var canvasesDiv = document.createElement('div');
-  canvasesDiv.className = 'canvas';
+  canvasesDiv.className = 'nodisplay';
 
   for (var layout in KEYBOARDS) {
     // A div element which holds rows for the layout.
     var rowsDiv = document.createElement('div');
     var rows = KEYBOARDS[layout]['rows'];
     for (var i = 0; i < rows.length; ++i) {
-      rowsDiv.appendChild(rows[i].makeDOM(height));
+      rowsDiv.appendChild(rows[i].makeDOM());
       rows[i].showMode(currentMode);
     }
-    rowsDiv.hidden = true;
-    mainDiv.appendChild(rowsDiv);
+    rowsDiv.className = 'nodisplay';
+    keyboardDiv.appendChild(rowsDiv);
     KEYBOARDS[layout]['rowsDiv'] = rowsDiv;
 
     var canvas = KEYBOARDS[layout]['canvas'];
     if (canvas !== undefined) {
       canvas.visible = false;
-      var canvasHeight = (height - 2 /* overlapped margin*/) * rows.length;
+      var border = 1;
+      var marginTop = 5;
+      var canvasHeight = getKeyboardHeight() - 2 * border - marginTop;
       canvas.resize(canvasHeight);
       canvasesDiv.appendChild(canvas);
     }
+    KEYBOARDS[layout]['canvasesDiv'] = canvasesDiv;
   }
-  mainDiv.appendChild(canvasesDiv);
+  keyboardDiv.appendChild(canvasesDiv);
+  mainDiv.appendChild(keyboardDiv);
 
-  oldHeight = height;
   window.onhashchange();
 
   // Restore the keyboard to the default state when it is hidden.
@@ -184,8 +170,10 @@ window.onhashchange = function() {
       var visible = (layout == new_layout);
       var canvas = KEYBOARDS[layout]['canvas'];
       var rowsDiv = KEYBOARDS[layout]['rowsDiv'];
-      rowsDiv.hidden = !visible;
+      var canvasesDiv = KEYBOARDS[layout]['canvasesDiv'];
+      rowsDiv.className = visible ? 'rows' : 'nodisplay';
       if (canvas !== undefined) {
+        canvasesDiv.className = visible ? 'canvas' : 'nodisplay';
         canvas.visible = visible;
         if (!visible) {
           canvas.clear();

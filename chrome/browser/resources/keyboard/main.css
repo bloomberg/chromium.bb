@@ -14,17 +14,40 @@ body {
 }
 
 div.main {
+  margin: 0 auto;
   display: -webkit-box;
-  margin-top: 5px;
+  -webkit-box-orient: vertical;
+}
+
+div.keyboard {
+  margin: 0 auto;
+  display: -webkit-box;
+  text-align: center;
+  -webkit-box-flex: 1;
+}
+
+div.rows {
+  display: -webkit-box;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
 }
 
 div.canvas {
-  margin-left: 5px;
+  display: block;
+  margin: 5px 0 0 5px;
   -webkit-box-flex: 1;
 }
 
 div.row {
+  display: -webkit-box;
   margin-top: 5px;
+  -webkit-box-flex: 1;
+}
+
+div.row > div {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
 }
 
 canvas.handwriting {
@@ -66,10 +89,21 @@ canvas.handwriting {
 .key {
   border: 1px solid gray;
   color: #dbdbdb;
-  float: left;
+  display: -webkit-box;
   font-family: sans-serif;
-  text-align: center;
+  margin-left: 5px;
+  position: relative;
+  -webkit-box-flex: 1;
   -webkit-border-radius: 4px;
+}
+
+.key > div {
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .r0 {
@@ -120,26 +154,69 @@ div.moddown {
   width: 100%;
 }
 
-.backspace {
+.text-key {
+  height: 1.2em;
+}
+
+.backspace > div, .handwriting-backspace > div {
   background-image: url("del.svg");
 }
 
-.tab {
+.tab > div {
   background-image: url("tab.svg");
 }
 
-.return {
+.return > div, .handwriting-return > div {
   background-image: url("ret.svg");
 }
 
-.mic {
+.mic > div, .handwriting-mic > div {
   background-image: url("mic.svg");
 }
 
-.shift {
+.shift > div.image-key {
   background-image: url("shift.svg");
 }
 
-.hide {
+.moddownshift > div {
+  background-image: url("shift.svg");
+}
+
+.hide > div {
   background-image: url("keyboard.svg");
+}
+
+.at,
+.com,
+.comma,
+.handwriting-backspace,
+.hide,
+.mic,
+.period,
+.return,
+.symbol {
+  -webkit-box-flex: 1.3;
+}
+
+.backspace,
+.left_shift {
+  -webkit-box-flex: 1.6;
+}
+
+.space {
+  -webkit-box-flex: 4.8;
+}
+
+.handwriting-mic,
+.handwriting-space {
+  -webkit-box-flex: 3.7;
+}
+
+.handwriting-clear,
+.handwriting-return {
+  -webkit-box-flex: 5;
+}
+
+.nodisplay {
+  display: none;
 }

@@ -115,6 +115,35 @@ function sendKey(key, type) {
 }
 
 /**
+ * Add a child div element that represents the content of the given element.
+ * A child div element that represents a text content is added if
+ * opt_textContent is given. Otherwise a child element that represents an image
+ * content is added. If the given element already has a child, the child element
+ * is modified.
+ * @param {Element} element The DOM Element to which the content is added.
+ * @param {string} opt_textContent The text to be inserted.
+ * @return {void}
+ */
+function addContent(element, opt_textContent) {
+  if (element.childNodes.length > 0) {
+    var content = element.childNodes[0];
+    if (opt_textContent) {
+      content.textContent = opt_textContent;
+    }
+    return;
+  }
+
+  var content = document.createElement('div');
+  if (opt_textContent) {
+    content.textContent = opt_textContent;
+    content.className = 'text-key';
+  } else {
+    content.className = 'image-key';
+  }
+  element.appendChild(content);
+}
+
+/**
  * Set up the event handlers necessary to respond to mouse and touch events on
  * the virtual keyboard.
  * @param {BaseKey} key The BaseKey object corresponding to this key.
@@ -229,18 +258,6 @@ function BaseKey() {}
 
 BaseKey.prototype = {
   /**
-   * The aspect ratio of this key.
-   * @type {number}
-   */
-  aspect_: 1,
-
-  /**
-   * The column.
-   * @type {number}
-   */
-  column_: 0.,
-
-  /**
    * The cell type of this key.  Determines the background colour.
    * @type {string}
    */
@@ -291,21 +308,6 @@ BaseKey.prototype = {
   },
 
   /**
-   * @return {number} The aspect ratio of this key.
-   */
-  get aspect() {
-    return this.aspect_;
-  },
-
-  /**
-   * Set the horizontal position for this key.
-   * @param {number} column Horizonal position (in multiples of row height).
-   */
-  set column(column) {
-    this.column_ = column;
-  },
-
-  /**
    * Set the vertical position, aka row, of this key.
    * @param {number} row The row.
    */
@@ -316,56 +318,11 @@ BaseKey.prototype = {
   },
 
   /**
-   * Returns the amount of padding for the top of the key.
-   * @param {string} mode The mode for the key.
-   * @param {number} height The height of the key.
-   * @return {number} Padding in pixels.
-   */
-  getPadding: function(mode, height) {
-    return Math.floor(height / 3.5);
-  },
-
-  /**
-   * Size the DOM elements of this key.
-   * @param {string} mode The mode to be sized.
-   * @param {number} height The height of the key.
-   * @return {void}
-   */
-  sizeElement: function(mode, height) {
-    var padding = this.getPadding(mode, height);
-    var border = 1;
-    var margin = 5;
-    var width = Math.floor(height * (this.column_ + this.aspect_)) -
-                Math.floor(height *  this.column_);
-
-    var extraHeight = margin + padding + 2 * border;
-    var extraWidth = margin + 2 * border;
-
-    this.modeElements_[mode].style.width = (width - extraWidth) + 'px';
-    this.modeElements_[mode].style.height = (height - extraHeight) + 'px';
-    this.modeElements_[mode].style.marginLeft = margin + 'px';
-    this.modeElements_[mode].style.fontSize = (height / 3.5) + 'px';
-    this.modeElements_[mode].style.paddingTop = padding + 'px';
-  },
-
-  /**
-   * Resize all modes of this key based on the given height.
-   * @param {number} height The height of the key.
-   * @return {void}
-   */
-  resize: function(height) {
-    for (var i in this.modeElements_) {
-      this.sizeElement(i, height);
-    }
-  },
-
-  /**
    * Create the DOM elements for the given keyboard mode.  Must be overridden.
    * @param {string} mode The keyboard mode to create elements for.
-   * @param {number} height The height of the key.
    * @return {Element} The top-level DOM Element for the key.
    */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     throw new Error('makeDOM not implemented in BaseKey');
   },
 };
@@ -381,7 +338,6 @@ BaseKey.prototype = {
  */
 function Key(key, shift, num, symbol) {
   this.modeElements_ = {};
-  this.aspect_ = 1;  // ratio width:height
   this.cellType_ = '';
 
   this.modes_ = {};
@@ -395,12 +351,11 @@ Key.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].textContent = this.modes_[mode].display;
     this.modeElements_[mode].className = 'key';
+    addContent(this.modeElements_[mode], this.modes_[mode].display);
 
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         sendKeyFunction(this.modes_[mode].keyIdentifier, 'keydown'),
         sendKeyFunction(this.modes_[mode].keyIdentifier, 'keyup'));
@@ -411,15 +366,13 @@ Key.prototype = {
 
 /**
  * A key which displays an SVG image.
- * @param {number} aspect The aspect ratio of the key.
  * @param {string} className The class that provides the image.
  * @param {string} keyId The key identifier for the key.
  * @constructor
  * @extends {BaseKey}
  */
-function SvgKey(aspect, className, keyId) {
+function SvgKey(className, keyId) {
   this.modeElements_ = {};
-  this.aspect_ = aspect;
   this.cellType_ = 'nc';
   this.className_ = className;
   this.keyId_ = keyId;
@@ -429,21 +382,15 @@ SvgKey.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  getPadding: function(mode, height) { return 0; },
-
-  /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
     this.modeElements_[mode].className = 'key';
-
-    var img = document.createElement('div');
-    img.className = 'image-key ' + this.className_;
-    this.modeElements_[mode].appendChild(img);
+    this.modeElements_[mode].classList.add(this.className_);
+    addContent(this.modeElements_[mode]);
 
     setupKeyEventHandlers(this, this.modeElements_[mode],
         sendKeyFunction(this.keyId_, 'keydown'),
         sendKeyFunction(this.keyId_, 'keyup'));
-    this.sizeElement(mode, height);
 
     return this.modeElements_[mode];
   }
@@ -451,30 +398,29 @@ SvgKey.prototype = {
 
 /**
  * A Key that remains the same through all modes.
- * @param {number} aspect The aspect ratio of the key.
  * @param {string} content The display text for the key.
  * @param {string} keyId The key identifier for the key.
  * @constructor
  * @extends {BaseKey}
  */
-function SpecialKey(aspect, content, keyId) {
+function SpecialKey(className, content, keyId) {
   this.modeElements_ = {};
-  this.aspect_ = aspect;
   this.cellType_ = 'nc';
   this.content_ = content;
   this.keyId_ = keyId;
+  this.className_ = className;
 }
 
 SpecialKey.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].textContent = this.content_;
     this.modeElements_[mode].className = 'key';
+    this.modeElements_[mode].classList.add(this.className_);
+    addContent(this.modeElements_[mode], this.content_);
 
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         sendKeyFunction(this.keyId_, 'keydown'),
         sendKeyFunction(this.keyId_, 'keyup'));
@@ -485,48 +431,38 @@ SpecialKey.prototype = {
 
 /**
  * A shift key.
- * @param {number} aspect The aspect ratio of the key.
  * @constructor
  * @extends {BaseKey}
  */
-function ShiftKey(aspect) {
+function ShiftKey(className) {
   this.modeElements_ = {};
-  this.aspect_ = aspect;
   this.cellType_ = 'nc';
+  this.className_ = className;
 }
 
 ShiftKey.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  getPadding: function(mode, height) {
-    if (mode == NUMBER_MODE || mode == SYMBOL_MODE) {
-      return BaseKey.prototype.getPadding.call(this, mode, height);
-    }
-    return 0;
-  },
-
-  /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
+    this.modeElements_[mode].className = 'key shift';
+    this.modeElements_[mode].classList.add(this.className_);
 
     if (mode == KEY_MODE || mode == SHIFT_MODE) {
-      var shift = document.createElement('div');
-      shift.className = 'image-key shift';
-      this.modeElements_[mode].appendChild(shift);
+      addContent(this.modeElements_[mode]);
     } else if (mode == NUMBER_MODE) {
-      this.modeElements_[mode].textContent = 'more';
+      addContent(this.modeElements_[mode], 'more');
     } else if (mode == SYMBOL_MODE) {
-      this.modeElements_[mode].textContent = '#123';
+      addContent(this.modeElements_[mode], '#123');
     }
 
     if (mode == SHIFT_MODE || mode == SYMBOL_MODE) {
-      this.modeElements_[mode].className = 'moddown key';
+      this.modeElements_[mode].classList.add('moddown');
     } else {
-      this.modeElements_[mode].className = 'key';
+      this.modeElements_[mode].classList.remove('moddown');
     }
 
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         function() {
           transitionMode(SHIFT_MODE);
@@ -543,7 +479,6 @@ ShiftKey.prototype = {
  */
 function SymbolKey() {
   this.modeElements_ = {}
-  this.aspect_ = 1.3;
   this.cellType_ = 'nc';
 }
 
@@ -553,20 +488,20 @@ SymbolKey.prototype = {
   /** @inheritDoc */
   makeDOM: function(mode, height) {
     this.modeElements_[mode] = document.createElement('div');
+    this.modeElements_[mode].className = 'key symbol';
 
     if (mode == KEY_MODE || mode == SHIFT_MODE) {
-      this.modeElements_[mode].textContent = '#123';
+      addContent(this.modeElements_[mode], '#123');
     } else if (mode == NUMBER_MODE || mode == SYMBOL_MODE) {
-      this.modeElements_[mode].textContent = 'abc';
+      addContent(this.modeElements_[mode], 'abc');
     }
 
     if (mode == NUMBER_MODE || mode == SYMBOL_MODE) {
-      this.modeElements_[mode].className = 'moddown key';
+      this.modeElements_[mode].classList.add('moddown');
     } else {
-      this.modeElements_[mode].className = 'key';
+      this.modeElements_[mode].classList.remove('moddown');
     }
 
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         function() {
           transitionMode(NUMBER_MODE);
@@ -583,7 +518,6 @@ SymbolKey.prototype = {
  */
 function DotComKey() {
   this.modeElements_ = {}
-  this.aspect_ = 1.3;
   this.cellType_ = 'nc';
 }
 
@@ -591,12 +525,11 @@ DotComKey.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].textContent = '.com';
-    this.modeElements_[mode].className = 'key';
+    this.modeElements_[mode].className = 'key com';
+    addContent(this.modeElements_[mode], '.com');
 
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         function() {
           sendKey('.');
@@ -611,13 +544,11 @@ DotComKey.prototype = {
 
 /**
  * The key that hides the keyboard.
- * @param {number} aspect The aspect ratio of the key.
  * @constructor
  * @extends {BaseKey}
  */
-function HideKeyboardKey(aspect) {
+function HideKeyboardKey() {
   this.modeElements_ = {}
-  this.aspect_ = aspect;
   this.cellType_ = 'nc';
 }
 
@@ -625,18 +556,11 @@ HideKeyboardKey.prototype = {
   __proto__: BaseKey.prototype,
 
   /** @inheritDoc */
-  getPadding: function(mode, height) { return 0; },
-
-  /** @inheritDoc */
-  makeDOM: function(mode, height) {
+  makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key';
+    this.modeElements_[mode].className = 'key hide';
+    addContent(this.modeElements_[mode]);
 
-    var hide = document.createElement('div');
-    hide.className = 'image-key hide';
-    this.modeElements_[mode].appendChild(hide);
-
-    this.sizeElement(mode, height);
     setupKeyEventHandlers(this, this.modeElements_[mode],
         function() {
           if (chrome.experimental) {
@@ -663,22 +587,10 @@ function Row(position, keys) {
 
 Row.prototype = {
   /**
-   * Get the total aspect ratio of the row.
-   * @return {number} The aspect ratio relative to a height of 1 unit.
-   */
-  get aspect() {
-    var total = 0;
-    for (var i = 0; i < this.keys_.length; ++i) {
-      total += this.keys_[i].aspect;
-    }
-    return total;
-  },
-
-  /**
    * Create the DOM elements for the row.
    * @return {Element} The top-level DOM Element for the row.
    */
-  makeDOM: function(height) {
+  makeDOM: function() {
     this.element_ = document.createElement('div');
     this.element_.className = 'row';
     for (var i = 0; i < MODES.length; ++i) {
@@ -691,7 +603,7 @@ Row.prototype = {
     for (var j = 0; j < this.keys_.length; ++j) {
       var key = this.keys_[j];
       for (var i = 0; i < MODES.length; ++i) {
-        this.modeElements_[MODES[i]].appendChild(key.makeDOM(MODES[i], height));
+        this.modeElements_[MODES[i]].appendChild(key.makeDOM(MODES[i]));
       }
     }
 
@@ -701,11 +613,8 @@ Row.prototype = {
       this.modeElements_[MODES[i]].appendChild(clearingDiv);
     }
 
-    var column = 0.;
     for (var i = 0; i < this.keys_.length; ++i) {
       this.keys_[i].row = this.position_;
-      this.keys_[i].column = column;
-      column += this.keys_[i].aspect;
     }
 
     return this.element_;
@@ -720,17 +629,6 @@ Row.prototype = {
     for (var i = 0; i < MODES.length; ++i) {
       this.modeElements_[MODES[i]].style.display = 'none';
     }
-    this.modeElements_[mode].style.display = 'block';
-  },
-
-  /**
-   * Resizes all keys in the row according to the global size.
-   * @param {number} height The height of the key.
-   * @return {void}
-   */
-  resize: function(height) {
-    for (var i = 0; i < this.keys_.length; ++i) {
-      this.keys_[i].resize(height);
-    }
+    this.modeElements_[mode].style.display = '-webkit-box';
   },
 };

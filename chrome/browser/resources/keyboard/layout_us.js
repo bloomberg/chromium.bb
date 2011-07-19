@@ -19,7 +19,7 @@ var backspaceKey;
  */
 var KEYS_US = [
   [
-    new SvgKey(1, 'tab', 'Tab'),
+    new SvgKey('tab', 'Tab'),
     new Key(C('q'), C('Q'), C('1'), C('`')),
     new Key(C('w'), C('W'), C('2'), C('~')),
     new Key(C('e'), C('E'), C('3'), new Character('<', 'LessThan')),
@@ -30,7 +30,7 @@ var KEYS_US = [
     new Key(C('i'), C('I'), C('8'), C('}')),
     new Key(C('o'), C('O'), C('9'), C('\'')),
     new Key(C('p'), C('P'), C('0'), C('|')),
-    backspaceKey = new SvgKey(1.6, 'backspace', 'Backspace')
+    backspaceKey = new SvgKey('backspace', 'Backspace')
   ],
   [
     new SymbolKey(),
@@ -44,10 +44,10 @@ var KEYS_US = [
     new Key(C('k'), C('K'), C('*'), C('#')),
     new Key(C('l'), C('L'), C('('), C(' ')),
     new Key(C('\''), C('\''), C(')'), C(' ')),
-    new SvgKey(1.3, 'return', 'Enter')
+    new SvgKey('return', 'Enter')
   ],
   [
-    new ShiftKey(1.6),
+    new ShiftKey('left_shift'),
     new Key(C('z'), C('Z'), C('/'), C(' ')),
     new Key(C('x'), C('X'), C('-'), C(' ')),
     new Key(C('c'), C('C'), C('\''), C(' ')),
@@ -58,19 +58,19 @@ var KEYS_US = [
     new Key(C('!'), C('!'), C('{'), C(' ')),
     new Key(C('?'), C('?'), C('}'), C(' ')),
     new Key(C('/'), C('/'), C('\\'), C(' ')),
-    new ShiftKey(1)
+    new ShiftKey()
   ],
   [
-    new SvgKey(1.3, 'mic', ''),
+    new SvgKey('mic', ''),
     new DotComKey(),
-    new SpecialKey(1.3, '@', '@'),
+    new SpecialKey('at', '@', '@'),
     // TODO(bryeung): the spacebar needs to be a little bit more stretchy,
     // since this row has only 7 keys (as opposed to 12), the truncation
     // can cause it to not be wide enough.
-    new SpecialKey(4.8, ' ', 'Spacebar'),
-    new SpecialKey(1.3, ',', ','),
-    new SpecialKey(1.3, '.', '.'),
-    new HideKeyboardKey(1.3)
+    new SpecialKey('space', ' ', 'Spacebar'),
+    new SpecialKey('comma', ',', ','),
+    new SpecialKey('period', '.', '.'),
+    new HideKeyboardKey()
   ]
 ];
 
