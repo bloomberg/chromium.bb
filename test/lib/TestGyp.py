@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2009 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -415,7 +415,8 @@ class TestGypMSVS(TestGypBase):
     Failing that, we search for likely deployment paths.
     """
     super(TestGypMSVS, self).initialize_build_tool()
-    possible_roots = ['C:\\Program Files (x86)', 'C:\\Program Files']
+    possible_roots = ['C:\\Program Files (x86)', 'C:\\Program Files',
+                      'E:\\Program Files (x86)', 'E:\\Program Files']
     possible_paths = {
         '2010': r'Microsoft Visual Studio 10.0\Common7\IDE\devenv.com',
         '2008': r'Microsoft Visual Studio 9.0\Common7\IDE\devenv.com',
