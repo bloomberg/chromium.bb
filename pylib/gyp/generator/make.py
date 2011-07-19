@@ -1608,6 +1608,9 @@ class MakefileWriter:
         self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
             self.GetFrameworkVersion(spec))
 
+      # Needed by test/mac/gyptest-rebuild.py.
+      self.WriteLn('\t@true  # No-op, used by tests')
+
       # Since this target depends on binary and resources which are in
       # nested subfolders, the framework directory will be older than
       # its dependencies usually. To prevent this rule from executing
