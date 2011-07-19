@@ -91,7 +91,6 @@ FileManagerDialog::FileManagerDialog(Listener* listener)
 FileManagerDialog::~FileManagerDialog() {
   if (extension_dialog_)
     extension_dialog_->ObserverDestroyed();
-  PendingDialog::Remove(tab_id_);
 }
 
 bool FileManagerDialog::IsRunning(gfx::NativeWindow owner_window) const {

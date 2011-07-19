@@ -88,7 +88,6 @@ FilePath FileSystemPathManager::ValidateFileSystemRootAndGetPathOnFileThread(
   case kFileSystemTypePersistent:
     return sandbox_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
         origin_url, type, virtual_path, create);
-    break;
   case kFileSystemTypeExternal:
     return external_provider_.get() ?
         external_provider_->ValidateFileSystemRootAndGetPathOnFileThread(
