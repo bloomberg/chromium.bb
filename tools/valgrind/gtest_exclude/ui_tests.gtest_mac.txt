@@ -85,7 +85,6 @@ BookmarksUITest.CommandAgainGoesBackToBookmarksTab
 ChromeMainTest.AppLaunch
 
 # See http://crbug.com/46783
-SessionHistoryTest.FrameBackForward
 SessionHistoryTest.JavascriptHistory
 SessionHistoryTest.LocationReplace
 

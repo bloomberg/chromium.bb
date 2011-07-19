@@ -86,5 +86,8 @@ LoginPromptTest.TestTwoAuths
 # Flakily times out, http://crbug.com/85868
 SessionHistoryTest.FragmentBackForward
 
+# Fails flakily, http://crbug.com/46783
+SessionHistoryTest.FrameBackForward
+
 # Fails flakily, http://crbug.com/86783
 ResourceDispatcherTest.CrossSiteImmediateLoadOnunloadCookie
