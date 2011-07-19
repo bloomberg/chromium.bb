@@ -190,7 +190,10 @@ class NativeWidgetPrivate : public NativeWidget {
   virtual void EnableClose(bool enable) = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual void ShowNativeWidget(ShowState state) = 0;
+  // Invoked if the initial show should maximize the window. |restored_bounds|
+  // is the bounds of the window when not maximized.
+  virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
+  virtual void ShowWithState(ShowState state) = 0;
   virtual bool IsVisible() const = 0;
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;

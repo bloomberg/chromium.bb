@@ -246,7 +246,9 @@ class NativeWidgetWin : public ui::WindowImpl,
   virtual void EnableClose(bool enable) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void ShowNativeWidget(ShowState state) OVERRIDE;
+  virtual void ShowMaximizedWithBounds(
+      const gfx::Rect& restored_bounds) OVERRIDE;
+  virtual void ShowWithState(ShowState state) OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;

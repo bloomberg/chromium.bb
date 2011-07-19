@@ -99,6 +99,7 @@ Widget::InitParams::InitParams()
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      maximize(false),
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
@@ -117,6 +118,7 @@ Widget::InitParams::InitParams(Type type)
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
+      maximize(false),
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
@@ -438,9 +440,13 @@ void Widget::EnableClose(bool enable) {
 
 void Widget::Show() {
   if (non_client_view_) {
-    native_widget_->ShowNativeWidget(
-        saved_maximized_state_ ? internal::NativeWidgetPrivate::SHOW_MAXIMIZED
-                               : internal::NativeWidgetPrivate::SHOW_RESTORED);
+    if (saved_maximized_state_ && !initial_restored_bounds_.IsEmpty()) {
+      native_widget_->ShowMaximizedWithBounds(initial_restored_bounds_);
+    } else {
+      native_widget_->ShowWithState(saved_maximized_state_ ?
+          internal::NativeWidgetPrivate::SHOW_MAXIMIZED :
+          internal::NativeWidgetPrivate::SHOW_RESTORED);
+    }
     // |saved_maximized_state_| only applies the first time the window is shown.
     // If we don't reset the value the window will be shown maximized every time
     // it is subsequently shown after being hidden.
@@ -455,8 +461,7 @@ void Widget::Hide() {
 }
 
 void Widget::ShowInactive() {
-  native_widget_->ShowNativeWidget(
-      internal::NativeWidgetPrivate::SHOW_INACTIVE);
+  native_widget_->ShowWithState(internal::NativeWidgetPrivate::SHOW_INACTIVE);
 }
 
 void Widget::Activate() {
@@ -1012,39 +1017,15 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
   if (!non_client_view_)
     return;
 
-  // First we obtain the window's saved show-style and store it. We need to do
-  // this here, rather than in Show() because by the time Show() is called,
-  // the window's size will have been reset (below) and the saved maximized
-  // state will have been lost. Sadly there's no way to tell on Windows when
-  // a window is restored from maximized state, so we can't more accurately
-  // track maximized state independently of sizing information.
-  widget_delegate_->GetSavedMaximizedState(&saved_maximized_state_);
-
-  // Restore the window's placement from the controller.
-  gfx::Rect saved_bounds = bounds;
-  if (widget_delegate_->GetSavedWindowBounds(&saved_bounds)) {
-    if (!widget_delegate_->ShouldRestoreWindowSize()) {
-      saved_bounds.set_size(non_client_view_->GetPreferredSize());
+  gfx::Rect saved_bounds;
+  if (GetSavedBounds(&saved_bounds, &saved_maximized_state_)) {
+    if (saved_maximized_state_) {
+      // If we're going to maximize, wait until Show is invoked to set the
+      // bounds. That way we avoid a noticable resize.
+      initial_restored_bounds_ = saved_bounds;
     } else {
-      // Make sure the bounds are at least the minimum size.
-      if (saved_bounds.width() < minimum_size_.width()) {
-        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                             saved_bounds.right() + minimum_size_.width() -
-                                 saved_bounds.width(),
-                             saved_bounds.bottom());
-      }
-
-      if (saved_bounds.height() < minimum_size_.height()) {
-        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                             saved_bounds.right(),
-                             saved_bounds.bottom() + minimum_size_.height() -
-                                 saved_bounds.height());
-      }
+      SetBounds(saved_bounds);
     }
-
-    // Widget's SetBounds method does not further modify the bounds that are
-    // passed to it.
-    SetBounds(saved_bounds);
   } else {
     if (bounds.IsEmpty()) {
       // No initial bounds supplied, so size the window to its content and
@@ -1055,6 +1036,32 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
       SetBoundsConstrained(bounds, NULL);
     }
   }
+}
+
+bool Widget::GetSavedBounds(gfx::Rect* bounds, bool* maximize) {
+  // First we obtain the window's saved show-style and store it. We need to do
+  // this here, rather than in Show() because by the time Show() is called,
+  // the window's size will have been reset (below) and the saved maximized
+  // state will have been lost. Sadly there's no way to tell on Windows when
+  // a window is restored from maximized state, so we can't more accurately
+  // track maximized state independently of sizing information.
+  widget_delegate_->GetSavedMaximizedState(maximize);
+
+  // Restore the window's placement from the controller.
+  if (widget_delegate_->GetSavedWindowBounds(bounds)) {
+    if (!widget_delegate_->ShouldRestoreWindowSize()) {
+      bounds->set_size(non_client_view_->GetPreferredSize());
+    } else {
+      // Make sure the bounds are at least the minimum size.
+      if (bounds->width() < minimum_size_.width())
+        bounds->set_width(minimum_size_.width());
+
+      if (bounds->height() < minimum_size_.height())
+        bounds->set_height(minimum_size_.height());
+    }
+    return true;
+  }
+  return false;
 }
 
 namespace internal {

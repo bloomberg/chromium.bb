@@ -1194,7 +1194,13 @@ void NativeWidgetGtk::Hide() {
   }
 }
 
-void NativeWidgetGtk::ShowNativeWidget(ShowState state) {
+void NativeWidgetGtk::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  // TODO: when we add maximization support update this.
+  Show();
+}
+
+void NativeWidgetGtk::ShowWithState(ShowState state) {
   // No concept of maximization (yet) on ChromeOS.
   if (state == internal::NativeWidgetPrivate::SHOW_INACTIVE)
     gtk_window_set_focus_on_map(GetNativeWindow(), false);

@@ -894,7 +894,16 @@ void NativeWidgetWin::Hide() {
   }
 }
 
-void NativeWidgetWin::ShowNativeWidget(ShowState state) {
+void NativeWidgetWin::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  WINDOWPLACEMENT placement = { 0 };
+  placement.length = sizeof(WINDOWPLACEMENT);
+  placement.showCmd = SW_SHOWMAXIMIZED;
+  placement.rcNormalPosition = restored_bounds.ToRECT();
+  SetWindowPlacement(hwnd(), &placement);
+}
+
+void NativeWidgetWin::ShowWithState(ShowState state) {
   DWORD native_show_state;
   switch (state) {
     case SHOW_INACTIVE:
@@ -2213,6 +2222,8 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set type-independent style attributes.
   if (params.child)
     style |= WS_CHILD | WS_VISIBLE;
+  if (params.maximize)
+    style |= WS_MAXIMIZE;
   if (!params.accept_events)
     ex_style |= WS_EX_TRANSPARENT;
   if (!params.can_activate)

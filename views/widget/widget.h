@@ -143,6 +143,8 @@ class Widget : public internal::NativeWidgetDelegate,
     Ownership ownership;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
+    // Whether the widget should be maximized.
+    bool maximize;
     // Should the widget be double buffered? Default is false.
     bool double_buffer;
     gfx::NativeView parent;
@@ -621,6 +623,10 @@ class Widget : public internal::NativeWidgetDelegate,
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
 
+  // Returns the bounds and maximized state from the delegate. Returns true if
+  // the delegate wants to use a specified bounds.
+  bool GetSavedBounds(gfx::Rect* bounds, bool* maximize);
+
   internal::NativeWidgetPrivate* native_widget_;
 
   ObserverList<Observer> observers_;
@@ -676,6 +682,10 @@ class Widget : public internal::NativeWidgetDelegate,
   // The saved maximized state for this window. See note in SetInitialBounds
   // that explains why we save this.
   bool saved_maximized_state_;
+
+  // The restored bounds used for the initial show. This is only used if
+  // |saved_maximized_state_| is true.
+  gfx::Rect initial_restored_bounds_;
 
   // The smallest size the window can be.
   gfx::Size minimum_size_;

@@ -346,7 +346,13 @@ void NativeWidgetViews::Hide() {
   view_->SetVisible(false);
 }
 
-void NativeWidgetViews::ShowNativeWidget(ShowState state) {
+void NativeWidgetViews::ShowWithState(ShowState state) {
+  Show();
+}
+
+void NativeWidgetViews::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  Show();
 }
 
 bool NativeWidgetViews::IsVisible() const {

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
@@ -43,6 +44,12 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params;
   params.delegate = browser_view_;
   params.native_widget = native_browser_frame_->AsNativeWidget();
+  if (browser_view_->browser()->is_type_tabbed()) {
+    // Typed panel/popup can only return a size once the widget has been
+    // created.
+    params.bounds = browser_view_->browser()->GetSavedWindowBounds();
+    params.maximize = browser_view_->browser()->GetSavedMaximizedState();
+  }
   Init(params);
 #if defined(OS_CHROMEOS)
   // On ChromeOS we always want top-level windows to appear active.
