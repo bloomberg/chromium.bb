@@ -1407,7 +1407,6 @@
    ...
    fun:URLFetcher::Core::StartURLRequest
    fun:URLFetcher::Core::StartURLRequestWhenAppropriate
-   fun:void DispatchToMethod
 }
 {
    bug_80666
