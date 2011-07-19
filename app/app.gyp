@@ -19,11 +19,11 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'run_all_unittests.cc',
-        'sql/connection_unittest.cc',
-        'sql/sqlite_features_unittest.cc',
-        'sql/statement_unittest.cc',
-        'sql/transaction_unittest.cc',
+        '../sql/run_all_unittests.cc',
+        '../sql/connection_unittest.cc',
+        '../sql/sqlite_features_unittest.cc',
+        '../sql/statement_unittest.cc',
+        '../sql/transaction_unittest.cc',
       ],
       'include_dirs': [
         '..',

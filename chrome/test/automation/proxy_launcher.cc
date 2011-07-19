@@ -4,7 +4,6 @@
 
 #include "chrome/test/automation/proxy_launcher.h"
 
-#include "app/sql/connection.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
@@ -19,13 +18,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/test_switches.h"
-#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
+#include "sql/connection.h"
 
 namespace {
 

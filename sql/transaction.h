@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SQL_TRANSACTION_H_
-#define APP_SQL_TRANSACTION_H_
+#ifndef SQL_TRANSACTION_H_
+#define SQL_TRANSACTION_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -54,4 +54,4 @@ class Transaction {
 
 }  // namespace sql
 
-#endif  // APP_SQL_TRANSACTION_H_
+#endif  // SQL_TRANSACTION_H_

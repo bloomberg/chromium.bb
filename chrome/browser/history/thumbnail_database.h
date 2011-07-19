@@ -8,13 +8,13 @@
 
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/init_status.h"
-#include "app/sql/meta_table.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
+#include "sql/connection.h"
+#include "sql/init_status.h"
+#include "sql/meta_table.h"
 
 class FilePath;
 class RefCountedMemory;

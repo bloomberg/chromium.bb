@@ -4,13 +4,13 @@
 
 #include "chrome/test/ui/ui_test.h"
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "net/test/test_server.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 
 namespace {
 

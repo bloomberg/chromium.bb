@@ -4,9 +4,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "app/sql/connection.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "sql/connection.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
 

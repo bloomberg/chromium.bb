@@ -22,8 +22,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -50,6 +48,8 @@
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"

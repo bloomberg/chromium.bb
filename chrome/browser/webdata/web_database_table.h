@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_TABLE_H_
 #pragma once
 
-#include "app/sql/connection.h"
-#include "app/sql/init_status.h"
-#include "app/sql/meta_table.h"
+#include "sql/connection.h"
+#include "sql/init_status.h"
+#include "sql/meta_table.h"
 
 // An abstract base class representing a table within a WebDatabase.
 // Each table should subclass this, adding type-specific methods as needed.

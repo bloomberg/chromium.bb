@@ -4,8 +4,6 @@
 //
 // Unit tests for the SafeBrowsing storage system.
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -17,6 +15,8 @@
 #include "content/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

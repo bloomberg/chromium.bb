@@ -7,13 +7,13 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(USE_NSS)

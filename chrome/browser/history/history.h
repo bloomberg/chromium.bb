@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "app/sql/init_status.h"
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "base/file_path.h"
@@ -25,6 +24,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/page_transition_types.h"
+#include "sql/init_status.h"
 
 class BookmarkService;
 struct DownloadHistoryInfo;

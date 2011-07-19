@@ -1,6 +1,5 @@
 include_rules = [
   "+mac",
-  "+app",
   "+third_party/zlib",
   "+ui",
 ]

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/ui_test_utils.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

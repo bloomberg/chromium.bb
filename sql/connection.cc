@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/sql/connection.h"
+#include "sql/connection.h"
 
 #include <string.h>
 
-#include "app/sql/statement.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace {

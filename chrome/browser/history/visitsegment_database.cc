@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "sql/statement.h"
 
 // The following tables are used to store url segment information.
 //

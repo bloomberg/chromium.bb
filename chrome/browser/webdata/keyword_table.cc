@@ -4,7 +4,6 @@
 
 #include "chrome/browser/webdata/keyword_table.h"
 
-#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "googleurl/src/gurl.h"
+#include "sql/statement.h"
 
 using base::Time;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SQL_CONNECTION_H_
-#define APP_SQL_CONNECTION_H_
+#ifndef SQL_CONNECTION_H_
+#define SQL_CONNECTION_H_
 #pragma once
 
 #include <map>
@@ -384,4 +384,4 @@ class Connection {
 
 }  // namespace sql
 
-#endif  // APP_SQL_CONNECTION_H_
+#endif  // SQL_CONNECTION_H_

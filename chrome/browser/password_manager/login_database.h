@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/meta_table.h"
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "sql/connection.h"
+#include "sql/meta_table.h"
 #include "webkit/glue/password_form.h"
 
 // Interface to the database storage of login information, intended as a helper

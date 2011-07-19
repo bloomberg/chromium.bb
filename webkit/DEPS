@@ -15,10 +15,10 @@ include_rules = [
   "+ui/gfx",
 
   # For databases/
-  "+app/sql",
+  "+sql",
 
   # For gpu/
-  "+app/gfx",
+  "+ui/gfx",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/command_buffer/service",

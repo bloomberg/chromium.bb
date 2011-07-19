@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SQL_STATEMENT_H_
-#define APP_SQL_STATEMENT_H_
+#ifndef SQL_STATEMENT_H_
+#define SQL_STATEMENT_H_
 #pragma once
 
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "sql/connection.h"
 
 namespace sql {
 
@@ -164,4 +164,4 @@ class Statement {
 
 }  // namespace sql
 
-#endif  // APP_SQL_STATEMENT_H_
+#endif  // SQL_STATEMENT_H_

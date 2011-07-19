@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +18,8 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
 namespace syncable {

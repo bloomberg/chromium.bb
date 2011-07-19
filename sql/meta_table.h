@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SQL_META_TABLE_H_
-#define APP_SQL_META_TABLE_H_
+#ifndef SQL_META_TABLE_H_
+#define SQL_META_TABLE_H_
 #pragma once
 
 #include <string>
@@ -80,4 +80,4 @@ class MetaTable {
 
 }  // namespace sql
 
-#endif  // APP_SQL_META_TABLE_H_
+#endif  // SQL_META_TABLE_H_

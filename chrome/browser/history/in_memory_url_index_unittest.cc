@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,9 +15,12 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/common/chrome_paths.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The test version of the history url database table ('url') is contained in

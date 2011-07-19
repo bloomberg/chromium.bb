@@ -1384,6 +1384,7 @@
             '../printing/printing.gyp:*',
             '../sdch/sdch.gyp:*',
             '../skia/skia.gyp:*',
+            '../sql/sql.gyp:*',
             '../testing/gmock.gyp:*',
             '../testing/gtest.gyp:*',
             '../third_party/bsdiff/bsdiff.gyp:*',

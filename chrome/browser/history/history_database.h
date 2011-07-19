@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #pragma once
 
-#include "app/sql/connection.h"
-#include "app/sql/init_status.h"
-#include "app/sql/meta_table.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/history_types.h"
@@ -16,6 +13,9 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/history/visitsegment_database.h"
+#include "sql/connection.h"
+#include "sql/init_status.h"
+#include "sql/meta_table.h"
 
 class FilePath;
 

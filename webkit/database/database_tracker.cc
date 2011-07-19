@@ -7,11 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/diagnostic_error_delegate.h"
-#include "app/sql/meta_table.h"
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
@@ -19,6 +14,11 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "sql/connection.h"
+#include "sql/diagnostic_error_delegate.h"
+#include "sql/meta_table.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "webkit/database/database_quota_client.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"

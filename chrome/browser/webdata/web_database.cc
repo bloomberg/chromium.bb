@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "content/common/notification_service.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 
 namespace {
 

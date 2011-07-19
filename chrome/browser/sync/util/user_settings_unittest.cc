@@ -5,7 +5,6 @@
 #include <limits>
 #include <string>
 
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/user_settings.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::numeric_limits;

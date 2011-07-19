@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "app/sql/init_status.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/mru_cache.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "sql/init_status.h"
 
 class BookmarkService;
 struct DownloadHistoryInfo;

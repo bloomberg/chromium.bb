@@ -8,15 +8,15 @@
 
 #include "chrome/browser/history/text_database.h"
 
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 
 // There are two tables in each database, one full-text search (FTS) table which
 // indexes the contents and title of the pages. The other is a regular SQLITE

@@ -9,7 +9,6 @@
 #include <map>
 #include <vector>
 
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
@@ -24,6 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
+#include "sql/statement.h"
 
 namespace {
 

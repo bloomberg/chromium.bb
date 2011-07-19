@@ -7,19 +7,19 @@
 #include <algorithm>
 #include <string>
 
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/time.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/thumbnail_score.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 

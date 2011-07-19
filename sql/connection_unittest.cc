@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/importer/safari_importer.h"
 
-#include "app/sql/connection.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/chrome_paths.h"
+#include "sql/connection.h"
 #include "testing/platform_test.h"
 
 // In order to test the Safari import functionality effectively, we store a

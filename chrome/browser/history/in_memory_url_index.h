@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
+#include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Profile;

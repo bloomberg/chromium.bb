@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
 #pragma once
 
-#include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "sql/statement.h"
 
 class GURL;
 

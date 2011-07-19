@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "app/sql/connection.h"
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -26,6 +24,8 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "webkit/glue/password_form.h"
 
 namespace {

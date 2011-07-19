@@ -6,9 +6,6 @@
 
 #include <list>
 
-#include "app/sql/meta_table.h"
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -22,6 +19,9 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "sql/meta_table.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 
 using base::Time;
 

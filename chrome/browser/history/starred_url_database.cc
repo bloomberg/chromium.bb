@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/starred_url_database.h"
 
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history.h"
+#include "sql/statement.h"
 
 // The following table is used to store star (aka bookmark) information. This
 // class derives from URLDatabase, which has its own schema.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include <set>
 #include <vector>
 
-#include "app/sql/connection.h"
-#include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
+#include "sql/connection.h"
+#include "sql/meta_table.h"
 
 namespace history {
 

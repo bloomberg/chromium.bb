@@ -4,13 +4,11 @@
 
 #include <vector>
 
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -18,7 +16,9 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 

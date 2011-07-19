@@ -4,11 +4,11 @@
 
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/history/history_unittest_base.h"
+#include "sql/connection.h"
 
 namespace history {
 

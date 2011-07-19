@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/visit_database.h"
+#include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

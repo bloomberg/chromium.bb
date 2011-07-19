@@ -7,12 +7,12 @@
 #include <limits>
 #include <vector>
 
-#include "app/sql/statement.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/history/download_history_info.h"
+#include "sql/statement.h"
 
 // Download schema:
 //

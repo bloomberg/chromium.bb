@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "app/sql/connection.h"
-#include "app/sql/transaction.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -15,6 +13,8 @@
 #include "base/string_util.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
+#include "sql/connection.h"
+#include "sql/transaction.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"

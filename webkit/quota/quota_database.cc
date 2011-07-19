@@ -6,16 +6,16 @@
 
 #include <string>
 
-#include "app/sql/connection.h"
-#include "app/sql/diagnostic_error_delegate.h"
-#include "app/sql/meta_table.h"
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "sql/connection.h"
+#include "sql/diagnostic_error_delegate.h"
+#include "sql/meta_table.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace quota {

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/webdata/logins_table.h"
 
-#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/ie7_password.h"
+#include "sql/statement.h"
 
 bool LoginsTable::AddIE7Login(const IE7PasswordInfo& info) {
   sql::Statement s(db_->GetUniqueStatement(

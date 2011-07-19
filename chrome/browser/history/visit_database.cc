@@ -9,12 +9,12 @@
 #include <map>
 #include <set>
 
-#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/page_transition_types.h"
+#include "sql/statement.h"
 
 // Rows, in order, of the visit table.
 #define HISTORY_VISIT_ROW_FIELDS \

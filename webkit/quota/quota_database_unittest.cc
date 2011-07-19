@@ -6,15 +6,15 @@
 #include <iterator>
 #include <set>
 
-#include "app/sql/connection.h"
-#include "app/sql/meta_table.h"
-#include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
+#include "sql/connection.h"
+#include "sql/meta_table.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_database.h"

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/sql/connection.h"
-#include "app/sql/transaction.h"
 #include "base/file_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -11,6 +9,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "sql/connection.h"
+#include "sql/transaction.h"
 
 namespace history {
 

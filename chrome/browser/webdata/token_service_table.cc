@@ -7,9 +7,9 @@
 #include <map>
 #include <string>
 
-#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "chrome/browser/password_manager/encryptor.h"
+#include "sql/statement.h"
 
 bool TokenServiceTable::Init() {
   if (!db_->DoesTableExist("token_service")) {

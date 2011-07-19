@@ -4,9 +4,6 @@
 
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
-#include "app/sql/connection.h"
-#include "app/sql/diagnostic_error_delegate.h"
-#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -16,6 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "sql/connection.h"
+#include "sql/diagnostic_error_delegate.h"
+#include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/database/database_tracker.h"
