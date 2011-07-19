@@ -135,9 +135,9 @@ def SetupArch(arch, is_dynamic, allow_build = True):
     else:
       Fatal('Dynamic loading is not yet supported on %s' % arch)
     env.runnable_ld = os.path.join(env.nnacl_root,
-                                      'nacl64', libdir, 'runnable-ld.so')
+                                      'x86_64-nacl', libdir, 'runnable-ld.so')
     env.library_path.append(os.path.join(env.nnacl_root,
-                                         'nacl64', libdir))
+                                         'x86_64-nacl', libdir))
 
   env.sel_ldr = FindOrBuildSelLdr(allow_build = allow_build)
 
