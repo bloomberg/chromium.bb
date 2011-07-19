@@ -45,13 +45,6 @@
         },
         'conditions': [
           ['OS=="win"', {
-            'sources': [
-              'app/chrome_exe.rc',
-              'app/chrome_exe_version.rc.version',
-            ],
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome',
-            ],
             # TODO(scottbyer): This is a temporary workaround.  The right fix
             # is to change the output file to be in $(IntDir) for this project
             # and the .dll project and use the hardlink script to link it back
@@ -82,41 +75,6 @@
               },
             },
             'actions': [
-              {
-                'action_name': 'version',
-                'variables': {
-                  'template_input_path': 'app/chrome_exe_version.rc.version',
-                },
-                'conditions': [
-                  [ 'branding == "Chrome"', {
-                    'variables': {
-                       'branding_path': 'app/theme/google_chrome/BRANDING',
-                    },
-                  }, { # else branding!="Chrome"
-                    'variables': {
-                       'branding_path': 'app/theme/chromium/BRANDING',
-                    },
-                  }],
-                ],
-                'inputs': [
-                  '<(template_input_path)',
-                  '<(version_path)',
-                  '<(branding_path)',
-                ],
-                'outputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_exe_version.rc',
-                ],
-                'action': [
-                  'python',
-                  '<(version_py_path)',
-                  '-f', '<(version_path)',
-                  '-f', '<(branding_path)',
-                  '<(template_input_path)',
-                  '<@(_outputs)',
-                ],
-                'process_outputs_as_sources': 1,
-                'message': 'Generating version information in <(_outputs)'
-              },
               {
                 'action_name': 'first_run',
                 'inputs': [
@@ -465,6 +423,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            'chrome_version_resources',
             'installer_util',
             'installer_util_strings',
             '../base/base.gyp:base',
@@ -473,6 +432,10 @@
             '../sandbox/sandbox.gyp:sandbox',
             'app/locales/locales.gyp:*',
             'app/policy/cloud_policy_codegen.gyp:policy',
+          ],
+          'sources': [
+            'app/chrome_exe.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -498,6 +461,7 @@
             # On Windows make sure we've built Win64 version of chrome_dll,
             # which contains all of the library code with Chromium
             # functionality.
+            'chrome_version_resources',
             'chrome_dll_nacl_win64',
             'common_constants_win64',
             'installer_util_nacl_win64',
@@ -513,6 +477,9 @@
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_exe_version.rc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

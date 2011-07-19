@@ -428,7 +428,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:crash_service',
-            '../chrome/chrome.gyp:chrome_dll_version',
+            '../chrome/chrome.gyp:chrome_version_resources',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
@@ -831,7 +831,7 @@
         'chrome_frame_launcher.gyp:chrome_frame_helper_dll',
         '../chrome/chrome.gyp:chrome',
         '../chrome/chrome.gyp:chrome_dll',
-        '../chrome/chrome.gyp:chrome_dll_version',
+        '../chrome/chrome.gyp:chrome_version_resources',
         '../chrome/chrome.gyp:common',
       ],
       'sources': [

@@ -1425,23 +1425,31 @@
           ],
         },
         {
-          'target_name': 'chrome_dll_version',
+          'target_name': 'chrome_version_resources',
           'type': 'none',
           'dependencies': [
             '../build/util/build_util.gyp:lastchange',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome_version',
             ],
           },
-          'actions': [
+          'sources': [
+            'app/chrome_exe.ver',
+            'app/chrome_dll.ver',
+            'app/nacl64_exe.ver',
+            'app/nacl64_dll.ver',
+            'app/other.ver',
+          ],
+          'rules': [
             {
-              'action_name': 'version',
+              'rule_name': 'version',
+              'extension': 'ver',
               'variables': {
                 'lastchange_path':
                   '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
-                'template_input_path': 'app/chrome_dll_version.rc.version',
+                'template_input_path': 'app/chrome_version.rc.version',
               },
               'conditions': [
                 [ 'branding == "Chrome"', {
@@ -1461,11 +1469,12 @@
                 '<(lastchange_path)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_version/<(RULE_INPUT_ROOT)_version.rc',
               ],
               'action': [
                 'python',
                 '<(version_py_path)',
+                '-f', '<(RULE_INPUT_PATH)',
                 '-f', '<(version_path)',
                 '-f', '<(branding_path)',
                 '-f', '<(lastchange_path)',

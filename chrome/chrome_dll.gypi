@@ -78,7 +78,7 @@
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
-                'chrome_dll_version',
+                'chrome_version_resources',
                 'chrome_resources',
                 'installer_util_strings',
                 '../content/content.gyp:content_worker',
@@ -95,7 +95,8 @@
                 'app/chrome_dll_resource.h',
                 'app/chrome_main.cc',
                 'app/chrome_main_win.cc',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
 
                 '../webkit/glue/resources/aliasb.cur',
                 '../webkit/glue/resources/cell.cur',
@@ -587,7 +588,7 @@
           ],
           'dependencies': [
             '<@(nacl_win64_dependencies)',
-            'chrome_dll_version',
+            'chrome_version_resources',
             'nacl_win64',
             '../base/base.gyp:base_i18n_nacl_win64',
           ],
@@ -604,7 +605,8 @@
             'browser/policy/policy_path_parser_win.cc',
             'browser/renderer_host/render_process_host_dummy.cc',
             'common/googleurl_dummy.cc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/nacl64_dll_version.rc',
 
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in

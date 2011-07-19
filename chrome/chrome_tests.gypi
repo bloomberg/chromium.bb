@@ -565,7 +565,7 @@
             '../third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome.gyp:chrome_dll_version',
+            'chrome.gyp:chrome_version_resources',
             'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
@@ -597,7 +597,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
@@ -2229,7 +2229,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_resources',
             'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
@@ -2256,7 +2256,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
@@ -2367,7 +2367,7 @@
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
-        'app/chrome_dll_version.rc.version',
+        'app/chrome_version.rc.version',
         'browser/accessibility/renderer_accessibility_browsertest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
@@ -2679,7 +2679,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
@@ -2691,7 +2691,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_resources',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -2716,7 +2716,7 @@
             'app/chrome_command_ids.h',
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
-            'app/chrome_dll_version.rc.version',
+            'app/chrome_version.rc.version',
             'browser/extensions/extension_rlz_apitest.cc',
             # http://crbug.com/15101 These tests fail on Linux and Mac.
             'browser/renderer_host/web_cache_manager_browsertest.cc',
@@ -2854,7 +2854,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_resources',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -2865,7 +2865,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
@@ -3452,7 +3452,7 @@
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
-        'app/chrome_dll_version.rc.version',
+        'app/chrome_version.rc.version',
         'browser/password_manager/password_form_data.cc',
         'browser/sessions/session_backend.cc',
         'browser/sync/glue/session_model_associator.cc',
@@ -3545,14 +3545,14 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_resources',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -3575,7 +3575,7 @@
         }, { # else: OS != "win"
           'sources!': [
             'app/chrome_dll.rc',
-            'app/chrome_dll_version.rc.version',
+            'app/chrome_version.rc.version',
             'test/data/resource.rc',
           ],
         }],
@@ -3648,7 +3648,7 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_resources',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -3658,14 +3658,14 @@
           'sources': [
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
-            'app/chrome_dll_version.rc.version',
+            'app/chrome_version.rc.version',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
