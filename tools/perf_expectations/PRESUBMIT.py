@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,11 +14,12 @@ UNIT_TESTS = [
 ]
 
 PERF_EXPECTATIONS = 'tools/perf_expectations/perf_expectations.json'
+CONFIG_FILE = 'tools/perf_expectations/chromium_perf_expectations.cfg'
 
 def CheckChangeOnUpload(input_api, output_api):
   run_tests = False
   for path in input_api.LocalPaths():
-    if PERF_EXPECTATIONS == path:
+    if (PERF_EXPECTATIONS == path or CONFIG_FILE == path):
       run_tests = True
 
   output = []
@@ -32,7 +33,7 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   run_tests = False
   for path in input_api.LocalPaths():
-    if PERF_EXPECTATIONS == path:
+    if (PERF_EXPECTATIONS == path or CONFIG_FILE == path):
       run_tests = True
 
   output = []
