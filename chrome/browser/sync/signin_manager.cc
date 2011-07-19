@@ -91,7 +91,7 @@ void SigninManager::StartSignIn(const std::string& username,
   // are not running in ChomiumOS, since it handles pre-login itself.
 #if !defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAutoLogin)) {
+      switches::kDisablePreLogin)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    NotificationService::AllSources());
