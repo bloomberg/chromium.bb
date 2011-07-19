@@ -327,14 +327,10 @@ class Network {
   ConnectionState connection_state() const { return state_; }
   bool connecting() const { return IsConnectingState(state_); }
   bool configuring() const { return state_ == STATE_CONFIGURATION; }
-  bool connected() const { return state_ == STATE_READY ||
-                                  state_ == STATE_ONLINE ||
-                                  state_ == STATE_PORTAL; }
+  bool connected() const { return IsConnectedState(state_); }
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }
-  bool failed_or_disconnected() const {
-    return failed() || state_ == STATE_IDLE;
-  }
+  bool disconnected() const { return IsDisconnectedState(state_); }
   bool ready() const { return state_ == STATE_READY; }
   bool online() const { return state_ == STATE_ONLINE; }
   bool restricted_pool() const { return state_ == STATE_PORTAL; }
@@ -382,11 +378,23 @@ class Network {
   // Copy any credentials from a remembered network that are unset in |this|.
   virtual void CopyCredentialsFromRemembered(Network* remembered);
 
-  // Static helper function.
+  // Static helper functions.
+  static bool IsConnectedState(ConnectionState state) {
+    return (state == STATE_READY ||
+            state == STATE_ONLINE ||
+            state == STATE_PORTAL);
+  }
   static bool IsConnectingState(ConnectionState state) {
     return (state == STATE_ASSOCIATION ||
             state == STATE_CONFIGURATION ||
             state == STATE_CARRIER);
+  }
+  static bool IsDisconnectedState(ConnectionState state) {
+    return (state == STATE_UNKNOWN ||
+            state == STATE_IDLE ||
+            state == STATE_DISCONNECT ||
+            state == STATE_FAILURE ||
+            state == STATE_ACTIVATION_FAILURE);
   }
 
   // Sends the well-known TPM PIN to flimflam via D-Bus, because flimflam may
@@ -594,7 +602,7 @@ class WirelessNetwork : public Network {
   WirelessNetwork(const std::string& service_path, ConnectionType type)
       : Network(service_path, type),
         strength_(0) {}
-  int strength_;
+  int strength_;  // 0-100
 
   // Network overrides.
   virtual bool ParseValue(int index, const base::Value* value);
@@ -1061,6 +1069,7 @@ class NetworkLibrary {
 
   virtual const Network* active_network() const = 0;
   virtual const Network* connected_network() const = 0;
+  virtual const Network* connecting_network() const = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;

@@ -753,7 +753,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     case PLAN_ACTIVATION_START: {
       switch (network->activation_state()) {
         case chromeos::ACTIVATION_STATE_ACTIVATED: {
-          if (network->failed_or_disconnected()) {
+          if (network->disconnected()) {
             new_state = PLAN_ACTIVATION_RECONNECTING;
           } else if (network->connected()) {
             if (network->restricted_pool()) {
@@ -765,7 +765,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           break;
         }
         default: {
-          if (network->failed_or_disconnected() ||
+          if (network->disconnected() ||
               network->state() == chromeos::STATE_ACTIVATION_FAILURE) {
             new_state = (network->activation_state() ==
                          chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) ?
@@ -783,7 +783,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     case PLAN_ACTIVATION_START_OTASP: {
       switch (network->activation_state()) {
         case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED: {
-          if (network->failed_or_disconnected()) {
+          if (network->disconnected()) {
             new_state = PLAN_ACTIVATION_OTASP;
           } else if (network->connected()) {
             DisconnectFromNetwork(network);
@@ -811,7 +811,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     case PLAN_ACTIVATION_TRYING_OTASP: {
       switch (network->activation_state()) {
         case chromeos::ACTIVATION_STATE_ACTIVATED:
-          if (network->failed_or_disconnected()) {
+          if (network->disconnected()) {
             new_state = GetNextReconnectState(state_);
           } else if (network->connected()) {
             if (network->restricted_pool()) {

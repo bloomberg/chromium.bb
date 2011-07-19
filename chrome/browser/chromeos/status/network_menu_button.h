@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "ui/base/animation/throb_animation.h"
 
 class PrefService;
 
@@ -54,6 +54,7 @@ class StatusAreaHost;
 class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
                           public NetworkMenu::Delegate,
+                          public NetworkMenuIcon::Delegate,
                           public NetworkLibrary::NetworkDeviceObserver,
                           public NetworkLibrary::NetworkManagerObserver,
                           public NetworkLibrary::NetworkObserver,
@@ -65,36 +66,40 @@ class NetworkMenuButton : public StatusAreaButton,
 
   static void RegisterPrefs(PrefService* local_state);
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-
   // NetworkLibrary::NetworkDeviceObserver implementation.
   virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
-                                      const NetworkDevice* device);
+                                      const NetworkDevice* device) OVERRIDE;
+
   // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* cros);
+  virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;
+
   // NetworkLibrary::NetworkObserver implementation.
-  virtual void OnNetworkChanged(NetworkLibrary* cros, const Network* network);
+  virtual void OnNetworkChanged(NetworkLibrary* cros,
+                                const Network* network) OVERRIDE;
+
   // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
+  virtual void OnCellularDataPlanChanged(NetworkLibrary* cros) OVERRIDE;
 
   // NetworkMenu::Delegate implementation:
-  virtual views::MenuButton* GetMenuButton();
-  virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenButtonOptions();
-  virtual bool ShouldOpenButtonOptions() const;
+  virtual views::MenuButton* GetMenuButton() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual void OpenButtonOptions() OVERRIDE;
+  virtual bool ShouldOpenButtonOptions() const OVERRIDE;
+
+  // NetworkMenuIcon::Delegate implementation:
+  virtual void NetworkMenuIconChanged() OVERRIDE;
 
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // MessageBubbleDelegate implementation:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual void OnLinkActivated(size_t index);
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual void OnLinkActivated(size_t index) OVERRIDE;
 
  private:
   // Returns carrier deal if it's specified and should be shown,
@@ -102,19 +107,8 @@ class NetworkMenuButton : public StatusAreaButton,
   const ServicesCustomizationDocument::CarrierDeal* GetCarrierDeal(
       NetworkLibrary* cros);
 
-  // Sets the icon and the badges (badges are at the bottom of the icon).
-  void SetIconAndBadges(const SkBitmap* icon,
-                        const SkBitmap* right_badge,
-                        const SkBitmap* top_left_badge,
-                        const SkBitmap* left_badge);
-  // Sets the icon only. Keep the previous badge.
-  void SetIconOnly(const SkBitmap* icon);
-  // Sets the badges only. Keep the previous icon.
-  void SetBadgesOnly(const SkBitmap* right_badge,
-                     const SkBitmap* top_left_badge,
-                     const SkBitmap* left_badge);
   // Set the network icon based on the status of the |network|
-  void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
+  void SetNetworkIcon();
 
   // Called when the list of devices has possibly changed. This will remove
   // old network device observers and add a network observers
@@ -136,14 +130,8 @@ class NetworkMenuButton : public StatusAreaButton,
   // Path of the Cellular device that we monitor property updates from.
   std::string cellular_device_path_;
 
-  // The icon showing the network strength.
-  const SkBitmap* icon_;
-  // A badge icon displayed on top of icon, in bottom-right corner.
-  const SkBitmap* right_badge_;
-  // A badge icon displayed on top of icon, in top-left corner.
-  const SkBitmap* top_left_badge_;
-  // A  badge icon displayed on top of icon, in bottom-left corner.
-  const SkBitmap* left_badge_;
+  // The network icon and associated data.
+  scoped_ptr<NetworkMenuIcon> network_icon_;
 
   // Notification bubble for 3G promo.
   MessageBubble* mobile_data_bubble_;
@@ -158,9 +146,6 @@ class NetworkMenuButton : public StatusAreaButton,
   // Cellular device SIM was locked when we last checked
   bool was_sim_locked_;
 
-  // The throb animation that does the wifi connecting animation.
-  ui::ThrobAnimation animation_connecting_;
-
   // If any network is currently active, this is the service path of the one
   // whose status is displayed in the network menu button.
   std::string active_network_;
@@ -173,9 +158,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // Factory for delaying showing promo notification.
   ScopedRunnableMethodFactory<NetworkMenuButton> method_factory_;
-
-  // The last network we connected to (or tried to).
-  ConnectionType last_network_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };

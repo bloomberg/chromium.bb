@@ -173,6 +173,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, active_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const Network*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, ethernet_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const EthernetNetwork*)(NULL))));
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const WifiNetwork*)(NULL))));
@@ -192,6 +195,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(virtual_networks_)));
   EXPECT_CALL(*mock_network_library_, connected_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const Network*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, connecting_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const Network*)(NULL))));
 

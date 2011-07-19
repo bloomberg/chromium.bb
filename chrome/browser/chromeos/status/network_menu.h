@@ -100,64 +100,6 @@ class NetworkMenu {
   // Setters.
   void set_min_width(int min_width) { min_width_ = min_width; }
 
-  // The following methods returns pointer to a shared instance of the SkBitmap.
-  // This shared bitmap is owned by the resource bundle and should not be freed.
-
-  // Returns the Icon for a network strength for a WifiNetwork |wifi|.
-  // Expected to never return NULL.
-  static const SkBitmap* IconForNetworkStrength(const WifiNetwork* wifi);
-  // Returns the Icon for a network strength for CellularNetwork |cellular|.
-  // Expected to never return NULL.
-  static const SkBitmap* IconForNetworkStrength(
-      const CellularNetwork* cellular);
-  // Returns the Icon for animating network connecting.
-  // |animation_value| is the value from Animation.GetCurrentValue()
-  // |type| is the connection type
-  // Expected to never return NULL.
-  static const SkBitmap* IconForNetworkConnecting(double animation_value,
-                                                  ConnectionType type);
-
-  // Returns the Badge for a given network technology.
-  // This returns different colored symbols depending on cellular data left.
-  // Returns NULL if not badge is needed.
-  static const SkBitmap* BadgeForNetworkTechnology(
-      const CellularNetwork* cellular);
-  // Returns the Badge for a given network roaming status.
-  // This returns "R" badge if network is in roaming state, otherwise
-  // returns NULL. Badge is supposed to be shown on top right of the icon.
-  static const SkBitmap* BadgeForRoamingStatus(const CellularNetwork* cellular);
-  // Returns the badge for the given network if it's active with vpn.
-  // If |network| is not null, will check if it's the active network.
-  // If |network| is null or if |network| is the active one, the yellow lock
-  // badge will be returned, otherwise returns null.
-  // Badge is supposed to be shown on in bottom left corner of the icon.
-  static const SkBitmap* BadgeForPrivateNetworkStatus(const Network* network);
-
-  // Returns an Icon for a given network.
-  static SkBitmap IconForNetwork(const Network* network);
-  // This method will convert the |icon| bitmap to the correct size for display.
-  // |icon| must be non-NULL.
-  // If |badge| icon is not NULL, it will be drawn on top of the icon in
-  // the bottom-right corner.
-  static SkBitmap IconForDisplay(const SkBitmap* icon, const SkBitmap* badge);
-  // This method will convert the |icon| bitmap to the correct size for display.
-  // |icon| must be non-NULL.
-  // If one of the |bottom_right_badge| or |top_left_badge| or
-  // |bottom_left_badge| icons are not NULL, they will be drawn on top of the
-  // icon.
-  static SkBitmap IconForDisplay(const SkBitmap* icon,
-                                 const SkBitmap* bottom_right_badge,
-                                 const SkBitmap* top_left_badge,
-                                 const SkBitmap* bottom_left_badge);
-
-  // Returns the connection type which should be passed to subsequent calls
-  // to IconForNetworkConnecting(). If |network| is non NULL this will be the
-  // either TYPE_WIFI or TYPE_CELLULAR depending on the network. If |network|
-  // is NULL it will be the type of a connecting network, preferring TYPE_WIFI
-  // if both types are connecting. If no network is connecting and |network| is
-  // NULL, TYPE_WIFI will be returned.
-  static ConnectionType TypeForNetwork(const Network* network);
-
  private:
   friend class NetworkMenuModel;
 
@@ -172,7 +114,6 @@ class NetworkMenu {
 
   // The network menu.
   scoped_ptr<views::MenuItemView> menu_item_view_;
-
   scoped_ptr<NetworkMenuModel> main_menu_model_;
 
   // Holds minimum width of the menu.

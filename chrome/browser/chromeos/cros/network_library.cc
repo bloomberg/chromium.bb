@@ -2673,10 +2673,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
     return remembered_virtual_networks_;
   }
 
+  // Use flimflam's ordering of the services to determine which type of
+  // network to return (i.e. don't assume priority of network types).
   // Note: This does not include any virtual networks.
   virtual const Network* active_network() const OVERRIDE {
-    // Use flimflam's ordering of the services to determine what the active
-    // network is (i.e. don't assume priority of network types).
     Network* result = NULL;
     if (ethernet_ && ethernet_->is_active())
       result = ethernet_;
@@ -2692,8 +2692,6 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   }
 
   virtual const Network* connected_network() const OVERRIDE {
-    // Use flimflam's ordering of the services to determine what the connected
-    // network is (i.e. don't assume priority of network types).
     Network* result = NULL;
     if (ethernet_ && ethernet_->connected())
       result = ethernet_;
@@ -2706,6 +2704,17 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
          active_cellular_->priority_order_ < result->priority_order_))
       result = active_cellular_;
     return result;
+  }
+
+  // Connecting order in logical prefernce.
+  virtual const Network* connecting_network() const {
+    if (ethernet_connecting())
+      return ethernet_network();
+    else if (wifi_connecting())
+      return wifi_network();
+    else if (cellular_connecting())
+      return cellular_network();
+    return NULL;
   }
 
   virtual bool ethernet_available() const OVERRIDE {

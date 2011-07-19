@@ -10,9 +10,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/views/dropdown_button.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/throb_animation.h"
 
 namespace chromeos {
 
@@ -23,6 +22,7 @@ namespace chromeos {
 class NetworkDropdownButton : public DropDownButton,
                               public views::ViewMenuDelegate,
                               public NetworkMenu::Delegate,
+                              public NetworkMenuIcon::Delegate,
                               public NetworkLibrary::NetworkManagerObserver,
                               public LoginHtmlDialog::Delegate {
  public:
@@ -31,12 +31,6 @@ class NetworkDropdownButton : public DropDownButton,
                         bool should_show_options);
   virtual ~NetworkDropdownButton();
 
-  // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
-
   void SetFirstLevelMenuWidth(int width);
 
   void CancelMenu();
@@ -44,14 +38,20 @@ class NetworkDropdownButton : public DropDownButton,
   // Refreshes button state. Used when language has been changed.
   void Refresh();
 
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
+
   // NetworkMenu::Delegate implementation:
-  virtual views::MenuButton* GetMenuButton();
-  virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenButtonOptions();
-  virtual bool ShouldOpenButtonOptions() const;
+  virtual views::MenuButton* GetMenuButton() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual void OpenButtonOptions() OVERRIDE;
+  virtual bool ShouldOpenButtonOptions() const OVERRIDE;
+
+  // NetworkMenuIcon::Delegate implementation:
+  virtual void NetworkMenuIconChanged() OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
  protected:
   // Overridden from views::View.
@@ -61,19 +61,18 @@ class NetworkDropdownButton : public DropDownButton,
   virtual void OnDialogClosed() OVERRIDE;
 
  private:
+  void SetNetworkIconAndText();
+
   // The Network menu.
   scoped_ptr<NetworkMenu> network_menu_;
 
-  // The throb animation that does the wifi connecting animation.
-  ui::ThrobAnimation animation_connecting_;
+  // The Network menu icon.
+  scoped_ptr<NetworkMenuIcon> network_icon_;
 
   gfx::NativeWindow parent_window_;
 
   // If true things like proxy settings menu item will be supported.
   bool should_show_options_;
-
-  // The last network we connected to (or tried to).
-  ConnectionType last_network_type_;
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;

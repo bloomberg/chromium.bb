@@ -146,6 +146,7 @@ class MockNetworkLibrary : public NetworkLibrary {
 
   MOCK_CONST_METHOD0(active_network, const Network*(void));
   MOCK_CONST_METHOD0(connected_network, const Network*(void));
+  MOCK_CONST_METHOD0(connecting_network, const Network*(void));
 
   MOCK_CONST_METHOD0(offline_mode, bool(void));
 

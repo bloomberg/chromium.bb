@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
-#include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -1030,9 +1030,11 @@ ListValue* InternetOptionsHandler::GetWiredList() {
     const chromeos::EthernetNetwork* ethernet_network =
         cros_->ethernet_network();
     if (ethernet_network) {
+      const SkBitmap* icon =
+          chromeos::NetworkMenuIcon::GetBitmap(ethernet_network);
       list->Append(GetNetwork(
           ethernet_network->service_path(),
-          chromeos::NetworkMenu::IconForNetwork(ethernet_network),
+          *icon,
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
           ethernet_network->connecting(),
           ethernet_network->connected(),
@@ -1054,9 +1056,10 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
+    const SkBitmap* icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForNetwork(*it),
+        *icon,
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1088,9 +1091,10 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
+    const SkBitmap* icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForNetwork(*it),
+        *icon,
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1129,9 +1133,10 @@ ListValue* InternetOptionsHandler::GetVPNList() {
       cros_->virtual_networks();
   for (chromeos::VirtualNetworkVector::const_iterator it =
       virtual_networks.begin(); it != virtual_networks.end(); ++it) {
+    const SkBitmap* icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
     list->Append(GetNetwork(
         (*it)->service_path(),
-        chromeos::NetworkMenu::IconForNetwork(*it),
+        *icon,
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
@@ -1159,9 +1164,11 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     // Set in_active_profile.
     bool shared =
         remembered->profile_type() == chromeos::PROFILE_SHARED;
+    const SkBitmap* icon =
+        chromeos::NetworkMenuIcon::GetBitmap(wifi ? wifi : remembered);
     list->Append(GetNetwork(
         remembered->service_path(),
-        chromeos::NetworkMenu::IconForNetwork(wifi ? wifi : remembered),
+        *icon,
         remembered->name(),
         wifi ? wifi->connecting() : false,
         wifi ? wifi->connected() : false,
@@ -1183,9 +1190,11 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     // Set in_active_profile.
     bool shared =
         remembered->profile_type() == chromeos::PROFILE_SHARED;
+    const SkBitmap* icon =
+        chromeos::NetworkMenuIcon::GetBitmap(vpn ? vpn : remembered);
     list->Append(GetNetwork(
         remembered->service_path(),
-        chromeos::NetworkMenu::IconForNetwork(vpn ? vpn : remembered),
+        *icon,
         remembered->name(),
         vpn ? vpn->connecting() : false,
         vpn ? vpn->connected() : false,
