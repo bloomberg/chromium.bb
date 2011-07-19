@@ -188,6 +188,9 @@ void AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded(const std::string& account,
 
   TabContentsWrapper* tab_contents_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  // tab_contents_wrapper is NULL for TabContents hosted in HTMLDialog.
+  if (!tab_contents_wrapper)
+    return;
 
   // Make sure that the account specified matches the logged in user.
   // However, account is usually empty.  In an incognito window, there may
