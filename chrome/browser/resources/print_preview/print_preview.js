@@ -22,7 +22,7 @@ const MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
 const MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
 const MORE_PRINTERS = 'morePrinters';
 const SIGN_IN = 'signIn';
-const PRINT_TO_PDF = 'Print To PDF';
+const PRINT_TO_PDF = 'Print to PDF';
 
 // State of the print preview settings.
 var printSettings = new PrintSettings();
