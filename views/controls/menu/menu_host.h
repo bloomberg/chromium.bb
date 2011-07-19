@@ -73,8 +73,8 @@ class MenuHost : public Widget {
   // If true, DestroyMenuHost has been invoked.
   bool destroying_;
 
-  // If true, we're attempting to Show.
-  bool showing_;
+  // If true and capture is lost we don't notify the delegate.
+  bool ignore_capture_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHost);
 };

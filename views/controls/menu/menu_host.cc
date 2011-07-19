@@ -20,7 +20,7 @@ namespace views {
 MenuHost::MenuHost(SubmenuView* submenu)
     : submenu_(submenu),
       destroying_(false),
-      showing_(false) {
+      ignore_capture_lost_(false) {
 }
 
 MenuHost::~MenuHost() {
@@ -50,7 +50,7 @@ bool MenuHost::IsMenuHostVisible() {
 void MenuHost::ShowMenuHost(bool do_capture) {
   // Doing a capture may make us get capture lost. Ignore it while we're in the
   // process of showing.
-  showing_ = true;
+  ignore_capture_lost_ = true;
   Show();
   if (do_capture) {
     native_widget_private()->SetMouseCapture();
@@ -59,12 +59,14 @@ void MenuHost::ShowMenuHost(bool do_capture) {
     // become active and confuse things.
     native_widget_private()->SetKeyboardCapture();
   }
-  showing_ = false;
+  ignore_capture_lost_ = false;
 }
 
 void MenuHost::HideMenuHost() {
+  ignore_capture_lost_ = true;
   ReleaseMenuHostCapture();
   Hide();
+  ignore_capture_lost_ = false;
 }
 
 void MenuHost::DestroyMenuHost() {
@@ -97,7 +99,7 @@ bool MenuHost::ShouldReleaseCaptureOnMouseReleased() const {
 }
 
 void MenuHost::OnMouseCaptureLost() {
-  if (destroying_ || showing_)
+  if (destroying_ || ignore_capture_lost_)
     return;
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
