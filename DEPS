@@ -1,7 +1,7 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "arm_toolchain_version": "6086",
-  "x86_toolchain_version": "6086",
+  "arm_toolchain_version": "6105",
+  "x86_toolchain_version": "6105",
   # Keep them seperate from the rest of the list.
 
   # When possible, keep chrome_rev and chrome_rev_ppapi at the same value.
