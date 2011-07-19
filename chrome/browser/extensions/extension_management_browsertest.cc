@@ -83,8 +83,15 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   }
 };
 
+#if defined(OS_LINUX)
+// Times out sometimes on Linux.  http://crbug.com/89727
+#define MAYBE_InstallSameVersion FLAKY_InstallSameVersion
+#else
+#define MAYBE_InstallSameVersion InstallSameVersion
+#endif
+
 // Tests that installing the same version overwrites.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallSameVersion) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallSameVersion) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(InstallExtension(
