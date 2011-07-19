@@ -6,7 +6,9 @@
 
 #include <cstring>
 
+#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_input_event.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/tests/testing_instance.h"
@@ -18,6 +20,10 @@ TestScrollbar::TestScrollbar(TestingInstance* instance)
       WidgetClient_Dev(instance),
       scrollbar_(*instance, true),
       scrollbar_value_changed_(false) {
+}
+
+bool TestScrollbar::Init() {
+  return InitTestingInterface();
 }
 
 void TestScrollbar::RunTest() {
@@ -32,12 +38,15 @@ std::string TestScrollbar::TestHandleEvent() {
 
   scrollbar_.SetDocumentSize(10000);
 
-  PP_InputEvent event;
-  std::memset(&event, 0, sizeof(event));
-  event.type = PP_INPUTEVENT_TYPE_KEYDOWN;
-  event.u.key.modifier = 0;
-  event.u.key.key_code = 0x28; // VKEY_DOWN
-  scrollbar_.HandleEvent(event);
+  pp::Core* core = pp::Module::Get()->core();
+  PP_Resource input_event = testing_interface_->CreateKeyboardInputEvent(
+      instance_->pp_instance(), PP_INPUTEVENT_TYPE_KEYDOWN,
+      core->GetTimeTicks(),
+      0,  // Modifier.
+      0x28,  // Key code = VKEY_DOWN.
+      PP_MakeUndefined());
+  scrollbar_.HandleEvent(pp::InputEvent(input_event));
+  core->ReleaseResource(input_event);
 
   return scrollbar_value_changed_ ?
       "" : "Didn't get callback for scrollbar value change";

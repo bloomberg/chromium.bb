@@ -24,11 +24,11 @@ PP_Bool Paint(PP_Resource widget, const PP_Rect* rect, PP_Resource image_id) {
   return enter.object()->Paint(rect, image_id);
 }
 
-PP_Bool HandleEvent(PP_Resource widget, const PP_InputEvent* event) {
+PP_Bool HandleEvent(PP_Resource widget, PP_Resource pp_input_event) {
   EnterResource<PPB_Widget_API> enter(widget, false);
   if (enter.failed())
     return PP_FALSE;
-  return enter.object()->HandleEvent(event);
+  return enter.object()->HandleEvent(pp_input_event);
 }
 
 PP_Bool GetLocation(PP_Resource widget, PP_Rect* location) {

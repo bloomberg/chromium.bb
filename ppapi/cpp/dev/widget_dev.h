@@ -8,11 +8,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/resource.h"
 
-struct PP_InputEvent;
-
 namespace pp {
 
 class ImageData;
+class InputEvent;
 class Instance;
 class Rect;
 
@@ -28,7 +27,7 @@ class Widget_Dev : public Resource {
 
   // PPB_Widget methods:
   bool Paint(const Rect& rect, ImageData* image);
-  bool HandleEvent(const PP_InputEvent& event);
+  bool HandleEvent(const InputEvent& event);
   bool GetLocation(Rect* location);
   void SetLocation(const Rect& location);
 };

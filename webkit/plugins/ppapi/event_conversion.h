@@ -34,7 +34,6 @@ void CreateInputEventData(const WebKit::WebInputEvent& event,
 
 // Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
 // NULL.  The caller owns the created object on success.
-WebKit::WebInputEvent* CreateWebInputEvent(const PP_InputEvent& event);
 WebKit::WebInputEvent* CreateWebInputEvent(
     const ::ppapi::InputEventData& event);
 

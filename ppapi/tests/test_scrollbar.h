@@ -16,6 +16,7 @@ class TestScrollbar : public TestCase,
   TestScrollbar(TestingInstance* instance);
 
   // TestCase implementation.
+  virtual bool Init();
   virtual void RunTest();
 
  private:

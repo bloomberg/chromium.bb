@@ -73,6 +73,7 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -107,6 +108,7 @@
 
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::InputEventData;
 using ppapi::TimeTicksToPPTimeTicks;
 using ppapi::TimeToPPTime;
 
@@ -209,11 +211,36 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
   return ResourceTracker::Get()->GetLiveObjectsForInstance(instance_id);
 }
 
+PP_Resource CreateKeyboardInputEvent(PP_Instance pp_instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks ticks,
+                                     uint32_t modifiers,
+                                     uint32_t key_code,
+                                     struct PP_Var char_text) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return 0;
+
+  InputEventData data;
+  data.event_type = type;
+  data.event_time_stamp = ticks;
+  data.event_modifiers = modifiers;
+  data.key_code = key_code;
+
+  if (char_text.type == PP_VARTYPE_STRING) {
+    scoped_refptr<StringVar> char_text_string(StringVar::FromPPVar(char_text));
+    if (char_text_string.get())
+      data.character_text = char_text_string->value();
+  }
+  return PPB_InputEvent_Impl::Create(instance, data);
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectsForInstance
+  &GetLiveObjectsForInstance,
+  &CreateKeyboardInputEvent
 };
 
 // GetInterface ----------------------------------------------------------------

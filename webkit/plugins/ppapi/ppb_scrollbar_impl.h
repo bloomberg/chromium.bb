@@ -41,13 +41,12 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   virtual void SetTickMarks(const PP_Rect* tick_marks, uint32_t count) OVERRIDE;
   virtual void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) OVERRIDE;
 
-  // PPB_Widget public implementation.
-  virtual PP_Bool HandleEvent(const PP_InputEvent* event) OVERRIDE;
-
  private:
   // PPB_Widget private implementation.
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
                                 PPB_ImageData_Impl* image) OVERRIDE;
+  virtual PP_Bool HandleEventInternal(
+      const ::ppapi::InputEventData& data) OVERRIDE;
   virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
 
   // WebKit::WebScrollbarClient implementation.

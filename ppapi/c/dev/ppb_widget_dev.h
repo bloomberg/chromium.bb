@@ -9,10 +9,9 @@
 #include "ppapi/c/pp_resource.h"
 
 struct PP_Rect;
-struct PP_InputEvent;
 
-#define PPB_WIDGET_DEV_INTERFACE_0_2 "PPB_Widget(Dev);0.2"
-#define PPB_WIDGET_DEV_INTERFACE PPB_WIDGET_DEV_INTERFACE_0_2
+#define PPB_WIDGET_DEV_INTERFACE_0_3 "PPB_Widget(Dev);0.3"
+#define PPB_WIDGET_DEV_INTERFACE PPB_WIDGET_DEV_INTERFACE_0_3
 
 // The interface for reusing browser widgets.
 struct PPB_Widget_Dev {
@@ -28,8 +27,7 @@ struct PPB_Widget_Dev {
 
   // Pass in an event to a widget.  It'll return PP_TRUE if the event was
   // consumed.
-  PP_Bool (*HandleEvent)(PP_Resource widget,
-                         const struct PP_InputEvent* event);
+  PP_Bool (*HandleEvent)(PP_Resource widget, PP_Resource input_event);
 
   // Get/set the location of the widget.
   PP_Bool (*GetLocation)(PP_Resource widget,

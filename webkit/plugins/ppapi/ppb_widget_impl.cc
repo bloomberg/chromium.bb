@@ -6,12 +6,15 @@
 
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_input_event_api.h"
+#include "ppapi/thunk/ppb_widget_api.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
+using ppapi::thunk::PPB_InputEvent_API;
 using ppapi::thunk::PPB_Widget_API;
 
 namespace webkit {
@@ -36,6 +39,13 @@ PP_Bool PPB_Widget_Impl::Paint(const PP_Rect* rect, PP_Resource image_id) {
   return PaintInternal(gfx::Rect(rect->point.x, rect->point.y,
                                  rect->size.width, rect->size.height),
                        static_cast<PPB_ImageData_Impl*>(enter.object()));
+}
+
+PP_Bool PPB_Widget_Impl::HandleEvent(PP_Resource pp_input_event) {
+  EnterResourceNoLock<PPB_InputEvent_API> enter(pp_input_event, true);
+  if (enter.failed())
+    return PP_FALSE;
+  return HandleEventInternal(enter.object()->GetInputEventData());
 }
 
 PP_Bool PPB_Widget_Impl::GetLocation(PP_Rect* location) {

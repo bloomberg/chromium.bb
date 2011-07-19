@@ -161,14 +161,6 @@ void PPB_Scrollbar_Impl::ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) {
   scrollbar_->scroll(direction, granularity, fmultiplier);
 }
 
-PP_Bool PPB_Scrollbar_Impl::HandleEvent(const PP_InputEvent* event) {
-  scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(*event));
-  if (!web_input_event.get())
-    return PP_FALSE;
-
-  return PP_FromBool(scrollbar_->handleInputEvent(*web_input_event.get()));
-}
-
 PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
                                           PPB_ImageData_Impl* image) {
   ImageDataAutoMapper mapper(image);
@@ -183,6 +175,15 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
 #endif
 
   return PP_TRUE;
+}
+
+PP_Bool PPB_Scrollbar_Impl::HandleEventInternal(
+    const ::ppapi::InputEventData& data) {
+  scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(data));
+  if (!web_input_event.get())
+    return PP_FALSE;
+
+  return PP_FromBool(scrollbar_->handleInputEvent(*web_input_event.get()));
 }
 
 void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {

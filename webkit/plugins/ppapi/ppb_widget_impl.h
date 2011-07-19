@@ -12,10 +12,12 @@
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_Widget_Dev;
-struct PP_InputEvent;
 
 namespace gfx {
 class Rect;
+}
+namespace ppapi {
+struct InputEventData;
 }
 
 namespace webkit {
@@ -35,7 +37,7 @@ class PPB_Widget_Impl : public Resource,
 
   // PPB_WidgetAPI implementation.
   virtual PP_Bool Paint(const PP_Rect* rect, PP_Resource ) OVERRIDE;
-  virtual PP_Bool HandleEvent(const PP_InputEvent* event) = 0;
+  virtual PP_Bool HandleEvent(PP_Resource pp_input_event) OVERRIDE;
   virtual PP_Bool GetLocation(PP_Rect* location) OVERRIDE;
   virtual void SetLocation(const PP_Rect* location) OVERRIDE;
 
@@ -45,6 +47,7 @@ class PPB_Widget_Impl : public Resource,
  protected:
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
                                 PPB_ImageData_Impl* image) = 0;
+  virtual PP_Bool HandleEventInternal(const ::ppapi::InputEventData& data) = 0;
   virtual void SetLocationInternal(const PP_Rect* location) = 0;
 
   PP_Rect location() const { return location_; }

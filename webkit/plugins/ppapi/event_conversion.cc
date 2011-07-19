@@ -152,9 +152,9 @@ void AppendMouseWheelEvent(const WebInputEvent& event,
   result_events->push_back(result);
 }
 
-WebKeyboardEvent* BuildKeyEvent(const PP_InputEvent& event) {
+WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent();
-  switch (event.type) {
+  switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
       key_event->type = WebInputEvent::RawKeyDown;
       break;
@@ -167,25 +167,22 @@ WebKeyboardEvent* BuildKeyEvent(const PP_InputEvent& event) {
     default:
       NOTREACHED();
   }
-  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
-  key_event->modifiers = event.u.key.modifier;
-  key_event->windowsKeyCode = event.u.key.key_code;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
+  key_event->modifiers = event.event_modifiers;
+  key_event->windowsKeyCode = event.key_code;
   return key_event;
 }
 
-WebKeyboardEvent* BuildCharEvent(const PP_InputEvent& event) {
+WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent();
   key_event->type = WebInputEvent::Char;
-  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
-  key_event->modifiers = event.u.character.modifier;
+  key_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
+  key_event->modifiers = event.event_modifiers;
 
   // Make sure to not read beyond the buffer in case some bad code doesn't
   // NULL-terminate it (this is called from plugins).
   size_t text_length_cap = WebKeyboardEvent::textLengthCap;
-  size_t text_len = 0;
-  while (text_len < text_length_cap && event.u.character.text[text_len])
-      text_len++;
-  string16 text16 = UTF8ToUTF16(std::string(event.u.character.text, text_len));
+  string16 text16 = UTF8ToUTF16(event.character_text);
 
   memset(key_event->text, 0, text_length_cap);
   memset(key_event->unmodifiedText, 0, text_length_cap);
@@ -196,9 +193,9 @@ WebKeyboardEvent* BuildCharEvent(const PP_InputEvent& event) {
   return key_event;
 }
 
-WebMouseEvent* BuildMouseEvent(const PP_InputEvent& event) {
+WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
   WebMouseEvent* mouse_event = new WebMouseEvent();
-  switch (event.type) {
+  switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
       mouse_event->type = WebInputEvent::MouseDown;
       break;
@@ -220,27 +217,28 @@ WebMouseEvent* BuildMouseEvent(const PP_InputEvent& event) {
     default:
       NOTREACHED();
   }
-  mouse_event->timeStampSeconds = PPTimeTicksToEventTime(event.time_stamp);
-  mouse_event->modifiers = event.u.mouse.modifier;
+  mouse_event->timeStampSeconds =
+      PPTimeTicksToEventTime(event.event_time_stamp);
+  mouse_event->modifiers = event.event_modifiers;
   mouse_event->button =
-      static_cast<WebMouseEvent::Button>(event.u.mouse.button);
-  mouse_event->x = static_cast<int>(event.u.mouse.x);
-  mouse_event->y = static_cast<int>(event.u.mouse.y);
-  mouse_event->clickCount = event.u.mouse.click_count;
+      static_cast<WebMouseEvent::Button>(event.mouse_button);
+  mouse_event->x = event.mouse_position.x;
+  mouse_event->y = event.mouse_position.y;
+  mouse_event->clickCount = event.mouse_click_count;
   return mouse_event;
 }
 
-WebMouseWheelEvent* BuildMouseWheelEvent(const PP_InputEvent& event) {
+WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent();
   mouse_wheel_event->type = WebInputEvent::MouseWheel;
   mouse_wheel_event->timeStampSeconds =
-      PPTimeTicksToEventTime(event.time_stamp);
-  mouse_wheel_event->modifiers = event.u.wheel.modifier;
-  mouse_wheel_event->deltaX = event.u.wheel.delta_x;
-  mouse_wheel_event->deltaY = event.u.wheel.delta_y;
-  mouse_wheel_event->wheelTicksX = event.u.wheel.wheel_ticks_x;
-  mouse_wheel_event->wheelTicksY = event.u.wheel.wheel_ticks_y;
-  mouse_wheel_event->scrollByPage = event.u.wheel.scroll_by_page;
+      PPTimeTicksToEventTime(event.event_time_stamp);
+  mouse_wheel_event->modifiers = event.event_modifiers;
+  mouse_wheel_event->deltaX = event.wheel_delta.x;
+  mouse_wheel_event->deltaY = event.wheel_delta.y;
+  mouse_wheel_event->wheelTicksX = event.wheel_ticks.x;
+  mouse_wheel_event->wheelTicksY = event.wheel_ticks.y;
+  mouse_wheel_event->scrollByPage = event.wheel_scroll_by_page;
   return mouse_wheel_event;
 }
 
@@ -328,9 +326,9 @@ void CreateInputEventData(const WebInputEvent& event,
   }
 }
 
-WebInputEvent* CreateWebInputEvent(const PP_InputEvent& event) {
+WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
   scoped_ptr<WebInputEvent> web_input_event;
-  switch (event.type) {
+  switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_UNDEFINED:
       return NULL;
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
