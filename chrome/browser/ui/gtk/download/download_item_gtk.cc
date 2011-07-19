@@ -137,6 +137,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   // Stack the labels on top of one another.
   text_stack_ = gtk_vbox_new(FALSE, 0);
+  g_signal_connect(text_stack_, "destroy",
+                   G_CALLBACK(gtk_widget_destroyed), &text_stack_);
   gtk_box_pack_start(GTK_BOX(text_stack_), name_label_, TRUE, TRUE, 0);
 
   // We use a GtkFixed because we don't want it to have its own window.
@@ -482,6 +484,12 @@ void DownloadItemGtk::UpdateNameLabel() {
 }
 
 void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
+  if (!text_stack_) {
+    // At least our container has been destroyed, which means that
+    // this item is on the way to being destroyed; don't do anything.
+    return;
+  }
+
   // If |status_text| is empty, only |name_label_| is displayed at the
   // vertical center of |text_stack_|. Otherwise, |name_label_| is displayed
   // on the upper half of |text_stack_| and |status_label_| is displayed
