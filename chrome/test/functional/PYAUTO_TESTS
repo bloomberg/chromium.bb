@@ -395,8 +395,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/89675
-      '-enterprise',
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
     ],
