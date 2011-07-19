@@ -248,3 +248,19 @@ RunInBackgroundTest.RunInBackgroundBasicTest
 
 # http://crbug.com/88254
 PPAPITest.CursorControl
+
+# Automation system fails to start up, http://crbug.com/89786
+AppModeTest.EnableAppModeTest
+AutomationProxyTest.GetTab
+AutomationProxyTest.NavigateToURL
+BookmarksUITest.TwoCommandsOneTab
+ExtensionProxyUITest.NoSuchExtension
+ExtensionProxyUITest.Uninstall
+PPAPITest.Broker
+PPAPITest.Core
+PPAPITest.Memory
+PPAPITest.PostMessage
+RedirectTest.Client
+RedirectTest.ClientFragments
+WorkerFileSystemTest.Persistent
+WorkerFileSystemTest.SyncTemporary
