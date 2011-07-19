@@ -115,13 +115,13 @@ ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {
 }
 
 void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
-  if (!profile_->IsSameProfile(browser->profile()))
-    return;
   RegisterForBrowserNotifications(browser);
 }
 
 void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
     const Browser* browser) {
+  if (!profile_->IsSameProfile(browser->profile()))
+    return;
   // Start listening to TabStripModel events for this browser.
   browser->tabstrip_model()->AddObserver(this);
 
