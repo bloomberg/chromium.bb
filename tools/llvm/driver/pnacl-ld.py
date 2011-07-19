@@ -183,6 +183,9 @@ LDPatterns = [
   ( '(-?-soname=.*)',             "env.append('LD_FLAGS', $0)"),
   ( ('(-?-soname)', '(.*)'),      "env.append('LD_FLAGS', $0, $1)"),
   ( '(--eh-frame-hdr)',           "env.append('LD_FLAGS', $0)"),
+  ( '(-M)',                       "env.append('LD_FLAGS', $0)"),
+  ( '(-t)',                       "env.append('LD_FLAGS', $0)"),
+  ( ('-y','(.*)'),                "env.append('LD_FLAGS', '-y', $0)"),
 
   ( '(--print-gc-sections)',      "env.append('LD_FLAGS', $0)"),
   ( '(-gc-sections)',             "env.append('LD_FLAGS', $0)"),
