@@ -110,11 +110,6 @@ class GLES2Decoder : public CommonDecoder {
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
-  // Sets a callback which is called after a Set/WaitLatch command is processed.
-  // The bool parameter will be true for SetLatch, and false for a WaitLatch
-  // that is blocked. An unblocked WaitLatch will not trigger a callback.
-  virtual void SetLatchCallback(const base::Callback<void(bool)>& callback) = 0;
-
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.
   virtual bool GetServiceTextureId(uint32 client_texture_id,

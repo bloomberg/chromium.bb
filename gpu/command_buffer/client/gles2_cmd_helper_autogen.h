@@ -1219,16 +1219,6 @@
     c.Init(bucket_id);
   }
 
-  void SetLatchCHROMIUM(GLuint latch_id) {
-    gles2::SetLatchCHROMIUM& c = GetCmdSpace<gles2::SetLatchCHROMIUM>();
-    c.Init(latch_id);
-  }
-
-  void WaitLatchCHROMIUM(GLuint latch_id) {
-    gles2::WaitLatchCHROMIUM& c = GetCmdSpace<gles2::WaitLatchCHROMIUM>();
-    c.Init(latch_id);
-  }
-
   void SetSurfaceCHROMIUM(GLint surface_id) {
     gles2::SetSurfaceCHROMIUM& c = GetCmdSpace<gles2::SetSurfaceCHROMIUM>();
     c.Init(surface_id);

@@ -87,6 +87,7 @@ class PepperCommandBuffer : public gpu::CommandBuffer {
   virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
+  virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
@@ -183,6 +184,10 @@ gpu::CommandBuffer::State PepperCommandBuffer::GetState() {
       UpdateState(state);
   }
 
+  return last_state_;
+}
+
+gpu::CommandBuffer::State PepperCommandBuffer::GetLastState() {
   return last_state_;
 }
 

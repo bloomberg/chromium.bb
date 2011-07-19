@@ -46,6 +46,10 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     return state_;
   }
 
+  virtual State GetLastState() {
+    return state_;
+  }
+
   virtual void Flush(int32 put_offset) {
     state_.put_offset = put_offset;
   }
@@ -258,7 +262,7 @@ class GLES2ImplementationTest : public testing::Test {
         false));
 
     EXPECT_CALL(*command_buffer_, OnFlush(_)).Times(1).RetiresOnSaturation();
-    helper_->CommandBufferHelper::FlushSync();
+    helper_->CommandBufferHelper::Finish();
     Buffer ring_buffer = command_buffer_->GetRingBuffer();
     commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
                 command_buffer_->GetState().put_offset;

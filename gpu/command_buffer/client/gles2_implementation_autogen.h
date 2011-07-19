@@ -1272,16 +1272,6 @@ const GLchar* GetRequestableExtensionsCHROMIUM();
 
 void RequestExtensionCHROMIUM(const char* extension);
 
-void SetLatchCHROMIUM(GLuint latch_id) {
-  GPU_CLIENT_LOG("[" << this << "] glSetLatchCHROMIUM(" << latch_id << ")");
-  helper_->SetLatchCHROMIUM(latch_id);
-}
-
-void WaitLatchCHROMIUM(GLuint latch_id) {
-  GPU_CLIENT_LOG("[" << this << "] glWaitLatchCHROMIUM(" << latch_id << ")");
-  helper_->WaitLatchCHROMIUM(latch_id);
-}
-
 void RateLimitOffscreenContextCHROMIUM();
 
 void SetSurfaceCHROMIUM(GLint surface_id) {

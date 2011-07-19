@@ -43,20 +43,15 @@ class ContextGroup;
 // posts tasks to the current message loop to do additional work.
 class GpuScheduler : public CommandBufferEngine {
  public:
-  // Scheduler quantum: makes ProcessCommands continue until the specified time
-  // has passed, or the command buffer yields or runs out of commands.
-  static const int kMinimumSchedulerQuantumMicros = 2000;
-
   // If a group is not passed in one will be created.
-  GpuScheduler(CommandBuffer* command_buffer,
-               SurfaceManager* surface_manager,
-               gles2::ContextGroup* group);
+  static GpuScheduler* Create(CommandBuffer* command_buffer,
+                              SurfaceManager* surface_manager,
+                              gles2::ContextGroup* group);
 
   // This constructor is for unit tests.
-  GpuScheduler(CommandBuffer* command_buffer,
-               gles2::GLES2Decoder* decoder,
-               CommandParser* parser,
-               int commands_per_update);
+  static GpuScheduler* CreateForTests(CommandBuffer* command_buffer,
+                                      gles2::GLES2Decoder* decoder,
+                                      CommandParser* parser);
 
   virtual ~GpuScheduler();
 
@@ -73,7 +68,7 @@ class GpuScheduler : public CommandBufferEngine {
 
   bool SetParent(GpuScheduler* parent_scheduler, uint32 parent_texture_id);
 
-  void PutChanged(bool sync);
+  void PutChanged();
 
   // Sets whether commands should be processed by this scheduler. Setting to
   // false unschedules. Setting to true reschedules. Whether or not the
@@ -151,13 +146,6 @@ class GpuScheduler : public CommandBufferEngine {
 
   void SetCommandProcessedCallback(Callback0::Type* callback);
 
-  // Sets a callback which is called after a Set/WaitLatch command is processed.
-  // The bool parameter will be true for SetLatch, and false for a WaitLatch
-  // that is blocked. An unblocked WaitLatch will not trigger a callback.
-  void SetLatchCallback(const base::Callback<void(bool)>& callback) {
-    decoder_->SetLatchCallback(callback);
-  }
-
   // Sets a callback which is called when set_token() is called, and passes the
   // just-set token to the callback.  DCHECKs that no callback has previously
   // been registered for this notification.
@@ -178,8 +166,10 @@ class GpuScheduler : public CommandBufferEngine {
 
 
  private:
-  // Helper which causes a call to ProcessCommands to be scheduled later.
-  void ScheduleProcessCommands();
+  // If a group is not passed in one will be created.
+  GpuScheduler(CommandBuffer* command_buffer,
+               gles2::GLES2Decoder* decoder,
+               CommandParser* parser);
 
   // Called via a callback just before we are supposed to call the
   // user's resize callback.
@@ -188,14 +178,11 @@ class GpuScheduler : public CommandBufferEngine {
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
   void WillSwapBuffers();
-  void ProcessCommands();
 
   // The GpuScheduler holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GpuScheduler and holds a strong reference to it
   // through the ProcessCommands callback.
   CommandBuffer* command_buffer_;
-
-  int commands_per_update_;
 
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;

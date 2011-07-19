@@ -19,41 +19,37 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
-                           SurfaceManager* surface_manager,
-                           gles2::ContextGroup* group)
-    : command_buffer_(command_buffer),
-      commands_per_update_(100),
-      unscheduled_count_(0),
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
-      swap_buffers_count_(0),
-      acknowledged_swap_buffers_count_(0),
-#endif
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+GpuScheduler* GpuScheduler::Create(CommandBuffer* command_buffer,
+                                   SurfaceManager* surface_manager,
+                                   gles2::ContextGroup* group) {
   DCHECK(command_buffer);
-  decoder_.reset(gles2::GLES2Decoder::Create(surface_manager, group));
-  decoder_->set_engine(this);
+
+  gles2::GLES2Decoder* decoder =
+      gles2::GLES2Decoder::Create(surface_manager, group);
+
+  GpuScheduler* scheduler = new GpuScheduler(command_buffer,
+                                             decoder,
+                                             NULL);
+
+  decoder->set_engine(scheduler);
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {
-    decoder_->set_debug(true);
+    decoder->set_debug(true);
   }
+
+  return scheduler;
 }
 
-GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
-                           gles2::GLES2Decoder* decoder,
-                           CommandParser* parser,
-                           int commands_per_update)
-    : command_buffer_(command_buffer),
-      commands_per_update_(commands_per_update),
-      unscheduled_count_(0),
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
-      swap_buffers_count_(0),
-      acknowledged_swap_buffers_count_(0),
-#endif
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+GpuScheduler* GpuScheduler::CreateForTests(CommandBuffer* command_buffer,
+                                           gles2::GLES2Decoder* decoder,
+                                           CommandParser* parser) {
   DCHECK(command_buffer);
-  decoder_.reset(decoder);
-  parser_.reset(parser);
+  GpuScheduler* scheduler = new GpuScheduler(command_buffer,
+                                             decoder,
+                                             parser);
+
+  return scheduler;
 }
 
 GpuScheduler::~GpuScheduler() {
@@ -81,11 +77,6 @@ bool GpuScheduler::InitializeCommon(
       context->SetSwapInterval(1);
   }
 #endif
-
-  // Do not limit to a certain number of commands before scheduling another
-  // update when rendering onscreen.
-  if (!surface->IsOffscreen())
-    commands_per_update_ = INT_MAX;
 
   // Map the ring buffer and create the parser.
   Buffer ring_buffer = command_buffer_->GetRingBuffer();
@@ -144,28 +135,15 @@ const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 }
 #endif
 
-void GpuScheduler::PutChanged(bool sync) {
+void GpuScheduler::PutChanged() {
   TRACE_EVENT1("gpu", "GpuScheduler:PutChanged", "this", this);
+
+  DCHECK(IsScheduled());
+
   CommandBuffer::State state = command_buffer_->GetState();
   parser_->set_put(state.put_offset);
-
-  if (sync)
-    ProcessCommands();
-  else
-    ScheduleProcessCommands();
-}
-
-void GpuScheduler::ProcessCommands() {
-  TRACE_EVENT1("gpu", "GpuScheduler:ProcessCommands", "this", this);
-  CommandBuffer::State state = command_buffer_->GetState();
   if (state.error != error::kNoError)
     return;
-
-  if (unscheduled_count_ > 0) {
-    TRACE_EVENT1("gpu", "EarlyOut_Unscheduled",
-                 "unscheduled_count_", unscheduled_count_);
-    return;
-  }
 
   if (decoder_.get()) {
     if (!decoder_->MakeCurrent()) {
@@ -184,60 +162,30 @@ void GpuScheduler::ProcessCommands() {
 
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
   // Don't swamp the browser process with SwapBuffers calls it can't handle.
-  if (do_rate_limiting &&
-      swap_buffers_count_ - acknowledged_swap_buffers_count_ >=
-      kMaxOutstandingSwapBuffersCallsPerOnscreenContext) {
-    TRACE_EVENT0("gpu", "EarlyOut_OSX_Throttle");
-    // Stop doing work on this command buffer. In the GPU process,
-    // receipt of the GpuMsg_AcceleratedSurfaceBuffersSwappedACK
-    // message causes ProcessCommands to be scheduled again.
-    return;
-  }
+  DCHECK(!do_rate_limiting ||
+         swap_buffers_count_ - acknowledged_swap_buffers_count_ == 0);
 #endif
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  base::TimeDelta elapsed;
-  bool is_break = false;
   error::Error error = error::kNoError;
-  do {
-    int commands_processed = 0;
-    while (commands_processed < commands_per_update_ &&
-           !parser_->IsEmpty()) {
-      error = parser_->ProcessCommand();
+  while (!parser_->IsEmpty()) {
+    error = parser_->ProcessCommand();
 
-      // TODO(piman): various classes duplicate various pieces of state, leading
-      // to needlessly complex update logic. It should be possible to simply
-      // share the state across all of them.
-      command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+    // TODO(piman): various classes duplicate various pieces of state, leading
+    // to needlessly complex update logic. It should be possible to simply
+    // share the state across all of them.
+    command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
-      if (error == error::kWaiting || error == error::kYield) {
-        is_break = true;
-        break;
-      } else if (error::IsError(error)) {
-        command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
-        command_buffer_->SetParseError(error);
-        return;
-      }
-
-      if (unscheduled_count_ > 0) {
-        is_break = true;
-        break;
-      }
-
-      ++commands_processed;
-      if (command_processed_callback_.get()) {
-        command_processed_callback_->Run();
-      }
+    if (error::IsError(error)) {
+      command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
+      command_buffer_->SetParseError(error);
+      return;
     }
-    elapsed = base::TimeTicks::Now() - start_time;
-  } while(!is_break &&
-          !parser_->IsEmpty() &&
-          elapsed.InMicroseconds() < kMinimumSchedulerQuantumMicros);
 
-  if (unscheduled_count_ == 0 &&
-      error != error::kWaiting &&
-      !parser_->IsEmpty()) {
-    ScheduleProcessCommands();
+    if (command_processed_callback_.get())
+      command_processed_callback_->Run();
+
+    if (unscheduled_count_ > 0)
+      return;
   }
 }
 
@@ -249,12 +197,8 @@ void GpuScheduler::SetScheduled(bool scheduled) {
     --unscheduled_count_;
     DCHECK_GE(unscheduled_count_, 0);
 
-    if (unscheduled_count_ == 0) {
-      if (scheduled_callback_.get())
-        scheduled_callback_->Run();
-
-      ScheduleProcessCommands();
-    }
+    if (unscheduled_count_ == 0 && scheduled_callback_.get())
+      scheduled_callback_->Run();
   } else {
     ++unscheduled_count_;
   }
@@ -320,10 +264,18 @@ void GpuScheduler::SetTokenCallback(
   set_token_callback_ = callback;
 }
 
-void GpuScheduler::ScheduleProcessCommands() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(&GpuScheduler::ProcessCommands));
+GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
+                           gles2::GLES2Decoder* decoder,
+                           CommandParser* parser)
+    : command_buffer_(command_buffer),
+      decoder_(decoder),
+      parser_(parser),
+      unscheduled_count_(0),
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+      swap_buffers_count_(0),
+      acknowledged_swap_buffers_count_(0),
+#endif
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 void GpuScheduler::WillResize(gfx::Size size) {

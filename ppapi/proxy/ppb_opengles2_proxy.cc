@@ -750,14 +750,6 @@ void Viewport(
   GetGLES(context_id)->Viewport(x, y, width, height);
 }
 
-void SetLatchCHROMIUM(PP_Resource context_id, GLuint latch_id) {
-  GetGLES(context_id)->SetLatchCHROMIUM(latch_id);
-}
-
-void WaitLatchCHROMIUM(PP_Resource context_id, GLuint latch_id) {
-  GetGLES(context_id)->WaitLatchCHROMIUM(latch_id);
-}
-
 const struct PPB_OpenGLES2_Dev opengles2_interface = {
   &ActiveTexture,
   &AttachShader,

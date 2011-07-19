@@ -31,6 +31,17 @@ const char* GetCommandName(CommandId command_id) {
 
 }  // namespace cmd
 
+// TODO(apatrick): this method body is here instead of command_buffer.cc
+// because NaCl currently compiles in this file but not the other.
+// Remove this method body and the includes of command_buffer.h and
+// logging.h above once NaCl defines SetContextLostReason() in its
+// CommandBuffer subclass and has been rolled forward. See
+// http://crbug.com/89670 .
+gpu::CommandBuffer::State CommandBuffer::GetLastState() {
+  GPU_NOTREACHED();
+  return gpu::CommandBuffer::State();
+}
+
 // TODO(kbr): this method body is here instead of command_buffer.cc
 // because NaCl currently compiles in this file but not the other.
 // Remove this method body and the includes of command_buffer.h and

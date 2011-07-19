@@ -556,11 +556,5 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(CommonDecoderTest, YieldScheduler) {
-  cmd::YieldScheduler cmd;
-  cmd.Init();
-  EXPECT_EQ(error::kYield, ExecuteCmd(cmd));
-}
-
 }  // namespace gpu
 

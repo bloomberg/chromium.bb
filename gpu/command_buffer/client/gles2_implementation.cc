@@ -832,7 +832,6 @@ void GLES2Implementation::SwapBuffers() {
   // the scheduler yields between the InsertToken and the SwapBuffers.
   swap_buffers_tokens_.push(helper_->InsertToken());
   helper_->SwapBuffers();
-  helper_->YieldScheduler();
   helper_->CommandBufferHelper::Flush();
   // Wait if we added too many swap buffers.
   if (swap_buffers_tokens_.size() > kMaxSwapBuffers) {

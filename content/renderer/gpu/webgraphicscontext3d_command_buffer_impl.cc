@@ -372,17 +372,11 @@ void WebGraphicsContext3DCommandBufferImpl::getChildToParentLatchCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::waitLatchCHROMIUM(
     WGC3Duint latch_id)
 {
-  TRACE_EVENT1("gpu", "WebGfxCtx3DCmdBfrImpl::WaitLatch", "latch_id", latch_id);
-  gl_->WaitLatchCHROMIUM(latch_id);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setLatchCHROMIUM(
     WGC3Duint latch_id)
 {
-  TRACE_EVENT1("gpu", "WebGfxCtx3DCmdBfrImpl::SetLatch", "latch_id", latch_id);
-  gl_->SetLatchCHROMIUM(latch_id);
-  // required to ensure set command is sent to GPU process
-  gl_->Flush();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::
