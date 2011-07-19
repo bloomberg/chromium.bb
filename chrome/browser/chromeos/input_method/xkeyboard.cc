@@ -302,7 +302,7 @@ class XKeyboard {
     VLOG(1) << "OnSetLayoutFinish: pid=" << pid;
     if (self->execute_queue_.empty()) {
       LOG(ERROR) << "OnSetLayoutFinish: execute_queue_ is empty. "
-                 << "base::LaunchApp failed? pid=" << pid;
+                 << "base::LaunchProcess failed? pid=" << pid;
       return;
     }
     self->execute_queue_.pop();

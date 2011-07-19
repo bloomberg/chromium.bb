@@ -142,7 +142,7 @@ bool RelaunchAppWithHelper(const std::string& helper,
   file_util::ScopedFD pipe_read_fd(&pipe_fds[0]);
   file_util::ScopedFD pipe_write_fd(&pipe_fds[1]);
 
-  // Make sure kRelauncherSyncFD is a safe value. base::LaunchApp will
+  // Make sure kRelauncherSyncFD is a safe value. base::LaunchProcess will
   // preserve these three FDs in forked processes, so kRelauncherSyncFD should
   // not conflict with them.
   COMPILE_ASSERT(kRelauncherSyncFD != STDIN_FILENO &&

@@ -47,12 +47,14 @@ void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
 // Start the given proxy configuration utility.
 bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // base::LaunchApp() returns true ("success") if the fork() succeeds, but not
-  // necessarily the exec(). We'd like to be able to use StartProxyConfigUtil()
-  // to search possible options and stop on success, so we search $PATH first to
-  // predict whether the exec is expected to succeed.
-  // TODO(mdm): this is a useful check, and is very similar to some code in
-  // proxy_config_service_linux.cc. It should probably be in base:: somewhere.
+  // base::LaunchProcess() returns true ("success") if the fork()
+  // succeeds, but not necessarily the exec(). We'd like to be able to
+  // use StartProxyConfigUtil() to search possible options and stop on
+  // success, so we search $PATH first to predict whether the exec is
+  // expected to succeed.
+  // TODO(mdm): this is a useful check, and is very similar to some
+  // code in proxy_config_service_linux.cc. It should probably be in
+  // base:: somewhere.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string path;
   if (!env->GetVar("PATH", &path)) {

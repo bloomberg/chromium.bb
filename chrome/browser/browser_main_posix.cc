@@ -196,7 +196,7 @@ void BrowserMainPartsPosix::PreEarlyInitialization() {
 
   // If adding to this list of signal handlers, note the new signal probably
   // needs to be reset in child processes. See
-  // base/process_util_posix.cc:LaunchApp
+  // base/process_util_posix.cc:LaunchProcess.
 
   // We need to handle SIGTERM, because that is how many POSIX-based distros ask
   // processes to quit gracefully at shutdown time.
