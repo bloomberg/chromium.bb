@@ -67,7 +67,13 @@ gpu::CommandBuffer::State CommandBufferNacl::GetState() {
       || state_size != static_cast<nacl_abi_size_t>(sizeof(state))) {
     return ErrorGpuState();
   }
-  return PpapiToGpuState(state);
+
+  last_state_ = PpapiToGpuState(state);
+  return last_state_;
+}
+
+gpu::CommandBuffer::State CommandBufferNacl::GetLastState() {
+  return last_state_;
 }
 
 void CommandBufferNacl::Flush(int32 put_offset) {
@@ -96,7 +102,8 @@ gpu::CommandBuffer::State CommandBufferNacl::FlushSync(int32 put_offset,
     return ErrorGpuState();
   }
 
-  return PpapiToGpuState(state);
+  last_state_ = PpapiToGpuState(state);
+  return last_state_;
 }
 
 void CommandBufferNacl::SetGetOffset(int32 get_offset) {

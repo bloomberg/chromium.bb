@@ -28,6 +28,7 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   }
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
+  virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
@@ -47,6 +48,7 @@ class CommandBufferNacl : public gpu::CommandBuffer {
   PP_Resource context_3d_;
   const PPB_Core* iface_core_;
   gpu::Buffer buffer_;
+  State last_state_;
 
   static gpu::CommandBuffer::State PpapiToGpuState(PP_Context3DTrustedState s);
   static gpu::CommandBuffer::State ErrorGpuState();
