@@ -51,11 +51,8 @@ CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
        !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node)) {
-    result.push_back(
-        X509Certificate::CreateFromHandle(
-            node->cert,
-            X509Certificate::SOURCE_LONE_CERT_IMPORT,
-            X509Certificate::OSCertHandles()));
+    result.push_back(X509Certificate::CreateFromHandle(
+        node->cert, X509Certificate::OSCertHandles()));
   }
   CERT_DestroyCertList(cert_list);
 
