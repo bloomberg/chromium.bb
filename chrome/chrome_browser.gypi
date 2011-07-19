@@ -852,8 +852,6 @@
         'browser/download/drag_download_file.h',
         'browser/download/drag_download_util.cc',
         'browser/download/drag_download_util.h',
-        'browser/download/mhtml_generation_manager.cc',
-        'browser/download/mhtml_generation_manager.h',
         'browser/download/save_package_file_picker.cc',
         'browser/download/save_package_file_picker.h',
         'browser/enumerate_modules_model_win.cc',

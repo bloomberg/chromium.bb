@@ -41,6 +41,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
 #include "content/renderer/device_orientation_dispatcher.h"
+#include "content/renderer/mhtml_generator.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
@@ -403,6 +404,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #if defined(ENABLE_P2P_APIS)
   p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
 #endif
+
+  new MHTMLGenerator(this);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }

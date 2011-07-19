@@ -180,6 +180,10 @@ ui::Clipboard* MockContentBrowserClient::GetClipboard() {
   return &clipboard;
 }
 
+MHTMLGenerationManager* MockContentBrowserClient::GetMHTMLGenerationManager() {
+  return NULL;
+}
+
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }

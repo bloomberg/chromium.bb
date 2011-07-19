@@ -19,6 +19,7 @@ class BrowserURLHandler;
 class CommandLine;
 class FilePath;
 class GURL;
+class MHTMLGenerationManager;
 class PluginProcessHost;
 class Profile;
 class QuotaPermissionContext;
@@ -231,6 +232,7 @@ class ContentBrowserClient {
   // Getters for common objects.
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
   virtual ui::Clipboard* GetClipboard() = 0;
+  virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;

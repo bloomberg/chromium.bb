@@ -655,6 +655,11 @@ ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
   return g_browser_process->clipboard();
 }
 
+MHTMLGenerationManager*
+    ChromeContentBrowserClient::GetMHTMLGenerationManager() {
+  return g_browser_process->mhtml_generation_manager();
+}
+
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   return !browser_command_line.HasSwitch(switches::kChromeFrame);

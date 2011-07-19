@@ -789,11 +789,6 @@ enum {
   // The source is the corresponding RenderViewHost. There are no details.
   NOTIFICATION_DOWNLOAD_INITIATED,
 
-  // Sent when a page generation to MHTML has finished.
-  // The source is the corresponding RenderViewHost. The details is a
-  // MHTMLGenerationManager::NotificationDetails.
-  NOTIFICATION_MHTML_GENERATED,
-
   // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/mhtml_generator.h"
+#include "content/renderer/mhtml_generator.h"
 
 #include "base/platform_file.h"
-#include "chrome/common/render_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
@@ -38,8 +38,7 @@ void MHTMLGenerator::OnSavePageAsMHTML(
 }
 
 void MHTMLGenerator::NotifyBrowser(int job_id, bool success) {
-  render_view()->Send(new ViewHostMsg_SavedPageAsMHTML(
-      render_view()->routing_id(), job_id, success));
+  render_view()->Send(new ViewHostMsg_SavedPageAsMHTML(job_id, success));
   file_ = base::kInvalidPlatformFileValue;
 }
 

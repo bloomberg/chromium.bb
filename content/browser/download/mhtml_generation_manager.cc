@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/mhtml_generation_manager.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 
 #include "base/platform_file.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/view_messages.h"
 
 MHTMLGenerationManager::Job::Job()
     : browser_file(base::kInvalidPlatformFileValue),
@@ -89,17 +88,15 @@ void MHTMLGenerationManager::FileCreated(int job_id,
   job.browser_file = browser_file;
   job.renderer_file = renderer_file;
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(job.process_id, job.routing_id);
-  if (!tab_contents) {
+  RenderViewHost* rvh = RenderViewHost::FromID(job.process_id, job.routing_id);
+  if (!rvh) {
     // The tab went away.
     JobFinished(job_id, false);
     return;
   }
 
-  RenderViewHost* host = tab_contents->render_view_host();
-  host->Send(new ViewMsg_SavePageAsMHTML(host->routing_id(), job_id,
-                                         renderer_file));
+  rvh->Send(new ViewMsg_SavePageAsMHTML(rvh->routing_id(), job_id,
+                                        renderer_file));
 }
 
 void MHTMLGenerationManager::JobFinished(int job_id, bool success) {
@@ -111,16 +108,15 @@ void MHTMLGenerationManager::JobFinished(int job_id, bool success) {
 
   Job& job = iter->second;
 
-  TabContents* tab_contents =
-      tab_util::GetTabContentsByID(job.process_id, job.routing_id);
-  if (tab_contents) {
+  RenderViewHost* rvh = RenderViewHost::FromID(job.process_id, job.routing_id);
+  if (rvh) {
     NotificationDetails details;
     details.file_path = job.file_path;
     details.success = success;
 
     NotificationService::current()->Notify(
-        chrome::NOTIFICATION_MHTML_GENERATED,
-        Source<RenderViewHost>(tab_contents->render_view_host()),
+        content::NOTIFICATION_MHTML_GENERATED,
+        Source<RenderViewHost>(rvh),
         Details<NotificationDetails>(&details));
   }
 

@@ -429,6 +429,13 @@ enum {
   // enable/disable status.
   NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
 
+  // Download Notifications --------------------------------------------------
+
+  // Sent when a page generation to MHTML has finished.
+  // The source is the corresponding RenderViewHost. The details is a
+  // MHTMLGenerationManager::NotificationDetails.
+  NOTIFICATION_MHTML_GENERATED,
+
   // Purge Memory ------------------------------------------------------------
 
   // Sent on the IO thread when the system should try to reduce the amount of

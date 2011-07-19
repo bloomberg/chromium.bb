@@ -1195,6 +1195,11 @@ IPC_MESSAGE_ROUTED0(ViewMsg_GetFPS)
 // Used to instruct the RenderView to go into "view source" mode.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
 
+// Instructs the renderer to save the current page to MHTML.
+IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
+                    int /* job_id */,
+                    IPC::PlatformFileForTransit /* file handle */)
+
 // Messages sent from the renderer to the browser.
 
 // Sent by the renderer when it is creating a new window.  The browser creates
@@ -1963,3 +1968,8 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 IPC_MESSAGE_CONTROL2(ViewHostMsg_FPS,
                      int /* routing id */,
                      float /* frames per second */)
+
+// Notifies the browser that the page was or was not saved as MHTML.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
+                     int /* job_id */,
+                     bool /* success */)

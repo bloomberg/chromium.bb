@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/download/mhtml_generation_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -135,7 +134,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClearPredictorCache, OnClearPredictorCache)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SavedPageAsMHTML, OnSavedPageAsMHTML)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -176,7 +174,6 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_CloseChannel::ID:
     case ViewHostMsg_UpdatedCacheStats::ID:
-    case ViewHostMsg_SavedPageAsMHTML::ID:
       *thread = BrowserThread::UI;
       break;
     default:
@@ -533,11 +530,4 @@ void ChromeRenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                             const std::string& cookie) {
   AutomationResourceMessageFilter::SetCookiesForUrl(
       render_process_id_, message.routing_id(), url, cookie);
-}
-
-
-void ChromeRenderMessageFilter::OnSavedPageAsMHTML(int job_id, bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_browser_process->mhtml_generation_manager()->
-      MHTMLGenerated(job_id, success);
 }

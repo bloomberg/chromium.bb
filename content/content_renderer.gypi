@@ -85,6 +85,8 @@
         'renderer/media/video_capture_message_filter.h',
         'renderer/media/webrtc_audio_device_impl.cc',
         'renderer/media/webrtc_audio_device_impl.h',
+        'renderer/mhtml_generator.cc',
+        'renderer/mhtml_generator.h',
         'renderer/navigation_state.cc',
         'renderer/navigation_state.h',
         'renderer/notification_provider.cc',

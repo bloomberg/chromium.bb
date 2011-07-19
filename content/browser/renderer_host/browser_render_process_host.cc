@@ -32,6 +32,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/device_orientation/message_filter.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/file_system/file_system_dispatcher_host.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager.h"
@@ -743,6 +744,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SavedPageAsMHTML, OnSavedPageAsMHTML)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
@@ -914,4 +916,9 @@ void BrowserRenderProcessHost::OnRevealFolderInOS(const FilePath& path) {
   // Only honor the request if appropriate persmissions are granted.
   if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
     content::GetContentClient()->browser()->RevealFolderInOS(path);
+}
+
+void BrowserRenderProcessHost::OnSavedPageAsMHTML(int job_id, bool success) {
+  content::GetContentClient()->browser()->GetMHTMLGenerationManager()->
+      MHTMLGenerated(job_id, success);
 }

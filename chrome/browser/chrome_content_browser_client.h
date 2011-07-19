@@ -92,6 +92,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
+  virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual WebPreferences GetWebkitPrefs(Profile* profile,
                                         bool is_web_ui) OVERRIDE;

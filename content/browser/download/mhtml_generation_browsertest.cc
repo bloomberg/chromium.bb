@@ -4,14 +4,13 @@
 
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/download/mhtml_generation_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,14 +42,14 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/google/google.html"));
 
-  TabContents* tab = browser()->GetSelectedTabContentsWrapper()->tab_contents();
+  TabContents* tab = browser()->GetSelectedTabContents();
   MHTMLGenerationManager* mhtml_generation_manager =
       g_browser_process->mhtml_generation_manager();
 
   Source<RenderViewHost> source(tab->render_view_host());
   ui_test_utils::WindowedNotificationObserverWithDetails<
       MHTMLGenerationManager::NotificationDetails> signal(
-          chrome::NOTIFICATION_MHTML_GENERATED, source);
+          content::NOTIFICATION_MHTML_GENERATED, source);
   mhtml_generation_manager->GenerateMHTML(tab, path);
   signal.Wait();
 
