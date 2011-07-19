@@ -77,7 +77,8 @@ class IMultimedia {
   virtual void AudioInit16Bit(int frequency,
                               int channels,
                               int frame_count,
-                              AUDIO_CALLBACK cb) = 0;
+                              AUDIO_CALLBACK cb,
+                              void* cb_data) = 0;
   virtual void AudioStart() = 0;
   virtual void AudioStop() = 0;
 };

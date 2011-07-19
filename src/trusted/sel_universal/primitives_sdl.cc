@@ -185,13 +185,16 @@ class JobSdlAudioInit: public Job {
  private:
   SDLInfo* info_;
   AUDIO_CALLBACK cb_;
+  void* cb_data_;
 
  public:
   explicit JobSdlAudioInit(SDLInfo* info,
                            int frequency,
                            int channels,
                            int frame_size,
-                           AUDIO_CALLBACK cb) : info_(info), cb_(cb) {
+                           AUDIO_CALLBACK cb,
+                           void* cb_data)
+    : info_(info), cb_(cb), cb_data_(cb_data) {
     info->audio.frequency = frequency;
     info->audio.channels = channels;
     info->audio.frame_size = frame_size;
@@ -211,7 +214,7 @@ class JobSdlAudioInit: public Job {
     //       so we compensate here by doubling
     fmt.samples = info_->audio.frame_size * 2;
     fmt.callback = cb_;
-    fmt.userdata = NULL;
+    fmt.userdata = cb_data_;
     NaClLog(LOG_INFO, "JobSdlAudioInit %d %d %d %d\n",
             fmt.freq, fmt.format, fmt.channels, fmt.samples);
     if (SDL_OpenAudio(&fmt, NULL) < 0) {

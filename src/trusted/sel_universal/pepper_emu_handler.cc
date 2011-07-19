@@ -17,47 +17,21 @@
 #include <queue>
 #include <string>
 
-#if (NACL_LINUX)
-// for shmem
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-// for sync_sockets
-#include <sys/socket.h>
-#endif
-
-
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 #include "native_client/src/third_party/ppapi/c/pp_size.h"
-#include "native_client/src/third_party/ppapi/c/ppb_audio.h"
-#include "native_client/src/third_party/ppapi/c/ppb_audio_config.h"
 
-
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/pepper_emu.h"
-#include "native_client/src/trusted/sel_universal/srpc_helper.h"
-
-using nacl::DescWrapperFactory;
-using nacl::DescWrapper;
 
 // ======================================================================
 const int kInvalidInstance = 0;
 const int kInvalidHandle = 0;
-const int kFirstAudioHandle = 300;
-const int kFirstAudioConfigHandle = 400;
-const int kBytesPerSample = 4;  // 16-bit stereo
-
-const int kRecommendSampleFrameCount = 2048;
-const int kMaxAudioBufferSize = 0x10000;
 
 // ======================================================================
 
@@ -65,18 +39,6 @@ const int kMaxAudioBufferSize = 0x10000;
 // we expect them to be zero initialized.
 static struct {
   int instance;
-
-  // audio stuff
-  int handle_audio;
-  int handle_audio_config;
-
-  int sample_frequency;
-  int sample_frame_count;
-
-  nacl::DescWrapper* desc_audio_shmem;
-  nacl::DescWrapper* desc_audio_sync_in;
-  nacl::DescWrapper* desc_audio_sync_out;
-  void* addr_audio;
 
   // for event loggging and replay
   std::ofstream event_logger_stream;
@@ -91,192 +53,6 @@ static struct {
 } Global;
 
 // ======================================================================
-static void AudioCallBack(void* data, unsigned char* buffer, int length) {
-  NaClLog(2, "AudioCallBack(%p, %p, %d)\n", data, buffer, length);
-  UNREFERENCED_PARAMETER(data);
-  CHECK(length == Global.sample_frame_count * kBytesPerSample);
-  // NOTE: we copy the previously filled buffer.
-  //       This introduces extra latency but simplifies the design
-  //       as we do not have to wait for the nexe to generate the data.
-  memcpy(buffer, Global.addr_audio, length);
-
-  // ping sync socket
-  int value = 0;
-  Global.desc_audio_sync_in->Write(&value, sizeof value);
-}
-
-// From the PPB_Audio API
-// PP_Resource Create(PP_Instance instance, PP_Resource config,
-//                    PPB_Audio_Callback audio_callback, void* user_data);
-// PPB_Audio_Create:ii:i
-static void PPB_Audio_Create(SRPC_PARAMS) {
-  int instance = ins[0]->u.ival;
-  int handle = ins[1]->u.ival;
-  NaClLog(1, "PPB_Audio_Create(%d, %d)\n", instance, handle);
-  CHECK(instance == Global.instance);
-  CHECK(handle == Global.handle_audio_config);
-
-  nacl::DescWrapperFactory factory;
-#if (NACL_WINDOWS || NACL_OSX)
-  NaClLog(LOG_ERROR, "HandlerSyncSocketCreate NYI for windows/mac\n");
-#else
-  nacl::Handle handles[2] = {nacl::kInvalidHandle, nacl::kInvalidHandle};
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, handles) != 0) {
-    NaClLog(LOG_FATAL, "cannot create syn sockets\n");
-  }
-  Global.desc_audio_sync_in = factory.ImportSyncSocketHandle(handles[0]);
-  Global.desc_audio_sync_out = factory.ImportSyncSocketHandle(handles[1]);
-#endif
-  Global.desc_audio_shmem = factory.MakeShm(kMaxAudioBufferSize);
-  size_t dummy_size;
-
-  if (Global.desc_audio_shmem->Map(&Global.addr_audio, &dummy_size)) {
-    NaClLog(LOG_FATAL, "cannot map audio shmem\n");
-  }
-  NaClLog(LOG_INFO, "PPB_Audio_Create: buffer is %p\n", Global.addr_audio);
-
-  Global.sdl_engine->AudioInit16Bit(Global.sample_frequency,
-                                    2,
-                                    Global.sample_frame_count,
-                                    &AudioCallBack);
-
-  CHECK(Global.handle_audio == kInvalidHandle);
-  Global.handle_audio = kFirstAudioHandle;
-  outs[0]->u.ival = Global.handle_audio;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_INIT_AUDIO, 0, 0, 0, 0);
-  Global.sdl_engine->PushUserEvent(&event);
-}
-
-// From the PPB_Audio API
-// PP_Bool IsAudio(PP_Resource resource)
-// PPB_Audio_IsAudio:i:i
-static void PPB_Audio_IsAudio(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_Audio_IsAudio(%d)\n", handle);
-  CHECK(handle == Global.handle_audio);
-
-  outs[0]->u.ival = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the PPB_Audio API
-// PP_Resource GetCurrentConfig(PP_Resource audio);
-// PPB_Audio_GetCurrentConfig:i:i
-static void PPB_Audio_GetCurrentConfig(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_Audio_GetCurrentConfig(%d)\n", handle);
-  CHECK(handle == Global.handle_audio);
-  CHECK(Global.handle_audio_config != kInvalidHandle);
-
-  outs[0]->u.ival = Global.handle_audio_config;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the PPB_Audio API
-// PP_Bool StartPlayback(PP_Resource audio);
-// PPB_Audio_StopPlayback:i:i
-static void PPB_Audio_StopPlayback(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_Audio_StopPlayback(%d)\n", handle);
-  CHECK(handle == Global.handle_audio);
-  Global.sdl_engine->AudioStop();
-
-  outs[0]->u.ival = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the PPB_Audio API
-// PP_Bool StopPlayback(PP_Resource audio);
-// PPB_Audio_StartPlayback:i:i
-static void PPB_Audio_StartPlayback(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_Audio_StartPlayback(%d)\n", handle);
-  CHECK(handle == Global.handle_audio);
-  Global.sdl_engine->AudioStart();
-
-  outs[0]->u.ival = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// From the PPB_AudioConfig API
-// PP_Resource CreateStereo16Bit(PP_Instance instance,
-//                               PP_AudioSampleRate sample_rate,
-//                               uint32_t sample_frame_count);
-// PPB_AudioConfig_CreateStereo16Bit:iii:i
-static void PPB_AudioConfig_CreateStereo16Bit(SRPC_PARAMS) {
-  int instance = ins[0]->u.ival;
-  Global.sample_frequency = ins[1]->u.ival;
-  Global.sample_frame_count = ins[2]->u.ival;
-  NaClLog(1, "PPB_AudioConfig_CreateStereo16Bit(%d, %d, %d)\n",
-          instance, Global.sample_frequency, Global.sample_frame_count);
-  CHECK(instance == Global.instance);
-  CHECK(Global.sample_frame_count * kBytesPerSample < kMaxAudioBufferSize);
-  CHECK(Global.handle_audio_config == kInvalidHandle);
-  Global.handle_audio_config = kFirstAudioConfigHandle;
-  outs[0]->u.ival = Global.handle_audio_config;
-
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// PPB_AudioConfig_IsAudioConfig:i:i
-// PP_Bool IsAudioConfig(PP_Resource resource);
-static void PPB_AudioConfig_IsAudioConfig(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_AudioConfig_IsAudioConfig(%d)\n", handle);
-  outs[0]->u.ival = (handle == Global.handle_audio_config);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// PPB_AudioConfig_RecommendSampleFrameCount:ii:i
-// uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
-//                                    uint32_t requested_sample_frame_count);
-static void PPB_AudioConfig_RecommendSampleFrameCount(SRPC_PARAMS) {
-  int sample_frequency = ins[0]->u.ival;
-  int sample_frame_count = ins[1]->u.ival;
-  NaClLog(LOG_INFO, "PPB_AudioConfig_RecommendSampleFrameCount(%d, %d)\n",
-          sample_frequency, sample_frame_count);
-  // This is clearly imperfect.
-  // TODO(robertm): Consider using SDL's negotiation mechanism here
-  outs[0]->u.ival = kRecommendSampleFrameCount;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// PPB_AudioConfig_GetSampleRate:i:i
-// PP_AudioSampleRate GetSampleRate(PP_Resource config);
-static void PPB_AudioConfig_GetSampleRate(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_AudioConfig_GetSampleRate(%d)\n", handle);
-  CHECK(handle == Global.handle_audio_config);
-
-  outs[0]->u.ival = Global.sample_frequency;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-// PPB_AudioConfig_GetSampleFrameCount:i:i
-// uint32_t GetSampleFrameCount(PP_Resource config);
-static void PPB_AudioConfig_GetSampleFrameCount(SRPC_PARAMS) {
-  int handle = ins[0]->u.ival;
-  NaClLog(1, "PPB_AudioConfig_GetSampleFrameCount(%d)\n", handle);
-  CHECK(handle == Global.handle_audio_config);
-
-  outs[0]->u.ival = Global.sample_frame_count;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-
 // TODO(robertm): rename this to HandlerPepperEmuInitialize
 #define TUPLE(a, b) #a #b, a
 bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
@@ -288,20 +64,6 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   }
 
   UNREFERENCED_PARAMETER(ncl);
-  // TODO(robertm): factor the audio video rpcs into a different file
-  // and initialize them via say PepperEmuInitAV()
-  ncl->AddUpcallRpc(TUPLE(PPB_Audio_Create, :ii:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Audio_IsAudio, :i:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Audio_GetCurrentConfig, :i:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Audio_StopPlayback, :i:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_Audio_StartPlayback, :i:i));
-
-  ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_CreateStereo16Bit, :iii:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_IsAudioConfig, :i:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_RecommendSampleFrameCount, :ii:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleRate, :i:i));
-  ncl->AddUpcallRpc(TUPLE(PPB_AudioConfig_GetSampleFrameCount, :i:i));
-
   Global.instance = ExtractInt32(args[1]);
   Global.title = args[4];
 
@@ -309,6 +71,7 @@ bool HandlerPepperEmuInitialize(NaClCommandLoop* ncl,
   Global.sdl_engine = MakeEmuPrimitives(ExtractInt32(args[2]),
                                         ExtractInt32(args[3]),
                                         Global.title.c_str());
+  PepperEmuInitAudio(ncl, Global.sdl_engine);
   PepperEmuInitCore(ncl, Global.sdl_engine);
   PepperEmuInitFileIO(ncl, Global.sdl_engine);
   PepperEmuInitPostMessage(ncl, Global.sdl_engine);
@@ -432,24 +195,6 @@ static void InvokeHandleInputEvent(NaClCommandLoop* ncl,
 }
 
 
-static void InvokeAudioStreamCreated(NaClCommandLoop* ncl) {
-  NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
-  NaClSrpcArg* ins[NACL_SRPC_MAX_ARGS + 1];
-  NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
-  NaClSrpcArg* outs[NACL_SRPC_MAX_ARGS + 1];
-  BuildArgVec(outs, out, 0);
-  BuildArgVec(ins, in, 4);
-  ins[0]->tag = NACL_SRPC_ARG_TYPE_INT;
-  ins[0]->u.ival = Global.handle_audio;
-  ins[1]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  ins[1]->u.hval = Global.desc_audio_shmem->desc();
-  ins[2]->tag = NACL_SRPC_ARG_TYPE_INT;
-  ins[2]->u.ival = Global.sample_frame_count * kBytesPerSample;
-  ins[3]->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  ins[3]->u.hval = Global.desc_audio_sync_out->desc();
-  ncl->InvokeNexeRpc("PPP_Audio_StreamCreated:ihih:", ins, outs);
-}
-
 static bool HandleUserEvent(NaClCommandLoop* ncl, PP_InputEvent* event) {
   // NOTE: this hack is necessary because we are overlaying two different
   //       enums and gcc's range propagation is rather smart.
@@ -458,48 +203,48 @@ static bool HandleUserEvent(NaClCommandLoop* ncl, PP_InputEvent* event) {
   PP_InputEvent_User *user_event = GetUserEvent(event);
 
   switch (event_type) {
-   case CUSTOM_EVENT_TERMINATION:
-    NaClLog(LOG_INFO, "Got termination event\n");
-    return false;
+    case CUSTOM_EVENT_TERMINATION:
+      NaClLog(LOG_INFO, "Got termination event\n");
+      return false;
 
     // This event is created on behalf of PPB_URLLoader_Open
-   case CUSTOM_EVENT_OPEN_CALLBACK:
+    case CUSTOM_EVENT_OPEN_CALLBACK:
     // FALL THROUGH
     // This event is created on behalf of PPB_Core_CallOnMainThread
-   case CUSTOM_EVENT_TIMER_CALLBACK:
+    case CUSTOM_EVENT_TIMER_CALLBACK:
     // FALL THROUGH
     // This event is created on behalf of PPB_URLLoader_ReadResponseBody
-   case CUSTOM_EVENT_READ_CALLBACK:
+    case CUSTOM_EVENT_READ_CALLBACK:
     // FALL THROUGH
     // This event gets created so that we can invoke
     // RunCompletionCallback after PPB_Graphics2D_Flush
-   case CUSTOM_EVENT_FLUSH_CALLBACK: {
-     NaClLog(2, "Completion callback(%d, %d)\n",
-             user_event->callback, user_event->result);
-     InvokeCompletionCallback(ncl,
-                              user_event->callback,
-                              user_event->result,
-                              user_event->pointer,
-                              user_event->size);
-     return true;
-   }
+    case CUSTOM_EVENT_FLUSH_CALLBACK: {
+      NaClLog(2, "Completion callback(%d, %d)\n",
+              user_event->callback, user_event->result);
+      InvokeCompletionCallback(ncl,
+                               user_event->callback,
+                               user_event->result,
+                               user_event->pointer,
+                               user_event->size);
+      return true;
+    }
     // This event gets created so that we can invoke
     // PPP_Audio_StreamCreated after PPB_Audio_Create
-   case CUSTOM_EVENT_INIT_AUDIO:
-    NaClLog(1, "audio init callback\n");
+    case CUSTOM_EVENT_INIT_AUDIO:
+      NaClLog(1, "audio init callback\n");
 #if (NACL_LINUX || NACL_OSX)
-    sleep(1);
+      sleep(1);
 #elif NACL_WINDOWS
-    Sleep(1 * 1000);
+      Sleep(1 * 1000);
 #else
 #error "Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS"
 #endif
-    InvokeAudioStreamCreated(ncl);
-    return true;
+      InvokeAudioStreamCreatedCallback(ncl, user_event);
+      return true;
 
-   default:
-    NaClLog(LOG_FATAL, "unknown event type %d\n", event->type);
-    return false;
+    default:
+     NaClLog(LOG_FATAL, "unknown event type %d\n", event->type);
+     return false;
   }
 }
 

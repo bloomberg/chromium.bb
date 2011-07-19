@@ -9,11 +9,16 @@
 
 class NaClCommandLoop;
 class IMultimedia;
+struct PP_InputEvent_User;
 
+void PepperEmuInitAudio(NaClCommandLoop* ncl, IMultimedia* im);
 void PepperEmuInitCore(NaClCommandLoop* ncl, IMultimedia* im);
 void PepperEmuInitFileIO(NaClCommandLoop* ncl, IMultimedia* im);
 void PepperEmuInitPostMessage(NaClCommandLoop* ncl, IMultimedia* im);
 void PepperEmuInit2D(NaClCommandLoop* ncl, IMultimedia* im);
 void PepperEmuInit3D(NaClCommandLoop* ncl, IMultimedia* im);
+
+void InvokeAudioStreamCreatedCallback(NaClCommandLoop* ncl,
+                                      PP_InputEvent_User *event);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PEPPER_HANDLER_H_ */

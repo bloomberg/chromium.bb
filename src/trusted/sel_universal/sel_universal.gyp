@@ -12,6 +12,7 @@
       'src_files': ['non_standard_pepper_events.cc',
                     'parsing.cc',
                     'pepper_emu_fileio.cc',
+                    'pepper_emu_audio.cc',
                     'pepper_emu_core.cc',
                     'pepper_emu_handler.cc',
                     'pepper_emu_helper.cc',

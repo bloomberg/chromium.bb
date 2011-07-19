@@ -109,11 +109,13 @@ class EmuPrimitivesSimple : public IMultimedia {
   virtual void AudioInit16Bit(int frequency,
                               int channels,
                               int frame_size,
-                              AUDIO_CALLBACK cb) {
+                              AUDIO_CALLBACK cb,
+                              void* cb_data) {
     UNREFERENCED_PARAMETER(frequency);
     UNREFERENCED_PARAMETER(channels);
     UNREFERENCED_PARAMETER(frame_size);
     UNREFERENCED_PARAMETER(cb);
+    UNREFERENCED_PARAMETER(cb_data);
     NaClLog(LOG_FATAL, "AudioInit16Bit() not supported\n");
   }
 
