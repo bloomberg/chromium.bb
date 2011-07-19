@@ -184,6 +184,7 @@
                          NSForegroundColorAttributeName,
                          [self font], NSFontAttributeName,
                          style.get(), NSParagraphStyleAttributeName,
+                         [NSNumber numberWithFloat:0.2], NSKernAttributeName,
                          nil];
   scoped_nsobject<NSAttributedString> ats([[NSAttributedString alloc]
                                             initWithString:[self title]
