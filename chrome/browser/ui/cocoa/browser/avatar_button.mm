@@ -41,6 +41,8 @@
     [button_ setImagePosition:NSImageOnly];
     [[button_ cell] setImageScaling:NSImageScaleProportionallyDown];
     [[button_ cell] setImageDimsWhenDisabled:NO];
+    [[button_ cell] setHighlightsBy:NSContentsCellMask];
+    [[button_ cell] setShowsStateBy:NSContentsCellMask];
     [button_ setBordered:NO];
     [button_ setTarget:self];
     [button_ setAction:@selector(buttonClicked:)];
