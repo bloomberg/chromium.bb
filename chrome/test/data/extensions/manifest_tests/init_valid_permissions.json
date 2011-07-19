@@ -1,5 +1,0 @@
-{
-   "name": "my extension",
-   "permissions": [ "file:///C:/foo.txt" ],
-   "version": "1.0.0.0"
-}

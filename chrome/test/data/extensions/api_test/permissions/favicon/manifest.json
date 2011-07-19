@@ -1,7 +1,0 @@
-{
-  "name": "favicon test",
-  "version": "0.1",
-  "description": "Tests that we can load favicon images.",
-  "background_page": "test.html",
-  "permissions": ["chrome://favicon/"]
-}

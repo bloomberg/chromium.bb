@@ -1,6 +1,0 @@
-# Very slow under Valgrind.
-KeygenHandlerTest.*SmokeTest
-KeygenHandlerTest.*ConcurrencyTest
-
-# Fails Valgrind with varying stack traces. http://crbug.com/43179
-SpdyNetworkTransactionTest.PostWithEarlySynReply

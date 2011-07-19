@@ -1,6 +1,0 @@
-{
-  "name": "connect_external",
-  "version": "1.0",
-  "description": "Tests connect to an external extension.",
-  "background_page": "test.html"
-}

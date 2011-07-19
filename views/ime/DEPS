@@ -1,4 +1,0 @@
-include_rules = [
-  "+third_party/gtk+/gdk/gdkkeysyms.h",
-  "+third_party/gtk+/gtk/gtkimcontextsimpleseqs.h",
-]

@@ -1,5 +1,0 @@
-{
-   "name": "file:/// scheme in permissions list",
-   "permissions": [ "file:///*" ],
-   "version": "1"
-}

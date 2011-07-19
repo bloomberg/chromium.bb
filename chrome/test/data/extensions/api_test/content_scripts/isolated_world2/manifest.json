@@ -1,7 +1,0 @@
-{
-  "name": "isolated world 2",
-  "version": "0.1",
-  "description": "together with isolated world 1, tests that scripts from different extensions run in different worlds",
-  "background_page": "background.html",
-  "permissions": ["http://*/*", "tabs"]
-}

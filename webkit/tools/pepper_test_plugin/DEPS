@@ -1,4 +1,0 @@
-include_rules = [
-  "+gpu/pgl",
-  "+third_party/gles2_book",
-]

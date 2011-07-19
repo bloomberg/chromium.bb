@@ -1,9 +1,0 @@
-{
-  "name": "enabled_app",
-  "version": "0.1",
-  "app": {
-    "launch": {
-      "web_url": "http://www.google.com"
-    }
-  }
-}

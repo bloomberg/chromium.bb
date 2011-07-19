@@ -1,6 +1,0 @@
-include_rules = [
-  "-chrome",
-  "+chrome/browser/ui",  # for browser_test
-  "+chrome/test",  # for browser_test
-]
-

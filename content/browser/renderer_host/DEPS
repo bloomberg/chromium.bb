@@ -1,5 +1,0 @@
-include_rules = [
-  "+content/renderer",  # For single-process mode.
-  "+media/base",  # For media command line switches.
-  "+third_party/zlib",
-]

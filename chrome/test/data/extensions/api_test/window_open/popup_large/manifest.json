@@ -1,7 +1,0 @@
-{
-  "name": "ChromeOS window.open Test",
-  "version": "1",
-  "description": "Test for window.open() from an extension (Large window)",
-  "background_page": "background.html",
-  "permissions": ["tabs"]
-}

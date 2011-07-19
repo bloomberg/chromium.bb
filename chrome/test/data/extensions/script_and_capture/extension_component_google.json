@@ -1,5 +1,0 @@
-{
-   "name": "permission test",
-   "version": "1",
-   "permissions": [ "tabs", "http://www.google.com/" ]
-}

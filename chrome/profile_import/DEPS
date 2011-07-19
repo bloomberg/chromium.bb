@@ -1,6 +1,0 @@
-include_rules = [
-  "+chrome/browser/history",
-  "+chrome/browser/importer",
-  "+chrome/browser/search_engines",
-  "+webkit/glue"
-]

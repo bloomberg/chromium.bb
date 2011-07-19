@@ -1,7 +1,0 @@
-{
-   "name": "nacl permission enabled apitest",
-   "description": "nacl permission enabled extension",
-   "version": "0.1",
-   "background_page": "background.html",
-   "permissions": [ "experimental" ]
-}

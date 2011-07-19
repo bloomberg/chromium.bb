@@ -1,7 +1,0 @@
-<script>
-chrome.tabs.onCreated.addListener(function() {
-  chrome.tabs.onCreated.removeListener(arguments.callee);
-  chrome.extension.getBackgroundPage().verifyCreatedTab.apply(null, arguments);
-});
-window.open('foo.html');
-</script>

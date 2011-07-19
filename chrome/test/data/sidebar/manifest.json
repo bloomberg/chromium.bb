@@ -1,7 +1,0 @@
-{
-  "name": "SidebarTest",
-  "version": "0.1",
-  "description": "interactive_ui_tests, SidebarTest.*",
-  "sidebar": {},
-  "permissions": ["experimental"]
-}

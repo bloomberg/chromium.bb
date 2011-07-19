@@ -1,7 +1,0 @@
-{
-  "name": "window/create.panel",
-  "version": "0.1",
-  "description": "Tests window.create with panel type.",
-  "background_page": "test.html",
-  "permissions": ["experimental", "tabs"]
-}

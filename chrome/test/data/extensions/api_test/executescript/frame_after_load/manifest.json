@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "name": "executeScript after frame has loaded test",
-  "description": "Test extension API: executeScript after frame has loaded",
-  "background_page": "test.html",
-  "permissions": ["tabs", "http://a.com/"]
-}

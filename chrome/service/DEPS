@@ -1,4 +1,0 @@
-include_rules = [
-  # For generated headers.
-  "+grit",
-]

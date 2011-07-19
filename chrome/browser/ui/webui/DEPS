@@ -1,4 +1,0 @@
-include_rules = [
-  # Generated files
-  "+js2webui/chrome/test/data",
-]

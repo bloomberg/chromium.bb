@@ -1,8 +1,0 @@
-{
-  "name": "Test context menu creation from multiple extension pages.",
-  "version": "1.0",
-  "permissions": [
-    "contextMenus"
-  ],
-  "background_page": "background.html"
-}

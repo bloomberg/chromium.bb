@@ -1,9 +1,0 @@
-include_rules = [
-  "-chrome",
-  "+sandbox/src",
-  "+skia/ext",
-  "+third_party/npapi",
-  "+webkit/glue",
-  "+webkit/plugins",
-]
-

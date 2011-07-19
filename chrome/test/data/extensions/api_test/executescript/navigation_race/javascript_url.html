@@ -1,9 +1,0 @@
-<script src="test.js"></script>
-<script>
-function executeCodeInTab(tabId, callback) {
-  chrome.tabs.update(
-      tabId,
-      {url: "javascript:void(document.title = 'hi, I\\'m on ' + location)"},
-      callback);
-}
-</script>

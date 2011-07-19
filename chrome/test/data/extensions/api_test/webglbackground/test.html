@@ -1,9 +1,0 @@
-<canvas></canvas>
-<script>
-chrome.test.runTests([
-  function checkForWebGL() {
-    chrome.test.assertEq(null, document.getElementsByTagName("canvas")[0].getContext("experimental-webgl"));
-    chrome.test.succeed();
-  }
-]);
-</script>

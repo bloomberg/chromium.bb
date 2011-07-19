@@ -1,6 +1,0 @@
-{
-  "name": "background page alert crash",
-  "version": "0.1",
-  "description": "Pops up an alert dialog from the bg page",
-  "background_page": "test.html"
-}

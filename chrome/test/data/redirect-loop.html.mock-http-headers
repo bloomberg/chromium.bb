@@ -1,3 +1,0 @@
-HTTP/1.1 302 Moved
-Location: /files/redirect-loop.html
-Set-Cookie: A=B

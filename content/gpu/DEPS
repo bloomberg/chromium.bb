@@ -1,9 +1,0 @@
-include_rules = [
-  "-chrome",
-  "+chrome/app",
-  "+gpu/command_buffer",
-  "+libEGL",
-  "+libGLESv2",
-  "+sandbox",
-  "+skia",
-]

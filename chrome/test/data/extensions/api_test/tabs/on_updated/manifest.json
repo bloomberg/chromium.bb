@@ -1,7 +1,0 @@
-{
-  "name": "tabs/on_updated",
-  "version": "0.1",
-  "description": "Tests the behavior of the tabs.onUpdated event with different cases of navigation",
-  "background_page": "test.html",
-  "permissions": ["tabs"]
-}

@@ -1,7 +1,0 @@
-Note: plugin.dll is a Release build of npapi_layout_test_plugin with the mime
-type changed, so it doesn't conflict with the original DLL.
-
-On Linux plugin32.so and plugin64.so are Release builds of
-npapi_layout_test_plugin with the mime type changed. The build machine is
-running 64-bit Hardy with GCC 4.2.4. The binaries have been stripped with
-strip --strip-unneeded.

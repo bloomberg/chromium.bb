@@ -1,8 +1,0 @@
-{
-  "name": "Navigation race",
-  "version": "1",
-  "permissions": [
-    "tabs",
-    "http://b.com/"
-  ]
-}

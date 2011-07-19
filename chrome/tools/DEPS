@@ -1,4 +1,0 @@
-include_rules = [
-  "+chrome/browser",
-  "+chrome/third_party/hunspell/google",
-]

@@ -1,6 +1,0 @@
-{
-   "name": "Storage_UnlimitedQuota",
-   "version": "1.0",
-   "description": "An extension that asks for unlimited storage space.",
-   "permissions": ["unlimited_storage"]
-}

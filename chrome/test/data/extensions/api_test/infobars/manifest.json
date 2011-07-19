@@ -1,8 +1,0 @@
-{
-  "name": "chrome.extension.infobars",
-  "version": "0.1",
-  "description": "end-to-end browser test for chrome.extension.infobars API",
-  "background_page": "test.html",
-  "icons": { "16": "icon.png" },
-  "permissions": ["experimental", "tabs"]
-}

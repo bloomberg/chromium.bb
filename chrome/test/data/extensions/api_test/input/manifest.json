@@ -1,7 +1,0 @@
-{
-  "name": "chrome.experimental.input",
-  "version": "0.1",
-  "description": "end-to-end browser test for chrome.experimental.input API",
-  "background_page": "test.html",
-  "permissions": ["experimental"]
-}

@@ -1,6 +1,0 @@
-{
-  "description": "_locales can't be empty",
-  "name": "no_locale_data",
-  "default_locale": "en_US",
-  "version": "1.0"
-}

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "name": "executeScript.file then close",
-  "description": "Tests that executeScript with a file source can be fired from a page that immediately closes without crashing the browser",
-  "background_page": "test.html",
-  "permissions": ["tabs", "http://b.com/"]
-}

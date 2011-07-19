@@ -1,7 +1,0 @@
-{
-  "name": "Uninstall policy controlled extension test",
-  "version": "0.1",
-  "permissions": ["management"],
-  "background_page": "background.html"
-}
-

@@ -1,8 +1,0 @@
-{
-  "name": "New tab override test",
-  "version": "0.1",
-  "description": "Test chrome://newtab override",
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
-  }
-}

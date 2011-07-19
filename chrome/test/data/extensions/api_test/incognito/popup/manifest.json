@@ -1,9 +1,0 @@
-{
-  "name": "Incognito popup tester",
-  "version": "0.1",
-  "description": "apitest for popups in incognito mode",
-  "permissions": [ "tabs" ],
-  "browser_action": {
-    "popup": "popup.html"
-  }
-}
