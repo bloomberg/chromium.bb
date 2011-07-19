@@ -155,9 +155,17 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   ASSERT_TRUE(windowOpenerValid);
 }
 
+
+#if defined(OS_WIN)
+// Seems to timeout sometimes on Windows: http://crbug.com/89766
+#define MAYBE_AppProcessInstances FLAKY_AppProcessInstances
+#else
+#define MAYBE_AppProcessInstances AppProcessInstances
+#endif
+
 // Test that hosted apps without the background permission use a process per app
 // instance model, such that separate instances are in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
