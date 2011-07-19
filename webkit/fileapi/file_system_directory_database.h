@@ -38,7 +38,7 @@ class FileSystemDirectoryDatabase {
     FileInfo();
     ~FileInfo();
 
-    bool is_directory() {
+    bool is_directory() const {
       return data_path.empty();
     }
 

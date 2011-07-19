@@ -128,6 +128,9 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
     // This will just give the entry's name instead of entire path
     // if we use current.value().
     entry.name = file_util::FileEnumerator::GetFilename(info).value();
+    entry.size = file_util::FileEnumerator::GetFilesize(info);
+    entry.last_modified_time =
+        file_util::FileEnumerator::GetLastModifiedTime(info);
     // TODO(rkc): Fix this also once we've refactored file_util
     // http://code.google.com/p/chromium-os/issues/detail?id=15948
     // This currently just prevents a file from showing up at all

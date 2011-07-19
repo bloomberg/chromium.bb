@@ -187,6 +187,14 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
 
+  base::PlatformFileError GetFileInfoInternal(
+      FileSystemDirectoryDatabase* db,
+      FileSystemOperationContext* context,
+      FileId file_id,
+      FileInfo* local_info,
+      base::PlatformFileInfo* file_info,
+      FilePath* platform_file_path);
+
   // Creates a new file, both the underlying backing file and the entry in the
   // database.  file_info is an in-out parameter.  Supply the name and
   // parent_id; data_path is ignored.  On success, data_path will

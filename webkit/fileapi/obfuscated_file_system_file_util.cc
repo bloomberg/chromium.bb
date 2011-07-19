@@ -172,24 +172,8 @@ PlatformFileError ObfuscatedFileSystemFileUtil::GetFileInfo(
   if (!db->GetFileWithPath(virtual_path, &file_id))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   FileInfo local_info;
-  if (!db->GetFileInfo(file_id, &local_info)) {
-    NOTREACHED();
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-  if (local_info.is_directory()) {
-    file_info->is_directory = true;
-    file_info->is_symbolic_link = false;
-    file_info->last_modified = local_info.modification_time;
-    *platform_file_path = FilePath();
-    // We don't fill in ctime or atime.
-    return base::PLATFORM_FILE_OK;
-  }
-  if (local_info.data_path.empty())
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
-    context->src_type(), local_info.data_path);
-  return underlying_file_util_->GetFileInfo(
-      context, data_path, file_info, platform_file_path);
+  return GetFileInfoInternal(db, context, file_id,
+                             &local_info, file_info, platform_file_path);
 }
 
 PlatformFileError ObfuscatedFileSystemFileUtil::ReadDirectory(
@@ -226,13 +210,20 @@ PlatformFileError ObfuscatedFileSystemFileUtil::ReadDirectory(
   }
   std::vector<FileId>::iterator iter;
   for (iter = children.begin(); iter != children.end(); ++iter) {
-    if (!db->GetFileInfo(*iter, &file_info)) {
+    base::PlatformFileInfo platform_file_info;
+    FilePath file_path;
+    if (GetFileInfoInternal(db, context, *iter,
+                            &file_info, &platform_file_info, &file_path) !=
+        base::PLATFORM_FILE_OK) {
       NOTREACHED();
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
+
     base::FileUtilProxy::Entry entry;
     entry.name = file_info.name;
     entry.is_directory = file_info.is_directory();
+    entry.size = entry.is_directory ? 0 : platform_file_info.size;
+    entry.last_modified_time = platform_file_info.last_modified;
     entries->push_back(entry);
   }
   return base::PLATFORM_FILE_OK;
@@ -717,6 +708,39 @@ ObfuscatedFileSystemFileUtil::CreateFileEnumerator(
   if (!db)
     return new FileSystemFileUtil::EmptyFileEnumerator();
   return new ObfuscatedFileSystemFileEnumerator(db, root_path);
+}
+
+PlatformFileError ObfuscatedFileSystemFileUtil::GetFileInfoInternal(
+    FileSystemDirectoryDatabase* db,
+    FileSystemOperationContext* context,
+    FileId file_id,
+    FileInfo* local_info,
+    base::PlatformFileInfo* file_info,
+    FilePath* platform_file_path) {
+  DCHECK(db);
+  DCHECK(context);
+  DCHECK(file_info);
+  DCHECK(platform_file_path);
+
+  if (!db->GetFileInfo(file_id, local_info)) {
+    NOTREACHED();
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+
+  if (local_info->is_directory()) {
+    file_info->is_directory = true;
+    file_info->is_symbolic_link = false;
+    file_info->last_modified = local_info->modification_time;
+    *platform_file_path = FilePath();
+    // We don't fill in ctime or atime.
+    return base::PLATFORM_FILE_OK;
+  }
+  if (local_info->data_path.empty())
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
+    context->src_type(), local_info->data_path);
+  return underlying_file_util_->GetFileInfo(
+      context, data_path, file_info, platform_file_path);
 }
 
 PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
