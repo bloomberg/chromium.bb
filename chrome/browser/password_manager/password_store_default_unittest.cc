@@ -151,7 +151,7 @@ MATCHER(EmptyWDResult, "") {
 }
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
-  // Prentend that the migration has already taken place.
+  // Pretend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
                                             true,
                                             PrefService::UNSYNCABLE_PREF);
@@ -399,7 +399,7 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
       new SignalingTask(&done));
   done.Wait();
 
-  // Prentend that the migration has already taken place.
+  // Pretend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
                                             true,
                                             PrefService::UNSYNCABLE_PREF);
@@ -431,7 +431,7 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
-  // Prentend that the migration has already taken place.
+  // Pretend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
                                             true,
                                             PrefService::UNSYNCABLE_PREF);

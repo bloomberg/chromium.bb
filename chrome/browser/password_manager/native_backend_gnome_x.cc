@@ -23,66 +23,28 @@
 
 using webkit_glue::PasswordForm;
 
-namespace {
+#define GNOME_KEYRING_DEFINE_POINTER(name) \
+  typeof(&::gnome_keyring_##name) GnomeKeyringLoader::gnome_keyring_##name;
+GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DEFINE_POINTER)
+#undef GNOME_KEYRING_DEFINE_POINTER
 
-// Many of the gnome_keyring_* functions use variable arguments, which makes
-// them difficult if not impossible to wrap in C. Therefore, we want the
-// actual uses below to either call the functions directly (if we are linking
-// against libgnome-keyring), or call them via appropriately-typed function
-// pointers (if we are dynamically loading libgnome-keyring).
-
-// Thus, instead of making a wrapper class with two implementations, we use
-// the preprocessor to rename the calls below in the dynamic load case, and
-// provide a function to initialize a set of function pointers that have the
-// alternate names. We also make sure the types are correct, since otherwise
-// dynamic loading like this would leave us vulnerable to signature changes.
+bool GnomeKeyringLoader::keyring_loaded = false;
 
 #if defined(DLOPEN_GNOME_KEYRING)
 
-// Call a given parameter with the name of each function we use from GNOME
-// Keyring.
-#define GNOME_KEYRING_FOR_EACH_FUNC(F)          \
-  F(is_available)                               \
-  F(store_password)                             \
-  F(delete_password)                            \
-  F(find_itemsv)                                \
-  F(result_to_message)
-
-// Define the actual function pointers that we'll use in application code.
-#define GNOME_KEYRING_DEFINE_WRAPPER(name) \
-  typeof(&gnome_keyring_##name) wrap_gnome_keyring_##name;
-GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DEFINE_WRAPPER)
-#undef GNOME_KEYRING_DEFINE_WRAPPER
-
-// Make it easy to initialize the function pointers above with a loop below.
-#define GNOME_KEYRING_FUNCTION(name) \
-  {"gnome_keyring_"#name, reinterpret_cast<void**>(&wrap_gnome_keyring_##name)},
-const struct {
-  const char* name;
-  void** pointer;
-} gnome_keyring_functions[] = {
-  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_FUNCTION)
+#define GNOME_KEYRING_FUNCTION_INFO(name) \
+  {"gnome_keyring_"#name, reinterpret_cast<void**>(&gnome_keyring_##name)},
+const GnomeKeyringLoader::FunctionInfo GnomeKeyringLoader::functions[] = {
+  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_FUNCTION_INFO)
   {NULL, NULL}
 };
-#undef GNOME_KEYRING_FUNCTION
-
-#undef GNOME_KEYRING_FOR_EACH_FUNC
-
-// Allow application code below to use the normal function names, but actually
-// end up using the function pointers above instead.
-#define gnome_keyring_is_available \
-    wrap_gnome_keyring_is_available
-#define gnome_keyring_store_password \
-    wrap_gnome_keyring_store_password
-#define gnome_keyring_delete_password \
-    wrap_gnome_keyring_delete_password
-#define gnome_keyring_find_itemsv \
-    wrap_gnome_keyring_find_itemsv
-#define gnome_keyring_result_to_message \
-    wrap_gnome_keyring_result_to_message
+#undef GNOME_KEYRING_FUNCTION_INFO
 
 /* Load the library and initialize the function pointers. */
-bool LoadGnomeKeyring() {
+bool GnomeKeyringLoader::LoadGnomeKeyring() {
+  if (keyring_loaded)
+    return true;
+
   void* handle = dlopen("libgnome-keyring.so.0", RTLD_NOW | RTLD_GLOBAL);
   if (!handle) {
     // We wanted to use GNOME Keyring, but we couldn't load it. Warn, because
@@ -91,30 +53,40 @@ bool LoadGnomeKeyring() {
     LOG(WARNING) << "Could not load libgnome-keyring.so.0: " << dlerror();
     return false;
   }
-  for (size_t i = 0; gnome_keyring_functions[i].name; ++i) {
+
+  for (size_t i = 0; functions[i].name; ++i) {
     dlerror();
-    *gnome_keyring_functions[i].pointer =
-        dlsym(handle, gnome_keyring_functions[i].name);
+    *functions[i].pointer = dlsym(handle, functions[i].name);
     const char* error = dlerror();
     if (error) {
       LOG(ERROR) << "Unable to load symbol "
-                 << gnome_keyring_functions[i].name << ": " << error;
+                 << functions[i].name << ": " << error;
       dlclose(handle);
       return false;
     }
   }
+
+  keyring_loaded = true;
   // We leak the library handle. That's OK: this function is called only once.
   return true;
 }
 
-#else  // !defined(DLOPEN_GNOME_KEYRING)
+#else  // defined(DLOPEN_GNOME_KEYRING)
 
-bool LoadGnomeKeyring() {
-  // We don't need to do anything here.
+bool GnomeKeyringLoader::LoadGnomeKeyring() {
+  if (keyring_loaded)
+    return true;
+#define GNOME_KEYRING_ASSIGN_POINTER(name) \
+  gnome_keyring_##name = &::gnome_keyring_##name;
+  GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_ASSIGN_POINTER)
+#undef GNOME_KEYRING_ASSIGN_POINTER
+  keyring_loaded = true;
   return true;
 }
 
-#endif  // !defined(DLOPEN_GNOME_KEYRING)
+#endif  // defined(DLOPEN_GNOME_KEYRING)
+
+namespace {
 
 const char kGnomeKeyringAppString[] = "chrome";
 
@@ -221,7 +193,7 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
 // a WaitResult() method should be called to wait for the result. Each instance
 // supports only one outstanding method at a time, though multiple instances may
 // be used in parallel.
-class GKRMethod {
+class GKRMethod : public GnomeKeyringLoader {
  public:
   typedef NativeBackendGnome::PasswordFormList PasswordFormList;
 

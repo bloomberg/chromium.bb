@@ -1490,12 +1490,14 @@
         'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
         'browser/password_manager/login_database_unittest.cc',
+        'browser/password_manager/native_backend_gnome_x_unittest.cc',
         'browser/password_manager/password_form_data.cc',
         'browser/password_manager/password_form_manager_unittest.cc',
         'browser/password_manager/password_manager_unittest.cc',
         'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
+        'browser/password_manager/password_store_x_unittest.cc',
         'browser/plugin_exceptions_table_model_unittest.cc',
         'browser/policy/asynchronous_policy_loader_unittest.cc',
         'browser/policy/asynchronous_policy_provider_unittest.cc',
@@ -1827,7 +1829,7 @@
         'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',
-	'browser/ui/gtk/accelerators_gtk_unittest.cc',
+        'browser/ui/gtk/accelerators_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
@@ -2087,11 +2089,12 @@
         }],
         ['chromeos==1', {
           'sources/': [
+            ['exclude', '^browser/notifications/desktop_notifications_unittest.cc'],
+            ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
+            ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
-            ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
-            ['exclude', 'browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
-            ['exclude', 'browser/ui/webui/print_preview_ui_unittest.cc'],
+            ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],
           ],
         }, { # else: chromeos == 0
           'sources/': [
@@ -2111,15 +2114,30 @@
             }],
             ['toolkit_views==1', {
               'sources!': [
-		 'browser/ui/gtk/accelerators_gtk_unittest.cc',
-                 'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
-                 'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
-                 'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
-                 'browser/ui/gtk/gtk_expanded_container_unittest.cc',
-                 'browser/ui/gtk/gtk_theme_service_unittest.cc',
-                 'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',
-                 'browser/ui/gtk/reload_button_gtk_unittest.cc',
-                 'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
+                'browser/ui/gtk/accelerators_gtk_unittest.cc',
+                'browser/ui/gtk/bookmarks/bookmark_bar_gtk_unittest.cc',
+                'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
+                'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
+                'browser/ui/gtk/gtk_expanded_container_unittest.cc',
+                'browser/ui/gtk/gtk_theme_service_unittest.cc',
+                'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',
+                'browser/ui/gtk/reload_button_gtk_unittest.cc',
+                'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
+              ],
+            }],
+            ['chromeos==0', {
+              'conditions': [
+                ['use_gnome_keyring==1', {
+                  # We use a few library functions directly, so link directly.
+                  'dependencies': [
+                    '../build/linux/system.gyp:gnome_keyring_direct',
+                  ],
+                }, {
+                  # Disable the GNOME Keyring tests if we are not using it.
+                  'sources!': [
+                    'browser/password_manager/native_backend_gnome_x_unittest.cc',
+                  ],
+                }],
               ],
             }],
           ],

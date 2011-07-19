@@ -3,20 +3,28 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_x.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
-#include "content/common/notification_service.h"
+#include "content/common/notification_registrar.h"
+#include "content/common/notification_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,12 +62,14 @@ class DBThreadObserverHelper
  public:
   DBThreadObserverHelper() : done_event_(true, false) {}
 
-  void Init() {
+  void Init(PasswordStore* password_store) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
+        NewRunnableMethod(this,
+                          &DBThreadObserverHelper::AddObserverTask,
+                          make_scoped_refptr(password_store)));
     done_event_.Wait();
   }
 
@@ -75,11 +85,11 @@ class DBThreadObserverHelper
  protected:
   friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
 
-  void AddObserverTask() {
+  void AddObserverTask(PasswordStore* password_store) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.Add(&observer_,
-                   chrome::LOGINS_CHANGED,
-                   NotificationService::AllSources());
+                   chrome::NOTIFICATION_LOGINS_CHANGED,
+                   Source<PasswordStore>(password_store));
     done_event_.Signal();
   }
 
@@ -357,9 +367,9 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   // Initializing the PasswordStore should trigger a migration.
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
-                           profile_.get(),
-                           wds_.get(),
-                           GetBackend()));
+                         profile_.get(),
+                         wds_.get(),
+                         GetBackend()));
   store->Init();
 
   // Check that the migration preference has not been initialized.
@@ -437,7 +447,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
 
-  store->Shutdown();
+  // Public in PasswordStore, protected in PasswordStoreX.
+  static_cast<PasswordStore*>(store)->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
@@ -473,7 +484,7 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
       new SignalingTask(&done));
   done.Wait();
 
-  // Prentend that the migration has already taken place.
+  // Pretend that the migration has already taken place.
   profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
                                             true,
                                             PrefService::UNSYNCABLE_PREF);
@@ -481,9 +492,9 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
-                           profile_.get(),
-                           wds_.get(),
-                           GetBackend()));
+                         profile_.get(),
+                         wds_.get(),
+                         GetBackend()));
   store->Init();
 
   MockPasswordStoreConsumer consumer;
@@ -503,7 +514,8 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
 
   STLDeleteElements(&unexpected_autofillable);
 
-  store->Shutdown();
+  // Public in PasswordStore, protected in PasswordStoreX.
+  static_cast<PasswordStore*>(store)->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
@@ -515,9 +527,9 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
-                           profile_.get(),
-                           wds_.get(),
-                           GetBackend()));
+                         profile_.get(),
+                         wds_.get(),
+                         GetBackend()));
   store->Init();
 
   PasswordFormData form_data =
@@ -534,15 +546,15 @@ TEST_P(PasswordStoreXTest, Notifications) {
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
   scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
-  helper->Init();
+  helper->Init(store);
 
   const PasswordStoreChange expected_add_changes[] = {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_add_changes)))));
@@ -565,8 +577,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_update_changes)))));
@@ -584,8 +596,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(helper->observer(),
-              Observe(int(chrome::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+              Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_delete_changes)))));
@@ -598,7 +610,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
       new SignalingTask(&done));
   done.Wait();
 
-  store->Shutdown();
+  // Public in PasswordStore, protected in PasswordStoreX.
+  static_cast<PasswordStore*>(store)->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
@@ -654,9 +667,9 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
-                           profile_.get(),
-                           wds_.get(),
-                           GetBackend()));
+                         profile_.get(),
+                         wds_.get(),
+                         GetBackend()));
   store->Init();
 
   MockPasswordStoreConsumer consumer;
@@ -740,7 +753,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
 
-  store->Shutdown();
+  // Public in PasswordStore, protected in PasswordStoreX.
+  static_cast<PasswordStore*>(store)->Shutdown();
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

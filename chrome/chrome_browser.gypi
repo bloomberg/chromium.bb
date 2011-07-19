@@ -3857,7 +3857,7 @@
           'conditions': [
             ['use_gnome_keyring==1', {
               'dependencies': [
-                '../build/linux/system.gyp:gnome-keyring',
+                '../build/linux/system.gyp:gnome_keyring',
               ],
             }],
             ['linux_breakpad==1', {
