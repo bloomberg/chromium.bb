@@ -319,7 +319,6 @@
           'dependencies': [
             'content_common',
             '../testing/gtest.gyp:gtest',
-            '../testing/gtest.gyp:gtest_main',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/angle/include',

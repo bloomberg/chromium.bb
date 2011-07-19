@@ -21,11 +21,15 @@
 // Include gtest.h out of order because <X11/X.h> #define's Bool & None, which
 // gtest uses as struct names (inside a namespace).  This means that
 // #include'ing gtest after anything that pulls in X.h fails to compile.
+// This is http://code.google.com/p/googletest/issues/detail?id=371
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/stringize_macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -43,11 +47,51 @@ using media::VideoDecodeAccelerator;
 
 namespace {
 
-// General-purpose constants for this test.
-enum {
-  kFrameWidth = 320,
-  kFrameHeight = 240,
-};
+// Values optionally filled in from flags; see main() below.
+// The syntax of this variable is:
+//   filename:width:height:numframes:numNALUs:minFPSwithRender:minFPSnoRender
+// where only the first field is required.  Value details:
+// - |filename| must be an h264 Annex B (NAL) stream.
+// - |width| and |height| are in pixels.
+// - |numframes| is the number of picture frames in the file.
+// - |numNALUs| is the number of NAL units in the stream.
+// - |minFPSwithRender| and |minFPSnoRender| are minimum frames/second speeds
+//   expected to be achieved with and without rendering to the screen, resp.
+//   (the latter tests just decode speed).
+// An empty value for a numeric field means "ignore".
+const char* test_video_data = "test-25fps.h264:320:240:250:258:50:175";
+
+// Parse |data| into its constituent parts and set the various output fields
+// accordingly.  CHECK-fails on unexpected or missing required data.
+// Unspecified optional fields are set to -1.
+void ParseTestVideoData(std::string data,
+                        std::string* file_name,
+                        int* width, int* height,
+                        int* num_frames,
+                        int* num_NALUs,
+                        int* min_fps_render,
+                        int* min_fps_no_render) {
+  std::vector<std::string> elements;
+  base::SplitString(data, ':', &elements);
+  CHECK_GE(elements.size(), 1U) << data;
+  CHECK_LE(elements.size(), 7U) << data;
+  *file_name = elements[0];
+  *width = *height = *num_frames = *num_NALUs = -1;
+  *min_fps_render = *min_fps_no_render = -1;
+  if (!elements[1].empty())
+    CHECK(base::StringToInt(elements[1], width));
+  if (!elements[2].empty())
+    CHECK(base::StringToInt(elements[2], height));
+  if (!elements[3].empty())
+    CHECK(base::StringToInt(elements[3], num_frames));
+  if (!elements[4].empty())
+    CHECK(base::StringToInt(elements[4], num_NALUs));
+  if (!elements[5].empty())
+    CHECK(base::StringToInt(elements[5], min_fps_render));
+  if (!elements[6].empty())
+    CHECK(base::StringToInt(elements[6], min_fps_no_render));
+}
+
 
 // Helper for managing X11, EGL, and GLES2 resources.  Xlib is not thread-safe,
 // and GL state is thread-specific, so all the methods of this class (except for
@@ -508,15 +552,12 @@ void EglRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_->Initialize(config));
 }
 
-
 void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions) {
   if (decoder_deleted())
     return;
   std::vector<media::PictureBuffer> buffers;
-  CHECK_EQ(dimensions.width(), kFrameWidth);
-  CHECK_EQ(dimensions.height(), kFrameHeight);
 
   for (uint32 i = 0; i < requested_num_of_buffers; ++i) {
     uint32 id = picture_buffers_by_id_.size();
@@ -720,6 +761,15 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
   const size_t num_concurrent_decoders = GetParam().b;
   const int delete_decoder_state = GetParam().c;
 
+  std::string test_video_file;
+  int frame_width, frame_height;
+  int num_frames, num_NALUs, min_fps_render, min_fps_no_render;
+  ParseTestVideoData(test_video_data, &test_video_file, &frame_width,
+                     &frame_height, &num_frames, &num_NALUs,
+                     &min_fps_render, &min_fps_no_render);
+  min_fps_render /= num_concurrent_decoders;
+  min_fps_no_render /= num_concurrent_decoders;
+
   // Suppress EGL surface swapping in all but a few tests, to cut down overall
   // test runtime.
   const bool suppress_swap_to_display = num_NALUs_per_decode > 1;
@@ -729,8 +779,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   // Read in the video data.
   std::string data_str;
-  CHECK(file_util::ReadFileToString(FilePath(std::string("test-25fps.h264")),
-                                    &data_str));
+  CHECK(file_util::ReadFileToString(FilePath(test_video_file), &data_str));
 
   // Initialize the rendering helper.
   base::Thread rendering_thread("EglRenderingVDAClientThread");
@@ -743,8 +792,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
       base::Bind(&RenderingHelper::Initialize,
                  base::Unretained(&rendering_helper),
                  suppress_swap_to_display, num_concurrent_decoders,
-                 static_cast<int>(kFrameWidth), static_cast<int>(kFrameHeight),
-                 &done));
+                 frame_width, frame_height, &done));
   done.Wait();
 
   // First kick off all the decoders.
@@ -799,16 +847,16 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     if (delete_decoder_state < CS_FLUSHED)
       continue;
     EglRenderingVDAClient* client = clients[i];
-    EXPECT_EQ(client->num_decoded_frames(), 25 /* fps */ * 10 /* seconds */);
-    // Hard-coded the number of NALUs in the stream.  Icky.
-    EXPECT_EQ(client->num_done_bitstream_buffers(),
-              ceil(258.0 / num_NALUs_per_decode));
-    // These numbers are pulled out of a hat, but seem to be safe with current
-    // hardware.
-    double min_expected_fps = suppress_swap_to_display ? 175 : 50;
-    min_expected_fps /= num_concurrent_decoders;
+    if (num_frames > 0)
+      EXPECT_EQ(client->num_decoded_frames(), num_frames);
+    if (num_NALUs > 0) {
+      EXPECT_EQ(client->num_done_bitstream_buffers(),
+                ceil(static_cast<double>(num_NALUs) / num_NALUs_per_decode));
+    }
     LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
-    EXPECT_GT(client->frames_per_second(), min_expected_fps);
+    int min_fps = suppress_swap_to_display ? min_fps_no_render : min_fps_render;
+    if (min_fps > 0)
+      EXPECT_GT(client->frames_per_second(), min_fps);
   }
 
   rendering_thread.message_loop()->PostTask(
@@ -866,3 +914,19 @@ INSTANTIATE_TEST_CASE_P(
 // - Test frame size changes mid-stream
 
 }  // namespace
+
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
+  CommandLine cmd_line(argc, argv);  // Must run after InitGoogleTest.
+  CommandLine::SwitchMap switches = cmd_line.GetSwitches();
+  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
+       it != switches.end(); ++it) {
+    if (it->first == "test_video_data") {
+      test_video_data = it->second.c_str();
+      continue;
+    }
+    LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
+  }
+
+  return RUN_ALL_TESTS();
+}
