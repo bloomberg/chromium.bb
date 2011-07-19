@@ -266,6 +266,10 @@ void PPB_Context3D_Impl::UnmapTexSubImage2DCHROMIUM(const void* mem) {
     gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
+gpu::gles2::GLES2Implementation* PPB_Context3D_Impl::GetGLES2Impl() {
+  return gles2_impl();
+}
+
 bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
                               PP_Resource share_context,
                               const int32_t* attrib_list) {

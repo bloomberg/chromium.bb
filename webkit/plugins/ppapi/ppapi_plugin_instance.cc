@@ -55,6 +55,7 @@
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
+#include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
@@ -89,6 +90,7 @@
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
 using ppapi::thunk::PPB_Surface3D_API;
@@ -286,8 +288,8 @@ void PluginInstance::Paint(WebCanvas* canvas,
     return;
   }
 
-  if (bound_graphics_2d())
-    bound_graphics_2d()->Paint(canvas, plugin_rect, paint_rect);
+  if (GetBoundGraphics2D())
+    GetBoundGraphics2D()->Paint(canvas, plugin_rect, paint_rect);
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
@@ -321,10 +323,12 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
 }
 
 unsigned PluginInstance::GetBackingTextureId() {
-  if (!bound_graphics_3d())
-    return 0;
+  if (GetBoundGraphics3D())
+    return GetBoundGraphics3D()->GetBackingTextureId();
+  else if (GetBoundSurface3D())
+    return GetBoundSurface3D()->GetBackingTextureId();
 
-  return bound_graphics_3d()->GetBackingTextureId();
+  return 0;
 }
 
 void PluginInstance::CommitBackingTexture() {
@@ -546,19 +550,23 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 }
 
 void PluginInstance::ViewInitiatedPaint() {
-  if (bound_graphics_2d())
-    bound_graphics_2d()->ViewInitiatedPaint();
-  if (bound_graphics_3d())
-    bound_graphics_3d()->ViewInitiatedPaint();
+  if (GetBoundGraphics2D())
+    GetBoundGraphics2D()->ViewInitiatedPaint();
+  else if (GetBoundGraphics3D())
+    GetBoundGraphics3D()->ViewInitiatedPaint();
+  else if (GetBoundSurface3D())
+    GetBoundSurface3D()->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
-  if (bound_graphics_2d())
-    bound_graphics_2d()->ViewFlushedPaint();
-  if (bound_graphics_3d())
-    bound_graphics_3d()->ViewFlushedPaint();
+  if (GetBoundGraphics2D())
+    GetBoundGraphics2D()->ViewFlushedPaint();
+  else if (GetBoundGraphics3D())
+    GetBoundGraphics3D()->ViewFlushedPaint();
+  else if (GetBoundSurface3D())
+    GetBoundSurface3D()->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(
@@ -568,13 +576,13 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* clip) {
   if (!always_on_top_)
     return false;
-  if (!bound_graphics_2d() || !bound_graphics_2d()->is_always_opaque())
+  if (!GetBoundGraphics2D() || !GetBoundGraphics2D()->is_always_opaque())
     return false;
 
   // We specifically want to compare against the area covered by the backing
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
-  PPB_ImageData_Impl* image_data = bound_graphics_2d()->image_data();
+  PPB_ImageData_Impl* image_data = GetBoundGraphics2D()->image_data();
   gfx::Rect plugin_backing_store_rect(position_.origin(),
                                       gfx::Size(image_data->width(),
                                                 image_data->height()));
@@ -1260,7 +1268,7 @@ void PluginInstance::DrawSkBitmapToCanvas(
 }
 #endif  // defined(OS_MACOSX) && !defined(USE_SKIA)
 
-PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
+PPB_Graphics2D_Impl* PluginInstance::GetBoundGraphics2D() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
@@ -1269,7 +1277,16 @@ PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
   return NULL;
 }
 
-PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
+PPB_Graphics3D_Impl* PluginInstance::GetBoundGraphics3D() const {
+  if (bound_graphics_.get() == NULL)
+    return NULL;
+
+  if (bound_graphics_->AsPPB_Graphics3D_API())
+    return static_cast<PPB_Graphics3D_Impl*>(bound_graphics_.get());
+  return NULL;
+}
+
+PPB_Surface3D_Impl* PluginInstance::GetBoundSurface3D() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
@@ -1345,33 +1362,38 @@ PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
                                      PP_Resource device) {
   if (bound_graphics_.get()) {
-    if (bound_graphics_2d()) {
-      bound_graphics_2d()->BindToInstance(NULL);
-    } else if (bound_graphics_.get()) {
-      bound_graphics_3d()->BindToInstance(false);
+    if (GetBoundGraphics2D()) {
+      GetBoundGraphics2D()->BindToInstance(NULL);
+    } else if (GetBoundGraphics3D()) {
+      GetBoundGraphics3D()->BindToInstance(false);
+    } else if (GetBoundSurface3D()) {
+      GetBoundSurface3D()->BindToInstance(false);
     }
-    // Special-case clearing the current device.
-    if (!device) {
-      setBackingTextureId(0);
-      InvalidateRect(gfx::Rect());
-    }
+    bound_graphics_ = NULL;
   }
-  bound_graphics_ = NULL;
 
-  if (!device)
+  // Special-case clearing the current device.
+  if (!device) {
+    setBackingTextureId(0);
+    InvalidateRect(gfx::Rect());
     return PP_TRUE;
+  }
+
+  // Refuse to bind if we're transitioning to fullscreen.
+  if (fullscreen_container_ && !fullscreen_)
+    return PP_FALSE;
 
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
   PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
       static_cast<PPB_Graphics2D_Impl*>(enter_2d.object()) : NULL;
-  EnterResourceNoLock<PPB_Surface3D_API> enter_3d(device, false);
-  PPB_Surface3D_Impl* graphics_3d = enter_3d.succeeded() ?
-      static_cast<PPB_Surface3D_Impl*>(enter_3d.object()) : NULL;
+  EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
+  PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
+      static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;
+  EnterResourceNoLock<PPB_Surface3D_API> enter_surface_3d(device, false);
+  PPB_Surface3D_Impl* surface_3d = enter_surface_3d.succeeded() ?
+      static_cast<PPB_Surface3D_Impl*>(enter_surface_3d.object()) : NULL;
 
   if (graphics_2d) {
-    // Refuse to bind if we're transitioning to fullscreen.
-    if (fullscreen_container_ && !fullscreen_)
-      return PP_FALSE;
     if (graphics_2d->instance() != this)
       return PP_FALSE;  // Can't bind other instance's contexts.
     if (!graphics_2d->BindToInstance(this))
@@ -1381,9 +1403,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     setBackingTextureId(0);
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
-    // Refuse to bind if we're transitioning to fullscreen.
-    if (fullscreen_container_ && !fullscreen_)
-      return PP_FALSE;
     // Make sure graphics can only be bound to the instance it is
     // associated with.
     if (graphics_3d->instance() != this)
@@ -1391,8 +1410,18 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     if (!graphics_3d->BindToInstance(true))
       return PP_FALSE;
 
-    setBackingTextureId(graphics_3d->GetBackingTextureId());
     bound_graphics_ = graphics_3d;
+    setBackingTextureId(graphics_3d->GetBackingTextureId());
+  } else if (surface_3d) {
+    // Make sure graphics can only be bound to the instance it is
+    // associated with.
+    if (surface_3d->instance() != this)
+      return PP_FALSE;
+    if (!surface_3d->BindToInstance(true))
+      return PP_FALSE;
+
+    bound_graphics_ = surface_3d;
+    setBackingTextureId(surface_3d->GetBackingTextureId());
   } else {
     // The device is not a valid resource type.
     return PP_FALSE;

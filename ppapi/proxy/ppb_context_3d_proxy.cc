@@ -512,6 +512,10 @@ void Context3D::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
+gpu::gles2::GLES2Implementation* Context3D::GetGLES2Impl() {
+  return gles2_impl();
+}
+
 // PPB_Context3D_Proxy ---------------------------------------------------------
 
 PPB_Context3D_Proxy::PPB_Context3D_Proxy(Dispatcher* dispatcher,

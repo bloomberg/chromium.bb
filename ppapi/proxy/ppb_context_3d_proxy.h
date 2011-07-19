@@ -76,6 +76,7 @@ class Context3D : public PluginResource,
                                          GLenum type,
                                          GLenum access) OVERRIDE;
   virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
+  virtual gpu::gles2::GLES2Implementation* GetGLES2Impl() OVERRIDE;
 
   bool CreateImplementation();
 

@@ -5718,24 +5718,25 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write(_LICENSE)
     file.Write(_DO_NOT_EDIT_WARNING)
 
-    file.Write("#include \"webkit/plugins/ppapi/ppb_opengles_impl.h\"\n\n")
-
+    file.Write("#include \"ppapi/shared_impl/opengles2_impl.h\"\n\n")
+    file.Write("#include \"base/logging.h\"\n")
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
-    file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
-    file.Write("#include \"ppapi/shared_impl/resource_object_base.h\"\n")
-    file.Write("#include \"ppapi/shared_impl/tracker_base.h\"\n")
-    file.Write("#include \"webkit/plugins/ppapi/ppb_context_3d_impl.h\"\n\n")
+    file.Write("#include \"ppapi/shared_impl/graphics_3d_impl.h\"\n")
+    file.Write("#include \"ppapi/thunk/enter.h\"\n")
+    file.Write("#include \"ppapi/thunk/ppb_context_3d_api.h\"\n\n")
 
-    file.Write("using ppapi::ResourceObjectBase;\n")
-    file.Write("using ppapi::TrackerBase;\n\n")
-    file.Write("namespace webkit {\n")
     file.Write("namespace ppapi {\n\n")
     file.Write("namespace {\n\n")
 
     file.Write("gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {\n")
-    file.Write("  ResourceObjectBase* base = TrackerBase::Get()->GetResourceAPI(context);\n")
-    file.Write("  DCHECK(base->AsPPB_Context3D_API());\n")
-    file.Write("  return static_cast<PPB_Context3D_Impl*>(base)->gles2_impl();\n")
+    file.Write("  thunk::EnterResource<thunk::PPB_Graphics3D_API> enter_g3d(context, false);\n")
+    file.Write("  if (enter_g3d.succeeded()) {\n")
+    file.Write("    return static_cast<Graphics3DImpl*>(enter_g3d.object())->gles2_impl();\n")
+    file.Write("  } else {\n")
+    file.Write("    thunk::EnterResource<thunk::PPB_Context3D_API> enter_c3d(context, true);\n")
+    file.Write("    DCHECK(enter_c3d.succeeded());\n")
+    file.Write("    return enter_c3d.object()->GetGLES2Impl();\n")
+    file.Write("  }\n")
     file.Write("}\n\n")
 
     for func in self.original_functions:
@@ -5766,106 +5767,12 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
+const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
   return &ppb_opengles2;
 }
 
 """)
     file.Write("}  // namespace ppapi\n")
-    file.Write("}  // namespace webkit\n\n")
-
-    file.Close()
-
-  def WritePepperGLES2ProxyImplementation(self, filename):
-    """Writes the Pepper OpenGLES interface implementation."""
-
-    file = CWriter(filename)
-    file.Write(_LICENSE)
-    file.Write(_DO_NOT_EDIT_WARNING)
-
-    file.Write("#include \"ppapi/proxy/ppb_opengles2_proxy.h\"\n\n")
-
-    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
-    file.Write("#include \"ppapi/c/pp_errors.h\"\n")
-    file.Write("#include \"ppapi/c/pp_resource.h\"\n")
-    file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
-    file.Write("#include \"ppapi/proxy/plugin_dispatcher.h\"\n")
-    file.Write("#include \"ppapi/proxy/plugin_resource.h\"\n")
-    file.Write("#include \"ppapi/proxy/ppb_context_3d_proxy.h\"\n")
-    file.Write("#include \"ppapi/shared_impl/resource_object_base.h\"\n")
-    file.Write("#include \"ppapi/shared_impl/tracker_base.h\"\n\n")
-
-    file.Write("namespace pp {\n")
-    file.Write("namespace proxy {\n\n")
-    file.Write("namespace {\n\n")
-    file.Write("gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {\n")
-    file.Write("  ppapi::ResourceObjectBase* base =\n")
-    file.Write("  ppapi::TrackerBase::Get()->GetResourceAPI(context);\n")
-    file.Write("  DCHECK(base->AsPPB_Context3D_API());\n")
-    file.Write("  return static_cast<Context3D*>(base)->gles2_impl();\n")
-    file.Write("}\n\n")
-
-    for func in self.original_functions:
-      if not func.IsCoreGLFunction():
-        continue
-
-      original_arg = func.MakeTypedOriginalArgString("")
-      context_arg = "PP_Resource context_id"
-      if len(original_arg):
-        arg = context_arg + ", " + original_arg
-      else:
-        arg = context_arg
-      file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
-
-      return_str = "" if func.return_type == "void" else "return "
-      file.Write("  %sGetGLES(context_id)->%s(%s);\n" %
-                 (return_str, func.original_name,
-                  func.MakeOriginalArgString("")))
-      file.Write("}\n\n")
-
-    file.Write("const struct PPB_OpenGLES2_Dev opengles2_interface = {\n")
-    file.Write("  &")
-    file.Write(",\n  &".join(
-      f.name for f in self.original_functions if f.IsCoreGLFunction()))
-    file.Write("\n")
-    file.Write("};\n\n")
-
-    file.Write("""
-InterfaceProxy* CreateOpenGLES2Proxy(Dispatcher* dispatcher,
-                                     const void* target_interface) {
-  return new PPB_OpenGLES2_Proxy(dispatcher, target_interface);
-}
-
-}  // namespace
-
-PPB_OpenGLES2_Proxy::PPB_OpenGLES2_Proxy(Dispatcher* dispatcher,
-                                         const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
-}
-
-PPB_OpenGLES2_Proxy::~PPB_OpenGLES2_Proxy() {
-}
-
-// static
-const InterfaceProxy::Info* PPB_OpenGLES2_Proxy::GetInfo() {
-  static const Info info = {
-    &opengles2_interface,
-    PPB_OPENGLES2_DEV_INTERFACE,
-    INTERFACE_ID_PPB_OPENGLES2,
-    false,
-    &CreateOpenGLES2Proxy,
-  };
-  return &info;
-}
-
-bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  return false;
-}
-
-""")
-    file.Write("}  // namespace proxy\n")
-    file.Write("}  // namespace pp\n")
-
     file.Close()
 
   def WriteGLES2ToPPAPIBridge(self, filename):
@@ -5995,12 +5902,7 @@ def main(argv):
 
   elif options.alternate_mode == "chrome_ppapi":
     # To trigger this action, do "make ppapi_gles_implementation"
-    gen.WritePepperGLES2Implementation(
-        "webkit/plugins/ppapi/ppb_opengles_impl.cc")
-
-  elif options.alternate_mode == "chrome_ppapi_proxy":
-    gen.WritePepperGLES2ProxyImplementation(
-        "ppapi/proxy/ppb_opengles2_proxy.cc")
+    gen.WritePepperGLES2Implementation("ppapi/shared_impl/opengles2_impl.cc")
 
   elif options.alternate_mode == "nacl_ppapi":
     gen.WritePepperGLES2NaClProxy(

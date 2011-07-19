@@ -72,6 +72,7 @@ class PPB_Context3D_Impl : public Resource,
                                          GLenum type,
                                          GLenum access) OVERRIDE;
   virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
+  virtual gpu::gles2::GLES2Implementation* GetGLES2Impl() OVERRIDE;
 
   int32_t BindSurfacesImpl(PPB_Surface3D_Impl* draw, PPB_Surface3D_Impl* read);
 

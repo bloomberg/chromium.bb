@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,14 +19,12 @@ class PPB_OpenGLES2_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  const PPB_OpenGLES2_Dev* ppb_gles2_target() const {
+  const PPB_OpenGLES2_Dev* ppb_opengles2_target() const {
     return reinterpret_cast<const PPB_OpenGLES2_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
- private:
 };
 
 }  // namespace proxy

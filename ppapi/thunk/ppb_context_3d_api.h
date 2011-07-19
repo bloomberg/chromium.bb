@@ -9,6 +9,12 @@
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 
+namespace gpu {
+namespace gles2 {
+class GLES2Implementation;
+}  // namespace gles2
+}  // namespace gpu
+
 namespace ppapi {
 namespace thunk {
 
@@ -47,6 +53,9 @@ class PPB_Context3D_API {
                                          GLenum type,
                                          GLenum access) = 0;
   virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
+
+  // For binding with OpenGLES interface.
+  virtual gpu::gles2::GLES2Implementation* GetGLES2Impl() = 0;
 };
 
 }  // namespace thunk

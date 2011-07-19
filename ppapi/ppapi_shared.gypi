@@ -44,6 +44,8 @@
         'shared_impl/input_event_impl.h',
         'shared_impl/instance_impl.cc',
         'shared_impl/instance_impl.h',
+        'shared_impl/opengles2_impl.cc',
+        'shared_impl/opengles2_impl.h',
         'shared_impl/ppapi_preferences.cc',
         'shared_impl/ppapi_preferences.h',
         'shared_impl/ppp_instance_combined.cc',
