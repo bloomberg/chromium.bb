@@ -405,6 +405,11 @@ class BuilderStage(object):
     print >> sys.stderr, description
     return exception, description
 
+  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
+    """Get the location of the current image."""
+    buildroot, board = self._options.buildroot, self._build_config['board']
+    return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
+
   def Run(self):
     """Have the builder execute the stage."""
 
@@ -774,6 +779,14 @@ class BuildTargetStage(BuilderStage):
                                       self._build_config['board'],
                                       extra_env=env)
 
+    # Update link to latest image.
+    latest_image = os.readlink(self.GetImageDirSymlink('latest'))
+    cbuildbot_image_link = self.GetImageDirSymlink()
+    if os.path.lexists(cbuildbot_image_link):
+      os.remove(cbuildbot_image_link)
+
+    os.symlink(latest_image, cbuildbot_image_link)
+
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
@@ -802,6 +815,7 @@ class TestStage(BuilderStage):
       try:
         commands.RunTestSuite(self._build_root,
                               self._build_config['board'],
+                              self.GetImageDirSymlink(),
                               os.path.join(test_results_dir,
                                            'test_harness'),
                               full=(not self._build_config['quick_vm']))
@@ -809,6 +823,7 @@ class TestStage(BuilderStage):
         if self._build_config['chrome_tests']:
           commands.RunChromeSuite(self._build_root,
                                   self._build_config['board'],
+                                  self.GetImageDirSymlink(),
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
       finally:
@@ -828,6 +843,7 @@ class TestHWStage(BuilderStage):
 
     commands.UpdateRemoteHW(self._build_root,
                             self._build_config['board'],
+                            self.GetImageDirSymlink(),
                             ip)
     commands.RemoteRunPyAuto(self._build_root,
                              self._build_config['board'],

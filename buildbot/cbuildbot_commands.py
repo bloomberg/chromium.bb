@@ -237,17 +237,20 @@ def RunUnitTests(buildroot, board, full):
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
-def RunChromeSuite(buildroot, board, results_dir):
+def RunChromeSuite(buildroot, board, image_dir, results_dir):
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
   if os.path.exists(results_dir_in_chroot):
     shutil.rmtree(results_dir_in_chroot)
+
+  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
   cros_lib.OldRunCommand(['bin/cros_run_parallel_vm_tests',
                           '--board=%s' % board,
                           '--quiet',
+                          '--image_path=%s' % image_path,
                           '--results_dir_root=%s' % results_dir,
                           'desktopui_BrowserTest.control$',
                           'desktopui_BrowserTest.control.one',
@@ -256,7 +259,7 @@ def RunChromeSuite(buildroot, board, results_dir):
                          ], cwd=cwd, error_ok=True, enter_chroot=False)
 
 
-def RunTestSuite(buildroot, board, results_dir, full=True):
+def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -264,8 +267,7 @@ def RunTestSuite(buildroot, board, results_dir, full=True):
     shutil.rmtree(results_dir_in_chroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
-                            'latest', 'chromiumos_test_image.bin')
+  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
 
   if full:
     cmd = ['bin/ctest',
@@ -289,12 +291,11 @@ def RunTestSuite(buildroot, board, results_dir, full=True):
   cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=False)
 
 
-def UpdateRemoteHW(buildroot, board, remote_ip):
+def UpdateRemoteHW(buildroot, board, image_dir, remote_ip):
   """Reimage the remote machine using the image modified for test."""
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  test_image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
-                                 'latest', 'chromiumos_test_image.bin')
+  test_image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
   cmd = ['./image_to_live.sh',
          '--remote=%s' % remote_ip,
          '--image=%s' % test_image_path, ]

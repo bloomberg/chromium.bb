@@ -482,6 +482,7 @@ class TestStageTest(AbstractStageTest):
                           full=True)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
+                          mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           full=True)
@@ -508,10 +509,11 @@ class TestStageTest(AbstractStageTest):
     commands.RunUnitTests(self.build_root, self.build_config['board'],
                           full=False)
     commands.RunTestSuite(self.build_root,
-                            self.build_config['board'],
-                            os.path.join(self.fake_results_dir,
-                                         'test_harness'),
-                            full=False)
+                          self.build_config['board'],
+                          mox.IgnoreArg(),
+                          os.path.join(self.fake_results_dir,
+                                       'test_harness'),
+                          full=False)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
@@ -542,6 +544,7 @@ class TestHWStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
+                            mox.IgnoreArg(),
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
@@ -566,6 +569,7 @@ class TestHWStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
+                            mox.IgnoreArg(),
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
@@ -591,6 +595,7 @@ class TestHWStageTest(AbstractStageTest):
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
+                            mox.IgnoreArg(),
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
@@ -700,6 +705,11 @@ class BuildTargetStageTest(AbstractStageTest):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    latest_image_dir = self.build_root + '/src/build/images/x86-generic/latest'
+    self.mox.StubOutWithMock(os, 'readlink')
+    self.mox.StubOutWithMock(os, 'symlink')
+    os.readlink(latest_image_dir).AndReturn('myimage')
+    os.symlink('myimage', '%s-cbuildbot' % latest_image_dir)
 
     # Disable most paths by default and selectively enable in tests
 
