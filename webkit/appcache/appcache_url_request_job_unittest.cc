@@ -187,7 +187,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
     DCHECK(task_stack_.empty());
-    orig_http_factory_ = net::URLRequest::RegisterProtocolFactory(
+    orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     url_request_delegate_.reset(new MockURLRequestDelegate(this));
     storage_delegate_.reset(new MockStorageDelegate(this));
@@ -205,7 +205,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void TearDownTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    net::URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
+        "http", orig_http_factory_);
     orig_http_factory_ = NULL;
     request_.reset();
     url_request_delegate_.reset();

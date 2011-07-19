@@ -75,6 +75,8 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   }
 };
 
+}  // namespace
+
 class FileSystemURLRequestJobTest : public testing::Test {
  protected:
   FileSystemURLRequestJobTest()
@@ -105,12 +107,12 @@ class FileSystemURLRequestJobTest : public testing::Test {
             &FileSystemURLRequestJobTest::OnGetRootPath));
     MessageLoop::current()->RunAllPending();
 
-    net::URLRequest::RegisterProtocolFactory("filesystem",
-                                             &FileSystemURLRequestJobFactory);
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
+        "filesystem", &FileSystemURLRequestJobFactory);
   }
 
   virtual void TearDown() {
-    net::URLRequest::RegisterProtocolFactory("filesystem", NULL);
+    net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
   }
 
   void OnGetRootPath(bool success, const FilePath& root_path,
@@ -227,6 +229,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
 // static
 net::URLRequestJob* FileSystemURLRequestJobTest::job_ = NULL;
+
+namespace {
 
 TEST_F(FileSystemURLRequestJobTest, FileTest) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);

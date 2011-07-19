@@ -48,11 +48,11 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
                             const std::string& response_data)
       : service_url_(service_url),
         response_data_(response_data) {
-    net::URLRequest::RegisterRequestInterceptor(this);
+    net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
   }
 
   virtual ~CannedResponseInterceptor() {
-    net::URLRequest::UnregisterRequestInterceptor(this);
+    net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
   }
 
  private:

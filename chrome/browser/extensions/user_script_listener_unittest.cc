@@ -104,16 +104,18 @@ class SimpleTestJob : public net::URLRequestTestJob {
   ~SimpleTestJob() {}
 };
 
+}  // namespace
+
 class UserScriptListenerTest
     : public ExtensionServiceTestBase,
       public net::URLRequest::Interceptor {
  public:
   UserScriptListenerTest() {
-    net::URLRequest::RegisterRequestInterceptor(this);
+    net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
   }
 
   ~UserScriptListenerTest() {
-    net::URLRequest::UnregisterRequestInterceptor(this);
+    net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
   }
 
   virtual void SetUp() {
@@ -174,6 +176,8 @@ class UserScriptListenerTest
  private:
   ResourceQueue resource_queue_;
 };
+
+namespace {
 
 TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   LoadTestExtension();

@@ -174,7 +174,8 @@ class BlobURLRequestJobTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
 
-    net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
+        "blob", &BlobURLRequestJobFactory);
     url_request_delegate_.reset(new MockURLRequestDelegate(this));
   }
 
@@ -185,7 +186,7 @@ class BlobURLRequestJobTest : public testing::Test {
     url_request_delegate_.reset();
 
     DCHECK(!blob_url_request_job_);
-    net::URLRequest::RegisterProtocolFactory("blob", NULL);
+    net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   }
 
   void TestFinished() {

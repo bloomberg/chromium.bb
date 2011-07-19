@@ -19,11 +19,11 @@ static const int kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;
 ConnectInterceptor::ConnectInterceptor()
     : timed_cache_(base::TimeDelta::FromSeconds(
           kMaxUnusedSocketLifetimeSecondsWithoutAGet)) {
-  net::URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
 }
 
 ConnectInterceptor::~ConnectInterceptor() {
-  net::URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(

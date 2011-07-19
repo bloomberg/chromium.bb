@@ -31,11 +31,11 @@ class AutoUpdateTestRequestJob : public net::URLRequestTestJob {
 
 
 AutoUpdateInterceptor::AutoUpdateInterceptor() {
-  net::URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
 }
 
 AutoUpdateInterceptor::~AutoUpdateInterceptor() {
-  net::URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(

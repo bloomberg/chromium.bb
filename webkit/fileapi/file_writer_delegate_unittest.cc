@@ -222,11 +222,11 @@ void FileWriterDelegateTest::SetUp() {
   SetUpTestHelper(base_dir);
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(
       test_helper_.GetOriginRootPath(), &file_path_));
-  net::URLRequest::RegisterProtocolFactory("blob", &Factory);
+  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", &Factory);
 }
 
 void FileWriterDelegateTest::TearDown() {
-  net::URLRequest::RegisterProtocolFactory("blob", NULL);
+  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   base::ClosePlatformFile(file_);
   test_helper_.TearDown();
 }

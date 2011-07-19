@@ -81,10 +81,10 @@ bool URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
 
   if (!is_protocol_factory_registered_) {
     old_http_factory_ =
-        net::URLRequest::RegisterProtocolFactory(
+        net::URLRequest::Deprecated::RegisterProtocolFactory(
             "http", &URLRequestAutomationJob::Factory);
     old_https_factory_ =
-        net::URLRequest::RegisterProtocolFactory(
+        net::URLRequest::Deprecated::RegisterProtocolFactory(
             "https", &URLRequestAutomationJob::Factory);
     is_protocol_factory_registered_ = true;
   }

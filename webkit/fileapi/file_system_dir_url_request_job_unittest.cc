@@ -36,7 +36,8 @@ namespace fileapi {
 namespace {
 
 // We always use the TEMPORARY FileSystem in this test.
-static const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
+static const char kFileSystemURLPrefix[] =
+    "filesystem:http://remote/temporary/";
 
 class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
@@ -52,6 +53,8 @@ class TestSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     return true;
   }
 };
+
+}  // namespace
 
 class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
@@ -83,7 +86,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
             &FileSystemDirURLRequestJobTest::OnGetRootPath));
     MessageLoop::current()->RunAllPending();
 
-    net::URLRequest::RegisterProtocolFactory(
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
         "filesystem", &FileSystemDirURLRequestJobFactory);
   }
 
@@ -92,7 +95,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     request_.reset(NULL);
     delegate_.reset(NULL);
 
-    net::URLRequest::RegisterProtocolFactory("filesystem", NULL);
+    net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
   }
 
   void OnGetRootPath(bool success, const FilePath& root_path,
@@ -172,6 +175,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
 // static
 net::URLRequestJob* FileSystemDirURLRequestJobTest::job_ = NULL;
+
+namespace {
 
 // TODO(adamk): Write tighter tests once we've decided on a format for directory
 // listing responses.

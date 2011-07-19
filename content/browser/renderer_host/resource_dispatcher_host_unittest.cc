@@ -273,7 +273,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(!test_fixture_);
     test_fixture_ = this;
     ChildProcessSecurityPolicy::GetInstance()->Add(0);
-    net::URLRequest::RegisterProtocolFactory(
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
         "test",
         &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
@@ -281,9 +281,10 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   virtual void TearDown() {
-    net::URLRequest::RegisterProtocolFactory("test", NULL);
+    net::URLRequest::Deprecated::RegisterProtocolFactory("test", NULL);
     if (!scheme_.empty())
-      net::URLRequest::RegisterProtocolFactory(scheme_, old_factory_);
+      net::URLRequest::Deprecated::RegisterProtocolFactory(
+          scheme_, old_factory_);
 
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
     URLRequestTestDelayedStartJob::ClearQueue();
@@ -346,7 +347,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(scheme_.empty());
     DCHECK(!old_factory_);
     scheme_ = scheme;
-    old_factory_ = net::URLRequest::RegisterProtocolFactory(
+    old_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         scheme_, &ResourceDispatcherHostTest::Factory);
   }
 

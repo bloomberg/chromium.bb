@@ -169,7 +169,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    orig_http_factory_ = net::URLRequest::RegisterProtocolFactory(
+    orig_http_factory_ = net::URLRequest::Deprecated::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     mock_service_.reset(new MockAppCacheService);
     mock_frontend_.reset(new MockFrontend);
@@ -184,7 +184,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void TearDownTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
     DCHECK(!mock_factory_job_);
-    net::URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
+    net::URLRequest::Deprecated::RegisterProtocolFactory(
+        "http", orig_http_factory_);
     orig_http_factory_ = NULL;
     job_ = NULL;
     handler_.reset();

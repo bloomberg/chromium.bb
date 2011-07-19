@@ -10,11 +10,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 ComponentUpdateInterceptor::ComponentUpdateInterceptor() {
-  net::URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
 }
 
 ComponentUpdateInterceptor::~ComponentUpdateInterceptor() {
-  net::URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::Deprecated::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* ComponentUpdateInterceptor::MaybeIntercept(

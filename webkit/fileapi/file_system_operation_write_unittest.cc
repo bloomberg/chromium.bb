@@ -203,11 +203,12 @@ void FileSystemOperationWriteTest::SetUp() {
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
   virtual_path_ = file_.BaseName();
 
-  net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
+  net::URLRequest::Deprecated::RegisterProtocolFactory(
+      "blob", &BlobURLRequestJobFactory);
 }
 
 void FileSystemOperationWriteTest::TearDown() {
-  net::URLRequest::RegisterProtocolFactory("blob", NULL);
+  net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
   quota_manager_ = NULL;
   test_helper_.TearDown();
 }

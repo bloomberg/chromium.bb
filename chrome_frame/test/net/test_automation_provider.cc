@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,10 @@ TestAutomationProvider::TestAutomationProvider(
   // ensure that we don't inadvarently end up handling http requests which
   // we don't expect. The initial chrome frame page for the network tests
   // issues http requests which our test factory should not handle.
-  net::URLRequest::RegisterProtocolFactory("http",
-                                           TestAutomationProvider::Factory);
-  net::URLRequest::RegisterProtocolFactory("https",
-                                           TestAutomationProvider::Factory);
+  net::URLRequest::Deprecated::RegisterProtocolFactory(
+      "http", TestAutomationProvider::Factory);
+  net::URLRequest::Deprecated::RegisterProtocolFactory(
+      "https", TestAutomationProvider::Factory);
   automation_resource_message_filter_ =
       new TestAutomationResourceMessageFilter(this);
   g_provider_instance_ = this;
