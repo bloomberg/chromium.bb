@@ -63,7 +63,16 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceExecuteScript) {
                                   "execute_script.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceJavaScriptUrl) {
+
+#if defined(OS_LINUX)
+// Fails on Linux.  http://crbug.com/89731
+#define MAYBE_NavigationRaceJavaScriptUrl DISABLED_NavigationRaceJavaScriptUrl
+#else
+#define MAYBE_NavigationRaceJavaScriptUrl NavigationRaceJavaScriptUrl
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
+                       MAYBE_NavigationRaceJavaScriptUrl) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
