@@ -4884,6 +4884,20 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_89684
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos22NetworkLibraryImplStub4InitEv
+   fun:_ZN8chromeos14NetworkLibrary7GetImplEb
+   fun:_ZN8chromeos11CrosLibrary7LibraryINS_14NetworkLibraryEE14GetDefaultImplEb
+   fun:_ZN8chromeos11CrosLibrary17GetNetworkLibraryEv
+   fun:_ZN8chromeos15OfflineLoadPage21ShowActivationMessageEv
+   fun:_ZN8chromeos15OfflineLoadPage15GetHTMLContentsEv
+   fun:_ZN16InterstitialPage4ShowEv
+   fun:_ZN22ChromeInterstitialPage4ShowEv
+   fun:_ZN8chromeos19OfflineLoadPageTest16ShowInterstitialEPKc
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
