@@ -17,6 +17,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -828,9 +829,19 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
           errors::kInvalidFileFilterValue, base::IntToString(i));
       return NULL;
     }
+    StringToLowerASCII(&filter);
     URLPattern pattern(URLPattern::SCHEME_FILESYSTEM);
     if (pattern.Parse(filter, URLPattern::ERROR_ON_PORTS) !=
         URLPattern::PARSE_SUCCESS) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidURLPatternError, filter);
+      return NULL;
+    }
+    std::string path = pattern.path();
+    bool allowed = path == "*" || path == "*.*" ||
+        (path.compare(0, 2, "*.") == 0 &&
+         path.find_first_of('*', 2) == std::string::npos);
+    if (!allowed) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidURLPatternError, filter);
       return NULL;

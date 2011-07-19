@@ -9,7 +9,7 @@
       "id" : "TestAction",
       "default_title" : "Default title",
       "default_icon" : "icon.png",
-      "file_filters" : [ "filesystem:*.txt" ]
+      "file_filters" : [ "filesystem:*.tXt" ]
     }
   ],
   "permissions": [

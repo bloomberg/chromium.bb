@@ -166,6 +166,10 @@ bool FindCommonTasks(Profile* profile,
     if (!files_list->GetString(i, &file_url))
       return false;
 
+    // We need case-insensitive matching, and pattern in handler is already
+    // in lower case.
+    StringToLowerASCII(&file_url);
+
     ActionList file_actions;
     if (!GetFileBrowserHandlers(profile, GURL(file_url), &file_actions))
       return false;
