@@ -76,9 +76,10 @@ git_url -- git repository URL for our manifests.
            Internal:
                ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
 
-manifest_version -- URL to git repo to store per-build manifest.
-                    Usually None or
-                    _MANIFEST_VERSIONS_INT_URL
+manifest_version -- Whether we are using the manifest_version repo that stores
+                    per-build manifests.
+
+use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
 
 latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
 gcc_46 -- Use gcc-4.6 to build ChromeOS. Only works when latest_toolchain=True.
@@ -94,10 +95,20 @@ MANIFEST_INT_URL = constants.GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
 
 # TODO(sosa): Move to manifest-versions-external once its created
 _VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
-_MANIFEST_VERSIONS_URL = constants.GERRIT_SSH_URL + _VERSIONS_SUFFIX
+MANIFEST_VERSIONS_URL = constants.GERRIT_SSH_URL + _VERSIONS_SUFFIX
 
 _VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
-_MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
+MANIFEST_VERSIONS_INT_URL = constants.GERRIT_INT_SSH_URL + _VERSIONS_INT_SUFFIX
+
+
+def _IsInternalBuild(git_url):
+  """Returns whether the url is for the internal source.
+
+  Args:
+    git_url: The url of the manifest used to checkout the source
+  """
+  return git_url == MANIFEST_INT_URL
+
 
 default = {
   'board' : None, # Must be filled in
@@ -148,7 +159,8 @@ default = {
   'upload_symbols' : False,
 
   'git_url' : MANIFEST_URL,
-  'manifest_version' : None,
+  'manifest_version' : False,
+  'use_lkgm' : False,
   'prebuilts' : True,
 
   'use_sdk' : False,
@@ -209,7 +221,7 @@ release = {
   #   --bvt --clean --no-gstorage --ctest
   'build_tests' : True,
   'chrome_tests' : True,
-  'manifest_version' : _MANIFEST_VERSIONS_INT_URL,
+  'manifest_version' : True,
   'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
@@ -256,7 +268,7 @@ add_config('x86-generic-pre-flight-queue', [{
   'uprev' : True,
   'overlays': 'public',
   'push_overlays': 'public',
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [{
@@ -269,7 +281,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'chrome_tests' : True,
   'overlays': 'public',
   'push_overlays': 'public',
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 
   'remote_ip' : None, # Placeholder for future IP
 }])
@@ -283,7 +295,7 @@ add_config('arm-generic-chrome-pre-flight-queue', [arm, {
   'chrome_tests' : True,
   'overlays': 'public',
   'push_overlays': None,
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 }])
 
 add_config('x86-pineview-bin', [{
@@ -293,7 +305,7 @@ add_config('x86-pineview-bin', [{
   'overlays': 'public',
   'push_overlays': None,
   'important': True,
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 }])
 
 add_config('arm-tegra2-bin', [arm, {
@@ -303,7 +315,7 @@ add_config('arm-tegra2-bin', [arm, {
   'overlays': 'public',
   'push_overlays': None,
   'important': True,
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 }])
 
 add_config('arm-generic-bin', [arm, {
@@ -313,7 +325,7 @@ add_config('arm-generic-bin', [arm, {
   'overlays': 'public',
   'push_overlays': None,
   'important': True,
-  'manifest_version': _MANIFEST_VERSIONS_URL,
+  'manifest_version': True,
 }])
 
 add_config('arm-generic-full', [arm, full, {
@@ -375,7 +387,7 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'overlays': 'private',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',
-  'manifest_version' : _MANIFEST_VERSIONS_INT_URL,
+  'manifest_version' : True,
 }])
 
 add_config('x86-alex-pre-flight-branch', [internal, {

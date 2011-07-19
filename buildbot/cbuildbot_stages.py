@@ -364,11 +364,11 @@ class BuilderStage(object):
     builders = []
     build_type = self._build_config['build_type']
     overlay_config = self._build_config['overlays']
-    manifest_version_url = self._build_config['manifest_version']
+    use_manifest_version = self._build_config['manifest_version']
     for build_name, config in config.iteritems():
       if (config['important'] and config['build_type'] == build_type and
           config['overlays'] == overlay_config and
-          config['manifest_version'] == manifest_version_url):
+          config['manifest_version'] == use_manifest_version):
         builders.append(build_name)
 
     return builders
@@ -502,6 +502,12 @@ class ManifestVersionedSyncStage(BuilderStage):
 
   manifest_manager = None
 
+  def _GetManifestVersionsRepoUrl(self):
+    if cbuildbot_config._IsInternalBuild(self._build_config['git_url']):
+      return cbuildbot_config.MANIFEST_VERSIONS_INT_URL
+    else:
+      return cbuildbot_config.MANIFEST_VERSIONS_URL
+
   def InitializeManifestManager(self):
     """Initializes a manager that manages manifests for associated stages."""
     increment = 'branch' if self._tracking_branch == 'master' else 'patch'
@@ -510,7 +516,7 @@ class ManifestVersionedSyncStage(BuilderStage):
         manifest_version.BuildSpecsManager(
             source_dir=self._build_root,
             checkout_repo=self._build_config['git_url'],
-            manifest_repo=self._build_config['manifest_version'],
+            manifest_repo=self._GetManifestVersionsRepoUrl(),
             branch=self._tracking_branch,
             build_name=self._bot_id,
             incr_type=increment,
@@ -566,7 +572,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_dir=self._build_root,
         checkout_repo=self._build_config['git_url'],
-        manifest_repo=self._build_config['manifest_version'],
+        manifest_repo=self._GetManifestVersionsRepoUrl(),
         branch=self._tracking_branch,
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
@@ -601,18 +607,16 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
     if os.path.exists(manifests_dir):
       shutil.rmtree(manifests_dir)
 
-    repository.CloneGitRepo(manifests_dir,
-                            self._build_config['manifest_version'])
+    repository.CloneGitRepo(manifests_dir, self._GetManifestVersionsRepoUrl())
     return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
 
   def PostSyncStep(self):
     """Override base class version.  Updates the prebuilt urls."""
     # The LKGM does not include the updated prebuilt url.
     # Update the url before running the build.
-    if (not self._options.buildbot
-        and (self._build_config['usepkg_chroot']
-             or self._build_config['usepkg_setup_board']
-             or self._build_config['usepkg_build_packages'])):
+    if (self._build_config['usepkg_chroot']
+        or self._build_config['usepkg_setup_board']
+        or self._build_config['usepkg_build_packages']):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['overlays'],

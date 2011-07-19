@@ -262,7 +262,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     self.build_name = 'x86-generic-pre-flight-queue'
     self.build_type = 'binary'
 
-    self.build_config['manifest_version'] = self.manifest_version_url
+    self.build_config['manifest_version'] = True
     self.build_config['build_type'] = self.build_type
 
     self.manager = lkgm_manager.LKGMManager(
@@ -277,25 +277,25 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
   def testGetImportantBuildsForMaster(self):
     test_config = {}
     test_config['test1'] = {
-        'manifest_version': self.manifest_version_url,
+        'manifest_version': True,
         'build_type': 'binary',
         'overlays': 'public',
         'important': True,
     }
     test_config['test2'] = {
-        'manifest_version': self.manifest_version_url,
+        'manifest_version': True,
         'build_type': 'binary',
         'overlays': 'public',
         'important': True,
     }
     test_config['test3'] = {
-        'manifest_version': self.manifest_version_url,
+        'manifest_version': True,
         'build_type': 'binary',
         'overlays': 'public',
         'important': False,
     }
     test_config['test4'] = {
-        'manifest_version': 'some_other_url',
+        'manifest_version': False,
         'build_type': 'binary',
         'overlays': 'public',
         'important': True,
@@ -549,7 +549,7 @@ class TestHWStageTest(AbstractStageTest):
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
                             ip,
-                            False)
+                            internal_test=False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -574,7 +574,7 @@ class TestHWStageTest(AbstractStageTest):
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
                             ip,
-                            False)
+                            internal_test=False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -600,7 +600,7 @@ class TestHWStageTest(AbstractStageTest):
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
                             ip,
-                            False)
+                            internal_test=False)
 
     self.mox.ReplayAll()
     self.RunStage()

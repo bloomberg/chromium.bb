@@ -175,10 +175,12 @@ def RunBuildStages(bot_id, options, build_config):
   # Determine the stages to use for syncing and completion.
   sync_stage_class = stages.SyncStage
   completion_stage_class = None
-  # Trybots will sync to TOT for now.
-  # TODO(rcui): have trybots patch to LKGM
-  if (options.buildbot and build_config['manifest_version']
-      and options.chrome_rev != 'tot'):
+  # Trybots will sync to TOT for now unless --lkgm option is specified.
+  # TODO(rcui): have trybots default to patch to LKGM.
+  if options.lkgm or (options.buildbot and build_config['use_lkgm']):
+    sync_stage_class = stages.LKGMSyncStage
+  elif (options.buildbot and build_config['manifest_version']
+        and options.chrome_rev != 'tot'):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
     if build_config['build_type'] in ('binary', 'chrome'):
       sync_stage_class = stages.LKGMCandidateSyncStage
@@ -334,10 +336,18 @@ def _ConfirmBuildRoot(buildroot):
   repository.CreateTrybotMarker(buildroot)
 
 
-def _DetermineDefaultBuildRoot(git_url):
+def _GetManifestVersionsRepoUrl(internal_build):
+  if internal_build:
+    return cbuildbot_config.MANIFEST_VERSIONS_INT_URL
+  else:
+    return cbuildbot_config.MANIFEST_VERSIONS_URL
+
+
+def _DetermineDefaultBuildRoot(internal_build):
   """Default buildroot to be under the directory that contains current checkout.
 
-  We separate the buildroot for external and internal configurations.
+  Arguments:
+    internal_build: Whether the build is an internal build
   """
   repo_dir = cros_lib.FindRepoDir()
   if not repo_dir:
@@ -346,7 +356,7 @@ def _DetermineDefaultBuildRoot(git_url):
 
   # Place trybot buildroot under the directory containing current checkout.
   top_level = os.path.dirname(os.path.realpath(os.path.dirname(repo_dir)))
-  if git_url == cbuildbot_config.MANIFEST_INT_URL:
+  if internal_build:
     buildroot = os.path.join(top_level, _DEFAULT_INT_BUILDROOT)
   else:
     buildroot = os.path.join(top_level, _DEFAULT_EXT_BUILDROOT)
@@ -512,6 +522,8 @@ def _CreateParser():
   group.add_option('--hwtests', action='store_true', dest='hw_tests',
                     default=False,
                     help='Run tests on remote machine')
+  group.add_option('--lkgm', action='store_true', dest='lkgm', default=False,
+                    help='Sync to last known good manifest blessed by PFQ')
   group.add_option('--noarchive', action='store_false', dest='archive',
                     default=True,
                     help="Don't run archive stage.")
@@ -597,7 +609,8 @@ def main(argv=None):
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
     else:
-      options.buildroot = _DetermineDefaultBuildRoot(build_config['git_url'])
+      internal = cbuildbot_config._IsInternalBuild(build_config['git_url'])
+      options.buildroot = _DetermineDefaultBuildRoot(internal)
       # We use a marker file in the buildroot to indicate the user has consented
       # to using this directory.
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
