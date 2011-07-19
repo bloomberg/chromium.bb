@@ -69,13 +69,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "Chromoting Host Plugin"
+            VALUE "FileDescription", "Remoting Host Plugin"
             VALUE "FileVersion", "1, 0, 0, 1"
-            VALUE "MIMEType", "application/vnd.chromium.remoting-host"
             VALUE "InternalName", "remoting_host_plugin.dll"
             VALUE "LegalCopyright", "Copyright (C) 2011 The Chromium Authors. All rights reserved."
+            VALUE "MIMEType", "application/vnd.chromium.remoting-host"
             VALUE "OriginalFilename", "remoting_host_plugin.dll"
-            VALUE "ProductName", "Chromoting"
+            VALUE "ProductName", "Remoting Host Plugin"
             VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
