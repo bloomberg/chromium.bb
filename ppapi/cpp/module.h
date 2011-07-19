@@ -13,7 +13,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/core.h"
 
 namespace pp {

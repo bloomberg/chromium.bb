@@ -138,7 +138,6 @@
         'cpp/audio.h',
         'cpp/audio_config.cc',
         'cpp/audio_config.h',
-        'cpp/common.h',
         'cpp/completion_callback.cc',
         'cpp/completion_callback.h',
         'cpp/core.cc',
