@@ -338,7 +338,9 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, InjectIDBKey) {
 
   ScopedIDBKeyPathHelper scoped_helper;
   scoped_helper.SetExpectedValue(expected_value);
-  scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar"));
+  // TODO(lukezarko@gmail.com): re-enable this after the changes described at
+  //     https://bugs.webkit.org/show_bug.cgi?id=63481 land.
+  // scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bar"));
 
   scoped_helper.SetExpectedValue(SerializedScriptValue());  // Expect null.
   scoped_helper.CheckInjectValue(key, value, UTF8ToUTF16("bad.key.path"));
