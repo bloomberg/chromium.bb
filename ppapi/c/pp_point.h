@@ -2,8 +2,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_point.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_POINT_H_
 #define PPAPI_C_PP_POINT_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
@@ -11,15 +17,11 @@
  * 0,0 is the upper-left starting coordinate.
  */
 
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_stdint.h"
 
 /**
- *
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The PP_Point structure defines the integer x and y coordinates of a point.
  */
@@ -29,7 +31,6 @@ struct PP_Point {
    * as the left-most coordinate.
    */
   int32_t x;
-
   /**
    * This value represents the vertical coordinate of a point, starting with 0
    * as the top-most coordinate.

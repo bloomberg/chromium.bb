@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_url_request_info.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
 
@@ -19,18 +22,17 @@
  * manipulating URL requests.
  */
 
+
 /**
  * @addtogroup Enums
  * @{
  */
-
 /**
  * This enumeration contains properties that can be set on a URL request.
  */
 typedef enum {
   /** This corresponds to a string (<code>PP_VARTYPE_STRING</code>). */
   PP_URLREQUESTPROPERTY_URL,
-
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); either
    * POST or GET. Refer to the
@@ -39,7 +41,6 @@ typedef enum {
    *
    */
   PP_URLREQUESTPROPERTY_METHOD,
-
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>); \n
    * delimited. Refer to the
@@ -47,7 +48,6 @@ typedef enum {
    * Field Definitions</a> documentaiton for further information.
    */
   PP_URLREQUESTPROPERTY_HEADERS,
-
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
@@ -56,7 +56,6 @@ typedef enum {
    * download.
    */
   PP_URLREQUESTPROPERTY_STREAMTOFILE,
-
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_TRUE</code>).
@@ -65,7 +64,6 @@ typedef enum {
    * examining redirect headers.
    */
   PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS,
-
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
@@ -73,14 +71,12 @@ typedef enum {
    * download progress using PPB_URLLoader.GetDownloadProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
-
   /**
    * This corresponds to a <code>PP_Bool (default=<code>PP_FALSE</code>).
    * Set this value to <code>PP_TRUE</code> if you want to be able to poll the
    * upload progress using PPB_URLLoader.GetUplaodProgress().
    */
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS,
-
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING)</code> or may be
    * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default).
@@ -92,7 +88,6 @@ typedef enum {
    * <code>PP_ERROR_BADARGUMENT</code> will result.
    */
   PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL,
-
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>). Whether cross-origin requests are allowed.
@@ -103,7 +98,6 @@ typedef enum {
    * Sharing</a> documentation.
    */
   PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS,
-
   /**
    * This corresponds to a <code>PP_Bool</code> (<code>PP_VARTYPE_BOOL</code>;
    * default=<code>PP_FALSE</code>).
@@ -112,7 +106,6 @@ typedef enum {
    * response. If the request is not cross-origin, this property is ignored.
    */
   PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS,
-
   /**
    * This corresponds to a string (<code>PP_VARTYPE_STRING</code>) or may be
    * undefined (<code>PP_VARTYPE_UNDEFINED</code>; default).
@@ -124,7 +117,6 @@ typedef enum {
    * universal access, <code>PP_ERROR_BADARGUMENT</code> will result.
    */
   PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
-
   /**
    * This corresponds to an integer (<code>PP_VARTYPE_INT32</code>); default
    * is not defined and is set by the browser, possibly depending on system
@@ -137,7 +129,6 @@ typedef enum {
    * be set. Behavior is undefined if the former is <= the latter.
    */
   PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD,
-
   /**
    * This corresponds to an integer (<code>PP_VARTYPE_INT32</code>); default is
    * not defined and is set by the browser to a value appropriate for the
@@ -157,22 +148,20 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
  * @}
  */
 
-#define PPB_URLREQUESTINFO_INTERFACE_0_2 "PPB_URLRequestInfo;0.2"
-#define PPB_URLREQUESTINFO_INTERFACE_1_0 "PPB_URLRequestInfo;1.0"
-#define PPB_URLREQUESTINFO_INTERFACE PPB_URLREQUESTINFO_INTERFACE_1_0
-
 /**
- *
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPB_URLRequestInfo</code> interface is used to create
  * and handle URL requests. This API is used in conjunction with
  * <code>PPB_URLLoader</code>. Refer to <code>PPB_URLLoader for further
  * information.
  */
+#define PPB_URLREQUESTINFO_INTERFACE_0_2 "PPB_URLRequestInfo;0.2"
+#define PPB_URLREQUESTINFO_INTERFACE_1_0 "PPB_URLRequestInfo;1.0"
+#define PPB_URLREQUESTINFO_INTERFACE PPB_URLREQUESTINFO_INTERFACE_1_0
+
 struct PPB_URLRequestInfo {
   /**
    * Create() creates a new <code>URLRequestInfo</code> object.
@@ -184,7 +173,6 @@ struct PPB_URLRequestInfo {
    * <code>URLRequestInfo</code> if successful, 0 if the instance is invalid.
    */
   PP_Resource (*Create)(PP_Instance instance);
-
   /**
    * IsURLRequestInfo() determines if a resource is a
    * <code>URLRequestInfo</code>.
@@ -197,7 +185,6 @@ struct PPB_URLRequestInfo {
    * invalid or some type other than <code>URLRequestInfo</code>.
    */
   PP_Bool (*IsURLRequestInfo)(PP_Resource resource);
-
   /**
    * SetProperty() sets a request property. The value of the property must be
    * the correct type according to the property being set.
@@ -214,7 +201,6 @@ struct PPB_URLRequestInfo {
   PP_Bool (*SetProperty)(PP_Resource request,
                          PP_URLRequestProperty property,
                          struct PP_Var value);
-
   /**
    * AppendDataToBody() appends data to the request body. A Content-Length
    * request header will be automatically generated.
@@ -232,7 +218,6 @@ struct PPB_URLRequestInfo {
   PP_Bool (*AppendDataToBody)(PP_Resource request,
                               const void* data,
                               uint32_t len);
-
   /**
    * AppendFileToBody() appends a file, to be uploaded, to the request body.
    * A content-length request header will be automatically generated.

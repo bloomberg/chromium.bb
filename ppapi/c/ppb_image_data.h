@@ -2,13 +2,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_image_data.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
@@ -19,11 +21,11 @@
  * a browser handles image data.
  */
 
+
 /**
  * @addtogroup Enums
  * @{
  */
-
 /**
  * <code>PP_ImageDataFormat</code> is an enumeration of the different types of
  * image data formats.
@@ -69,22 +71,18 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ImageDataFormat, 4);
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The <code>PP_ImageDataDesc</code> structure represents a description of
  * image data.
  */
 struct PP_ImageDataDesc {
-
   /**
    * This value represents one of the image data types in the
    * <code>PP_ImageDataFormat</code> enum.
    */
   PP_ImageDataFormat format;
-
   /** This value represents the size of the bitmap in pixels. */
   struct PP_Size size;
-
   /**
    * This value represents the row width in bytes. This may be different than
    * width * 4 since there may be padding at the end of the lines.
@@ -96,19 +94,18 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
  * @}
  */
 
-#define PPB_IMAGEDATA_INTERFACE_0_3 "PPB_ImageData;0.3"
-#define PPB_IMAGEDATA_INTERFACE_1_0 "PPB_ImageData;1.0"
-#define PPB_IMAGEDATA_INTERFACE PPB_IMAGEDATA_INTERFACE_1_0
-
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPB_ImageData</code> interface contains pointers to several
  * functions for determining the browser's treatment of image data.
  */
+#define PPB_IMAGEDATA_INTERFACE_0_3 "PPB_ImageData;0.3"
+#define PPB_IMAGEDATA_INTERFACE_1_0 "PPB_ImageData;1.0"
+#define PPB_IMAGEDATA_INTERFACE PPB_IMAGEDATA_INTERFACE_1_0
+
 struct PPB_ImageData {
   /**
    * GetNativeImageDataFormat() returns the browser's preferred format for
@@ -119,7 +116,6 @@ struct PPB_ImageData {
    * @return A <code>PP_ImageDataFormat</code> containing the preferred format.
    */
   PP_ImageDataFormat (*GetNativeImageDataFormat)();
-
   /**
    * IsImageDataFormatSupported() determines if the given image data format is
    * supported by the browser.
@@ -130,7 +126,6 @@ struct PPB_ImageData {
    * image data format is supported by the browser.
    */
   PP_Bool (*IsImageDataFormatSupported)(PP_ImageDataFormat format);
-
   /**
    * Create() allocates an image data resource with the given format and size.
    *
@@ -157,7 +152,6 @@ struct PPB_ImageData {
                         PP_ImageDataFormat format,
                         const struct PP_Size* size,
                         PP_Bool init_to_zero);
-
   /**
    * IsImageData() determiens if a given resource is image data.
    *
@@ -169,7 +163,6 @@ struct PPB_ImageData {
    * invalid or some type other than image data.
    */
   PP_Bool (*IsImageData)(PP_Resource image_data);
-
   /**
    * Describe() computes the description of the
    * image data.
@@ -184,9 +177,7 @@ struct PPB_ImageData {
    * <code>PP_FALSE</code>, the <code>desc</code> structure will be filled
    * with 0.
    */
-  PP_Bool (*Describe)(PP_Resource image_data,
-                      struct PP_ImageDataDesc* desc);
-
+  PP_Bool (*Describe)(PP_Resource image_data, struct PP_ImageDataDesc* desc);
   /**
    * Map() maps an image data into the module address space.
    *
@@ -196,7 +187,6 @@ struct PPB_ImageData {
    * @return A pointer to the beginning of the data.
    */
   void* (*Map)(PP_Resource image_data);
-
   /**
    * Unmap is a pointer to a function that unmaps an image data from the module
    * address space.
@@ -211,3 +201,4 @@ struct PPB_ImageData {
  */
 
 #endif  /* PPAPI_C_PPB_IMAGE_DATA_H_ */
+

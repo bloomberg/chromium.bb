@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_file_info.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_FILE_INFO_H_
 #define PPAPI_C_PP_FILE_INFO_H_
 
@@ -14,11 +17,11 @@
  * This file defines three enumerations for use in the PPAPI C file IO APIs.
  */
 
+
 /**
  * @addtogroup Enums
  * @{
  */
-
 /**
  * The <code>PP_FileType</code> enum contains file type constants.
  */
@@ -61,29 +64,24 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileSystemType, 4);
 struct PP_FileInfo {
   /** This value represents the size of the file measured in bytes */
   int64_t size;
-
   /**
    * This value represents the type of file as defined by the
    * <code>PP_FileType</code> enum
    */
   PP_FileType type;
-
   /**
    * This value represents the file system type of the file as defined by the
    * <code>PP_FileSystemType</code> enum.
    */
   PP_FileSystemType system_type;
-
   /**
    * This value represents the creation time of the file.
    */
   PP_Time creation_time;
-
   /**
    * This value represents the last time the file was accessed.
    */
   PP_Time last_access_time;
-
   /**
    * This value represents the last time the file was modified.
    */
@@ -95,3 +93,4 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_FileInfo, 40);
  */
 
 #endif  /* PPAPI_C_PP_FILE_INFO_H_ */
+

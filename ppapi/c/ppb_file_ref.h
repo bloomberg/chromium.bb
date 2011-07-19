@@ -2,13 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_file_ref.idl modified Wed Jul 13 16:43:20 2011. */
+
 #ifndef PPAPI_C_PPB_FILE_REF_H_
 #define PPAPI_C_PPB_FILE_REF_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
 /**
@@ -17,9 +23,6 @@
  * file in a file system.
  */
 
-#define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
-#define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
-#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
 
 /**
  * @addtogroup Interfaces
@@ -30,6 +33,10 @@
  * a file system.  This struct contains a <code>PP_FileSystemType</code>
  * identifier and a file path string.
  */
+#define PPB_FILEREF_INTERFACE_0_9 "PPB_FileRef;0.9"
+#define PPB_FILEREF_INTERFACE_1_0 "PPB_FileRef;1.0"
+#define PPB_FILEREF_INTERFACE PPB_FILEREF_INTERFACE_1_0
+
 struct PPB_FileRef {
   /**
    * Create() creates a weak pointer to a file in the given file system. File
@@ -54,7 +61,6 @@ struct PPB_FileRef {
    * invalid or some type other than <code>PPB_FileRef</code>.
    */
   PP_Bool (*IsFileRef)(PP_Resource resource);
-
   /**
    * GetFileSystemType() returns the type of the file system.
    *
@@ -66,7 +72,6 @@ struct PPB_FileRef {
    * is not a valid file reference.
    */
   PP_FileSystemType (*GetFileSystemType)(PP_Resource file_ref);
-
   /**
    * GetName() returns the name of the file.
    *
@@ -79,7 +84,6 @@ struct PPB_FileRef {
    * file. Use GetPath() to get the full file path.
    */
   struct PP_Var (*GetName)(PP_Resource file_ref);
-
   /**
    * GetPath() returns the absolute path of the file.
    *
@@ -91,7 +95,6 @@ struct PPB_FileRef {
    * <code>PP_FileSystemType_External</code>.
    */
   struct PP_Var (*GetPath)(PP_Resource file_ref);
-
   /**
    * GetParent() returns the parent directory of this file.  If
    * <code>file_ref</code> points to the root of the filesystem, then the root
@@ -105,7 +108,6 @@ struct PPB_FileRef {
    * <code>PP_FileSystemType_External</code>.
    */
   PP_Resource (*GetParent)(PP_Resource file_ref);
-
   /**
    * MakeDirectory() makes a new directory in the file system as well as any
    * parent directories if the <code>make_ancestors</code> argument is
@@ -126,7 +128,6 @@ struct PPB_FileRef {
   int32_t (*MakeDirectory)(PP_Resource directory_ref,
                            PP_Bool make_ancestors,
                            struct PP_CompletionCallback callback);
-
   /**
    * Touch() Updates time stamps for a file.  You must have write access to the
    * file if it exists in the external filesystem.
@@ -144,7 +145,6 @@ struct PPB_FileRef {
                    PP_Time last_access_time,
                    PP_Time last_modified_time,
                    struct PP_CompletionCallback callback);
-
   /**
    * Delete() deletes a file or directory. If <code>file_ref</code> refers to
    * a directory, then the directory must be empty. It is an error to delete a
@@ -160,7 +160,6 @@ struct PPB_FileRef {
    */
   int32_t (*Delete)(PP_Resource file_ref,
                     struct PP_CompletionCallback callback);
-
   /**
    * Rename() renames a file or directory.  Arguments <code>file_ref</code> and
    * <code>new_file_ref</code> must both refer to files in the same file

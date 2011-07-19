@@ -2,12 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_url_response_info.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 #define PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
 /**
@@ -16,12 +20,11 @@
  * responses.
  */
 
+
 /**
- *
  * @addtogroup Enums
  * @{
  */
-
 /**
  * This enumeration contains properties set on a URL response.
  */
@@ -36,7 +39,6 @@ typedef enum {
    * HTML Resolving Relative URIs</a> documentation for further information.
    */
   PP_URLRESPONSEPROPERTY_URL,
-
   /**
    * This corresponds to a string (PP_VARTYPE_STRING); the absolute URL returned
    * in the response header's 'Location' field if this is a redirect response,
@@ -45,7 +47,6 @@ typedef enum {
    * HTTP Status Codes - Redirection</a> documentation for further information.
    */
   PP_URLRESPONSEPROPERTY_REDIRECTURL,
-
   /**
    * This corresponds to a string (PP_VARTYPE_STRING); the HTTP method to be
    * used in a new request if this is a redirect response, an empty string
@@ -54,7 +55,6 @@ typedef enum {
    * HTTP Status Codes - Redirection</a> documentation for further information.
    */
   PP_URLRESPONSEPROPERTY_REDIRECTMETHOD,
-
   /**
    * This corresponds to an int32 (PP_VARETYPE_INT32); the status code from the
    * response, e.g., 200 if the request was successful. Refer to the
@@ -63,7 +63,6 @@ typedef enum {
    * information.
    */
   PP_URLRESPONSEPROPERTY_STATUSCODE,
-
   /**
    * This corresponds to a string (PP_VARTYPE_STRING); the status line
    * from the response. Refer to the
@@ -71,7 +70,6 @@ typedef enum {
    * HTTP Response Status Line</a> documentation for further information.
    */
   PP_URLRESPONSEPROPERTY_STATUSLINE,
-
   /**
    * This corresponds to a string(PP_VARTYPE_STRING), a \n-delimited list of
    * header field/value pairs of the form "field: value", returned by the
@@ -86,23 +84,20 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLResponseProperty, 4);
  * @}
  */
 
-#define PPB_URLRESPONSEINFO_INTERFACE_0_1 "PPB_URLResponseInfo;0.1"
-#define PPB_URLRESPONSEINFO_INTERFACE_1_0 "PPB_URLResponseInfo;1.0"
-#define PPB_URLRESPONSEINFO_INTERFACE PPB_URLRESPONSEINFO_INTERFACE_1_0
-
 /**
- *
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The PPB_URLResponseInfo interface contains APIs for
  * examining URL responses. Refer to <code>PPB_URLLoader</code> for further
  * information.
  */
-struct PPB_URLResponseInfo {
+#define PPB_URLRESPONSEINFO_INTERFACE_0_1 "PPB_URLResponseInfo;0.1"
+#define PPB_URLRESPONSEINFO_INTERFACE_1_0 "PPB_URLResponseInfo;1.0"
+#define PPB_URLRESPONSEINFO_INTERFACE PPB_URLRESPONSEINFO_INTERFACE_1_0
 
+struct PPB_URLResponseInfo {
   /**
    * IsURLResponseInfo() determines if a response is a
    * <code>URLResponseInfo</code>.
@@ -115,7 +110,6 @@ struct PPB_URLResponseInfo {
    * invalid or some type other than <code>URLResponseInfo</code>.
    */
   PP_Bool (*IsURLResponseInfo)(PP_Resource resource);
-
   /**
    * GetProperty() gets a response property.
    *
@@ -129,7 +123,6 @@ struct PPB_URLResponseInfo {
    */
   struct PP_Var (*GetProperty)(PP_Resource response,
                                PP_URLResponseProperty property);
-
   /**
    * GetBodyAsFileRef() returns a FileRef pointing to the file containing the
    * response body.  This is only valid if

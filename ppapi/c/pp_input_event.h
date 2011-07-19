@@ -2,13 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_input_event.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_INPUT_EVENT_H_
 #define PPAPI_C_PP_INPUT_EVENT_H_
-
-/**
- * @file
- * This file defines the API used to handle mouse and keyboard input events.
- */
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
@@ -17,10 +15,15 @@
 #include "ppapi/c/ppb_input_event.h"
 
 /**
+ * @file
+ * This file defines the API used to handle mouse and keyboard input events.
+ */
+
+
+/**
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The <code>PP_InputEvent_Key</code> struct represents a key up or key down
  * event.
@@ -41,23 +44,13 @@
 struct PP_InputEvent_Key {
   /** This value is a bit field combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
-
   /**
    * This value reflects the DOM KeyboardEvent <code>keyCode</code> field.
    * Chrome populates this with the Windows-style Virtual Key code of the key.
    */
-
   uint32_t key_code;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
-/**
- * @}
- */
-
-/**
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The <code>PP_InputEvent_Character</code> struct represents a typed character
@@ -83,7 +76,6 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
 struct PP_InputEvent_Character {
   /** A combination of the <code>PP_InputEvent_Modifier</code> flags. */
   uint32_t modifier;
-
   /**
    * This value represents the typed character as a single null-terminated UTF-8
    * character. Any unused bytes will be filled with null bytes. Since the
@@ -93,14 +85,6 @@ struct PP_InputEvent_Character {
   char text[5];
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Character, 12);
-/**
- * @}
- */
-
-/**
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The <code>PP_InputEvent_Mouse</code> struct represents all mouse events
@@ -112,14 +96,12 @@ struct PP_InputEvent_Mouse {
    * <code>PP_InputEvent_Modifier</code> flags.
    */
   uint32_t modifier;
-
   /**
    * This value represents the button that changed for mouse down or up events.
    * This value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for mouse move,
    * enter, and leave events.
    */
   PP_InputEvent_MouseButton button;
-
   /**
    * This values represents the x coordinate of the mouse when the event
    * occurred.
@@ -140,19 +122,10 @@ struct PP_InputEvent_Mouse {
    * plugin will give non-integer values.
    */
   float y;
-
-  // TODO(brettw) figure out exactly what this means.
+  /* TODO(brettw) figure out exactly what this means. */
   int32_t click_count;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
-/**
- * @}
- */
-
-/**
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The <code>PP_InputEvent_Wheel</code> struct represents all mouse wheel
@@ -164,7 +137,6 @@ struct PP_InputEvent_Wheel {
    * flags.
    */
   uint32_t modifier;
-
   /**
    * Indicates the amount vertically and horizontally the user has requested
    * to scroll by with their mouse wheel. A scroll down or to the right (where
@@ -187,10 +159,8 @@ struct PP_InputEvent_Wheel {
    * "clicks".
    */
   float delta_x;
-
   /** This value represents */
   float delta_y;
-
   /**
    * The number of "clicks" of the scroll wheel that have produced the
    * event. The value may have system-specific acceleration applied to it,
@@ -210,10 +180,8 @@ struct PP_InputEvent_Wheel {
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
   float wheel_ticks_x;
-
   /** This value represents */
   float wheel_ticks_y;
-
   /**
    * Indicates if the scroll <code>delta_x</code>/<code>delta_y</code>
    * indicates pages or lines to scroll by. When true, the user is requesting
@@ -222,15 +190,6 @@ struct PP_InputEvent_Wheel {
   PP_Bool scroll_by_page;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
-/**
- * @}
- */
-
-/**
- *
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The PP_InputEventData union represents all input event data types.
@@ -240,22 +199,12 @@ union PP_InputEventData {
   struct PP_InputEvent_Character character;
   struct PP_InputEvent_Mouse mouse;
   struct PP_InputEvent_Wheel wheel;
-
   /**
    * This value allows new events to be added without changing the size of
    * this struct.
    */
   char padding[64];
 };
-/**
- * @}
- */
-
-/**
- *
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The PP_InputEvent struct represents all input events.
@@ -263,25 +212,21 @@ union PP_InputEventData {
 struct PP_InputEvent {
   /** This value represents the type of the event. */
   PP_InputEvent_Type type;
-
   /** This value ensure the time_stamp is aligned on an 8-byte boundary
    * relative to the start of the struct. Some compilers align doubles
    * on 8-byte boundaries for 32-bit x86, and some align on 4-byte boundaries.
    */
   int32_t padding;
-
   /**
    * This value represents the time that this event was generated. This value
    * is not relative to any particular epoch; the most you can do is compare
    * time stamps.
    */
   PP_TimeTicks time_stamp;
-
   /**
    * This value represents the event type and its specific data.
    */
   union PP_InputEventData u;
-
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
 /**
@@ -289,3 +234,4 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
  */
 
 #endif  /* PPAPI_C_PP_INPUT_EVENT_H_ */
+

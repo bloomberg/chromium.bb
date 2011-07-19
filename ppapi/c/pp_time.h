@@ -2,15 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_time.idl modified Tue Jul  5 16:02:03 2011. */
+
 #ifndef PPAPI_C_PP_TIME_H_
 #define PPAPI_C_PP_TIME_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
  * This file defines time and time ticks types.
  */
 
-#include "ppapi/c/pp_macros.h"
 
 /**
  * @addtogroup Typedefs
@@ -23,14 +28,7 @@
  */
 typedef double PP_Time;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
-/**
- * @}
- */
 
-/**
- * @addtogroup Typedefs
- * @{
- */
 /**
  * A <code>PP_TimeTicks</code> value represents time ticks which are measured
  * in seconds and are used for indicating the time that certain messages were

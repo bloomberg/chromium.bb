@@ -2,20 +2,24 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_errors.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
+
+#include "ppapi/c/pp_macros.h"
 
 /**
  * @file
  * This file defines an enumeration of all PPAPI error codes.
  */
 
+
 /**
- *
  * @addtogroup Enums
  * @{
  */
-
 /**
  * This enumeration contains enumerators of all PPAPI error codes.
  * Errors are negative valued.
@@ -27,7 +31,6 @@ enum {
    * asynchronous completion.
    */
   PP_OK = 0,
-
   /**
    * This value is returned by a function that accepts a PP_CompletionCallback
    * and cannot complete synchronously. This code indicates that the given
@@ -35,75 +38,58 @@ enum {
    * available.
    */
   PP_OK_COMPLETIONPENDING = -1,
-
   /** This value indicates failure for unspecified reasons. */
   PP_ERROR_FAILED = -2,
-
   /**
    * This value indicates failure due to an asynchronous operation being
    * interrupted, typically as a result of user action.
    */
   PP_ERROR_ABORTED = -3,
-
   /** This value indicates failure due to an invalid argument. */
   PP_ERROR_BADARGUMENT = -4,
-
   /** This value indicates failure due to an invalid PP_Resource. */
   PP_ERROR_BADRESOURCE = -5,
-
   /** This value indicates failure due to an unavailable PPAPI interface. */
   PP_ERROR_NOINTERFACE = -6,
-
   /** This value indicates failure due to insufficient privileges. */
   PP_ERROR_NOACCESS = -7,
-
   /** This value indicates failure due to insufficient memory. */
   PP_ERROR_NOMEMORY = -8,
-
   /** This value indicates failure due to insufficient storage space. */
   PP_ERROR_NOSPACE = -9,
-
   /** This value indicates failure due to insufficient storage quota. */
   PP_ERROR_NOQUOTA = -10,
-
   /**
    * This value indicates failure due to an action already being in
    * progress.
    */
   PP_ERROR_INPROGRESS = -11,
-
+  /** This value indicates failure due to a file that does not exist. */
   /**
    * The requested command is not supported by the browser.
    */
   PP_ERROR_NOTSUPPORTED = -12,
-
-  /** This value indicates failure due to a file that does not exist. */
   PP_ERROR_FILENOTFOUND = -20,
-
   /** This value indicates failure due to a file that already exists. */
   PP_ERROR_FILEEXISTS = -21,
-
   /** This value indicates failure due to a file that is too big. */
   PP_ERROR_FILETOOBIG = -22,
-
   /**
    * This value indicates failure due to a file having been modified
    * unexpectedly.
    */
   PP_ERROR_FILECHANGED = -23,
-
   /** This value indicates failure due to a time limit being exceeded. */
   PP_ERROR_TIMEDOUT = -30,
-
   /**
    * This value indicates that the user cancelled rather than providing
    * expected input.
    */
   PP_ERROR_USERCANCEL = -40
 };
-
 /**
  * @}
  */
 
 #endif  /* PPAPI_C_PP_ERRORS_H_ */
+

@@ -2,16 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppp_messaging.idl modified Wed Jul 13 16:51:47 2011. */
+
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
-
-struct PP_Var;
-
-#define PPP_MESSAGING_INTERFACE_0_1 "PPP_Messaging;0.1"
-#define PPP_MESSAGING_INTERFACE_1_0 "PPP_Messaging;1.0"
-#define PPP_MESSAGING_INTERFACE PPP_MESSAGING_INTERFACE_1_0
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 /**
  * @file
@@ -21,16 +22,20 @@ struct PP_Var;
  *
  */
 
+
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPP_Messaging</code> interface contains pointers to functions
  * that you must implement to handle postMessage events on the associated
  * DOM element.
  */
+#define PPP_MESSAGING_INTERFACE_0_1 "PPP_Messaging;0.1"
+#define PPP_MESSAGING_INTERFACE_1_0 "PPP_Messaging;1.0"
+#define PPP_MESSAGING_INTERFACE PPP_MESSAGING_INTERFACE_1_0
+
 struct PPP_Messaging {
   /**
    * HandleMessage() is a function that the browser calls when PostMessage()
@@ -69,5 +74,6 @@ struct PPP_Messaging {
 /**
  * @}
  */
+
 #endif  /* PPAPI_C_PPP_MESSAGING_H_ */
 

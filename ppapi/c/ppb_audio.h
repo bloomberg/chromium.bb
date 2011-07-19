@@ -2,17 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_audio.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-
-#define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
-#define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"
-#define PPB_AUDIO_INTERFACE PPB_AUDIO_INTERFACE_1_0
 
 /**
  * @file
@@ -20,11 +20,11 @@
  * realtime stereo audio streaming capabilities.
  */
 
+
 /**
  * @addtogroup Typedefs
  * @{
  */
-
 /**
  * <code>PPB_Audio_Callback</code> defines the type of an audio callback
  * function used to fill the audio buffer with data. Please see the
@@ -71,6 +71,10 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  *
  * ...audio_callback() will now be periodically invoked on a seperate thread...
  */
+#define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
+#define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"
+#define PPB_AUDIO_INTERFACE PPB_AUDIO_INTERFACE_1_0
+
 struct PPB_Audio {
   /**
    * Create is a pointer to a function that creates an audio resource.
@@ -107,7 +111,6 @@ struct PPB_Audio {
    * an Audio resource, otherwise PP_FALSE.
    */
   PP_Bool (*IsAudio)(PP_Resource resource);
-
   /**
    * GetCurrrentConfig is a pointer to a function that returns an audio config
    * resource for the given audio resource.
@@ -117,7 +120,6 @@ struct PPB_Audio {
    * @return A PP_Resource containing the audio config resource if successful.
    */
   PP_Resource (*GetCurrentConfig)(PP_Resource audio);
-
   /**
    * StartPlayback is a pointer to a function that starts the playback of
    * the audio resource and begins periodically calling the callback.
@@ -129,7 +131,6 @@ struct PPB_Audio {
    * in progress.
    */
   PP_Bool (*StartPlayback)(PP_Resource audio);
-
   /**
    * StopPlayback is a pointer to a function that stops the playback of
    * the audio resource.

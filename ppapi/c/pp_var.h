@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_var.idl modified Tue Jul 12 15:26:30 2011. */
+
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
 
@@ -15,12 +18,11 @@
  * your module and the page.
  */
 
+
 /**
- *
  * @addtogroup Enums
  * @{
  */
-
 /**
  * The <code>PP_VarType</code> is an enumeration of the different types that
  * can be contained within a <code>PP_Var</code> structure.
@@ -30,42 +32,35 @@ typedef enum {
    * An undefined value.
    */
   PP_VARTYPE_UNDEFINED,
-
   /**
    * A NULL value. This is similar to undefined, but JavaScript differentiates
    * the two so it is exposed here as well.
    */
   PP_VARTYPE_NULL,
-
   /**
    * A boolean value, use the <code>as_bool</code> member of the var.
    */
   PP_VARTYPE_BOOL,
-
   /**
    * A 32-bit integer value. Use the <code>as_int</code> member of the var.
    */
   PP_VARTYPE_INT32,
-
   /**
    * A double-precision floating point value. Use the <code>as_double</code>
    * member of the var.
    */
   PP_VARTYPE_DOUBLE,
-
   /**
    * The Var represents a string. The <code>as_id</code> field is used to
    * identify the string, which may be created and retrieved from the
    * <code>PPB_Var</code> interface.
    */
   PP_VARTYPE_STRING,
-
   /**
    * Represents a JavaScript object. This vartype is not currently usable
    * from modules, although it is used internally for some tasks.
    */
   PP_VARTYPE_OBJECT,
-
   /**
    * Arrays and dictionaries are not currently supported but will be added
    * in future revisions. These objects are reference counted so be sure
@@ -80,12 +75,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
  * @}
  */
 
-
 /**
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The PP_VarValue union stores the data for any one of the types listed
  * in the PP_VarType enum.
@@ -97,21 +90,18 @@ union PP_VarValue {
    * <code>PP_Bool</code>.
    */
   PP_Bool as_bool;
-
   /**
    * If <code>type</code> is <code>PP_VARTYPE_INT32</code>,
    * <code>as_int</code> represents the value of this <code>PP_Var</code> as
    * <code>int32_t</code>.
    */
   int32_t as_int;
-
   /**
    * If <code>type</code> is <code>PP_VARTYPE_DOUBLE</code>,
    * <code>as_double</code> represents the value of this <code>PP_Var</code>
    * as <code>double</code>.
    */
   double as_double;
-
   /**
    * If <code>type</code> is <code>PP_VARTYPE_STRING</code>,
    * <code>PP_VARTYPE_OBJECT</code>, <code>PP_VARTYPE_ARRAY</code>, or
@@ -123,15 +113,6 @@ union PP_VarValue {
    */
   int64_t as_id;
 };
-/**
- * @}
- */
-
-
-/**
- * @addtogroup Structs
- * @{
- */
 
 /**
  * The <code>PP_VAR</code> struct is a variant data type and can contain any
@@ -149,7 +130,6 @@ union PP_VarValue {
  */
 struct PP_Var {
   PP_VarType type;
-
   /**
    * The <code>padding</code> ensures <code>value</code> is aligned on an
    * 8-byte boundary relative to the start of the struct. Some compilers
@@ -157,7 +137,6 @@ struct PP_Var {
    * 4-byte boundaries.
    */
   int32_t padding;
-
   /**
    * This <code>value</code> represents the contents of the PP_Var. Only one of
    * the fields of <code>value</code> is valid at a time based upon

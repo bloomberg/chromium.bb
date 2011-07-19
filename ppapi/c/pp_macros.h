@@ -1,14 +1,22 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_macros.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_MACROS_H_
 #define PPAPI_C_PP_MACROS_H_
+
 
 /**
  * @file
  * Defines the API ...
- *
+ */
+
+
+
+/*
  * @addtogroup PP
  * @{
  */

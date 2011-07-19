@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_resource.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_RESOURCE_H_
 #define PPAPI_C_PP_RESOURCE_H_
 
@@ -14,11 +17,11 @@
  * associated with the module.
  */
 
+
 /**
  * @addtogroup Typedefs
  * @{
  */
-
 /**
  * This typdef represents an opaque handle assigned by the browser to the
  * resource. The handle is guaranteed never to be 0 for a valid resource, so a

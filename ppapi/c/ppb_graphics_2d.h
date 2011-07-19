@@ -2,22 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_graphics_2d.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
-
-
-#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
-#define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
-#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
 
 /**
  * @file
@@ -25,14 +24,18 @@
  * context within the browser.
  */
 
+
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * <code>PPB_Graphics2D</code> defines the interface for a 2D graphics context.
  */
+#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
+#define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
+#define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
+
 struct PPB_Graphics2D {
   /**
    * Create() creates a 2D graphics context. The returned graphics context will
@@ -59,7 +62,6 @@ struct PPB_Graphics2D {
   PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_Size* size,
                         PP_Bool is_always_opaque);
-
   /**
    * IsGraphics2D() determines if the given resource is a valid
    * <code>Graphics2D</code>.
@@ -71,7 +73,6 @@ struct PPB_Graphics2D {
    * another type.
    */
   PP_Bool (*IsGraphics2D)(PP_Resource resource);
-
   /**
    * Describe() retrieves the configuration for the given graphics context,
    * filling the given values (which must not be <code>NULL</code>).
@@ -88,7 +89,6 @@ struct PPB_Graphics2D {
   PP_Bool (*Describe)(PP_Resource graphics_2d,
                       struct PP_Size* size,
                       PP_Bool* is_always_opqaue);
-
   /**
    * PaintImageData() enqueues a paint of the given image into the context.
    * This function has no effect until you call Flush() As a result, what
@@ -132,7 +132,6 @@ struct PPB_Graphics2D {
                          PP_Resource image_data,
                          const struct PP_Point* top_left,
                          const struct PP_Rect* src_rect);
-
   /**
    * Scroll() enqueues a scroll of the context's backing store. This
    * function has no effect until you call Flush(). The data within the
@@ -154,7 +153,6 @@ struct PPB_Graphics2D {
   void (*Scroll)(PP_Resource graphics_2d,
                  const struct PP_Rect* clip_rect,
                  const struct PP_Point* amount);
-
   /**
    * ReplaceContents() provides a slightly more efficient way to paint the
    * entire module's image. Normally, calling PaintImageData() requires that
@@ -188,7 +186,6 @@ struct PPB_Graphics2D {
    * @param[in] image The <code>ImageData</code> to be painted.
    */
   void (*ReplaceContents)(PP_Resource graphics_2d, PP_Resource image_data);
-
   /**
    * Flush() flushes any enqueued paint, scroll, and replace commands to the
    * backing store. This function actually executes the updates, and causes a
@@ -249,22 +246,20 @@ struct PPB_Graphics2D {
    * not issued its callback yet.  In the failure case, nothing will be updated
    * and no callback will be scheduled.
    */
-
   /*
    * TODO(darin): We should ensure that the completion callback always runs, so
    * that it is easier for consumers to manage memory referenced by a callback.
    */
-
   /*
    * TODO(): Add back in the synchronous mode description once we have support
    * for it.
    */
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);
-
 };
-
 /**
  * @}
  */
+
 #endif  /* PPAPI_C_PPB_GRAPHICS_2D_H_ */
+

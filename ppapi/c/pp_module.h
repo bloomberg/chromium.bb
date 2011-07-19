@@ -1,9 +1,15 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_module.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_MODULE_H_
 #define PPAPI_C_PP_MODULE_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
@@ -11,15 +17,11 @@
  * or .nexe.
  */
 
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_stdint.h"
 
 /**
- *
  * @addtogroup Typedefs
  * @{
  */
-
 /**
  * The PP_Module value uniquely identifies the module or .nexe.
  *

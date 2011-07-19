@@ -2,36 +2,38 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_file_system.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_time.h"
 
 /**
  * @file
  * This file defines the API to create a file system associated with a file.
  */
 
-struct PP_CompletionCallback;
-
-#define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
-#define PPB_FILESYSTEM_INTERFACE_1_0 "PPB_FileSystem;1.0"
-#define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_1_0
 
 /**
- * @addtogroup Structs
+ * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPB_FileSystem</code> struct identifies the file system type
  * associated with a file.
  */
+#define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
+#define PPB_FILESYSTEM_INTERFACE_1_0 "PPB_FileSystem;1.0"
+#define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_1_0
+
 struct PPB_FileSystem {
   /** Create() creates a file system object of the given type.
    *
@@ -44,7 +46,6 @@ struct PPB_FileSystem {
    * successful.
    */
   PP_Resource (*Create)(PP_Instance instance, PP_FileSystemType type);
-
   /**
    * IsFileSystem() determines if the provided resource is a file system.
    *
@@ -56,7 +57,6 @@ struct PPB_FileSystem {
    * invalid or some type other than <code>PPB_FileSystem</code>.
    */
   PP_Bool (*IsFileSystem)(PP_Resource resource);
-
   /**
    * Open() opens the file system. A file system must be opened before running
    * any other operation on it.
@@ -75,7 +75,6 @@ struct PPB_FileSystem {
   int32_t (*Open)(PP_Resource file_system,
                   int64_t expected_size,
                   struct PP_CompletionCallback callback);
-
   /**
    * GetType() returns the type of the provided file system.
    *
@@ -94,3 +93,4 @@ struct PPB_FileSystem {
  */
 
 #endif  /* PPAPI_C_PPB_FILE_SYSTEM_H_ */
+

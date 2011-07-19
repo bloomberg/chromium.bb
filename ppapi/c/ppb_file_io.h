@@ -2,10 +2,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_file_io.idl modified Wed Jul 13 16:41:25 2011. */
+
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
@@ -17,8 +22,6 @@
  * This file defines the API to create a file i/o object.
  */
 
-struct PP_CompletionCallback;
-struct PP_FileInfo;
 
 /**
  * @addtogroup Enums
@@ -29,28 +32,24 @@ struct PP_FileInfo;
  */
 typedef enum {
   /** Requests read access to a file. */
-  PP_FILEOPENFLAG_READ      = 1 << 0,
-
+  PP_FILEOPENFLAG_READ = 1 << 0,
   /**
    * Requests write access to a file.  May be combined with
    * <code>PP_FILEOPENFLAG_READ</code> to request read and write access.
    */
-  PP_FILEOPENFLAG_WRITE     = 1 << 1,
-
+  PP_FILEOPENFLAG_WRITE = 1 << 1,
   /**
    * Requests that the file be created if it does not exist.  If the file
    * already exists, then this flag is ignored unless
    * <code>PP_FILEOPENFLAG_EXCLUSIVE</code> was also specified, in which case
    * FileIO::Open() will fail.
    */
-  PP_FILEOPENFLAG_CREATE    = 1 << 2,
-
+  PP_FILEOPENFLAG_CREATE = 1 << 2,
   /**
    * Requests that the file be truncated to length 0 if it exists and is a
    * regular file. <code>PP_FILEOPENFLAG_WRITE</code> must also be specified.
    */
-   PP_FILEOPENFLAG_TRUNCATE  = 1 << 3,
-
+  PP_FILEOPENFLAG_TRUNCATE = 1 << 3,
   /**
    * Requests that the file is created when this flag is combined with
    * <code>PP_FILEOPENFLAG_CREATE</code>.  If this flag is specified, and the
@@ -63,10 +62,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
  * @}
  */
 
-#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
-#define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
-#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
-
 /**
  * @addtogroup Interfaces
  * @{
@@ -75,6 +70,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
  * The <code>PPB_FileIO</code> struct is used to operate on a regular file
  * (PP_FileType_Regular).
  */
+#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
+#define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
+#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
+
 struct PPB_FileIO {
   /**
    * Create() creates a new FileIO object.
@@ -96,7 +95,6 @@ struct PPB_FileIO {
    * invalid or some type other than <code>PPB_FileIO</code>.
    */
   PP_Bool (*IsFileIO)(PP_Resource resource);
-
   /**
    * Open() opens the specified regular file for I/O according to the given
    * open flags, which is a bit-mask of the <code>PP_FileOpenFlags</code>
@@ -119,7 +117,6 @@ struct PPB_FileIO {
                   PP_Resource file_ref,
                   int32_t open_flags,
                   struct PP_CompletionCallback callback);
-
   /**
    * Query() queries info about the file opened by this FileIO object. This
    * function will fail if the FileIO object has not been opened.
@@ -136,7 +133,6 @@ struct PPB_FileIO {
   int32_t (*Query)(PP_Resource file_io,
                    struct PP_FileInfo* info,
                    struct PP_CompletionCallback callback);
-
   /**
    * Touch() Updates time stamps for the file opened by this FileIO object.
    * This function will fail if the FileIO object has not been opened.
@@ -154,7 +150,6 @@ struct PPB_FileIO {
                    PP_Time last_access_time,
                    PP_Time last_modified_time,
                    struct PP_CompletionCallback callback);
-
   /**
    * Read() reads from an offset in the file.  The size of the buffer must be
    * large enough to hold the specified number of bytes to read.  This function
@@ -179,7 +174,6 @@ struct PPB_FileIO {
                   char* buffer,
                   int32_t bytes_to_read,
                   struct PP_CompletionCallback callback);
-
   /**
    * Write() writes to an offset in the file.  This function might perform a
    * partial write. The FileIO object must have been opened with write access.
@@ -219,7 +213,6 @@ struct PPB_FileIO {
   int32_t (*SetLength)(PP_Resource file_io,
                        int64_t length,
                        struct PP_CompletionCallback callback);
-
   /**
    * Flush() flushes changes to disk.  This call can be very expensive!
    *
@@ -230,9 +223,7 @@ struct PPB_FileIO {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
-  int32_t (*Flush)(PP_Resource file_io,
-                   struct PP_CompletionCallback callback);
-
+  int32_t (*Flush)(PP_Resource file_io, struct PP_CompletionCallback callback);
   /**
    * Close() cancels any IO that may be pending, and closes the FileIO object.
    * Any pending callbacks will still run, reporting

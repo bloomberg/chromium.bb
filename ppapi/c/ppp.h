@@ -2,8 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppp.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
+
+#include "ppapi/c/pp_macros.h"
+
+/**
+ * @file
+ * This file defines three functions that your module must
+ * implement to interact with the browser.
+ */
+
+
 
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_stdint.h"
@@ -15,14 +28,7 @@
 #define PP_EXPORT __declspec(dllexport)
 #endif
 
-/**
- * @file
- * This file defines three functions that your module must
- * implement to interact with the browser.
- */
-
 // {PENDING: undefine PP_EXPORT?}
-
 
 /* We don't want name mangling for these external functions.  We only need
  * 'extern "C"' if we're compiling with a C++ compiler.
@@ -108,3 +114,4 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 #endif
 
 #endif  /* PPAPI_C_PPP_H_ */
+

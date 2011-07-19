@@ -2,22 +2,25 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_size.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_SIZE_H_
 #define PPAPI_C_PP_SIZE_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
  * This file defines the width and height of a 2D rectangle.
  */
 
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_stdint.h"
 
 /**
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The <code>PP_Size</code> struct contains the size of a 2D rectangle.
  */

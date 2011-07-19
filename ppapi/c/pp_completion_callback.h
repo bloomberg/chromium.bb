@@ -2,24 +2,25 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_completion_callback.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_COMPLETION_CALLBACK_H_
 #define PPAPI_C_PP_COMPLETION_CALLBACK_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
  * This file defines the API to create and run a callback.
  */
 
-#include <stdlib.h>
-
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_stdint.h"
 
 /**
  * @addtogroup Typedefs
  * @{
  */
-
 /**
  * PP_CompletionCallback_Func defines the function signature that you implement
  * to receive callbacks on asynchronous completion of an operation.
@@ -37,11 +38,9 @@ typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
  */
 
 /**
- *
  * @addtogroup Enums
  * @{
  */
-
 /**
  * This enumeration contains flags used to control how non-NULL callbacks are
  * scheduled by asynchronous methods.
@@ -72,7 +71,6 @@ typedef enum {
   PP_COMPLETIONCALLBACK_FLAG_OPTIONAL = 1 << 0
 } PP_CompletionCallback_Flag;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
-
 /**
  * @}
  */
@@ -81,7 +79,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
  * @addtogroup Structs
  * @{
  */
-
 /**
  * Any method that takes a PP_CompletionCallback can complete asynchronously.
  * Refer to PP_CompletionCallback_Flag for more information.
@@ -99,6 +96,8 @@ struct PP_CompletionCallback {
 /**
  * @}
  */
+
+#include <stdlib.h>
 
 /**
  * @addtogroup Functions
@@ -219,3 +218,4 @@ PP_INLINE void PP_RunAndClearCompletionCallback(
  */
 
 #endif  /* PPAPI_C_PP_COMPLETION_CALLBACK_H_ */
+

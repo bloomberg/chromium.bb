@@ -2,18 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_core.idl modified Mon Jul 18 12:14:19 2011. */
+
 #ifndef PPAPI_C_PPB_CORE_H_
 #define PPAPI_C_PPB_CORE_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
-
-struct PP_CompletionCallback;
-
-#define PPB_CORE_INTERFACE_1_0 "PPB_Core;1.0"
-#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_1_0
 
 /**
  * @file
@@ -22,16 +22,19 @@ struct PP_CompletionCallback;
  * threads.
  */
 
+
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPB_Core</code> interface contains pointers to functions related
  * to memory management, time, and threads on the browser.
  *
  */
+#define PPB_CORE_INTERFACE_1_0 "PPB_Core;1.0"
+#define PPB_CORE_INTERFACE PPB_CORE_INTERFACE_1_0
+
 struct PPB_Core {
   /**
    *
@@ -40,14 +43,12 @@ struct PPB_Core {
    * @param[in] config A <code>PP_Resource</code> containing the resource.
    */
   void (*AddRefResource)(PP_Resource resource);
-
   /**
    * ReleaseResource() removes a reference from a resource.
    *
    * @param[in] config A <code>PP_Resource</code> containing the resource.
    */
   void (*ReleaseResource)(PP_Resource resource);
-
   /**
    * GetTime() returns the "wall clock time" according to the
    * browser.
@@ -56,7 +57,6 @@ struct PPB_Core {
    * to the browser.
    */
   PP_Time (*GetTime)();
-
   /**
    * GetTimeTicks() returns the "tick time" according to the browser.
    * This clock is used by the browser when passing some event times to the
@@ -68,12 +68,10 @@ struct PPB_Core {
    * @return A <code>PP_TimeTicks</code> containing the "tick time" according
    * to the browser.
    */
-
-// TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-// This currently does change with wall clock time, but will be fixed in
-// a future release.
+  /* TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
+   * This currently does change with wall clock time, but will be fixed in
+   * a future release. */
   PP_TimeTicks (*GetTimeTicks)();
-
   /**
    * CallOnMainThread() schedules work to be executed on the main module thread
    * after the specified delay. The delay may be 0 to specify a call back as
@@ -100,7 +98,6 @@ struct PPB_Core {
   void (*CallOnMainThread)(int32_t delay_in_milliseconds,
                            struct PP_CompletionCallback callback,
                            int32_t result);
-
   /**
    * IsMainThread() returns true if the current thread is the main pepper
    * thread.
@@ -117,5 +114,5 @@ struct PPB_Core {
  * @}
  */
 
-
 #endif  /* PPAPI_C_PPB_CORE_H_ */
+

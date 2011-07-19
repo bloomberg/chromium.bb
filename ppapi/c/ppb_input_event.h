@@ -3,9 +3,12 @@
  * found in the LICENSE file.
  */
 
+/* From ppb_input_event.idl modified Tue Jul 12 15:22:36 2011. */
+
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
@@ -14,81 +17,65 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_INPUT_EVENT_INTERFACE_0_1 "PPB_InputEvent;0.1"
-#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_0_1
+/**
+ * @file
+ * This file defines the Input Event interfaces.
+ */
 
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1 "PPB_MouseInputEvent;0.1"
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1
-
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1 "PPB_WheelInputEvent;0.1"
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1
-
-#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1 "PPB_KeyboardInputEvent;0.1"
-#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
-    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1
 
 /**
  * @addtogroup Enums
  * @{
  */
-
 /**
  * This enumeration contains the types of input events.
  */
 typedef enum {
-  PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
-
+  PP_INPUTEVENT_TYPE_UNDEFINED = -1,
   /**
    * Notification that a mouse button was pressed.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEDOWN   = 0,
-
+  PP_INPUTEVENT_TYPE_MOUSEDOWN = 0,
   /**
    * Notification that a mouse button was released.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEUP     = 1,
-
+  PP_INPUTEVENT_TYPE_MOUSEUP = 1,
   /**
    * Notification that a mouse button was moved when it is over the instance
    * or dragged out of it.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEMOVE   = 2,
-
+  PP_INPUTEVENT_TYPE_MOUSEMOVE = 2,
   /**
    * Notification that the mouse entered the instance's bounds.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEENTER  = 3,
-
+  PP_INPUTEVENT_TYPE_MOUSEENTER = 3,
   /**
    * Notification that a mouse left the instance's bounds.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
    */
-  PP_INPUTEVENT_TYPE_MOUSELEAVE  = 4,
-
+  PP_INPUTEVENT_TYPE_MOUSELEAVE = 4,
   /**
    * Notification that the scroll wheel was used.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_WHEEL class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEWHEEL  = 5,
-
+  PP_INPUTEVENT_TYPE_MOUSEWHEEL = 5,
   /**
    * Notification that a key transitioned from "up" to "down".
    * TODO(brettw) differentiate from KEYDOWN.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_RAWKEYDOWN  = 6,
-
+  PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
   /**
    * Notification that a key was pressed. This does not necessarily correspond
    * to a character depending on the key and language. Use the
@@ -96,15 +83,13 @@ typedef enum {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_KEYDOWN     = 7,
-
+  PP_INPUTEVENT_TYPE_KEYDOWN = 7,
   /**
    * Notification that a key was released.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_KEYUP       = 8,
-
+  PP_INPUTEVENT_TYPE_KEYUP = 8,
   /**
    * Notification that a character was typed. Use this for text input. Key
    * down events may generate 0, 1, or more than one character event depending
@@ -112,8 +97,7 @@ typedef enum {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
    */
-  PP_INPUTEVENT_TYPE_CHAR        = 9,
-
+  PP_INPUTEVENT_TYPE_CHAR = 9,
   /**
    * TODO(brettw) when is this used?
    *
@@ -129,17 +113,17 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
  * function on PPB_InputEvent.
  */
 typedef enum {
-  PP_INPUTEVENT_MODIFIER_SHIFTKEY         = 1 << 0,
-  PP_INPUTEVENT_MODIFIER_CONTROLKEY       = 1 << 1,
-  PP_INPUTEVENT_MODIFIER_ALTKEY           = 1 << 2,
-  PP_INPUTEVENT_MODIFIER_METAKEY          = 1 << 3,
-  PP_INPUTEVENT_MODIFIER_ISKEYPAD         = 1 << 4,
-  PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT     = 1 << 5,
-  PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN   = 1 << 6,
+  PP_INPUTEVENT_MODIFIER_SHIFTKEY = 1 << 0,
+  PP_INPUTEVENT_MODIFIER_CONTROLKEY = 1 << 1,
+  PP_INPUTEVENT_MODIFIER_ALTKEY = 1 << 2,
+  PP_INPUTEVENT_MODIFIER_METAKEY = 1 << 3,
+  PP_INPUTEVENT_MODIFIER_ISKEYPAD = 1 << 4,
+  PP_INPUTEVENT_MODIFIER_ISAUTOREPEAT = 1 << 5,
+  PP_INPUTEVENT_MODIFIER_LEFTBUTTONDOWN = 1 << 6,
   PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN = 1 << 7,
-  PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN  = 1 << 8,
-  PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY      = 1 << 9,
-  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10
+  PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN = 1 << 8,
+  PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY = 1 << 9,
+  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY = 1 << 10
 } PP_InputEvent_Modifier;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
 
@@ -149,16 +133,12 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
  * PPB_InputEvent.
  */
 typedef enum {
-  PP_INPUTEVENT_MOUSEBUTTON_NONE   = -1,
-  PP_INPUTEVENT_MOUSEBUTTON_LEFT   = 0,
+  PP_INPUTEVENT_MOUSEBUTTON_NONE = -1,
+  PP_INPUTEVENT_MOUSEBUTTON_LEFT = 0,
   PP_INPUTEVENT_MOUSEBUTTON_MIDDLE = 1,
-  PP_INPUTEVENT_MOUSEBUTTON_RIGHT  = 2
+  PP_INPUTEVENT_MOUSEBUTTON_RIGHT = 2
 } PP_InputEvent_MouseButton;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
-
-/**
- * @}
- */
 
 typedef enum {
   /**
@@ -171,7 +151,6 @@ typedef enum {
    * lead to higher performance.
    */
   PP_INPUTEVENT_CLASS_MOUSE = 1 << 0,
-
   /**
    * Requests keyboard events. Keyboard events must be requested in filtering
    * mode via RequestFilteringInputEvents(). This is because many commands
@@ -182,7 +161,6 @@ typedef enum {
    * would allow pages to trap users on a page.
    */
   PP_INPUTEVENT_CLASS_KEYBOARD = 1 << 1,
-
   /**
    * Identifies scroll wheel input event. Wheel events must be requested in
    * filtering mode via RequestFilteringInputEvents(). This is because many
@@ -202,7 +180,6 @@ typedef enum {
    * frames in a page.
    */
   PP_INPUTEVENT_CLASS_WHEEL = 1 << 2,
-
   /**
    * Identifies touch input events.
    *
@@ -211,7 +188,6 @@ typedef enum {
    * higher level and achieve higher performance.
    */
   PP_INPUTEVENT_CLASS_TOUCH = 1 << 3,
-
   /**
    * Identifies IME composition input events.
    *
@@ -220,6 +196,16 @@ typedef enum {
   PP_INPUTEVENT_CLASS_IME = 1 << 4
 } PP_InputEvent_Class;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Class, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
+#define PPB_INPUT_EVENT_INTERFACE_0_1 "PPB_InputEvent;0.1"
+#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_0_1
 
 struct PPB_InputEvent {
   /**
@@ -269,9 +255,7 @@ struct PPB_InputEvent {
    * PP_ERROR_NOTSUPPORTED return value is requesting keyboard events, these
    * must use RequestFilteringInputEvents().
    */
-  int32_t (*RequestInputEvents)(PP_Instance instance,
-                                uint32_t event_classes);
-
+  int32_t (*RequestInputEvents)(PP_Instance instance, uint32_t event_classes);
   /**
    * Request that input events corresponding to the given input events are
    * delivered to the instance for filtering.
@@ -302,7 +286,6 @@ struct PPB_InputEvent {
    */
   int32_t (*RequestFilteringInputEvents)(PP_Instance instance,
                                          uint32_t event_classes);
-
   /**
    * Request that input events corresponding to the given input classes no
    * longer be delivered to the instance.
@@ -325,21 +308,17 @@ struct PPB_InputEvent {
    * @param event_classes A combination of flags from PP_InputEvent_Class that
    * identifies the classes of events the instance is no longer interested in.
    */
-  void (*ClearInputEventRequest)(PP_Instance instance,
-                                 uint32_t event_classes);
-
+  void (*ClearInputEventRequest)(PP_Instance instance, uint32_t event_classes);
   /**
    * Returns true if the given resource is a valid input event resource.
    */
   PP_Bool (*IsInputEvent)(PP_Resource resource);
-
   /**
    * Returns the type of input event for the given input event resource.
    * This is valid for all input events. Returns PP_INPUTEVENT_TYPE_UNDEFINED
    * if the resource is invalid.
    */
   PP_InputEvent_Type (*GetType)(PP_Resource event);
-
   /**
    * Returns the time that the event was generated. This will be before the
    * current time since processing and dispatching the event has some overhead.
@@ -353,7 +332,6 @@ struct PPB_InputEvent {
    * event times to a particular time of day on the system clock.
    */
   PP_TimeTicks (*GetTimeStamp)(PP_Resource event);
-
   /**
    * Returns a bitfield indicating which modifiers were down at the time of
    * the event. This is a combination of the flags in the
@@ -365,6 +343,9 @@ struct PPB_InputEvent {
   uint32_t (*GetModifiers)(PP_Resource event);
 };
 
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1 "PPB_MouseInputEvent;0.1"
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1
+
 struct PPB_MouseInputEvent {
   /**
    * Determines if a resource is a mouse event.
@@ -372,7 +353,6 @@ struct PPB_MouseInputEvent {
    * @return PP_TRUE if the given resource is a valid mouse input event.
    */
   PP_Bool (*IsMouseInputEvent)(PP_Resource resource);
-
   /**
    * Returns which mouse button generated a mouse down or up event.
    *
@@ -381,7 +361,6 @@ struct PPB_MouseInputEvent {
    * events, and for all non-mouse events.
    */
   PP_InputEvent_MouseButton (*GetMouseButton)(PP_Resource mouse_event);
-
   /**
    * Returns the pixel location of a mouse input event.
    *
@@ -390,12 +369,14 @@ struct PPB_MouseInputEvent {
    * mouse drags. The return value will be (0, 0) for non-mouse events.
    */
   struct PP_Point (*GetMousePosition)(PP_Resource mouse_event);
-
   /**
    * TODO(brettw) figure out exactly what this means.
    */
   int32_t (*GetMouseClickCount)(PP_Resource mouse_event);
 };
+
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1 "PPB_WheelInputEvent;0.1"
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1
 
 struct PPB_WheelInputEvent {
   /**
@@ -404,7 +385,6 @@ struct PPB_WheelInputEvent {
    * @return PP_TRUE if the given resource is a valid wheel input event.
    */
   PP_Bool (*IsWheelInputEvent)(PP_Resource resource);
-
   /**
    * Indicates the amount vertically and horizontally the user has requested
    * to scroll by with their mouse wheel. A scroll down or to the right (where
@@ -427,7 +407,6 @@ struct PPB_WheelInputEvent {
    * "clicks".
    */
   struct PP_FloatPoint (*GetWheelDelta)(PP_Resource wheel_event);
-
   /**
    * The number of "clicks" of the scroll wheel that have produced the
    * event. The value may have system-specific acceleration applied to it,
@@ -447,7 +426,6 @@ struct PPB_WheelInputEvent {
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
   struct PP_FloatPoint (*GetWheelTicks)(PP_Resource wheel_event);
-
   /**
    * Indicates if the scroll delta x/y indicates pages or lines to
    * scroll by.
@@ -458,6 +436,10 @@ struct PPB_WheelInputEvent {
   PP_Bool (*GetScrollByPage)(PP_Resource wheel_event);
 };
 
+#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1 "PPB_KeyboardInputEvent;0.1"
+#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
+    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1
+
 struct PPB_KeyboardInputEvent {
   /**
    * Determines if a resource is a keyboard event.
@@ -465,13 +447,11 @@ struct PPB_KeyboardInputEvent {
    * @return PP_TRUE if the given resource is a valid mouse input event.
    */
   PP_Bool (*IsKeyboardInputEvent)(PP_Resource resource);
-
   /**
    * Returns the DOM |keyCode| field for the keyboard event.
    * Chrome populates this with the Windows-style Virtual Key code of the key.
    */
   uint32_t (*GetKeyCode)(PP_Resource key_event);
-
   /**
    * Returns the typed character for the given character event.
    *
@@ -481,5 +461,9 @@ struct PPB_KeyboardInputEvent {
    */
   struct PP_Var (*GetCharacterText)(PP_Resource character_event);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_INPUT_EVENT_H_ */
+

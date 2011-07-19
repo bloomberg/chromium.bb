@@ -2,18 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_url_loader.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-
-#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
-#define PPB_URLLOADER_INTERFACE_1_0 "PPB_URLLoader;1.0"
-#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_1_0
 
 /**
  * @file
@@ -21,11 +21,11 @@
  * URLs.
  */
 
+
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <strong>PPB_URLLoader</strong> interface contains pointers to functions
  * for loading URLs. The typical steps for loading a URL are:
@@ -45,6 +45,10 @@
  * - Then, access the downloaded file using the GetBodyAsFileRef() function of
  * the <code>URLResponseInfo</code> returned in step #4.
  */
+#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
+#define PPB_URLLOADER_INTERFACE_1_0 "PPB_URLLoader;1.0"
+#define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_1_0
+
 struct PPB_URLLoader {
   /**
    * Create() creates a new <code>URLLoader</code> object. The
@@ -59,19 +63,17 @@ struct PPB_URLLoader {
    * successful, 0 if the instance is invalid.
    */
   PP_Resource (*Create)(PP_Instance instance);
-
   /**
    * IsURLLoader() determines if a resource is an <code>URLLoader</code>.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a
    * <code>URLLoader</code>.
    *
-   * @return <code>PP_TRUE</code> if the resource is a <code>URLLoader</code>, 
+   * @return <code>PP_TRUE</code> if the resource is a <code>URLLoader</code>,
    * <code>PP_FALSE</code> if the resource is invalid or some type other
    * than <code>URLLoader</code>.
    */
   PP_Bool (*IsURLLoader)(PP_Resource resource);
-
   /**
    * Open() begins loading the <code>URLRequestInfo</code>. The operation
    * completes when response headers are received or when an error occurs.  Use
@@ -91,7 +93,6 @@ struct PPB_URLLoader {
   int32_t (*Open)(PP_Resource loader,
                   PP_Resource request_info,
                   struct PP_CompletionCallback callback);
-
   /**
    * FollowRedirect()can be invoked to follow a redirect after Open() completed
    * on receiving redirect headers.
@@ -108,14 +109,13 @@ struct PPB_URLLoader {
    */
   int32_t (*FollowRedirect)(PP_Resource loader,
                             struct PP_CompletionCallback callback);
-
   /**
    * GetUploadProgress() returns the current upload progress (which is
    * meaningful after Open() has been called). Progress only refers to the
    * request body and does not include the headers.
    *
    * This data is only available if the <code>URLRequestInfo</code> passed
-   * to Open() had the <code>PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS</code> 
+   * to Open() had the <code>PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS</code>
    * property set to PP_TRUE.
    *
    * @param[in] loader A <code>PP_Resource</code> corresponding to a
@@ -123,13 +123,12 @@ struct PPB_URLLoader {
    * @param[in] bytes_sent The number of bytes sent thus far.
    * @param[in] total_bytes_to_be_sent The total number of bytes to be sent.
    *
-   * @return <code>PP_TRUE</code> if the upload progress is available, 
+   * @return <code>PP_TRUE</code> if the upload progress is available,
    * <code>PP_FALSE</code> if it is not available.
    */
   PP_Bool (*GetUploadProgress)(PP_Resource loader,
                                int64_t* bytes_sent,
                                int64_t* total_bytes_to_be_sent);
-
   /**
    * GetDownloadProgress() returns the current download progress, which is
    * meaningful after Open() has been called. Progress only refers to the
@@ -152,7 +151,6 @@ struct PPB_URLLoader {
   PP_Bool (*GetDownloadProgress)(PP_Resource loader,
                                  int64_t* bytes_received,
                                  int64_t* total_bytes_to_be_received);
-
   /**
    * GetResponseInfo() returns the current <code>URLResponseInfo</code> object.
    *
@@ -164,7 +162,6 @@ struct PPB_URLLoader {
    * resource or if Open() has not been called.
    */
   PP_Resource (*GetResponseInfo)(PP_Resource loader);
-
   /**
    * ReadResponseBody() is used to read the response body. The size of the
    * buffer must be large enough to hold the specified number of bytes to read.
@@ -205,7 +202,6 @@ struct PPB_URLLoader {
    */
   int32_t (*FinishStreamingToFile)(PP_Resource loader,
                                    struct PP_CompletionCallback callback);
-
   /**
    * Close is a pointer to a function used to cancel any pending IO and close
    * the <code>URLLoader</code> object. Any pending callbacks will still run,
@@ -226,3 +222,4 @@ struct PPB_URLLoader {
  */
 
 #endif  /* PPAPI_C_PPB_URL_LOADER_H_ */
+

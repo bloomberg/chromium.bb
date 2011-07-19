@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_bool.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_BOOL_H_
 #define PPAPI_C_PP_BOOL_H_
 
@@ -13,12 +16,11 @@
  * headers.
  */
 
+
 /**
- *
  * @addtogroup Enums
  * @{
  */
-
 /**
  * The <code>PP_Bool</code> enum is a boolean value for use in PPAPI C headers.
  * The standard bool type is not available to pre-C99 compilers, and is not
@@ -48,6 +50,7 @@ inline PP_Bool PP_FromBool(bool b) {
 inline bool PP_ToBool(PP_Bool b) {
   return (b != PP_FALSE);
 }
+
 #endif  // __cplusplus
 
 #endif  /* PPAPI_C_PP_BOOL_H_ */

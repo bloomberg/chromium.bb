@@ -2,8 +2,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_H_
 #define PPAPI_C_PPB_H_
+
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_stdint.h"
 
 /**
  * @file
@@ -11,11 +17,11 @@
  * <code>PPB_GetInterface</code> function.
  */
 
+
 /**
  * @addtogroup Typedefs
  * @{
  */
-
 /**
  * This function pointer type defines the signature for the
  * <code>PPB_GetInterface</code> function. A generic
@@ -37,5 +43,6 @@ typedef const void* (*PPB_GetInterface)(const char* interface_name);
 /**
  * @}
  */
+
 #endif  /* PPAPI_C_PPB_H_ */
 

@@ -2,32 +2,38 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_instance.idl modified Mon Jul 18 12:54:08 2011. */
+
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
-
-#define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
-#define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
-#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 /**
  * @file
  * This file defines the PPB_Instance interface implemented by the
  * browser and containing pointers to functions related to
  * the module instance on a web page.
- *
+ */
+
+
+/**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The PPB_Instance interface contains pointers to functions
  * related to the module instance on a web page.
- *
  */
+#define PPB_INSTANCE_INTERFACE_0_5 "PPB_Instance;0.5"
+#define PPB_INSTANCE_INTERFACE_1_0 "PPB_Instance;1.0"
+#define PPB_INSTANCE_INTERFACE PPB_INSTANCE_INTERFACE_1_0
 
 struct PPB_Instance {
   /**
@@ -58,7 +64,6 @@ struct PPB_Instance {
    * instance, so the caller can release its reference if it chooses.
    */
   PP_Bool (*BindGraphics)(PP_Instance instance, PP_Resource device);
-
   /**
    * IsFullFrame() determines if the module instance is full-frame (repr).
    * Such a module represents the entire document in a frame rather than an
@@ -73,11 +78,7 @@ struct PPB_Instance {
    * instance is full-frame.
    */
   PP_Bool (*IsFullFrame)(PP_Instance instance);
-
 };
-
-typedef struct PPB_Instance PPB_Instance_1_0;
-
 /**
  * @}
  */

@@ -2,6 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppb_var.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPB_VAR_H_
 #define PPAPI_C_PPB_VAR_H_
 
@@ -11,23 +14,23 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VAR_INTERFACE_0_5 "PPB_Var;0.5"
-#define PPB_VAR_INTERFACE_1_0 "PPB_Var;1.0"
-#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_1_0
-
 /**
  * @file
  * This file defines the <code>PPB_Var</code> struct.
  */
 
+
 /**
  * @addtogroup Interfaces
  * @{
  */
-
 /**
  * PPB_Var API
  */
+#define PPB_VAR_INTERFACE_0_5 "PPB_Var;0.5"
+#define PPB_VAR_INTERFACE_1_0 "PPB_Var;1.0"
+#define PPB_VAR_INTERFACE PPB_VAR_INTERFACE_1_0
+
 struct PPB_Var {
   /**
    * AddRef() adds a reference to the given var. If this is not a refcounted
@@ -37,7 +40,6 @@ struct PPB_Var {
    * @param[in] var A <code>PP_Var</code> that will have a reference added.
    */
   void (*AddRef)(struct PP_Var var);
-
   /**
    * Release() removes a reference to given var, deleting it if the internal
    * reference count becomes 0. If the given var is not a refcounted object,
@@ -47,7 +49,6 @@ struct PPB_Var {
    * @param[in] var A <code>PP_Var</code> that will have a reference removed.
    */
   void (*Release)(struct PP_Var var);
-
   /**
    * VarFromUtf8() creates a string var from a string. The string must be
    * encoded in valid UTF-8 and is NOT NULL-terminated, the length must be
@@ -76,7 +77,6 @@ struct PPB_Var {
   struct PP_Var (*VarFromUtf8)(PP_Module module,
                                const char* data,
                                uint32_t len);
-
   /**
    * VarToUtf8() converts a string-type var to a char* encoded in UTF-8. This
    * string is NOT NULL-terminated. The length will be placed in

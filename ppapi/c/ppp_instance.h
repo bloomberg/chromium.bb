@@ -2,18 +2,23 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From ppp_instance.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
-
-struct PP_InputEvent;
-
-#define PPP_INSTANCE_INTERFACE_0_5 "PPP_Instance;0.5"
-#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_0_5
+#include "ppapi/c/pp_size.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_time.h"
+#include "ppapi/c/ppb_input_event.h"
 
 /**
  * @file
@@ -21,10 +26,11 @@ struct PP_InputEvent;
  * pointers to methods that you must implement in your module.
  */
 
-/** @addtogroup Interfaces
+
+/**
+ * @addtogroup Interfaces
  * @{
  */
-
 /**
  * The <code>PPP_Instance</code> interface contains pointers to a series of
  * functions that you must implement in your module. These functions can be
@@ -32,6 +38,8 @@ struct PP_InputEvent;
  * to handle events such as change of focus or input events (keyboard/mouse)
  * events.
  */
+#define PPP_INSTANCE_INTERFACE_0_5 "PPP_Instance;0.5"
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_0_5
 
 struct PPP_Instance {
   /**
@@ -77,7 +85,6 @@ struct PPP_Instance {
                        uint32_t argc,
                        const char* argn[],
                        const char* argv[]);
-
   /**
    * DidDestroy() is an instance destruction handler. This function is called
    * in many cases (see below) when a module instance is destroyed. It will be
@@ -105,7 +112,6 @@ struct PPP_Instance {
    * of a module.
    */
   void (*DidDestroy)(PP_Instance instance);
-
   /**
    * DidChangeView() is called when the position, the size, of the clip
    * rectangle of the element in the browser that corresponds to this
@@ -142,7 +148,6 @@ struct PPP_Instance {
   void (*DidChangeView)(PP_Instance instance,
                         const struct PP_Rect* position,
                         const struct PP_Rect* clip);
-
   /**
    * DidChangeFocus() is called when an instance has gained or lost focus.
    * Having focus means that keyboard events will be sent to the instance.
@@ -161,7 +166,6 @@ struct PPP_Instance {
    * @param[in] has_focus Indicates the new focused state of the instance.
    */
   void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
-
   /**
    * HandleInputEvent() handles input events, such as keyboard events. This
    * function returns <code>PP_TRUE</code> if the event was handled or
@@ -189,7 +193,6 @@ struct PPP_Instance {
    */
   PP_Bool (*HandleInputEvent)(PP_Instance instance,
                               const struct PP_InputEvent* event);
-
   /**
    * HandleDocumentLoad() is called after initialize for a full-frame
    * module that was instantiated based on the MIME type of a DOMWindow
@@ -219,10 +222,10 @@ struct PPP_Instance {
    */
   PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 };
-
 /**
  * @}
  */
+
 
 typedef struct PPP_Instance PPP_Instance_0_5;
 

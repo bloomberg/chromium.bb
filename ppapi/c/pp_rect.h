@@ -2,13 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+/* From pp_rect.idl modified Sat Jul 16 16:50:26 2011. */
+
 #ifndef PPAPI_C_PP_RECT_H_
 #define PPAPI_C_PP_RECT_H_
-
-/**
- * @file
- * This file defines the APIs for creating a 2 dimensional rectangle.
- */
 
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
@@ -16,22 +14,25 @@
 #include "ppapi/c/pp_stdint.h"
 
 /**
+ * @file
+ * This file defines the APIs for creating a 2 dimensional rectangle.
+ */
+
+
+/**
  * @addtogroup Structs
  * @{
  */
-
 /**
  * The <code>PP_Rect</code> struct contains the size and location of a 2D
  * rectangle.
  */
 struct PP_Rect {
-
   /**
    * This value represents the x and y coordinates of the upper-left corner of
    * the rectangle.
    */
   struct PP_Point point;
-
   /** This value represents the width and height of the rectangle. */
   struct PP_Size size;
 };
@@ -39,6 +40,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Rect, 16);
 /**
  * @}
  */
+
 
 /**
  * @addtogroup Functions
@@ -70,5 +72,6 @@ PP_INLINE struct PP_Rect PP_MakeRectFromXYWH(int32_t x, int32_t y,
 /**
  * @}
  */
+
 #endif  /* PPAPI_C_PP_RECT_H_ */
 
