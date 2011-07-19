@@ -2,6 +2,7 @@ Name: OpenGL ES 2.0 Programming Guide
 Short Name: opengles-book
 URL: http://opengles-book.com/
 Version: unknown
+Security Critical: no
 
 Description:
 Code samples from OpenGL ES 2.0 Programming Guide.
@@ -31,4 +32,8 @@ Local Modifications:
     - Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.h
     - Chapter_9/TextureWrap/TextureWrap.h
     - Chapter_11/Stencil_Test/Stencil_Test.h
+    
+  Initialized local variables:
+    - Chapter_11/Stencil_Test/Stencil_Test.c
+    - Common/Source/esShader.c
 

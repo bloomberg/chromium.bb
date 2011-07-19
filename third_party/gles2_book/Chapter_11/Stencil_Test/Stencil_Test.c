@@ -121,7 +121,7 @@ void stDraw ( ESContext *esContext )
        { 1.0f, 1.0f, 0.0f, 0.0f }
    };
 
-   GLint   numStencilBits;
+   GLint   numStencilBits = 0;
    GLuint  stencilValues[NumTests] = { 
       0x7, // Result of test 0
       0x0, // Result of test 1

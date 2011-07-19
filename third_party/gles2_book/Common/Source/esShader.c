@@ -42,8 +42,8 @@
 //
 GLuint esLoadShader ( GLenum type, const char *shaderSrc )
 {
-   GLuint shader;
-   GLint compiled;
+   GLuint shader = 0;
+   GLint compiled = 0;
    
    // Create the shader object
    shader = glCreateShader ( type );
@@ -95,10 +95,10 @@ GLuint esLoadShader ( GLenum type, const char *shaderSrc )
 //
 GLuint esLoadProgram ( const char *vertShaderSrc, const char *fragShaderSrc )
 {
-   GLuint vertexShader;
-   GLuint fragmentShader;
-   GLuint programObject;
-   GLint linked;
+   GLuint vertexShader = 0;
+   GLuint fragmentShader = 0;
+   GLuint programObject = 0;
+   GLint linked = 0;
 
    // Load the vertex/fragment shaders
    vertexShader = esLoadShader ( GL_VERTEX_SHADER, vertShaderSrc );
