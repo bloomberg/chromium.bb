@@ -214,13 +214,27 @@ void NaClProcessHost::OnProcessLaunched() {
   // might need to open the file on startup.  If so, we would need to
   // ensure that NaCl's ELF loader does not use lseek() on the shared
   // IRT file descriptor, otherwise there would be a race condition.
-  FilePath plugin_dir;
-  if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
-    LOG(ERROR) << "Failed to locate the plugins directory";
-    delete this;
-    return;
+  FilePath irt_path;
+  // Allow the IRT library to be overridden via an environment
+  // variable.  This allows the NaCl/Chromium integration bot to
+  // specify a newly-built IRT rather than using a prebuilt one
+  // downloaded via Chromium's DEPS file.  We use the same environment
+  // variable that the standalone NaCl PPAPI plugin accepts.
+  const char* irt_path_var = getenv("NACL_IRT_LIBRARY");
+  if (irt_path_var != NULL) {
+    FilePath::StringType string(irt_path_var,
+                                irt_path_var + strlen(irt_path_var));
+    irt_path = FilePath(string);
+  } else {
+    FilePath plugin_dir;
+    if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
+      LOG(ERROR) << "Failed to locate the plugins directory";
+      delete this;
+      return;
+    }
+    irt_path = plugin_dir.Append(GetIrtLibraryFilename());
   }
-  FilePath irt_path = plugin_dir.Append(GetIrtLibraryFilename());
+
   base::FileUtilProxy::CreateOrOpenCallback* callback =
       callback_factory_.NewCallback(&NaClProcessHost::OpenIrtFileDone);
   if (!base::FileUtilProxy::CreateOrOpen(
