@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "views/events/event.h"
 #include "views/ime/input_method.h"
+#include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
 #if defined(TOUCH_UI)
@@ -64,6 +65,13 @@ void InputFunction::Run() {
 }
 
 views::Widget* SendKeyboardEventInputFunction::GetTopLevelWidget() {
+  if (views::ViewsDelegate::views_delegate) {
+    views::View* view = views::ViewsDelegate::views_delegate->
+                        GetDefaultParentView();
+    if (view)
+      return view->GetWidget();
+  }
+
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
   views::Widget* login_window = chromeos::WebUILoginDisplay::GetLoginWindow();
   if (login_window)
