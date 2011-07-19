@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
 #include "ui/gfx/point.h"
 
@@ -24,7 +24,7 @@ namespace chromeos {
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
 class NetworkScreenHandler : public NetworkScreenActor,
-                             public OobeMessageHandler {
+                             public BaseScreenHandler {
  public:
   NetworkScreenHandler();
   virtual ~NetworkScreenHandler();
@@ -40,7 +40,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
                                     const string16& network_id);
   virtual void EnableContinue(bool enabled);
 
-  // OobeMessageHandler implementation:
+  // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 

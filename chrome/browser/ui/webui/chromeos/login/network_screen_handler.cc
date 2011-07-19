@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -133,7 +134,7 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
                                   *enabled_value);
 }
 
-// NetworkScreenHandler, OobeMessageHandler implementation: --------------------
+// NetworkScreenHandler, BaseScreenHandler implementation: --------------------
 
 void NetworkScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {

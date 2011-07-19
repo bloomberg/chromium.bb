@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/login_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "views/widget/widget.h"
 
 namespace gfx {
@@ -40,7 +40,7 @@ namespace chromeos {
 //   set_login_handler(this);
 
 class WebUILoginDisplay : public LoginDisplay,
-                          public LoginUIHandlerDelegate {
+                          public SigninScreenHandlerDelegate {
  public:
   virtual ~WebUILoginDisplay();
 
@@ -68,12 +68,14 @@ class WebUILoginDisplay : public LoginDisplay,
                          int login_attempts,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
 
-  // LoginUIHandlerDelegate
+  // SigninScreenHandlerDelegate implementation:
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void SetWebUIHandler(
+      LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
 
   void set_login_window(views::Widget* login_window) {
     login_window_ = login_window;
@@ -89,6 +91,9 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // Container of the screen we are displaying
   views::Widget* login_window_;
+
+  // Reference to the WebUI handling layer for the login screen
+  LoginDisplayWebUIHandler* webui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
 };

@@ -122,7 +122,7 @@ var LoginScreen = (function() {
             'Expected every user to have a name.');
 
       userElement.setAttribute('display-name', user.name);
-      userElement.setAttribute('user-name', user.email_address);
+      userElement.setAttribute('user-name', user.emailAddress);
       userElement.setAttribute('user-index', index);
 
       // Find the span element (if any) and fill it in with the app name
@@ -133,7 +133,7 @@ var LoginScreen = (function() {
       // Fill in the image
       var userImg = userElement.getElementsByClassName('user-image')[0];
       if (userImg) {
-        userImg.style.backgroundImage = "url('" + user.image_url + "')";
+        userImg.style.backgroundImage = "url('" + user.imageUrl + "')";
         // We put a click handler just on the user image - so clicking on the
         // margins between users doesn't do anything
         var self = this;
@@ -172,7 +172,7 @@ var LoginScreen = (function() {
         var loginButton =
           guestLoginBox.getElementsByClassName('loginbutton')[0];
         loginButton.addEventListener('click', function(e) {
-          chrome.send('LaunchIncognito', []);
+          chrome.send('launchIncognito', []);
           // Don't allow the click to trigger a link or anything
           e.preventDefault();
           // Prevent the user-frame from receiving the event.
@@ -288,7 +288,7 @@ var LoginScreen = (function() {
       }
       this.updateSliderCards();
 
-      chrome.send('RemoveUser', [getUserName(userElement)]);
+      chrome.send('removeUser', [getUserName(userElement)]);
     },
 
     /**
@@ -419,7 +419,7 @@ var LoginScreen = (function() {
         var userName = getUserName(userElement);
         var password = passwordBox.value;
         if (password.length > 0) {
-          chrome.send('AuthenticateUser', [userName, password]);
+          chrome.send('authenticateUser', [userName, password]);
           return false;
         }
       }
@@ -473,7 +473,7 @@ var LoginScreen = (function() {
             this.slider.currentCardIndex = guestIndex;
             setTimeout(function() {
               // TODO(fsamuel): Make this call a common function.
-              chrome.send('LaunchIncognito', []);
+              chrome.send('launchIncognito', []);
             }, 50);
           }
           break;
@@ -610,7 +610,7 @@ var LoginScreen = (function() {
 
       passwordBox.addEventListener('keypress', function(e) {
         if (e.keyCode == 13) {
-          chrome.send('AuthenticateUser', [emailBox.value, passwordBox.value]);
+          chrome.send('authenticateUser', [emailBox.value, passwordBox.value]);
         }
       }, true);
     },
@@ -620,7 +620,7 @@ var LoginScreen = (function() {
       // Request data on the users so we can fill them in.
       // Note that this is kicked off asynchronously.  'getUsersCallback' will
       // be invoked at some point after this function returns.
-      chrome.send('GetUsers');
+      chrome.send('getUsers');
 
       // Prevent touch events from triggering any sort of native scrolling
       document.addEventListener('touchmove', function(e) {

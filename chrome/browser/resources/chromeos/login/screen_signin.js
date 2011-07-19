@@ -32,6 +32,8 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
+      $('email').addEventListener('keydown', this.handleKeyDown_.bind(this));
+      $('password').addEventListener('keydown', this.handleKeyDown_.bind(this));
     },
 
     /**
@@ -93,14 +95,51 @@ cr.define('login', function() {
     },
 
     /**
+     * Validates input fields.
+     */
+    checkInput: function() {
+      // Validate input.
+      if (!$('email').value) {
+         $('email').focus();
+        return false;
+      }
+
+      if (!$('password').value) {
+        $('password').focus();
+        return false;
+      }
+
+      return true;
+    },
+
+    /**
      * Handles sign in button click.
      * @private
      */
     handleSigninClick_: function(e) {
+      if (!this.checkInput())
+        return;
+
       this.state = SigninScreen.STATE_AUTHENTICATING;
 
       chrome.send('authenticateUser',
           [$('email').value, $('password').value]);
+    },
+
+    /**
+     * Handles keyboard event.
+     * @private
+     */
+    handleKeyDown_: function(e) {
+      // Handle 'Enter' key for 'email' and 'password' field.
+      if (e.keyIdentifier == 'Enter') {
+        if (e.target.id == 'email') {
+          if (e.target.value)
+            $('password').focus();
+        } else if (e.target.id == 'password') {
+          this.handleSigninClick_();
+        }
+      }
     }
   };
 

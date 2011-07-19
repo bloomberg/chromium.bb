@@ -81,12 +81,7 @@ void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
 
 void WebUILoginDisplayHost::StartSignInScreen() {
   if (!login_window_)
-  // TODO(fsamuel): Use the OOBE once it's touch-friendly.
-#if defined(TOUCH_UI)
-    LoadURL(GURL(kLoginURL));
-#else
     LoadURL(GURL(kOobeURL));
-#endif
 
   BaseLoginDisplayHost::StartSignInScreen();
 

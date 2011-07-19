@@ -68,7 +68,8 @@ void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
   // TODO(rharrison): Push the change to WebUI Login screen
 }
 
-void WebUILoginDisplay::OnFadeOut() { }
+void WebUILoginDisplay::OnFadeOut() {
+}
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // Send message to WM to enable/disable click on windows.
@@ -77,7 +78,7 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   WmIpc::instance()->SendMessage(message);
 
   if (is_enabled)
-    login_handler_->ClearAndEnablePassword();
+    webui_handler_->ClearAndEnablePassword();
 }
 
 void WebUILoginDisplay::SelectPod(int index) {
@@ -87,7 +88,7 @@ void WebUILoginDisplay::SelectPod(int index) {
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
-  DCHECK(login_handler_);
+  DCHECK(webui_handler_);
 
   std::string error_text;
   switch (error_msg_id) {
@@ -121,10 +122,14 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
       break;
   }
 
-  login_handler_->ShowError(error_text, help_link, help_topic_id);
+  webui_handler_->ShowError(error_text, help_link, help_topic_id);
 }
 
-// WebUILoginDisplay, LoginUIHandlerDelegate implementation: -------------------
+// WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
+void WebUILoginDisplay::SetWebUIHandler(
+    LoginDisplayWebUIHandler* webui_handler) {
+  webui_handler_ = webui_handler;
+}
 
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
@@ -149,8 +154,8 @@ void WebUILoginDisplay::LoginAsGuest() {
 
 WebUILoginDisplay::WebUILoginDisplay()
     : LoginDisplay(NULL, gfx::Rect()),
-      LoginUIHandlerDelegate(),
-      login_window_(NULL) {
+      login_window_(NULL),
+      webui_handler_(NULL) {
 }
 
 }  // namespace chromeos

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -56,36 +57,15 @@ class OobeUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(OobeUIHTMLSource);
 };
 
-// OobeMessageHandler ----------------------------------------------------------
-OobeMessageHandler::OobeMessageHandler() : page_is_ready_(false) {
-}
-
-OobeMessageHandler::~OobeMessageHandler() {
-}
-
-void OobeMessageHandler::InitializeBase() {
-  page_is_ready_ = true;
-  Initialize();
-}
-
-void OobeMessageHandler::ShowScreen(const char* screen_name,
-                                    const char* data) {
-  DictionaryValue screen_params;
-  screen_params.SetString("id", screen_name);
-  if (data)
-    screen_params.SetString("data", data);
-  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
-}
-
 // CoreOobeHandler -------------------------------------------------------------
 
 // The core handler for Javascript messages related to the "oobe" view.
-class CoreOobeHandler : public OobeMessageHandler {
+class CoreOobeHandler : public BaseScreenHandler {
  public:
   explicit CoreOobeHandler(OobeUI* oobe_ui);
   virtual ~CoreOobeHandler();
 
-  // OobeMessageHandler implementation:
+  // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
   virtual void Initialize();
 
@@ -158,22 +138,22 @@ OobeUI::OobeUI(TabContents* contents)
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       signin_screen_handler_(NULL) {
-  AddOobeMessageHandler(new CoreOobeHandler(this));
+  AddScreenHandler(new CoreOobeHandler(this));
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
   network_screen_actor_ = network_screen_handler;
-  AddOobeMessageHandler(network_screen_handler);
+  AddScreenHandler(network_screen_handler);
 
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler;
   eula_screen_actor_ = eula_screen_handler;
-  AddOobeMessageHandler(eula_screen_handler);
+  AddScreenHandler(eula_screen_handler);
 
   UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler;
   update_screen_actor_ = update_screen_handler;
-  AddOobeMessageHandler(update_screen_handler);
+  AddScreenHandler(update_screen_handler);
 
   signin_screen_handler_ = new SigninScreenHandler;
-  AddOobeMessageHandler(signin_screen_handler_);
+  AddScreenHandler(signin_screen_handler_);
 
   DictionaryValue* localized_strings = new DictionaryValue;
   GetLocalizedStrings(localized_strings);
@@ -234,20 +214,20 @@ ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
 void OobeUI::GetLocalizedStrings(DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 1; i < handlers_.size(); ++i) {
-    static_cast<OobeMessageHandler*>(handlers_[i])->
+    static_cast<BaseScreenHandler*>(handlers_[i])->
         GetLocalizedStrings(localized_strings);
   }
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 }
 
-void OobeUI::AddOobeMessageHandler(OobeMessageHandler* handler) {
+void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
   AddMessageHandler(handler->Attach(this));
 }
 
 void OobeUI::InitializeHandlers() {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 1; i < handlers_.size(); ++i) {
-    static_cast<OobeMessageHandler*>(handlers_[i])->InitializeBase();
+    static_cast<BaseScreenHandler*>(handlers_[i])->InitializeBase();
   }
 }
 

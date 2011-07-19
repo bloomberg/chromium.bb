@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/browser/webui/web_ui.h"
 
 namespace base {
@@ -24,7 +24,7 @@ class HelpAppLauncher;
 // WebUI implementation of EulaScreenActor. It is used to interact
 // with the eula part of the JS page.
 class EulaScreenHandler : public EulaScreenActor,
-                          public OobeMessageHandler,
+                          public BaseScreenHandler,
                           public TpmPasswordFetcherDelegate {
  public:
   EulaScreenHandler();
@@ -37,7 +37,7 @@ class EulaScreenHandler : public EulaScreenActor,
   virtual void SetDelegate(Delegate* delegate);
   virtual void OnPasswordFetched(const std::string& tpm_password);
 
-  // OobeMessageHandler implementation:
+  // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 

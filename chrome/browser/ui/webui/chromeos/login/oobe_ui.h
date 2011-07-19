@@ -14,42 +14,11 @@ class DictionaryValue;
 }
 
 namespace chromeos {
+class BaseScreenHandler;
 class SigninScreenHandler;
 }
 
 namespace chromeos {
-
-// Base class for the OOBE WebUI handlers.
-class OobeMessageHandler : public WebUIMessageHandler {
- public:
-  OobeMessageHandler();
-  virtual ~OobeMessageHandler();
-
-  // Gets localized strings to be used on the page.
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) = 0;
-
-  // This method is called when page is ready. It propagates to inherited class
-  // via virtual Initialize() method (see below).
-  void InitializeBase();
-
- protected:
-  // Called when the page is ready and handler can do initialization.
-  virtual void Initialize() = 0;
-
-  // Show selected WebUI |screen|. Optionally it can pass screen initialization
-  // data via |data| parameter.
-  void ShowScreen(const char* screen, const char* data);
-
-  // Whether page is ready.
-  bool page_is_ready() const { return page_is_ready_; }
-
- private:
-  // Keeps whether page is ready.
-  bool page_is_ready_;
-
-  DISALLOW_COPY_AND_ASSIGN(OobeMessageHandler);
-};
 
 // A custom WebUI that defines datasource for out-of-box-experience (OOBE) UI:
 // - welcome screen (setup language/keyboard/network).
@@ -80,7 +49,7 @@ class OobeUI : public OobeDisplay,
   void ShowSigninScreen();
 
  private:
-  void AddOobeMessageHandler(OobeMessageHandler* handler);
+  void AddScreenHandler(BaseScreenHandler* handler);
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenActor* update_screen_actor_;

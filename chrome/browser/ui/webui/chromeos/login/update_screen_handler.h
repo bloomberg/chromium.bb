@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_UPDATE_SCREEN_HANDLER_H_
 
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
 
 class UpdateScreenHandler : public UpdateScreenActor,
-                            public OobeMessageHandler {
+                            public BaseScreenHandler {
  public:
   UpdateScreenHandler();
   virtual ~UpdateScreenHandler();
 
-  // OobeMessageHandler implementation:
+  // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 

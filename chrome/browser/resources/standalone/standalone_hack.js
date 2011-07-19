@@ -36,27 +36,27 @@ chrome.send = (function() {
   var users = [
   {
     name: 'Alan Beaker',
-    email_address: 'beaker@chromium.org',
-    image_url: '../../app/theme/avatar_beaker.png',
-    can_remove: false
+    emailAddress: 'beaker@chromium.org',
+    imageUrl: '../../app/theme/avatar_beaker.png',
+    canRemove: false
   },
   {
     name: 'Alex Briefcase',
-    email_address: 'briefcase@chromium.org',
-    image_url: '../../app/theme/avatar_briefcase.png',
-    can_remove: true
+    emailAddress: 'briefcase@chromium.org',
+    imageUrl: '../../app/theme/avatar_briefcase.png',
+    canRemove: true
   },
   {
     name: 'Alex Circles',
-    email_address: 'circles@chromium.org',
-    image_url: '../../app/theme/avatar_circles.png',
-    can_remove: true
+    emailAddress: 'circles@chromium.org',
+    imageUrl: '../../app/theme/avatar_circles.png',
+    canRemove: true
   },
   {
     name: 'Guest',
-    email_address: '',
-    image_url: '',
-    can_remove: false
+    emailAddress: '',
+    imageUrl: '',
+    canRemove: false
   }
   ];
 
