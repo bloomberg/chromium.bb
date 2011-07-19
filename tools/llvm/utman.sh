@@ -116,12 +116,12 @@ readonly TC_SRC="${NACL_ROOT}/hg"
 readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 
 # The location of sources (absolute)
-readonly TC_SRC_LLVM="${TC_SRC}/llvm"
-readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc"
+readonly TC_SRC_LLVM="${TC_SRC}/llvm/llvm-trunk"
+readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc/llvm-gcc-4.2"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
-readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
+readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
 readonly TC_SRC_GOOGLE_PERFTOOLS="${TC_SRC}/google-perftools"
 readonly TC_SRC_LLVM_MQ_PATCHES="${TC_SRC}/llvm-mq-patches"
 readonly TC_SRC_LLVM_GCC_MQ_PATCHES="${TC_SRC}/llvm-gcc-mq-patches"
@@ -214,8 +214,8 @@ fi
 
 # Current milestones in each repo
 # hg-update-all uses these
-readonly LLVM_REV=2c5d50edfa14
-readonly LLVM_GCC_REV=4143147bce3b
+readonly LLVM_REV=9ca0d1b53734
+readonly LLVM_GCC_REV=e093fe8c5603
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=14dd509248e5
 readonly COMPILER_RT_REV=1a3a6ffb31ea
@@ -225,22 +225,18 @@ readonly GOOGLE_PERFTOOLS_REV=867799d6e777
 # version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
-#readonly LLVM_MQ_REV=2b2a4c101299      ## patches for svn124151
-#readonly LLVM_GCC_MQ_REV=00eb50705e47  ## patches for svn124444
-readonly LLVM_MQ_REV=50103aa675b9       ## patches for nacl6074-svn128002
-readonly LLVM_GCC_MQ_REV=bb0dc99d5b4a  ## patches for nacl6036-svn126872
+readonly LLVM_MQ_REV=26d6e009bd6f       ## patches for nacl6116-svn128002
+readonly LLVM_GCC_MQ_REV=6951bd89b2e5  ## patches for nacl6116-svn126872
 
 
 # Vendor Revs of llvm and llvm-gcc to which the qeues apply
-# readonly LLVM_QPARENT_REV=4ca8cbf6756b      # svn124151
-# readonly LLVM_GCC_QPARENT_REV=b5bd5728d7a2  # svn124444
-readonly LLVM_QPARENT_REV=dc3938cfe844      # svn128002
-readonly LLVM_GCC_QPARENT_REV=261494c15c49  # svn126872
+readonly LLVM_QPARENT_REV=1dd4ed44a6f8     # svn128002
+readonly LLVM_GCC_QPARENT_REV=3cde3ed75a27  # svn126872
 
 
 # Repositories
-readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc"
-readonly REPO_LLVM="nacl-llvm-branches"
+readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc-trunk"
+readonly REPO_LLVM="nacl-llvm-branches.llvm-trunk"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
@@ -471,11 +467,13 @@ hg-update-nosfi() {
 
 #@ hg-update-llvm-gcc    - Update LLVM-GCC to the stable revision
 hg-update-llvm-gcc() {
+  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
   hg-update-common "llvm-gcc" ${LLVM_GCC_REV} "${TC_SRC_LLVM_GCC}"
 }
 
 #@ hg-update-llvm        - Update LLVM to the stable revision
 hg-update-llvm() {
+  hg-check-if-using-old-repo "${TC_SRC_LLVM}"
   hg-update-common "llvm" ${LLVM_REV} "${TC_SRC_LLVM}"
 }
 
@@ -520,6 +518,23 @@ hg-update-llvm-gcc-mq-patches() {
    "${TC_SRC_LLVM_GCC_MQ_PATCHES}"
 }
 
+hg-check-if-using-old-repo() {
+  local repodir="$1"
+  if ${UTMAN_BUILDBOT}; then
+    if test -d "${repodir}/../.hg" ; then
+      local repodirparent=$(dirname "${repodir}")
+      StepBanner "Bot is still using the old repo structure ${repodir}"
+      rm -rf "${repodirparent}";
+    fi
+  else
+    if test -d "${repodir}/../.hg" ; then
+      StepBanner "You are is still using the old repo structure ${repodir}"
+      StepBanner "Perhaps you might want to do mv hg hg-old ?"
+      exit 1
+    fi
+  fi
+}
+
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
@@ -536,10 +551,12 @@ hg-pull-all() {
 }
 
 hg-pull-llvm-gcc() {
+  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
   hg-pull "${TC_SRC_LLVM_GCC}"
 }
 
 hg-pull-llvm() {
+  hg-check-if-using-old-repo "${TC_SRC_LLVM}"
   hg-pull "${TC_SRC_LLVM}"
 }
 
@@ -559,6 +576,14 @@ hg-pull-google-perftools() {
   hg-pull "${TC_SRC_GOOGLE_PERFTOOLS}"
 }
 
+hg-pull-llvm-gcc-mq-patches() {
+  hg-pull "${TC_SRC_LLVM_GCC_MQ_PATCHES}"
+}
+
+hg-pull-llvm-mq-patches() {
+  hg-pull "${TC_SRC_LLVM_MQ_PATCHES}"
+}
+
 #@ hg-checkout-all       - check out mercurial repos needed to build toolchain
 #@                          (skips repos which are already checked out)
 hg-checkout-all() {
@@ -574,10 +599,12 @@ hg-checkout-all() {
 }
 
 hg-checkout-llvm-gcc() {
+  hg-check-if-using-old-repo ${TC_SRC_LLVM_GCC}
   hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
 }
 
 hg-checkout-llvm() {
+  hg-check-if-using-old-repo  ${TC_SRC_LLVM}
   hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
 }
 
@@ -1065,7 +1092,7 @@ llvm-configure() {
              MAKE_OPTS=${MAKE_OPTS} \
              CC="${CC}" \
              CXX="${CXX}" \
-             ${srcdir}/llvm-trunk/configure \
+             ${srcdir}/configure \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
@@ -1302,7 +1329,7 @@ llvm-gcc-configure() {
              AR_FOR_TARGET="${CROSS_TARGET_AR}" \
              RANLIB_FOR_TARGET="${CROSS_TARGET_RANLIB}" \
              NM_FOR_TARGET="${CROSS_TARGET_NM}" \
-             ${srcdir}/llvm-gcc-4.2/configure \
+             ${srcdir}/configure \
                --prefix="${LLVM_GCC_INSTALL_DIR}" \
                --enable-llvm="${LLVM_INSTALL_DIR}" \
                ${flags} \
@@ -1368,7 +1395,7 @@ build-libgcc_eh-bitcode() {
   RunWithLog libgcc_eh.bitcode.make \
        env -i PATH=/usr/bin/:/bin \
               "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-              "INCLUDES=-I${srcdir}/llvm-gcc-4.2/include -I${srcdir}/llvm-gcc-4.2/gcc -I." \
+              "INCLUDES=-I${srcdir}/include -I${srcdir}/gcc -I." \
               "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc  -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE " \
               "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
               make ${MAKE_OPTS} -f libgcc.mk libgcc_eh.a
@@ -1967,7 +1994,7 @@ llvm-sb-configure() {
       ${LLVM_SB_LOG_PREFIX}.configure \
       env -i \
       PATH="/usr/bin:/bin" \
-      ${srcdir}/llvm-trunk/configure \
+      ${srcdir}/configure \
         "${LLVM_SB_CONFIGURE_ENV[@]}" \
         --prefix=${installdir} \
         --host=nacl \

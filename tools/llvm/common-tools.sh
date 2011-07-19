@@ -186,8 +186,10 @@ hg-checkout() {
   local repo=$1
   local dest=$2
   local rev=$3
-  mkdir -p "${TC_SRC}"
+
   if [ ! -d ${dest} ] ; then
+    local repobasedir=$(dirname "${dest}")
+    mkdir -p "${repobasedir}"
     StepBanner "HG-CHECKOUT" "Checking out new repository for ${repo} @ ${rev}"
     # Use a temporary directory just in case HG has problems
     # with long filenames during checkout, and to make sure the
