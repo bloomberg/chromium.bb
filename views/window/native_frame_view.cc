@@ -42,7 +42,7 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
   return gfx::Rect(rect);
 #else
   // TODO(sad):
-  return gfx::Rect(client_bounds);
+  return client_bounds;
 #endif
 }
 
@@ -68,10 +68,7 @@ void NativeFrameView::UpdateWindowIcon() {
 }
 
 gfx::Size NativeFrameView::GetPreferredSize() {
-  gfx::Size pref = frame_->client_view()->GetPreferredSize();
-  gfx::Rect bounds(0, 0, pref.width(), pref.height());
-  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
-      bounds).size();
+  return frame_->client_view()->GetPreferredSize();
 }
 
 }  // namespace views

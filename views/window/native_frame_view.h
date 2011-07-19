@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,11 @@ class NativeFrameView : public NonClientFrameView {
   virtual void UpdateWindowIcon() OVERRIDE;
 
   // View overrides:
+
+  // Returns the client size. On Windows, this is the expected behavior for
+  // native frames (see |NativeWidgetWin::WidgetSizeIsClientSize()|), while
+  // other platforms currently always return client bounds from
+  // |GetWindowBoundsForClientBounds()|.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
