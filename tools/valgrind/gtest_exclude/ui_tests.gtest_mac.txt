@@ -177,18 +177,33 @@ ErrorPageTest.Page404_GoBack
 NamedInterfaceTest.BasicNamedInterface
 
 # Fails to start the browser, see http://crbug.com/75249
+AppModeTest.EnableAppModeTest
 AutomationProxySnapshotTest.ContentLargerThanView
 AutomationProxyTest.AcceleratorNewTab
+AutomationProxyTest.GetTab
+AutomationProxyTest.NavigateToURL
 BookmarksUITest.CommandOpensBookmarksTab
+BookmarksUITest.TwoCommandsOneTab
+ExtensionProxyUITest.NoSuchExtension
+ExtensionProxyUITest.Uninstall
 HistoryTester.VerifyHistoryLength1
 HistoryTester.VerifyHistoryLength2
 RedirectTest.ClientServerServer
 DomCheckerTest.File
+PPAPITest.Broker
+PPAPITest.Core
+PPAPITest.Memory
+PPAPITest.PostMessage
+PreferenceServiceTest.PreservedWindowPlacementIsMigrated
+RedirectTest.Client
+RedirectTest.ClientFragments
 ResourceDispatcherTest.CrossSiteNavigationNonBuffered
 ResourceDispatcherTest.CrossSiteNoUnloadOn204
 ResourceDispatcherTest.CrossSiteOnunloadCookie
 ResourceDispatcherTest.CrossOriginRedirectBlocked
 ResourceDispatcherTest.SniffHTMLWithNoContentType
+WorkerFileSystemTest.Persistent
+WorkerFileSystemTest.SyncTemporary
 
 # Fails, see http://crbug.com/75250
 NewTabUITest.AboutHangInNTP
@@ -248,19 +263,3 @@ RunInBackgroundTest.RunInBackgroundBasicTest
 
 # http://crbug.com/88254
 PPAPITest.CursorControl
-
-# Automation system fails to start up, http://crbug.com/89786
-AppModeTest.EnableAppModeTest
-AutomationProxyTest.GetTab
-AutomationProxyTest.NavigateToURL
-BookmarksUITest.TwoCommandsOneTab
-ExtensionProxyUITest.NoSuchExtension
-ExtensionProxyUITest.Uninstall
-PPAPITest.Broker
-PPAPITest.Core
-PPAPITest.Memory
-PPAPITest.PostMessage
-RedirectTest.Client
-RedirectTest.ClientFragments
-WorkerFileSystemTest.Persistent
-WorkerFileSystemTest.SyncTemporary
