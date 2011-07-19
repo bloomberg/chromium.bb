@@ -311,6 +311,60 @@
     ],
   },
 
+  # The CONTINUOUS_PUBLIC is a subset of CONTINUOUS suite
+  # and excludes tests that depend on internal data
+  'CONTINUOUS_PUBLIC': {
+    'all': [
+      '@CONTINUOUS',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # These currently fail even with internal data
+      '-chromeos_firmware_version_checker.ChromeosFirmwareVersionChecker.testECVersion',
+      '-chromeos_firmware_version_checker.ChromeosFirmwareVersionChecker.testFirmwareVersion',
+      '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      '-chromeos_security.ChromeosSecurity.testCannotViewLocalFiles',
+      '-flash.FlashTest.testCanLoadFlash',
+      '-flash.FlashTest.testFlashLoadsAfterKill',
+      '-flash.FlashTest.testFlashIncognitoMode',
+      '-flash.FlashTest.testFlashWithMultipleTabs',
+      '-flash.FlashTest.testSingleFlashPluginProcess',
+      '-ntp.NTPTest.testGetAppsWhenInstallApp',
+      '-ntp.NTPTest.testLaunchAppNewWindow',
+      '-ntp.NTPTest.testLaunchAppPinnedTab',
+      '-ntp.NTPTest.testLaunchAppRegularTab',
+      '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
+      '-ntp.NTPTest.testUninstallApp',
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
+      '-passwords.PasswordTest.testInfoBarDisappearByReload',
+      '-passwords.PasswordTest.testNeverSavePasswords',
+      '-plugins.PluginsTest.testBlockAllPlugins',
+      '-plugins.PluginsTest.testBlockPluginException',
+      '-popups.PopupsTest.testMultiplePopups',
+      '-popups.PopupsTest.testPopupBlockedEverySec',
+
+    ],
+
+    'win': [
+    ],
+
+    'mac': [
+    ],
+
+    'linux': [
+    ],
+
+    'chromeos': [
+    ],
+  },
+
   # The FULL suite includes CONTINUOUS, and more.
   # This the suite that gets run on 'Google Chrome' builds.
   'FULL': {
