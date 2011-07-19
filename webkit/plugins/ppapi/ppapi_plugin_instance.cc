@@ -449,6 +449,8 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
       for (size_t i = 0; i < events.size(); i++) {
         if (filtered_input_event_mask_ & event_class)
           events[i].is_filtered = true;
+        else
+          rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Impl> event_resource(
             new PPB_InputEvent_Impl(this, events[i]));
         PP_Resource resource = event_resource->GetReference();
