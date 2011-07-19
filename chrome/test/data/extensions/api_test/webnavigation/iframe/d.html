@@ -1,0 +1,10 @@
+<html><body>
+<script>
+  function loadF() {
+    var iframe = document.createElement('iframe');
+    iframe.src = "f.html";
+    var div = document.getElementById('f');
+    div.appendChild(iframe);
+  }
+</script>
+<iframe src="e.html" onload="loadF()"></iframe><div id="f"></div></body></html>

@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>Multiple ChromeFrame instances target page.</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function onLoad() {
+        if (!isRunningInChrome()) {
+          onFailure("WidgetMode_MultipleInstancesTest", 1,
+                    "Page not running in Chrome");
+        } else {
+          onSuccess("WidgetMode_MultipleInstancesTest", 1);
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="onLoad()">
+    ChromeFrame multiple widget instances test
+  </body>
+</html>

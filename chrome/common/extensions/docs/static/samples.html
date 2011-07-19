@@ -1,0 +1,117 @@
+<link rel="stylesheet" href="css/samples.css" />
+<script jscontent="search_data"></script>
+<script src="js/sample_search.js"></script>
+
+<script type="text/prerenderjs">
+  /**
+   * The following code is executed before the jstemplate in this file is
+   * rendered, meaning it can modify template data by changing the pageData
+   * window variable.  See api_page_generator.js for more information.
+   *
+   * Adds the samples manifest data + API modules.
+   */
+  pageData.samples = samples;
+  pageData.api_mapping = apiMapping;
+  pageData.api_modules = [];
+  schema.forEach(function(mod) {
+    if (mod.nodoc) {
+      return;
+    }
+    if (mod.namespace.indexOf('experimental') != -1) {
+      return;
+    }
+    pageData.api_modules.push('chrome.' + mod.namespace);
+  });
+  pageData.api_modules.push('chrome.experimental');
+  pageData.api_modules.sort();
+
+  var search_data = {};
+  samples.forEach(function(sample) {
+    search_data[sample.id] = sample.search_string;
+
+    // Change the API calls data to be a mapping of calls to URLs for
+    // simpler template rendering.
+    var api_calls = sample.api_calls.slice();
+    sample.api_calls = [];
+    api_calls.sort();
+    for (var i = 0; i < api_calls.length; i++) {
+      sample.api_calls.push({
+          'call': api_calls[i],
+          'url': apiMapping[api_calls[i]]
+      });
+    }
+
+    // Change the sample files list to be a mapping of relative paths to URLs
+    // for simpler template rendering.
+    var source_files = sample.source_files.slice();
+    sample.source_files = [];
+    source_files.sort();
+    for (var i = 0; i < source_files.length; i++) {
+      sample.source_files.push({
+          'file': source_files[i],
+          'url': 'http://src.chromium.org/viewvc/chrome/trunk' +
+                 '/src/chrome/common/extensions/docs/' + sample.path +
+                 source_files[i] + '?content-type=text/plain'
+      });
+    }
+  });
+
+  // The search data should be injected as executable JavaScript, so assign
+  // a template value which will store the data as a page global.
+  pageData.search_data = "var search_data = " +
+                         JSON.stringify(search_data); + ";";
+</script>
+
+<div id="controls">
+  <div id="searchbox" class="controlbox">
+    <strong>Filter by keyword:</strong>
+    <input autofocus type="search" type="text" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();" />
+    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
+  </div>
+
+  <div id="filterbox" class="controlbox">
+    <strong>Filter by API:</strong>
+    <span jseval="$total=api_modules.length">
+      <span jsselect="api_modules" >
+        <a href="javascript:void(0);" jsvalues="onclick:'setFilter(\'' + $this + '\', this)'" jscontent="$this"></a><span jsdisplay="$index != $total - 1">, </span>
+      </span>
+    </span>
+  </div>
+</div>
+
+<div jsselect="samples" jsvalues="id:id" class="sample">
+  <img jsdisplay="icon != null" class="icon" jsvalues="src:path + icon" />
+  <img jsdisplay="icon == null" class="icon" src="images/sample-default-icon.png" />
+  <h2 class="name">
+    <a jscontent="name" jsvalues="href:'#'+$this.id"></a>
+  </h2>
+  <p jsdisplay="features.length > 0" class="metadata features" jseval="$total=features.length">Uses
+    <span jsselect="features">
+      <strong jscontent="$this"></strong><span jsdisplay="$index < $total - 2 && $total > 2">, </span>
+      <span jsdisplay="$index == $total - 2 && $total > 1" > and</span>
+    </span>
+  </p>
+  <p jscontent="description"></p>
+  <div jsdisplay="api_calls.length > 0" class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li jsselect="api_calls">
+        <code><a jsvalues="href:$this.url" jscontent="$this.call"></a></code>
+      </li>
+    </ul>
+  </div>
+  <div jsdisplay="source_files.length > 0" class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li jsselect="source_files">
+        <code><a jsvalues="href:$this.url" jscontent="$this.file" target="_blank"></a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a jsvalues="href:'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/' + path" target="_blank">Browse source</a>
+    - <a jsvalues="href:$this.zip_path">Download source</a>
+  </div>
+</div>
+
+<div id="noresults" style="display:none">
+  Sorry, no results were found.
+</div>

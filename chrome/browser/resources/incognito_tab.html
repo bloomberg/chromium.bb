@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;bookmarkbarattached:bookmarkbarattached">
+<head>
+<title i18n-content="title"></title>
+<link rel="stylesheet" href="incognito_tab.css">
+<script>
+// Until themes can clear the cache, force-reload the theme stylesheet.
+document.write('<link id="incognitothemecss" rel="stylesheet" ' +
+               'href="chrome://theme/css/newincognitotab.css?' +
+               Date.now() + '">');
+</script>
+</head>
+<body>
+<div class="content" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <img src="shared/images/otr_icon_standalone.png" class="icon" />
+  <span i18n-values=".innerHTML:content"></span>
+  <div style="margin-top:15px">
+    <img src="../../app/theme/extensions_section.png" class="extensionicon" />
+    <span i18n-values=".innerHTML:extensionsmessage"></span>
+  </div>
+</div>
+</body>
+<script>
+function themeChanged() {
+  document.getElementById('incognitothemecss').href =
+      'chrome://theme/css/newincognitotab.css?' + Date.now();
+}
+
+function bookmarkBarAttached() {
+  document.documentElement.setAttribute("bookmarkbarattached", "true");
+}
+
+function bookmarkBarDetached() {
+  document.documentElement.setAttribute("bookmarkbarattached", "false");
+}
+</script>
+</html>

@@ -1,0 +1,88 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file contains the implementation of IdAllocator.
+
+#include "../common/id_allocator.h"
+#include "../common/logging.h"
+
+namespace gpu {
+
+IdAllocator::IdAllocator() {}
+
+IdAllocator::~IdAllocator() {}
+
+ResourceId IdAllocator::AllocateID() {
+  ResourceId id;
+  ResourceIdSet::iterator iter = free_ids_.begin();
+  if (iter != free_ids_.end()) {
+    id = *iter;
+  } else {
+    id = LastUsedId() + 1;
+    if (!id) {
+      // We wrapped around to 0.
+      id = FindFirstUnusedId();
+    }
+  }
+  MarkAsUsed(id);
+  return id;
+}
+
+ResourceId IdAllocator::AllocateIDAtOrAbove(ResourceId desired_id) {
+  ResourceId id;
+  ResourceIdSet::iterator iter = free_ids_.lower_bound(desired_id);
+  if (iter != free_ids_.end()) {
+    id = *iter;
+  } else if (LastUsedId() < desired_id) {
+    id = desired_id;
+  } else {
+    id = LastUsedId() + 1;
+    if (!id) {
+      // We wrapped around to 0.
+      id = FindFirstUnusedId();
+    }
+  }
+  MarkAsUsed(id);
+  return id;
+}
+
+bool IdAllocator::MarkAsUsed(ResourceId id) {
+  GPU_DCHECK(id);
+  free_ids_.erase(id);
+  std::pair<ResourceIdSet::iterator, bool> result = used_ids_.insert(id);
+  return result.second;
+}
+
+void IdAllocator::FreeID(ResourceId id) {
+  if (id) {
+    used_ids_.erase(id);
+    free_ids_.insert(id);
+  }
+}
+
+bool IdAllocator::InUse(ResourceId id) const {
+  return id == kInvalidResource || used_ids_.find(id) != used_ids_.end();
+}
+
+ResourceId IdAllocator::LastUsedId() const {
+  if (used_ids_.empty()) {
+    return 0u;
+  } else {
+    return *used_ids_.rbegin();
+  }
+}
+
+ResourceId IdAllocator::FindFirstUnusedId() const {
+  ResourceId id = 1;
+  for (ResourceIdSet::const_iterator it = used_ids_.begin();
+       it != used_ids_.end(); ++it) {
+    if ((*it) != id) {
+      return id;
+    }
+    ++id;
+  }
+  return id;
+}
+
+}  // namespace gpu

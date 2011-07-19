@@ -1,0 +1,270 @@
+/* Apps */
+
+#apps-content {
+  position: relative;
+  max-width: 780px;  /* (124 + margin * 2) * 6 */
+}
+
+html.apps-promo-visible #apps-content {
+  max-width: 650px; /* (124 + margin * 2) * 5 */
+}
+
+#apps-maxiview {
+  overflow: hidden;
+}
+
+/*
+We don't need to do anything for html.apps-promo-visible because there is
+enough extra space in the small grid layout.
+*/
+.small-layout #apps-content,
+.small-layout html.apps-promo-visible #apps-content {
+  max-width: 520px;  /* (124 + margin * 2) * 4 */
+}
+
+.app,
+.app[new=installed] {
+  box-sizing: border-box;
+  -webkit-perspective: 400;
+  border-radius: 10px;
+  color: black;
+  margin: 5px 3px;
+  position: absolute;
+  height: 150px;
+  width: 124px; /* 920 / 7 - margin * 2 */
+  visibility: hidden;
+}
+
+.app a {
+  border-radius: 10px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.app a {
+  -webkit-transition: background-color .5s;
+  background: rgba(255, 255, 255, 0) /* transparent white */
+              no-repeat center 10px;
+  background-size: 96px 96px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 107%;
+  overflow: hidden;
+  padding: 111px 10px 10px;  /* 10 + 96 + 5 */
+  text-align: center;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app .app-settings {
+  background-color: transparent;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: 0;
+  height: 14px;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 14px;
+}
+
+.app > .app-settings {
+  -webkit-transition: opacity .3s;
+  -webkit-transition-delay: 0;
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
+  opacity: 0;
+}
+
+.app > .app-settings:hover {
+  -webkit-transition: none;
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH_H);
+}
+
+.app:hover > .app-settings,
+.app > .app-settings:focus {
+  -webkit-transition-delay: .5s;
+  opacity: .9;
+}
+
+.app.dragging > .app-settings {
+  background-image: none;
+}
+
+.app.dragging {
+  opacity: .7;
+}
+
+.app_notification {
+  color: gray;
+  display: block;
+  -webkit-transition: color .15s linear;
+}
+.app_notification:hover {
+  color: Blue;
+}
+
+.app-notification-close {
+  height: 14px;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 14px;
+}
+
+#apps-content[launcher-animations=true] .app {
+  -webkit-transition: top .2s, left .2s, right .2s, opacity .2s;
+}
+
+#apps-content.visible .app {
+  visibility: visible;
+}
+
+@-webkit-keyframes bounce {
+  0% {
+    -webkit-transform: scale(0, 0);
+  }
+
+  60% {
+    -webkit-transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    -webkit-transform: scale(1, 1);
+  }
+}
+
+html[install-animation-enabled=true] .app[new=new] {
+  opacity: 0;
+}
+
+html[install-animation-enabled=true] .app[new=installed] {
+  -webkit-animation: bounce .5s ease-in-out;
+  -webkit-transition: opacity .5s;
+}
+
+.app.web-store-entry > a {
+  background-image: url("chrome://theme/IDR_WEBSTORE_ICON");
+}
+
+menu > button.default {
+  font-weight: bold;
+}
+
+#apps-promo {
+  display: none;
+}
+
+html.apps-promo-visible #apps-promo {
+  height: 125px;
+  -webkit-padding-start: 125px;
+  display: table-cell;
+  vertical-align: text-bottom;
+}
+
+#apps-promo-heading {
+  font-size: 115%;
+  font-weight: bold;
+  margin-bottom: 5px;
+  -webkit-margin-start: 3px;
+}
+
+#apps-promo-hide {
+  -webkit-appearance: none;
+  -webkit-transition: opacity .15s;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 90%;
+  text-decoration: underline;
+  margin-top: 2px;
+}
+
+html[dir=rtl] #apps-promo-hide {
+  float: left;
+}
+
+/*
+We position the web store entry all by its lonesome in the top of the rightmost
+column when there is at least one full row of apps. Note that this is similar,
+but different than its position during promo (html.apps-promo-visible), so we
+never set .loner while the promo is running.
+*/
+.app.web-store-entry.loner {
+  position: absolute;
+  left: 100%;
+  top: 0;
+}
+
+html[dir=rtl] .app.web-store-entry.loner {
+  right: 100%;
+}
+
+.g-button-basic {
+  display: inline-block;
+  border-width: 6px 10px 12px 6px;
+  -webkit-border-image: url('g-button-chocobo.png') 6 10 12 6;
+  font-size: 1.3em;
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.notification-bubble {
+  background-color: White;
+  border: 1px solid #B5B5B5;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size : 107%;
+  min-height: 100px;
+  min-width: 200px;  
+  opacity: 0;
+  padding: 10px;
+  position: absolute;
+  width: 200px;
+  -webkit-border-radius: 5px;
+  -webkit-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition: opacity 0.2s linear;
+}
+.notification-bubble:focus {
+  outline: none;
+}
+
+.notification-bubble-opened {
+  opacity: 1;
+  pointer-events: auto;
+}
+.notification-bubble-closed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A content-less div with this setting, will create an arrow when coupled
+   with the arrow_* styles below it. */
+div.arrow {
+  border-style: solid;
+  border-width: 12px;
+  height: 0px;
+  width: 0px;
+  position: absolute;
+}
+div.arrow-contents {
+  border-color: transparent white transparent transparent;
+  z-index: 2;
+  -webkit-transition: opacity 0.2s linear;
+}
+div.arrow-shadow {
+  border-color: transparent gray transparent transparent;
+  -webkit-transition: opacity 0.2s linear;
+}
+div.arrow-border {
+  border-color: transparent #B5B5B5 transparent transparent;
+  z-index: 1;
+  -webkit-transition: opacity 0.2s linear;
+}

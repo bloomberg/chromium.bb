@@ -1,0 +1,51 @@
+%HIVE% {
+  NoRemove Software {
+    NoRemove Classes {
+      ChromeTab.ChromeActiveDocument.1 = s 'ChromeActiveDocument Class' {
+        CLSID = s '{3E1D0E7F-F5E3-44CC-AA6A-C0A637619AB8}'
+        'DocObject' = s '0'
+        val EditFlags = d '65536'
+        val BrowserFlags = d '&H40000140'
+      }
+      ChromeTab.ChromeActiveDocument = s 'ChromeActiveDocument Class' {
+        CLSID = s '{3E1D0E7F-F5E3-44CC-AA6A-C0A637619AB8}'
+        CurVer = s 'ChromeTab.ChromeActiveDocument.1'
+      }
+      NoRemove CLSID {
+        ForceRemove {3E1D0E7F-F5E3-44CC-AA6A-C0A637619AB8} = s 'ChromeActiveDocument Class' {
+          ProgID = s 'ChromeTab.ChromeActiveDocument.1'
+          VersionIndependentProgID = s 'ChromeTab.ChromeActiveDocument'
+          ForceRemove 'Programmable'
+          InprocServer32 = s '%MODULE%' {
+            val ThreadingModel = s 'Apartment'
+          }
+          val AppID = s '%APPID%'
+          ForceRemove 'Control'
+          ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 104'
+          'DocObject' = s '0'
+          'MiscStatus' = s '0' {
+              '1' = s '%OLEMISC%'
+          }
+          'TypeLib' = s '{6F2664E1-FF6E-488A-BCD1-F4CA6001DFCC}'
+          'Version' = s '1.0'
+        }
+      }
+    }
+  }
+}
+
+%HIVE% {
+  NoRemove Software {
+    NoRemove Classes {
+      NoRemove MIME {
+        NoRemove Database {
+          NoRemove 'Content Type' {
+            'application/chromepage' {
+              val CLSID = s '{3E1D0E7F-F5E3-44CC-AA6A-C0A637619AB8}'
+            }
+          }
+        }
+      }
+    }
+  }
+}

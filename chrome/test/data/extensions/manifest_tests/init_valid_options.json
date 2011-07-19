@@ -1,0 +1,5 @@
+{
+   "name": "my extension",
+   "options_page": "options.html",
+   "version": "1.0.0.0"
+}

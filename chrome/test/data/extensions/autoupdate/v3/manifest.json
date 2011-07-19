@@ -1,0 +1,6 @@
+{
+  "description": "Extension for Auto-Update testing",
+  "name": "Auto-Update Test",
+  "version": "3.0",
+  "update_url": "http://localhost/autoupdate/manifest"
+}

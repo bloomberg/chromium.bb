@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/webkit_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="webkit_resources.pak" type="data_package" />
+    <output filename="webkit_resources.rc" type="rc_all" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <include name="IDC_ALIAS" file="resources\aliasb.cur" type="CURSOR" />
+      <include name="IDR_BROKENIMAGE" file="resources\broken-image.gif" type="BINDATA" />
+      <include name="IDC_CELL" file="resources\cell.cur" type="CURSOR" />
+      <include name="IDC_COLRESIZE" file="resources\col_resize.cur" type="CURSOR" />
+      <include name="IDC_COPYCUR" file="resources\copy.cur" type="CURSOR" />
+      <include name="IDC_CURSOR_NONE" file="resources\none.cur" type="CURSOR" />
+      <include name="IDR_INPUT_SPEECH" file="resources\input_speech.png" type="BINDATA" />
+      <include name="IDR_INPUT_SPEECH_RECORDING" file="resources\input_speech_recording.png" type="BINDATA" />
+      <include name="IDR_INPUT_SPEECH_WAITING" file="resources\input_speech_waiting.png" type="BINDATA" />
+      <include name="IDR_MEDIA_PAUSE_BUTTON" file="resources\media_pause.png" type="BINDATA" />
+      <include name="IDR_MEDIA_PLAY_BUTTON" file="resources\media_play.png" type="BINDATA" />
+      <include name="IDR_MEDIA_PLAY_BUTTON_DISABLED" file="resources\media_play_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SOUND_DISABLED" file="resources\media_sound_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SOUND_FULL_BUTTON" file="resources\media_sound_full.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SOUND_NONE_BUTTON" file="resources\media_sound_none.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SLIDER_THUMB" file="resources\media_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIA_VOLUME_SLIDER_THUMB" file="resources\media_volume_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON" file="resources\mediaplayer_pause.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER" file="resources\mediaplayer_pause_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN" file="resources\mediaplayer_pause_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON" file="resources\mediaplayer_play.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER" file="resources\mediaplayer_play_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN" file="resources\mediaplayer_play_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED" file="resources\mediaplayer_play_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_DISABLED" file="resources\mediaplayer_sound_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON" file="resources\mediaplayer_sound_full.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_HOVER" file="resources\mediaplayer_sound_full_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_DOWN" file="resources\mediaplayer_sound_full_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON" file="resources\mediaplayer_sound_level2.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER" file="resources\mediaplayer_sound_level2_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN" file="resources\mediaplayer_sound_level2_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON" file="resources\mediaplayer_sound_level1.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER" file="resources\mediaplayer_sound_level1_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN" file="resources\mediaplayer_sound_level1_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON" file="resources\mediaplayer_sound_none.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_HOVER" file="resources\mediaplayer_sound_none_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_DOWN" file="resources\mediaplayer_sound_none_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB" file="resources\mediaplayer_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER" file="resources\mediaplayer_slider_thumb_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN" file="resources\mediaplayer_slider_thumb_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="resources\mediaplayer_volume_slider_thumb.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="resources\mediaplayer_volume_slider_thumb_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="resources\mediaplayer_volume_slider_thumb_down.png" type="BINDATA" />
+      <include name="IDC_PAN_EAST" file="resources\pan_east.cur" type="CURSOR" />
+      <include name="IDC_PAN_MIDDLE" file="resources\pan_middle.cur" type="CURSOR" />
+      <include name="IDC_PAN_NORTH" file="resources\pan_north.cur" type="CURSOR" />
+      <include name="IDC_PAN_NORTH_EAST" file="resources\pan_north_east.cur" type="CURSOR" />
+      <include name="IDC_PAN_NORTH_WEST" file="resources\pan_north_west.cur" type="CURSOR" />
+      <include name="IDR_PAN_SCROLL_ICON" file="resources\pan_icon.png" type="BINDATA" />
+      <include name="IDC_PAN_SOUTH" file="resources\pan_south.cur" type="CURSOR" />
+      <include name="IDC_PAN_SOUTH_EAST" file="resources\pan_south_east.cur" type="CURSOR" />
+      <include name="IDC_PAN_SOUTH_WEST" file="resources\pan_south_west.cur" type="CURSOR" />
+      <include name="IDC_PAN_WEST" file="resources\pan_west.cur" type="CURSOR" />
+      <include name="IDC_ROWRESIZE" file="resources\row_resize.cur" type="CURSOR" />
+      <include name="IDR_SEARCH_CANCEL" file="resources\search_cancel.png" type="BINDATA" />
+      <include name="IDR_SEARCH_CANCEL_PRESSED" file="resources\search_cancel_pressed.png" type="BINDATA" />
+      <include name="IDR_SEARCH_MAGNIFIER" file="resources\search_magnifier.png" type="BINDATA" />
+      <include name="IDR_SEARCH_MAGNIFIER_RESULTS" file="resources\search_magnifier_results.png" type="BINDATA" />
+      <include name="IDR_TEXTAREA_RESIZER" file="resources\textarea_resize_corner.png" type="BINDATA" />
+      <include name="IDR_TICKMARK_DASH" file="resources\dash.png" type="BINDATA" />
+      <include name="IDC_VERTICALTEXT" file="resources\vertical_text.cur" type="CURSOR" />
+      <include name="IDC_ZOOMIN" file="resources\zoom_in.cur" type="CURSOR" />
+      <include name="IDC_ZOOMOUT" file="resources\zoom_out.cur" type="CURSOR" />
+      <include name="IDR_AUTOFILL_CC_AMEX" file="resources\amex.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_DINERS" file="resources\diners.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_DISCOVER" file="resources\discover.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_GENERIC" file="resources\cc-generic.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_JCB" file="resources\jcb.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_MASTERCARD" file="resources\mastercard.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_SOLO" file="resources\solo.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_VISA" file="resources\visa.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTP" file="resources\pdf_button_ftp.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTP_HOVER" file="resources\pdf_button_ftp_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTP_PRESSED" file="resources\pdf_button_ftp_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW" file="resources\pdf_button_ftw.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW_HOVER" file="resources\pdf_button_ftw_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_FTW_PRESSED" file="resources\pdf_button_ftw_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END" file="resources\pdf_button_zoomin_end.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END_HOVER" file="resources\pdf_button_zoomin_end_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_END_PRESSED" file="resources\pdf_button_zoomin_end_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN" file="resources\pdf_button_zoomin.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_HOVER" file="resources\pdf_button_zoomin_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMIN_PRESSED" file="resources\pdf_button_zoomin_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT" file="resources\pdf_button_zoomout.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT_HOVER" file="resources\pdf_button_zoomout_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_ZOOMOUT_PRESSED" file="resources\pdf_button_zoomout_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_SAVE" file="resources\pdf_button_save.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_SAVE_HOVER" file="resources\pdf_button_save_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_SAVE_PRESSED" file="resources\pdf_button_save_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_PRINT" file="resources\pdf_button_print.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_PRINT_HOVER" file="resources\pdf_button_print_hover.png" type="BINDATA" />
+      <include name="IDR_PDF_BUTTON_PRINT_PRESSED" file="resources\pdf_button_print_pressed.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_0" file="resources\pdf_thumbnail_0.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_1" file="resources\pdf_thumbnail_1.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_2" file="resources\pdf_thumbnail_2.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_3" file="resources\pdf_thumbnail_3.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_4" file="resources\pdf_thumbnail_4.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_5" file="resources\pdf_thumbnail_5.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_6" file="resources\pdf_thumbnail_6.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_7" file="resources\pdf_thumbnail_7.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_8" file="resources\pdf_thumbnail_8.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_9" file="resources\pdf_thumbnail_9.png" type="BINDATA" />
+      <include name="IDR_PDF_THUMBNAIL_NUM_BACKGROUND" file="resources\pdf_thumbnail_num_background.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_0" file="resources\pdf_progress_0.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_1" file="resources\pdf_progress_1.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_2" file="resources\pdf_progress_2.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_3" file="resources\pdf_progress_3.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_4" file="resources\pdf_progress_4.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_5" file="resources\pdf_progress_5.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_6" file="resources\pdf_progress_6.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_7" file="resources\pdf_progress_7.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_8" file="resources\pdf_progress_8.png" type="BINDATA" />
+      <include name="IDR_PDF_PROGRESS_BAR_BACKGROUND" file="resources\pdf_progress_background.png" type="BINDATA" />
+      <include name="IDR_PDF_PAGE_DROPSHADOW" file="resources\pdf_dropshadow.png" type="BINDATA" />
+    </includes>
+  </release>
+</grit>

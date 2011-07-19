@@ -1,0 +1,32 @@
+{
+  "id": "hpiknbiabeeppbpihjehijgoemciehgk",
+  "version": "2",
+  "name": "My extension 2",
+  "mayDisable": true,
+  "enabled": true,
+  "terminated": false,
+  "description": "",
+  "allow_reload": false,
+  "is_hosted_app": false,
+  "order": 2,
+  "enabledIncognito": false,
+  "wantsFileAccess": false,
+  "allowFileAccess": false,
+  "views": [
+    {
+      "path": "bar.html",
+      "renderProcessId": 42,
+      "renderViewId": 88,
+      "incognito": false
+    },
+    {
+      "path": "bar.html",
+      "renderProcessId": 0,
+      "renderViewId": 0,
+      "incognito": false
+    }
+  ],
+  "hasPopupAction": false,
+  "homepageUrl": "",
+  "icon": "chrome://extension-icon/hpiknbiabeeppbpihjehijgoemciehgk/48/1"
+}

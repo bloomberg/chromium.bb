@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<script>
+
+function save() {
+  var prefs = JSON.parse(localStorage.prefs);
+  prefs.use_notifications = document.getElementById("notifications").checked;
+  localStorage.prefs = JSON.stringify(prefs);
+}
+
+// Make sure the checkbox checked state gets properly initialized from the
+// saved preference.
+window.onload = function() {
+  var prefs = JSON.parse(localStorage.prefs);
+  document.getElementById("notifications").checked = prefs.use_notifications;
+}
+
+</script>
+</head>
+<body>
+<h2>Options for Chromium Buildbot Monitor</h2>
+<br>
+Use desktop notifications: <input id="notifications" type="checkbox" onclick="save()">
+
+</body>
+</html>

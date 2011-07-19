@@ -1,0 +1,9 @@
+{
+  "name": "Test App 4",
+  "version": "1",
+  "app": {
+    "launch": {
+      "web_url": "http://maps.google.com/path5/foo.html"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+   "name": "geolocation access apitest fail",
+   "description": "tests geolocation is not accessible from this extensions",
+   "version": "0.1",
+   "background_page": "background.html",
+   "permissions": [ ]
+}

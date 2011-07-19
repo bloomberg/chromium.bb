@@ -1,0 +1,46 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+.timeline-view {
+  padding: 0px;
+  -webkit-box-orient: vertical;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+.timeline-view > .timeline {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+  overflow: auto;
+}
+
+.timeline-view .timeline-container {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  overflow: auto;
+}
+
+.timeline-view .timeline-container > * {
+  -webkit-box-flex: 1;
+}
+.timeline-view .summary-container * {
+  -webkit-user-select: text;
+}
+
+.timeline-view .summary-container {
+  border-top: 1px solid black;
+  max-height: 250px;
+  min-height: 250px;
+  font-family: monospace;
+  overflow: auto;
+}
+
+.timeline-view .selection {
+  margin: 2px;
+}
+
+.timeline-view .selection ul {
+  margin: 0px;
+}

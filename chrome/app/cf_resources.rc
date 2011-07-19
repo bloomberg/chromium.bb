@@ -1,0 +1,52 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+#ifdef IDC_STATIC
+#undef IDC_STATIC
+#endif
+#define IDC_STATIC (-1)
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#include "grit\\generated_resources.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CHROME_FRAME_FIND_DIALOG DIALOGEX 0, 0, 278, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Find"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_FIND_TEXT,51,7,154,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Find Next",IDOK,221,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,221,24,50,14
+    CONTROL         "Match &case",IDC_MATCH_CASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,24,52,10
+    GROUPBOX        "Direction",IDC_STATIC,85,24,119,24
+    CONTROL         "&Down",IDC_DIRECTION_DOWN,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,101,34,34,10
+    CONTROL         "&Up",IDC_DIRECTION_UP,"Button",BS_AUTORADIOBUTTON,155,34,38,10
+    LTEXT           "Fi&nd what:",IDC_STATIC,6,7,35,8
+END
+
+IDD_CHROME_FRAME_READY_PROMPT DIALOGEX 0, 0, 393, 14
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "This site recommends Google Chrome Frame (already installed).",IDC_PROMPT_MESSAGE,16,3,207,8
+    LTEXT           "Learn more.",IDC_PROMPT_LINK,233,3,42,8
+    ICON            IDI_CHROME_FRAME_ICON,IDC_PROMPT_ICON,3,2,23,17,0,WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "Enable",IDACTIVATE,280,2,50,12
+    PUSHBUTTON      "Ignore",IDNEVER,340,2,50,12
+END

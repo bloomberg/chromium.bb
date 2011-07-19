@@ -1,0 +1,23 @@
+Name: mach_override
+Short Name: Part of the mach_star project
+Version: Unknown
+URL: https://github.com/rentzsch/mach_star
+Date: 04/18/2011
+Revision: 32c4560eb09848073f69
+License: MIT
+Security Critical: Yes.
+
+
+Description:
+This is the mach_override part of the lastest (as of 04/11/2011) revision of
+mach_star, namely:
+
+  https://github.com/rentzsch/mach_star/tree/aeb1720815c7255070da0f548267ccfdf7bd50b7
+
+This package is used to replace framework functions with different
+implementations at run time.
+
+
+Local Modifications:
+
+None; all local changes have been upstreamed.

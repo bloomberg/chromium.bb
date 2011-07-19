@@ -1,0 +1,8 @@
+<script src="common.js"></script>
+<script>
+// This tests that an invalid id passed to beginInstall generates an error.
+chrome.webstorePrivate.beginInstall("some invalid id", function() {
+  assertEq(chrome.extension.lastError.message, "Invalid id");
+  succeed();
+});
+</script>

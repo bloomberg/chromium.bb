@@ -1,0 +1,16 @@
+{
+  "name":           "__MSG_extName__",
+  "version":        "0.1",
+  "description":    "__MSG_extDescription__",
+  "default_locale": "en",
+  "background_page": "background.html",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "popup":        "popup.html"
+  },
+  "permissions":    [
+    "extension",
+    "experimental",
+    "webNavigation"
+  ]
+}

@@ -1,0 +1,44 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for extensions.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of extension sync objects.
+//
+// Merge policy: the settings for the higher version number win; in
+// the case of a tie, server wins.
+message ExtensionSpecifics {
+  // Globally unique id for this extension.
+  optional string id = 1;
+  // The known installed version.
+  optional string version = 2;
+
+  // Auto-update URL to use for this extension.  May be blank, in
+  // which case the default one (i.e., the one for the Chrome
+  // Extensions Gallery) is used.
+  optional string update_url = 3;
+  // Whether or not this extension is enabled.
+  optional bool enabled = 4;
+  // Whether or not this extension is enabled in incognito mode.
+  optional bool incognito_enabled = 5;
+
+  // The name of the extension.  Used only for debugging.
+  optional string name = 6;
+}
+
+extend EntitySpecifics {
+  optional ExtensionSpecifics extension = 48119;
+}

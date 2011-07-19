@@ -1,0 +1,13 @@
+{
+  "name": "A page action with a popup that does nothing.",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs", "http://*/*"
+  ],
+  "page_action": {
+      "default_title": "Popup hello world",
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+  }
+}

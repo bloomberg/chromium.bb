@@ -1,0 +1,43 @@
+<div id="pageData-name" class="pageData">chrome.* APIs</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+Google Chrome provides APIs such as
+<code>chrome.bookmarks</code> and <code>chrome.tab</code>
+so that extensions can interact with the browser.
+</p>
+
+<h2 id="supported">Supported APIs</h2>
+
+<p>
+Here are the supported chrome.* APIs:
+</p>
+
+<ul>
+  <li jsselect="stableAPIs();"><a jsvalues=".href: $this + '.html'" jscontent="$this" href="bookmarks.html" js>bookmarks</a></li>
+</ul>
+
+<h2 id="experimental">Experimental APIs</h2>
+
+<p>
+Google Chrome also has
+<a href="experimental.html">experimental APIs</a>,
+some of which will become supported APIs
+in future releases of Chrome.
+</p>
+
+<h2 id="conventions">API conventions</h2>
+
+<p>
+Unless the doc says otherwise,
+methods in the chrome.* APIs are <b>asynchronous</b>:
+they return immediately,
+without waiting for the operation to finish.
+If you need to know the outcome of an operation,
+then you pass a callback function into the method.
+For more information, watch this video:
+</p>
+
+<p>
+<iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/bmxr75CV36A?rel=0" frameborder="0" allowfullscreen></iframe>
+</p>

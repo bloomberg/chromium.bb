@@ -1,0 +1,16 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use
+// of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package chrome_os_pb;
+
+option optimize_for = LITE_RUNTIME;
+
+message SystemMetrics {
+  optional int32 boot_time_ms = 1;
+  optional int32 up_time_s = 2;
+  optional int32 keystroke_window_cycling_count = 3;
+  optional int32 overview_keystroke_count = 4;
+  optional int32 overview_exit_mouse_count = 5;
+  optional int32 overview_exit_keystroke_count = 6;
+}

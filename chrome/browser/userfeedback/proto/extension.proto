@@ -1,0 +1,108 @@
+// Copyright 2009 Google Inc. All Rights Reserved.
+// Author: morgwai@google.com (Morgwai Kotarbinski)
+//
+// Messages sent from extension to feedback server as JSON.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package userfeedback;
+
+import "common.proto";
+import "chrome.proto";
+import "dom.proto";
+import "math.proto";
+import "web.proto";
+
+// Sent along with request for extension page when user attempts to open
+// feedback tab.
+message ExtensionPageRequestParams {
+
+  required ExtensionDetails extension_details = 1;
+
+  // Url of the page (without request params) that user wants to open
+  // feedback tool for.
+  required string url = 2;
+};
+
+message PostedScreenshot {
+
+  required string mime_type = 1;
+
+  required Dimensions dimensions = 2;
+
+  optional string base64_content = 3;
+
+  optional bytes binary_content = 4;
+};
+
+// Contains data about possible errors on the client side.
+// Describes number of attempts to send feedback and possible error codes/
+// exceptions which occured.
+message ExtensionErrors {
+
+  required int32 number_of_attempts = 1;
+
+  required string errors = 2;
+};
+
+// Sent when user hits final submit button in external extension.
+// NOTE: Field numbers for ExternalExtensionSubmit and InternalExtensionSubmit
+// share the same number space, because we don't want submission from internal
+// extension to the external address, or submission from external extension to
+// internal address, work by accident, partially work, or break in an odd way.
+// If the field numbers were overlapping for both protos, such cross-submission
+// might work, due to the specifics of JsPbLite.
+message ExternalExtensionSubmit {
+
+  required CommonData common_data = 1;
+
+  required WebData web_data = 2;
+
+  required int32 type_id = 3;
+
+  optional PostedScreenshot screenshot = 4;
+
+  optional HtmlDocument html_document_structure = 5;
+
+  optional ExtensionErrors extension_errors = 13;
+
+  optional ChromeData chrome_data = 14;
+
+  repeated ProductSpecificBinaryData product_specific_binary_data = 15;
+};
+
+// Sent when user hits final submit button in internal extension.
+// NOTE: Field numbers for ExternalExtensionSubmit and InternalExtensionSubmit
+// share the same number space. See comment for ExternalExtensionSubmit.
+message InternalExtensionSubmit {
+
+  required CommonData common_data = 6;
+
+  required WebData web_data = 7;
+
+  optional int32 type_id = 8;
+
+  optional PostedScreenshot screenshot = 9;
+
+  optional HtmlDocument html_document_structure = 10;
+
+  optional InternalWebData internal_data = 11;
+
+  optional ExtensionErrors extension_errors = 12;
+
+  repeated ProductSpecificBinaryData product_specific_binary_data = 15;
+};
+
+// A query for suggestions, sent when the user hits the preview button.
+message SuggestQuery {
+
+  required CommonData common_data = 1;
+
+  required WebData web_data = 2;
+
+  required int32 type_id = 3;
+
+  optional HtmlDocument html_document_structure = 4;
+};

@@ -1,0 +1,178 @@
+body {
+  -webkit-user-select: none;
+  background-color: #fff;
+  margin-bottom: 6px;
+  margin-top: 6px;
+}
+
+a:link {
+  color: #00c;
+}
+
+a:visited {
+  color: #551a8b;
+}
+
+a:active {
+  color: #f00;
+}
+
+hr {
+  background-color: #ddd;
+  border: 0;
+  height: 1px;
+  margin: 5px;
+  text-align: left;
+  width: 100%;
+}
+
+input[type='button'],
+input[type='submit'] {
+  min-height: 26px;
+  min-width: 87px;
+}
+
+.end-aligned {
+  text-align: end;
+}
+
+#gaia-account-text {
+  font-weight: bold;
+  position: relative;
+  top: -7px;
+}
+
+#email-readonly {
+  display: none;
+  font-size: 10pt;
+  font-weight: bold;
+}
+
+div.errormsg {
+  color: red;
+  display: none;
+  font-size: smaller;
+}
+
+font.errormsg {
+  color: red;
+  font-size: smaller;
+}
+
+div.errormsgspacer {
+  min-height: 1em;
+}
+
+font.errormsgspacer {
+  font-size: smaller;
+}
+
+#gaia-login-form {
+  margin-bottom: 0;
+}
+
+#captcha-wrapper {
+  background: no-repeat;
+  background-color: #e8eefa;
+  background-position: center;
+  background-size: 200px 70px;
+  display: block;
+}
+
+#captcha-image {
+  height: 70px;
+  width: 200px;
+}
+
+#logging-in-throbber {
+  margin: 0 10px;
+}
+
+.bottom-padded-cell {
+  padding-bottom: 3px;
+}
+
+.no-vertical-padding {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+#cancel-space-no-captcha {
+  height: 22px;
+}
+
+#top-blurb {
+  font-size: 11pt;
+  line-height: 1.5em;
+}
+
+#top-blurb-error {
+  background-color: #eeb939;
+  border-radius: 4px;
+  display: block;
+  font-size: 11pt;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 4px 10px;
+  text-align: center;
+  visibility: hidden;
+  width: 70%;
+}
+
+#content-table {
+  background-color: #fff;
+  border: #c3d9ff 1px solid;
+  padding: 2px;
+}
+
+.access-code-row {
+  display: none;
+}
+
+.access-code-row > td {
+  padding-bottom: 1px;
+  text-align: center;
+}
+
+#access-code-label-row > td {
+  padding-top: 6px;
+}
+
+.gaia-le-lbl,
+.gaia-le-val,
+.gaia-le-rem,
+.gaia-captchahtml-desc
+.gaia-captchahtml-cmt {
+  font-size: smaller;
+}
+
+.gaia-captchahtml-cmt {
+  font-style: italic;
+}
+
+.gaia-le-fpwd,
+.gaia-le-chusr {
+  font-size: 70%;
+}
+
+#error-custom {
+  display: none;
+}
+
+#captcha-div {
+  display: none;
+}
+
+#password-row {
+  margin-top: 2px;
+}
+
+#action-area {
+  margin-top: 2px;
+}
+
+#errormsg-0-access-code {
+  text-align: center;
+}

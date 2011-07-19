@@ -1,0 +1,39 @@
+%HIVE% {
+  NoRemove Software {
+    NoRemove Classes {
+      ChromeTab.ChromeProtocol.1 = s 'ChromeProtocol Class' {
+        CLSID = s '{9875BFAF-B04D-445E-8A69-BE36838CDE3E}'
+      }
+      ChromeTab.ChromeProtocol = s 'ChromeProtocol Class' {
+        CLSID = s '{9875BFAF-B04D-445E-8A69-BE36838CDE3E}'
+        CurVer = s 'ChromeTab.ChromeProtocol.1'
+      }
+      NoRemove CLSID {
+        ForceRemove {9875BFAF-B04D-445E-8A69-BE36838CDE3E} = s 'ChromeProtocol Class' {
+          ProgID = s 'ChromeTab.ChromeProtocol.1'
+          VersionIndependentProgID = s 'ChromeTab.ChromeProtocol'
+          ForceRemove 'Programmable'
+          InprocServer32 = s '%MODULE%' {
+            val ThreadingModel = s 'Apartment'
+          }
+          val AppID = s '%APPID%'
+          'TypeLib' = s '{6F2664E1-FF6E-488A-BCD1-F4CA6001DFCC}'
+        }
+      }
+    }
+  }
+}
+
+%HIVE% {
+  NoRemove Software {
+    NoRemove Classes {
+      NoRemove Protocols {
+        NoRemove Handler {
+          'gcf' {
+            val CLSID = s '{9875BFAF-B04D-445E-8A69-BE36838CDE3E}'
+          }
+        }
+      }
+    }
+  }
+}

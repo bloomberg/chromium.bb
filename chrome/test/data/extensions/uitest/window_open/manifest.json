@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0.0",
+  "name": "window.open test",
+  "description": "An extension for an extension UITest.",
+  "permissions": ["tabs"]
+}

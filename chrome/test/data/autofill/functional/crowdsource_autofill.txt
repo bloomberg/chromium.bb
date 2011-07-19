@@ -1,0 +1,6 @@
+# Profile for crowdsource Autofill tests.
+# Used by: chrome/test/functional/autofill.py
+[
+ {u'NAME_FIRST': u'David',u'NAME_LAST': u'Yu',u'EMAIL_ADDRESS': u'david.yu@gmail.com', u'ADDRESS_HOME_LINE1': u'', u'ADDRESS_HOME_LINE2': u'', u'ADDRESS_HOME_CITY': u'', 'ADDRESS_HOME_STATE': u'', u'ADDRESS_HOME_ZIP': u'', u'PHONE_HOME_WHOLE_NUMBER': u'', u'ADDRESS_HOME_COUNTRY': u'',},
+]
+

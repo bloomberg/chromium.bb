@@ -1,0 +1,20 @@
+<html>
+<!-- TODO(slightlyoff): Move to tests directory? -->
+<head>
+<title>Script test</title>
+<script>
+function OnLoad() {
+  var host = window.externalHost;
+  host.onmessage = OnHostMessage;
+  host.ForwardMessageToExternalHost("Hello from ChromeFrame");
+}
+
+function OnHostMessage(text) {
+  window.alert("In ChromeFrame: \r\n Message from host: " + text);
+}
+</script>
+</head>
+<body onload="OnLoad();">
+Test script
+</body>
+</html> 

@@ -1,0 +1,6 @@
+include_rules = [
+  "+grit",  # For generated headers
+  "+libxml",
+  "+webkit/glue",
+  "+webkit/plugins",
+]

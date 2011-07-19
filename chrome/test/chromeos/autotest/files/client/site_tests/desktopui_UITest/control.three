@@ -1,0 +1,18 @@
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+AUTHOR = "Chrome OS Team"
+NAME = "desktopui_UITest"
+PURPOSE = "Verify Chrome executes and renders basic pages."
+CRITERIA = "This test will fail if running Chrome returns a command error."
+TIME = "LONG"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "desktopui"
+TEST_TYPE = "client"
+
+DOC = """
+This is a wrapper test for Chrome ui_tests
+"""
+
+job.run_test('desktopui_UITest', group=3, total_groups=4)

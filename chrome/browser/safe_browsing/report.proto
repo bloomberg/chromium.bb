@@ -1,0 +1,93 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Safe Browsing reporting protocol buffers.
+//
+// A ClientMalwareReportRequest is sent when a user opts-in to 
+// sending detailed malware reports from the safe browsing interstitial page.
+// 
+// It is a list of Resource messages, which may contain the url of a
+// resource such as the page in the address bar or any other resource
+// that was loaded for this page.
+//
+// In addition to the url, a resource can contain HTTP request and response
+// headers and bodies.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+message ClientMalwareReportRequest {
+
+  message HTTPHeader {
+    required bytes name = 1;
+    optional bytes value = 2;
+  }
+
+  message HTTPRequest {
+    message FirstLine {
+      optional bytes verb = 1;  // Also known as method, eg "GET"
+      optional bytes uri = 2;
+      optional bytes version = 3;
+    }
+    
+    optional FirstLine firstline = 1;
+    repeated HTTPHeader headers = 2;
+    optional bytes body = 3;
+
+    // bodydigest and bodylength can be useful if the report does not
+    // contain the body itself.
+    optional bytes bodydigest = 4;  
+    optional int32 bodylength = 5;
+  }
+
+  message HTTPResponse {
+    message FirstLine {
+      optional int32 code = 1;
+      optional bytes reason = 2;
+      optional bytes version = 3;
+    }
+
+    optional FirstLine firstline = 1;
+    repeated HTTPHeader headers = 2;
+    optional bytes body = 3;
+
+    // bodydigest and bodylength can be useful if the report does not
+    // contain the body itself.
+    optional bytes bodydigest = 4;
+    optional int32 bodylength = 5;
+    optional bytes remote_ip = 6;
+  }
+
+  message Resource {
+    required int32 id = 1;
+    optional string url = 2;
+    optional HTTPRequest request = 3;
+    optional HTTPResponse response = 4;
+
+    optional int32 parent_id = 5;  // Id of the parent, if known.
+
+    // A list of children. The order of the children in this list is
+    // significant. The |parent_id| field for child nodes can be derived
+    // from this, but this allows us to be more flexible.
+    repeated int32 child_ids = 6;
+
+    // Tag that was used to include this resource, eg "iframe"
+    optional string tag_name = 7;
+  }
+
+  // URL of the resource that matches the safe browsing list.
+  optional string malware_url = 1;
+
+  // URL of the page in the address bar.
+  optional string page_url = 2;
+
+  optional string referrer_url = 3;
+  repeated Resource resources = 4;
+
+  // Whether the report has HTTP Responses.
+  optional bool complete = 5;
+}

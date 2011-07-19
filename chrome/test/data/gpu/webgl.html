@@ -1,0 +1,105 @@
+<html>
+<head>
+<script type="text/javascript">
+var canvas;
+var w, h;
+var gl;
+
+function testHorizontalBands() {
+  gl.enable(gl.SCISSOR_TEST);
+
+  gl.clearColor(1, 0, 0, 1);
+  gl.scissor(0, 0, w, h/2);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.clearColor(0, 1, 0, 1);
+  gl.scissor(0, h/2, w, h/2);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.disable(gl.SCISSOR_TEST);
+
+  var size = w * h * 4;
+  var array = new Uint8Array(size);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, array);
+
+  return array[0] == 255 && array[1] == 0 &&
+      array[size - 4] == 0 && array[size - 3] == 255;
+}
+
+function testContextLost(e) {
+  e.preventDefault();
+}
+
+function testContextRestored() {
+  gl = canvas.getContext("experimental-webgl");
+  if (!gl) {
+    document.title = "FAILED: could not get recovered context";
+    return;
+  }
+  gl.clearColor(0, 0, 1, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  var a = new Uint8Array(w * h * 4);
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, a);
+
+  window.domAutomationController.setAutomationId(1);
+  if (a[0] == 0 && a[1] == 0 && a[2] == 255)
+    window.domAutomationController.send("SUCCESS");
+  else
+    window.domAutomationController.send("FAILED");
+}
+
+function contetLostTest(kind)
+{
+  switch (kind) {
+    case "WEBKIT_lose_context": {
+      var extension = gl.getExtension("WEBKIT_lose_context");
+      extension.loseContext();
+      if (extension.restoreContext)
+        extension.restoreContext();
+      break;
+    }
+    case "kill":
+      // nothing -- the browser test navigates to about:gpucrash and kills
+      // the GPU process.
+      break;
+  }
+}
+
+function onLoad() {
+  canvas = document.getElementById("canvas1");
+  w = canvas.width;
+  h = canvas.height
+  if (!canvas) {
+    document.title = "FAILED: canvas element not found";
+    return;
+  }
+  canvas.addEventListener("webglcontextlost", testContextLost, false);
+  canvas.addEventListener("webglcontextrestored", testContextRestored, false);
+
+  gl = canvas.getContext("experimental-webgl");
+  if (!gl) {
+    document.title = "FAILED: could not get webgl context for canvas";
+    return;
+  }
+
+  if (!testHorizontalBands()) {
+    document.title = "FAILED: did not render correctly";
+    return;
+  }
+
+  var query = /query=(.*)/.exec(window.location.href);
+  if (query) {
+    contetLostTest(query[1]);
+  } else {
+      var renderer = gl.getParameter(gl.RENDERER);
+      document.title = "SUCCESS: " + renderer;
+  }
+}
+</script>
+</head>
+<body onload="onLoad()">
+<canvas id="canvas1" width="16px" height="32px">
+</canvas>
+</body>
+</html>

@@ -1,0 +1,54 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+#sync-search-query {
+  width: 20em;
+}
+
+#sync-search-status {
+  color: #333;
+  font-style: italic;
+}
+
+#sync-results-container {
+  display: -webkit-box;
+  /* Should be > #sync-page's min-height. */
+  /* TODO(akalin): Find a less hacky way to do this. */
+  height: 750px;
+}
+
+#sync-results-list {
+  height: 100%;
+  width: 275px;
+  /* min-width and max-width are used by the split pane. */
+  min-width: 50px;
+  max-width: 50%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 5px;
+  -webkit-padding-start: 10px;
+}
+
+#sync-results-splitter {
+  width: 5px;
+  background-color: #ebeff9;
+  cursor: col-resize;
+}
+
+/* Platform annotations are set in sync_node_browser.js. */
+/* TODO(akalin): Make the BMM also use this style. */
+html[os=win] #sync-results-splitter {
+  cursor: e-resize;
+}
+
+#sync-result-details-container {
+  height: 100%;
+  overflow: auto;
+  -webkit-box-flex: 1;
+
+  /* TODO(akalin): Figure out why this is needed, even with box-flex: 1. */
+  width: 100%;
+}

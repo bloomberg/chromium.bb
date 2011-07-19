@@ -1,0 +1,38 @@
+<html>
+<style>
+body {
+ margin: 0;
+ font-family: arial,sans-serif;
+}
+#message {
+ position: absolute;
+ left: 10px;
+ width: 45%;
+}
+#login {
+ position: absolute;
+ left: 50%;
+}
+#message h1 {
+ font-size: medium;
+}
+#message p {
+ font-size: smaller;
+}
+</style>
+<script>
+function initmessage() {
+  document.getElementById('message').innerHTML = chrome.dialogArguments;
+}
+
+function init() {
+  chrome.send('SigninInit');
+  initmessage();
+}
+</script>
+<body onload="init();">
+<div id="message"></div>
+<iframe id="login" frameborder="0" width="50%" scrolling="no" height="100%"
+        src="chrome://syncresources/gaialogin" tabindex="-1"></iframe>
+</body>
+</html>

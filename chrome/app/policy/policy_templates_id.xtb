@@ -1,0 +1,253 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="id">
+<translation id="1503959756075098984">ID ekstensi dan URL pembaruan akan dipasang secara diam-diam</translation>
+<translation id="2463365186486772703">Lokal aplikasi</translation>
+<translation id="1397855852561539316">URL saran penyedia penelusuran bawaan</translation>
+<translation id="7040229947030068419">Nilai contoh:</translation>
+<translation id="6106630674659980926">Aktifkan pengelola sandi</translation>
+<translation id="7337927025691881244">Memungkinkan Anda menentukan ekstensi mana yang TIDAK dapat dipasang pengguna. Ekstensi yang sudah terpasang akan dihapus jika dimasukkan ke daftar hitam. Nilai daftar hitam * berarti semua ekstensi dimasukkan daftar hitam kecuali yang tercantum dalam daftar putih secara eksplisit.</translation>
+<translation id="7755528767666760533">Menentukan URL mesin telusur yang digunakan untuk memberikan hasil sekejap. URL harus berisi string <ph name="SEARCH_TERM_MARKER"/>, yang akan diganti pada waktu kueri dengan teks yang telah dimasukkan pengguna sejauh ini. Opsional.</translation>
+<translation id="7614663184588396421">Daftar skema protokol yang dinonaktifkan</translation>
+<translation id="2309390639296060546">Setelan geolokasi bawaan</translation>
+<translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
+<translation id="5183383917553127163">Memungkinkan Anda menentukan ekstensi mana yang tidak masuk daftar hitam. Nilai daftar hitam * berarti semua ekstensi dimasukkan ke daftar hitam dan pengguna hanya dapat memasang ekstensi yang tercantum dalam daftar putih. Jika tidak diubah, semua ekstensi dimasukkan ke daftar putih, tetapi jika semua ekstensi telah dimasukkan ke daftar hitam karena kebijakan, daftar putih dapat digunakan untuk mengesampingkan kebijakan tersebut.</translation>
+<translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION"/></translation>
+<translation id="5469825884154817306">Cekal gambar pada situs ini</translation>
+<translation id="3512877396423730277">Mengontrol apakah sub-konten pihak ketiga dalam sebuah laman diizinkan memunculkan kotak dialog Autentikasi Dasar HTTP. Biasanya hal ini dinonaktifkan sebagai pertahanan terhadap phishing.</translation>
+<translation id="1438955478865681012">Mengonfigurasi kebijakan yang terkait dengan ekstensi. Pengguna tidak diizinkan memasang ekstensi yang masuk daftar hitam kecuali telah masuk daftar putih. Anda juga dapat memaksa <ph name="PRODUCT_NAME"/> untuk memasang ekstensi secara otomatis dengan menentukannya di <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Daftar hitam lebih mengutamakan daftar ekstensi yang dipaksakan.</translation>
+<translation id="4070280487546651935">Menentukan kata kunci, yang merupakan pintasan pada mahakotak untuk memicu penelusuran bagi penyedia ini. Opsional.</translation>
+<translation id="1096105751829466145">Penyedia penelusuran bawaan</translation>
+<translation id="7567380065339179813">Izinkan pengaya pada situs ini</translation>
+<translation id="5290940294294002042">Tentukan daftar pengaya yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
+<translation id="1427655258943162134">Alamat atau URL server proxy</translation>
+<translation id="1827523283178827583">Gunakan server proxy tetap</translation>
+<translation id="3021409116652377124">Nonaktifkan pencari pengaya</translation>
+<translation id="2455652143675149114">Memungkinkan Anda menentukan perilaku saat permulaan. Jika Anda memilih 'Buka beranda', beranda akan selalu dibuka saat Anda memulai <ph name="PRODUCT_NAME"/>. Jika Anda memilih 'Buka ulang URL yang dibuka terakhir', URL yang terbuka saat <ph name="PRODUCT_NAME"/> terakhir kali ditutup akan dibuka ulang. Jika Anda memilih 'Buka daftar URL', daftar 'URL yang dibuka saat permulaan' akan dibuka ketika pengguna memulai <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkannya di <ph name="PRODUCT_NAME"/>. Menonaktifkan setelan ini sama dengan membiarkannya tanpa dikonfigurasi. Pengguna masih dapat mengubahnya di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="4980635395568992380">Jenis data:</translation>
+<translation id="3096595567015595053">Daftar pengaya yang diaktifkan</translation>
+<translation id="7998998292074133333">Mengaktifkan kunci saat perangkat ChromeOS menganggur atau ditangguhkan. Jika Anda mengaktifkan setelan ini, pengguna akan dimintai sandi untuk membuka kunci perangkat ChromeOS dari modus tidur. Jika Anda menonaktifkan setelan ini, pengguna tidak akan dimintai sandi untuk menyalakan perangkat ChromeOS dari modus tidur. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="5912364507361265851">Izinkan pengguna menampilkan sandi pada Pengelola Sandi</translation>
+<translation id="6999540307315670568">Mengaktifkan bilah bookmark pada laman tab baru di <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> akan menampilkan bilah bookmark di laman &quot;Tab baru&quot;. Jika Anda menonaktifkan setelan ini, pengguna tidak akan pernah melihat bilah bookmark. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkannya di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8828766846428537606">Mengonfigurasi beranda bawaan pada <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubahnya. Setelan beranda pengguna hanya dikunci sepenuhnya, jika Anda memilih beranda sebagai laman tab baru, atau menyetelnya menjadi URL dan menentukan URL beranda. Jika Anda tidak menentukan URL beranda, pengguna masih dapat menyetel beranda ke laman tab baru dengan menentukan 'chrome://newtab'.</translation>
+<translation id="1353966721814789986">Laman permulaan</translation>
+<translation id="5564962323737505851">Mengonfigurasi pengelola sandi. Jika pengelola sandi diaktifkan, Anda dapat memilih mengaktifkan atau menonaktifkan apakah pengguna dapat menampilkan sandi tersimpan dalam teks yang jelas.</translation>
+<translation id="4668325077104657568">Setelan gambar bawaan</translation>
+<translation id="6368403635025849609">Izinkan JavaScript di situs ini</translation>
+<translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
+<translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
+<translation id="8665076741187546529">Konfigurasi daftar ekstensi yang dipasang secara paksa</translation>
+<translation id="6242542007132978836">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan pengaya secara otomatis. Menjalankan pengaya secara otomatis dapat diizinkan untuk semua situs web atau pun ditolak untuk semua situs web.</translation>
+<translation id="5233161357000953961">Menonaktifkan penggunaan protokol SPDY di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="4899708173828500852">Aktifkan Penjelajahan Aman</translation>
+<translation id="3570008976476035109">Mencekal pengaya di situs ini</translation>
+<translation id="2884728160143956392">Izinkan kuki sesi saja di situs-situs tersebut</translation>
+<translation id="3496296378755072552">Pengelola sandi</translation>
+<translation id="7118495359694701769">Menentukan apakah SPN Kerberos yang dihasilkan harus mencakup port non-standar. Jika Anda mengaktifkan setelan ini, dan port non-standar (mis. selain port 80 atau 443) dimasukkan, ini akan dimasukkan ke SPN Kerberos yang dihasilkan. Jika Anda menonaktifkan setelan ini, SPN Kerberos yang dihasilkan tidak akan pernah mencakup port.</translation>
+<translation id="9135033364005346124">Mengaktifkan proxy <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="4276147605137721961">Mengaktifkan atau menonaktifkan pengeditan bookmark di <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, bookmark dapat ditambahkan, dihapus, atau diubah. Ini adalah setelan bawaan. Jika Anda menonaktifkan setelan ini, bookmark tidak dapat ditambahkan, dihapus, atau diubah. Bookmark yang ada masih tersedia.</translation>
+<translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
+<translation id="8621457834803281393">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan menyetel kuki.</translation>
+<translation id="254524874071906077">Setel Chrome sebagai Peramban Bawaan</translation>
+<translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
+<translation id="3915395663995367577">URL untuk proxy berkas .pac</translation>
+<translation id="7191531985645073769">Menonaktifkan sinkronisasi data pada <ph name="PRODUCT_NAME"/> yang menggunakan layanan sinkronisasi dengan inang Google dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1022361784792428773">ID ekstensi yang tidak diizinkan dipasang pengguna (atau * untuk semua)</translation>
+<translation id="5026128159812446244">Memungkinkan akses ke berkas lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME"/> menampilkan dialog pemilihan berkas. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan berkas seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan berkas (seperti mengimpor bookmark, mengunggah berkas, menyimpan tautan, dll.) yang akan ditampilkan adalah pesan, dan pengguna diasumsikan telah mengeklik Batal pada dialog pemilihan berkas. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan berkas seperti biasa.</translation>
+<translation id="7683777542468165012">Penyegaran Kebijakan Dinamis</translation>
+<translation id="43195497515906639">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk menyimpan data pengguna. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang telah disediakan.</translation>
+<translation id="6228640147633317529">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menampilkan gambar.</translation>
+<translation id="2711603272213076156">Izinkan permintaan dialog pemilihan berkas.</translation>
+<translation id="1426410128494586442">Ya</translation>
+<translation id="3381968327636295719">Gunakan peramban inang jika tidak diubah</translation>
+<translation id="6368011194414932347">Mengonfigurasi URL beranda</translation>
+<translation id="1966609843734913335">Mengaktifkan mode Penyamaran di <ph name="PRODUCT_NAME"/>. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka laman web dalam mode penyamaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka laman web dalam mode penyamaran.</translation>
+<translation id="3423023819976532001">Memungkinkan menyimpan sandi dan menggunakan sandi tersimpan di <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, pengguna dapat membuat <ph name="PRODUCT_NAME"/> mengingat sandi dan memunculkannya secara otomatis saat mereka masuk ke sebuah situs pada waktu berikutnya. Jika Anda menonaktifkan setelan ini, pengguna tidak dapat menyimpan sandi atau menggunakan sandi yang sudah tersimpan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2877225735001246144">Nonaktifkan pencarian CNAME saat menegosiasikan autentikasi Kerberos</translation>
+<translation id="6200084307932433394">Mengaktifkan layanan Google Terjemahan terintegrasi di <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> akan menampilkan bilah alat terintegrasi yang menawarkan untuk menerjemahkan laman bagi pengguna, bila perlu. Jika Anda menonaktifkan setelan ini, pengguna tidak akan pernah melihat bilah terjemahan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5059221739913673172">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk menyimpan data pengguna. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang telah disediakan terlepas apakah pengguna telah menentukan panji '--user-data-dir' atau belum.</translation>
+<translation id="3528000905991875314">Mengaktifkan laman galat alternatif</translation>
+<translation id="4084327080063933392">Menentukan nama penyedia penelusuran bawaan. Jika dibiarkan kosong, nama inang yang ditentukan oleh URL penelusuran akan digunakan.</translation>
+<translation id="6114416803310251055">tak lagi digunakan</translation>
+<translation id="8493645415242333585">Menonaktifkan penyimpanan riwayat peramban</translation>
+<translation id="5776485039795852974">Tanyakan setiap kali situs ingin menampilkan pemberitahuan desktop</translation>
+<translation id="6786747875388722282">Ekstensi</translation>
+<translation id="6417878201680958437">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lain diabaikan. Jika Anda memilih menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lain diabaikan. Jika Anda memilih mode proxy server tetap, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy' dan 'Daftar peraturan mengabaikan proxy yang dipisahkan koma'. Jika Anda memilih menggunakan skrip proxy .pac, Anda harus menentukan URL skrip di 'URL berkas .pac proxy'. Untuk contoh detail, kunjungi: <ph name="PROXY_HELP_URL"/> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> mengabaikan semua opsi yang berhubungan dengan proxy yang ditentukan dari baris perintah.</translation>
+<translation id="6899705656741990703">Mendeteksi setelan proxy secara otomatis</translation>
+<translation id="4101772068965291327">Buka beranda</translation>
+<translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
+<translation id="8704831857353097849">Daftar pengaya yang dinonaktifkan</translation>
+<translation id="467449052039111439">Buka daftar URL</translation>
+<translation id="5883015257301027298">Setelan kuki bawaan</translation>
+<translation id="1222189289457045659">Mengaktifkan penggunaan penyedia penelusuran bawaan. Jika Anda mengaktifkan setelan ini, penelusuran bawaan dilakukan ketika pengguna mengetikkan teks di mahakotak yang bukan URL. Anda dapat menentukan penyedia penelusuran bawaan yang akan digunakan dengan menyetel seluruh kebijakan penelusuran bawaan. Jika ini dibiarkan kosong, pengguna dapat memilih penyedia bawaan. Jika Anda menonaktifkan setelan ini, tidak ada penelusuran dilakukan ketika pengguna memasukkan teks non-URL di mahakotak. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8955719471735800169">Kembali ke atas</translation>
+<translation id="6845930317830839162">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan untuk semua situs web atau pun ditolak untuk semua situs web.</translation>
+<translation id="4250680216510889253">Tidak</translation>
+<translation id="1522425503138261032">Izinkan situs melacak lokasi fisik pengguna</translation>
+<translation id="6569553007023490040">Mengonfigurasi URL beranda bawaan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubahnya. Jenis beranda dapat disetel baik ke URL yang Anda tentukan di sini atau ke Laman Tab Baru. Jika Anda memilih Laman Tab Baru, maka kebijakan ini diabaikan. Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL beranda mereka di <ph name="PRODUCT_NAME"/>, namun mereka masih dapat memilih Laman Tab Baru sebagai beranda mereka.</translation>
+<translation id="4423597592074154136">Tentukan setelan proxy secara manual</translation>
+<translation id="3137734558440858947">Memungkinkan Anda menyetel apakah situs web diizinkan menampilkan gambar. Menampilkan gambar dapat diizinkan untuk semua situs web atau pun ditolak untuk semua situs web.</translation>
+<translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
+<translation id="3523486089716697173">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan menampilkan gambar.</translation>
+<translation id="751265277672445578">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, <ph name="PRODUCT_NAME"/> menggunakan baik lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>
+<translation id="6022948604095165524">Tindakan saat permulaan</translation>
+<translation id="3704185423155638353">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan menjalankan JavaScript.</translation>
+<translation id="7628741187268592472">Menentukan pustaka GSSAPI mana yang digunakan untuk Autentikasi HTTP. Anda dapat menyetel baik nama perpustakaan saja, atau pun jalur selengkapnya. Jika setelan tidak tersedia, <ph name="PRODUCT_NAME"/> akan kembali menggunakan nama pustaka bawaan.</translation>
+<translation id="605147781209875705">Kebijakan ini sudah tidak berlaku, gunakan ProxyMode sebagai gantinya. Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lain diabaikan. Jika Anda memilih menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lain diabaikan. Jika Anda memilih setelan proxy manual, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy', 'URL ke berkas .pac proxy' dan 'Daftar peraturan pengabaian proxy yang dipisahkan koma'. Untuk contoh detailnya, kunjungi: <ph name="PROXY_HELP_URL"/> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> mengabaikan semua opsi yang berhubungan dengan proxy yang ditentukan dari baris perintah.</translation>
+<translation id="6516561898504323308">Mencekal kuki pihak ketiga. Mengaktifkan setelan ini berarti mencegah kuki disetel oleh elemen laman web yang bukan dari domain yang ada di bilah alamat peramban. Menonaktifkan setelan ini memungkinkan kuki disetel oleh elemen laman web yang bukan dari domain yang ada di bilah alamat peramban dan mencegah pengguna mengubah setelan ini.</translation>
+<translation id="3864818549971490907">Setelan pengaya bawaan</translation>
+<translation id="4320376026953250541">Microsoft Windows XP SP2 atau yang lebih baru</translation>
+<translation id="6886010724297701888"><ph name="PRODUCT_NAME"/> akan mengabaikan proxy apa pun untuk daftar inang yang diberikan di sini. Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'. Untuk contoh yang lebih detail, kunjungi: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="2959898425599642200">Peraturan mengabaikan proxy</translation>
+<translation id="7337941689192402544">Setel direktori data pengguna <ph name="PRODUCT_NAME"/></translation>
+<translation id="5326137997741385453">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk menyimpan berkas tembolok di diska. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang disediakan, terlepas apakah pengguna telah menetapkan panji '-disk-cache-dir' atau belum.</translation>
+<translation id="4752274243117690301">Jika Anda menyetel setelan ini ke True penelusuran otomatis dan pemasangan pengaya yang hilang akan dinonaktifkan di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3292147213643666827">      Memungkinkan <ph name="PRODUCT_NAME"/> untuk bertindak sebagai proxy antara <ph name="CLOUD_PRINT_NAME"/> dan printer turunan yang tersambung ke komputer. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mengaktifkan proxy cloud print dengan mengautentikasikan dengan akun Google mereka. Jika setelan ini dinonaktifkan, pengguna tidak dapat mengaktifkan proxy, dan mesin tidak akan diizinkan berbagi printer dengan <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="617204585863800180">Mengaktifkan prediksi jaringan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengesampingkan setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6641981670621198190">Nonaktifkan dukungan untuk API grafis 3D</translation>
+<translation id="2741921267428646309">Ini adalah daftar kebijakan yang dipatuhi <ph name="PRODUCT_NAME"/>. Anda tidak perlu mengubah setelan ini secara manual! Anda dapat mengunduh template yang mudah digunakan dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Daftar kebijakan yang didukung sama untuk Chromium dan Google Chrome, tetapi lokasi pendaftaran Windows mereka berbeda. Dimulai dengan <ph name="CHROMIUM_KEY"/> untuk kebijakan Chromium dan <ph name="GOOGLE_CHROME_KEY"/> untuk kebijakan Google Chrome.</translation>
+<translation id="7003746348783715221">Preferensi <ph name="PRODUCT_NAME"/></translation>
+<translation id="9096086085182305205">Daftar putih server autentikasi</translation>
+<translation id="7063895219334505671">Izinkan munculan di situs ini</translation>
+<translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
+<translation id="1757688868319862958">Mengizinkan <ph name="PRODUCT_NAME"/> menjalankan pengaya yang membutuhkan otorisasi. Jika Anda mengaktifkan setelan ini, pengaya yang tidak kedaluwarsa selalu berjalan. Jika setelan ini dinonaktifkan atau tidak disetel, pengguna akan dimintai izin untuk menjalankan pengaya yang membutuhkan otorisasi. Ini adalah pengaya yang dapat meretas keamanan.</translation>
+<translation id="6157537876488211233">Peraturan mengabaikan proxy yang dipisahkan koma</translation>
+<translation id="7091198954851103976">Selalu jalankan pengaya yang membutuhkan otorisasi</translation>
+<translation id="8870318296973696995">Beranda</translation>
+<translation id="4505337077089958219">Kebijakan tingkat penyegaran</translation>
+<translation id="996560596616541671">Server yang mungkin didelegasikan <ph name="PRODUCT_NAME"/></translation>
+<translation id="3866249974567520381">Uraian</translation>
+<translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
+<translation id="4467952432486360968">Cekal kuki pihak ketiga</translation>
+<translation id="1722705282440676367">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lain diabaikan. Jika Anda memilih mendeteksi server proxy secara otomatis, semua opsi lain diabaikan. Untuk contoh detail, kunjungi: <ph name="PROXY_HELP_URL"/> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> mengabaikan semua opsi terkait proxy yang ditentukan dari baris perintah.</translation>
+<translation id="8470053727907466464">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama kode laman seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba sesuai urutan yang ditentukan. Bawaannya adalah UTF-8.</translation>
+<translation id="2537063115727103969">Kebijakan ini merupakan pengganti untuk opsi setelan konten &quot;Hapus kuki dan data situs lainnya ketika menutup peramban&quot;. Bila disetel ke true <ph name="PRODUCT_NAME"/> akan menghapus semua data yang disimpan secara lokal dari peramban ketika dimatikan.</translation>
+<translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
+<translation id="3709266154059827597">Konfigurasi daftar hitam pemasangan ekstensi</translation>
+<translation id="8451988835943702790">Gunakan Laman Tab Baru sebagai beranda</translation>
+<translation id="823695959636476037">Mengontrol apakah pengguna bisa menampilkan sandi dalam teks yang jelas pada pengelola sandi. Jika Anda menonaktifkan setelan ini, pengelola sandi tidak mengizinkan menampilkan sandi tersimpan ke dalam teks yang jelas pada jendela pengelola sandi. Jika Anda mengaktifkan atau tidak mengonfigurasi setelan ini, pengguna dapat melihat sandi mereka di teks yang jelas pada pengelola sandi.</translation>
+<translation id="8731693562790917685">Setelan Konten memungkinkan Anda menentukan bagaimana konten jenis tertentu (misalnya Kuki, Gambar, atau JavaScript) ditangani.</translation>
+<translation id="467236746355332046">Fitur yang didukung:</translation>
+<translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
+<translation id="4985088509112317247">Memungkinkan Anda menentukan apakah situs web diizinkan menyetel data lokal. Menyetel data lokal dapat diizinkan untuk semua situs web atau pun ditolak untuk semua situs web.</translation>
+<translation id="6244210204546589761">URL untuk membuka saat permulaan</translation>
+<translation id="7468416082528382842">Lokasi registry Windows:</translation>
+<translation id="6119099935390640260">Anda dapat menentukan URL untuk berkas .pac proxy di sini. Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'. Untuk contoh detail, kunjungi: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="1808715480127969042">Cekal kuki di situs ini</translation>
+<translation id="1115048775745697549">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
+<translation id="2745445908503591390">Hapus data situs saat peramban ditutup</translation>
+<translation id="8665913667133665583">Menentukan server mana yang harus masuk daftar putih untuk autentikasi terintegrasi. Autentikasi terintegrasi hanya diaktifkan ketika <ph name="PRODUCT_NAME"/> menerima pertanyaan autentikasi dari proxy atau dari server yang ada di daftar yang diizinkan ini. Pisahkan nama beberapa server dengan koma. Karakter pengganti (*) diizinkan.</translation>
+<translation id="538108065117008131">Izinkan <ph name="PRODUCT_FRAME_NAME"/> menangani jenis konten berikut.</translation>
+<translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
+<translation id="7931766636395791713">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan JavaScript.</translation>
+<translation id="1019101089073227242">Menyetel direktori data pengguna</translation>
+<translation id="2030905906517501646">Kata kunci penyedia penelusuran bawaan</translation>
+<translation id="4290189791053175631">Anda dapat menentukan URL server proxy di sini. Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'. Untuk opsi selengkapnya dan contoh detail, kunjungi: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="350797926066071931">Aktifkan Terjemahan</translation>
+<translation id="2267204956165795704">Menentukan URL mesin telusur yang digunakan ketika melakukan penelusuran bawaan. URL harus berisi string '<ph name="SEARCH_TERM_MARKER"/>', yang akan diganti pada waktu kueri dengan istilah yang ditelusuri pengguna.</translation>
+<translation id="4518251772179446575">Tanyakan setiap kali situs ingin melacak lokasi fisik pengguna</translation>
+<translation id="402759845255257575">Jangan izinkan situs apa pun menjalankan JavaScript</translation>
+<translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
+<translation id="5475361623548884387">Aktifkan pencetakan</translation>
+<translation id="3653237928288822292">Ikon penyedia penelusuran bawaan</translation>
+<translation id="8496973106638946974">Mengaktifkan fitur Penjelajahan Aman <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, Penjelajahan Aman selalu aktif. Jika Anda menonaktifkan setelan ini, Penjelajahan Aman tidak pernah aktif. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="13356285923490863">Nama Kebijakan</translation>
+<translation id="557658534286111200">Mengaktifkan atau menonaktifkan pengeditan bookmark</translation>
+<translation id="3473585733246847076">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menyetel kuki.</translation>
+<translation id="2493647325461842868">Mengaktifkan saran penelusuran di Mahakotak <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, saran penelusuran digunakan. Jika Anda menonaktifkan setelan ini, saran penelusuran tidak pernah digunakan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="6775978436824155661">Memungkinkan pencetakan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak. Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak dari <ph name="PRODUCT_NAME"/>. Pencetakan dinonaktifkan di menu perkakas, ekstensi, aplikasi JavaScript, dll. Ini masih mungkin untuk mencetak dari pengaya yang mengabaikan <ph name="PRODUCT_NAME"/> saat mencetak. Sebagai contoh aplikasi Flash tertentu memiliki opsi cetak dalam menu konteksnya, dan itu tidak akan dinonaktifkan.</translation>
+<translation id="6908640907898649429">Mengonfigurasi penyedia penelusuran bawaan. Anda dapat menentukan penyedia penelusuran bawaan yang akan digunakan pengguna atau memilih menonaktifkan penelusuran bawaan.</translation>
+<translation id="681446116407619279">Skema autentikasi yang didukung</translation>
+<translation id="4027608872760987929">Aktifkan penyedia penelusuran bawaan</translation>
+<translation id="2223598546285729819">Setelan pemberitahuan bawaan</translation>
+<translation id="3793095274466276777">Mengonfigurasi pemeriksaan peramban bawaan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubahnya. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> akan selalu memeriksa saat permulaan apakah itu peramban bawaan dan mendaftar sendiri secara otomatis jika memungkinkan. Jika setelan ini dinonaktifkan, <ph name="PRODUCT_NAME"/> tidak akan memeriksa apakah itu peramban bawaan dan akan menonaktifkan kontrol pengguna untuk setelan opsi ini. Jika setelan ini tidak disetel, <ph name="PRODUCT_NAME"/> akan mengizinkan pengguna mengontrol apakah itu peramban bawaan dan apakah pemberitahuan pengguna harus ditampilkan ketika tidak muncul.</translation>
+<translation id="1530812829012954197">Selalu urai pola URL berikut di peramban inang</translation>
+<translation id="6190022522129724693">Setelan munculan bawaan</translation>
+<translation id="847472800012384958">Jangan izinkan situs mana pun menampilkan munculan</translation>
+<translation id="4733471537137819387">Kebijakan yang terkait dengan autentikasi HTTP terintegrasi.</translation>
+<translation id="4608714268466689965">Memungkinkan Anda menyetel apakah situs web diizinkan menampilkan pemberitahuan desktop. Menampilkan pemberitahuan desktop dapat diizinkan jika tidak diubah, ditolak jika tidak diubah, atau pengguna dapat ditanyai setiap kali situs web ingin menampilkan pemberitahuan desktop.</translation>
+<translation id="8951350807133946005">Setel direktori tembolok diska</translation>
+<translation id="1334051495529796396">Menentukan apakah SPN Kerberos yang dihasilkan berdasar pada nama DNS kanonis atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan sebagaimana yang dimasukkan. Jika Anda menonaktifkan setelan ini, nama kanonis server akan ditentukan melalui pencarian CNAME.</translation>
+<translation id="166427968280387991">Server proxy</translation>
+<translation id="2805707493867224476">Izinkan semua situs menampilkan munculan</translation>
+<translation id="1727394138581151779">Cekal semua pengaya</translation>
+<translation id="7079519252486108041">Cekal pengaya di situs ini</translation>
+<translation id="7433714841194914373">Aktifkan Sekejap</translation>
+<translation id="4983201894483989687">Izinkan menjalankan pengaya yang kedaluwarsa</translation>
+<translation id="7492608050778218564">Menonaktifkan dukungan untuk API grafis 3D. Mengaktifkan setelan ini mencegah laman web mengakses unit pemrosesan grafik (GPU). Secara khusus, laman web tidak dapat mengakses API WebGL dan pengaya tidak dapat menggunakan API 3D Pepper. Menonaktifkan setelan ini berpotensi memungkinkan laman web menggunakan API WebGL dan pengaya menggunakan API 3D Pepper. Setelan bawaan peramban mungkin masih mengharuskan argumen baris perintah untuk diterapkan sebelum menggunakan API ini.</translation>
+<translation id="7202926611616207807">Izinkan semua situs menyetel data lokal.</translation>
+<translation id="678228246386317063">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menyetel kuki sesi saja.</translation>
+<translation id="5774856474228476867">URL penelusuran penyedia penelusuran bawaan</translation>
+<translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>
+<translation id="6524941558928880715">Buka ulang URL yang terakhir dibuka</translation>
+<translation id="3167247709504138314">Menentukan URL mesin telusur yang digunakan untuk memberikan saran penelusuran. URL harus berisi string '<ph name="SEARCH_TERM_MARKER"/>' yang akan diganti pada waktu kueri dengan teks yang telah dimasukkan pengguna sejauh ini. Opsional.</translation>
+<translation id="602728333950205286">URL sekejap penyedia penelusuran bawaan</translation>
+<translation id="1675002386741412210">Didukung di:</translation>
+<translation id="5417368737700340683">Mengaktifkan fitur Sekejap <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME"/> Sekejap diaktifkan. Jika Anda menonaktifkan setelan ini, <ph name="PRODUCT_NAME"/> Sekejap dinonaktifkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
+<translation id="3264793472749429012">Penyandiaksaraan penyedia penelusuran bawaan</translation>
+<translation id="2371550098059356219">Menentukan daftar pengaya yang diaktifkan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan rangkaian karakter sembarang. '*' cocok dengan jumlah sembarang dari karakter, sedangkan '?' menentukan karakter tunggal opsional, yaitu cocok dengan nol atau satu karakter. Karakter hindar adalah '\', jadi untuk mencocokkan '*', '?', atau karakter '\' yang sebenarnya, Anda dapat menempatkan sebuah '\' di depannya. Daftar pengaya tertentu selalu digunakan di <ph name="PRODUCT_NAME"/> jika dipasang. Pengaya ditandai sebagai diaktifkan pada 'about: plugins' dan pengguna tidak dapat menonaktifkannya. Perhatikan bahwa kebijakan ini mengesampingkan baik DisabledPlugins dan DisabledPluginsExceptions.</translation>
+<translation id="308285197738484705">Aktifkan prediksi jaringan.</translation>
+<translation id="5765780083710877561">Uraian:</translation>
+<translation id="3319991432361168617">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME"/> untuk mengunduh berkas. Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME"/> akan menggunakan direktori yang disediakan, terlepas apakah pengguna telah menentukan direktori atau mengaktifkan panji untuk ditanyai lokasi unduhan setiap waktu.</translation>
+<translation id="8284208534498422489">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan membuka munculan.</translation>
+<translation id="8544375438507658205">Pengurai HTML bawaan untuk <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="7424751532654212117">Daftar pengecualian untuk daftar pengaya yang dinonaktifkan</translation>
+<translation id="6233173491898450179">Setel direktori unduhan</translation>
+<translation id="2299220924812062390">Tentukan daftar pengaya yang diaktifkan</translation>
+<translation id="8754704265300028644">Menonaktifkan penyimpanan riwayat peramban di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika setelan ini diaktifkan, riwayat perambanan tidak disimpan. Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, riwayat perambanan disimpan.</translation>
+<translation id="1897365952389968758">Izinkan semua situs menjalankan JavaScript</translation>
+<translation id="6931242315485576290">Nonaktifkan sinkronisasi data dengan Google</translation>
+<translation id="7006788746334555276">Setelan Konten</translation>
+<translation id="3676473196461789250">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan pengaya.</translation>
+<translation id="5671281984733584565">Menampilkan tombol Beranda pada bilah alat <ph name="PRODUCT_NAME"/>. Jika Anda mengaktifkan setelan ini, tombol Beranda selalu ditampilkan. Jika Anda menonaktifkan setelan ini, tombol Beranda tidak pernah ditampilkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="805526450642067726">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan menjalankan pengaya.</translation>
+<translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
+<translation id="3101501961102569744">Pilih cara menentukan setelan server proxy</translation>
+<translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
+<translation id="3891357445869647828">Mengaktifkan JavaScript</translation>
+<translation id="868187325500643455">Izinkan semua situs menjalankan pengaya secara otomatis</translation>
+<translation id="5226033722357981948">Menentukan apakah pencari pengaya harus dinonaktifkan</translation>
+<translation id="9068358498333390522">Memungkinkan Anda menyetel apakah situs web diizinkan menampilkan munculan. Menampilkan munculan dapat diizinkan untuk semua situs web atau pun ditolak untuk semua situs web.</translation>
+<translation id="7194407337890404814">Nama penyedia penelusuran bawaan</translation>
+<translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
+<translation id="4554678280250165996">Menentukan skema Autentikasi HTTP mana yang didukung oleh <ph name="PRODUCT_NAME"/>. Nilai yang mungkin adalah 'basic', 'digest', 'ntlm', dan 'negotiate'. Pisahkan beberapa nilai dengan koma.</translation>
+<translation id="5034323863800401760">Menonaktifkan Alat Pengembang dan konsol JavaScript. Jika Anda mengaktifkan setelan ini, Alat Pengembang tidak bisa diakses dan elemen situs web tidak dapat diperiksa lagi. Semua pintasan keyboard dan entri menu atau menu konteks untuk membuka Alat Pengembang atau Konsol JavaScript akan dinonaktifkan.</translation>
+<translation id="6013842521938070987">Menonaktifkan skema protokol yang terdaftar di <ph name="PRODUCT_NAME"/>. URL yang menggunakan skema dari daftar ini tidak akan memuat dan tidak dapat dinavigasikan.</translation>
+<translation id="4056910949759281379">Nonaktifkan protokol SPDY</translation>
+<translation id="3808945828600697669">Tentukan daftar pengaya yang dinonaktifkan</translation>
+<translation id="2187975305444384964">Memungkinkan Anda menyetel apakah situs web diizinkan melacak lokasi fisik pengguna. Pelacakan lokasi fisik pengguna dapat diizinkan jika tidak diubah, ditolak jika tidak diubah, atau pengguna dapat ditanyai setiap kali situs web meminta lokasi fisik.</translation>
+<translation id="8397112610813153899">Mengubahsuaikan daftar pola URL yang harus selalu diurai oleh <ph name="PRODUCT_FRAME_NAME"/>. Untuk contoh pola lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait kerusakan</translation>
+<translation id="1151353063931113432">Izinkan gambar di situs ini</translation>
+<translation id="4498075447689127727">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan membuka munculan.</translation>
+<translation id="1297182715641689552">Gunakan skrip proxy .pac</translation>
+<translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION"/></translation>
+<translation id="7469554574977894907">Aktifkan saran penelusuran</translation>
+<translation id="5511702823008968136">Aktifkan Bilah Bookmark</translation>
+<translation id="3653673712530669976">Memungkinkan Anda mengonfigurasi pengurai HTML bawaan ketika <ph name="PRODUCT_FRAME_NAME"/> terpasang. Setelan bawaannya adalah mengizinkan peramban inang melakukan penguraian, tetapi Anda dapat mengganti ini secara opsional dan memerintahkan <ph name="PRODUCT_FRAME_NAME"/> agar mengurai laman HTML jika tidak diubah.</translation>
+<translation id="7848840259379156480">Memungkinkan Anda mengonfigurasi pengurai HTML bawaan ketika <ph name="PRODUCT_FRAME_NAME"/> terpasang. Setelan bawaannya adalah mengizinkan peramban inang melakukan penguraian, tetapi Anda dapat mengganti ini secara opsional dan memerintahkan <ph name="PRODUCT_FRAME_NAME"/> agar mengurai laman HTML jika tidak diubah.</translation>
+<translation id="4486602758942612946">Mengubahsuaikan daftar pola URL yang harus selalu diurai oleh peramban inang. Untuk contoh pola lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="4346795218451526495">Menentukan daftar pengaya yang dapat diaktifkan atau dinonaktifkan pengguna di <ph name="PRODUCT_NAME"/>. Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan rangkaian karakter sembarang. '*' cocok dengan jumlah sembarang dari karakter sedangkan '?' menentukan karakter tunggal opsional, yaitu cocok dengan nol atau satu karakter. Karakter hindar adalah '\', jadi untuk mencocokkan '*', '?', atau karakter '\' yang sebenarnya, Anda dapat menempatkan sebuah '\' di depannya. Jika Anda mengaktifkan setelan ini, daftar pengaya tertentu dapat digunakan di <ph name="PRODUCT_NAME"/>. pengguna dapat mengaktifkan atau menonaktifkannya di 'about:plugins', meskipun pengaya juga cocok dengan pola di DisabledPlugins. Pengguna juga dapat mengaktifkan dan menonaktifkan pengaya yang tidak cocok dengan semua pola di DisabledPlugins, DisabledPluginsExceptions, dan EnabledPlugins.</translation>
+<translation id="8777120694819070607">Mengizinkan <ph name="PRODUCT_NAME"/> menjalankan pengaya yang kedaluwarsa. Jika Anda mengaktifkan setelan ini, pengaya yang kedaluwarsa digunakan sebagai pengaya normal. Jika Anda menonaktifkan setelan ini, pengaya yang kedaluwarsa tidak akan digunakan dan pengguna tidak akan dimintai izin untuk menjalankannya. Jika setelan ini tidak disetel, pengguna akan dimintai izin untuk menjalankan pengaya yang kedaluwarsa.</translation>
+<translation id="407895324478579198">Memungkinkan Anda menentukan daftar ekstensi yang akan dipasang diam-diam, tanpa interaksi pengguna. Setiap item dari daftar tersebut adalah string, yang berisi ID ekstensi dan URL pembaruan yang dipisahkan oleh tanda titik koma (<ph name="SEMICOLON"/>). Sebagai contoh: <ph name="EXTENSION_POLICY_EXAMPLE"/>. Untuk setiap item, <ph name="PRODUCT_NAME"/> akan mengambil ekstensi yang ditentukan oleh ID dari URL tertentu dan diam-diam memasangnya. Laman berikut ini menjelaskan cara menginangi ekstensi di server Anda sendiri. Tentang URL pembaruan: <ph name="LINK_TO_EXTENSION_DOC1"/>, tentang penginangan ekstensi secara umum: <ph name="LINK_TO_EXTENSION_DOC2"/>. Pengguna tidak akan bisa mencopot pemasangan ekstensi yang ditentukan oleh kebijakan ini. Jika Anda menghapus ekstensi dari daftar ini, maka akan dicopot oleh <ph name="PRODUCT_NAME"/> secara otomatis. Ekstensi yang masuk daftar hitam dalam 'ExtensionInstallBlacklist' dan tidak masuk daftar putih, tidak bisa dipasang dengan paksa oleh kebijakan ini.</translation>
+<translation id="3300906985144143927">Menentukan URL ikon favorit dari penyedia penelusuran bawaan. Opsional.</translation>
+<translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME"/> jika tidak diubah</translation>
+<translation id="1047128214168693844">Jangan izinkan situs mana pun melacak lokasi fisik pengguna</translation>
+<translation id="3273221114520206906">Setelan JavaScript bawaan</translation>
+<translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
+<translation id="6510914645829248303">Jika 'Buka daftar URL' dipilih sebagai tindakan permulaan, ini memungkinkan Anda menentukan daftar URL yang sedang dibuka.</translation>
+<translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
+<translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
+<translation id="5512418063782665071">URL beranda</translation>
+<translation id="8990655542335348641">Menentukan periode dalam milidetik di mana layanan pengelolaan perangkat dikuerikan untuk informasi kebijakan. Menyetel kebijakan ini berarti mengganti nilai bawaan 3 jam. Nilai yang valid untuk kebijakan ini adalah dalam kisaran 30 menit hingga 1 hari. Setiap nilai yang tidak berada dalam rentang ini akan disertakan pada batas masing-masing.</translation>
+<translation id="6049075103826767200">Memungkinkan pelaporan penggunaan dan data terkait kerusakan secara anonim tentang <ph name="PRODUCT_NAME"/> ke Google dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, pelaporan penggunaan dan data terkait kerusakan secara anonim akan dikirimkan ke Google. Jika Anda menonaktifkan setelan ini, pelaporan penggunaan dan data terkait kerusakan secara anonim tidak pernah dikirimkan ke Google. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2263362640517427542">Aktifkan kunci bila perangkat ChromeOS menganggur atau ditangguhkan.</translation>
+<translation id="6808666497110319299">Mengaktifkan penggunaan laman galat alternatif yang terdapat pada <ph name="PRODUCT_NAME"/> (seperti 'laman tidak ditemukan') dan mencegah pengguna mengubah setelan ini. Jika Anda mengaktifkan setelan ini, laman galat alternatif digunakan. Jika Anda menonaktifkan setelan ini, laman galat alternatif tidak pernah digunakan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1948757837129151165">Kebijakan untuk Autentikasi HTTP</translation>
+<translation id="817926804885880359">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME"/> dan memungkinkan pengguna melengkapi formulir web secara otomatis menggunakan informasi yang tersimpan sebelumnya seperti alamat atau informasi kartu kredit. Jika Anda menonaktifkan setelan ini, IsiOtomatis tidak akan bisa diakses pengguna. Jika Anda mengaktifkan setelan ini atau tidak mengonfigurasi nilai, IsiOtomatis akan tetap berada di bawah kontrol pengguna. Ini akan memungkinkan mereka mengonfigurasi profil IsiOtomatis dan mengaktifkan atau menonaktifkan IsiOtomatis sesuai keinginannya.</translation>
+<translation id="6938581770853731947">Mengonfigurasi jenis beranda bawaan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah preferensi beranda. Beranda dapat disetel ke URL yang Anda tentukan atau ke Laman Tab Baru. Jika Anda mengaktifkan setelan ini, Laman Tab Baru selalu digunakan untuk beranda, dan lokasi URL beranda diabaikan. Jika Anda menonaktifkan setelan ini, Laman Tab Baru tidak akan menjadi beranda pengguna, kecuali URL-nya disetel ke 'chrome://newtab'. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah jenis berandanya di <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5645779841392247734">Izinkan kuki di situs ini</translation>
+<translation id="3906388518501362918">Mengaktifkan JavaScript di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Jika setelan ini diaktifkan atau tidak dikonfigurasi, laman web dapat menggunakan JavaScript. Jika setelan ini dinonaktifkan, laman web tidak dapat menggunakan JavaScript.</translation>
+<translation id="4821854788360803313">Menentukan daftar pengaya yang dinonaktifkan di <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini. Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan rangkaian karakter sembarang. '*' Cocok dengan jumlah sembarang dari karakter, sedangkan '?' menentukan karakter tunggal opsional, yaitu cocok dengan nol atau satu karakter. Karakter hindar adalah '\', jadi untuk mencocokkan '*', '?', atau karakter '\' yang sebenarnya, Anda dapat menempatkan sebuah '\' di depannya. Jika Anda mengaktifkan setelan ini, daftar pengaya tertentu tidak pernah digunakan di <ph name="PRODUCT_NAME"/>. Pengaya ditandai sebagai dinonaktifkan dalam 'about: plugins' dan pengguna tidak dapat mengaktifkannya. Perhatikan bahwa kebijakan ini dapat diganti oleh EnabledPlugins dan DisabledPluginsExceptions.</translation>
+</translationbundle>

@@ -1,0 +1,6 @@
+{
+  "description": "Fail if messages.json is not valid (check JSON syntax only)",
+  "name": "invalid_messages_file",
+  "default_locale": "en_US",
+  "version": "1.0"
+}

@@ -1,0 +1,5 @@
+{
+   "name": "http:// scheme in permissions list",
+   "permissions": [ "http://*" ],
+   "version": "1"
+}

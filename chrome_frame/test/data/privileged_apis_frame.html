@@ -1,0 +1,33 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<!-- This page is meant to load inside ChromeFrame -->
+  <head>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
+    <script type="text/javascript">
+      function OnLoad() {
+        externalHost.onmessage = OnHostMessage;
+      }
+
+      function OnHostMessage(evt) {
+        // Any time we receive a message, we reflect it back both
+        // with a nonsensical target, and with "*".
+        appendStatus('Host message: ' + evt.data);
+        externalHost.postMessage(evt.data,
+                                 "privileged_target");
+        appendStatus('After postMessage(' + evt.data + ', "privileged_target)"');
+        externalHost.postMessage(evt.data);
+        appendStatus('After postMessage(' + evt.data + '")');
+      }
+    </script>
+  </head>
+
+  <body onload="OnLoad();">
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <p>ChromeFrame PrivilegeApis Test
+    <br>Tests that private messaging is not available to regular web pages</p>
+  </body>
+</html>

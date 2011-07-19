@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleIdentifier</key>
+	<string>${CHROMIUM_BUNDLE_ID}.remoting.host.plugin</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>BRPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0.0</string>
+	<key>CFBundleSignature</key>
+	<string>${CHROMIUM_CREATOR}</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5.0</string>
+	<key>WebPluginName</key>
+	<string>${EXECUTABLE_NAME}</string>
+	<key>WebPluginMIMETypes</key>
+	<dict>
+		<key>HOST_PLUGIN_MIME_TYPE</key>
+		<dict/>
+	</dict>
+	<key>WebPluginDescription</key>
+	<string>Remoting Host Plugin</string>
+</dict>
+</plist>

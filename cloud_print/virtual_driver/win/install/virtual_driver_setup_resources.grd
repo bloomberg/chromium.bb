@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.  Use of this
+source code is governed by a BSD-style license that can be found in the LICENSE
+file.
+-->
+
+
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/virtual_driver_setup_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="virtual_driver_setup_resources_en-US.rc" type="rc_all" lang="en" language_section="lang"/>
+    <output filename="virtual_driver_setup_resources_es.rc" type="rc_all" lang="es" language_section="lang"/>
+  </outputs>
+  <release seq="1">
+    <messages>
+      <message name="IDS_GOOGLE"
+               meaning="Google" desc="The name of the company that built this.">
+        Google
+      </message>
+      <message name="IDS_DRIVER_NAME"
+               meaning="Driver Name" desc="The user visible name of the printer we create and its associated driver.">
+        Google Cloud Print Virtual Printer
+      </message>
+    </messages>
+  </release>
+</grit>

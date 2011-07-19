@@ -1,0 +1,540 @@
+<!DOCTYPE HTML>
+<head i18n-values="dir:textdirection;">
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+  <head>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="tabswitcherview.css">
+    <script src="util.js"></script>
+    <script src="view.js"></script>
+    <script src="tabswitcherview.js"></script>
+    <script src="dataview.js"></script>
+    <script src="httpcacheview.js"></script>
+    <script src="testview.js"></script>
+    <script src="hstsview.js"></script>
+    <script src="logdumputil.js"></script>
+    <script src="main.js"></script>
+    <script src="dnsview.js"></script>
+    <script src="eventsview.js"></script>
+    <script src="detailsview.js"></script>
+    <script src="sourceentry.js"></script>
+    <script src="resizableverticalsplitview.js"></script>
+    <script src="topmidbottomview.js"></script>
+    <script src="timelineviewpainter.js"></script>
+    <script src="logviewpainter.js"></script>
+    <script src="loggrouper.js"></script>
+    <script src="proxyview.js"></script>
+    <script src="socketpoolwrapper.js"></script>
+    <script src="socketsview.js"></script>
+    <script src="spdyview.js"></script>
+    <script src="serviceprovidersview.js"></script>
+    <script src="httpthrottlingview.js"></script>
+    <script src="logsview.js"></script>
+    <script src="prerenderview.js"></script>
+  </head>
+  <body onload="onLoaded()" id=dataViewDropTarget>
+    <!-- Tab switcher for main categories. -->
+    <div id=categoryTabHandles>
+      <ul>
+        <li><a href="#data" id=dataTab>Data</a></li>
+        <li><a href="#proxy" id=proxyTab>Proxy</a></li>
+        <li><a href="#events" id=eventsTab>Events</a></li>
+        <li><a href="#dns" id=dnsTab>DNS</a></li>
+        <li><a href="#sockets" id=socketsTab>Sockets</a></li>
+        <li><a href="#spdy" id=spdyTab>SPDY</a></li>
+        <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
+        <li><a href="#httpThrottling" id=httpThrottlingTab>HTTP Throttling</a></li>
+        <!-- Tab is only shown on Windows -->
+        <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
+        <li><a href="#tests" id=testTab>Tests</a></li>
+        <li><a href="#hsts" id=hstsTab>HSTS</a></li>
+        <li><a href="#logs" id=logsTab style="display: none;">Logs</a></li>
+        <li><a href="#prerender" id=prerenderTab>Prerender</a></li>
+      </ul>
+      <div style="clear: both;"></div>
+    </div>
+    <!-- Proxy info -->
+    <div id=proxyTabContent>
+      <h4>
+        Current proxy settings
+        <input type=button value="Re-apply settings" id=proxyReloadSettings class="hideOnLoadLog"/>
+      </h4>
+
+      <table><tr>
+
+      <td valign=top>
+      <h3>Effective settings</h3>
+      <pre id=proxyEffectiveSettings></pre>
+      </pre>
+      </td>
+
+      <td style='width: 30px'>&nbsp;</td>
+
+      <td valign=top>
+      <h3>Original settings</h3>
+      <pre id=proxyOriginalSettings></pre>
+      </td>
+
+      </tr></table>
+
+      <h4>Proxy auto-config initialization</h4>
+      <ul>
+        <li>
+          <a href='#events&q=type:INIT_PROXY_RESOLVER'>View all events</a>
+        </li>
+        <li>
+          Latest proxy resolver event:
+          <pre id=proxyResolverLog></pre>
+        </li>
+      </ul>
+
+      <h4>
+        Proxies which have failed recently, and are marked as bad
+        <input type=button value="Clear bad proxies" id=clearBadProxies class="hideOnLoadLog" />
+      </h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Bad proxy server</th>
+            <th>Time for next retry</th>
+          </tr>
+        </thead>
+        <tbody id=badProxiesTableBody></tbody>
+      </table>
+    </div>
+    <!-- Host resolver info -->
+    <div id=dnsTabContent>
+      <h4>Host resolver</h4>
+      <ul>
+        <li><a href='#events&q=type:HOST_RESOLVER_IMPL_REQUEST%20type:HOST_RESOLVER_IMPL_JOB%20is:active'>View pending lookups</a></li>
+        <li>Default address family: <span id=hostResolverDefaultFamily></span>
+          <span id=hostResolverIPv6Disabled class=warningText style="display: none;">
+            (IPv6 disabled)
+            <input type=button value="Enable IPv6" id=hostResolverEnableIPv6 />
+          </span>
+        </li>
+      </ul>
+
+      <h4>
+        Host resolver cache
+        <input type=button value="Clear host cache" id=clearHostResolverCache class="hideOnLoadLog" />
+      </h4>
+      <ul>
+        <li>Capacity: <span id=hostResolverCacheCapacity></span></li>
+        <li>Time to live (ms) for success entries:
+            <span id=hostResolverCacheTTLSuccess></span></li>
+        <li>Time to live (ms) for failure entries:
+            <span id=hostResolverCacheTTLFailure></span></li>
+      </ul>
+
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Hostname</th>
+            <th>Family</th>
+            <th>Addresses</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody id=hostResolverCacheTbody>
+        </tbody>
+      </table>
+    </div>
+    <div id=socketsTabContent>
+      <h4>Socket pools</h4>
+      <ul>
+        <li class="hideOnLoadLog">
+          <input type=button value="Close idle sockets" id=socketPoolCloseIdleButton />
+        </li>
+        <li class="hideOnLoadLog">
+          <input type=button value="Flush socket pools" id=socketPoolFlushButton />
+          <span class=warningText >May break pages with active connections</span>
+        </li>
+        <li><a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
+        </li>
+      </ul>
+      <p>
+        <div id=socketPoolDiv>
+        </div>
+      </p>
+      <p>
+        <div id=socketPoolGroupsDiv>
+        </div>
+      </p>
+    </div>
+    <div id=spdyTabContent>
+      <h4>SPDY Status</h4>
+      <ul>
+        <li>SPDY Enabled: <span id=spdyEnabledSpan>????</span></li>
+        <li>Use Alternate Protocol: <span id=spdyUseAlternateProtocolSpan>????</span></li>
+        <li>Force SPDY Always: <span id=spdyForceAlwaysSpan>????</span></li>
+        <li>Force SPDY Over SSL: <span id=spdyForceOverSslSpan>????</span></li>
+        <li>Next Protocols: <span id=spdyNextProtocolsSpan>????</span></li>
+      </ul>
+
+      <h4>SPDY sessions</h4>
+        <!-- Only one of these two are shown -->
+        <span id=spdySessionNoneSpan>None</span>
+        <span id=spdySessionLinkSpan style="display: none;">
+          <a href='#events&q=type:SPDY_SESSION%20is:active'>View live SPDY sessions</a>
+        </span>
+      <p>
+        <div id=spdySessionDiv>
+        </div>
+      </p>
+
+      <h4>Alternate Protocol Mappings</h4>
+      <p />
+        <div id=spdyAlternateProtocolMappingsDiv>
+        </div>
+    </div>
+    <div id=httpCacheTabContent>
+      <div class="hideOnLoadLog">
+        <h4>Entries</h4>
+        <a href="chrome://view-http-cache" target=_blank>Explore cache entries</a>
+      </div>
+
+      <h4>Statistics</h4>
+      <div id=httpCacheStats>Nothing loaded yet.</div>
+    </div>
+    <div id=httpThrottlingTabContent>
+      <p>
+      In order to prevent Distributed Denial of Service (DDoS) attacks from
+      being perpetrated by web pages and extensions that run within Chrome, the
+      HTTP throttling mechanism keeps track of errors requesting a given URL
+      (minus the query parameters), and after a few 5xx errors in a row, starts
+      exponentially increasing an interval during which requests to the
+      given URL are disallowed.
+      </p><p>
+      You may enable or disable the feature below.  Please let us know if the
+      feature is causing problems for your web site.  More details and contact
+      information at 
+      <a href="http://dev.chromium.org/throttling">http://dev.chromium.org/throttling</a>.
+      </p>
+      <p><input id=enableHttpThrottlingCheckbox type=checkbox />
+        Throttle HTTP requests if the server has been overloaded or encountered an error.
+      </p>
+    </div>
+    <div id=prerenderTabContent>
+      <h4>Prerender</h4>
+      <ul>
+        <li>Prerender Enabled: <span id=prerenderEnabledSpan></span></li>
+      </ul>
+      <p>
+        Active Prerender Pages
+        <div id=prerenderActiveDiv>
+        </div>
+      </p>
+      <p>
+        Prerender History
+        <div id=prerenderHistoryDiv>
+        </div>
+      </p>
+    </div>
+    <!-- Only shown on Windows -->
+    <div id=serviceProvidersTabContent style="display: none;">
+      <h4>Layered Service Providers</h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Type</th>
+            <th>Socket Type</th>
+            <th>Protocol</th>
+            <th>Path</th>
+          </tr>
+        </thead>
+        <tbody id=serviceProvidersTbody>
+        </tbody>
+      </table>
+      <h4>Namespace Providers</h4>
+      <table class="styledTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Namespace</th>
+            <th>Active</th>
+          </tr>
+        </thead>
+        <tbody id=namespaceProvidersTbody>
+        </tbody>
+      </table>
+    </div>
+    <!-- Import/Export data -->
+    <div id=dataTabContent>
+
+    <table width=100%>
+    <tr>
+    <td valign=top>
+      <div id=dataViewDumpDataDiv>
+        <h2>Dump data</h2>
+        <div style="margin: 8px">
+          <p><input id=securityStrippingCheckbox type=checkbox checked=yes>
+             Strip private information (cookies and credentials).
+          </p>
+          <p>
+            <a href="javascript:displayHelpForBugDump()">
+              Help: How to get data for bug reports?
+            </a>
+          </p>
+          <button id=dataViewSaveLogFile class=bigButton>Dump to file</button>
+          <pre id=dataViewSaveStatusText></pre>
+        </div>
+      </div>
+      <div id=dataViewLoadedDiv style="display: none">
+        <h2>Data Loaded</h2>
+        <p id=dataViewLoadedClientInfoText></p>
+      </div>
+      <div>
+        <h2>Load data</h2>
+        <p><input type=file value="Load log from file" id=dataViewLoadLogFile /></p>
+        <pre id=dataViewLoadStatusText></pre>
+        <div style="margin: 8px">
+          <p>Either press the button above and select a file or drag a file onto
+             this window to load it.
+          </p>
+          <p>Works for both log dumps generated from this page with Chrome 14
+             and later, and with log files created with
+              "--log-net-log=file_name".  "--net-log-level=#" will set the
+              default log level used.
+          </p>
+          <p>Once a log is loaded, this page will stop collecting data, and will
+             only start gathering data again when
+             <a href="javascript:history.go(0);">reloaded</a>.
+          </p>
+        </div>
+      </div>
+    </td>
+
+    <td align=right valign=top>
+      <div class="capturingBox" id=dataViewCapturingBox>
+        <span id=dataViewCapturingTextSpan>
+          <b>Capturing all events...</b>
+        </span>
+        <span id=dataViewLoggingTextSpan style="display: none;">
+          <b>Viewing loaded log file.</b>
+        </span>
+        <table style="margin: 8px">
+          <tr>
+            <td>Passively&nbsp;captured:</td>
+            <td align=right id=passivelyCapturedCount></td>
+          </tr>
+          <tr>
+            <td>Actively captured:</td>
+            <td align=right id=activelyCapturedCount></td>
+          </tr>
+        </table>
+        <p class="hideOnLoadLog">
+          <input type=button value="Delete all" id=dataViewDeleteAll />
+        </p>
+        <p class="hideOnLoadLog"><input id=byteLoggingCheckbox type=checkbox />
+            Log actual bytes sent/received.
+        </p>
+      </div>
+    </td>
+
+    </tr>
+    </table>
+    
+    <iframe style="display: none" id=dataViewDownloadIframe></iframe>
+
+    </div>
+
+<!-- START OF HELP TEXT -->
+<script>
+function displayHelpForBugDump() {
+  // We can't access the popups loaded from WebUI pages, so we instead populate
+  // its contents using a data:URL. YUCK!
+  // TODO(eroman): do something less hacky, like exposing a new URL.
+  var helpContents =
+      document.getElementById('howtoDumpForBugsHelpContent').innerHTML;
+  window.open('data:text/html,' + encodeURIComponent(helpContents));
+}
+</script>
+<div id=howtoDumpForBugsHelpContent style="display: none">
+<h2>How to get data for bug reports</h2>
+
+<ol>
+<li>Reproduce the network problem.</li>
+<li>Click the <i>Dump to file</i> button in the <i>Data</i> tab.</li>
+
+<li>The log file will act like a normal download.</li>
+
+<li>Email the log file to the bug investigator,
+  <b>along with an explanation of what went wrong, including any relevant
+     URLs.</b>
+  You may want to compress the file before sending, as the log files can be
+  fairly large but compress well.
+</li>
+
+</ol>
+
+
+<ul>
+<li>The network log <b>may contain personally identifying information</b> like
+  IP addresses, URLs, and cookies.</li>
+<ul>
+<li>You can edit the log to obscure information if you like, but sometimes it
+  is relevant to the bug.  If you choose do this, please make sure you can still
+  load the log file.</li>
+<li>If you choose not to have cookies removed from the log, you must toggle
+  the checkbox before clicking the button.</li>
+</ul>
+<li>Ideally you would have the tool running <b>before</b> you reproduce the
+  bug.
+  If that isn't possible (perhaps the bug happens unpredictably), then the
+  next best thing is to load chrome://net-internals/ <b>as soon as you can
+  after</b> the problem has occurred.</li>
+</ul>
+
+<h2>How it works</h2>
+
+<ul>
+  <li>While the net-internals page is open, it will capture the network events
+  that are happening in Chrome. You can view that in real-time by going to
+  the <i>Events</i> tab.</li>
+  <li>Once you close the net-internals window, the data it had captured will be
+  discarded.</li>
+<li>Chrome keeps around a small buffer of the most recent network events
+  even when the net-internals window is not open. That way if you open
+  chrome://net-internals/ <b>shortly after</b> encountering a problem,
+  you may still find the relevant data.
+  These <i>passively captured</i> events are less accurate however, and will
+  be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
+</li>
+</ul>
+
+<button onclick='window.close()'>Close this popup</button>
+<!-- END OF HELP TEXT -->
+</div>
+
+    <!-- Connection tests -->
+    <div id=testTabContent>
+      <p>Input a URL which failed to load, and then click the button to run some
+         tests for why it failed.</p>
+      <form id=connectionTestsForm>
+        URL: <input type=text id=testUrlInput />
+        <input type=submit value="Start tests" />
+      </form>
+      <div id=testSummary></div>
+    </div>
+
+    <!-- HSTS tab -->
+    <div id=hstsTabContent>
+      <p>
+        HSTS is HTTPS Strict Transport Security: a way for sites to elect to
+        always use HTTPS. See <a href="http://dev.chromium.org/sts">
+        http://dev.chromium.org/sts</a>.</p>
+
+        <!-- This UI allows a user to query and update the browser's list of
+             HSTS domains. -->
+
+      <h4>Add domain</h4>
+
+      <p>Input a domain name to add it to the HSTS set:</p>
+      <form id=hstsAddForm>
+        Domain: <input type=text id=hstsAddInput type="url"
+                 placeholder="example.com"/><br/>
+        Include subdomains: <input type="checkbox" id=hstsCheckInput /><br/>
+        Public key fingerprints: <input type=text id=hstsAddPins style="width: 25em;"/><br/>
+        <p style="font-size: small; color: gray; font-style: italic; margin-left: 2em; max-width: 40em;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=</tt>)</p>
+        <input type=submit value="Add" />
+      </form>
+
+      <h4>Delete domain</h4>
+
+      <p>
+        Input a domain name to delete it from the HSTS set
+        (<i>you cannot delete preloaded entries</i>):
+      </p>
+      <form id=hstsDeleteForm>
+        Domain: <input type=text id=hstsDeleteInput type="url"
+                 placeholder="example.com"/>
+        <input type=submit value="Delete" />
+      </form>
+
+      <h4>Query domain</h4>
+
+      <p>Input a domain name to query the current HSTS set:</p>
+      <form id=hstsQueryForm>
+        Domain: <input type=text id=hstsQueryInput type="url"
+                 placeholder="example.com"/>
+        <input type=submit value="Query" />
+      </form>
+      <div style="margin-top: 1em; margin-left: 2em;" id=hstsQueryOutput></div>
+    </div>
+
+    <!-- ================= Events view =================== -->
+
+    <!-- Filter Box: This the top bar which contains the search box.  -->
+    <div id=filterBox>
+      <table width=100%>
+        <tr>
+          <td width=1%>Filter:</td>
+          <td width=98%><input type="search" incremental id=filterInput /></td>
+          <td width=1% id=filterCount>(1 of 34)</td>
+        </tr>
+      </table>
+    </div>
+    <!-- Events Box: This the panel on the left which lists the sources -->
+    <div id=eventsBox>
+      <table id=eventsListTable cellspacing=0 cellpadding=0 width=100%>
+        <thead>
+          <tr>
+            <td><input type=checkbox id=selectAll /></td>
+            <td id=sortById>ID</td>
+            <td id=sortBySource>Source</td>
+            <td id=sortByDescription width=99%>Description</td>
+          </tr>
+        </thead>
+        <!-- Events table body: This is where request rows go into -->
+        <tbody id=eventsListTableBody></tbody>
+      </table>
+    </div>
+    <!-- Action Box: This is a button bar along the bottom -->
+    <div id=actionBox>
+      <input type=button value="Delete selected" id=deleteSelected />
+      <input type=button value="Delete all" id=deleteAll />
+    </div>
+    <!-- Splitter Box: This is a handle to resize the vertical divider -->
+    <div id=splitterBox></div>
+    <!-- Details box: This is the panel on the right which shows information -->
+    <div id=detailsTabHandles>
+      <table class=tabSwitcher cellspacing=0>
+        <tr>
+          <th id=detailsLogTab>Log</th>
+          <td class=tabSwitcherSpacer>&nbsp;</td>
+          <th id=detailsTimelineTab>Timeline</th>
+        </tr>
+      </table>
+      <div class=tabSwitcherLine></div>
+    </div>
+    <div id=detailsLogBox></div>
+    <div id=detailsTimelineBox></div>
+    
+    <!-- ============================ Logs View ============================ -->
+    <div id=logsTabContent style="display: none;">
+      <h4>Network Log Data</h4>
+      <button id=logsGlobalShowBtn class=logsGlobalButton>Show all...</button>
+      <button id=logsGlobalHideBtn class=logsGlobalButton>Hide all...</button>
+      <button id=logsRefreshBtn class=logsGlobalButton>Refresh logs...</button>
+      <div style="clear: both"></div>
+      <table width=100% class=styledTable>
+        <thead>
+          <tr id=logTableHeaderRow>
+            <th width=10%>Log Name</th>
+            <th width=8%></th>
+            <th width=82%>Log</th>
+          </tr>
+        </thead>
+        <tbody id=logTable>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

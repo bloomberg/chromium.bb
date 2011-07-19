@@ -1,0 +1,7 @@
+{
+   "name": "my extension",
+   "version": "1.0.0.0",
+   "content_scripts": [ {
+      "matches": [ "file://*", "http://*.google.com/*", "https://*.google.com/*" ]
+   } ]
+}

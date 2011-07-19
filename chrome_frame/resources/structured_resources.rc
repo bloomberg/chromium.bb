@@ -1,0 +1,16 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerators
+//
+
+IDR_CHROME_FRAME_IE_FULL_TAB ACCELERATORS
+BEGIN
+    VK_LEFT,        IDC_CHROMEFRAME_BACK,       VIRTKEY, ALT
+    VK_BACK,        IDC_CHROMEFRAME_BACK,       VIRTKEY
+    VK_BACK,        IDC_CHROMEFRAME_FORWARD,    VIRTKEY, SHIFT
+    VK_RIGHT,       IDC_CHROMEFRAME_FORWARD,    VIRTKEY, ALT
+END

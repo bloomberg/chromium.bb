@@ -1,0 +1,97 @@
+<HTML>
+<!-- TODO(slightlyoff): Move to tests directory? -->
+<HEAD>
+<TITLE> Chrome Frame Test </TITLE>
+<SCRIPT type="text/javascript">
+function msg(txt) {
+  try {
+    document.getElementById("my_text").innerHTML = txt;
+  } catch(e) {
+    alert("error");
+  }
+}
+
+function GetChromeFrame() {
+  var chromeFrame = window.document.ChromeFrame
+  return chromeFrame;
+}
+
+function OnChromeFrameMessage(text) {
+  msg("In host:  \r\nMessage from ChromeFrame: " + text);
+  
+  var chromeFrame = GetChromeFrame();
+  chromeFrame.PostMessageToFrame("OnHostMessage", "Hello from host");
+  return "OK";
+}
+
+function OnNavigate() {
+  var url = document.getElementById('inputurl');
+  GetChromeFrame().src = url.value;
+}
+
+function OnFocus() {
+  msg("OnFocus");
+}
+
+window.onload = function() {
+  var chromeFrame = GetChromeFrame();
+  var url = location.href;
+  url = url.substr(0, url.lastIndexOf('/') + 1) + "frame_w_controls.html";
+  chromeFrame.src = url;
+
+  try {
+    var cf = document.getElementById('ChromeFrame');
+    cf.addEventListener("focus", OnFocus, true);
+    cf.addEventListener("blur", function() { msg('blur'); }, true);
+    msg("ready");
+  } catch(e) {
+    alert("error");
+  }
+}
+
+function setFocusToCf() {
+  var cf = document.getElementById('ChromeFrame');
+  cf.focus();
+  // alert(cf.hasFocus());
+  return true;
+}
+
+</SCRIPT>
+<style>
+/* CSS magic to avoid the focus rect */
+object:focus {
+    outline: 0;
+}
+</style>
+<!--
+object:focus { outline: none; }
+:focus { outline: none }
+a:focus          { outline: 1px dotted invert }
+-->
+</HEAD>
+<BODY>
+Chrome Frame Test activex
+<br><br>
+<input id="inputurl" type="text" name="URL">
+<input type="submit" value="Navigate" onClick="OnNavigate();"> 
+<center>
+<OBJECT ID="ChromeFrame" tabindex="0"
+        WIDTH="500"
+        HEIGHT="300"
+        CODEBASE="http://www.google.com"
+        CLASSID="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
+    <!-- <PARAM NAME="BackColor" VALUE="100"> -->
+    <!-- <PARAM NAME="src" VALUE="file:///z:/code/debug/test.html"> -->
+    <embed ID="ChromeFramePlugin" WIDTH=500 HEIGHT=300 NAME="ChromeFrame"
+        SRC="http://www.google.com" TYPE="application/chromeframe">
+    </embed>
+</OBJECT>
+<p>To test the focus: <input id="fake_edit" type="text" name="fake"></p>
+<p><button onclick="return setFocusToCf();">SetFocusToCF</button></p>
+<p>
+Message:<br>
+<pre><p id="my_text"></p></pre>
+</p>
+</center>
+</BODY>
+</HTML>

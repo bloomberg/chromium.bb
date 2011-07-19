@@ -1,0 +1,18 @@
+{
+  "name": "Google Wave Notifier",
+  "version": "1.0.1",
+  "description": "Find out when you have new waves and preview them fast.",
+  "icons": {"16": "16.png", "48": "48.png", "128": "128.png"},
+  "permissions": [
+    "tabs",
+    "https://www.google.com/",
+    "http://www-opensocial.googleusercontent.com/"
+  ],
+  "background_page": "background.html",
+  "options_page": "options.html",
+  "browser_action": {
+    "default_icon": "unauthorized.png",
+    "default_title": "Preview new waves",
+    "popup": "popup.html"
+  }
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<link rel="stylesheet" type="text/css" href="cloud_print_setup_login.css" />
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script type="text/javascript" src="cloud_print_setup_login.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+      onload="cloudprint.fixUpTemplateLink();">
+  <table class="cloudprint-contents" id="cloudprint-contents">
+    <tbody>
+      <tr>
+        <td class="cloudprint-signup" id="cloudprint-signup">
+          <table class="cloudprint-intro">
+            <tbody>
+              <tr><td><div class="cloudprint-header" id="header"
+                           i18n-content="header"></div></td></tr>
+              <tr><td><div class="cloudprint-explain" id="explain"
+                           i18n-content="explain"></div></td></tr>
+            </tbody>
+          </table>
+          <table class="cloudprint-body">
+            <tbody>
+              <tr>
+                <td class="cloudprint-item-image">
+                  <img src="cell_phone.png" /></td>
+                <td>
+                  <div class="cloudprint-item-header" id="anywhere-header"
+                       i18n-content="anywhereheader"></div>
+                  <div class="cloudprint-item-explain" id="anywhere-explain"
+                       i18n-content="anywhereexplain"></div></td>
+              </tr>
+              <tr>
+                <td class="cloudprint-item-image">
+                  <img src="cloud_printer.png" /></td>
+                <td>
+                  <div class="cloudprint-item-header" id="printer-header"
+                       i18n-content="printerheader"></div>
+                  <div class="cloudprint-item-explain" id="printer-explain"
+                       i18n-content="printerexplain"></div></td>
+              </tr>
+              <tr>
+                <td class="cloudprint-item-image">
+                  <img src="sharing.png" /></td>
+                <td>
+                  <div class="cloudprint-item-header" id="sharing-header"
+                       i18n-content="sharingheader"></div>
+                  <div class="cloudprint-item-explain" id="sharing-explain"
+                       i18n-content="sharingexplain"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+        <td class="cloudprint-login">
+          <iframe id="gaialogin" frameborder="0"
+                  width="100%" scrolling="no" height="100%"
+                  src="chrome://cloudprintsetup/gaialogin"></iframe>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

@@ -1,0 +1,137 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <windows.h>
+#include <wincrypt.h>
+
+#include "base/file_util.h"
+#include "base/scoped_temp_dir.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/installer/util/self_cleaning_temp_dir.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Returns a string of 8 characters consisting of the letter 'R' followed by
+// seven random hex digits.
+std::wstring GetRandomFilename() {
+  uint8 data[4];
+  HCRYPTPROV crypt_ctx = NULL;
+
+  // Get four bytes of randomness.  Use CAPI rather than the CRT since I've
+  // seen the latter trivially repeat.
+  EXPECT_NE(FALSE, CryptAcquireContext(&crypt_ctx, NULL, NULL, PROV_RSA_FULL,
+                                        CRYPT_VERIFYCONTEXT));
+  EXPECT_NE(FALSE, CryptGenRandom(crypt_ctx, arraysize(data), &data[0]));
+  EXPECT_NE(FALSE, CryptReleaseContext(crypt_ctx, 0));
+
+  // Hexify the value.
+  std::string result(base::HexEncode(&data[0], arraysize(data)));
+  EXPECT_EQ(8, result.size());
+
+  // Replace the first digit with the letter 'R' (for "random", get it?).
+  result[0] = 'R';
+
+  return ASCIIToWide(result);
+}
+
+}  // namespace
+
+namespace installer {
+
+class SelfCleaningTempDirTest : public testing::Test {
+};
+
+// Test the implementation of GetTopDirToCreate when given the root of a
+// volume.
+TEST_F(SelfCleaningTempDirTest, TopLevel) {
+  FilePath base_dir;
+  SelfCleaningTempDir::GetTopDirToCreate(FilePath(L"C:\\"), &base_dir);
+  EXPECT_TRUE(base_dir.empty());
+}
+
+// Test the implementation of GetTopDirToCreate when given a non-existant dir
+// under the root of a volume.
+TEST_F(SelfCleaningTempDirTest, TopLevelPlusOne) {
+  FilePath base_dir;
+  FilePath parent_dir(L"C:\\");
+  parent_dir = parent_dir.Append(GetRandomFilename());
+  SelfCleaningTempDir::GetTopDirToCreate(parent_dir, &base_dir);
+  EXPECT_EQ(parent_dir, base_dir);
+}
+
+// Test that all intermediate dirs are cleaned up if they're empty when
+// Delete() is called.
+TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
+  // Make a directory in which we'll work.
+  ScopedTempDir work_dir;
+  EXPECT_TRUE(work_dir.CreateUniqueTempDir());
+
+  // Make up some path under the temp dir.
+  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  SelfCleaningTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
+  EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
+  EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+  EXPECT_TRUE(temp_dir.Delete());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_TRUE(work_dir.Delete());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+}
+
+// Test that all intermediate dirs are cleaned up if they're empty when the
+// destructor is called.
+TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {
+  // Make a directory in which we'll work.
+  ScopedTempDir work_dir;
+  EXPECT_TRUE(work_dir.CreateUniqueTempDir());
+
+  // Make up some path under the temp dir.
+  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  {
+    SelfCleaningTempDir temp_dir;
+    EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
+    EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
+    EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+  }
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_TRUE(work_dir.Delete());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+}
+
+// Test that intermediate dirs are left behind if they're not empty when the
+// destructor is called.
+TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
+  static const char kHiHon[] = "hi, hon";
+
+  // Make a directory in which we'll work.
+  ScopedTempDir work_dir;
+  EXPECT_TRUE(work_dir.CreateUniqueTempDir());
+
+  // Make up some path under the temp dir.
+  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  {
+    SelfCleaningTempDir temp_dir;
+    EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
+    EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
+    EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+    // Drop a file somewhere.
+    EXPECT_EQ(arraysize(kHiHon) - 1,
+              file_util::WriteFile(parent_temp_dir.Append(GetRandomFilename()),
+                                   kHiHon, arraysize(kHiHon) - 1));
+  }
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_TRUE(work_dir.Delete());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+}
+
+}  // namespace installer

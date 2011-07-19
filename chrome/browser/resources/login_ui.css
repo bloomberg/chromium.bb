@@ -1,0 +1,43 @@
+body {
+  background: -webkit-radial-gradient(circle contain,
+                                      darkblue 5px,
+                                      black 1000px);
+  font-family: 'Times New Roman';
+  font-size: 15px;
+}
+
+#sign-in-div {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+#sign-in-body {
+  padding: 5px 10px 5px 10px;
+  background: white;
+}
+
+#title-text {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+label {
+  clear: both;
+}
+
+a {
+  display: block;
+  color: blue;
+  font-size: 30px;
+}
+
+a:hover {
+  text-decoration: underline;
+}

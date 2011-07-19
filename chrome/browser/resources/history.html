@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     TODO(tsepez) rename when Content-security-policy is done.
+     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
+-->
+<meta http-equiv="X-WebKit-CSP"
+      content="object-src 'none';
+               script-src chrome://resources
+                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                          'self' 'unsafe-eval'">
+<title i18n-content="title"></title>
+<link rel="icon" href="../../app/theme/history_favicon.png">
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="chrome://history/history.js"></script>
+<script src="chrome://history/strings.js"></script>
+<link rel="stylesheet" href="webui.css">
+<style>
+#results-separator {
+  margin-top:12px;
+  border-top:1px solid #9cc2ef;
+  background-color:#ebeff9;
+  font-weight:bold;
+  padding:3px;
+  margin-bottom:-8px;
+}
+#results-separator table {
+  width: 100%;
+}
+#results-summary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 50%;
+}
+#edit-button {
+  text-align: end;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 50%;
+}
+#editing-controls button {
+  margin-top: 18px;
+  margin-bottom: -8px;
+}
+#results-display {
+  max-width:740px;
+}
+.day {
+  margin-top:18px;
+  padding:0px 3px;
+  display:inline-block;
+}
+.edit-button {
+  display: inline;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  color: blue; /* -webkit-link makes it purple :'( */
+  cursor: pointer;
+  text-decoration: underline;
+  padding:0px 9px;
+  display:inline-block;
+  font:inherit;
+}
+.gap {
+  margin-left:18px;
+  width:15px;
+  border-right:1px solid #ddd;
+  height:14px;
+}
+.entry {
+  margin-left:18px;
+  margin-top:6px;
+  overflow:auto;
+}
+table.results {
+  margin-left:4px;
+}
+.entry .time {
+  color:#888;
+  float:left;
+  min-width:56px;
+  -webkit-margin-end:5px;
+  padding-top:1px;
+  white-space:nowrap;
+}
+html[dir='rtl'] .time {
+  float:right;
+}
+.entry .title {
+  max-width:600px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.results .time, .results .title {
+  margin-top:18px;
+}
+.title > .starred {
+  background:url('shared/images/star_small.png');
+  background-repeat:no-repeat;
+  display:inline-block;
+  -webkit-margin-start:12px;
+  -webkit-margin-end:0;
+  width:11px;
+  height:11px;
+}
+.entry .title > a {
+  box-sizing: border-box;
+  background-repeat:no-repeat;
+  background-size:16px;
+  background-position:0px 1px;
+  padding:1px 0px 4px 22px;
+  display:inline-block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+html[dir='rtl'] .entry .title > a {
+  background-position-x:right;
+  padding-left:0px;
+  padding-right:22px;
+}
+#results-pagination {
+  padding-top:24px;
+  -webkit-margin-start:18px;
+}
+</style>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="header">
+  <a id="history-section" href="">
+    <img src="shared/images/history_section.png"
+         width="67" height="67" class="logo" border="0"></a>
+  <form id="search-form" method="post" action=""
+      class="form">
+    <input type="text" name="term" id="term">
+    <input type="submit" name="submit" i18n-values="value:searchbutton">
+  </form>
+</div>
+<div class="main">
+  <div id="results-separator">
+    <table border="0" cellPadding="0" cellSpacing="0">
+      <tr><td id="results-summary"></td><td id="edit-button"><p></p></td></tr>
+    </table>
+  </div>
+  <div id="editing-controls"></div>
+  <div id="results-display"></div>
+  <div id="results-pagination"></div>
+</div>
+<div class="footer">
+</div>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
+</body>
+</html>

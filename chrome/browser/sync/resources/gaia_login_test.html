@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<!--
+This page is a simple testing environment for gaia_login.html to help
+iterate on the design without having to compile and launch the
+browser.  Note that you must supply the "--allow-file-access-from-files"
+for the chrome you are using to load this page for this to work.
+-->
+<style>
+body {
+  background-color: #d0d0d0;
+}
+
+#iframe {
+  height: 375px;
+  width: 421px;
+  border: 0px;
+  float: left;
+}
+#options {
+  float: left;
+}
+
+</style>
+<script>
+function gel(id) {
+  return document.getElementById(id);
+}
+
+function get_selected_value(el) {
+  for (var i = 0; i < el.length; ++i) {
+    if (el[i].checked)
+      return el[i].value;
+  }
+  return null;
+}
+
+function set_up_testing() {
+  var win = window.frames[0];
+  var doc = win.document;
+  var form = gel("form");
+  form.addEventListener("change", function() { update(); }, true);
+
+  win.JSON = {};
+  win.JSON.parse = function() {
+    return {
+      error: get_selected_value(form.error),
+      user: "homer@gmail.com",
+      captchaUrl: "https://www.google.com/accounts/Captcha"
+    };
+  };
+
+  console.log(win.JSON.parse());
+
+  set_text("introduction",
+           "Chromium sync makes it easy to share your data (such as " +
+           "bookmarks and preferences) between your computers. Chromium " +
+           "synchronizes your data by storing it online with Google when " +
+           "you login with your Google Account.");
+  set_text("settingupsync", "Setting up sync");
+  set_text("errorsigningin", "Error signing in.");
+  set_text("signinsuffix", "Account");
+  set_text("emaillabel", "Email:");
+  set_text("cannotbeblank", "cannotbeblank");
+  set_text("passwordlabel", "Password:");
+  set_text("invalidcredentials", "Invalid user name or password.");
+  set_text("captchainstructions",
+           "Enter the correct password above and then type the characters " +
+           "you see in the picture below.");
+  set_text("couldnotconnect", "Could not connect to the server");
+  set_text("value:signin", "Sign in");
+  set_text("href:cannotaccessaccounturl", "href:cannotaccessaccounturl");
+  set_text("cannotaccessaccount", "I cannot access my account");
+  set_text("href:createnewaccounturl", "href:createnewaccounturl");
+  set_text("createaccount", "Create a Google account");
+  set_text("value:cancel", "Cancel");
+
+  function set_text(id, text) {
+    if (id.indexOf(":") >= 0) {
+      var node = doc.evaluate("//*[@i18n-values='" + id + "']",
+                              doc,
+                              null,
+                              XPathResult.FIRST_ORDERED_NODE_TYPE,
+                              null).singleNodeValue;
+      node.setAttribute(id.split(":")[0], text);
+    } else {
+      var node = doc.evaluate("//*[@i18n-content='" + id + "']",
+                              doc,
+                              null,
+                              XPathResult.FIRST_ORDERED_NODE_TYPE,
+                              null).singleNodeValue;
+      node.innerHTML = text;
+    }
+  }
+
+  win.initForm();
+}
+
+function update() {
+  window.frames[0].document.location.reload();
+}
+
+</script>
+<body>
+<div>
+<iframe
+  id="iframe"
+  src="gaia_login.html"
+  onload="set_up_testing()">
+</iframe>
+<div id="options">
+<form id="form" name="form">
+<p>
+  <input type="radio" name="error" value="" checked> No Error
+  <input type="radio" name="error" value="1"> Bad Password
+  <input type="radio" name="error" value="3"> Lost Connection
+  <input type="radio" name="error" value="4"> Captcha
+</p>
+</form>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script type="text/javascript" src="cloud_print_setup_flow.js"></script>
+</head>
+<body style="margin:0; border:0;" onload="cloudprint.showInitialPage();">
+  <iframe id="cloudprintsetup"
+          src="chrome://cloudprintsetup/cloudprintsetup"
+          frameborder="0" width="100%" scrolling="no" height="100%"
+          style="display:none" tabindex="-1"></iframe>
+  <iframe id="setupdone"
+          src="chrome://cloudprintsetup/setupdone"
+          frameborder="0" width="100%" scrolling="no" height="100%"
+          style="display:none" tabindex="-1"></iframe>
+</body>
+</html>

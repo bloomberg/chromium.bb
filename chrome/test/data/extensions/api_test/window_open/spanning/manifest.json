@@ -1,0 +1,6 @@
+{
+  "name": "window.open test - spanning",
+  "version": "1",
+  "permissions": ["experimental", "tabs"],
+  "background_page": "background.html"
+}

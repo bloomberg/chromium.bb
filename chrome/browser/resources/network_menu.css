@@ -1,0 +1,51 @@
+input:invalid {
+  background-color: #ff6666;
+}
+
+.left-icon {
+  background-position: 4px top !important;
+}
+
+.network-menu-item {
+  width: 100%;
+}
+
+.network-label-icon {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  min-height: 24px;
+}
+
+.network-label {
+  -webkit-box-flex: 1;
+}
+
+.network-icon {
+  width: 24px;
+  height: 24px;
+
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+}
+
+.network-status {
+  color: grey;
+}
+
+.spinner {
+  background-image: -webkit-canvas(spinner-circle);
+
+  -webkit-animation-name: spin;
+  -webkit-animation-duration:2s;
+  -webkit-animation-iteration-count:infinite;
+  -webkit-animation-timing-function:linear;
+}
+
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}

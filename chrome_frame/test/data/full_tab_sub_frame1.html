@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <!-- the http-equiv tag should be ignored since we're in a sub frame -->
+    <title>ChromeFrame Sub Frame test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function OnLoad() {
+        if (isRunningInChrome()) {
+          onFailure("sub_frame", 1, 'Failed');
+        } else {
+          onSuccess("sub_frame", 1);
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="OnLoad();">
+    ChromeFrame full tab mode sub frame test. Verifies that frame pages are
+    not opened in CF even though they have the meta tag.<br>
+    This frame has the x-ua-compatible http-equiv tag, but should not be
+    loaded in CF since it's inside a frame.
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name" : "Extension Docs Search",
+  "description" : "Search the Chrome Extensions documentation.  To use, type 'crdoc' plus a search term into the Omnibox.",
+  "version" : "1.0.0",
+  "permissions" : [
+    "http://src.chromium.org/viewvc/*",
+    "tabs"
+  ],
+  "icons" : {
+    "16" : "icon-16.png",
+    "128" : "icon-128.png"
+  },
+  "omnibox": { "keyword" : "crdoc" },
+  "background_page" : "background.html"
+}

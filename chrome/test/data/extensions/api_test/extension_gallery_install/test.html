@@ -1,0 +1,25 @@
+<script src="common.js"></script>
+<script>
+// This tests the webstorePrivate beginInstall and completeInstall functions.
+
+// Register a listener for when the install is completed.
+chrome.management.onInstalled.addListener(function(info) {
+  assertEq(info.id, extension_id);
+  succeed();
+});
+
+// Make sure our extension isn't yet installed.
+checkInstalled(function(installed) {
+  assertEq(false, installed);
+
+  // Begin installing.
+  chrome.webstorePrivate.beginInstall(extension_id, function() {
+    assertNoLastError();
+
+    // Now complete the installation.
+    chrome.webstorePrivate.completeInstall(extension_id, function() {
+      assertNoLastError();
+    });
+  });
+});
+</script>

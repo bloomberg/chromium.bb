@@ -1,0 +1,31 @@
+<html>
+<!--
+This test checks to make sure plugins aren't loaded when prerendered page
+is displayed and click-to-play is enabled.
+-->
+<head>
+<title>Prerender click-to-play</title>
+
+<script>
+// Make sure plugin was not loaded while prerendering.
+function DidPrerenderPass() {
+  // |plugin| should be the blocked plugin placeholder, rather than the
+  // test plugin.
+  var plugin = window.document['plugin'];
+  return plugin.getURL == undefined;
+}
+
+// Make sure plugin still hasn't loaded once the page is displayed.
+function DidDisplayPass() {
+  // |plugin| should be the blocked plugin placeholder, rather than the
+  // test plugin.
+  var plugin = window.document['plugin'];
+  return plugin.getURL == undefined;
+}
+</script>
+
+</head>
+<body>
+<embed name="plugin" type="application/x-webkit-test-netscape"></embed>
+</body>
+</html>

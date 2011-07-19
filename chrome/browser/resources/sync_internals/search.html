@@ -1,0 +1,26 @@
+<p>
+<input id="sync-search-query" type="search" incremental
+       placeholder="Search Sync Data">
+<span id="sync-search-status"></span>
+</p>
+
+<div id="sync-results-container">
+  <list id="sync-results-list"></list>
+  <div id="sync-results-splitter"></div>
+  <div id="sync-result-details-container">
+    <pre id="sync-result-details"></pre>
+  </div>
+</div>
+
+<script>
+// require: cr/ui.js
+// require: util.js
+
+cr.ui.decorate('#sync-results-splitter', cr.ui.Splitter);
+
+chrome.sync.decorateSearchControls(
+  $('sync-search-query'),
+  $('sync-search-status'),
+  $('sync-results-list'),
+  $('sync-result-details'));
+</script>

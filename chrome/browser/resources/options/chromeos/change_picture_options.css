@@ -1,0 +1,23 @@
+#images-list {
+  border: 0;
+  margin: 10px;
+  padding: 10px;
+}
+
+#images-list * {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#images-list .list-element {
+  display: inline;
+  padding: 10px;
+}
+
+#images-list img {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  width: 64px;
+  height: 64px;
+}
+

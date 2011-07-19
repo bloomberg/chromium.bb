@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hr">
+<translation id="4519964825805946997">Nije uspjela instalacija dodatka s adrese <ph name="URL"/></translation>
+<translation id="9186171386827445984">Učitavanje dokumenta: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stranica...</translation>
+<translation id="1235745349614807883">Obriši najnovija pretraživanja</translation>
+<translation id="1171774979989969504">Unesite adresu e-pošte.</translation>
+<translation id="709897737746224366">Udovoljite zadanom formatu.</translation>
+<translation id="5048533449481078685">oznaka popisa</translation>
+<translation id="372362261556059955">Potreban je dodatni dodatak</translation>
+<translation id="4202807286478387388">skoči</translation>
+<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="7658239707568436148">Odustani</translation>
+<translation id="795667975304826397">Nije odabrana niti jedna datoteka.</translation>
+<translation id="1416462845279468967">Nije uspjela instalacija dodatka</translation>
+<translation id="8141602879876242471">Ovaj je indeks moguće pretraživati. Unesite ključne riječi za pretraživanje:</translation>
+<translation id="5650795167354946011">Nakon instalacije dodatka kliknite ovdje za osvježenje stranice</translation>
+<translation id="370665806235115550">Učitavanje...</translation>
+<translation id="6845533974506654842">pritisni</translation>
+<translation id="8244226242650769279">karta slika</translation>
+<translation id="310520048233152454">Unesite URL.</translation>
+<translation id="2548326553472216322">Nema najnovijih pretraživanja</translation>
+<translation id="7263440858009898357">Odaberite stavku s popisa.</translation>
+<translation id="5164977714490026579">Vrijednost mora biti <ph name="MINIMUM"/> ili veća.</translation>
+<translation id="5944544982112848342">2048 (visoki stupanj)</translation>
+<translation id="3040011195152428237">veza</translation>
+<translation id="2745343197843472802">Nabavi dodatak</translation>
+<translation id="8451268428117625855">Odaberite datoteku.</translation>
+<translation id="5776402066334188252">Potvrdite da želite instalirati dodatak. Instalirajte samo dodatke koje smatrate pouzdanima.</translation>
+<translation id="3018094406922859308">Preuzimanje dodatka...</translation>
+<translation id="7364796246159120393">Odaberi datoteku</translation>
+<translation id="2761667185364618470">Označite taj okvir ako želite ići dalje.</translation>
+<translation id="8964020114565522021">Povucite datoteku ovamo</translation>
+<translation id="5129723458012748440">Nije instaliran dodatak <ph name="PLUGIN"/></translation>
+<translation id="838869780401515933">označi</translation>
+<translation id="2846343701378493991">1024 (srednji)</translation>
+<translation id="5476505524087279545">ukloni oznaku</translation>
+<translation id="3789841737615482174">Instaliraj</translation>
+<translation id="2507943997699731163">Ispunite ovo polje.</translation>
+<translation id="5253117816378681419">Potvrdite da želite instalirati dodatak <ph name="PLUGIN"/>. Instalirajte samo dodatke koje smatrate pouzdanima.</translation>
+<translation id="6663448176199120256">Najnovija pretraživanja</translation>
+<translation id="7335060848622232389">Onemogućeno je instaliranje dodataka.</translation>
+<translation id="2597378329261239068">Ovaj je dokument zaštićen zaporkom. Unesite zaporku.</translation>
+<translation id="5466621249238537318">Izaberite jednu ili više datoteka.</translation>
+<translation id="8750798805984357768">Izaberite jednu od tih opcija.</translation>
+<translation id="7740050170769002709">HTML sadržaj</translation>
+<translation id="2226276347425096477">Skratite taj tekst na <ph name="MAX_CHARACTERS"/> znakova ili manje (trenutačno upotrebljavate <ph name="CURRENT_LENGTH"/> znakova).</translation>
+<translation id="1639239467298939599">Učitavanje</translation>
+<translation id="2908441821576996758">Unesite popis adresa e-pošte odijeljen zarezima.</translation>
+<translation id="5939518447894949180">Ponovno postavi</translation>
+<translation id="835897206747267392">Nevažeća vrijednost.</translation>
+<translation id="3851140433852960970">Nema dostupnog dodatka za prikaz ovog sadržaja.</translation>
+<translation id="1842960171412779397">odaberi</translation>
+<translation id="3450233048674729344">Vrijednost mora biti <ph name="MAXIMUM"/> ili manja.</translation>
+<translation id="9198010615634362518">Potreban dodatak nije instaliran.</translation>
+<translation id="7638452146404718955">Kliknite ovdje za preuzimanje dodatka</translation>
+<translation id="6119846243427417423">aktiviraj</translation>
+<translation id="8444882422881193423">Broj datoteka: <ph name="NUMBER_OF_FILES"/></translation>
+<translation id="3934680773876859118">Učitavanje dokumenta PDF nije uspjelo</translation>
+<translation id="8597182159515967513">naslov</translation>
+<translation id="2653659639078652383">Pošalji</translation>
+<translation id="8475551193147984329">Potreban je dodatak <ph name="PLUGIN"/></translation>
+</translationbundle>

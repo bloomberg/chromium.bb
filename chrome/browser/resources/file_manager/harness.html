@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<!--
+  -- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html>
+  <head>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      #screen {
+        position: relative;
+        width: 800px;
+        height: 620px;
+
+        background-image: -webkit-linear-gradient(top, #c6c6c6, #888);
+      }
+
+      #dialog {
+        position: absolute;
+        left: 40px;
+        top: 20px;
+        width: 720px;
+        height: 580px;
+        border-radius: 4px;
+        border: none;
+        -webkit-box-shadow: 0px 0px 20px rgba(0, 0, 0, 1);
+        background-color: white;
+      }
+
+      #default-path {
+        width: 20em;
+      }
+    </style>
+
+    <script src='js/util.js'></script>
+    <script src='js/harness.js'></script>
+
+    <title>File Manager Test Harness</title>
+  </head>
+  <body>
+    [ <a href='main.html'
+         >Full Page</a> |
+      <a href='javascript:harness.changeParam("type", "saveas-file")'
+         >Save File</a> |
+    <a href='javascript:harness.changeParam("type", "open-file")'
+       >Open File</a> |
+    <a href='javascript:harness.changeParam("type", "open-multi-file")'
+       >Open Files</a> |
+    <a href='javascript:harness.changeParam("type", "folder")'
+       >Select Folder</a> ],
+    Default Path: <input id=default-path>
+    <a href='javascript:harness.changePath()'>Go</a>
+    <div id=screen>
+      <iframe id=dialog></iframe>
+    </div>
+    <div>
+      <button onclick='harness.onClearClick(event)'>Reset Filesystem</button>
+      | Add Files:
+      <input type='file' multiple onchange='harness.onFilesChange(event)'>
+    </div>
+
+    <script>harness.init()</script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>$2</title>
+  <style>
+  body {
+    direction: $5;
+  }
+  #icon {
+    height: 32px;
+    width: 32px;
+    float: $4;
+  }
+  #title {
+    margin-$4: 38px;
+    font-weight: bold;
+    font-size: 13px;
+    font-family: helvetica, arial, sans-serif;
+  }
+  #description {
+    margin-$4: 38px;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 13px;
+  }
+  #link {
+    margin-$4: 38px;
+    font-family: helvetica, arial, sans-serif;
+    font-size: 13px;
+  }
+  </style>
+</head>
+<body>
+  <div id="icon"><img src="$1" width="32" height="32" /></div>
+  <div id="title">$2</div>
+  <div id="description">$3</div>
+  <div id="link"><a href="" onclick="chrome.send('link')">$6</a></div>
+</body>
+</html>

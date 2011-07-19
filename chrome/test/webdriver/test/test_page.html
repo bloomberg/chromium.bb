@@ -1,0 +1,29 @@
+<html>
+<script>
+var success = false;
+function succeed() {
+  success = true;
+}
+</script>
+<div style="height:30px"></div>
+<div style="width:100px">
+  <a name="wrapped" style="margin-left:200px" onclick="succeed()">Click me</a>
+</div>
+<div style="height:100px; overflow:scroll">
+  <br><br><br><br><br><br><br><br><br>
+  <a name="hidden_scroll" onclick="succeed()">Click Here</a>
+  <iframe name="iframe" src="iframe_src.html"></iframe>
+</div>
+
+<div style="height:5000px"></div>
+<a name="far_away" style="margin-left:5000px" onclick="succeed()">Click</a>
+
+<input type="text" name="key_input_test"/>
+
+<select><option>1</option><option name="option">2</option></select>
+
+<div name="editable" contentEditable>
+  <div name="editable_child">editable</div>
+</div>
+
+</html>

@@ -1,0 +1,7 @@
+{
+   "background_page": "background.html",
+   "description": "Test whether extensions open incognito windows after policy disallows it",
+   "name": "Incognito Disabled",
+   "permissions": [ "tabs" ],
+   "version": "1.0"
+}

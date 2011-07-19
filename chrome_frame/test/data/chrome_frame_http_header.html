@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+  </head>
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <script type="text/javascript">
+      var testName = 'FullTabHttpHeader';
+      (function(){
+        try {
+          if (TestIfRunningInChrome()) {
+            onSuccess(testName, 1);
+          } else {
+            onFailure(testName, 1, 'Failed to load in Chrome.');
+          }
+        } catch (e) {
+          onFailure(testName, 1,
+                    testName + ' failed with error: ' + e);
+        }
+      })();
+    </script>
+    <p>Tests Chrome Frame full tab mode loading via an HTTP header.</p>
+  </body>
+</html>

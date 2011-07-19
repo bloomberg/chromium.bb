@@ -1,0 +1,1177 @@
+Index: regexp_adapter.h
+===================================================================
+--- regexp_adapter.h	(revision 0)
++++ regexp_adapter.h	(revision 0)
+@@ -0,0 +1,96 @@
++// Copyright (C) 2011 Google Inc.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Author: George Yakovlev
++
++#ifndef I18N_PHONENUMBERS_REGEXP_ADAPTER_H_
++#define I18N_PHONENUMBERS_REGEXP_ADAPTER_H_
++
++#include <string>
++
++// Regexp adapter to allow pluggable regexp engine, as it is external to
++// libphonenumber.
++
++namespace reg_exp {
++
++// The reg exp input class.
++// It supports only functions used in phonelibrary.
++class RegularExpressionInput {
++ public:
++  virtual ~RegularExpressionInput() {};
++  
++  // Matches string to regular expression, returns true if expression was
++  // matched, false otherwise, advances position in the match.
++  // |reg_exp| - expression to be matched.
++  // |beginning_only| - if true match would be successfull only if appears at
++  // the beginning of the tested region of the string.
++  // |matched_string1| - successfully matched first string. Can be NULL.
++  // |matched_string2| - successfully matched second string. Can be NULL.
++  virtual bool ConsumeRegExp(std::string const& reg_exp,
++                             bool beginning_only,
++                             std::string* matched_string1,
++                             std::string* matched_string2) = 0;
++  // Convert unmatched input to a string.
++  virtual std::string ToString() const = 0;
++};
++
++// The regular expression class.
++// It supports only functions used in phonelibrary.
++class RegularExpression {
++ public:
++  RegularExpression() {}
++  virtual ~RegularExpression() {}
++
++  // Matches string to regular expression, returns true if expression was
++  // matched, false otherwise, advances position in the match.
++  // |input_string| - string to be searched.
++  // |beginning_only| - if true match would be successfull only if appears at
++  // the beginning of the tested region of the string.
++  // |matched_string1| - successfully matched first string. Can be NULL.
++  // |matched_string2| - successfully matched second string. Can be NULL.
++  // |matched_string3| - successfully matched third string. Can be NULL.
++  virtual bool Consume(RegularExpressionInput* input_string,
++                       bool beginning_only,
++                       std::string* matched_string1 = NULL,
++                       std::string* matched_string2 = NULL,
++                       std::string* matched_string3 = NULL) const = 0;
++
++
++  // Matches string to regular expression, returns true if expression was
++  // matched, false otherwise.
++  // |input_string| - string to be searched.
++  // |full_match| - if true match would be successfull only if it matches the
++  // complete string.
++  // |matched_string| - successfully matched string. Can be NULL.
++  virtual bool Match(const char* input_string,
++                     bool full_match,
++                     std::string* matched_string) const = 0;
++
++  // Replaces match(es) in the |string_to_process|. if |global| is true,
++  // replaces all the matches, only the first match otherwise.
++  // |replacement_string| - text the matches are replaced with.
++  // Returns true if expression successfully processed through the string,
++  // even if no actual replacements were made. Returns false in case of an
++  // error.
++  virtual bool Replace(std::string* string_to_process,
++                       bool global,
++                       const char* replacement_string) const = 0;
++};
++
++RegularExpressionInput* CreateRegularExpressionInput(const char* utf8_input);
++RegularExpression* CreateRegularExpression(const char* utf8_regexp);
++
++}  // namespace reg_exp
++
++#endif  // I18N_PHONENUMBERS_REGEXP_ADAPTER_H_
+
+Property changes on: regexp_adapter.h
+___________________________________________________________________
+Added: svn:eol-style
+   + LF
+
+Index: regexp_adapter_re2.cc
+===================================================================
+--- regexp_adapter_re2.cc	(revision 0)
++++ regexp_adapter_re2.cc	(revision 0)
+@@ -0,0 +1,192 @@
++// Copyright (C) 2011 Google Inc.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Author: George Yakovlev
++#include "regexp_adapter.h"
++
++#include <re2/re2.h>
++#include <re2/stringpiece.h>
++#include <re2/re2.h>
++
++namespace {
++scoped_ptr<RE2Cache> re2_cache;
++}  // namespace
++
++class RE2RegularExpressionInput : public RegularExpressionInput {
++ public:
++  RE2RegularExpressionInput(const char* utf8_input);
++  
++  virtual bool ConsumeRegExp(std::string const& reg_exp,
++                             bool beginning_only,
++                             std::string* matched_string1,
++                             std::string* matched_string2);
++  virtual std::string ToString() const;
++ private:
++  StringPiece utf8_input_;
++};
++
++
++class RE2RegularExpression : public reg_exp::RegularExpression {
++ public:
++  RE2RegularExpression(const char* utf8_regexp);
++
++  virtual bool Consume(reg_exp::RegularExpressionInput* input_string,
++                       bool beginning_only,
++                       std::string* matched_string1,
++                       std::string* matched_string2,
++                       std::string* matched_string3) const;
++
++  virtual bool Match(const char* input_string,
++                     bool full_match,
++                     std::string* matched_string) const;
++
++  virtual bool Replace(std::string* string_to_process,
++                       bool global,
++                       const char* replacement_string) const;
++ private:
++  RE2 utf8_regexp_;
++};
++
++RE2RegularExpressionInput::RE2RegularExpressionInput(const char* utf8_input)
++    : utf8_input_(utf8_input) {
++  DCHECK(utf8_input);
++}
++  
++bool RE2RegularExpressionInput::ConsumeRegExp(std::string const& reg_exp,
++                                              bool beginning_only,
++                                              std::string* matched_string1,
++                                              std::string* matched_string2) {
++  if (beginning_only) {
++    if (matched_string2)
++      return RE2::Consume(&utf8_input_,
++                          RE2Cache::ScopedAccess(re2_cache.get(), reg_exp),
++                          matched_string1, matched_string2);
++    else if (matched_string1)
++      return RE2::Consume(&utf8_input_,
++                          RE2Cache::ScopedAccess(re2_cache.get(), reg_exp),
++                          matched_string1);
++    else
++      return RE2::Consume(&utf8_input_,
++                          RE2Cache::ScopedAccess(re2_cache.get(), reg_exp));
++  } else {
++    if (matched_string2)
++      return RE2::FindAndConsume(&utf8_input_,
++                                 RE2Cache::ScopedAccess(re2_cache.get(),
++                                                        reg_exp),
++                                 matched_string1, matched_string2);
++    else if (matched_string1)
++      return RE2::FindAndConsume(&utf8_input_,
++                                 RE2Cache::ScopedAccess(re2_cache.get(),
++                                                        reg_exp),
++                                 matched_string1);
++    else
++      return RE2::FindAndConsume(&utf8_input_,
++                                 RE2Cache::ScopedAccess(re2_cache.get(),
++                                                        reg_exp));
++  }
++}
++
++std::string RE2RegularExpressionInput::ToString() const {
++  utf8_input_.ToString();
++}
++
++RE2RegularExpression::RE2RegularExpression(const char* utf8_regexp)
++    : utf8_regexp_(utf8_regexp) {
++  DCHECK(utf8_regexp);
++}
++
++bool RE2RegularExpression::Consume(RegularExpressionInput* input_string,
++                                   bool beginning_only,
++                                   std::string* matched_string1,
++                                   std::string* matched_string2,
++                                   std::string* matched_string3) const {
++  DCHECK(input_string);
++  // matched_string1 may be NULL
++  // matched_string2 may be NULL
++  if (beginning_only) {
++    if (matched_string3) {
++      return RE2::Consume(input_string, utf8_regexp_,
++                          matched_string1, matched_string2, matched_string3);
++    } else if (matched_string2) {
++      return RE2::Consume(input_string, utf8_regexp_,
++                          matched_string1, matched_string2);
++    } else if (matched_string1) {
++      return RE2::Consume(input_string, utf8_regexp_, matched_string1);
++    } else {
++      return RE2::Consume(input_string, utf8_regexp_);
++    }
++  } else {
++    if (matched_string3) {
++      return RE2::FindAndConsume(input_string, utf8_regexp_,
++                                 matched_string1, matched_string2,
++                                 matched_string3);
++    } else if (matched_string2) {
++      return RE2::FindAndConsume(input_string, utf8_regexp_,
++                                 matched_string1, matched_string2);
++    } else if (matched_string1) {
++      return RE2::FindAndConsume(input_string, utf8_regexp_, matched_string1);
++    } else {
++      return RE2::FindAndConsume(input_string, utf8_regexp_);
++    }
++  }
++}
++
++bool RE2RegularExpression::Match(const char* input_string,
++                                 bool full_match,
++                                 std::string* matched_string) const {
++  DCHECK(input_string);
++  // matched_string may be NULL
++  if (full_match) {
++    if (matched_string)
++      return RE2::FullMatch(input_string, matched_string);
++    else
++      return RE2::FullMatch(input_string);
++  } else {
++    if (matched_string)
++      return RE2::PartialMatch(input_string, matched_string);
++    else
++      return RE2::PartialMatch(input_string);
++  }
++}
++
++bool RE2RegularExpression::Replace(std::string* string_to_process,
++                                   bool global,
++                                   const char* replacement_string) const {
++  DCHECK(string_to_process);
++  DCHECK(replacement_string);
++  if (global) {
++    StringPiece str(replacement_string);
++    return RE2::GlobalReplace(string_to_process, str);
++  } else {
++    return RE2::Replace(string_to_process, replacement_string);
++  }
++}
++
++
++namespace reg_exp {
++
++RegularExpressionInput* CreateRegularExpressionInput(const char* utf8_input) {
++  if (!re2_cache.get())
++    re2_cache.reset(new RE2Cache(64));
++  return new RE2RegularExpressionInput(utf8_input);
++}
++
++RegularExpression* CreateRegularExpression(const char* utf8_regexp) {
++  if (!re2_cache.get())
++    re2_cache.reset(new RE2Cache(64));
++  return new RE2RegularExpression(utf8_regexp);
++}
++
++}  // namespace reg_exp
++
+
+Property changes on: regexp_adapter_re2.cc
+___________________________________________________________________
+Added: svn:eol-style
+   + LF
+
+Index: phonenumberutil_test.cc
+===================================================================
+--- phonenumberutil_test.cc	(revision 186)
++++ phonenumberutil_test.cc	(working copy)
+@@ -21,12 +21,12 @@
+ #include <string>
+ 
+ #include <gtest/gtest.h>
+-#include <re2/re2.h>
+ 
+ #include "phonemetadata.pb.h"
+ #include "phonenumber.h"
+ #include "phonenumber.pb.h"
+ #include "phonenumberutil.h"
++#include "regexp_adapter.h"
+ #include "test_metadata.h"
+ 
+ namespace i18n {
+Index: phonenumberutil.cc
+===================================================================
+--- phonenumberutil.cc	(revision 186)
++++ phonenumberutil.cc	(working copy)
+@@ -25,8 +25,6 @@
+ #include <vector>
+ 
+ #include <google/protobuf/message_lite.h>
+-#include <re2/re2.h>
+-#include <re2/stringpiece.h>
+ #include <unicode/errorcode.h>
+ #include <unicode/translit.h>
+ 
+@@ -38,7 +36,7 @@
+ #include "phonemetadata.pb.h"
+ #include "phonenumber.h"
+ #include "phonenumber.pb.h"
+-#include "re2_cache.h"
++#include "regexp_adapter.h"
+ #include "stringutil.h"
+ #include "utf/unicodetext.h"
+ #include "utf/utf.h"
+@@ -54,14 +52,11 @@
+ using std::stringstream;
+ 
+ using google::protobuf::RepeatedPtrField;
+-using re2::StringPiece;
+ 
+ namespace {
+ 
+ scoped_ptr<LoggerAdapter> logger;
+ 
+-scoped_ptr<RE2Cache> re2_cache;
+-
+ // These objects are created in the function InitializeStaticMapsAndSets.
+ 
+ // These mappings map a character (key) to a specific digit that should replace
+@@ -78,7 +73,7 @@
+ const char kPlusSign[] = "+";
+ 
+ const char kPlusChars[] = "+＋";
+-scoped_ptr<const RE2> plus_chars_pattern;
++scoped_ptr<const reg_exp::RegularExpression> plus_chars_pattern;
+ 
+ const char kRfc3966ExtnPrefix[] = ";ext=";
+ 
+@@ -89,7 +84,7 @@
+ // prefixes in a region, they will be represented as a regex string that always
+ // contains character(s) other than ASCII digits.
+ // Note this regex also includes tilde, which signals waiting for the tone.
+-scoped_ptr<const RE2> unique_international_prefix;
++scoped_ptr<const reg_exp::RegularExpression> unique_international_prefix;
+ 
+ // Digits accepted in phone numbers.
+ // Both Arabic-Indic and Eastern Arabic-Indic are supported.
+@@ -97,8 +92,8 @@
+ // We accept alpha characters in phone numbers, ASCII only. We store lower-case
+ // here only since our regular expressions are case-insensitive.
+ const char kValidAlpha[] = "a-z";
+-scoped_ptr<const RE2> capturing_digit_pattern;
+-scoped_ptr<const RE2> capturing_ascii_digits_pattern;
++scoped_ptr<const reg_exp::RegularExpression> capturing_digit_pattern;
++scoped_ptr<const reg_exp::RegularExpression> capturing_ascii_digits_pattern;
+ 
+ // Regular expression of acceptable characters that may start a phone number
+ // for the purposes of parsing. This allows us to strip away meaningless
+@@ -110,7 +105,7 @@
+ // a number. The string starting with this valid character is captured.
+ // This corresponds to VALID_START_CHAR in the java version.
+ scoped_ptr<const string> valid_start_char;
+-scoped_ptr<const RE2> valid_start_char_pattern;
++scoped_ptr<const reg_exp::RegularExpression> valid_start_char_pattern;
+ 
+ // Regular expression of characters typically used to start a second phone
+ // number for the purposes of parsing. This allows us to strip off parts of
+@@ -121,7 +116,8 @@
+ // preceding this is captured.
+ // This corresponds to SECOND_NUMBER_START in the java version.
+ const char kCaptureUpToSecondNumberStart[] = "(.*)[\\\\/] *x";
+-scoped_ptr<const RE2> capture_up_to_second_number_start_pattern;
++scoped_ptr<const reg_exp::RegularExpression>
++    capture_up_to_second_number_start_pattern;
+ 
+ // Regular expression of trailing characters that we want to remove. We remove
+ // all characters that are not alpha or numerical characters. The hash
+@@ -130,7 +126,7 @@
+ // number if this was a match.
+ // This corresponds to UNWANTED_END_CHARS in the java version.
+ const char kUnwantedEndChar[] = "[^\\p{N}\\p{L}#]";
+-scoped_ptr<const RE2> unwanted_end_char_pattern;
++scoped_ptr<const reg_exp::RegularExpression> unwanted_end_char_pattern;
+ 
+ // Regular expression of acceptable punctuation found in phone numbers. This
+ // excludes punctuation found as a leading character only.  This consists of
+@@ -177,20 +173,20 @@
+ scoped_ptr<const string> known_extn_patterns;
+ // Regexp of all known extension prefixes used by different regions followed
+ // by 1 or more valid digits, for use when parsing.
+-scoped_ptr<const RE2> extn_pattern;
++scoped_ptr<const reg_exp::RegularExpression> extn_pattern;
+ 
+ // We append optionally the extension pattern to the end here, as a valid phone
+ // number may have an extension prefix appended, followed by 1 or more digits.
+-scoped_ptr<const RE2> valid_phone_number_pattern;
++scoped_ptr<const reg_exp::RegularExpression> valid_phone_number_pattern;
+ 
+ // We use this pattern to check if the phone number has at least three letters
+ // in it - if so, then we treat it as a number where some phone-number digits
+ // are represented by letters.
+-scoped_ptr<const RE2> valid_alpha_phone_pattern;
++scoped_ptr<const reg_exp::RegularExpression> valid_alpha_phone_pattern;
+ 
+-scoped_ptr<const RE2> first_group_capturing_pattern;
++scoped_ptr<const reg_exp::RegularExpression> first_group_capturing_pattern;
+ 
+-scoped_ptr<const RE2> carrier_code_pattern;
++scoped_ptr<const reg_exp::RegularExpression> carrier_code_pattern;
+ 
+ void TransformRegularExpressionToRE2Syntax(string* regex) {
+   DCHECK(regex);
+@@ -280,18 +276,19 @@
+        it = available_formats.begin(); it != available_formats.end(); ++it) {
+     int size = it->leading_digits_pattern_size();
+     if (size > 0) {
+-      StringPiece number_copy(number_for_leading_digits_match);
++      scoped_ptr<reg_exp::RegularExpressionInput>
++          number_copy(reg_exp::CreateRegularExpressionInput(
++              number_for_leading_digits_match.c_str()));
+       // We always use the last leading_digits_pattern, as it is the most
+       // detailed.
+-      if (!RE2::Consume(&number_copy,
+-                        RE2Cache::ScopedAccess(
+-                            re2_cache.get(),
+-                            it->leading_digits_pattern(size - 1)))) {
++      if (!number_copy->ConsumeRegExp(it->leading_digits_pattern(size - 1),
++                                      true, NULL, NULL)) {
+         continue;
+       }
+     }
+-    RE2Cache::ScopedAccess pattern_to_match(re2_cache.get(), it->pattern());
+-    if (RE2::FullMatch(national_number, pattern_to_match)) {
++    scoped_ptr<reg_exp::RegularExpression> pattern_to_match(
++        reg_exp::CreateRegularExpression(it->pattern().c_str()));
++    if (pattern_to_match->Match(national_number.c_str(), true, NULL)) {
+       string formatting_pattern(it->format());
+       if (number_format == PhoneNumberUtil::NATIONAL &&
+           carrier_code.length() > 0 &&
+@@ -299,11 +296,12 @@
+         // Replace the $CC in the formatting rule with the desired carrier code.
+         string carrier_code_formatting_rule =
+             it->domestic_carrier_code_formatting_rule();
+-        RE2::Replace(&carrier_code_formatting_rule, *carrier_code_pattern,
+-                     carrier_code);
++        carrier_code_pattern->Replace(&carrier_code_formatting_rule,
++                                      false, carrier_code.c_str());
+         TransformRegularExpressionToRE2Syntax(&carrier_code_formatting_rule);
+-        RE2::Replace(&formatting_pattern, *first_group_capturing_pattern,
+-                     carrier_code_formatting_rule);
++        first_group_capturing_pattern->Replace(&formatting_pattern,
++            false,
++            carrier_code_formatting_rule.c_str());
+       } else {
+         // Use the national prefix formatting rule instead.
+         string national_prefix_formatting_rule =
+@@ -315,14 +313,15 @@
+           // should be formatted at this point.
+           TransformRegularExpressionToRE2Syntax(
+               &national_prefix_formatting_rule);
+-          RE2::Replace(&formatting_pattern, *first_group_capturing_pattern,
+-                       national_prefix_formatting_rule);
++          first_group_capturing_pattern->Replace(&formatting_pattern,
++              false,
++              national_prefix_formatting_rule.c_str());
+         }
+       }
+       TransformRegularExpressionToRE2Syntax(&formatting_pattern);
+       formatted_number->assign(national_number);
+-      RE2::GlobalReplace(formatted_number, pattern_to_match,
+-                         formatting_pattern);
++      pattern_to_match->Replace(formatted_number, true,
++                                formatting_pattern.c_str());
+       return;
+     }
+   }
+@@ -361,12 +360,14 @@
+ 
+ bool IsNumberMatchingDesc(const string& national_number,
+                           const PhoneNumberDesc& number_desc) {
+-  return (RE2::FullMatch(national_number,
+-                         RE2Cache::ScopedAccess(re2_cache.get(),
+-                             number_desc.possible_number_pattern())) &&
+-          RE2::FullMatch(national_number,
+-                         RE2Cache::ScopedAccess(re2_cache.get(),
+-                             number_desc.national_number_pattern())));
++  scoped_ptr<const reg_exp::RegularExpression>
++       possible_pattern(reg_exp::CreateRegularExpression(
++           number_desc.possible_number_pattern().c_str()));
++  scoped_ptr<const reg_exp::RegularExpression>
++       national_pattern(reg_exp::CreateRegularExpression(
++           number_desc.national_number_pattern().c_str()));
++  return (possible_pattern->Match(national_number.c_str(), true, NULL) &&
++          national_pattern->Match(national_number.c_str(), true, NULL));
+ }
+ 
+ PhoneNumberUtil::PhoneNumberType GetNumberTypeHelper(
+@@ -452,18 +453,25 @@
+ // Initialisation helper function used to populate the regular expressions in a
+ // defined order.
+ void CreateRegularExpressions() {
+-  unique_international_prefix.reset(new RE2("[\\d]+(?:[~⁓∼～][\\d]+)?"));
+-  first_group_capturing_pattern.reset(new RE2("(\\$1)"));
+-  carrier_code_pattern.reset(new RE2("\\$CC"));
+-  capturing_digit_pattern.reset(new RE2(StrCat("([", kValidDigits, "])")));
+-  capturing_ascii_digits_pattern.reset(new RE2("(\\d+)"));
++  unique_international_prefix.reset(
++      reg_exp::CreateRegularExpression("[\\d]+(?:[~⁓∼～][\\d]+)?"));
++  first_group_capturing_pattern.reset(
++      reg_exp::CreateRegularExpression("(\\$1)"));
++  carrier_code_pattern.reset(
++      reg_exp::CreateRegularExpression("\\$CC"));
++  capturing_digit_pattern.reset(
++      reg_exp::CreateRegularExpression(
++         StrCat("([", kValidDigits, "])").c_str()));
++  capturing_ascii_digits_pattern.reset(
++      reg_exp::CreateRegularExpression("(\\d+)"));
+   valid_start_char.reset(new string(StrCat(
+       "[", kPlusChars, kValidDigits, "]")));
+-  valid_start_char_pattern.reset(new RE2(*valid_start_char));
+-  capture_up_to_second_number_start_pattern.reset(new RE2(
+-      kCaptureUpToSecondNumberStart));
+-  unwanted_end_char_pattern.reset(new RE2(
+-      kUnwantedEndChar));
++  valid_start_char_pattern.reset(
++      reg_exp::CreateRegularExpression(valid_start_char->c_str()));
++  capture_up_to_second_number_start_pattern.reset(
++      reg_exp::CreateRegularExpression(kCaptureUpToSecondNumberStart));
++  unwanted_end_char_pattern.reset(
++      reg_exp::CreateRegularExpression(kUnwantedEndChar));
+   valid_phone_number.reset(new string(
+       StrCat("[", kPlusChars, "]*(?:[", kValidPunctuation, "]*[", kValidDigits,
+              "]){3,}[", kValidAlpha, kValidPunctuation, kValidDigits, "]*")));
+@@ -479,17 +487,19 @@
+              "int|ｉｎｔ|anexo)"
+              "[:\\.．]?[  \\t,-]*", capturing_extn_digits, "#?|"
+              "[- ]+([", kValidDigits, "]{1,5})#")));
+-  extn_pattern.reset(new RE2(StrCat("(?i)(?:", *known_extn_patterns, ")$")));
+-  valid_phone_number_pattern.reset(new RE2(
+-      StrCat("(?i)", *valid_phone_number, "(?:", *known_extn_patterns, ")?")));
+-  valid_alpha_phone_pattern.reset(new RE2(
+-      StrCat("(?i)(?:.*?[", kValidAlpha, "]){3}")));
+-  plus_chars_pattern.reset(new RE2(StrCat("[", kPlusChars, "]+")));
++  extn_pattern.reset(reg_exp::CreateRegularExpression(
++      StrCat("(?i)(?:", *known_extn_patterns, ")$").c_str()));
++  valid_phone_number_pattern.reset(reg_exp::CreateRegularExpression(
++      StrCat("(?i)", *valid_phone_number, "(?:", *known_extn_patterns,
++             ")?").c_str()));
++  valid_alpha_phone_pattern.reset(reg_exp::CreateRegularExpression(
++      StrCat("(?i)(?:.*?[", kValidAlpha, "]){3}").c_str()));
++  plus_chars_pattern.reset(reg_exp::CreateRegularExpression(
++      StrCat("[", kPlusChars, "]+").c_str()));
+ }
+ 
+ void InitializeStaticMapsAndSets() {
+   // Create global objects.
+-  re2_cache.reset(new RE2Cache(64));
+   all_plus_number_grouping_symbols.reset(new map<char32, char>);
+   alpha_mappings.reset(new map<char32, char>);
+   all_normalization_mappings.reset(new map<char32, char>);
+@@ -625,36 +635,37 @@
+ 
+ // Strips the IDD from the start of the number if present. Helper function used
+ // by MaybeStripInternationalPrefixAndNormalize.
+-bool ParsePrefixAsIdd(const RE2& idd_pattern, string* number) {
++bool ParsePrefixAsIdd(const reg_exp::RegularExpression* idd_pattern,
++                      string* number) {
+   DCHECK(number);
+-  StringPiece number_copy(*number);
++  scoped_ptr<reg_exp::RegularExpressionInput> number_copy(
++      reg_exp::CreateRegularExpressionInput(number->c_str()));
+   // First attempt to strip the idd_pattern at the start, if present. We make a
+   // copy so that we can revert to the original string if necessary.
+-  if (RE2::Consume(&number_copy, idd_pattern)) {
++  if (idd_pattern->Consume(number_copy.get(), true, NULL, NULL)) {
+     // Only strip this if the first digit after the match is not a 0, since
+     // country calling codes cannot begin with 0.
+     string extracted_digit;
+-    if (RE2::PartialMatch(number_copy,
+-                          *capturing_digit_pattern,
+-                          &extracted_digit)) {
++    if (capturing_digit_pattern->Match(number_copy->ToString().c_str(), false,
++                                       &extracted_digit)) {
+       PhoneNumberUtil::NormalizeDigitsOnly(&extracted_digit);
+       if (extracted_digit == "0") {
+         return false;
+       }
+     }
+-    number->assign(number_copy.ToString());
++    number->assign(number_copy->ToString());
+     return true;
+   }
+   return false;
+ }
+ 
+ PhoneNumberUtil::ValidationResult TestNumberLengthAgainstPattern(
+-    const RE2& number_pattern, const string& number) {
++    const reg_exp::RegularExpression* number_pattern, const string& number) {
+   string extracted_number;
+-  if (RE2::FullMatch(number, number_pattern, &extracted_number)) {
++  if (number_pattern->Match(number.c_str(), true, &extracted_number)) {
+     return PhoneNumberUtil::IS_POSSIBLE;
+   }
+-  if (RE2::PartialMatch(number, number_pattern, &extracted_number)) {
++  if (number_pattern->Match(number.c_str(), false, &extracted_number)) {
+     return PhoneNumberUtil::TOO_LONG;
+   } else {
+     return PhoneNumberUtil::TOO_SHORT;
+@@ -862,8 +873,10 @@
+     PhoneNumberFormat number_format,
+     const RepeatedPtrField<NumberFormat>& user_defined_formats,
+     string* formatted_number) const {
+-  static const RE2 national_prefix_pattern("\\$NP");
+-  static const RE2 first_group_pattern("\\$FG");
++  static scoped_ptr<const reg_exp::RegularExpression>
++      national_prefix_pattern(reg_exp::CreateRegularExpression("\\$NP"));
++  static scoped_ptr<const reg_exp::RegularExpression>
++      first_group_pattern(reg_exp::CreateRegularExpression("\\$FG"));
+   DCHECK(formatted_number);
+   int country_calling_code = number.country_code();
+   // Note GetRegionCodeForCountryCode() is used because formatting information
+@@ -893,10 +906,12 @@
+       num_format_copy->MergeFrom(*it);
+       if (!national_prefix.empty()) {
+         // Replace $NP with national prefix and $FG with the first group ($1).
+-        RE2::Replace(&national_prefix_formatting_rule, national_prefix_pattern,
+-                     national_prefix);
+-        RE2::Replace(&national_prefix_formatting_rule, first_group_pattern,
+-                     "$1");
++        national_prefix_pattern->Replace(&national_prefix_formatting_rule,
++                                         false,
++                                         national_prefix.c_str());
++        first_group_pattern->Replace(&national_prefix_formatting_rule,
++                                     false,
++                                     "$1");
+         num_format_copy->set_national_prefix_formatting_rule(
+             national_prefix_formatting_rule);
+       } else {
+@@ -1021,7 +1036,8 @@
+   // format of the number is returned, unless there is a preferred international
+   // prefix.
+   string international_prefix_for_formatting(
+-      RE2::FullMatch(international_prefix, *unique_international_prefix)
++      unique_international_prefix->Match(international_prefix.c_str(),
++                                         true, NULL)
+       ? international_prefix
+       : metadata->preferred_international_prefix());
+   if (!international_prefix_for_formatting.empty()) {
+@@ -1133,7 +1149,8 @@
+   // format of the number is returned, unless there is a preferred international
+   // prefix.
+   string international_prefix_for_formatting(
+-      RE2::FullMatch(international_prefix, *unique_international_prefix)
++      unique_international_prefix->Match(international_prefix.c_str(),
++                                         true, NULL)
+       ? international_prefix
+       : metadata->preferred_international_prefix());
+   if (!international_prefix_for_formatting.empty()) {
+@@ -1179,8 +1196,10 @@
+                                       number, carrier_code, formatted_number);
+   if (number_format == RFC3966) {
+     // Replace all separators with a "-".
+-    static const RE2 separator_pattern(StrCat("[", kValidPunctuation, "]+"));
+-    RE2::GlobalReplace(formatted_number, separator_pattern, "-");
++    scoped_ptr<const reg_exp::RegularExpression> separator_pattern(
++        reg_exp::CreateRegularExpression(
++            StrCat("[", kValidPunctuation, "]+").c_str()));
++    separator_pattern->Replace(formatted_number, true, "-");
+   }
+ }
+ 
+@@ -1288,10 +1307,9 @@
+        it != region_codes.end(); ++it) {
+     const PhoneMetadata* metadata = GetMetadataForRegion(*it);
+     if (metadata->has_leading_digits()) {
+-      StringPiece number(national_number);
+-      if (RE2::Consume(&number,
+-                       RE2Cache::ScopedAccess(re2_cache.get(),
+-                                              metadata->leading_digits()))) {
++      scoped_ptr<reg_exp::RegularExpressionInput> number(
++          reg_exp::CreateRegularExpressionInput(national_number.c_str()));
++      if (number->ConsumeRegExp(metadata->leading_digits(), true, NULL, NULL)) {
+         *region_code = *it;
+         return;
+       }
+@@ -1367,8 +1385,10 @@
+     const string& number_to_parse,
+     const string& default_region) const {
+   if (!IsValidRegionCode(default_region) && !number_to_parse.empty()) {
+-    StringPiece number_as_string_piece(number_to_parse);
+-    if (!RE2::Consume(&number_as_string_piece, *plus_chars_pattern)) {
++    scoped_ptr<reg_exp::RegularExpressionInput> number_as_string_piece(
++        reg_exp::CreateRegularExpressionInput(number_to_parse.c_str()));
++    if (!plus_chars_pattern->Consume(number_as_string_piece.get(),
++                                     true, NULL, NULL)) {
+       return false;
+     }
+   }
+@@ -1435,8 +1455,6 @@
+     return TOO_SHORT_NSN;
+   }
+   if (country_metadata) {
+-    RE2Cache::ScopedAccess valid_number_pattern(re2_cache.get(),
+-        country_metadata->general_desc().national_number_pattern());
+     string* carrier_code = keep_raw_input ?
+         temp_number.mutable_preferred_domestic_carrier_code() : NULL;
+     MaybeStripNationalPrefixAndCarrierCode(*country_metadata,
+@@ -1489,7 +1507,7 @@
+   for (it = number_as_unicode.begin(); it != number_as_unicode.end(); ++it) {
+     len = it.get_utf8(current_char);
+     current_char[len] = '\0';
+-    if (RE2::FullMatch(current_char, *valid_start_char_pattern)) {
++    if (valid_start_char_pattern->Match(current_char, true, NULL)) {
+       break;
+     }
+   }
+@@ -1505,7 +1523,7 @@
+   for (; reverse_it.base() != it; ++reverse_it) {
+     len = reverse_it.get_utf8(current_char);
+     current_char[len] = '\0';
+-    if (!RE2::FullMatch(current_char, *unwanted_end_char_pattern)) {
++    if (!unwanted_end_char_pattern->Match(current_char, true, NULL)) {
+       break;
+     }
+   }
+@@ -1521,9 +1539,9 @@
+       " left with: " + *extracted_number);
+ 
+   // Now remove any extra numbers at the end.
+-  RE2::PartialMatch(*extracted_number,
+-                    *capture_up_to_second_number_start_pattern,
+-                    extracted_number);
++  capture_up_to_second_number_start_pattern->Match(extracted_number->c_str(),
++                                                   false,
++                                                   extracted_number);
+ }
+ 
+ bool PhoneNumberUtil::IsPossibleNumber(const PhoneNumber& number) const {
+@@ -1569,9 +1587,10 @@
+       return IS_POSSIBLE;
+     }
+   }
+-  RE2Cache::ScopedAccess possible_number_pattern(re2_cache.get(),
+-      StrCat("(", general_num_desc.possible_number_pattern(), ")"));
+-  return TestNumberLengthAgainstPattern(possible_number_pattern,
++  scoped_ptr<reg_exp::RegularExpression> possible_number_pattern(
++      reg_exp::CreateRegularExpression(
++      StrCat("(", general_num_desc.possible_number_pattern(), ")").c_str()));
++  return TestNumberLengthAgainstPattern(possible_number_pattern.get(),
+                                         national_number);
+ }
+ 
+@@ -1701,13 +1720,16 @@
+ 
+   string formatted_number;
+   Format(copied_proto, INTERNATIONAL, &formatted_number);
+-  StringPiece i18n_number(formatted_number);
++  scoped_ptr<reg_exp::RegularExpressionInput> i18n_number(
++      reg_exp::CreateRegularExpressionInput(formatted_number.c_str()));
+   string digit_group;
+   string ndc;
+   string third_group;
+   for (int i = 0; i < 3; ++i) {
+-    if (!RE2::FindAndConsume(&i18n_number, *capturing_ascii_digits_pattern,
+-                             &digit_group)) {
++    if (!capturing_ascii_digits_pattern->Consume(i18n_number.get(),
++                                                 false,
++                                                 &digit_group,
++                                                 NULL)) {
+       // We should find at least three groups.
+       return 0;
+     }
+@@ -1734,9 +1756,11 @@
+ void PhoneNumberUtil::NormalizeDigitsOnly(string* number) {
+   DCHECK(number);
+   // Delete everything that isn't valid digits.
+-  static const RE2 invalid_digits_pattern(StrCat("[^", kValidDigits, "]"));
+-  static const StringPiece empty;
+-  RE2::GlobalReplace(number, invalid_digits_pattern, empty);
++  static scoped_ptr<reg_exp::RegularExpression> invalid_digits_pattern(
++      reg_exp::CreateRegularExpression(StrCat("[^", kValidDigits,
++                                              "]").c_str()));
++  static const char *empty = "";
++  invalid_digits_pattern->Replace(number, true, empty);
+   // Normalize all decimal digits to ASCII digits.
+   UParseError error;
+   icu::ErrorCode status;
+@@ -1778,7 +1802,7 @@
+   string number_copy(number);
+   string extension;
+   MaybeStripExtension(&number_copy, &extension);
+-  return RE2::FullMatch(number_copy, *valid_alpha_phone_pattern);
++  return valid_alpha_phone_pattern->Match(number_copy.c_str(), true, NULL);
+ }
+ 
+ void PhoneNumberUtil::ConvertAlphaCharactersInNumber(string* number) const {
+@@ -1798,7 +1822,7 @@
+ //   - Arabic-Indic numerals are converted to European numerals.
+ void PhoneNumberUtil::Normalize(string* number) const {
+   DCHECK(number);
+-  if (RE2::PartialMatch(*number, *valid_alpha_phone_pattern)) {
++  if (valid_alpha_phone_pattern->Match(number->c_str(), false, NULL)) {
+     NormalizeHelper(*all_normalization_mappings, true, number);
+   }
+   NormalizeDigitsOnly(number);
+@@ -1816,7 +1840,7 @@
+     logger->Debug("Number too short to be viable:" + number);
+     return false;
+   }
+-  return RE2::FullMatch(number, *valid_phone_number_pattern);
++  return valid_phone_number_pattern->Match(number.c_str(), true, NULL);
+ }
+ 
+ // Strips any international prefix (such as +, 00, 011) present in the number
+@@ -1836,17 +1860,20 @@
+   if (number->empty()) {
+     return PhoneNumber::FROM_DEFAULT_COUNTRY;
+   }
+-  StringPiece number_string_piece(*number);
+-  if (RE2::Consume(&number_string_piece, *plus_chars_pattern)) {
+-    number->assign(number_string_piece.ToString());
++  scoped_ptr<reg_exp::RegularExpressionInput> number_string_piece(
++      reg_exp::CreateRegularExpressionInput(number->c_str()));
++  if (plus_chars_pattern->Consume(number_string_piece.get(), true,
++                                  NULL, NULL)) {
++    number->assign(number_string_piece->ToString());
+     // Can now normalize the rest of the number since we've consumed the "+"
+     // sign at the start.
+     Normalize(number);
+     return PhoneNumber::FROM_NUMBER_WITH_PLUS_SIGN;
+   }
+   // Attempt to parse the first digits as an international prefix.
+-  RE2Cache::ScopedAccess idd_pattern(re2_cache.get(), possible_idd_prefix);
+-  if (ParsePrefixAsIdd(idd_pattern, number)) {
++  scoped_ptr<reg_exp::RegularExpression> idd_pattern(
++      reg_exp::CreateRegularExpression(possible_idd_prefix.c_str()));
++  if (ParsePrefixAsIdd(idd_pattern.get(), number)) {
+     Normalize(number);
+     return PhoneNumber::FROM_NUMBER_WITH_IDD;
+   }
+@@ -1854,7 +1881,7 @@
+   // This shouldn't be done before, since non-numeric characters (+ and ~) may
+   // legally be in the international prefix.
+   Normalize(number);
+-  return ParsePrefixAsIdd(idd_pattern, number)
++  return ParsePrefixAsIdd(idd_pattern.get(), number)
+       ? PhoneNumber::FROM_NUMBER_WITH_IDD
+       : PhoneNumber::FROM_DEFAULT_COUNTRY;
+ }
+@@ -1879,25 +1906,25 @@
+   }
+   // We use two copies here since Consume modifies the phone number, and if the
+   // first if-clause fails the number will already be changed.
+-  StringPiece number_copy(*number);
+-  StringPiece number_copy_without_transform(*number);
++  scoped_ptr<reg_exp::RegularExpressionInput> number_copy(
++      reg_exp::CreateRegularExpressionInput(number->c_str()));
++  scoped_ptr<reg_exp::RegularExpressionInput> number_copy_without_transform(
++      reg_exp::CreateRegularExpressionInput(number->c_str()));
++
+   string number_string_copy(*number);
+   string captured_part_of_prefix;
+-  RE2Cache::ScopedAccess national_number_rule(
+-      re2_cache.get(),
+-      metadata.general_desc().national_number_pattern());
++  scoped_ptr<reg_exp::RegularExpression> national_number_rule(
++      reg_exp::CreateRegularExpression(
++      metadata.general_desc().national_number_pattern().c_str()));
+   // Attempt to parse the first digits as a national prefix. We make a
+   // copy so that we can revert to the original string if necessary.
+   const string& transform_rule = metadata.national_prefix_transform_rule();
+   if (!transform_rule.empty() &&
+-      (RE2::Consume(&number_copy,
+-                    RE2Cache::ScopedAccess(re2_cache.get(),
+-                                           possible_national_prefix),
+-                    &carrier_code_temp, &captured_part_of_prefix) ||
+-       RE2::Consume(&number_copy,
+-                    RE2Cache::ScopedAccess(re2_cache.get(),
+-                                           possible_national_prefix),
+-                    &captured_part_of_prefix)) &&
++      (number_copy->ConsumeRegExp(possible_national_prefix, true,
++                                  &carrier_code_temp,
++                                  &captured_part_of_prefix) ||
++       number_copy->ConsumeRegExp(possible_national_prefix, true,
++                                  &captured_part_of_prefix, NULL)) &&
+       !captured_part_of_prefix.empty()) {
+     string re2_transform_rule(transform_rule);
+     TransformRegularExpressionToRE2Syntax(&re2_transform_rule);
+@@ -1905,29 +1932,27 @@
+     // have been some part of the prefix that we captured.
+     // We make the transformation and check that the resultant number is viable.
+     // If so, replace the number and return.
+-    RE2::Replace(&number_string_copy,
+-                 RE2Cache::ScopedAccess(re2_cache.get(),
+-                                        possible_national_prefix),
+-                 re2_transform_rule);
+-    if (RE2::FullMatch(number_string_copy, national_number_rule)) {
++    scoped_ptr<reg_exp::RegularExpression> possible_national_prefix_rule(
++        reg_exp::CreateRegularExpression(possible_national_prefix.c_str()));
++    possible_national_prefix_rule->Replace(&number_string_copy, false,
++                                           re2_transform_rule.c_str());
++    if (national_number_rule->Match(number_string_copy.c_str(), true, NULL)) {
+       number->assign(number_string_copy);
+       if (carrier_code) {
+         carrier_code->assign(carrier_code_temp);
+       }
+     }
+-  } else if (RE2::Consume(&number_copy_without_transform,
+-                          RE2Cache::ScopedAccess(re2_cache.get(),
+-                                                 possible_national_prefix),
+-                          &carrier_code_temp) ||
+-             RE2::Consume(&number_copy_without_transform,
+-                          RE2Cache::ScopedAccess(re2_cache.get(),
+-                                                 possible_national_prefix))) {
++  } else if (number_copy_without_transform->ConsumeRegExp(
++                 possible_national_prefix, true, &carrier_code_temp, NULL) ||
++             number_copy_without_transform->ConsumeRegExp(
++                 possible_national_prefix, true, NULL, NULL)) {
+     logger->Debug("Parsed the first digits as a national prefix.");
++    string unconsumed_part(number_copy_without_transform->ToString());
+     // If captured_part_of_prefix is empty, this implies nothing was captured by
+     // the capturing groups in possible_national_prefix; therefore, no
+     // transformation is necessary, and we just remove the national prefix.
+-    if (RE2::FullMatch(number_copy_without_transform, national_number_rule)) {
+-      number->assign(number_copy_without_transform.ToString());
++    if (national_number_rule->Match(unconsumed_part.c_str(), true, NULL)) {
++      number->assign(unconsumed_part);
+       if (carrier_code) {
+         carrier_code->assign(carrier_code_temp);
+       }
+@@ -1949,11 +1974,13 @@
+   string possible_extension_two;
+   string possible_extension_three;
+   string number_copy(*number);
+-  if (RE2::PartialMatch(number_copy, *extn_pattern,
+-                        &possible_extension_one, &possible_extension_two,
+-                        &possible_extension_three)) {
++  scoped_ptr<reg_exp::RegularExpressionInput> number_copy_regex_input(
++      reg_exp::CreateRegularExpressionInput(number_copy.c_str()));
++ if (extn_pattern->Consume(number_copy_regex_input.get(), false,
++                           &possible_extension_one, &possible_extension_two,
++                           &possible_extension_three)) {
+     // Replace the extensions in the original string here.
+-    RE2::Replace(&number_copy, *extn_pattern, "");
++    extn_pattern->Replace(&number_copy, false, "");
+     logger->Debug("Found an extension. Possible extension one: "
+             + possible_extension_one
+             + ". Possible extension two: " + possible_extension_two
+@@ -2061,25 +2088,29 @@
+                              &potential_national_number)) {
+       const PhoneNumberDesc& general_num_desc =
+           default_region_metadata->general_desc();
+-      RE2Cache::ScopedAccess valid_number_pattern(
+-          re2_cache.get(),
+-          general_num_desc.national_number_pattern());
++      scoped_ptr<reg_exp::RegularExpression> valid_number_pattern(
++          reg_exp::CreateRegularExpression(
++          general_num_desc.national_number_pattern().c_str()));
++
+       MaybeStripNationalPrefixAndCarrierCode(*default_region_metadata,
+                                              &potential_national_number,
+                                              NULL);
+       logger->Debug("Number without country code prefix: "
+               + potential_national_number);
+       string extracted_number;
+-      RE2Cache::ScopedAccess possible_number_pattern(
+-          re2_cache.get(),
+-          StrCat("(", general_num_desc.possible_number_pattern(), ")"));
++      scoped_ptr<reg_exp::RegularExpression> possible_number_pattern(
++          reg_exp::CreateRegularExpression(
++          StrCat("(", general_num_desc.possible_number_pattern(),
++                 ")").c_str()));
+       // If the number was not valid before but is valid now, or if it was too
+       // long before, we consider the number with the country code stripped to
+       // be a better result and keep that instead.
+-      if ((!RE2::FullMatch(*national_number, valid_number_pattern) &&
+-           RE2::FullMatch(potential_national_number, valid_number_pattern)) ||
+-           TestNumberLengthAgainstPattern(possible_number_pattern,
+-                                          *national_number)
++      if ((!valid_number_pattern->Match(national_number->c_str(),
++                                       true, NULL) &&
++           valid_number_pattern->Match(potential_national_number.c_str(),
++                                        true, NULL)) ||
++          TestNumberLengthAgainstPattern(possible_number_pattern.get(),
++                                         *national_number)
+                 == TOO_LONG) {
+         national_number->assign(potential_national_number);
+         if (keep_raw_input) {
+Index: regexp_adapter_unittest.cc
+===================================================================
+--- regexp_adapter_unittest.cc	(revision 0)
++++ regexp_adapter_unittest.cc	(revision 0)
+@@ -0,0 +1,142 @@
++// Copyright (C) 2011 Google Inc.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Author: George Yakovlev
++#include <gtest/gtest.h>
++
++#include "base/scoped_ptr.h"
++#include "regexp_adapter.h"
++
++namespace reg_exp {
++
++TEST(RegExpAdapter, TestConsumeRegExp) {
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp1(
++      reg_exp::CreateRegularExpression("[0-9a-z]+"));
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp2(
++      reg_exp::CreateRegularExpression(" \\(([0-9a-z]+)\\)"));
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp3(
++      reg_exp::CreateRegularExpression("([0-9a-z]+)-([0-9a-z]+)"));
++
++  scoped_ptr<reg_exp::RegularExpressionInput> reg_input1(
++      reg_exp::CreateRegularExpressionInput("+1-123-456-789"));
++  scoped_ptr<reg_exp::RegularExpressionInput> reg_input2(
++      reg_exp::CreateRegularExpressionInput("1 (123)456-789"));
++
++  EXPECT_FALSE(reg_exp1->Consume(reg_input1.get(), true, NULL, NULL));
++  EXPECT_EQ(reg_input1->ToString(), "+1-123-456-789");
++  EXPECT_TRUE(reg_exp1->Consume(reg_input1.get(), false, NULL, NULL));
++  EXPECT_EQ(reg_input1->ToString(), "-123-456-789");
++  std::string res1, res2;
++  EXPECT_FALSE(reg_exp2->Consume(reg_input1.get(), true, &res1, NULL));
++  EXPECT_FALSE(reg_exp3->Consume(reg_input1.get(), true, &res1, &res2));
++  EXPECT_TRUE(reg_exp3->Consume(reg_input1.get(), false, &res1, &res2));
++  EXPECT_EQ(reg_input1->ToString(), "-789");
++  EXPECT_EQ(res1, "123");
++  EXPECT_EQ(res2, "456");
++
++  EXPECT_EQ(reg_input2->ToString(), "1 (123)456-789");
++  EXPECT_TRUE(reg_exp1->Consume(reg_input2.get(), true, NULL, NULL));
++  EXPECT_EQ(reg_input2->ToString(), " (123)456-789");
++  EXPECT_TRUE(reg_exp2->Consume(reg_input2.get(), true, &res1, NULL));
++  EXPECT_EQ(reg_input2->ToString(), "456-789");
++  EXPECT_EQ(res1, "123");
++  EXPECT_TRUE(reg_exp3->Consume(reg_input2.get(), true, &res1, &res2));
++  EXPECT_EQ(reg_input2->ToString(), "");
++  EXPECT_EQ(res1, "456");
++  EXPECT_EQ(res2, "789");
++}
++
++TEST(RegExpAdapter, TestConsumeInput) {
++  scoped_ptr<reg_exp::RegularExpressionInput> reg_input(
++      reg_exp::CreateRegularExpressionInput("1 (123)456-789"));
++  std::string res1, res2;
++  EXPECT_EQ(reg_input->ToString(), "1 (123)456-789");
++  EXPECT_FALSE(reg_input->ConsumeRegExp(std::string("\\[1\\]"),
++                                        true,
++                                        &res1,
++                                        &res2));
++  EXPECT_EQ(reg_input->ToString(), "1 (123)456-789");
++  EXPECT_FALSE(reg_input->ConsumeRegExp(std::string("([0-9]+) \\([0-9]+\\)"),
++                                        true,
++                                        &res1,
++                                        &res2));
++  EXPECT_EQ(reg_input->ToString(), "1 (123)456-789");
++  EXPECT_TRUE(reg_input->ConsumeRegExp(std::string("([0-9]+) \\(([0-9]+)\\)"),
++                                        true,
++                                        &res1,
++                                        &res2));
++  EXPECT_EQ(reg_input->ToString(), "456-789");
++  EXPECT_EQ(res1, "1");
++  EXPECT_EQ(res2, "123");
++}
++
++TEST(RegExpAdapter, TestMatch) {
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp(
++      reg_exp::CreateRegularExpression("([0-9a-z]+)"));
++  std::string matched;
++  EXPECT_TRUE(reg_exp->Match("12345af", true, &matched));
++  EXPECT_EQ(matched, "12345af");
++  EXPECT_TRUE(reg_exp->Match("12345af", false, &matched));
++  EXPECT_EQ(matched, "12345af");
++  EXPECT_TRUE(reg_exp->Match("12345af", false, NULL));
++  EXPECT_TRUE(reg_exp->Match("12345af", true, NULL));
++
++  EXPECT_FALSE(reg_exp->Match("[12]", true, &matched));
++  EXPECT_TRUE(reg_exp->Match("[12]", false, &matched));
++  EXPECT_EQ(matched, "12");
++
++  EXPECT_FALSE(reg_exp->Match("[]", true, &matched));
++  EXPECT_FALSE(reg_exp->Match("[]", false, &matched));
++}
++
++TEST(RegExpAdapter, TestReplace) {
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp(
++      reg_exp::CreateRegularExpression("[0-9]"));
++
++  std::string s("123-4567 ");
++  EXPECT_TRUE(reg_exp->Replace(&s, false, "+"));
++  EXPECT_EQ(s, "+23-4567 ");
++  EXPECT_TRUE(reg_exp->Replace(&s, false, "+"));
++  EXPECT_EQ(s, "++3-4567 ");
++  EXPECT_TRUE(reg_exp->Replace(&s, true, "*"));
++  EXPECT_EQ(s, "++*-**** ");
++  EXPECT_TRUE(reg_exp->Replace(&s, true, "*"));
++  EXPECT_EQ(s, "++*-**** ");
++
++  scoped_ptr<const reg_exp::RegularExpression> full_number_expr(
++      reg_exp::CreateRegularExpression("(\\d{3})(\\d{3})(\\d{4})"));
++  s = "1234567890:0987654321";
++  EXPECT_TRUE(full_number_expr->Replace(&s, true, "(\\1) \\2-\\3$1"));
++  EXPECT_EQ(s, "(123) 456-7890$1:(098) 765-4321$1");
++}
++
++TEST(RegExpAdapter, TestUtf8) {
++  // Expression: <tel symbol><opening square bracket>[<alpha>-<omega>]*
++  // <closing square bracket>
++  scoped_ptr<const reg_exp::RegularExpression> reg_exp(
++      reg_exp::CreateRegularExpression(
++      "\xe2\x84\xa1\xe2\x8a\x8f([\xce\xb1-\xcf\x89]*)\xe2\x8a\x90"));
++  std::string matched;
++  // The string is split to avoid problem with MSVC compiler when it thinks
++  // 123 is a part of character code.
++  EXPECT_FALSE(reg_exp->Match("\xe2\x84\xa1\xe2\x8a\x8f" "123\xe2\x8a\x90",
++                              true, &matched));
++  EXPECT_TRUE(reg_exp->Match(
++      "\xe2\x84\xa1\xe2\x8a\x8f\xce\xb1\xce\xb2\xe2\x8a\x90", true, &matched));
++  // <alpha><betha>
++  EXPECT_EQ(matched, "\xce\xb1\xce\xb2");
++}
++
++}  // namespace reg_exp
++
+
+Property changes on: regexp_adapter_unittest.cc
+___________________________________________________________________
+Added: svn:eol-style
+   + LF
+

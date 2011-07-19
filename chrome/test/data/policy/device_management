@@ -1,0 +1,12 @@
+{
+  "google/chromeos/user": {
+    "mandatory": {
+      "HomepageLocation" : "http://www.chromium.org"
+    },
+    "recommended": {
+    }
+  },
+  "managed_users": [
+    "*"
+  ]
+}

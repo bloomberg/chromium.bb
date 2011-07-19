@@ -1,0 +1,90 @@
+<script>
+(function () {
+// Contains the latest snapshot of sync about info.
+chrome.sync.aboutInfo = {};
+
+// TODO(akalin): Make aboutInfo have key names likeThis and not
+// like_this.
+function refreshAboutInfo(aboutInfo) {
+  chrome.sync.aboutInfo = aboutInfo;
+  var aboutInfoDiv = document.getElementById('aboutInfo');
+  jstProcess(new JsEvalContext(aboutInfo), aboutInfoDiv);
+}
+
+function onLoad() {
+  chrome.sync.getAboutInfo(refreshAboutInfo);
+  chrome.sync.onServiceStateChanged.addListener(function() {
+    chrome.sync.getAboutInfo(refreshAboutInfo);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", onLoad, false);
+})();
+</script>
+
+<style>
+div.column {
+  display: inline-block;
+  padding-right: 5em;
+  vertical-align: top;
+}
+
+div#aboutInfo h2 {
+  color: #4a8ee6;
+  font-size: 100%;
+}
+
+div#aboutInfo .err {
+  color: red;
+}
+
+table#aboutDetails tr:nth-child(odd) {
+  background: #eff3ff;
+}
+
+table#routingInfo tr:nth-child(odd) {
+  background: #ccffcc;
+}
+</style>
+
+<div id='aboutInfo'>
+<div class="column">
+  <h2>Summary</h2>
+  <p jscontent="summary"/>
+  <p jsdisplay="unrecoverable_error_detected">
+    <span class="err" jscontent="unrecoverable_error_message"></span>
+  </p>
+
+  <h2>Sync URL</h2>
+  <p jscontent="service_url"/>
+
+  <h2>Details</h2>
+  <table id="aboutDetails">
+    <tr>
+      <td>Authenticated</td>
+      <td>
+        <span jscontent="authenticated"></span>
+        <span jsdisplay="!authenticated" class="err" jscontent="auth_problem"></span>
+      </td>
+    </tr>
+    <tr>
+      <td>Last Synced</td>
+      <td jscontent="time_since_sync"/>
+    </tr>
+    <tr jsselect="details">
+      <td jscontent="stat_name"/>
+      <td jscontent="stat_value"/>
+    </tr>
+  </table>
+</div>
+
+<div class="column">
+  <h2>Routing Info</h2>
+  <table id="routingInfo">
+    <tr jsselect="routing_info">
+      <td jscontent="model_type"/>
+      <td jscontent="group"/>
+    </tr>
+  </table>
+</div>
+</div>

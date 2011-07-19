@@ -1,0 +1,10 @@
+{
+   "content_scripts": [ {
+      "js": [ "script.js" ],
+      "matches": [ "file://*", "http://*/*" ]
+   } ],
+   "description": "test8",
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCuuuaBElvU9XfeQLZ+w7YijIjQ/UOtUCzPApLZ1jurBC2BtTKVffL/ZzBEjGeYJZGqrbYeXxoIuM++UlWTGwxeOhGyO3zE0qgqlx9C8ufgaFAXY+fnLXnsrN18UupRGesuvmBEfvI0Lgp0fMKgAFBd5AEwdsrTLqkNK0pkGelEHwIDAQAB",
+   "name": "test8",
+   "version": "1.0"
+}

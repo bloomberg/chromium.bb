@@ -1,0 +1,5 @@
+{
+  "name": "permissions",
+  "version": "0.1",
+  "permissions": ["unlimitedStorage", "notifications", "http://*/*"]
+}

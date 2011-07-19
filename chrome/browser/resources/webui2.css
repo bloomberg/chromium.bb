@@ -1,0 +1,31 @@
+body {
+  background-color:white;
+  color:black;
+  margin:10px;
+}
+.header {
+  overflow:auto;
+  clear:both;
+}
+.header .logo {
+  float:left;
+}
+.header .form {
+  float:left;
+  margin-top:22px;
+  -webkit-margin-start:12px;
+}
+html[dir='rtl'] .logo {
+  float:right;
+}
+html[dir='rtl'] .form {
+  float:right;
+}
+.page-navigation {
+  padding:8px;
+  background-color:#ebeff9;
+  margin-right:4px;
+}
+.footer {
+  height:24px;
+}

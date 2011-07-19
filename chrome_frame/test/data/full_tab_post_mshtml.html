@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>FullTab mode POST test</title>
+  </head>
+
+  <script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+
+  <script type="text/javascript">
+    function onLoad() {
+      if (isRunningInChrome()) {
+        location.href = "/quit?unexpectedly_running_in_chrome";
+      } else {
+        document.getElementById("myform").submit();
+      }
+    }
+  </script>
+
+  <body onload="setTimeout(onLoad, 100);">
+    <form id="myform" action="full_tab_post_target_cf.html" method="POST">
+      Field nr 1: <input type="text" name="field1" value="test1"/><br/>
+      Field nr 2: <input type="text" name="field1" value="test2"/><br/>
+      <input type="submit" value="Submit"/>
+    </form>
+  </body>
+</html>

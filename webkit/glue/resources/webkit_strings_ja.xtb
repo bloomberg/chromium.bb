@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ja">
+<translation id="4519964825805946997"><ph name="URL"/> からプラグインをインストールできませんでした</translation>
+<translation id="9186171386827445984">ドキュメントの読み込み中: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ページ...</translation>
+<translation id="1235745349614807883">最近の検索履歴を消去</translation>
+<translation id="1171774979989969504">メール アドレスを入力してください。</translation>
+<translation id="709897737746224366">指定されている形式で入力してください。</translation>
+<translation id="5048533449481078685">リスト マーカー</translation>
+<translation id="372362261556059955">追加のプラグインが必要です</translation>
+<translation id="4202807286478387388">ジャンプ</translation>
+<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="7658239707568436148">キャンセル</translation>
+<translation id="795667975304826397">選択されていません</translation>
+<translation id="1416462845279468967">プラグインをインストールできませんでした</translation>
+<translation id="8141602879876242471">このインデックスは検索できます。キーワードを入力してください:</translation>
+<translation id="5650795167354946011">プラグインをインストールした後は、ここをクリックして更新を行ってください</translation>
+<translation id="370665806235115550">読み込み中...</translation>
+<translation id="6845533974506654842">押す</translation>
+<translation id="8244226242650769279">イメージ マップ</translation>
+<translation id="310520048233152454">URL を入力してください。</translation>
+<translation id="2548326553472216322">最近の検索はありません</translation>
+<translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
+<translation id="5164977714490026579">値は <ph name="MINIMUM"/> 以上にする必要があります。</translation>
+<translation id="5944544982112848342">2048 (高)</translation>
+<translation id="3040011195152428237">リンク</translation>
+<translation id="2745343197843472802">プラグインをダウンロード</translation>
+<translation id="8451268428117625855">ファイルを選択してください。</translation>
+<translation id="5776402066334188252">このプラグインをインストールしてもよいかご確認ください。信頼できるプラグインのみをインストールする必要があります。</translation>
+<translation id="3018094406922859308">プラグインをダウンロードしています...</translation>
+<translation id="7364796246159120393">ファイルを選択</translation>
+<translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
+<translation id="8964020114565522021">ファイルをここにドラッグ</translation>
+<translation id="5129723458012748440"><ph name="PLUGIN"/> プラグインがインストールされていません。</translation>
+<translation id="838869780401515933">チェックを付ける</translation>
+<translation id="2846343701378493991">1024 (中)</translation>
+<translation id="5476505524087279545">チェックを外す</translation>
+<translation id="3789841737615482174">インストール</translation>
+<translation id="2507943997699731163">このフィールドを入力してください。</translation>
+<translation id="5253117816378681419">この <ph name="PLUGIN"/> プラグインをインストールしてもよいかご確認ください。信頼できるプラグインのみをインストールする必要があります。</translation>
+<translation id="6663448176199120256">最近の検索</translation>
+<translation id="7335060848622232389">プラグインのインストールが無効になっています。</translation>
+<translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
+<translation id="5466621249238537318">1 つ以上のファイルを選択してください。</translation>
+<translation id="8750798805984357768">これらのオプションから 1 つ選択してください。</translation>
+<translation id="7740050170769002709">HTML コンテンツ</translation>
+<translation id="2226276347425096477">このテキストを半角 <ph name="MAX_CHARACTERS"/> 文字以下にしてください（現時点で半角 <ph name="CURRENT_LENGTH"/> 文字です）。</translation>
+<translation id="1639239467298939599">読み込み中</translation>
+<translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
+<translation id="5939518447894949180">リセット</translation>
+<translation id="835897206747267392">値が無効です。</translation>
+<translation id="3851140433852960970">このコンテンツの表示に使用できるプラグインはありません。</translation>
+<translation id="1842960171412779397">選択</translation>
+<translation id="3450233048674729344">値は <ph name="MAXIMUM"/> 以下にする必要があります。</translation>
+<translation id="9198010615634362518">必要なプラグインがインストールされていません。</translation>
+<translation id="7638452146404718955">ここをクリックしてプラグインをダウンロード</translation>
+<translation id="6119846243427417423">アクティブにする</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ファイル</translation>
+<translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
+<translation id="8597182159515967513">見出し</translation>
+<translation id="2653659639078652383">送信</translation>
+<translation id="8475551193147984329"><ph name="PLUGIN"/> プラグインが必要です</translation>
+</translationbundle>

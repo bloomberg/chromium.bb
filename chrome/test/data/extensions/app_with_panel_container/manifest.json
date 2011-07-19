@@ -1,0 +1,13 @@
+{
+  "name": "App Test: panel container",
+  "version": "1",
+  "permissions": [
+    "notifications"
+  ],
+  "app": {
+    "launch": {
+      "local_path": "empty.html",
+      "container": "panel"
+    }
+  }
+}

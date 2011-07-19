@@ -1,0 +1,12 @@
+{
+  "name": "New tab override test",
+  "version": "0.1",
+  "description": "Test chrome://newtab override",
+  "background_page": "background.html",
+  "permissions": [ 
+    "tabs"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  }
+}

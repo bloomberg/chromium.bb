@@ -1,0 +1,11 @@
+<script src="common.js"></script>
+<script>
+// This tests that a call to completeInstall without a previous call to begin
+// generates an error.
+chrome.webstorePrivate.completeInstall(extension_id, function() {
+  var expected_error = extension_id +
+                       " does not match a previous call to beginInstall";
+  chrome.test.assertEq(chrome.extension.lastError.message, expected_error);
+  chrome.test.succeed();
+});
+</script>

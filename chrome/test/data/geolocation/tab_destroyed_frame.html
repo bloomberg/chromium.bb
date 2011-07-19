@@ -1,0 +1,55 @@
+<html>
+ <head>
+  <script>
+    var last_position = 0;
+    var last_error = 0;
+    var watch_id = 0;
+    var navigation_count = 0;
+    var max_navigation_count = undefined;
+    var iteration = 0;
+    function geoNavigateIfNeeded(msg) {
+      if (max_navigation_count == undefined ||
+          navigation_count++ < max_navigation_count) {
+        ++iteration;
+        document.location.hash = '#' + iteration + ':' + msg;
+      }
+    }
+    function geoSuccessCallback(position) {
+      last_position = position;
+      geoNavigateIfNeeded('geoSuccessCallback');
+    }
+    function geoErrorCallback(error) {
+      last_error = error;
+      geoNavigateIfNeeded('geoErrorCallback');
+    }
+    function geoStart() {
+      watch_id = navigator.geolocation.watchPosition(
+          geoSuccessCallback, geoErrorCallback,
+          {maximumAge:600000, timeout:100000, enableHighAccuracy:true});
+      geoNavigateIfNeeded('geoStart');
+      return watch_id;
+    }
+    function geoGetLastPositionLatitude() {
+      return "" + last_position.coords.latitude;
+    }
+    function geoGetLastPositionLongitude() {
+      return "" + last_position.coords.longitude;
+    }
+    function geoGetLastError() {
+      return "" + (last_error ? last_error.code : 0);
+    }
+    function geoSetMaxNavigateCount(max_navigations) {
+      navigation_count = 0;
+      max_navigation_count = max_navigations;
+      return "" + max_navigation_count;
+    }
+    function geoAccessNavigatorGeolocation() {
+      return "" + typeof(navigator.geolocation);
+    }
+  </script>
+ </head>
+ <body>
+ <input type="button" value="manual" onclick="geoStart()"/>
+ </body>
+</html>
+

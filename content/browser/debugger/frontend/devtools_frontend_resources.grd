@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit current_release="1" latest_public_release="0">
+  <outputs>
+    <output filename="grit/devtools_frontend_resources.h"
+            type="rc_header">
+      <emit emit_type="prepend"/>
+    </output>
+    <output filename="grit/devtools_frontend_resources_map.cc"
+            type="resource_file_map_source"/>
+    <output filename="grit/devtools_frontend_resources_map.h"
+            type="resource_map_header"/>
+    <output filename="devtools_frontend_resources.pak"
+            type="data_package"/>
+  </outputs>
+  <release seq="1">
+    <includes>
+      <include file="devtools_frontend.html"
+               name="IDR_DEVTOOLS_FRONTEND_HTML"
+               type="BINDATA"/></includes>
+  </release>
+</grit>

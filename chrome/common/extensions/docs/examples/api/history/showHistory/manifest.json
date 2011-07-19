@@ -1,0 +1,10 @@
+{
+  "name": "Typed URL History",
+  "version": "1.0",
+  "description": "Reads your history, and shows the top ten pages you go to by typing the URL.",
+  "permissions": ["history", "tabs"],
+  "browser_action": {
+    "default_popup": "typedUrls.html",
+    "default_icon": "clock.png"
+  }
+}

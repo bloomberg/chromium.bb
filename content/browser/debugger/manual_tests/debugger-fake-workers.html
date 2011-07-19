@@ -1,0 +1,102 @@
+<html>
+<body onload="onLoad()">
+<script>
+
+function log(message) {
+  var div = document.createElement('div');
+  div.innerText = message;
+  document.getElementById('console').appendChild(div);
+}
+
+function strike(id) {
+  document.getElementById(id).style.textDecoration = "line-through"
+}
+
+function onLoad() {
+  if (!Worker.prototype.postMessage) { // fake workers
+      strike('s1');
+      strike('s2');
+      log('[using fake workers]');
+  } else {
+      log('[using real workers]');
+  }
+}
+
+var primeWorker;
+var invalidWorker;
+var count;
+var timer;
+
+function startWorkers() {
+  startButton.disabled = true;
+
+  primeWorker = new Worker('resources/worker-primes.js');                         	
+  primeWorker.onmessage = onMessage;
+  primeWorker.onerror = onError;
+  primeWorker.postMessage(2);
+  count = 3;
+
+  timer = setInterval(onTimer, 1000);
+  try {
+    invalidWorker = new Worker('non-existent-worker.js');
+  } catch(e) {
+  }
+  log('Started worker');
+}
+
+function onTimer() {
+  primeWorker.postMessage(count);
+  count+=2;
+}
+
+function onMessage(event) {
+  if (event.data[1]) {
+    log(event.data[0]);
+    if (event.data[0] === 5)
+      strike('s6');
+  }
+}
+
+function onError(event) {
+  log('Error in worker: ' + event.message);
+  strike('s8');
+}
+
+function causeError() {
+  primeWorker.postMessage('forty two');
+}
+
+function stopWorker() {
+  log('Stopping worker...');
+  if (timer) {
+    clearInterval(timer);
+    timer = 0;
+  }
+  primeWorker.terminate();
+  startButton.disabled = false;
+}
+
+</script>
+
+<h1>Tests debugging of HTML5 Workers</h1>
+
+<ol>
+
+<li id="s1">Open DevTools, Scripts Panel; Tick Debug on Workers sidebar.</li>
+<li id="s2">Reload the page.</li>
+<li id="s3"><button onclick="startWorkers()" id="startButton">Start Worker</button></li>
+<li id="s4">Observe 2 workers appear in the worker sidebar pane (including non-existent-worker.js)"</li>
+<li id="s5">Observe worker-primes.js and primes.js appear in scripts drop-down box.</li>
+<li id="s6">Assure primes are being logged to test console below.</li>
+<li id="s7">Set a breakpoint on one of worker scripts, assure it's hit.</li>
+<li id="s8">Try causing an error in worker, observe it's logged in DevTools console and in test console below.
+  <button onclick="causeError()">Cause Error</button>
+<li id="s9"><button onclick="stopWorker()">Stop Worker</button></li>
+
+</ol>
+
+<div id="console" style="font-family: courier; background-color: black; color: green; width: 80em; height: 25em; overflow: scroll">
+</div>
+
+</body>
+</html>

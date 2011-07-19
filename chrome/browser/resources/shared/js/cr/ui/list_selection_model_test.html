@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+
+</style>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="../../cr.js"></script>
+<script src="../event_target.js"></script>
+<script src="list_selection_model.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+
+</head>
+<body>
+
+<script>
+
+function range(start, end) {
+  var a = [];
+  for (var i = start; i <= end; i++) {
+    a.push(i);
+  }
+  return a;
+}
+
+function createSelectionModel(len) {
+  return new cr.ui.ListSelectionModel(len);
+}
+
+function testAdjust1() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 100;
+  sm.adjust(0, 10, 0);
+
+  assertEquals(90, sm.leadIndex);
+  assertEquals(90, sm.anchorIndex);
+  assertEquals(90, sm.selectedIndex);
+}
+
+function testAdjust2() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 50;
+  sm.adjust(60, 10, 0);
+
+  assertEquals(50, sm.leadIndex);
+  assertEquals(50, sm.anchorIndex);
+  assertEquals(50, sm.selectedIndex);
+}
+
+function testAdjust3() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 100;
+  sm.adjust(0, 0, 10);
+
+  assertEquals(110, sm.leadIndex);
+  assertEquals(110, sm.anchorIndex);
+  assertEquals(110, sm.selectedIndex);
+}
+
+function testAdjust4() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = 100;
+  sm.selectRange(100, 110);
+
+  sm.adjust(0, 10, 5);
+
+  assertEquals(95, sm.leadIndex);
+  assertEquals(95, sm.anchorIndex);
+  assertArrayEquals(range(95, 105), sm.selectedIndexes);
+}
+
+function testAdjust5() {
+  var sm = createSelectionModel(100);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 99;
+
+  sm.adjust(99, 1, 0);
+
+  assertEquals('lead', 98, sm.leadIndex);
+  assertEquals('anchor', 98, sm.anchorIndex);
+  assertArrayEquals([], sm.selectedIndexes);
+}
+
+function testAdjust6() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = 105;
+  sm.selectRange(100, 110);
+
+  // Remove 100 - 105
+  sm.adjust(100, 5, 0);
+
+  assertEquals('lead', 100, sm.leadIndex);
+  assertEquals('anchor', 100, sm.anchorIndex);
+  assertArrayEquals(range(100, 105), sm.selectedIndexes);
+}
+
+function testAdjust7() {
+  var sm = createSelectionModel(1);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 0;
+
+  sm.adjust(0, 0, 10);
+
+  assertEquals('lead', 10, sm.leadIndex);
+  assertEquals('anchor', 10, sm.anchorIndex);
+  assertArrayEquals([10], sm.selectedIndexes);
+}
+
+function testAdjust8() {
+  var sm = createSelectionModel(100);
+
+  sm.leadIndex = sm.anchorIndex = 50;
+  sm.selectAll();
+
+  sm.adjust(10, 80, 0);
+
+  assertEquals('lead', 10, sm.leadIndex);
+  assertEquals('anchor', 10, sm.anchorIndex);
+  assertArrayEquals(range(0, 19), sm.selectedIndexes);
+}
+
+function testAdjust9() {
+  var sm = createSelectionModel(10);
+
+  sm.leadIndex = sm.anchorIndex = 5;
+  sm.selectAll();
+
+  // Remove all
+  sm.adjust(0, 10, 0);
+
+  assertEquals('lead', -1, sm.leadIndex);
+  assertEquals('anchor', -1, sm.anchorIndex);
+  assertArrayEquals([], sm.selectedIndexes);
+}
+
+function testAdjust10() {
+  var sm = createSelectionModel(10);
+
+  sm.leadIndex = sm.anchorIndex = 5;
+  sm.selectAll();
+
+  sm.adjust(0, 10, 20);
+
+  assertEquals('lead', 0, sm.leadIndex);
+  assertEquals('anchor', 0, sm.anchorIndex);
+  assertArrayEquals([], sm.selectedIndexes);
+}
+
+function testAdjust11() {
+  var sm = createSelectionModel(20);
+
+  sm.leadIndex = sm.anchorIndex = 10;
+  sm.selectAll();
+
+  sm.adjust(5, 20, 10);
+
+  assertEquals('lead', 5, sm.leadIndex);
+  assertEquals('anchor', 5, sm.anchorIndex);
+  assertArrayEquals(range(0, 4), sm.selectedIndexes);
+}
+
+</script>
+
+</body>
+</html>

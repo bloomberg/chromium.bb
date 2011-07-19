@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sr">
+<translation id="4519964825805946997">Инсталирање додатне компоненте са <ph name="URL"/> није успело</translation>
+<translation id="9186171386827445984">Учитавање документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> странице(а)...</translation>
+<translation id="1235745349614807883">Обриши недавне претраге</translation>
+<translation id="1171774979989969504">Унесите адресу е-поште.</translation>
+<translation id="709897737746224366">Изаберите захтевани формат.</translation>
+<translation id="5048533449481078685">означивач листе</translation>
+<translation id="372362261556059955">Потребна је још једна додатна компонента</translation>
+<translation id="4202807286478387388">прескочи</translation>
+<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="7658239707568436148">Откажи</translation>
+<translation id="795667975304826397">Није одабрано</translation>
+<translation id="1416462845279468967">Инсталација додатне компоненте није успела</translation>
+<translation id="8141602879876242471">Ово је индекс који може да се претражује. Унесите кључне речи за претрагу:</translation>
+<translation id="5650795167354946011">Након инсталирања додатне компоненте, кликните овде да бисте освежили</translation>
+<translation id="370665806235115550">Учитавање...</translation>
+<translation id="6845533974506654842">притисни</translation>
+<translation id="8244226242650769279">мапа слике</translation>
+<translation id="310520048233152454">Унесите URL адресу.</translation>
+<translation id="2548326553472216322">Нема недавних претрага</translation>
+<translation id="7263440858009898357">Изаберите ставку са листе.</translation>
+<translation id="5164977714490026579">Вредност сме да буде најмање <ph name="MINIMUM"/>.</translation>
+<translation id="5944544982112848342">2048 (високи степен)</translation>
+<translation id="3040011195152428237">веза</translation>
+<translation id="2745343197843472802">Преузми додатну компоненту</translation>
+<translation id="8451268428117625855">Изаберите датотеку.</translation>
+<translation id="5776402066334188252">Потврдите да желите да инсталирате ову додатну компоненту. Инсталирајте само додатне компоненте у које имате поверења.</translation>
+<translation id="3018094406922859308">Преузимање додатних компоненти...</translation>
+<translation id="7364796246159120393">Одабери датотеку</translation>
+<translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
+<translation id="8964020114565522021">Превуците датотеку овде</translation>
+<translation id="5129723458012748440">Додатак <ph name="PLUGIN"/> није инсталиран.</translation>
+<translation id="838869780401515933">изабери</translation>
+<translation id="2846343701378493991">1024 (средњи степен)</translation>
+<translation id="5476505524087279545">опозови избор</translation>
+<translation id="3789841737615482174">Инсталирај</translation>
+<translation id="2507943997699731163">Попуните ово поље.</translation>
+<translation id="5253117816378681419">Потврдите да желите да инсталирате <ph name="PLUGIN"/> додатну компоненту. Инсталирајте само додатне компоненте у које имате поверења.</translation>
+<translation id="6663448176199120256">Недавне претраге</translation>
+<translation id="7335060848622232389">Инсталација додатних компоненти је онемогућена.</translation>
+<translation id="2597378329261239068">Овај документ је заштићен лозинком. Унесите лозинку.</translation>
+<translation id="5466621249238537318">Изаберите једну или више датотека.</translation>
+<translation id="8750798805984357768">Изаберите неку од ових опција.</translation>
+<translation id="7740050170769002709">HTML садржај</translation>
+<translation id="2226276347425096477">Скратите овај текст на <ph name="MAX_CHARACTERS"/> знак(ов)а или мање (тренутно користите <ph name="CURRENT_LENGTH"/> знак(ов)а).</translation>
+<translation id="1639239467298939599">Учитавање</translation>
+<translation id="2908441821576996758">Унесите листу адреса е-поште раздвојених зарезима.</translation>
+<translation id="5939518447894949180">Ресетуј</translation>
+<translation id="835897206747267392">Неважећа вредност.</translation>
+<translation id="3851140433852960970">Нема доступног додатка за приказивање овог садржаја.</translation>
+<translation id="1842960171412779397">изабери</translation>
+<translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Потребнa додатна компонента није инсталирана.</translation>
+<translation id="7638452146404718955">Кликните овде да бисте преузели додатну компоненту</translation>
+<translation id="6119846243427417423">активирај</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> датотеке(а)</translation>
+<translation id="3934680773876859118">Учитавање PDF документа није успело</translation>
+<translation id="8597182159515967513">наслов</translation>
+<translation id="2653659639078652383">Пошаљи</translation>
+<translation id="8475551193147984329">Потребна је <ph name="PLUGIN"/> додатна компонента</translation>
+</translationbundle>

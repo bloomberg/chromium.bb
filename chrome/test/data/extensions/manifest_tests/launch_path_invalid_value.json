@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "local_path": "http://www.google.com/"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <script>
+      chrome.tabs.getSelected(null, function(tab) {
+        chrome.test.notifyPass();
+      });
+    </script>
+  </body>
+</html>

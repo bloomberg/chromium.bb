@@ -1,0 +1,13 @@
+{
+  "name": "connect_external",
+  "version": "1.0",
+  "description": "Tests connect from a content script.",
+  "permissions": ["tabs"],
+  "background_page": "test.html",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*"],
+      "js": ["page.js"]
+    }
+  ]
+}

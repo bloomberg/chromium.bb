@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Single Worker Test</title>
+
+<script src="worker_utils.js"></script>
+
+<script>
+var workers = [];
+function startAndTerminateWorkers() {
+  var terminateCount = 0;
+  for (var i = 0 ; i < 200 ; i++) {
+    var w = new Worker("worker_common.js");
+    workers.push(w);
+    w.postMessage("ping");
+    w.onmessage = function() {
+      terminateCount++;
+      if (terminateCount == 16) {
+        shutdownWorkers();
+      }
+      if (terminateCount > 16) {
+        // Should not get more than 16 messages back unless we raise the worker
+        // limit.
+        onFailure();
+      }
+    }
+  }
+}
+
+function shutdownWorkers() {
+  for (var i = 0 ; i < workers.length ; i++) {
+    workers[i].terminate();
+  }
+  workers = [];
+  onSuccess();
+}
+
+startAndTerminateWorkers();
+</script>
+
+<body>
+<div id=statusPanel></div>
+</body>

@@ -1,0 +1,13 @@
+{
+  "name": "My Bookmarks",
+  "version": "1.0",
+  "description": "A browser action with a popup dump of all bookmarks, including search, add, edit and delete.",
+  "permissions": [
+    "bookmarks", "tabs"
+  ],
+  "browser_action": {
+      "default_title": "My Bookmarks.",
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+  }
+}

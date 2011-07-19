@@ -1,0 +1,19 @@
+<html>
+<head><title>Target page for validating referrers in URL requests issued by <br />
+plugins
+</title>
+
+<script src="npapi.js"></script>
+
+<script>
+function onLoad() {
+  if (document.referrer == "http://mock.http/dummy_plugin_referrer")
+    onSuccess("plugin_referrer_test", 1);
+  else
+    onFailure("plugin_referrer_test", 1, "Unexpected referrer value");
+}
+</script>
+</head>
+
+<body onload="onLoad()">Plugin referrer test page.</body>
+</html>

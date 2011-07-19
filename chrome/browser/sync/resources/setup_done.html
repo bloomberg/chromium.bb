@@ -1,0 +1,69 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body {
+  background: #FFFFFF;
+  font-size: 11pt;
+  line-height: 1.5em;
+  margin: 10px 15px;
+  -webkit-user-select: none;
+}
+.sync-header {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.sync-success-image {
+  text-align: center;
+  margin: 20px;
+}
+#user {
+  font-weight: bold;
+}
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
+}
+
+</style>
+<script>
+  function setShowFirstTimeSetupSummary() {
+    // TODO(hclam): Show the information for the first time setup.
+  }
+  function setSyncedToUser(synced_to) {
+    document.getElementById('user').innerHTML = synced_to;
+  }
+  function onPageShown() {
+    document.getElementById("close").focus();
+  }
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily">
+  <div class="sync-header" i18n-content="success"></div>
+  <div class="sync-success-image">
+    <img src="success-large.png" />
+  </div>
+  <div id="user"></div>
+  <div id="summary" i18n-content="setupsummary"></div>
+  <div class="sync-footer">
+    <input id="close" type="submit" i18n-values="value:okay"
+           onclick='chrome.send("DialogClose", [""])' />
+  </div>
+</body>
+</html>

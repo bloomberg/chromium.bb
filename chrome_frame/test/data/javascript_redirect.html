@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      window.onload = function() {
+        var url = "" + window.location;
+        window.location = url.substring(0, url.lastIndexOf("/") + 1) +
+            "simple.html";
+      }
+    </script>
+  </head>
+</html>

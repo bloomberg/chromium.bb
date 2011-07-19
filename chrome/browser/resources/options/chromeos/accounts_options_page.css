@@ -1,0 +1,87 @@
+.user-list-table {
+  border: 1px solid lightgrey;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.user-name-edit-row {
+  border: 1px solid lightgrey;
+  background-color: #ebeffa;
+  padding: 5px;
+}
+
+.user-list-item {
+  padding: 2px;
+}
+
+.user-icon {
+  border: 1px solid black;
+  width: 26px;
+  height: 26px;
+}
+
+.user-email-label {
+  -webkit-margin-start: 10px;
+}
+
+.user-name-label {
+  color: darkgray;
+  -webkit-margin-start: 10px;
+}
+
+.user-email-name-block {
+  -webkit-box-flex: 1;
+  max-width: 318px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-user-button {
+  background-image: url(chrome://theme/IDR_CLOSE_BAR);
+  width: 16px;
+  height: 16px;
+}
+
+.remove-user-button:hover {
+  background-image: url(chrome://theme/IDR_CLOSE_BAR_H);
+}
+
+#userList {
+  padding: 5px;
+  width: 366px;
+  height: 166px;
+}
+
+#userList[disabled],
+#userList[disabled] > [selected],
+#userList[disabled] > :hover {
+  border-color: hsl(0, 0%, 85%);
+}
+
+#userList[disabled] > [selected],
+#userList[disabled] > :hover {
+  background-color: hsl(0,0%,90%);
+}
+
+#userList[disabled] .remove-user-button {
+  visibility: hidden;
+}
+
+#userNameEdit {
+  border: 1px solid lightgrey;
+  width: 366px;
+}
+
+#ownerOnlyWarning {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 1px;
+  -webkit-padding-start: 20px;
+  background-repeat: no-repeat;
+  background-image: url('warning.png');
+}
+
+input#userNameEdit:invalid {
+  background-color: #ff6666;
+}

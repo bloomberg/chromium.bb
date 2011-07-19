@@ -1,0 +1,48 @@
+<p>
+An <code>Event</code> is an object
+that allows you to be notified
+when something interesting happens.
+Here's an example of using the
+<code>chrome.tabs.onCreated</code> event
+to be notified whenever there's a new tab:
+</p>
+
+<pre>
+chrome.tabs.onCreated.<b>addListener(function(</b>tab<b>) {</b>
+  appendToLog('tabs.onCreated --'
+              + ' window: ' + tab.windowId
+              + ' tab: '    + tab.id
+              + ' index: '  + tab.index
+              + ' url: '    + tab.url);
+<b>});</b>
+</pre>
+
+<p>
+As the example shows,
+you register for notification using <code>addListener()</code>.
+The argument to <code>addListener()</code>
+is always a function that you define to handle the event,
+but the parameters to the function depend on
+which event you're handling.
+Checking the documentation for
+<a href="tabs.html#event-onCreated"><code>chrome.tabs.onCreated</code></a>,
+you can see that the function has a single parameter:
+a <a href="tabs.html#type-Tab">Tab</a> object
+that has details about the newly created tab.
+</p>
+
+<h2>
+Methods
+</h2>
+
+<p>
+You can invoke the following methods on any <code>Event</code> object:
+</p>
+
+<pre>
+void addListener(function callback(...))
+void removeListener(function callback(...))
+bool hasListener(function callback(...))
+</pre>
+
+<!-- [PENDING: explain removeListener and hasListener] -->

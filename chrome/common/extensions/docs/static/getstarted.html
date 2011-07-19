@@ -1,0 +1,185 @@
+<div id="pageData-name" class="pageData">Tutorial: Getting Started (Hello, World!)</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+This tutorial walks you through creating a simple extension.
+You'll add an icon to Google Chrome
+that, when clicked, displays an automatically generated page.
+The icon and page will look something like this:
+</p>
+
+<img src="images/hello-world-small.png"
+  width="300" height="221"
+  alt="a window with a grid of images related to HELLO WORLD" />
+
+<p>
+You can develop extensions using any release of Google Chrome,
+on Windows, Mac, or Linux.
+</p>
+
+<h2 id="load">Create and load an extension</h2>
+<p>
+In this section, you'll write an extension
+that adds a <em>browser action</em>
+to the toolbar of Google Chrome.
+</p>
+
+<ol>
+  <li>
+    Create a folder somewhere on your computer to contain your extension's code.
+  </li>
+  <li>
+    Inside your extension's folder,
+    create a text file called <strong><code>manifest.json</code></strong>,
+    and put this in it:
+<pre>{
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "permissions": [
+    "http://api.flickr.com/"
+  ]
+}</pre>
+  </li>
+  <li>
+    Copy this icon to the same folder:<br>
+    <table cellpadding="0" cellspacing="0" style="border:0">
+      <tr>
+        <td style="text-align:center; border:0;"><a
+          href="examples/tutorials/getstarted/icon.png"
+            ><img src="examples/tutorials/getstarted/icon.png"
+              width="19" height="19" border="0"></a><br>
+          <a href="examples/tutorials/getstarted/icon.png"
+            >Download icon.png</a></td>
+      </tr>
+    </table>
+  </li>
+  <li id="load-ext"> Load the extension.
+    <ol type="a">
+      <li style="margin-top:0" />
+      Bring up the extensions management page
+      by clicking the wrench icon
+      <img src="images/toolsmenu.gif" width="29" height="29" alt=""
+        style="margin-top:0" />
+      and choosing <b>Tools > Extensions</b>.
+      </li>
+
+      <li>
+      If <b>Developer mode</b> has a + by it,
+      click the + to add developer information to the page.
+      The + changes to a -,
+      and more buttons and information appear.
+      </li>
+
+      <li>
+      Click the <b>Load unpacked extension</b> button.
+      A file dialog appears.
+      </li>
+
+      <li>
+      In the file dialog,
+      navigate to your extension's folder
+      and click <b>OK</b>.
+      </li>
+    </ol> </li>
+  </ol>
+
+<p>
+If your extension is valid,
+its icon appears next to the address bar,
+and information about the extension
+appears in the extensions page,
+as the following screenshot shows.
+</p>
+
+<p>
+<a href="images/load_after.png"><img
+  src="images/load_after_small.png"
+  width="300" height="132" /></a>
+</p>
+
+<h2 id="code">Add code to the extension</h2>
+<p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
+<ol>
+  <li>
+    <p> Edit <code>manifest.json</code> to add the following line:</p>
+<pre>
+  ...
+  "browser_action": {
+    "default_icon": "icon.png"<b>,
+    "popup": "popup.html"</b>
+  },
+  ...
+</pre>
+    <p> Inside your extension's folder,
+    create a text file called <strong><code>popup.html</code></strong>,
+    and add the following code to it:</p>
+    <blockquote> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/popup.html?content-type=text/plain"
+    target="_blank">CSS
+    and JavaScript code for hello_world</a></blockquote>
+  </li>
+  <li>
+    Return to the extensions management page,
+    and click the <b>Reload</b> button
+    to load the new version of the extension.</li>
+  <li>Click the extension's icon.
+  A popup should appear that displays the contents of
+  <code>popup.html</code>. </li>
+</ol>
+<p> It should look something like this:</p>
+
+<img src="images/hello-world.png"
+  width="500" height="369"
+  alt="a popup with a grid of images related to HELLO WORLD" />
+
+<p> If you don't see the popup,
+try the instructions again,
+following them exactly.
+Don't try loading an HTML file that isn't in the extension's folder &mdash;
+it won't work! </p>
+
+<h2 id="summary">Now what?</h2>
+
+<!-- [PENDING: Summarize what we did, what it means, what else we would've done if this were a real extension (e.g. package/zip it), and where to find more information.] -->
+
+<p>
+Here are some suggestions for what to read next:
+</p>
+
+<ul>
+  <li>
+    The <a href="overview.html">Overview</a>,
+    which has important conceptual and practical information
+  </li>
+  <li>
+    The
+    <a href="tut_debugging.html">debugging tutorial</a>,
+    which starts where this tutorial leaves off
+  </li>
+  <li>
+    The <a href="hosting.html">hosting</a> page,
+    which tells you about options for distributing your extension
+  </li>
+</ul>
+
+<p>
+If you don't feel like reading, try these:
+</p>
+<ul>
+  <li>
+    Keep up to date with the latest news:
+    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/subscribe">subscribe to chromium-extensions</a>
+  </li>
+  <li>
+    Look at some
+    <a href="samples.html">sample extensions</a>
+  </li>
+  <li>
+    Watch some
+    <a href="http://www.youtube.com/view_play_list?p=CA101D6A85FE9D4B">videos</a>, such as
+    <a href="http://www.youtube.com/watch?v=e3McMaHvlBY&feature=PlayList&p=CA101D6A85FE9D4B&index=3">How to build an extension</a>
+  </li>
+</ul>

@@ -1,0 +1,113 @@
+<div id="pageData-name" class="pageData">Page Actions</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p>
+Use page actions to put icons inside the address bar.
+Page actions represent actions
+that can be taken on the current page,
+but that aren't applicable to all pages.
+Some examples:
+</p>
+<ul>
+  <li> Subscribe to this page's RSS feed </li>
+  <li> Make a slideshow out of this page's photos </li>
+</ul>
+
+<p>
+The RSS icon in the following screenshot
+represents a page action
+that lets you subscribe to
+the RSS feed for the current page.
+</p>
+
+<img src="images/page-action.png"
+  width="361" height="79" />
+
+<p>
+If you want the extension's icon to always be visible,
+use a <a href="browserAction.html">browser action</a> instead.
+</p>
+
+<p class="caution">
+<strong>Note:</strong>
+Packaged apps cannot use page actions.
+</p>
+
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+Register your page action in the
+<a href="manifest.html">extension manifest</a>
+like this:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"page_action": {
+    "default_icon": "icons/foo.png", <em>// optional</em>
+    "default_title": "Do action",    <em>// optional; shown in tooltip</em>
+    "default_popup": "popup.html"    <em>// optional</em>
+  }</b>,
+  ...
+}</pre>
+
+<h2 id="ui">Parts of the UI</h2>
+
+<p>
+Like browser actions,
+page actions can have an icon,
+a tooltip, and popup;
+they can't have badges, however.
+In addition, page actions can appear and disappear.
+You can find information about icons, tooltips, and popups
+by reading about the
+<a href="browserAction.html#ui">browser action UI</a>.
+</p>
+
+<p>
+You make a page action appear and disappear using the
+<a href="#method-show">show()</a> and
+<a href="#method-hide">hide()</a> methods, respectively.
+By default, a page action is hidden.
+When you show it, you specify the tab
+in which the icon should appear.
+The icon remains visible
+until the tab is closed
+or starts displaying a different URL
+(because the user clicks a link, for example).
+</p>
+
+<!-- [PENDING: We should discuss how tabs and page actions are related.  All methods take a tab ID argument.  How do you get that tab ID?  What's the usual way of arranging the code that monitors pages?  Point to examples.] -->
+
+
+<h2 id="tips">Tips</h2>
+
+<p>For the best visual impact,
+follow these guidelines:</p>
+
+<ul>
+  <li><b>Do</b> use page actions
+    for features that make sense
+    for only a few pages.
+  <li><b>Don't</b> use page actions
+    for features that make sense
+    for most pages.
+    Use <a href="browserAction.html">browser actions</a> instead.
+  <li><b>Don't</b> constantly animate your icon.
+    That's just annoying.
+</ul>
+
+
+<h2 id="examples"> Examples </h2>
+
+<p>
+You can find simple examples of using page actions in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/">examples/api/pageAction</a>
+directory.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
+
+<!-- END AUTHORED CONTENT -->

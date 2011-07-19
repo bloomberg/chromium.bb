@@ -1,0 +1,19 @@
+{
+  "name": "Sample - OAuth Contacts",
+  "version": "1.0.6",
+  "icons": { "48": "img/icon-48.png",
+            "128": "img/icon-128.png" },
+  "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.",
+  "background_page": "background.html",
+  "browser_action": {
+    "default_title": "",
+    "default_icon": "img/icon-19-off.png"
+  },
+  "permissions": [
+    "tabs",
+    "http://www.google.com/m8/feeds/*",
+    "https://www.google.com/accounts/OAuthGetRequestToken",
+    "https://www.google.com/accounts/OAuthAuthorizeToken",
+    "https://www.google.com/accounts/OAuthGetAccessToken"
+  ]
+}

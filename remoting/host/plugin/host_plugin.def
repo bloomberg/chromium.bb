@@ -1,0 +1,6 @@
+LIBRARY   remoting_host_plugin
+
+EXPORTS
+        NP_GetEntryPoints
+        NP_Initialize
+        NP_Shutdown

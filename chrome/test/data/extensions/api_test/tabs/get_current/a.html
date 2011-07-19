@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <script>
+window.onload = function() {    
+  chrome.tabs.getCurrent(function(tab) {
+    chrome.extension.getBackgroundPage().onCompleteGetCurrentTab(tab);
+  });
+};
+    </script>
+  </head>
+  <body>
+    <h1>A</h1>
+  </body>
+</html>

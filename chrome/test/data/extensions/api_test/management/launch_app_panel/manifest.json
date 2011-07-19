@@ -1,0 +1,11 @@
+{
+  "name": "Launch App in Panel",
+  "version": "1",
+  "permissions": ["management"],
+  "app": {
+    "launch": {
+      "local_path": "launch.html",
+      "container": "panel"
+    }
+  }
+}

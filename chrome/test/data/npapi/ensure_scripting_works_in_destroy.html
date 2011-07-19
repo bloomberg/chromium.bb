@@ -1,0 +1,21 @@
+<html>
+<head>
+<script src="npapi.js"></script>
+<script>
+function onloadfunction() {
+  document.getElementById("theiframe").src = "about:blank";
+}
+</script>
+</head>
+
+<body onload="setTimeout(onloadfunction(), 0)">
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+Tests that scripting works during NPP_Destroy.
+
+<iframe src="ensure_scripting_works_in_destroy_iframe.html" id="theiframe">
+</iframe>
+</body>
+</html>

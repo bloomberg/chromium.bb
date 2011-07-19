@@ -1,0 +1,8 @@
+{
+  "name": "chrome.experimental.sidebar",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.experimental.sidebar API",
+  "background_page": "test.html",
+  "sidebar": {},
+  "permissions": ["tabs", "experimental"]
+}

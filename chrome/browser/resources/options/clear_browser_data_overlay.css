@@ -1,0 +1,24 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+#clearBrowserDataOverlay {
+  min-width: 500px;
+}
+
+#clearBrowserDataOverlay > .content-area label {
+  margin: 5px 0;
+}
+
+#clear-data-checkboxes {
+  -webkit-padding-start: 8px;
+  margin: 5px 0;
+}
+
+#cbdThrobber {
+  margin: 4px 10px;
+  vertical-align: middle;
+  visibility: hidden;
+}

@@ -1,0 +1,146 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.tile-page {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.tile-page-scrollbar {
+  margin: 0 4px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 5px;
+  z-index: 5;
+  -webkit-box-sizing: border-box;
+}
+
+.tile-page-content {
+  height: 100%;
+  overflow-y: scroll;
+  padding-top: 100px;
+  position: relative;
+  text-align: center;
+  width: 100%;
+  -webkit-mask-image: -webkit-linear-gradient(bottom, transparent, black 30px);
+  /* The following four properties are necessary so that the mask won't clip
+   * the scrollbar. */
+  box-sizing: border-box;
+  /* Scrollbar + balance right padding.  */
+  padding-left: 26px;
+  /* Same width as the scrollbar. */
+  padding-right: 13px;
+  /* Don't apply clip mask to padding. */
+  -webkit-mask-clip: content-box;
+}
+
+.tile-grid {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.tile {
+  display: inline-block;
+  position: absolute;
+  /* Don't offer the context menu on long-press. */
+  -webkit-touch-callout: none;
+  -webkit-user-drag: element;
+}
+
+/* I don't know why this is necessary. -webkit-user-drag: element on .tile
+ * should be enough. If we don't do this, we get 2 drag representations for
+ * the image. */
+.tile img {
+  -webkit-user-drag: none;
+}
+
+.doppleganger {
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+}
+
+.tile.dragging {
+  opacity: 0;
+}
+
+.tile.drag-representation {
+  pointer-events: none;
+  position: fixed;
+  z-index: 3;
+}
+
+.tile.drag-representation.placing > * {
+  -webkit-transition: -webkit-transform 200ms;
+}
+
+.animating-tile-page .tile,
+.tile.drag-representation.placing {
+  -webkit-transition: left 200ms, right 200ms, top 200ms;
+}
+
+.animating-tile-page .top-margin {
+  -webkit-transition: margin-bottom 200ms;
+}
+
+@-webkit-keyframes bounce {
+  0% {
+    -webkit-transform: scale(0, 0);
+  }
+
+  60% {
+    -webkit-transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    -webkit-transform: scale(1, 1);
+  }
+}
+
+.tile > .new-tile-contents {
+  -webkit-animation: bounce 0.5s ease-in-out;
+}
+
+@-webkit-keyframes blipout {
+  0% {
+    -webkit-transform: scale(1, 1);
+  }
+
+  60% {
+    opacity: 1;
+    -webkit-animation-timing-function: ease-in;
+    -webkit-transform: scale(1.3, 0.02);
+  }
+
+  90% {
+    opacity: 0.7;
+    -webkit-animation-timing-function: default;
+    -webkit-transform: scale(0.3, 0.02);
+  }
+
+  100% {
+    opacity: 0;
+    -webkit-animation-timing-function: linear;
+    -webkit-transform: scale(0.3, 0.02);
+  }
+}
+
+.tile > .removing-tile-contents {
+  pointer-events: none;
+  -webkit-animation: blipout 0.3s;
+}
+
+/** Scrollbars ****************************************************************/
+
+.tile-page-content::-webkit-scrollbar {
+  width: 13px;
+}
+
+.tile-page-content::-webkit-scrollbar-button {
+  display: none;
+}

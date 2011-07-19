@@ -1,0 +1,29 @@
+<html>
+<!-- TODO(slightlyoff): Move to tests directory? -->
+<head>
+<title>Script test</title>
+<script>
+function msg(txt) {
+  window.document.getElementById("my_text").innerText = txt;
+}
+
+function OnLoad() {
+  var host = window.externalHost;
+  host.ForwardMessageToExternalHost("OnChromeFrameMessage",
+                                    "Hello from ChromeFrame");
+}
+
+function OnHostMessage(text) {
+  msg("In ChromeFrame: \r\n Message from host: " + text);
+}
+</script>
+</head>
+<body onload="OnLoad();">
+Here's an edit field: <input type="text"><br>
+Here's another: <input type="text"><br>
+<p>
+Message:<br>
+<pre><div id="my_text"></div></pre>
+</p>
+</body>
+</html> 

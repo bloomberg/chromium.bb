@@ -1,0 +1,33 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Internal message types that should not be seen outside the protocol
+// directory.
+
+syntax = "proto2";
+
+import "auth.proto";
+import "control.proto";
+import "event.proto";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting.protocol;
+
+// Represents a message being sent on the control channel.
+message ControlMessage {
+  optional SuggestResolutionRequest suggest_resolution = 1;
+  optional NotifyResolutionRequest notify_resolution = 2;
+  optional BeginSessionRequest begin_session_request = 3;
+  optional BeginSessionResponse begin_session_response = 4;
+}
+
+// Defines an event message on the event channel.
+message EventMessage {
+  required int64 sequence_number = 1;  // Client timestamp for event
+  optional bool dummy = 2;       // Is this a dummy event?
+
+  optional KeyEvent key_event = 3;
+  optional MouseEvent mouse_event = 4;
+}

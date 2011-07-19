@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0.0",
+  "name": "Tests edge cases in chrome.tabs.executeScript() with permissions",
+  "background_page": "test.html",
+  "permissions": ["tabs", "http://a.com/", "http://b.com/"]
+}

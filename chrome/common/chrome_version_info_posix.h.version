@@ -1,0 +1,13 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_COMMON_CHROME_VERSION_INFO_POSIX_H_
+#define CHROME_COMMON_CHROME_VERSION_INFO_POSIX_H_
+
+#define PRODUCT_NAME "@PRODUCT_FULLNAME@"
+#define PRODUCT_VERSION "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+#define LAST_CHANGE "@LASTCHANGE@"
+#define OFFICIAL_BUILD @OFFICIAL_BUILD@
+
+#endif  // CHROME_COMMON_CHROME_VERSION_INFO_POSIX_H_

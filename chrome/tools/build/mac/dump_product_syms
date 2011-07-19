@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This script expects the following environment variables to be set.  Xcode
+# normally sets them:
+#
+# CONFIGURATION - Release or Debug; this script only operates when Release.
+# SRCROOT - /path/to/chrome/src/chrome
+# BUILT_PRODUTS_DIR - /path/to/chrome/src/xcodebuild/Release
+#
+# The script also takes a single argument defining the branding type.
+#
+# To test this script without running an entire build:
+#
+# cd /path/to/chrome/src/chrome
+# CONFIGURATION=Release \
+#     SRCROOT=$(pwd) \
+#     BUILT_PRODUCTS_DIR=$(pwd)/../xcodebuild/Release \
+#     tools/build/mac/dump_app_syms Chromium
+
+# Make sure we got the header to write into passed to us
+if [ $# -ne 1 ]; then
+  echo "error: missing branding as an argument" >&2
+  exit 1
+fi
+
+set -ex
+
+# Skip out if we're aren't in Release mode, no need for dump_syms on debug runs.
+if [ "${CONFIGURATION}" != "Release" ] ; then
+  exit 0
+fi
+
+TOP="${SRCROOT}/.."
+BUILD_BRANDING=$1
+
+BRAND_SCRIPT="${TOP}/build/branding_value.sh"
+SRC_APP_NAME=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" PRODUCT_FULLNAME)
+. "${TOP}/chrome/VERSION"
+
+BREAKPAD_DUMP_SYMS="${BUILT_PRODUCTS_DIR}/dump_syms"
+FULL_VERSION="${MAJOR}.${MINOR}.${BUILD}.${PATCH}"
+ARCH="i386"
+
+DSYM_TAR_PATH="${BUILT_PRODUCTS_DIR}/${SRC_APP_NAME}.dSYM.tar.bz2"
+
+declare -a DSYMS
+
+for SRC_NAME in "${SRC_APP_NAME}.app" \
+                "${SRC_APP_NAME} Framework.framework" \
+                "${SRC_APP_NAME} Helper.app" \
+                "crash_inspector" \
+                "crash_report_sender.app" \
+                "libffmpegsumo.dylib" \
+                "libplugin_carbon_interpose.dylib" ; do
+  # SRC_STEM is the name of the file within the DWARF directory of the .dSYM
+  # bundle, which comes from the on-disk name of an executable or dylib within
+  # its enclosing .app or .framework bundle.  This is the bundle name without
+  # .app or .framework appended.  For non-bundled types, the stem is just the
+  # name of the singular file on disk.
+  SRC_STEM=$(echo "${SRC_NAME}" | sed -Ee 's/^(.*)\.(app|framework)$/\1/')
+  DSYM_NAME="${SRC_NAME}.dSYM"
+  DSYM_PATH="${BUILT_PRODUCTS_DIR}/${DSYM_NAME}"
+  DWARF_PATH="${DSYM_PATH}/Contents/Resources/DWARF/${SRC_STEM}"
+  BPAD_SYM_NAME="${SRC_NAME}-${FULL_VERSION}-${ARCH}.breakpad"
+  BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
+
+  # Only run dump_syms if the file has changed since the last dump.
+  if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
+    "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" "${DWARF_PATH}" > "${BPAD_SYM_PATH}"
+  fi
+
+  # Remove the .dSYM archive if the file has changed since the archive was
+  # last generated.  This will cause a new .dSYM archive to be created.
+  if [ "${DWARF_PATH}" -nt "${DSYM_TAR_PATH}" ] ; then
+    rm -f "${DSYM_TAR_PATH}"
+  fi
+
+  # Push the .dSYM bundle onto the DSYMS array so that it will be included in
+  # the .dSYM archive if a new one is needed
+  DSYMS[${#DSYMS[@]}]="${DSYM_NAME}"
+done
+
+# Create the archive of .dSYM bundles.
+if [ ! -e "${DSYM_TAR_PATH}" ] ; then
+  # Change directory so that absolute paths aren't included in the archive.
+  (cd "${BUILT_PRODUCTS_DIR}" &&
+   tar -jcf "${DSYM_TAR_PATH}" "${DSYMS[@]}")
+fi

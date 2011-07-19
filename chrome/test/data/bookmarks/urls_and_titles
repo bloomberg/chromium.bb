@@ -1,0 +1,28 @@
+# A list of URLs and titles for bookmarks. Also contains unicode strings
+# Used by: chrome/test/functional/bookmarks.py
+
+{
+  "http://www.bing.com/" : u"Bing",
+  "https://www.blogger.com/start" : u"Blogger: Create your free blog",
+  "http://www.google.com/" : u"Google",
+  "http://www.microsoft.com/en/us/default.aspx" : u"Microsoft Corporation",
+  "http://www.msn.com/" : u"MSN.com",
+  "http://www.myspace.com/" : u"MySpace",
+  "http://www.rapidshare.com/" : u"RapidShare: 1-CLICK Web hosting - Easy Filehosting",
+  "http://twitter.com/" : u"Twitter",
+  "http://www.baidu.com/" : u"\u767e\u5ea6\u4e00\u4e0b\uff0c\u4f60\u5c31\u77e5\u9053",
+  "http://www.facebook.com/" : u"Welcome to Facebook",
+  "http://www.wikipedia.org/" : u"Wikipedia",
+  "http://vkontakte.ru/" : u"\u0412 \u041a\u043e\u043d\u0442\u0430\u043a\u0442\u0435 | \u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c",
+  "http://wordpress.com/" : u"WordPress.com \u2014 Get a Free Blog Here",
+  "http://www.yahoo.com/" : u"Yahoo!",
+  "http://www.yandex.ru/" : u"\u042f\u043d\u0434\u0435\u043a\u0441",
+  "http://www.yahoo.co.jp/" : u"Yahoo! JAPAN",
+  "http://www.qq.com/" : u"\u817e\u8baf\u9996\u9875",
+  "http://www.youtube.com/" : u"YouTube - Broadcast Yourself.",
+  "http://www.ebay.com/" : u"eBay - New & used electronics, cars, apparel, collectibles, sporting goods & more at low prices",
+  "http://www.fc2.com/" : u"FC2 - Free Website Access Analysis Blog Rental Server SEO Countermeasures etc. -",
+  "http://www.amazon.com/" : u"Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more",
+  "http://www.sina.com.cn/" : u"\u65b0\u6d6a\u9996\u9875",
+  "http://www.flickr.com/" : u"Welcome to Flickr - Photo Sharing",
+}

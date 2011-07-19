@@ -1,0 +1,85 @@
+<html>
+ <head>
+  <script>
+    var position_1 = 0;
+    var position_2 = 0;
+    var watch_1_id = 0;
+    var watch_2_id = 0;
+    var last_error = 0;
+    var final_position_latitude = 0;
+    var final_position_longitude = 0;
+    var initial_navigation_sent = false;
+    var iteration = 0;
+    function geoNavigate(msg) {
+      ++iteration;
+      document.location.hash = '#' + iteration + ':' + msg;
+    }
+    function geoSendInitialAlertIfNeeded() {
+     if (position_1 != 0 && position_2 != 0 && !initial_navigation_sent) {
+       if (position_1.coords.latitude != position_2.coords.latitude ||
+           position_1.coords.longitude != position_2.coords.longitude) {
+         last_error = "TEST FAIL: watches received different locations. " +
+                      " Watch 1 (" + watch_1_id + ") got " + position_1 +
+                      " Watch 2 (" + watch_2_id + ") got " + position_2;
+       }
+       initial_navigation_sent = true;
+       geoNavigate("Both watches received initial position");
+     }
+    }
+    function geoSuccessCallback1(position) {
+      position_1 = position;
+      geoSendInitialAlertIfNeeded();
+      if (position.coords.latitude == final_position_latitude &&
+          position.coords.longitude == final_position_longitude) {
+        geoNavigate("Watch ID " + watch_1_id + " got final position.");
+      }
+    }
+    function geoSuccessCallback2(position) {
+      navigator.geolocation.clearWatch(watch_2_id);
+      position_2 = position;
+      geoSendInitialAlertIfNeeded();
+      if (position.coords.latitude == final_position_latitude ||
+          position.coords.longitude == final_position_longitude) {
+        last_error = "TEST FAIL: watch 2 received the final position";
+        geoNavigate(last_error);
+      }
+    }
+    function geoErrorCallback(error) {
+      last_error = error;
+      geoNavigate("Got error: " + error);
+    }
+    function geoStart() {
+      watch_1_id = navigator.geolocation.watchPosition(
+          geoSuccessCallback1, geoErrorCallback,
+          {maximumAge:600000, timeout:100000, enableHighAccuracy:false});
+      if (watch_1_id == 0)
+        return "Bad watch 1 ID";
+      watch_2_id = navigator.geolocation.watchPosition(
+          geoSuccessCallback2, geoErrorCallback,
+          {maximumAge:600000, timeout:100000, enableHighAccuracy:true});
+      if (watch_2_id == 0)
+        return "Bad watch 2 ID";
+      if (watch_1_id == watch_2_id)
+        return "Watch 1 & 2 share ID " + watch_1_id;
+    }
+    function geoGetLastPositionLatitude() {
+      return "" + position_1.coords.latitude;
+    }
+    function geoGetLastPositionLongitude() {
+      return "" + position_1.coords.longitude;
+    }
+    function geoGetLastError() {
+      return "" + (last_error ? last_error : 0);
+    }
+    function geoSetFinalPosition(latitude, longitude) {
+      final_position_latitude = latitude;
+      final_position_longitude = longitude;
+      return "ok";
+    }
+  </script>
+ </head>
+ <body>
+ <input type="button" value="manual" onclick="geoStart()"/>
+ </body>
+</html>
+

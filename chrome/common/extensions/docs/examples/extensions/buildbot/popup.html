@@ -1,0 +1,241 @@
+<head>
+<script>
+var botRoot = "http://build.chromium.org/p/chromium";
+var waterfallURL = botRoot + "/waterfall/bot_status.json?json=1";
+var botList;
+var checkinResults;
+var bots;
+var failures;
+
+function updateBotList(text) {
+  var results = (new RegExp('(.*)<\/body>', 'g')).exec(text);
+  if (!results || results.index < 0) {
+    console.log("Error: couldn't find bot JSON");
+    console.log(text);
+    return;
+  }
+  var data;
+  try {
+    // The build bot returns invalid JSON. Namely it uses single
+    // quotes and includes commas in some invalid locations. We have to
+    // run some regexps across the text to fix it up.
+    var jsonString = results[1].replace(/'/g, '"').replace(/},]/g,'}]');
+    data = JSON.parse(jsonString);
+  } catch (e) {
+    console.dir(e);
+    console.log(text);
+    return;
+  }
+  if (!data) {
+    throw new Error("JSON parse fail: " + results[1]);
+  }
+  botList = data[0];
+  checkinResults = data[1];
+
+  failures = botList.filter(function(bot) {
+    return (bot.color != "success");
+  });
+  displayFailures();
+}
+
+function displayFailures() {
+  bots.innerText = "";
+
+  if (failures.length == 0) {
+    var anchor = document.createElement("a");
+    anchor.addEventListener("click", showConsole);
+    anchor.className = "open";
+    anchor.innerText = "The tree is completely green.";
+    bots.appendChild(anchor);
+    bots.appendChild(document.createTextNode(" (no way!)"));
+  } else {
+    var anchor = document.createElement("a");
+    anchor.addEventListener("click", showFailures);
+    anchor.innerText = "failures:";
+    var div = document.createElement("div");
+    div.appendChild(anchor);
+    bots.appendChild(div);
+
+    failures.forEach(function(bot, i) {
+      var div = document.createElement("div");
+      div.className = "bot " + bot.color;
+      div.addEventListener("click", function() {
+        // Requires closure for each iteration to retain local value of |i|.
+        return function() { showBot(i); }
+      }());
+      div.innerText = bot.title;
+      bots.appendChild(div);
+    });
+  }
+}
+
+function showURL(url) {
+  window.open(url);
+  window.event.stopPropagation();
+}
+
+function showBot(botIndex) {
+  var bot = failures[botIndex];
+  var url = botRoot + "/waterfall/waterfall?builder=" + bot.name;
+  showURL(url);
+}
+
+function showConsole() {
+  var url = botRoot + "/waterfall/console";
+  showURL(url);
+}
+
+function showTry() {
+  var url = botRoot + "/try-server/waterfall";
+  showURL(url);
+}
+
+function showFyi() {
+  var url = botRoot + "/waterfall.fyi/console";
+  showURL(url);
+}
+
+function showFailures() {
+  var url = botRoot +
+      "/waterfall/waterfall?show_events=true&failures_only=true";
+  showURL(url);
+}
+
+function requestURL(url, callback) {
+  console.log("requestURL: " + url);
+  var xhr = new XMLHttpRequest();
+  try {
+    xhr.onreadystatechange = function(state) {
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
+          var text = xhr.responseText;
+          //console.log(text);
+          callback(text);
+        } else {
+          bots.innerText = "Error.";
+        }
+      }
+    }
+
+    xhr.onerror = function(error) {
+      console.log("xhr error: " + JSON.stringify(error));
+      console.dir(error);
+    }
+
+    xhr.open("GET", url, true);
+    xhr.send({});
+  } catch(e) {
+    console.log("exception: " + e);
+  }
+}
+window.onload = function() {
+  bots = document.getElementById("bots");
+
+  // XHR from onload winds up blocking the load, so we put it in a setTimeout.
+  window.setTimeout(requestURL, 0, waterfallURL, updateBotList);
+}
+
+function toggle_size() {
+  if (document.body.className == "big") {
+    document.body.className = "small";
+  } else {
+    document.body.className = "big";
+  }
+}
+
+</script>
+<style>
+body {
+  font-family: sans-serif;
+  font-size: 0.8em;
+  overflow: hidden;
+}
+
+#links {
+  background-color: #efefef;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  margin-top: 1px;
+  padding: 3px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+a {
+  text-decoration: underline;
+  color: #444;
+}
+
+a:hover {
+  color: black;
+  cursor: pointer;
+}
+
+body.big .bot {
+  -webkit-transition: all .5s ease-out;
+  margin: 20px;
+}
+
+body.small .bot {
+  -webkit-transition: all .5s ease-out;
+}
+
+.bot {
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 1px;
+  padding: 3px;
+  white-space: nowrap;
+}
+
+.bot:hover {
+  border: 2px solid black;
+  padding: 2px;
+}
+
+.open {
+  color: green;
+}
+
+.closed {
+  color: red;
+}
+
+.running {
+  background-color:  rgb(255, 252, 108);
+  border: 1px solid rgb(197, 197, 109);
+}
+
+.notstarted {
+  border: 1px solid rgb(170, 170, 170);
+}
+
+.failure {
+  background-color: rgb(233, 128, 128);
+  border: 1px solid rgb(167, 114, 114);
+}
+
+.warnings {
+  background-color: rgb(255, 195, 67);
+  border: 1px solid rgb(194, 157, 70);
+}
+
+.success {
+  background-color: rgb(143, 223, 95);
+  border: 1px solid rgb(79, 133, 48);
+}
+
+.exception {
+  background-color: rgb(224, 176, 255);
+  border: 1px solid rgb(172, 160, 179);
+}
+</style>
+</head>
+<body onclick="toggle_size()">
+<div id="links">
+<a href="" onclick='showConsole()'>console</a> -
+<a href="" onclick='showTry()'>try</a> -
+<a href="" onclick='showFyi()'>fyi</a>
+</div>
+<div id="bots">Loading....</div>
+</body>

@@ -1,0 +1,42 @@
+<html>
+ <head>
+  <style>
+   body {
+    margin: 0px;
+    padding: 0px;
+   }
+   #mybox {
+    padding: 20px;
+    margin: 0px;
+    border: 1px solid #000;
+   }
+   #mystatus {
+    border: 1px solid #000;
+    padding: 20px;
+    margin: 0px;
+   }
+  </style>
+  <script>
+   var state = '';
+   function load() {
+     state = 'initial';
+     document.getElementById("mystatus").innerHTML = state;
+     document.cookie = '__state=' + state + '; path=/';
+   }
+   function enter() {
+     state += ',entered';
+     document.getElementById("mystatus").innerHTML = state;
+     document.cookie = '__state=' + state + '; path=/';
+   }
+   function leave() {
+     state += ',left';
+     document.getElementById("mystatus").innerHTML = state;
+     document.cookie = '__state=' + state + '; path=/';
+   }
+  </script>
+ </head>
+ <body onload="load()">
+  <div id="mybox" onmouseover="enter()" onmouseout="leave()"></div>
+  <div id="mystatus"></div>
+ </body>
+</html>

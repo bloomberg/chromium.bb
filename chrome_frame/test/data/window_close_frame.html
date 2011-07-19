@@ -1,0 +1,20 @@
+<html>
+  <head><title>window.close test</title>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
+    <script type="text/javascript">
+      function close_window() {
+        if (!isRunningInChrome()) {
+          onFailure("WindowCloseTest", 1,
+                    "window_close_frame.html should load in Chrome");
+          return;
+        }
+        window.close();
+      }
+    </script>
+  </head>
+  <body onLoad="setTimeout(close_window, 100);">
+    <h2>Prepare close!</h2>
+    <p>Content closing the window...</p>
+  </body>
+</html>

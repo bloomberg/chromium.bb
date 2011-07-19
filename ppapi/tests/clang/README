@@ -1,0 +1,57 @@
+This is a directory for Clang plugins that are designed to do analysis and/or
+manipulation of PPAPI code.  Clang is an open-source C front-end that allows
+you to parse C, C++, or Objective-C code in to an abstract syntax tree (or AST)
+for processing.  This README assumes that you are working in a check-out of
+chromium.
+
+To use these plugins, you will need to get Clang.  Clang is rapidly changing,
+so you may want to download and build it yourself.  See the instructions here:
+- http://clang.llvm.org/get_started.html
+
+To build the plugins, use the Makefile in this directory.  If you want the
+provided Makefile to work out-of-the-box, in step 2 of the instructions at the
+above URL, you should do the following:
+> mkdir ~/llvm
+> cd ~/llvm
+Now continue with the svn co command to check out llvm in ~/llvm/llvm.  If you
+choose to build llvm in another location, you can use environment variables to
+force the Makefile to find your build of clang.  See the Makefile for details.
+
+To run a plugin, use clang with the -cc1 -load and -plugin flags and an
+otherwise normal build line.  For example, to run liBPrintNamesAndSizes.so, if
+you currently build like this:
+g++ (build_options)
+Run this from the command-line instead:
+clang -cc1 -load ppapi/tests/clang/libPrintNamesAndSizes.so \
+  -plugin PrintNamesAndSizes (build_options)
+
+Plugins:
+  PrintNamesAndSizes : print_names_and_sizes.cc
+  Print information about all top-level type definitions.  You probably won't
+  need to run it by itself;  instead see generate_ppapi_size_checks.py, which
+  uses the plugin.  See print_names_and_sizes.cc for more detail on the plugin.
+
+  Example command-line:
+    python generate_ppapi_size_checks.py \
+        --ppapi-root=/usr/local/google/chrome_build/src/ppapi
+    python generate_ppapi_size_checks.py --help
+
+
+  FindAffectedInterfaces : find_affected_interfaces.cc
+  Given typenames as parameters, print out all types that are affected
+  (including function pointer types and structs containing affected function
+  pointer types) if the given type(s) change.  This is meant to be used for
+  determining what interfaces are affected by a change to a struct.
+
+  Example command-line:
+    clang -cc1 -load ppapi/tests/clang/libFindAffectedInterfaces.so \
+        -plugin FindAffectedInterfaces -I. ppapi/tests/all_includes.h \
+        -plugin-arg-FindAffectedInterfaces \
+        "struct PP_VideoCompressedDataBuffer_Dev"
+    clang -cc1 -load tests/clang/libFindAffectedInterfaces.so \
+        -plugin FindAffectedInterfaces -I../ tests/all_c_includes.h \
+        -plugin-arg-FindAffectedInterfaces \
+        "struct PP_VideoCompressedDataBuffer_Dev,struct PP_Var"
+
+(This assumes that clang is in your path and you are running the plugin from
+ the ppapi subdirectory in a chrome checkout).

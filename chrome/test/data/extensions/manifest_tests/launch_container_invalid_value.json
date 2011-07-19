@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "foobar",
+      "local_path": "dog.html"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript"
+            src="CFInstall.js"></script>
+  </head>
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <script type="text/javascript">
+      var testName = 'CFInstallBasic';
+      (function(){
+        try{
+          // Testing over-rides for GCF detection code.
+          CFInstall._force = true;
+          CFInstall._forceValue = false;
+
+          CFInstall.check({
+            // TODO(slightlyoff): popup window tests?
+            mode: 'inline'
+          });
+
+          if (document.body.firstChild.tagName != 'IFRAME') {
+            onFailure(testName, 1, 'prompt placed incorrectly');
+            return;
+          }
+
+          onSuccess(testName, 1);
+
+        } catch (e) {
+          onFailure(testName, 1,
+                    'CFInstall basic test failed with error: '+e);
+        }
+      })();
+    </script>
+    <p>Tests CFInstall basic prompt functionality</p>
+  </body>
+</html>

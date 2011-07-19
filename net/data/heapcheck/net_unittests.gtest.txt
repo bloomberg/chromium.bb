@@ -1,0 +1,20 @@
+# http://crbug.com/31129 -- forking Python servers may break heapchecker's
+# symbolization.
+URLRequestTestHTTP.*
+# Exclude tests that simulate a crash: they leak a lot of stuff.
+# Note that *InvalidEntry* is too general.
+DiskCacheBackendTest.AppCacheInvalidEntry
+DiskCacheBackendTest.AppCacheInvalidEntryRead
+DiskCacheBackendTest.AppCacheInvalidEntryWithLoad
+DiskCacheBackendTest.InvalidEntry
+DiskCacheBackendTest.InvalidEntryEnumeration
+DiskCacheBackendTest.InvalidEntryRead
+DiskCacheBackendTest.InvalidEntryWithLoad
+DiskCacheBackendTest.TrimInvalidEntry
+DiskCacheBackendTest.TrimInvalidEntry2
+DiskCacheBackendTest.NewEvictionInvalidEntry
+DiskCacheBackendTest.NewEvictionInvalidEntryEnumeration
+DiskCacheBackendTest.NewEvictionInvalidEntryRead
+DiskCacheBackendTest.NewEvictionInvalidEntryWithLoad
+DiskCacheBackendTest.NewEvictionTrimInvalidEntry
+DiskCacheBackendTest.NewEvictionTrimInvalidEntry2

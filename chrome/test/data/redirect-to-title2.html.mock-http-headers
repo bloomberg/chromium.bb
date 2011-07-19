@@ -1,0 +1,2 @@
+HTTP/1.1 302 Moved
+Location: http://mock.http:4000/title2.html

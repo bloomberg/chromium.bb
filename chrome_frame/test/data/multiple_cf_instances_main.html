@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>Multiple chrome frame instances test</title>
+<script type="text/javascript">
+  function createSecondChromeFrameInstance() {
+    var dummy = document.createElement('span');
+    document.body.appendChild(dummy);
+    dummy.innerHTML = '<object border="1" width="100%" height ="200px"' +
+                      'classid="clsid:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">' +
+                      '<param name="src"' +
+                      'value="multiple_cf_instances_test.html">' +
+                      '<embed id="CFPlugin" width="500" height="500"' +
+                        'name="ChromeFrame" type="application/chromeframe"' +
+                        'src="multiple_cf_instances_test.html">' +
+                      '</embed></object>';
+  }
+
+  function onLoad() {
+    createSecondChromeFrameInstance();
+  }
+</script>
+</head>
+
+<body onload="onLoad();">
+    <object id="ChromeFrame1" width="500" height="500"
+        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
+        <param name="src" value="about:blank">
+        <embed id="ChromeFramePlugin" width="500" height="500"
+            name="ChromeFrame" type="application/chromeframe"
+            src="about:blank">
+        </embed>
+    </object>
+ChromeFrame multiple widget instances test page. This testcase verifies
+whether multiple chrome frame widget instances can be created on the
+same page.
+</body>
+</html>

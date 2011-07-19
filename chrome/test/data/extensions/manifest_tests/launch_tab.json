@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "tab",
+      "local_path": "foo.html"
+    }
+  }
+}

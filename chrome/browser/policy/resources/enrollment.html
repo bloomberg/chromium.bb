@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+  <title></title>
+  <link rel="stylesheet" href="enrollment.css">
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="enrollment.js"></script>
+</head>
+<body class="stretch"
+    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="login-screen" class="stretch">
+    <div id="login-info">
+      <h1 id="login-header" i18n-content="loginHeader"></h1>
+      <div id="login-explain" i18n-content="loginExplain"></div>
+      <div class="login-item">
+        <div class="login-item-image">
+          <img src="cloud.png">
+        </div>
+        <div class="login-item-content">
+          <h4 class="login-item-header"
+            i18n-content="cloudHeader"></h4>
+          <div class="login-item-explain"
+            i18n-content="cloudExplain"></div>
+        </div>
+      </div>
+      <div class="login-item">
+        <div class="login-item-image">
+          <img src="access_control.png">
+        </div>
+        <div class="login-item-content">
+          <h4 class="login-item-header"
+            i18n-content="accesscontrolHeader"></h4>
+          <div class="login-item-explain"
+            i18n-content="accesscontrolExplain"></div>
+        </div>
+      </div>
+    </div><div id="login-form">
+      <iframe id="gaialogin" scrolling="no"
+        src="chrome://enterprise-enrollment/gaialogin"></iframe>
+    </div>
+  </div>
+  <div id="confirmation-screen" class="stretch">
+    <h1 id="confirmation-header" i18n-content="confirmationHeader"></h1>
+    <div id="confirmation-content">
+      <img id="confirmation-image" src="success.png">
+      <span id="confirmation-message" i18n-content="confirmationMessage"></span>
+    </div>
+    <div id="confirmation-footer">
+      <input type="submit" class="button" id="close"
+          i18n-values="value:confirmationClose"
+          onclick="chrome.send('confirmationClose', [''])">
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "notifications test",
+  "version": "1",
+  "permissions": [ "tabs" ],
+  "background_page": "background.html"
+}

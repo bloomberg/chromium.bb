@@ -1,0 +1,49 @@
+How to build SPDY dissector for Wireshark (Windows directions).
+
+1) Retrieve wireshark source code.
+
+> mkdir D:\src\wireshark
+> cd D:\src\wireshark
+> svn co http://anonsvn.wireshark.org/wireshark/trunk/ trunk
+
+2) Retrieve the spdyshark source code.
+
+> cd D:\src
+> svn co http://src.chromium.org/svn/trunk/src/net/tools/spdyshark
+
+3) Follow directions to build Wireshark from 
+
+http://www.wireshark.org/docs/wsdg_html_chunked/ChSetupWin32.html
+
+  - Read all the directions, there are a number of preliminary steps.
+
+  - You may need to explicitly make C:\wireshark-win32-libs [or
+    C:\wireshark-win64-libs]
+ 
+  - Make sure PYTHON environment variable is set (this may not be the
+  case if using the one from depot_tools). Although wireshark seems
+  to require it, it tries to workaround missing PYTHON environment
+  variables unsuccessfully. 
+
+4) Make a symbolic link for spdyshark to Wireshark
+
+> mklink /D D:\src\wireshark\trunk\plugins\spdyshark D:\src\spdyshark
+
+5) Build the plugin.
+
+> cd D:\src\wireshark\trunk\plugins\spdyshark
+> nmake -f Makefile.nmake all
+
+6) Move the plugin into the wireshark-gtk directory [should automate]
+
+> copy D:\src\wireshark\trunk\plugins\spdyshark.dll
+  D:\src\wireshark\trunk\wireshark-gtk2\plugins
+
+7) Start wireshark, and confirm that SPDY plugin is loaded.
+
+> D:\src\wireshark\trunk\wireshark-gtk2\wireshark.exe
+
+Choose Edit > Preferences to bring up the Preferences dialog.
+
+Exand "Protocols" in the left pane of the preferences dialog and
+confirm that spdyshark is there.

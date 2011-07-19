@@ -1,0 +1,13 @@
+%HIVE% {
+  NoRemove Software {
+    NoRemove MozillaPlugins {
+      ForceRemove '@google.com/ChromeFrame,version=1.0' {
+        val Path = s '%MODULE%'
+        val Description = s 'Google ChromeFrame'
+        val ProductName = s 'Google ChromeFrame'
+        val Vendor = s 'Google'
+        val Version = s '%VERSION%'
+      }
+    }
+  }
+}

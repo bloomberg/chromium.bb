@@ -1,0 +1,8 @@
+{
+   "name": "PageAction Test",
+   "version": "1.0",
+   "page_action": {
+      "default_title": 42,
+      "name": "MyExtensionActionName"
+   }
+}

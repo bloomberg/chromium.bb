@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="id">
+<translation id="4519964825805946997">Gagal memasang pengaya dari <ph name="URL"/></translation>
+<translation id="9186171386827445984">Memuat dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
+<translation id="1235745349614807883">Hapus Penelusuran Barusan</translation>
+<translation id="1171774979989969504">Masukkan alamat email.</translation>
+<translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
+<translation id="5048533449481078685">penanda daftar</translation>
+<translation id="372362261556059955">Diperlukan pengaya tambahan</translation>
+<translation id="4202807286478387388">lompati</translation>
+<translation id="4611115858363067980"><ph name="FILENAME"/> - <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="7658239707568436148">Batal</translation>
+<translation id="795667975304826397">Tidak ada berkas yang dipiliah</translation>
+<translation id="1416462845279468967">Pemasangan pengaya gagal</translation>
+<translation id="8141602879876242471">Terdapat indeks yang dapat dicari. Masukkan kata kunci penelusuran:</translation>
+<translation id="5650795167354946011">Setelah memasang pengaya, klik di sini untuk menyegarkan</translation>
+<translation id="370665806235115550">Membuka...</translation>
+<translation id="6845533974506654842">tekan</translation>
+<translation id="8244226242650769279">gambar peta</translation>
+<translation id="310520048233152454">Masukkan URL.</translation>
+<translation id="2548326553472216322">Tidak ada penelusuran terkini</translation>
+<translation id="7263440858009898357">Pilih item pada daftar.</translation>
+<translation id="5164977714490026579">Nilai harus lebih besar daripada atau sama dengan <ph name="MINIMUM"/>.</translation>
+<translation id="5944544982112848342">2048 (Tingkat Tinggi)</translation>
+<translation id="3040011195152428237">tautan</translation>
+<translation id="2745343197843472802">Dapatkan Pengaya</translation>
+<translation id="8451268428117625855">Pilih berkas.</translation>
+<translation id="5776402066334188252">Konfirmasikan bahwa Anda ingin memasang pengaya ini. Anda harus memasang pengaya yang dipercayai saja.</translation>
+<translation id="3018094406922859308">Mengunduh pengaya...</translation>
+<translation id="7364796246159120393">Pilih Berkas</translation>
+<translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
+<translation id="8964020114565522021">Tarik file ke sini</translation>
+<translation id="5129723458012748440">Pengaya <ph name="PLUGIN"/> tidak dipasang.</translation>
+<translation id="838869780401515933">centangi</translation>
+<translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
+<translation id="5476505524087279545">batalkan centang</translation>
+<translation id="3789841737615482174">Pasang</translation>
+<translation id="2507943997699731163">Harap isi bidang ini.</translation>
+<translation id="5253117816378681419">Konfirmasikan bahwa Anda ingin memasang pengaya <ph name="PLUGIN"/>. Anda harus memasang pengaya yang Anda percayai saja.</translation>
+<translation id="6663448176199120256">Penelusuran Barusan</translation>
+<translation id="7335060848622232389">Pemasangan pengaya telah dinonaktifkan.</translation>
+<translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
+<translation id="5466621249238537318">Pilih salah satu atau beberapa berkas.</translation>
+<translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
+<translation id="7740050170769002709">Konten HTML</translation>
+<translation id="2226276347425096477">Pendekkan teks ini menjadi <ph name="MAX_CHARACTERS"/> karakter atau kurang (saat ini Anda menggunakan <ph name="CURRENT_LENGTH"/> karakter).</translation>
+<translation id="1639239467298939599">Memuat</translation>
+<translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
+<translation id="5939518447894949180">Atur ulang</translation>
+<translation id="835897206747267392">Nilai tidak valid.</translation>
+<translation id="3851140433852960970">Tidak ada pengaya yang tersedia untuk menampilkan konten ini.</translation>
+<translation id="1842960171412779397">pilih</translation>
+<translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Pengaya yang diperlukan tidak dipasang.</translation>
+<translation id="7638452146404718955">Klik di sini untuk mengunduh pengaya</translation>
+<translation id="6119846243427417423">aktifkan</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> berkas</translation>
+<translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
+<translation id="8597182159515967513">kepala</translation>
+<translation id="2653659639078652383">Kirim</translation>
+<translation id="8475551193147984329">Pengaya <ph name="PLUGIN"/> diperlukan</translation>
+</translationbundle>

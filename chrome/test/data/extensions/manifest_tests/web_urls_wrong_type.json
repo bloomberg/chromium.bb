@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "urls": 42,
+    "launch": {
+      "web_url": "http://www.google.com/foo.html"
+    }
+  }
+}

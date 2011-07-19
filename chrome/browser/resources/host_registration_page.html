@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Register your computer with Google</title>
+<style>
+#form {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: -webkit-linear-gradient(#FAFBFB, #CCD1D4);
+}
+
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', load);
+window.addEventListener('message', processMessage);
+var hostPageDomain = 'chrome://register';
+var registerDoneUrl = 'cros://register/success';
+var registerSkipUrl = 'cros://register/skipped';
+var registrationUrl = '';
+
+function load() {
+  chrome.send('getRegistrationUrl', []);
+}
+function $(o) {
+  return document.getElementById(o);
+}
+
+function processMessage(e) {
+  if (e.data.domain != registrationUrl){
+    skipRegistration();
+    return;
+  }
+
+  if (e.data.type == 'get_user_info') {
+    chrome.send('getUserInfo', []);
+  } else if (e.data.type == 'complete_registration') {
+    location.replace(e.data.payload.registration_status ? registerDoneUrl :
+                                                          registerSkipUrl);
+  }
+}
+
+function setRegistrationUrl(url) {
+  registrationUrl = url;
+  $('form').contentWindow.location.href = url;
+}
+
+function setUserInfo(userInfo) {
+  var msg = {
+    type: 'set_user_info',
+    domain: hostPageDomain,
+    payload: userInfo
+  };
+  $('form').contentWindow.postMessage(msg, registrationUrl);
+}
+
+// Called by WebUI handler when startup manifest is not defined.
+function skipRegistration() {
+  location.replace(registerSkipUrl);
+}
+</script>
+</head>
+<body><iframe id="form" frameborder="0"></iframe></body>
+</html>

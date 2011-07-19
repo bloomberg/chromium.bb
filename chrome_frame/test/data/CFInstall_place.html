@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript"
+            src="CFInstall.js"></script>
+  </head>
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <div id="parent">
+      <div id="prev">before</div><div id="toBeReplaced">
+        fallback content goes here
+      </div><div id="after">after</div>
+    </div>
+    <script type="text/javascript">
+      var testName = 'CFInstallPlace';
+      (function(){
+        try{
+          // Testing over-rides for GCF detection code.
+          CFInstall._force = true;
+          CFInstall._forceValue = false;
+
+          CFInstall.check({
+            node: 'toBeReplaced',
+            id: 'prompt',
+            cssText: 'width: 400px; height: 300px;',
+            mode: 'inline'
+          });
+
+          var p = byId('prompt');
+
+          if (!p) {
+            onFailure(testName, 1, 'prompt not created with correct ID');
+            return;
+          }
+
+          var fc = document.body.firstChild;
+
+          if (fc.nodeType == 1 && fc.tagName == 'IFRAME') {
+            onFailure(testName, 1, 'prompt placed incorrectly');
+            return;
+          }
+
+          if (p.tagName != 'IFRAME') {
+            onFailure(testName, 1, 'prompt has wrong tag type');
+            return;
+          }
+
+          // Ensure that it got dropped into the right bit of the DOM
+          if (byId('prev').nextSibling != p) {
+            onFailure(testName, 1, 'prompt placed incorrectly');
+            return;
+          }
+
+          // Make sure that the geometry took.
+          if (p.style.width != '400px') {
+            onFailure(testName, 1, 'prompt sized incorrectly');
+            return;
+          }
+
+          onSuccess(testName, 1);
+
+        } catch (e) {
+          onFailure(testName, 1,
+                    'CFInstall placement failed with error: '+e);
+        }
+      })();
+    </script>
+    <p>Tests CFInstall prompt placement</p>
+  </body>
+</html>

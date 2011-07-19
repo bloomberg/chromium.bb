@@ -1,0 +1,279 @@
+<div id="pageData-name" class="pageData">Message Passing</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+Since content scripts run in the context of a web page and not the extension,
+they often need some way of communicating with the rest of the extension. For
+example, an RSS reader extension might use content scripts to detect the
+presence of an RSS feed on a page, then notify the background page in order to
+display a page action icon for that page.
+
+<p>
+Communication between extensions and their content scripts works by using
+message passing. Either side can listen for messages sent from the other end,
+and respond on the same channel. A message can contain any valid JSON object
+(null, boolean, number, string, array, or object). There is a simple API for
+<a href="#simple">one-time requests</a>
+and a more complex API that allows you to have
+<a href="#connect">long-lived connections</a>
+for exchanging multiple messages with a shared context. It is also possible to
+send a message to another extension if you know its ID, which is covered in
+the
+<a href="#external">cross-extension messages</a>
+section.
+
+
+<h2 id="simple">Simple one-time requests</h2>
+<p>
+If you only need to send a single message to another part of your extension
+(and optionally get a response back), you should use the simplified
+<a href="extension.html#method-sendRequest">chrome.extension.sendRequest()</a>
+or
+<a href="tabs.html#method-sendRequest">chrome.tabs.sendRequest()</a>
+methods. This lets you send a one-time JSON-serializable message from a
+content script to extension, or vice versa, respectively. An optional
+callback parameter allows you handle the response from the other side, if
+there is one.
+
+<p>
+Sending a request from a content script looks like this:
+<pre>
+contentscript.js
+================
+chrome.extension.sendRequest({greeting: "hello"}, function(response) {
+  console.log(response.farewell);
+});
+</pre>
+
+<p>
+Sending a request from the extension to a content script looks very similar,
+except that you need to specify which tab to send it to. This example
+demonstrates sending a message to the content script in the selected tab.
+<pre>
+background.html
+===============
+chrome.tabs.getSelected(null, function(tab) {
+  chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
+    console.log(response.farewell);
+  });
+});
+</pre>
+
+<p>
+On the receiving end, you need to set up an
+<a href="extension.html#event-onRequest">chrome.extension.onRequest</a>
+event listener to handle the message. This looks the same from a content
+script or extension page. The request will remain open until you call
+sendResponse, so it is good practice to call sendResponse with an empty
+object to allow the request to be cleaned up.
+<pre>
+chrome.extension.onRequest.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.greeting == "hello")
+      sendResponse({farewell: "goodbye"});
+    else
+      sendResponse({}); // snub them.
+  });
+</pre>
+
+<p class="note">
+<b>Note:</b> If multiple pages are listening for onRequest events, only the
+first to call sendResponse() for a particular event will succeed in sending the
+response. All other responses to that event will be ignored.
+</p>
+
+
+<h2 id="connect">Long-lived connections</h2>
+<p>
+Sometimes it's useful to have a conversation that lasts longer than a single
+request and response. In this case, you can open a long-lived channel from
+your content script to an extension page, or vice versa, using
+<a href="extension.html#method-connect">chrome.extension.connect()</a>
+or
+<a href="tabs.html#method-connect">chrome.tabs.connect()</a> respectively. The
+channel can optionally have a name, allowing you to distinguish between
+different types of connections.
+
+<p>
+One use case might be an automatic form fill extension. The content script
+could open a channel to the extension page for a particular login, and send a
+message to the extension for each input element on the page to request the
+form data to fill in. The shared connection allows the extension to keep
+shared state linking the several messages coming from the content script.
+
+<p>
+When establishing a connection, each end is given a
+<a href="extension.html#type-Port">Port</a>
+object which is used for sending and receiving messages through that
+connection.
+
+<p>
+Here is how you open a channel from a content script, and send and listen for
+messages:
+<pre>
+contentscript.js
+================
+var port = chrome.extension.connect({name: "knockknock"});
+port.postMessage({joke: "Knock knock"});
+port.onMessage.addListener(function(msg) {
+  if (msg.question == "Who's there?")
+    port.postMessage({answer: "Madame"});
+  else if (msg.question == "Madame who?")
+    port.postMessage({answer: "Madame... Bovary"});
+});
+</pre>
+
+<p>
+Sending a request from the extension to a content script looks very similar,
+except that you need to specify which tab to connect to. Simply replace the
+call to connect in the above example with
+<a href="tabs.html#method-connect">chrome.tabs.connect(tabId, {name:
+"knockknock"})</a>.
+
+<p>
+In order to handle incoming connections, you need to set up a
+<a href="extension.html#event-onConnect">chrome.extension.onConnect</a>
+event listener. This looks the same from a content script or an extension
+page. When another part of your extension calls "connect()", this event is
+fired, along with the
+<a href="extension.html#type-Port">Port</a>
+object you can use to send and receive messages through the connection. Here's
+what it looks like to respond to incoming connections:
+<pre>
+chrome.extension.onConnect.addListener(function(port) {
+  console.assert(port.name == "knockknock");
+  port.onMessage.addListener(function(msg) {
+    if (msg.joke == "Knock knock")
+      port.postMessage({question: "Who's there?"});
+    else if (msg.answer == "Madame")
+      port.postMessage({question: "Madame who?"});
+    else if (msg.answer == "Madame... Bovary")
+      port.postMessage({question: "I don't get it."});
+  });
+});
+</pre>
+
+<p>
+You may want to find out when a connection is closed, for example if you are
+maintaining separate state for each open port. For this you can listen to the
+<a href="extension.html#type-Port">Port.onDisconnect</a>
+event. This event is fired either when the other side of the channel manually
+calls
+<a href="extension.html#type-Port">Port.disconnect()</a>, or when the page
+containing the port is unloaded (for example if the tab is navigated).
+onDisconnect is guaranteed to be fired only once for any given port.
+
+
+<h2 id="external">Cross-extension messaging</h2>
+<p>
+In addition to sending messages between different components in your
+extension, you can use the messaging API to communicate with other extensions.
+This lets you expose a public API that other extensions can take advantage of.
+
+<p>
+Listening for incoming requests and connections is similar to the internal
+case, except you use the
+<a href="extension.html#event-onRequestExternal">chrome.extension.onRequestExternal</a>
+or
+<a href="extension.html#event-onConnectExternal">chrome.extension.onConnectExternal</a>
+methods. Here's an example of each:
+<pre>
+// For simple requests:
+chrome.extension.onRequestExternal.addListener(
+  function(request, sender, sendResponse) {
+    if (sender.id == blacklistedExtension)
+      sendResponse({});  // don't allow this extension access
+    else if (request.getTargetData)
+      sendResponse({targetData: targetData});
+    else if (request.activateLasers) {
+      var success = activateLasers();
+      sendResponse({activateLasers: success});
+    }
+  });
+
+// For long-lived connections:
+chrome.extension.onConnectExternal.addListener(function(port) {
+  port.onMessage.addListener(function(msg) {
+    // See other examples for sample onMessage handlers.
+  });
+});
+</pre>
+
+<p>
+Likewise, sending a message to another extension is similar to sending one
+within your extension. The only difference is that you must pass the ID of the
+extension you want to communicate with. For example:
+<pre>
+// The ID of the extension we want to talk to.
+var laserExtensionId = "abcdefghijklmnoabcdefhijklmnoabc";
+
+// Make a simple request:
+chrome.extension.sendRequest(laserExtensionId, {getTargetData: true},
+  function(response) {
+    if (targetInRange(response.targetData))
+      chrome.extension.sendRequest(laserExtensionId, {activateLasers: true});
+  });
+
+// Start a long-running conversation:
+var port = chrome.extension.connect(laserExtensionId);
+port.postMessage(...);
+</pre>
+
+<h2 id="security-considerations">Security considerations</h2>
+
+<p>
+When receiving a message from a content script or another extension, your
+background page should be careful not to fall victim to <a
+href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+scripting</a>.  Specifically, avoid using dangerous APIs such as the
+below:
+</p>
+<pre>background.html
+===============
+chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
+  // WARNING! Might be evaluating an evil script!
+  var resp = eval("(" + response.farewell + ")");
+});
+
+background.html
+===============
+chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
+  // WARNING! Might be injecting a malicious script!
+  document.getElementById("resp").innerHTML = response.farewell;
+});
+</pre>
+<p>
+Instead, prefer safer APIs that do not run scripts:
+</p>
+<pre>background.html
+===============
+chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
+  // JSON.parse does not evaluate the attacker's scripts.
+  var resp = JSON.parse(response.farewell);
+});
+
+background.html
+===============
+chrome.tabs.sendRequest(tab.id, {greeting: "hello"}, function(response) {
+  // innerText does not let the attacker inject HTML elements.
+  document.getElementById("resp").innerText = response.farewell;
+});
+</pre>
+
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find simple examples of communication via messages in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/">examples/api/messaging</a>
+directory.
+Also see the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr">contentscript_xhr</a> example,
+in which a content script and its parent extension exchange messages,
+so that the parent extension can perform
+cross-site requests on behalf of the content script.
+For more examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>

@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0.0",
+  "name": "NPAPI plugin test",
+  "description": "Tests that private publics are only visible to the extension",
+  "plugins": [
+    {"path": "plugin.dll"},
+    {"path": "plugin32.so"},
+    {"path": "plugin64.so"}
+  ]
+}

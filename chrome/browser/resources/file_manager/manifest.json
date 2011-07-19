@@ -1,0 +1,82 @@
+{
+  // chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/
+  "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDlhpGghtnNJ7pluQN0RDwbUxwwi99oM35ZEaFYvxPLrf0fIEC18cfDdJi6u4aJ+UoSpgzK731L0P/k4LvK2Rz9kVKOy0+IvuRrWkT7lbrLfA1UEBh02OA1AAshjmyRg4IxCqgl8ia8XWq6HKegS1y1KXZYGgb4qp7Bh9VC4cIzswIBIw==",
+  "name": "File Manager",
+  "version": "0.1",
+  "description": "File Manager",
+  "incognito" : "split",
+  "icons": {
+    "16": "images/icon16.png"
+  },
+  "permissions": [
+    "fileBrowserHandler",
+    "fileBrowserPrivate",
+    "mediaPlayerPrivate",
+    "unlimitedStorage",
+    "chrome://extension-icon/",
+    "chrome://resources/"
+  ],
+  "app": {
+    "launch": {
+      "local_path": "main.html"
+    }
+  },
+  "file_browser_handlers": [
+    {
+      "id": "preview",
+      "default_title": "__MSG_PREVIEW_IMAGE__",
+      "default_icon": "images/icon_preview_16x16.png",
+      "file_filters": [
+        "filesystem:*.bmp",
+        "filesystem:*.gif",
+        "filesystem:*.jpg",
+        "filesystem:*.jpeg",
+        "filesystem:*.webp",
+        "filesystem:*.png"
+      ]
+    },
+    {
+      "id": "play",
+      "default_title": "__MSG_PLAY_MEDIA__",
+      "default_icon": "images/icon_play_16x16.png",
+      "file_filters": [
+        "filesystem:*.avi",
+        "filesystem:*.webm",
+        "filesystem:*.mp4",
+        "filesystem:*.m4v",
+        "filesystem:*.mov",
+        "filesystem:*.ogg",
+        "filesystem:*.oga",
+        "filesystem:*.ogm",
+        "filesystem:*.ogv",
+        "filesystem:*.ogx",
+        "filesystem:*.wav",
+        "filesystem:*.mp3",
+        "filesystem:*.m4a"
+      ]
+    },
+    {
+      "id": "enqueue",
+      "default_title": "__MSG_ENQUEUE_MEDIA__",
+      "default_icon": "images/icon_add_to_queue_16x16.png",
+      "file_filters": [
+        "filesystem:*.avi",
+        "filesystem:*.webm",
+        "filesystem:*.mp4",
+        "filesystem:*.m4v",
+        "filesystem:*.mov",
+        "filesystem:*.ogg",
+        "filesystem:*.oga",
+        "filesystem:*.ogm",
+        "filesystem:*.ogv",
+        "filesystem:*.ogx",
+        "filesystem:*.wav",
+        "filesystem:*.mp3",
+        "filesystem:*.m4a"
+      ]
+    }
+  ],
+  "chrome_url_overrides": {
+    "files": "main.html"
+  }
+}

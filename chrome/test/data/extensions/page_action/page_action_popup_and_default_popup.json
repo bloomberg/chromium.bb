@@ -1,0 +1,10 @@
+{
+   "name": "PageAction Test",
+   "version": "1.0",
+   "page_action": {
+      "default_icon": "image1.png",
+      "default_popup": "a_popup.html",
+      "default_title": "MyExtensionActionTitle",
+      "popup": "a_popup.html"
+   }
+}

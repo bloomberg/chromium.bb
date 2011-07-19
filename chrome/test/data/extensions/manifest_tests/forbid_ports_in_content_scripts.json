@@ -1,0 +1,14 @@
+{
+  "name": "test",
+  "version": "1",
+  "content_scripts": [
+    {
+      "matches": ["http://*.no.port.okay/path/*"],
+      "js": ["javascript.js"]
+    },
+    {
+      "matches": ["http://*.has.port.error:12345/path/*"],
+      "js": ["javascript.js"]
+    }
+  ]
+}

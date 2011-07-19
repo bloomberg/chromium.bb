@@ -1,0 +1,19 @@
+set noparent
+
+# extensions_api.json
+aa@chromium.org
+asargent@chromium.org
+bolms@chromium.org
+erikkay@chromium.org
+finnur@chromium.org
+jstritar@chromium.org
+kathyw@chromium.org
+mihaip@chromium.org
+mpcomplete@chromium.org
+skerner@chromium.org
+tessamac@chromium.org
+yoz@chromium.org
+
+# devtools_api.json
+caseq@chromium.org
+pfeldman@chromium.org

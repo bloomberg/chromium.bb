@@ -1,0 +1,7 @@
+{
+   "name": "PageAction Test",
+   "version": "1.0",
+   "page_action": {
+      "name": 123
+   }
+}

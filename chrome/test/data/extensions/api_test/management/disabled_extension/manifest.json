@@ -1,0 +1,5 @@
+{
+  "name": "disabled_extension",
+  "version": "0.1",
+  "options_page": "pages/options.html"
+}

@@ -1,0 +1,20 @@
+<html>
+<head>
+<title>Preloader</title>
+
+<script>
+  function UnloadHandler() {
+    document.title = 'Unloaded';
+  }
+
+  addEventListener('unload', UnloadHandler, false);
+</script>
+
+</head>
+<body>
+<script>
+  document.write('<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
+</script>
+<a href="REPLACE_WITH_PRERENDER_URL">Link To Click</a>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "description": "Data for default_locale has to be present",
+  "name": "missing_default_data",
+  "default_locale": "sr",
+  "version": "1.0"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "tab",
+      "height": 480,
+      "local_path": "bar.html"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "A browser action which changes its icon when clicked.",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs", "http://*/*"
+  ],
+  "browser_action": {
+      "name": "Click to change the icon's color"
+  }
+}

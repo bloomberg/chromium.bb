@@ -1,0 +1,92 @@
+body {
+  background: -webkit-linear-gradient(white, #EEE);
+  cursor: default;
+  margin: 0;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.menu-item {
+  white-space: nowrap;
+  margin: 0;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  background-repeat: no-repeat;
+  -webkit-padding-end: 19px;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  overflow: hidden;
+}
+
+.disabled {
+  color: #b7b7b7;
+}
+
+.no-icon {
+  -webkit-padding-start: 19px;
+}
+
+.menu-label {
+  -webkit-box-flex: 1;
+  vertical-align: middle;
+}
+
+.accelerator {
+  opacity: 0.3;
+  -webkit-margin-start: 15px;
+}
+
+.left-icon {
+  background-position: 4px center;
+}
+
+.right-icon {
+  background-position: right center;
+}
+
+.separator {
+  background: -webkit-linear-gradient(left,
+                                      rgba(0, 0, 0, .10),
+                                      rgba(0, 0, 0, .02) 96%);
+  border: 0;
+  height: 1px;
+  margin: 4px 0;
+}
+
+.mnemonic-enabled .mnemonic {
+  text-decoration: underline;
+}
+
+.selected {
+  background-color: #DCE5FA;
+}
+
+#viewport {
+  overflow: hidden;
+}
+
+.scroll-button {
+  height: 20px;
+  width: 100%;
+  line-height: 20px;
+  text-align: center;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+#scroll-up {
+  /* TODO(oshima): get right icons from UX designer */
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAI0lEQVQImWNgQIA4BgaGuQxoII6BgeEvAwPDf2RJZEEYngsA2N8I6FqZBpwAAAAASUVORK5CYII=");
+}
+
+#scroll-down {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAIklEQVQImWNgYGCIY2Bg+MfAwPAfCc9jgAJkSbggsiRcEACghQjtUFgYGwAAAABJRU5ErkJggg==");
+}
+
+.scroll-button:hover {
+  background-color: #DCE5FA;
+}
+
+.hidden {
+  display: none;
+}

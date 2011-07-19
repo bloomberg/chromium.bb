@@ -1,0 +1,94 @@
+<div id="pageData-name" class="pageData">Bookmarks</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.bookmarks</code> module to create, organize,
+and otherwise manipulate bookmarks.
+Also see <a href="override.html">Override Pages</a>,
+which you can use to create a custom Bookmark Manager page.
+</p>
+
+<img src="images/bookmarks.png"
+     width="210" height="147" alt="Clicking the star adds a bookmark" />
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "bookmarks" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the bookmarks API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "bookmarks"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="description">Objects and properties</h2>
+
+<p>
+Bookmarks are organized in a tree,
+where each node in the tree
+is either a bookmark or a folder
+(sometimes called a <em>group</em>).
+Each node in the tree
+is represented by a
+<a href="#type-BookmarkTreeNode"><code>BookmarkTreeNode</code></a> object.
+</p>
+
+<p>
+<code>BookmarkTreeNode</code> properties
+are used throughout the <code>chrome.bookmarks</code> API.
+For example, when you call
+<a href="#method-create"><code>create()</code></a>,
+you pass in the new node's parent (<code>parentId</code>),
+and, optionally, the node's
+<code>index</code>, <code>title</code>, and <code>url</code> properties.
+See <a href="#type-BookmarkTreeNode"><code>BookmarkTreeNode</code></a>
+for information about the properties a node can have.
+</p>
+
+<p class="note"><b>Note:</b> You cannot use this API to add or remove entries
+in the root folder.  You also cannot rename, move, or remove the special
+"Bookmarks Bar" and "Other Bookmarks" folders.</p>
+
+<h2 id="overview-examples">Examples</h2>
+
+<p>
+The following code creates a folder with the title "Extension bookmarks".
+The first argument to <code>create()</code> specifies properties
+for the new folder.
+The second argument defines a function
+to be executed after the folder is created.
+</p>
+
+<pre>
+chrome.bookmarks.create({'parentId': bookmarkBar.id,
+                         'title': 'Extension bookmarks'},
+                        function(newFolder) {
+  console.log("added folder: " + newFolder.title);
+});
+</pre>
+
+<p>
+The next snippet creates a bookmark pointing to
+the developer documentation for extensions.
+Since nothing bad will happen if creating the bookmark fails,
+this code doesn't bother to define a callback function.
+</p>
+
+<pre>
+chrome.bookmarks.create({'parentId': extensionsFolderId,
+                         'title': 'Extensions doc',
+                         'url': 'http://code.google.com/chrome/extensions'});
+</pre>
+
+<p>
+For an example of using this API, see the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/bookmarks/basic/">basic bookmarks sample</a>.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
+
+<!-- END AUTHORED CONTENT -->

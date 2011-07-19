@@ -1,0 +1,151 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  margin: 10px;
+  min-width: 47em;
+}
+
+a {
+  color: blue;
+  font-size: 103%;
+}
+
+div#header {
+  margin-bottom: 1.05em;
+  /* 67px is the height of the header's background image. */
+  min-height: 67px;
+  overflow: hidden;
+  padding-bottom: 20px;
+  -webkit-padding-start: 0;
+  padding-top: 20px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+#header h1 {
+  background: url('../../app/theme/flags_section.png') 0px 20px no-repeat;
+  display: inline;
+  margin: 0;
+  padding-bottom: 43px;
+  -webkit-padding-start: 75px;
+  padding-top: 40px;
+}
+
+html[dir=rtl] #header h1 {
+  background: url('../../app/theme/flags_section.png') right no-repeat;
+}
+
+h1 {
+  font-size: 156%;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+}
+
+#blurb-container {
+  padding-bottom: 1.5em;
+  font-size: 120%;
+}
+
+#blurb-warning {
+  color: red;
+  font-weight: bold;
+}
+
+div.content {
+  font-size: 88%;
+  margin-top: 5px;
+}
+
+.section-header {
+  background: #ebeff9;
+  border-top: 1px solid #b5c7de;
+  font-size: 99%;
+  padding-bottom: 2px;
+  -webkit-padding-start: 5px;
+  padding-top: 3px;
+  width: 100%;
+}
+
+.section-header > table tr td:first-child {
+  width: 100%;
+}
+
+.section-header > table {
+  width: 100%;
+}
+
+.section-header-title {
+  font-weight: bold;
+}
+
+.vbox-container {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.wbox {
+  display: -webkit-box;
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+#top {
+  -webkit-padding-end: 5px;
+}
+
+/* Disabled experiments display grey text on a grey background.  The title,
+   however, should remain completely legible. */
+.experiment-disabled > td {
+  background: #F0F0F0;
+  color: #A0A0A0;
+}
+
+.experiment-disabled .experiment-name {
+  color: #000;
+}
+
+.experiment {
+  border-bottom: 1px solid #cdcdcd;
+}
+
+.experiment td {
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
+/* Indent the text related to each experiment. */
+.experiment-text {
+  -webkit-padding-start: 5px;
+}
+
+.experiment-name {
+  font-weight: bold;
+}
+
+.no-experiments {
+  margin: 6em 0 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+/* Match the indentation of .experiment-text. */
+.experiment-actions {
+  -webkit-padding-start: 5px;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+div.needs-restart {
+  padding-top: 10px;
+  -webkit-padding-start: 5px;
+}
+
+button {
+  font-size: 104%;
+}
+

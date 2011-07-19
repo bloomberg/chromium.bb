@@ -1,0 +1,6 @@
+{
+  "name": "Launch App test extension",
+  "version": "1",
+  "permissions": ["management", "tabs"],
+  "background_page": "background.html"
+}

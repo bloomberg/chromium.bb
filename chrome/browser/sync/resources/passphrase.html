@@ -1,0 +1,173 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body {
+   line-height: 1.4em;
+   background: #FFFFFF;
+   font-size: 11pt;
+}
+html[os='mac'] body {
+  line-height: 1.5em;
+  background: #FFFFFF;
+}
+form {
+  -webkit-user-select: none;
+}
+.sync-header {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+input[type='button'],
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+html[os='mac'] input[type='button'],
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
+}
+#passphrase-input {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+#incorrectPassphrase {
+  margin-top: 5px;
+}
+.error {
+  color: red;
+}
+.overlay-warning {
+  position: absolute;
+  display: none;
+  left: 25px;
+  right: 25px;
+  top: 100px;
+  background: white;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0.2em 0.2em 0.5em #888;
+}
+#cancel-warning-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.overlay-warning INPUT {
+  margin-top: 12px;
+  float: right;
+  margin-left: 5px;
+}
+#sync-passphrase-warning {
+  margin-bottom: 5px;
+}
+</style>
+<script src="chrome://resources/js/cr.js"></script>
+<script>
+  // Called once, when this html/js is loaded.
+  function setupPassphraseDialog(args) {
+    // Allow platform specific rules
+    if (cr.isMac) {
+      document.documentElement.setAttribute('os', 'mac');
+    } else if (!cr.isWindows) {
+      document.documentElement.setAttribute('os', 'linux');
+    }
+
+    document.getElementById("passphraseRejectedBody").style.display = "none";
+    document.getElementById("normalBody").style.display = "none";
+    document.getElementById("incorrectPassphrase").style.display = "none";
+
+    if (args["passphrase_creation_rejected"]) {
+      document.getElementById("passphraseRejectedBody").style.display = "block";
+    } else {
+      document.getElementById("normalBody").style.display = "block";
+    }
+
+    if (args["passphrase_setting_rejected"]) {
+      document.getElementById("incorrectPassphrase").style.display = "block";
+    }
+  }
+
+  function sendPassphraseAndClose() {
+    var f = document.getElementById("passphraseForm");
+    var result = JSON.stringify({"passphrase": f.passphrase.value});
+    chrome.send("Passphrase", [result]);
+  }
+
+  function showCancelWarning() {
+    document.getElementById("cancel-warning-box").style.display = "block";
+    document.getElementById("okButton").disabled = true;
+    document.getElementById("cancelButton").disabled = true;
+  }
+
+  function hideCancelWarning() {
+    document.getElementById("cancel-warning-box").style.display = "none";
+    document.getElementById("okButton").disabled = false;
+    document.getElementById("cancelButton").disabled = false;
+  }
+
+  function goToDashboard() {
+    chrome.send("GoToDashboard", [""]);
+    chrome.send("DialogClose", [""]);
+  }
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily"
+      onload="setupPassphraseDialog(JSON.parse(chrome.dialogArguments));">
+<form id="passphraseForm"
+      onSubmit="sendPassphraseAndClose(); return false;">
+  <div id="enter-passphrase">
+    <div class="sync-header" id="enterTitle"
+         i18n-content="enterPassphraseTitle"></div>
+    <div class="sync-instructions-start-hidden" id="normalBody"
+         i18n-content="enterPassphraseBody"></div>
+    <div class="sync-instructions-start-hidden" id="passphraseRejectedBody"
+         i18n-content="enterOtherPassphraseBody"></div>
+  </div>
+
+  <div id="passphrase-input">
+    <label id="passphraseLabel" name="passphraseLabel"
+           for="passphrase" i18n-content="passphraseLabel">
+    </label>
+    <input id="passphrase" name="passphrase" type="password" />
+    <div class="error" id="incorrectPassphrase"
+         i18n-content="incorrectPassphrase">
+    </div>
+  </div>
+
+  <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
+  </span> <a id="clear-data-link" i18n-content="cleardatalink" href="#"
+     onclick="goToDashboard(); return false;"></a>
+
+  <div class="overlay-warning" id="cancel-warning-box">
+    <div id="cancel-warning-header" i18n-content="cancelWarningHeader"></div>
+    <div id="cancel-warning" i18n-content="cancelWarning"></div>
+    <input id="cancel-no-button" type="submit" i18n-values="value:no"
+           onclick="hideCancelWarning(); return false;" />
+    <input id="cancel-yes-button" type="submit" i18n-values="value:yes"
+           onclick="chrome.send('PassphraseCancel', ['']); return false;" />
+  </div>
+
+  <div class="sync-footer">
+    <input id="okButton" type="submit" i18n-values="value:ok" />
+    <input id="cancelButton" type="button" i18n-values="value:cancel"
+           onclick="showCancelWarning(); return false;" />
+  </div>
+</form>
+</body>
+</html>

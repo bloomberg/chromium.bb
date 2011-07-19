@@ -1,0 +1,64 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Client side phishing and malware detection request and response
+// protocol buffers.  Those protocol messages should be kept in sync
+// with the server implementation.
+//
+// If you want to change this protocol definition or you have questions
+// regarding its format please contact chrome-anti-phishing@googlegroups.com.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+message ClientPhishingRequest {
+  // URL that the client visited.  The CGI parameters are stripped by the
+  // client.
+  required string url = 1;
+
+  // Score that was computed on the client.  Value is between 0.0 and 1.0.
+  // The larger the value the more likely the url is phishing.
+  required float client_score = 2;
+
+  // Note: we're skipping tag 3 because it was previously used.
+
+  // Is true if the features for this URL were classified as phishing.
+  // Currently, this will always be true for all client-phishing requests
+  // that are sent to the server.
+  optional bool is_phishing = 4;
+
+  message Feature {
+    // Feature name.  E.g., 'PageHasForms'.
+    required string name = 1;
+
+    // Feature value is always in the range [0.0, 1.0].  Boolean features
+    // have value 1.0.
+    required double value = 2;
+  }
+
+  // List of features that were extracted.  Those are the features that were
+  // sent to the scorer and which resulted in client_score being computed.
+  repeated Feature feature_map = 5;
+
+  // The version number of the model that was used to compute the client-score.
+  // Copied from ClientSideModel.version().
+  optional int32 model_version = 6;
+
+  // Field 7 is only used on the server.
+
+  // List of features that are extracted in the client but are not used in the
+  // machine learning model.
+  repeated Feature non_model_feature_map = 8;
+
+  // The referrer URL.  This field might not be set, for example, in the case
+  // where the referrer uses HTTPs.
+  optional string referrer_url = 9;
+}
+
+message ClientPhishingResponse {
+  required bool phishy = 1;
+}

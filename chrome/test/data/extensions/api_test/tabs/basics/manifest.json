@@ -1,0 +1,6 @@
+{
+  "name": "chrome.tabs",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.tabs API",
+  "permissions": ["tabs"]
+}

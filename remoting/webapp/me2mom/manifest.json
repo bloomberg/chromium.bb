@@ -1,0 +1,29 @@
+{
+  "name": "Remoting IT2Me",
+  "version": "1.0",
+  "description": "IT2Me-style remote support in Chrome.",
+  "app": {
+    "launch": {
+      "local_path": "choice.html"
+    }
+  },
+  "icons": {
+    "128": "chromoting128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+      "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline",
+      "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline?*"
+      ],
+      "js": ["cs_oauth2_trampoline.js"]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "https://accounts.google.com/o/oauth2/*",
+    "https://www.google.com/accounts/*",
+    "https://www.googleapis.com/chromoting/*"
+  ],
+  "PLUGINS": "PLACEHOLDER"
+}

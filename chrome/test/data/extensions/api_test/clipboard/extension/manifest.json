@@ -1,0 +1,7 @@
+{
+  "name": "chrome.clipboard.extension",
+  "version": "0.1",
+  "description": "end-to-end browser test for clipboard permissions",
+  "background_page": "test.html",
+  "permissions": ["clipboardRead"]
+}

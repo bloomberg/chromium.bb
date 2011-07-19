@@ -1,0 +1,66 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+.subpages-nav-tabs .tab {
+  position: relative;
+  padding: 4px 8px;
+}
+
+.subpages-nav-tabs .active-tab {
+  position: relative;
+  background: white;
+  border: 1px solid #A0A0A0;  /* light gray */
+  border-bottom: 2px solid white;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+/* To avoid tabs changing size when they are clicked and their labels become
+ * bold, we actually put two labels inside each tab: an inactive label and an
+ * active label. Only one is visible at a time, but the bold label is used to
+ * size the tab even when it's not visible. This keeps the tab size constant.
+ */
+.subpages-nav-tabs .active-tab-label {
+  font-weight: bold;
+}
+
+.subpages-nav-tabs .tab-label {
+  position: absolute;
+  top: 5px;
+  left: 9px;
+}
+
+html[dir=rtl] .subpages-nav-tabs .tab-label {
+  right: 9px;
+}
+
+.subpages-nav-tabs .active-tab-label,
+.subpages-nav-tabs .active-tab .tab-label {
+  visibility: hidden;
+}
+
+/* .tab is not removed when .active-tab is added, so we must
+ * override the hidden visibility above in the active tab case.
+ */
+.subpages-nav-tabs .active-tab .active-tab-label {
+  visibility: visible;
+}
+
+.subpages-nav-tabs {
+  padding: 4px;
+  border-bottom: 1px solid #A0A0A0;  /* light gray */
+  background: -webkit-linear-gradient(white, #F3F3F3);  /* very light gray */
+  margin-bottom: 15px;
+}
+
+.subpages-tab-contents {
+  display: none;
+   -webkit-padding-start: 10px;
+}
+
+.active-tab-contents {
+  display: block;
+}

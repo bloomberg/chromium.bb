@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html id="template_root" i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title">
+</title>
+<style>
+html {
+  height: 100%;
+}
+body {
+  color: #000;
+  font-family: arial, sans-serif;
+  background-image: -webkit-linear-gradient(white 50%, rgb(236, 244, 255));
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  visibility: hidden;
+  -webkit-user-select: none;
+}
+
+.upper {
+  position: relative;
+  width: 100%;
+  -webkit-box-flex: 0.8;
+}
+
+#lower {
+  position: relative;
+  margin-top: 0;
+  width: 100%;
+  -webkit-box-flex: 1;
+  background-image: -webkit-gradient(radial, 50% -20%, 700, 50% -70%, 0, from(#FFF), color-stop(.7, #EEE), to(#EEE));
+}
+
+.icon {
+  float: left;
+  margin: 15px;
+  overflow: visible;
+}
+
+.h3 {
+  float: left;
+  height: 10%;
+  width: 80%;
+  font-family: Sans-serif;
+  font-size: 120%;
+  font-weight: bold;
+  padding: 3px;
+}
+
+.message {
+  float: left;
+  margin-top: 10px;
+}
+
+.link {
+  float: left;
+  clear: both;
+  padding: 3px;
+  font-weight: bold;
+}
+
+.offline_message {
+  position: absolute;
+  width: 600px;
+  height: 49%;
+  top: 50%;
+  left: 50%;
+  margin-left: -300px;
+  margin-top: -20%;
+}
+
+.activation_message {
+  position: absolute;
+  width: 500px;
+  top: 0;
+  margin-top: 0;
+  left: 50%;
+  margin-left: -250px;
+  min-height: 380px;
+}
+
+#carrierPage {
+  padding-top: 10px;
+  width: 500px;
+  height: 380px;
+  overflow-x: none;
+  overflow-y: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.splitter {
+  border-top: 1px solid #DDD;
+  height: 1px;
+}
+</style>
+<script src="shared/js/local_strings.js"></script>
+
+<script>
+var localStrings = new LocalStrings();
+
+function sendCommand(cmd) {
+  window.domAutomationController.setAutomationId(1);
+  window.domAutomationController.send(cmd);
+}
+
+// Show the offline page.
+function showPage() {
+  document.body.style.visibility = 'visible';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var time_to_wait = localStrings.getString('time_to_wait');
+  var show_activation = localStrings.getString('show_activation') == 'true';
+  window.setTimeout(showPage, time_to_wait);
+  var lower = document.getElementById('lower');
+  if (show_activation)
+    lower.style.display = 'block';
+});
+</script>
+
+<body oncontextmenu="return false;">
+  <div class="upper" i18n-values=".title:url">
+    <div class="offline_message">
+      <div class="icon" i18n-values=".src:icon;.style.display:display_icon"></div>
+      <h3 i18n-content="heading"></h3>
+      <div class="message" i18n-values=".innerHTML:msg"></div>
+      <div class="link"><a href="chrome://settings/internet"
+           onclick="sendCommand('proceed')"
+           i18n-content="try_loading"></a> 
+      </div>
+      <div class="link"><a href="chrome://settings/internet"
+           onclick="sendCommand('open_network_settings')"
+           i18n-content="network_settings"></a>
+      </div>
+    </div>
+  </div>
+  <div id="lower" class="hidden">
+    <div class="activation_message">
+      <div class="splitter"></div>
+      <iframe src="chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/activation_in_offline.html"
+              id="carrierPage" frameborder="0"></iframe>
+    </div>
+  </div>
+</body>
+</html>

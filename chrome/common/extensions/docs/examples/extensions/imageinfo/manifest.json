@@ -1,0 +1,18 @@
+{
+  "name" : "Imageinfo",
+  "version" : "1.0.0",
+  "description" : "Get image info for images, including EXIF data",
+  "background_page" : "background.html",
+  "permissions" : [
+    "contextMenus",
+    "tabs",
+    "http://*/*",
+    "https://*/*"
+   ],
+  "minimum_chrome_version" : "6.0.0.0",
+  "icons" : {
+    "16" : "imageinfo-16.png",
+    "48" : "imageinfo-48.png",
+    "128" : "imageinfo-128.png"
+  }
+}

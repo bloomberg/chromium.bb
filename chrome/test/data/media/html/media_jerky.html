@@ -1,0 +1,20 @@
+<!-- 
+This HTML file contains a div for a player which is used for playback testing 
+(chrome/test/functional/media_playbackbacktime.py).
+The query string should contain the following information: 
+   tag (optional): HTML video/audio tag (default is video).
+   media (required): media file name.
+   t (optional): if specified, disables the media cache.
+   jerky (optional): if specified, show the predefined pattern for jerky test.
+
+   Example: "media_playback.html?tag=video&media=foo.webm&t=t&jerky=True"
+-->
+<html>
+<body onload='setPattern();'>
+<div id='player_container'></div>
+<script type='text/javascript' src='player.js'></script>
+<script>
+  setTimeout(playMedia, 1000);
+</script>
+</body>
+</html>

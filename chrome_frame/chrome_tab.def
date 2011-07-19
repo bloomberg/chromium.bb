@@ -1,0 +1,11 @@
+; ChromeTab.def : Declares the module parameters.
+
+LIBRARY      "npchrome_frame.dll"
+
+EXPORTS
+	DllCanUnloadNow            PRIVATE
+	DllGetClassObject          PRIVATE
+	DllRegisterServer          PRIVATE
+	DllUnregisterServer        PRIVATE
+	DllRegisterUserServer      PRIVATE
+	DllUnregisterUserServer    PRIVATE

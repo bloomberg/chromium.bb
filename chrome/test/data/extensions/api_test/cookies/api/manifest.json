@@ -1,0 +1,14 @@
+{
+  "name": "chrome.cookies",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.experimental.cookies API",
+  "background_page": "background.html",
+  "permissions": [
+    "cookies",
+    "tabs",
+    "http://*.chrome_extensions.cookies.com/",
+    "http://chromium.cookies.com/",
+    "https://*.cookies.com/",
+    "http://.strange%20stuff%21%21.com/"
+  ]
+}

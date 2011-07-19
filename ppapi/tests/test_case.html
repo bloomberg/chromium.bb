@@ -1,0 +1,167 @@
+<html><head>
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="-1" />
+<link rel="stylesheet" href="test_page.css">
+<script>
+function AdjustHeight(frameWin) {
+  var div = frameWin.document.getElementsByTagName("div")[0];
+  var height = frameWin.getComputedStyle(div).height;
+  frameWin.frameElement.style.height = height;
+}
+
+function DidExecuteTests() {
+  if (window == top)
+    return;
+
+  // Otherwise, we are in a subframe, so we can use this opportunity to resize
+  // ourselves.
+  AdjustHeight(window);
+}
+
+function AppendFrame(testcase, i) {
+  var p = document.createElement("P");
+  p.setAttribute("class", "frame-container");
+
+  var title = document.createElement("H2");
+  title.appendChild(document.createTextNode(testcase));
+  p.appendChild(title);
+
+  var frame = document.createElement("IFRAME");
+  var mode = ExtractSearchParameter("mode");
+  if (mode == "nacl")
+    frame.setAttribute("src", "?testcase=" + testcase + "&mode=nacl");
+  else
+    frame.setAttribute("src", "?testcase=" + testcase);
+  frame.setAttribute("onload", "LoadNext(" + (i + 1) + ")");
+  p.appendChild(frame);
+
+  document.body.appendChild(p);
+}
+
+function LoadNext(i) {
+  var links = document.links;
+  if (links.length > i)
+    AppendFrame(links[i].firstChild.nodeValue, i);
+}
+
+function RunAll() {
+  // Remove any existing frames.
+  var existing = document.getElementsByClassName("frame-container");
+  while (existing.length)
+    existing[0].parentNode.removeChild(existing[0]);
+
+  // Add new frames for each test, but do so one frame at a time.
+  LoadNext(0);
+}
+
+function ExtractSearchParameter(name) {
+  var nameIndex = location.search.indexOf(name + "=");
+  if (nameIndex != -1) {
+    var value = location.search.substring(nameIndex + name.length + 1);
+    var endIndex = value.indexOf("&");
+    if (endIndex != -1)
+      value = value.substring(0, endIndex);
+    return value;
+  }
+  return "";
+}
+
+// Parses the message, looking for strings of the form:
+// TESTING_MESSAGE:<message_type>:<message_contents>
+//
+// If the message_data is not a string or does not match the above format, then
+// undefined is returned.
+//
+// Otherwise, returns an array containing 2 items. The 0th element is the
+// message_type, one of:
+//  - ClearContents
+//  - DidExecuteTests
+//  - LogHTML
+//  - SetCookie
+// The second item is the verbatim message_contents.
+function ParseTestingMessage(message_data) {
+  if (typeof(message_data)!='string')
+    return undefined;
+  var testing_message_prefix = "TESTING_MESSAGE";
+  var delim_str = ":";
+  var delim1 = message_data.indexOf(delim_str);
+  if (message_data.substring(0, delim1) !== testing_message_prefix)
+    return undefined;
+  var delim2 = message_data.indexOf(delim_str, delim1 + 1);
+  if (delim2 == -1)
+    delim2 = message_data.length;
+  var message_type = message_data.substring(delim1 + 1, delim2);
+  var message_contents = message_data.substring(delim2 + 1);
+  return [message_type, message_contents];
+}
+
+function ClearConsole() {
+  window.document.getElementById("console").innerHTML = "";
+}
+
+function LogHTML(html) {
+  window.document.getElementById("console").innerHTML += html;
+}
+
+function SetCookie(key_value_string) {
+  window.document.cookie = key_value_string + "; path=/";
+}
+
+function IsTestingMessage(message_data) {
+  return (ParseTestingMessage(message_data) != undefined);
+}
+
+function handleTestingMessage(message_event) {
+  var type_contents_tuple = ParseTestingMessage(message_event.data);
+  if (type_contents_tuple) {
+    var type = type_contents_tuple[0];
+    var contents = type_contents_tuple[1];
+    if (type === "ClearConsole")
+      ClearConsole();
+    else if (type === "DidExecuteTests")
+      DidExecuteTests();
+    else if (type === "LogHTML")
+      LogHTML(contents);
+    else if (type === "SetCookie")
+      SetCookie(contents);
+  }
+}
+
+onload = function() {
+  var testcase = ExtractSearchParameter("testcase");
+  var mode = ExtractSearchParameter("mode");
+  document.title = 'Test ' + testcase;
+  var obj;
+  if (mode == "nacl") {
+    obj = document.createElement("EMBED");
+    obj.setAttribute("src", "test_case.nmf");
+    obj.setAttribute("type", "application/x-nacl");
+    obj.setAttribute("mode", mode);
+  } else {
+    var mimeType = "application/x-ppapi-tests";
+    if (mimeType in navigator.mimeTypes) {
+      obj = document.createElement("EMBED");
+      obj.setAttribute("src", "http://a.b.c/test");
+      obj.setAttribute("type", mimeType);
+    } else {
+      document.getElementById("console").innerHTML =
+          '<span class="fail">FAIL</span>: ' +
+          '<span class="err_msg">Test plug-in is not registered.</span>';
+    }
+  }
+  if (obj) {
+    obj.setAttribute("id", "plugin");
+    obj.setAttribute("testcase", testcase);
+    obj.setAttribute("protocol", window.location.protocol);
+    var container = document.getElementById("container");
+    container.appendChild(obj);
+    container.addEventListener("message", handleTestingMessage, true);
+  }
+}
+</script>
+</head><body>
+<div>
+  <div id="container"></div>
+  <div id="console" /><span class="load_msg">loading...</span></div>
+</div>
+</body></html>

@@ -1,0 +1,217 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     TODO(tsepez) rename when Content-security-policy is done.
+     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
+-->
+<meta http-equiv="X-WebKit-CSP"
+      content="object-src 'none';
+               script-src chrome://resources
+                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                          'self' 'unsafe-eval'">
+<title i18n-content="title"></title>
+<link rel="icon" href="../../app/theme/downloads_favicon.png">
+<style>
+body {
+  background-color: white;
+  color: black;
+  margin: 10px;
+}
+
+.header {
+  overflow: auto;
+  clear: both;
+}
+
+.header .logo {
+  float: left;
+}
+
+.header .form {
+  float: left;
+  margin-top: 22px;
+  -webkit-margin-start: 12px;
+}
+
+html[dir=rtl] .logo, html[dir=rtl] .form {
+  float: right;
+}
+
+#downloads-summary {
+  margin-top: 12px;
+  border-top: 1px solid #9cc2ef;
+  background-color: #ebeff9;
+  padding: 3px;
+  margin-bottom: 6px;
+}
+
+#downloads-summary-text {
+  font-weight: bold;
+}
+
+#downloads-summary > a {
+  float: right;
+}
+
+html[dir=rtl] #downloads-summary > a {
+  float: left;
+}
+
+#downloads-display {
+  max-width: 740px;
+}
+
+.download {
+  position: relative;
+  margin-top: 6px;
+  -webkit-margin-start: 114px;
+  -webkit-padding-start: 56px;
+  margin-bottom: 15px;
+}
+
+.date-container {
+  position: absolute;
+  left: -110px;
+  width: 110px;
+}
+
+html[dir=rtl] .date-container {
+  left: auto;
+  right: -110px;
+}
+
+.date-container .since {
+  color: black;
+}
+
+.date-container .date {
+  color: #666;
+}
+
+.download .icon {
+  position: absolute;
+  top: 2px;
+  left: 9px;
+  width: 32px;
+  height: 32px;
+}
+
+html[dir=rtl] .icon {
+  left: auto;
+  right: 9px;
+}
+
+.download.otr > .safe,
+.download.otr > .show-dangerous {
+  background: url('shared/images/otr_icon_standalone.png') no-repeat 100% 100%;
+  opacity: .66;
+  -webkit-transition: opacity .15s;
+}
+
+html[dir=rtl] .download.otr > .safe,
+html[dir=rtl] .download.otr > .show-dangerous {
+  background-position: 0% 100%;
+}
+
+.download.otr > .safe:hover,
+.download.otr > .show-dangerous:hover {
+  opacity: 1;
+}
+
+.progress {
+  position: absolute;
+  top: -6px;
+  left: 0px;
+  width: 48px;
+  height: 48px;
+}
+
+html[dir=rtl] .progress {
+  left: auto;
+  right: 0px;
+}
+
+.progress.background {
+  background: url('../../app/theme/download_progress_background32.png');
+}
+
+.progress.foreground {
+  background: url('../../app/theme/download_progress_foreground32.png');
+}
+
+.name {
+  display: none;
+  -webkit-padding-end: 16px;
+  max-width: 450px;
+  word-break: break-all;
+}
+
+.download .status {
+  display: inline;
+  color: #999;
+  white-space: nowrap;
+}
+
+.download .src-url {
+  display: inline-block;
+  color: #5566DD;
+  max-width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  padding-top: 4px;
+  padding-bottom: 1px;
+}
+
+.controls a {
+  color: #777;
+  margin-right: 16px;
+}
+
+#downloads-pagination {
+  padding-top: 24px;
+  margin-left: 18px;
+}
+
+.page-navigation {
+  padding: 8px;
+  background-color: #ebeff9;
+  margin-right: 4px;
+}
+
+.footer {
+  height: 24px;
+}
+
+</style>
+<script src="chrome://resources/js/local_strings.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="header">
+  <a id="search-link" href="">
+    <img src="shared/images/downloads_section.png"
+         width="67" height="67" class="logo" border="0" /></a>
+  <form id="search-form" method="post" action="" class="form">
+    <input type="text" name="term" id="term" />
+    <input id="search-submit"
+           type="submit" name="submit" i18n-values="value:searchbutton" />
+  </form>
+</div>
+<div class="main">
+  <div id="downloads-summary">
+    <span id="downloads-summary-text" i18n-content="downloads">Downloads</span>
+    <a id="clear-all" href="" i18n-content="clear_all">Clear All</a>
+  </div>
+  <div id="downloads-display"></div>
+</div>
+<div class="footer">
+</div>
+<script src="chrome://downloads/downloads.js"></script>
+<script src="chrome://downloads/strings.js"></script>
+<script src="chrome://resources/js/i18n_template.js"></script>
+<script src="chrome://resources/js/i18n_process.js"></script>
+</body>
+</html>

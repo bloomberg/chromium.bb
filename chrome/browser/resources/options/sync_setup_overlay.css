@@ -1,0 +1,321 @@
+/* TODO(jhawkins): Organize these by page. */
+
+#sync-setup-overlay * h4 {
+  margin: 5px 0;
+}
+
+#sync-setup-overlay * form {
+  -webkit-user-select: none;
+}
+
+#sync-setup-overlay * .content-area {
+  padding: 10px 15px;
+}
+
+.action-area-link-container {
+  -webkit-box-flex: 1;
+}
+
+.sync-customize-section-container {
+  margin: 5px 0 10px 0;
+}
+
+#sync-custom-passphrase {
+  margin: 0 25px;
+}
+
+#sync-passphrase-message {
+  color: gray;
+}
+
+.sync-custom-passphrase-input {
+  margin: 10px 0;
+}
+
+#sync-existing-passphrase-container {
+  background: #fff29e;
+  border: 1px solid #d4cdad;
+  padding: 10px;
+}
+
+#sync-select-container {
+  margin-bottom: 10px;
+}
+
+#sync-instructions-container {
+  margin-bottom: 30px;
+}
+
+#choose-data-types-body {
+  margin: 10px 0;
+}
+
+#choose-data-types-body > div {
+  -webkit-column-count: 3;
+}
+
+#sync-setup-overlay {
+  -webkit-user-select: none;
+  background-color: #fff;
+  margin-bottom: 6px;
+  margin-top: 6px;
+  width: 500px;
+}
+
+#sync-setup-overlay * a:link {
+  color: #00c;
+}
+
+#sync-setup-overlay * a:visited {
+  color: #551a8b;
+}
+
+#sync-setup-overlay * a:active {
+  color: #f00;
+}
+
+#sync-setup-overlay * hr {
+  background-color: #ddd;
+  border: 0;
+  height: 1px;
+  text-align: left;
+  width: 100%;
+}
+
+#sync-setup-overlay * input[type='button'],
+#sync-setup-overlay * input[type='submit'] {
+  min-height: 26px;
+  min-width: 87px;
+}
+
+.end-aligned {
+  text-align: end;
+}
+
+#sync-setup-overlay * .throbber {
+  margin: 4px 10px;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
+#gaia-account-text {
+  font-weight: bold;
+}
+
+#email-readonly {
+  font-weight: bold;
+}
+
+#sync-setup-overlay * div.errormsg {
+  color: red;
+  font-size: smaller;
+}
+
+#passphrase-encryption-message {
+  color: gray;
+  margin-bottom: 5px;
+}
+
+#passphrase-input {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#incorrect-passphrase {
+  margin-top: 5px;
+}
+
+#sync-setup-overlay * .error {
+  color: red;
+}
+
+.overlay-warning {
+  position: absolute;
+  left: 25px;
+  right: 25px;
+  top: 100px;
+  background: white;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0.2em 0.2em 0.5em #888;
+}
+
+#cancel-warning-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.overlay-warning input {
+  margin-top: 12px;
+  float: right;
+  margin-left: 5px;
+}
+
+#sync-passphrase-warning {
+  margin-bottom: 5px;
+}
+
+div.error-msg-spacer {
+  min-height: 1em;
+}
+
+#gaia-login-form {
+  margin-bottom: 0;
+}
+
+#captcha-wrapper {
+  background: no-repeat;
+  background-color: #e8eefa;
+  background-position: center;
+  background-size: 200px 70px;
+}
+
+#captcha-image {
+  height: 70px;
+  width: 200px;
+}
+
+#logging-in-throbber {
+  margin: 0 10px;
+}
+
+.bottom-padded-cell {
+  padding-bottom: 3px;
+}
+
+.no-vertical-padding {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+#cancel-space-no-captcha {
+  height: 22px;
+}
+
+#top-blurb {
+  line-height: 1.5em;
+}
+
+#top-blurb-error {
+  background-color: #eeb939;
+  border-radius: 4px;
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 4px 10px;
+  text-align: center;
+  visibility: hidden;
+  width: 70%;
+}
+
+#content-table {
+  background-color: #fff;
+  border: #c3d9ff 1px solid;
+  padding: 2px;
+}
+
+.access-code-row > td {
+  padding-bottom: 1px;
+  text-align: center;
+}
+
+#access-code-label-row > td {
+  padding-top: 6px;
+}
+
+#captcha-instructions {
+  margin-bottom: 5px;
+  white-space: normal;
+}
+
+#password-row {
+  margin-top: 2px;
+}
+
+#action-area {
+  margin-top: 2px;
+}
+
+#errormsg-0-access-code {
+  text-align: center;
+}
+
+#sync-setup-configure {
+  line-height: 1.33em;
+  background: #FFFFFF;
+}
+
+html[os='mac'] #sync-setup-configure {
+  line-height: 1.5em;
+}
+
+#choose-data-types-form {
+  -webkit-user-select: none;
+}
+
+#chooseDataTypesRadio {
+  vertical-align: top;
+}
+
+#chooseDataTypes > div {
+  display: inline-block;
+}
+
+.sync-item-show {
+  display: block;
+  white-space: nowrap;
+}
+
+.sync-item-show > label {
+ overflow: hidden;
+ white-space: nowrap;
+ text-overflow: ellipsis;
+ display: inline-block;
+ width: 92%;
+}
+
+.sync-item-hide {
+  display: none;
+}
+
+.sync-label-inactive {
+  color: #9b9b9b;
+}
+
+.sync-label-active {
+  color: #000;
+}
+
+.sync-data-types {
+  margin-left: 5px;
+}
+
+.sync-configuration-errors {
+  margin-top: 5px;
+}
+
+.sync-configuration-error {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  padding: 1px 10px;
+  background-color: #eeb939;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+#learn-more-link {
+  float: right;
+}
+
+html[dir='rtl'] #learn-more-link {
+  float: left;
+}
+
+#customize-link, #use-default-link {
+  -webkit-transition: opacity .25s;
+}

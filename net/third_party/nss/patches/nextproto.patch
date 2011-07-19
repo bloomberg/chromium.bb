@@ -1,0 +1,502 @@
+commit de6d1a65eb146a0887a31ca92e9ca924045e9e69
+Author: Adam Langley <agl@chromium.org>
+Date:   Mon Jun 20 15:49:24 2011 -0400
+
+    nextproto.patch
+
+diff --git a/mozilla/security/nss/cmd/tstclnt/tstclnt.c b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
+index 55684e6..d209a33 100644
+--- a/mozilla/security/nss/cmd/tstclnt/tstclnt.c
++++ b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
+@@ -868,6 +868,12 @@ int main(int argc, char **argv)
+ 	return 1;
+     }
+ 
++    rv = SSL_SetNextProtoNego(s, "\004flip\004http1.1", 10);
++    if (rv != SECSuccess) {
++	SECU_PrintError(progName, "error enabling next protocol negotiation");
++	return 1;
++    }
++
+     /* enable false start. */
+     rv = SSL_OptionSet(s, SSL_ENABLE_FALSE_START, enableFalseStart);
+     if (rv != SECSuccess) {
+diff --git a/mozilla/security/nss/lib/ssl/ssl.def b/mozilla/security/nss/lib/ssl/ssl.def
+index d3f455c..a1f4b51 100644
+--- a/mozilla/security/nss/lib/ssl/ssl.def
++++ b/mozilla/security/nss/lib/ssl/ssl.def
+@@ -152,3 +152,10 @@ SSL_SNISocketConfigHook;
+ ;+    local:
+ ;+*;
+ ;+};
++;+NSS_CHROMIUM {
++;+    global:
++SSL_GetNextProto;
++SSL_SetNextProtoNego;
++;+    local:
++;+*;
++;+};
+diff --git a/mozilla/security/nss/lib/ssl/ssl.h b/mozilla/security/nss/lib/ssl/ssl.h
+index 4a9e89d..ffa973c 100644
+--- a/mozilla/security/nss/lib/ssl/ssl.h
++++ b/mozilla/security/nss/lib/ssl/ssl.h
+@@ -153,6 +153,18 @@ SSL_IMPORT SECStatus SSL_OptionSetDefault(PRInt32 option, PRBool on);
+ SSL_IMPORT SECStatus SSL_OptionGetDefault(PRInt32 option, PRBool *on);
+ SSL_IMPORT SECStatus SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle);
+ 
++SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
++					  const unsigned char *data,
++					  unsigned short length);
++SSL_IMPORT SECStatus SSL_GetNextProto(PRFileDesc *fd,
++				      int *state,
++				      unsigned char *buf,
++				      unsigned *length,
++				      unsigned buf_len);
++#define SSL_NEXT_PROTO_NO_SUPPORT	0 /* No peer support                */
++#define SSL_NEXT_PROTO_NEGOTIATED	1 /* Mutual agreement               */
++#define SSL_NEXT_PROTO_NO_OVERLAP	2 /* No protocol overlap found      */
++
+ /*
+ ** Control ciphers that SSL uses. If on is non-zero then the named cipher
+ ** is enabled, otherwise it is disabled. 
+diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
+index 8048913..e0cb4e9 100644
+--- a/mozilla/security/nss/lib/ssl/ssl3con.c
++++ b/mozilla/security/nss/lib/ssl/ssl3con.c
+@@ -81,6 +81,7 @@ static SECStatus ssl3_InitState(             sslSocket *ss);
+ static SECStatus ssl3_SendCertificate(       sslSocket *ss);
+ static SECStatus ssl3_SendEmptyCertificate(  sslSocket *ss);
+ static SECStatus ssl3_SendCertificateRequest(sslSocket *ss);
++static SECStatus ssl3_SendNextProto(         sslSocket *ss);
+ static SECStatus ssl3_SendFinished(          sslSocket *ss, PRInt32 flags);
+ static SECStatus ssl3_SendServerHello(       sslSocket *ss);
+ static SECStatus ssl3_SendServerHelloDone(   sslSocket *ss);
+@@ -5742,6 +5743,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss)
+     if (rv != SECSuccess) {
+ 	goto loser;	/* err code was set. */
+     }
++
++    rv = ssl3_SendNextProto(ss);
++    if (rv != SECSuccess) {
++	goto loser;	/* err code was set. */
++    }
++
+     rv = ssl3_SendFinished(ss, 0);
+     if (rv != SECSuccess) {
+ 	goto loser;	/* err code was set. */
+@@ -8169,6 +8176,40 @@ ssl3_ComputeTLSFinished(ssl3CipherSpec *spec,
+ }
+ 
+ /* called from ssl3_HandleServerHelloDone
++ */
++static SECStatus
++ssl3_SendNextProto(sslSocket *ss)
++{
++    SECStatus rv;
++    int padding_len;
++    static const unsigned char padding[32] = {0};
++
++    if (ss->ssl3.nextProtoState == SSL_NEXT_PROTO_NO_SUPPORT)
++	return SECSuccess;
++
++    PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
++    PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
++
++    padding_len = 32 - ((ss->ssl3.nextProto.len + 2) % 32);
++
++    rv = ssl3_AppendHandshakeHeader(ss, next_proto, ss->ssl3.nextProto.len +
++						    2 + padding_len);
++    if (rv != SECSuccess) {
++	return rv;	/* error code set by AppendHandshakeHeader */
++    }
++    rv = ssl3_AppendHandshakeVariable(ss, ss->ssl3.nextProto.data,
++				      ss->ssl3.nextProto.len, 1);
++    if (rv != SECSuccess) {
++	return rv;	/* error code set by AppendHandshake */
++    }
++    rv = ssl3_AppendHandshakeVariable(ss, padding, padding_len, 1);
++    if (rv != SECSuccess) {
++	return rv;	/* error code set by AppendHandshake */
++    }
++    return rv;
++}
++
++/* called from ssl3_HandleServerHelloDone
+  *             ssl3_HandleClientHello
+  *             ssl3_HandleFinished
+  */
+@@ -8421,6 +8462,14 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
+ 	if (doStepUp || ss->writerThread == PR_GetCurrentThread()) {
+ 	    flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
+ 	}
++
++	if (!isServer) {
++	    rv = ssl3_SendNextProto(ss);
++	    if (rv != SECSuccess) {
++		goto xmit_loser;	/* err code was set. */
++	    }
++	}
++
+ 	rv = ssl3_SendFinished(ss, flags);
+ 	if (rv != SECSuccess) {
+ 	    goto xmit_loser;	/* err is set. */
+@@ -9488,6 +9537,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+     ssl3_DestroyCipherSpec(&ss->ssl3.specs[1], PR_TRUE/*freeSrvName*/);
+ 
+     ss->ssl3.initialized = PR_FALSE;
++
++    if (ss->ssl3.nextProto.data) {
++	PORT_Free(ss->ssl3.nextProto.data);
++	ss->ssl3.nextProto.data = NULL;
++    }
+ }
+ 
+ /* End of ssl3con.c */
+diff --git a/mozilla/security/nss/lib/ssl/ssl3ext.c b/mozilla/security/nss/lib/ssl/ssl3ext.c
+index becbfe9..fbd5a91 100644
+--- a/mozilla/security/nss/lib/ssl/ssl3ext.c
++++ b/mozilla/security/nss/lib/ssl/ssl3ext.c
+@@ -235,6 +235,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
+ #endif
+     { ssl_session_ticket_xtn,     &ssl3_ServerHandleSessionTicketXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
++    { ssl_next_proto_neg_xtn,     &ssl3_ServerHandleNextProtoNegoXtn },
+     { -1, NULL }
+ };
+ 
+@@ -245,6 +246,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+     /* TODO: add a handler for ssl_ec_point_formats_xtn */
+     { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
++    { ssl_next_proto_neg_xtn,     &ssl3_ClientHandleNextProtoNegoXtn },
+     { -1, NULL }
+ };
+ 
+@@ -267,7 +269,8 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
+     { ssl_elliptic_curves_xtn,    &ssl3_SendSupportedCurvesXtn },
+     { ssl_ec_point_formats_xtn,   &ssl3_SendSupportedPointFormatsXtn },
+ #endif
+-    { ssl_session_ticket_xtn,     &ssl3_SendSessionTicketXtn }
++    { ssl_session_ticket_xtn,     &ssl3_SendSessionTicketXtn },
++    { ssl_next_proto_neg_xtn,     &ssl3_ClientSendNextProtoNegoXtn }
+     /* any extra entries will appear as { 0, NULL }    */
+ };
+ 
+@@ -534,6 +537,123 @@ ssl3_SendSessionTicketXtn(
+     return -1;
+ }
+ 
++/* handle an incoming Next Protocol Negotiation extension. */
++SECStatus
++ssl3_ServerHandleNextProtoNegoXtn(sslSocket * ss, PRUint16 ex_type, SECItem *data)
++{
++    if (data->len != 0) {
++	/* Clients MUST send an empty NPN extension, if any. */
++	return SECFailure;
++    }
++
++    ss->ssl3.hs.nextProtoNego = PR_TRUE;
++    return SECSuccess;
++}
++
++/* ssl3_ValidateNextProtoNego checks that the given block of data is valid: none
++ * of the length may be 0 and the sum of the lengths must equal the length of
++ * the block. */
++SECStatus
++ssl3_ValidateNextProtoNego(const unsigned char* data, unsigned short length)
++{
++    unsigned int offset = 0;
++
++    while (offset < length) {
++	if (data[offset] == 0) {
++	    return SECFailure;
++	}
++	offset += (unsigned int)data[offset] + 1;
++    }
++
++    if (offset > length)
++	return SECFailure;
++
++    return SECSuccess;
++}
++
++SECStatus
++ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
++                                 SECItem *data)
++{
++    unsigned int i, j;
++    SECStatus rv;
++    unsigned char *result;
++
++    if (data->len == 0) {
++	/* The server supports the extension, but doesn't have any
++	 * protocols configured. In this case we request our favoured
++	 * protocol. */
++	goto pick_first;
++    }
++
++    rv = ssl3_ValidateNextProtoNego(data->data, data->len);
++    if (rv != SECSuccess)
++	return rv;
++
++    /* For each protocol in server preference order, see if we support it. */
++    for (i = 0; i < data->len; ) {
++	for (j = 0; j < ss->opt.nextProtoNego.len; ) {
++	    if (data->data[i] == ss->opt.nextProtoNego.data[j] &&
++		memcmp(&data->data[i+1], &ss->opt.nextProtoNego.data[j+1],
++		       data->data[i]) == 0) {
++		/* We found a match */
++		ss->ssl3.nextProtoState = SSL_NEXT_PROTO_NEGOTIATED;
++		result = &data->data[i];
++		goto found;
++	    }
++	    j += (unsigned int)ss->opt.nextProtoNego.data[j] + 1;
++	}
++
++	i += (unsigned int)data->data[i] + 1;
++    }
++
++  pick_first:
++    ss->ssl3.nextProtoState = SSL_NEXT_PROTO_NO_OVERLAP;
++    result = ss->opt.nextProtoNego.data;
++
++  found:
++    if (ss->ssl3.nextProto.data)
++	PORT_Free(ss->ssl3.nextProto.data);
++    ss->ssl3.nextProto.data = PORT_Alloc(result[0]);
++    PORT_Memcpy(ss->ssl3.nextProto.data, result + 1, result[0]);
++    ss->ssl3.nextProto.len = result[0];
++    return SECSuccess;
++}
++
++PRInt32
++ssl3_ClientSendNextProtoNegoXtn(sslSocket * ss,
++			       PRBool      append,
++			       PRUint32    maxBytes)
++{
++    PRInt32 extension_length;
++
++    /* Renegotiations do not send this extension. */
++    if (ss->opt.nextProtoNego.len == 0 || ss->firstHsDone) {
++	return 0;
++    }
++
++    extension_length = 4;
++
++    if (append && maxBytes >= extension_length) {
++	SECStatus rv;
++	rv = ssl3_AppendHandshakeNumber(ss, ssl_next_proto_neg_xtn, 2);
++	if (rv != SECSuccess)
++	    goto loser;
++	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
++	if (rv != SECSuccess)
++	    goto loser;
++	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
++		ssl_next_proto_neg_xtn;
++    } else if (maxBytes < extension_length) {
++	return 0;
++    }
++
++    return extension_length;
++
++ loser:
++    return -1;
++}
++
+ /*
+  * NewSessionTicket
+  * Called from ssl3_HandleFinished
+diff --git a/mozilla/security/nss/lib/ssl/ssl3prot.h b/mozilla/security/nss/lib/ssl/ssl3prot.h
+index 4702fcc..f3c950e 100644
+--- a/mozilla/security/nss/lib/ssl/ssl3prot.h
++++ b/mozilla/security/nss/lib/ssl/ssl3prot.h
+@@ -157,7 +157,8 @@ typedef enum {
+     server_hello_done	= 14,
+     certificate_verify	= 15, 
+     client_key_exchange	= 16, 
+-    finished		= 20
++    finished		= 20,
++    next_proto		= 67
+ } SSL3HandshakeType;
+ 
+ typedef struct {
+diff --git a/mozilla/security/nss/lib/ssl/sslimpl.h b/mozilla/security/nss/lib/ssl/sslimpl.h
+index 9af471d..d1c1181 100644
+--- a/mozilla/security/nss/lib/ssl/sslimpl.h
++++ b/mozilla/security/nss/lib/ssl/sslimpl.h
+@@ -313,6 +313,11 @@ typedef struct {
+ #endif /* NSS_ENABLE_ECC */
+ 
+ typedef struct sslOptionsStr {
++    /* For clients, this is a validated list of protocols in preference order
++     * and wire format. For servers, this is the list of support protocols,
++     * also in wire format. */
++    SECItem      nextProtoNego;
++
+     unsigned int useSecurity		: 1;  /*  1 */
+     unsigned int useSocks		: 1;  /*  2 */
+     unsigned int requestCertificate	: 1;  /*  3 */
+@@ -786,6 +791,7 @@ const ssl3CipherSuiteDef *suite_def;
+ #ifdef NSS_ENABLE_ECC
+     PRUint32              negotiatedECCurves; /* bit mask */
+ #endif /* NSS_ENABLE_ECC */
++    PRBool                nextProtoNego;/* Our peer has sent this extension */
+ } SSL3HandshakeState;
+ 
+ 
+@@ -827,6 +833,16 @@ struct ssl3StateStr {
+     PRBool               initialized;
+     SSL3HandshakeState   hs;
+     ssl3CipherSpec       specs[2];	/* one is current, one is pending. */
++
++    /* In a client: if the server supports Next Protocol Negotiation, then
++     * this is the protocol that was requested.
++     * In a server: this is the protocol that the client requested via Next
++     * Protocol Negotiation.
++     *
++     * In either case, if the data pointer is non-NULL, then it is malloced
++     * data.  */
++    SECItem		nextProto;
++    int			nextProtoState;	/* See SSL_NEXT_PROTO_* defines */
+ };
+ 
+ typedef struct {
+@@ -1494,8 +1510,12 @@ extern SECStatus ssl3_HandleSupportedPointFormatsXtn(sslSocket * ss,
+ 			PRUint16 ex_type, SECItem *data);
+ extern SECStatus ssl3_ClientHandleSessionTicketXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
++extern SECStatus ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss,
++			PRUint16 ex_type, SECItem *data);
+ extern SECStatus ssl3_ServerHandleSessionTicketXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
++extern SECStatus ssl3_ServerHandleNextProtoNegoXtn(sslSocket *ss,
++			PRUint16 ex_type, SECItem *data);
+ 
+ /* ClientHello and ServerHello extension senders.
+  * Note that not all extension senders are exposed here; only those that
+@@ -1526,6 +1546,10 @@ extern PRInt32 ssl3_SendSupportedCurvesXtn(sslSocket *ss,
+ extern PRInt32 ssl3_SendSupportedPointFormatsXtn(sslSocket *ss,
+ 			PRBool append, PRUint32 maxBytes);
+ #endif
++extern PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
++					       PRUint32 maxBytes);
++extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
++					    unsigned short length);
+ 
+ /* call the registered extension handlers. */
+ extern SECStatus ssl3_HandleHelloExtensions(sslSocket *ss, 
+diff --git a/mozilla/security/nss/lib/ssl/sslsock.c b/mozilla/security/nss/lib/ssl/sslsock.c
+index bc770a1..4c8fbfd 100644
+--- a/mozilla/security/nss/lib/ssl/sslsock.c
++++ b/mozilla/security/nss/lib/ssl/sslsock.c
+@@ -163,6 +163,7 @@ static const sslSocketOps ssl_secure_ops = {	/* SSL. */
+ ** default settings for socket enables
+ */
+ static sslOptions ssl_defaults = {
++    { siBuffer, NULL, 0 },	/* nextProtoNego */
+     PR_TRUE, 	/* useSecurity        */
+     PR_FALSE,	/* useSocks           */
+     PR_FALSE,	/* requestCertificate */
+@@ -438,6 +439,10 @@ ssl_DestroySocketContents(sslSocket *ss)
+ 	ssl3_FreeKeyPair(ss->ephemeralECDHKeyPair);
+ 	ss->ephemeralECDHKeyPair = NULL;
+     }
++    if (ss->opt.nextProtoNego.data) {
++	PORT_Free(ss->opt.nextProtoNego.data);
++	ss->opt.nextProtoNego.data = NULL;
++    }
+     PORT_Assert(!ss->xtnData.sniNameArr);
+     if (ss->xtnData.sniNameArr) {
+         PORT_Free(ss->xtnData.sniNameArr);
+@@ -1266,6 +1271,75 @@ SSL_ImportFD(PRFileDesc *model, PRFileDesc *fd)
+     return fd;
+ }
+ 
++/* SSL_SetNextProtoNego sets the list of supported protocols for the given
++ * socket. The list is a series of 8-bit, length prefixed strings. */
++SECStatus
++SSL_SetNextProtoNego(PRFileDesc *fd, const unsigned char *data,
++		     unsigned short length)
++{
++    sslSocket *ss = ssl_FindSocket(fd);
++
++    if (!ss) {
++	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_SetNextProtoNego", SSL_GETPID(),
++		fd));
++	return SECFailure;
++    }
++
++    if (ssl3_ValidateNextProtoNego(data, length) != SECSuccess)
++	return SECFailure;
++
++    ssl_GetSSL3HandshakeLock(ss);
++    if (ss->opt.nextProtoNego.data)
++	PORT_Free(ss->opt.nextProtoNego.data);
++    ss->opt.nextProtoNego.data = PORT_Alloc(length);
++    if (!ss->opt.nextProtoNego.data) {
++	ssl_ReleaseSSL3HandshakeLock(ss);
++	return SECFailure;
++    }
++    memcpy(ss->opt.nextProtoNego.data, data, length);
++    ss->opt.nextProtoNego.len = length;
++    ss->opt.nextProtoNego.type = siBuffer;
++    ssl_ReleaseSSL3HandshakeLock(ss);
++
++    return SECSuccess;
++}
++
++/* SSL_GetNextProto reads the resulting Next Protocol Negotiation result for
++ * the given socket. It's only valid to call this once the handshake has
++ * completed.
++ *
++ * state is set to one of the SSL_NEXT_PROTO_* constants. The negotiated
++ * protocol, if any, is written into buf, which must be at least buf_len
++ * bytes long. If the negotiated protocol is longer than this, it is truncated.
++ * The number of bytes copied is written into length.
++ */
++SECStatus
++SSL_GetNextProto(PRFileDesc *fd, int *state, unsigned char *buf,
++		 unsigned int *length, unsigned int buf_len)
++{
++    sslSocket *ss = ssl_FindSocket(fd);
++
++    if (!ss) {
++	SSL_DBG(("%d: SSL[%d]: bad socket in SSL_GetNextProto", SSL_GETPID(),
++		fd));
++	return SECFailure;
++    }
++
++    *state = ss->ssl3.nextProtoState;
++
++    if (ss->ssl3.nextProtoState != SSL_NEXT_PROTO_NO_SUPPORT &&
++	ss->ssl3.nextProto.data) {
++	*length = ss->ssl3.nextProto.len;
++	if (*length > buf_len)
++	    *length = buf_len;
++	PORT_Memcpy(buf, ss->ssl3.nextProto.data, *length);
++    } else {
++	*length = 0;
++    }
++
++    return SECSuccess;
++}
++
+ PRFileDesc *
+ SSL_ReconfigFD(PRFileDesc *model, PRFileDesc *fd)
+ {
+diff --git a/mozilla/security/nss/lib/ssl/sslt.h b/mozilla/security/nss/lib/ssl/sslt.h
+index c7d4553..f6e0b62 100644
+--- a/mozilla/security/nss/lib/ssl/sslt.h
++++ b/mozilla/security/nss/lib/ssl/sslt.h
+@@ -203,9 +203,10 @@ typedef enum {
+     ssl_ec_point_formats_xtn         = 11,
+ #endif
+     ssl_session_ticket_xtn           = 35,
++    ssl_next_proto_neg_xtn           = 13172,
+     ssl_renegotiation_info_xtn       = 0xff01	/* experimental number */
+ } SSLExtensionType;
+ 
+-#define SSL_MAX_EXTENSIONS             5
++#define SSL_MAX_EXTENSIONS             6
+ 
+ #endif /* __sslt_h_ */

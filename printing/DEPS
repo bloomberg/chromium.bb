@@ -1,0 +1,6 @@
+include_rules = [
+  "+base",
+  "+skia/ext",
+  "+ui/base/text",
+  "+ui/gfx",
+]

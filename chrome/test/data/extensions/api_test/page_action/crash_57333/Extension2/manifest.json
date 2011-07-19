@@ -1,0 +1,13 @@
+{
+  "name": "Extension 2",
+  "version": "1.0",
+  "description": "Extension for testing crash http://crbug.com/57333",
+  "background_page" : "background.html",
+  "icons": {
+    "16": "16.png"
+  },
+  "page_action": {
+    "default_icon": "16.png"
+  },
+  "permissions": [ "contextMenus" ]
+}

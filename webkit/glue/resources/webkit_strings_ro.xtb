@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ro">
+<translation id="4519964825805946997">Instalarea pluginului de la <ph name="URL"/> a eșuat</translation>
+<translation id="9186171386827445984">Se încarcă documentul: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (de) pagini...</translation>
+<translation id="1235745349614807883">Ștergeți căutările recente</translation>
+<translation id="1171774979989969504">Introduceţi o adresă de e-mail.</translation>
+<translation id="709897737746224366">Potriviţi cu formatul solicitat.</translation>
+<translation id="5048533449481078685">marcator listă</translation>
+<translation id="372362261556059955">Este necesar un plugin suplimentar</translation>
+<translation id="4202807286478387388">Salt</translation>
+<translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="7658239707568436148">Anulați</translation>
+<translation id="795667975304826397">Nu s-au ales fișiere</translation>
+<translation id="1416462845279468967">Instalarea pluginului a eșuat</translation>
+<translation id="8141602879876242471">Acesta este un index în care se poate căuta. Introduceți cuvintele cheie pentru căutare:</translation>
+<translation id="5650795167354946011">După instalarea pluginului, faceți clic aici pentru a actualiza</translation>
+<translation id="370665806235115550">Se încarcă...</translation>
+<translation id="6845533974506654842">Apăsați</translation>
+<translation id="8244226242650769279">hartă cu imagini</translation>
+<translation id="310520048233152454">Introduceţi o adresă URL.</translation>
+<translation id="2548326553472216322">Nicio căutare recentă</translation>
+<translation id="7263440858009898357">Selectaţi un articol din listă.</translation>
+<translation id="5164977714490026579">Valoarea trebuie să fie mai mare sau egală cu <ph name="MINIMUM"/>.</translation>
+<translation id="5944544982112848342">2048 (Grad înalt)</translation>
+<translation id="3040011195152428237">link</translation>
+<translation id="2745343197843472802">Descărcați pluginul</translation>
+<translation id="8451268428117625855">Selectaţi un fişier.</translation>
+<translation id="5776402066334188252">Confirmați că doriți să instalați acest plugin. Vă recomandăm să instalați numai pluginuri în care aveți încredere.</translation>
+<translation id="3018094406922859308">Se descarcă pluginul...</translation>
+<translation id="7364796246159120393">Alegeți fișierul</translation>
+<translation id="2761667185364618470">Bifaţi caseta dacă doriţi să continuaţi.</translation>
+<translation id="8964020114565522021">Trageți fișierul aici</translation>
+<translation id="5129723458012748440">Pluginul <ph name="PLUGIN"/> nu este instalat.</translation>
+<translation id="838869780401515933">Bifați</translation>
+<translation id="2846343701378493991">1024 (Grad mediu)</translation>
+<translation id="5476505524087279545">Debifați</translation>
+<translation id="3789841737615482174">Instalați</translation>
+<translation id="2507943997699731163">Completaţi acest câmp.</translation>
+<translation id="5253117816378681419">Confirmați că doriți să instalați pluginul <ph name="PLUGIN"/>. Vă recomandăm să instalați numai pluginuri în care aveți încredere.</translation>
+<translation id="6663448176199120256">Căutări recente</translation>
+<translation id="7335060848622232389">Instalarea pluginurilor a fost dezactivată.</translation>
+<translation id="2597378329261239068">Acest document este protejat cu parolă. Introduceți o parolă.</translation>
+<translation id="5466621249238537318">Selectaţi unul sau mai multe fişiere.</translation>
+<translation id="8750798805984357768">Selectaţi una dintre aceste opţiuni.</translation>
+<translation id="7740050170769002709">Conținut HTML</translation>
+<translation id="2226276347425096477">Micşoraţi acest text la cel mult <ph name="MAX_CHARACTERS"/> (de) caractere (în prezent utilizaţi <ph name="CURRENT_LENGTH"/> (de) caractere).</translation>
+<translation id="1639239467298939599">Se încarcă</translation>
+<translation id="2908441821576996758">Introduceţi o listă de adrese de e-mail separate prin virgulă.</translation>
+<translation id="5939518447894949180">Resetați</translation>
+<translation id="835897206747267392">Valoare nevalidă.</translation>
+<translation id="3851140433852960970">Niciun plugin disponibil pentru a afişa acest conținut.</translation>
+<translation id="1842960171412779397">Selectați</translation>
+<translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM"/>.</translation>
+<translation id="9198010615634362518">Pluginul necesar nu este instalat.</translation>
+<translation id="7638452146404718955">Faceți clic aici pentru a descărca pluginul</translation>
+<translation id="6119846243427417423">Activați</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> fișiere</translation>
+<translation id="3934680773876859118">Încărcarea documentului PDF nu a reuşit</translation>
+<translation id="8597182159515967513">titlu</translation>
+<translation id="2653659639078652383">Trimiteți</translation>
+<translation id="8475551193147984329">Este necesar pluginul <ph name="PLUGIN"/></translation>
+</translationbundle>

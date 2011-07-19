@@ -1,0 +1,12 @@
+<html>
+<head>
+<script>
+  // Called when the user clicks on the browser action.
+  chrome.pageAction.onClicked.addListener(function(windowId) {
+    chrome.test.notifyPass();
+  });
+
+  chrome.test.notifyPass();
+</script>
+</head>
+</html>

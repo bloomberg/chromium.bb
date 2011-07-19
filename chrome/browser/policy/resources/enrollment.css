@@ -1,0 +1,96 @@
+body {
+  -webkit-user-select: none;
+  background-color: #fff;
+  margin: 10px 15px;
+}
+
+input[type='button'],
+input[type='submit'] {
+  min-height: 26px;
+  min-width: 87px;
+}
+
+.stretch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.hidden
+[hidden] {
+  display: none !important;
+}
+
+#login-info {
+  display: inline-block;
+  vertical-align: top;
+  height: 100%;
+  width: 50%;
+  box-sizing: border-box;
+  padding: 6px;
+}
+
+#login-header {
+  margin: 4px 0;
+  font-weight: bold;
+}
+
+.login-item {
+  position: relative;
+  margin: 16px 8px;
+  font-size: 0.9em;
+}
+
+.login-item-image {
+  position: absolute;
+}
+
+.login-item-content {
+  -webkit-margin-start: 52px;
+}
+
+.login-item-header {
+  margin: 0 8px 0 0;
+  font-weight: bold;
+}
+
+#login-form {
+  display: inline-block;
+  vertical-align: top;
+  height: 100%;
+  width: 50%;
+}
+
+#gaialogin {
+  border: none;
+  width: 100%;
+  height: 100%;
+  vertical-align: top;
+}
+
+#confirmation-header {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+#confirmation-content {
+  position: absolute;
+  top: 50%;
+  height: 1.5em;
+  width: 100%;
+  margin-top: -.75em;
+  text-align: center;
+}
+
+#confirmation-image {
+  vertical-align: middle;
+}
+
+#confirmation-footer {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  text-align: end;
+}

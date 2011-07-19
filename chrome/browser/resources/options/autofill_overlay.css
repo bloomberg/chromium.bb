@@ -1,0 +1,63 @@
+#autofill-edit-address-overlay {
+  min-width: 510px;
+}
+
+#autofill-edit-credit-card-overlay {
+  min-width: 500px;
+}
+
+div.table {
+  display: table;
+}
+
+div.cell {
+  display: table-cell;
+}
+
+div.row {
+  display: table-row;
+}
+
+div.input {
+  padding: 2px;
+}
+
+#autofill-edit-address-overlay list#full-name-list {
+  width: 237px;
+}
+
+#autofill-edit-address-overlay list#full-name-list div.static-text {
+  width: 202px;
+}
+
+#autofill-edit-address-overlay list#full-name-list input {
+  width: 212px;
+}
+
+/* Size to match large name fields. */
+#company-name, #addr-line-1, #addr-line-2 {
+  width: 206px;
+}
+
+#country {
+  max-width: 450px;
+}
+
+#autofill-edit-address-overlay list {
+  /* Min height is a multiple of the list item height (32) */
+  min-height: 32px;
+  width: 176px;
+}
+
+#autofill-edit-address-overlay list div.static-text {
+  -webkit-box-flex: 1;
+  -webkit-border-radius: 2px;
+  -webkit-padding-start: 4px;
+  -webkit-padding-end: 4px;
+  border: 1px solid darkGray;
+  width: 141px;
+}
+
+#autofill-edit-address-overlay list input {
+  width: 151px;
+}

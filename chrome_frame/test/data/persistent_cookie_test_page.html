@@ -1,0 +1,26 @@
+<html>
+  <head><title>Persistent host browser chrome frame cookie test page</title>
+    <script type="text/javascript"
+    src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+
+      function setPersistentCookieAndRedirect() {
+        if (isRunningInMSIE()) {
+          eraseCookie("PersistentCookie1");
+          eraseCookie("PersistentCookie2");
+          createCookie("PersistentCookie1", "Cookie1", 365);
+          createCookie("PersistentCookie2", "Cookie2", 365);
+          document.location = "persistent_cookie_test_final_page.html";
+        } else {
+          onFailure("PersistentCookieTest", 1, "Incorrectly loaded in chrome");
+        }
+      }
+    </script>
+  </head>
+  <body onLoad="setTimeout(setPersistentCookieAndRedirect, 100);">
+    <h2>Prepare to be redirected!</h2>
+    <p>Sets two persistent cookies in the host and redirects ChromeFrame <br />
+       to a page which validates the cookies.</p>
+  </body>
+</html>

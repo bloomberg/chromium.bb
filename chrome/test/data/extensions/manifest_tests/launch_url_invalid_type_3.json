@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "web_url": "javascript:alert(1)"
+    }
+  }
+}

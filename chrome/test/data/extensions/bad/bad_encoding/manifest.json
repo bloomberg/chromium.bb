@@ -1,0 +1,10 @@
+{
+  "name": "nevermind",
+  "version": "1",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*"],
+      "js": ["bad_encoding.js"]
+    }
+  ]
+}

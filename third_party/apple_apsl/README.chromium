@@ -1,0 +1,51 @@
+Name: Darwin
+URL: http://www.opensource.apple.com/
+Version: unknown
+Security Critical: yes
+
+Four files are excerpted here:
+
+malloc.h from:
+http://www.opensource.apple.com/source/Libc/Libc-583/include/malloc/malloc.h
+
+Modifications:
+- Modified #ifdef guards.
+- Removed everything but the definition of malloc_zone_t.
+- Renamed _malloc_zone_t to ChromeMallocZone to avoid possible name conflicts.
+- Added a few comments.
+
+CFRuntime.h from:
+http://www.opensource.apple.com/source/CF/CF-550/CFRuntime.h
+
+Modifications:
+- Modified #ifdef guards.
+- Removed everything but the definition of CFRuntimeBase.
+- Renamed CFRuntimeBase to ChromeCFRuntimeBase to avoid possible name conflicts.
+
+CFBase.h from:
+http://opensource.apple.com/source/CF/CF-550/CFBase.c
+
+Modifications:
+- Renamed the file to CFBase.h.
+- Added #ifdef guards.
+- Added an #include of the CFRuntime.h file.
+- Removed everything but the definition of __CFAllocator.
+- Modified the reference of CFRuntimeBase to ChromeCFRuntimeBase.
+- Renamed __CFAllocator to ChromeCFAllocatorLeopards to avoid possible name
+  conflicts.
+- Added a presumed definition of ChromeCFAllocatorLion.
+
+cssmapplePriv.h from:
+http://www.opensource.apple.com/source/libsecurity_cssm/libsecurity_cssm-31536/lib/cssmapplePriv.h
+
+Warning: Technically, this is a private Apple header, and as such provides no
+guarantee for API stability. However, the use of this header is the only way
+to implement OCSP checking per Apple's public documentation on the usage of
+their Trust Policy Module. Further, the use of this private header is the
+recommended approach from Apple for modifying OCSP policies.
+
+See: http://developer.apple.com/documentation/Security/Reference/SecAppleTrustPolicyModuleSpec/Apple_Trust_Policy_Module_Functional_Specification.pdf
+and http://lists.apple.com/archives/apple-cdsa/2008/Aug/msg00008.html
+
+Modifications:
+- Removed unneeded definitions for internal Apple CSP DL enums and structs

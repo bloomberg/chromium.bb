@@ -1,0 +1,6 @@
+<script>
+  chrome.tabs.getSelected(null, function(tab) {
+    chrome.pageAction.show(tab.id);
+    chrome.test.notifyPass();
+  });
+</script>

@@ -1,0 +1,61 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+.tab-switcher-view {
+  font-family: sans-serif;
+}
+
+.tab-switcher-view ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tab-switcher-view {
+  border-bottom: 1px solid #555;
+  background: #aaa;
+  overflow: hidden;
+}
+
+.tab-switcher-view li {
+  float: left;
+  -webkit-margin-start: 5px;
+}
+
+html[dir=rtl] .tab-switcher-view li {
+  float: right;
+}
+
+.tab-switcher-view a {
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  margin-top: 4px;
+  padding: 5px 10px 3px 10px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background-clip: border-box;
+  background: #ccc;
+}
+
+.tab-switcher-view a:hover {
+  background: #eee;
+}
+
+
+.tab-switcher-view a:visited,
+.tab-switcher-view a  {
+  color: blue;
+}
+
+.tab-switcher-view .selected {
+  background: white;
+}
+
+.tab-switcher-view a.selected {
+  position: relative;
+  top: 3px;
+  color: black;
+}

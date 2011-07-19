@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "version": "1",
+  "content_scripts": [
+    {
+      "matches": [12345]
+    }
+  ]
+}

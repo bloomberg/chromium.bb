@@ -1,0 +1,42 @@
+<p><strong>Some personal info may be in the data dump.  An option to
+redact sensitive info will be added in the future, but until then, be
+careful about posting data dumps on bug reports.</strong></p>
+
+<!-- TODO(akalin): Add option to redact sensitive info. -->
+
+<button id="dump-to-text">Dump to text</button>
+
+<pre id="data-dump"></pre>
+
+<script>
+(function() {
+var dumpToTextButton = document.getElementById('dump-to-text');
+var dataDump = document.getElementById('data-dump');
+dumpToTextButton.addEventListener('click', function(event) {
+  // TODO(akalin): Add info like Chrome version, OS, date dumped, etc.
+
+  var data = '';
+  data += '======\n';
+  data += 'Status\n';
+  data += '======\n';
+  data += JSON.stringify(chrome.sync.aboutInfo, null, 2);
+  data += '\n';
+  data += '\n';
+
+  data += '=============\n';
+  data += 'Notifications\n';
+  data += '=============\n';
+  data += JSON.stringify(chrome.sync.notifications, null, 2);
+  data += '\n';
+  data += '\n';
+
+  data += '===\n';
+  data += 'Log\n';
+  data += '===\n';
+  data += JSON.stringify(chrome.sync.log.entries, null, 2);
+  data += '\n';
+
+  dataDump.textContent = data;
+});
+})();
+</script>

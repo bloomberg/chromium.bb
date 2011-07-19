@@ -1,0 +1,11 @@
+{
+  "name": "Simple Background App",
+  "version": "0.1",
+  "app": {
+    "urls": [ "http://SOME_SITE_WITHOUT_PORT_NUMBERS/SOME_PATH/" ],
+    "launch": {
+      "web_url": "http://SOME_SITE/SOME_PATH/index.html"
+    }
+  },
+  "permissions": ["background", "notifications"]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "File manager override test",
+  "version": "0.1",
+  "description": "Test chrome://files override",
+  "chrome_url_overrides": {
+    "files": "files.html"
+  }
+}

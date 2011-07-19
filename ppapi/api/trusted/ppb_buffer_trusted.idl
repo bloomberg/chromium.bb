@@ -1,0 +1,25 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the trusted buffer interface.
+ */
+
+label Chrome {
+  M14 = 0.1
+};
+
+[macro="PPB_BUFFER_TRUSTED_INTERFACE"]
+interface PPB_BufferTrusted {
+  /**
+   * Returns the internal shared memory pointer associated with the given
+   * Buffer resource.  Used for proxying.  Returns PP_OK on success, or
+   * PP_ERROR_* on failure.  On success, the size in bytes of the shared
+   * memory region will be placed into |*byte_count|, and the handle for
+   * the shared memory in |*handle|.
+   */
+  int32_t GetSharedMemory([in] PP_Resource buffer, [out] handle_t handle);
+};
+

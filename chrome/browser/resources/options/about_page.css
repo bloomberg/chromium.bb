@@ -1,0 +1,34 @@
+#aboutPage {
+  -webkit-user-select: text;
+}
+
+.loading {
+  font-style: italic;
+}
+
+#channelSelect {
+  margin-bottom: 5px;
+}
+
+#channelWarning {
+  color: red;
+  font-weight: bold;
+}
+
+.update-icon {
+  width: 17px;
+  height: 17px;
+  display: inline-block;
+  vertical-align: middle;
+  background-repeat: no-repeat;
+}
+
+.update-icon.fail {
+  background-image: url('../../../app/theme/update_fail.png');
+}
+.update-icon.available {
+  background-image: url('../../../app/theme/update_available.png');
+}
+.update-icon.up-to-date {
+  background-image: url('../../../app/theme/update_uptodate.png');
+}

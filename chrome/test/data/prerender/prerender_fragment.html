@@ -1,0 +1,24 @@
+<html>
+<head>
+<title>Prerender fragment testing</title>
+
+<script>
+var pageWasPrerendered = false;
+
+function DidPrerenderPass() {
+  pageWasPrerendered = true;
+  return true;
+}
+
+// Make sure DidPrerenderPass() was not called first.
+function DidDisplayPass() {
+  return !pageWasPrerendered;
+}
+</script>
+
+</head>
+<body>
+  <a name="fragment">Fragment</a>
+  <a name="other_fragment">Other Fragment</a>
+</body>
+</html>

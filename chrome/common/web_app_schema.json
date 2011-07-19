@@ -1,0 +1,58 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file contains the schema for web app defintion files.
+
+{
+  "type": "object",
+  "properties": {
+    // TODO(aa): Need to figure out what max length the store is using for name
+    // and description.
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 45
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 132,
+      "optional": true
+    },
+    "launch_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "launch_container": {
+      "enum": ["tab", "panel"],
+      "optional": true
+    },
+    // TODO(aa): We had problems with a simple array of strings in extensions.
+    // Consider something else.
+    "permissions": {
+      "type": "array",
+      "optional": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "urls": {
+      "type": "array",
+      "optional": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "icons": {
+      "type": "object",
+      "optional": true,
+      "properties": {
+        "16": { "optional": true, "type": "string", "minLength": 1 },
+        "48": { "optional": true, "type": "string", "minLength": 1 },
+        "128": { "optional": true, "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

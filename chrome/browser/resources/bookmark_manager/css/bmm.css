@@ -1,0 +1,297 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  overflow: hidden;
+}
+
+list {
+  display: block;
+  overflow-x: hidden;
+  overflow-y: visible; /* let the container do the scrolling */
+}
+
+list > * {
+  color: hsl(0, 0%, 70%);
+  padding: 0 3px;
+  -webkit-padding-end: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+list > * > * {
+  box-sizing: border-box;
+  -webkit-padding-start: 20px;
+  background: 0 50% no-repeat;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre; /* Don't collapse whitespace */
+}
+
+list > * > .label {
+  -webkit-transition: all .15s;
+  color: black;
+  display: inline-block; /* We need to use inline-block here due to RTL. */
+}
+
+list > * > .url {
+  display: none;
+}
+
+list > :hover > .url,
+list > [selected] > .url {
+  display: inline;
+}
+
+html[dir=rtl] list .label {
+  background-position: 100% 50%;
+}
+
+list > .folder > .label {
+  background-image: url("../../../../../ui/resources/folder_closed.png");
+}
+
+/* We need to ensure that even empty labels take up space */
+list > * > .label:empty:after,
+list > * > .url:empty:after {
+  content: " ";
+  white-space: pre;
+}
+
+list > .folder > .url:empty:after {
+  content: "";
+}
+
+list > * > button {
+  -webkit-transition: opacity .15s;
+  background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
+  border: 1px solid hsl(214, 91%, 85%);
+  border-radius: 3px;
+  bottom: 1px;
+  display: none;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  right: 3px;
+  top: 1px;
+  width: 15px;
+}
+
+list > [selected]:hover > button,
+list > * > button[menu-shown] {
+  border-color: hsl(214, 91%, 65%);
+}
+
+list > :hover > button {
+  display: block;
+}
+
+list > * > button:hover,
+list > * > button[menu-shown] {
+  display: block;
+}
+
+html[dir=rtl] list > * > button {
+  right: auto;
+  left: 3px;
+}
+
+/*
+/* Edit mode
+*/
+
+list [editing] .label input,
+list [editing] .url input {
+  /* Do not inherit the line-height */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+  -webkit-margin-start: -4px;
+  -webkit-margin-end: 4px;
+  max-width: 40%;
+  padding: 0;
+  -webkit-padding-start: 1px;
+  -webkit-padding-end: 3px;
+  text-decoration: none;
+}
+
+.tree-item [editing] input {
+  margin: 0;
+  padding: 0;
+  -webkit-margin-start: -3px;
+  -webkit-padding-end: 7px;
+}
+
+html[os=mac] .tree-label [editing] input {
+  padding-top: 1px;
+}
+
+html:not([os=mac]) list .label input,
+html:not([os=mac]) list .url input {
+  outline: none;
+}
+
+list > [editing] {
+  overflow: visible;
+}
+
+list [editing] .label,
+list [editing] .url,
+list [editing] > * {
+  overflow: visible;
+  display: inline;
+}
+
+list [editing] .url {
+  -webkit-padding-start: 10px;
+}
+
+/* end editing */
+
+html[dir=rtl] list > .folder > .label {
+  background-image: url("../../../../../ui/resources/folder_closed_rtl.png");
+}
+
+html[os=mac] list > .folder > .label {
+  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
+}
+
+html[os=mac] .tree-label {
+  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
+}
+
+html[os=mac] .tree-row[selected] > .tree-label {
+  background-image: url("../../../../app/theme/bookmark_bar_folder_mac.png");
+}
+
+.main {
+  position: absolute;
+  display: -webkit-box;
+  top: 79px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.main > * {
+  height: 100%;
+}
+
+#tree-container {
+  width: 200px;
+  /* min-width and max-width are used by the split pane. */
+  min-width: 50px;
+  max-width: 50%;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 5px;
+  -webkit-padding-start: 10px;
+}
+
+#tree {
+  min-width: 100%;
+  overflow: visible; /* let the container do the scrolling */
+  display: inline-block;
+}
+
+#list {
+  -webkit-box-flex: 1;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+.splitter {
+  width: 5px;
+  background-color: #ebeff9;
+  cursor: e-resize;
+}
+
+html[os=mac] .splitter {
+  cursor: col-resize;
+}
+
+.logo {
+  -webkit-appearance: none;
+  border: 0;
+  background: url("../images/bookmarks_section_32.png") no-repeat 50% 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  margin: 10px;
+  float: left;
+}
+
+.header form {
+  float: left;
+  margin: 14px 2px;
+  margin-bottom: 0;
+}
+
+.header {
+  min-width: 400px;
+}
+
+html[dir=rtl] .logo,
+html[dir=rtl] .header > div,
+html[dir=rtl] .header form {
+  float: right;
+}
+
+#drop-overlay {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  border: 1px solid hsl(214, 91%, 85%);;
+  border-radius: 3px;
+  box-sizing: border-box;
+  background-color: hsla(214, 91%, 85%, .5);
+  overflow: hidden;
+  z-index: -1;
+}
+
+#drop-overlay.line {
+  border: 3px solid black;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  background-color: black;
+  background-clip: padding-box;
+  height: 8px;
+  border-radius: 0;
+  z-index: 10;
+}
+
+.summary {
+  background-color: #ebeff9;
+  border-top: 1px solid #9cc2ef;
+  padding: 5px 10px;
+  clear: both;
+  white-space: nowrap;
+}
+
+.summary > * {
+  font-size: 100%;
+  display: inline-block;
+  margin: 0;
+}
+
+.summary button {
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  padding: 0;
+  background: -webkit-canvas(drop-down-arrow) 100% 50% no-repeat;
+  -webkit-padding-end: 11px;
+  -webkit-margin-start: 10px;
+}
+
+html[dir=rtl] .summary button {
+  background-position: 0% 50%;
+}

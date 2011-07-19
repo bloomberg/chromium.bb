@@ -1,0 +1,9 @@
+{
+  "background_page": "background.html",
+  "description": "Add support to the omnibox to search the Chromium source code.",
+  "name": "Chromium Search",
+  "omnibox": { "keyword" : "src" },
+  "permissions": [ "tabs", "http://www.google.com/" ],
+  "version": "6",
+  "minimum_chrome_version": "9"
+}

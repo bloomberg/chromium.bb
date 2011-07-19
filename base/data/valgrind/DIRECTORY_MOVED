@@ -1,0 +1,4 @@
+For those who got a merge conflict in this directory on update:
+The files from this dir has been moved to tools/valgrind/gtest_exclude
+
+TODO(timurrrr): remove this in a couple of weeks

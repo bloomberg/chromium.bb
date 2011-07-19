@@ -1,0 +1,32 @@
+{
+  "id": "behllobkkfkfnphdnhnkndlbkcpglgmj",
+  "version": "1.0.0.0",
+  "name": "__MSG_chrome_extension_name__",
+  "mayDisable": true,
+  "enabled": true,
+  "terminated": false,
+  "description": "__MSG_chrome_extension_description__",
+  "allow_reload": false,
+  "is_hosted_app": false,
+  "order": 2,
+  "enabledIncognito": false,
+  "wantsFileAccess": true,
+  "allowFileAccess": false,
+  "views": [
+    {
+      "path": "bar.html",
+      "renderProcessId": 42,
+      "renderViewId": 88,
+      "incognito": false
+    },
+    {
+      "path": "dog.html",
+      "renderProcessId": 0,
+      "renderViewId": 0,
+      "incognito": false
+    }
+  ],
+  "hasPopupAction": false,
+  "homepageUrl": "",
+  "icon": "chrome://extension-icon/behllobkkfkfnphdnhnkndlbkcpglgmj/48/1"
+}

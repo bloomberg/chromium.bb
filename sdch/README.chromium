@@ -1,0 +1,7 @@
+The linux directory contains a config.h generated from a run of configure on
+Ubuntu 10.04.1 LTS x86_64, with VCDIFF_USE_BLOCK_COMPARE_WORDS manually
+changed to match the $host_cpu test in configure.
+
+The mac directory contains a config.h generated from a run of configure on a
+Mac, with VCDIFF_USE_BLOCK_COMPARE_WORDS manually changed to match the
+$host_cpu test in configure.

@@ -1,0 +1,317 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8"/>
+<title i18n-content="page-title"></title>
+<!-- We want to keep our style in sync with the options page. -->
+<link rel="stylesheet" href="chrome://resources/css/button.css">
+<link rel="stylesheet" href="chrome://resources/css/select.css">
+<link rel="stylesheet" href="webui.css">
+<link rel="stylesheet" href="options/options_page.css">
+<link rel="stylesheet" href="bug_report.css">
+
+<script src="shared/js/local_strings.js"></script>
+<script src="shared/js/util.js"></script>
+<script src="bug_report.js"></script>
+<script>
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+/**
+ * Window onload handler, sets up the page.
+ */
+function load() {
+  if ($('sysinfo-url')) {
+    $('sysinfo-url').onclick = function(event) {
+      chrome.send('openSystemTab');
+    };
+  }
+
+  var menuOffPattern = /(^\?|&)menu=off($|&)/;
+  var menuDisabled = menuOffPattern.test(window.location.search);
+  document.documentElement.setAttribute('hide-menu', menuDisabled);
+
+  // Set default values for the possible parameters, and then parse the actual
+  // values from the URL hash.
+  var parameters = {
+    'description': '',
+    'issueType': 0,
+  };
+  var queryPos = window.location.hash.indexOf('?');
+  if (queryPos !== -1) {
+    // Get an array of parameters in 'name=value' form.
+    var query = window.location.hash.substring(queryPos + 1).split('&');
+    for (var i = 0; i < query.length; i++) {
+      // Decode and store each parameter value.
+      parameter = query[i].split('=');
+      parameters[parameter[0]] = decodeURIComponent(parameter[1]);
+    }
+
+    // For a clean URL, trim the parameters from the hash.
+    window.location.hash = window.location.hash.substring(0, queryPos);
+  }
+
+  // Set the initial description text.
+  $('description-text').textContent = parameters['description'];
+
+  // Get a list of issues that we allow the user to select from.
+  // Note, the order and the issues types themselves are different
+  // between Chromium and Chromium OS, so this code needs to be
+  // maintained individually between in these two sections.
+  var issueTypeText = [];
+  issueTypeText[0] = localStrings.getString('issue-choose');
+<if expr="not pp_ifdef('chromeos')">
+  issueTypeText[1] = localStrings.getString('issue-page-formatting');
+  issueTypeText[2] = localStrings.getString('issue-page-load');
+  issueTypeText[3] = localStrings.getString('issue-plugins');
+  issueTypeText[4] = localStrings.getString('issue-tabs');
+  issueTypeText[5] = localStrings.getString('issue-sync');
+  issueTypeText[6] = localStrings.getString('issue-crashes');
+  issueTypeText[7] = localStrings.getString('issue-extensions');
+  issueTypeText[8] = localStrings.getString('issue-phishing');
+  issueTypeText[9] = localStrings.getString('issue-other');
+  var numDefaultIssues = issueTypeText.length;
+  issueTypeText[10] = localStrings.getString('issue-autofill');
+</if>
+<if expr="pp_ifdef('chromeos')">
+  issueTypeText[1] = localStrings.getString('issue-connectivity');
+  issueTypeText[2] = localStrings.getString('issue-sync');
+  issueTypeText[3] = localStrings.getString('issue-crashes');
+  issueTypeText[4] = localStrings.getString('issue-page-formatting');
+  issueTypeText[5] = localStrings.getString('issue-extensions');
+  issueTypeText[6] = localStrings.getString('issue-standby');
+  issueTypeText[7] = localStrings.getString('issue-phishing');
+  issueTypeText[8] = localStrings.getString('issue-other');
+  var numDefaultIssues = issueTypeText.length;
+  issueTypeText[9] = localStrings.getString('issue-autofill');
+</if>
+  // Add all the issues to the selection box.
+  for (var i = 0; i < issueTypeText.length; i++) {
+    var option = document.createElement('option');
+    option.className = 'bug-report-text';
+    option.textContent = issueTypeText[i];
+    if (('' + i) === parameters['issueType'])
+      option.selected = true;
+
+    if (i < numDefaultIssues || option.selected)
+      $('issue-with-combo').add(option);
+  }
+
+  chrome.send('getDialogDefaults', []);
+  chrome.send('refreshCurrentScreenshot', []);
+};
+
+function setupCurrentScreenshot(screenshot) {
+  addScreenshot('current-screenshots', screenshot);
+}
+
+function setupSavedScreenshots(screenshots) {
+  if (screenshots.length == 0) {
+    $('saved-screenshots').textContent =
+        localStrings.getString('no-saved-screenshots');
+
+    // Make sure we make the display the message
+    $('saved-screenshots').style.display = 'block';
+
+    // In case the user tries to send now; fail safe, do not send a screenshot
+    // at all versus sending the current screenshot. 
+    selectedThumbnailDivId = '';
+    selectedThumbnailId = '';
+  } else {
+    for (i = 0; i < screenshots.length; ++i)
+      addScreenshot('saved-screenshots', screenshots[i]);
+
+    // Now that we have our screenshots, try selecting the saved screenshots
+    // again.
+    savedSelected();
+  }
+}
+
+
+function setupDialogDefaults(defaults) {
+  if (defaults.length > 0) {
+    $('page-url-text').value = defaults[0];
+    if (defaults[0] == '')
+      $('page-url-checkbox').checked = false;
+
+    if (defaults.length > 2) {
+      // We're in Chromium OS.
+      $('user-email-text').textContent = defaults[2];
+      if (defaults[2] == '') {
+        // if we didn't get an e-mail address from cros,
+        // disable the user email display totally
+        $('user-email-table').style.display = 'none';
+
+        // this also means we are in privacy mode, so no saved screenshots
+        $('screenshot-link-tosaved').style.display = 'none';
+      }
+    }
+  }
+}
+
+window.addEventListener('DOMContentLoaded', load);
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="main-content">
+  <div id="navbar-container">
+    <h1 id="settings-title" i18n-content="page-title">
+    </h1>
+  </div>
+  <div id="mainview" class>
+    <!-- Even though we really don't need these many nested DIV's, we're staying
+    as close to the settings page layout as possible, re-using all our styles
+    from options_page.css -->
+    <div id="mainview-content">
+      <div class="page">
+        <h1 i18n-content="title"></h1>
+        <table id="main-table">
+          <!--  Issue type dropdown -->
+          <tbody>
+            <tr>
+              <th id="issue-with" class="bug-report-label"
+                  i18n-content="issue-with"></th>
+            </tr>
+            <tr>
+              <td>
+                <select id="issue-with-combo" class="bug-report-text">
+                </select>
+              </td>
+            </tr>
+            <!--  Description -->
+            <tr>
+              <th id="description" colspan="2" class="bug-report-label"
+                  i18n-content="description"></th>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <textarea id="description-text" rows="10"
+                    class="bug-report-text"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table style="-webkit-border-vertical-spacing: 0px;">
+                  <!--  Page URL -->
+                  <tr>
+                    <td>
+                      <table class="bug-report-table">
+                        <tr>
+                          <td class="bug-report-fieldlabel">
+                            <input id="page-url-checkbox" type="checkbox"
+                                value="pageurl" checked>
+                            <span id="page-url-label" i18n-content="page-url">
+                            </span>
+                          </td>
+                          <td>
+                            <input id="page-url-text" class="bug-report-field"
+                                maxlength="200">
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+<if expr="pp_ifdef('chromeos')">
+                  <!--  User e-mail -->
+                  <tr>
+                    <td>
+                      <table id="user-email-table" class="bug-report-table">
+                        <tr>
+                          <td class="bug-report-fieldlabel">
+                            <input id="user-email-checkbox" type="checkbox"
+                                checked>
+                            <span id="user-email-label"
+                                i18n-content="user-email"></span>
+                          </td>
+                          <td>
+                            <label id="user-email-text"
+                                class="bug-report-field"></label>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <!--  System Information -->
+                  <tr>
+                    <td>
+                      <table class="bug-report-table">
+                        <tr>
+                          <td class="bug-report-fieldlabel">
+                            <input id="sys-info-checkbox" type="checkbox"
+                                checked>
+                            <span id="sysinfo-label">
+                              <a id="sysinfo-url" href="#"
+                                  i18n-content="sysinfo"></a>
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+</if>
+                  <!--  Screenshot -->
+                  <tr>
+                    <td>
+                      <table class="bug-report-table">
+                        <tr>
+                          <td class="bug-report-fieldlabel">
+                            <input id="screenshot-checkbox" type="checkbox">
+                            <span id="screenshot-label-current"
+                                i18n-content="current-screenshot">
+                            </span>
+<if expr="pp_ifdef('chromeos')">
+                            <span id="screenshot-label-saved"
+                                style="display: none;"
+                                i18n-content="saved-screenshot">
+                            </span>
+                            <a id="screenshot-link-tosaved" href="#"
+                                onclick="changeToSaved()"
+                                i18n-content="choose-different-screenshot">
+                            </a>
+                            <a id="screenshot-link-tocurrent" href="#"
+                                style="display: none;"
+                                onclick="changeToCurrent()"
+                                i18n-content="choose-original-screenshot">
+                            </a>
+</if>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+<if expr="pp_ifdef('chromeos')">
+                      <div id="saved-screenshots" style="display: none;"
+                          class="thumbnail-list"></div>
+</if>
+                      <div id="current-screenshots" class="thumbnail-list">
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id="buttons-pane">
+                  <!--  Buttons -->
+                  <input id="send-report-button" type="submit"
+                      class="bug-report-button" onclick="sendReport()"
+                      i18n-values="value:send-report">
+                  <input id="cancel-button" type="submit"
+                      class="bug-report-button" i18n-values="value:cancel"
+                      onclick="cancel()">
+                </div>
+                <div id="privacy-note" i18n-values=".innerHTML:privacy-note">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<script src="common.js"></script>
+<script>
+// We expect that this test is called outside of a user gesture, which should
+// generate an error.
+chrome.webstorePrivate.beginInstall(extension_id, function() {
+  assertEq(chrome.extension.lastError.message,
+      "This function must be called during a user gesture");
+  succeed();
+});
+</script>

@@ -1,0 +1,68 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body {
+   line-height: 1.5em;
+   background: #FFFFFF;
+   font-size: 11pt;
+}
+html[os='mac'] body {
+  line-height: 1.5em;
+  background: #FFFFFF;
+}
+form {
+  -webkit-user-select: none;
+}
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+input[type='button'],
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+html[os='mac'] input[type='button'],
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
+}
+#throbber {
+  margin: -3px 10px;
+}
+#setting_up {
+  margin: 100px;
+  text-align: center;
+}
+#setting_up_label {
+  margin: 15px;
+  font-weight: bold;
+  font-size: 125%;
+}
+
+</style>
+<link rel="stylesheet" href="chrome://resources/css/throbber.css">
+<script src="chrome://resources/js/cr.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily">
+<form id="settingUpForm" onSubmit="return false;">
+  <div id="setting_up">
+    <div id="throbber" class="throbber"></div>
+    <div id="setting_up_label" i18n-content="settingup"></div>
+  </div>
+  <div class="sync-footer">
+    <input id="cancelButton" type="button" i18n-values="value:cancel"
+           onclick='chrome.send("DialogClose", [""])' />
+  </div>
+</form>
+</body>
+</html>

@@ -1,0 +1,12 @@
+/**
+ * The following style rules affect Extension Infobars on the Mac.
+ */
+
+body {
+  background: -webkit-linear-gradient(#EBEBEB, #CFCFCF);
+  font-family: 'Lucida Grande', Helvetica, sans-serif;
+  font-size: 12px;
+  height: 36px; /* Infobars are limited to 36-72px */
+  margin: 0 38px;
+  overflow: hidden;
+}

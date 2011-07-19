@@ -1,0 +1,63 @@
+<script type="text/javascript">
+
+var TOTAL = 4;
+var count = 0;
+
+function load(e) {
+  if (++count < TOTAL)
+    return;
+
+  // Good. All the images have loaded. Now make sure they're the correct size.
+  var imgs = document.getElementsByTagName('img');
+  for (var x = 0; x < imgs.length; x++) {
+    var style = getComputedStyle(imgs[x]);
+    var size = imgs[x].getAttribute('testsize');
+    if (style.height != size || style.width != size) {
+      document.title = "Incorrect size on " + imgs[x].src;
+      return;
+    }
+  }
+
+  // Success!
+  document.title = "Loaded";
+}
+
+function error(e) {
+  // We failed to load an image that should have loaded.
+  document.title = "Not loaded: " + e.target.src;
+}
+
+</script>
+
+<!-- Tests loading a standard 128px icon. -->
+<img src="chrome://extension-icon/gbmgkahjioeacddebbnengilkgbkhodg/128/0"
+     testsize="128px"
+     onload="load(event);"
+     onerror="error(event);"/>
+
+<!--
+     Tests loading a standard 48px icon with a MATCH_SMALLER.
+     This should not be resized to 48px.
+-->
+<img src="chrome://extension-icon/gbmgkahjioeacddebbnengilkgbkhodg/48/2"
+     testsize="32px"
+     onload="load(event);"
+     onerror="error(event);"/>
+
+<!--
+     Tests loading a standard 32px icon, grayscale. We assume that we
+     actually got a grayscale image back here.
+-->
+<img src="chrome://extension-icon/gbmgkahjioeacddebbnengilkgbkhodg/32/1?grayscale=true"
+     testsize="32px"
+     onload="load(event);"
+     onerror="error(event);"/>
+
+<!--
+     Tests loading a 16px by resizing the 32px version (MATCH_BIGGER).
+     This should be resized to 16px.
+-->
+<img src="chrome://extension-icon/gbmgkahjioeacddebbnengilkgbkhodg/16/1"
+     testsize="16px"
+     onload="load(event);"
+     onerror="error(event);"/>

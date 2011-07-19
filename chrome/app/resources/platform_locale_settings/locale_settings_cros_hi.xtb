@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hi">
+<translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans,Mangal,Lohit Hindi,sans-serif</translation>
+<translation id="IDS_LOCALE_GTKRC"> # gtkrc.hi
+gtk-font-name="ChromeDroidSans,Mangal,Lohit Hindi,sans-serif, 10"
+style "OverrideTooltipFontStyle" = "TooltipStyle" {
+  font_name = "ChromeDroidSans,Mangal,Lohit Hindi,sans-serif, 10"
+}
+widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
+</translation>
+</translationbundle>

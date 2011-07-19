@@ -1,0 +1,10 @@
+{
+  "name": "content_scripts_fragment_navigation",
+  "version": "1.0",
+  "description": "Tests content scripts running with navigation to fragments within a page",
+  "background_page": "background.html",
+  "permissions": ["tabs"],
+  "content_scripts": [
+    { "matches": ["http://*/*"], "js": ["content_script.js"] }
+  ]
+}

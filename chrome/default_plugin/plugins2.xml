@@ -1,0 +1,59 @@
+<plugins>
+  <plugin>
+  	<mime_types>application/x-java-applet;application/x-java-bean;application/x-java-vm;application/x-java-applet,version=1.1.1;application/x-java-bean,version=1.1.1;application/x-java-applet,version=1.1;application/x-java-bean,version=1.1;application/x-java-applet,version=1.2;application/x-java-bean,version=1.2;application/x-java-applet,version=1.1.3;application/x-java-bean,version=1.1.3;application/x-java-applet,version=1.1.2;application/x-java-bean,version=1.1.2;application/x-java-applet,version=1.3;application/x-java-bean,version=1.3;application/x-java-applet,version=1.2.2;application/x-java-bean,version=1.2.2;application/x-java-applet,version=1.2.1;application/x-java-bean,version=1.2.1;application/x-java-applet,version=1.3.1;application/x-java-bean,version=1.3.1;application/x-java-applet,version=1.4;application/x-java-bean,version=1.4;application/x-java-applet,version=1.4.1;application/x-java-bean,version=1.4.1;application/x-java-applet,version=1.4.2;application/x-java-bean,version=1.4.2;application/x-java-applet,version=1.5;application/x-java-bean,version=1.5;application/x-java-applet,version=1.6;application/x-java-bean,version=1.6;</mime_types>
+	  <lang>en-us</lang>
+  	<name>Java(TM)</name>
+  	<url>http://java.com/download</url>
+    <displayurl>1</displayurl>
+  </plugin>
+
+  <plugin>
+  	<mime_types>audio/x-pn-realaudio-plugin;audio/x-pn-realaudio;audio/vnd.rn-realaudio;video/vnd.rn-realvideo</mime_types>
+	  <lang>en-us</lang>
+  	<name>RealPlayer</name>
+  	<url>http://forms.real.com/real/realone/download.html?type=rpsp_us</url>
+  </plugin>
+
+  <plugin>
+  	<mime_types>application/x-shockwave-flash;application/futuresplash</mime_types>
+	  <lang>en-us</lang>
+  	<name>Adobe Flash Player</name>
+    <url>http://fpdownload.adobe.com/get/flashplayer/current/install_flash_player.exe</url>
+  </plugin>
+
+  <plugin>
+  	<mime_types>application/x-director</mime_types>
+	  <lang>en-us</lang>
+  	<name>Adobe Shockwave Player</name>
+  	<url>http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe</url>
+  </plugin>
+
+  <plugin>
+  	<mime_types>application/pdf;application/vnd.adobe.x-mars;application/vnd.fdf;application/vnd.adobe.xfdf;application/vnd.adobe.xdp+xml;application/vnd.adobe.xfd+xml;</mime_types>
+	  <lang>en-us</lang>
+  	<name>Adobe Reader</name>
+  	<url>http://ardownload.adobe.com/pub/adobe/reader/win/9.x/9.1/enu/AdbeRdr910_en_US.exe</url>
+  </plugin>
+
+  <plugin>
+	  <mime_types>video/quicktime;application/sdp;application/x-sdp;application/x-rtsp;video/flc;audio/x-wav;audio/wav;audio/aiff;audio/x-aiff;audio/basic;audio/mid;audio/x-midi;audio/midi;audio/vnd.qcelp;audio/x-gsm;audio/amr;audio/aac;audio/x-aac;audio/x-caf;audio/ac3;audio/x-ac3;video/x-mpeg;video/mpeg;audio/mpeg;audio/x-mpeg;video/3ggp;audio/3ggp;video/3ggp2;audio/3ggp2;video/sd-video;application/x-mpeg;video/mp4;audio/mp4;audio/x-m4a;audio/x-m4p;audio/x-m4b;video/x-m4v;image/x-macpaint;image/pict;image/x-pict;image/png;image/x-png;image/x-quicktime;image/x-sgi;image/x-targa;image/jp2;image/jpeg2000;image/jpeg2000-image;image/x-jpeg2000-image</mime_types>
+	  <lang>en-us</lang>
+	  <name>QuickTime Player</name>
+	  <url>http://appldnld.apple.com.edgesuite.net/content.info.apple.com/QuickTime/061-6118.20090601.Pq3V9/QuickTimeInstaller.exe</url>
+  </plugin>
+  
+  <plugin>
+  	<mime_types>application/x-ms-wmp;application/asx;video/x-ms-asf-plugin;application/x-mplayer2;video/x-ms-asf;video/x-ms-wm;audio/x-ms-wma;audio/x-ms-wax;video/x-ms-wmv;video/x-ms-wvx</mime_types>
+	  <lang>en-us</lang>
+  	<name>Windows Media Player Plugin</name>
+  	<url>http://port25.technet.com/videos/downloads/wmpfirefoxplugin.exe</url>
+  </plugin>
+
+  <plugin>
+    <mime_types>video/divx;video/x-matroska</mime_types>
+    <lang>en-us</lang>
+    <name>DivX Web Player</name>
+    <url>http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe</url>
+  </plugin>
+  
+</plugins>

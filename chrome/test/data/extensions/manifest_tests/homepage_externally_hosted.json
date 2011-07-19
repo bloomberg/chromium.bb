@@ -1,0 +1,5 @@
+{
+  "name": "foo",
+  "version": "1",
+  "update_url": "http://foo.com/bar.xml"
+}

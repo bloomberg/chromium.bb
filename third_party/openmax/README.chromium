@@ -1,0 +1,13 @@
+Name: OpenMAX IL
+Short Name: openmax
+URL: http://www.khronos.org/openmax/
+Version: 1.1.2
+License: BSD
+License File: il/LICENSE
+
+Description:
+Header files required to work with OpenMAX IL.
+From http://www.khronos.org/openmax/headers/omx_il_v1_1/omx_il_v1_1_2_headers.zip
+
+Local Modifications:
+No Modifications

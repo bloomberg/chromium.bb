@@ -1,0 +1,32 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+.gpu-tracing-overlay {
+  text-align: center;
+  display: -webkit-box;
+  width: 200px;
+  height: 80px;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+}
+
+.gpu-tracing-start-button {
+  position: fixed;
+  right: 3px;
+  top: -1px;
+  -webkit-margin-start: 5px;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  margin-top: 4px;
+  padding: 5px 10px 3px 10px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background-clip: border-box;
+  background: rgb(255, 0, 0);
+  border: 1px solid black;
+  border-bottom: 0;
+}

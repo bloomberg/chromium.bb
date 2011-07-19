@@ -1,0 +1,22 @@
+<div id="pageData-name" class="pageData">WebRequest API</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.experimental.webRequest</code> module to intercept, block,
+or modify requests in-flight. This module is still very much experimental. For
+information on how to use experimental APIs, see the
+<a href="experimental.html">chrome.experimental.* APIs</a> page.
+</p>
+
+<h2>A note about timestamps</h2>
+<p>
+It's important to note that some technical oddities in the OS's handling
+of distinct Chrome processes can cause the clock to be skewed between the
+browser itself and extension processes. That means that WebRequest's events'
+<code>timeStamp</code> property is only guaranteed to be <i>internally</i>
+consistent. Comparing one event to another event will give you the correct
+offset between them, but comparing them to the current time inside the
+extension (via <code>(new Date()).getTime()</code>, for instance) might give
+unexpected results.
+</p>
+<!-- END AUTHORED CONTENT -->

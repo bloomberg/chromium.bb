@@ -1,0 +1,12 @@
+/**
+ * The following style rules affect Extension Infobars.
+ */
+
+body {
+  background: -webkit-linear-gradient(#E9E9E9, #DADADA);
+  font-family: Segoe UI, Tahoma;
+  font-size: 11px;
+  height: 36px; /* Infobars are limited to 36-72px */
+  margin: 0px;
+  overflow: hidden;
+}

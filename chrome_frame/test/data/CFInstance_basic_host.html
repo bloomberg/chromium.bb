@@ -1,0 +1,55 @@
+<html>
+  <!-- This page is meant to loaded inside the host browser (IE, FF, etc.) -->
+  <head>
+    <script type="text/javascript" 
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript" 
+            src="CFInstance.js"></script>
+  </head>
+
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <div id="parent">
+      <div id="prev">before</div><div id="toBeReplaced"> 
+        fallback content goes here 
+      </div><div id="after">after</div>
+    </div>
+    <script type="text/javascript">
+      var testName = "CFInstanceBasic";
+      (function(){
+        try{
+          var cf = new CFInstance({
+            src: "CFInstance_basic_frame.html",
+            node: "toBeReplaced"
+          });
+
+          if (document.getElementById("parent") != cf.parentNode ) {
+            onFailure(testName, 1, "parent node mismatch");
+            return;
+          }
+
+          if (document.getElementById("prev").nextSibling != cf) {
+            onFailure(testName, 1, "sibling node mismatch");
+            return;
+          }
+
+          if (document.getElementById("after").previousSibling != cf) {
+            onFailure(testName, 1, "sibling node mismatch");
+            return;
+          }
+
+          onSuccess(testName, 1);
+
+        } catch (e) {
+          onFailure(testName, 1,
+                    "CFInstance constructor failed with error: "+e);
+        } 
+      })();
+    </script>
+    <p>Tests ChromeFrame Navigation</p>
+  </body>
+</html>
+

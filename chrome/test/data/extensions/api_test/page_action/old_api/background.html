@@ -1,0 +1,18 @@
+<html>
+<head>
+<script>
+
+chrome.pageActions["action"].addListener(function(actionId, info) {
+  if (actionId == "action" && typeof(info.tabId) == "number" &&
+      typeof(info.tabUrl) == "string" && info.button == 1) {
+    chrome.test.notifyPass();
+  } else {
+    chrome.test.notifyFail("pageActions listener failed");
+  }
+});
+
+chrome.test.notifyPass();
+
+</script>
+</head>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "Browser Action",
+  "version": "0.1.1",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "permissions": [
+    "tabs", "http://*/*"
+  ]
+}

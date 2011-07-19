@@ -1,0 +1,127 @@
+<!--
+  Copyright 2010 Google
+
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License. You may obtain a copy of
+  the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  License for the specific language governing permissions and limitations under
+  the License.
+
+  Brian Kennish <byoogle@google.com>
+-->
+<style>
+  body {
+    width: 400px;
+    font: small Arial, sans-serif;
+    color: initial
+  }
+
+  body > div {
+    border-bottom: 1px solid #edeff5;
+    padding: 3px 6px
+  }
+
+  .overflow { margin-right: 27px }
+
+  .digest, #logo, #authorization { cursor: pointer }
+
+  .digest { height: 64px }
+
+  .mouseover { background: #f4f6fc }
+
+  .title { font-weight: bold }
+
+  .snippet { color: #7f7f7f }
+
+  #authorization {
+    float: right;
+    margin-top: 14px;
+    text-decoration: underline;
+    color: #003ea8
+  }
+
+  #template { display: none }
+</style>
+<script>
+  const TABS = chrome.tabs;
+  const URL = 'https://wave.google.com/wave/';
+  const BACKGROUND = chrome.extension.getBackgroundPage();
+  const OAUTH = BACKGROUND.OAUTH;
+  const DIGESTS =
+    (BACKGROUND.parse(localStorage.digests) || []).
+      slice(0, localStorage.maxDigests);
+  const DIGEST_COUNT = DIGESTS.length;
+  var template;
+  var digest;
+
+  onload = function() {
+    document.getElementById('logo').onclick = function() {
+      TABS.create({url: URL});
+    };
+
+    const AUTHORIZATION = document.getElementById('authorization');
+    AUTHORIZATION.textContent = 'Sign ';
+
+    if (OAUTH.hasToken()) {
+      AUTHORIZATION.textContent += 'out';
+
+      AUTHORIZATION.onclick = function() {
+        BACKGROUND.clearInterval(BACKGROUND.id);
+        delete localStorage.digests;
+        OAUTH.clearTokens();
+        BACKGROUND.initialize();
+        BACKGROUND.BROWSER_ACTION.setIcon({path: 'unauthorized.png'});
+        BACKGROUND.load();
+        BACKGROUND.PRETTYLOAD.finish(BACKGROUND.UNKNOWN_COUNT);
+        close();
+      };
+    } else {
+      AUTHORIZATION.textContent += 'in';
+
+      AUTHORIZATION.onclick = function() { BACKGROUND.authorize(); };
+    }
+
+    const BODY = document.body;
+
+    for (var i = 0; i < DIGEST_COUNT; i++) {
+      template =
+        BODY.appendChild(document.getElementById('template').cloneNode(true));
+      digest = DIGESTS[i];
+      template.id = digest.waveId;
+
+      if (BACKGROUND.parse(localStorage.participantAnnotated)) {
+        template.title = digest.participants.join(', ');
+      }
+
+      template.getElementsByClassName('title')[0].textContent = digest.title;
+      template.getElementsByClassName('snippet')[0].textContent +=
+        digest.snippet;
+
+      template.onmouseover = function() { this.className += ' mouseover'; };
+
+      template.onmouseout = function() {
+        this.className = this.className.split(' ', 1);
+      };
+
+      template.onclick = function() {
+        TABS.create({url: URL + '#restored:wave:' + this.id});
+      };
+    }
+
+    if (BODY.scrollHeight > 600) { BODY.className = 'overflow'; }
+  };
+</script>
+<div>
+  <img id="logo" src="logo.png" alt="Google Wave">
+  <div id="authorization"></div>
+</div>
+<div class="digest" id="template">
+  <span class="title"></span>
+  <span class="snippet">&ndash; </span>
+</div>

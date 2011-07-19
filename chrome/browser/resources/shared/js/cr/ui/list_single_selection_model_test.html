@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+
+</style>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="../../cr.js"></script>
+<script src="../event_target.js"></script>
+<script src="list_single_selection_model.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+
+</head>
+<body>
+
+<script>
+
+function range(start, end) {
+  var a = [];
+  for (var i = start; i <= end; i++) {
+    a.push(i);
+  }
+  return a;
+}
+
+function createSelectionModel(len) {
+  return new cr.ui.ListSingleSelectionModel(len);
+}
+
+function testAdjust1() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 100;
+  sm.adjust(0, 10, 0);
+
+  assertEquals(90, sm.leadIndex);
+  assertEquals(90, sm.anchorIndex);
+  assertEquals(90, sm.selectedIndex);
+}
+
+function testAdjust2() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 50;
+  sm.adjust(60, 10, 0);
+
+  assertEquals(50, sm.leadIndex);
+  assertEquals(50, sm.anchorIndex);
+  assertEquals(50, sm.selectedIndex);
+}
+
+function testAdjust3() {
+  var sm = createSelectionModel(200);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 100;
+  sm.adjust(0, 0, 10);
+
+  assertEquals(110, sm.leadIndex);
+  assertEquals(110, sm.anchorIndex);
+  assertEquals(110, sm.selectedIndex);
+}
+
+function testAdjust4() {
+  var sm = createSelectionModel(100);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 99;
+
+  sm.adjust(99, 1, 0);
+
+  assertEquals('lead', 98, sm.leadIndex);
+  assertEquals('anchor', 98, sm.anchorIndex);
+  assertArrayEquals([], sm.selectedIndexes);
+}
+
+function testAdjust5() {
+  var sm = createSelectionModel(1);
+
+  sm.leadIndex = sm.anchorIndex = sm.selectedIndex = 0;
+
+  sm.adjust(0, 0, 10);
+
+  assertEquals('lead', 10, sm.leadIndex);
+  assertEquals('anchor', 10, sm.anchorIndex);
+  assertArrayEquals([10], sm.selectedIndexes);
+}
+
+</script>
+
+</body>
+</html>

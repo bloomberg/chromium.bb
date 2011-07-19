@@ -1,0 +1,40 @@
+policy_module(chromium-browser,1.0.0)
+
+gen_require(`
+  type gnome_home_t;
+  type proc_t;
+  type tmpfs_t;
+  type unconfined_t;
+  type urandom_device_t;
+  type user_devpts_t;
+  type user_tmpfs_t;
+')
+
+type chromium_renderer_t;
+domain_base_type(chromium_renderer_t)
+role unconfined_r types chromium_renderer_t;
+
+allow unconfined_t chromium_renderer_t:process { dyntransition };
+
+allow chromium_renderer_t unconfined_t:unix_stream_socket { read write send_msg recv_msg };
+allow unconfined_t chromium_renderer_t:unix_stream_socket { read write send_msg recv_msg };
+
+allow chromium_renderer_t urandom_device_t:chr_file { read };
+allow chromium_renderer_t user_devpts_t:chr_file { write };
+allow chromium_renderer_t self:process { execmem };
+allow chromium_renderer_t self:fifo_file { read write };
+allow chromium_renderer_t self:unix_dgram_socket { read write create send_msg recv_msg sendto };
+allow chromium_renderer_t unconfined_t:unix_dgram_socket { read write send_msg recv_msg };
+allow unconfined_t chromium_renderer_t:unix_dgram_socket { read write send_msg recv_msg };
+allow chromium_renderer_t user_tmpfs_t:file { read write append open getattr };
+allow chromium_renderer_t tmpfs_t:file { read write };
+allow chromium_renderer_t self:shm { create destroy getattr setattr read write associate unix_read unix_write };
+
+# For reading dictionaries out of the user-data-dir
+allow chromium_renderer_t gnome_home_t:file { read getattr };
+
+miscfiles_read_localization(chromium_renderer_t);
+miscfiles_read_fonts(chromium_renderer_t);
+
+# The renderer will attempt to read meminfo
+dontaudit chromium_renderer_t proc_t:file { read };

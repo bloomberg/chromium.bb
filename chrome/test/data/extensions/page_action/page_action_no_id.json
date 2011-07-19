@@ -1,0 +1,9 @@
+{
+   "name": "PageAction Test",
+   "page_action": {
+      "icons": [ "image1.png", "image2.png" ],
+      "name": "MyExtensionActionName",
+      "type": "tab"
+   },
+   "version": "1.0"
+}

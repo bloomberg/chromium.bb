@@ -1,0 +1,274 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title i18n-content="title"></title>
+
+<style>
+body {
+  font-size: 84%;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0.75em;
+  margin: 0;
+  min-width: 45em;
+}
+
+h1, h2 {
+ font-size: 120%;
+ letter-spacing: -1px;
+ margin: 0;
+}
+
+h1 {
+  font-weight: bold;
+  color: #4a8ee6;
+  padding: 0;
+}
+
+h2 {
+  font-weight: normal;
+  padding: 0.5em 1em;
+  color: #3a75bd;
+  -webkit-margin-start: -38px;
+  -webkit-padding-start: 38px;
+  border-top: 1px solid #3a75bd;
+  padding-top: 0.5em;
+}
+
+h2:first-child {
+  border-top: 0;
+  padding-top: 0;
+  float: left;
+  vertical-align: text-bottom;
+}
+
+#header {
+  padding: 0.6em 1em 0.75em 0;
+  margin-bottom: 0.75em;
+  position: relative;
+  overflow: hidden;
+  background: #5296de;
+  background-size: 100%;
+  border: 1px solid #3a75bd;
+  border-radius: 6px;
+  color: white;
+  text-shadow: 0 0 2px black;
+}
+
+html[dir='rtl'] #header {
+  padding: 0.6em 0 0.75em 1em;
+}
+
+#header h1 {
+  -webkit-padding-start: 3em;
+  margin: 0;
+  display: inline;
+  background: url('shared/images/gear.png') no-repeat;
+  background-position: 12px 60%;
+  color: white;
+}
+
+html[dir='rtl'] #header h1 {
+  background-position-left: auto;
+  backgroun-position-right: 12px;
+}
+
+#header p {
+  font-size: 84%;
+  font-style: italic;
+  padding: 0;
+  margin: 0;
+  color: white;
+  -webkit-padding-start: 0.4em;
+  display: inline;
+}
+
+.list {
+  line-height: 200%;
+  border-collapse: collapse;
+  font-size: 84%;
+  table-layout: fixed;
+  width: 100%;
+}
+.list:not(.filtered) tr:nth-child(odd) td {
+  background: #eff3ff;
+}
+
+.list td {
+  padding: 0 0.5em;
+  vertical-align: top;
+  line-height: 1.4em;
+  padding-top: 0.35em;
+  font-family: 'Courier New', monospace;
+  white-space: pre;
+}
+
+.list tr td:nth-last-child(1),
+.list tr th:nth-last-child(1) {
+  -webkit-padding-end: 1em;
+}
+
+.list:not(.filtered) .tab .name {
+  -webkit-padding-start: 1.5em;
+}
+
+.list .name {
+  width: 20%;
+}
+
+.list .button_cell {
+  width: 7%;
+}
+
+.list .name div {
+  height: 1.6em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.button_hidden {
+  display: none;
+}
+
+.number_expanded, .number_collapsed  {
+  text-align: left;
+  width: 80%;
+}
+
+html[dir='rtl'] .number_expanded, html[dir='rtl'] .number_collapsed  {
+  text-align: right;
+}
+
+tr:not(.firstRow) > *:nth-child(1),
+tr:not(.firstRow) > *:nth-child(2),
+tr.firstRow th:nth-child(1),
+tr.firstRow th:nth-child(2) {
+  -webkit-border-end: 1px solid #b5c6de;
+}
+
+.name {
+  background-position: 5em center;
+  background-repeat: no-repeat;
+}
+
+html[dir='rtl'] #details .name {
+  background-position-left: auto;
+  background-position-right: 5em;
+}
+
+.number_collapsed .stat_value {
+  display: none;
+}
+
+.number_expanded .stat_value {
+  display: auto;
+}
+
+#anchor {
+  display: none;
+}
+
+.globalButton {
+  float: left;
+  margin: 1px 5px;
+}
+
+html[dir='rtl'] .globalButton {
+  float: right;
+}
+</style>
+<script src="shared/js/local_strings.js"></script>
+<script>
+var localStrings;
+
+function getValueDivForButton(button) {
+  return document.getElementById(button.id.substr(0, button.id.length - 4));
+}
+
+function getButtonForValueDiv(valueDiv) {
+  return document.getElementById(valueDiv.id + '-btn');
+}
+
+function changeCollapsedStatus() {
+  var valueDiv = getValueDivForButton(this);
+  if (valueDiv.parentNode.className == 'number_collapsed') {
+    valueDiv.parentNode.className = 'number_expanded';
+    this.textContent = localStrings.getString('collapse_btn');
+  } else {
+    valueDiv.parentNode.className = 'number_collapsed';
+    this.textContent = localStrings.getString('expand_btn');
+  }
+}
+
+function collapseAll() {
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    if (button && button.className != 'button_hidden') {
+      button.textContent = localStrings.getString('expand_btn');
+      valueDivs[i].parentNode.className = 'number_collapsed';
+    }
+  }
+}
+
+function expandAll() {
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    if (button && button.className != 'button_hidden') {
+      button.textContent = localStrings.getString('collapse_btn');
+      valueDivs[i].parentNode.className = 'number_expanded';
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  localStrings = new LocalStrings();    
+    
+  var collapseAllBtn = document.getElementById('collapseAll');
+  collapseAllBtn.onclick = collapseAll;
+  
+  var expandAllBtn = document.getElementById('expandAll');
+  expandAllBtn.onclick = expandAll;
+  
+  var anchorName = document.getElementById('anchor').textContent;
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    button.onclick = changeCollapsedStatus;
+    if (valueDivs[i].textContent.split('\n').length > 1) {
+      button.textContent = localStrings.getString('expand_btn');
+      valueDivs[i].parentNode.className = 'number_collapsed';
+    } else {
+      button.className = 'button_hidden';
+    }
+  }    
+});
+</script>
+
+</head>
+<body id="t">
+  <div id="header">
+    <h1 i18n-content="title"></h1>
+    <p i18n-content="description"></p>
+  </div>
+  <div id="content">
+    <h2 i18n-content="table_title"></h2>
+    <div id="anchor" jscontent="anchor"></div>
+    <button id="expandAll" class="globalButton" i18n-content="expand_all_btn">
+    </button>
+    <button id="collapseAll" class="globalButton" 
+        i18n-content="collapse_all_btn"></button>
+    <table class="list" id="details">
+      <tr jsselect="details">
+        <td class="name"><a jsvalues="name:anchor_value"><div
+            jscontent="stat_name"></div></a></td>
+        <td class="button_cell"><button jsvalues="id:stat_name + '-value-btn'"
+            class="expand_status"></button></td>
+        <td class="number"><div class="stat_value" jscontent="stat_value"
+            jsvalues="id:stat_name + '-value'"></div></td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

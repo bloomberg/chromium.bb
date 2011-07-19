@@ -1,0 +1,6 @@
+.throbber {
+  background: url('chrome://resources/images/throbber.svg');
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}

@@ -1,0 +1,42 @@
+<html>
+
+<head>
+<script src="npapi.js"></script>
+<script>
+  function deleteShortLivedInstance() {
+    var shortLivedDiv = document.getElementById("short_lived_div");
+    shortLivedDiv.innerHTML = "Instance deleted";
+  }
+</script>
+</head>
+
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+
+NPAPI NPN_PluginThreadAsyncCall test<p>
+Tests that a plugin can schedule async callbacks.<P>
+
+<embed type="application/vnd.npapi-test"
+  src="foo"
+  name="plugin_thread_async_call"
+  id="1"
+  short_lived="false"
+  mode="np_embed"
+>
+
+<div id="short_lived_div">
+  <embed type="application/vnd.npapi-test"
+    src="foo"
+    name="plugin_thread_async_call"
+    id="2"
+    short_lived="true"
+    mode="np_embed"
+  >
+</div>
+
+</body>
+</html>

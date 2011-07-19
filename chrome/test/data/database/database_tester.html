@@ -1,0 +1,164 @@
+<html>
+<!--database_tester.html
+Script with javascript functions for simple database operations. This is used in
+pyauto tests.
+-->
+<script>
+
+// Open a Web SQL database.
+var g_db = null;
+if (typeof window.openDatabase == "undefined") {
+  document.write("Error: Web SQL databases are not supported.");
+}
+try {
+  g_db = openDatabase("test", "1.0", "test database", 1024 * 1024);
+} catch(err) {
+  document.write("Error: cannot open database.");
+}
+
+// Creates a table named "table1" with one text column named "data".
+function createTable() {
+  if (!g_db) {
+    sendErrorToTest("database is not open");
+  }
+  g_db.transaction(
+      function(tx) {
+        tx.executeSql("CREATE TABLE table1 (data TEXT)");
+      },
+      function(error) {
+        sendErrorToTest("cannot create table: " + error);
+      },
+      function() {
+        sendValueToTest("created");
+      });
+}
+
+// Inserts a record into the database.
+function insertRecord(text) {
+  g_db.transaction(
+      function(tx) {
+        tx.executeSql("INSERT INTO table1 VALUES (?)", [text]);
+      },
+      function(error) {
+        sendErrorToTest("insert error: " + error);
+      },
+      function() {
+        sendValueToTest("inserted");
+      });
+}
+
+// Updates a record at the given index with the given text. The indices are
+// 0-based and are ordered from oldest record, to newest record.
+function updateRecord(index, text) {
+  var didUpdate = false;
+  findId(index, function(rowId) {
+    g_db.transaction(
+        function(tx) {
+          tx.executeSql(
+              "UPDATE table1 SET data=? WHERE ROWID=?",
+              [text, rowId],
+              function(tx, result) {
+                if (result.rowsAffected == 1)
+                  didUpdate = true;
+                else if (result.rowsAffected == 0)
+                  sendErrorToTest("could not update index: " + index);
+                else
+                  sendErrorToTest("multiple rows with index: " + index);
+              });
+        },
+        function(error) {
+          sendErrorToTest("update error: " + error);
+        },
+        function() {
+          if (didUpdate)
+            sendValueToTest("updated");
+        });
+  });
+}
+
+// Deletes a record at the given index.
+function deleteRecord(index) {
+  findId(index, function(rowId) {
+    g_db.transaction(
+        function(tx) {
+          tx.executeSql("DELETE FROM table1 WHERE ROWID=?", [rowId]);
+        },
+        function(error) {
+          sendErrorToTest("delete error: " + error);
+        },
+        function() {
+          sendValueToTest("deleted");
+        });
+  });
+}
+
+// Gets all the records in the database, ordered by their age.
+function getRecords() {
+  g_db.readTransaction(function(tx) {
+    tx.executeSql(
+        "SELECT data FROM table1 ORDER BY ROWID",
+        [],
+        function(tx, result) {
+          items = [];
+          for (var i = 0; i < result.rows.length; i++) {
+            items.push(result.rows.item(i).data);
+          }
+          sendValueToTest(items);
+        },
+        function(tx, error) {
+          sendErrorToTest("getRecords error: " + error);
+        });
+  });
+}
+
+// Helper function that finds the ID for a record based on a given index.
+function findId(index, callback) {
+  g_db.readTransaction(function(tx) {
+    // |ROWID| is a special sqlite column. It is unique and is incremented
+    // automatically when a new record is created.
+    // |LIMIT| is a nonstandard clause supported by sqlite that lets us pick
+    // rows from the database by index. E.g., LIMIT 2,10 will give us 10 records
+    // starting at offset 2.
+    tx.executeSql(
+        "SELECT ROWID AS id FROM table1 ORDER BY ROWID LIMIT ?,1",
+        [index],
+        function(tx, result) {
+          if (result.rows.length >= 1)
+            callback(result.rows.item(0).id);
+          else
+            sendErrorToTest("could not find row with index: " + index);
+        },
+        function(tx, error) {
+          sendErrorToTest("findId error: " + error);
+        });
+  });
+}
+
+// Helper function that sends a message back to the test, which contains a value
+// corresponding to the logical return value of the function, and a boolean
+// indicating success.
+function sendValueToTest(value) {
+  sendHelper(true, "", value);
+}
+
+// Helper function that sends a message back to the test, which contains an
+// error message and a boolean indicating failure.
+function sendErrorToTest(errorMsg) {
+  sendHelper(false, errorMsg, 0);
+}
+
+function sendHelper(success, errorMsg, returnValue) {
+  var result = {
+    "succeeded": success,
+    "errorMsg": errorMsg,
+    "returnValue": returnValue
+  };
+  window.domAutomationController.send(JSON.stringify(result));
+}
+
+</script>
+
+<body>
+This page is used for testing Web SQL databases.
+</body>
+</html>

@@ -1,0 +1,38 @@
+include_rules = [
+  "+app",
+  "+content",
+  "+crypto",
+  "+gpu",
+  "+net",
+  "+printing",
+  "+views",
+
+  # The subdirectories in chrome/ will manually allow their own include
+  # directories in chrome/ so we disallow all of them.
+  "-chrome",
+  "+chrome/common",
+  "+chrome/test",
+
+  # Don't allow inclusion of these other libs we shouldn't be calling directly.
+  "-v8",
+  "-webkit",
+  "-tools",
+
+  "-crypto/third_party",
+
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/Source/WebKit/chromium",
+  "+webkit/appcache",
+  "+webkit/blob",
+  "+webkit/database",
+  "+webkit/fileapi",
+  "+webkit/quota",
+
+  # Allow inclusion of third-party code:
+  "+third_party/mozilla",   # Mozilla interface headers.
+  "+third_party/npapi",     # NPAPI interface headers.
+  "+third_party/tcmalloc",  # tcmallo
+  "+third_party/GTM",       # Google Toolbox for Mac.
+
+  "+ui",
+]

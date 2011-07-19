@@ -1,0 +1,13 @@
+{
+  "name": "incognito no script",
+  "version": "0.1",
+  "description": "Checks that content scripts do not inject js into incognito browsers.",
+  "permissions": ["http://*/*", "https://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["change_page_title.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

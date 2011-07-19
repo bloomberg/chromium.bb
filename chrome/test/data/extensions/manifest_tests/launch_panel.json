@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "panel",
+      "web_url": "http://www.google.com/hot.html"
+    }
+  }
+}

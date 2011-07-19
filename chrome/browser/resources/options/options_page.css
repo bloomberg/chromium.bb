@@ -1,0 +1,816 @@
+body {
+  cursor: default;
+  font-size: 13px;
+}
+
+a:link {
+  color: rgb(63, 110, 194);
+}
+
+a:active {
+  color: rgb(37, 64, 113);
+}
+
+#settings-title {
+  -webkit-padding-end: 24px;
+  -webkit-user-select: none;
+  color: #53637d;
+  cursor: pointer;
+  font-size: 200%;
+  font-weight: normal;
+  margin: 0;
+  padding-bottom: 14px;
+  padding-top: 13px;
+  text-align: end;
+  text-shadow: white 0 1px 2px;
+}
+
+#main-content {
+  display: -webkit-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.frozen,
+.subpage-sheet-container.frozen {
+  position: fixed;
+}
+
+#search-field {
+  font-size: inherit;
+  margin: 0;
+}
+
+.overlay {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-transition: 0.25s opacity;
+  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
+                                      rgba(127, 127, 127, 0.5) 35%,
+                                      rgba(0, 0, 0, 0.7));
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  padding: 20px;
+  padding-bottom: 130px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 10;
+}
+
+.raw-button,
+.raw-button:hover,
+.raw-button:active {
+  -webkit-box-shadow: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  min-width: 0;
+  padding: 1px 6px;
+}
+
+.close-subpage {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+  height: 16px;
+  min-width: 0;
+  position: relative;
+  top: 16px;
+  width: 16px;
+}
+
+.close-subpage:hover {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+}
+
+.close-subpage:active {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+}
+
+html[dir='ltr'] .close-subpage {
+  float: right;
+  right: 20px;
+}
+
+html[dir='rtl'] .close-subpage {
+  float: left;
+  left: 20px;
+}
+
+html.hide-menu .close-subpage {
+  display: none
+}
+
+.content-area {
+  padding: 10px 15px 5px 15px;
+}
+
+.action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  border-top: 1px solid rgba(188, 193, 208, .5);
+  display: -webkit-box;
+  padding: 12px;
+}
+
+html[dir='rtl'] .action-area {
+  left: 0;
+}
+
+.action-area-right {
+  display: -webkit-box;
+}
+
+.button-strip {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.bottom-strip {
+  padding: 12px;
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  border-top: none;
+}
+
+html[toolkit=views] .button-strip {
+  -webkit-box-direction: reverse;
+}
+
+.button-strip > button {
+  -webkit-margin-start: 10px;
+  display: block;
+}
+
+.overlay .page {
+  -webkit-box-shadow: 0px 5px 80px #505050;
+  background: white;
+  border: 1px solid rgb(188, 193, 208);
+  border-radius: 2px;
+  min-width: 400px;
+  padding: 0;
+  position: relative;
+}
+
+#navbar {
+  margin: 0;
+}
+
+#navbar-container {
+  -webkit-border-end: 1px solid #c6c9ce;
+  background: -webkit-linear-gradient(rgba(234, 238, 243, 0.2), #eaeef3),
+              -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
+  position: fixed;
+  bottom: 0;
+  /* We set both left and right for the sake of RTL. */
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 216px;
+  z-index: 2;
+}
+
+html[dir='rtl'] #navbar-container {
+  background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #EAEEF3),
+              -webkit-linear-gradient(right, #EAEEF3, #EAEEF3 97%, #D3D7DB);
+}
+
+html.hide-menu #navbar-container {
+  display: none;
+}
+
+#navbar-container > ul {
+  -webkit-user-select: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-item {
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
+  color: #426dc9;
+  cursor: pointer;
+  display: block;
+  font-size: 105%;
+  outline: none;
+  padding: 7px 0;
+  text-align: end;
+  text-shadow: white 0 1px 1px;
+  -webkit-padding-end: 24px;
+}
+
+.navbar-item:focus {
+  border-bottom: 1px solid #8faad9;
+  border-top: 1px solid #8faad9;
+}
+
+.navbar-item-selected {
+  -webkit-box-shadow: 0px 1px 0px #f7f7f7;
+  background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #aabedc);
+  border-bottom: 1px solid #8faad9;
+  border-top: 1px solid #8faad9;
+  color: black;
+  text-shadow: #bbcee9 0 1px 1px;
+}
+
+#mainview {
+  -webkit-box-align: stretch;
+  -webkit-padding-start: 216px;
+  margin: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+html.hide-menu #mainview {
+  -webkit-padding-start: 0;
+}
+
+#mainview-content {
+  min-height: 100%;
+  position: relative;
+}
+
+#toplevel-page-container {
+  box-sizing: border-box;
+  max-width: 888px;
+  min-width: 600px;
+  padding: 0 24px;
+}
+
+#subpage-backdrop {
+  -webkit-transition: 0.25s opacity;
+  background-color: rgba(233, 238, 242, .5);
+  height: 100%;
+  left: 216px;
+  right: 216px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.subpage-sheet-container {
+  -webkit-transition: 0.25s opacity, 0.1s padding-left, 0.1s padding-right;
+  box-sizing: border-box;
+  min-height: 100%;
+  position: absolute;
+  /* We set both left and right for the sake of RTL. */
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+#subpage-sheet-container-1 {
+  -webkit-padding-start: 40px;
+  z-index: 5;
+}
+
+#subpage-sheet-container-2 {
+  -webkit-padding-start: 80px;
+  z-index: 10;
+}
+
+.subpage-sheet {
+  -webkit-box-shadow: #666 0px 2px 5px;
+  background-color: white;
+  border-left: 1px solid #b8b8b8;
+  box-sizing: border-box;
+  min-height: 100%;
+  width: 100%;
+  min-width: 651px;
+}
+
+.subpage-sheet-contents {
+  box-sizing: border-box;
+  padding: 0px 20px 20px 20px;
+  width: 650px;
+}
+
+#managed-prefs-banner {
+  background: -webkit-linear-gradient(#fff2b7, #fae691 97%, #878787);
+  height: 31px;
+  width: 100%;
+}
+
+#managed-prefs-banner {
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+#managed-prefs-icon {
+  background-image: url("chrome://theme/IDR_WARNING");
+  background-repeat: no-repeat;
+  background-position:center;
+  display: inline-block;
+  padding: 5px;
+  height: 21px;
+  vertical-align: middle;
+  width: 24px;
+}
+
+#managed-prefs-text {
+  vertical-align: middle;
+}
+
+.page h1 {
+  -webkit-padding-end: 24px;
+  -webkit-user-select: none;
+  border-bottom: 1px solid #eeeeee;
+  color: #53637d;
+  font-size: 200%;
+  font-weight: normal;
+  margin: 0;
+  padding-bottom: 4px;
+  padding-top: 13px;
+  text-shadow: white 0 1px 2px;
+}
+
+.subpage-sheet .page h1 {
+  margin-bottom: 10px;
+}
+
+.overlay .page h1 {
+  background: -webkit-linear-gradient(white, #F8F8F8);
+  border-bottom: 1px solid rgba(188, 193, 208, .5);
+  font-size: 105%;
+  font-weight: bold;
+  padding: 10px 15px 8px 15px;
+}
+
+.page list {
+  /* Min height is a multiple of the list item height (32) */
+  min-height: 192px;
+}
+
+/**
+ * TODO(kevers): Standardize formatting of sections to use display tables.
+ * For now, we require separate specialized rules for sections that are 
+ * formatted as table rows. 
+ */
+section {
+  -webkit-box-orient: horizontal;
+  border-bottom: 1px solid #eeeeee;
+  display: -webkit-box;
+  margin-top: 17px;
+  padding-bottom: 20px;
+}
+
+div.page section:last-child {
+  border-bottom: none;
+}
+
+div.page > h3 {
+  font-size: 105%;
+  font-weight: bold;
+  margin: 20px 0 10px 0;
+}
+
+section > h3 {
+  font-size: 105%;
+  font-weight: bold;
+  margin: 0;
+  vertical-align: middle;
+  width: 130px;
+  -webkit-padding-end: 10px;
+}
+
+section > div:only-of-type {
+  -webkit-box-flex: 1;
+}
+
+.option {
+  margin-top: 0;
+}
+
+div.checkbox,
+div.radio {
+  margin: 5px 0;
+}
+
+/* [hidden] does display:none, but its priority is too low in some cases. */
+[hidden] {
+  display: none !important;
+}
+
+.transparent {
+  opacity: 0;
+}
+
+div.disabled {
+  color: #888;
+}
+
+.touch-slider {
+  -webkit-appearance: slider-horizontal;
+}
+
+.text-button,
+.text-button:active,
+.text-button:focus,
+.text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border-color: transparent;
+  color: #000;
+}
+
+button[disabled].text-button,
+button[disabled].text-button:active,
+button[disabled].text-button:focus,
+button[disabled].text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border-color: transparent;
+  color: #AAA;
+}
+
+.settings-list,
+.settings-list-empty {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+
+.settings-list-empty {
+  background-color: #f4f4f4;
+  box-sizing: border-box;
+  min-height: 125px;
+  padding-left: 20px;
+  padding-top: 20px;
+}
+
+list > * {
+  -webkit-box-align: center;
+  -webkit-transition: .15s background-color;
+  box-sizing: border-box;
+  border-radius: 0;
+  display: -webkit-box;
+  height: 32px;
+  border: none;
+  margin: 0;
+}
+
+list:not([disabled]) > :hover {
+  background-color: #e4ecf7;
+}
+
+/* TODO(stuartmorgan): Once this becomes the list style for other WebUI pages
+ * these rules can be simplified (since they wont need to override other rules).
+ */
+
+list:not([hasElementFocus]) > [selected],
+list:not([hasElementFocus]) > [lead][selected] {
+  background-color: #d0d0d0;
+  background-image: none;
+}
+
+list[hasElementFocus] > [selected],
+list[hasElementFocus] > [lead][selected],
+list:not([hasElementFocus]) > [selected]:hover,
+list:not([hasElementFocus]) > [selected][lead]:hover {
+  background-color: #bbcee9;
+  background-image: none;
+}
+
+list[hasElementFocus] > [lead],
+list[hasElementFocus] > [lead][selected] {
+  border-top: 1px solid #7892b4;
+  border-bottom: 1px solid #7892b4;
+}
+
+list[hasElementFocus] > [lead]:nth-child(2),
+list[hasElementFocus] > [lead][selected]:nth-child(2) {
+  border-top: 1px solid transparent;
+}
+
+list[hasElementFocus] > [lead]:nth-last-child(2),
+list[hasElementFocus] > [lead][selected]:nth-last-child(2) {
+  border-bottom: 1px solid transparent;
+}
+
+list[disabled] > [lead][selected],
+list[disabled]:focus > [lead][selected] {
+  border: none;
+}
+
+list[disabled] {
+  opacity: 0.6;
+}
+
+list > .heading {
+  color: #666666;
+}
+
+list > .heading:hover {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+list .deletable-item {
+  -webkit-box-align: center;
+}
+
+list .deletable-item > :first-child {
+  -webkit-box-align: center;
+  -webkit-box-flex: 1;
+  -webkit-padding-end: 5px;
+  display: -webkit-box;
+}
+
+list .close-button {
+  -webkit-transition: .15s opacity;
+  background-color: transparent;
+  /* TODO(stuartmorgan): Replace with real images once they are available. */
+  background-image: url("../../../app/theme/close_bar.png");
+  border: none;
+  display: block;
+  height: 16px;
+  opacity: 1;
+  width: 16px;
+}
+
+list > *:not(:hover):not([lead]) .close-button,
+list > *:not(:hover):not([selected]) .close-button,
+list:not([hasElementFocus]) > *:not(:hover) .close-button,
+list[disabled] .close-button,
+list .close-button[disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+list .close-button:hover {
+  background-image: url("../../../app/theme/close_bar_h.png");
+}
+
+list .close-button:active {
+  background-image: url("../../../app/theme/close_bar_p.png");
+}
+
+list .static-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+list[inlineeditable] input {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+}
+
+list > :not([editing]) [displaymode="edit"] {
+  display: none;
+}
+
+list > [editing] [displaymode="static"] {
+  display: none;
+}
+
+list > [editing] input:invalid {
+  /* TODO(stuartmorgan): Replace with validity badge */
+  background-color: pink;
+}
+
+.option-name {
+  padding-right: 5px;
+}
+
+html[dir=rtl].option-name {
+  padding-left: 5px;
+}
+
+.favicon-cell {
+  -webkit-padding-start: 20px;
+  background-position: left;
+  background-repeat: no-repeat;
+}
+
+input[type="url"].favicon-cell {
+  -webkit-padding-start: 22px;
+  background-position-x: 4px;
+}
+
+/* TODO(jhawkins): Use something better than 99.3% when CSS3 background
+ * positioning is available.
+ */
+html[dir=rtl] input.favicon-cell {
+  background-position-x: 99.3%;
+}
+
+list .favicon-cell {
+  -webkit-margin-start: 7px;
+  -webkit-padding-start: 26px;
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+html[dir=rtl] list .favicon-cell {
+  background-position: right;
+}
+
+html[enable-background-mode=false] #background-mode-section {
+ display: none;
+}
+
+/* UI Controls */
+
+/* Currently we can't make custom focus outlines look right on the Mac, so
+ * we stick to native focus rings. Once outlines follow border radius, we
+ * can revisit.
+ */
+html:not([os=mac]) button:focus,
+html:not([os=mac]) input:focus,
+html:not([os=mac]) input[type='submit']:focus,
+html:not([os=mac]) select:focus {
+  outline-color: rgba(0, 128, 256, 0.5);
+}
+html[os=mac] button:focus,
+html[os=mac] input[type='submit']:focus {
+  outline-offset: -2px;
+}
+
+/* LIST */
+html:not([os=mac]) list[hasElementFocus] {
+  outline: 1px solid rgba(0, 128, 256, 0.5);
+  outline-offset: -2px;
+}
+
+/* This matches the native list outline on Mac */
+html[os=mac] list[hasElementFocus] {
+  outline-color: #759ad9;
+  outline-offset: -1px;
+  outline-style: auto;
+  outline-width: 5px;
+}
+
+/* TEXT */
+input[type='password'],
+input[type='text'],
+input[type='url'],
+input:not([type]) {
+  -webkit-border-radius: 2px;
+  border: 1px solid #aaa;
+  font-size: inherit;
+  padding: 3px;
+}
+
+/* CHECKBOX, RADIO */
+input[type=checkbox],
+input[type=radio] {
+  margin-left: 0;
+  margin-right: 0;
+  position: relative;
+  top: 1px;
+}
+
+/* Checkbox and radio buttons have different sizes on different platforms. The
+ * following rules have platform specific tweaks.
+ * TODO(arv): Test the vertical position on Linux and CrOS as well.
+ */
+
+label > input[type=checkbox],
+label > input[type=radio] {
+  margin-top: 1px;
+}
+
+html[os=mac] label > input[type=checkbox],
+html[os=mac] label > input[type=radio] {
+  margin-top: 2px;
+}
+
+html[os=chromeos] label > input[type=checkbox],
+html[os=chromeos] label > input[type=radio] {
+  top: 2px;
+}
+
+/* This will 'disable' the label associated with any input whose next sibling is
+ * the span containing the label (usually a checkbox or radio).
+ */
+label > input[disabled] ~ span {
+  color: #888;
+}
+
+.suboption {
+  -webkit-margin-start: 16px;
+}
+
+.informational-text {
+  color: grey;
+}
+
+#main-content list.autocomplete-suggestions {
+  background-color: white;
+  border: 1px solid #aaa;
+  border-radius: 2px;
+  min-height: 0;
+  opacity: 0.9;
+  position: fixed;
+  z-index: 3;
+}
+
+list.autocomplete-suggestions > div {
+  height: auto;
+}
+
+list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
+list.autocomplete-suggestions:not([hasElementFocus]) > [lead][selected] {
+  background-color: #bbcee9;
+}
+
+html:not([hasFlashPlugin]) .flash-plugin-area,
+/* If the Flash plug-in supports the NPP_ClearSiteData API, we don't need to
+ * show the link to the Flash storage settings manager:
+ */
+html[flashPluginSupportsClearSiteData] .flash-plugin-area,
+html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
+html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled {
+  display: none;
+}
+
+
+/* Display a collection of sections as a table in order to display nicely
+ * in multiple locales.  The left column should expand to accomodate the
+ * widest label without introducing excessive whitespace.  Labels in
+ * languages such as German or Dutch tend to be wider than for English 
+ */
+.displaytable {
+  display: table;
+  width: 100%;
+}
+
+.displaytable > section {
+  display: table-row;
+}
+
+/* right table column containing settable options */
+.displaytable > section > h3 + div,
+.displaytable > section > h3 + table {
+  padding-top: 17px;
+  padding-bottom: 20px;
+}
+
+.displaytable > section > * {
+  display: table-cell;
+  vertical-align: baseline;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* do not display a border after the last section in the table */
+.displaytable:not([searching='true']) > section:last-child > *  {
+  border-bottom: none;
+}
+
+/* Elements that need to be LTR even in an RTL context, but should align
+ * right. (Namely, URLs, search engine names, etc.)
+ */
+html[dir='rtl'] .weakrtl {
+  direction: ltr;
+  text-align: right;
+}
+
+/* Input fields in search engine table need to be weak-rtl. Since those input
+ * fields are generated for all cr.ListItem elements (and we only want weakrtl
+ * on some), the class needs to be on the enclosing div.
+ */
+html[dir='rtl'] div.weakrtl input {
+    direction: ltr;
+    text-align: right;
+}
+
+html[dir='rtl'] .favicon-cell.weakrtl {
+  -webkit-padding-end: 22px;
+  -webkit-padding-start: 0;
+}
+
+/* weakrtl for selection drop downs needs to account for the fact that
+ * Webkit does not honor the text-align attribute for the select element.
+ * (See Webkit bug #40216)
+ */
+html[dir='rtl'] select.weakrtl {
+  direction: rtl;
+}
+
+html[dir='rtl'] select.weakrtl option {
+  direction: ltr;
+}
+
+/* WebKit does not honor alignment for text specified via placeholder attrib.
+ * This CSS is a workaround. Please remove once WebKit bug is fixed. 
+ * https://bugs.webkit.org/show_bug.cgi?id=63367 
+ */
+html[dir='rtl'] input.weakrtl::-webkit-input-placeholder,
+html[dir='rtl'] .weakrtl input::-webkit-input-placeholder { 
+  direction: rtl;
+}

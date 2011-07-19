@@ -1,0 +1,9 @@
+include_rules = [
+  "+ui",
+  "+base/crypto",
+  "+net/base",
+
+  "+remoting/protocol",
+  "+remoting/jingle_glue",
+  "+third_party/npapi",
+]

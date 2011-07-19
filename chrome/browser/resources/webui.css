@@ -1,0 +1,59 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  background-color: white;
+  color: black;
+  margin: 10px;
+}
+
+.header {
+  clear: both;
+  overflow: auto;
+}
+
+.header .logo {
+  float: left;
+}
+
+html[dir='rtl'] .logo {
+  float: right;
+}
+
+.header .form {
+  -webkit-margin-start: 12px;
+  float: left;
+  margin-top: 22px;
+}
+
+html[dir='rtl'] .form {
+  float: right;
+}
+
+.page-navigation {
+  -webkit-margin-end: 4px;
+  background-color: #ebeff9;
+  padding: 8px;
+}
+
+.footer {
+  height: 24px;
+}
+
+/* TODO(jhawkins): Refactor button styling and remove !important here. This is
+ * currently necessary because individual page button element selectors have
+ * higher specificity.
+ */
+.link-button,
+.link-button:active,
+.link-button:focus,
+.link-button:hover {
+  -webkit-box-shadow: none !important;
+  background: transparent none !important;
+  border: none !important;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}

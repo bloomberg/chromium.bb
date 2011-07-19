@@ -1,0 +1,98 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol for video messages.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting;
+
+// TODO(ajwong): Determine if these fields should be optional or required.
+message VideoPacketFormat {
+  // Identifies how the image was encoded.
+  enum Encoding {
+    ENCODING_INVALID = -1;
+    ENCODING_VERBATIM = 0;
+    ENCODING_ZLIB = 1;
+    ENCODING_VP8 = 2;
+  };
+
+  // X,Y coordinates (in screen pixels) for origin of this update.
+  optional int32 x = 1;
+  optional int32 y = 2;
+
+  // Width, height (in screen pixels) for this update.
+  optional int32 width = 3;
+  optional int32 height = 4;
+
+  // The encoding used for this image update.
+  optional Encoding encoding = 5 [default = ENCODING_INVALID];
+  
+  // Width and height of the whole screen.
+  optional int32 screen_width = 6;
+  optional int32 screen_height = 7;
+}
+
+// TODO(hclam): Remove this message once we can obtain dirty rects from libvpx.
+message Rect {
+  optional int32 x = 1;
+  optional int32 y = 2;
+  optional int32 width = 3;
+  optional int32 height = 4;
+}
+
+message VideoPacket {
+  // Bitmasks for use in the flags field below.
+  //
+  // The encoder may fragment one update into multiple partitions.
+  // Each partition may be divided into multiple packets depending on
+  // how the encoder outputs data. Thus, one update can logically
+  // consist of multiple packets. The FIRST_PACKET and LAST_PACKET
+  // flags are used to indicate the start and end of a partition. The
+  // LAST_PARTITION flag is set for the last packet in the last
+  // partition. Here are notable consequences:
+  //  * Both FIRST_PACKET and LAST_PACKET may be set if an update is only
+  //    one packet long.
+  //  * The VideoPacketFormat is only supplied in a FIRST_PACKET.
+  //  * LAST_PARTITION can be set only in packet that has LAST_PACKET set.
+  //  * An local update cannot change format between a FIRST_PACKET and
+  //    a LAST_PACKET.
+  //  * All packets in one logical update must be processed in order, and
+  //    packets may not be skipped.
+  enum Flags {
+    FIRST_PACKET = 1;
+    LAST_PACKET = 2;
+    LAST_PARTITION = 4;
+  }
+  optional int32 flags = 1 [default = 0];
+
+  // The sequence number of the partial data for updating a rectangle.
+  optional int32 sequence_number = 2 [default = 0];
+
+  optional int32 timestamp = 3 [default = 0];
+
+  // This is provided on the first packet of the rectangle data, when
+  // the flags has FIRST_PACKET set.
+  optional VideoPacketFormat format = 4;
+
+  optional bytes data = 5;
+
+  // This field is only for VP8 to provide out-of-band information of dirty
+  // rects.
+  // TODO(hclam): Remove this field when we can obtain this information from
+  // libvpx.
+  repeated Rect dirty_rects = 6;
+
+  // Time in milliseconds spent in capturing this video frame.
+  optional int32 capture_time_ms = 7;
+
+  // Time in milliseconds spent in encoding this video frame.
+  optional int32 encode_time_ms = 8;
+
+  // The most recent sequence number received from the client on the event
+  // channel.
+  optional int64 client_sequence_number = 9;
+}

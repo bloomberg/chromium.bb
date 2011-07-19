@@ -1,0 +1,9 @@
+# Configuration for debugging on Linux
+
+include $(TOP)/configs/linux
+
+CONFIG_NAME = linux-debug
+
+OPT_FLAGS = -g
+#CFLAGS += -pedantic
+DEFINES += -DDEBUG -DDEBUG_MATH

@@ -1,0 +1,17 @@
+<script>
+
+    function gcAndDetach() {
+      // Collect the IDBRequest so that only the indexeddb message dispatcher
+      // has a reference to IDBDatabase.
+      gc();
+      // Make Document::detach run stopActiveDOMObjects.
+      location.href = 'database_callbacks_second.html';
+    }
+    function openConnection() {
+      var idbRequest = webkitIndexedDB.open("database_callbacks_first");
+      // setTimeout is needed so that the IDBRequest returned by
+      // webkitIndexedDB.open() can be garbage collected.
+      idbRequest.onsuccess = function() { setTimeout(gcAndDetach, 0) };
+    }
+    openConnection();
+</script>

@@ -1,0 +1,103 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for autofill.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of autofill sync objects.
+
+// An AutofillProfile.
+message AutofillProfileSpecifics {
+  // User-defined label.
+  optional string label = 1;
+  
+  optional string guid = 15;
+
+  // Contact info.
+  optional string name_first = 2;
+  optional string name_middle = 3;
+  optional string name_last = 4;
+  optional string email_address = 5;
+  optional string company_name = 6;
+
+  // Home address.
+  optional string address_home_line1 = 7;
+  optional string address_home_line2 = 8;
+  optional string address_home_city = 9;
+  optional string address_home_state = 10;
+  optional string address_home_zip = 11;
+  optional string address_home_country = 12;
+
+  // Phone + fax.
+  optional string phone_home_whole_number = 13;
+  optional string phone_fax_whole_number = 14;
+}
+
+message AutofillCreditCardSpecifics {
+  // User-defined label (e.g. Amazon Visa). 
+  optional string label = 1;
+
+  // The cardholder's name.
+  optional string name_on_card = 2;
+
+  // The type, e.g. Mastercard.
+  optional string type = 3;
+
+  // The credit card number.
+  optional string card_number = 4;
+
+  // The expiration.
+  optional string expiration_month = 5;
+  optional string expiration_year = 6;
+
+  // The CVV.
+  optional string verification_code = 7;
+
+  // The label of the Autofill profile that contains the billing address.
+  optional string billing_address = 8;
+
+  // The label of the Autofill profile that contains the shipping address.
+  optional string shipping_address = 9;
+}
+
+message AutofillSpecifics {
+  // If any of these 3 fields are present, then all 3 should be, and it implies
+  // that this entity represents a classic autofill object.  In this case,
+  // none of the autofill++ objects below should be present.
+  optional string name = 1;
+  optional string value = 2;
+  repeated int64 usage_timestamp = 3;
+
+  // An autofill++ profile object.  If present, indicates this entity
+  // represents an AutofillProfile exclusively, and no other fields (such as
+  // name/value or credit_card) should be present.
+  optional AutofillProfileSpecifics profile = 4;
+
+  // An AutofillCreditCardSpecifics, encryped using Nigori (see Chromium's
+  // base/nigori.h for details).  If present, indicates this entity represents
+  // an autofill++ CreditCard, and no other fields should be present.
+  // If encryption for autofill++ is not enabled, this is unused.  See
+  // |credit_card| in that case.
+  optional bytes encrypted_credit_card = 5;
+
+  // If encryption for autofill++ is not enabled, this field stores the
+  // AutofillCreditCardSpecifics [instead of |encrypted_credit_card|].
+  optional AutofillCreditCardSpecifics credit_card = 6;
+}
+
+extend EntitySpecifics {
+  optional AutofillSpecifics autofill = 31729;
+  optional AutofillProfileSpecifics autofill_profile = 63951;
+}

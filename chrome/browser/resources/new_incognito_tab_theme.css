@@ -1,0 +1,13 @@
+html {
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
+  background-color: $2;
+  background-position: $3;
+  background-repeat: $5;
+  height: 100%;
+  overflow: auto;
+  background-attachment: fixed;
+}
+
+html[bookmarkbarattached='true'] {
+  background-position: $4;
+}

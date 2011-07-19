@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <title>Heap Profiler: heap snapshots comparison test</title>
+    <script type="text/javascript">
+      var aHolder = [], bHolder = [], cHolder = [], dHolder = [];
+
+      function A(x) {
+        this.x = x;
+      }
+
+      function B(x) {
+        this.x = x;
+      }
+
+      function C() {}
+
+      var i;
+      for (i = 0; i < 100; ++i) {
+        var b = new B('hello');
+        bHolder.push(b);
+        aHolder.push(new A(b));
+        b = null;
+      }
+      for (i = 0; i < 25; ++i) {
+        cHolder.push(new C());
+      }
+
+      function D() {}
+
+      function changeStuff() {
+        if (aHolder.length > 0) {
+          aHolder.splice(aHolder.length - 25, 25);
+        }
+        for (i = 0; i < 25; ++i) {
+          bHolder.push(new B('hello'));
+        }
+        cHolder = [];
+        for (i = 0; i < 25; ++i) {
+          dHolder.push(new D());
+        }
+      }
+    </script>
+  </head>
+  <body>
+    This is the test for heap snapshot comparison functionality.
+    <br>
+    <br>
+    To use this test:
+    <ul>
+      <li>load file in the browser;
+      <li>open DevTools (Ctrl+Shift+I on Win/Linux, Command+Option+I on Mac);
+      <li>go to 'Profiles' page;
+      <li>press 'Take heap snapshot' button
+        (eye icon on the left side of the status bar);
+      <li>press
+        <input type="button" name="changeStuff" value="this button" onclick="changeStuff()" />;
+      <li>press 'Take heap snapshot' button again;
+    </ul>
+    <br>
+    On the left pane under 'Heap snapshots' section, items called
+    'Snapshot 1' and 'Snapshot 2' must appear. Select 'Snapshot 2'. 
+    Ensure that absolute values are shown (not percents).
+    <br>
+    <br>
+    TEST 1. Verify the following:
+    <ul>
+      <li>the value in '+/- Count' column for 'A' must be '-25';
+      <li>after expanding 'A' item, the value in '+/- Count' column
+        for 'Array' child entry must also be '-25';
+      <li>the value in '+/- Count' column for 'B' must be '+25';
+      <li>after expanding 'B' item, the value in '+/- Count' column
+        for 'Array' child entry must also be '+25'; the value for 'A'
+        child must be '-25';
+    </ul>
+    <br>
+    TEST 2. Change display to percent view (using the percent button on the
+    status bar). Verify the following:
+    <ul>
+      <li>values in '+/- Count' and '+/- Size' columns for 'C' must be 'deleted';
+      <li>values in '+/- Count' and '+/- Size' columns for 'D' must be 'new';
+    </ul>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+# List of Win Chrome plugins to verify plugins' version and state.
+# To add new plugin, add new plugin with following version in the list,
+# {u'name':'<Plugin Name>', u'enabled':<True/False>, u'version':u'<VERSION>'}
+# Used by: chrome/test/functional/plugins_check.py
+# Note: By default the script will use the key named 'name' as the unique
+#       identifier.  If you want to override you can use the unique_key key
+[
+ {u'name':'Shockwave Flash', u'enabled':1},
+ {u'name':'Chrome PDF Viewer', u'enabled':1, u'version':u''},
+]

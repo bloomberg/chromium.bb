@@ -1,0 +1,12 @@
+{
+  "name": "Test application",
+  "description": "the description is",
+  "launch_url": "launch.html",
+  "launch_container": "panel",
+  "icons": {
+    "16": "16.png",
+    "48": "48.png",
+    "128": "128.png"
+  },
+  "permissions": ["geolocation", "notifications"]
+}

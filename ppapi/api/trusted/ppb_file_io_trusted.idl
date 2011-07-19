@@ -1,0 +1,49 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/*
+ * This file defines the trusted file IO interface
+ */
+
+label Chrome {
+  M14= 0.4
+};
+
+// Available only to trusted implementations.
+interface PPB_FileIOTrusted {
+  /**
+   * Returns a file descriptor corresponding to the given FileIO object. On
+   * Windows, returns a HANDLE; on all other platforms, returns a POSIX file
+   * descriptor. The FileIO object must have been opened with a successful
+   * call to FileIO::Open.  The file descriptor will be closed automatically
+   * when the FileIO object is closed or destroyed.
+   */
+  int32_t GetOSFileDescriptor([in] PP_Resource file_io);
+
+  // Notifies the browser that underlying file will be modified.  This gives
+  // the browser the opportunity to apply quota restrictions and possibly
+  // return an error to indicate that the write is not allowed.
+  int32_t WillWrite([in] PP_Resource file_io,
+                    [in] int64_t offset,
+                    [in] int32_t bytes_to_write,
+                    [in] PP_CompletionCallback callback);
+
+  /**
+   * Notifies the browser that underlying file will be modified.  This gives
+   * the browser the opportunity to apply quota restrictions and possibly
+   * return an error to indicate that the write is not allowed.
+   *
+   * TODO(darin): Maybe unify the above into a single WillChangeFileSize
+   * method?  The above methods have the advantage of mapping to PPB_FileIO
+   * Write and SetLength calls.  WillChangeFileSize would require the caller to
+   * compute the file size resulting from a Write call, which may be
+   * undesirable.
+   */
+  int32_t WillSetLength([in] PP_Resource file_io,
+                        [in] int64_t length,
+                        [in] PP_CompletionCallback callback);
+
+};
+

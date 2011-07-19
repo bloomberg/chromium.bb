@@ -1,0 +1,17 @@
+HKLM {
+  NoRemove SOFTWARE {
+    NoRemove Microsoft {
+      NoRemove Windows {
+        NoRemove CurrentVersion {
+          NoRemove Explorer {
+            NoRemove 'Browser Helper Objects' {
+              ForceRemove {ECB3C477-1A0A-44BD-BB57-78F9EFE34FA7} = s 'ChromeFrame BHO' {
+                val NoExplorer = d 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

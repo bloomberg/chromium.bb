@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ar">
+<translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans, Droid Arabic Kufi, sans-serif</translation>
+<translation id="IDS_MINIMUM_FONT_SIZE">10</translation>
+<translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">10</translation>
+<translation id="IDS_LOCALE_GTKRC"> # gtkrc.ar
+gtk-font-name="ChromeDroidSans,Droid Arabic Kufi,sans-serif, 10"
+style "OverrideTooltipFontStyle" = "TooltipStyle" {
+  font_name = "ChromeDroidSans,Droid Arabic Kufi,sans-serif, 10"
+}
+widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
+</translation>
+</translationbundle>

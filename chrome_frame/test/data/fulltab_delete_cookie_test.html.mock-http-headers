@@ -1,0 +1,3 @@
+HTTP/1.0 200 OK
+Content-type: text/html
+Set-Cookie: CF_FullTabDeleteCookie=1;path=/

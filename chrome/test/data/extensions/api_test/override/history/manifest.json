@@ -1,0 +1,12 @@
+{
+  "name": "History override test",
+  "version": "0.1",
+  "description": "Test chrome://history/ override",
+  "background_page": "background.html",
+  "permissions": [ 
+    "history"
+  ],
+  "chrome_url_overrides": {
+    "history": "history.html"
+  }
+}

@@ -1,0 +1,37 @@
+File Manager Development Harness
+================================
+
+The File Manager harness hosts file manager dialogs as a regular web page.  It's
+useful for development and manual unit testing.
+
+In order to use the harness, you must start chrome with the following
+arguments:
+  chrome --allow-file-access-from-files --unlimited-quota-for-files
+
+To view the harness, visit:
+  file://PATH/TO/src/chrome/browser/resources/file_manager/harness.html
+
+This will display a "Open File" dialog by default.  You can switch to another
+kind of dialog using the links at the top of the page.
+
+Populating the development filesystem
+=====================================
+
+The "Save File" dialog type includes "New Folder" button.  This can be used to
+populate a few subdirectories for basic testing.
+
+The buttons at the bottom of the page allow you to add files to, or clear out
+the mock filesystem.  (This is the filesystem associated with all file: urls.)
+
+The Choose File button (from the bottom of the page) does not support importing
+a hierarchy of directories.  If you would like to bulk import a hierarchy, use
+the squashdir.py script located in file_manager/bin/squashdir.py.  This will
+copy a tree of files into a single directory, renaming them all to include
+their original path.  The Choose File button will reconstitute these munged
+filenames back into their original structure.
+
+Poking at the File Manager
+==========================
+
+From the JS Console, you can refer to the fileManager object as
+`harness.fileManager`.

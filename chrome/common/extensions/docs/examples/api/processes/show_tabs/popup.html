@@ -1,0 +1,92 @@
+<html>
+<head>
+<script>
+  // Show a list of all tabs in the same process as this one.
+  function init() {
+    chrome.windows.getCurrent(function(currentWindow) {
+      chrome.tabs.getSelected(currentWindow.id, function(selectedTab) {
+        chrome.experimental.processes.getProcessIdForTab(selectedTab.id,
+          function(pid) {
+            var outputDiv = document.getElementById("tab-list");
+            var titleDiv = document.getElementById("title");
+            titleDiv.innerHTML = "<b>Tabs in Process " + pid + ":</b>";
+            displayTabInfo(currentWindow.id, selectedTab, outputDiv);
+            displaySameProcessTabs(selectedTab, pid, outputDiv);
+          }
+        );
+
+      });
+    });
+  }
+
+  function displaySameProcessTabs(selectedTab, processId, outputDiv) {
+    // Loop over all windows and their tabs
+    var tabs = [];
+    chrome.windows.getAll({ populate: true }, function(windowList) {
+      for (var i = 0; i < windowList.length; i++) {
+        for (var j = 0; j < windowList[i].tabs.length; j++) {
+          var tab = windowList[i].tabs[j];
+          if (tab.id != selectedTab.id) {
+            tabs.push(tab);
+          }
+        }
+      }
+      
+      // Display tab in list if it is in the same process
+      tabs.forEach(function(tab) {
+        chrome.experimental.processes.getProcessIdForTab(tab.id,
+          function(pid) {
+            if (pid == processId) {
+              displayTabInfo(tab.windowId, tab, outputDiv);
+            }
+          }
+        );
+      });
+    });
+  }
+
+  // Print a link to a given tab
+  function displayTabInfo(windowId, tab, outputDiv) {
+    if (tab.favIconUrl != undefined) {
+      outputDiv.innerHTML += "<img src='" + tab.favIconUrl + "'>\n";
+    }
+    outputDiv.innerHTML +=
+      "<b><a href='#' onclick='showTab(window, " + windowId + ", " + tab.id +
+      ")'>" + tab.title + "</a></b><br>\n" +
+      "<i>" + tab.url + "</i><br>\n";
+  }
+
+  // Bring the selected tab to the front
+  function showTab(origWindow, windowId, tabId) {
+    // TODO: Bring the window to the front.  (See http://crbug.com/31434)
+    //chrome.windows.update(windowId, {focused: true});
+    chrome.tabs.update(tabId, { selected: true });
+    origWindow.close();
+  }
+</script>
+<style>
+body {
+  overflow: hidden;
+  margin: 0px;
+  padding: 0px;
+  background: white;
+}
+
+div:first-child {
+  margin-top: 0px;
+}
+
+div {
+  padding: 1px 3px;
+  font-family: sans-serif;
+  font-size: 10pt;
+  width: 400px;
+  margin-top: 1px;
+}
+</style>
+</head>
+<body onload="init()" style="width: 400px">
+<div id="title"></div>
+<div id="tab-list"></div>
+</body>
+</html>

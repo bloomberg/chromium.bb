@@ -1,0 +1,244 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<title>Slideshow</title>
+<style>
+
+body {
+  overflow: hidden;
+  background: black;
+}
+
+#glow {
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  height: 8px;
+  opacity: .4;
+  position: absolute;
+  background: -webkit-linear-gradient(transparent, white);
+}
+
+#main {
+  position: absolute;
+  left: 0;
+  right:0;
+  top: 0;
+  bottom: 30px;
+  overflow: hidden;
+}
+
+#playercontrols {
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  height: 30px;
+  opacity: .9;
+  right: 0;
+  align:center;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  position: absolute;
+  background: -webkit-linear-gradient(#323232, #070707);
+}
+
+#prevbutton > div {
+  background: url('shared/images/mediaplayer_prev.png');
+  background-repeat: no-repeat;
+  background-position: 4px 8px;
+  width: 100%;
+  height: 30px;
+  z-index: 9999;
+}
+
+.currentpicture {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  -webkit-transition-property: left;
+  -webkit-transition-duration: 1s;
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  pointer-events: none;
+}
+
+.comingfromleft {
+  left: -100%;
+}
+
+.comingfromright {
+  left: 100%;
+}
+
+#nextbutton > div {
+  background: url('shared/images/mediaplayer_next.png');
+  background-repeat: no-repeat;
+  background-position: 4px 8px;
+  width: 100%;
+  height: 30px;
+  z-index: 9999;
+}
+
+button {
+  z-index: 9999;
+  cursor: pointer;
+  width: 28px;
+  height: 30px;
+  webkit-appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+button:hover {
+  background: -webkit-linear-gradient(#6a7eac, #000000);
+}
+
+</style>
+<script src="shared/js/local_strings.js"></script>
+<script src="shared/js/media_common.js"></script>
+<script>
+
+document.addEventListener('DOMContentLoaded', load);
+
+document.onselectstart = function(e) {
+  e.preventDefault();
+};
+
+function $(o) {
+  return document.getElementById(o);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Document Functions:
+
+var currentPicture = null;
+var prevPicture = null;
+var currentFileOffset = 0;
+var filelist;
+var moveRight = false;
+var lastimg = null;
+
+function loadedPicture() {
+  if (prevPicture) {
+    if (moveRight) {
+      prevPicture.style.left = '-100%';
+    } else {
+      prevPicture.style.left = '100%';
+    }
+  }
+  if (window.innerHeight < lastimg.height ||
+      window.innerWidth < lastimg.width) {
+     if (lastimg.width > lastimg.height) {
+       lastimg.style.height = 'auto';
+       lastimg.style.width = '100%';
+     } else {
+       lastimg.style.width = 'auto';
+       lastimg.style.height = '100%';
+     }
+  }
+  setTimeout(function() {
+      currentPicture.style.left = '0';
+   }, 10);
+}
+
+function transitionTo(path, fromTheRight) {
+  if (currentPicture) {
+    if (prevPicture) {
+      $('main').removeChild(prevPicture);
+    }
+    prevPicture = currentPicture;
+  }
+
+  currentPicture = document.createElement('div');
+
+  $('main').appendChild(currentPicture);
+  if (fromTheRight) {
+    currentPicture.className = 'currentpicture comingfromright';
+  } else {
+    currentPicture.className = 'currentpicture comingfromleft';
+  }
+  var image = document.createElement('img');
+  lastimg = image;
+  image.onload = loadedPicture;
+  image.onerror = loadedPicture;
+  document.location.hash = path;
+  image.src = 'file://' + path;
+  currentPicture.appendChild(image);
+  moveRight = fromTheRight;
+}
+
+function browseFileResult(info, results) {
+  filelist = results;
+  if (info.currentOffset) {
+    currentFileOffset = info.currentOffset;
+  } else {
+    currentFileOffset = 0;
+  }
+  transitionTo(filelist[currentFileOffset].path, true);
+}
+
+function keyPressed(e) {
+  // Left Pressed
+  if (e.keyCode == 37) {
+    if (currentFileOffset > 0) {
+      currentFileOffset--;
+      transitionTo(filelist[currentFileOffset].path, false);
+    }
+  }
+  // Right Pressed
+  if (e.keyCode == 39) {
+    if (currentFileOffset < (filelist.length - 1)) {
+      currentFileOffset++;
+      transitionTo(filelist[currentFileOffset].path, true);
+    }
+  }
+}
+
+function load() {
+  localStrings = new LocalStrings();
+
+  document.onkeydown = keyPressed;
+  if (document.location.href.indexOf('#') != -1) {
+    var currentpathArray = document.location.href.split('#');
+    var path = currentpathArray[1];
+    chrome.send('getChildren', [path]);
+  }
+}
+
+function prevButtonClick() {
+  if (currentFileOffset > 0) {
+    currentFileOffset--;
+    transitionTo(filelist[currentFileOffset].path, false);
+  }
+}
+
+function nextButtonClick() {
+  if (currentFileOffset < (filelist.length - 1)) {
+    currentFileOffset++;
+    transitionTo(filelist[currentFileOffset].path, true);
+  }
+}
+
+function toggleFullscreen() {
+  chrome.send('toggleFullscreen', ['']);
+}
+
+</script>
+<body>
+<div id="main"></div>
+<div id="glow"></div>
+<div id="playercontrols">
+  <button id="prevbutton" onclick="prevButtonClick()">
+    <div></div>
+  </button>
+  <button id="nextbutton" onclick="nextButtonClick()">
+    <div></div>
+  </button>
+</div>
+</body>
+</html>

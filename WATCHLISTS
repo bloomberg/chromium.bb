@@ -1,0 +1,317 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Watchlist Rules
+# Refer: http://dev.chromium.org/developers/contributing-code/watchlists
+
+
+{
+  'WATCHLIST_DEFINITIONS': {
+    'this_file': {
+      'filepath': '^WATCHLISTS$',
+    },
+    'valgrind': {
+      'filepath': 'valgrind',
+    },
+    'mac': {
+      'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
+    },
+    'base': {
+      'filepath': '^base/.*',
+    },
+    'extension': {
+      'filepath': 'extension',
+    },
+    'views': {
+      # Applies to all files and subdirs within this directory.
+      'filepath': '^views/.*',
+    },
+    'browser': {
+      'filepath': 'chrome/browser/.*',
+    },
+    'browser_main': {
+      'filepath': 'chrome/browser/browser_main.cc',
+    },
+    'browser_resources': {
+      'filepath': 'chrome/browser/resources/.*',
+    },
+    'chromeos_login': {
+      'filepath': 'chrome/browser/chromeos/login/.*',
+    },
+    'content': {
+      'filepath': 'content/.*',
+    },
+    'download': {
+      'filepath': 'chrome/browser/download/.*|'\
+        'content/browser/download/.*',
+    },
+    'history': {
+      'filepath': 'chrome/browser/history/.*',
+    },
+    'renderer': {
+      'filepath': 'chrome/browser/renderer_host/.*|chrome/renderer/.*|'\
+        'chrome/common/render.*',
+    },
+    'tab_contents': {
+      'filepath': 'chrome/browser/tab_contents/.*|'\
+        'content/browser/tab_contents/.*|'\
+        'chrome/browser/ui/tab_contents/.*',
+    },
+    'webkit': {
+      'filepath': 'webkit/.*',
+    },
+    'plugin': {
+      'filepath': 'chrome/browser/plugin.*|chrome/plugin/.*|'\
+        'chrome/common/plugin.*|webkit/glue/webplugin.*|webkit/glue/plugins/.*',
+    },
+    'worker': {
+      'filepath': 'chrome/browser/worker_host/.*|chrome/worker/.*|'\
+        'chrome/common/worker_messages.*|webkit/glue/webworker.*',
+    },
+    'net': {
+      'filepath': 'net/.*',
+    },
+    'net_error_list': {
+      'filepath': 'net/base/net_error_list.h',
+    },
+    'ftp': {
+      'filepath': 'ftp',
+    },
+    'installer': {
+      'filepath': 'chrome/installer/.*',
+    },
+    'importer': {
+      'filepath': '.*import.*',
+    },
+    'media': {
+      'filepath': 'media/.*|third_party/(ffmpeg|openmax)/.*|webmediaplayer|'\
+        'audio_message_filter|video_layer',
+    },
+    'ipc': {
+      'filepath': 'ipc/ipc.*',
+    },
+    'linux-sandboxing': {
+      'filepath': 'sandbox/linux/.*',
+    },
+    'sync': {
+      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|'\
+        'chrome/test/live_sync/.*',
+    },
+    'layout_tests': {
+      'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
+    },
+    'tools': {
+      'filepath': 'tools/.*',
+    },
+    'tests': {
+      'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/.*',
+    },
+    'automation': {
+      'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
+    },
+    'chrome_frame': {
+      'filepath': 'chrome_frame/.*',
+    },
+    'nacl': {
+      'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|'\
+        'chrome/browser/nacl_host/.*|chrome/common/nacl.*',
+    },
+    'appcache': {
+      'filepath': 'appcache/.*',
+    },
+    'gpu': {
+      'filepath': 'gpu/.*',
+    },
+    'locale_settings': {
+      'filepath': 'chrome/app/resources/locale_settings.*',
+    },
+    'options_dialog_content': {
+      'filepath': 'chrome/browser/views/options/content_page_view.h|'\
+        'chrome/browser/views/options/general_page_view.h',
+    },
+    'chromeos': {
+      'filepath': 'chrome/browser/chromeos/.*',
+    },
+    'npapi_headers': {
+      'filepath': 'third_party/npapi/bindings/.*',
+    },
+    'remoting': {
+      'filepath': 'remoting/.*',
+    },
+    'domui_options': {
+      'filepath': 'chrome/browser/resources/options/.*|'\
+                  'chrome/browser/resources/options.html|'\
+                  'chrome/browser/dom_ui/options/.*',
+    },
+    'ntp': {
+      'filepath': 'chrome/browser/resources/ntp/.*|'\
+        'chrome/browser/resources/ntp4/.*|'\
+        'chrome/browser/resources/touch_ntp/.*|'\
+        'chrome/browser/resources/touch_ntp/.*|'\
+        'chrome/browser/ui/webui/ntp/.*',
+    },
+    'cookie_monster': {
+      'filepath': 'net/base/cookie_.*|'\
+        'chrome/browser/net/sqlite_persistent_cookie_store.*',
+    },
+    'autofill': {
+      'filepath': 'chrome/browser/autofill/.*|'\
+        'chrome/browser/resources/options/autofill_.*|'\
+        'chrome/browser/sync/glue/autofill_.*|'\
+        'chrome/browser/ui/webui/options/autofill_.*|'\
+        'chrome/renderer/autofill/.*|'\
+        'chrome/test/data/autofill/.*|'\
+        'chrome/test/data/autofill/heuristics/input/.*|'\
+        'chrome/test/data/autofill/heuristics/output/.*|'\
+        'chrome/test/data/autofill/merge/input/.*|'\
+        'chrome/test/data/autofill/merge/output/.*',
+    },
+    'webdata': {
+      'filepath': 'chrome/browser/webdata/.*',
+    },
+    'i18n': {
+      'filepath': 'base/i18n/.*|base/*string.*|.*l10n.*|.*icu.*|'\
+        '.*locale_settings.*|.*encoding.*',
+    },
+    'pyauto': {
+      'filepath': 'chrome/test/pyautolib' \
+                  '|chrome/test/functional' \
+                  '|chrome/browser/automation/automation_provider_json'
+    },
+    'labs': {
+      'filepath': 'chrome/browser/labs' \
+                  '|chrome/browser/dom_ui/labs'
+    },
+    'fileapi': {
+      'filepath': 'file_system/.*' \
+                  '|fileapi/.*'
+    },
+    'pepper_api': {
+      'filepath': 'ppapi/c/.*',
+    },
+    'prerender': {
+      'filepath': 'chrome/browser/prerender/.*'
+    },
+    'chromedriver': {
+      'filepath': 'chrome/test/webdriver|third_party/webdriver'
+    },
+    'dom_login': {
+      'filepath': 'chrome/browser/chromeos/frame/.*dom.*' \
+                  '|chrome/browser/chromeos/login/.*dom.*'  \
+                  '|chrome/browser/chromeos/login/.*login_display.*' \
+                  '|chrome/browser/chromeos/login/existing_user_controller.*' \
+                  '|chrome/browser/resources/login.html' \
+                  '|chrome/browser/ui/webui/chromeos/login/.*'
+    },
+    'filebrowse': {
+      'filepath': 'file_browser' \
+                  '|file_manager' \
+                  '|filebrowse'
+    },
+    'imageburner': {
+      'filepath': 'imageburner'
+    },
+    'clang_update': {
+      'filepath': 'tools/clang/scripts/update.sh'
+    },
+    'panels': {
+      'filepath': 'chrome/browser/ui/panels/.*',
+    },
+    'accelerator_table_gtk': {
+      'filepath': 'chrome/browser/ui/views/accelerator_table_gtk.cc',
+    },
+    'downloads_ui': {
+      'filepath': 'chrome/browser/resources/.*downloads\..*' \
+                  '|chrome/browser/ui/webui/.*downloads.*' \
+                  '|chrome/browser/ui/views/download/.*' \
+                  '|chrome/browser/ui/cocoa/download/.*' \
+                  '|chrome/browser/ui/gtk/download/.*'
+    },
+    'x11': {
+      'filepath': 'content/browser/renderer_host/backing_store_x\..*' \
+                  '|chrome/browser/chromeos/input_method/xkeyboard\..*' \
+                  '|chrome/browser/chromeos/system_key_event_listener\..*' \
+                  '|chrome/browser/chromeos/wm_.*' \
+                  '|ui/base/x/.*'
+    },
+  },
+
+  'WATCHLISTS': {
+    'this_file': ['nirnimesh@chromium.org'],
+    'valgrind': ['timurrrr@chromium.org',
+                 'stuartmorgan+watch@chromium.org',
+                 'glider@chromium.org'],
+    'base': ['brettw-cc@chromium.org'],
+    'browser_main': ['brettw-cc@chromium.org'],
+    'browser_resources': ['arv@chromium.org'],
+    'chromeos_login': ['nkostylev+cc@chromium.org'],
+    'content': ['jam@chromium.org', 'joi+watch-content@chromium.org'],
+    'download': ['phajdan.jr@chromium.org','rdsmith+dwatch@chromium.org'],
+    'history': ['brettw-cc@chromium.org'],
+    'renderer': ['darin-cc@chromium.org',
+                 'brettw-cc@chromium.org'],
+    'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org'],
+    'webkit': ['darin-cc@chromium.org'],
+    'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
+               'stuartmorgan+watch@chromium.org'],
+    'worker': ['jam@chromium.org'],
+    'extension': ['aa@chromium.org',
+                  'erikkay@chromium.org'],
+    'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
+    'net_error_list': ['mmenke@chromium.org'],
+    'ftp': ['phajdan.jr@chromium.org'],
+    'media': ['acolwell+watch@chromium.org', 'ajwong+watch@chromium.org',
+              'annacc+watch@chromium.org', 'ddorwin+watch@chromium.org',
+              'fischman+watch@chromium.org', 'hclam+watch@chromium.org',
+              'scherkus@chromium.org', 'sjl@chromium.org', 'vrk@chromium.org'],
+    'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
+    'linux-sandboxing': ['agl@chromium.org'],
+    'sync': ['tim@chromium.org', 'nick@chromium.org',
+             'idana@chromium.org', 'rsimha@chromium.org'],
+    'tools': ['pam+watch@chromium.org'],
+    'tests': ['phajdan.jr@chromium.org'],
+    'automation': ['phajdan.jr@chromium.org', 'kkania@chromium.org'],
+    'chrome_frame': ['amit@chromium.org'],
+    'nacl': ['native-client-reviews@googlegroups.com'],
+    'appcache': ['michaeln@chromium.org'],
+    'gpu': ['apatrick@chromium.org'],
+    'locale_settings': ['finnur+watch@chromium.org'],
+    'options_dialog_content': ['finnur+watch@chromium.org'],
+    'chromeos': ['davemoore+watch@chromium.org'],
+    'npapi_headers': ['stuartmorgan@chromium.org'],
+    'remoting': ['ajwong+watch@chromium.org', 'dmaclach+watch@chromium.org',
+                 'garykac+watch@chromium.org', 'hclam+watch@chromium.org',
+                 'jamiewalch+watch@chromium.org',
+                 'lambroslambrou+watch@chromium.org',
+                 'sergeyu+watch@chromium.org',
+                 'simonmorris+watch@chromium.org',
+                 'wez+watch@chromium.org'],
+    'ntp': ['estade+watch@chromium.org'],
+    'cookie_monster': ['rdsmith@chromium.org'],
+    'autofill': ['dhollowa@chromium.org', 'georgey@chromium.org',
+                 'isherman@chromium.org'],
+    'webdata': ['dhollowa@chromium.org'],
+    'i18n': ['jshin+watch@chromium.org'],
+    'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
+               'nirnimesh@chromium.org', 'dyu@chromium.org'],
+    'labs': ['thakis@chromium.org'],
+    'fileapi': ['kinuko+watch@chromium.org'],
+    'pepper_api': ['piman+watch@chromium.org'],
+    'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
+                  'dominich+watch@chromium.org'],
+    'chromedriver': ['kkania@chromium.org'],
+    'dom_login': ['rharrison@chromium.org'],
+    'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
+    'filebrowse': ['achuith+watch@chromium.org', 'rginda+watch@chromium.org'],
+    'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org'],
+    'panels': ['dimich@chromium.org', 'jennb@chromium.org',
+               'prasadt@chromium.org', 'dcheng@chromium.org',
+               'jianli@chromium.org'],
+    'importer': ['tfarina@chromium.org'],
+    'views': ['dhollowa@chromium.org'],
+    'accelerator_table_gtk': ['mazda@chromium.org', 'derat+watch@chromium.org'],
+    'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
+    'x11': ['derat+watch@chromium.org'],
+  },
+}

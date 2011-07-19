@@ -1,0 +1,62 @@
+<!--
+This HTML file contains a div for a player which is used for event testing
+(chrome/test/functional/media_event_*.py).
+The query string should contain the following information:
+  tag (required): HTML video/audio tag.
+  video file (required): video file name.
+  t (optional): if specified, disables the media cache.
+  actions (optional): add a list of triples (time, action, action_argument)
+    delimited by '|'. For example, '3000|seek|5000' means 'at second 3, seek
+    to second 5'. Possible actions are 'play', 'pause', 'seek', or
+    'ratechange'. Time and action_arugment is in milliseconds. 'play' and
+    'pause' should have dummy action_argument, which is ignored.
+
+Example: "media_event.html?tag=video&media=foo.webm&t=t&actions=3000|seek|5000"
+-->
+<html>
+<body>
+<div id='player_container'></div>
+<script type='text/javascript' src='player.js'></script>
+<script>
+var events = ['abort', 'canplay', 'canplaythrough', 'durationchange', 'emptied',
+              'ended', 'error', 'load', 'loadeddata', 'loadedmetadata',
+              'loadstart',  'pause', 'play', 'playing', 'progress',
+              'ratechange', 'seeked', 'seeking', 'stalled', 'suspend',
+              'timeupdate', 'volumechange', 'waiting',
+              'cuechange', 'enter', 'exit', 'change'];
+
+var startTime = 0
+
+var table = document.createElement('table');
+table.id = 'event';
+document.body.appendChild(table);
+
+function recordEventTime(evt) {
+  // Record the time when an event happens.
+  var time = new Date().getTime() - startTime
+  document.getElementById(evt.type).innerHTML += time + ' '
+}
+
+var player = document.getElementById('player');
+
+for (var event in events) {
+  var row = document.createElement('tr');
+  var eventNameColumn = document.createElement('td');
+  eventNameColumn.innerHTML = events[event];
+  var eventValueColumn = document.createElement('td');
+  eventValueColumn.innerHTML = '';
+  eventValueColumn.id = events[event];
+  row.appendChild(eventNameColumn);
+  row.appendChild(eventValueColumn);
+  table.appendChild(row)
+  player.addEventListener(events[event], recordEventTime, false);
+}
+
+if (ok) {
+  startTime = new Date().getTime();
+  player.play();
+}
+</script>
+</body>
+</html>
+

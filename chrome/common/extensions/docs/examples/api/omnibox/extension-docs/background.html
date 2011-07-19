@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+  <head>
+  </head>
+  <body>
+    <script>
+      /**
+       * Allows for binding callbacks to a specific scope.
+       * @param {Object} scope Scope to bind to.
+       * @returns {Function} A wrapped call to this function.
+       */
+      Function.prototype.bind = function(scope) {
+        var func = this;
+        return function() {
+          return func.apply(scope, arguments);
+        };
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+
+      /**
+       * Holds the search index and exposes operations to search the API docs.
+       * @constructor
+       */
+      function APISearchCorpus() {
+        this.corpus_ = [];
+      };
+
+      /**
+       * Adds an entry to the index.
+       * @param {String} name Name of the function (e.g. chrome.tabs.get).
+       * @param {String} url Url to the documentation.
+       * @param {String} desc Description (optional).
+       * @param {String} type The type of entry (e.g. method, event).
+       */
+      APISearchCorpus.prototype.addEntry = function(name, url, desc, type) {
+        this.corpus_.push({
+          'name' : name,
+          'url' : url,
+          'style' : name,
+          'description' : desc,
+          'type' : type
+        });
+      };
+
+      /**
+       * Locates a match from the supplied keywords against text.
+       *
+       * Keywords are matched in the order supplied, and a non-overlapping
+       * search is used.  The matches are returned in a styled string that 
+       * can be passed directly to the omnibox API.
+       *
+       * @param {Array.<String>} keywords A list of keywords to check.
+       * @param {String} name The name to search against.
+       * @returns {String|null} A string containing &lt;match&gt; markup
+       *     corresponding to the matched text, or null if no match was found.
+       */
+      APISearchCorpus.prototype.findMatch_ = function(keywords, name) {
+        var style = [];
+        var indexFrom = 0;
+        var lowerName = name.toLowerCase();
+        for (var i = 0; i < keywords.length; i++) {
+          var keyword = keywords[i].toLowerCase();
+          var start = lowerName.indexOf(keyword, indexFrom);
+          if (start == -1) {
+            return null;
+          }
+          var end = start + keyword.length + 1;
+          
+          style.push(name.substring(indexFrom, start))
+          style.push('<match>');
+          style.push(name.substring(start, end));
+          style.push('</match>');
+          
+          indexFrom = end;
+        }
+        style.push(name.substring(indexFrom));
+        return style.join('');
+      };
+
+      /**
+       * Searches this corpus for the supplied text.
+       * @param {String} text Query text.
+       * @param {Number} limit Max results to return.
+       * @returns {Array.<Object>} A list of entries corresponding with
+       *     matches (@see APISearchCorpus.findMatch_ for keyword search
+       *     algorithm.  Results are returned in a sorted order, first by
+       *     length, then alphabetically by name.  An exact match will be
+       *     returned first.
+       */
+      APISearchCorpus.prototype.search = function(text, limit) {
+        var results = [];
+        var match = null;
+        if (!text || text.length == 0) {
+          return this.corpus_.slice(0, limit);  // No text, start listing APIs.
+        }
+        var searchText = text.toLowerCase();
+        var keywords = searchText.split(' ');
+        for (var i = 0; i < this.corpus_.length; i++) {
+          var name = this.corpus_[i]['name'];
+          if (results.length < limit) {
+            var result = this.findMatch_(keywords, name);
+            if (result) {
+              this.corpus_[i]['style'] = result;
+              results.push(this.corpus_[i]);
+            }
+          }
+          if (!match && searchText == name) {
+            match = this.corpus_[i];  // An exact match.
+          }
+          if (match && results.length >= limit) {
+            break;  // Have an exact match and have reached the search limit.
+          }
+        }
+        if (match) {
+          results.unshift(match);  // Add any exact match to the front.
+        }
+        return results;
+      };
+
+      /**
+       * Sorts the corpus according to name length, then name alphabetically.
+       */
+      APISearchCorpus.prototype.sort = function() {
+        function compareLength(a, b) {
+          return a['name'].length - b['name'].length;
+        };
+
+        function compareAlpha(a, b) {
+          if (a['name'] < b['name']) return -1;
+          if (a['name'] > b['name']) return 1;
+          return 0;
+        };
+
+        function compare(a, b) {
+          var result = compareLength(a, b);
+          if (result == 0) result = compareAlpha(a, b);
+          return result;
+        };
+
+        this.corpus_.sort(compare);
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+
+      /**
+       * Provides an interface to the Chrome Extensions documentation site.
+       * @param {APISearchCorpus} corpus The search corpus to populate.
+       * @constructor
+       */
+      function DocsManager(corpus) {
+        this.CODE_URL_PREFIX = 'http://code.google.com/chrome/extensions/';
+        this.API_MANIFEST_URL = [
+          'http://src.chromium.org/viewvc/chrome/trunk/src/',
+          'chrome/common/extensions/api/extension_api.json'
+        ].join('');
+        this.corpus_ = corpus;
+      };
+
+      /**
+       * Initiates a fetch of the docs and populates the corpus.
+       */
+      DocsManager.prototype.fetch = function() {
+        this.fetchApi_(this.onApi_.bind(this));
+      };
+
+      /**
+       * Retrieves the API manifest from cache or fetches a new one if none.
+       * @param {Function} callback The function to pass the parsed manifest
+       *    data to.
+       */
+      DocsManager.prototype.fetchApi_ = function(callback) {
+        var currentCacheTime = this.getCacheTime_();
+        if (localStorage['cache-time'] && localStorage['cache']) {
+          var cacheTime = JSON.parse(localStorage['cache-time']);
+          if (cacheTime < currentCacheTime) {
+            callback(JSON.parse(localStorage['cache']));
+            return;
+          }
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener('readystatechange', function(evt) {
+          if (xhr.readyState == 4 && xhr.responseText) {
+            localStorage['cache-time'] = JSON.stringify(currentCacheTime);
+            localStorage['cache'] = xhr.responseText;
+            var json = JSON.parse(xhr.responseText);
+            callback(json);
+          }
+        });
+        xhr.open('GET', this.API_MANIFEST_URL, true);
+        xhr.send();
+      };
+
+      /**
+       * Returns a time which can be used to cache a manifest response.
+       * @returns {Number} A timestamp divided by the number of ms in a day,
+       *     rounded to the nearest integer.  This means the number should
+       *     change only once per day, invalidating the cache that often.
+       */
+      DocsManager.prototype.getCacheTime_ = function() {
+        var time = new Date().getTime();
+        time = Math.round(time / (1000 * 60 * 60 * 24));
+        return time;
+      };
+
+      /**
+       * Returns an URL for the documentation given an API element.
+       * @param {String} namespace The namespace (e.g. tabs, windows).
+       * @param {String} type The type of element (e.g. event, method, type).
+       * @param {String} name The name of the element (e.g. onRemoved).
+       * @returns {String} An URL corresponding with the documentation for the
+       *     given element.
+       */
+      DocsManager.prototype.getDocLink_ = function(namespace, type, name) {
+        var linkparts = [ this.CODE_URL_PREFIX, namespace, '.html' ];
+        if (type && name) {
+          linkparts.push('#', type, '-', name);
+        }
+        return linkparts.join('');
+      };
+
+      /**
+       * Returns a qualified name for an API element.
+       * @param {String} namespace The namespace (e.g. tabs, windows).
+       * @param {String} name The name of the element (e.g. onRemoved).
+       * @returns {String} A qualified API name (e.g. chrome.tabs.onRemoved).
+       */
+      DocsManager.prototype.getName_ = function(namespace, name) {
+        var nameparts = [ 'chrome', namespace ];
+        if (name) {
+          nameparts.push(name);
+        }
+        return nameparts.join('.');
+      };
+
+      /**
+       * Parses an API manifest data structure and populates the search index.
+       * @param {Object} api The api manifest, as a JSON-parsed object.
+       */
+      DocsManager.prototype.onApi_ = function(api) {
+        for (var i = 0; i < api.length; i++) {
+          var module = api[i];
+          if (module.nodoc) {
+            continue;
+          }
+          var ns = module.namespace;
+          var nsName = this.getName_(ns);
+          var nsUrl = this.getDocLink_(ns);
+          this.corpus_.addEntry(nsName, nsUrl, null, 'namespace');
+          this.parseAPIArray_('method', ns, module.functions);
+          this.parseAPIArray_('event', ns, module.events);
+          this.parseAPIArray_('type', ns, module.types);
+          this.parseAPIObject_('property', ns, module.properties);
+          this.corpus_.sort();
+        }
+      };
+
+      /**
+       * Parses an API manifest subsection which is formatted as an Array.
+       * @param {String} type The type of data (e.g. method, event, type).
+       * @param {String} ns The namespace (e.g. tabs, windows).
+       * @param {Array} list The list of API elements.
+       */
+      DocsManager.prototype.parseAPIArray_ = function(type, ns, list) {
+        if (!list) return;
+        for (var j = 0; j < list.length; j++) {
+          var item = list[j];
+          if (item.nodoc) continue;
+          var name = item.name || item.id;
+          var fullname = this.getName_(ns, name);
+          var url = this.getDocLink_(ns, type, name);
+          var description = item.description;
+          this.corpus_.addEntry(fullname, url, description, type);
+        }
+      };
+
+      /**
+       * Parses an API manifest subsection which is formatted as an Object.
+       * @param {String} type The type of data (e.g. property).
+       * @param {String} ns The namespace (e.g. tabs, windows).
+       * @param {Object} list The object containing API elements.
+       */
+      DocsManager.prototype.parseAPIObject_ = function(type, ns, list) {
+        for (var prop in list) {
+          if (list.hasOwnProperty(prop)) {
+            var name = this.getName_(ns, prop);
+            var url = this.getDocLink_(ns, type, prop);
+            var description = list[prop].description;
+            this.corpus_.addEntry(name, url, description, type);
+          }
+        }
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+
+      /**
+       * Manages text input into the omnibox and returns search results.
+       * @param {APISearchCorpus} Populated search corpus.
+       * @param {TabManager} Manager to use to open tabs.
+       * @constructor
+       */
+      function OmniboxManager(corpus, tabManager) {
+        this.SEPARATOR = ' - ';
+        this.corpus_ = corpus;
+        this.tabManager_ = tabManager;
+        chrome.omnibox.onInputChanged.addListener(
+            this.onChanged_.bind(this));
+        chrome.omnibox.onInputEntered.addListener(
+            this.onEntered_.bind(this));
+      };
+
+      /**
+       * Converts a corpus match to an object suitable for the omnibox API.
+       * @param {Object} match The match to convert.
+       * @returns {Object} A suggestion object formatted for the omnibox API.
+       */
+      OmniboxManager.prototype.convertMatchToSuggestion_ = function(match) {
+        var suggestion = [ match['style'] ];
+        if (match['type']) {
+          // Abusing the URL style a little, but want this to stand out.
+          suggestion.push(['<url>', match['type'], '</url>'].join(''));
+        }
+        if (match['description']) {
+          suggestion.push(['<dim>', match['description'], '</dim>'].join(''));
+        }
+        return {
+          'content' : match['name'],
+          'description' : suggestion.join(' - ')
+        }
+      };
+
+      /**
+       * Suggests a list of possible matches when omnibox text changes.
+       * @param {String} text Text input from the omnibox.
+       * @param {Function} suggest Callback to execute with a list of
+       *     suggestion objects, if any matches were found.
+       */
+      OmniboxManager.prototype.onChanged_ = function(text, suggest) {
+        var matches = this.corpus_.search(text, 10);
+        var suggestions = [];
+        for (var i = 0; i < matches.length; i++) {
+          var suggestion = this.convertMatchToSuggestion_(matches[i]);
+          suggestions.push(suggestion);
+        }
+        suggest(suggestions);
+      };
+
+      /**
+       * Opens the most appropriate URL when enter is pressed in the omnibox.
+       *
+       * Note that the entered text does not have to be exact - the first
+       * search result is automatically opened when enter is pressed.
+       *
+       * @param {String} text The text entered.
+       */
+      OmniboxManager.prototype.onEntered_ = function(text) {
+        var matches = this.corpus_.search(text, 1);
+        if (matches.length > 0) {
+          this.tabManager_.open(matches[0]['url']);
+        }
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+
+      /**
+       * Manages opening urls in tabs.
+       * @constructor
+       */
+      function TabManager() {
+        this.tab_ = null;
+        chrome.tabs.onRemoved.addListener(this.onRemoved_.bind(this));
+      };
+
+      /**
+       * When a tab is removed, see if it was opened by us and null out if yes.
+       * @param {Number} tabid ID of the removed tab.
+       */
+      TabManager.prototype.onRemoved_ = function(tabid) {
+        if (this.tab_ && tabid == this.tab_.id) this.tab_ = null;
+      };
+
+      /**
+       * When a tab opened by us is created, store it for future updates.
+       * @param {Tab} tab The tab which was just opened.
+       */
+      TabManager.prototype.onTab_ = function(tab) {
+        this.tab_ = tab;
+      };
+
+      /**
+       * Opens the supplied URL.
+       *
+       * The first time this method is called a new tab is created.  Subsequent
+       * times this is called, the opened tab will be updated.  If that tab
+       * is ever closed, then a new tab will be created for the next call.
+       *
+       * @param {String} url The URL to open.
+       */
+      TabManager.prototype.open = function(url) {
+        if (url) {
+          var args = { 'url' : url, 'selected' : true };
+          if (this.tab_) {
+            chrome.tabs.update(this.tab_.id, args);
+          } else {
+            chrome.tabs.create(args, this.onTab_.bind(this));
+          }
+        }
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+
+      var corpus = new APISearchCorpus();
+      var docsManager = new DocsManager(corpus);
+      docsManager.fetch();
+      var tabManager = new TabManager();
+      var omnibox = new OmniboxManager(corpus, tabManager);
+    </script>
+  </body>
+</html>

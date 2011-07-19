@@ -1,0 +1,6 @@
+{
+  "name": "foo",
+  "version": "1",
+  "browser_action": {},
+  "page_action": {}
+}

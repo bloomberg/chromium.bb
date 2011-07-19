@@ -1,0 +1,10 @@
+{
+  "name": "Debugger",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs",
+    "experimental",
+    "http://*/*"
+  ]
+}

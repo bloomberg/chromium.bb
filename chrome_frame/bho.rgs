@@ -1,0 +1,26 @@
+%HIVE% {
+  NoRemove SOFTWARE {
+    NoRemove Classes {
+      ChromeFrame.Bho.1 = s 'Bho Class' {
+        CLSID = s '{ECB3C477-1A0A-44bd-BB57-78F9EFE34FA7}'
+      }
+      ChromeFrame.Bho = s 'ChromeFrame BHO' {
+        CLSID = s '{ECB3C477-1A0A-44bd-BB57-78F9EFE34FA7}'
+        CurVer = s 'ChromeFrame.Bho.1'
+      }
+      NoRemove CLSID {
+        ForceRemove {ECB3C477-1A0A-44bd-BB57-78F9EFE34FA7} = s 'ChromeFrame BHO' {
+          ProgID = s 'ChromeFrame.Bho.1'
+          VersionIndependentProgID = s 'ChromeFrame.Bho'
+          InprocServer32 = s '%MODULE%' {
+            val ThreadingModel = s 'Apartment'
+          }
+          'TypeLib' = s '{6F2664E1-FF6E-488A-BCD1-F4CA6001DFCC}'
+          'Implemented Categories' {
+            {31CAF6E4-D6AA-4090-A050-A5AC8972E9EF}
+          }
+        }
+      }
+    }
+  }
+}

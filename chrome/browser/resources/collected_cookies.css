@@ -1,0 +1,16 @@
+body {
+  font-size: 84%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.cookies-tree {
+  border: 1px solid lightgrey;
+  padding: 5px;
+  width: 450px;
+  height: 135px;
+}
+
+#info-banner {
+  background: -webkit-linear-gradient(#fff2b7, #fae691 97%, #878787);
+  padding: 2px 0;
+}

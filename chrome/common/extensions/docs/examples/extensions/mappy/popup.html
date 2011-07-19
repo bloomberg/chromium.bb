@@ -1,0 +1,42 @@
+<head>
+<style>
+body {
+  margin: 0px;
+  padding: 0px;
+}
+#map {
+  width: 512px;
+  height: 512px;
+}
+</style>
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w&sensor=false"
+        type="text/javascript"></script>
+<script>
+var maps_key = "ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w";
+
+function gclient_geocode(address) {
+  var geocoder = new GClientGeocoder();
+  geocoder.getLatLng(address, function(point) {
+    if (!point) {
+      console.log(address + " not found");
+    } else {
+      var latlng = point.toUrlValue();
+      var url = "http://maps.google.com/staticmap?center=" + latlng +
+                "&markers=" + latlng + "&zoom=14" +
+                "&size=512x512&sensor=false&key=" + maps_key;
+      var map = document.getElementById("map");
+      map.src = url;
+    }
+  });
+}
+
+function map() {
+  var address = chrome.extension.getBackgroundPage().selectedAddress;
+  if (address)
+    gclient_geocode(address);
+};
+</script>
+</head>
+<body onload="map()">
+<img id="map" onclick="window.close()">
+</body>

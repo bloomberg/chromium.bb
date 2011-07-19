@@ -1,0 +1,37 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Protocol buffers for creating performance traces on requests.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting;
+
+// Represents one entry in the TraceBuffer below.  Collates information that
+// would be useful for analyzing the performance in a program trace.
+message TraceRecord {
+  required string annotation = 1;
+  required int64 timestamp = 2;  // In micros from epoch.
+
+  // -- Information for constructing a distributed trace. --
+  // TODO(ajwong): Decide which of these are useful, and remove rest.
+
+  // Identifies the machine.
+  optional int64 source_id = 3 [ default = -1 ];
+
+  // Identifies the thread on the machine.
+  optional fixed64 thread_id = 4;
+
+  // Estimated skew from master clock.
+  optional int64 clock_skew = 5 [ default = 0 ];
+}
+
+// Protocol buffer used for collecting stats, and performance data.
+message TraceBuffer {
+  required string name = 1;  // Name of this trace.
+  repeated TraceRecord record = 2;
+}
+

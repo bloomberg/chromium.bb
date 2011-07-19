@@ -1,0 +1,510 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="cs">
+<translation id="1503959756075098984">ID rozšíření a adresy URL aktualizací, které se mají nainstalovat na pozadí</translation>
+<translation id="2463365186486772703">Jazyk aplikace</translation>
+<translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
+<translation id="7040229947030068419">Ukázková hodnota:</translation>
+<translation id="6106630674659980926">Aktivovat správce hesel</translation>
+<translation id="7337927025691881244">Umožňuje určit rozšíření, která uživatelé NEMOHOU nainstalovat. Pokud se na černé listině vyskytne rozšíření, které již bylo nainstalováno, bude odebráno. 
+
+Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána všechna rozšíření, která nejsou explicitně uvedena na bílé listině.</translation>
+<translation id="7755528767666760533">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER"/>. Tento řetězec bude při odesílání dotazu nahrazen textem, který do daného okamžiku zadal uživatel. Nepovinné.</translation>
+<translation id="7614663184588396421">Seznam deaktivovaných schémat protokolu</translation>
+<translation id="2309390639296060546">Výchozí nastavení geolokace</translation>
+<translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
+<translation id="5183383917553127163">Umožňuje určit rozšíření, kterých se netýká černá listina.
+
+          Pokud je na černé listině uvedena hodnota *, znamená to, že jsou na ní všechna rozšíření a uživatelé mohou instalovat pouze rozšíření uvedená na bílé listině.
+
+          Ve výchozím nastavení jsou všechna rozšíření na bílé listině. Pokud však byla všechna rozšíření pomocí zásady umístěna na černou listinu, lze tuto zásadu pomocí bílé listiny přepsat.</translation>
+<translation id="3185009703220253572">od verze <ph name="SINCE_VERSION"/></translation>
+<translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
+<translation id="3512877396423730277">Kontroluje, zda je na stránce u obsahu třetích stran povoleno vyskakování dialogového okna HTTP Basic Auth. Tato možnost je obvykle vypnuta jako ochrana proti phishingu.</translation>
+<translation id="1438955478865681012">Slouží ke konfiguraci zásad souvisejících s rozšířeními. Uživatel není oprávněn instalovat rozšíření na černé listině, pokud nejsou uvedena na bílé listině. V aplikaci <ph name="PRODUCT_NAME"/> můžete také vynutit automatickou instalaci rozšíření, a to tím, že rozšíření zadáte do seznamu <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Černá listina má vyšší prioritu než seznam vynucených rozšíření.</translation>
+<translation id="4070280487546651935">Určuje klíčové slovo, které v omniboxu spouští vyhledávání tohoto poskytovatele. Nepovinné.</translation>
+<translation id="1096105751829466145">Výchozí poskytovatel vyhledávání</translation>
+<translation id="7567380065339179813">Povolit pluginy na těchto stránkách</translation>
+<translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
+<translation id="1427655258943162134">Adresa (nebo adresa URL) serveru proxy</translation>
+<translation id="1827523283178827583">Použít pevně dané servery proxy</translation>
+<translation id="3021409116652377124">Deaktivovat nástroj pro vyhledávání pluginů</translation>
+<translation id="2455652143675149114">Umožňuje určit chování při spuštění.
+
+          Pokud zvolíte možnost Otevřít domovskou stránku, při spuštění prohlížeče <ph name="PRODUCT_NAME"/> se vždy otevře domovská stránka.
+
+          Pokud zvolíte možnost Znovu otevřít adresy URL, které byly otevřené naposledy, znovu se otevřou stránky, které byly otevřené, když jste <ph name="PRODUCT_NAME"/> naposledy ukončili.
+
+          Pokud zvolíte možnost Otevřít seznam adres URL, otevřou se při spuštění prohlížeče <ph name="PRODUCT_NAME"/> adresy URL uvedené v seznamu adres URL otevíraných při spuštění.
+
+          Pokud toto nastavení aktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.
+
+          Pokud toto nastavení deaktivujete, bude to stejné, jako byste jej nenakonfigurovali. Uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> budou i nadále moci měnit.</translation>
+<translation id="4980635395568992380">Typ údajů:</translation>
+<translation id="3096595567015595053">Seznam aktivovaných pluginů</translation>
+<translation id="7998998292074133333">Aktivovat zámek, pokud jsou zařízení s operačním systémem ChromeOS nečinná nebo pozastavená.
+
+      Pokud toto nastavení aktivujete a uživatelé budou chtít zařízení se systémem ChromeOS odemknout a probudit z režimu spánku, budou vyzváni k zadání hesla.
+
+      Pokud toto nastavení deaktivujete, uživatelé budou moci probudit zařízení se systémem ChromeOS z režimu spánku i bez hesla.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v systému <ph name="PRODUCT_OS_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="5912364507361265851">Umožnit uživatelům zobrazit hesla ve Správci hesel</translation>
+<translation id="6999540307315670568">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> panel záložek na stránce Nová karta.
+
+      Pokud toto nastavení aktivujete, <ph name="PRODUCT_NAME"/> zobrazí na stránce Nová karta panel záložek.
+
+      Pokud toto nastavení deaktivujete, panel záložek se uživatelům nezobrazí.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="8828766846428537606">Slouží ke konfiguraci výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavenou domovskou stránku měnili.
+
+      Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta, a to tím, že zadá řetězec „chrome://newtab“.</translation>
+<translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
+<translation id="5564962323737505851">Slouží ke konfiguraci správce hesel. Pokud je správce hesel aktivní, můžete se rozhodnout, zda uživatelům povolíte zobrazovat hesla jako čitelný text.</translation>
+<translation id="4668325077104657568">Výchozí nastavení obrázků</translation>
+<translation id="6368403635025849609">Povolit JavaScript na těchto stránkách</translation>
+<translation id="6074963268421707432">Nepovolit žádnému webu zobrazovat oznámení na ploše</translation>
+<translation id="3758249152301468420">Deaktivovat nástroje pro vývojáře</translation>
+<translation id="8665076741187546529">Konfigurace seznamu rozšíření, jejichž instalace je vynucena</translation>
+<translation id="6242542007132978836">Umožňuje nastavit, zda mohou webové stránky automaticky spouštět pluginy. Automaticky spouštěné pluginy lze buď povolit pro všechny weby, nebo je naopak pro všechny weby zakázat.</translation>
+<translation id="5233161357000953961">Zakáže v prohlížeči <ph name="PRODUCT_NAME"/> použití protokolu SPDY.</translation>
+<translation id="4899708173828500852">Aktivovat Bezpečné prohlížení</translation>
+<translation id="3570008976476035109">Blokovat pluginy na těchto stránkách</translation>
+<translation id="2884728160143956392">Povolit soubory cookie pouze pro relaci na těchto stránkách</translation>
+<translation id="3496296378755072552">Správce hesel</translation>
+<translation id="7118495359694701769">Určuje, zda by měl vygenerovaný hlavní název služby (SPN) protokolu Kerberos obsahovat nestandardní port.
+
+          Pokud toto nastavení aktivujete a bude zadán nestandardní port (tedy jiný port než 80 nebo 443), bude zahrnut do vygenerovaného hlavního názvu služby (SPN) protokolu Kerberos.
+
+          Pokud toto nastavení deaktivujete, vygenerovaný hlavní název služby (SPN) protokolu Kerberos port v žádném případě obsahovat nebude.</translation>
+<translation id="9135033364005346124">Aktivovat server proxy služby <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="4276147605137721961">Povolí nebo zakáže v prohlížeči <ph name="PRODUCT_NAME"/> editaci záložek.
+
+      Pokud toto nastavení aktivujete, bude možné přidávat či odebírat záložky nebo je měnit. Toto je výchozí nastavení.
+
+      Pokud toto nastavení deaktivujete, záložky nebude možné přidávat, odebírat ani měnit. Existující záložky budou i nadále k dispozici.</translation>
+<translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
+<translation id="8621457834803281393">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno nastavovat soubory cookie.</translation>
+<translation id="254524874071906077">Nastavit Chrome jako výchozí prohlížeč</translation>
+<translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
+<translation id="3915395663995367577">Adresa URL souboru PAC serveru proxy</translation>
+<translation id="7191531985645073769">Deaktivuje synchronizaci dat v prohlížeči <ph name="PRODUCT_NAME"/> prováděnou pomocí služeb synchronizace hostovaných společností Google a znemožní uživatelům toto nastavení měnit.
+
+      Pokud toto nastavení aktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
+<translation id="5026128159812446244">Umožňuje přistupovat k místním souborům v počítači tím, že prohlížeči <ph name="PRODUCT_NAME"/> povolí, aby zobrazoval dialogová okna pro výběr souboru.
+
+      Pokud toto nastavení aktivujete, uživatelé budou moci otevírat dialogová okna pro výběr souboru obvyklým způsobem.
+
+      Pokud toto nastavení deaktivujete a uživatel provede akci, po které by se mu v obvyklém případě zobrazilo dialogové okno pro výběr souboru (například import záložek, nahrávání souborů, ukládání odkazů apod.), zobrazí se mu namísto tohoto dialogového okna zpráva a prohlížeč se zachová, jako kdyby uživatel v dialogovém okně pro výběr souboru kliknul na možnost Storno.
+
+      Pokud toto nastavení nenakonfigurujete, uživatelé budou moci otevírat dialogová okna pro výběr souboru obvyklým způsobem.</translation>
+<translation id="7683777542468165012">Dynamická aktualizace zásad</translation>
+<translation id="43195497515906639">Slouží ke konfiguraci adresáře, do kterého bude modul <ph name="PRODUCT_NAME"/> ukládat uživatelská data. Pokud tuto zásadu nastavíte, bude modul <ph name="PRODUCT_NAME"/> používat zadaný adresář.</translation>
+<translation id="6228640147633317529">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno nastavovat soubory cookie.</translation>
+<translation id="2711603272213076156">Povolit zobrazování dialogových oken pro výběr souboru</translation>
+<translation id="1426410128494586442">Ano</translation>
+<translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
+<translation id="6368011194414932347">Konfigurace adresy URL domovské stránky</translation>
+<translation id="1966609843734913335">Povolí v prohlížeči <ph name="PRODUCT_NAME"/> anonymní režim.
+
+      Pokud je toto nastavení aktivováno nebo není nakonfigurováno, uživatelé mohou otevírat webové stránky v anonymním režimu.
+
+      Pokud je toto nastavení deaktivováno, uživatelé nemohou otevírat webové stránky v anonymním režimu.</translation>
+<translation id="3423023819976532001">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkce ukládání hesel a použití uložených hesel.
+
+          Pokud toto nastavení aktivujete, uživatelé si budou v prohlížeči <ph name="PRODUCT_NAME"/> moci uložit hesla a nechat prohlížeč, aby hesla automaticky zadal při příštím přihlášení k webu.
+
+          Pokud toto nastavení deaktivujete, uživatelé nebudou moci ukládat hesla ani používat hesla, která již byla uložena.
+
+          Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="2877225735001246144">Deaktivovat vyhledání záznamů CNAME při vyjednávání ověření protokolu Kerberos</translation>
+<translation id="6200084307932433394">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> integrovanou službu Překladač Google.
+
+      Pokud toto nastavení aktivujete, zobrazí <ph name="PRODUCT_NAME"/> integrovaný panel nástrojů, který uživateli nabídne překlad stránky (pokud je to namístě).
+
+      Pokud toto nastavení deaktivujete, panel překladu se uživatelům nezobrazí v žádné situaci.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="5059221739913673172">Slouží ke konfiguraci adresáře, do kterého bude <ph name="PRODUCT_NAME"/> ukládat uživatelská data.
+
+     Pokud tuto zásadu nastavíte, použije <ph name="PRODUCT_NAME"/> zadaný adresář nezávisle na tom, zda uživatel zadal příznak „--user-data-dir“, či nikoli.</translation>
+<translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
+<translation id="4084327080063933392">Udává název výchozího poskytovatele vyhledávání. Je-li toto pole ponecháno prázdné, bude použit název hostitele určený adresou URL vyhledávání.</translation>
+<translation id="6114416803310251055">zastaralé</translation>
+<translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
+<translation id="5776485039795852974">Dotázat se vždy, když se webové stránky snaží zobrazit oznámení na ploše</translation>
+<translation id="6786747875388722282">Rozšíření</translation>
+<translation id="6417878201680958437">Umožňuje určit server proxy, který bude <ph name="PRODUCT_NAME"/> používat, a brání uživatelům, aby nastavení serveru proxy změnili.
+
+          Pokud se rozhodnete server proxy nikdy nepoužívat a vždy se připojovat přímo, budou všechny ostatní možnosti ignorovány.
+
+          Pokud se rozhodnete používat systémová nastavení serveru proxy nebo server proxy zjišťovat automaticky, budou všechny ostatní možnosti ignorovány.
+
+          Pokud zvolíte režim pevně daného serveru proxy, můžete zvolit další možnosti v částech „Adresa (nebo adresa URL) serveru proxy“ a „Seznam pravidel vynechání serveru proxy oddělených čárkami“.
+
+          Pokud se rozhodnete použít skript PAC serveru proxy, je nutné zadat v části „Adresa URL souboru PAC serveru proxy“ adresu URL.
+
+          Podrobné příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL"/>
+
+          Pokud toto nastavení aktivujete, bude <ph name="PRODUCT_NAME"/> ignorovat veškeré možnosti týkající se serverů proxy zadané pomocí příkazového řádku.</translation>
+<translation id="6899705656741990703">Zjistit nastavení serveru proxy automaticky</translation>
+<translation id="4101772068965291327">Otevřít domovskou stránku</translation>
+<translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
+<translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
+<translation id="467449052039111439">Otevřít seznam adres URL</translation>
+<translation id="5883015257301027298">Výchozí nastavení souborů cookie</translation>
+<translation id="1222189289457045659">Umožňuje využívat výchozího poskytovatele vyhledávání.
+
+          Pokud toto nastavení aktivujete a uživatel zadá do omniboxu text, který není adresou URL, bude provedeno vyhledávání pomocí výchozího poskytovatele vyhledávání.
+
+          Výchozího poskytovatele vyhledávání lze určit nastavením ostatních zásad výchozího vyhledávání. Pokud tyto zásady ponecháte prázdné, bude výchozího poskytovatele moci zvolit uživatel.
+
+          Pokud toto nastavení deaktivujete a uživatel do omniboxu zadá jiný text než adresu URL, nebude provedeno žádné vyhledávání.
+
+          Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="8955719471735800169">Zpět na začátek</translation>
+<translation id="6845930317830839162">Umožňuje nastavit, zda mohou webové stránky spouštět JavaScript. Spouštění JavaScriptu lze buď povolit pro všechny weby, nebo naopak pro všechny weby zakázat.</translation>
+<translation id="4250680216510889253">Ne</translation>
+<translation id="1522425503138261032">Umožňuje webovým stránkám sledovat fyzickou polohu uživatele</translation>
+<translation id="6569553007023490040">Slouží ke konfiguraci adresy URL výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME"/> a brání uživatelům, aby tuto adresu změnili.
+
+          Typ domovské stránky lze nastavit buď na adresu URL, kterou zadáte v této části, nebo na stránku Nová karta.
+
+          Pokud zvolíte stránku Nová karta, bude tato zásada ignorována.
+
+          Pokud aktivujete toto nastavení, uživatelé nebudou v prohlížeči <ph name="PRODUCT_NAME"/> moci změnit adresu URL domovské stránky. Jako domovskou stránku si však stále budou moci nastavit stránku Nová karta.</translation>
+<translation id="4423597592074154136">Zadat nastavení serveru proxy ručně</translation>
+<translation id="3137734558440858947">Umožňuje nastavit, zda mají webové stránky povoleno zobrazovat obrázky. Zobrazování obrázků lze buď povolit všem webovým stránkám, nebo je všem webovým stránkám zakázat.</translation>
+<translation id="9035964157729712237">ID rozšíření, která mají být vyňata z černé listiny</translation>
+<translation id="3523486089716697173">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat obrázky.</translation>
+<translation id="751265277672445578">Slouží ke konfiguraci jazyka aplikace <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavený jazyk změnili.
+
+      Pokud toto nastavení aktivujete, bude <ph name="PRODUCT_NAME"/> používat zvolený jazyk. Není-li nakonfigurovaný jazyk podporován, použije se místo něho nastavení „en-US“.
+
+      Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, použije <ph name="PRODUCT_NAME"/> buď preferovaný jazyk nastavený uživatelem (je-li nakonfigurován), nebo jazyk systému, nebo základní nastavení „en-US“.</translation>
+<translation id="6022948604095165524">Akce při spuštění</translation>
+<translation id="3704185423155638353">Umožňuje nastavit seznam vzorů adres URL stránek, kterým není povoleno spouštět JavaScript.</translation>
+<translation id="7628741187268592472">Určuje knihovnu GSSAPI, která bude použita pro ověření pomocí protokolu HTTP. Nastavit lze buď pouze název knihovny, nebo celou cestu. Pokud nezadáte žádné nastavení, použije <ph name="PRODUCT_NAME"/> výchozí název knihovny.</translation>
+<translation id="605147781209875705">Tato zásada je zastaralá, použijte místo ní zásadu ProxyMode.
+
+          Umožňuje zadat server proxy, který bude prohlížečem <ph name="PRODUCT_NAME"/> používán, a brání uživatelům měnit nastavení serveru proxy.
+
+          Pokud se rozhodnete server proxy nikdy nepoužívat a vždy se připojovat přímo, budou všechny ostatní možnosti ignorovány.
+
+          Pokud se rozhodnete používat systémová nastavení serveru proxy nebo server proxy zjišťovat automaticky, budou všechny ostatní možnosti ignorovány.
+
+          Pokud zvolíte možnost ručního nastavení serveru proxy, můžete zvolit další možnosti v částech „Adresa (nebo adresa URL) serveru proxy“, „Adresa URL souboru PAC serveru proxy“ a „Seznam pravidel vynechání serveru proxy oddělených čárkami“.
+
+          Podrobné příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL"/>
+
+          Pokud toto nastavení aktivujete, bude <ph name="PRODUCT_NAME"/> ignorovat veškeré možnosti týkající se serverů proxy zadané pomocí příkazového řádku.</translation>
+<translation id="6516561898504323308">Blokuje soubory cookie třetích stran.
+
+      Aktivací tohoto nastavení zabráníte tomu, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, nastavovaly soubory cookie.
+
+      Deaktivací tohoto nastavení umožníte, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, mohly nastavovat soubory cookie.</translation>
+<translation id="3864818549971490907">Výchozí nastavení pluginů</translation>
+<translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
+<translation id="6886010724297701888">U hostitelů v tomto seznamu <ph name="PRODUCT_NAME"/> vynechá všechny servery proxy.
+
+          Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení serveru proxy“ zvolili ruční nastavení serveru proxy.
+
+          Podrobnější příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="2959898425599642200">Pravidla vynechání serveru proxy</translation>
+<translation id="7337941689192402544">Nastavit adresář uživatelských dat modulu <ph name="PRODUCT_NAME"/></translation>
+<translation id="5326137997741385453">Slouží ke konfiguraci adresáře, do kterého bude prohlížeč <ph name="PRODUCT_NAME"/> ukládat soubory do mezipaměti na disku. Pokud tuto zásadu nastavíte, bude prohlížeč <ph name="PRODUCT_NAME"/> zadaný adresář používat bez ohledu na to, zda uživatel zadal příznak „--user-data-dir“, nebo ne.</translation>
+<translation id="4752274243117690301">Pokud u tohoto nastavení zvolíte hodnotu True, bude v prohlížeči <ph name="PRODUCT_NAME"/> deaktivováno automatické vyhledávání a instalace chybějících pluginů.</translation>
+<translation id="3292147213643666827">      Umožňuje prohlížeči <ph name="PRODUCT_NAME"/> fungovat jako server proxy mezi službou <ph name="CLOUD_PRINT_NAME"/> a staršími tiskárnami připojenými k počítači.
+
+      Pokud je toto nastavení aktivováno nebo není nakonfigurováno, mohou uživatelé server proxy pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
+
+      Pokud je toto nastavení deaktivováno, uživatelé server proxy nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="617204585863800180">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> předvídání akcí sítě a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="6641981670621198190">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
+<translation id="2741921267428646309">Toto je seznam zásad, kterými se <ph name="PRODUCT_NAME"/> řídí.
+
+      Tato nastavení není třeba měnit ručně. Na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> si můžete stáhnout snadno použitelné šablony.
+
+      Projekt Chromium a prohlížeč Google Chrome používají stejný seznam podporovaných zásad, liší se však jejich umístění v registru systému Windows.
+
+      U zásad projektu Chromium začínají klíčem <ph name="CHROMIUM_KEY"/> a u zásad prohlížeče Google Chrome klíčem <ph name="GOOGLE_CHROME_KEY"/>.</translation>
+<translation id="7003746348783715221">Nastavení prohlížeče <ph name="PRODUCT_NAME"/></translation>
+<translation id="9096086085182305205">Bílá listina serverů pro ověřování</translation>
+<translation id="7063895219334505671">Povolit na těchto stránkách vyskakovací okna</translation>
+<translation id="2824715612115726353">Povolit anonymní režim</translation>
+<translation id="1757688868319862958">Umožňuje službě <ph name="PRODUCT_NAME"/> spustit pluginy, které vyžadují autorizaci. Pokud toto nastavení povolíte, budou pluginy, které nejsou zastaralé, stále spuštěny. Je-li toto nastavení zakázáno nebo není nastaveno, uživatelé budou požádáni, aby povolili spuštění pluginů, které vyžadují autorizaci. Jedná se o pluginy, které mohou ohrozit bezpečnost.</translation>
+<translation id="6157537876488211233">Seznam pravidel vynechání serveru proxy oddělených čárkami</translation>
+<translation id="7091198954851103976">Vždy spustit pluginy, které vyžadují autorizaci.</translation>
+<translation id="8870318296973696995">Domovská stránka</translation>
+<translation id="4505337077089958219">Frekvence aktualizace zásad</translation>
+<translation id="996560596616541671">Servery, na které může <ph name="PRODUCT_NAME"/> delegovat ověření.</translation>
+<translation id="3866249974567520381">Popis</translation>
+<translation id="2236488539271255289">Nepovolovat nastavení místních dat žádným webům</translation>
+<translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
+<translation id="1722705282440676367">Umožňuje zadat server proxy, který bude prohlížečem <ph name="PRODUCT_NAME"/> používán, a brání uživatelům měnit nastavení serveru proxy. Pokud se rozhodnete server proxy nikdy nepoužívat a vždy se připojovat přímo, budou všechny ostatní možnosti ignorovány. Pokud zvolíte možnost automatického zjišťování serveru proxy, budou všechny ostatní možnosti ignorovány. Podrobné příklady naleznete na následující adrese: <ph name="PROXY_HELP_URL"/>. Pokud toto nastavení aktivujete, bude prohlížeč <ph name="PRODUCT_NAME"/> ignorovat veškeré možnosti týkající se serveru proxy zadané pomocí příkazového řádku.</translation>
+<translation id="8470053727907466464">Určuje kódování znaků podporovaná poskytovatelem vyhledávání. Kódování jsou názvy stránek kódů, například UTF-8, GB2312 nebo ISO-8859-1. Budou vyzkoušena v uvedeném pořadí. Výchozí kódování je UTF-8.</translation>
+<translation id="2537063115727103969">Tato zásada přepisuje možnost nastavení obsahu „Při zavření prohlížeče vymazat soubory cookie a jiná data webů“.
+
+      Je-li nastavena na hodnotu True, budou z prohlížeče <ph name="PRODUCT_NAME"/> po zavření vymazána veškerá data uložená v počítači.</translation>
+<translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
+<translation id="3709266154059827597">Konfigurace černé listiny instalace rozšíření</translation>
+<translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
+<translation id="823695959636476037">Určuje, zda mohou uživatelé ve správci hesel zobrazit hesla jako čitelný text.
+
+          Pokud toto nastavení deaktivujete, v okně správce hesel nebude možné zobrazit uložená hesla jako čitelný text.
+
+          Pokud toto nastavení aktivujete nebo jej nenakonfigurujete, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
+<translation id="8731693562790917685">Nastavení obsahu umožňují určit, jakým způsobem bude zpracováván obsah určitého typu (například soubory cookie, obrázky nebo JavaScript).</translation>
+<translation id="467236746355332046">Podporované funkce:</translation>
+<translation id="7632724434767231364">Název knihovny GSSAPI</translation>
+<translation id="4985088509112317247">Umožňuje nastavit, zda mohou webové stránky nastavovat místní data. Nastavení místních dat lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.</translation>
+<translation id="6244210204546589761">Adresy URL otevírané při spuštění</translation>
+<translation id="7468416082528382842">Umístění v registru systému Windows:</translation>
+<translation id="6119099935390640260">Zde můžete zadat adresu URL souboru PAC serveru proxy.
+
+          Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení serveru proxy“ zvolili ruční nastavení serveru proxy.
+
+          Podrobné příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="1808715480127969042">Blokovat soubory cookie na těchto stránkách</translation>
+<translation id="1115048775745697549">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
+<translation id="2745445908503591390">Po vypnutí prohlížeče vymazat data webů</translation>
+<translation id="8665913667133665583">Určuje, které servery mají být umístěny na bílou listinu pro integrované ověření. Integrované ověření je povoleno pouze v případě, že <ph name="PRODUCT_NAME"/> obdrží výzvu ověřování ze serveru proxy nebo jiného serveru, které jsou uvedeny v tomto seznamu povolených serverů.
+
+          Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.</translation>
+<translation id="538108065117008131">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME"/> zpracovávat následující typy obsahu.</translation>
+<translation id="2312134445771258233">Umožňuje konfigurovat stránky, které se načtou při spuštění.
+
+      Pokud jste v části „Akce při spuštění“ nezvolili možnost „Otevřít seznam adres URL“, budou položky v seznamu „Adresy URL otevírané při spuštění“ ignorovány.</translation>
+<translation id="7931766636395791713">Umožňuje nastavit seznam vzorů adres URL stránek, které mají povoleno spouštět JavaScript.</translation>
+<translation id="1019101089073227242">Nastavit adresář uživatelských dat</translation>
+<translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
+<translation id="4290189791053175631">Zde můžete zadat adresu URL serveru proxy.
+
+          Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení serveru proxy“ zvolili ruční nastavení serveru proxy.
+
+          Další možnosti a podrobné příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL"/></translation>
+<translation id="350797926066071931">Aktivovat Překladač</translation>
+<translation id="2267204956165795704">Určuje adresu URL vyhledávače, který bude použit při výchozím vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER"/>, který bude během dotazování nahrazen vyhledávacími dotazy uživatele.</translation>
+<translation id="4518251772179446575">Dotázat se vždy, když se webové stránky snaží sledovat fyzickou polohu uživatele</translation>
+<translation id="402759845255257575">Nepovolit spouštění JavaScriptu žádnému webu</translation>
+<translation id="706669471845501145">Povolit webovým stránkám zobrazovat upozornění na ploše</translation>
+<translation id="5475361623548884387">Povolit tisk</translation>
+<translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
+<translation id="8496973106638946974">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkci Bezpečné prohlížení a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete, bude Bezpečné prohlížení vždy aktivní.
+
+      Pokud toto nastavení deaktivujete, zůstane Bezpečné prohlížení za všech okolností neaktivní.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="13356285923490863">Název zásady</translation>
+<translation id="557658534286111200">Povolí nebo zakáže úpravy záložek</translation>
+<translation id="3473585733246847076">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mohou nastavovat soubory cookie.</translation>
+<translation id="2493647325461842868">Aktivuje v omniboxu prohlížeče <ph name="PRODUCT_NAME"/> funkci návrhů pro vyhledávání a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete, budou se zobrazovat návrhy pro vyhledávání.
+
+      Pokud toto nastavení deaktivujete, návrhy pro vyhledávání se nikdy nezobrazí.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="6775978436824155661">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkci tisku a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud je toto nastavení aktivováno nebo není nakonfigurováno, uživatelé budou moci tisknout.
+
+      Pokud je toto nastavení deaktivováno, uživatelé v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci využívat tisk. Tisk je deaktivován v nabídce Nástroje, v rozšířeních, aplikacích v JavaScriptu apod. V pluginech, které při tisku nepoužívají <ph name="PRODUCT_NAME"/>, bude možné tisknout i nadále. Možnost tisku se může vyskytovat například v kontextové nabídce některých aplikací ve formátu Flash. Tato možnost deaktivována nebude.</translation>
+<translation id="6908640907898649429">Slouží ke konfiguraci výchozího poskytovatele vyhledávání. Můžete uživatelům zvolit výchozího poskytovatele vyhledávání nebo výchozí vyhledávání deaktivovat.</translation>
+<translation id="681446116407619279">Podporovaná schémata ověření</translation>
+<translation id="4027608872760987929">Aktivovat výchozího poskytovatele vyhledávání</translation>
+<translation id="2223598546285729819">Výchozí nastavení oznámení</translation>
+<translation id="3793095274466276777">Slouží ke konfiguraci kontroly výchozího prohlížeče v prohlížeči <ph name="PRODUCT_NAME"/> a brání uživatelům, aby tato nastavení změnili.
+
+      Pokud toto nastavení aktivujete, <ph name="PRODUCT_NAME"/> při spuštění vždy zkontroluje, zda je výchozím prohlížečem, a pokud to bude možné, automaticky se registruje.
+
+      Pokud je toto nastavení deaktivováno, <ph name="PRODUCT_NAME"/> nebude kontrolovat, zda je výchozím prohlížečem, a deaktivuje uživatelské ovládací prvky pro nastavení této možnosti.
+
+      Pokud toto nastavení není nakonfigurováno, může uživatel v prohlížeči <ph name="PRODUCT_NAME"/> určit, zda jej chce nastavit jako výchozí prohlížeč a zda se má zobrazit oznámení v případě, že jím není.</translation>
+<translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
+<translation id="6190022522129724693">Výchozí nastavení vyskakovacích oken</translation>
+<translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
+<translation id="4733471537137819387">Zásady související s integrovaným ověřením pomocí protokolu HTTP</translation>
+<translation id="4608714268466689965">Umožňuje nastavit, zda mohou webové stránky zobrazovat oznámení na ploše. Zobrazování oznámení na ploše lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při pokusu webových stránek o zobrazení oznámení na ploše zobrazí uživateli výzva.</translation>
+<translation id="8951350807133946005">Nastavit adresář mezipaměti na disku</translation>
+<translation id="1334051495529796396">Určuje, zda bude vygenerovaný hlavní název služby protokolu Kerberos založen na kanonickém názvu DNS, nebo na původním zadaném názvu.
+
+          Pokud toto nastavení aktivujete, vyhledávání záznamů CNAME bude přeskočeno a bude použit zadaný název serveru.
+
+          Pokud toto nastavení deaktivujete, bude kanonický název serveru určen prostřednictvím vyhledávání záznamů CNAME.</translation>
+<translation id="166427968280387991">Server proxy</translation>
+<translation id="2805707493867224476">Povolit všem webům zobrazovat vyskakovací okna</translation>
+<translation id="1727394138581151779">Blokovat všechny pluginy</translation>
+<translation id="7079519252486108041">Blokovat vyskakovací okna na těchto webech</translation>
+<translation id="7433714841194914373">Aktivovat Dynamický režim</translation>
+<translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
+<translation id="7492608050778218564">Deaktivuje podporu pro rozhraní API pro 3D grafiku.
+
+      Aktivací tohoto nastavení zabráníte webovým stránkám v přístupu ke grafickému procesoru (GPU). Webové stránky nebudou moci přistupovat k rozhraní WebGL API a pluginy nebudou moci využít rozhraní Pepper 3D API.
+
+      Pokud toto nastavení deaktivujete, umožníte webovým stránkám využívat rozhraní WebGL API a pluginům umožníte využívat rozhraní Pepper 3D API. Výchozí nastavení prohlížeče však mohou k použití těchto rozhraní API i nadále vyžadovat předání argumentů příkazového řádku.</translation>
+<translation id="7202926611616207807">Umožnit nastavení místních dat všem webům</translation>
+<translation id="678228246386317063">Umožňuje nastavit seznam vzorů adres URL stránek, které mohou nastavovat soubory cookie pouze pro relaci.</translation>
+<translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
+<translation id="4650759511838826572">Deaktivovat schémata protokolu adresy URL</translation>
+<translation id="6524941558928880715">Znovu otevřít adresy URL, které byly otevřené naposledy</translation>
+<translation id="3167247709504138314">Určuje adresu URL vyhledávače, který bude použit k získání návrhů pro vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER"/>, který bude během dotazování nahrazen textem zadávaným uživatelem. Tato možnost je nepovinná.</translation>
+<translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
+<translation id="1675002386741412210">Podpora:</translation>
+<translation id="5417368737700340683">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> Dynamický režim a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete, Dynamický režim <ph name="PRODUCT_NAME"/> bude aktivní.
+
+      Pokud toto nastavení deaktivujete, Dynamický režim <ph name="PRODUCT_NAME"/> nebude aktivní.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej nebudou moci změnit ani přepsat.</translation>
+<translation id="3264793472749429012">Kódování výchozího poskytovatele vyhledávání</translation>
+<translation id="2371550098059356219">Určuje seznam aktivovaných pluginů prohlížeče <ph name="PRODUCT_NAME"/> a brání uživatelům, aby toto nastavení změnili.
+
+      Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro libovolný počet znaků, zatímco znak „?“ určuje jeden volitelný znak (může tedy zastupovat libovolný znak nebo žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
+
+      Pokud jsou pluginy uvedené v seznamu nainstalovány, jsou v prohlížeči <ph name="PRODUCT_NAME"/> vždy použity. Na stránce about:plugins jsou tyto pluginy označeny jako aktivní a uživatelé je nemohou deaktivovat.
+
+      Tato zásada přepisuje zásady DisabledPlugins a DisabledPluginsExceptions.</translation>
+<translation id="308285197738484705">Aktivovat předvídání akcí sítě</translation>
+<translation id="5765780083710877561">Popis:</translation>
+<translation id="3319991432361168617">Slouží ke konfiguraci adresáře, který bude prohlížečem <ph name="PRODUCT_NAME"/> použit pro stahování souborů.
+
+      Pokud tuto zásadu nastavíte, použije <ph name="PRODUCT_NAME"/> zadaný adresář i v případě, že uživatel zadal jiný adresář nebo zvolil, že chce pokaždé zobrazit výzvu k zadání umístění stahovaného souboru.</translation>
+<translation id="8284208534498422489">Umožňuje nastavit seznam vzorů adres URL stránek, které mají povoleno otevírat vyskakovací okna.</translation>
+<translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="7424751532654212117">Seznam výjimek ze seznamu deaktivovaných pluginů</translation>
+<translation id="6233173491898450179">Nastavit adresář pro stahování</translation>
+<translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
+<translation id="8754704265300028644">Deaktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkci historie prohlížení a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud je toto nastavení aktivováno, historie prohlížení nebude ukládána.
+
+      Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, historie prohlížení bude ukládána.</translation>
+<translation id="1897365952389968758">Povolit všem webům spouštět JavaScript</translation>
+<translation id="6931242315485576290">Deaktivovat synchronizaci dat se servery Google</translation>
+<translation id="7006788746334555276">Nastavení obsahu</translation>
+<translation id="3676473196461789250">Umožňuje nastavit seznam vzorů adres URL určujících stránky, které mohou spouštět pluginy.</translation>
+<translation id="5671281984733584565">Zobrazí na liště prohlížeče <ph name="PRODUCT_NAME"/> tlačítko Domovská stránka.
+
+      Pokud toto nastavení aktivujete, tlačítko Domovská stránka se bude vždy zobrazovat.
+
+      Pokud toto nastavení deaktivujete, tlačítko Domovská stránka se nikdy nezobrazí.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="805526450642067726">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno spouštět pluginy.</translation>
+<translation id="4625915093043961294">Konfigurovat bílou listinu pro instalaci rozšíření</translation>
+<translation id="3101501961102569744">Zvolit způsob konfigurace nastavení serveru proxy</translation>
+<translation id="7774768074957326919">Použít systémová nastavení serveru proxy</translation>
+<translation id="3891357445869647828">Povolit JavaScript</translation>
+<translation id="868187325500643455">Povolit automatické spouštění pluginů všem webům</translation>
+<translation id="5226033722357981948">Určuje, zda má být deaktivován nástroj pro vyhledávání pluginů</translation>
+<translation id="9068358498333390522">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.</translation>
+<translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
+<translation id="5535973522252703021">Bílá listina serverů pro delegování ověření protokolu Kerberos</translation>
+<translation id="4554678280250165996">Určuje, která schémata ověření pomocí protokolu HTTP bude <ph name="PRODUCT_NAME"/> podporovat.
+
+          Zadat můžete hodnoty „basic“, „digest“, „ntlm“ a „negotiate“. Chcete-li zadat více hodnot, oddělte je čárkami.</translation>
+<translation id="5034323863800401760">Deaktivuje nástroje pro vývojáře a konzolu JavaScriptu.
+
+      Pokud toto nastavení aktivujete, nebude možné přistupovat k nástrojům pro vývojáře ani kontrolovat prvky webových stránek. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzolu JavaScriptu otevřít.</translation>
+<translation id="6013842521938070987">Deaktivuje v prohlížeči <ph name="PRODUCT_NAME"/> uvedená schémata protokolů.
+
+      Adresy URL, které používají schémata uvedená v tomto seznamu, se nebudou načítat a nebude na ně možné přejít.</translation>
+<translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
+<translation id="3808945828600697669">Určit seznam deaktivovaných pluginů</translation>
+<translation id="2187975305444384964">Umožňuje nastavit, zda mohou webové stránky sledovat fyzickou polohu uživatele. Sledování fyzické polohy uživatelů lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při pokusu webových stránek o sledování fyzické polohy uživateli zobrazí výzva.</translation>
+<translation id="8397112610813153899">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit plugin <ph name="PRODUCT_FRAME_NAME"/>.
+
+          Ukázkové vzory naleznete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2098658257603918882">Aktivovat odesílání dat o využití nebo selhání</translation>
+<translation id="1151353063931113432">Povolit obrázky na těchto stránkách</translation>
+<translation id="4498075447689127727">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno otevírat vyskakovací okna.</translation>
+<translation id="1297182715641689552">Použít skript serveru proxy ve formátu PAC</translation>
+<translation id="8631434304112909927">naposledy ve verzi <ph name="UNTIL_VERSION"/></translation>
+<translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
+<translation id="5511702823008968136">Aktivovat panel záložek</translation>
+<translation id="3653673712530669976">Umožňuje nakonfigurovat výchozí modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
+         Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení
+          však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
+<translation id="7848840259379156480">Umožňuje konfigurovat modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
+      Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
+<translation id="4486602758942612946">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
+          Ukázkové vzory naleznete na stránce http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="4346795218451526495">Určuje seznam pluginů, které může uživatel v prohlížeči <ph name="PRODUCT_NAME"/> aktivovat nebo deaktivovat.
+
+      Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro libovolný počet znaků, zatímco znak „?“ určuje jeden volitelný znak (může tedy zastupovat libovolný znak nebo žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
+
+      Pokud toto nastavení aktivujete, bude v prohlížeči <ph name="PRODUCT_NAME"/> možné použít pluginy uvedené v seznamu. Uživatelé je budou moci aktivovat nebo deaktivovat na stránce about:plugins, a to i v případě, že bude určitý plugin odpovídat vzoru v zásadě DisabledPlugins. Uživatelé budou moci aktivovat a deaktivovat také pluginy, které neodpovídají žádným vzorům v zásadách DisabledPlugins, DisabledPluginsExceptions a EnabledPlugins.</translation>
+<translation id="8777120694819070607">Umožňuje prohlížeči <ph name="PRODUCT_NAME"/> spouštět zastaralé pluginy.
+
+      Pokud toto nastavení aktivujete, budou zastaralé pluginy použity jako normální pluginy.
+
+      Pokud toto nastavení deaktivujete, zastaralé pluginy nebude možné použít a uživatelům se u nich nezobrazí ani žádost o oprávnění ke spuštění.
+
+      Pokud toto nastavení není nakonfigurováno, uživatelům se při spouštění zastaralého pluginu zobrazí žádost o oprávnění k této akci.</translation>
+<translation id="407895324478579198">Umožňuje určit seznam rozšíření, která budou instalována na pozadí a bez přispění uživatele.
+
+          Každá položka seznamu představuje řetězec, který obsahuje ID rozšíření a adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON"/>). Příklad: <ph name="EXTENSION_POLICY_EXAMPLE"/>. U každé položky načte <ph name="PRODUCT_NAME"/> ze zadané adresy URL rozšíření podle ID a nainstaluje je na pozadí. Na následujících stránkách naleznete informace o tom, jak hostovat rozšíření na vlastním serveru. Informace o adresách URL pro aktualizace: <ph name="LINK_TO_EXTENSION_DOC1"/>. Obecné informace o hostování rozšíření: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Rozšíření uvedená v tomto seznamu uživatelé nebudou moci odinstalovat.  Pokud z něj rozšíření odeberete, <ph name="PRODUCT_NAME"/> jej automaticky odinstaluje. Instalaci rozšíření, která jsou uvedena na černé listině v zásadě ExtensionInstallBlacklist a nejsou uvedena na bílé listině, touto zásadou vynutit nelze.</translation>
+<translation id="3300906985144143927">Určuje adresu URL ikony výchozího poskytovatele vyhledávání. Nepovinné.</translation>
+<translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="1047128214168693844">Nepovolovat sledování fyzické polohy žádným webovým stránkám</translation>
+<translation id="3273221114520206906">Výchozí nastavení JavaScriptu</translation>
+<translation id="6810445994095397827">Blokovat JavaScript na těchto stránkách</translation>
+<translation id="6510914645829248303">Pokud je jako akce při spuštění zaškrtnuto políčko „Otevřít seznam adres URL“, tato zásada umožňuje zvolit seznam adres URL, které budou otevřeny.</translation>
+<translation id="3780152581321609624">Zahrnout do hlavního názvu služby protokolu Kerberos nestandardní port</translation>
+<translation id="2660846099862559570">Nikdy nepoužívat server proxy</translation>
+<translation id="5512418063782665071">Adresa URL domovské stránky</translation>
+<translation id="8990655542335348641">Určuje dobu (v ms), po kterou budou službě správy zařízení odesílány dotazy týkající se informací o zásadách.
+
+      Nastavením této zásady bude přepsána výchozí hodnota 3 hodiny. Platné hodnoty pro tuto zásadu se pohybují v rozmezí od 30 minut do 1 dne. Hodnoty mimo tento rozsah budou přizpůsobeny vzhledem k příslušné hranici.</translation>
+<translation id="6049075103826767200">Aktivuje funkci anonymního odesílání dat týkajících se využití nebo selhání prohlížeče <ph name="PRODUCT_NAME"/> společnosti Google a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete, společnosti Google budou odesílány anonymní zprávy týkající se využití nebo selhání.
+
+      Pokud toto nastavení deaktivujete, anonymní zprávy týkající se využití nebo selhání společnosti Google odesílány nebudou.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="2263362640517427542">Aktivovat zámek, pokud jsou zařízení s operačním systémem ChromeOS nečinná nebo pozastavená.</translation>
+<translation id="6808666497110319299">Umožňuje využívat alternativní chybové stránky předdefinované v prohlížeči <ph name="PRODUCT_NAME"/> (např. stránka nenalezena) a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud toto nastavení aktivujete, budou používány alternativní chybové stránky.
+
+      Pokud toto nastavení deaktivujete, alternativní chybové stránky používány nebudou.
+
+       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="1948757837129151165">Zásady pro ověření pomocí protokolu HTTP</translation>
+<translation id="817926804885880359">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkci Automatické vyplňování a umožní uživatelům automaticky vyplňovat pole webových formulářů pomocí uložených informací (například adresa nebo číslo platební karty).
+
+      Pokud toto nastavení deaktivujete, uživatelé nebudou mít k funkci Automatické vyplňování přístup.
+
+      Pokud toto nastavení aktivujete nebo nenakonfigurujete žádnou hodnotu, zůstane funkce Automatické vyplňování pod kontrolou uživatelů. Budou moci nakonfigurovat profily této funkce a podle vlastního uvážení ji zapínat nebo vypínat.</translation>
+<translation id="6938581770853731947">Slouží ke konfiguraci typu výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavení domovské stránky měnili. Jako domovskou stránku lze nastavit adresu URL, kterou zadáte, nebo stránku Nová karta. Pokud aktivujete toto nastavení, bude jako domovská stránka vždy použita stránka Nová karta a adresa URL domovské stránky bude ignorována. Pokud toto nastavení deaktivujete, stránka Nová karta se uživateli jako domovská stránka nikdy nezobrazí (pokud není adresa URL domovské stránky nastavena jako řetězec chrome://newtab). Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit typ domovské stránky.</translation>
+<translation id="5645779841392247734">Povolit soubory cookie na těchto stránkách</translation>
+<translation id="3906388518501362918">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> JavaScript a brání uživatelům, aby toto nastavení změnili.
+
+      Pokud je toto nastavení aktivováno nebo není nakonfigurováno, webové stránky mohou používat JavaScript.
+
+      Pokud je toto nastavení deaktivováno, webové stránky JavaScript používat nemohou.</translation>
+<translation id="4821854788360803313">Určuje seznam deaktivovaných pluginů prohlížeče <ph name="PRODUCT_NAME"/> a brání uživatelům, aby toto nastavení změnili.
+
+      Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro libovolný počet znaků, zatímco znak „?“ určuje jeden volitelný znak (může tedy zastupovat libovolný znak nebo žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
+
+      Pokud toto nastavení aktivujete, pluginy uvedené v seznamu nebudou v prohlížeči <ph name="PRODUCT_NAME"/> nikdy použity. Na stránce about:plugins se pluginy zobrazí jako deaktivované a uživatelé je nebudou moci aktivovat.
+
+      Tuto zásadu lze přepsat pomocí zásad EnabledPlugins a DisabledPluginsExceptions.</translation>
+</translationbundle>

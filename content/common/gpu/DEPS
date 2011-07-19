@@ -1,0 +1,9 @@
+include_rules = [
+  "+chrome/app",
+  "+gpu/command_buffer",
+  "+libEGL",
+  "+libGLESv2",
+  "+skia",
+  "+third_party/angle/include",
+  "+third_party/openmax",
+]

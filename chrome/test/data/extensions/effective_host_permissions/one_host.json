@@ -1,0 +1,7 @@
+{
+  "name": "effective host permisions test",
+  "version": "1.0",
+  "permissions": [
+    "http://www.google.com/"
+  ]
+}

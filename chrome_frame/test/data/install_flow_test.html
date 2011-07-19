@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>install flow test</title>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript"
+            src="CFInstall.js"></script>
+  </head>
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+    <script type="text/javascript">
+      var testName = 'FullTab_InstallFlowTest';
+      (function(){
+        try{
+          if (CFInstall.isAvailable()) {
+            onFailure(testName, 1, 'plugin registered ahead of install test');
+          } else {
+            appendStatus("Waiting for install to complete...");
+            var timer = setInterval(function() {
+              if (CFInstall.isAvailable()) {
+                clearInterval(timer);
+                appendStatus("Installed! Redirecting...");
+                location.href = "install_flow_test_finish.html";
+              } 
+            }, 1000);
+          }
+        } catch (e) {
+          onFailure(testName, 1,
+                    'install flow test failed with error: '+e);
+        }
+      })();
+    </script>
+  </body>
+</html>

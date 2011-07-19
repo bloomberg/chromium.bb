@@ -1,0 +1,20 @@
+<html>
+  <head><title>cf: protocol test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function test() {
+        if (isRunningInMSIE()) {
+          reloadUsingCFProtocol();
+        } else {
+          onSuccess("chrome_frame_protocol", 1);
+        }
+      }
+    </script>
+  </head>
+  <body onLoad="setTimeout(test, 100);">
+    <h2>Prepare to be redirected!</h2>
+    <p>Redirects the same page to its 'gcf:' version</p>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+<html>
+
+<head>
+<script src="npapi.js"></script>
+<script>
+  function areTheseTheSame(a, b) {
+    return a === b;
+  }
+</script>
+</head>
+
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+
+NPObject Identity Test<p>
+
+Tests that identity is preserved for NPObjects passed from a plugin into JavaScript.
+
+<embed	type="application/vnd.npapi-test" 
+	src="foo"
+	name="npobject_identity"
+	id="1"
+	mode="np_embed"
+>
+
+</body>
+</html>

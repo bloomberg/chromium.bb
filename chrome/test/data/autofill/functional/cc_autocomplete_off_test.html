@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!-- Autofill credit card test form where autocomplete is off for the card number field. -->
+<html>
+  <head>
+    <title>Autofill Credit Card Test Form</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body>
+    <form id="testform" method="post">
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <label for="nameoncard">Name on Card</label>
+            </td>
+            <td>
+              <input size="40" id="CREDIT_CARD_NAME"/>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <label for="card_number">Card Number</label>
+            </td>
+            <td>
+              <input autocomplete="off" size="40" id="CREDIT_CARD_NUMBER" name="card_number"/>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <label>Expiration Date</label>
+            </td>
+            <td>
+              <input size="2" name="ccmonth" id="CREDIT_CARD_EXP_MONTH">  <input size="4" name="ccyear" id="CREDIT_CARD_EXP_4_DIGIT_YEAR" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
+

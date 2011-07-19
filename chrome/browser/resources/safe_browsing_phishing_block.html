@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html id="template_root" i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title"></title>
+<style>
+body {
+  background-color:#500;
+  font-family:Helvetica,Arial,sans-serif;
+  margin:0px;
+}
+.background {
+  position:absolute;
+  width:100%;
+  height:100%;
+}
+.cell {
+  padding:40px;
+}
+.box {
+  width:80%;
+  background-color:white;
+  color:black;
+  font-size:10pt;
+  line-height:16pt;
+  text-align:left;
+  padding:20px;
+  position:relative;
+  -webkit-box-shadow:3px 3px 8px #200;
+  border-radius:5px;
+}
+html[dir='rtl'] .box {
+  text-align:right;
+}
+.icon {
+  position:absolute;
+}
+.title {
+  margin: 0px 87px 0px;
+  font-size:18pt;
+  line-height: 140%;
+  margin-bottom:6pt;
+  font-weight:bold;
+  color:#660000;
+}
+.main {
+  margin:0px 90px 0px;
+}
+.submission {
+  margin:15px 5px 15px 0px;
+  padding:0px;
+}
+input {
+  margin:0px;
+}
+.proceedbutton {
+}
+.helpbutton {
+  float:right;
+}
+html[dir='rtl'] .helpbutton {
+  float:left;
+}
+.example {
+  margin: 30px 90px 0px;
+  border-top:1px solid #ccc;
+  padding-top:6px;
+}
+
+.green {
+  background: -webkit-linear-gradient(#83c260, #71b44c 44%, #549d2c);
+  border: 1px solid #4c7336;
+  border-bottom: 1px solid #44692f;
+  border-radius: 3px;
+  -webkit-box-shadow: inset 0 1px 0 0 #a0d186, 0px 1px 2px rgba(0,0,0,0.2);
+  color: #fff;
+  font-family: arial, helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 6px 16px 7px 16px;
+  text-align: center;
+  text-shadow: 0 -1px 0 #4865e4;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+
+.green:hover, .green:focus {
+  background: -webkit-linear-gradient(#8bc968, #7bbc57 44%, #4f9727);
+  border: 1px solid #456a2f;
+  border-bottom: 1px solid #456a2f;
+  -webkit-box-shadow: inset 0 1px 0 0 #a0d186, 0px 1px 2px rgba(0,0,0,0.3);;
+}
+
+.green:active {
+  background: -webkit-linear-gradient(#83c260, #71b44c 44%, #549d2c);
+  border: 1px solid #3e612a;
+  border-top:1px solid #4c7336;
+  border-bottom:1px solid #547b3f;
+  -webkit-box-shadow: inset 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.green:focus {
+  border: 1px solid #000;
+}
+</style>
+
+<script>
+  function sendCommand(cmd) {
+    window.domAutomationController.setAutomationId(1);
+    window.domAutomationController.send(cmd);
+  }
+</script>
+
+</head>
+<body oncontextmenu="return false;">
+<div class="background"><img src="ssl_roadblock_background.png" width="100%" height="100%" alt="background" onmousedown="return false;"></div>
+<table width="100%" cellspacing="0" cellpadding="0">
+  <td class="cell" valign="middle" align="center">
+    <div class="box">
+      <div class="icon"><img src="shared/images/phishing_icon.png" alt="Phishing Warning Icon" onmousedown="return false;"></div>
+      <div class="title" i18n-content="headLine"></div>
+      <div class="main" i18n-values=".innerHTML:description1"></div>
+      <div class="main">
+        <form class="submission">
+          <input type="button" class="green" id="back" i18n-values="value:back_button" onclick="sendCommand('takeMeBack')">
+        </form>
+      </div>
+      <div class="main"><a href="" i18n-content="description2" onclick="sendCommand('learnMore'); return false;"></a></div>
+      <div class="main"><a href="" onclick="sendCommand('reportError'); return false;" onmousedown="return false;" i18n-content="report_error"></a></div>
+      <div class="main" i18n-values=".innerHTML:description3"></div>
+    </div>
+  </td>
+</table>
+</body>
+</html>

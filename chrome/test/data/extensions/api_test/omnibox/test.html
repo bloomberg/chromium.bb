@@ -1,0 +1,28 @@
+<script>
+chrome.omnibox.onInputChanged.addListener(
+  function(text, suggest) {
+    chrome.test.log("onInputChanged: " + text);
+    if (text == "suggestio") {
+      // First test, complete "suggestio"
+      var desc = 'Description with style: <match>&lt;match&gt;</match>, ' +
+                 '<dim>[dim]</dim>, <url>(url till end)</url>';
+      suggest([
+        {content: text + "n1", description: desc},
+        {content: text + "n2", description: "description2"},
+        {content: text + "n3", description: "description3"},
+      ]);
+    } else {
+      // Other tests, just provide a simple suggestion.
+      suggest([{content: text + " 1", description: "description"}]);
+    }
+  });
+
+chrome.omnibox.onInputEntered.addListener(
+  function(text) {
+    chrome.test.assertEq("command", text);
+    chrome.test.notifyPass();
+  });
+
+// Now we wait for the input events to fire.
+chrome.test.notifyPass();
+</script>

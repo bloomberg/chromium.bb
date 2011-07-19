@@ -1,0 +1,13 @@
+{
+  "name": "Test App 3",
+  "version": "1",
+  "app": {
+    "urls": [
+      "http://www.example.com/path1/should_overlap",
+      "http://www.example.com/path5"
+    ],
+    "launch": {
+      "web_url": "http://www.example.com/path5/foo.html"
+    }
+  }
+}

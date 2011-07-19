@@ -1,0 +1,3 @@
+* need a pattern generator for non-standard and compound hyphenation patterns
+* add Unicode case conversion to the example
+* make a txt and TeX prehyphenator

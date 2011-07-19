@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame referrer test main</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <a href="referrer_frame.html">self-link</a>
+
+    <script type="text/javascript">
+      function OpenReferrerFrame() {
+        if (isRunningInMSIE()) {
+          onFailure("FullTab_ReferrerTest", 1, "Failed");
+        } else {
+          document.location.href = "referrer_frame.html";
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="setTimeout(OpenReferrerFrame, 100);">
+    ChromeFrame full tab mode referrer test. Verifies that the referrer header
+    is set correctly in navigations initiated by ChromeFrame.
+  </body>
+</html>

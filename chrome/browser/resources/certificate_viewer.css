@@ -1,0 +1,38 @@
+.title {
+  font-weight: bold;
+  padding-top: 5px;
+}
+
+#usages {
+  -webkit-padding-start: 15px;
+  padding-top: 5px;
+  white-space: pre-wrap;
+}
+
+.groups {
+  display: table;
+}
+
+.group,
+.detail {
+  display: table-row;
+}
+
+.detail div {
+  -webkit-padding-start: 15px;
+  padding: 3px;
+}
+
+.attribute {
+  display: table-cell;
+  white-space: nowrap;
+}
+
+.value {
+  display: table-cell;
+  white-space: pre-wrap;
+}
+
+.controls {
+  text-align: end;
+}

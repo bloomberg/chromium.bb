@@ -1,0 +1,60 @@
+<html>
+<body>
+<h1>Instant</h1>
+<div id=log></div>
+<script>
+window.chrome.sv = true;
+
+window.onsubmitcalls = 0;
+window.onchangecalls = 0;
+window.oncancelcalls = 0;
+window.onresizecalls = 0;
+
+var searchBox = window.chrome.searchBox || {};
+window.lastSearchBox = {};
+
+Object.prototype.clone = function() {
+  var copy = {}
+  for (var prop in this) copy[prop] = this[prop];
+  return copy;
+};
+
+var CloneSearchBox = function() {
+  window.lastSearchBox = {};
+  for (var key in searchBox)
+    window.lastSearchBox[key] = searchBox[key];
+};
+
+window.beforeLoadSearchBox = searchBox.clone();
+window.lastSearchBox = searchBox.clone();
+
+window.setSuggestionsArgument = {
+  suggestions: [
+    { value: "defghi" }
+  ]
+};
+
+window.chrome.searchBox.onsubmit = function() {
+  searchBox.setSuggestions(setSuggestionsArgument);
+  window.lastSearchBox = searchBox.clone();
+  window.onsubmitcalls++;
+};
+
+window.chrome.searchBox.onchange = function() {
+  searchBox.setSuggestions(setSuggestionsArgument);
+  window.lastSearchBox = searchBox.clone();
+  window.onchangecalls++;
+};
+
+window.chrome.searchBox.oncancel = function() {
+  searchBox.setSuggestions(setSuggestionsArgument);
+  window.lastSearchBox = searchBox.clone();
+  window.oncancelcalls++;
+};
+
+window.chrome.searchBox.onresize = function() {
+  window.onresizecalls++;
+};
+</script>
+</body>
+</html>

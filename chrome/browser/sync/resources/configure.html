@@ -1,0 +1,673 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body {
+   
+}
+ body {
+  
+}
+
+h4 {
+  margin: 10px 0;
+}
+
+hr {
+  background-color: #ddd;
+  border: 0;
+  height: 1px;
+  margin: 5px 0;
+  text-align: left;
+  width: 100%;
+}
+
+form {
+  -webkit-user-select: none;
+}
+
+.content-area {
+  padding: 10px 15px;
+}
+
+.action-area {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  border-top: 1px solid rgba(188, 193, 208, .5);
+  display: -webkit-box;
+  padding: 12px;
+}
+
+.sync-header {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.sync-select-customization {
+  margin-top: 10px;
+}
+
+.action-area-link-container {
+  -webkit-box-flex: 1;
+}
+
+#sync-passphrase-container {
+  margin: 10px 0;
+}
+
+#sync-custom-passphrase {
+  margin: 0 25px;
+}
+
+#sync-passphrase-message {
+  color: gray;
+}
+
+.sync-custom-passphrase-input {
+  margin: 10px 0;
+}
+
+#sync-select-container {
+  margin-bottom: 10px;
+}
+
+#sync-instructions-container {
+  margin-bottom: 30px;
+}
+
+#chooseDataTypesRadio {
+  vertical-align: top;
+}
+#chooseDataTypes > div {
+  display: inline-block;
+}
+#chooseDataTypesBody {
+  margin: 10px 0;
+}
+#chooseDataTypesBody > div {
+  -webkit-column-count: 3;
+}
+
+.sync-config-tab-contents-inactive {
+  display: none;
+}
+.sync-config-tab-contents-active {
+  display: block;
+  margin: 10px 15px;
+}
+.sync-config-tabstrip {
+  border-bottom: 1px solid gray;
+  height: 25px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  background-color: #DDD;
+}
+.sync-config-tab-active {
+  background-color: white;
+  border-top: 1px solid gray;
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+  border-top-left-radius: 5px 5px;
+  border-top-right-radius: 5px 5px;
+}
+
+.sync-config-tab-active,
+.sync-config-tab-inactive {
+  float: left;
+  height: 22px;
+  padding: 3px 5px 0px;
+  margin-left: 15px;
+  min-width: 100px;
+  text-align: center;
+}
+.sync-config-tab-active A,
+.sync-config-tab-inactive A,
+.sync-config-tab-active A:visited,
+.sync-config-tab-inactive A:visited,
+.sync-config-tab-active A:hover,
+.sync-config-tab-inactive A:hover {
+  color: black;
+  text-decoration: none;
+}
+
+#sync-encryption-instructions {
+  margin-bottom: 5px;
+}
+
+#sync-passphrase-warning {
+  margin-bottom: 5px;
+}
+
+#encryption-tab-contents > .sync_item_show {
+  margin-bottom: 5px;
+}
+
+.sync-item-show {
+  display: block;
+  white-space: nowrap;
+}
+
+.sync-item-show > label {
+ overflow: hidden;
+ white-space: nowrap;
+ text-overflow: ellipsis;
+ display: inline-block;
+ width: 92%;
+}
+
+.sync-item-hide {
+  display: none;
+}
+.sync-label-inactive {
+  color: #9B9B9B;
+}
+.sync-label-active {
+  color: #000000;
+}
+.sync-data-types {
+  margin-left: 5px;
+}
+.sync-errors {
+  margin-top: 5px;
+}
+.sync-error-show {
+  display: block;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  padding: 1px 10px;
+  background-color: #eeb939;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.sync-error-hide {
+  display: none;
+}
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+.sync-section {
+  background: #EEE;
+  margin: 5px 0px 5px 19px;
+  padding: 6px;
+}
+
+#explicit-message {
+  margin-bottom: 5px;
+}
+
+#change-passphrase {
+  margin: 10px 0;
+  background: #EEE;
+  padding: 8px;
+}
+
+#clear-data-button {
+  margin-top: 10px;
+}
+
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+
+input[type='button'],
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+html[os='mac'] input[type='button'],
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
+}
+
+</style>
+<script src="chrome://resources/js/cr.js"></script>
+<!-- TODO(jhawkins): util.js for $(). -->
+<script>
+  // Called once, when this html/js is loaded.
+  function initializeConfigureDialog(args) {
+    // Allow platform specific rules
+    if (cr.isMac) {
+      document.documentElement.setAttribute('os', 'mac');
+    } else if (!cr.isWindows) {
+      document.documentElement.setAttribute('os', 'linux');
+    }
+
+    var datatypeSelect = document.getElementById('sync-select-datatypes');
+    datatypeSelect.onchange = function() {
+      var syncAll = this.selectedIndex == 0;
+      setCheckboxesToKeepEverythingSynced(syncAll);
+
+      document.getElementById('chooseDataTypesBody').hidden = syncAll;
+    };
+
+    if (args) {
+      setCheckboxesAndErrors(args);
+
+      // Whether to display the 'Sync everything' confirmation screen or the
+      // customize data types screen.
+      // TODO(jhawkins): Rename |keepEverythingSynced| to |syncAllDataTypes|.
+      var syncEverything = args['syncEverything'];
+      var syncAllDataTypes = args['keepEverythingSynced'];
+      var usePassphrase = args['usePassphrase'];
+      if (syncEverything == false || syncAllDataTypes == false ||
+          usePassphrase) {
+        showCustomizePage();
+      }
+    }
+  }
+
+  function showCustomizePage() {
+    document.getElementById('confirm-sync-preferences').hidden = true;
+    document.getElementById('customize-sync-preferences').hidden = false;
+
+    // If the user is shown the 'Customize' page, it's likely he intends to
+    // change the data types.  Select the 'Choose data types' option in this
+    // case.
+    document.getElementById('sync-select-datatypes').selectedIndex = 1;
+    document.getElementById('chooseDataTypesBody').hidden = false;
+    setDataTypeCheckboxesEnabled(true);
+  }
+
+  function showSyncEverythingPage() {
+    document.getElementById('confirm-sync-preferences').hidden = false;
+    document.getElementById('customize-sync-preferences').hidden = true;
+
+    // The default state is to sync everything and to not use a custom
+    // passphrase.
+    setCheckboxesToKeepEverythingSynced(true);
+    document.getElementById("google-option").checked = true;
+  }
+
+  function setCheckboxesAndErrors(args) {
+    setChooseDataTypesCheckboxes(args);
+    setEncryptionCheckboxes(args);
+    setErrorState(args);
+  }
+
+  function checkAllDataTypeCheckboxes() {
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    for (var i = 0; i < checkboxes.length; i++) {
+      // Only check the visible ones (since there's no way to uncheck
+      // the invisible ones).
+      if (checkboxes[i].parentElement.className == "sync-item-show") {
+        checkboxes[i].checked = true;
+      }
+    }
+  }
+
+  function setCheckboxesToKeepEverythingSynced(value) {
+    setDataTypeCheckboxesEnabled(!value);
+    if (value)
+      checkAllDataTypeCheckboxes();
+  }
+
+  // Can be called multiple times.
+  function setChooseDataTypesCheckboxes(args) {
+    // If this frame is on top, the focus should be on it, so pressing enter
+    // submits this form.
+    if (args.iframeToShow == 'configure') {
+      document.getElementById("okButton").focus();
+    }
+
+    var datatypeSelect = document.getElementById('sync-select-datatypes');
+    datatypeSelect.selectedIndex = args.keepEverythingSynced ? 0 : 1;
+    document.getElementById('chooseDataTypesBody').hidden =
+        args.keepEverythingSynced;
+
+    document.getElementById("bookmarksCheckbox").checked = args.syncBookmarks;
+    document.getElementById("preferencesCheckbox").checked =
+        args.syncPreferences;
+    document.getElementById("themesCheckbox").checked = args.syncThemes;
+
+    if (args.passwordsRegistered) {
+      document.getElementById("passwordsCheckbox").checked = args.syncPasswords;
+      document.getElementById("passwordsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("passwordsItem").className = "sync-item-hide";
+    }
+    if (args.autofillRegistered) {
+      document.getElementById("autofillCheckbox").checked = args.syncAutofill;
+      document.getElementById("autofillItem").className = "sync-item-show";
+    } else {
+      document.getElementById("autofillItem").className = "sync-item-hide";
+    }
+    if (args.extensionsRegistered) {
+      document.getElementById("extensionsCheckbox").checked =
+          args.syncExtensions;
+      document.getElementById("extensionsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("extensionsItem").className = "sync-item-hide";
+    }
+    if (args.typedUrlsRegistered) {
+      document.getElementById("typedUrlsCheckbox").checked = args.syncTypedUrls;
+      document.getElementById("omniboxItem").className = "sync-item-show";
+    } else {
+      document.getElementById("omniboxItem").className = "sync-item-hide";
+    }
+    if (args.appsRegistered) {
+      document.getElementById("appsCheckbox").checked =
+          args.syncApps;
+      document.getElementById("appsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("appsItem").className = "sync-item-hide";
+    }
+
+    setCheckboxesToKeepEverythingSynced(args.keepEverythingSynced);
+    if (args.sessionsRegistered) {
+      document.getElementById("sessionsCheckbox").checked = args.syncSessions;
+      document.getElementById("sessionsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("sessionsItem").className = "sync-item-hide";
+    }
+  }
+
+  function setEncryptionCheckboxes(args) {
+    if (args["usePassphrase"]) {
+      document.getElementById("explicit-option").checked = true;
+
+      // The passphrase, once set, cannot be unset, but we show a reset link.
+      document.getElementById("explicit-option").disabled = true;
+      document.getElementById("google-option").disabled = true;
+      document.getElementById("sync-custom-passphrase").hidden = true;
+    } else {
+      document.getElementById("google-option").checked = true;
+    }
+    switchToMode("");
+  }
+
+  function setErrorState(args) {
+    if (!args.was_aborted)
+      return;
+
+    document.getElementById("aborted-text").className = "sync-error-show";
+    document.getElementById("okButton").disabled = true;
+    document.getElementById("keepEverythingSyncedRadio").disabled = true;
+    document.getElementById("chooseDataTypesRadio").disabled = true;
+  }
+
+  function setDataTypeCheckboxesEnabled(enabled) {
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    var labels = document.getElementsByName("dataTypeLabel");
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].disabled = !enabled;
+      if (checkboxes[i].disabled) {
+        labels[i].className = "sync-label-inactive";
+      } else {
+        labels[i].className = "sync-label-active";
+      }
+    }
+  }
+
+  // Returns true if at least one data type is enabled and no data types are
+  // checked.  (If all data type checkboxes are disabled, it's because "keep
+  // everything synced" is checked.)
+  function noDataTypesChecked() {
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    var atLeastOneChecked = false;
+    var atLeastOneEnabled = false;
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (!checkboxes[i].disabled &&
+          checkboxes[i].parentElement.className == "sync-item-show") {
+        atLeastOneEnabled = true;
+        if (checkboxes[i].checked) {
+          atLeastOneChecked = true;
+        }
+      }
+    }
+    return atLeastOneEnabled && !atLeastOneChecked;
+  }
+
+  function sendConfiguration() {
+    // Trying to submit, so hide previous errors.
+    document.getElementById("aborted-text").className = "sync-error-hide";
+    document.getElementById("error-text").className = "sync-error-hide";
+
+    if (noDataTypesChecked()) {
+      document.getElementById("error-text").className = "sync-error-show";
+      return;
+    }
+
+    var f = document.getElementById("chooseDataTypesForm");
+    if (!checkPassphraseMatch()) {
+      return false;
+    }
+
+    var syncAll =
+        document.getElementById('sync-select-datatypes').selectedIndex == 0;
+
+    // These values need to be kept in sync with where they are read in
+    // SyncSetupFlow::GetDataTypeChoiceData().
+    var result = JSON.stringify({
+        "keepEverythingSynced": syncAll,
+        "syncBookmarks": syncAll || f.bookmarksCheckbox.checked,
+        "syncPreferences": syncAll || f.preferencesCheckbox.checked,
+        "syncThemes": syncAll || f.themesCheckbox.checked,
+        "syncPasswords": syncAll || f.passwordsCheckbox.checked,
+        "syncAutofill": syncAll || f.autofillCheckbox.checked,
+        "syncExtensions": syncAll || f.extensionsCheckbox.checked,
+        "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
+        "syncApps": syncAll || f.appsCheckbox.checked,
+        "syncSessions": syncAll || f.sessionsCheckbox.checked,
+        "usePassphrase": (getRadioCheckedValue() == 'explicit'),
+        "passphrase": f.passphrase.value
+    });
+    chrome.send("Configure", [result]);
+  }
+
+  function switchToMode(mode) {
+    if (mode == "google")
+      document.getElementById("sync-custom-passphrase").hidden = true;
+    else if (mode =="explicit")
+      document.getElementById("sync-custom-passphrase").hidden = false;
+  }
+
+  function getRadioCheckedValue() {
+    var f = document.getElementById("chooseDataTypesForm");
+    for (var i = 0; i < f.option.length; ++i) {
+      if (f.option[i].checked) {
+        return f.option[i].value;
+      }
+    }
+    return undefined;
+  }
+
+  function onRadioChange() {
+    switchToMode(getRadioCheckedValue());
+  }
+
+  function checkPassphraseMatch() {
+    var emptyError = document.getElementById("emptyerror");
+    var mismatchError = document.getElementById("mismatcherror");
+    emptyError.style.display = "none";
+    mismatchError.style.display = "none";
+
+    var f = document.getElementById("chooseDataTypesForm");
+    if (getRadioCheckedValue() != "explicit" || f.option[0].disabled) {
+      return true;
+    }
+    if (f.passphrase.value.length == 0) {
+      emptyError.style.display = "block";
+      return false;
+    }
+
+    var confirmPassphrase = document.getElementById("confirm-passphrase");
+    var passphrase = document.getElementById("passphrase");
+    if (confirmPassphrase.value != passphrase.value) {
+      mismatchError.style.display = "block";
+      return false;
+    }
+    return true;
+  }
+
+  function goToDashboard() {
+    chrome.send("GoToDashboard", [""]);
+    chrome.send("DialogClose", [""]);
+  }
+
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily"
+      onload="initializeConfigureDialog(JSON.parse(chrome.dialogArguments));">
+<div id="confirm-sync-preferences">
+  <div class="sync-header" i18n-content="confirmSyncPreferences"></div>
+  <div id="sync-instructions-container" class="content-area">
+    <span i18n-content="choosedatatypesinstructions"></span>
+    <a i18n-values="href:encryptionhelpurl" target="_blank"
+        i18n-content="learnmore"></a>
+  </div>
+  <div>
+    <div class="action-area">
+      <div class="action-area-link-container">
+        <a id="customize-link" href="#" i18n-content="customizelinklabel"
+            onclick="showCustomizePage();"></a>
+      </div> 
+      <input id="okButton" type="button" i18n-values="value:syncEverything"
+          onclick="sendConfiguration();">
+      <input id="cancelButton" type="button" i18n-values="value:cancel"
+          onclick="chrome.send('DialogClose', [''])">
+    </div>
+  </div>
+</div>
+<div id="customize-sync-preferences" hidden>
+  <form id="chooseDataTypesForm" onSubmit="sendConfiguration(); return false;">
+    <div class="sync-header">Customize Sync Preferences</div>
+    <hr>
+    <div id="sync-configure-content" class="content-area">
+      <div id="sync-select-container">
+        <select id="sync-select-datatypes">
+          <option i18n-content="keepeverythingsynced"></option>
+          <option i18n-content="choosedatatypes" selected></option>
+        </select>
+        <div id="chooseDataTypesBody" hidden>
+          <div>
+            <!-- Apps -->
+            <div class="sync-item-show" id="appsItem">
+              <input id="appsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="appsCheckboxLabel" name="dataTypeLabel"
+                     for="appsCheckbox" i18n-content="apps"
+                     i18n-values="title:apps"></label>
+            </div>
+            <!-- Autofill -->
+            <div class="sync-item-show" id="autofillItem">
+              <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="autofillCheckboxLabel" name="dataTypeLabel"
+                     for="autofillCheckbox" i18n-content="autofill"
+                     i18n-values="title:autofill"></label>
+            </div>
+            <!-- Bookmarks -->
+            <div class="sync-item-show" id="bookmarksItem">
+              <input id="bookmarksCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="bookmarksCheckboxLabel" name="dataTypeLabel"
+                     for="bookmarksCheckbox" i18n-content="bookmarks"
+                     i18n-values="title:bookmarks"></label>
+            </div>
+            <!-- Extensions -->
+            <div class="sync-item-show" id="extensionsItem">
+              <input id="extensionsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="extensionsCheckboxLabel" name="dataTypeLabel"
+                     for="extensionsCheckbox" i18n-content="extensions"
+                     i18n-values="title:extensions"></label>
+            </div>
+            <!-- Omnibox -->
+            <div class="sync-item-show" id="omniboxItem">
+              <input id="typedUrlsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="typedUrlsCheckboxLabel" name="dataTypeLabel"
+                     for="typedUrlsCheckbox" i18n-content="typedurls"
+                     i18n-values="title:typedurls"></label>
+            </div>
+            <!-- Passwords -->
+            <div class="sync-item-show" id="passwordsItem">
+              <input id="passwordsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="passwordsCheckboxLabel" name="dataTypeLabel"
+                     for="passwordsCheckbox" i18n-content="passwords"
+                     i18n-values="title:passwords"></label>
+            </div>
+            <!-- Preferences -->
+            <div class="sync-item-show" id="preferencesItem">
+              <input id="preferencesCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="preferencesCheckboxLabel" name="dataTypeLabel"
+                     for="preferencesCheckbox" i18n-content="preferences"
+                     i18n-values="title:preferences"></label>
+            </div>
+            <!-- Themes -->
+            <div class="sync-item-show" id="themesItem">
+              <input id="themesCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="themesCheckboxLabel" name="dataTypeLabel" for="themesCheckbox"
+                     i18n-content="themes" i18n-values="title:themes"></label>
+            </div>
+            <!-- Sessions -->
+            <div class="sync-item-show" id="sessionsItem">
+              <input id="sessionsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="sessionsCheckboxLabel" name="dataTypeLabel"
+                     for="sessionsCheckbox" i18n-content="foreignsessions"
+                     il8n-values="title:sessions"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sync-errors">
+        <span id="error-text" i18n-content="synczerodatatypeserror"
+              class="sync-error-hide"></span>
+        <span id="aborted-text" i18n-content="abortederror"
+              class="sync-error-hide"></span>
+      </div>
+      <hr>
+      <h4 i18n-content="passphraseSectionTitle"></h4>
+      <div id="sync-passphrase-container">
+        <div>
+          <input id="google-option" name="option" type="radio" value="google"
+              onchange="onRadioChange();">
+          <label for="google-option" i18n-content="googleOption"></label>
+        </div>
+        <div>
+          <input id="explicit-option" name="option" type="radio"
+              value="explicit" onchange="onRadioChange();">
+          <label for="explicit-option" i18n-content="explicitOption"></label>
+          <a i18n-values="href:encryptionhelpurl" target="_blank"
+              i18n-content="learnmore"></a>
+        </div>
+        <div id="sync-custom-passphrase" hidden>
+          <div id="sync-passphrase-message">
+            <span i18n-content="sectionExplicitMessagePrefix"></span>
+            <a href="http://google.com/dashboard" target="_blank"
+                i18n-content="sectionExplicitMessagePostfix"></a>
+            <span>.</span>
+          </div>
+          <div class="sync-custom-passphrase-input">
+            <input id="passphrase" type="password"
+                i18n-values="placeholder:passphraseLabel">
+          </div>
+          <div class="sync-custom-passphrase-input">
+            <input id="confirm-passphrase" type="password"
+                i18n-values="placeholder:confirmLabel">
+          </div>
+          <div class="error" style="display:none"
+              id="emptyerror" i18n-content="emptyErrorMessage"></div>
+          <div class="error" style="display:none"
+              id="mismatcherror" i18n-content="mismatchErrorMessage"></div>
+        </div>
+      </div>
+      <div class="action-area">
+        <div class="action-area-link-container">
+          <a id="use-default-link" href="#" i18n-content="useDefaultSettings"
+              onclick="showSyncEverythingPage();"></a>
+        </div>
+        <input id="okButton" type="submit" i18n-values="value:ok" />
+        <input id="cancelButton" type="button" i18n-values="value:cancel"
+               onclick='chrome.send("DialogClose", [""])' />
+      </div>
+    </div>
+  </form>
+</div>
+</body>
+</html>
