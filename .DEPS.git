@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@fa113f82cde91714a6e8990647ae7ee345fe8cf2'
+         '@cb3fa836e439d9e346c67f9f400744cb78fbc839'
 }
 
 deps = {
@@ -21,9 +21,9 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@290665e5ec3f648c6d94f0a4e2d0f1c603f65b84',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@03fd44915a73f60f7cb956f800d5e313a7478226',
+        Var('git_url') + '/native_client/src/native_client.git@1735ce237c467c08cd0285e3f491484846c408b7',
     'src/native_client/src/third_party/ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@6736167d89a437064082b2bf8a6efc33045d6e4e',
+        Var('git_url') + '/chromium/src/ppapi.git@35c09a30c037e2d47e493c8e8b7aa5591f8bf789',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@f1dd933c4e47a65889b4bba2a5f58b12aac53383',
     'src/seccompsandbox':
@@ -35,7 +35,7 @@ deps = {
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@5e89aabe2f7485a181475070e6d0e2dce5e9510e',
+        Var('git_url') + '/external/angleproject.git@8263a5a5ffecf167bf3518fe7246afe050481b8d',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
@@ -83,15 +83,15 @@ deps = {
     'src/third_party/webdriver/python/selenium':
         Var('git_url') + '/external/selenium/py/selenium.git@f531d35cf99dd456a1e52af343e738635dd755e4',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc.git@ba28d7fd4e4376c04bf270009b1e101a3df8071c',
+        Var('git_url') + '/external/webrtc/src.git@9b2ef609ad18857d346cb87d6d7baec959e91410',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@52de20c269423e263996d3f77bfb6c7858b61965',
+        Var('git_url') + '/external/gyp.git@b0ac097aa7fcb4f881c97bd3a0ef266bfa07c032',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@59c6ae4c476750845a529cd407454378ebaaa347',
     'src/v8':
-        Var('git_url') + '/external/v8.git@37f4447773402769fd4da67c10868b6752664504',
+        Var('git_url') + '/external/v8.git@84bcc559ac20fb04f806e97d28a314b20b58fd60',
 }
 
 deps_os = {
@@ -195,13 +195,13 @@ hooks = [
     'python',
     'src/build/download_nacl_irt.py',
     '--nacl_revision',
-    '5988',
+    '6106',
     '--file_hash',
     'x86_32',
-    '40737ff789c03561a79dc7802f16e84d4dbe3b07',
+    '940d9c16d36e10085af92a72620865a099cf0ad9',
     '--file_hash',
     'x86_64',
-    '8d7d2f6f5ef19467981eb89ab2a138e79aa5926d'
+    '55678cbba7e597f232d7d3d63508bec5fbd5c935'
 ],
     'pattern':
          '.'
