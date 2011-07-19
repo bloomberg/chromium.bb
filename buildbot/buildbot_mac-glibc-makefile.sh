@@ -48,6 +48,7 @@ fi
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
+  ./buildbot_patch-toolchain-tries.sh
   make -j8 buildbot-build-with-glibc
 )
 

@@ -31,6 +31,7 @@ rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
+  ./buildbot_patch-toolchain-tries.sh
   make -j8 buildbot-build-with-glibc
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
