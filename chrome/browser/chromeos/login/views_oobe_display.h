@@ -32,8 +32,8 @@ class ViewsOobeDisplay : public OobeDisplay,
   virtual UpdateScreenActor* GetUpdateScreenActor();
   virtual NetworkScreenActor* GetNetworkScreenActor();
   virtual EulaScreenActor* GetEulaScreenActor();
+  virtual UserImageScreenActor* GetUserImageScreenActor();
   virtual ViewScreenDelegate* GetEnterpriseEnrollmentScreenActor();
-  virtual ViewScreenDelegate* GetUserImageScreenActor();
   virtual ViewScreenDelegate* GetRegistrationScreenActor();
   virtual ViewScreenDelegate* GetHTMLPageScreenActor();
 
@@ -75,6 +75,7 @@ class ViewsOobeDisplay : public OobeDisplay,
   scoped_ptr<UpdateScreenActor> update_screen_actor_;
   scoped_ptr<NetworkScreenActor> network_screen_actor_;
   scoped_ptr<EulaScreenActor> eula_screen_actor_;
+  scoped_ptr<UserImageScreenActor> user_image_screen_actor_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
 

@@ -67,7 +67,7 @@ class OobeUI : public OobeDisplay,
   virtual NetworkScreenActor* GetNetworkScreenActor();
   virtual EulaScreenActor* GetEulaScreenActor();
   virtual ViewScreenDelegate* GetEnterpriseEnrollmentScreenActor();
-  virtual ViewScreenDelegate* GetUserImageScreenActor();
+  virtual UserImageScreenActor* GetUserImageScreenActor();
   virtual ViewScreenDelegate* GetRegistrationScreenActor();
   virtual ViewScreenDelegate* GetHTMLPageScreenActor();
 

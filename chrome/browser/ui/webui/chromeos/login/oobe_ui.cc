@@ -216,7 +216,7 @@ ViewScreenDelegate* OobeUI::GetEnterpriseEnrollmentScreenActor() {
   return NULL;
 }
 
-ViewScreenDelegate* OobeUI::GetUserImageScreenActor() {
+UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
   NOTIMPLEMENTED();
   return NULL;
 }

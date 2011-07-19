@@ -7,36 +7,38 @@
 #pragma once
 
 #include "chrome/browser/chromeos/login/camera_controller.h"
-#include "chrome/browser/chromeos/login/user_image_view.h"
-#include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/chromeos/login/user_image_screen_actor.h"
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
 
-class UserImageScreen: public ViewScreen<UserImageView>,
+class UserImageScreen: public WizardScreen,
                        public CameraController::Delegate,
-                       public UserImageView::Delegate,
+                       public UserImageScreenActor::Delegate,
                        public NotificationObserver {
  public:
-  explicit UserImageScreen(ViewScreenDelegate* delegate);
+  UserImageScreen(ScreenObserver* screen_observer,
+                  UserImageScreenActor* actor);
   virtual ~UserImageScreen();
 
-  // Overridden from ViewScreen:
-  virtual void Refresh();
+  // WizardScreen implementation:
+  virtual void PrepareToShow();
+  virtual void Show();
   virtual void Hide();
-  virtual UserImageView* AllocateView();
 
   // CameraController::Delegate implementation:
   virtual void OnCaptureSuccess();
   virtual void OnCaptureFailure();
 
-  // UserImageView::Delegate implementation:
+  // UserImageScreenActor::Delegate implementation:
   virtual void StartCamera();
   virtual void StopCamera();
   virtual void OnPhotoTaken(const SkBitmap& image);
   virtual void OnDefaultImageSelected(int index);
+  virtual void OnActorDestroyed(UserImageScreenActor* actor);
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
@@ -48,11 +50,12 @@ class UserImageScreen: public ViewScreen<UserImageView>,
 
   NotificationRegistrar registrar_;
 
+  UserImageScreenActor* actor_;
+
   DISALLOW_COPY_AND_ASSIGN(UserImageScreen);
 };
 
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_H_
-
 

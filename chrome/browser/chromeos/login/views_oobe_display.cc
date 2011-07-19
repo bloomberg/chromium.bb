@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_update_screen_actor.h"
+#include "chrome/browser/chromeos/login/views_user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -200,8 +201,10 @@ ViewScreenDelegate* ViewsOobeDisplay::GetEnterpriseEnrollmentScreenActor() {
   return this;
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::GetUserImageScreenActor() {
-  return this;
+UserImageScreenActor* ViewsOobeDisplay::GetUserImageScreenActor() {
+  if (user_image_screen_actor_ == NULL)
+    user_image_screen_actor_.reset(new ViewsUserImageScreenActor(this));
+  return user_image_screen_actor_.get();
 }
 
 ViewScreenDelegate* ViewsOobeDisplay::GetRegistrationScreenActor() {

@@ -10,9 +10,6 @@
 
 namespace chromeos {
 
-class HelpAppLauncher;
-class NetworkSelectionView;
-
 // Interface for dependency injection between NetworkScreen and its actual
 // representation, either views based or WebUI. Owned by NetworkScreen.
 class NetworkScreenActor {

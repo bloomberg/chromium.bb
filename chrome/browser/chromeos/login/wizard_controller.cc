@@ -181,7 +181,7 @@ chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
   if (!user_image_screen_.get())
     user_image_screen_.reset(
         new chromeos::UserImageScreen(
-            oobe_display_->GetUserImageScreenActor()));
+            this, oobe_display_->GetUserImageScreenActor()));
   return user_image_screen_.get();
 }
 
