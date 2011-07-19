@@ -895,7 +895,10 @@ void WebThemeEngineImpl::paintTextField(
       gfx::NativeTheme::kTextField, native_state, gfx_rect, extra);
 }
 
-static gfx::NativeTheme::State WebTrackbarStateToGfx(int part, int state) {
+static gfx::NativeTheme::State WebTrackbarStateToGfx(
+    int part,
+    int state,
+    gfx::NativeTheme::TrackbarExtraParams* extra) {
   gfx::NativeTheme::State gfx_state = gfx::NativeTheme::kNormal;
   switch (state) {
     case TUS_NORMAL:
@@ -914,6 +917,21 @@ static gfx::NativeTheme::State WebTrackbarStateToGfx(int part, int state) {
       NOTREACHED() << "Invalid state: " << state;
       break;
   }
+
+  switch (part) {
+    case TKP_TRACK:
+    case TKP_THUMBBOTTOM:
+      extra->vertical = false;
+      break;
+    case TKP_TRACKVERT:
+    case TKP_THUMBVERT:
+      extra->vertical = true;
+      break;
+    default:
+      NOTREACHED() << "Invalid part: " << part;
+      break;
+  }
+
   return gfx_state;
 }
 
@@ -923,9 +941,11 @@ void WebThemeEngineImpl::paintTrackbar(
   gfx::NativeTheme::Part native_part = gfx::NativeTheme::kTrackbarTrack;
   switch (part) {
     case TKP_TRACK:
+    case TKP_TRACKVERT:
       native_part = gfx::NativeTheme::kTrackbarTrack;
       break;
     case TKP_THUMBBOTTOM:
+    case TKP_THUMBVERT:
       native_part = gfx::NativeTheme::kTrackbarThumb;
       break;
     default:
@@ -933,10 +953,11 @@ void WebThemeEngineImpl::paintTrackbar(
       break;
   }
 
-  gfx::NativeTheme::State native_state = WebTrackbarStateToGfx(part, state);
-  gfx::Rect gfx_rect(rect.x, rect.y, rect.width, rect.height);
   gfx::NativeTheme::ExtraParams extra;
-  extra.button.classic_state = classic_state;
+  gfx::NativeTheme::State native_state = WebTrackbarStateToGfx(part, state,
+                                                               &extra.trackbar);
+  gfx::Rect gfx_rect(rect.x, rect.y, rect.width, rect.height);
+  extra.trackbar.classic_state = classic_state;
   gfx::NativeTheme::instance()->Paint(canvas, native_part,
                                       native_state, gfx_rect, extra);
 }

@@ -172,6 +172,7 @@ class UI_API NativeTheme {
   };
 
   struct TrackbarExtraParams {
+    bool vertical;
     int classic_state;  // Used on Windows when uxtheme is not available.
   };
 

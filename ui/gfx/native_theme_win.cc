@@ -931,6 +931,9 @@ HRESULT NativeThemeWin::PaintTrackbar(
     const gfx::Rect& rect,
     const TrackbarExtraParams& extra) const {
   int part_id = part == kTrackbarTrack ? TKP_TRACK : TKP_THUMBBOTTOM;
+  if (extra.vertical)
+    part_id = part == kTrackbarTrack ? TKP_TRACKVERT : TKP_THUMBVERT;
+
   int state_id = 0;
   switch(state) {
     case kDisabled:
