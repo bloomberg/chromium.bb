@@ -271,6 +271,8 @@
       '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
       '-instant.InstantSettingsTest.testEnableDisableInstant',
+      # crosbug.com/14256
+      '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
       '-omnibox.OmniboxTest.testContentHistory',
       # onunload popups get created in the same window on chromeos
