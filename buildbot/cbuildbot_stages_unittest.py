@@ -545,7 +545,8 @@ class TestHWStageTest(AbstractStageTest):
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
-                            ip)
+                            ip,
+                            False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -568,7 +569,8 @@ class TestHWStageTest(AbstractStageTest):
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
-                            ip)
+                            ip,
+                            False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -592,7 +594,8 @@ class TestHWStageTest(AbstractStageTest):
                             ip)
     commands.RemoteRunPyAuto(self.build_root,
                             self.build_config['board'],
-                            ip)
+                            ip,
+                            False)
 
     self.mox.ReplayAll()
     self.RunStage()

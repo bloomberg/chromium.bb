@@ -831,7 +831,8 @@ class TestHWStage(BuilderStage):
                             ip)
     commands.RemoteRunPyAuto(self._build_root,
                              self._build_config['board'],
-                             ip)
+                             ip,
+                             internal_test=False)
 
 
 class RemoteTestStatusStage(BuilderStage):

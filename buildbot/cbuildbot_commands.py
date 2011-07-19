@@ -303,7 +303,7 @@ def UpdateRemoteHW(buildroot, board, remote_ip):
                          print_cmd=True)
 
 
-def RemoteRunPyAuto(buildroot, board, remote_ip):
+def RemoteRunPyAuto(buildroot, board, remote_ip, internal_test):
   """Execute PyAuto tests on a remote machine.
 
   Runs the CONTINUOUS suite of desktopui_PyAutoFunctionalTests on a remote
@@ -312,10 +312,16 @@ def RemoteRunPyAuto(buildroot, board, remote_ip):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   test_suite = 'client/site_tests/desktopui_PyAutoFunctionalTests/control'
+
+  if internal_test:
+    suite = 'CONTINUOUS'
+  else:
+    suite = 'CONTINUOUS_PUBLIC'
+
   cmd = ['./run_remote_tests.sh',
          '--board=%s' % board,
          '--remote=%s' % remote_ip,
-         '--args=CONTINUOUS',
+         '--args=%s' % suite,
          test_suite, ]
 
   cros_lib.OldRunCommand(cmd, cwd=cwd, enter_chroot=True, error_ok=False,
