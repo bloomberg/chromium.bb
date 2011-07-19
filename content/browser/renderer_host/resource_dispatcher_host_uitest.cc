@@ -227,8 +227,15 @@ TEST_F(ResourceDispatcherTest, CrossSiteImmediateLoadOnunloadCookie) {
   ASSERT_STREQ("foo", value_result.c_str());
 }
 
+#if defined(OS_WIN)
+// Seems to fail sometimes on Windows: http://crbug.com/80596
+#define MAYBE_CrossSiteNoUnloadOn204 FLAKY_CrossSiteNoUnloadOn204
+#else
+#define MAYBE_CrossSiteNoUnloadOn204 CrossSiteNoUnloadOn204
+#endif
+
 // Tests that the unload handler is not run for 204 responses.
-TEST_F(ResourceDispatcherTest, CrossSiteNoUnloadOn204) {
+TEST_F(ResourceDispatcherTest, MAYBE_CrossSiteNoUnloadOn204) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
