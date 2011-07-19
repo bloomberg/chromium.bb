@@ -1613,7 +1613,7 @@ class MakefileWriter:
       # its dependencies usually. To prevent this rule from executing
       # on every build (expensive, especially with postbuilds), expliclity
       # update the time on the framework directory.
-      self.WriteLn('\t@touch %s' % self.output)
+      self.WriteLn('\t@touch -c %s' % self.output)
 
     if self.type == 'executable':
       self.WriteDoCmd([self.output_binary], link_deps, 'link', part_of_all)
