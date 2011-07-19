@@ -166,6 +166,7 @@ class TemplateURLServiceTest : public testing::Test {
     ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
     ASSERT_TRUE(expected.date_created() == actual.date_created());
     ASSERT_TRUE(expected.last_modified() == actual.last_modified());
+    ASSERT_EQ(expected.sync_guid(), actual.sync_guid());
   }
 
   // Checks that the two TemplateURLs are similar. It does not check the id, the
@@ -396,6 +397,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   t_url->SetFaviconURL(favicon_url);
   t_url->set_date_created(Time::FromTimeT(100));
   t_url->set_last_modified(Time::FromTimeT(100));
+  t_url->set_sync_guid("00000000-0000-0000-0000-000000000001");
   t_url->set_safe_for_autoreplace(true);
   model()->Add(t_url);
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"),

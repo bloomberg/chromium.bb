@@ -35,6 +35,7 @@ message SearchEngineSpecifics {
   optional string instant_url = 15;
   optional int64 id = 16;
   optional int64 last_modified = 17;
+  optional string sync_guid = 18;
 }
 
 extend EntitySpecifics {

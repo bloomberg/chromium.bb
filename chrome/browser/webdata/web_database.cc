@@ -16,8 +16,8 @@ namespace {
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 38;
-const int kCompatibleVersionNumber = 38;
+const int kCurrentVersionNumber = 39;
+const int kCompatibleVersionNumber = 39;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -284,6 +284,13 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(38);
 
       ChangeVersion(&meta_table_, 38, true);
+      // FALL THROUGH
+
+    case 38:
+      if (!keyword_table_->MigrateToVersion39AddSyncGUIDColumn())
+        return FailedMigrationTo(39);
+
+      ChangeVersion(&meta_table_, 39, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

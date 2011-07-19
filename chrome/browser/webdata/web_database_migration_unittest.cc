@@ -186,7 +186,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 38;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 39;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -1462,5 +1462,45 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion37ToCurrent) {
     // |keywords| |last_modified| column should have been added.
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "last_modified"));
+  }
+}
+
+// Tests that the |keywords| |sync_guid| column gets added to the schema for
+// a version 38 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion38ToCurrent) {
+  // This schema is taken from a build prior to the addition of the |keywords|
+  // |sync_guid| column.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_38.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 38 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Columns existing and not existing before current version.
+    ASSERT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "sync_guid"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // |keywords| |sync_guid| column should have been added.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "id"));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "sync_guid"));
   }
 }

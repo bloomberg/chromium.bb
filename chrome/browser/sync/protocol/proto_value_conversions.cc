@@ -293,6 +293,7 @@ DictionaryValue* SearchEngineSpecificsToValue(
   SET_STR(instant_url);
   SET_INT64(id);
   SET_INT64(last_modified);
+  SET_STR(sync_guid);
   return value;
 }
 

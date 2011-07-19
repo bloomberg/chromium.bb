@@ -488,6 +488,9 @@ class TemplateURL {
   std::string GetExtensionId() const;
   bool IsExtensionKeyword() const;
 
+  std::string sync_guid() const { return sync_guid_; }
+  void set_sync_guid(const std::string& guid) { sync_guid_ = guid; }
+
  private:
   friend void MergeEnginesFromPrepopulateData(
       PrefService* prefs,
@@ -534,6 +537,9 @@ class TemplateURL {
   SearchEngineType search_engine_type_;
   int logo_id_;
   int prepopulate_id_;
+  // The primary unique identifier for Sync. This is only set on TemplateURLs
+  // that have been associated with Sync.
+  std::string sync_guid_;
 
   // TODO(sky): Add date last parsed OSD file.
 };

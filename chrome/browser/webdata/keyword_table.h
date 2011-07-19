@@ -49,6 +49,8 @@ class Time;
 //                          in version 29.
 //   last_modified          See TemplateURL::last_modified.  This was added in
 //                          version 38.
+//   sync_guid              See TemplateURL::sync_guid. This was added in
+//                          version 39.
 //
 class KeywordTable : public WebDatabaseTable {
  public:
@@ -90,6 +92,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion28SupportsInstantColumn();
   bool MigrateToVersion29InstantUrlToSupportsInstant();
   bool MigrateToVersion38AddLastModifiedColumn();
+  bool MigrateToVersion39AddSyncGUIDColumn();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
