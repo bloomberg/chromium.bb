@@ -52,7 +52,7 @@ EXTRA_ENV = {
                   '-U__ARMEL__ -U__THUMBEL__ -U__SOFTFP__ ' +
                   '-U__VFP_FP__ -U__ARM_NEON__ -U__ARM_FP16 ' +
                   '-U__ARM_FP16__ -U__MAVERICK__ -U__XSCALE__ -U__IWMMXT__ ' +
-                  '-U__ARM_EABI__',
+                  '-U__ARM_EABI__ -U__ARM_ARCH_7A__',
 
   'BIAS_NONE'   : '${REMOVE_BIAS}',
   'BIAS_ARM'    : '',
