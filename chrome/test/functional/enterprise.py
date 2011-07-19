@@ -17,8 +17,12 @@ class EnterpriseTest(pyauto.PyUITest):
 
   Browser preferences will be managed using policies. These managed preferences
   cannot be modified by user. This works only for Google Chrome, not Chromium.
+
+  On Linux, assume that 'suid-python' (a python binary setuid root) is
+  available on the machine under /usr/local/bin directory.
   """
-  assert pyauto.PyUITest.IsWin(), 'Only runs on Win'
+  assert pyauto.PyUITest.IsWin() or pyauto.PyUITest.IsLinux(), \
+         'Only runs on Win or Linux'
 
   def Debug(self):
     """Test method for experimentation.
@@ -32,38 +36,71 @@ class EnterpriseTest(pyauto.PyUITest):
       pp.pprint(self.GetPrefsInfo().Prefs())
 
   @staticmethod
-  def _CleanupRegistry():
+  def _Cleanup():
     """Removes the registry key and its subkeys(if they exist).
-    Registry Key being deleted: HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google
+
+    Win: Registry Key being deleted: HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google
+    Linux: Removes the chrome directory from /etc/opt
     """
-    if subprocess.call(
-        r'reg query HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google') == 0:
-      logging.debug(r'Removing HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google')
-      subprocess.call(r'reg delete HKLM\Software\Policies\Google /f')
+    if pyauto.PyUITest.IsWin():
+      if subprocess.call(
+          r'reg query HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google') == 0:
+        logging.debug(r'Removing HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google')
+        subprocess.call(r'reg delete HKLM\Software\Policies\Google /f')
+    elif pyauto.PyUITest.IsLinux():
+      sudo_cmd_file = os.path.join(os.path.dirname(__file__),
+                                   'enterprise_helper_linux.py')
+      if os.path.isdir ('/etc/opt/chrome'):
+        logging.debug('Removing directory /etc/opt/chrome/')
+        subprocess.call(['suid-python', sudo_cmd_file,
+                         'remove_dir', '/etc/opt/chrome'])
 
   @staticmethod
-  def _SetUpRegistry():
-    """Add the registry keys from the .reg file.
+  def _SetUp():
+    """Win: Add the registry keys from the .reg file.
+
     Removes the registry key and its subkeys if they exist.
-    Adding HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google."""
-    EnterpriseTest._CleanupRegistry()
-    registry_location = os.path.join(EnterpriseTest.DataDir(), 'enterprise',
-                                     'chrome-add.reg')
-    # Add the registry keys
-    subprocess.call('reg import %s' % registry_location)
+    Adding HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google.
+
+    Linux: Copy the chrome.json file to the managed directory.
+    Remove /etc/opt/chrome directory if it exists.
+    """
+    EnterpriseTest._Cleanup()
+    if pyauto.PyUITest.IsWin():
+      registry_location = os.path.join(EnterpriseTest.DataDir(), 'enterprise',
+                                       'chrome-add.reg')
+      # Add the registry keys
+      subprocess.call('reg import %s' % registry_location)
+    elif pyauto.PyUITest.IsLinux():
+      chrome_json = os.path.join(EnterpriseTest.DataDir(),
+                                       'enterprise', 'chrome.json')
+      sudo_cmd_file = os.path.join(os.path.dirname(__file__),
+                                   'enterprise_helper_linux.py')
+      policies_location = '/etc/opt/chrome/policies/managed'
+      subprocess.call(['suid-python',  sudo_cmd_file,
+                       'setup_dir', policies_location])
+      # Copy chrome.json file to the managed directory
+      subprocess.call(['suid-python',  sudo_cmd_file,
+                       'copy', chrome_json, policies_location])
 
   def setUp(self):
-     # Add policies through registry.
-     self._SetUpRegistry()
-     # Check if registries are created.
-     registry_query_code = subprocess.call(
+    # Add policies through registry or json file.
+    self._SetUp()
+    # Check if registries are created in Win.
+    if pyauto.PyUITest.IsWin():
+      registry_query_code = subprocess.call(
         r'reg query HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google')
-     assert registry_query_code == 0, 'Could not create registries.'
-     pyauto.PyUITest.setUp(self)
+      assert registry_query_code == 0, 'Could not create registries.'
+    # Check if json file is copied under correct location in Linux.
+    elif pyauto.PyUITest.IsLinux():
+      policy_file_check = os.path.isfile(
+                            '/etc/opt/chrome/policies/managed/chrome.json')
+      assert policy_file_check, 'Policy file(s) not set up.'
+    pyauto.PyUITest.setUp(self)
 
   def tearDown(self):
     pyauto.PyUITest.tearDown(self)
-    EnterpriseTest._CleanupRegistry()
+    EnterpriseTest._Cleanup()
 
   def _CheckIfPrefCanBeModified(self, key, defaultval, newval):
     """Check if the managed preferences can be modified.
@@ -165,10 +202,14 @@ class EnterpriseTest(pyauto.PyUITest):
     """Verify that Chrome can be launched only in a specific locale."""
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
-    self.assertTrue(re.search('hi',
-                    self.GetPrefsInfo().Prefs()['intl']['accept_languages']),
-                    msg='Chrome locale is not Hindi.')
-    # TODO(sunandt): Try changing the application locale to another language.
+    if self.IsWin():
+      self.assertTrue(re.search('hi',
+                      self.GetPrefsInfo().Prefs()['intl']['accept_languages']),
+                      msg='Chrome locale is not Hindi.')
+      # TODO(sunandt): Try changing the application locale to another language.
+    elif self.IsLinux():
+      logging.info("Locale policy not supported in Linux")
+      pass
 
   def testDisableDevTools(self):
     """Verify that devtools window cannot be launched."""
@@ -223,20 +264,21 @@ class EnterpriseTest(pyauto.PyUITest):
     """
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
+    self.assertEqual('Downloads',
+      self.GetPrefsInfo().Prefs()['download']['default_directory'],
+      msg='Downloads directory is not set correctly.')
     if self.IsWin():
-      self.assertEqual('Downloads',
-        self.GetPrefsInfo().Prefs()['download']['default_directory'],
-        msg='Downloads directory is not set correctly.')
       # Check for changing the download directory location
       self.assertRaises(pyauto.JSONInterfaceError,
           lambda: self.SetPrefs(pyauto.kDownloadDefaultDirectory,
                                 os.getenv('USERPROFILE')))
-      # Check for changing the option 'Ask for each download'
-      self.assertRaises(pyauto.JSONInterfaceError,
-                        lambda: self.SetPrefs(pyauto.kPromptForDownload, True))
     elif self.IsLinux():
-      # TODO(sunandt)
-      pass
+      self.assertRaises(pyauto.JSONInterfaceError,
+          lambda: self.SetPrefs(pyauto.kDownloadDefaultDirectory,
+                                os.getenv('HOME')))
+    # Check for changing the option 'Ask for each download'
+    self.assertRaises(pyauto.JSONInterfaceError,
+                      lambda: self.SetPrefs(pyauto.kPromptForDownload, True))
 
   def testEnabledPlugins(self):
     """Verify that enabled plugins cannot be disabled."""

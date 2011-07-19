@@ -377,6 +377,7 @@
     ],
 
     'linux': [
+      'enterprise',
       # Add back the omnibox tests excluded from the CONTINUOUS suite above
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
