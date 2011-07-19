@@ -77,26 +77,10 @@
       # ==================================================
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
-      # crbug.com/88074
-      '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
-
-      # DCHECKs firing in Debug build. crbug.com/86456
-      '-autofill.AutofillTest.testWhitespacesAndSeparatorCharsStrippedForValidCCNums',
-      '-autofill.AutofillTest.testAggregatesMinValidProfile',
-      '-autofill.AutofillTest.testCCInfoNotStoredWhenAutocompleteOff',
-      '-autofill.AutofillTest.testInvalidCreditCardNumberIsNotAggregated',
-      '-autofill.AutofillTest.testProfileWithEmailInOtherFieldNotSaved',
-      '-autofill.AutofillTest.testProfilesNotAggregatedWithInvalidEmail',
-      '-autofill.AutofillTest.testProfilesNotAggregatedWithNoAddress',
-
       # Browser crash when clearing browsing history and downloads together.
       # crbug.com/88128
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
-
+      '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       # Browser crash?  crbug.com/86150

@@ -673,7 +673,6 @@ class AutofillTest(pyauto.PyUITest):
     """
     self._AggregateProfilesIntoAutofillPrefs('dataset_2.txt')
     # Expecting 3 profiles out of the original 14 within Autofill preferences
-    raw_input()
     self.assertEqual(3, len(self.GetAutofillProfile()['profiles']),
                      msg='Aggregated profiles did not merge correctly.')
 
