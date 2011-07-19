@@ -283,7 +283,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'push_overlays': 'public',
   'manifest_version': True,
 
-  'remote_ip' : None, # Placeholder for future IP
+  'remote_ip' : '172.22.75.211',
 }])
 
 add_config('arm-generic-chrome-pre-flight-queue', [arm, {

@@ -835,7 +835,7 @@ class TestStage(BuilderStage):
             self._build_root, test_results_dir)
 
 
-class TestHWStage(BuilderStage):
+class TestHWStage(NonHaltingBuilderStage):
   """Stage that performs testing on actual HW."""
   def _PerformStage(self):
     if self._options.remote_ip:
