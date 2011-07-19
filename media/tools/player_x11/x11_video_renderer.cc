@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,6 @@
 #include "base/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-
-X11VideoRenderer* X11VideoRenderer::instance_ = NULL;
 
 // Returns the picture format for ARGB.
 // This method is originally from chrome/common/x11_util.cc.
@@ -55,17 +53,16 @@ static XRenderPictFormat* GetRenderARGB32Format(Display* dpy) {
 }
 
 X11VideoRenderer::X11VideoRenderer(Display* display, Window window,
-                                   MessageLoop* message_loop)
+                                   MessageLoop* main_message_loop)
     : display_(display),
       window_(window),
       image_(NULL),
       picture_(0),
       use_render_(false),
-      glx_thread_message_loop_(message_loop) {
+      main_message_loop_(main_message_loop) {
 }
 
-X11VideoRenderer::~X11VideoRenderer() {
-}
+X11VideoRenderer::~X11VideoRenderer() {}
 
 void X11VideoRenderer::OnStop(media::FilterCallback* callback) {
   if (image_) {
@@ -91,6 +88,8 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   use_render_ = XRenderQueryExtension(display_, &dummy, &dummy);
 
   if (use_render_) {
+    LOG(INFO) << "Using XRender extension.";
+
     // If we are using XRender, we'll create a picture representing the
     // window.
     XWindowAttributes attr;
@@ -118,20 +117,17 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
                         width() * 4);
   DCHECK(image_);
 
-  // Save this instance.
-  DCHECK(!instance_);
-  instance_ = this;
   return true;
 }
 
 void X11VideoRenderer::OnFrameAvailable() {
-  if (glx_thread_message_loop()) {
-    glx_thread_message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &X11VideoRenderer::Paint));
-  }
+  main_message_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &X11VideoRenderer::PaintOnMainThread));
 }
 
-void X11VideoRenderer::Paint() {
+void X11VideoRenderer::PaintOnMainThread() {
+  DCHECK_EQ(main_message_loop_, MessageLoop::current());
+
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
   if (!image_ || !video_frame) {

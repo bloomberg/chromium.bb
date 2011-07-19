@@ -6,23 +6,15 @@
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "ui/gfx/gl/gl_bindings.h"
 
+class MessageLoop;
+
 class GlVideoRenderer : public media::VideoRendererBase {
  public:
-  GlVideoRenderer(Display* display, Window window, MessageLoop* message_loop);
-
-  // This method is called to paint the current video frame to the assigned
-  // window.
-  void Paint();
-
-  static GlVideoRenderer* instance() { return instance_; }
-
-  MessageLoop* glx_thread_message_loop() {
-    return glx_thread_message_loop_;
-  }
+  GlVideoRenderer(Display* display, Window window,
+                  MessageLoop* main_message_loop);
 
  protected:
   // VideoRendererBase implementation.
@@ -35,6 +27,8 @@ class GlVideoRenderer : public media::VideoRendererBase {
   friend class scoped_refptr<GlVideoRenderer>;
   virtual ~GlVideoRenderer();
 
+  void PaintOnMainThread();
+
   Display* display_;
   Window window_;
 
@@ -44,8 +38,7 @@ class GlVideoRenderer : public media::VideoRendererBase {
   // 3 textures, one for each plane.
   GLuint textures_[3];
 
-  MessageLoop* glx_thread_message_loop_;
-  static GlVideoRenderer* instance_;
+  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GlVideoRenderer);
 };

@@ -8,24 +8,14 @@
 #include <X11/Xlib.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 
 class MessageLoop;
 
 class X11VideoRenderer : public media::VideoRendererBase {
  public:
-  X11VideoRenderer(Display* display, Window window, MessageLoop* message_loop);
-
-  // This method is called to paint the current video frame to the assigned
-  // window.
-  void Paint();
-
-  static X11VideoRenderer* instance() { return instance_; }
-
-  MessageLoop* glx_thread_message_loop() {
-    return glx_thread_message_loop_;
-  }
+  X11VideoRenderer(Display* display, Window window,
+                   MessageLoop* main_message_loop);
 
  protected:
   // VideoRendererBase implementation.
@@ -37,6 +27,8 @@ class X11VideoRenderer : public media::VideoRendererBase {
   // Only allow to be deleted by reference counting.
   friend class scoped_refptr<X11VideoRenderer>;
   virtual ~X11VideoRenderer();
+
+  void PaintOnMainThread();
 
   Display* display_;
   Window window_;
@@ -50,8 +42,7 @@ class X11VideoRenderer : public media::VideoRendererBase {
 
   bool use_render_;
 
-  MessageLoop* glx_thread_message_loop_;
-  static X11VideoRenderer* instance_;
+  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(X11VideoRenderer);
 };

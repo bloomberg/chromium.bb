@@ -6,23 +6,21 @@
 
 #include <X11/Xutil.h>
 
+#include "base/message_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
-GlVideoRenderer* GlVideoRenderer::instance_ = NULL;
-
 GlVideoRenderer::GlVideoRenderer(Display* display, Window window,
-                                 MessageLoop* message_loop)
+                                 MessageLoop* main_message_loop)
     : display_(display),
       window_(window),
       gl_context_(NULL),
-      glx_thread_message_loop_(message_loop) {
+      main_message_loop_(main_message_loop) {
 }
 
-GlVideoRenderer::~GlVideoRenderer() {
-}
+GlVideoRenderer::~GlVideoRenderer() {}
 
 void GlVideoRenderer::OnStop(media::FilterCallback* callback) {
   glXMakeCurrent(display_, 0, NULL);
@@ -227,20 +225,17 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   // made current on the main thread.
   glXMakeCurrent(display_, 0, NULL);
 
-  // Save this instance.
-  DCHECK(!instance_);
-  instance_ = this;
   return true;
 }
 
 void GlVideoRenderer::OnFrameAvailable() {
-  if (glx_thread_message_loop()) {
-    glx_thread_message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &GlVideoRenderer::Paint));
-  }
+  main_message_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &GlVideoRenderer::PaintOnMainThread));
 }
 
-void GlVideoRenderer::Paint() {
+void GlVideoRenderer::PaintOnMainThread() {
+  DCHECK_EQ(main_message_loop_, MessageLoop::current());
+
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
 
