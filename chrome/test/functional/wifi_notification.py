@@ -21,7 +21,7 @@ class WifiNotification(chromeos_network.PyNetworkUITest):
   password10 = 'tententent'
   password13 = 'thirteenthirt'
   password26 = 'twentysixtwentysixtwentysi'
-  password64 =
+  password64 = \
     'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl'
 
   def _WifiNotification(self, router_name, password):
@@ -50,9 +50,6 @@ class WifiNotification(chromeos_network.PyNetworkUITest):
     self.assertTrue(result_ssid,
                     'SSID is not found. Notification text is: "%s"'
                     % notification_result)
-
-    # TODO(tturchetto): Uncomment this when bug is fixed. crosbug.com/15176
-    #self.CloseNotification(0)
 
   def testWifiNotificationWEP_Linksys_WRT54G2_wrongpassword(self):
     """wifi disconnect notification-Linksys_WRT54G2.(WEP)-invalid password"""
