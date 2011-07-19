@@ -88,9 +88,9 @@ protected:
 };
 
 // Tests that we handle disagreements among extensions about responses to
-// blocking events by choosing the response from the most-recently-installed
-// extension.
-TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
+// blocking events (redirection) by choosing the response from the
+// most-recently-installed extension.
+TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   std::string extension1_id("1");
   std::string extension2_id("2");
   ExtensionWebRequestEventRouter::RequestFilter filter;
@@ -105,21 +105,22 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
       ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
       ipc_sender_factory.GetWeakPtr());
 
+  GURL redirect_url("about:redirected");
+  GURL not_chosen_redirect_url("about:not_chosen");
+
   net::URLRequest request(GURL("about:blank"), &delegate_);
   request.set_context(context_);
-
   {
     // onBeforeRequest will be dispatched twice initially. The second response -
     // the redirect - should win, since it has a later |install_time|. The
     // redirect will dispatch another pair of onBeforeRequest. There, the first
     // response should win (later |install_time|).
-    GURL redirect_url("about:redirected");
     ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
     // Extension1 response. Arrives first, but ignored due to install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    response->cancel = true;
+    response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
@@ -145,7 +146,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    response->cancel = true;
+    response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
@@ -161,4 +162,124 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedence) {
     EXPECT_EQ(2U, request.url_chain().size());
     EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
   }
+
+  // Now test the same thing but the extensions answer in reverse order.
+  net::URLRequest request2(GURL("about:blank"), &delegate_);
+  request2.set_context(context_);
+  {
+    ExtensionWebRequestEventRouter::EventResponse* response = NULL;
+
+    // Extension2 response. Arrives first, and chosen because of install_time.
+    response = new ExtensionWebRequestEventRouter::EventResponse(
+        extension2_id, base::Time::FromDoubleT(2));
+    response->new_url = redirect_url;
+    ipc_sender_.PushTask(
+        NewRunnableFunction(&EventHandledOnIOThread,
+            &profile_, extension2_id, kEventName, kEventName + "/2",
+            request2.identifier(), response));
+
+    // Extension1 response. Arrives second, but ignored due to install_time.
+    response = new ExtensionWebRequestEventRouter::EventResponse(
+        extension1_id, base::Time::FromDoubleT(1));
+    response->new_url = not_chosen_redirect_url;
+    ipc_sender_.PushTask(
+        NewRunnableFunction(&EventHandledOnIOThread,
+            &profile_, extension1_id, kEventName, kEventName + "/1",
+            request2.identifier(), response));
+
+    // Extension2 response to the redirected URL. Arrives first, and chosen.
+    response = new ExtensionWebRequestEventRouter::EventResponse(
+        extension2_id, base::Time::FromDoubleT(2));
+    ipc_sender_.PushTask(
+        NewRunnableFunction(&EventHandledOnIOThread,
+            &profile_, extension2_id, kEventName, kEventName + "/2",
+            request2.identifier(), response));
+
+    // Extension1 response to the redirected URL. Arrives second, and ignored.
+    response = new ExtensionWebRequestEventRouter::EventResponse(
+        extension1_id, base::Time::FromDoubleT(1));
+    response->new_url = not_chosen_redirect_url;
+    ipc_sender_.PushTask(
+        NewRunnableFunction(&EventHandledOnIOThread,
+            &profile_, extension1_id, kEventName, kEventName + "/1",
+            request2.identifier(), response));
+
+    request2.Start();
+    MessageLoop::current()->Run();
+
+    EXPECT_TRUE(!request2.is_pending());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request2.status().status());
+    EXPECT_EQ(0, request2.status().os_error());
+    EXPECT_EQ(redirect_url, request2.url());
+    EXPECT_EQ(2U, request2.url_chain().size());
+    EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
+  }
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension1_id, kEventName + "/1");
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension2_id, kEventName + "/2");
+}
+
+// Test that a request is canceled if this is requested by any extension
+// regardless whether it is the extension with the highest precedence.
+TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
+  std::string extension1_id("1");
+  std::string extension2_id("2");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  const std::string kEventName(keys::kOnBeforeRequest);
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
+
+  GURL request_url("about:blank");
+  net::URLRequest request(request_url, &delegate_);
+  request.set_context(context_);
+
+  // onBeforeRequest will be dispatched twice. The second response -
+  // the redirect - would win, since it has a later |install_time|, but
+  // the first response takes precedence because cancel >> redirect.
+  GURL redirect_url("about:redirected");
+  ExtensionWebRequestEventRouter::EventResponse* response = NULL;
+
+  // Extension1 response. Arrives first, would be ignored in principle due to
+  // install_time but "cancel" always wins.
+  response = new ExtensionWebRequestEventRouter::EventResponse(
+      extension1_id, base::Time::FromDoubleT(1));
+  response->cancel = true;
+  ipc_sender_.PushTask(
+      NewRunnableFunction(&EventHandledOnIOThread,
+          &profile_, extension1_id, kEventName, kEventName + "/1",
+          request.identifier(), response));
+
+  // Extension2 response. Arrives second, but has higher precedence
+  // due to its later install_time.
+  response = new ExtensionWebRequestEventRouter::EventResponse(
+      extension2_id, base::Time::FromDoubleT(2));
+  response->new_url = redirect_url;
+  ipc_sender_.PushTask(
+      NewRunnableFunction(&EventHandledOnIOThread,
+          &profile_, extension2_id, kEventName, kEventName + "/2",
+          request.identifier(), response));
+
+  request.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(request.is_pending());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(net::ERR_EMPTY_RESPONSE, request.status().os_error());
+  EXPECT_EQ(request_url, request.url());
+  EXPECT_EQ(1U, request.url_chain().size());
+  EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension1_id, kEventName + "/1");
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension2_id, kEventName + "/2");
 }

@@ -921,11 +921,13 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   // response, if any. More recently installed extensions have greater
   // precedence.
   if (response) {
-    if (!blocked_request.chosen_response.get() ||
-        response->extension_install_time >
-            blocked_request.chosen_response->extension_install_time) {
+    bool keep_chosen =
+        blocked_request.chosen_response.get() &&
+        (blocked_request.chosen_response->extension_install_time >=
+             response->extension_install_time ||
+         blocked_request.chosen_response->cancel);
+    if (!keep_chosen)
       blocked_request.chosen_response.reset(response_scoped.release());
-    }
   }
 
   if (num_handlers_blocking == 0) {
