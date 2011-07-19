@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/proxy/interface_id.h"
 
 struct PP_Flash_Menu;
@@ -83,6 +84,21 @@ class ResourceCreationAPI {
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) = 0;
+  virtual PP_Resource CreateKeyboardInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      uint32_t key_code,
+      struct PP_Var character_text) = 0;
+  virtual PP_Resource CreateMouseInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_InputEvent_MouseButton mouse_button,
+      PP_Point mouse_position,
+      int32_t click_count) = 0;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) = 0;
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
@@ -96,6 +112,13 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateVideoDecoder(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) = 0;
+  virtual PP_Resource CreateWheelInputEvent(
+      PP_Instance instance,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_FloatPoint wheel_delta,
+      PP_FloatPoint wheel_ticks,
+      PP_Bool scroll_by_page) = 0;
 
   static const ::pp::proxy::InterfaceID interface_id =
       ::pp::proxy::INTERFACE_ID_RESOURCE_CREATION;

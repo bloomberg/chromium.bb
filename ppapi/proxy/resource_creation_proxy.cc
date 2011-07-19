@@ -27,14 +27,17 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_input_event_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
+using ppapi::InputEventData;
 using ppapi::thunk::ResourceCreationAPI;
 
 namespace pp {
@@ -189,6 +192,57 @@ PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
+PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    uint32_t key_code,
+    struct PP_Var character_text) {
+  if (type != PP_INPUTEVENT_TYPE_RAWKEYDOWN &&
+      type != PP_INPUTEVENT_TYPE_KEYDOWN &&
+      type != PP_INPUTEVENT_TYPE_KEYUP &&
+      type != PP_INPUTEVENT_TYPE_CHAR)
+    return 0;
+  PluginVarTracker* tracker = PluginVarTracker::GetInstance();
+
+  ppapi::InputEventData data;
+  data.event_type = type;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.key_code = key_code;
+  if (character_text.type == PP_VARTYPE_STRING)
+    data.character_text = *tracker->GetExistingString(character_text);
+
+  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
+}
+
+PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    PP_InputEvent_MouseButton mouse_button,
+    PP_Point mouse_position,
+    int32_t click_count) {
+  if (type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
+      type != PP_INPUTEVENT_TYPE_MOUSEUP &&
+      type != PP_INPUTEVENT_TYPE_MOUSEMOVE &&
+      type != PP_INPUTEVENT_TYPE_MOUSEENTER &&
+      type != PP_INPUTEVENT_TYPE_MOUSELEAVE)
+    return 0;
+
+  ppapi::InputEventData data;
+  data.event_type = type;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.mouse_button = mouse_button;
+  data.mouse_position = mouse_position;
+  data.mouse_click_count = click_count;
+
+  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
+}
+
 PP_Resource ResourceCreationProxy::CreateGraphics3D(
     PP_Instance instance,
     PP_Config3D_Dev config,
@@ -247,6 +301,24 @@ PP_Resource ResourceCreationProxy::CreateVideoLayer(
     PP_VideoLayerMode_Dev mode) {
   NOTIMPLEMENTED();
   return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
+    PP_Instance instance,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    PP_FloatPoint wheel_delta,
+    PP_FloatPoint wheel_ticks,
+    PP_Bool scroll_by_page) {
+  ppapi::InputEventData data;
+  data.event_type = PP_INPUTEVENT_TYPE_MOUSEWHEEL;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.wheel_delta = wheel_delta;
+  data.wheel_ticks = wheel_ticks;
+  data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
+
+  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
 }
 
 bool ResourceCreationProxy::Send(IPC::Message* msg) {

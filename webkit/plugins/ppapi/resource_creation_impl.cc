@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 #include "ppapi/c/pp_size.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
@@ -21,6 +22,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
@@ -28,6 +30,9 @@
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
+#include "webkit/plugins/ppapi/var.h"
+
+using ppapi::InputEventData;
 
 namespace webkit {
 namespace ppapi {
@@ -198,6 +203,60 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance pp_instance,
   return PPB_ImageData_Impl::Create(instance_, format, size, init_to_zero);
 }
 
+PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    uint32_t key_code,
+    struct PP_Var character_text) {
+  if (type != PP_INPUTEVENT_TYPE_RAWKEYDOWN &&
+      type != PP_INPUTEVENT_TYPE_KEYDOWN &&
+      type != PP_INPUTEVENT_TYPE_KEYUP &&
+      type != PP_INPUTEVENT_TYPE_CHAR)
+    return 0;
+
+  InputEventData data;
+  data.event_type = type;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.key_code = key_code;
+  if (character_text.type == PP_VARTYPE_STRING) {
+    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(character_text));
+    if (!string_var.get())
+      return 0;
+    data.character_text = string_var->value();
+  }
+
+  return PPB_InputEvent_Impl::Create(instance_, data);
+}
+
+PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    PP_InputEvent_MouseButton mouse_button,
+    PP_Point mouse_position,
+    int32_t click_count) {
+  if (type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
+      type != PP_INPUTEVENT_TYPE_MOUSEUP &&
+      type != PP_INPUTEVENT_TYPE_MOUSEMOVE &&
+      type != PP_INPUTEVENT_TYPE_MOUSEENTER &&
+      type != PP_INPUTEVENT_TYPE_MOUSELEAVE)
+    return 0;
+
+  InputEventData data;
+  data.event_type = type;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.mouse_button = mouse_button;
+  data.mouse_position = mouse_position;
+  data.mouse_click_count = click_count;
+
+  return PPB_InputEvent_Impl::Create(instance_, data);
+}
+
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
                                                   PP_Bool vertical) {
   return ReturnResource(new PPB_Scrollbar_Impl(instance_, PP_ToBool(vertical)));
@@ -231,6 +290,24 @@ PP_Resource ResourceCreationImpl::CreateVideoDecoder(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,
                                                    PP_VideoLayerMode_Dev mode) {
   return PPB_VideoLayer_Impl::Create(instance_, mode);
+}
+
+PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
+    PP_Instance instance,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    PP_FloatPoint wheel_delta,
+    PP_FloatPoint wheel_ticks,
+    PP_Bool scroll_by_page) {
+  InputEventData data;
+  data.event_type = PP_INPUTEVENT_TYPE_MOUSEWHEEL;
+  data.event_time_stamp = time_stamp;
+  data.event_modifiers = modifiers;
+  data.wheel_delta = wheel_delta;
+  data.wheel_ticks = wheel_ticks;
+  data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
+
+  return PPB_InputEvent_Impl::Create(instance_, data);
 }
 
 }  // namespace ppapi

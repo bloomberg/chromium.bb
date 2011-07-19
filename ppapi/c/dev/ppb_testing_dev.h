@@ -9,12 +9,11 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/ppb_input_event.h"
 
 struct PP_Point;
 
-#define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_7
+#define PPB_TESTING_DEV_INTERFACE_0_6 "PPB_Testing(Dev);0.6"
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_6
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin
@@ -69,14 +68,6 @@ struct PPB_Testing_Dev {
   // associated with this plugin instance. Used for detecting leaks. Returns
   // (uint32_t)-1 on failure.
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
-
-  // Creates a keyboard input event resource with the given parameters.
-  PP_Resource (*CreateKeyboardInputEvent)(PP_Instance instance,
-                                          PP_InputEvent_Type type,
-                                          PP_TimeTicks ticks,
-                                          uint32_t modifiers,
-                                          uint32_t key_code,
-                                          struct PP_Var char_text);
 };
 
 #endif  /* PPAPI_C_DEV_PPB_TESTING_DEV_H_ */

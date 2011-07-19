@@ -84,6 +84,21 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateKeyboardInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      uint32_t key_code,
+      struct PP_Var character_text) OVERRIDE;
+  virtual PP_Resource CreateMouseInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_InputEvent_MouseButton mouse_button,
+      PP_Point mouse_position,
+      int32_t click_count) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
@@ -97,6 +112,13 @@ class ResourceCreationProxy : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateVideoDecoder(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) OVERRIDE;
+  virtual PP_Resource CreateWheelInputEvent(
+      PP_Instance instance,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_FloatPoint wheel_delta,
+      PP_FloatPoint wheel_ticks,
+      PP_Bool scroll_by_page) OVERRIDE;
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

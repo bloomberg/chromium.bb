@@ -80,6 +80,21 @@ const PPB_InputEvent g_ppb_input_event_thunk = {
 
 // Mouse -----------------------------------------------------------------------
 
+PP_Resource CreateMouseInputEvent(PP_Instance instance,
+                                  PP_InputEvent_Type type,
+                                  PP_TimeTicks time_stamp,
+                                  uint32_t modifiers,
+                                  PP_InputEvent_MouseButton mouse_button,
+                                  PP_Point mouse_position,
+                                  int32_t click_count) {
+  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateMouseInputEvent(instance, type, time_stamp,
+                                                  modifiers, mouse_button,
+                                                  mouse_position, click_count);
+}
+
 PP_Bool IsMouseInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
@@ -114,6 +129,7 @@ int32_t GetMouseClickCount(PP_Resource mouse_event) {
 }
 
 const PPB_MouseInputEvent g_ppb_mouse_input_event_thunk = {
+  &CreateMouseInputEvent,
   &IsMouseInputEvent,
   &GetMouseButton,
   &GetMousePosition,
@@ -121,6 +137,20 @@ const PPB_MouseInputEvent g_ppb_mouse_input_event_thunk = {
 };
 
 // Wheel -----------------------------------------------------------------------
+
+PP_Resource CreateWheelInputEvent(PP_Instance instance,
+                                  PP_TimeTicks time_stamp,
+                                  uint32_t modifiers,
+                                  PP_FloatPoint wheel_delta,
+                                  PP_FloatPoint wheel_ticks,
+                                  PP_Bool scroll_by_page) {
+  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateWheelInputEvent(instance, time_stamp,
+                                                  modifiers, wheel_delta,
+                                                  wheel_ticks, scroll_by_page);
+}
 
 PP_Bool IsWheelInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
@@ -151,6 +181,7 @@ PP_Bool GetWheelScrollByPage(PP_Resource wheel_event) {
 }
 
 const PPB_WheelInputEvent g_ppb_wheel_input_event_thunk = {
+  &CreateWheelInputEvent,
   &IsWheelInputEvent,
   &GetWheelDelta,
   &GetWheelTicks,
@@ -158,6 +189,20 @@ const PPB_WheelInputEvent g_ppb_wheel_input_event_thunk = {
 };
 
 // Keyboard --------------------------------------------------------------------
+
+PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     uint32_t key_code,
+                                     struct PP_Var character_text) {
+  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateKeyboardInputEvent(instance, type, time_stamp,
+                                                     modifiers, key_code,
+                                                     character_text);
+}
 
 PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
@@ -183,6 +228,7 @@ PP_Var GetCharacterText(PP_Resource character_event) {
 }
 
 const PPB_KeyboardInputEvent g_ppb_keyboard_input_event_thunk = {
+  &CreateKeyboardInputEvent,
   &IsKeyboardInputEvent,
   &GetKeyCode,
   &GetCharacterText

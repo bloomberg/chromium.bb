@@ -348,6 +348,20 @@ struct PPB_InputEvent {
 
 struct PPB_MouseInputEvent {
   /**
+   * Creates a mouse input event with the given parameters. Normally you will
+   * get a mouse event passed through the HandleInputEvent and will not need
+   * to create them, but some applications may want to create their own for
+   * internal use. The type must be one of the mouse event types.
+   */
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_InputEvent_Type type,
+                        PP_TimeTicks time_stamp,
+                        uint32_t modifiers,
+                        PP_InputEvent_MouseButton mouse_button,
+                        struct PP_Point mouse_position,
+                        int32_t click_count);
+
+  /**
    * Determines if a resource is a mouse event.
    *
    * @return PP_TRUE if the given resource is a valid mouse input event.
@@ -379,6 +393,19 @@ struct PPB_MouseInputEvent {
 #define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1
 
 struct PPB_WheelInputEvent {
+  /**
+   * Creates a wheel input event with the given parameters. Normally you will
+   * get a wheel event passed through the HandleInputEvent and will not need
+   * to create them, but some applications may want to create their own for
+   * internal use.
+   */
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_TimeTicks time_stamp,
+                        uint32_t modifiers,
+                        struct PP_FloatPoint wheel_delta,
+                        struct PP_FloatPoint wheel_ticks,
+                        PP_Bool scroll_by_page);
+
   /**
    * Determines if a resource is a wheel event.
    *
@@ -441,6 +468,19 @@ struct PPB_WheelInputEvent {
     PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1
 
 struct PPB_KeyboardInputEvent {
+  /**
+   * Creates a keyboard input event with the given parameters. Normally you
+   * will get a keyboard event passed through the HandleInputEvent and will not
+   * need to create them, but some applications may want to create their own
+   * for internal use. The type must be one of the keyboard event types.
+   */
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_InputEvent_Type type,
+                        PP_TimeTicks time_stamp,
+                        uint32_t modifiers,
+                        uint32_t key_code,
+                        struct PP_Var character_text);
+
   /**
    * Determines if a resource is a keyboard event.
    *

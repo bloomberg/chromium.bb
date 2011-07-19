@@ -54,10 +54,6 @@ interface PPB_Core {
    * @return A <code>PP_TimeTicks</code> containing the "tick time" according
    * to the browser.
    */
-
-// TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
-// This currently does change with wall clock time, but will be fixed in
-// a future release.
   PP_TimeTicks GetTimeTicks();
 
   /**

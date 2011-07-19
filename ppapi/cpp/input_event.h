@@ -5,12 +5,15 @@
 #ifndef PPAPI_CPP_INPUT_EVENT_H_
 #define PPAPI_CPP_INPUT_EVENT_H_
 
+#include <string>
+
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
 
 class FloatPoint;
+class Instance;
 class Point;
 class Var;
 
@@ -77,6 +80,15 @@ class MouseInputEvent : public InputEvent {
   /// event, the mouse object will be is_null().
   explicit MouseInputEvent(const InputEvent& event);
 
+  /// Manually constructs a mouse event from the given parameters.
+  MouseInputEvent(Instance* instance,
+                  PP_InputEvent_Type type,
+                  PP_TimeTicks time_stamp,
+                  uint32_t modifiers,
+                  PP_InputEvent_MouseButton mouse_button,
+                  const Point& mouse_position,
+                  int32_t click_count);
+
   /// Returns the mouse position for a mouse input event.
   ///
   /// @return The mouse button associated with mouse down and up events. This
@@ -105,6 +117,14 @@ class WheelInputEvent : public InputEvent {
   /// event. If the given event is itself is_null() or is not a wheel input
   /// event, the wheel object will be is_null().
   explicit WheelInputEvent(const InputEvent& event);
+
+  /// Constructs a wheel input even from the given parameters.
+  WheelInputEvent(Instance* instance,
+                  PP_TimeTicks time_stamp,
+                  uint32_t modifiers,
+                  const FloatPoint& wheel_delta,
+                  const FloatPoint& wheel_ticks,
+                  bool scroll_by_page);
 
   /// Indicates the amount vertically and horizontally the user has requested
   /// to scroll by with their mouse wheel. A scroll down or to the right (where
@@ -162,6 +182,14 @@ class KeyboardInputEvent : public InputEvent {
   /// event. If the given event is itself is_null() or is not a keyboard input
   /// event, the keybaord object will be is_null().
   explicit KeyboardInputEvent(const InputEvent& event);
+
+  /// Constructs a keyboard input even from the given parameters.
+  KeyboardInputEvent(Instance* instance,
+                     PP_InputEvent_Type type,
+                     PP_TimeTicks time_stamp,
+                     uint32_t modifiers,
+                     uint32_t key_code,
+                     const Var& character_text);
 
   /// Returns the DOM |keyCode| field for the keyboard event.
   /// Chrome populates this with the Windows-style Virtual Key code of the key.

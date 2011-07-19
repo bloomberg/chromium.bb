@@ -39,14 +39,13 @@ std::string TestScrollbar::TestHandleEvent() {
   scrollbar_.SetDocumentSize(10000);
 
   pp::Core* core = pp::Module::Get()->core();
-  PP_Resource input_event = testing_interface_->CreateKeyboardInputEvent(
-      instance_->pp_instance(), PP_INPUTEVENT_TYPE_KEYDOWN,
+  pp::KeyboardInputEvent input_event(
+      instance_, PP_INPUTEVENT_TYPE_KEYDOWN,
       core->GetTimeTicks(),
       0,  // Modifier.
       0x28,  // Key code = VKEY_DOWN.
-      PP_MakeUndefined());
-  scrollbar_.HandleEvent(pp::InputEvent(input_event));
-  core->ReleaseResource(input_event);
+      pp::Var());
+  scrollbar_.HandleEvent(input_event);
 
   return scrollbar_value_changed_ ?
       "" : "Didn't get callback for scrollbar value change";

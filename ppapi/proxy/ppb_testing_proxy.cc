@@ -9,9 +9,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
-#include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_input_event_proxy.h"
 
 namespace pp {
 namespace proxy {
@@ -70,25 +68,6 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
   dispatcher->Send(new PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance(
       INTERFACE_ID_PPB_TESTING, instance_id, &result));
   return result;
-}
-
-PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
-                                     PP_InputEvent_Type type,
-                                     PP_TimeTicks ticks,
-                                     uint32_t modifiers,
-                                     uint32_t key_code,
-                                     PP_Var char_text) {
-  PluginVarTracker* tracker = PluginVarTracker::GetInstance();
-
-  ppapi::InputEventData data;
-  data.event_type = type;
-  data.event_time_stamp = ticks;
-  data.event_modifiers = modifiers;
-  data.key_code = key_code;
-  if (char_text.type == PP_VARTYPE_STRING)
-    data.character_text = *tracker->GetExistingString(char_text);
-
-  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
 }
 
 const PPB_Testing_Dev testing_interface = {
