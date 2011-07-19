@@ -51,7 +51,7 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
 // in chrome/common/chrome_constants.cc as well, or else existing users won't
 // download the new model.
 const char ClientSideDetectionService::kClientModelUrl[] =
-    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v2.pb";
+    "https://ssl.gstatic.com/safebrowsing/csd/client_model_v3.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
   scoped_ptr<ClientReportPhishingRequestCallback> callback;
