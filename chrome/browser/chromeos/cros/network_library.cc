@@ -4703,6 +4703,10 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
         DeleteNetwork(network);
       }
     }
+    // If the last network has disappeared, nothing else will
+    // have notified observers, so do it now.
+    if (services->empty())
+      NotifyNetworkManagerChanged(true);  // Forced update
   }
 
   // Request updates for watched networks. Does not affect network lists.
