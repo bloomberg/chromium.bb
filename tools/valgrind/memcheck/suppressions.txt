@@ -4866,6 +4866,24 @@
    fun:_ZN5views4View19RemoveAllChildViewsEb
    fun:_ZN5views8internal8RootViewD0Ev
 }
+{
+   bug_89677
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE17NewRunnableMethodIMS0_FvyEyEEP14CancelableTaskT_RKT0_
+   fun:_ZN13ThreadWatcher15PostPingMessageEv
+   fun:_Z16DispatchToMethodI13ThreadWatcherMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
+   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN12_GLOBAL__N_118TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
