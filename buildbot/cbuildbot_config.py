@@ -340,22 +340,26 @@ add_config('x86-generic-gcc_46', [full, {
   'board' : 'x86-generic',
   'latest_toolchain' : True,
   'gcc_46' : True,
+  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2-seaboard-gcc_46', [arm, full, {
   'board' : 'tegra2_seaboard',
   'latest_toolchain' : True,
   'gcc_46' : True,
+  'prebuilts' : False,
 }])
 
 add_config('x86-generic-toolchain', [full, {
   'board' : 'x86-generic',
   'latest_toolchain' : True,
+  'prebuilts' : False,
 }])
 
 add_config('arm-tegra2-seaboard-toolchain', [arm, full, {
   'board' : 'tegra2_seaboard',
   'latest_toolchain' : True,
+  'prebuilts' : False,
 }])
 
 #
