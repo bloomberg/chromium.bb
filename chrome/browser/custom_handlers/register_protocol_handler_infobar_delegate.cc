@@ -39,10 +39,19 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
   return !old_handler.IsEmpty() ?
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
           handler_.title(), UTF8ToUTF16(handler_.url().host()),
-          UTF8ToUTF16(handler_.protocol()), old_handler.title()) :
+          GetProtocolName(handler_), old_handler.title()) :
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
           handler_.title(), UTF8ToUTF16(handler_.url().host()),
-          UTF8ToUTF16(handler_.protocol()));
+          GetProtocolName(handler_));
+}
+
+string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
+    const ProtocolHandler& handler) const {
+  if (handler.protocol() == "mailto")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
+  if (handler.protocol() == "webcal")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
+  return UTF8ToUTF16(handler.protocol());
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(

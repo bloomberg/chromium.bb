@@ -33,6 +33,8 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
  private:
+  // Returns a user-friendly name for the protocol of this protocol handler.
+  string16 GetProtocolName(const ProtocolHandler& handler) const;
   TabContents* tab_contents_;
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler handler_;
