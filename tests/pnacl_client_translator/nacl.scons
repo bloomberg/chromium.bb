@@ -40,28 +40,25 @@ def ArchFromTargetPlatform():
 def MappingForStagedFile(f):
   return (f.replace('${STAGING_DIR}/', ''), f)
 
-def ReplicateAndMap(files, dash_free_isa, replicates, map_files):
+def ReplicateAndMap(files, arch, replicates, map_files):
   # Replicate to STAGING (files can be copied from there).
   replicates += env.Replicate('${STAGING_DIR}/pnacl_support/%s' %
-                              dash_free_isa,
+                              arch,
                               files)
   # Above, we have the full path w/ variables like ${TARGET_ROOT}.
   # Here, we need an "evaluated" string. Hack that w/ basename...
   basefiles = [ os.path.basename(f) for f in files ]
   # Set up file mapping for test runner:
   map_files += [MappingForStagedFile('${STAGING_DIR}/pnacl_support/%s/%s' %
-                                     (dash_free_isa, f))
+                                     (arch, f))
                 for f in basefiles]
 
+# TODO(jvoung): Try using env.Publish()
 def LayoutTranslatorBinariesOnServer():
   ''' Lay out the translator support files in a way that imitates
       any old webserver hosting pnacl bitcode for all 3 arches.
       Simple server directory layout for each arch-specific-support file:
          ./pnacl_support/${arch}/${file}
-
-      Non-arch specific files:
-         ./pnacl_support/pnacl_coordinator.js
-         etc...
 
       Location of test-page, bitcode, etc.:
          ./mypage.html
@@ -82,14 +79,12 @@ def LayoutTranslatorBinariesOnServer():
                      for x in ['crt1.o', 'libcrt_platform.a']]
 
   arch = ArchFromTargetPlatform()
-  dash_free_arch = DashFreeArch(arch)
-  ReplicateAndMap(sdk_native_libs, dash_free_arch, replicates, map_files)
+  ReplicateAndMap(sdk_native_libs, arch, replicates, map_files)
 
   toolchain_dir = '${PNACL_ROOT}'
   for arch in ['arm', 'x86-32', 'x86-64']:
-    dash_free_arch = DashFreeArch(arch)
     toolchain_bin = '%s/tools-sb/%s/srpc/bin/' % (toolchain_dir,
-                                                  dash_free_arch)
+                                                  DashFreeArch(arch))
     toolchain_binaries = [toolchain_bin + 'llc', toolchain_bin + 'ld']
     toolchain_lib_dir = '%s/lib-%s/' % (toolchain_dir, arch)
     toolchain_native_libs = [(toolchain_lib_dir + x)
@@ -97,20 +92,10 @@ def LayoutTranslatorBinariesOnServer():
 
     toolchain_local_files = toolchain_native_libs + toolchain_binaries
     ReplicateAndMap(toolchain_local_files,
-                    dash_free_arch,
+                    arch,
                     replicates,
                     map_files)
 
-  # Do the same for pnacl_coordinator, etc.
-  # TODO(jvoung): we may want to move these to the toolchain directory.
-  # We could also get rid of these now that we are off of pnacl_coordinator.js
-  other_support_files = ['pnacl_coordinator.js',
-                         'llc_manifest.nmf',
-                         'ld_manifest.nmf']
-  replicates += env.Replicate('${STAGING_DIR}/pnacl_support',
-                other_support_files)
-  map_files += [MappingForStagedFile('${STAGING_DIR}/pnacl_support/%s' % f)
-                for f in other_support_files]
   # Stage the nacltest.js too, so that you can run this test by starting up
   # your own http server, your own browser, and visit the staging directory.
   replicates += env.Replicate('${STAGING_DIR}',
@@ -145,60 +130,46 @@ def StripArchFromLDCommand(env):
 bitcode_env = StripArchFromLDCommand(env)
 
 # Specify the object file to prevent junk from getting left over
-# in source directory (tests/srpc_hw/). SCons will default to point "-o"
-# to the source directory if it is an absolute directory.
+# in source directory. SCons will default to point "-o" to the source
+# directory if it is an absolute directory.
+test_example_obj = bitcode_env.ComponentObject(
+    'pnacl_test_example_obj',
+    '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
 
-pnacl_srpc_hello_world_obj = bitcode_env.ComponentObject(
-    'pnacl_srpc_hw', '${SCONSTRUCT_DIR}/tests/srpc_hw/srpc_hw.c')
-
-pnacl_srpc_hello_world_pexe = bitcode_env.ComponentProgram(
-    'pnacl_srpc_hw.pexe',
-    [ pnacl_srpc_hello_world_obj ],
-    EXTRA_LIBS=['srpc',
+test_example_pexe = bitcode_env.ComponentProgram(
+    'pnacl_test_example.pexe',
+    [ test_example_obj ],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                'ppapi_test_lib',
                 'platform',
+                'pthread',
                 'gio',
-                'imc',
-                'imc_syscalls',
-                'pthread'])
+                ])
 
 # Page independent support assets.
 (map_files_toolchain, replicates_toolchain) = LayoutTranslatorBinariesOnServer()
 
 # Assets for the page.
 (map_files_page, replicates_page) = LayoutPageAssetsOnServer(
-    [pnacl_srpc_hello_world_pexe,
-     'pnacl_srpc_hw.html',
-     'pnacl_srpc_hw.nmf',
-     'pnacl_srpc_hw2.html'])
+    [test_example_pexe,
+     'pnacl_test_example.nmf',
+     'pnacl_test_example.html',
+     ])
+
+# Grab test routines.
+borrowed_file = '${STAGING_DIR}/ppapi_test_example.js',
 
 node = bitcode_env.PPAPIBrowserTester(
-    'pnacl_srpc_hw.out',
-    url='pnacl_srpc_hw.html',
-    files=[], # all of them should be in map_files
-    map_files=map_files_toolchain + map_files_page,
-    args=['--enable_experimental_js'])
+    'pnacl_test_example.out',
+    url='pnacl_test_example.html',
+    files=[borrowed_file], # the rest are in "map_files"
+    map_files=map_files_toolchain + map_files_page)
 
 # Make sure the files are actually staged when this test runs.
 env.Depends(node, replicates_toolchain + replicates_page)
 
 bitcode_env.AddNodeToTestSuite(node,
                                ['chrome_browser_tests'],
-                               'run_pnacl_srpc_hw_browser_test',
-                               is_broken=(
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
-
-node = bitcode_env.PPAPIBrowserTester(
-    'pnacl_srpc_hw2.out',
-    url='pnacl_srpc_hw2.html',
-    files=[], # all of them should be in map_files
-    map_files=map_files_toolchain + map_files_page,
-    args=['--enable_experimental_js'])
-
-# Make sure the files are actually staged when this test runs.
-env.Depends(node, replicates_toolchain + replicates_page)
-
-bitcode_env.AddNodeToTestSuite(node,
-                               ['chrome_browser_tests'],
-                               'run_pnacl_srpc_hw2_browser_test',
+                               'run_pnacl_example_browser_test',
                                is_broken=(
                                    bitcode_env.PPAPIBrowserTesterIsBroken()))

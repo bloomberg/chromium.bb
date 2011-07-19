@@ -1,7 +1,0 @@
-{
-  "program": {
-    "x86-32": {"url": "x8632/llc"},
-    "x86-64": {"url": "x8664/llc"},
-    "arm":    {"url": "arm/llc"}
-  }
-}
