@@ -210,6 +210,8 @@
         'common/section_util_win.cc',
         'common/section_util_win.h',
         'common/security_style.h',
+        'common/sensors.h',
+        'common/sensors_listener.h',
         'common/serialized_script_value.cc',
         'common/serialized_script_value.h',
         'common/set_process_title.cc',
