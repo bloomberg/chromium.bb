@@ -353,6 +353,30 @@
     },
     {
       "api_calls": [
+        "chrome.extension.isAllowedIncognitoAccess"
+      ],
+      "description": "Sample extension which demonstrates how to access a preference.",
+      "features": [
+        "browser_action",
+        "contentSettings",
+        "experimental",
+        "popup"
+      ],
+      "icon": null,
+      "id": "7da105f28e200d42510aff3591dfa5aeb0b82605",
+      "name": "Block\/allow third-party cookies API example extension",
+      "path": "examples\/api\/preferences\/allowThirdPartyCookies\/",
+      "protocols": [],
+      "search_string": "BLOCK\/ALLOW THIRD-PARTY COOKIES API EXAMPLE EXTENSION SAMPLE EXTENSION WHICH DEMONSTRATES HOW TO ACCESS A PREFERENCE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS",
+      "source_files": [
+        "manifest.json",
+        "popup.html"
+      ],
+      "source_hash": "67648790a6ee68e071627e870868d5582e1ef2b5",
+      "zip_path": "examples\/api\/preferences\/allowThirdPartyCookies.zip"
+    },
+    {
+      "api_calls": [
         "chrome.experimental.devtools.audits.addCategory",
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
@@ -543,7 +567,10 @@
       "zip_path": "examples\/api\/i18n\/cld.zip"
     },
     {
-      "api_calls": [],
+      "api_calls": [
+        "chrome.extension.onRequest",
+        "chrome.extension.sendRequest"
+      ],
       "description": "Demonstrates making cross domain requests from a content script by putting Twitter trends on Google News.",
       "features": [],
       "icon": "sample-128.png",
@@ -553,12 +580,13 @@
       "protocols": [
         "https:\/\/"
       ],
-      "search_string": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS.",
+      "search_string": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS. CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
       "source_files": [
+        "background.html",
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "749314ae399dfc5f6759358b384bc55997fed455",
+      "source_hash": "afb208775dc8842def6ade41a83957ccffa7be1c",
       "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {
@@ -702,7 +730,7 @@
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "2919c196fec8721c240b529b7763c36f7330d986",
+      "source_hash": "e3514a32b04876d79e64f31ffe7beb4bbae98d33",
       "zip_path": "examples\/api\/preferences\/enableReferrer.zip"
     },
     {

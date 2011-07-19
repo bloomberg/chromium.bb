@@ -2,7 +2,7 @@
 <html>
 <head>
   <script>
-var pref = chrome.experimental.contentSettings.global.referrersEnabled;
+var pref = chrome.experimental.contentSettings.global.thirdPartyCookiesAllowed;
 
 /**
  * Returns whether the |levelOfControl| means that the extension can change the
@@ -113,7 +113,7 @@ function setUseSeparateIncognitoSettings(value) {
 <body onload="init()">
 
 <div style="width: 300px">
-<input type="checkbox" onclick="setPrefValue(this.checked)" id="regularValue" /> Enable referrers
+<input type="checkbox" onclick="setPrefValue(this.checked)" id="regularValue" /> Allow third-party sites to set cookies
 
 <div id="incognito" style="display:none">
 <input type="checkbox" onclick="setUseSeparateIncognitoSettings(this.checked)" id="useSeparateIncognitoSettings" /> Use separate setting for incognito mode:
