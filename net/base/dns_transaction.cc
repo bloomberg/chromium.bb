@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/rand_util.h"
+#include "base/values.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_query.h"
 #include "net/base/dns_response.h"
+#include "net/base/dns_util.h"
 #include "net/base/rand_callback.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
@@ -20,6 +22,17 @@ namespace {
 // Retry timeouts.
 const int kTimeoutsMs[] = {3000, 5000, 11000};
 const int kMaxAttempts = arraysize(kTimeoutsMs);
+
+// Returns the string representation of an IPAddressNumber.
+std::string IPAddressToString(const IPAddressNumber& ip_address) {
+  IPEndPoint ip_endpoint(ip_address, 0);
+  struct sockaddr_storage addr;
+  size_t addr_len = sizeof(addr);
+  struct sockaddr* sockaddr = reinterpret_cast<struct sockaddr*>(&addr);
+  if (!ip_endpoint.ToSockAddr(sockaddr, &addr_len))
+    return "";
+  return NetAddressToString(sockaddr, addr_len);
+}
 
 }
 
@@ -52,11 +65,85 @@ void DnsTransaction::Delegate::Detach(DnsTransaction* transaction) {
   registered_transactions_.erase(transaction);
 }
 
+namespace {
+
+class DnsTransactionStartParameters : public NetLog::EventParameters {
+ public:
+  DnsTransactionStartParameters(const IPEndPoint& dns_server,
+                                const DnsTransaction::Key& key,
+                                const NetLog::Source& source)
+      : dns_server_(dns_server), key_(key), source_(source) {}
+
+  virtual Value* ToValue() const {
+    std::string hostname;
+    DnsResponseBuffer(
+        reinterpret_cast<const uint8*>(key_.first.c_str()), key_.first.size()).
+            DNSName(&hostname);
+
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("dns_server", dns_server_.ToString());
+    dict->SetString("hostname", hostname);
+    dict->SetInteger("query_type", key_.second);
+    dict->Set("source_dependency", source_.ToValue());
+    return dict;
+  }
+
+ private:
+  const IPEndPoint dns_server_;
+  const DnsTransaction::Key key_;
+  const NetLog::Source source_;
+};
+
+class DnsTransactionFinishParameters : public NetLog::EventParameters {
+ public:
+  DnsTransactionFinishParameters(int net_error,
+                                 const IPAddressList& ip_address_list)
+      : net_error_(net_error), ip_address_list_(ip_address_list) {}
+
+  virtual Value* ToValue() const {
+    ListValue* list = new ListValue();
+    for (IPAddressList::const_iterator it = ip_address_list_.begin();
+         it != ip_address_list_.end(); ++it)
+      list->Append(Value::CreateStringValue(IPAddressToString(*it)));
+
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetInteger("net_error", net_error_);
+    dict->Set("address_list", list);
+    return dict;
+  }
+
+ private:
+  const int net_error_;
+  const IPAddressList ip_address_list_;
+};
+
+class DnsTransactionRetryParameters : public NetLog::EventParameters {
+ public:
+  DnsTransactionRetryParameters(int attempt_number,
+                                const NetLog::Source& source)
+      : attempt_number_(attempt_number), source_(source) {}
+
+  virtual Value* ToValue() const {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetInteger("attempt_number", attempt_number_);
+    dict->Set("source_dependency", source_.ToValue());
+    return dict;
+  }
+
+ private:
+  const int attempt_number_;
+  const NetLog::Source source_;
+};
+
+}  // namespace
+
 DnsTransaction::DnsTransaction(const IPEndPoint& dns_server,
                                const std::string& dns_name,
                                uint16 query_type,
                                const RandIntCallback& rand_int,
-                               ClientSocketFactory* socket_factory)
+                               ClientSocketFactory* socket_factory,
+                               const BoundNetLog& source_net_log,
+                               NetLog* net_log)
     : dns_server_(dns_server),
       key_(dns_name, query_type),
       delegate_(NULL),
@@ -66,10 +153,16 @@ DnsTransaction::DnsTransaction(const IPEndPoint& dns_server,
       socket_factory_(socket_factory ? socket_factory :
           ClientSocketFactory::GetDefaultFactory()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(this, &DnsTransaction::OnIOComplete)) {
+          io_callback_(this, &DnsTransaction::OnIOComplete)),
+      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_DNS_TRANSACTION)) {
   DCHECK(!rand_int.is_null());
   for (size_t i = 0; i < arraysize(kTimeoutsMs); ++i)
     timeouts_ms_.push_back(base::TimeDelta::FromMilliseconds(kTimeoutsMs[i]));
+  net_log_.BeginEvent(
+      NetLog::TYPE_DNS_TRANSACTION,
+      make_scoped_refptr(
+          new DnsTransactionStartParameters(dns_server_, key_,
+                                            source_net_log.source())));
 }
 
 DnsTransaction::~DnsTransaction() {
@@ -128,6 +221,10 @@ int DnsTransaction::DoLoop(int result) {
 
 void DnsTransaction::DoCallback(int result) {
   DCHECK_NE(result, ERR_IO_PENDING);
+  net_log_.EndEvent(
+      NetLog::TYPE_DNS_TRANSACTION,
+      make_scoped_refptr(
+          new DnsTransactionFinishParameters(result, ip_addresses_)));
   if (delegate_)
     delegate_->OnTransactionComplete(result, this, ip_addresses_);
 }
@@ -151,7 +248,14 @@ int DnsTransaction::DoConnect() {
       DatagramSocket::RANDOM_BIND,
       base::Bind(&base::RandInt),
       NULL,
-      NetLog::Source()));
+      net_log_.source()));
+
+  net_log_.AddEvent(
+      NetLog::TYPE_DNS_TRANSACTION_ATTEMPT_STARTED,
+      make_scoped_refptr(
+          new DnsTransactionRetryParameters(attempts_,
+                                            socket_->NetLog().source())));
+
   return socket_->Connect(dns_server_);
 }
 

@@ -23,6 +23,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_api.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
@@ -71,7 +72,9 @@ class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
                  const std::string& dns_name,
                  uint16 query_type,
                  const RandIntCallback& rand_int,
-                 ClientSocketFactory* socket_factory);
+                 ClientSocketFactory* socket_factory,
+                 const BoundNetLog& source_net_log,
+                 NetLog* net_log);
   ~DnsTransaction();
   void SetDelegate(Delegate* delegate);
   const Key& key() const { return key_; }
@@ -134,6 +137,8 @@ class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   ClientSocketFactory* socket_factory_;
   base::OneShotTimer<DnsTransaction> timer_;
   CompletionCallbackImpl<DnsTransaction> io_callback_;
+
+  BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTransaction);
 };

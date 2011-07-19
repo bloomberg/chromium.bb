@@ -77,7 +77,8 @@ TEST(DnsTransactionTest, NormalQueryResponseTest) {
   bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
   ASSERT_TRUE(rv0);
 
-  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory);
+  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory,
+                   BoundNetLog(), NULL);
 
   TestDelegate delegate;
   t.SetDelegate(&delegate);
@@ -127,7 +128,8 @@ TEST(DnsTransactionTest, MismatchedQueryResponseTest) {
   bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
   ASSERT_TRUE(rv0);
 
-  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory);
+  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory,
+                   BoundNetLog(), NULL);
 
   TestDelegate delegate;
   t.SetDelegate(&delegate);
@@ -176,7 +178,8 @@ TEST(DnsTransactionTest, FirstTimeoutTest) {
   bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
   ASSERT_TRUE(rv0);
 
-  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory);
+  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory,
+                   BoundNetLog(), NULL);
 
   TestDelegate delegate;
   t.SetDelegate(&delegate);
@@ -243,7 +246,8 @@ TEST(DnsTransactionTest, SecondTimeoutTest) {
   bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
   ASSERT_TRUE(rv0);
 
-  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory);
+  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory,
+                   BoundNetLog(), NULL);
 
   TestDelegate delegate;
   t.SetDelegate(&delegate);
@@ -306,7 +310,8 @@ TEST(DnsTransactionTest, ThirdTimeoutTest) {
   bool rv0 = CreateDnsAddress(kDnsIp, kDnsPort, &dns_server);
   ASSERT_TRUE(rv0);
 
-  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory);
+  DnsTransaction t(dns_server, t1_dns_name, kT1Qtype, rand_int_cb, &factory,
+                   BoundNetLog(), NULL);
 
   TestDelegate delegate;
   t.SetDelegate(&delegate);
