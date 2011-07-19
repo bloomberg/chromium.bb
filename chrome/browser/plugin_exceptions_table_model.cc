@@ -165,7 +165,7 @@ void PluginExceptionsTableModel::LoadSettings() {
       SettingsEntry entry = {
         setting_it->a,
         group_id,
-        setting_it->b,
+        setting_it->c,
         false
       };
       settings_.push_back(entry);
@@ -176,7 +176,7 @@ void PluginExceptionsTableModel::LoadSettings() {
       SettingsEntry entry = {
         setting_it->a,
         group_id,
-        setting_it->b,
+        setting_it->c,
         true
       };
       settings_.push_back(entry);

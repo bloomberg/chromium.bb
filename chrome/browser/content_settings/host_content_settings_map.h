@@ -42,9 +42,11 @@ class HostContentSettingsMap
       public NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
-  typedef Tuple3<ContentSettingsPattern, ContentSetting, std::string>
-      PatternSettingSourceTriple;
-  typedef std::vector<PatternSettingSourceTriple> SettingsForOneType;
+  typedef Tuple4<ContentSettingsPattern,
+                 ContentSettingsPattern,
+                 ContentSetting,
+                 std::string> PatternSettingSourceTuple;
+  typedef std::vector<PatternSettingSourceTuple> SettingsForOneType;
 
   HostContentSettingsMap(PrefService* prefs,
                          ExtensionService* extension_service,

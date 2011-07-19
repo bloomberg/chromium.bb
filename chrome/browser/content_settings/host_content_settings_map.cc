@@ -312,21 +312,22 @@ void HostContentSettingsMap::GetSettingsForOneType(
         content_type, resource_identifier, &rules);
 
     // Sort rules according to their primary pattern string using a map.
-    std::map<std::string, PatternSettingSourceTriple> settings_map;
+    std::map<std::string, PatternSettingSourceTuple> settings_map;
     for (Rules::iterator rule = rules.begin();
          rule != rules.end();
          ++rule) {
       // We do not support pattern pairs in the UI, so we only display the
       // primary pattern.
       std::string sort_key = rule->primary_pattern.ToString();
-      settings_map[sort_key] = PatternSettingSourceTriple(
+      settings_map[sort_key] = PatternSettingSourceTuple(
           rule->primary_pattern,
+          rule->secondary_pattern,
           rule->content_setting,
           kProviderNames[i]);
     }
 
     // TODO(markusheintz): Only the rules that are applied should be added.
-    for (std::map<std::string, PatternSettingSourceTriple>::iterator i(
+    for (std::map<std::string, PatternSettingSourceTuple>::iterator i(
              settings_map.begin());
          i != settings_map.end();
          ++i) {

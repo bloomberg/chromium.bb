@@ -526,7 +526,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
     exceptions.Append(
-        GetExceptionForPage(entries[i].a, entries[i].b, entries[i].c));
+        GetExceptionForPage(entries[i].a, entries[i].c, entries[i].d));
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
@@ -552,8 +552,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   ListValue otr_exceptions;
   for (size_t i = 0; i < otr_entries.size(); ++i) {
     otr_exceptions.Append(GetExceptionForPage(otr_entries[i].a,
-                                              otr_entries[i].b,
-                                              otr_entries[i].c));
+                                              otr_entries[i].c,
+                                              otr_entries[i].d));
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
