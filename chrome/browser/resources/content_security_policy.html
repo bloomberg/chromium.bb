@@ -1,0 +1,18 @@
+<!-- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
+     TODO(tsepez) rename when Content-security-policy is done.
+     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
+     TODO(tsepez) chrome-extension: permits the ChromeVox screen reader
+         extension to function on these pages.  Remove it when the extension
+         is updated to stop injecting script into the pages.
+-->
+<meta
+  http-equiv="X-WebKit-CSP"
+  content="object-src 'none';
+           script-src chrome://resources
+                      chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
+                      'self'
+                      'unsafe-eval'">

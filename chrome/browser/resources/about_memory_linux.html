@@ -6,13 +6,8 @@ about:memory template page
 <html id="t">
 <head>
   <title>About Memory</title>
-  <meta http-equiv="X-WebKit-CSP"
-        content="object-src 'none';
-                 script-src chrome://resources
-                            chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
-                            'self' 'unsafe-eval'">
+  <include src="content_security_policy.html"/>
   <link rel="stylesheet" href="shared/css/about_memory.css">
-
 <style>
 body {
   font-family: Arial, Helvetica, sans-serif;

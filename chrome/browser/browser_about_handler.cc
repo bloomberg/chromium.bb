@@ -408,11 +408,9 @@ void AppendHeader(std::string* output, int refresh,
     output->append(EscapeForHTML(unescaped_title));
     output->append("</title>\n");
   }
-  output->append(
-      "<meta charset=\"utf-8\">\n<meta http-equiv=\"X-WebKit-CSP\" "
-      "content=\"object-src 'none'; "
-      "script-src chrome-extension://mndnfokpggljbaajbnioimlmbfngpief "
-      " 'self' 'unsafe-eval'\">\n");
+  output->append("<meta charset=\"utf-8\">\n");
+  output->append(ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_CONTENT_SECURITY_POLICY_HTML).as_string());
   if (refresh > 0) {
     output->append("<meta http-equiv=\"refresh\" content=\"");
     output->append(base::IntToString(refresh));

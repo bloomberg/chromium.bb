@@ -2,15 +2,7 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
-     TODO(tsepez) rename when Content-security-policy is done.
-     TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
--->
-<meta http-equiv="X-WebKit-CSP"
-      content="object-src 'none';
-               script-src chrome://resources
-                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
-                          'self' 'unsafe-eval'">
+<include src="content_security_policy.html"/>
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/history_favicon.png">
 <script src="chrome://resources/js/local_strings.js"></script>

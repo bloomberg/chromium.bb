@@ -35,6 +35,7 @@
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" type="BINDATA" />
       </if>
+      <include name="IDR_CONTENT_SECURITY_POLICY_HTML" file="resources\content_security_policy.html" type="BINDATA" />
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />

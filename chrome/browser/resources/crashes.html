@@ -2,11 +2,7 @@
 <html i18n-values="dir:textdirection;">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-WebKit-CSP"
-        content="object-src 'none';
-                 script-src chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
-                            chrome://resources
-                            'self' 'unsafe-eval'">
+  <include src="content_security_policy.html"/>
   <title i18n-content="crashesTitle"></title>
   <link rel="stylesheet" href="crashes.css">
   <script src="chrome://resources/js/local_strings.js"></script>

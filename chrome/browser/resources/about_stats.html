@@ -3,15 +3,7 @@
 <html id="t">
 <head>
 <title>About Stats</title>
-<!-- X-WebKit-CSP is our development name for Content-Security-Policy.
-     The 'unsafe-eval' is required for jstemplate_compiled.js.
-     TODO(tsepez) rename when Content-security-policy is done.
--->
-<meta http-equiv="X-WebKit-CSP"
-      content="object-src 'none';
-               script-src chrome://resources
-                          chrome-extension://mndnfokpggljbaajbnioimlmbfngpief
-                          'self' 'unsafe-eval'">
+<include src="content_security_policy.html"/>
 <style>
 body {
   border-top: 10px solid #3B85E3;
