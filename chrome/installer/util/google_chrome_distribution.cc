@@ -139,8 +139,9 @@ bool LaunchSetup(CommandLine cmd_line, bool system_level_toast) {
 
       // Use handle inheritance to make sure the duplicated toast results key
       // gets inherited by the child process.
-      return base::LaunchAppWithHandleInheritance(
-          cmd_line.command_line_string(), false, false, NULL);
+      base::LaunchOptions options;
+      options.inherit_handles = true;
+      return base::LaunchProcess(cmd_line, options, NULL);
     }
   }
 
