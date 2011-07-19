@@ -4181,6 +4181,7 @@
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string"},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
@@ -4219,6 +4220,7 @@
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "redirectUrl": {"type": "string", "description": "The new URL."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to make the redirect, in milliseconds since the epoch."},
@@ -4258,6 +4260,7 @@
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
@@ -4296,6 +4299,7 @@
               "requestId": {"type": "string", "description": "The ID of the request."},
               "url": {"type": "string", "description": "The URL of the current request."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
+              "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
             }

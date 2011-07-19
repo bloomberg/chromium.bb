@@ -239,7 +239,8 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("simpleLoad/a.html"),
-            statusCode: 200
+            statusCode: 200,
+            fromCache: false
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -248,6 +249,7 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200,
+            fromCache: false
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -293,6 +295,7 @@ runTests([
             statusCode: 301,
             responseHeadersExist: true,
             ip: "127.0.0.1",
+            fromCache: false,
             statusLine: "HTTP/1.0 301 Moved Permanently"
           }
         },
@@ -326,6 +329,7 @@ runTests([
             statusCode: 200,
             responseHeadersExist: true,
             ip: "127.0.0.1",
+            fromCache: false,
             statusLine: "HTTP/1.0 200 OK",
           }
         },
@@ -335,6 +339,7 @@ runTests([
             url: URL_HTTP_SIMPLE_LOAD,
             statusCode: 200,
             ip: "127.0.0.1",
+            fromCache: false,
             responseHeadersExist: true,
             statusLine: "HTTP/1.0 200 OK"
           }
@@ -387,6 +392,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -395,6 +401,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("complexLoad/b.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -403,6 +410,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("complexLoad/b.jpg"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -411,6 +419,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -419,6 +428,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("complexLoad/b.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -427,6 +437,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("complexLoad/b.jpg"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -464,6 +475,7 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             error: "net::ERR_EMPTY_RESPONSE"
             // Request to chrome-extension:// url has no IP.
           }
@@ -499,6 +511,7 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             error: "net::ERR_ABORTED"
             // Request to chrome-extension:// url has no IP.
           }
@@ -516,6 +529,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("simpleLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -524,6 +538,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("simpleLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -565,6 +580,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -573,6 +589,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: getURL("complexLoad/b.jpg"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -581,6 +598,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("complexLoad/a.html"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -589,6 +607,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: getURL("complexLoad/b.jpg"),
+            fromCache: false,
             statusCode: 200
             // Request to chrome-extension:// url has no IP.
           }
@@ -628,6 +647,7 @@ runTests([
           event: "onErrorOccurred",
           details: {
             url: getURL("does_not_exist.html"),
+            fromCache: false,
             error: "net::ERR_FILE_NOT_FOUND",
             // Request to chrome-extension:// url has no IP.
           }
@@ -671,6 +691,7 @@ runTests([
           event: "onResponseStarted",
           details: {
             url: URL_ECHO_USER_AGENT,
+            fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1"
           }
@@ -679,6 +700,7 @@ runTests([
           event: "onCompleted",
           details: {
             url: URL_ECHO_USER_AGENT,
+            fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1"
           }

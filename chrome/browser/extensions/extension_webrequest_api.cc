@@ -507,6 +507,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
+  dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
@@ -556,6 +557,7 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   dict->SetString(keys::kUrlKey, request->url().spec());
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
+  dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetInteger(keys::kStatusCodeKey, response_code);
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
@@ -607,6 +609,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   dict->SetInteger(keys::kStatusCodeKey, response_code);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
+  dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
@@ -652,6 +655,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   dict->SetString(keys::kUrlKey, request->url().spec());
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
+  dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetString(keys::kErrorKey,
                   net::ErrorToString(request->status().os_error()));
   dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
