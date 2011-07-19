@@ -109,6 +109,8 @@ const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
 
+static const char kDotGoogleDotCom[] = ".google.com";
+
 #if defined(OS_WIN)
 
 BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
@@ -985,6 +987,10 @@ void TabContents::OnDidRunInsecureContent(
   LOG(INFO) << security_origin << " ran insecure content from "
             << target_url.possibly_invalid_spec();
   UserMetrics::RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
+  if (EndsWith(security_origin, kDotGoogleDotCom, false)) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("SSL.RanInsecureContentGoogle"));
+  }
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged();

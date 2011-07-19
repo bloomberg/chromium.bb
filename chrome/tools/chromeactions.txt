@@ -9,6 +9,7 @@
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
 0xdddbf34cee2c636c	AboutFlags_dns-server
 0x4eae5ccc2900dffa	AboutFlags_enable-nacl
+0x1a3d598e2cd416a0	AboutFlags_enable-smooth-scrolling
 0x79571e31c2dc4d3c	AboutFlags_experimental-location-features
 0x307b8a127f85947e	AboutFlags_expose-for-tabs
 0x2c97f94b6aca4a22	AboutFlags_extension-apis
@@ -1041,6 +1042,7 @@
 0xf8af4ff865669301	SBInterstitialPhishingShow
 0xe1df5f4bee6d0e2f	SSL.DisplayedInsecureContent
 0xba6bde79f10497a9	SSL.RanInsecureContent
+0x12affa291e3d0146	SSL.RanInsecureContentGoogle
 0xc9cc8cce247e49ba	Save
 0xfc7723f7c10f79d5	SavePage
 0xc849f604a9954989	ScreenLocker_OnLoginFailure
