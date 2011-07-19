@@ -804,3 +804,23 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
   ASSERT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));
 }
+
+TEST_F(ExtensionManifestTest, FileManagerURLOverride) {
+  // A component extention can override chrome://files/ URL.
+  std::string error;
+  scoped_refptr<Extension> extension;
+  extension = LoadExtensionWithLocation(
+      "filebrowser_url_override.json",
+      Extension::COMPONENT,
+      true,  // Strict error checking
+      &error);
+#if defined(FILE_MANAGER_EXTENSION)
+  EXPECT_EQ("", error);
+#else
+  EXPECT_EQ(errors::kInvalidChromeURLOverrides, error);
+#endif
+
+  // Extensions of other types can't ovverride chrome://files/ URL.
+  LoadAndExpectError("filebrowser_url_override.json",
+      errors::kInvalidChromeURLOverrides);
+}

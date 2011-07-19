@@ -2072,12 +2072,14 @@ void Browser::OpenSearchEngineOptionsDialog() {
   ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(FILE_MANAGER_EXTENSION)
 void Browser::OpenFileManager() {
   UserMetrics::RecordAction(UserMetricsAction("OpenFileManager"));
-  ShowSingletonTab(FileManagerUtil::GetFileBrowserUrl());
+  ShowSingletonTab(GURL(chrome::kChromeUIFileManagerURL));
 }
+#endif
 
+#if defined(OS_CHROMEOS)
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
   ShowOptionsTab(chrome::kSystemOptionsSubPage);

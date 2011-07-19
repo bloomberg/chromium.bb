@@ -93,6 +93,10 @@ const char kChromeUITermsOemURL[] = "chrome://terms/oem/";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
 #endif
 
+#if defined(FILE_MANAGER_EXTENSION)
+const char kChromeUIFileManagerURL[] = "chrome://files/";
+#endif
+
 // Add Chrome UI hosts here, in alphabetical order.
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
@@ -200,6 +204,10 @@ const char kChromeUINetworkMenu[] = "network-menu";
 
 const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
 const char kOemEulaURLPath[] = "oem";
+#endif
+
+#if defined(FILE_MANAGER_EXTENSION)
+const char kChromeUIFileManagerHost[] = "files";
 #endif
 
 // Option sub pages.

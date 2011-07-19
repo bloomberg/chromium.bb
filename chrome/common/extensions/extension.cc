@@ -2061,7 +2061,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
            page != chrome::kChromeUIActivationMessageHost &&
 #endif
            page != chrome::kChromeUIBookmarksHost &&
-           page != chrome::kChromeUIHistoryHost) ||
+           page != chrome::kChromeUIHistoryHost
+#if defined(FILE_MANAGER_EXTENSION)
+               &&
+           !(location() ==  COMPONENT &&
+             page == chrome::kChromeUIFileManagerHost)
+#endif
+          ) ||
           !overrides->GetStringWithoutPathExpansion(*iter, &val)) {
         *error = errors::kInvalidChromeURLOverrides;
         return false;

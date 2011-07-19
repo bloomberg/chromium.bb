@@ -107,5 +107,8 @@
         "filesystem:*.M4A"
       ]
     }
-  ]
+  ],
+  "chrome_url_overrides": {
+    "files": "main.html"
+  }
 }

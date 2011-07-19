@@ -85,6 +85,10 @@ extern const char kChromeUIUserImageURL[];
 extern const char kChromeUIEnterpriseEnrollmentURL[];
 #endif
 
+#if defined(FILE_MANAGER_EXTENSION)
+extern const char kChromeUIFileManagerURL[];
+#endif
+
 // chrome components of URLs. Should be kept in sync with the full URLs above.
 extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAppCacheInternalsHost[];
@@ -190,6 +194,10 @@ extern const char kChromeUINetworkMenu[];
 
 extern const char kEULAPathFormat[];
 extern const char kOemEulaURLPath[];
+#endif
+
+#if defined(FILE_MANAGER_EXTENSION)
+extern const char kChromeUIFileManagerHost[];
 #endif
 
 // Options sub-pages.
