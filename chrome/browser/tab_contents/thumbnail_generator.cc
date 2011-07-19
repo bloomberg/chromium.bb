@@ -215,6 +215,13 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
       desired_size.width() * desired_size.height() * 4, sequence_num));
 
+#if defined(USE_X11)
+  // TODO: IPC a handle to the renderer like Windows.
+  // http://code.google.com/p/chromium/issues/detail?id=89777
+  NOTIMPLEMENTED();
+  return;
+#else
+
 #if defined(OS_WIN)
   // Duplicate the handle to the DIB here because the renderer process does not
   // have permission. The duplicated handle is owned by the renderer process,
@@ -246,6 +253,8 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
 
   renderer->PaintAtSize(
       renderer_dib_handle, sequence_num, page_size, desired_size);
+
+#endif  // defined(USE_X11)
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(

@@ -1585,7 +1585,13 @@ TEST_F(AutomationProxySnapshotTest, MAYBE_ContentLargerThanView) {
 }
 
 // Tests taking a large snapshot works.
-TEST_F(AutomationProxySnapshotTest, LargeSnapshot) {
+#if defined(OS_LINUX)
+// See http://code.google.com/p/chromium/issues/detail?id=89777
+#define MAYBE_LargeSnapshot DISABLED_LargeSnapshot
+#else
+#define MAYBE_LargeSnapshot LargeSnapshot
+#endif
+TEST_F(AutomationProxySnapshotTest, MAYBE_LargeSnapshot) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
