@@ -63,9 +63,9 @@ class IDLVersionList(object):
 
       # We should only be missing a 'version' tag for the first item.
       if not node.vmin:
+        raise RuntimeError('Missing version')
         node.Error('Missing version on overload of previous %s.' %
                    cver.Location())
-        raise RuntimeError('DSFSD')
         return False
 
       # If the node has no max, then set it to this one
@@ -142,36 +142,36 @@ class IDLNamespace(object):
       InfoOut.Log('')
 
   def FindVersion(self, name, version):
-    list = self.namespace.get(name, None)
-    if list == None:
+    verlist = self.namespace.get(name, None)
+    if verlist == None:
       if self.parent:
         return self.parent.FindVersion(name, version)
       else:
         return None
-    return list.FindVersion(version)
+    return verlist.FindVersion(version)
 
   def FindRange(self, name, vmin, vmax):
-    list = self.namespace.get(name, None)
-    if list == None:
+    verlist = self.namespace.get(name, None)
+    if verlist == None:
       if self.parent:
         return self.parent.FindRange(name, vmin, vmax)
       else:
         return []
-    return list.FindRange(vmin, vmax)
+    return verlist.FindRange(vmin, vmax)
 
   def FindList(self, name):
-    list = self.namespace.get(name, None)
-    if list == None:
+    verlist = self.namespace.get(name, None)
+    if verlist == None:
       if self.parent:
         return self.parent.FindList(name)
-    return list
+    return verlist
 
   def AddNode(self, node):
     name = node.GetName()
-    list = self.namespace.setdefault(name,IDLVersionList())
+    verlist = self.namespace.setdefault(name,IDLVersionList())
     if GetOption('namespace_debug'):
         print "Adding to namespace: %s" % node
-    return list.AddNode(node)
+    return verlist.AddNode(node)
 
 
 
@@ -303,6 +303,7 @@ def Main(args):
   Bar23 = MockNode('bar', 2.0, 3.0)
   Bar34 = MockNode('bar', 3.0, 4.0)
 
+
   # Verify we succeed with fully qualified versions
   namespace = IDLNamespace(namespace)
   AddOkay(namespace, BarXX)
@@ -333,7 +334,9 @@ def Main(args):
   VerifyFindAll(namespace, 'foo', 0.0, 3.0, [FooXX, Foo1X])
   VerifyFindAll(namespace, 'foo', 3.0, 100.0, [Foo3X])
 
-
+  FooBar = MockNode('foobar', 1.0, 2.0)
+  namespace = IDLNamespace(namespace)
+  AddOkay(namespace, FooBar)
 
   if errors:
     print 'Test failed with %d errors.' % errors

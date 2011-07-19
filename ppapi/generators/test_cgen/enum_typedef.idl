@@ -6,7 +6,7 @@
 
 /* This file will test that the IDL snippet matches the comment */
 
-/* enum et1 { A = 1, B = 2, C = 3 }; */
+/* typedef enum { A = 1, B = 2, C = 3 } et1; */
 enum et1 { A=1, B=2, C=3 };
 
 /* typedef int32_t i; */
@@ -25,10 +25,10 @@ typedef int32_t i_func_i([in] int32_t i);
 typedef et1[4] et4;
 
 /*
-typedef int8_t (*PPB_Audio_Callback)(const void* sample_buffer,
-                                     uint32_t buffer_size_in_bytes,
-                                     const void* user_data);
-*/
+ * typedef int8_t (*PPB_Audio_Callback)(const void* sample_buffer,
+ *                                   uint32_t buffer_size_in_bytes,
+ *                                   const void* user_data);
+ */
 typedef int8_t PPB_Audio_Callback([in] mem_t sample_buffer,
                                   [in] uint32_t buffer_size_in_bytes,
                                   [in] mem_t user_data);

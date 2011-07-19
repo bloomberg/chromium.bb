@@ -28,6 +28,7 @@ import glob
 import os.path
 import re
 import sys
+import time
 
 from idl_ast import IDLAst
 from idl_log import ErrOut, InfoOut, WarnOut
@@ -42,7 +43,7 @@ Option('build_debug', 'Debug tree building.')
 Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
-Option('srcroot', 'Working directory.', default='')
+Option('srcroot', 'Working directory.', default='../api')
 Option('wcomment', 'Disable warning for missing comment.')
 Option('wenum', 'Disable warning for missing enum value.')
 
@@ -814,6 +815,7 @@ class IDLParser(IDLLexer):
 # Loads a new file into the lexer and attemps to parse it.
 #
   def ParseFile(self, filename):
+    date = time.ctime(os.path.getmtime(filename))
     data = open(filename).read()
     if self.verbose:
       InfoOut.Log("Parsing %s" % filename)
@@ -824,7 +826,9 @@ class IDLParser(IDLLexer):
       srcroot = GetOption('srcroot')
       if srcroot and filename.find(srcroot) == 0:
         filename = filename[len(srcroot) + 1:]
-      return IDLFile(filename, out, self.parse_errors + self.lex_errors)
+      filenode = IDLFile(filename, out, self.parse_errors + self.lex_errors)
+      filenode.SetProperty('DATETIME', date)
+      return filenode
 
     except Exception as e:
       ErrOut.LogLine(filename, self.last.lineno, self.last.lexpos,
@@ -986,11 +990,18 @@ def TestNamespaceFiles(filter):
     InfoOut.Log("Passed namespace test.")
   return errs
 
-
+default_dirs = ['.', 'trusted']
 def ParseFiles(filenames):
   parser = IDLParser()
   filenodes = []
   errors = 0
+
+  if not filenames:
+    filenames = []
+    srcroot = GetOption('srcroot')
+    for dir in default_dirs:
+      srcdir = os.path.join(srcroot, dir, '*.idl')
+      filenames += sorted(glob.glob(gendir))
 
   for filename in filenames:
     filenode = parser.ParseFile(filename)

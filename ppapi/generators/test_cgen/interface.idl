@@ -11,12 +11,13 @@ struct ist {
   mem_t X;
 };
 
-/* struct iface1 { 
-  int8_t (*mem1)(int16_t x, int32_t y);
-  int32_t (*mem2)(const struct ist* a);
-  int32_t (*mem3)(struct ist* b);
-   
-}; */
+/*
+ * struct iface1 { 
+ * int8_t (*mem1)(int16_t x, int32_t y);
+ * int32_t (*mem2)(const struct ist* a);
+ * int32_t (*mem3)(struct ist* b);
+ * };
+ */
 interface iface1 {
   int8_t mem1([in] int16_t x, [in] int32_t y);
   int32_t mem2([in] ist a);

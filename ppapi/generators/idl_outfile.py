@@ -11,6 +11,7 @@ import time
 import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
+from idl_option import GetOption, Option, ParseOptions
 from stat import *
 
 #
@@ -51,7 +52,8 @@ class IDLOutFile(object):
         intext = None
 
       if intext == outtext:
-        InfoOut.Log('Output %s unchanged.' % self.filename)
+        if GetOption('verbose'):
+          InfoOut.Log('Output %s unchanged.' % self.filename)
         return False
 
     try:

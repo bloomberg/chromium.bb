@@ -81,8 +81,7 @@ class IDLNode(IDLVersion):
       if child.cls == 'ExtAttribute':
         self.SetProperty(child.name, child.value)
       else:
-        child.SetParent(self)
-        self.children.append(child)
+        self.AddChild(child)
 
 #
 # String related functions
@@ -170,6 +169,10 @@ class IDLNode(IDLVersion):
   def SetParent(self, parent):
     self.property_node.AddParent(parent)
     self.parent = parent
+
+  def AddChild(self, node):
+    node.SetParent(self)
+    self.children.append(node)
 
   # Get a list of all children
   def GetChildren(self):
