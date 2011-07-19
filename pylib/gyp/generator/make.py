@@ -1673,6 +1673,20 @@ class MakefileWriter:
         self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
             self.GetFrameworkVersion(spec))
 
+      # Postbuild actions. Like actions, but implicitly depend on the output
+      # framework.
+      for postbuild in spec.get('postbuilds', []):
+        self.WriteLn('\t@echo POSTBUILD %s' % postbuild['postbuild_name'])
+        shell_list = postbuild['action']
+        # The first element is the command. If it's a relative path, it's
+        # a script in the source tree relative to the gyp file and needs to be
+        # absolutified. Else, it's in the PATH (e.g. install_name_tool, ln).
+        if os.path.sep in shell_list[0]:
+          shell_list[0] = self.Absolutify(shell_list[0])
+        # TODO: Honor V=1 etc. Not using do_cmd because since this is part of
+        # the framework rule, there's no need for .d file processing here.
+        self.WriteLn('\t@%s' % gyp.common.EncodePOSIXShellList(shell_list))
+
       # Needed by test/mac/gyptest-rebuild.py.
       self.WriteLn('\t@true  # No-op, used by tests')
 
@@ -1682,6 +1696,9 @@ class MakefileWriter:
       # on every build (expensive, especially with postbuilds), expliclity
       # update the time on the framework directory.
       self.WriteLn('\t@touch -c %s' % self.output)
+    elif 'postbuilds' in spec:
+      print ("Warning: 'postbuild' support for non-bundles "
+             "isn't implemented yet (target '%s)'." % self.target)
 
     if self.type == 'executable':
       self.WriteLn(
