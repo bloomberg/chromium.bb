@@ -431,6 +431,9 @@ void BookmarkBarGtk::Show(BookmarkBar::State old_state,
     AnimationProgressed(&slide_animation_);
   }
 
+  if (model_ && model_->IsLoaded())
+    UpdateOtherBookmarksVisibility();
+
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
