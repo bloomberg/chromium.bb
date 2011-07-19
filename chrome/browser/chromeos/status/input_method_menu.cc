@@ -396,8 +396,10 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
   gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
 
-  input_method_menu_->RunMenuAt(
-      window, NULL, gfx::Rect(pt, gfx::Size()), menu_alignment_, true);
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(source, &screen_location);
+  gfx::Rect bounds(screen_location, source->size());
+  input_method_menu_->RunMenuAt(window, NULL, bounds, menu_alignment_, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
