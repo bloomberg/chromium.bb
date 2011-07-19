@@ -151,10 +151,6 @@ extern const char kAuditHandles[];
 extern const char kAuditAllHandles[];
 #endif
 
-#if defined(ENABLE_P2P_APIS)
-extern const char kEnableP2PApi[];
-#endif
-
 #if !defined(OFFICIAL_BUILD)
 extern const char kRendererCheckFalseTest[];
 #endif

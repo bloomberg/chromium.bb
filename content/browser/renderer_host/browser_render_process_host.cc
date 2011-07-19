@@ -398,8 +398,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
               widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
 #if defined(ENABLE_P2P_APIS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
-    channel_->AddFilter(new P2PSocketDispatcherHost());
+  channel_->AddFilter(new P2PSocketDispatcherHost());
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());
@@ -549,9 +548,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
     switches::kEnableMediaStream,
-#if defined(ENABLE_P2P_APIS)
-    switches::kEnableP2PApi,
-#endif
     switches::kEnablePepperTesting,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

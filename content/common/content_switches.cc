@@ -468,11 +468,6 @@ const char kAuditHandles[]                  = "enable-handle-auditing";
 const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 #endif
 
-#if defined(ENABLE_P2P_APIS)
-// Enable Pepper and JavaScript P2P API.
-const char kEnableP2PApi[]                  = "enable-p2papi";
-#endif
-
 #if !defined(OFFICIAL_BUILD)
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererCheckFalseTest[]        = "renderer-check-false-test";

@@ -401,8 +401,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     WebAccessibilityCache::enableAccessibility();
 
 #if defined(ENABLE_P2P_APIS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableP2PApi))
-    p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
+  p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
 #endif
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
