@@ -70,6 +70,7 @@ class PrefDefaultProvider : public ObservableDefaultProvider,
   void ReadDefaultSettings(bool overwrite);
 
   void MigrateObsoleteNotificationPref();
+  void MigrateObsoleteGeolocationPref();
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;

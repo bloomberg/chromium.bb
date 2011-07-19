@@ -236,7 +236,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_INTEGER, kPolicyDefaultNotificationSetting,
     prefs::kDesktopNotificationDefaultContentSetting },
   { Value::TYPE_INTEGER, kPolicyDefaultGeolocationSetting,
-    prefs::kGeolocationDefaultContentSetting },
+    prefs::kManagedDefaultGeolocationSetting },
   { Value::TYPE_STRING, kPolicyAuthSchemes,
     prefs::kAuthSchemes },
   { Value::TYPE_BOOLEAN, kPolicyDisableAuthNegotiateCnameLookup,

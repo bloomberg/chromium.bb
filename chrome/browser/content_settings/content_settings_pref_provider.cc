@@ -51,7 +51,7 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
-  CONTENT_SETTING_ASK,    // Not used for Geolocation
+  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_GEOLOCATION
   CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
@@ -64,9 +64,9 @@ const char* kTypeNames[] = {
   "javascript",
   "plugins",
   "popups",
-  NULL,  // Not used for Geolocation
   // TODO(markusheintz): Refactoring in progress. Content settings exceptions
-  // for notifications will be added next.
+  // for notifications and geolocation will be added next.
+  "geolocation",  // Only used for default Geolocation settings
   "notifications",  // Only used for default Notifications settings.
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
@@ -155,6 +155,7 @@ PrefDefaultProvider::PrefDefaultProvider(PrefService* prefs,
       updating_preferences_(false) {
   DCHECK(prefs_);
   MigrateObsoleteNotificationPref();
+  MigrateObsoleteGeolocationPref();
 
   // Read global defaults.
   DCHECK_EQ(arraysize(kTypeNames),
@@ -171,6 +172,7 @@ PrefDefaultProvider::PrefDefaultProvider(PrefService* prefs,
 
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
+  pref_change_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
 }
 
 PrefDefaultProvider::~PrefDefaultProvider() {
@@ -188,7 +190,7 @@ void PrefDefaultProvider::UpdateDefaultSetting(
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
-  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
+  DCHECK(kTypeNames[content_type] != NULL);
 
   // The default settings may not be directly modified for OTR sessions.
   // Instead, they are synced to the main profile's setting.
@@ -211,6 +213,14 @@ void PrefDefaultProvider::UpdateDefaultSetting(
       default_content_settings_.settings[content_type] = setting;
       default_settings_dictionary->SetWithoutPathExpansion(
           dictionary_path, Value::CreateIntegerValue(setting));
+    }
+
+    // Keep the obsolete pref in sync as long as backwards compatibility is
+    // required. This is required to keep sync working correctly.
+    if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+       prefs_->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                          setting == CONTENT_SETTING_DEFAULT ?
+                              kDefaultSettings[content_type] : setting);
     }
   }
 
@@ -238,6 +248,12 @@ void PrefDefaultProvider::Observe(int type,
     std::string* name = Details<std::string>(details).ptr();
     if (*name == prefs::kDefaultContentSettings) {
       ReadDefaultSettings(true);
+    } else if (*name == prefs::kGeolocationDefaultContentSetting) {
+      MigrateObsoleteGeolocationPref();
+      // Return and don't send a notifications. Migrating the obsolete
+      // geolocation pref will change the prefs::kDefaultContentSettings and
+      // cause the notification to be fired.
+      return;
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -323,6 +339,16 @@ void PrefDefaultProvider::MigrateObsoleteNotificationPref() {
   }
 }
 
+void PrefDefaultProvider::MigrateObsoleteGeolocationPref() {
+  if (prefs_->HasPrefPath(prefs::kGeolocationDefaultContentSetting)) {
+    ContentSetting setting = IntToContentSetting(
+        prefs_->GetInteger(prefs::kGeolocationDefaultContentSetting));
+    UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION, setting);
+    // Do not clear the old preference yet as long as we need to maintain
+    // backward compatibility.
+  }
+}
+
 // static
 void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   // The registration of the preference prefs::kDefaultContentSettings should
@@ -342,6 +368,10 @@ void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
       prefs::kDesktopNotificationDefaultContentSetting,
       kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS],
       PrefService::SYNCABLE_PREF);
+  prefs->RegisterIntegerPref(
+      prefs::kGeolocationDefaultContentSetting,
+      kDefaultSettings[CONTENT_SETTINGS_TYPE_GEOLOCATION],
+      PrefService::UNSYNCABLE_PREF);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -386,7 +416,6 @@ PrefProvider::PrefProvider(PrefService* prefs,
   }
   if (prefs_->GetInteger(prefs::kContentSettingsVersion) >
       ContentSettingsPattern::kContentSettingsPatternVersion) {
-    LOG(ERROR) << "Unknown content settings version in preferences.";
     return;
   }
 

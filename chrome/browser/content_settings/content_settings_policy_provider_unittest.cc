@@ -58,6 +58,44 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
   provider.ShutdownOnUIThread();
 }
 
+TEST_F(PolicyDefaultProviderTest, DefaultGeolocationContentSetting) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyDefaultProvider provider(prefs);
+
+  // By default, policies should be off.
+  EXPECT_FALSE(
+      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                    CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(
+      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  //
+  prefs->SetManagedPref(prefs::kGeolocationDefaultContentSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_FALSE(
+      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Change the managed value of the default geolocation setting
+  prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+
+  EXPECT_TRUE(
+      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  provider.ShutdownOnUIThread();
+}
+
 // When a default-content-setting is set to a managed setting a
 // CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
 // if the managed setting is removed.

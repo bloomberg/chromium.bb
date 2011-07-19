@@ -470,6 +470,7 @@ extern const char kManagedDefaultImagesSetting[];
 extern const char kManagedDefaultJavaScriptSetting[];
 extern const char kManagedDefaultPluginsSetting[];
 extern const char kManagedDefaultPopupsSetting[];
+extern const char kManagedDefaultGeolocationSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];

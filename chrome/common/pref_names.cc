@@ -1353,6 +1353,8 @@ const char kManagedDefaultPluginsSetting[] =
     "profile.managed_default_content_settings.plugins";
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
+const char kManagedDefaultGeolocationSetting[] =
+    "profile.managed_default_content_settings.geolocation";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.

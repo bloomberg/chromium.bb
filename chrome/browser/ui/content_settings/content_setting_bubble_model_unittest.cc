@@ -190,7 +190,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(1, true, false);
 
   // Change the default to allow: no message needed.
-  setting_map->SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
+  profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   CheckGeolocationBubble(1, false, false);
 
   // Second frame denied, but not stored in the content map: requires reload.
@@ -198,7 +199,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(2, false, true);
 
   // Change the default to block: offer a clear link for the persisted frame 1.
-  setting_map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+  profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK);
   CheckGeolocationBubble(2, true, false);
 }
 

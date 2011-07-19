@@ -292,7 +292,6 @@ void ContentSettingsHandler::Initialize() {
 
   PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
 
@@ -328,9 +327,7 @@ void ContentSettingsHandler::Observe(int type,
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name = *Details<std::string>(details).ptr();
-      if (pref_name == prefs::kGeolocationDefaultContentSetting)
-        UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-      else if (pref_name == prefs::kGeolocationContentSettings)
+      if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
       break;
     }
@@ -370,14 +367,12 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type) {
   ContentSetting default_setting;
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    default_setting = web_ui_->GetProfile()->
-        GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
-  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     default_setting = DesktopNotificationServiceFactory::GetForProfile(
         web_ui_->GetProfile())->GetDefaultContentSetting();
   } else {
-    default_setting = GetContentSettingsMap()->GetDefaultContentSetting(type);
+    default_setting = web_ui_->GetProfile()->
+        GetHostContentSettingsMap()->GetDefaultContentSetting(type);
   }
 
   return ContentSettingToString(default_setting);
@@ -385,10 +380,7 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
 
 bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
     ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return web_ui_->GetProfile()->
-        GetGeolocationContentSettingsMap()->IsDefaultContentSettingManaged();
-  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     return DesktopNotificationServiceFactory::GetForProfile(
         web_ui_->GetProfile())->IsDefaultContentSettingManaged();
   } else {
@@ -587,10 +579,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
 
   ContentSetting default_setting = ContentSettingFromString(setting);
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
-  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    web_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
-        SetDefaultContentSetting(default_setting);
-  } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     DesktopNotificationServiceFactory::GetForProfile(web_ui_->GetProfile())->
         SetDefaultContentSetting(default_setting);
   } else {

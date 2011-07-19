@@ -44,14 +44,6 @@ class GeolocationContentSettingsMap
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the default setting.
-  //
-  // This should only be called on the UI thread.
-  ContentSetting GetDefaultContentSetting() const;
-
-  // Returns true if the content setting is managed (set by a policy).
-  bool IsDefaultContentSettingManaged() const;
-
   // Returns a single ContentSetting which applies to the given |requesting_url|
   // when embedded in a top-level page from |embedding_url|.  To determine the
   // setting for a top-level page, as opposed to a frame embedded in a page,
@@ -66,11 +58,6 @@ class GeolocationContentSettingsMap
   //
   // This should only be called on the UI thread.
   AllOriginsSettings GetAllOriginsSettings() const;
-
-  // Sets the default setting.
-  //
-  // This should only be called on the UI thread.
-  void SetDefaultContentSetting(ContentSetting setting);
 
   // Sets the content setting for a particular (requesting origin, embedding
   // origin) pair.  If the embedding origin is the same as the requesting
@@ -100,9 +87,6 @@ class GeolocationContentSettingsMap
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationContentSettingsMap>;
-
-  // The default setting.
-  static const ContentSetting kDefaultSetting;
 
   // Sends a CONTENT_SETTINGS_CHANGED notification.
   void NotifyObservers(const ContentSettingsDetails& details);

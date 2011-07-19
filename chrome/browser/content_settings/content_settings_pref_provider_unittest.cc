@@ -55,6 +55,13 @@ TEST_F(PrefDefaultProviderTest, DefaultValues) {
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  provider_.UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            provider_.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 TEST_F(PrefDefaultProviderTest, Observer) {
@@ -68,6 +75,12 @@ TEST_F(PrefDefaultProviderTest, Observer) {
 
   provider_.UpdateDefaultSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(
+                  _, _, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+  provider_.UpdateDefaultSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK);
 }
 
 TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
@@ -124,6 +137,33 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 
   otr_provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefDefaultProviderTest, MigrateDefaultGeolocationContentSetting) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // Set obsolete preference and test if it is migrated correctly.
+  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                    CONTENT_SETTING_ALLOW);
+  PrefDefaultProvider provider(prefs, false);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(
+                  _, _, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+  provider.AddObserver(&mock_observer);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Change obsolete preference and test if it migrated correctly.
+  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                    CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  provider.ShutdownOnUIThread();
 }
 
 // ////////////////////////////////////////////////////////////////////////////

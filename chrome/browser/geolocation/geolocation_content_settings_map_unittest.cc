@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -68,17 +69,6 @@ class GeolocationContentSettingsMapTests : public testing::Test {
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
 };
-
-TEST_F(GeolocationContentSettingsMapTests, DefaultValues) {
-  TestingProfile profile;
-  GeolocationContentSettingsMap* map =
-      profile.GetGeolocationContentSettingsMap();
-
-  // Check setting defaults.
-  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetDefaultContentSetting());
-  map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, map->GetDefaultContentSetting());
-}
 
 TEST_F(GeolocationContentSettingsMapTests, Embedder) {
   TestingProfile profile;
@@ -243,7 +233,8 @@ TEST_F(GeolocationContentSettingsMapTests, WildCardForEmptyEmbedder) {
   // Change the wildcard behavior.
   map->SetContentSetting(requester_0, embedder_0, CONTENT_SETTING_ALLOW);
   map->SetContentSetting(requester_0, empty_url, CONTENT_SETTING_BLOCK);
-  map->SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
+  profile.GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(requester_0, embedder_0));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -270,7 +261,9 @@ TEST_F(GeolocationContentSettingsMapTests, IgnoreInvalidURLsInPrefs) {
 
   GeolocationContentSettingsMap* map =
       profile.GetGeolocationContentSettingsMap();
-  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetDefaultContentSetting());
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            profile.GetHostContentSettingsMap()->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // Check the valid entry was read OK.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -293,7 +286,9 @@ TEST_F(GeolocationContentSettingsMapTests, Observe) {
       profile.GetGeolocationContentSettingsMap();
   MockGeolocationSettingsObserver observer;
 
-  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetDefaultContentSetting());
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            profile.GetHostContentSettingsMap()->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
   // Test if a GEOLOCATION_SETTINGS_CHANGED notification is sent after
   // the geolocation default content setting was changed through calling the
@@ -301,18 +296,22 @@ TEST_F(GeolocationContentSettingsMapTests, Observe) {
   EXPECT_CALL(
       observer,
       OnContentSettingsChanged(map, CONTENT_SETTINGS_TYPE_DEFAULT));
-  map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+  profile.GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK);
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
-  // Test if a GEOLOCATION_SETTINGS_CHANGED notification is sent after
-  // the preference kGeolocationDefaultContentSetting was changed.
+  // Test if a GEOLOCATION_SETTINGS_CHANGED notification is sent after the
+  // obsolete preference kGeolocationDefaultContentSetting was changed.
   PrefService* prefs = profile.GetPrefs();
   EXPECT_CALL(
       observer,
       OnContentSettingsChanged(map, CONTENT_SETTINGS_TYPE_DEFAULT));
   prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
                     CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetDefaultContentSetting());
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            profile.GetHostContentSettingsMap()->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 }  // namespace

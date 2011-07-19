@@ -4,8 +4,11 @@
 
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 
+#include <string>
+
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,8 +57,9 @@ void GeolocationSettingsState::GetDetailedInfo(
     unsigned int* tab_state_flags) const {
   DCHECK(tab_state_flags);
   DCHECK(embedder_url_.is_valid());
-  const ContentSetting default_setting =
-      profile_->GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
+  ContentSetting default_setting =
+      profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_GEOLOCATION);
   std::set<std::string> formatted_hosts;
   std::set<std::string> repeated_formatted_hosts;
 

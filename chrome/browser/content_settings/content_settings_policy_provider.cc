@@ -35,7 +35,7 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   prefs::kManagedDefaultJavaScriptSetting,
   prefs::kManagedDefaultPluginsSetting,
   prefs::kManagedDefaultPopupsSetting,
-  NULL,  // Not used for Geolocation
+  prefs::kManagedDefaultGeolocationSetting,
   NULL,  // Not used for Notifications
 };
 
@@ -118,6 +118,7 @@ PolicyDefaultProvider::PolicyDefaultProvider(PrefService* prefs)
   pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
 }
 
 PolicyDefaultProvider::~PolicyDefaultProvider() {
@@ -164,6 +165,8 @@ void PolicyDefaultProvider::Observe(int type,
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
     } else if (*name == prefs::kManagedDefaultPopupsSetting) {
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_POPUPS);
+    } else if (*name == prefs::kManagedDefaultGeolocationSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -227,6 +230,9 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
                              CONTENT_SETTING_DEFAULT,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
                              CONTENT_SETTING_DEFAULT,
                              PrefService::UNSYNCABLE_PREF);
 }
