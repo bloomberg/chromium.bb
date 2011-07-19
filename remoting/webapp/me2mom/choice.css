@@ -121,6 +121,10 @@ label {
   */
 }
 
+.expiring {
+    color: #900 !important;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -156,9 +160,13 @@ label {
   padding: 5px 10px;
 }
 
+#access-code-countdown-container {
+  height: 50px;
+  text-align: center;
+}
+
 #access-code-display {
   margin-top: 50px;
-  margin-bottom: 50px;
   color: rgb(0, 0, 0);
   font-weight: bold;
   font-size: 26px;

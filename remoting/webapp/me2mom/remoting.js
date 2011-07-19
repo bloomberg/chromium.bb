@@ -43,6 +43,20 @@ var kHostSecretLen = 5;
 var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
 var kDigitsPerGroup = 4;
 
+function hasClass(element, cls) {
+  return element.className.match(new RegExp('\\b' + cls + '\\b'));
+}
+
+function addClass(element, cls) {
+  if (!hasClass(element, cls))
+    element.className = element.className + ' ' + cls;
+}
+
+function removeClass(element, cls) {
+  element.className =
+      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '');
+}
+
 function retrieveEmail_(access_token) {
   var headers = {
     'Authorization': 'OAuth ' + remoting.oauth2.getAccessToken()
@@ -256,11 +270,61 @@ remoting.tryShare = function() {
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
 
+function disableTimeoutCountdown_() {
+  if (remoting.timerRunning) {
+    clearInterval(remoting.accessCodeTimerId);
+    remoting.timerRunning = false;
+    updateTimeoutStyles_();
+  }
+}
+
+var ACCESS_CODE_TIMER_DISPLAY_THRESHOLD = 30;
+var ACCESS_CODE_RED_THRESHOLD = 10;
+
+/**
+ * Show/hide or restyle various elements, depending on the remaining countdown
+ * and timer state.
+ *
+ * @return {bool} True if the timeout is in progress, false if it has expired.
+ */
+function updateTimeoutStyles_() {
+  if (remoting.timerRunning) {
+    if (remoting.accessCodeExpiresIn <= 0) {
+      remoting.cancelShare();
+      return false;
+    }
+    if (remoting.accessCodeExpiresIn <= ACCESS_CODE_RED_THRESHOLD) {
+      addClass(document.getElementById('access-code-display'), 'expiring');
+    } else {
+      removeClass(document.getElementById('access-code-display'), 'expiring');
+    }
+  }
+  document.getElementById('access-code-countdown').hidden =
+      (remoting.accessCodeExpiresIn > ACCESS_CODE_TIMER_DISPLAY_THRESHOLD ) ||
+      !remoting.timerRunning;
+  return true;
+}
+
+remoting.decrementAccessCodeTimeout_ = function() {
+  --remoting.accessCodeExpiresIn;
+  remoting.updateAccessCodeTimeoutElement_();
+}
+
+remoting.updateAccessCodeTimeoutElement_ = function() {
+  var pad = (remoting.accessCodeExpiresIn < 10) ? '0' : '';
+  document.getElementById('seconds-remaining').innerText =
+      pad + remoting.accessCodeExpiresIn;
+  if (!updateTimeoutStyles_()) {
+    disableTimeoutCountdown_();
+  }
+}
+
 function onStateChanged_() {
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
     remoting.setHostMode('preparing-to-share');
+    disableTimeoutCountdown_();
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
     var accessCode = plugin.accessCode;
     var accessCodeDisplay = document.getElementById('access-code-display');
@@ -272,7 +336,21 @@ function onStateChanged_() {
       nextFourDigits.innerText = accessCode.substring(i, i + kDigitsPerGroup);
       accessCodeDisplay.appendChild(nextFourDigits);
     }
-    remoting.setHostMode('ready-to-share');
+    // TODO(jamiewalch): Get the validity period from the cloud.
+    remoting.accessCodeExpiresIn = 300;
+    if (remoting.accessCodeExpiresIn > 0) {  // Check it hasn't expired.
+      remoting.accessCodeTimerId = setInterval(
+          'remoting.decrementAccessCodeTimeout_()', 1000);
+      remoting.timerRunning = true;
+      remoting.updateAccessCodeTimeoutElement_();
+      updateTimeoutStyles_();
+      remoting.setHostMode('ready-to-share');
+    } else {
+      // This can only happen if the access code takes more than 5m to get from
+      // the cloud to the web-app, so we don't care how clean this UX is.
+      remoting.debug.log('Access code already invalid on receipt!');
+      remoting.cancelShare();
+    }
   } else if (state == plugin.CONNECTED) {
     remoting.setHostMode('shared');
   } else if (state == plugin.DISCONNECTED) {
@@ -303,6 +381,7 @@ remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   plugin.disconnect();
+  disableTimeoutCountdown_();
 }
 
 /**
