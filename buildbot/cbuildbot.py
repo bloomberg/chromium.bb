@@ -28,6 +28,7 @@ from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_background_stages as bg_stages
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
+from chromite.buildbot import tee
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -293,16 +294,6 @@ def RunBuildStages(bot_id, options, build_config):
   return stages.Results.Success()
 
 
-def _SetupRedirectOutputToFile():
-  """Create a tee subprocess and redirect stdout and stderr to it."""
-  cros_lib.Info('Saving output to %s file' % _BUILDBOT_LOG_FILE)
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-
-  tee = subprocess.Popen(['tee', _BUILDBOT_LOG_FILE], stdin=subprocess.PIPE)
-  os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-  os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-
-
 # Input validation functions
 
 
@@ -363,9 +354,18 @@ def _DetermineDefaultBuildRoot(git_url):
   return buildroot
 
 
-def _RunBuildStagesWithCheck(bot_id, options, build_config):
-  if not RunBuildStages(bot_id, options, build_config):
-    sys.exit(1)
+def _RunBuildStagesWrapper(bot_id, options, build_config):
+  """Helper function that wraps RunBuildStages()."""
+  # Start tee-ing output to file.
+  cros_lib.Info('Saving output to %s file' % _BUILDBOT_LOG_FILE)
+  tee_proc = tee.Tee(_BUILDBOT_LOG_FILE)
+  tee_proc.start()
+
+  try:
+    if not RunBuildStages(bot_id, options, build_config):
+      sys.exit(1)
+  finally:
+    tee_proc.stop()
 
 
 def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
@@ -375,7 +375,7 @@ def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
   sudo_queue = _LaunchSudoKeepAliveProcess()
 
   try:
-    _RunBuildStagesWithCheck(bot_id, options, build_config)
+    _RunBuildStagesWrapper(bot_id, options, build_config)
   finally:
     # Pass the stop message to the sudo process.
     sudo_queue.put(object())
@@ -606,10 +606,8 @@ def main(argv=None):
   if not options.buildbot and options.clobber:
     _ValidateClobber(options.buildroot)
 
-  _SetupRedirectOutputToFile()
-
   if options.buildbot:
-    _RunBuildStagesWithCheck(bot_id, options, build_config)
+    _RunBuildStagesWrapper(bot_id, options, build_config)
   else:
     _RunBuildStagesWithSudoProcess(bot_id, options, build_config)
 
