@@ -58,8 +58,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
 
   // pp::VideoDecoderClient_Dev implementation.
   virtual void ProvidePictureBuffers(
-      uint32_t req_num_of_bufs, PP_Size dimensions,
-      PP_PictureBufferType_Dev type);
+      uint32_t req_num_of_bufs, PP_Size dimensions);
   virtual void DismissPictureBuffer(int32_t picture_buffer_id);
   virtual void PictureReady(const PP_Picture_Dev& picture);
   virtual void EndOfStream();
@@ -80,7 +79,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   void DecodeNextNALUs();
   void DecodeNextNALU();
   void GetNextNALUBoundary(size_t start_pos, size_t* end_pos);
-  void Render(const PP_GLESBuffer_Dev& buffer);
+  void Render(const PP_PictureBuffer_Dev& buffer);
 
   // GL-related functions.
   void InitGL();
@@ -103,7 +102,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   int num_frames_rendered_;
 
   // Map of texture buffers indexed by buffer id.
-  typedef std::map<int, PP_GLESBuffer_Dev> PictureBufferMap;
+  typedef std::map<int, PP_PictureBuffer_Dev> PictureBufferMap;
   PictureBufferMap buffers_by_id_;
   // Map of bitstream buffers indexed by id.
   typedef std::map<int, pp::Buffer_Dev*> BitstreamBufferMap;
@@ -251,18 +250,17 @@ void GLES2DemoInstance::DecodeNextNALU() {
 }
 
 void GLES2DemoInstance::ProvidePictureBuffers(
-    uint32_t req_num_of_bufs, PP_Size dimensions,
-    PP_PictureBufferType_Dev type) {
-  std::vector<PP_GLESBuffer_Dev> buffers;
+    uint32_t req_num_of_bufs, PP_Size dimensions) {
+  std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; i++) {
-    PP_GLESBuffer_Dev buffer;
+    PP_PictureBuffer_Dev buffer;
     buffer.texture_id = CreateTexture(dimensions.width, dimensions.height);
     int id = ++next_picture_buffer_id_;
-    buffer.info.id= id;
+    buffer.id = id;
     buffers.push_back(buffer);
     assert(buffers_by_id_.insert(std::make_pair(id, buffer)).second);
   }
-  video_decoder_->AssignGLESBuffers(buffers);
+  video_decoder_->AssignPictureBuffers(buffers);
 }
 
 void GLES2DemoInstance::DismissPictureBuffer(int32_t picture_buffer_id) {
@@ -332,7 +330,7 @@ void GLES2DemoInstance::InitGL() {
   CreateGLObjects();
 }
 
-void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
+void GLES2DemoInstance::Render(const PP_PictureBuffer_Dev& buffer) {
   assert(!is_painting_);
   is_painting_ = true;
   gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
@@ -341,7 +339,7 @@ void GLES2DemoInstance::Render(const PP_GLESBuffer_Dev& buffer) {
   gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
-          &GLES2DemoInstance::PaintFinished, buffer.info.id);
+          &GLES2DemoInstance::PaintFinished, buffer.id);
   last_swap_request_ticks_ = core_if_->GetTimeTicks();
   assert(surface_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
 }

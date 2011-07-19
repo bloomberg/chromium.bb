@@ -50,12 +50,12 @@ int32_t Decode(PP_Resource video_decoder,
   return MayForceCallback(callback, result);
 }
 
-void AssignGLESBuffers(PP_Resource video_decoder,
-                       uint32_t no_of_buffers,
-                       const PP_GLESBuffer_Dev* buffers) {
+void AssignPictureBuffers(PP_Resource video_decoder,
+                          uint32_t no_of_buffers,
+                          const PP_PictureBuffer_Dev* buffers) {
   EnterVideoDecoder enter(video_decoder, true);
   if (enter.succeeded())
-    enter.object()->AssignGLESBuffers(no_of_buffers, buffers);
+    enter.object()->AssignPictureBuffers(no_of_buffers, buffers);
 }
 
 void ReusePictureBuffer(PP_Resource video_decoder, int32_t picture_buffer_id) {
@@ -92,7 +92,7 @@ const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
   &IsVideoDecoder,
   &Initialize,
   &Decode,
-  &AssignGLESBuffers,
+  &AssignPictureBuffers,
   &ReusePictureBuffer,
   &Flush,
   &Reset,

@@ -103,20 +103,20 @@ void GpuVideoDecodeAcceleratorHost::Decode(
       bitstream_buffer.id(), bitstream_buffer.size()));
 }
 
-void GpuVideoDecodeAcceleratorHost::AssignGLESBuffers(
-    const std::vector<media::GLESBuffer>& buffers) {
+void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
+    const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(CalledOnValidThread());
   // Rearrange data for IPC command.
   std::vector<int32> buffer_ids;
   std::vector<uint32> texture_ids;
   std::vector<gfx::Size> sizes;
   for (uint32 i = 0; i < buffers.size(); i++) {
-    const media::GLESBuffer& buffer = buffers[i];
+    const media::PictureBuffer& buffer = buffers[i];
     texture_ids.push_back(buffer.texture_id());
     buffer_ids.push_back(buffer.id());
     sizes.push_back(buffer.size());
   }
-  Send(new AcceleratedVideoDecoderMsg_AssignGLESBuffers(
+  Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(
       command_buffer_route_id_, SyncTokens(), buffer_ids, texture_ids, sizes));
 }
 
@@ -164,13 +164,9 @@ void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32 num_requested_buffers,
-    const gfx::Size& buffer_size,
-    int32 mem_type) {
+    const gfx::Size& buffer_size) {
   DCHECK(CalledOnValidThread());
-  media::VideoDecodeAccelerator::MemoryType converted_mem_type =
-      static_cast<media::VideoDecodeAccelerator::MemoryType>(mem_type);
-  client_->ProvidePictureBuffers(
-      num_requested_buffers, buffer_size, converted_mem_type);
+  client_->ProvidePictureBuffers(num_requested_buffers, buffer_size);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
@@ -185,11 +181,9 @@ void GpuVideoDecodeAcceleratorHost::OnInitializeDone() {
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(
-    int32 picture_buffer_id, int32 bitstream_buffer_id,
-    const gfx::Size& visible_size, const gfx::Size& decoded_size) {
+    int32 picture_buffer_id, int32 bitstream_buffer_id) {
   DCHECK(CalledOnValidThread());
-  media::Picture picture(
-      picture_buffer_id, bitstream_buffer_id, visible_size, decoded_size);
+  media::Picture picture(picture_buffer_id, bitstream_buffer_id);
   client_->PictureReady(picture);
 }
 

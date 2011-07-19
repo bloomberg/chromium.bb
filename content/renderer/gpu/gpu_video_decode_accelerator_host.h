@@ -42,8 +42,8 @@ class GpuVideoDecodeAcceleratorHost
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
-  virtual void AssignGLESBuffers(
-      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignPictureBuffers(
+      const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
@@ -58,13 +58,11 @@ class GpuVideoDecodeAcceleratorHost
 
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
   void OnProvidePictureBuffer(
-    uint32 num_requested_buffers, const gfx::Size& buffer_size, int32 mem_type);
+    uint32 num_requested_buffers, const gfx::Size& buffer_size);
   void OnDismissPictureBuffer(int32 picture_buffer_id);
   void OnInitializeDone();
   void OnPictureReady(int32 picture_buffer_id,
-                      int32 bitstream_buffer_id,
-                      const gfx::Size& visible_size,
-                      const gfx::Size& decoded_size);
+                      int32 bitstream_buffer_id);
   void OnFlushDone();
   void OnResetDone();
   void OnEndOfStream();

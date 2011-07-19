@@ -411,8 +411,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   // The heart of the Client.
   virtual void ProvidePictureBuffers(
       uint32 requested_num_of_buffers,
-      const gfx::Size& dimensions,
-      VideoDecodeAccelerator::MemoryType type);
+      const gfx::Size& dimensions);
   virtual void DismissPictureBuffer(int32 picture_buffer_id);
   virtual void PictureReady(const media::Picture& picture);
   // Simple state changes.
@@ -434,7 +433,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   bool decoder_deleted() { return !decoder_; }
 
  private:
-  typedef std::map<int, media::GLESBuffer*> PictureBufferById;
+  typedef std::map<int, media::PictureBuffer*> PictureBufferById;
 
   void SetState(ClientState new_state);
 
@@ -512,12 +511,10 @@ void EglRenderingVDAClient::CreateDecoder() {
 
 void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions,
-    VideoDecodeAccelerator::MemoryType type) {
+    const gfx::Size& dimensions) {
   if (decoder_deleted())
     return;
-  CHECK_EQ(type, VideoDecodeAccelerator::PICTUREBUFFER_MEMORYTYPE_GL_TEXTURE);
-  std::vector<media::GLESBuffer> buffers;
+  std::vector<media::PictureBuffer> buffers;
   CHECK_EQ(dimensions.width(), kFrameWidth);
   CHECK_EQ(dimensions.height(), kFrameHeight);
 
@@ -527,12 +524,12 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(rendering_window_id_, &texture_id, &done);
     done.Wait();
-    media::GLESBuffer* buffer =
-        new media::GLESBuffer(id, dimensions, texture_id);
+    media::PictureBuffer* buffer =
+        new media::PictureBuffer(id, dimensions, texture_id);
     CHECK(picture_buffers_by_id_.insert(std::make_pair(id, buffer)).second);
     buffers.push_back(*buffer);
   }
-  decoder_->AssignGLESBuffers(buffers);
+  decoder_->AssignPictureBuffers(buffers);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
   CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
 }
@@ -562,10 +559,10 @@ void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
   ++num_decoded_frames_;
 
-  media::GLESBuffer* gles_buffer =
+  media::PictureBuffer* picture_buffer =
       picture_buffers_by_id_[picture.picture_buffer_id()];
-  CHECK(gles_buffer);
-  rendering_helper_->RenderTexture(gles_buffer->texture_id());
+  CHECK(picture_buffer);
+  rendering_helper_->RenderTexture(picture_buffer->texture_id());
 
   decoder_->ReusePictureBuffer(picture.picture_buffer_id());
 }

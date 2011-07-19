@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_12 "PPB_VideoDecoder(Dev);0.12"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_12
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_13 "PPB_VideoDecoder(Dev);0.13"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_13
 
 // Video decoder interface.
 //
@@ -20,7 +20,7 @@
 //   configure the decoder there.
 // - Call Decode() to decode some video data.
 // - Receive ProvidePictureBuffers callback
-//   - Supply the decoder with textures using AssignGLESBuffers.
+//   - Supply the decoder with textures using AssignPictureBuffers.
 // - Receive PictureReady callbacks
 //   - Hand the textures back to the decoder using ReusePictureBuffer.
 // - To signal EOS to the decoder: call Flush() and wait for NotifyFlushDone
@@ -90,8 +90,9 @@ struct PPB_VideoDecoder_Dev {
   //   |no_of_buffers| how many buffers are behind picture buffer pointer.
   //   |buffers| contains the reference to the picture buffer that was
   //   allocated.
-  void (*AssignGLESBuffers)(PP_Resource video_decoder, uint32_t no_of_buffers,
-                            const struct PP_GLESBuffer_Dev* buffers);
+  void (*AssignPictureBuffers)(
+      PP_Resource video_decoder, uint32_t no_of_buffers,
+      const struct PP_PictureBuffer_Dev* buffers);
 
   // Tells the decoder to reuse the given picture buffer. Typical use of this
   // function is to call from PictureReady callback to recycle picture buffer

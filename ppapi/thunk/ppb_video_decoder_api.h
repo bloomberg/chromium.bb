@@ -19,8 +19,8 @@ class PPB_VideoDecoder_API {
                              PP_CompletionCallback callback) = 0;
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          PP_CompletionCallback callback) = 0;
-  virtual void AssignGLESBuffers(uint32_t no_of_buffers,
-                                 const PP_GLESBuffer_Dev* buffers) = 0;
+  virtual void AssignPictureBuffers(uint32_t no_of_buffers,
+                                    const PP_PictureBuffer_Dev* buffers) = 0;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) = 0;
   virtual int32_t Flush(PP_CompletionCallback callback) = 0;
   virtual int32_t Reset(PP_CompletionCallback callback) = 0;

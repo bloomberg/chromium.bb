@@ -36,9 +36,7 @@ class GpuVideoDecodeAccelerator
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers,
-      const gfx::Size& dimensions,
-      media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
+      uint32 requested_num_of_buffers, const gfx::Size& dimensions) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;
@@ -67,7 +65,7 @@ class GpuVideoDecodeAccelerator
   void OnDecode(
       const gpu::ReadWriteTokens& /* tokens */,
       base::SharedMemoryHandle handle, int32 id, int32 size);
-  void OnAssignGLESBuffers(
+  void OnAssignPictureBuffers(
       const gpu::ReadWriteTokens& /* tokens */,
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,

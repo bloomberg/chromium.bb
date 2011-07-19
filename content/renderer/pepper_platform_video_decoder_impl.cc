@@ -56,10 +56,10 @@ void PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
   decoder_->Decode(bitstream_buffer);
 }
 
-void PlatformVideoDecoderImpl::AssignGLESBuffers(
-    const std::vector<media::GLESBuffer>& buffers) {
+void PlatformVideoDecoderImpl::AssignPictureBuffers(
+    const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(decoder_);
-  decoder_->AssignGLESBuffers(buffers);
+  decoder_->AssignPictureBuffers(buffers);
 }
 
 void PlatformVideoDecoderImpl::ReusePictureBuffer(
@@ -96,10 +96,9 @@ void PlatformVideoDecoderImpl::NotifyError(
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions,
-    media::VideoDecodeAccelerator::MemoryType type) {
+    const gfx::Size& dimensions) {
   DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
-  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions, type);
+  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions);
 }
 
 void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {

@@ -30,8 +30,8 @@ class PlatformVideoDecoderImpl
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
-  virtual void AssignGLESBuffers(
-      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignPictureBuffers(
+      const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32 picture_buffer_id);
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
@@ -39,9 +39,7 @@ class PlatformVideoDecoderImpl
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers,
-      const gfx::Size& dimensions,
-      media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
+      uint32 requested_num_of_buffers, const gfx::Size& dimensions) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;

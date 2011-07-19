@@ -19,14 +19,13 @@ const char kPPPVideoDecoderInterface[] = PPP_VIDEODECODER_DEV_INTERFACE;
 // Callback to provide buffers for the decoded output pictures.
 void ProvidePictureBuffers(PP_Instance instance,
                            uint32_t req_num_of_bufs,
-                           struct PP_Size dimensions,
-                           enum PP_PictureBufferType_Dev type) {
+                           struct PP_Size dimensions) {
   void* object = pp::Instance::GetPerInstanceObject(
       instance, kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->ProvidePictureBuffers(
-      req_num_of_bufs, dimensions, type);
+      req_num_of_bufs, dimensions);
 }
 
 void DismissPictureBuffer(PP_Instance instance,

@@ -124,22 +124,22 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PPB_VideoDecoder_Impl::AssignGLESBuffers(
+void PPB_VideoDecoder_Impl::AssignPictureBuffers(
     uint32_t no_of_buffers,
-    const PP_GLESBuffer_Dev* buffers) {
+    const PP_PictureBuffer_Dev* buffers) {
   if (!platform_video_decoder_)
     return;
 
-  std::vector<media::GLESBuffer> wrapped_buffers;
+  std::vector<media::PictureBuffer> wrapped_buffers;
   for (uint32 i = 0; i < no_of_buffers; i++) {
-    PP_GLESBuffer_Dev in_buf = buffers[i];
-    media::GLESBuffer buffer(
-        in_buf.info.id,
-        gfx::Size(in_buf.info.size.width, in_buf.info.size.height),
+    PP_PictureBuffer_Dev in_buf = buffers[i];
+    media::PictureBuffer buffer(
+        in_buf.id,
+        gfx::Size(in_buf.size.width, in_buf.size.height),
         in_buf.texture_id);
     wrapped_buffers.push_back(buffer);
   }
-  platform_video_decoder_->AssignGLESBuffers(wrapped_buffers);
+  platform_video_decoder_->AssignPictureBuffers(wrapped_buffers);
 }
 
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
@@ -179,19 +179,13 @@ void PPB_VideoDecoder_Impl::Destroy() {
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
-    uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions,
-    media::VideoDecodeAccelerator::MemoryType type) {
+    uint32 requested_num_of_buffers, const gfx::Size& dimensions) {
   if (!ppp_videodecoder_)
     return;
 
-  // TODO(vrk): Compiler assert or use switch statement instead of making
-  // a blind cast.
-  PP_PictureBufferType_Dev out_type =
-      static_cast<PP_PictureBufferType_Dev>(type);
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
   ppp_videodecoder_->ProvidePictureBuffers(
-      instance()->pp_instance(), requested_num_of_buffers, out_dim, out_type);
+      instance()->pp_instance(), requested_num_of_buffers, out_dim);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
@@ -201,10 +195,6 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
-  output.visible_size = PP_MakeSize(picture.visible_size().width(),
-                                    picture.visible_size().height());
-  output.decoded_size = PP_MakeSize(picture.decoded_size().width(),
-                                    picture.decoded_size().height());
   ppp_videodecoder_->PictureReady(instance()->pp_instance(), output);
 }
 

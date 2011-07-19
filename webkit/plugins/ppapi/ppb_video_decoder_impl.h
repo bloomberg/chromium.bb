@@ -17,7 +17,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
-struct PP_GLESBuffer_Dev;
+struct PP_PictureBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
 struct PP_VideoBitstreamBuffer_Dev;
 struct PPB_VideoDecoder_Dev;
@@ -44,8 +44,8 @@ class PPB_VideoDecoder_Impl : public Resource,
                              PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          PP_CompletionCallback callback) OVERRIDE;
-  virtual void AssignGLESBuffers(uint32_t no_of_buffers,
-                                 const PP_GLESBuffer_Dev* buffers) OVERRIDE;
+  virtual void AssignPictureBuffers(
+      uint32_t no_of_buffers, const PP_PictureBuffer_Dev* buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
   virtual int32_t Flush(PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Reset(PP_CompletionCallback callback) OVERRIDE;
@@ -53,9 +53,7 @@ class PPB_VideoDecoder_Impl : public Resource,
 
   // media::VideoDecodeAccelerator::Client implementation.
   virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers,
-      const gfx::Size& dimensions,
-      media::VideoDecodeAccelerator::MemoryType type) OVERRIDE;
+      uint32 requested_num_of_buffers, const gfx::Size& dimensions) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;

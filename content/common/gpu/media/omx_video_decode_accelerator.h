@@ -44,8 +44,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // media::VideoDecodeAccelerator implementation.
   bool Initialize(const std::vector<uint32>& config) OVERRIDE;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
-  virtual void AssignGLESBuffers(
-      const std::vector<media::GLESBuffer>& buffers) OVERRIDE;
+  virtual void AssignPictureBuffers(
+      const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
   void ReusePictureBuffer(int32 picture_buffer_id) OVERRIDE;
   void Flush() OVERRIDE;
   void Reset() OVERRIDE;
@@ -70,12 +70,12 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   };
 
   // Helper struct for keeping track of the relationship between an OMX output
-  // buffer and the GLESBuffer it points to.
+  // buffer and the PictureBuffer it points to.
   struct OutputPicture {
-    OutputPicture(media::GLESBuffer g_b, OMX_BUFFERHEADERTYPE* o_b_h,
+    OutputPicture(media::PictureBuffer p_b, OMX_BUFFERHEADERTYPE* o_b_h,
                   EGLImageKHR e_i)
-        : gles_buffer(g_b), omx_buffer_header(o_b_h),  egl_image(e_i) {}
-    media::GLESBuffer gles_buffer;
+        : picture_buffer(p_b), omx_buffer_header(o_b_h),  egl_image(e_i) {}
+    media::PictureBuffer picture_buffer;
     OMX_BUFFERHEADERTYPE* omx_buffer_header;
     EGLImageKHR egl_image;
   };

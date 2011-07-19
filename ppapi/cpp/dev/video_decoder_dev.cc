@@ -47,11 +47,11 @@ int32_t VideoDecoder_Dev::Initialize(const PP_VideoConfigElement* config,
       callback.pp_completion_callback());
 }
 
-void VideoDecoder_Dev::AssignGLESBuffers(
-    const std::vector<PP_GLESBuffer_Dev>& buffers) {
+void VideoDecoder_Dev::AssignPictureBuffers(
+    const std::vector<PP_PictureBuffer_Dev>& buffers) {
   if (!has_interface<PPB_VideoDecoder_Dev>() || !pp_resource())
     return;
-  get_interface<PPB_VideoDecoder_Dev>()->AssignGLESBuffers(
+  get_interface<PPB_VideoDecoder_Dev>()->AssignPictureBuffers(
       pp_resource(), buffers.size(), &buffers[0]);
 }
 

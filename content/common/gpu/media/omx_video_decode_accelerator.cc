@@ -322,8 +322,8 @@ void OmxVideoDecodeAccelerator::Decode(
   input_buffers_at_component_++;
 }
 
-void OmxVideoDecodeAccelerator::AssignGLESBuffers(
-    const std::vector<media::GLESBuffer>& buffers) {
+void OmxVideoDecodeAccelerator::AssignPictureBuffers(
+    const std::vector<media::PictureBuffer>& buffers) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer",
                     VIDEODECODERERROR_UNSUPPORTED,);
@@ -619,15 +619,13 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   DCHECK(!pictures_.empty());
-  gfx::Size decoded_pixel_size(pictures_.begin()->second.gles_buffer.size());
-  gfx::Size visible_pixel_size(pictures_.begin()->second.gles_buffer.size());
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
-    media::GLESBuffer& gles_buffer = it->second.gles_buffer;
+    media::PictureBuffer& picture_buffer = it->second.picture_buffer;
     OMX_BUFFERHEADERTYPE** omx_buffer = &it->second.omx_buffer_header;
     DCHECK(!*omx_buffer);
     OMX_ERRORTYPE result = OMX_UseEGLImage(
-        component_handle_, omx_buffer, output_port_, &gles_buffer,
+        component_handle_, omx_buffer, output_port_, &picture_buffer,
         it->second.egl_image);
     RETURN_ON_OMX_FAILURE(result, "OMX_UseEGLImage",
                           VIDEODECODERERROR_MEMFAILURE, false);
@@ -635,8 +633,7 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
     // passing to PictureReady.
     int garbage_bitstream_buffer_id = -1;
     (*omx_buffer)->pAppPrivate =
-        new media::Picture(gles_buffer.id(), garbage_bitstream_buffer_id,
-                           decoded_pixel_size, visible_pixel_size);
+        new media::Picture(picture_buffer.id(), garbage_bitstream_buffer_id);
   }
   return true;
 }
@@ -692,14 +689,13 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   // this (there's already freeing logic there, which should not be duplicated).
 
   // Request picture buffers to be handed to the component.
-  // ProvidePictureBuffers() will trigger AssignGLESBuffers, which ultimately
+  // ProvidePictureBuffers() will trigger AssignPictureBuffers, which ultimately
   // assigns the textures to the component and re-enables the port.
   const OMX_VIDEO_PORTDEFINITIONTYPE& vformat = port_format.format.video;
   if (client_) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
-        gfx::Size(vformat.nFrameWidth, vformat.nFrameHeight),
-        PICTUREBUFFER_MEMORYTYPE_GL_TEXTURE);
+        gfx::Size(vformat.nFrameWidth, vformat.nFrameHeight));
   }
 }
 

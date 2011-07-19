@@ -475,7 +475,7 @@ IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
 // Sent from Renderer process to the GPU process to give the texture IDs for
 // the textures the decoder will use for output.  Delays evaluation until
 // |token.second| is seen.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
                     gpu::ReadWriteTokens, /* tokens */
                     std::vector<int32>, /* Picture buffer ID */
                     std::vector<uint32>, /* Texture ID */
@@ -510,10 +510,9 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
                     int32) /* Processed buffer ID */
 
 // Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
-                    int32,  /* Number of video frames to generate */
-                    gfx::Size, /* Requested size of buffer */
-                    int32) /* Type of buffer */
+IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
+                    int32, /* Number of video frames to generate */
+                    gfx::Size) /* Requested size of buffer */
 
 // Notify client that decoder has been initialized.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_InitializeDone)
@@ -524,11 +523,9 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
                     int32) /* Picture buffer ID */
 
 // Decoder reports that a picture is ready.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_PictureReady,
+IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_PictureReady,
                     int32,  /* Picture buffer ID */
-                    int32,  /* Bitstream buffer ID */
-                    gfx::Size, /* Visible size */
-                    gfx::Size) /* Decoded size */
+                    int32)  /* Bitstream buffer ID */
 
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)

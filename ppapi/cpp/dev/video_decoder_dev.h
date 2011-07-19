@@ -36,7 +36,7 @@ class VideoDecoder_Dev : public Resource {
   int32_t Initialize(const PP_VideoConfigElement* config,
                      const Context3D_Dev& context,
                      CompletionCallback callback);
-  void AssignGLESBuffers(const std::vector<PP_GLESBuffer_Dev>& buffers);
+  void AssignPictureBuffers(const std::vector<PP_PictureBuffer_Dev>& buffers);
   int32_t Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
                  CompletionCallback callback);
   void ReusePictureBuffer(int32_t picture_buffer_id);

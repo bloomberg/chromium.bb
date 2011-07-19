@@ -56,7 +56,7 @@ bool GpuVideoDecodeAccelerator::DeferMessageIfNeeded(
   // Only consider deferring for message types that need it.
   switch (msg.type()) {
     case AcceleratedVideoDecoderMsg_Decode::ID:
-    case AcceleratedVideoDecoderMsg_AssignGLESBuffers::ID:
+    case AcceleratedVideoDecoderMsg_AssignPictureBuffers::ID:
     case AcceleratedVideoDecoderMsg_ReusePictureBuffer::ID:
     case AcceleratedVideoDecoderMsg_Flush::ID:
     case AcceleratedVideoDecoderMsg_Reset::ID:
@@ -89,8 +89,8 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignGLESBuffers,
-                        OnAssignGLESBuffers)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
+                        OnAssignPictureBuffers)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
                         OnReusePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Flush, OnFlush)
@@ -110,11 +110,9 @@ void GpuVideoDecodeAccelerator::OnChannelError() {
 }
 
 void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
-    uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions,
-    media::VideoDecodeAccelerator::MemoryType type) {
+    uint32 requested_num_of_buffers, const gfx::Size& dimensions) {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
-          host_route_id_, requested_num_of_buffers, dimensions, type))) {
+          host_route_id_, requested_num_of_buffers, dimensions))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                << "failed";
   }
@@ -135,9 +133,7 @@ void GpuVideoDecodeAccelerator::PictureReady(
   if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(
           host_route_id_,
           picture.picture_buffer_id(),
-          picture.bitstream_buffer_id(),
-          picture.visible_size(),
-          picture.decoded_size()))) {
+          picture.bitstream_buffer_id()))) {
     LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_PictureReady) failed";
   }
 }
@@ -177,7 +173,7 @@ void GpuVideoDecodeAccelerator::OnDecode(
   video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
 
-void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
+void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const gpu::ReadWriteTokens& /* tokens */,
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
@@ -185,7 +181,7 @@ void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
   DCHECK(stub_ && stub_->scheduler());  // Ensure already Initialize()'d.
   gpu::gles2::GLES2Decoder* command_decoder = stub_->scheduler()->decoder();
 
-  std::vector<media::GLESBuffer> buffers;
+  std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(
@@ -194,10 +190,10 @@ void GpuVideoDecodeAccelerator::OnAssignGLESBuffers(
       LOG(DFATAL) << "Failed to translate texture!";
       return;
     }
-    buffers.push_back(media::GLESBuffer(
+    buffers.push_back(media::PictureBuffer(
         buffer_ids[i], sizes[i], service_texture_id));
   }
-  video_decode_accelerator_->AssignGLESBuffers(buffers);
+  video_decode_accelerator_->AssignPictureBuffers(buffers);
 }
 
 void GpuVideoDecodeAccelerator::OnReusePictureBuffer(

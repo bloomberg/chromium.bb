@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.5"
+#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.6"
 
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder
@@ -31,8 +31,7 @@ struct PPP_VideoDecoder_Dev {
   void (*ProvidePictureBuffers)(
       PP_Instance instance,
       uint32_t req_num_of_bufs,
-      struct PP_Size dimensions,
-      enum PP_PictureBufferType_Dev type);
+      struct PP_Size dimensions);
 
   // Callback function for decoder to deliver unneeded picture buffers back to
   // the plugin.
