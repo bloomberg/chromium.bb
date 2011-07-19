@@ -2558,6 +2558,7 @@
         'browser/ui/cocoa/applescript/window_applescript_test.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
+        'browser/ui/panels/panel_app_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_browser_view_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',

@@ -27,7 +27,16 @@ class PanelBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
+// TODO(dimich): Need to do 2 things before enabling it for Mac:
+//               a) Add NativePanelTesting::SetUpForTesting()
+//               b) Move this test into a panel_unittest.cc
+#ifdef OS_MACOSX
+#define MAYBE_CreatePanel DISABLED_CreatePanel
+#else
+#define MAYBE_CreatePanel CreatePanel
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->active_count()); // No panels initially.
 

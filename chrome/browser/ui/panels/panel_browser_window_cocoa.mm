@@ -42,7 +42,8 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
                                                  const gfx::Rect& bounds)
   : browser_(browser),
     panel_(panel),
-    bounds_(bounds) {
+    bounds_(bounds),
+    is_shown_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
 }
 
@@ -57,16 +58,15 @@ void PanelBrowserWindowCocoa::ShowPanel() {
   if (isClosed())
     return;
 
+  // Browser calls this several times, meaning 'ensure it's shown'.
+  // Animations don't look good when repeated - hence this flag is needed.
+  if (is_shown_) {
+    return;
+  }
+  is_shown_ = true;
+
   NSRect finalFrame = ConvertCoordinatesToCocoa(GetPanelBounds());
-  NSRect startFrame = NSMakeRect(NSMinX(finalFrame), NSMinY(finalFrame),
-                                 NSWidth(finalFrame), kMinimumWindowSize);
-  NSWindow* window = [controller_ window];
-  // Show the window, using OS-specific animation.
-  [window setFrame:startFrame display:NO animate:NO];
-  // Shows the window without making it key, on top of its layer, even if
-  // Chromium is not an active app.
-  [window orderFrontRegardless];
-  [window setFrame:finalFrame display:YES animate:YES];
+  [controller_ revealAnimatedWithFrame:finalFrame];
 }
 
 void PanelBrowserWindowCocoa::ShowPanelInactive() {
@@ -102,6 +102,8 @@ void PanelBrowserWindowCocoa::ClosePanel() {
   NSWindow* window = [controller_ window];
   NSRect frame = [window frame];
   frame.size.height = kMinimumWindowSize;
+  // TODO(dimich): make this async. Currently, multiple panels will serially
+  // (and annoyingly) close when user exits Chrome.
   [window setFrame:frame display:YES animate:YES];
   browser_->OnWindowClosing();
   DestroyPanelBrowser();  // not immediately, though.

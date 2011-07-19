@@ -24,6 +24,7 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
+    [PanelWindowControllerCocoa enableMockTabContentsView];
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {

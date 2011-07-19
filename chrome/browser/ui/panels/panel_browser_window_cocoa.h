@@ -48,6 +48,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
+  Browser* browser() { return browser_.get(); }
 
  private:
   friend class PanelBrowserWindowCocoaTest;
@@ -63,6 +64,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
+  bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
 };
