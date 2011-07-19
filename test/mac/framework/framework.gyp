@@ -3,11 +3,19 @@
 # found in the LICENSE file.
 {
   'targets': [
+    {
+      'target_name': 'dep_framework',
+      'product_name': 'Dependency Framework',
+      'type': 'shared_library',
+      'mac_bundle': 1,
+      'sources': [ 'empty.c', ],
+    },
     {    
       'target_name': 'test_framework',
       'product_name': 'Test Framework',
       'type': 'shared_library',
       'mac_bundle': 1,
+      'dependencies': [ 'dep_framework', ],
       'sources': [
         'TestFramework/ObjCVector.h',
         'TestFramework/ObjCVectorInternal.h',

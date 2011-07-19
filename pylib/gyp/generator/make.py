@@ -132,7 +132,7 @@ LINK_COMMANDS_LINUX = """\
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--start-group $(LD_INPUTS) -Wl,--end-group $(LIBS)
 
 # We support two kinds of shared objects (.so):
 # 1) shared_library, which is just bundling together many dependent libraries
@@ -151,7 +151,7 @@ cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o $@ -Wl,--s
 # - Set SONAME to the library filename so our binaries don't reference
 # the local, absolute paths used on the link command-line.
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(filter-out FORCE_DO_CMD, $^) -Wl,--no-whole-archive $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--whole-archive $(LD_INPUTS) -Wl,--no-whole-archive $(LIBS)
 
 quiet_cmd_solink_module = SOLINK_MODULE($(TOOLSET)) $@
 cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $(filter-out FORCE_DO_CMD, $^) -Wl,--end-group $(LIBS)
@@ -159,12 +159,12 @@ cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSE
 
 LINK_COMMANDS_MAC = """\
 quiet_cmd_link = LINK($(TOOLSET)) $@
-cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+cmd_link = $(LINK.$(TOOLSET)) $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
 
 # TODO(thakis): Find out and document the difference between shared_library and
 # loadable_module on mac.
 quiet_cmd_solink = SOLINK($(TOOLSET)) $@
-cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(filter-out FORCE_DO_CMD, $^) $(LIBS)
+cmd_solink = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSET)) -o "$@" $(LD_INPUTS) $(LIBS)
 
 # TODO(thakis): The solink_module rule is likely wrong. Xcode seems to pass
 # -bundle -single_module here (for osmesa.so).
@@ -1686,12 +1686,22 @@ class MakefileWriter:
       self.WriteLn('\t@touch -c %s' % self.output)
 
     if self.type == 'executable':
+      self.WriteLn(
+          '%s: LD_INPUTS := %s' % (self.output_binary, ' '.join(link_deps)))
       self.WriteDoCmd([self.output_binary], link_deps, 'link', part_of_all)
     elif self.type == 'static_library':
+      for link_dep in link_deps:
+        assert ' ' not in link_dep, (
+            "Spaces in alink input filenames not supported (%s)"  % link_dep)
       self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all)
     elif self.type == 'shared_library':
+      self.WriteLn(
+          '%s: LD_INPUTS := %s' % (self.output_binary, ' '.join(link_deps)))
       self.WriteDoCmd([self.output_binary], link_deps, 'solink', part_of_all)
     elif self.type == 'loadable_module':
+      for link_dep in link_deps:
+        assert ' ' not in link_dep, (
+            "Spaces in module input filenames not supported (%s)"  % link_dep)
       self.WriteDoCmd(
           [self.output_binary], link_deps, 'solink_module', part_of_all)
     elif self.type == 'none':
