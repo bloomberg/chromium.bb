@@ -87,6 +87,11 @@ MenuConfig* MenuConfig::Create() {
     config->separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
   }
 
+  // On Windows, having some menus use wider spacing than others looks wrong.
+  // See http://crbug.com/88875
+  config->item_no_icon_bottom_margin = config->item_bottom_margin;
+  config->item_no_icon_top_margin = config->item_top_margin;
+
   BOOL show_cues;
   config->show_mnemonics =
       (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &show_cues, 0) &&
