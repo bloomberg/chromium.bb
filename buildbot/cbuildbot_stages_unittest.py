@@ -850,7 +850,7 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(shutil, 'rmtree')
 
     self.options.buildbot = False
-    shutil.rmtree(mox.Regex(r'^%s' % self.build_root))
+    shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,
         self.options.buildnumber, None, mox.Regex(r'^%s' % self.build_root),
