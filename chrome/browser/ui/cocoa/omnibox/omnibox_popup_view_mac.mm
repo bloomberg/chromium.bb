@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"

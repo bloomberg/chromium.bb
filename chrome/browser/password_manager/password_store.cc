@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "content/browser/browser_thread.h"

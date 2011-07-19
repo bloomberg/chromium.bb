@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/net/http_return.h"

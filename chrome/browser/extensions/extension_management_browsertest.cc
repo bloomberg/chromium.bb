@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"

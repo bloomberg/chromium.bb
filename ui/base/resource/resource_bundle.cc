@@ -5,7 +5,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"

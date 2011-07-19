@@ -14,7 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/canvas_skia.h"

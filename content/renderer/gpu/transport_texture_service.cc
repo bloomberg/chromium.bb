@@ -4,7 +4,7 @@
 
 #include "content/renderer/gpu/transport_texture_service.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/transport_texture_host.h"

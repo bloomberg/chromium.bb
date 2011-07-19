@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 

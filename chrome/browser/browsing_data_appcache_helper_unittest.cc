@@ -4,7 +4,7 @@
 
 #include "chrome/browser/browsing_data_appcache_helper.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

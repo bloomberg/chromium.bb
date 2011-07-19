@@ -5,7 +5,7 @@
 #include "content/renderer/web_ui_bindings.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"

@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

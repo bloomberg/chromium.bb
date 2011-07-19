@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/path_service.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

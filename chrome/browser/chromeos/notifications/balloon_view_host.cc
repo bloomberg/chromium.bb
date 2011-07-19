@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/common/view_messages.h"

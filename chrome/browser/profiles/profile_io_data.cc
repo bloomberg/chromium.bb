@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"

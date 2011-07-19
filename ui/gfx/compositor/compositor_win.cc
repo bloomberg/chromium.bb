@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/win/scoped_comptr.h"
 #include "grit/gfx_resources.h"

@@ -4,7 +4,7 @@
 
 #include "content/renderer/media/video_capture_impl.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/common/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 

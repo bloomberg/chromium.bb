@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"

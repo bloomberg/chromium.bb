@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/observer_list.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 CommandUpdater::CommandUpdaterDelegate::~CommandUpdaterDelegate() {
 }

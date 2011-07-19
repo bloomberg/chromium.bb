@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

@@ -5,7 +5,7 @@
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCommon.h"

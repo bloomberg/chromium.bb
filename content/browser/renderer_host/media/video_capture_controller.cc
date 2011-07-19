@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"

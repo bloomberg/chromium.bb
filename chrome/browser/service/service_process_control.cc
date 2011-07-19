@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"

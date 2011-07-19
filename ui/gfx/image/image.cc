@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_USES_GTK)

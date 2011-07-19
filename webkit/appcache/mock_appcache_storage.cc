@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"

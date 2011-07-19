@@ -5,7 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "base/i18n/case_conversion.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"

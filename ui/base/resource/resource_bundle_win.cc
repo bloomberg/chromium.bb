@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/resource_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"

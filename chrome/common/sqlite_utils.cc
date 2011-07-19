@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 

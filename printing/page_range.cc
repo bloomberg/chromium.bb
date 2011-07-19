@@ -4,7 +4,8 @@
 
 #include "printing/page_range.h"
 
-#include "base/stl_util-inl.h"
+#include <set>
+#include <vector>
 
 namespace printing {
 
@@ -18,7 +19,7 @@ std::vector<int> PageRange::GetPages(const PageRanges& ranges) {
       pages.insert(i);
     }
   }
-  return SetToVector(pages);
+  return std::vector<int>(pages.begin(), pages.end());
 }
 
 /* static */

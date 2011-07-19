@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/pickle.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"

@@ -9,7 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"

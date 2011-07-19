@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"

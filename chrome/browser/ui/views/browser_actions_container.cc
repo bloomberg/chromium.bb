@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/browser_actions_container.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"

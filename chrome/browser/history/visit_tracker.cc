@@ -4,7 +4,7 @@
 
 #include "chrome/browser/history/visit_tracker.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 namespace history {
 

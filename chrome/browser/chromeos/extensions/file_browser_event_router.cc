@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

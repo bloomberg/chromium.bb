@@ -10,7 +10,7 @@
 #include "third_party/zlib/zlib.h"
 #endif
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/browser/clipboard_dispatcher.h"
 #include "content/browser/content_browser_client.h"
 #include "content/common/clipboard_messages.h"

@@ -6,12 +6,13 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"

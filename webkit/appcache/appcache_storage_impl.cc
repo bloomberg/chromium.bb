@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"

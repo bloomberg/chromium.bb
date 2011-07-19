@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"

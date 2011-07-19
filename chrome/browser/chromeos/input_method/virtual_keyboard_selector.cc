@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 namespace {
 const char kDefaultURLPath[] = "index.html";

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/app/chrome_command_ids.h"

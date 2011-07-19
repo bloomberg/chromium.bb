@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/url_constants.h"

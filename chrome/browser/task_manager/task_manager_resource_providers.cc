@@ -8,7 +8,7 @@
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"

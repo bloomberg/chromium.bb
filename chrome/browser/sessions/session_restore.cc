@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"

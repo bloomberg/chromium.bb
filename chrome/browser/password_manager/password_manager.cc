@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"

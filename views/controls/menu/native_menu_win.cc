@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "third_party/skia/include/core/SkBitmap.h"

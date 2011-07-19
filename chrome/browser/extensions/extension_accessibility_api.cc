@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include "base/json/json_writer.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"

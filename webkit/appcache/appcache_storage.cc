@@ -4,7 +4,7 @@
 
 #include "webkit/appcache/appcache_storage.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/quota/quota_client.h"

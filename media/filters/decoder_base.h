@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "media/base/buffers.h"

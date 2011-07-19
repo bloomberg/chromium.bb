@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"

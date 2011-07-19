@@ -5,7 +5,7 @@
 #include "ui/gfx/compositor/layer_animator.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/compositor/compositor.h"

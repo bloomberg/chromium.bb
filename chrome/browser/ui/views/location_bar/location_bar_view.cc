@@ -9,7 +9,7 @@
 #endif
 
 #include "base/command_line.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"

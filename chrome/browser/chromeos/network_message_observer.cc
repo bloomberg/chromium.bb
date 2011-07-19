@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

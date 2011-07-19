@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"

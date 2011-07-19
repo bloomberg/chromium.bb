@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"

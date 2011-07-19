@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

@@ -5,7 +5,7 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/crl_filter.h"

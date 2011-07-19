@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 // If the browser stays open long enough, we reset state once a day.

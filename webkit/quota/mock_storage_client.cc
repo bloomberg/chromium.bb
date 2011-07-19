@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop_proxy.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_manager.h"
 

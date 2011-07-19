@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"

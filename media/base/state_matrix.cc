@@ -4,7 +4,7 @@
 
 #include "media/base/state_matrix.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 namespace media {
 

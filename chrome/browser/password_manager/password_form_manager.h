@@ -11,7 +11,7 @@
 
 #include "build/build_config.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "webkit/glue/password_form.h"
 

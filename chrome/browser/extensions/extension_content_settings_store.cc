@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_content_settings_api_constants.h"
 #include "chrome/browser/extensions/extension_content_settings_helpers.h"

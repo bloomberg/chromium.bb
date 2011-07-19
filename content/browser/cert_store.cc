@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_service.h"

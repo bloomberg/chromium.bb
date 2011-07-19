@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/task.h"
 #include "base/tracked.h"

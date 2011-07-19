@@ -4,7 +4,7 @@
 
 #include "webkit/appcache/appcache_backend_impl.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_service.h"

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "remoting/base/capture_data.h"

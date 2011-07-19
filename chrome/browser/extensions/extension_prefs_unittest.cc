@@ -5,7 +5,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_prefs.h"

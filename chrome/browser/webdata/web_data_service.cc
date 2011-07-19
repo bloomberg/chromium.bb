@@ -5,7 +5,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"

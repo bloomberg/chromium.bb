@@ -7,7 +7,7 @@
 #include <map>
 #include <utility>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/safe_browsing/csd.pb.h"

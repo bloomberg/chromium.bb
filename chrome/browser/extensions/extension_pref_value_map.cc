@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 

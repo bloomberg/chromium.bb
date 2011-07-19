@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"

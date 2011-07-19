@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
 StatusTray::StatusTray() {

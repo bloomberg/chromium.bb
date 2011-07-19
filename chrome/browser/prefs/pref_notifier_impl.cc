@@ -4,7 +4,7 @@
 
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_observer.h"

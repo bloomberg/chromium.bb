@@ -5,7 +5,7 @@
 #include "media/base/async_filter_factory_base.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 namespace media {
 

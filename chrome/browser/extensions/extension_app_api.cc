@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_app_api.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"

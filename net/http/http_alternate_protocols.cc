@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 namespace net {
 

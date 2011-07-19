@@ -4,7 +4,7 @@
 
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/gles2_texture_to_egl_image_translator.h"

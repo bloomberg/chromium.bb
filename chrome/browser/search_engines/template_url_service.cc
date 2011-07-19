@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/case_conversion.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/login/login_model.h"

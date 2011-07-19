@@ -36,7 +36,7 @@
 #include <vector>
 #include <map>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/file_util.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/parsers/metadata_parser_factory.h"
 #include "chrome/browser/parsers/metadata_parser_jpeg_factory.h"

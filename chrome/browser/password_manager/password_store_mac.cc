@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"

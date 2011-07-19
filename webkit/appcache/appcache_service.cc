@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_quota_client.h"

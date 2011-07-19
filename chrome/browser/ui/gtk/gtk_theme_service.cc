@@ -11,7 +11,7 @@
 
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service_factory.h"

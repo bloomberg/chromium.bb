@@ -5,7 +5,7 @@
 #include "chrome/browser/tabs/tab_finder.h"
 
 #include "base/command_line.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

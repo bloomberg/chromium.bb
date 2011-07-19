@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/common/extensions/extension.h"

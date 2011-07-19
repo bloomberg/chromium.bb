@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

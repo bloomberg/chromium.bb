@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/common/p2p_messages.h"
 #include "net/base/address_list.h"

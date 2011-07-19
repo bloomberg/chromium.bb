@@ -9,7 +9,7 @@
 #include <map>
 #include <utility>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/browser/policy/policy_map.h"

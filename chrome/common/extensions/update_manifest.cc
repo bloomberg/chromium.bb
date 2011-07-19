@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"

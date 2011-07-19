@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/prefs/pref_service.h"

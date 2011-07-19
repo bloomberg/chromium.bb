@@ -5,7 +5,7 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 
 namespace remoting {

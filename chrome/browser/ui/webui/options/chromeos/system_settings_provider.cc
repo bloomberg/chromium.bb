@@ -8,7 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"

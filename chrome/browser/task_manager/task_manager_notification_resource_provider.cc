@@ -5,7 +5,7 @@
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 
 #include "base/basictypes.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"

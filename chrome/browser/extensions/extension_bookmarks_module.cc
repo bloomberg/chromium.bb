@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"

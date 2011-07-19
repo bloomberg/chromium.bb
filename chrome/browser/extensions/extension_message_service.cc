@@ -6,7 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/json/json_writer.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"

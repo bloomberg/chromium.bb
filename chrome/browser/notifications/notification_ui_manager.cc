@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/idle.h"

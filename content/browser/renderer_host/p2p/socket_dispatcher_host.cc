@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

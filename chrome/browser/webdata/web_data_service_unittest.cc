@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"

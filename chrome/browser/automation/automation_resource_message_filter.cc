@@ -6,7 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/net/url_request_mock_util.h"

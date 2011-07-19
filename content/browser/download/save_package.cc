@@ -11,7 +11,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"

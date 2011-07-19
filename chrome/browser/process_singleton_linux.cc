@@ -67,7 +67,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/safe_strerror_posix.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"

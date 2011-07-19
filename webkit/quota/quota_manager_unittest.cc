@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"

@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"

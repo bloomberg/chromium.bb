@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/time.h"

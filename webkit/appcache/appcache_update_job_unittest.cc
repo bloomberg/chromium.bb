@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"

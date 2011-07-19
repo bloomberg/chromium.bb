@@ -4,7 +4,7 @@
 
 #include "chrome/browser/notifications/balloon_collection_base.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
 #include "googleurl/src/gurl.h"

@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"

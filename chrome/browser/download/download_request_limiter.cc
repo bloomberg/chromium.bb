@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/download_request_limiter.h"
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

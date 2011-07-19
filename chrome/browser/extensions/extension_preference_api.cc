@@ -8,7 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"

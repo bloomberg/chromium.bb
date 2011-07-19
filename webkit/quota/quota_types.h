@@ -8,11 +8,12 @@
 
 #include <deque>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback_old.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 class GURL;
 

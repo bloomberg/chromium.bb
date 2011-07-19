@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/search_engine_type.h"

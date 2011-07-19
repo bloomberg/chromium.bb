@@ -5,15 +5,15 @@
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "net/url_request/url_request.h"
 
 namespace {
 
-class ChromeDnsCertProvenanceChecker :
-    public net::DnsCertProvenanceChecker,
-    public net::DnsCertProvenanceChecker::Delegate {
+class ChromeDnsCertProvenanceChecker
+    : public net::DnsCertProvenanceChecker,
+      public net::DnsCertProvenanceChecker::Delegate {
  public:
   ChromeDnsCertProvenanceChecker(
       net::DnsRRResolver* dnsrr_resolver,

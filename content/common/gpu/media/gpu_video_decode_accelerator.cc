@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"

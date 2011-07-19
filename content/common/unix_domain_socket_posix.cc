@@ -12,7 +12,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 
 // static
 bool UnixDomainSocket::SendMsg(int fd,

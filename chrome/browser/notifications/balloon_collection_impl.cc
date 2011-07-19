@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification.h"

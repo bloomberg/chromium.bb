@@ -5,7 +5,7 @@
 #include "chrome/browser/sessions/base_session_service.h"
 
 #include "base/pickle.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

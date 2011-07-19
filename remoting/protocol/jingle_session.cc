@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "crypto/hmac.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"

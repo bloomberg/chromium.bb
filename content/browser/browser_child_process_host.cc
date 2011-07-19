@@ -11,7 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"

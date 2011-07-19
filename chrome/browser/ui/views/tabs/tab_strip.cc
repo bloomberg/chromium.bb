@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/themes/theme_service.h"

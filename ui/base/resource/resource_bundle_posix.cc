@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"

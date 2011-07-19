@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"

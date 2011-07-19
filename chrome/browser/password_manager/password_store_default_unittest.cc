@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"

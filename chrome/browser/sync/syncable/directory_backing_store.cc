@@ -16,7 +16,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"

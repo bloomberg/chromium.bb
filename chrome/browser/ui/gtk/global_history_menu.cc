@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/top_sites.h"

@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
-#include "base/stl_util-inl.h"
+#include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
