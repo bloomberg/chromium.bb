@@ -530,6 +530,10 @@ View* Widget::GetRootView() {
   return root_view_.get();
 }
 
+const View* Widget::GetRootView() const {
+  return root_view_.get();
+}
+
 bool Widget::IsVisible() const {
   return native_widget_->IsVisible();
 }
@@ -922,6 +926,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
 void Widget::OnMouseCaptureLost() {
   if (is_mouse_button_pressed_)
     GetRootView()->OnMouseCaptureLost();
+  static_cast<internal::RootView*>(GetRootView())->set_capture_view(NULL);
   is_mouse_button_pressed_ = false;
 }
 

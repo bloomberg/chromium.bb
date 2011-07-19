@@ -938,6 +938,7 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
     TouchFactory::GetInstance()->UngrabTouchDevices(
         GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif
+    delegate_->OnMouseCaptureLost();
   }
 }
 

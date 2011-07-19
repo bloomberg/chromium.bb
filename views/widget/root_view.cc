@@ -168,11 +168,11 @@ void RootView::SchedulePaintInternal(const gfx::Rect& rect) {
 }
 
 bool RootView::OnMousePressed(const MouseEvent& event) {
-  if (capture_view_) {
-    MouseEvent e(event, this, capture_view_);
-    return capture_view_->OnMousePressed(e);
-  }
   MouseEvent e(event, this);
+  if (capture_view_) {
+    MouseEvent ce(e, this, capture_view_);
+    return capture_view_->OnMousePressed(ce);
+  }
 
   UpdateCursor(e);
   SetMouseLocationAndFlags(e);
@@ -247,12 +247,12 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
 }
 
 bool RootView::OnMouseDragged(const MouseEvent& event) {
+  MouseEvent e(event, this);
   if (capture_view_) {
-    MouseEvent e(event, this, capture_view_);
-    return capture_view_->OnMouseDragged(e);
+    MouseEvent ce(e, this, capture_view_);
+    return capture_view_->OnMouseDragged(ce);
   }
 
-  MouseEvent e(event, this);
   UpdateCursor(e);
 
   if (mouse_pressed_handler_) {
@@ -265,13 +265,13 @@ bool RootView::OnMouseDragged(const MouseEvent& event) {
 }
 
 void RootView::OnMouseReleased(const MouseEvent& event) {
+  MouseEvent e(event, this);
   if (capture_view_) {
-    MouseEvent e(event, this, capture_view_);
-    capture_view_->OnMouseReleased(e);
+    MouseEvent ce(e, this, capture_view_);
+    capture_view_->OnMouseReleased(ce);
     return;
   }
 
-  MouseEvent e(event, this);
   UpdateCursor(e);
 
   if (mouse_pressed_handler_) {
@@ -308,13 +308,13 @@ void RootView::OnMouseCaptureLost() {
 }
 
 void RootView::OnMouseMoved(const MouseEvent& event) {
+  MouseEvent e(event, this);
   if (capture_view_) {
-    MouseEvent e(event, this, capture_view_);
-    capture_view_->OnMouseMoved(e);
+    MouseEvent ce(e, this, capture_view_);
+    capture_view_->OnMouseMoved(ce);
     return;
   }
 
-  MouseEvent e(event, this);
   View* v = GetEventHandlerForPoint(e.location());
   // Find the first enabled view, or the existing move handler, whichever comes
   // first.  The check for the existing handler is because if a view becomes

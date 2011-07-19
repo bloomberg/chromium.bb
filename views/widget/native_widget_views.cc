@@ -207,7 +207,14 @@ void NativeWidgetViews::ReleaseMouseCapture() {
 bool NativeWidgetViews::HasMouseCapture() const {
   // NOTE: we may need to tweak this to only return true if the parent native
   // widget's RootView has us as the capture view.
-  return GetParentNativeWidget()->HasMouseCapture();
+  const internal::NativeWidgetPrivate* parent_widget = GetParentNativeWidget();
+  if (!parent_widget)
+    return false;
+  const internal::RootView* parent_root =
+      static_cast<const internal::RootView*>(parent_widget->GetWidget()->
+                  GetRootView());
+  return parent_widget->HasMouseCapture() &&
+         view_.get() == parent_root->capture_view();
 }
 
 void NativeWidgetViews::SetKeyboardCapture() {

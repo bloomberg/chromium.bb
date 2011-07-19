@@ -20,6 +20,18 @@
 namespace views {
 namespace {
 
+// A view that always processes all mouse events.
+class MouseView : public View {
+ public:
+  MouseView() : View() {
+  }
+  virtual ~MouseView() {}
+
+  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {
+    return true;
+  }
+};
+
 class WidgetTestViewsDelegate : public TestViewsDelegate {
  public:
   WidgetTestViewsDelegate() : default_parent_view_(NULL) {
@@ -114,6 +126,11 @@ Widget* CreateChildNativeWidgetViews() {
   return CreateChildNativeWidgetViewsWithParent(NULL);
 }
 
+bool WidgetHasMouseCapture(const Widget* widget) {
+  return static_cast<const internal::NativeWidgetPrivate*>(widget->
+      native_widget())-> HasMouseCapture();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget::GetTopLevelWidget tests.
 
@@ -167,6 +184,49 @@ TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
 
   toplevel->CloseNow();
   // |child1| and |child11| should be destroyed with |toplevel|.
+}
+
+// Tests some grab/ungrab events.
+TEST_F(WidgetTest, GrabUngrab) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  views_delegate.set_default_parent_view(toplevel->GetRootView());
+
+  Widget* child1 = CreateChildNativeWidgetViews(); // Will be parented
+                                                   // automatically to
+                                                   // |toplevel|.
+  Widget* child2 = CreateChildNativeWidgetViews();
+
+  toplevel->SetBounds(gfx::Rect(0, 0, 500, 500));
+
+  child1->SetBounds(gfx::Rect(10, 10, 300, 300));
+  View* view = new MouseView();
+  view->SetBounds(0, 0, 300, 300);
+  child1->GetRootView()->AddChildView(view);
+
+  child2->SetBounds(gfx::Rect(200, 10, 200, 200));
+  view = new MouseView();
+  view->SetBounds(0, 0, 200, 200);
+  child2->GetRootView()->AddChildView(view);
+
+  toplevel->Show();
+  RunPendingMessages();
+
+  // Click on child1
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 15, 15, ui::EF_LEFT_BUTTON_DOWN);
+  toplevel->OnMouseEvent(pressed);
+
+  EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
+  EXPECT_TRUE(WidgetHasMouseCapture(child1));
+  EXPECT_FALSE(WidgetHasMouseCapture(child2));
+
+  MouseEvent released(ui::ET_MOUSE_RELEASED, 15, 15, ui::EF_LEFT_BUTTON_DOWN);
+  toplevel->OnMouseEvent(released);
+
+  EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
+  EXPECT_FALSE(WidgetHasMouseCapture(child1));
+  EXPECT_FALSE(WidgetHasMouseCapture(child2));
+
+  toplevel->CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

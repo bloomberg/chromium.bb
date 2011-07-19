@@ -360,6 +360,7 @@ class Widget : public internal::NativeWidgetDelegate,
   // Returns the View at the root of the View hierarchy contained by this
   // Widget.
   View* GetRootView();
+  const View* GetRootView() const;
 
   // A secondary widget is one that is automatically closed (via Close()) when
   // all non-secondary widgets are closed.
