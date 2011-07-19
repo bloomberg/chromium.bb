@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
-#import <QuartzCore/QuartzCore.h>
-
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
@@ -17,6 +15,7 @@
 
 namespace  {
 const CGFloat kButtonWidth = 16;
+const CGFloat kFramesPerSecond = 16; // Determined experimentally to look good.
 const CGFloat kCircleRadius = 0.415 * kButtonWidth;
 const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
@@ -25,9 +24,9 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 const CGFloat kDefaultAnimationDuration = 0.25;
 
 // Images that are used for all close buttons. Set up in +initialize.
-CIImage* gHoverNoneImage = nil;
-CIImage* gHoverMouseOverImage = nil;
-CIImage* gHoverMouseDownImage = nil;
+NSImage* gHoverNoneImage = nil;
+NSImage* gHoverMouseOverImage = nil;
+NSImage* gHoverMouseDownImage = nil;
 
 // Strings that are used for all close buttons. Set up in +initialize.
 NSString* gTooltip = nil;
@@ -46,8 +45,8 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 // Called by |fadeOutAnimation_| when animated value changes.
 - (void)setFadeOutValue:(CGFloat)value;
 
-// Returns a CIImage of the close button in a given state.
-+ (CIImage*)imageForBounds:(NSRect)bounds
+// Returns an autoreleased NSImage of the close button in a given state.
++ (NSImage*)imageForBounds:(NSRect)bounds
                      xPath:(NSBezierPath*)xPath
                 circlePath:(NSBezierPath*)circlePath
                 hoverState:(HoverState)hoverState;
@@ -83,7 +82,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
     [circlePath transformUsingAffineTransform:transform];
     [xPath transformUsingAffineTransform:transform];
 
-    CIImage* image = [self imageForBounds:bounds
+    NSImage* image = [self imageForBounds:bounds
                                     xPath:xPath
                                circlePath:circlePath
                                hoverState:kHoverStateNone];
@@ -136,7 +135,9 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSRect imageRect = NSRectFromCGRect([gHoverMouseOverImage extent]);
+  NSRect imageRect = NSZeroRect;
+  imageRect.size = [gHoverMouseOverImage size];
+
   switch(self.hoverState) {
     case kHoverStateMouseOver:
       [gHoverMouseOverImage drawInRect:imageRect
@@ -157,7 +158,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       CGFloat value = 1.0;
       if (fadeOutAnimation_) {
         value = [fadeOutAnimation_ currentValue];
-        CIImage *previousImage = nil;
+        NSImage* previousImage = nil;
         if (previousState_ == kHoverStateMouseOver) {
           previousImage = gHoverMouseOverImage;
         } else {
@@ -192,6 +193,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
           [[GTMKeyValueAnimation alloc] initWithTarget:self
                                                keyPath:kFadeOutValueKeyPath];
       [fadeOutAnimation_ setDuration:kDefaultAnimationDuration];
+      [fadeOutAnimation_ setFrameRate:kFramesPerSecond];
       [fadeOutAnimation_ setDelegate:self];
       [fadeOutAnimation_ startAnimation];
     } else {
@@ -215,7 +217,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   previousState_ = kHoverStateNone;
 }
 
-+ (CIImage*)imageForBounds:(NSRect)bounds
++ (NSImage*)imageForBounds:(NSRect)bounds
                      xPath:(NSBezierPath*)xPath
                 circlePath:(NSBezierPath*)circlePath
                 hoverState:(HoverState)hoverState {
@@ -264,8 +266,9 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   [shadow setShadowOffset:NSMakeSize(0.0, 0.0)];
   [shadow setShadowBlurRadius:2.5];
   [xPath fillWithInnerShadow:shadow];
-
-  return [[[CIImage alloc] initWithBitmapImageRep:imageRep] autorelease];
+  NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
+  [image addRepresentation:imageRep];
+  return image;
 }
 
 @end
