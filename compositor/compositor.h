@@ -366,7 +366,8 @@ void
 wlsc_switcher_init(struct wlsc_compositor *compositor);
 
 void
-evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);
+evdev_input_add_devices(struct wlsc_compositor *c,
+			struct udev *udev, const char *seat);
 
 enum {
 	TTY_ENTER_VT,

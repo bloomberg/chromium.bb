@@ -210,13 +210,17 @@ evdev_input_device_create(struct evdev_input *master,
 	return device;
 }
 
+static const char default_seat[] = "seat0";
+
 void
-evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev)
+evdev_input_add_devices(struct wlsc_compositor *c,
+			struct udev *udev, const char *seat)
 {
 	struct evdev_input *input;
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
 	struct udev_device *device;
+	const char *device_seat;
 	const char *path;
 
 	input = malloc(sizeof *input);
@@ -228,13 +232,22 @@ evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev)
 
 	e = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
 	udev_enumerate_scan_devices(e);
 	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(udev, path);
-		evdev_input_device_create(input, c->wl_display,
-					  udev_device_get_devnode(device));
+
+                device_seat =
+			udev_device_get_property_value(device, "ID_SEAT");
+		if (!device_seat)
+			device_seat = default_seat;
+
+		if (strcmp(device_seat, seat) == 0) {
+			evdev_input_device_create(input, c->wl_display,
+						  udev_device_get_devnode(device));
+		}
+
+		udev_device_unref(device);
 	}
 	udev_enumerate_unref(e);
 
