@@ -273,9 +273,6 @@
       # ==================================================
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
-      # crosbug.com/17714
-      '-chromeos_security.ChromeosSecurity.testComponentExtensionPermissions',
-      '-chromeos_security.ChromeosSecurity.testNoUnexpectedExtensions',
       # Chrome freezes and then system reboots when downloading large files
       # crosbug.com/17459
       '-downloads.DownloadsTest.testBigZip',
