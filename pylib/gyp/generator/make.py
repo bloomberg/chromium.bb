@@ -323,7 +323,7 @@ cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
 # send stderr to /dev/null to ignore messages when linking directories.
-cmd_copy = ln -f $< $@ 2>/dev/null || cp -af $< $@
+cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp -af "$<" "$@")
 
 %(link_commands)s
 """
@@ -1318,10 +1318,8 @@ class MakefileWriter:
         filename = os.path.split(path)[1]
         output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
                                                         filename)))
-        assert ' ' not in path, (
-          "Spaces in copy src filenames not supported (%s)"  % path)
-        assert ' ' not in path, (
-          "Spaces in copy dest filenames not supported (%s)"  % output)
+        path = QuoteSpaces(path)
+        output = QuoteSpaces(output)
 
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)

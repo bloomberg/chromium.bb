@@ -17,7 +17,7 @@ if sys.platform == 'darwin':
 
   test.run_gyp('framework.gyp', chdir='framework')
 
-  test.build('framework.gyp', test.ALL, chdir='framework')
+  test.build('framework.gyp', 'test_framework', chdir='framework')
 
   # Binary
   test.built_file_must_exist(

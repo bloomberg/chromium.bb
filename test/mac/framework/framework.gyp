@@ -5,7 +5,7 @@
   'targets': [
     {
       'target_name': 'dep_framework',
-      'product_name': 'Dependency Framework',
+      'product_name': 'Dependency Bundle',
       'type': 'shared_library',
       'mac_bundle': 1,
       'sources': [ 'empty.c', ],
@@ -36,6 +36,19 @@
         'INFOPLIST_FILE': 'TestFramework/Info.plist',
         'GCC_DYNAMIC_NO_PIC': 'NO',
       },
+    },
+    {
+      'target_name': 'copy_target',
+      'type': 'none',
+      'dependencies': [ 'test_framework', 'dep_framework', ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/Test Framework.framework/foo',
+          'files': [
+            '<(PRODUCT_DIR)/Dependency Bundle.framework',
+          ],
+        },
+      ],
     },
   ],
 }
