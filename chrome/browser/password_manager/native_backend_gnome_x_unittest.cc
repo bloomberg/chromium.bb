@@ -242,6 +242,7 @@ gpointer mock_gnome_keyring_find_itemsv(
     free(found->keyring);
     gnome_keyring_attribute_list_free(found->attributes);
     free(found->secret);
+    delete found;
     element = g_list_next(element);
   }
   g_list_free(results);
