@@ -881,6 +881,11 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::isGLES2Compliant() {
   return true;
 }
 
+bool WebGraphicsContext3DInProcessCommandBufferImpl::setParentContext(
+    WebGraphicsContext3D* parent_context) {
+  return false;
+}
+
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::getPlatformTextureId() {
   DCHECK(context_);
   return context_->GetParentTextureId();
