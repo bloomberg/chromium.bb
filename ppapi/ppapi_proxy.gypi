@@ -96,6 +96,8 @@
         'proxy/ppb_font_proxy.h',
         'proxy/ppb_graphics_2d_proxy.cc',
         'proxy/ppb_graphics_2d_proxy.h',
+        'proxy/ppb_graphics_3d_proxy.cc',
+        'proxy/ppb_graphics_3d_proxy.h',
         'proxy/ppb_image_data_proxy.cc',
         'proxy/ppb_image_data_proxy.h',
         'proxy/ppb_input_event_proxy.cc',
