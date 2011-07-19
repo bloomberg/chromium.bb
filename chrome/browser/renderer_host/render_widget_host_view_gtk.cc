@@ -27,7 +27,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
-#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/backing_store_x.h"
@@ -46,6 +45,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "views/widget/tooltip_window_gtk.h"
+#else
+#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -884,10 +885,11 @@ bool RenderWidgetHostViewGtk::IsPopup() const {
 void RenderWidgetHostViewGtk::DoSharedInit() {
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
   im_context_.reset(new GtkIMContextWrapper(this));
-  key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
 #if defined(OS_CHROMEOS)
   tooltip_window_.reset(new views::TooltipWindowGtk(view_.get()));
+#else
+  key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
 #endif
 }
 
@@ -1138,6 +1140,7 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   if (!host_)
     return;
 
+#if !defined(OS_CHROMEOS)
   EditCommands edit_commands;
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
@@ -1148,6 +1151,7 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     host_->ForwardKeyboardEvent(copy_event);
     return;
   }
+#endif
 
   host_->ForwardKeyboardEvent(event);
 }

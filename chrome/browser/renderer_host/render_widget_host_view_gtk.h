@@ -25,7 +25,6 @@
 
 class RenderWidgetHost;
 class GtkIMContextWrapper;
-class GtkKeyBindingsHandler;
 #if !defined(TOOLKIT_VIEWS)
 class MenuGtk;
 #endif
@@ -35,6 +34,8 @@ struct NativeWebKeyboardEvent;
 namespace views {
 class TooltipWindowGtk;
 }
+#else
+class GtkKeyBindingsHandler;
 #endif  // defined(OS_CHROMEOS)
 
 typedef struct _GtkClipboard GtkClipboard;
@@ -112,6 +113,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   void Paint(const gfx::Rect&);
 
   // Called by GtkIMContextWrapper to forward a keyboard event to renderer.
+  // On Linux (not ChromeOS):
   // Before calling RenderWidgetHost::ForwardKeyboardEvent(), this method
   // calls GtkKeyBindingsHandler::Match() against the event and send matched
   // edit commands to renderer by calling
@@ -227,9 +229,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // A convenience wrapper object for GtkIMContext;
   scoped_ptr<GtkIMContextWrapper> im_context_;
 
+#if !defined(OS_CHROMEOS)
   // A convenience object for handling editor key bindings defined in gtk
   // keyboard theme.
   scoped_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
+#endif
 
   // Helper class that lets us allocate plugin containers and move them.
   webkit::npapi::GtkPluginContainerManager plugin_container_manager_;

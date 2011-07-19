@@ -2090,6 +2090,7 @@
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
+            ['exclude', 'browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
             ['exclude', 'browser/ui/webui/print_preview_ui_unittest.cc'],
           ],
         }, { # else: chromeos == 0

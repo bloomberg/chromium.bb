@@ -3743,6 +3743,8 @@
             'browser/platform_util_linux.cc',
             'browser/printing/print_dialog_gtk.cc',
             'browser/printing/print_dialog_gtk.h',
+            'browser/renderer_host/gtk_key_bindings_handler.cc',
+            'browser/renderer_host/gtk_key_bindings_handler.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
           ],
