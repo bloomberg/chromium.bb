@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/net/url_request_mock_http_job.h"
@@ -47,6 +49,27 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_EQ(0, panel_manager->active_count());
 }
 
+class PanelDownloadTest : public PanelBrowserTest {
+ public:
+  PanelDownloadTest() : PanelBrowserTest() { }
+
+  // Creates a temporary directory for downloads that is auto-deleted
+  // on destruction.
+  bool CreateDownloadDirectory(Profile* profile) {
+    bool created = downloads_directory_.CreateUniqueTempDir();
+    if (!created)
+      return false;
+    profile->GetPrefs()->SetFilePath(
+        prefs::kDownloadDefaultDirectory,
+        downloads_directory_.path());
+    return true;
+  }
+
+ private:
+  // Location of the downloads directory for download tests.
+  ScopedTempDir downloads_directory_;
+};
+
 class DownloadObserver : public DownloadManager::Observer {
  public:
   explicit DownloadObserver(Profile* profile)
@@ -64,7 +87,7 @@ class DownloadObserver : public DownloadManager::Observer {
     if (!saw_download_) {
       waiting_ = true;
       ui_test_utils::RunMessageLoop();
-      ASSERT_TRUE(saw_download_);
+      EXPECT_TRUE(saw_download_);
       waiting_ = false;
     }
   }
@@ -92,8 +115,9 @@ class DownloadObserver : public DownloadManager::Observer {
 
 // Verify that the download shelf is opened in the existing tabbed browser
 // when a download is started in a Panel.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_Download) {
+IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
   Profile* profile = browser()->profile();
+  ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  "PanelTest",
                                                  gfx::Rect(),
@@ -102,10 +126,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_Download) {
   ASSERT_FALSE(browser()->window()->IsDownloadShelfVisible());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());
 
+  scoped_ptr<DownloadObserver> observer(new DownloadObserver(profile));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  scoped_ptr<DownloadObserver> observer(new DownloadObserver(profile));
   ui_test_utils::NavigateToURLWithDisposition(
       panel_browser,
       download_url,
@@ -140,8 +163,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_Download) {
 // Verify that a new tabbed browser is created to display a download
 // shelf when a download is started in a Panel and there is no existing
 // tabbed browser.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_DownloadNoTabbedBrowser) {
+IN_PROC_BROWSER_TEST_F(PanelDownloadTest, DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
+  ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                  "PanelTest",
                                                  gfx::Rect(),
@@ -158,10 +182,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_DownloadNoTabbedBrowser) {
   ASSERT_EQ(1U, BrowserList::size());
   ASSERT_EQ(NULL, Browser::GetTabbedBrowser(profile, false));
 
+  scoped_ptr<DownloadObserver> observer(new DownloadObserver(profile));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
-
-  scoped_ptr<DownloadObserver> observer(new DownloadObserver(profile));
   ui_test_utils::NavigateToURLWithDisposition(
       panel_browser,
       download_url,
