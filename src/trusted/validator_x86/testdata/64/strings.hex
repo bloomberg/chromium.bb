@@ -1,0 +1,44 @@
+# Test string operations with 2 memory operands.
+# mov %esi,%esi
+# add %r15,%rsi
+# mov %edi,%edi
+# add %r15,%rdi
+# movsl %ds:(%rsi),%es:(%rdi)
+89 f6
+4c 01 fe
+89 ff
+4c 01 ff
+a5
+
+# mov %esi,%esi
+# add %r15,%rsi
+# mov %edi,%edi
+# add %r15,%rdi
+# cmpsl %es:(%rdi),%ds:(%rsi)
+89 f6
+4c 01 fe
+89 ff
+4c 01 ff
+a7
+
+# mov %esi,%esi
+# lea (%r15,%rsi),%rsi
+# mov %edi,%edi
+# lea (%r15,%rdi),%rdi
+# cmpsl %es:(%rdi),%ds:(%rsi)
+89 f6
+49 8d 34 37
+89 ff
+49 8d 3c 3f
+a7
+
+# mov %edi,%edi
+# lea (%r15,%rdi),%rdi
+# mov %esi,%esi
+# lea (%r15,%rsi),%rsi
+# cmpsl %es:(%rdi),%ds:(%rsi)
+89 ff
+49 8d 3c 3f
+89 f6
+49 8d 34 37
+a7

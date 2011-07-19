@@ -1,0 +1,16 @@
+VALIDATOR: 000000000000000a: a5                                           movsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000000a: a5                                           movsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000015: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 0000000000000015: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000002f: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: 000000000000002f: a7                                           cmpsd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: Checking jump targets: 0 to 30
+VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: ERROR: 20: Bad basic block alignment.
+***MODULE IS UNSAFE***
