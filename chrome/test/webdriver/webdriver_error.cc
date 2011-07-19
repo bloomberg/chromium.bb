@@ -11,34 +11,34 @@ namespace webdriver {
 namespace {
 
 // Returns the string equivalent of the given |ErrorCode|.
-const char* ErrorCodeToString(ErrorCode code) {
+const char* DefaultMessageForErrorCode(ErrorCode code) {
   switch (code) {
     case kSuccess:
-      return "SUCCESS";
+      return "Success";
     case kNoSuchElement:
-      return "NO_SUCH_ELEMENT";
+      return "The element could not be found";
     case kNoSuchFrame:
-      return "NO_SUCH_FRAME";
+      return "The frame could not be found";
     case kUnknownCommand:
-      return "UNKNOWN_COMMAND";
+      return "Unknown command";
     case kStaleElementReference:
-      return "STALE_ELEMENT_REFERENCE";
+      return "Element reference is invalid";
     case kElementNotVisible:
-      return "ELEMENT_NOT_VISIBLE";
+      return "Element is not visible";
     case kInvalidElementState:
-      return "INVALID_ELEMENT_STATE";
+      return "Element is in an invalid state";
     case kUnknownError:
-      return "UNKNOWN_ERROR";
+      return "Unknown error";
     case kElementNotSelectable:
-      return "ELEMENT_NOT_SELECTABLE";
+      return "Element is not selectable";
     case kXPathLookupError:
-      return "XPATH_LOOKUP_ERROR";
+      return "XPath lookup error";
     case kNoSuchWindow:
-      return "NO_SUCH_WINDOW";
+      return "The window could not be found";
     case kInvalidCookieDomain:
-      return "INVALID_COOKIE_DOMAIN";
+      return "The cookie domain is invalid";
     case kUnableToSetCookie:
-      return "UNABLE_TO_SET_COOKIE";
+      return "Unable to set cookie";
     default:
       return "<unknown>";
   }
@@ -63,15 +63,12 @@ void Error::AddDetails(const std::string& details) {
     details_ = details + ";\n " + details_;
 }
 
-std::string Error::ToString() const {
-  std::string error;
-  if (code_ != kUnknownError) {
-    error += ErrorCodeToString(code_);
-    error += ": ";
-  }
-  if (details_.length()) {
-    error += details_;
-  }
+std::string Error::GetMessage() const {
+  std::string msg;
+  if (details_.length())
+    msg = details_;
+  else
+    msg = DefaultMessageForErrorCode(code_);
 
   // Only include a stacktrace on Linux. Windows and Mac have all symbols
   // stripped in release builds.
@@ -81,11 +78,11 @@ std::string Error::ToString() const {
   if (count > 0) {
     std::ostringstream ostream;
     trace_.OutputToStream(&ostream);
-    error += "\n";
-    error += ostream.str();
+    msg += "\n";
+    msg += ostream.str();
   }
 #endif
-  return error;
+  return msg;
 }
 
 ErrorCode Error::code() const {

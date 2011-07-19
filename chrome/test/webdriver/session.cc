@@ -150,7 +150,8 @@ Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
 
 Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
   bool is_displayed = false;
-  Error* error = IsElementDisplayed(current_target_, element, &is_displayed);
+  Error* error = IsElementDisplayed(
+      current_target_, element, true /* ignore_opacity */, &is_displayed);
   if (error)
     return error;
   if (!is_displayed)
@@ -165,28 +166,36 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
 
   ListValue args;
   args.Append(element.ToValue());
-  // Focus the element if not focused already. If it is an editable element,
-  // focus the editing host element instead. Descendants of an editing host
-  // element cannot be focused in chrome.
-  // See http://www.w3.org/TR/html5/editing.html#attr-contenteditable.
+  // Focus the target element in order to send keys to it.
+  // First, the currently active element is blurred, if it is different from
+  // the target element. We do not want to blur an element unnecessarily,
+  // because this may cause us to lose the current cursor position in the
+  // element.
+  // Secondly, we focus the target element.
+  // Thirdly, we check if the new active element is the target element. If not,
+  // we throw an error.
+  // Additional notes:
+  //   - |document.activeElement| is the currently focused element, or body if
+  //     no element is focused
+  //   - Even if |document.hasFocus()| returns true and the active element is
+  //     the body, sometimes we still need to focus the body element for send
+  //     keys to work. Not sure why
+  //   - You cannot focus a descendant of a content editable node
   // TODO(jleyba): Update this to use the correct atom.
   const char* kFocusScript =
       "var elem = arguments[0];"
-      "if (elem.isContentEditable) {"
-      "  while (elem.parentNode && elem.parentNode.isContentEditable)"
-      "    elem = elem.parentNode;"
-      "}"
-      "if (elem != document.activeElement) {"
-      "  if(document.activeElement)"
-      "    document.activeElement.blur();"
-      "  elem.focus();"
-      "}";
+      "var doc = elem.ownerDocument || elem;"
+      "var prevActiveElem = doc.activeElement;"
+      "if (elem != prevActiveElem && prevActiveElem)"
+      "  prevActiveElem.blur();"
+      "elem.focus();"
+      "if (elem != doc.activeElement)"
+      "  throw new Error('Failed to send keys because cannot focus element.');";
   Value* unscoped_result = NULL;
   error = ExecuteScript(kFocusScript, &args, &unscoped_result);
-  if (error) {
-    error->AddDetails("Failed to focus element before sending keys");
+  if (error)
     return error;
-  }
+
   error = NULL;
   RunSessionTask(NewRunnableMethod(
       this,
@@ -523,6 +532,7 @@ Error* Session::SwitchToWindow(const std::string& name) {
 
   if (!switch_to_id)
     return new Error(kNoSuchWindow);
+  frame_elements_.clear();
   current_target_ = FrameId(switch_to_id, FramePath());
   return NULL;
 }
@@ -564,7 +574,7 @@ Error* Session::SwitchToFrameWithIndex(int index) {
       "console.info(frame == null ? 'found nothing' : frame);"
       "if (!frame) { return null; }"
       "frame_xpath = ((frame.tagName == 'IFRAME' ? "
-      "    '/html/body//iframe' : '/html/frameset/frame') + index);"
+      "    '(/html/body//iframe)' : '/html/frameset/frame') + index);"
       "return [frame, frame_xpath];";
   ListValue args;
   args.Append(Value::CreateIntegerValue(index));
@@ -923,11 +933,13 @@ Error* Session::GetElementBorder(const FrameId& frame_id,
 
 Error* Session::IsElementDisplayed(const FrameId& frame_id,
                                    const WebElementId& element,
+                                   bool ignore_opacity,
                                    bool* is_displayed) {
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_DISPLAYED);
   ListValue args;
   args.Append(element.ToValue());
+  args.Append(Value::CreateBooleanValue(ignore_opacity));
 
   Value* unscoped_result = NULL;
   Error* error = ExecuteScript(frame_id, script, &args, &unscoped_result);
@@ -996,7 +1008,8 @@ Error* Session::GetElementTagName(const FrameId& frame_id,
 Error* Session::GetClickableLocation(const WebElementId& element,
                                      gfx::Point* location) {
   bool is_displayed = false;
-  Error* error = IsElementDisplayed(current_target_, element, &is_displayed);
+  Error* error = IsElementDisplayed(
+      current_target_, element, true /* ignore_opacity */, &is_displayed);
   if (error)
     return error;
   if (!is_displayed)
@@ -1163,12 +1176,11 @@ Error* Session::ExecuteScriptAndParseResponse(const FrameId& frame_id,
   ErrorCode code = static_cast<ErrorCode>(status);
   if (code != kSuccess) {
     DictionaryValue* error_dict;
-    std::string error_msg = "Script threw an exception";
-    if (result_dict->GetDictionary("value", &error_dict)) {
-      std::string exception;
-      if (error_dict->GetString("message", &exception))
-        error_msg += ": " + exception;
-    }
+    std::string error_msg;
+    if (result_dict->GetDictionary("value", &error_dict))
+      error_dict->GetString("message", &error_msg);
+    if (error_msg.empty())
+      error_msg = "Script failed with error code: " + base::IntToString(code);
     return new Error(code, error_msg);
   }
 

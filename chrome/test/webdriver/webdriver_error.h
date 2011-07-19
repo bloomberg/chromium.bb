@@ -49,8 +49,7 @@ class Error {
 
   void AddDetails(const std::string& details);
 
-  // Returns a formatted string describing the error. For logging purposes.
-  std::string ToString() const;
+  std::string GetMessage() const;
 
   ErrorCode code() const;
   const std::string& details() const;

@@ -161,7 +161,8 @@ bool ElementDisplayedCommand::DoesGet() {
 void ElementDisplayedCommand::ExecuteGet(Response* const response) {
   bool is_displayed;
   Error* error = session_->IsElementDisplayed(
-      session_->current_target(), element, &is_displayed);
+      session_->current_target(), element, false /* ignore_opacity */,
+      &is_displayed);
   if (error) {
     response->SetError(error);
     return;

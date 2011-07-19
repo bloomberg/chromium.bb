@@ -40,7 +40,7 @@ void ExecuteCommand::ExecutePost(Response* const response) {
   Value* result = NULL;
   Error* error = session_->ExecuteScript(script, args, &result);
   if (error) {
-    error->AddDetails("Original script: " + script);
+    error->AddDetails("Script execution failed. Script: " + script);
     response->SetError(error);
     return;
   }

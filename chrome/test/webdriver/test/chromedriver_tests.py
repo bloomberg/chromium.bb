@@ -385,6 +385,11 @@ class MouseTest(ChromeDriverTest):
     super(MouseTest, self).setUp()
     self._driver = self.GetNewDriver()
 
+  def testCanClickTransparentElement(self):
+    self._driver.get(GetTestDataUrl() + '/transparent.html')
+    self._driver.find_element_by_tag_name('a').click()
+    self.assertTrue(self._driver.execute_script('return window.success'))
+
   def testClickElementThatNeedsContainerScrolling(self):
     self._driver.get(GetTestDataUrl() + '/test_page.html')
     self._driver.find_element_by_name('hidden_scroll').click()
@@ -420,13 +425,55 @@ class TypingTest(ChromeDriverTest):
   def setUp(self):
     super(TypingTest, self).setUp()
     self._driver = self.GetNewDriver()
-    self._driver.get(GetTestDataUrl() + '/test_page.html')
 
-  # See http://crbug.com/85243.
-  def testCanSendKeysToDescendantOfEditingHost(self):
-    self._driver.find_element_by_name('editable_child').send_keys('moo')
-    text = self._driver.find_element_by_name('editable').text
-    self.assertEquals('mooeditable', text)
+  def testSendKeysToEditingHostDiv(self):
+    self._driver.get(GetTestDataUrl() + '/content_editable.html')
+    div = self._driver.find_element_by_name('editable')
+    # Break into two to ensure element doesn't lose focus.
+    div.send_keys('hi')
+    div.send_keys(' there')
+    self.assertEquals('hi there', div.text)
+
+  def testSendKeysToNonFocusableChildOfEditingHost(self):
+    self._driver.get(GetTestDataUrl() + '/content_editable.html')
+    child = self._driver.find_element_by_name('editable_child')
+    self.assertRaises(WebDriverException, child.send_keys, 'hi')
+
+  def testSendKeysToFocusableChildOfEditingHost(self):
+    self._driver.get(GetTestDataUrl() + '/content_editable.html')
+    child = self._driver.find_element_by_tag_name('input')
+    child.send_keys('hi')
+    child.send_keys(' there')
+    self.assertEquals('hi there', child.get_attribute('value'))
+
+  def testSendKeysToDesignModePage(self):
+    self._driver.get(GetTestDataUrl() + '/design_mode_doc.html')
+    body = self._driver.find_element_by_tag_name('body')
+    body.send_keys('hi')
+    body.send_keys(' there')
+    self.assertEquals('hi there', body.text)
+
+  def testSendKeysToDesignModeIframe(self):
+    self._driver.get(GetTestDataUrl() + '/content_editable.html')
+    self._driver.switch_to_frame(0)
+    body = self._driver.find_element_by_tag_name('body')
+    body.send_keys('hi')
+    body.send_keys(' there')
+    self.assertEquals('hi there', body.text)
+
+  def testSendKeysToTransparentElement(self):
+    self._driver.get(GetTestDataUrl() + '/transparent.html')
+    text_box = self._driver.find_element_by_tag_name('input')
+    text_box.send_keys('hi')
+    self.assertEquals('hi', text_box.get_attribute('value'))
+
+  def testSendKeysDesignModePageAfterNavigate(self):
+    self._driver.get(GetTestDataUrl() + '/test_page.html')
+    self._driver.get(GetTestDataUrl() + '/design_mode_doc.html')
+    body = self._driver.find_element_by_tag_name('body')
+    body.send_keys('hi')
+    body.send_keys(' there')
+    self.assertEquals('hi there', body.text)
 
 
 class UrlBaseTest(unittest.TestCase):
@@ -577,6 +624,57 @@ class FileUploadControlTest(ChromeDriverTest):
     self.assertEqual(4, len(files_on_element))
     for f in files_on_element:
       self.assertTrue(f['name'] in filenames)
+
+
+class FrameSwitchingTest(ChromeDriverTest):
+
+  def testGetWindowHandles(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    driver.execute_script('window.popup = window.open("about:blank")')
+    self.assertEquals(2, len(driver.window_handles))
+    driver.execute_script('window.popup.close()')
+    self.assertEquals(1, len(driver.window_handles))
+
+  def testSwitchToSameWindow(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    driver.switch_to_window(driver.window_handles[0])
+    self.assertEquals('test_page.html', driver.current_url.split('/')[-1])
+
+  def testClosedWindowThrows(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    driver.execute_script('window.open("about:blank")')
+    driver.close()
+    self.assertRaises(WebDriverException, driver.close)
+
+  def testSwitchFromClosedWindow(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    driver.execute_script('window.open("about:blank")')
+    driver.close()
+    driver.switch_to_window(driver.window_handles[0])
+    self.assertEquals('about:blank', driver.current_url)
+
+  def testSwitchToWindowWhileInSubframe(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    driver.execute_script('window.open("about:blank")')
+    driver.switch_to_frame(0)
+    driver.switch_to_window(driver.window_handles[1])
+    self.assertEquals('about:blank', driver.current_url)
+
+  # Tests that the indexing is absolute and not based on index of frame in its
+  # parent element.
+  # See crbug.com/88685.
+  def testSwitchToFrameByIndex(self):
+    driver = self.GetNewDriver({'chrome.switches': ['disable-popup-blocking']})
+    driver.get(GetTestDataUrl() + '/switch_to_frame_by_index.html')
+    for i in range(3):
+      driver.switch_to_frame(i)
+      self.assertEquals(str(i), driver.current_url.split('?')[-1])
+      driver.switch_to_default_content()
 
 
 """Chrome functional test section. All implementation tests of ChromeDriver

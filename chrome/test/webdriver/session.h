@@ -243,6 +243,7 @@ class Session {
   // Gets whether the element is currently displayed.
   Error* IsElementDisplayed(const FrameId& frame_id,
                             const WebElementId& element,
+                            bool ignore_opacity,
                             bool* is_visible);
 
   // Gets whether the element is currently enabled.
