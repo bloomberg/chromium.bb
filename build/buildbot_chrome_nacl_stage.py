@@ -110,7 +110,9 @@ def BuildAndTest(options):
       bits = 64
     else:
       bits = 32
-    scons = ['./scons']
+    # xvfb-run has a 2-second overhead per invocation, so it is cheaper to wrap
+    # the entire build step rather than each test (browser_headless=1).
+    scons = ['xvfb-run', '--auto-servernum', './scons']
     shell = False
 
   chrome_filename = FindChrome(src_dir, options)
@@ -124,7 +126,7 @@ def BuildAndTest(options):
     scons.append('buildbot=%s' % (options.buildbot,))
 
   # Clean the output of the previous build.
-  # Incremental builds can get wedged in wierd ways, so we're trading speed
+  # Incremental builds can get wedged in weird ways, so we're trading speed
   # for reliability.
   shutil.rmtree(os.path.join(nacl_dir, 'scons-out'), True)
 
@@ -142,12 +144,18 @@ def BuildAndTest(options):
 
   # Run nacl/chrome integration tests.
   cmd = scons + ['-k', 'platform=x86-%d' % bits,
-      'browser_headless=1',
-      'disable_flaky_tests=1',
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=' + chrome_filename,
-      'chrome_browser_tests',
   ]
+  if not options.integration_bot:
+    cmd.append('disable_flaky_tests=1')
+  cmd.append('chrome_browser_tests')
+  # TODO(ncbray): enable PyAuto on every integration bot.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1917
+  if options.integration_bot and sys.platform.startswith('linux'):
+    cmd.append('pyauto_tests')
+  sys.stdout.write('Running %s\n' % ' '.join(cmd))
+  sys.stdout.flush()
   subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
 
 
@@ -160,6 +168,12 @@ def MakeCommandLineParser():
   parser.add_option('--disable_tests', dest='disable_tests',
                     type='string', default='',
                     help='Comma-separated list of tests to omit')
+  # TODO(ncbray): don't default based on CWD.
+  pwd = os.environ.get('PWD', '')
+  is_integration_bot = 'nacl-chrome' in pwd
+  parser.add_option('--integration_bot', dest='integration_bot',
+                    type='int', default=int(is_integration_bot),
+                    help='Is this an integration bot?')
 
   # Not used on the bots, but handy for running the script manually.
   parser.add_option('--bits', dest='bits', action='store',

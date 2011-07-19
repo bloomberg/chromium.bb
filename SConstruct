@@ -1081,6 +1081,13 @@ def DownloadedChromeBinary(env):
 pre_base_env.AddMethod(DownloadedChromeBinary)
 
 
+def ChromeBinary(env):
+  return env.File(ARGUMENTS.get('chrome_browser_path',
+                                env.DownloadedChromeBinary()))
+
+pre_base_env.AddMethod(ChromeBinary)
+
+
 def GetPPAPIPluginPath(env, allow_64bit_redirect=True):
   if 'force_ppapi_plugin' in ARGUMENTS:
     return env.SConstructAbsPath(ARGUMENTS['force_ppapi_plugin'])
@@ -1130,8 +1137,7 @@ def PPAPIBrowserTester(env,
                              '/browser_tester.py')
   command = GetHeadlessPrefix(env) + [
       '${PYTHON}', python_tester_script,
-      '--browser_path', ARGUMENTS.get('chrome_browser_path',
-                                      env.DownloadedChromeBinary()),
+      '--browser_path', env.ChromeBinary(),
       '--url', url,
       # Fail if there is no response for 20 seconds.
       '--timeout', str(timeout)]
@@ -1185,10 +1191,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
 
   if env.Bit('host_mac'):
     # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
-    pyautolib_dir = env.DownloadedChromeBinary().dir.dir.dir.dir
+    pyautolib_dir = env.ChromeBinary().dir.dir.dir.dir
   else:
     # On Windows or Linux, remove 'chrome' or 'chrome.exe' from the path.
-    pyautolib_dir = env.DownloadedChromeBinary().dir
+    pyautolib_dir = env.ChromeBinary().dir
 
   pyauto_python = ''
   if not env.Bit('host_mac'):
@@ -1269,11 +1275,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
 
   # Add an explicit dependency on the files used by pyauto tests.
   env.Depends(node, files)
-
-  # Add an explicit dependency on the chrome binary assuming we are not running
-  # on the Chrome bots.
-  if 'chrome_browser_path' not in ARGUMENTS:
-    env.Depends(node, env.DownloadedChromeBinary())
+  env.Depends(node, env.ChromeBinary())
 
   return node
 
@@ -1286,7 +1288,6 @@ pre_base_env.AddMethod(PyAutoTester)
 # available on 64-bit machines).
 def PyAutoTesterIsBroken(env):
   return (PPAPIBrowserTesterIsBroken(env) or
-          'chrome_browser_path' in ARGUMENTS or
           (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit'))
 
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
