@@ -9,9 +9,9 @@ vars = {
   "swig_revision": "69281",
   # These hashes need to be updated when nacl_revision is changed.
   # After changing nacl_revision, run 'gclient runhooks' to get the new values.
-  "nacl_irt_hash_x86_32": "dc4485ff3f68862c889976bcb7f1978242dedd3d",
-  "nacl_irt_hash_x86_64": "189ff1a20bd685d0120f693aa227e69169a030df",
-  "nacl_revision": "6081",
+  "nacl_irt_hash_x86_32": "940d9c16d36e10085af92a72620865a099cf0ad9",
+  "nacl_irt_hash_x86_64": "55678cbba7e597f232d7d3d63508bec5fbd5c935",
+  "nacl_revision": "6106",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
