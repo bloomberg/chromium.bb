@@ -108,11 +108,6 @@ tests = [
         stdout_golden=prog_env.File('write_to_dyncode.stdout'),
         ),
     prog_env.CommandSelLdrTestNacl(
-        'dyncode_disabled_test.out',
-        dyncode_disabled_test_nexe,
-        osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
-        ),
-    prog_env.CommandSelLdrTestNacl(
         'debug_mode_test.out',
         debug_mode_test_nexe,
         # NOTE: the data we are loading does not pass the validator
@@ -127,6 +122,16 @@ tests = [
         stdout_golden=prog_env.File('dyncode_demand_alloc_test.stdout'),
         ),
   ]
+
+# The IRT itself counts as dynamic code loading, so we cannot disable
+# dynamic loading when using the IRT.
+if not prog_env.Bit('tests_use_irt'):
+  tests.append(prog_env.CommandSelLdrTestNacl(
+      'dyncode_disabled_test.out',
+      dyncode_disabled_test_nexe,
+      osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
+      ))
+
 if not prog_env.Bit('target_arm'):
   tests.append(prog_env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
