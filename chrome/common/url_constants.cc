@@ -26,6 +26,8 @@ const char* kSavableSchemes[] = {
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutVersionURL[] = "about:version";
 
+// Add Chrome UI URLs as necessary, in alphabetical order.
+// Be sure to add the corresponding kChromeUI*Host constant below.
 const char kChromeUIAboutURL[] = "chrome://about/";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIBugReportURL[] = "chrome://bugreport/";
@@ -65,7 +67,7 @@ const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 const char kChromeUIVersionURL[] = "chrome://version/";
-const char kChromeUIWorkersURL[] = "chrome://workers";
+const char kChromeUIWorkersURL[] = "chrome://workers/";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
@@ -73,6 +75,8 @@ const char kChromeUIActiveDownloadsURL[] = "chrome://active-downloads/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
 const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
+const char kChromeUIEnterpriseEnrollmentURL[] =
+    "chrome://enterprise-enrollment/";
 const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
@@ -85,13 +89,13 @@ const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
-const char kChromeUITermsOemURL[] = "chrome://terms/oem";
+const char kChromeUITermsOemURL[] = "chrome://terms/oem/";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
-const char kChromeUIEnterpriseEnrollmentURL[] =
-    "chrome://enterprise-enrollment/";
 #endif
 
-// Keep this list sorted please.
+// Add Chrome UI hosts here, in alphabetical order.
+// Add hosts to kChromePaths in browser_about_handler.cc to be listed by
+// chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 const char kChromeUIAboutHost[] = "about";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlankHost[] = "blank";
@@ -199,6 +203,8 @@ const char kOemEulaURLPath[] = "oem";
 #endif
 
 // Option sub pages.
+// Add sub page paths to kChromeSettingsSubPages in builtin_provider.cc to be
+// listed by the built-in AutocompleteProvider.
 const char kAdvancedOptionsSubPage[] = "advanced";
 const char kAutofillSubPage[] = "autofill";
 const char kBrowserOptionsSubPage[] = "browser";

@@ -106,7 +106,7 @@ void AboutTcmallocRendererCallback(base::ProcessId pid,
 
 namespace {
 
-// Add paths here to be included in chrome://chrome-urls/.
+// Add paths here to be included in chrome://chrome-urls (about:about).
 // These paths will also be suggested by BuiltinProvider.
 const char* const kChromePaths[] = {
   chrome::kChromeUIAppCacheInternalsHost,
