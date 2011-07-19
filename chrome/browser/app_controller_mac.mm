@@ -41,6 +41,7 @@
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
+#import "chrome/browser/ui/cocoa/profile_menu_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
@@ -154,6 +155,7 @@ void RecordLastRunAppBundlePath() {
 
 @interface AppController (Private)
 - (void)initMenuState;
+- (void)initProfileMenu;
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
 - (void)openUrls:(const std::vector<GURL>&)urls;
@@ -214,6 +216,9 @@ void RecordLastRunAppBundlePath() {
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
+
+  // Initialize the Profile menu.
+  [self initProfileMenu];
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -969,6 +974,20 @@ void RecordLastRunAppBundlePath() {
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
   menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
+}
+
+// Conditionally adds the Profile menu to the main menu bar.
+- (void)initProfileMenu {
+  bool enableMenu = ProfileManager::IsMultipleProfilesEnabled();
+
+  NSMenu* mainMenu = [NSApp mainMenu];
+  NSMenuItem* profileMenu = [mainMenu itemWithTag:IDC_PROFILE_MAIN_MENU];
+  [profileMenu setHidden:!enableMenu];
+
+  if (enableMenu) {
+    profileMenuController_.reset(
+        [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
+  }
 }
 
 // The Confirm to Quit preference is atypical in that the preference lives in

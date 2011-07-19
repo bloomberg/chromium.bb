@@ -2537,6 +2537,8 @@
         'browser/ui/cocoa/omnibox/omnibox_view_mac.mm',
         'browser/ui/cocoa/page_info_bubble_controller.h',
         'browser/ui/cocoa/page_info_bubble_controller.mm',
+        'browser/ui/cocoa/profile_menu_controller.h',
+        'browser/ui/cocoa/profile_menu_controller.mm',
         'browser/ui/cocoa/repost_form_warning_mac.h',
         'browser/ui/cocoa/repost_form_warning_mac.mm',
         'browser/ui/cocoa/restart_browser.h',
