@@ -428,42 +428,6 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(lambda path: not os.path.exists(path),
                                    args=[downloaded_pkg]))
 
-  def testAlwaysOpenFileType(self):
-    """Verify "Always Open Files of this Type" download option
-
-    If 'always open' option is set for any filetype, downloading that type of
-    file gets opened always after the download.
-    A cross-platform trick to verify it, by downloading a .zip file and
-    expecting it to get unzipped.  Just check if it got unzipped or not.
-    This way you won't have to worry about which application might 'open'
-    it.
-    """
-    if not self.IsMac():
-      logging.info('Don\'t have a standard way to test when a file "opened"')
-      logging.info('Bailing out')
-      return
-    file_path = os.path.join(self.DataDir(), 'downloads', 'a_zip_file.zip')
-    file_url = self.GetFileURLForPath(file_path)
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    self.DownloadAndWaitForStart(file_url)
-    self.WaitForAllDownloadsToComplete()
-    id = self._GetDownloadId()
-    self.PerformActionOnDownload(id, 'toggle_open_files_like_this')
-    # Retesting the flag we set
-    file_url2 = self.GetFileURLForDataPath(os.path.join('zip', 'test.zip'))
-    unzip_path = os.path.join(self.GetDownloadDirectory().value(),
-                              'test', 'foo')
-    os.path.exists(unzip_path) and pyauto_utils.RemovePath(unzip_path)
-    self.DownloadAndWaitForStart(file_url2)
-    self.WaitForAllDownloadsToComplete()
-    # When the downloaded zip gets 'opened', a_file.txt will become available.
-    self.assertTrue(self.WaitUntil(lambda: os.path.exists(unzip_path)),
-                    'Did not open the filetype')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    os.path.exists(unzip_path) and pyauto_utils.RemovePath(unzip_path)
-
   def testExtendedAttributesOnMac(self):
     """Verify that Chrome sets the extended attributes on a file.
        This test is for mac only.
@@ -480,40 +444,6 @@ class DownloadsTest(pyauto.PyUITest):
     self.WaitForAllDownloadsToComplete()
     import xattr
     self.assertTrue('com.apple.quarantine' in xattr.listxattr(downloaded_pkg))
-
-  def testOpenWhenDone(self):
-    """Verify "Open When Done" download option.
-
-    Test creates a zip file on the fly and downloads it.
-    Set this option when file is downloading. Once file is downloaded,
-    verify that downloaded zip file is unzipped.
-    """
-    if not self.IsMac():
-      logging.info('Don\'t have a standard way to test when a file "opened"')
-      logging.info('Bailing out')
-      return
-    # Creating a temp zip file.
-    file_path = self._MakeFile(2**24)
-    file_url = self.GetFileURLForPath(file_path)
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    self.DownloadAndWaitForStart(file_url)
-    id = self._GetDownloadId()
-    self.PerformActionOnDownload(id, 'open')
-    self.WaitForAllDownloadsToComplete()
-    unzip_file_name = downloaded_pkg + '.cpgz'
-    # Verify that the file was correctly downloaded.
-    self.assertTrue(self.WaitUntil(lambda: os.path.exists(unzip_file_name)),
-                    'Unzipped folder %s missing.' % unzip_file_name)
-    self.assertTrue(os.path.exists(downloaded_pkg),
-                    'Downloaded file %s missing.' % downloaded_pkg)
-    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
-                    'Downloaded file %s does not match original' %
-                      downloaded_pkg)
-    os.path.exists(file_path) and os.remove(file_path)
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    os.path.exists(unzip_file_name) and os.remove(unzip_file_name)
 
   def testDownloadPercentage(self):
     """Verify that during downloading, % values increases,
