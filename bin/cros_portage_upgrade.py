@@ -57,8 +57,8 @@ class Upgrader(object):
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'csv_file', 'html_file', 'rdeps', 'stable_only',
-               'upgrade', 'upgrade_deep', 'upstream', 'verbose']
+  OPT_SLOTS = ['amend', 'csv_file', 'html_file', 'rdeps',
+               'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
 
   __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
                '_args',         # Commandline arguments (all portage targets)
@@ -75,7 +75,6 @@ class Upgrader(object):
                '_master_table', # Merged table from all board runs
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
-               '_stable_only',  # Boolean to require only stable upstream
                '_stable_repo',  # Path to portage-stable
                '_stable_repo_status', # git status report at start of run
                '_targets',      # Processed list of portage targets
@@ -84,6 +83,7 @@ class Upgrader(object):
                '_upgrade_deep', # Boolean indicating upgrade_deep requested
                '_upstream',     # User-provided path to upstream repo
                '_upstream_repo',# Path to upstream portage repo
+               '_unstable_ok',  # Boolean to allow unstable upstream also
                '_verbose',      # Boolean
                ]
 
@@ -550,7 +550,7 @@ class Upgrader(object):
                                                         unstable_ok=True)
 
     # The upstream version can be either latest stable or latest overall.
-    if self._stable_only:
+    if not self._unstable_ok:
       upstream_cpv = info['stable_upstream_cpv']
     else:
       upstream_cpv = info['latest_upstream_cpv']
@@ -951,8 +951,8 @@ def main():
             'In this mode, the specified packages are often high-level\n'
             'targets such as "chromeos" or "chromeos-dev". '
             'The --to-csv option is often used in this mode.\n'
-            'The --stable-only option in this mode will make '
-            'the upstream comparison consider only stable versions.\n'
+            'The --unstable-ok option in this mode will make '
+            'the upstream comparison consider unstable versions, also.\n'
             '\n'
             'Upgrade mode will attempt to upgrade the specified '
             'packages to the latest upstream version.\nUnlike with --upgrade, '
@@ -960,14 +960,15 @@ def main():
             'will also be upgraded.\n'
             '\n'
             'Status report mode examples:\n'
-            '> cros_portage_upgrade --stable-only --board=tegra2_aebl '
+            '> cros_portage_upgrade --board=tegra2_aebl '
             '--to-csv=cros-aebl.csv chromeos\n'
-            '> cros_portage_upgrade --board=x86-mario --to-csv=cros_test-mario '
-            'chromeos chromeos-dev chromeos-test\n'
+            '> cros_portage_upgrade --unstable-ok --board=x86-mario '
+            '--to-csv=cros_test-mario chromeos chromeos-dev chromeos-test\n'
             'Upgrade mode examples:\n'
-            '> cros_portage_upgrade --stable-only --board=tegra2_aebl '
+            '> cros_portage_upgrade --board=tegra2_aebl '
             '--upgrade dbus\n'
-            '> cros_portage_upgrade --board=x86-mario --upgrade-deep gdata\n'
+            '> cros_portage_upgrade --unstable-ok --board=x86-mario '
+            '--upgrade-deep gdata\n'
             )
 
   class MyOptParser(optparse.OptionParser):
@@ -990,9 +991,6 @@ def main():
   parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
                     default='%s/trunk/src' % os.environ['HOME'],
                     help="Path to root src directory [default: '%default']")
-  parser.add_option('--stable-only', dest='stable_only', action='store_true',
-                    default=False,
-                    help="Use only stable upstream ebuilds for upgrades")
   parser.add_option('--to-csv', dest='csv_file', type='string', action='store',
                     default=None, help="File to write csv-formatted results to")
   parser.add_option('--to-html', dest='html_file',
@@ -1000,13 +998,16 @@ def main():
                     help="File to write html-formatted results to")
   parser.add_option('--upgrade', dest='upgrade',
                     action='store_true', default=False,
-                    help="Upgrade target package(s) only.")
+                    help="Upgrade target package(s) only")
   parser.add_option('--upgrade-deep', dest='upgrade_deep', action='store_true',
                     default=False,
                     help="Upgrade target package(s) and all dependencies")
   parser.add_option('--upstream', dest='upstream', type='string',
                     action='store', default=None,
                     help="Latest upstream repo location [default: '%default']")
+  parser.add_option('--unstable-ok', dest='unstable_ok', action='store_true',
+                    default=False,
+                    help="Use latest upstream ebuild, stable or not")
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
                     help="Enable verbose output (for debugging)")
