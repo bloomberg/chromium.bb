@@ -73,6 +73,10 @@ function DataView(mainBoxId,
 
   this.updateEventCounts_();
 
+  // Track blob for previous log dump so it can be revoked when a new dump is
+  // saved.
+  this.lastBlobURL_ = null;
+
   g_browser.addLogObserver(this);
 }
 
@@ -267,91 +271,32 @@ DataView.prototype.enableLoadFileElement_ = function(enabled) {
 };
 
 /**
- * If not already busy loading or saving a log dump, triggers generation of
- * gathering log dump data and starts waiting for the process to complete.
+ * If not already busy loading or saving a log dump, triggers asynchronous
+ * generation of log dump and starts waiting for it to complete.
  */
 DataView.prototype.onSaveFile_ = function() {
   if (this.saveFileButton_.disabled)
     return;
+  // Clean up previous blob, if any, to reduce resource usage.
+  if (this.lastBlobURL_) {
+    window.webkitURL.revokeObjectURL(this.lastBlobURL_);
+    this.lastBlobURL_ = null;
+  }
   this.setSaveFileStatus('Preparing data...', true);
 
-  createLogDumpAsync(this.onLogDumpCreated.bind(this));
+  createLogDumpAsync(this.onLogDumpCreated_.bind(this));
 };
 
 /**
- * Starts the process of creating a file containing |dumpText| and downloading
- * it.
+ * Creates a blob url and starts downloading it.
  */
-DataView.prototype.onLogDumpCreated = function(dumpText) {
+DataView.prototype.onLogDumpCreated_ = function(dumpText) {
   var blobBuilder = new WebKitBlobBuilder();
   blobBuilder.append(dumpText, 'native');
   var textBlob = blobBuilder.getBlob('octet/stream');
-
-  this.setSaveFileStatus('Creating file...', true);
-
-  window.webkitRequestFileSystem(
-      window.TEMPORARY, textBlob.size,
-      this.onFileSystemCreate_.bind(this, textBlob),
-      this.onFileError_.bind(this, 'Unable to create file system.'));
-};
-
-/**
- * Once we have access to the file system, create a log file.
- */
-DataView.prototype.onFileSystemCreate_ = function(textBlob, fileSystem) {
-  fileSystem.root.getFile(
-      'net_internals.log', {create: true},
-      this.onFileCreate_.bind(this, textBlob),
-      this.onFileError_.bind(this, 'Unable to create file.'));
-};
-
-/**
- * Once the file is created, or an existing one has been opened, create a
- * writer for it.
- */
-DataView.prototype.onFileCreate_ = function(textBlob, fileEntry) {
-  fileEntry.createWriter(
-      this.onFileCreateWriter_.bind(this, textBlob, fileEntry),
-      this.onFileError_.bind(this, 'Unable to create writer.'));
-};
-
-/* Once the |fileWriter| has been created, truncate the file, in case it already
- * existed.
- */
-DataView.prototype.onFileCreateWriter_ = function(textBlob,
-                                                  fileEntry, fileWriter) {
-  fileWriter.onerror = this.onFileError_.bind(this, 'Truncate failed.');
-  fileWriter.onwriteend = this.onFileTruncate_.bind(this, textBlob,
-                                                    fileWriter, fileEntry);
-  fileWriter.truncate(0);
-};
-
-/**
- * Once the file has been truncated, write |textBlob| to the file.
- */
-DataView.prototype.onFileTruncate_ = function(textBlob, fileWriter, fileEntry) {
-  fileWriter.onerror = this.onFileError_.bind(this, 'Write failed.');
-  fileWriter.onwriteend = this.onFileWriteComplete_.bind(this, fileEntry);
-  fileWriter.write(textBlob);
-};
-
-/**
- * Once the file has been written to, start the download.
- */
-DataView.prototype.onFileWriteComplete_ = function(fileEntry) {
-  this.downloadIframe_.src = fileEntry.toURL();
+  this.lastBlobURL_ = window.webkitURL.createObjectURL(textBlob);
+  this.downloadIframe_.src = this.lastBlobURL_;
   this.setSaveFileStatus('Dump successful', false);
-};
-
-/**
- * On any Javascript File API error, enable the save button and display
- * |errorText|, followed by the specific error.
- */
-DataView.prototype.onFileError_ = function(errorText, error) {
-  this.enableSaveFileButton_(true);
-  this.setSaveFileStatus(
-      errorText + '  ' + getKeyWithValue(FileError, error.code),
-      false);
 };
 
 /**
