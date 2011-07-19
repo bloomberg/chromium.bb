@@ -528,6 +528,7 @@ FileManager.prototype = {
 
     var listContainer = this.dialogDom_.querySelector('.list-container');
     listContainer.addEventListener('keydown', this.onListKeyDown_.bind(this));
+    listContainer.addEventListener('keypress', this.onListKeyPress_.bind(this));
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
@@ -580,6 +581,8 @@ FileManager.prototype = {
 
     this.onResize_();
     this.dialogDom_.style.opacity = '1';
+
+    this.textSearchState_ = {text: '', date: new Date()};
   };
 
   /**
@@ -2251,6 +2254,47 @@ FileManager.prototype = {
         }
         break;
     }
+  };
+
+  /**
+   * KeyPress event handler for the div.list-container element.
+   */
+  FileManager.prototype.onListKeyPress_ = function(event) {
+    if (event.srcElement.tagName == 'INPUT') {
+      // Ignore keypress handler in the rename input box.
+      return;
+    }
+
+    if (event.ctrlKey || event.metaKey || event.altKey)
+      return;
+
+    var now = new Date();
+    var char = String.fromCharCode(event.charCode).toLowerCase();
+    var text = now - this.textSearchState_.date > 1000 ? '' :
+        this.textSearchState_.text;
+    this.textSearchState_ = {text: text + char, date: now};
+
+    this.doTextSearch_();
+  };
+
+  /**
+   * Performs a 'text search' - selects a first list entry with name
+   * starting with entered text (case-insensitive).
+   */
+  FileManager.prototype.doTextSearch_ = function() {
+    var text = this.textSearchState_.text;
+    if (!text)
+      return;
+
+    for (var index = 0; index < this.dataModel_.length; ++index) {
+      var name = this.dataModel_.item(index).name;
+      if (name.substring(0, text.length).toLowerCase() == text) {
+        this.currentList_.selectionModel.selectedIndexes = [index];
+        return;
+      }
+    }
+
+    this.textSearchState_.text = '';
   };
 
   /**
