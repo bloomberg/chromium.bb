@@ -14,6 +14,36 @@ from idl_log import ErrOut, InfoOut, WarnOut
 from idl_option import GetOption, Option, ParseOptions
 from stat import *
 
+def IsEquivelent(intext, outtext):
+  if not intext: return False
+  inlines = intext.split('\n')
+  outlines = outtext.split('\n')
+
+  # If number of lines don't match, it's a mismatch
+  if len(inlines) != len(outlines):  return False
+
+  for index in range(len(inlines)):
+    inline = inlines[index]
+    outline = outlines[index]
+
+    if inline == outline: continue
+
+    # If the line is not an exact match, check for comment deltas
+    inwords = inline.split()
+    outwords = outline.split()
+
+    if inwords[0] != outwords[0] or inwords[0] != '/*': return False
+
+    # Neither the year, nor the modified date need an exact match
+    if inwords[1] == 'Copyright':
+      if inwords[4:] == outwords[4:]: continue
+    elif inwords[1] == 'From':
+      if inwords[0:4] == outwords[0:4]:
+        continue
+    return False
+  return True
+
+
 #
 # IDLOutFile
 #
@@ -51,7 +81,7 @@ class IDLOutFile(object):
       else:
         intext = None
 
-      if intext == outtext:
+      if IsEquivelent(intext, outtext):
         if GetOption('verbose'):
           InfoOut.Log('Output %s unchanged.' % self.filename)
         return False

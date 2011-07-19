@@ -36,7 +36,7 @@ def IDLToHeader(filenode, relpath=None, prefix=None):
 
 def GenerateHeader(filenode, pref, inline=True):
   name = filenode.GetProperty('NAME')
-  if name == 'pp_stdint.idl': return
+#  if name == 'pp_stdint.idl':  return
 
   # If we have an 'out' filter list, then check if we should output this file.
   outlist = GetOption('out')
@@ -51,13 +51,13 @@ def GenerateHeader(filenode, pref, inline=True):
   gpath = GetOption('guard')
   def_guard = IDLToHeader(filenode, relpath=gpath, prefix=pref)
   def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
-  copyright = filenode.GetChildren()[0]
-  assert(copyright.IsA('Copyright'))
+  cright_node = filenode.GetChildren()[0]
+  assert(cright_node.IsA('Copyright'))
 
   fileinfo = filenode.GetChildren()[1]
   assert(fileinfo.IsA('Comment'))
 
-  out.Write('%s\n' % cgen.Copyright(copyright))
+  out.Write('%s\n' % cgen.Copyright(cright_node))
   out.Write('/* From %s modified %s. */\n\n'% (
       filenode.GetProperty('NAME'), filenode.GetProperty('DATETIME')))
   out.Write('#ifndef %s\n#define %s\n\n' % (def_guard, def_guard))

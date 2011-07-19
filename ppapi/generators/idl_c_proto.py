@@ -240,8 +240,8 @@ class CGen(object):
   def GetTypeByMode(self, node, mode):
     self.LogEnter('GetTypeByMode of %s mode=%s' % (node, mode))
     name = self.GetTypeName(node)
-    type, mode = self.GetRootTypeMode(node, mode)
-    out = CGen.TypeMap[type][mode] % name
+    ntype, mode = self.GetRootTypeMode(node, mode)
+    out = CGen.TypeMap[ntype][mode] % name
     self.LogExit('GetTypeByMode %s = %s' % (node, out))
     return out
 
@@ -419,6 +419,9 @@ class CGen(object):
     self.LogExit('Exit DefineStruct')
     return out
 
+  def DefineType(self, node, prefix='', comment=False):
+    return ''
+
   #
   # Copyright and Comment
   #
@@ -457,33 +460,35 @@ class CGen(object):
 #    try:
       self.LogEnter('Define %s tab=%d prefix="%s"' % (node,tabs,prefix))
 
-      min = node.GetProperty('version')
-      max = node.GetProperty('deprecate')
+      node_nim = node.GetProperty('version')
+      node_max = node.GetProperty('deprecate')
 
-      if min is not None:
-        min = float(min)
+      if node_nim is not None:
+        node_nim = float(node_nim)
       else:
-        min = 0.0
+        node_nim = 0.0
 
-      if max is not None:
-        max = float(max)
+      if node_max is not None:
+        node_max = float(node_max)
       else:
-        max = 1.0e100
+        node_max = 1.0e100
 
       label = node.GetLabel()
       if label:
         lver = label.GetVersion('M14')
 
         # Verify that we are in a valid version.
-        if max <= lver: return ''
-        if min > lver: return ''
+        if node_max <= lver: return ''
+        if node_nim > lver: return ''
 
       declmap = {
+        'Describe' : CGen.DefineType,
         'Enum' : CGen.DefineEnum,
         'Function' : CGen.DefineMember,
         'Interface' : CGen.DefineStruct,
         'Member' : CGen.DefineMember,
         'Struct' : CGen.DefineStruct,
+        'Type' : CGen.DefineType,
         'Typedef' : CGen.DefineTypedef,
       }
 
@@ -520,11 +525,11 @@ class CGen(object):
         if len(line) > 80:
           left = line.rfind('(') + 1
           args = line[left:].split(',')
-          max = 0
+          line_max = 0
           for arg in args:
-            if len(arg) > max: max = len(arg)
+            if len(arg) > line_max: line_max = len(arg)
 
-          if left + max >= 80:
+          if left + line_max >= 80:
             space = '%s    ' % tab
             args =  (',\n%s' % space).join([arg.strip() for arg in args])
             lines.append('%s\n%s%s' % (line[:left], space, args))

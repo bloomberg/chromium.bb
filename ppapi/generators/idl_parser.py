@@ -367,7 +367,7 @@ class IDLParser(IDLLexer):
 #
   def p_describe_block(self, p):
     """describe_block : modifiers DESCRIBE '{' describe_list '}' ';'"""
-    children = ListFromConcat(p[1], p[2])
+    children = ListFromConcat(p[1], p[4])
     p[0] = self.BuildProduction('Describe', p, 2, children)
     if self.parse_debug: DumpReduction('describe_block', p)
 
@@ -378,7 +378,7 @@ class IDLParser(IDLLexer):
                      | modifiers TYPEDEF ';' describe_list
                      | """
     if len(p) > 1:
-      Type = self.BuildProduction('Type', p, 2, p[1])
+      Type = self.BuildNamed('Type', p, 2, p[1])
       p[0] = ListFromConcat(Type, p[4])
 
   def p_describe_error(self, p):
@@ -1001,7 +1001,8 @@ def ParseFiles(filenames):
     srcroot = GetOption('srcroot')
     for dir in default_dirs:
       srcdir = os.path.join(srcroot, dir, '*.idl')
-      filenames += sorted(glob.glob(gendir))
+      srcdir = os.path.normpath(srcdir)
+      filenames += sorted(glob.glob(srcdir))
 
   for filename in filenames:
     filenode = parser.ParseFile(filename)

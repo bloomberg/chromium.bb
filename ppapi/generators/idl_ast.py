@@ -116,14 +116,14 @@ class IDLAst(IDLNode):
         builtin = filenode
         break
 
-    if not builtin:
-      builtin = IDLFile('pp_stdint.idl', [])
-      extranodes = [builtin]
+#    if not builtin:
+#      builtin = IDLFile('pp_stdint.idl', [])
+#      extranodes = [builtin]
 
-    for name in BuiltIn:
-      nameattr = IDLAttribute('NAME', name)
-      typenode = IDLNode('Type', 'BuiltIn', 1, 0, [nameattr])
-      builtin.AddChild(typenode)
+#    for name in BuiltIn:
+#      nameattr = IDLAttribute('NAME', name)
+#      typenode = IDLNode('Type', 'BuiltIn', 1, 0, [nameattr])
+#      builtin.AddChild(typenode)
 
     IDLNode.__init__(self, 'AST', 'BuiltIn', 1, 0, extranodes + children)
     self.SetProperty('LABEL', IDLVersionMapDefault())
