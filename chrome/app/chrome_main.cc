@@ -77,7 +77,6 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/common/nacl_fork_delegate_linux.h"
 #include "content/common/zygote_fork_delegate_linux.h"
 #endif
 
@@ -460,11 +459,7 @@ int RunZygote(const MainFunctionParams& main_function_params) {
     media::InitializeMediaLibrary(media_path);
 
   // This function call can return multiple times, once per fork().
-  NaClForkDelegate* nacl_delegate = new NaClForkDelegate();
-  int rval = ZygoteMain(main_function_params, nacl_delegate);
-  if (nacl_delegate)
-    delete nacl_delegate;
-  if (!rval)
+  if (!ZygoteMain(main_function_params, NULL))
     return 1;
 
   // Zygote::HandleForkRequest may have reallocated the command
