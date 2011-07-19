@@ -61,8 +61,8 @@
             <span i18n-content="passwordsNeverSave"></span>
           </label>
         </div>
-        <div><button id="manage-passwords"
-            i18n-content="manage_passwords"></button></div>
+        <div><button id="manage-passwords" i18n-content="manage_passwords"
+            pref="profile.password_manager_enabled"></button></div>
         <!-- This makes the managed-banner appear when the "pref" is
         configured by the IT administrator. -->
         <input name="password_allow_show_hidden" type="text"
@@ -79,7 +79,7 @@
             <span i18n-content="autofillEnabled"></span>
           </label>
         </div>
-        <button id="autofill-settings"
+        <button id="autofill-settings" pref="autofill.enabled"
             i18n-content="manageAutofillSettings"></button>
       </div>
     </section>

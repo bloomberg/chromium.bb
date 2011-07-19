@@ -565,6 +565,53 @@ cr.define('options', function() {
    */
   cr.defineProperty(PrefTextField, 'dataType', cr.PropertyKind.ATTR);
 
+  /////////////////////////////////////////////////////////////////////////////
+  // PrefButton class:
+
+  // Define a constructor that uses a button element as its underlying element.
+  var PrefButton = cr.ui.define('button');
+
+  PrefButton.prototype = {
+    // Set up the prototype chain
+    __proto__: HTMLButtonElement.prototype,
+
+    /**
+    * Initialization function for the cr.ui framework.
+    */
+    decorate: function() {
+      var self = this;
+
+      // Listen to pref changes. This element behaves like a normal button and
+      // doesn't affect the underlying preference; it just becomes disabled
+      // when the preference is managed, and its value is false.
+      // This is useful for buttons that should be disabled when the underlying
+      // boolean preference is set to false by a policy or extension.
+      Preferences.getInstance().addEventListener(this.pref,
+          function(event) {
+            var e = {
+              value: {
+                'disabled': event.value['disabled'] && !event.value['value'],
+                'controlledBy': event.value['controlledBy']
+              }
+            };
+            updateElementState_(self, e);
+          });
+    },
+  };
+
+  /**
+   * The preference name.
+   * @type {string}
+   */
+  cr.defineProperty(PrefButton, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * Whether the preference is controlled by something else than the user's
+   * settings (either 'policy' or 'extension').
+   * @type {string}
+   */
+  cr.defineProperty(PrefButton, 'controlledBy', cr.PropertyKind.ATTR);
+
   // Export
   return {
     PrefCheckbox: PrefCheckbox,
@@ -573,7 +620,8 @@ cr.define('options', function() {
     PrefRadio: PrefRadio,
     PrefRange: PrefRange,
     PrefSelect: PrefSelect,
-    PrefTextField: PrefTextField
+    PrefTextField: PrefTextField,
+    PrefButton: PrefButton
   };
 
 });

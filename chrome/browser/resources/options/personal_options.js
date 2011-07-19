@@ -95,25 +95,6 @@ cr.define('options', function() {
         $('passwords-offersave').value = false;
         $('passwords-neversave').value = true;
         $('manage-passwords').disabled = true;
-      } else {
-        // Otherwise, follow the preference, which can be toggled at runtime.
-        // TODO(joaodasilva): remove the radio controls toggles below, once a
-        // generic fix for updateElementState_ in pref_ui.js is available.
-        // The problem is that updateElementState_ disables controls when a
-        // policy enforces the preference, but doesn't re-enable them when the
-        // policy is changed or removed. That's because controls can also be
-        // disabled for other reasons (e.g. Guest mode, in this case) and
-        // removing the policy doesn't mean the control can be enabled again.
-        Preferences.getInstance().addEventListener(
-            'profile.password_manager_enabled',
-            function(event) {
-              var managed = event.value && event.value['managed'];
-              var value = event.value && event.value['value'] != undefined ?
-                  event.value['value'] : event.value;
-              $('passwords-offersave').disabled = managed;
-              $('passwords-neversave').disabled = managed;
-              $('manage-passwords').disabled = managed && !value;
-            });
       }
 
       if (PersonalOptions.disableAutofillManagement()) {
@@ -124,15 +105,6 @@ cr.define('options', function() {
         autofillEnabled.disabled = true;
         autofillEnabled.checked = false;
         cr.dispatchSimpleEvent(autofillEnabled, 'change');
-      } else {
-        Preferences.getInstance().addEventListener(
-            'autofill.enabled',
-            function(event) {
-              var managed = event.value && event.value['managed'];
-              var value = event.value && event.value['value'] != undefined ?
-                  event.value['value'] : event.value;
-              $('autofill-settings').disabled = managed && !value;
-            });
       }
     },
 
@@ -277,4 +249,3 @@ cr.define('options', function() {
   };
 
 });
-

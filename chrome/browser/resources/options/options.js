@@ -40,6 +40,7 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
+  cr.ui.decorate('button[pref]', options.PrefButton);
   cr.ui.decorate('#content-settings-page input[type=radio]:not(.handler-radio)',
       options.ContentSettingsRadio);
   cr.ui.decorate('#content-settings-page input[type=radio].handler-radio',
