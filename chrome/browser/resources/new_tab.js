@@ -725,7 +725,8 @@ function hideSection(section) {
 
       var maxiview = getSectionMaxiview(el);
       if (maxiview) {
-        maxiview.classList.add(isDoneLoading() ? 'collapsing' : 'collapsed');
+        maxiview.classList.add((isDoneLoading() && isAnimating()) ?
+                               'collapsing' : 'collapsed');
         maxiview.classList.remove('opaque');
       }
 
