@@ -192,6 +192,44 @@ struct PP_InputEvent_Wheel {
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
 
 /**
+ * The PP_InputEventData union represents all input event data types.
+ */
+union PP_InputEventData {
+  struct PP_InputEvent_Key key;
+  struct PP_InputEvent_Character character;
+  struct PP_InputEvent_Mouse mouse;
+  struct PP_InputEvent_Wheel wheel;
+  /**
+   * This value allows new events to be added without changing the size of
+   * this struct.
+   */
+  char padding[64];
+};
+
+/**
+ * The PP_InputEvent struct represents all input events.
+ */
+struct PP_InputEvent {
+  /** This value represents the type of the event. */
+  PP_InputEvent_Type type;
+  /** This value ensure the time_stamp is aligned on an 8-byte boundary
+   * relative to the start of the struct. Some compilers align doubles
+   * on 8-byte boundaries for 32-bit x86, and some align on 4-byte boundaries.
+   */
+  int32_t padding;
+  /**
+   * This value represents the time that this event was generated. This value
+   * is not relative to any particular epoch; the most you can do is compare
+   * time stamps.
+   */
+  PP_TimeTicks time_stamp;
+  /**
+   * This value represents the event type and its specific data.
+   */
+  union PP_InputEventData u;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
+/**
  * @}
  */
 

@@ -23,13 +23,13 @@
 #include "remoting/protocol/connection_to_host.h"
 
 class MessageLoop;
+struct PP_InputEvent;
 
 namespace base {
 class Thread;
 }  // namespace base
 
 namespace pp {
-class InputEvent;
 class Module;
 }  // namespace pp
 
@@ -64,7 +64,7 @@ class ChromotingInstance : public pp::InstancePrivate {
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void Connect(const ClientConfig& config);
-  virtual bool HandleInputEvent(const pp::InputEvent& event);
+  virtual bool HandleInputEvent(const PP_InputEvent& event);
   virtual void Disconnect();
   virtual pp::Var GetInstanceObject();
 

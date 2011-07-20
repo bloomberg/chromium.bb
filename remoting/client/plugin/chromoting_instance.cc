@@ -19,8 +19,8 @@
 // crbug.com/74951
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
+#include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/rect.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
@@ -55,8 +55,6 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
       logger_(this) {
-  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
-  RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -171,51 +169,44 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
   view_->SetScreenSize(clip.width(), clip.height());
 }
 
-bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
+bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
   DCHECK(CurrentlyOnPluginThread());
 
   PepperInputHandler* pih
       = static_cast<PepperInputHandler*>(input_handler_.get());
 
-  switch (event.GetType()) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-      pih->HandleMouseButtonEvent(true, pp::MouseInputEvent(event));
+  switch (event.type) {
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+      pih->HandleMouseButtonEvent(true, event.u.mouse);
       return true;
-    }
 
-    case PP_INPUTEVENT_TYPE_MOUSEUP: {
-      pih->HandleMouseButtonEvent(false, pp::MouseInputEvent(event));
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
+      pih->HandleMouseButtonEvent(false, event.u.mouse);
       return true;
-    }
 
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
-    case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
-      pih->HandleMouseMoveEvent(pp::MouseInputEvent(event));
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      pih->HandleMouseMoveEvent(event.u.mouse);
       return true;
-    }
 
-    case PP_INPUTEVENT_TYPE_CONTEXTMENU: {
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
       // We need to return true here or else we'll get a local (plugin) context
       // menu instead of the mouseup event for the right click.
       return true;
-    }
 
     case PP_INPUTEVENT_TYPE_KEYDOWN:
-    case PP_INPUTEVENT_TYPE_KEYUP: {
-      pp::KeyboardInputEvent key_event(event);
+    case PP_INPUTEVENT_TYPE_KEYUP:
       logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEY%s key=%d",
-          (event.GetType()==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP"),
-          key_event.GetKeyCode());
-      pih->HandleKeyEvent(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN,
-                          key_event);
+                    (event.type==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP"),
+                    event.u.key.key_code);
+      pih->HandleKeyEvent(event.type == PP_INPUTEVENT_TYPE_KEYDOWN,
+                          event.u.key);
       return true;
-    }
 
-    case PP_INPUTEVENT_TYPE_CHAR: {
-      pih->HandleCharacterEvent(pp::KeyboardInputEvent(event));
+    case PP_INPUTEVENT_TYPE_CHAR:
+      pih->HandleCharacterEvent(event.u.character);
       return true;
-    }
 
     default:
       break;

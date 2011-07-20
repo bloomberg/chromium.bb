@@ -165,7 +165,7 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_Instance_Proxy::GetInfo1_0());
+  AddPPP(PPP_Instance_Proxy::GetInfo0_5());
 }
 
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {
