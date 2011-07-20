@@ -1017,9 +1017,9 @@ void RecordLastRunAppBundlePath() {
   if (lastProfile_)
     return lastProfile_;
 
-  // Fallback to the default if this is the first Browser.
+  // On first launch, no profile will be stored, so use last from Local State.
   if (g_browser_process->profile_manager())
-    return g_browser_process->profile_manager()->GetDefaultProfile();
+    return g_browser_process->profile_manager()->GetLastUsedProfile();
 
   return NULL;
 }
