@@ -4963,12 +4963,6 @@
    fun:_ZN13safe_browsing23ClientSideDetectionHost22OnDetectedPhishingSiteERKSs
 }
 {
-   bug_89884
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackI17PageSnapshotTakerRK8SkBitmapEPN9Callback1IT0_E4TypeEPT_MS9_FvS5_E
-}
-{
    bug_89938
    Memcheck:Cond
    fun:_ZN5views6Widget4ShowEv

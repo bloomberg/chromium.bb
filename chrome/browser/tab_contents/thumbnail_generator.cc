@@ -189,6 +189,8 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
                                         ThumbnailReadyCallback* callback,
                                         gfx::Size page_size,
                                         gfx::Size desired_size) {
+  scoped_ptr<ThumbnailReadyCallback> callback_deleter(callback);
+
   if (prefer_backing_store) {
     BackingStore* backing_store = renderer->GetBackingStore(false);
     if (backing_store) {
@@ -201,7 +203,6 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
                                                     NULL);
       callback->Run(first_try);
 
-      delete callback;
       return;
     }
     // Now, if the backing store didn't exist, we will still try and
@@ -232,7 +233,6 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
       false);
   if (!renderer_dib_handle) {
     LOG(WARNING) << "Could not duplicate dib handle for renderer";
-    delete callback;
     return;
   }
 #else
@@ -240,7 +240,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
 #endif
 
   linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
-  request_info->callback.reset(callback);
+  request_info->callback.reset(callback_deleter.release());
   request_info->thumbnail_dib.reset(thumbnail_dib.release());
   request_info->renderer = renderer;
   ThumbnailCallbackMap::value_type new_value(sequence_num, request_info);
