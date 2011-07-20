@@ -51,6 +51,8 @@ cr.define('ntp4', function() {
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
       this.addEventListener('dragenter', this.onDragEnter_);
+      this.addEventListener('dragover', this.onDragOver_);
+      this.addEventListener('drop', this.onDrop_);
       this.addEventListener('dragleave', this.onDragLeave_);
       this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
 
@@ -145,8 +147,6 @@ cr.define('ntp4', function() {
     /**
       * These are equivalent to dragEnters_ and isCurrentDragTarget_ from
       * TilePage.
-      * TODO(estade): thunkify the event handlers in the same manner as the
-      * tile grid drag handlers.
       */
     dragEnters_: 0,
     isCurrentDragTarget_: false,
@@ -155,11 +155,15 @@ cr.define('ntp4', function() {
      * A drag has entered the navigation dot. If the user hovers long enough,
      * we will navigate to the relevant page.
      * @param {Event} e The MouseOver event for the drag.
+     * @private
      */
     onDragEnter_: function(e) {
-      if (++this.dragEnters_ > 1)
-        return;
-
+      if (++this.dragEnters_ == 1)
+        this.doDragEnter_(e);
+      else
+        this.doDragOver_(e);
+    },
+    doDragEnter_: function(e) {
       if (!this.page_.shouldAcceptDrag(e.dataTransfer))
         return;
 
@@ -171,11 +175,57 @@ cr.define('ntp4', function() {
         self.dragNavTimeout = null;
       }
       this.dragNavTimeout = window.setTimeout(navPageClearTimeout, 500);
+
+      this.doDragOver_(e);
+    },
+
+    /**
+     * A dragged element has moved over the navigation dot. Show the correct
+     * indicator and prevent default handling so the <input> won't act as a drag
+     * target.
+     * @param {Event} e The MouseOver event for the drag.
+     * @private
+     */
+    onDragOver_: function(e) {
+      this.doDragOver_(e);
+    },
+    doDragOver_: function(e) {
+      e.preventDefault();
+
+      if (!this.isCurrentDragTarget_)
+        e.dataTransfer.dropEffect = 'none';
+      else if (ntp4.getCurrentlyDraggingTile)
+        e.dataTransfer.dropEffect = 'move';
+      else
+        e.dataTransfer.dropEffect = 'copy';
+    },
+
+    /**
+     * A dragged element has been dropped on the navigation dot. Tell the page
+     * to append it.
+     * @param {Event} e The MouseOver event for the drag.
+     * @private
+     */
+    onDrop_: function(e) {
+      this.dragEnters_ = 0;
+      if (!this.isCurrentDragTarget_)
+        return;
+      this.doDrop_(e);
+    },
+    doDrop_: function(e) {
+      e.stopPropagation();
+      this.isCurrentDragTarget_ = false;
+      if (ntp4.getCurrentlyDraggingTile)
+        this.page_.appendDraggingTile();
+      // TODO(estade): handle non-tile drags.
+
+      this.cancelDelayedSwitch_();
     },
 
     /**
      * The drag has left the navigation dot.
      * @param {Event} e The MouseOver event for the drag.
+     * @private
      */
     onDragLeave_: function(e) {
       if (--this.dragEnters_ > 0)
@@ -184,7 +234,13 @@ cr.define('ntp4', function() {
       if (!this.isCurrentDragTarget_)
         return;
       this.isCurrentDragTarget_ = false;
+    },
 
+    /**
+     * Cancels the timer for page switching.
+     * @private
+     */
+    cancelDelayedSwitch_: function() {
       if (this.dragNavTimeout) {
         window.clearTimeout(this.dragNavTimeout);
         this.dragNavTimeout = null;
@@ -194,6 +250,7 @@ cr.define('ntp4', function() {
     /**
      * A transition has ended.
      * @param {Event} e The transition end event.
+     * @private
      */
     onTransitionEnd_: function(e) {
       if (e.propertyName === 'width' && this.classList.contains('small'))

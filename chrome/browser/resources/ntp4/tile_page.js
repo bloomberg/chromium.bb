@@ -90,6 +90,14 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragStart_: function(e) {
+      // TODO(estade): most visited dragging is disabled for now, remove this
+      // when it does something useful.
+      if (this.querySelector('.most-visited')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
       // The user may start dragging again during a previous drag's finishing
       // animation.
       if (this.classList.contains('dragging'))
@@ -951,6 +959,20 @@ cr.define('ntp4', function() {
 
       this.classList.remove('animating-tile-page');
       this.cleanUpDrag_();
+    },
+
+    /**
+     * Appends the currently dragged tile to the end of the page. Called
+     * from outside the page, e.g. when dropping on a nav dot.
+     */
+    appendDraggingTile: function() {
+      var originalPage = currentlyDraggingTile.tilePage;
+      if (originalPage == this)
+        return;
+
+      this.tileGrid_.appendChild(currentlyDraggingTile);
+      originalPage.cleanUpDrag_();
+      this.tileMoved(currentlyDraggingTile);
     },
 
     /**
