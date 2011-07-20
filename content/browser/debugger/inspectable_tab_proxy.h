@@ -70,7 +70,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
     return service_;
   }
 
-  void Close();
+  void CloseImpl();
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();

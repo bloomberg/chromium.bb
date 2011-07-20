@@ -252,7 +252,7 @@ void DebuggerRemoteService::DetachFromTab(const std::string& destination,
   DevToolsClientHostImpl* client_host =
       delegate_->inspectable_tab_proxy()->ClientHostForTabId(tab_uid);
   if (client_host != NULL) {
-    client_host->Close();
+    client_host->CloseImpl();
     result_code = RESULT_OK;
   } else {
     // No client host registered for |tab_uid|.

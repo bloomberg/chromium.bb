@@ -7,6 +7,7 @@ include_rules = [
 
   # http://crbug.com/84078
   "+chrome/browser/browser_process.h",
+  "+chrome/browser/debugger/devtools_window.h",
   "+chrome/browser/download/download_prefs.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/extension_message_service.h",

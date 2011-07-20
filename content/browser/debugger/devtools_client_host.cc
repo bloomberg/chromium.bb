@@ -35,6 +35,10 @@ DevToolsClientHost::~DevToolsClientHost() {
   instances_.erase(it);
 }
 
+RenderViewHost* DevToolsClientHost::GetClientRenderViewHost() {
+  return NULL;
+}
+
 DevToolsClientHost::DevToolsClientHost() : close_listener_(NULL) {
   instances_.push_back(this);
 }

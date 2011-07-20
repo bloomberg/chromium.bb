@@ -35,7 +35,7 @@ void DevToolsClientHostImpl::InspectedTabClosing() {
 }
 
 // The remote debugger has detached.
-void DevToolsClientHostImpl::Close() {
+void DevToolsClientHostImpl::CloseImpl() {
   NotifyCloseListener();
   delete this;
 }

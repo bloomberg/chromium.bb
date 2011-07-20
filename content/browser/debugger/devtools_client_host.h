@@ -76,7 +76,7 @@ class DevToolsClientHost {
 
   // Returns client (front-end) RenderViewHost implementation of this
   // client host if applicable. NULL otherwise.
-  virtual RenderViewHost* GetClientRenderViewHost() { return NULL; }
+  virtual RenderViewHost* GetClientRenderViewHost();
 
  protected:
   DevToolsClientHost();
