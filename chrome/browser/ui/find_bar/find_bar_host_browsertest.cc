@@ -694,12 +694,20 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
 #if defined(OS_MACOSX)
 // FindNextInNewTabUsesPrepopulate times-out, at least on Mac.
 // See http://crbug.com/43070
-#define FindNextInNewTabUsesPrepopulate DISABLED_FindNextInNewTabUsesPrepopulate
+#define MAYBE_FindNextInNewTabUsesPrepopulate \
+    DISABLED_FindNextInNewTabUsesPrepopulate
+#elif defined (OS_WINDOWS)
+// Occasionally times-out on Windows, too.
+// See http://crbug.com/43070 and http://crbug.com/88316
+#define MAYBE_FindNextInNewTabUsesPrepopulate \
+    FLAKY_FindNextInNewTabUsesPrepopulate
+#else
+#define MAYBE_FindNextInNewTabUsesPrepopulate FindNextInNewTabUsesPrepopulate
 #endif
 
 // Make sure F3 in a new tab works if Find has previous string to search for.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       FindNextInNewTabUsesPrepopulate) {
+                       MAYBE_FindNextInNewTabUsesPrepopulate) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
