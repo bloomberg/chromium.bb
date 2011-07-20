@@ -2567,7 +2567,6 @@ non_browser_tests = [
     'tests/dynamic_linking/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
-    'tests/fake_browser/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
