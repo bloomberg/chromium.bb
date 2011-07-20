@@ -56,8 +56,21 @@ var layoutSettings;
 var showingSystemDialog = false;
 
 // The range of options in the printer dropdown controlled by cloud print.
-var firstCloudPrintOptionPos = 0
+var firstCloudPrintOptionPos = 0;
 var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
+
+
+// TODO(abodenha@chromium.org) A lot of cloud print specific logic has
+// made its way into this file.  Refactor to create a cleaner boundary
+// between print preview and GCP code.  Reference bug 88098 when fixing.
+
+// A dictionary of cloud printers that have been added to the printer
+// dropdown.
+var addedCloudPrinters = {};
+
+// The maximum number of cloud printers to allow in the dropdown.
+const maxCloudPrinters = 10;
+
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -183,6 +196,9 @@ function updateControlsWithSelectedPrinterCapabilities() {
              selectedValue == ADD_CLOUD_PRINTER) {
     printerList.selectedIndex = lastSelectedPrinterIndex;
     chrome.send(selectedValue);
+    skip_refresh = true;
+  } else if (selectedValue == MORE_PRINTERS) {
+    onSystemDialogLinkClicked();
     skip_refresh = true;
   } else if (selectedValue == PRINT_TO_PDF) {
     updateWithPrinterCapabilities({
@@ -342,6 +358,13 @@ function generatePreviewRequestID() {
 }
 
 /**
+ * @return {boolean} True iff a preview has been requested.
+ */
+function hasRequestedPreview() {
+  return lastPreviewRequestID > -1;
+}
+
+/**
  * Returns the name of the selected printer or the empty string if no
  * printer is selected.
  * @return {string} The name of the currently selected printer.
@@ -445,8 +468,6 @@ function fileSelectionCancelled() {
  *                 the default printer is a cloud printer.
  */
 function setDefaultPrinter(printer_name, cloudPrintData) {
-  // Add a placeholder value so the printer list looks valid.
-  addDestinationListOption('', '', true, true, true);
   if (printer_name) {
     defaultOrLastUsedPrinterName = printer_name;
     if (cloudPrintData) {
@@ -455,7 +476,11 @@ function setDefaultPrinter(printer_name, cloudPrintData) {
                                    addCloudPrinters,
                                    doUpdateCloudPrinterCapabilities);
     } else {
-      $('printer-list')[0].value = defaultOrLastUsedPrinterName;
+      addDestinationListOption('',
+                               defaultOrLastUsedPrinterName,
+                               true,
+                               true,
+                               true);
       updateControlsWithSelectedPrinterCapabilities();
     }
   }
@@ -468,19 +493,11 @@ function setDefaultPrinter(printer_name, cloudPrintData) {
  * @param {Array} printers Array of printer info objects.
  */
 function setPrinters(printers) {
-  var printerList = $('printer-list');
-  // If there exists a dummy printer value, then setDefaultPrinter() already
-  // requested a preview, so no need to do it again.
-  var needPreview = (printerList[0].value == '');
   for (var i = 0; i < printers.length; ++i) {
     var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
                              isDefault, false, false);
   }
-
-  if (!cloudprint.isCloudPrint(printerList[0]))
-    // Remove the dummy printer added in setDefaultPrinter().
-    printerList.remove(0);
 
   if (printers.length != 0)
     addDestinationListOption('', '', false, true, true);
@@ -499,25 +516,28 @@ function setPrinters(printers) {
         MANAGE_LOCAL_PRINTERS, false, false, false);
   }
   if (useCloudPrint) {
+    // Fetch recent printers.
     cloudprint.fetchPrinters(addCloudPrinters, false);
+    // Fetch the full printer list.
+    cloudprint.fetchPrinters(addCloudPrinters, true);
     addDestinationListOption(localStrings.getString('manageCloudPrinters'),
         MANAGE_CLOUD_PRINTERS, false, false, false);
   }
 
-  printerList.disabled = false;
+  $('printer-list').disabled = false;
 
-  if (needPreview)
+  if (!hasRequestedPreview())
     updateControlsWithSelectedPrinterCapabilities();
 }
 
 /**
  * Creates an option that can be added to the printer destination list.
- * @param {String} optionText specifies the option text content.
- * @param {String} optionValue specifies the option value.
+ * @param {string} optionText specifies the option text content.
+ * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
  * @param {boolean} isSeparator is true if the option is a visual separator and
- *                  needs to be disabled.
+ *     needs to be disabled.
  * @return {Object} The created option.
  */
 function createDestinationListOption(optionText, optionValue, isDefault,
@@ -535,8 +555,8 @@ function createDestinationListOption(optionText, optionValue, isDefault,
 
 /**
  * Adds an option to the printer destination list.
- * @param {String} optionText specifies the option text content.
- * @param {String} optionValue specifies the option value.
+ * @param {string} optionText specifies the option text content.
+ * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
  * @return {Object} The created option.
@@ -554,10 +574,10 @@ function addDestinationListOption(optionText, optionValue, isDefault,
 
 /**
  * Adds an option to the printer destination list at a specified position.
- * @param {Integer} position The index in the printer-list wher the option
-                             should be created.
- * @param {String} optionText specifies the option text content.
- * @param {String} optionValue specifies the option value.
+ * @param {number} position The index in the printer-list wher the option
+       should be created.
+ * @param {string} optionText specifies the option text content.
+ * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
  * @return {Object} The created option.
@@ -580,15 +600,31 @@ function addDestinationListOptionAtPosition(position,
 }
 
 /**
- * Removes the list of cloud printers from the printer pull down.
+ * Test if a particular cloud printer has already been added to the
+ * printer dropdown.
+ * @param {string} id A unique value to track this printer.
+ * @return {boolean} True if this id has previously been passed to
+ *     trackCloudPrinterAdded.
  */
-function clearCloudPrinters() {
-  var printerList = $('printer-list');
-  while (firstCloudPrintOptionPos < lastCloudPrintOptionPos) {
-    lastCloudPrintOptionPos--;
-    printerList.remove(lastCloudPrintOptionPos);
+function cloudPrinterAlreadyAdded(id) {
+  return (addedCloudPrinters[id]);
+}
+
+/**
+ * Record that a cloud printer will added to the printer dropdown.
+ * @param {string} id A unique value to track this printer.
+ * @return {boolean} False if adding this printer would exceed
+ *     |maxCloudPrinters|.
+ */
+function trackCloudPrinterAdded(id) {
+  if (Object.keys(addedCloudPrinters).length < maxCloudPrinters) {
+    addedCloudPrinters[id] = true;
+    return true;
+  } else {
+    return false;
   }
 }
+
 
 /**
  * Add cloud printers to the list drop down.
@@ -597,18 +633,21 @@ function clearCloudPrinters() {
  * @param {Array} printers Array of printer info objects.
  * @return {Object} The currently selected printer.
  */
-function addCloudPrinters(printers, showMorePrintersOption) {
-  // TODO(abodenha@chromium.org) Avoid removing printers from the list.
-  // Instead search for duplicates and don't add printers that already exist
-  // in the list.
-  clearCloudPrinters();
-  addDestinationListOptionAtPosition(
-      lastCloudPrintOptionPos++,
-      localStrings.getString('cloudPrinters'),
-      '',
-      false,
-      true,
-      false);
+function addCloudPrinters(printers) {
+  var isFirstPass = false;
+  var showMorePrintersOption = false;
+
+  if (firstCloudPrintOptionPos == lastCloudPrintOptionPos) {
+    isFirstPass = true;
+    var option = addDestinationListOptionAtPosition(
+        lastCloudPrintOptionPos++,
+        localStrings.getString('cloudPrinters'),
+        'Label',
+        false,
+        true,
+        false);
+    cloudprint.setCloudPrint(option, null, null);
+  }
   if (printers != null) {
     if (printers.length == 0) {
       addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
@@ -618,17 +657,23 @@ function addCloudPrinters(printers, showMorePrintersOption) {
           false,
           false);
     } else {
-      for (printer in printers) {
-        var option = addDestinationListOptionAtPosition(
-            lastCloudPrintOptionPos++,
-            printers[printer]['name'],
-            printers[printer]['id'],
-            printers[printer]['name'] == defaultOrLastUsedPrinterName,
-            false,
-            false);
-        cloudprint.setCloudPrint(option,
-                                 printers[printer]['name'],
-                                 printers[printer]['id']);
+      for (var i = 0; i < printers.length; i++) {
+        if (!cloudPrinterAlreadyAdded(printers[i]['id'])) {
+          var option = addDestinationListOptionAtPosition(
+              lastCloudPrintOptionPos++,
+              printers[i]['name'],
+              printers[i]['id'],
+              printers[i]['name'] == defaultOrLastUsedPrinterName,
+              false,
+              false);
+          cloudprint.setCloudPrint(option,
+                                   printers[i]['name'],
+                                   printers[i]['id']);
+          if (!trackCloudPrinterAdded(printers[i]['id'])) {
+            showMorePrintersOption = true;
+            break;
+          }
+        }
       }
       if (showMorePrintersOption) {
         addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
@@ -643,25 +688,30 @@ function addCloudPrinters(printers, showMorePrintersOption) {
       }
     }
   } else {
-    addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
-                                       localStrings.getString('signIn'),
-                                       SIGN_IN,
+    if (!cloudPrinterAlreadyAdded(SIGN_IN)) {
+      addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
+                                         localStrings.getString('signIn'),
+                                         SIGN_IN,
+                                         false,
+                                         false,
+                                         false);
+      trackCloudPrinterAdded(SIGN_IN);
+    }
+  }
+  if (isFirstPass) {
+    addDestinationListOptionAtPosition(lastCloudPrintOptionPos,
+                                       '',
+                                       '',
                                        false,
+                                       true,
+                                       true);
+    addDestinationListOptionAtPosition(lastCloudPrintOptionPos + 1,
+                                       localStrings.getString('localPrinters'),
+                                       '',
                                        false,
+                                       true,
                                        false);
   }
-  addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
-                                     '',
-                                     '',
-                                     false,
-                                     true,
-                                     true);
-  addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
-                                     localStrings.getString('localPrinters'),
-                                     '',
-                                     false,
-                                     true,
-                                     false);
   var printerList = $('printer-list')
   var selectedPrinter = printerList.selectedIndex;
   if (selectedPrinter < 0)

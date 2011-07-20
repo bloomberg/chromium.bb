@@ -119,12 +119,12 @@ cr.define('cloudprint', function() {
       var searchResult = JSON.parse(xhr.responseText);
       if (searchResult['success']) {
         var printerList = searchResult['printers'];
-        callback.call(this, printerList, false);
+        callback.call(this, printerList);
       } else {
-        callback.call(this, null, false);
+        callback.call(this, null);
       }
     } else {
-      callback.call(this, null, false);
+      callback.call(this, null);
     }
   }
 
@@ -293,28 +293,30 @@ cr.define('cloudprint', function() {
     }
   }
 
-  /** Creates a cloud print printer and sets it as the default printer.
+  /**
+   * Creates a cloud print printer and sets it as the default printer.
    * @param {string} printer_name The name of the printer to create.
    * @param {Object} cloud_print_data Data to be stored in cloudPrintOptions.
    * @param {function} add_callback The callback to be called to add the new
-   *                   printer to the print preview UI.
+   *     printer to the print preview UI.
    * @param {function} update_caps_callback The callback to be called to update
-   *                   capabilities on the new printer.
+   *     capabilities on the new printer.
    */
   function setDefaultPrinter(printer_name,
                              cloud_print_data,
                              add_callback,
                              update_caps_callback) {
-    var printer = add_callback([JSON.parse(cloud_print_data)], false);
+    var printer = add_callback([JSON.parse(cloud_print_data)]);
     if (printer)
       update_caps_callback(printer);
   }
 
-  /** Returns the data necessary to serialize a cloud print printer.
+  /**
+   * Returns the data necessary to serialize a cloud print printer.
    * @param {Object} printer The printer object to get data for.
    * @return {string} A JSON string that can be used to recreate the
-   *                  cloud print portion of the printer object, or
-   *                  an empty string if there is no data to save.
+   *     cloud print portion of the printer object, or and empty string if
+   *     there is no data to save.
    */
   function getData(printer) {
     if (isCloudPrint(printer)) {
@@ -324,7 +326,8 @@ cr.define('cloudprint', function() {
     }
   }
 
-  /** Test if a printer is a cloud print printer.
+  /**
+   * Test if a printer is a cloud print printer.
    * @param {Object} printer The printer to test.
    * @return {boolean} true iff the printer is a cloud print printer.
    */
@@ -332,11 +335,12 @@ cr.define('cloudprint', function() {
     return printer && printer.cloudPrintOptions != null;
   }
 
-  /** Mark a printer as a cloud print printer and record its name and id.
+  /**
+   * Mark a printer as a cloud print printer and record its name and id.
    * @param {Object} printer The printer to mark.
    * @param {string} name The user visible name of the printer.
    * @param {string} id The id of the printer used by cloud print to
-   *                 identify it.
+   *     identify it.
    */
   function setCloudPrint(printer, name, id) {
     if (!printer.cloudPrintOptions) {
