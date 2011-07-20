@@ -233,9 +233,6 @@ class DownloadManager
                    const DownloadStateInfo& state,
                    bool visited_referrer_before);
 
-  // Called when the user has validated the download of a dangerous file.
-  void DangerousDownloadValidated(DownloadItem* download);
-
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
   // finish asynchronously after this method returns.

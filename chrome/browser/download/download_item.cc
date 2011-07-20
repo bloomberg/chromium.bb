@@ -221,8 +221,7 @@ DownloadItem::~DownloadItem() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  state_ = REMOVING;
-  UpdateObservers();
+  TransitionTo(REMOVING);
   download_manager_->AssertQueueStateConsistent(this);
 }
 
@@ -321,13 +320,17 @@ void DownloadItem::ShowDownloadInShell() {
 }
 
 void DownloadItem::DangerousDownloadValidated() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(DANGEROUS, safety_state());
 
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             GetDangerType(),
                             DANGEROUS_TYPE_MAX);
-  download_manager_->DangerousDownloadValidated(this);
+
+  safety_state_ = DANGEROUS_BUT_VALIDATED;
+  UpdateObservers();
+
+  download_manager_->MaybeCompleteDownload(this);
 }
 
 void DownloadItem::UpdateSize(int64 bytes_so_far) {
@@ -386,8 +389,7 @@ void DownloadItem::Cancel(bool update_history) {
 
   download_util::RecordDownloadCount(download_util::CANCELLED_COUNT);
 
-  state_ = CANCELLED;
-  UpdateObservers();
+  TransitionTo(CANCELLED);
   StopProgressTimer();
   if (update_history)
     download_manager_->DownloadCancelled(download_id_);
@@ -398,8 +400,7 @@ void DownloadItem::MarkAsComplete() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(all_data_saved_);
-  state_ = COMPLETE;
-  UpdateObservers();
+  TransitionTo(COMPLETE);
 }
 
 void DownloadItem::OnAllDataSaved(int64 size) {
@@ -424,8 +425,7 @@ void DownloadItem::Completed() {
   VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
   DCHECK(all_data_saved_);
-  state_ = COMPLETE;
-  UpdateObservers();
+  TransitionTo(COMPLETE);
   download_manager_->DownloadCompleted(id());
   download_util::RecordDownloadCompleted(start_tick_);
 
@@ -472,6 +472,32 @@ void DownloadItem::StartCrxInstall() {
   UpdateObservers();
 }
 
+void DownloadItem::TransitionTo(DownloadState new_state) {
+  if (state_ == new_state)
+    return;
+
+  state_ = new_state;
+  UpdateObservers();
+}
+
+void DownloadItem::UpdateSafetyState() {
+  SafetyState updated_value(
+      GetSafetyState(state_info_.is_dangerous_file,
+                     state_info_.is_dangerous_url));
+  if (updated_value != safety_state_) {
+    safety_state_ = updated_value;
+    UpdateObservers();
+  }
+}
+
+void DownloadItem::UpdateTarget() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (state_info_.target_name.value().empty())
+    state_info_.target_name = full_path_.BaseName();
+}
+
 // NotificationObserver implementation.
 void DownloadItem::Observe(int type,
                            const NotificationSource& source,
@@ -498,14 +524,14 @@ void DownloadItem::Interrupted(int64 size, int os_error) {
 
   if (!IsInProgress())
     return;
-  state_ = INTERRUPTED;
+
   last_os_error_ = os_error;
   UpdateSize(size);
   StopProgressTimer();
   download_util::RecordDownloadInterrupted(os_error,
                                            received_bytes_,
                                            total_bytes_);
-  UpdateObservers();
+  TransitionTo(INTERRUPTED);
 }
 
 void DownloadItem::Delete(DeleteReason reason) {
@@ -539,7 +565,7 @@ void DownloadItem::Remove() {
   Cancel(true);
   download_manager_->AssertQueueStateConsistent(this);
 
-  state_ = REMOVING;
+  TransitionTo(REMOVING);
   download_manager_->RemoveDownload(db_handle_);
   // We have now been deleted.
 }
@@ -574,6 +600,11 @@ int DownloadItem::PercentComplete() const {
     return -1;
 
   return static_cast<int>(received_bytes_ * 100.0 / total_bytes_);
+}
+
+void DownloadItem::OnPathDetermined(const FilePath& path) {
+  full_path_ = path;
+  UpdateTarget();
 }
 
 void DownloadItem::Rename(const FilePath& full_path) {
@@ -685,16 +716,7 @@ void DownloadItem::SetFileCheckResults(const DownloadStateInfo& state) {
   state_info_ = state;
   VLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true);
 
-  safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
-                                 state_info_.is_dangerous_url);
-}
-
-void DownloadItem::UpdateTarget() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (state_info_.target_name.value().empty())
-    state_info_.target_name = full_path_.BaseName();
+  UpdateSafetyState();
 }
 
 DownloadItem::DangerType DownloadItem::GetDangerType() const {
@@ -711,8 +733,7 @@ void DownloadItem::MarkFileDangerous() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   state_info_.is_dangerous_file = true;
-  safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
-                                 state_info_.is_dangerous_url);
+  UpdateSafetyState();
 }
 
 void DownloadItem::MarkUrlDangerous() {
@@ -720,8 +741,7 @@ void DownloadItem::MarkUrlDangerous() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   state_info_.is_dangerous_url = true;
-  safety_state_ = GetSafetyState(state_info_.is_dangerous_file,
-                                 state_info_.is_dangerous_url);
+  UpdateSafetyState();
 }
 
 DownloadHistoryInfo DownloadItem::GetHistoryInfo() const {

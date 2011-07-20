@@ -581,7 +581,6 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
   // Make sure the initial file name is set only once.
   DCHECK(download->full_path().empty());
   download->OnPathDetermined(chosen_file);
-  download->UpdateTarget();
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
@@ -1147,15 +1146,6 @@ bool DownloadManager::IsDangerous(const DownloadItem& download,
       return true;
   }
   return false;
-}
-
-void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(DownloadItem::DANGEROUS, download->safety_state());
-  download->set_safety_state(DownloadItem::DANGEROUS_BUT_VALIDATED);
-  download->UpdateObservers();
-
-  MaybeCompleteDownload(download);
 }
 
 // Operations posted to us from the history service ----------------------------

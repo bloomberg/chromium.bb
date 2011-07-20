@@ -187,7 +187,7 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
 void DownloadsDOMHandler::HandleSaveDangerous(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    download_manager_->DangerousDownloadValidated(file);
+    file->DangerousDownloadValidated();
 }
 
 void DownloadsDOMHandler::HandleDiscardDangerous(const ListValue* args) {

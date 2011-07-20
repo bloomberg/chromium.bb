@@ -212,7 +212,7 @@ class DownloadItem : public NotificationObserver {
   int PercentComplete() const;
 
   // Called when the final path has been determined.
-  void OnPathDetermined(const FilePath& path) { full_path_ = path; }
+  void OnPathDetermined(const FilePath& path);
 
   // Returns true if this download has saved all of its data.
   bool all_data_saved() const { return all_data_saved_; }
@@ -221,9 +221,6 @@ class DownloadItem : public NotificationObserver {
   // result of analyzing the file and figuring out its type, location, etc.
   // May only be called once.
   void SetFileCheckResults(const DownloadStateInfo& state);
-
-  // Updates the target file.
-  void UpdateTarget();
 
   // Update the download's path, the actual file is renamed on the download
   // thread.
@@ -287,9 +284,6 @@ class DownloadItem : public NotificationObserver {
   void set_open_when_complete(bool open) { open_when_complete_ = open; }
   bool file_externally_removed() const { return file_externally_removed_; }
   SafetyState safety_state() const { return safety_state_; }
-  void set_safety_state(SafetyState safety_state) {
-    safety_state_ = safety_state;
-  }
   // Why |safety_state_| is not SAFE.
   DangerType GetDangerType() const;
   bool IsDangerous() const;
@@ -364,6 +358,18 @@ class DownloadItem : public NotificationObserver {
   // Call to install this item as a CRX. Should only be called on
   // items which are CRXes. Use is_extension_install() to check.
   void StartCrxInstall();
+
+  // Call to transition state; all state transitions should go through this.
+  void TransitionTo(DownloadState new_state);
+
+  // Called when safety_state_ should be recomputed from is_dangerous_file
+  // and is_dangerous_url.
+  void UpdateSafetyState();
+
+  // Helper function to recompute |state_info_.target_name| when
+  // it may have changed.  (If it's non-null it should be left alone,
+  // otherwise updated from |full_path_|.)
+  void UpdateTarget();
 
   // State information used by the download manager.
   DownloadStateInfo state_info_;
