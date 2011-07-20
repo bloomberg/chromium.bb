@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 
@@ -14,7 +15,8 @@ namespace IPC {
 class Message;
 }
 
-class TabContentsWrapper;
+class RenderViewHost;
+class TabContents;
 
 // Describes interface for managing devtools clients from browser process. There
 // are currently two types of clients: devtools windows and TCP socket
@@ -30,7 +32,10 @@ class DevToolsClientHost {
     DISALLOW_COPY_AND_ASSIGN(CloseListener);
   };
 
-  virtual ~DevToolsClientHost() {}
+  static DevToolsClientHost* FindOwnerClientHost(RenderViewHost* client_rvh);
+  static DevToolsClientHost* GetDevToolsClientHostForTest();
+
+  virtual ~DevToolsClientHost();
 
   // This method is called when tab inspected by this devtools client is
   // closing.
@@ -49,10 +54,32 @@ class DevToolsClientHost {
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
-  virtual void TabReplaced(TabContentsWrapper* new_tab) = 0;
+  virtual void TabReplaced(TabContents* new_tab) = 0;
+
+  // Default front-end implementation requests that the window representing
+  // this client host is activated.
+  virtual void Activate() {}
+
+  // Default front-end implementation requests that the window representing
+  // this client host is (un)docked.
+  virtual void SetDocked(bool docked) {}
+
+  // Default front-end implementation requests that the window representing
+  // this client host is closed.
+  virtual void Close() {}
+
+  // Default front-end implementation requests that the Save As dialog using
+  // default save location is shown with |suggested_file_name| as the default
+  // name and |content| as the data to save.
+  virtual void SaveAs(const std::string& suggested_file_name,
+                      const std::string& content) {}
+
+  // Returns client (front-end) RenderViewHost implementation of this
+  // client host if applicable. NULL otherwise.
+  virtual RenderViewHost* GetClientRenderViewHost() { return NULL; }
 
  protected:
-  DevToolsClientHost() : close_listener_(NULL) {}
+  DevToolsClientHost();
 
   // Should be called when the devtools client is going to die and this
   // DevToolsClientHost should not be used anymore.
@@ -60,6 +87,8 @@ class DevToolsClientHost {
 
  private:
   CloseListener* close_listener_;
+  typedef std::vector<DevToolsClientHost*> DevToolsClientHostList;
+  static DevToolsClientHostList instances_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsClientHost);
 };
 

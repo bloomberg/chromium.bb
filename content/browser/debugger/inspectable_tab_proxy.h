@@ -75,7 +75,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
   virtual void SendMessageToClient(const IPC::Message& msg);
-  virtual void TabReplaced(TabContentsWrapper* new_tab);
+  virtual void TabReplaced(TabContents* new_tab);
 
  private:
   // Message handling routines

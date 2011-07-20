@@ -10,6 +10,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/notification_details.h"

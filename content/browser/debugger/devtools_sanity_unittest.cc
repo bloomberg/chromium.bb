@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,6 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -334,7 +334,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
         &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, 1));
     ui_test_utils::RunMessageLoop();
-    window_ = DevToolsWindow::GetDevToolsWindowForTest();
+    window_ = static_cast<DevToolsWindow*>(
+                  DevToolsClientHost::GetDevToolsClientHostForTest());
     ASSERT_TRUE(window_ != NULL);
 
     RenderViewHost* client_rvh = window_->GetRenderViewHost();

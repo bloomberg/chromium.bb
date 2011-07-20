@@ -5,9 +5,8 @@
 #include "content/browser/debugger/devtools_handler.h"
 
 #include "content/browser/content_browser_client.h"
-#include "content/browser/debugger/devtools_file_util.h"
+#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -43,14 +42,14 @@ bool DevToolsHandler::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsHandler::OnForwardToAgent(const IPC::Message& message) {
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
-      render_view_host());
-  if (!window)
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (!client_host)
     return;
-  if (WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
-      window, message))
+  if (DevToolsManager::GetInstance()->
+          ForwardToDevToolsAgent(client_host, message))
     return;
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(window, message);
+  WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
+      client_host, message);
 }
 
 void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
@@ -59,42 +58,34 @@ void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
 }
 
 void DevToolsHandler::OnActivateWindow() {
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
-      render_view_host());
-  if (window)
-    window->Activate();
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (client_host)
+    client_host->Activate();
 }
 
 void DevToolsHandler::OnCloseWindow() {
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
-      render_view_host());
-  if (window)
-    window->Close();
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (client_host)
+    client_host->Close();
 }
 
 void DevToolsHandler::OnRequestDockWindow() {
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
-      render_view_host());
-  if (window)
-    window->SetDocked(true);
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (client_host)
+    client_host->SetDocked(true);
 }
 
 void DevToolsHandler::OnRequestUndockWindow() {
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(
-      render_view_host());
-  if (window)
-    window->SetDocked(false);
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (client_host)
+    client_host->SetDocked(false);
 }
 
 void DevToolsHandler::OnSaveAs(const std::string& file_name,
                                const std::string& content) {
-  TabContents* tab_contents = render_view_host()->delegate() ?
-      render_view_host()->delegate()->GetAsTabContents() : NULL;
-  DCHECK(tab_contents);
-  if (!tab_contents)
-    return;
-
-  DevToolsFileUtil::SaveAs(tab_contents->profile(), file_name, content);
+  DevToolsClientHost* client_host = GetOwnerClientHost();
+  if (client_host)
+    client_host->SaveAs(file_name, content);
 }
 
 void DevToolsHandler::OnRuntimePropertyChanged(const std::string& name,
@@ -109,4 +100,8 @@ void DevToolsHandler::OnClearBrowserCache() {
 
 void DevToolsHandler::OnClearBrowserCookies() {
   content::GetContentClient()->browser()->ClearCookies(render_view_host());
+}
+
+DevToolsClientHost* DevToolsHandler::GetOwnerClientHost() {
+  return DevToolsClientHost::FindOwnerClientHost(render_view_host());
 }

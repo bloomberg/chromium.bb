@@ -660,6 +660,10 @@ MHTMLGenerationManager*
   return g_browser_process->mhtml_generation_manager();
 }
 
+DevToolsManager* ChromeContentBrowserClient::GetDevToolsManager() {
+  return g_browser_process->devtools_manager();
+}
+
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   return !browser_command_line.HasSwitch(switches::kChromeFrame);

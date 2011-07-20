@@ -31,6 +31,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -107,8 +109,6 @@
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_toggle_action.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -2997,7 +2997,8 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
 
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   if (devtools_manager)  // NULL in unit tests.
-    devtools_manager->TabReplaced(old_contents, new_contents);
+    devtools_manager->TabReplaced(old_contents->tab_contents(),
+                                  new_contents->tab_contents());
 }
 
 void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {

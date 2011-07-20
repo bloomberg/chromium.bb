@@ -49,9 +49,14 @@ void DevToolsClientHostImpl::SendMessageToClient(
   IPC_END_MESSAGE_MAP()
 }
 
-void DevToolsClientHostImpl::TabReplaced(TabContentsWrapper* new_tab) {
+void DevToolsClientHostImpl::TabReplaced(TabContents* new_tab) {
   map_->erase(id_);
-  id_ = new_tab->restore_tab_helper()->session_id().id();
+  TabContentsWrapper* new_tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(new_tab);
+  DCHECK(new_tab_wrapper);
+  if (!new_tab_wrapper)
+    return;
+  id_ = new_tab_wrapper->restore_tab_helper()->session_id().id();
   (*map_)[id_] = this;
 }
 

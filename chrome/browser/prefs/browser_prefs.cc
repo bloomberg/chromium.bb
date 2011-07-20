@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -151,7 +151,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ProfileImpl::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
-  DevToolsManager::RegisterUserPrefs(user_prefs);
+  DevToolsWindow::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);

@@ -17,6 +17,7 @@
 class BrowserRenderProcessHost;
 class BrowserURLHandler;
 class CommandLine;
+class DevToolsManager;
 class FilePath;
 class GURL;
 class MHTMLGenerationManager;
@@ -233,6 +234,7 @@ class ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
   virtual ui::Clipboard* GetClipboard() = 0;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
+  virtual DevToolsManager* GetDevToolsManager() = 0;
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;
@@ -263,7 +265,6 @@ class ContentBrowserClient {
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,
                               bool can_save_as_complete) = 0;
-
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

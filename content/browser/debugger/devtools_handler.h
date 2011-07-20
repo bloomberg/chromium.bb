@@ -8,6 +8,8 @@
 
 #include "content/browser/renderer_host/render_view_host_observer.h"
 
+class DevToolsClientHost;
+
 class DevToolsHandler : public RenderViewHostObserver {
  public:
   explicit DevToolsHandler(RenderViewHost* render_view_host);
@@ -29,6 +31,8 @@ class DevToolsHandler : public RenderViewHostObserver {
                                 const std::string& value);
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
+
+  DevToolsClientHost* GetOwnerClientHost();
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHandler);
 };

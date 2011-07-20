@@ -7,10 +7,10 @@
 #include <list>
 
 #include "base/tuple.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/devtools_messages.h"

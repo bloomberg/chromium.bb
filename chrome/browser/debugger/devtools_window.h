@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
 #pragma once
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -22,8 +22,10 @@ class Message;
 
 class Browser;
 class BrowserWindow;
+class PrefService;
 class Profile;
 class RenderViewHost;
+class TabContentsWrapper;
 
 namespace base {
 class Value;
@@ -35,9 +37,9 @@ class DevToolsWindow
       public TabContentsDelegate {
  public:
   static const char kDevToolsApp[];
+  static void RegisterUserPrefs(PrefService* prefs);
   static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
   static DevToolsWindow* FindDevToolsWindow(RenderViewHost* window_rvh);
-  static DevToolsWindow* GetDevToolsWindowForTest();
 
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
@@ -50,13 +52,16 @@ class DevToolsWindow
   // Overridden from DevToolsClientHost.
   virtual void SendMessageToClient(const IPC::Message& message);
   virtual void InspectedTabClosing();
-  virtual void TabReplaced(TabContentsWrapper* new_tab);
-
-  void Show(DevToolsToggleAction action);
+  virtual void TabReplaced(TabContents* new_tab);
+  virtual RenderViewHost* GetClientRenderViewHost();
   void Activate();
   void SetDocked(bool docked);
   void Close();
+  virtual void SaveAs(const std::string& suggested_file_name,
+                      const std::string& content);
   RenderViewHost* GetRenderViewHost();
+
+  void Show(DevToolsToggleAction action);
 
   TabContentsWrapper* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
@@ -118,9 +123,7 @@ class DevToolsWindow
   DevToolsToggleAction action_on_load_;
   const bool shared_worker_frontend_;
   NotificationRegistrar registrar_;
-  typedef std::vector<DevToolsWindow*> DevToolsWindowList;
-  static DevToolsWindowList instances_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_

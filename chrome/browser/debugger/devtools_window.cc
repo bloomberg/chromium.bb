@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/debugger/devtools_file_util.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -29,7 +31,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -43,7 +44,12 @@
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
-DevToolsWindow::DevToolsWindowList DevToolsWindow::instances_;
+// static
+void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+}
 
 // static
 TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
@@ -66,19 +72,10 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
 // static
 DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
     RenderViewHost* window_rvh) {
-  for (DevToolsWindowList::iterator it = instances_.begin();
-       it != instances_.end(); ++it) {
-    if ((*it)->GetRenderViewHost() == window_rvh)
-      return *it;
-  }
-  return NULL;
-}
-
-// static
-DevToolsWindow* DevToolsWindow::GetDevToolsWindowForTest() {
-  if (instances_.empty())
-    return NULL;
-  return instances_.back();
+  DevToolsClientHost* client_host =
+      DevToolsClientHost::FindOwnerClientHost(window_rvh);
+  return client_host != NULL ? DevToolsWindow::AsDevToolsWindow(client_host)
+                             : NULL;
 }
 
 // static
@@ -152,15 +149,9 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
     if (tab)
       inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
   }
-  instances_.push_back(this);
 }
 
 DevToolsWindow::~DevToolsWindow() {
-  DevToolsWindowList::iterator it = std::find(instances_.begin(),
-                                              instances_.end(),
-                                              this);
-  DCHECK(it != instances_.end());
-  instances_.erase(it);
 }
 
 void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
@@ -192,9 +183,18 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
-void DevToolsWindow::TabReplaced(TabContentsWrapper* new_tab) {
-  DCHECK_EQ(profile_, new_tab->profile());
-  inspected_tab_ = new_tab;
+void DevToolsWindow::TabReplaced(TabContents* new_tab) {
+  TabContentsWrapper* new_tab_wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(new_tab);
+  DCHECK(new_tab_wrapper);
+  if (!new_tab_wrapper)
+      return;
+  DCHECK_EQ(profile_, new_tab_wrapper->profile());
+  inspected_tab_ = new_tab_wrapper;
+}
+
+RenderViewHost* DevToolsWindow::GetClientRenderViewHost() {
+  return tab_contents_->render_view_host();
 }
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
@@ -287,6 +287,13 @@ void DevToolsWindow::Close() {
     DCHECK(docked_);
     NotifyCloseListener();
     InspectedTabClosing();
+}
+
+void DevToolsWindow::SaveAs(const std::string& suggested_file_name,
+                            const std::string& content) {
+  DevToolsFileUtil::SaveAs(tab_contents_->profile(),
+                           suggested_file_name,
+                           content);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -580,12 +587,9 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     DevToolsClientHost* client_host) {
   if (!client_host)
     return NULL;
-  DevToolsWindowList::iterator it = std::find(instances_.begin(),
-                                              instances_.end(),
-                                              client_host);
-  if (it == instances_.end())
-    return NULL;
-  return *it;
+  if (client_host->GetClientRenderViewHost() != NULL)
+    return static_cast<DevToolsWindow*>(client_host);
+  return NULL;
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {

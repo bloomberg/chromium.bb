@@ -11,10 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_toggle_action.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "webkit/glue/resource_loader_bridge.h"
 
 namespace IPC {
 class Message;
@@ -25,9 +23,7 @@ class GURL;
 class IOThread;
 class PrefService;
 class RenderViewHost;
-class TabContentsWraper;
-
-using webkit_glue::ResourceLoaderBridge;
+class TabContents;
 
 typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
@@ -38,8 +34,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
                         public base::RefCounted<DevToolsManager> {
  public:
   static DevToolsManager* GetInstance();
-
-  static void RegisterUserPrefs(PrefService* prefs);
 
   DevToolsManager();
 
@@ -53,7 +47,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
                                      DevToolsClientHost* client_host);
   void UnregisterDevToolsClientHostFor(RenderViewHost* inspected_rvh);
 
-  void ForwardToDevToolsAgent(DevToolsClientHost* from,
+  bool ForwardToDevToolsAgent(DevToolsClientHost* from,
                               const IPC::Message& message);
   void ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
                                const IPC::Message& message);
@@ -73,7 +67,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
-  void TabReplaced(TabContentsWrapper* old_tab, TabContentsWrapper* new_tab);
+  void TabReplaced(TabContents* old_tab, TabContents* new_tab);
 
   // Detaches client host and returns cookie that can be used in
   // AttachClientHost.

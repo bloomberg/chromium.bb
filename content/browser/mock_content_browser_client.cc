@@ -184,6 +184,10 @@ MHTMLGenerationManager* MockContentBrowserClient::GetMHTMLGenerationManager() {
   return NULL;
 }
 
+DevToolsManager* MockContentBrowserClient::GetDevToolsManager() {
+  return NULL;
+}
+
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }

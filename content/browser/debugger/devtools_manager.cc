@@ -8,35 +8,23 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_client.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
-  // http://crbug.com/47806 this method may be called when BrowserProcess
-  // has already been destroyed.
-  if (!g_browser_process)
-    return NULL;
-  return g_browser_process->devtools_manager();
-}
-
-// static
-void DevToolsManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
+  return content::GetContentClient()->browser()->GetDevToolsManager();
 }
 
 DevToolsManager::DevToolsManager()
@@ -73,18 +61,16 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
   SendAttachToAgent(inspected_rvh);
 }
 
-void DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
+bool DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
                                              const IPC::Message& message) {
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(from);
-  if (!inspected_rvh) {
-    // TODO(yurys): notify client that the agent is no longer available
-    NOTREACHED();
-    return;
-  }
+  if (!inspected_rvh)
+    return false;
 
   IPC::Message* m = new IPC::Message(message);
   m->set_routing_id(inspected_rvh->routing_id());
   inspected_rvh->Send(m);
+  return true;
 }
 
 void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
@@ -181,9 +167,9 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
   }
 }
 
-void DevToolsManager::TabReplaced(TabContentsWrapper* old_tab,
-                                  TabContentsWrapper* new_tab) {
-  RenderViewHost* old_rvh = old_tab->tab_contents()->render_view_host();
+void DevToolsManager::TabReplaced(TabContents* old_tab,
+                                  TabContents* new_tab) {
+  RenderViewHost* old_rvh = old_tab->render_view_host();
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_rvh);
   if (!client_host)
     return;  // Didn't know about old_tab.
@@ -192,7 +178,7 @@ void DevToolsManager::TabReplaced(TabContentsWrapper* old_tab,
     return;  // Didn't know about old_tab.
 
   client_host->TabReplaced(new_tab);
-  AttachClientHost(cookie, new_tab->tab_contents()->render_view_host());
+  AttachClientHost(cookie, new_tab->render_view_host());
 }
 
 int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {

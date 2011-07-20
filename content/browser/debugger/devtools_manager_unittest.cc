@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_window.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +40,7 @@ class TestDevToolsClientHost : public DevToolsClientHost {
     last_sent_message = &message;
   }
 
-  virtual void TabReplaced(TabContentsWrapper* new_tab) {
+  virtual void TabReplaced(TabContents* new_tab) {
   }
 
   static void ResetCounters() {

@@ -49,7 +49,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
   virtual void SendMessageToClient(const IPC::Message& msg);
-  virtual void TabReplaced(TabContentsWrapper* tab_contents);
+  virtual void TabReplaced(TabContents* tab_contents);
   virtual void FrameNavigating(const std::string& url) {}
 
  private:
@@ -166,8 +166,8 @@ void ExtensionDevToolsClientHost::SendMessageToClient(
 }
 
 void ExtensionDevToolsClientHost::TabReplaced(
-    TabContentsWrapper* tab_contents) {
-  tab_contents_ = tab_contents->tab_contents();
+    TabContents* tab_contents) {
+  tab_contents_ = tab_contents;
 }
 
 void ExtensionDevToolsClientHost::Close() {

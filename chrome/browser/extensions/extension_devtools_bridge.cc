@@ -118,8 +118,7 @@ void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void ExtensionDevToolsBridge::TabReplaced(TabContentsWrapper* new_tab) {
-  DCHECK_EQ(profile_, new_tab->profile());
+void ExtensionDevToolsBridge::TabReplaced(TabContents* new_tab) {
   // We don't update the tab id as it needs to remain the same so that we can
   // properly unregister.
 }
