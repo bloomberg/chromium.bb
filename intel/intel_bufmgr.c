@@ -104,7 +104,7 @@ drm_intel_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 			 unsigned long size, void *data)
 {
 	int ret;
-	if (bo->bufmgr->bo_subdata)
+	if (bo->bufmgr->bo_get_subdata)
 		return bo->bufmgr->bo_get_subdata(bo, offset, size, data);
 
 	if (size == 0 || data == NULL)
