@@ -3,33 +3,40 @@
 // found in the LICENSE file.
 
 #include "remoting/host/local_input_monitor_thread_linux.h"
-#include "remoting/host/chromoting_host.h"
 
 #include <sys/select.h>
 #include <unistd.h>
+#define XK_MISCELLANY
+#include <X11/keysymdef.h>
+
+#include "base/basictypes.h"
+#include "base/eintr_wrapper.h"
+#include "remoting/host/chromoting_host.h"
+
+// These includes need to be later than dictated by the style guide due to
+// Xlib header pollution, specifically the min, max, and Status macros.
 #include <X11/Xlibint.h>
 #include <X11/extensions/record.h>
-
-#include "base/eintr_wrapper.h"
 
 namespace {
 
 struct scoped_x_record_context {
   scoped_x_record_context()
-      : control_channel(NULL), data_channel(NULL), range(NULL), context(0) {}
+      : data_channel(NULL), context(0) {
+    range[0] = range[1] = NULL;
+  }
   ~scoped_x_record_context() {
-    if (range)
-      XFree(range);
+    if (range[0])
+      XFree(range[0]);
+    if (range[1])
+      XFree(range[1]);
     if (context)
       XRecordFreeContext(data_channel, context);
     if (data_channel)
       XCloseDisplay(data_channel);
-    if (control_channel)
-      XCloseDisplay(control_channel);
   }
-  Display* control_channel;
   Display* data_channel;
-  XRecordRange* range;
+  XRecordRange* range[2];
   XRecordContext context;
 };
 
@@ -38,20 +45,25 @@ struct scoped_x_record_context {
 
 namespace remoting {
 
-static void ProcessReply(XPointer host,
+static void ProcessReply(XPointer thread,
                          XRecordInterceptData* data) {
   if (data->category == XRecordFromServer) {
     xEvent* event = reinterpret_cast<xEvent*>(data->data);
-    gfx::Point pos(event->u.keyButtonPointer.rootX,
-                   event->u.keyButtonPointer.rootY);
-    reinterpret_cast<ChromotingHost*>(host)->LocalMouseMoved(pos);
+    if (event->u.u.type == MotionNotify) {
+      gfx::Point pos(event->u.keyButtonPointer.rootX,
+                     event->u.keyButtonPointer.rootY);
+      reinterpret_cast<LocalInputMonitorThread*>(thread)->LocalMouseMoved(pos);
+    } else {
+      reinterpret_cast<LocalInputMonitorThread*>(thread)->LocalKeyPressed(
+          event->u.u.detail, event->u.u.type == KeyPress);
+    }
   }
   XRecordFreeData(data);
 }
 
 LocalInputMonitorThread::LocalInputMonitorThread(ChromotingHost* host)
     : base::SimpleThread("LocalInputMonitor"),
-      host_(host) {
+      host_(host), display_(NULL), shift_pressed_(false) {
   wakeup_pipe_[0] = -1;
   wakeup_pipe_[1] = -1;
   CHECK_EQ(pipe(wakeup_pipe_), 0);
@@ -78,34 +90,38 @@ void LocalInputMonitorThread::Run() {
   scoped_x_record_context scoper;
 
   // TODO(jamiewalch): We should pass the display in. At that point, since
-  // XRecord needs a private connection to the X Server for its data channel,
-  // we'll need something like the following:
-  //   data_channel = XOpenDisplay(DisplayString(control_channel));
+  // XRecord needs a private connection to the X Server for its data channel
+  // and both channels are used from a separate thread, we'll need to duplicate
+  // them with something like the following:
+  //   XOpenDisplay(DisplayString(display));
+  display_ = XOpenDisplay(NULL);
   scoper.data_channel = XOpenDisplay(NULL);
-  scoper.control_channel = XOpenDisplay(NULL);
-  if (!scoper.data_channel || !scoper.control_channel) {
+  if (!display_ || !scoper.data_channel) {
     LOG(ERROR) << "Couldn't open X display";
     return;
   }
 
   int xr_opcode, xr_event, xr_error;
-  if (!XQueryExtension(scoper.control_channel, "RECORD",
-                       &xr_opcode, &xr_event, &xr_error)) {
+  if (!XQueryExtension(display_, "RECORD", &xr_opcode, &xr_event, &xr_error)) {
     LOG(ERROR) << "X Record extension not available.";
     return;
   }
 
-  scoper.range = XRecordAllocRange();
-  if (!scoper.range) {
+  scoper.range[0] = XRecordAllocRange();
+  scoper.range[1] = XRecordAllocRange();
+  if (!scoper.range[0] || !scoper.range[1]) {
     LOG(ERROR) << "XRecordAllocRange failed.";
     return;
   }
-  scoper.range->device_events.first = MotionNotify;
-  scoper.range->device_events.last = MotionNotify;
+  scoper.range[0]->device_events.first = MotionNotify;
+  scoper.range[0]->device_events.last = MotionNotify;
+  scoper.range[1]->device_events.first = KeyPress;
+  scoper.range[1]->device_events.last = KeyRelease;
   XRecordClientSpec client_spec = XRecordAllClients;
 
-  scoper.context = XRecordCreateContext(scoper.data_channel, 0, &client_spec, 1,
-                                        &scoper.range, 1);
+  scoper.context = XRecordCreateContext(
+      scoper.data_channel, 0, &client_spec, 1, scoper.range,
+      arraysize(scoper.range));
   if (!scoper.context) {
     LOG(ERROR) << "XRecordCreateContext failed.";
     return;
@@ -113,7 +129,7 @@ void LocalInputMonitorThread::Run() {
 
   if (!XRecordEnableContextAsync(scoper.data_channel, scoper.context,
                                  ProcessReply,
-                                 reinterpret_cast<XPointer>(host_))) {
+                                 reinterpret_cast<XPointer>(this))) {
     LOG(ERROR) << "XRecordEnableContextAsync failed.";
     return;
   }
@@ -134,8 +150,23 @@ void LocalInputMonitorThread::Run() {
 
   // Context must be disabled via the control channel because we can't send any
   // X protocol traffic over the data channel while it's recording.
-  XRecordDisableContext(scoper.control_channel, scoper.context);
-  XFlush(scoper.control_channel);
+  XRecordDisableContext(display_, scoper.context);
+  XFlush(display_);
+  XCloseDisplay(display_);
+  display_ = NULL;
+}
+
+void LocalInputMonitorThread::LocalMouseMoved(const gfx::Point& pos) {
+  host_->LocalMouseMoved(pos);
+}
+
+void LocalInputMonitorThread::LocalKeyPressed(int key_code, bool down) {
+  int key_sym = XKeycodeToKeysym(display_, key_code, 0);
+  if (key_sym == XK_Shift_L || key_sym == XK_Shift_R)
+    shift_pressed_ = down;
+  if (shift_pressed_ && key_sym == XK_Escape && down) {
+    host_->Shutdown(NULL);
+  }
 }
 
 }  // namespace remoting

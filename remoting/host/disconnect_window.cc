@@ -5,10 +5,8 @@
 #include "remoting/host/disconnect_window.h"
 
 namespace remoting {
-
-//TODO(garykac): These strings should be localized.
+// TODO(garykac): These strings should be localized.
 const char DisconnectWindow::kTitle[] = "Remoting";
 const char DisconnectWindow::kSharingWith[] = "Sharing with: ";
-const char DisconnectWindow::kDisconnectButton[] = "Disconnect";
-
+const char DisconnectWindow::kDisconnectButton[] = "Disconnect (Shift+Esc)";
 }
