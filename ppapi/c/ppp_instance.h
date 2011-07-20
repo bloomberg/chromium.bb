@@ -38,8 +38,8 @@
  * to handle events such as change of focus or input events (keyboard/mouse)
  * events.
  */
-#define PPP_INSTANCE_INTERFACE_0_5 "PPP_Instance;0.5"
-#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_0_5
+#define PPP_INSTANCE_INTERFACE_1_0 "PPP_Instance;1.0"
+#define PPP_INSTANCE_INTERFACE PPP_INSTANCE_INTERFACE_1_0
 
 struct PPP_Instance {
   /**
@@ -154,11 +154,13 @@ struct PPP_Instance {
    * An instance's default condition is that it will not have focus.
    *
    * <strong>Note:</strong>Clicks on instances will give focus only if you
-   * handle the click event. Return <code>true</code> from HandleInputEvent to
-   * signal that the click event was handled. Otherwise the browser will bubble
-   * the event and give focus to the element on the page that actually did end
-   * up consuming it. If you're not getting focus, check to make sure you're
-   * returning true from the mouse click in <code>HandleInputEvent</code>.
+   * handle the click event. Return <code>true</code> from
+   * <code>HandleInputEvent</code> in <code>PPP_InputEvent</code> (or use
+   * unfiltered events) to signal that the click event was handled. Otherwise,
+   * the browser will bubble the event and give focus to the element on the page
+   * that actually did end up consuming it. If you're not getting focus, check
+   * to make sure you're returning true from the mouse click in
+   * <code>HandleInputEvent</code>.
    *
    * @param[in] instance A <code>PP_Instance</code> indentifying the instance
    * receiving the input event.
@@ -166,33 +168,6 @@ struct PPP_Instance {
    * @param[in] has_focus Indicates the new focused state of the instance.
    */
   void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
-  /**
-   * HandleInputEvent() handles input events, such as keyboard events. This
-   * function returns <code>PP_TRUE</code> if the event was handled or
-   * <code>PP_FALSE</code> if it was not.
-   *
-   * If the event was handled, it will not be forwarded to the web page or
-   * browser. If it was not handled, it will bubble according to the normal
-   * rules. So it is important that a module respond accurately with whether
-   * event propagation should continue.
-   *
-   * Event propagation also controls focus. If you handle an event like a mouse
-   * event, typically the instance will be given focus. Returning false means
-   * that the click will be given to a lower part of the page and your module
-   * will not receive focus. This allows an instance to be partially
-   * transparent, where clicks on the transparent areas will behave like clicks
-   * to the underlying page.
-   *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
-   * of a module.
-   *
-   * @param[in] event The input event.
-   *
-   * @return <code>PP_TRUE</code> if <code>event</code> was handled,
-   * <code>PP_FALSE</code> otherwise.
-   */
-  PP_Bool (*HandleInputEvent)(PP_Instance instance,
-                              const struct PP_InputEvent* event);
   /**
    * HandleDocumentLoad() is called after initialize for a full-frame
    * module that was instantiated based on the MIME type of a DOMWindow
@@ -227,7 +202,7 @@ struct PPP_Instance {
  */
 
 
-typedef struct PPP_Instance PPP_Instance_0_5;
+typedef struct PPP_Instance PPP_Instance_1_0;
 
 #endif  /* PPAPI_C_PPP_INSTANCE_H_ */
 

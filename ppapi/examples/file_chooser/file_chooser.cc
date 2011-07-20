@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
 #include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/var_private.h"
@@ -16,15 +17,17 @@ class MyInstance : public pp::InstancePrivate {
   MyInstance(PP_Instance instance)
       : pp::InstancePrivate(instance) {
     callback_factory_.Initialize(this);
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   }
 
-  virtual bool HandleInputEvent(const PP_InputEvent& event) {
-    switch (event.type) {
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+    switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-        const PP_InputEvent_Mouse& mouse_event = event.u.mouse;
-        if (mouse_event.button == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+        pp::MouseInputEvent mouse_event(event);
+        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
           ShowFileChooser(false);
-        else if (mouse_event.button == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
+        else if (mouse_event.GetMouseButton()
+            == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
           ShowFileChooser(true);
         else
           return false;

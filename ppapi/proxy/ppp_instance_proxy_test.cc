@@ -60,13 +60,6 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
   did_change_focus_called.Signal();
 }
 
-PP_InputEvent received_event;
-PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
-  received_instance = instance;
-  memcpy(&received_event, event, sizeof(*event));;
-  return bool_to_return;
-}
-
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   // This one requires use of the PPB_URLLoader proxy and PPB_Core, plus a
   // resource tracker for the url_loader resource.
@@ -92,15 +85,13 @@ void ResetReceived() {
   memset(&received_position, 0, sizeof(received_position));
   memset(&received_clip, 0, sizeof(received_clip));
   received_has_focus = PP_FALSE;
-  memset(&received_event, 0, sizeof(received_event));
 }
 
-PPP_Instance_0_5 ppp_instance_0_5 = {
+PPP_Instance_1_0 ppp_instance_1_0 = {
   &DidCreate,
   &DidDestroy,
   &DidChangeView,
   &DidChangeFocus,
-  &HandleInputEvent,
   &HandleDocumentLoad
 };
 
@@ -120,15 +111,15 @@ class PPP_Instance_ProxyTest : public TwoWayTest {
    }
 };
 
-TEST_F(PPP_Instance_ProxyTest, PPPInstance0_5) {
-  plugin().RegisterTestInterface(PPP_INSTANCE_INTERFACE_0_5, &ppp_instance_0_5);
+TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
+  plugin().RegisterTestInterface(PPP_INSTANCE_INTERFACE_1_0, &ppp_instance_1_0);
   host().RegisterTestInterface(PPB_FULLSCREEN_DEV_INTERFACE,
                                &ppb_fullscreen_dev);
 
-  // Grab the host-side proxy for the 0.5 interface.
-  const PPP_Instance_0_5* ppp_instance = static_cast<const PPP_Instance_0_5*>(
+  // Grab the host-side proxy for the 1.0 interface.
+  const PPP_Instance_1_0* ppp_instance = static_cast<const PPP_Instance_1_0*>(
       host().host_dispatcher()->GetProxiedInterface(
-          PPP_INSTANCE_INTERFACE_0_5));
+          PPP_INSTANCE_INTERFACE_1_0));
 
   // Call each function in turn, make sure we get the expected values and
   // returns.
@@ -182,20 +173,6 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance0_5) {
   did_change_focus_called.Wait();
   EXPECT_EQ(received_instance, expected_instance);
   EXPECT_EQ(received_has_focus, expected_has_focus);
-
-  PP_InputEvent expected_event = { PP_INPUTEVENT_TYPE_KEYDOWN,  // type
-                                   0,  // padding
-                                   1.0,  // time_stamp
-                                   { { 2, 3 } } };  // u (as PP_InputEvent_Key)
-  ResetReceived();
-  EXPECT_EQ(bool_to_return,
-            ppp_instance->HandleInputEvent(expected_instance, &expected_event));
-  EXPECT_EQ(received_instance, expected_instance);
-  ASSERT_EQ(received_event.type, expected_event.type);
-  // Ignore padding; it's okay if it's not serialized.
-  EXPECT_EQ(received_event.time_stamp, expected_event.time_stamp);
-  EXPECT_EQ(received_event.u.key.modifier, expected_event.u.key.modifier);
-  EXPECT_EQ(received_event.u.key.key_code, expected_event.u.key.key_code);
 
   //  TODO(dmichael): Need to mock out a resource Tracker to be able to test
   //                  HandleResourceLoad. It also requires

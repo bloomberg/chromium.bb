@@ -5,6 +5,7 @@
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/paint_manager.h"
@@ -41,25 +42,26 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
         last_x_(0),
         last_y_(0) {
     paint_manager_.Initialize(this, this, false);
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   }
 
-  virtual bool HandleInputEvent(const PP_InputEvent& event) {
-    switch (event.type) {
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+    switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
-        const PP_InputEvent_Mouse& mouse_event = event.u.mouse;
+        pp::MouseInputEvent mouse_event(event);
         // Update the square on a mouse down.
-        if (mouse_event.button == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-          UpdateSquare(static_cast<int>(mouse_event.x),
-                       static_cast<int>(mouse_event.y));
+        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+          UpdateSquare(static_cast<int>(mouse_event.GetMousePosition().x()),
+                       static_cast<int>(mouse_event.GetMousePosition().y()));
         }
         return true;
       }
       case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
-        const PP_InputEvent_Mouse& mouse_event = event.u.mouse;
+        pp::MouseInputEvent mouse_event(event);
         // Update the square on a drag.
-        if (mouse_event.button == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-          UpdateSquare(static_cast<int>(mouse_event.x),
-                       static_cast<int>(mouse_event.y));
+        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+          UpdateSquare(static_cast<int>(mouse_event.GetMousePosition().x()),
+                       static_cast<int>(mouse_event.GetMousePosition().y()));
         }
         return true;
       }

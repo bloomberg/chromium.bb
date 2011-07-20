@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,11 @@ struct PP_InputEvent_Character;
 struct PP_InputEvent_Key;
 struct PP_InputEvent_Mouse;
 
+namespace pp {
+class KeyboardInputEvent;
+class MouseInputEvent;
+}  // namespace pp
+
 namespace remoting {
 
 class PepperInputHandler : public InputHandler {
@@ -22,12 +27,12 @@ class PepperInputHandler : public InputHandler {
 
   virtual void Initialize();
 
-  void HandleKeyEvent(bool keydown, const PP_InputEvent_Key& event);
-  void HandleCharacterEvent(const PP_InputEvent_Character& event);
+  void HandleKeyEvent(bool keydown, const pp::KeyboardInputEvent& event);
+  void HandleCharacterEvent(const pp::KeyboardInputEvent& event);
 
-  void HandleMouseMoveEvent(const PP_InputEvent_Mouse& event);
+  void HandleMouseMoveEvent(const pp::MouseInputEvent& event);
   void HandleMouseButtonEvent(bool button_down,
-                              const PP_InputEvent_Mouse& event);
+                              const pp::MouseInputEvent& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);

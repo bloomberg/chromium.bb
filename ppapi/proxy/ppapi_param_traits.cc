@@ -171,30 +171,6 @@ void ParamTraits<PP_Flash_NetAddress>::Log(const param_type& p,
   l->append(" bytes)>");
 }
 
-// PP_InputEvent ---------------------------------------------------------------
-
-// static
-void ParamTraits<PP_InputEvent>::Write(Message* m, const param_type& p) {
-  // PP_InputEvent is just POD so we can just memcpy it.
-  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(PP_InputEvent));
-}
-
-// static
-bool ParamTraits<PP_InputEvent>::Read(const Message* m,
-                                      void** iter,
-                                      param_type* r) {
-  const char* data;
-  int data_size;
-  if (!m->ReadData(iter, &data, &data_size))
-    return false;
-  memcpy(r, data, sizeof(PP_InputEvent));
-  return true;
-}
-
-// static
-void ParamTraits<PP_InputEvent>::Log(const param_type& p, std::string* l) {
-}
-
 // PP_ObjectProperty -----------------------------------------------------------
 
 // static
