@@ -104,7 +104,7 @@ UNINITIALIZED READ
 *!CreateWindow*
 
 POSSIBLE LEAK
-GDI32.dll!GetBitmapBits
+GDI32.dll!*
 GDI32.dll!CreateFontIndirectExW
 GDI32.dll!CreateFontIndirectW
 
@@ -152,28 +152,6 @@ LEAK
 ...
 WINSPOOL.DRV!*
 
-# http://code.google.com/p/drmemory/issues/detail?id=45
-UNINITIALIZED READ
-...
-*!*len
-...
-*!*lipboard*
-
-UNINITIALIZED READ
-...
-*!*cmp
-...
-*!*lipboard*
-
-UNADDRESSABLE ACCESS
-...
-*!*lipboard*
-
-UNINITIALIZED READ
-...
-USER32.dll!DeregisterShellHookWindow
-*!*lipboard*
-
 # http://code.google.com/p/drmemory/issues/detail?id=48
 UNINITIALIZED READ
 system call NtContinue
@@ -213,17 +191,12 @@ UNADDRESSABLE ACCESS
 *!SetEnvironmentVariable*
 
 # http://code.google.com/p/drmemory/issues/detail?id=60
-UNINITIALIZED READ
-...
-*!MessageBoxIndirect*
-
-UNINITIALIZED READ
-...
-*!IsDlgButtonChecked*
-
-UNADDRESSABLE ACCESS
-...
-*!MessageBoxIndirect*
+LEAK
+IMM32.dll!ImmGetIMCCSize
+IMM32.dll!ImmLockClientImc
+IMM32.dll!ImmDisableIME
+IMM32.dll!ImmSetActiveContext
+USER32.dll!IMPSetIMEA
 
 # http://code.google.com/p/drmemory/issues/detail?id=65
 UNINITIALIZED READ
@@ -264,19 +237,6 @@ LEAK
 *!_mtinit
 *!__tmainCRTStartup
 *!mainCRTStartup
-
-# http://code.google.com/p/drmemory/issues/detail?id=257
-LEAK
-...
-*!std::_Maklocstr<char>
-*!std::numpunct<*>::_Init
-*!std::numpunct<*>::numpunct<*>
-*!std::numpunct<*>::_Getcat
-*!std::use_facet<std::numpunct<*> >
-*!std::num_put*
-*!std::num_put*
-*!std::num_put*
-*!std::basic_ostream<*,std::char_traits<*> >::operator<<
 
 # http://code.google.com/p/drmemory/issues/detail?id=274
 POSSIBLE LEAK
@@ -406,18 +366,6 @@ msdmo.dll!*
 msdmo.dll!*
 DEVENUM.DLL!*
 
-# http://code.google.com/p/drmemory/issues/detail?id=426
-UNINITIALIZED READ
-...
-USER32.dll!DrawText*
-
-LEAK
-IMM32.dll!ImmGetIMCCSize
-IMM32.dll!ImmLockClientImc
-IMM32.dll!ImmDisableIME
-IMM32.dll!ImmSetActiveContext
-USER32.dll!IMPSetIMEA
-
 # http://code.google.com/p/drmemory/issues/detail?id=435
 UNINITIALIZED READ
 ...
@@ -452,23 +400,6 @@ WINMM.dll!waveOutGetNumDevs
 LEAK
 ...
 WINMM.dll!waveOutGetNumDevs
-
-# http://code.google.com/p/drmemory/issues/detail?id=455
-UNADDRESSABLE ACCESS
-system call NtQueryValueKey
-...
-KERNEL32.dll!GetProfileIntA
-...
-RICHED20.dll!CreateTextServices
-
-# http://code.google.com/p/drmemory/issues/detail?id=462
-UNADDRESSABLE ACCESS
-...
-*!SystemFunction036
-
-UNADDRESSABLE ACCESS
-...
-RSAENH.dll!CPGenRandom
 
 # http://code.google.com/p/drmemory/issues/detail?id=471
 UNINITIALIZED READ
