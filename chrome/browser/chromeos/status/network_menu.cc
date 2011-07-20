@@ -1103,9 +1103,9 @@ void NetworkMenu::RunMenu(views::View* source) {
   // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
   gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
 
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(source, &screen_loc);
-  gfx::Rect bounds(screen_loc, source->size());
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(source, &screen_location);
+  gfx::Rect bounds(screen_location, source->size());
   menu_item_view_->GetSubmenu()->set_minimum_preferred_width(min_width_);
   menu_item_view_->RunMenuAt(window, delegate_->GetMenuButton(), bounds,
                              views::MenuItemView::TOPRIGHT, true);

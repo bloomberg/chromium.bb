@@ -160,9 +160,9 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
   gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
 
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(source, &screen_loc);
-  gfx::Rect bounds(screen_loc, source->size());
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(source, &screen_location);
+  gfx::Rect bounds(screen_location, source->size());
   menu_->RunMenuAt(
       window,
       this,
