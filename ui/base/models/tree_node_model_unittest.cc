@@ -19,12 +19,12 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
         removed_count_(0),
         changed_count_(0) {}
 
-  void AssertObserverCount(int added_count,
-                           int removed_count,
-                           int changed_count) {
-    ASSERT_EQ(added_count, added_count_);
-    ASSERT_EQ(removed_count, removed_count_);
-    ASSERT_EQ(changed_count, changed_count_);
+  void ExpectCountsEqual(int added_count,
+                         int removed_count,
+                         int changed_count) {
+    EXPECT_EQ(added_count, added_count_);
+    EXPECT_EQ(removed_count, removed_count_);
+    EXPECT_EQ(changed_count, changed_count_);
   }
 
   void ClearCounts() {
@@ -76,7 +76,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
   TestNode* child1 = new TestNode;
   model.Add(root, child1, 0);
 
-  AssertObserverCount(1, 0, 0);
+  ExpectCountsEqual(1, 0, 0);
 
   for (int i = 0; i < 2; ++i)
     child1->Add(new TestNode, i);
@@ -84,7 +84,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
   TestNode* child2 = new TestNode;
   model.Add(root, child2, 1);
 
-  AssertObserverCount(2, 0, 0);
+  ExpectCountsEqual(2, 0, 0);
 
   EXPECT_EQ(2, root->child_count());
   EXPECT_EQ(2, child1->child_count());
@@ -106,7 +106,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   // Now remove |child1| from |root| and release the memory.
   delete model.Remove(root, child1);
 
-  AssertObserverCount(0, 1, 0);
+  ExpectCountsEqual(0, 1, 0);
 
   EXPECT_EQ(0, model.GetChildCount(root));
 }
@@ -287,7 +287,7 @@ TEST_F(TreeNodeModelTest, SetTitle) {
 
   const string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
-  AssertObserverCount(0, 0, 1);
+  ExpectCountsEqual(0, 0, 1);
   EXPECT_EQ(title, root->GetTitle());
 }
 
