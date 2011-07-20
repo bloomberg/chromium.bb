@@ -275,7 +275,14 @@ def SetUpArgumentBits(env):
     desc='Print verbose system information')
 
   BitFromArgument(env, 'disable_dynamic_plugin_loading', default=False,
-    desc='Do not do dynamic plugin injection')
+    desc='Use the version of NaCl that is built into Chromium.  '
+      'Disables use of --register-pepper-plugins, so that the '
+      'externally-built NaCl plugin and sel_ldr are not used.')
+
+  BitFromArgument(env, 'override_chrome_irt', default=False,
+    desc='When using the version of NaCl that is built into Chromium, '
+      'this prevents use of the IRT that is built into Chromium, and uses '
+      'a newly-built IRT library.')
 
   BitFromArgument(env, 'disable_flaky_tests', default=False,
     desc='Do not run potentially flaky tests - used on Chrome bots')
@@ -1144,8 +1151,9 @@ def PPAPIBrowserTester(env,
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
-    if env.Bit('irt'):
-      command.extend(['--irt_library', env.GetIrtNexe()])
+  if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
+                         env.Bit('override_chrome_irt')):
+    command.extend(['--irt_library', env.GetIrtNexe()])
   for dep_file in files:
     command.extend(['--file', dep_file])
   for extension in extensions:
@@ -1231,9 +1239,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
     osenv.append('NACL_SEL_LDR=%s' % GetSelLdr(env))
     extra_deps.append(GetSelLdr(env))
-    if env.Bit('irt'):
-      osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
-      extra_deps.append(env.GetIrtNexe())
+  if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
+                         env.Bit('override_chrome_irt')):
+    osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
+    extra_deps.append(env.GetIrtNexe())
 
   # Enable experimental JavaScript APIs.
   osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
