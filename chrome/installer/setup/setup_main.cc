@@ -1159,7 +1159,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   installer::InitInstallerLogging(prefs);
 
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  VLOG(1) << "Command Line: " << cmd_line.command_line_string();
+  VLOG(1) << "Command Line: " << cmd_line.GetCommandLineString();
 
   VLOG(1) << "multi install is " << prefs.is_multi_install();
   bool system_install = false;

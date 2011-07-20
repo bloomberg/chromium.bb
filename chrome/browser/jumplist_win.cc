@@ -430,7 +430,7 @@ bool UpdateJumpList(const wchar_t* app_id,
   if (!user_data_dir.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
-  std::wstring chrome_switches = command_line.command_line_string();
+  std::wstring chrome_switches = command_line.GetCommandLineString();
 
   // We allocate 60% of the given JumpList slots to "most-visited" items
   // and 40% to "recently-closed" items, respectively.

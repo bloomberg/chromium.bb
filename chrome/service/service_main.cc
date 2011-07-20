@@ -24,7 +24,7 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
   }
 
   VLOG(1) << "Service process launched: "
-          << parameters.command_line_.command_line_string();
+          << parameters.command_line_.GetCommandLineString();
 
 #if defined(OS_MACOSX)
   chrome_application_mac::RegisterCrApp();

@@ -291,7 +291,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   if (!params->language().empty())
     command_line->AppendSwitchNative(switches::kLang, params->language());
 
-  std::wstring command_line_string(command_line->command_line_string());
+  std::wstring command_line_string(command_line->GetCommandLineString());
   // If there are any extra arguments, append them to the command line.
   if (!params->extra_arguments().empty()) {
     command_line_string += L' ' + params->extra_arguments();

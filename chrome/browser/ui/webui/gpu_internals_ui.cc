@@ -467,7 +467,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
             IDS_ABOUT_VERSION_UNOFFICIAL));
 
     dict->SetString("command_line",
-        CommandLine::ForCurrentProcess()->command_line_string());
+        CommandLine::ForCurrentProcess()->GetCommandLineString());
   }
 
   dict->SetString("blacklist_version",

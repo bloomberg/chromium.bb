@@ -101,7 +101,7 @@ bool ServiceProcessState::AddToAutoRun() {
   return AutoStart::AddApplication(
       GetServiceProcessScopedName(GetBaseDesktopName()),
       app_name,
-      autorun_command_line_->command_line_string(),
+      autorun_command_line_->GetCommandLineString(),
       false);
 }
 

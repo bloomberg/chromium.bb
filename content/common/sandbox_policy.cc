@@ -447,7 +447,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   result = g_broker_services->SpawnTarget(
       cmd_line->GetProgram().value().c_str(),
-      cmd_line->command_line_string().c_str(),
+      cmd_line->GetCommandLineString().c_str(),
       policy, &target);
   policy->Release();
 

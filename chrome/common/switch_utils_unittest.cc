@@ -20,7 +20,7 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
     FILE_PATH_LITERAL("--foo"),
     FILE_PATH_LITERAL("--bar")};
   CommandLine cmd_line(arraysize(argv), argv);
-  EXPECT_FALSE(cmd_line.command_line_string().empty());
+  EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
   std::map<std::string, CommandLine::StringType> switches =
       cmd_line.GetSwitches();
@@ -45,7 +45,7 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
       L" --make-default-browser"
       L" --foo"
       L" --bar");
-  EXPECT_FALSE(cmd_line.command_line_string().empty());
+  EXPECT_FALSE(cmd_line.GetCommandLineString().empty());
 
   std::map<std::string, CommandLine::StringType> switches =
       cmd_line.GetSwitches();

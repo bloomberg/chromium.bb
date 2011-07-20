@@ -323,4 +323,3 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   }
   return retval;
 }
-

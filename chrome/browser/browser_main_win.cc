@@ -199,7 +199,7 @@ void RegisterApplicationRestart(const CommandLine& parsed_command_line) {
   command_line.AppendArguments(parsed_command_line, false);
   if (!command_line.HasSwitch(switches::kRestoreLastSession))
     command_line.AppendSwitch(switches::kRestoreLastSession);
-  if (command_line.command_line_string().length() > RESTART_MAX_CMD_LINE) {
+  if (command_line.GetCommandLineString().length() > RESTART_MAX_CMD_LINE) {
     LOG(WARNING) << "Command line too long for RegisterApplicationRestart";
     return;
   }
@@ -207,7 +207,7 @@ void RegisterApplicationRestart(const CommandLine& parsed_command_line) {
   // Restart Chrome if the computer is restarted as the result of an update.
   // This could be extended to handle crashes, hangs, and patches.
   HRESULT hr = register_application_restart(
-      command_line.command_line_string().c_str(),
+      command_line.GetCommandLineString().c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
   DCHECK(SUCCEEDED(hr)) << "RegisterApplicationRestart failed.";
 }

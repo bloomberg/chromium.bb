@@ -72,7 +72,7 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   // TODO(stevenjb,satorux): Make this non blocking: crosbug.com/5603.
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
   if (argc < 1 || !base::GetAppOutput(command_line, &output_string)) {
-    LOG(WARNING) << "Error excuting: " << command_line.command_line_string();
+    LOG(WARNING) << "Error excuting: " << command_line.GetCommandLineString();
     return false;
   }
   TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);
@@ -90,12 +90,12 @@ bool NameValuePairsParser::ParseNameValuePairsFromTool(
   // TODO(stevenjb,satorux): Make this non blocking: crosbug.com/5603.
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
   if (argc < 1 || !base::GetAppOutput(command_line, &output_string)) {
-    LOG(WARNING) << "Error excuting: " << command_line.command_line_string();
+    LOG(WARNING) << "Error excuting: " << command_line.GetCommandLineString();
     return false;
   }
   if (!ParseNameValuePairs(output_string, eq, delim)) {
     LOG(WARNING) << "Error parsing values while excuting: "
-                 << command_line.command_line_string();
+                 << command_line.GetCommandLineString();
     return false;
   }
   return true;

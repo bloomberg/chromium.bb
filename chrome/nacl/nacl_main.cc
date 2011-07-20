@@ -43,7 +43,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
 
   DVLOG(1) << "Started NaCL broker with "
-           << parsed_command_line.command_line_string();
+           << parsed_command_line.GetCommandLineString();
 
   // NOTE: this code is duplicated from browser_main.cc
   // IMPORTANT: This piece of code needs to run as early as possible in the

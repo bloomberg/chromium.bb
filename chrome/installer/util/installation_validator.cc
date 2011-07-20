@@ -390,7 +390,7 @@ void InstallationValidator::ValidateCommandExpectations(
                  << (expectation.second ? " is missing" : " has") << " \""
                  << expectation.first << "\""
                  << (expectation.second ? "" : " but shouldn't") << ": "
-                 << command.command_line_string();
+                 << command.GetCommandLineString();
     }
   }
 }

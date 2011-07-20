@@ -151,7 +151,7 @@ class SafeBrowsingTestServer {
 #endif
     if (!base::LaunchProcess(cmd_line, options, &server_handle_)) {
       LOG(ERROR) << "Failed to launch server: "
-                 << cmd_line.command_line_string();
+                 << cmd_line.GetCommandLineString();
       return false;
     }
     return true;

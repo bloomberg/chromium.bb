@@ -38,7 +38,7 @@ bool LaunchTestServerAsJob(const CommandLine& cmdline,
   // automatically associated with a job object created by the debugger.
   // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
   if (!CreateProcess(
-      NULL, const_cast<wchar_t*>(cmdline.command_line_string().c_str()),
+      NULL, const_cast<wchar_t*>(cmdline.GetCommandLineString().c_str()),
       NULL, NULL, TRUE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
       &startup_info, &process_info)) {
     LOG(ERROR) << "Could not create process.";
@@ -183,7 +183,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
                              true,
                              &process_handle_,
                              &job_handle_)) {
-    LOG(ERROR) << "Failed to launch " << python_command.command_line_string();
+    LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
     return false;
   }
 

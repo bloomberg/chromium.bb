@@ -153,7 +153,7 @@ bool ServiceProcessState::AddToAutoRun() {
   return base::win::AddCommandToAutoRun(
       HKEY_CURRENT_USER,
       UTF8ToWide(GetServiceProcessAutoRunKey()),
-      autorun_command_line_->command_line_string());
+      autorun_command_line_->GetCommandLineString());
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {

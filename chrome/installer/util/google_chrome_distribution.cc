@@ -767,7 +767,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
     // The command line should now have the url added as:
     // "chrome.exe -- <url>"
     DCHECK_NE(std::wstring::npos,
-        options.command_line_string().find(L" -- " + url));
+        options.GetCommandLineString().find(L" -- " + url));
   }
   // Launch chrome now. It will show the toast UI.
   int32 exit_code = 0;

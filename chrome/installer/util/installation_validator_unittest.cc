@@ -211,7 +211,7 @@ void FakeProductState::AddQuickEnableCfCommand(
     cmd_line.AppendSwitch(installer::switches::kSystemLevel);
   cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
   commands_.Set(installer::kCmdQuickEnableCf,
-                AppCommand(cmd_line.command_line_string(), true, true));
+                AppCommand(cmd_line.GetCommandLineString(), true, true));
 }
 
 // Removes the "quick-enable-cf" Google Update product command.

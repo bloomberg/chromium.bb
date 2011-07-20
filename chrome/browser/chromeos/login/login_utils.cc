@@ -543,7 +543,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kHomePage,
       GURL(chrome::kChromeUINewTabURL).spec());
 
-  std::string cmd_line_str = command_line->command_line_string();
+  std::string cmd_line_str = command_line->GetCommandLineString();
   // Special workaround for the arguments that should be quoted.
   // Copying switches won't be needed when Guest mode won't need restart
   // http://crosbug.com/6924

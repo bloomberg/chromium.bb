@@ -94,7 +94,7 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   const CommandLine& command_line = parameters_.command_line_;
 
-  DVLOG(1) << "Started renderer with " << command_line.command_line_string();
+  DVLOG(1) << "Started renderer with " << command_line.GetCommandLineString();
 
   sandbox::TargetServices* target_services =
       parameters_.sandbox_info_.TargetServices();

@@ -250,8 +250,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
   // Convert the flags to switches.
   ConvertFlagsToSwitches(&prefs_, &command_line);
   EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
-  EXPECT_EQ(std::string(""),
-            command_line.GetSwitchValueASCII(kSwitch1));
+  EXPECT_EQ(std::string(""), command_line.GetSwitchValueASCII(kSwitch1));
   EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
   EXPECT_EQ(std::string(kValueForSwitch2),
             command_line.GetSwitchValueASCII(kSwitch2));
@@ -262,11 +261,11 @@ TEST_F(AboutFlagsTest, CheckValues) {
                                     std::string("=");
 #if defined(OS_WIN)
   EXPECT_EQ(std::wstring::npos,
-            command_line.command_line_string().find(
+            command_line.GetCommandLineString().find(
                 ASCIIToWide(switch1_with_equals)));
 #else
   EXPECT_EQ(std::string::npos,
-            command_line.command_line_string().find(switch1_with_equals));
+            command_line.GetCommandLineString().find(switch1_with_equals));
 #endif
 
   // And confirm there is a '=' for switches with values.
@@ -275,11 +274,11 @@ TEST_F(AboutFlagsTest, CheckValues) {
                                     std::string("=");
 #if defined(OS_WIN)            
   EXPECT_NE(std::wstring::npos,
-            command_line.command_line_string().find(
+            command_line.GetCommandLineString().find(
                 ASCIIToWide(switch2_with_equals)));
 #else
   EXPECT_NE(std::string::npos,
-            command_line.command_line_string().find(switch2_with_equals));
+            command_line.GetCommandLineString().find(switch2_with_equals));
 #endif
 
   // And it should persist

@@ -2619,7 +2619,7 @@ void TestingAutomationProvider::GetBrowserInfo(
   properties->SetString("HelperProcessExecutablePath",
                         chrome::kHelperProcessExecutablePath);
   properties->SetString("command_line_string",
-      CommandLine::ForCurrentProcess()->command_line_string());
+      CommandLine::ForCurrentProcess()->GetCommandLineString());
   FilePath dumps_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   properties->SetString("DIR_CRASH_DUMPS", dumps_path.value());

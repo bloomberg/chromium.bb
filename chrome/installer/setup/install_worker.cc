@@ -158,13 +158,13 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
       installer::kUninstallStringField, installer_path.value(), true);
   install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
       installer::kUninstallArgumentsField,
-      uninstall_arguments.command_line_string(), true);
+      uninstall_arguments.GetCommandLineString(), true);
 
   // MSI installations will manage their own uninstall shortcuts.
   if (!installer_state.is_msi() && product.ShouldCreateUninstallEntry()) {
     // We need to quote the command line for the Add/Remove Programs dialog.
     CommandLine quoted_uninstall_cmd(installer_path);
-    DCHECK_EQ(quoted_uninstall_cmd.command_line_string()[0], '"');
+    DCHECK_EQ(quoted_uninstall_cmd.GetCommandLineString()[0], '"');
     quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
     std::wstring uninstall_reg = browser_dist->GetUninstallRegPath();
@@ -174,7 +174,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
         browser_dist->GetAppShortCutName(), true);
     install_list->AddSetRegValueWorkItem(reg_root,
         uninstall_reg, installer::kUninstallStringField,
-        quoted_uninstall_cmd.command_line_string(), true);
+        quoted_uninstall_cmd.GetCommandLineString(), true);
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          L"InstallLocation",
@@ -589,7 +589,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
           root,
           version_key,
           google_update::kRegRenameCmdField,
-          product_rename_cmd.command_line_string(),
+          product_rename_cmd.GetCommandLineString(),
           true);
     }
 
@@ -888,17 +888,17 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
 
       list->AddSetRegValueWorkItem(root, version_key,
                                    google_update::kRegCFTempOptOutCmdField,
-                                   temp_opt_out.command_line_string(), true);
+                                   temp_opt_out.GetCommandLineString(), true);
       list->AddSetRegValueWorkItem(root, version_key,
                                    google_update::kRegCFEndTempOptOutCmdField,
-                                   end_temp_opt_out.command_line_string(),
+                                   end_temp_opt_out.GetCommandLineString(),
                                    true);
       list->AddSetRegValueWorkItem(root, version_key,
                                    google_update::kRegCFOptOutCmdField,
-                                   opt_out.command_line_string(), true);
+                                   opt_out.GetCommandLineString(), true);
       list->AddSetRegValueWorkItem(root, version_key,
                                    google_update::kRegCFOptInCmdField,
-                                   opt_in.command_line_string(), true);
+                                   opt_in.GetCommandLineString(), true);
     } else {
       // If Chrome is not also being uninstalled, we need to update its command
       // line so that it doesn't include uninstalling Chrome Frame now.
@@ -1196,7 +1196,7 @@ void AddQuickEnableWorkItems(const InstallerState& installer_state,
       if (installer_state.verbose_logging())
         cmd_line.AppendSwitch(switches::kVerboseLogging);
       cmd_line.AppendSwitch(switches::kChromeFrameQuickEnable);
-      AppCommand cmd(cmd_line.command_line_string(), true, true);
+      AppCommand cmd(cmd_line.GetCommandLineString(), true, true);
       cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
     } else {
       DCHECK(operation == REMOVE_COMMAND);

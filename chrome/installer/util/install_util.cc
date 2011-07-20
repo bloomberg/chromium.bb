@@ -118,7 +118,7 @@ bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   DCHECK(!program.empty());
   DCHECK_NE(program[0], L'\"');
 
-  CommandLine::StringType params(cmd.command_line_string());
+  CommandLine::StringType params(cmd.GetCommandLineString());
   if (params[0] == '"') {
     DCHECK_EQ('"', params[program.length() + 1]);
     DCHECK_EQ(program, params.substr(1, program.length()));

@@ -1136,7 +1136,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
 
 #if defined(OS_WIN)
   localized_strings->SetString("command_line",
-      WideToUTF16(CommandLine::ForCurrentProcess()->command_line_string()));
+      WideToUTF16(CommandLine::ForCurrentProcess()->GetCommandLineString()));
 #elif defined(OS_POSIX)
   std::string command_line = "";
   typedef std::vector<std::string> ArgvList;

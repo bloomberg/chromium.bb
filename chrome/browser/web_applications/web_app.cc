@@ -334,7 +334,7 @@ bool CreateShortcutTask::CreateShortcut() {
   // properly quoted for a Windows command line.  The method on
   // CommandLine should probably be renamed to better reflect that
   // fact.
-  std::wstring wide_switches(cmd_line.command_line_string());
+  std::wstring wide_switches(cmd_line.GetCommandLineString());
 
   // Sanitize description
   if (shortcut_info_.description.length() >= MAX_PATH)

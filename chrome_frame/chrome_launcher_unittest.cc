@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,22 +15,22 @@ TEST(ChromeLauncher, IsValidCommandLine) {
   bad.AppendSwitch(switches::kHomePage);  // exists but not in whitelist
 
   EXPECT_FALSE(chrome_launcher::IsValidCommandLine(
-      bad.command_line_string().c_str()));
+      bad.GetCommandLineString().c_str()));
 
   CommandLine good(FilePath(L"dummy.exe"));
   good.AppendSwitch(switches::kNoFirstRun);  // in whitelist
   good.AppendSwitchASCII(switches::kUserDataDir, "foo");  // in whitelist
 
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
-      good.command_line_string().c_str()));
+      good.GetCommandLineString().c_str()));
 
   CommandLine no_params(FilePath(L"dummy.exe"));
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
-      no_params.command_line_string().c_str()));
+      no_params.GetCommandLineString().c_str()));
 
   CommandLine empty(FilePath(L""));
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
-      empty.command_line_string().c_str()));
+      empty.GetCommandLineString().c_str()));
 }
 
 TEST(ChromeLauncher, TrimWhiteSpace) {

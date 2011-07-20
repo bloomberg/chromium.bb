@@ -330,7 +330,7 @@ HRESULT SetupRunOnce() {
                                        "0");
         run_once_cmd.AppendSwitch(switches::kChromeFrame);
         ret = run_once.WriteValue(L"A",
-                                  run_once_cmd.command_line_string().c_str());
+                                  run_once_cmd.GetCommandLineString().c_str());
       }
       result = HRESULT_FROM_WIN32(ret);
     } else {

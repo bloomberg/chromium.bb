@@ -300,10 +300,11 @@ void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   std::string command_line_string;
 
 #if defined(OS_WIN)
-  std::wstring wstr = CommandLine::ForCurrentProcess()->command_line_string();
+  std::wstring wstr = CommandLine::ForCurrentProcess()->GetCommandLineString();
   command_line_string = WideToASCII(wstr);
 #else
-  command_line_string = CommandLine::ForCurrentProcess()->command_line_string();
+  command_line_string =
+      CommandLine::ForCurrentProcess()->GetCommandLineString();
 #endif
 
   render_view_host->SetWebUIProperty("commandLineString", command_line_string);

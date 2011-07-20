@@ -241,7 +241,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 #if defined(OS_WIN)
   localized_strings->SetString("command_line_info",
-      WideToUTF16(CommandLine::ForCurrentProcess()->command_line_string()));
+      WideToUTF16(CommandLine::ForCurrentProcess()->GetCommandLineString()));
 #elif defined(OS_POSIX)
   // TODO(viettrungluu): something horrible might happen if there are non-UTF-8
   // arguments (since |SetString()| requires Unicode).

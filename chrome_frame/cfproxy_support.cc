@@ -300,7 +300,7 @@ std::wstring BuildCmdLine(const std::string& channel_id,
 
   command_line->AppendSwitchPath(switches::kUserDataDir, profile_path);
 
-  std::wstring command_line_string(command_line->command_line_string());
+  std::wstring command_line_string(command_line->GetCommandLineString());
   if (!extra_args.empty()) {
     command_line_string.append(L" ");
     command_line_string.append(extra_args);

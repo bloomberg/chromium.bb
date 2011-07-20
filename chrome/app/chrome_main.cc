@@ -608,7 +608,7 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_WIN)
   // Must do this before any other usage of command line!
-  if (HasDeprecatedArguments(command_line.command_line_string()))
+  if (HasDeprecatedArguments(command_line.GetCommandLineString()))
     return 1;
 #endif
 

@@ -103,7 +103,7 @@ int PluginMain(const MainFunctionParams& parameters) {
 
   CoInitialize(NULL);
   DVLOG(1) << "Started plugin with "
-           << parsed_command_line.command_line_string();
+           << parsed_command_line.GetCommandLineString();
 
   HMODULE sandbox_test_module = NULL;
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);

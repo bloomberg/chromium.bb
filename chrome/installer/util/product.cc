@@ -79,15 +79,14 @@ bool Product::LaunchChromeAndWait(const FilePath& application_path,
   bool success = false;
   STARTUPINFOW si = { sizeof(si) };
   PROCESS_INFORMATION pi = {0};
-  // Cast away constness of the command_line_string() since CreateProcess
-  // might modify the string (insert \0 to separate the program from the
-  // arguments).  Since we're not using the cmd variable beyond this point
-  // we don't care.
+  // Create a writable copy of the command line string, since CreateProcess may
+  // modify the string (insert \0 to separate the program from the arguments).
+  std::wstring writable_command_line_string(cmd.GetCommandLineString());
   if (!::CreateProcess(cmd.GetProgram().value().c_str(),
-                       const_cast<wchar_t*>(cmd.command_line_string().c_str()),
+                       &writable_command_line_string[0],
                        NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL,
                        &si, &pi)) {
-    PLOG(ERROR) << "Failed to launch: " << cmd.command_line_string();
+    PLOG(ERROR) << "Failed to launch: " << cmd.GetCommandLineString();
   } else {
     ::CloseHandle(pi.hThread);
 

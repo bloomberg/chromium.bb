@@ -1503,7 +1503,7 @@ Value* NetInternalsUI::GetConstants() {
                                                        "unofficial");
       dict->SetString("os_type", version_info.OSType());
       dict->SetString("command_line",
-                      CommandLine::ForCurrentProcess()->command_line_string());
+                      CommandLine::ForCurrentProcess()->GetCommandLineString());
     }
 
     constants_dict->Set("clientInfo", dict);
