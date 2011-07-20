@@ -806,66 +806,6 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
 
 namespace {
 
-void DropAssert(const std::string&) {}
-
-class BadServer : public Worker {
- public:
-  explicit BadServer(bool pump_during_send)
-    : Worker(Channel::MODE_SERVER, "simpler_server"),
-      pump_during_send_(pump_during_send) { }
-  void Run() {
-    int answer = 0;
-
-    SyncMessage* msg = new SyncMessage(
-        MSG_ROUTING_CONTROL, SyncChannelTestMsg_Double::ID,
-        Message::PRIORITY_NORMAL, NULL);
-    if (pump_during_send_)
-      msg->EnableMessagePumping();
-
-    // Temporarily ignore asserts so that the assertion in
-    // ipc_message_utils doesn't cause termination.
-    logging::SetLogAssertHandler(&DropAssert);
-    bool result = Send(msg);
-    logging::SetLogAssertHandler(NULL);
-    DCHECK(!result);
-
-    // Need to send another message to get the client to call Done().
-    result = Send(new SyncChannelTestMsg_AnswerToLife(&answer));
-    DCHECK(result);
-    DCHECK_EQ(answer, 42);
-
-    Done();
-  }
-
-  bool pump_during_send_;
-};
-
-void BadMessage(bool pump_during_send) {
-  std::vector<Worker*> workers;
-  workers.push_back(new BadServer(pump_during_send));
-  workers.push_back(new SimpleClient());
-  RunTest(workers);
-}
-
-}  // namespace
-
-#if defined(OS_WIN)
-// Crashy on windows. See crbug.com/62511.
-#define MAYBE_BadMessage DISABLED_BadMessage
-#else
-#define MAYBE_BadMessage BadMessage
-#endif
-
-// Tests that if a message is not serialized correctly, the Send() will fail.
-TEST_F(IPCSyncChannelTest, MAYBE_BadMessage) {
-  BadMessage(false);
-  BadMessage(true);
-}
-
-//-----------------------------------------------------------------------------
-
-namespace {
-
 class ChattyClient : public Worker {
  public:
   ChattyClient() :
