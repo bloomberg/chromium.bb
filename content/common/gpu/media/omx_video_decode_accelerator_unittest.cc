@@ -468,7 +468,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
 
   // Simple getters for inspecting the state of the Client.
   ClientState state() { return state_; }
-  VideoDecodeAccelerator::Error error() { return error_; }
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_decoded_frames() { return num_decoded_frames_; }
   EGLDisplay egl_display() { return rendering_helper_->egl_display(); }
@@ -501,7 +500,6 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   scoped_refptr<OmxVideoDecodeAccelerator> decoder_;
   int delete_decoder_state_;
   ClientState state_;
-  VideoDecodeAccelerator::Error error_;
   int num_decoded_frames_;
   int num_done_bitstream_buffers_;
   PictureBufferById picture_buffers_by_id_;
@@ -521,7 +519,6 @@ EglRenderingVDAClient::EglRenderingVDAClient(RenderingHelper* rendering_helper,
       encoded_data_next_pos_to_decode_(0), next_bitstream_buffer_id_(0),
       note_(note), delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
-      error_(VideoDecodeAccelerator::VIDEODECODERERROR_NONE),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0) {
   CHECK_GT(num_NALUs_per_decode, 0);
 }
@@ -643,7 +640,6 @@ void EglRenderingVDAClient::NotifyResetDone() {
 
 void EglRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
   SetState(CS_ERROR);
-  error_ = error;
 }
 
 static bool LookingAtNAL(const std::string& encoded, size_t pos) {

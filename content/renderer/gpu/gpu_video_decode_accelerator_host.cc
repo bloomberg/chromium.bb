@@ -151,8 +151,7 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(ipc_sender_);
   if (!ipc_sender_ || !ipc_sender_->Send(message)) {
     DLOG(ERROR) << "Send(" << message->type() << ") failed";
-    // TODO(vrk/fischman): Determine which error should be sent in this case.
-    OnErrorNotification(VIDEODECODERERROR_UNSUPPORTED);
+    OnErrorNotification(PLATFORM_FAILURE);
   }
 }
 

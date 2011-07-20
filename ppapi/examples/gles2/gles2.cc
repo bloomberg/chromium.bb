@@ -5,11 +5,13 @@
 #include <string.h>
 
 #include <iostream>
+#include <sstream>
 #include <list>
 #include <map>
 #include <set>
 #include <vector>
 
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
@@ -21,6 +23,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/var.h"
 #include "ppapi/examples/gles2/testdata.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 
@@ -89,6 +92,28 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   void DeleteTexture(GLuint id);
   void PaintFinished(int32_t result, int picture_buffer_id);
 
+  // Log an error to the developer console and stderr (though the latter may be
+  // closed due to sandboxing or blackholed for other reasons) by creating a
+  // temporary of this type and streaming to it.  Example usage:
+  // LogError(this).s() << "Hello world: " << 42;
+  class LogError {
+   public:
+    LogError(GLES2DemoInstance* demo) : demo_(demo) {}
+    ~LogError() {
+      const std::string& msg = stream_.str();
+      demo_->console_if_->Log(demo_->pp_instance(), PP_LOGLEVEL_ERROR,
+                              pp::Var(msg).pp_var());
+      std::cerr << msg << std::endl;
+    }
+    // Impl note: it would have been nicer to have LogError derive from
+    // std::ostringstream so that it can be streamed to directly, but lookup
+    // rules turn streamed string literals to hex pointers on output.
+    std::ostringstream& s() { return stream_; }
+   private:
+    GLES2DemoInstance* demo_;  // Unowned.
+    std::ostringstream stream_;
+  };
+
   pp::Size position_size_;
   int next_picture_buffer_id_;
   int next_bitstream_buffer_id_;
@@ -112,6 +137,7 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   PP_TimeTicks swap_ticks_;
 
   // Unowned pointers.
+  const struct PPB_Console_Dev* console_if_;
   const struct PPB_Core* core_if_;
   const struct PPB_OpenGLES2_Dev* gles2_if_;
 
@@ -134,6 +160,8 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
       context_(NULL),
       surface_(NULL),
       video_decoder_(NULL) {
+  assert((console_if_ = static_cast<const struct PPB_Console_Dev*>(
+      module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE))));
   assert((core_if_ = static_cast<const struct PPB_Core*>(
       module->GetBrowserInterface(PPB_CORE_INTERFACE))));
   assert((gles2_if_ = static_cast<const struct PPB_OpenGLES2_Dev*>(
@@ -287,6 +315,8 @@ void GLES2DemoInstance::EndOfStream() {
 }
 
 void GLES2DemoInstance::NotifyError(PP_VideoDecodeError_Dev error) {
+  LogError(this).s() << "Received error: " << error;
+  assert(!"Unexpected error; see stderr for details");
 }
 
 // This object is the global object representing this plugin library as long
@@ -352,9 +382,9 @@ void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
     double elapsed = core_if_->GetTimeTicks() - first_frame_delivered_ticks_;
     double fps = (elapsed > 0) ? num_frames_rendered_ / elapsed : 1000;
     double ms_per_swap = (swap_ticks_ * 1e3) / num_frames_rendered_;
-    std::cerr << "Rendered frames: " << num_frames_rendered_ << ", fps: "
-              << fps << ", with average ms/swap of: " << ms_per_swap
-              << std::endl;
+    LogError(this).s() << "Rendered frames: " << num_frames_rendered_
+                       << ", fps: " << fps << ", with average ms/swap of: "
+                       << ms_per_swap;
   }
   if (video_decoder_)
     video_decoder_->ReusePictureBuffer(picture_buffer_id);

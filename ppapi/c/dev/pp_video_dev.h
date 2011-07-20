@@ -201,28 +201,20 @@ struct PP_Picture_Dev {
   int32_t bitstream_buffer_id;
 };
 
-// Enumeration for error events that may be reported through
-// PP_VideoDecodeErrorHandler_Func_Dev callback function to the plugin. Default
-// error handling functionality expected from the plugin is to Flush and Destroy
-// the decoder.
+// Decoder error codes reported to the plugin.  A reasonable naive
+// error handling policy is for the plugin to Destroy() the decoder on error.
+// Note: Keep these in sync with media::VideoDecodeAccelerator::Error.
 enum PP_VideoDecodeError_Dev {
-  PP_VIDEODECODEERROR_NONE = 0,
-  // Decoder has not been initialized and configured properly.
-  PP_VIDEODECODEERROR_UNINITIALIZED,
-  // Decoder does not support feature of configuration or bitstream.
-  PP_VIDEODECODEERROR_UNSUPPORTED,
-  // Decoder did not get valid input.
-  PP_VIDEODECODERERROR_INVALIDINPUT,
-  // Failure in memory allocation or mapping.
-  PP_VIDEODECODERERROR_MEMFAILURE,
-  // Decoder was given bitstream that would result in output pictures but it
-  // has not been provided buffers to do all this.
-  PP_VIDEODECODEERROR_INSUFFICIENT_BUFFERS,
-  // Decoder cannot continue operation due to insufficient resources for the
-  // current configuration.
-  PP_VIDEODECODEERROR_INSUFFICIENTRESOURCES,
-  // Decoder hardware has reported hardware error.
-  PP_VIDEODECODEERROR_HARDWARE
+  // An operation was attempted during an incompatible decoder state.
+  PP_VIDEODECODERERROR_ILLEGAL_STATE = 1,
+  // Invalid argument was passed to an API method.
+  PP_VIDEODECODERERROR_INVALID_ARGUMENT,
+  // Encoded input is unreadable.
+  PP_VIDEODECODERERROR_UNREADABLE_INPUT,
+  // A failure occurred at the browser layer or lower.  Examples of such
+  // failures include GPU hardware failures, GPU driver failures, GPU library
+  // failures, browser programming errors, and so on.
+  PP_VIDEODECODERERROR_PLATFORM_FAILURE
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoDecodeError_Dev, 4);
 

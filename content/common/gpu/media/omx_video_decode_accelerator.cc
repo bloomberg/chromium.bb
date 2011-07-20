@@ -78,10 +78,9 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       output_buffers_at_component_(0),
       client_(client) {
   RETURN_ON_FAILURE(AreOMXFunctionPointersInitialized(),
-                    "Failed to load openmax library",
-                    VIDEODECODERERROR_UNSUPPORTED,);
+                    "Failed to load openmax library", PLATFORM_FAILURE,);
   RETURN_ON_OMX_FAILURE(omx_init(), "Failed to init OpenMAX core",
-                        VIDEODECODERERROR_UNSUPPORTED,);
+                        PLATFORM_FAILURE,);
 }
 
 OmxVideoDecodeAccelerator::~OmxVideoDecodeAccelerator() {
@@ -144,8 +143,8 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
 
 bool OmxVideoDecodeAccelerator::Initialize(const std::vector<uint32>& config) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  RETURN_ON_FAILURE(VerifyConfigs(config), "Invalid config",
-                    VIDEODECODERERROR_INVALIDINPUT, false);
+  RETURN_ON_FAILURE(VerifyConfigs(config), "Invalid config", INVALID_ARGUMENT,
+                    false);
   if (!CreateComponent())  // Does its own RETURN_ON_FAILURE dances.
     return false;
 
@@ -176,10 +175,9 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   OMX_ERRORTYPE result = omx_get_components_of_role(
       role_name, &num_components, reinterpret_cast<OMX_U8**>(&component));
   RETURN_ON_OMX_FAILURE(result, "Unsupport role: " << role_name,
-                        VIDEODECODERERROR_UNSUPPORTED, false);
-  RETURN_ON_FAILURE(num_components == 1,
-                    "No components for: " << role_name,
-                    VIDEODECODERERROR_UNSUPPORTED, false);
+                        PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(num_components == 1, "No components for: " << role_name,
+                    PLATFORM_FAILURE, false);
 
   // Get the handle to the component.
   AddRef();  // To reflect passing |this| to OMX_GetHandle below.
@@ -188,7 +186,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
       this, &omx_accelerator_callbacks);
   RETURN_ON_OMX_FAILURE(result,
                         "Failed to OMX_GetHandle on: " << component.get(),
-                        VIDEODECODERERROR_INSUFFICIENT_RESOURCES, false);
+                        PLATFORM_FAILURE, false);
   client_state_ = OMX_StateLoaded;
 
   // Get the port information. This will obtain information about the number of
@@ -200,7 +198,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   RETURN_ON_FAILURE(result == OMX_ErrorNone && port_param.nPorts == 2,
                     "Failed to get Port Param: " << result << ", "
                     << port_param.nPorts,
-                    VIDEODECODERERROR_INSUFFICIENT_RESOURCES, false);
+                    PLATFORM_FAILURE, false);
   input_port_ = port_param.nStartPortNumber;
   output_port_ = input_port_ + 1;
 
@@ -215,7 +213,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                             OMX_IndexParamStandardComponentRole,
                             &role_type);
   RETURN_ON_OMX_FAILURE(result, "Failed to Set Role",
-                        VIDEODECODERERROR_INVALIDINPUT, false);
+                        PLATFORM_FAILURE, false);
 
   // Populate input-buffer-related members based on input port data.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
@@ -226,9 +224,9 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                             &port_format);
   RETURN_ON_OMX_FAILURE(result,
                         "GetParameter(OMX_IndexParamPortDefinition) failed",
-                        VIDEODECODERERROR_INVALIDINPUT, false);
+                        PLATFORM_FAILURE, false);
   RETURN_ON_FAILURE(OMX_DirInput == port_format.eDir, "Expected input port",
-                    VIDEODECODERERROR_INVALIDINPUT, false);
+                    PLATFORM_FAILURE, false);
 
   input_buffer_count_ = port_format.nBufferCountActual;
   input_buffer_size_ = port_format.nBufferSize;
@@ -241,9 +239,9 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                             &port_format);
   RETURN_ON_OMX_FAILURE(result,
                         "GetParameter(OMX_IndexParamPortDefinition) failed",
-                        VIDEODECODERERROR_INVALIDINPUT, false);
+                        PLATFORM_FAILURE, false);
   RETURN_ON_FAILURE(OMX_DirOutput == port_format.eDir, "Expect Output Port",
-                    VIDEODECODERERROR_INVALIDINPUT, false);
+                    PLATFORM_FAILURE, false);
 
   // Set output port parameters.
   port_format.nBufferCountActual = kNumPictureBuffers;
@@ -258,7 +256,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                             &port_format);
   RETURN_ON_OMX_FAILURE(result,
                         "SetParameter(OMX_IndexParamPortDefinition) failed",
-                        VIDEODECODERERROR_INVALIDINPUT, false);
+                        PLATFORM_FAILURE, false);
 
   // Fill the component with fake output buffers.  This seems to be required for
   // the component to move from Loaded to Idle.  How bogus.
@@ -267,7 +265,7 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
     result = OMX_UseBuffer(component_handle_, &buffer, output_port_,
                            NULL, 0, reinterpret_cast<OMX_U8*>(0x1));
     RETURN_ON_OMX_FAILURE(result, "OMX_UseBuffer failed",
-                          VIDEODECODERERROR_INVALIDINPUT, false);
+                          PLATFORM_FAILURE, false);
     buffer->pAppPrivate = NULL;
     buffer->nTimeStamp = -1;
     buffer->nOutputPortIndex = output_port_;
@@ -287,7 +285,7 @@ void OmxVideoDecodeAccelerator::Decode(
                      client_state_ == OMX_StateExecuting),
                     "Call to Decode() during invalid state or transition: "
                     << current_state_change_ << ", " << client_state_,
-                    VIDEODECODERERROR_UNSUPPORTED,);
+                    ILLEGAL_STATE,);
 
   OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
   free_input_buffers_.pop();
@@ -296,8 +294,7 @@ void OmxVideoDecodeAccelerator::Decode(
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
   RETURN_ON_FAILURE(shm->Map(bitstream_buffer.size()),
-                    "Failed to SharedMemory::Map()",
-                    VIDEODECODERERROR_UNSUPPORTED,);
+                    "Failed to SharedMemory::Map()", UNREADABLE_INPUT,);
 
   SharedMemoryAndId* input_buffer_details = new SharedMemoryAndId();
   input_buffer_details->first.reset(shm.release());
@@ -317,7 +314,7 @@ void OmxVideoDecodeAccelerator::Decode(
   // Give this buffer to OMX.
   OMX_ERRORTYPE result = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
   RETURN_ON_OMX_FAILURE(result, "OMX_EmptyThisBuffer() failed",
-                        VIDEODECODERERROR_INVALIDINPUT,);
+                        PLATFORM_FAILURE,);
 
   input_buffers_at_component_++;
 }
@@ -325,8 +322,7 @@ void OmxVideoDecodeAccelerator::Decode(
 void OmxVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer",
-                    VIDEODECODERERROR_UNSUPPORTED,);
+  RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
   CHECK_EQ(output_buffers_at_component_, 0);
   CHECK_EQ(fake_output_buffers_.size(), 0U);
@@ -344,29 +340,28 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
     return;  // get all the buffers first.
   DCHECK_EQ(pictures_.size(), kNumPictureBuffers);
 
-  if (!AllocateOutputBuffers())  // Does its own RETURN_ON_FAILURE dances.
+  // These do their own RETURN_ON_FAILURE dances.
+  if (!AllocateOutputBuffers())
     return;
-
   if (!SendCommandToPort(OMX_CommandPortEnable, output_port_))
     return;
 }
 
 void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer",
-                    VIDEODECODERERROR_UNSUPPORTED,);
+  RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
   OutputPictureById::iterator it = pictures_.find(picture_buffer_id);
   RETURN_ON_FAILURE(it != pictures_.end(),
                     "Missing picture buffer id: " << picture_buffer_id,
-                    VIDEODECODERERROR_UNSUPPORTED,);
+                    INVALID_ARGUMENT,);
   OutputPicture& output_picture = it->second;
 
   ++output_buffers_at_component_;
   OMX_ERRORTYPE result =
       OMX_FillThisBuffer(component_handle_, output_picture.omx_buffer_header);
   RETURN_ON_OMX_FAILURE(result, "OMX_FillThisBuffer() failed",
-                        VIDEODECODERERROR_INVALIDINPUT,);
+                        PLATFORM_FAILURE,);
 }
 
 void OmxVideoDecodeAccelerator::Flush() {
@@ -384,7 +379,7 @@ void OmxVideoDecodeAccelerator::Flush() {
   omx_buffer->nTimeStamp = -2;
   OMX_ERRORTYPE result = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
   RETURN_ON_OMX_FAILURE(result, "OMX_EmptyThisBuffer() failed",
-                        VIDEODECODERERROR_INVALIDINPUT,);
+                        PLATFORM_FAILURE,);
   input_buffers_at_component_++;
 }
 
@@ -454,7 +449,7 @@ void OmxVideoDecodeAccelerator::BeginTransitionToState(
   OMX_ERRORTYPE result = OMX_SendCommand(
       component_handle_, OMX_CommandStateSet, new_state, 0);
   RETURN_ON_OMX_FAILURE(result, "SendCommand(OMX_CommandStateSet) failed",
-                        VIDEODECODERERROR_INVALIDINPUT,);
+                        PLATFORM_FAILURE,);
 }
 
 void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
@@ -476,8 +471,7 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInInitializing() {
        it != fake_output_buffers_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* buffer = *it;
     OMX_ERRORTYPE result = OMX_FillThisBuffer(component_handle_, buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FillThisBuffer()",
-                          VIDEODECODERERROR_INVALIDINPUT,);
+    RETURN_ON_OMX_FAILURE(result, "OMX_FillThisBuffer()", PLATFORM_FAILURE,);
     ++output_buffers_at_component_;
   }
 
@@ -604,9 +598,8 @@ bool OmxVideoDecodeAccelerator::AllocateInputBuffers() {
         OMX_UseBuffer(component_handle_, &buffer, input_port_,
                       NULL, /* pAppPrivate gets set in Decode(). */
                       0, reinterpret_cast<OMX_U8*>(0x1));
-    RETURN_ON_OMX_FAILURE(result,
-                          "OMX_UseBuffer() Input buffer error",
-                          VIDEODECODERERROR_MEMFAILURE, false);
+    RETURN_ON_OMX_FAILURE(result, "OMX_UseBuffer() Input buffer error",
+                          PLATFORM_FAILURE, false);
     buffer->nInputPortIndex = input_port_;
     buffer->nOffset = 0;
     buffer->nFlags = 0;
@@ -627,8 +620,7 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
     OMX_ERRORTYPE result = OMX_UseEGLImage(
         component_handle_, omx_buffer, output_port_, &picture_buffer,
         it->second.egl_image);
-    RETURN_ON_OMX_FAILURE(result, "OMX_UseEGLImage",
-                          VIDEODECODERERROR_MEMFAILURE, false);
+    RETURN_ON_OMX_FAILURE(result, "OMX_UseEGLImage", PLATFORM_FAILURE, false);
     // Here we set a garbage bitstream buffer id, and then overwrite it before
     // passing to PictureReady.
     int garbage_bitstream_buffer_id = -1;
@@ -647,8 +639,7 @@ void OmxVideoDecodeAccelerator::FreeInputBuffers() {
     omx_buffer = free_input_buffers_.front();
     free_input_buffers_.pop();
     result = OMX_FreeBuffer(component_handle_, input_port_, omx_buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer",
-                          VIDEODECODERERROR_INVALIDINPUT,);
+    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
   }
 }
 
@@ -663,8 +654,7 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
     CHECK(omx_buffer);
     delete reinterpret_cast<media::Picture*>(omx_buffer->pAppPrivate);
     result = OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer",
-                          VIDEODECODERERROR_INVALIDINPUT,);
+    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
     texture2eglImage_translator.DestroyEglImage(egl_display_,
                                                 it->second.egl_image);
     if (client_)
@@ -680,8 +670,7 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   port_format.nPortIndex = output_port_;
   OMX_ERRORTYPE result = OMX_GetParameter(
       component_handle_, OMX_IndexParamPortDefinition, &port_format);
-  RETURN_ON_OMX_FAILURE(result, "OMX_GetParameter",
-                        VIDEODECODERERROR_UNSUPPORTED,);
+  RETURN_ON_OMX_FAILURE(result, "OMX_GetParameter", PLATFORM_FAILURE,);
   DCHECK_EQ(port_format.nBufferCountMin, kNumPictureBuffers);
 
   // TODO(fischman): to support mid-stream resize, need to free/dismiss any
@@ -703,7 +692,7 @@ void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanFillBuffer()) {
-    StopOnError(VIDEODECODERERROR_UNSUPPORTED);  // Should be STATE_ERROR.
+    StopOnError(ILLEGAL_STATE);
     return;
   }
 
@@ -718,7 +707,7 @@ void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
     ++output_buffers_at_component_;
     OMX_ERRORTYPE result = OMX_FillThisBuffer(component_handle_, omx_buffer);
     RETURN_ON_OMX_FAILURE(result, "OMX_FillThisBuffer() failed",
-                          VIDEODECODERERROR_INSUFFICIENT_BUFFERS,);
+                          PLATFORM_FAILURE,);
   }
 }
 
@@ -732,8 +721,7 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     CHECK_EQ(fake_output_buffers_.erase(buffer), 1U);
     OMX_ERRORTYPE result =
         OMX_FreeBuffer(component_handle_, output_port_, buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer failed",
-                          VIDEODECODERERROR_INVALIDINPUT,);
+    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer failed", PLATFORM_FAILURE,);
     return;
   }
   CHECK(!fake_output_buffers_.size());
@@ -874,14 +862,14 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
           return;
         default:
           RETURN_ON_FAILURE(false, "Unknown command completed: " << data1,
-                            VIDEODECODERERROR_HARDWARE,);
+                            PLATFORM_FAILURE,);
       }
       return;
     case OMX_EventError:
       if (current_state_change_ != DESTROYING &&
           current_state_change_ != ERRORING) {
         RETURN_ON_FAILURE(false, "EventError: 0x" << std::hex << data1,
-                          VIDEODECODERERROR_HARDWARE,);
+                          PLATFORM_FAILURE,);
       }
       return;
     case OMX_EventPortSettingsChanged:
@@ -897,7 +885,7 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
         RETURN_ON_FAILURE(false,
                           "Unexpected EventPortSettingsChanged: "
                           << data1 << ", " << data2,
-                          VIDEODECODERERROR_HARDWARE,);
+                          PLATFORM_FAILURE,);
       }
       return;
     case OMX_EventBufferFlag:
@@ -908,12 +896,12 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
         RETURN_ON_FAILURE(false,
                           "Unexpected OMX_EventBufferFlag: "
                           << data1 << ", " << data2,
-                          VIDEODECODERERROR_HARDWARE,);
+                          PLATFORM_FAILURE,);
       }
       return;
     default:
       RETURN_ON_FAILURE(false, "Unexpected unhandled event: " << event,
-                        VIDEODECODERERROR_HARDWARE,);
+                        PLATFORM_FAILURE,);
   }
 }
 
@@ -986,6 +974,6 @@ bool OmxVideoDecodeAccelerator::SendCommandToPort(
   OMX_ERRORTYPE result = OMX_SendCommand(component_handle_,
                                          cmd, port_index, 0);
   RETURN_ON_OMX_FAILURE(result, "SendCommand() failed" << cmd,
-                        VIDEODECODERERROR_INVALIDINPUT, false);
+                        PLATFORM_FAILURE, false);
   return true;
 }

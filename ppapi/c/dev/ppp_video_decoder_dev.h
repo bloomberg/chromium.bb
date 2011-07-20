@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 
-#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.6"
+#define PPP_VIDEODECODER_DEV_INTERFACE "PPP_VideoDecoder(Dev);0.7"
 
 // PPP_VideoDecoder_Dev structure contains the function pointers that the
 // plugin MUST implement to provide services needed by the video decoder
@@ -60,8 +60,6 @@ struct PPP_VideoDecoder_Dev {
 
   // Error handler callback for decoder to deliver information about detected
   // errors to the plugin.
-  //
-  // TODO(vmr): Fill out error result codes and corresponding actions.
   //
   // Parameters:
   //  |instance| the plugin instance to which the callback is responding.
