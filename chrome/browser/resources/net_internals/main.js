@@ -342,9 +342,16 @@ BrowserBridge.POLL_INTERVAL_MS = 5000;
 /**
  * Wraps |chrome.send|.  Doesn't send anything when viewing a log file.
  */
-BrowserBridge.prototype.send = function(value) {
-  if (!this.isViewingLogFile_)
-    chrome.send(value);
+BrowserBridge.prototype.send = function(value1, value2) {
+  if (!this.isViewingLogFile_) {
+    if (arguments.length == 1) {
+      chrome.send(value1);
+    } else if (arguments.length == 2) {
+      chrome.send(value1, value2);
+    } else {
+      throw 'Unsupported number of arguments.';
+    }
+  }
 };
 
 BrowserBridge.prototype.sendReady = function() {
