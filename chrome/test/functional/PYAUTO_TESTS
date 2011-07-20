@@ -77,6 +77,9 @@
       # ==================================================
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
+      # crbug.com/81271
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
+      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Browser crash when clearing browsing history and downloads together.
       # crbug.com/88128
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
@@ -128,9 +131,6 @@
       # ==================================================
       # crbug.com/89081
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # crbug.com/85597
       '-cookies.CookiesTest.testCookiesFile',
       # Some download test fails on win official builder, only thru buildbot
@@ -315,7 +315,10 @@
       # Permanently-disabled tests.
       # ===========================
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
+      '-chromeos_security.ChromeosSecurity.testBundledCrxPermissions',
       '-chromeos_security.ChromeosSecurity.testCannotViewLocalFiles',
+      '-chromeos_security.ChromeosSecurity.testComponentExtensionPermissions',
+      '-chromeos_security.ChromeosSecurity.testNoUnexpectedExtensions',
       '-flash.FlashTest.testCanLoadFlash',
       '-flash.FlashTest.testFlashLoadsAfterKill',
       '-flash.FlashTest.testFlashIncognitoMode',
