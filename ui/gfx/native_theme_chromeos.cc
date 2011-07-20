@@ -301,6 +301,14 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part,
   return gfx::Size(width, height);
 }
 
+int NativeThemeChromeos::GetPopupListBoxMinimumRowHeight() const {
+#if defined(TOUCH_UI)
+  return 60;
+#else
+  return 0;
+#endif
+}
+
 void NativeThemeChromeos::PaintScrollbarTrack(
     SkCanvas* canvas,
     Part part,
