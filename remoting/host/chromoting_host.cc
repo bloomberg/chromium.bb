@@ -95,6 +95,7 @@ void ChromotingHost::Start() {
     state_ = kStarted;
   }
 
+  // Use an XMPP connection to the Talk network for session signalling.
   std::string xmpp_login;
   std::string xmpp_auth_token;
   std::string xmpp_auth_service;
@@ -106,7 +107,6 @@ void ChromotingHost::Start() {
     return;
   }
 
-  // Connect to the talk network with a JingleClient.
   signal_strategy_.reset(
       new XmppSignalStrategy(context_->jingle_thread(), xmpp_login,
                              xmpp_auth_token,
@@ -207,7 +207,7 @@ void ChromotingHost::OnSequenceNumberUpdated(ConnectionToClient* connection,
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// JingleClient::Callback implementations
+// SignalStrategy::StatusObserver implementations
 void ChromotingHost::OnStateChange(
     SignalStrategy::StatusObserver::State state) {
   DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());

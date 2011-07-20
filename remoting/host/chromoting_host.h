@@ -109,7 +109,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                                        int64 sequence_number);
 
   ////////////////////////////////////////////////////////////////////////////
-  // SignalStrategy implementation.
+  // SignalStrategy::StatusObserver implementation.
   virtual void OnStateChange(
       SignalStrategy::StatusObserver::State state) OVERRIDE;
   virtual void OnJidChange(const std::string& full_jid) OVERRIDE;

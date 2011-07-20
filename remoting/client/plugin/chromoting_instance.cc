@@ -98,7 +98,7 @@ bool ChromotingInstance::Init(uint32_t argc,
       CreatePepperPortAllocatorSessionFactory(this);
 
   // If we don't have socket dispatcher for IPC (e.g. P2P API is
-  // disabled), then JingleClient will try to use physical sockets.
+  // disabled), then JingleSessionManager will try to use physical sockets.
   if (socket_dispatcher) {
     logger_.VLog(1, "Creating IpcNetworkManager and IpcPacketSocketFactory.");
     network_manager = new IpcNetworkManager(socket_dispatcher);

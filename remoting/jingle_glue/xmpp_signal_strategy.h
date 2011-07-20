@@ -42,8 +42,6 @@ class XmppSignalStrategy : public SignalStrategy,
   virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
-  friend class JingleClientTest;
-
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
   static buzz::PreXmppAuth* CreatePreXmppAuth(
       const buzz::XmppClientSettings& settings);
