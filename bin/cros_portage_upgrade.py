@@ -57,7 +57,7 @@ class Upgrader(object):
   STABLE_OVERLAY_NAME = 'portage-stable'
   CROS_OVERLAY_NAME = 'chromiumos-overlay'
   HOST_BOARD = 'amd64-host'
-  OPT_SLOTS = ['amend', 'csv_file', 'html_file', 'rdeps',
+  OPT_SLOTS = ['amend', 'csv_file', 'rdeps',
                'upgrade', 'upgrade_deep', 'upstream', 'unstable_ok', 'verbose']
 
   __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
@@ -69,7 +69,6 @@ class Upgrader(object):
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
                '_emptydir',     # Path to temporary empty directory
-               '_html_file',    # File path for writing html output
                '_master_archs', # Set. Archs of tables merged into master_table
                '_master_cnt',   # Number of tables merged into master_table
                '_master_table', # Merged table from all board runs
@@ -912,8 +911,8 @@ class Upgrader(object):
       self._master_table = self._curr_table
       self._master_table._arch = None
 
-  def WriteTableFiles(self, csv=None, html=None):
-    """Write |table| to |csv| and/or |html| files, if requested."""
+  def WriteTableFiles(self, csv=None):
+    """Write |self._master_table| to |csv| file, if requested."""
 
     # Sort the table by package name, then slot
     def PkgSlotSort(row):
@@ -926,12 +925,6 @@ class Upgrader(object):
       # TODO(mtennant): change to cros_lib.Info
       print "Writing package status as csv to %s" % csv
       self._master_table.WriteCSV(filehandle)
-      filehandle.close()
-    if html:
-      filehandle = open(html, 'w')
-      # TODO(mtennant): change to cros_lib.Info
-      print "Writing package status as html to %s" % html
-      self._master_table.WriteHTML(filehandle)
       filehandle.close()
 
 def _BoardIsSetUp(board):
@@ -960,12 +953,12 @@ def main():
             'will also be upgraded.\n'
             '\n'
             'Status report mode examples:\n'
-            '> cros_portage_upgrade --board=tegra2_aebl '
+            '> cros_portage_upgrade --board=tegra2_aebl:x86-mario '
             '--to-csv=cros-aebl.csv chromeos\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--to-csv=cros_test-mario chromeos chromeos-dev chromeos-test\n'
             'Upgrade mode examples:\n'
-            '> cros_portage_upgrade --board=tegra2_aebl '
+            '> cros_portage_upgrade --board=tegra2_aebl:x86-mario '
             '--upgrade dbus\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--upgrade-deep gdata\n'
@@ -981,7 +974,7 @@ def main():
                     default=False,
                     help="Amend existing commit when doing upgrade.")
   parser.add_option('--board', dest='board', type='string', action='store',
-                    default=None, help="Target board")
+                    default=None, help="Target board(s), colon-separated")
   parser.add_option('--host', dest='host', action='store_true',
                     default=False,
                     help="Host target pseudo-board")
@@ -993,9 +986,6 @@ def main():
                     help="Path to root src directory [default: '%default']")
   parser.add_option('--to-csv', dest='csv_file', type='string', action='store',
                     default=None, help="File to write csv-formatted results to")
-  parser.add_option('--to-html', dest='html_file',
-                    type='string', action='store', default=None,
-                    help="File to write html-formatted results to")
   parser.add_option('--upgrade', dest='upgrade',
                     action='store_true', default=False,
                     help="Upgrade target package(s) only")
@@ -1035,13 +1025,10 @@ def main():
     parser.print_help()
     cros_lib.Die('Argument to --upstream must be a valid directory.')
 
-  # If --to-csv or --to-html given, verify file can be opened for write.
+  # If --to-csv given verify file can be opened for write.
   if options.csv_file and not os.access(options.csv_file, os.W_OK):
     parser.print_help()
     cros_lib.Die('Unable to open %s for writing.' % options.csv_file)
-  if options.html_file and not os.access(options.html_file, os.W_OK):
-    parser.print_help()
-    cros_lib.Die('Unable to open %s for writing.' % options.html_file)
 
   upgrader = Upgrader(options, args)
   upgrader.PreRunChecks()
@@ -1077,7 +1064,7 @@ def main():
   # way it won't come out for each board.  Base it on contents of final table.
   # Make verbose-dependent?
 
-  upgrader.WriteTableFiles(csv=options.csv_file, html=options.html_file)
+  upgrader.WriteTableFiles(csv=options.csv_file)
 
 
 if __name__ == '__main__':

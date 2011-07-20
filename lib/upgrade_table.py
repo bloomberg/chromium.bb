@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Perform various tasks related to updating Portage packages."""
+"""UpgradeTable class is used in Portage package upgrade process."""
 
 import logging
 import optparse
@@ -18,8 +18,7 @@ import tempfile
 import chromite.lib.table as table
 
 class UpgradeTable(table.Table):
-  """Class to represent upgrade data in memory, can be written to csv/html."""
-  # TODO(mtennant): Remove html output - it isn't used.
+  """Class to represent upgrade data in memory, can be written to csv."""
 
   # Column names.  Note that 'ARCH' is replaced with a real arch name when
   # these are accessed as attributes off an UpgradeTable object.
@@ -53,7 +52,7 @@ class UpgradeTable(table.Table):
   def __init__(self, arch, upgrade=False, name=None):
     self._arch = arch
 
-    # These constants serve two roles, for both csv and html table output:
+    # These constants serve two roles, for csv output:
     # 1) Restrict which column names are valid.
     # 2) Specify the order of those columns.
     columns = [self.COL_PACKAGE,
@@ -83,58 +82,3 @@ class UpgradeTable(table.Table):
   def GetArch(self):
     """Get the architecture associated with this UpgradeTable."""
     return self._arch
-
-  def WriteHTML(self, filehandle):
-    """Write table out as a custom html table to |filehandle|."""
-    # Basic HTML, up to and including start of table and table headers.
-    filehandle.write('<html>\n')
-    filehandle.write('  <table border="1" cellspacing="0" cellpadding="3">\n')
-    filehandle.write('    <caption>Portage Package Status</caption>\n')
-    filehandle.write('    <thead>\n')
-    filehandle.write('      <tr>\n')
-    filehandle.write('        <th>%s</th>\n' %
-             '</th>\n        <th>'.join(self._columns))
-    filehandle.write('      </tr>\n')
-    filehandle.write('    </thead>\n')
-    filehandle.write('    <tbody>\n')
-
-    # Now write out the rows.
-    for row in self._rows:
-      filehandle.write('      <tr>\n')
-      for col in self._columns:
-        val = row.get(col, "")
-
-        # Add color to the text in specific cases.
-        if val and col == self.COL_STATE:
-          # Add colors for state column.
-          if val == self.STATE_NEEDS_UPGRADE or val == self.STATE_UNKNOWN:
-            val = '<span style="color:red">%s</span>' % val
-          elif (val == self.STATE_NEEDS_UPGRADE_AND_DUPLICATED or
-                val == self.STATE_NEEDS_UPGRADE_AND_PATCHED):
-            val = '<span style="color:red">%s</span>' % val
-          elif val == self.STATE_CURRENT:
-            val = '<span style="color:green">%s</span>' % val
-        if val and col == self.COL_DEPENDS_ON:
-          # Add colors for dependencies column.  If a dependency is itself
-          # out of date, then make it red.
-          vallist = []
-          for cpv in val.split(' '):
-            # Get category/packagename from cpv, in order to look up row for
-            # the dependency.  Then see if that pkg is red in its own row.
-            catpkg = Upgrader._GetCatPkgFromCpv(cpv)
-            deprow = self.GetRowsByValue({self.COL_PACKAGE: catpkg})[0]
-            if (deprow[self.COL_STATE] == self.STATE_NEEDS_UPGRADE or
-                deprow[self.COL_STATE] == self.STATE_UNKNOWN):
-              vallist.append('<span style="color:red">%s</span>' % cpv)
-            else:
-              vallist.append(cpv)
-          val = ' '.join(vallist)
-
-        filehandle.write('        <td>%s</td>\n' % val)
-
-      filehandle.write('      </tr>\n')
-
-    # Finish the table and html
-    filehandle.write('    </tbody>\n')
-    filehandle.write('  </table>\n')
-    filehandle.write('</html>\n')
