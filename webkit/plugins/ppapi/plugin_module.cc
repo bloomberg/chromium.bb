@@ -7,16 +7,16 @@
 #include <set>
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
-#include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
@@ -105,10 +105,10 @@
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
-using ppapi::thunk::EnterResource;
-using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::TimeTicksToPPTimeTicks;
 using ppapi::TimeToPPTime;
+using ppapi::thunk::EnterResource;
+using ppapi::thunk::PPB_Graphics2D_API;
 
 namespace webkit {
 namespace ppapi {
@@ -336,23 +336,20 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Zoom_Thunk();
 
 #ifdef ENABLE_GPU
-  // This should really refer to switches::kDisable3DAPIs.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-3d-apis")) {
-    if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
-    if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_Context3D_Thunk();
-    if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
-    if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk();
-    if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
-      return PPB_OpenGLES_Impl::GetInterface();
-    if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_Surface3D_Thunk();
-    if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
-      return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
-  }
+  if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
+  if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Context3D_Thunk();
+  if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
+  if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk();
+  if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
+    return PPB_OpenGLES_Impl::GetInterface();
+  if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_Surface3D_Thunk();
+  if (strcmp(name, PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_LayerCompositor_Thunk();
 #endif  // ENABLE_GPU
 
 #ifdef ENABLE_FLAPPER_HACKS
