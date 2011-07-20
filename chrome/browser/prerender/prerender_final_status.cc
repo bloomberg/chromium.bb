@@ -43,6 +43,7 @@ const char* kFinalStatusNames[] = {
   "Fragment Mismatch",
   "SSL Client Certificate Requested",
   "Cache or History Cleared",
+  "Cancelled",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

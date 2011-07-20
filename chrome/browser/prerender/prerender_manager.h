@@ -98,6 +98,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual void DestroyPrerenderForRenderView(int process_id, int view_id,
                                              FinalStatus final_status);
 
+  // Cancels all active prerenders.
+  void CancelAllPrerenders();
+
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a prerendered version of the URL can be used,
   // and substitutes the prerendered RVH into the TabContents.  Returns

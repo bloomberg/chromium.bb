@@ -71,6 +71,10 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
   // BrowsingDataRemover deletes itself.
 }
 
+void CancelAllPrerenders(PrerenderManager* prerender_manager) {
+  prerender_manager->CancelAllPrerenders();
+}
+
 // Returns true if and only if the final status is one in which the prerendered
 // page should prerender correctly. The page still may not be used.
 bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
@@ -81,6 +85,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_CACHE_OR_HISTORY_CLEARED:
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
+    case FINAL_STATUS_CANCELLED:
       return true;
     default:
       return false;
@@ -559,10 +564,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
     GURL src_url = src_server->GetURL(replacement_path);
 
-    // This is needed to exit the event loop once the prerendered page has
-    // stopped loading or was cancelled.
     ASSERT_TRUE(prerender_manager());
     prerender_manager()->mutable_config().rate_limit_enabled = false;
+
+    // This is needed to exit the event loop once the prerendered page has
+    // stopped loading or was cancelled.
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(total_navigations,
@@ -1529,6 +1535,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
   // Make sure prerender history was not cleared.  Not a vital behavior, but
   // used to compare with PrerenderClearHistory test.
   EXPECT_EQ(1, GetHistoryLength());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CANCELLED,
+                   1);
+  // Post a task to cancel all the prerenders.
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   NewRunnableFunction(CancelAllPrerenders,
+                                                       prerender_manager()));
+  ui_test_utils::RunMessageLoop();
+  EXPECT_TRUE(GetPrerenderContents() == NULL);
 }
 
 }  // namespace prerender

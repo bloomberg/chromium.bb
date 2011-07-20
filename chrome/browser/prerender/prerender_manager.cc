@@ -171,6 +171,7 @@ struct PrerenderManager::PrerenderContentsData {
   PrerenderContentsData(PrerenderContents* contents, base::Time start_time)
       : contents_(contents),
         start_time_(start_time) {
+    CHECK(contents);
   }
 };
 
@@ -405,6 +406,15 @@ void PrerenderManager::DestroyPrerenderForRenderView(
   if (it != prerender_list_.end()) {
     PrerenderContents* prerender_contents = it->contents_;
     prerender_contents->Destroy(final_status);
+  }
+}
+
+void PrerenderManager::CancelAllPrerenders() {
+  DCHECK(CalledOnValidThread());
+  while (!prerender_list_.empty()) {
+    PrerenderContentsData data = prerender_list_.front();
+    DCHECK(data.contents_);
+    data.contents_->Destroy(FINAL_STATUS_CANCELLED);
   }
 }
 
@@ -811,6 +821,7 @@ void PrerenderManager::PeriodicCleanup() {
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
+    DCHECK(it->contents_);
     prerender_contents.push_back(it->contents_);
   }
   for (std::vector<PrerenderContents*>::iterator it =
