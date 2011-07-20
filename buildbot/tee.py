@@ -16,6 +16,8 @@ class Tee(object):
     self._file = file
     self._old_stdout = None
     self._old_stderr = None
+    self._old_stdout_fd = None
+    self._old_stderr_fd = None
     self._tee = None
 
   def start(self):
@@ -23,8 +25,15 @@ class Tee(object):
     # Flush and save old file descriptors.
     sys.stdout.flush()
     sys.stderr.flush()
-    self._old_stdout = os.dup(sys.stdout.fileno())
-    self._old_stderr = os.dup(sys.stdout.fileno())
+    self._old_stdout_fd = os.dup(sys.stdout.fileno())
+    self._old_stderr_fd = os.dup(sys.stderr.fileno())
+    # Save file objects
+    self._old_stdout = sys.stdout
+    self._old_stderr = sys.stderr
+
+    # Replace std[out|err] with unbuffered file objects
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
     # Create a tee subprocess and redirect stdout and stderr to it.
     self._tee = subprocess.Popen(['tee', self._file], stdin=subprocess.PIPE)
@@ -33,19 +42,16 @@ class Tee(object):
 
   def stop(self):
     """Restores old stdout and stderr handles and waits for tee proc to exit."""
-    sys.stdout.flush()
-    sys.stderr.flush()
-    self._tee.stdin.flush()
-
-    # Use os.close() to break the link from the sys.stdout file descriptor to
-    # the tee process's stdin.  Ditto for sys.stderr.  We don't want to call
-    # sys.std[out|err].close() because that will close the file descriptor.
-    # We still want to redirect the sys.std[out|err] fd to the console.
-    os.close(sys.stdout.fileno())
-    os.close(sys.stderr.fileno())
+    # Close unbuffered std[out|err] file objects, as well as the tee's stdin.
+    sys.stdout.close()
+    sys.stderr.close()
     self._tee.stdin.close()
 
+    # Restore file objects
+    sys.stdout = self._old_stdout
+    sys.stderr = self._old_stderr
+
     # Restore old file descriptors.
-    os.dup2(self._old_stdout, sys.stdout.fileno())
-    os.dup2(self._old_stderr, sys.stderr.fileno())
+    os.dup2(self._old_stdout_fd, sys.stdout.fileno())
+    os.dup2(self._old_stderr_fd, sys.stderr.fileno())
     self._tee.wait()
