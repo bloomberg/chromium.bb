@@ -2549,11 +2549,12 @@ nacl_env.Append(
     ####  ALPHABETICALLY SORTED ####
     ])
 
-non_browser_tests = [
+# These are tests that are worthwhile to run in both IRT and non-IRT variants.
+# The nacl_irt_test mode runs them in the IRT variants.
+irt_variant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
-    'tests/barebones/nacl.scons',
     'tests/blob_library_loading/nacl.scons',
     'tests/browser_dynamic_library/nacl.scons',
     'tests/browser_startup_time/nacl.scons',
@@ -2618,8 +2619,13 @@ non_browser_tests = [
     #### ALPHABETICALLY SORTED ####
     ]
 
-browser_tests = [
+# These are tests that are not worthwhile to run in an IRT variant.
+# In some cases, that's because they are browser tests which always
+# use the IRT.  In others, it's because they are special-case tests
+# that are incompatible with having an IRT loaded.
+nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
+    'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/earth/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
@@ -2655,7 +2661,7 @@ browser_tests = [
     #### ALPHABETICALLY SORTED ####
     ]
 
-nacl_env.Append(BUILD_SCONSCRIPTS=non_browser_tests + browser_tests)
+nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it
@@ -2882,7 +2888,7 @@ nacl_irt_test_env = nacl_env.Clone(
     INCLUDE_DIR = nacl_env.Dir('${INCLUDE_DIR}'),
     LIB_DIR = nacl_env.Dir('${LIB_DIR}'),
 
-    BUILD_SCONSCRIPTS = non_browser_tests
+    BUILD_SCONSCRIPTS = irt_variant_tests
     )
 nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')
