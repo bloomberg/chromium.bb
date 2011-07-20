@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -55,6 +56,7 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
+#include "net/base/cookie_monster.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -103,6 +105,48 @@ class ResetDefaultProxyConfigServiceTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(ResetDefaultProxyConfigServiceTask);
 };
 
+// Transfer the inital set of Profile cookies form the default profile.
+class TransferDefaultCookiesOnIOThreadTask : public Task {
+ public:
+  TransferDefaultCookiesOnIOThreadTask(
+      net::URLRequestContextGetter* default_context,
+      net::URLRequestContextGetter* new_context)
+      : default_context_(default_context),
+        new_context_(new_context) {}
+  virtual ~TransferDefaultCookiesOnIOThreadTask() {}
+
+  // Task override.
+  virtual void Run() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::CookieStore* default_store =
+        default_context_->GetURLRequestContext()->cookie_store();
+    net::CookieMonster* default_monster = default_store->GetCookieMonster();
+    default_monster->SetKeepExpiredCookies();
+    net::CookieStore* new_store =
+        new_context_->GetURLRequestContext()->cookie_store();
+    net::CookieMonster* new_monster = new_store->GetCookieMonster();
+
+    // Check that existing store does not already have some cookies.
+    // If it does, we are probably dealing with previously created profile
+    // and no transfer will be necessary.
+    // TOOD(zelidrag): Investigate perf impact of the next operation
+    // in case when we have a profile with bunch of cookies.
+    net::CookieList existing_cookies = new_monster->GetAllCookies();
+    if (existing_cookies.size())
+      return;
+
+    if (!new_monster->InitializeFrom(default_monster)) {
+      LOG(WARNING) << "Failed initial cookie transfer.";
+    }
+  }
+
+ private:
+  net::URLRequestContextGetter* default_context_;
+  net::URLRequestContextGetter* new_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransferDefaultCookiesOnIOThreadTask);
+};
+
 }  // namespace
 
 class LoginUtilsImpl : public LoginUtils,
@@ -117,42 +161,52 @@ class LoginUtilsImpl : public LoginUtils,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
-      LoginUtils::Delegate* delegate);
+      LoginUtils::Delegate* delegate) OVERRIDE;
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the incognito mode.
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url);
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
 
   // Invoked when the user is logging in for the first time, or is logging in as
   // a guest user.
-  virtual void SetFirstLoginPrefs(PrefService* prefs);
+  virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE;
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
-  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
+  virtual Authenticator* CreateAuthenticator(
+      LoginStatusConsumer* consumer) OVERRIDE;
 
   // Warms the url used by authentication.
-  virtual void PrewarmAuthentication();
+  virtual void PrewarmAuthentication() OVERRIDE;
 
   // Given the credentials try to exchange them for
   // full-fledged Google authentication cookies.
   virtual void FetchCookies(
       Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
 
   // Supply credentials for sync and others to use.
   virtual void FetchTokens(
       Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
 
   // Sets the current background view.
-  virtual void SetBackgroundView(chromeos::BackgroundView* background_view);
+  virtual void SetBackgroundView(
+      chromeos::BackgroundView* background_view) OVERRIDE;
 
   // Gets the current background view.
-  virtual chromeos::BackgroundView* GetBackgroundView();
+  virtual chromeos::BackgroundView* GetBackgroundView() OVERRIDE;
+
+  // Transfers cookies from the |default_profile| into the |new_profile|.
+  // If authentication was performed by an extension, then
+  // the set of cookies that was acquired through such that process will be
+  // automatically transfered into the profile. Returns true if cookie transfer
+  // was performed successfully.
+  virtual bool TransferDefaultCookies(Profile* default_profile,
+                                      Profile* new_profile) OVERRIDE;
 
   // ProfileManagerObserver implementation:
-  virtual void OnProfileCreated(Profile* profile);
+  virtual void OnProfileCreated(Profile* profile) OVERRIDE;
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -171,6 +225,7 @@ class LoginUtilsImpl : public LoginUtils,
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
+  scoped_refptr<Authenticator> authenticator_;
 
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
@@ -280,7 +335,20 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   // For existing users there's usually a pending online auth request.
   // Cookies will be fetched after it's is succeeded.
   if (!pending_requests_) {
-    FetchCookies(profile, credentials_);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kWebUIGaiaLogin)) {
+      // Transfer cookies from the profile that was used for authentication.
+      // This profile contains cookies that auth extension should have already
+      // put in place that will ensure that the newly created session is
+      // authenticated for the websites that work with the used authentication
+      // schema.
+      if (!TransferDefaultCookies(authenticator_->AuthenticationProfile(),
+                                  profile)) {
+        LOG(WARNING) << "Cookie transfer from the default profile failed!";
+      }
+    } else {
+      FetchCookies(profile, credentials_);
+    }
   }
 
   // Init extension event routers; this normally happens in browser_main
@@ -301,7 +369,12 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   // For existing users there's usually a pending online auth request.
   // Tokens will be fetched after it's is succeeded.
   if (!pending_requests_) {
-    FetchTokens(profile, credentials_);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kWebUIGaiaLogin)) {
+      // TODO(zelidrag): Find out what makes TokenService happy in this case.
+    } else {
+      FetchTokens(profile, credentials_);
+    }
   }
   btl->AddLoginTimeMarker("TokensGotten", false);
 
@@ -535,10 +608,13 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
+  if (!authenticator_.get()) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
-    return new ParallelAuthenticator(consumer);
+    authenticator_ = new ParallelAuthenticator(consumer);
   else
-    return new GoogleAuthenticator(consumer);
+    authenticator_ = new GoogleAuthenticator(consumer);
+  }
+  return authenticator_.get();
 }
 
 // We use a special class for this so that it can be safely leaked if we
@@ -588,6 +664,15 @@ void LoginUtilsImpl::SetBackgroundView(BackgroundView* background_view) {
 
 BackgroundView* LoginUtilsImpl::GetBackgroundView() {
   return background_view_;
+}
+
+bool LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,
+                                            Profile* profile) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          new TransferDefaultCookiesOnIOThreadTask(
+                              default_profile->GetRequestContext(),
+                              profile->GetRequestContext()));
+  return true;
 }
 
 LoginUtils* LoginUtils::Get() {

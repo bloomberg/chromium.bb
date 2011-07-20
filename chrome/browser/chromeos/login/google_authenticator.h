@@ -46,7 +46,8 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // of authentication cookies or a callback to consumer_->OnLoginFailure() with
   // an error message.
   // Returns true if the attempt gets sent successfully and false if not.
-  virtual bool CompleteLogin(const std::string& username,
+  virtual bool CompleteLogin(Profile* profile,
+                             const std::string& username,
                              const std::string& password);
 
   // Given a |username| and |password|, this method attempts to authenticate to

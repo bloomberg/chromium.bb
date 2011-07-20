@@ -71,6 +71,7 @@ bool ParallelAuthenticator::AuthenticateToLogin(
     const std::string& login_token,
     const std::string& login_captcha) {
   std::string canonicalized = Authenticator::Canonicalize(username);
+  auth_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(canonicalized,
                            password,
@@ -95,9 +96,11 @@ bool ParallelAuthenticator::AuthenticateToLogin(
   return true;
 }
 
-bool ParallelAuthenticator::CompleteLogin(const std::string& username,
+bool ParallelAuthenticator::CompleteLogin(Profile* profile,
+                                          const std::string& username,
                                           const std::string& password) {
   std::string canonicalized = Authenticator::Canonicalize(username);
+  auth_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(canonicalized,
                            HashPassword(password),

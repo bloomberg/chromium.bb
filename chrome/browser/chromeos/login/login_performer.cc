@@ -27,6 +27,10 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "net/base/cookie_monster.h"
+#include "net/base/cookie_store.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -150,9 +154,15 @@ void LoginPerformer::OnLoginSuccess(
 void LoginPerformer::OnProfileCreated(Profile* profile) {
   CHECK(profile);
 
-  LoginUtils::Get()->FetchCookies(profile, credentials_);
-  LoginUtils::Get()->FetchTokens(profile, credentials_);
-  credentials_ = GaiaAuthConsumer::ClientLoginResult();
+  if (auth_mode_ == AUTH_MODE_INTERNAL) {
+    // Fetch cookies, tokens for the loaded profile.
+    LoginUtils::Get()->FetchCookies(profile, credentials_);
+    LoginUtils::Get()->FetchTokens(profile, credentials_);
+    credentials_ = GaiaAuthConsumer::ClientLoginResult();
+  } else {
+    Profile* default_profile = authenticator_->AuthenticationProfile();
+    LoginUtils::Get()->TransferDefaultCookies(default_profile, profile);
+  }
 
   // Don't unlock screen if it was locked while we're waiting
   // for initial online auth.
@@ -516,12 +526,14 @@ void LoginPerformer::ResolveScreenUnlocked() {
 void LoginPerformer::StartLoginCompletion() {
   DVLOG(1) << "Login completion started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
+  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::CompleteLogin,
+                        profile,
                         username_,
                         password_));
 

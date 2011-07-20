@@ -1693,6 +1693,43 @@ TEST_F(CookieMonsterTest, DeleteCookieByName) {
   }
 }
 
+TEST_F(CookieMonsterTest, InitializeFromCookieMonster) {
+  scoped_refptr<CookieMonster> cm_1(new CookieMonster(NULL, NULL));
+  CookieOptions options;
+
+  EXPECT_TRUE(SetCookieWithOptions(cm_1.get(), url_google_foo_,
+                                               "A1=B; path=/foo;",
+                                               options));
+  EXPECT_TRUE(SetCookieWithOptions(cm_1.get(), url_google_bar_,
+                                               "A2=D; path=/bar;",
+                                               options));
+  EXPECT_TRUE(SetCookieWithOptions(cm_1.get(), url_google_,
+                                               "A3=F;",
+                                               options));
+
+  scoped_refptr<CookieMonster> cm_2(new CookieMonster(NULL, NULL));
+  ASSERT_TRUE(cm_2->InitializeFrom(cm_1.get()));
+  CookieList cookies = cm_2->GetAllCookies();
+
+  size_t expected_size = 3;
+  EXPECT_EQ(expected_size, cookies.size());
+
+  CookieList::iterator it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("A1", it->Name());
+  EXPECT_EQ("/foo", it->Path());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("A2", it->Name());
+  EXPECT_EQ("/bar", it->Path());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("A3", it->Name());
+  EXPECT_EQ("/", it->Path());
+}
+
+
 // Test that overwriting persistent cookies deletes the old one from the
 // backing store.
 TEST_F(CookieMonsterTest, OverwritePersistentCookie) {

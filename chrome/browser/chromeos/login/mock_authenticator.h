@@ -31,7 +31,9 @@ class MockAuthenticator : public Authenticator {
         expected_password_(expected_password) {
   }
 
-  virtual bool CompleteLogin(const std::string& username, const std::string& password);
+  virtual bool CompleteLogin(Profile* profile,
+                             const std::string& username,
+                             const std::string& password);
 
   // Returns true after posting task to UI thread to call OnLoginSuccess().
   // This is called on the FILE thread now, so we need to do this.
@@ -111,6 +113,8 @@ class MockLoginUtils : public LoginUtils {
       const CommandLine& base_command_line,
       CommandLine* command_line);
 
+  virtual bool TransferDefaultCookies(Profile* default_profile,
+                                      Profile* new_profile);
  private:
   std::string expected_username_;
   std::string expected_password_;

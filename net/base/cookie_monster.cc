@@ -611,6 +611,25 @@ void CookieMonster::SetCookieWithDetailsAsync(
     callback.Run(success_);
 }
 
+bool CookieMonster::InitializeFrom(CookieMonster* cookie_monster) {
+  net::CookieList list = cookie_monster->GetAllCookies();
+
+  base::AutoLock autolock(lock_);
+  InitIfNecessary();
+  for (net::CookieList::const_iterator iter = list.begin();
+           iter != list.end(); ++iter) {
+    scoped_ptr<net::CookieMonster::CanonicalCookie> cookie;
+    cookie.reset(new net::CookieMonster::CanonicalCookie(*iter));
+    net::CookieOptions options;
+    options.set_include_httponly();
+    if (!SetCanonicalCookie(&cookie, cookie->CreationDate(),
+                                             options)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 CookieList CookieMonster::GetAllCookies() {
   base::AutoLock autolock(lock_);
   InitIfNecessary();

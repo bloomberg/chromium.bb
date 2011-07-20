@@ -117,9 +117,11 @@ void GoogleAuthenticator::ClearClientLoginAttempt() {
   login_token_.clear();
   login_captcha_.clear();
 }
-bool GoogleAuthenticator::CompleteLogin(const std::string& username,
+bool GoogleAuthenticator::CompleteLogin(Profile* profile,
+                                        const std::string& username,
                                         const std::string& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  auth_profile_ = profile;
   username_.assign(Canonicalize(username));
   ascii_hash_.assign(HashPassword(password));
 
@@ -138,6 +140,7 @@ bool GoogleAuthenticator::AuthenticateToLogin(
     const std::string& login_token,
     const std::string& login_captcha) {
   unlock_ = false;
+  auth_profile_ = profile;
 
   // TODO(cmasone): Figure out how to parallelize fetch, username/password
   // processing without impacting testability.

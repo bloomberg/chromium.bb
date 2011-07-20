@@ -160,6 +160,11 @@ class NET_API CookieMonster : public CookieStore {
                                  bool secure, bool http_only,
                                  const SetCookiesCallback& callback);
 
+
+  // Helper function that adds all cookies from |cookie_monster| into this
+  // instance.
+  bool InitializeFrom(CookieMonster* cookie_monster);
+
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
   // The returned cookies are ordered by longest path, then by earliest
@@ -460,7 +465,6 @@ class NET_API CookieMonster : public CookieStore {
                                            const std::string& cookie_line,
                                            const base::Time& creation_time,
                                            const CookieOptions& options);
-
 
   // Helper function that sets a canonical cookie, deleting equivalents and
   // performing garbage collection.

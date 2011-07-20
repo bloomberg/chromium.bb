@@ -32,7 +32,8 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Given externally authenticated |username| and |password|, this method
   // attempts to complete authentication process.
   // Returns true if the attempt gets sent successfully and false if not.
-  virtual bool CompleteLogin(const std::string& username,
+  virtual bool CompleteLogin(Profile* profile,
+                             const std::string& username,
                              const std::string& password) = 0;
 
   // Given a |username| and |password|, this method attempts to authenticate
@@ -92,6 +93,10 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
                          const std::string& login_token,
                          const std::string& login_captcha) = 0;
 
+  // Profile (usually off the record ) that was used to perform the last
+  // authentication process.
+  Profile* AuthenticationProfile() { return auth_profile_; }
+
   // Perform basic canonicalization of |email_address|, taking into account
   // that gmail does not consider '.' or caps inside a username to matter.
   // It also ignores everything after a '+'.
@@ -101,6 +106,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
  protected:
   LoginStatusConsumer* consumer_;
+  Profile* auth_profile_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Authenticator);

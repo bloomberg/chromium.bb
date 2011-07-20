@@ -123,6 +123,7 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
+
   typedef enum AuthorizationMode {
     // Authorization performed internally by Chrome.
     AUTH_MODE_INTERNAL,
@@ -204,7 +205,7 @@ class LoginPerformer : public LoginStatusConsumer,
 
   GaiaAuthConsumer::ClientLoginResult credentials_;
 
-  // Current authorization mode type.
+  // Authorization mode type.
   AuthorizationMode auth_mode_;
 
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;

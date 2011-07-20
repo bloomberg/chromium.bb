@@ -18,7 +18,7 @@ class LoginStatusConsumer;
 const char Authenticator::kSpecialCaseDomain[] = "gmail.com";
 
 Authenticator::Authenticator(LoginStatusConsumer* consumer)
-    : consumer_(consumer) {
+    : consumer_(consumer), auth_profile_(NULL) {
 }
 
 Authenticator::~Authenticator() {}

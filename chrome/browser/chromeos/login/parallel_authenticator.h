@@ -80,7 +80,8 @@ class ParallelAuthenticator : public Authenticator,
   virtual ~ParallelAuthenticator();
 
   // Authenticator overrides.
-  virtual bool CompleteLogin(const std::string& username,
+  virtual bool CompleteLogin(Profile* profile,
+                             const std::string& username,
                              const std::string& password) OVERRIDE;
 
   // Given a |username| and |password|, this method attempts to authenticate to

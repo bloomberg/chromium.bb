@@ -25,7 +25,8 @@ bool MockAuthenticator::AuthenticateToLogin(Profile* profile,
   return false;
 }
 
-bool MockAuthenticator::CompleteLogin(const std::string& username,
+bool MockAuthenticator::CompleteLogin(Profile* profile,
+                                      const std::string& username,
                                       const std::string& password) {
   return false;
 }
@@ -104,6 +105,11 @@ std::string MockLoginUtils::GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   return std::string();
+}
+
+bool MockLoginUtils::TransferDefaultCookies(Profile* default_profile,
+                                                   Profile* new_profile) {
+  return true;
 }
 
 }  // namespace chromeos
