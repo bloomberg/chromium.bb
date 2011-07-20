@@ -1557,6 +1557,10 @@ GtkWindow* BrowserWindowGtk::GetBrowserWindowForXID(XID xid) {
   return (iter != BrowserWindowGtk::xid_map_.end()) ? iter->second : NULL;
 }
 
+GtkWidget* BrowserWindowGtk::titlebar_widget() const {
+  return titlebar_->widget();
+}
+
 // static
 void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
   bool custom_frame_default = false;

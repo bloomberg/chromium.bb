@@ -146,9 +146,6 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Paints the tab into |canvas|.
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Paints the tab into a SkBitmap.
-  virtual SkBitmap PaintBitmap();
-
   // Paints the tab, and keeps the result server-side. The returned surface must
   // be freed with cairo_surface_destroy().
   virtual cairo_surface_t* PaintToSurface();

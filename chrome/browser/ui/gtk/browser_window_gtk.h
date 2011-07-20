@@ -196,6 +196,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() const { return window_; }
 
+  GtkWidget* titlebar_widget() const;
+
   BrowserToolbarGtk* GetToolbar() { return toolbar_.get(); }
 
   gfx::Rect bounds() const { return bounds_; }

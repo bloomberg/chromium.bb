@@ -651,12 +651,6 @@ void TabRendererGtk::Paint(gfx::Canvas* canvas) {
     PaintIcon(canvas);
 }
 
-SkBitmap TabRendererGtk::PaintBitmap() {
-  gfx::CanvasSkia canvas(width(), height(), false);
-  Paint(&canvas);
-  return canvas.ExtractBitmap();
-}
-
 cairo_surface_t* TabRendererGtk::PaintToSurface() {
   gfx::CanvasSkia canvas(width(), height(), false);
   Paint(&canvas);

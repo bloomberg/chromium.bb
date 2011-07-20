@@ -634,7 +634,7 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
 
     // Note: we want to exclude the application popup window.
     if (browser_window_->browser()->is_app() &&
-        !browser_window_->browser()->is_type_popup()) {
+        browser_window_->browser()->is_type_popup()) {
       SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.
@@ -980,8 +980,7 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
 }
 
 bool BrowserTitlebar::IsTypePanel() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-      browser_window_->browser()->is_type_panel();
+  return browser_window_->browser()->is_type_panel();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

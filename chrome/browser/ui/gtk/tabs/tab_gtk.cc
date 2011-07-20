@@ -302,7 +302,8 @@ void TabGtk::StartDragging(gfx::Point drag_offset) {
   gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE,
                  1,  // Drags are always initiated by the left button.
                  last_mouse_down_);
-
+  // gtk_drag_begin adds a reference to list, so unref it here.
+  gtk_target_list_unref(list);
   delegate_->MaybeStartDrag(this, drag_offset);
 }
 
