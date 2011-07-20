@@ -4,6 +4,7 @@
 
 #include "webkit/glue/webvideoframe_impl.h"
 
+#include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
@@ -43,13 +44,8 @@ COMPILE_ASSERT_MATCHING_ENUM(FormatNV12, NV12);
 COMPILE_ASSERT_MATCHING_ENUM(FormatEmpty, EMPTY);
 COMPILE_ASSERT_MATCHING_ENUM(FormatASCII, ASCII);
 
-COMPILE_ASSERT_MATCHING_ENUM(SurfaceTypeSystemMemory, TYPE_SYSTEM_MEMORY);
-// TODO(hclam): Add checks for newly added surface types like GL texture and
-// D3D texture.
-
+// TODO(scherkus): remove WebVideoFrame::SurfaceType from upstream WebKit.
 WebVideoFrame::SurfaceType WebVideoFrameImpl::surfaceType() const {
-  if (video_frame_.get())
-    return static_cast<WebVideoFrame::SurfaceType>(video_frame_->type());
   return WebVideoFrame::SurfaceTypeSystemMemory;
 }
 
@@ -89,9 +85,9 @@ const void* WebVideoFrameImpl::data(unsigned plane) const {
   return NULL;
 }
 
+// TODO(scherkus): remove WebVideoFrame::texture() from upstream WebKit.
 unsigned WebVideoFrameImpl::texture(unsigned plane) const {
-  if (video_frame_.get())
-    return video_frame_->gl_texture(plane);
+  NOTIMPLEMENTED();
   return 0;
 }
 

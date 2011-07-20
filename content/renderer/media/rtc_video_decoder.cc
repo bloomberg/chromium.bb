@@ -59,8 +59,6 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   media_format_.SetAsInteger(MediaFormat::kHeight, height_);
   media_format_.SetAsInteger(MediaFormat::kSurfaceType,
                              static_cast<int>(VideoFrame::YV12));
-  media_format_.SetAsInteger(MediaFormat::kSurfaceFormat,
-                             static_cast<int>(VideoFrame::TYPE_SYSTEM_MEMORY));
 
   state_ = kNormal;
 

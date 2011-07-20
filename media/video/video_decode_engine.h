@@ -21,7 +21,6 @@ struct PipelineStatistics;
 
 struct VideoStreamInfo {
   VideoFrame::Format surface_format;
-  VideoFrame::SurfaceType surface_type;
 
   // Can be different with container's value.
   uint32 surface_width;

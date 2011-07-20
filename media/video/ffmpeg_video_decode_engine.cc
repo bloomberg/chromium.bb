@@ -103,7 +103,6 @@ void FFmpegVideoDecodeEngine::Initialize(
   VideoCodecInfo info;
   info.success = false;
   info.provides_buffers = true;
-  info.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
   info.stream_info.surface_format = GetSurfaceFormat();
   info.stream_info.surface_width = config.surface_width();
   info.stream_info.surface_height = config.surface_height();
