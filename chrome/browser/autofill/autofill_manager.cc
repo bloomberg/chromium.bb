@@ -331,42 +331,6 @@ void CheckForPopularForms(const std::vector<FormStructure*>& forms,
   }
 }
 
-// A substantial number of queries to the server include 100 or more form
-// fields.  The server ignores such requests, as they are almost certainly not
-// relevant.  If we see such a query, present an infobar prompting the user to
-// send Google Feedback identifying these forms.  Only executes if the
-// appropriate flag is set in about:flags.
-const size_t kLargeQuerySize = 100;
-
-void CheckForLargeQuery(const std::vector<FormStructure*>& forms,
-                        TabContentsWrapper* tab_contents_wrapper,
-                        TabContents* tab_contents) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableAutofillFeedback))
-    return;
-
-  size_t num_fields = 0;
-  std::string url;
-  for (std::vector<FormStructure*>::const_iterator it = forms.begin();
-       it != forms.end();
-       ++it) {
-    num_fields += (*it)->field_count();
-    url = (*it)->source_url().spec();
-  }
-
-  if (num_fields >= kLargeQuerySize) {
-    string16 text =
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_FEEDBACK_INFOBAR_TEXT);
-    string16 link =
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_FEEDBACK_INFOBAR_LINK_TEXT);
-    std::string message =
-        l10n_util::GetStringFUTF8(IDS_AUTOFILL_FEEDBACK_LARGE_QUERY_MESSAGE,
-                                  UTF8ToUTF16(url));
-
-    tab_contents_wrapper->AddInfoBar(
-        new AutofillFeedbackInfoBarDelegate(tab_contents, text, link, message));
-  }
-}
-
 }  // namespace
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
@@ -1146,9 +1110,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     else
       non_queryable_forms.push_back(form_structure.release());
   }
-
-  CheckForLargeQuery(form_structures_.get(), tab_contents_wrapper_,
-                     tab_contents());
 
   // If none of the forms were parsed, no use querying the server.
   if (!form_structures_.empty() && !disable_download_manager_requests_)
