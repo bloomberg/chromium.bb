@@ -109,8 +109,8 @@ cr.define('print_preview', function() {
       this.showHideCollateOption_();
 
       if (!hasPendingPreviewRequest) {
-        updatePrintButtonState();
-        updatePrintSummary();
+        cr.dispatchSimpleEvent(document, 'updateSummary');
+        cr.dispatchSimpleEvent(document, 'updatePrintButton');
       }
     },
 
@@ -123,8 +123,8 @@ cr.define('print_preview', function() {
       this.updateButtonsState_();
       this.showHideCollateOption_();
       if (!hasPendingPreviewRequest) {
-        updatePrintButtonState();
-        updatePrintSummary();
+        cr.dispatchSimpleEvent(document, 'updateSummary');
+        cr.dispatchSimpleEvent(document, 'updatePrintButton');
       }
     },
 
@@ -138,7 +138,7 @@ cr.define('print_preview', function() {
       this.decrementButton_.onclick = this.onDecrementButtonClicked_.bind(this);
       this.twoSidedCheckbox_.onclick = function() {
         if (!hasPendingPreviewRequest)
-          updatePrintSummary();
+          cr.dispatchSimpleEvent(document, 'updateSummary');
       }
       document.addEventListener('PDFLoaded',
                                 this.updateButtonsState_.bind(this));

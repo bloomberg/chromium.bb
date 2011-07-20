@@ -37,7 +37,7 @@ var hasPendingPreviewRequest = false;
 var lastPreviewRequestID = -1;
 
 // True when a pending print file request exists.
-var hasPendingPrintFileRequest = false;
+var hasPendingPrintDocumentRequest = false;
 
 // True when preview tab is hidden.
 var isTabHidden = false;
@@ -66,8 +66,6 @@ var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
 function onLoad() {
   cr.enablePlatformSpecificCSSRules();
 
-  $('cancel-button').addEventListener('click', handleCancelButtonClick);
-
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
     displayErrorMessageWithButton(localStrings.getString('noPlugin'),
@@ -77,16 +75,16 @@ function onLoad() {
     return;
   }
 
-  $('print-button').focus();
   $('system-dialog-link').addEventListener('click', onSystemDialogLinkClicked);
   $('mainview').parentElement.removeChild($('dummy-viewer'));
 
   $('printer-list').disabled = true;
-  $('print-button').onclick = printFile;
 
+  printHeader = print_preview.PrintHeader.getInstance();
   pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
   layoutSettings = print_preview.LayoutSettings.getInstance();
+  printHeader.addEventListeners();
   pageSettings.addEventListeners();
   copiesSettings.addEventListeners();
   layoutSettings.addEventListeners();
@@ -129,13 +127,6 @@ function disableInputElementsInSidebar() {
   var els = $('sidebar').querySelectorAll('input, button, select');
   for (var i = 0; i < els.length; i++)
     els[i].disabled = true;
-}
-
-/**
- * Asks the browser to close the preview tab.
- */
-function handleCancelButtonClick() {
-  chrome.send('closePrintPreviewTab');
 }
 
 /**
@@ -303,6 +294,17 @@ function isColor() {
 }
 
 /**
+ * Checks whether the specified settings are valid.
+ *
+ * @return {boolean} true if settings are valid, false if not.
+ */
+function areSettingsValid() {
+  return pageSettings.isPageSelectionValid() &&
+      (copiesSettings.isValid() ||
+       getSelectedPrinterName() == PRINT_TO_PDF);
+}
+
+/**
  * Creates an object based on the values in the printer settings.
  *
  * @return {Object} Object containing print job settings.
@@ -353,48 +355,45 @@ function getSelectedPrinterName() {
 }
 
 /**
- * Asks the browser to print the preview PDF based on current print settings.
- * If the preview is still loading, printPendingFile() will get called once
- * the preview loads.
+ * Asks the browser to print the preview PDF based on current print
+ * settings. If the preview is still loading, printPendingFile() will get
+ * called once the preview loads.
  */
-function printFile() {
-  hasPendingPrintFileRequest = hasPendingPreviewRequest;
+function requestToPrintDocument() {
+  hasPendingPrintDocumentRequest = hasPendingPreviewRequest;
   var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
 
-  if (hasPendingPrintFileRequest) {
+  if (hasPendingPrintDocumentRequest) {
     if (printToPDF) {
       // TODO(thestig) disable controls here.
-    } else {
-      isTabHidden = true;
-      chrome.send('hidePreview');
-    }
+     } else {
+       isTabHidden = true;
+       chrome.send('hidePreview');
+     }
     return;
   }
 
   if (printToPDF) {
-    sendPrintFileRequest();
+    sendPrintDocumentRequest();
   } else {
-    $('print-button').classList.add('loading');
-    $('cancel-button').classList.add('loading');
-    $('print-summary').innerHTML = localStrings.getString('printing');
     removeEventListeners();
-    window.setTimeout(function() { sendPrintFileRequest(); }, 1000);
+    window.setTimeout(function() { sendPrintDocumentRequest(); }, 1000);
   }
 }
 
 /**
- * Asks the browser to print the pending preview PDF that just finished loading.
+ * Asks the browser to print the pending preview PDF that just finished
+ * loading.
  */
-function printPendingFile() {
-  hasPendingPrintFileRequest = false;
+function requestToPrintPendingDocument() {
+  hasPendingPrintDocumentRequest = false;
 
-  if ($('print-button').disabled) {
+  if (!areSettingsValid()) {
     if (isTabHidden)
       cancelPendingPrintRequest();
     return;
   }
-
-  sendPrintFileRequest();
+  sendPrintDocumentRequest();
 }
 
 /**
@@ -407,7 +406,7 @@ function cancelPendingPrintRequest() {
 /**
  * Sends a message to initiate print workflow.
  */
-function sendPrintFileRequest() {
+function sendPrintDocumentRequest() {
   var printerList = $('printer-list');
   var printer = printerList[printerList.selectedIndex];
   chrome.send('saveLastPrinter', [printer.textContent,
@@ -789,12 +788,12 @@ function updatePrintPreview(jobTitle,
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
   createPDFPlugin(previewUid);
-  updatePrintSummary();
-  updatePrintButtonState();
+  cr.dispatchSimpleEvent(document, 'updateSummary');
+  cr.dispatchSimpleEvent(document, 'updatePrintButton');
   addEventListeners();
 
-  if (hasPendingPrintFileRequest)
-    printPendingFile();
+  if (hasPendingPrintDocumentRequest)
+    requestToPrintPendingDocument();
 }
 
 /**
@@ -858,78 +857,7 @@ function checkCompatiblePluginExists() {
           dummyPlugin.removePrintButton);
 }
 
-/**
- * Updates the state of print button depending on the user selection.
- * The button is enabled only when the following conditions are true.
- * 1) The selected page ranges are valid.
- * 2) The number of copies is valid (if applicable).
- */
-function updatePrintButtonState() {
-  if (showingSystemDialog)
-    return;
-
-  var settingsValid = pageSettings.isPageSelectionValid() &&
-      (copiesSettings.isValid() || getSelectedPrinterName() == PRINT_TO_PDF);
-  $('print-button').disabled = !settingsValid;
-}
-
 window.addEventListener('DOMContentLoaded', onLoad);
-
-/**
- * Updates the print summary based on the currently selected user options.
- *
- */
-function updatePrintSummary() {
-  var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
-  var copies = printToPDF ? 1 : copiesSettings.numberOfCopies;
-  var printSummary = $('print-summary');
-
-  if (!printToPDF && !copiesSettings.isValid()) {
-    printSummary.innerHTML = localStrings.getString('invalidNumberOfCopies');
-    return;
-  }
-
-  if (!pageSettings.isPageSelectionValid()) {
-    printSummary.innerHTML = '';
-    return;
-  }
-
-  var pageSet = pageSettings.selectedPagesSet;
-  var numOfSheets = pageSet.length;
-  var summaryLabel = localStrings.getString('printPreviewSheetsLabelSingular');
-  var numOfPagesText = '';
-  var pagesLabel = localStrings.getString('printPreviewPageLabelPlural');
-
-  if (printToPDF)
-    summaryLabel = localStrings.getString('printPreviewPageLabelSingular');
-
-  if (!printToPDF && copiesSettings.twoSidedCheckbox.checked)
-    numOfSheets = Math.ceil(numOfSheets / 2);
-  numOfSheets *= copies;
-
-  if (numOfSheets > 1) {
-    if (printToPDF)
-      summaryLabel = pagesLabel;
-    else
-      summaryLabel = localStrings.getString('printPreviewSheetsLabelPlural');
-  }
-
-  var html = '';
-  if (pageSet.length * copies != numOfSheets) {
-    numOfPagesText = pageSet.length * copies;
-    html = localStrings.getStringF('printPreviewSummaryFormatLong',
-                                   '<b>' + numOfSheets + '</b>',
-                                   '<b>' + summaryLabel + '</b>',
-                                   numOfPagesText, pagesLabel);
-  } else
-    html = localStrings.getStringF('printPreviewSummaryFormatShort',
-                                   '<b>' + numOfSheets + '</b>',
-                                   '<b>' + summaryLabel + '</b>');
-
-  // Removing extra spaces from within the string.
-  html = html.replace(/\s{2,}/g, ' ');
-  printSummary.innerHTML = html;
-}
 
 /**
  * Sets the default values and sends a request to regenerate preview data.

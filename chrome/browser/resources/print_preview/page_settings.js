@@ -240,8 +240,8 @@ cr.define('print_preview', function() {
      */
     onSelectedPagesTextfieldChanged: function() {
       this.validateSelectedPages_();
-      updatePrintButtonState();
-      updatePrintSummary();
+      cr.dispatchSimpleEvent(document, 'updateSummary');
+      cr.dispatchSimpleEvent(document, 'updatePrintButton');
     },
 
     /**
@@ -259,8 +259,8 @@ cr.define('print_preview', function() {
       // invalid entry in the page selection textfield still requires updating
       // the print summary and print button.
       if (!this.isPageSelectionValid() || !this.hasPageSelectionChanged_()) {
-        updatePrintButtonState();
-        updatePrintSummary();
+        cr.dispatchSimpleEvent(document, 'updateSummary');
+        cr.dispatchSimpleEvent(document, 'updatePrintButton');
         return;
       }
       this.previouslySelectedPages_ = this.selectedPagesSet;
@@ -294,7 +294,7 @@ cr.define('print_preview', function() {
     onSelectedPagesTextfieldBlur_: function() {
       this.selectedPagesRadioButton.checked = true;
       this.validateSelectedPages_();
-      updatePrintButtonState();
+      cr.dispatchSimpleEvent(document, 'updatePrintButton');
     },
 
     /**
@@ -327,7 +327,7 @@ cr.define('print_preview', function() {
     addEventListeners: function() {
       this.allPagesRadioButton.onclick = function() {
         if (hasPendingPreviewRequest)
-          updatePrintButtonState();
+          cr.dispatchSimpleEvent(document, 'updatePrintButton');
         else
           this.onSelectedPagesMayHaveChanged_();
       }.bind(this);
@@ -353,7 +353,7 @@ cr.define('print_preview', function() {
 
         if (hasPendingPreviewRequest) {
           this.validateSelectedPages_();
-          updatePrintButtonState();
+          cr.dispatchSimpleEvent(document, 'updatePrintButton');
         } else {
           clearTimeout(this.timerId_);
           this.onSelectedPagesMayHaveChanged_();
