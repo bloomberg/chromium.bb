@@ -186,7 +186,7 @@ bool AutofillDownloadManager::StartRequest(
     const std::string& form_xml,
     const FormRequestData& request_data) {
   net::URLRequestContextGetter* request_context =
-      Profile::GetDefaultRequestContext();
+      Profile::Deprecated::GetDefaultRequestContext();
   // Check if default request context is NULL: this very rarely happens,
   // I think, this could happen only if user opens chrome with some pages
   // loading the forms immediately; I cannot reproduce this even in that

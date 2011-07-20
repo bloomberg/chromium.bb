@@ -1268,7 +1268,8 @@ void MetricsService::PrepareFetchWithPendingLog() {
   current_fetch_.reset(new URLFetcher(GURL(WideToUTF16(server_url_)),
                                       URLFetcher::POST,
                                       this));
-  current_fetch_->set_request_context(Profile::GetDefaultRequestContext());
+  current_fetch_->set_request_context(
+      Profile::Deprecated::GetDefaultRequestContext());
   current_fetch_->set_upload_data(kMetricsType, compressed_log_);
 }
 

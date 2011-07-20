@@ -222,7 +222,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
     // server to send the data and inform the delegate.
     delegate_->DidStartReceivingAudio(caller_id_);
     request_.reset(new SpeechRecognitionRequest(
-        Profile::GetDefaultRequestContext(), this));
+        Profile::Deprecated::GetDefaultRequestContext(), this));
     request_->Start(language_, grammar_, hardware_info_, origin_url_,
                     encoder_->mime_type());
   }

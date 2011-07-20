@@ -68,4 +68,6 @@ class NewTabPageSyncHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(NewTabPageSyncHandler);
 };
 
+bool IsGoogleGAIACookieInstalled();
+
 #endif  // CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_PAGE_SYNC_HANDLER_H_

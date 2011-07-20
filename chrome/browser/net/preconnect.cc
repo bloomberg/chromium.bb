@@ -37,7 +37,8 @@ void PreconnectOnIOThread(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation,
     int count) {
-  net::URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+  net::URLRequestContextGetter* getter =
+      Profile::Deprecated::GetDefaultRequestContext();
   if (!getter)
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {

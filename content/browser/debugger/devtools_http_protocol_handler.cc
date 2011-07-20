@@ -182,7 +182,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   }
 
   // Proxy static files from chrome-devtools://devtools/*.
-  if (!Profile::GetDefaultRequestContext()) {
+  if (!Profile::Deprecated::GetDefaultRequestContext()) {
     server_->Send404(connection_id);
     return;
   }
@@ -211,7 +211,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   DevToolsUI::RegisterDevToolsDataSource();
   Bind(request, connection_id);
   request->set_context(
-      Profile::GetDefaultRequestContext()->GetURLRequestContext());
+      Profile::Deprecated::GetDefaultRequestContext()->GetURLRequestContext());
   request->Start();
 }
 

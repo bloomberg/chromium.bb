@@ -206,7 +206,8 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxy(
       &NetworkProxyLibrary::NotifyProxyResolved, request);
 
   // Retrieve ProxyService from profile's request context.
-  net::URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+  net::URLRequestContextGetter* getter =
+      Profile::Deprecated::GetDefaultRequestContext();
   net::ProxyService* proxy_service = NULL;
   if (getter)
     proxy_service = getter->GetURLRequestContext()->proxy_service();
@@ -311,4 +312,3 @@ LibCrosServiceLibrary* LibCrosServiceLibrary::GetImpl(bool stub) {
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::LibCrosServiceLibraryImpl);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(
     chromeos::LibCrosServiceLibraryImpl::NetworkProxyLibrary);
-

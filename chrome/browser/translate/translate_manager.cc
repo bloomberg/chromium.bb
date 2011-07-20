@@ -59,7 +59,7 @@ namespace {
 // mr Marathi
 // ta Tamil
 // te Telugu
-const char* kSupportedLanguages[] = {
+const char* const kSupportedLanguages[] = {
     "af",     // Afrikaans
     "az",     // Azerbaijani
     "sq",     // Albanian
@@ -721,7 +721,7 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
   language_list_request_pending_.reset(URLFetcher::Create(
       1, GURL(kLanguageListFetchURL), URLFetcher::GET, this));
   language_list_request_pending_->set_request_context(
-      Profile::GetDefaultRequestContext());
+      Profile::Deprecated::GetDefaultRequestContext());
   language_list_request_pending_->set_max_retries(kMaxRetryLanguageListFetch);
   language_list_request_pending_->Start();
 }
@@ -738,7 +738,7 @@ void TranslateManager::RequestTranslateScript() {
   translate_script_request_pending_.reset(URLFetcher::Create(
       0, GURL(kTranslateScriptURL), URLFetcher::GET, this));
   translate_script_request_pending_->set_request_context(
-      Profile::GetDefaultRequestContext());
+      Profile::Deprecated::GetDefaultRequestContext());
   translate_script_request_pending_->set_extra_request_headers(
       kTranslateScriptHeader);
   translate_script_request_pending_->Start();

@@ -45,7 +45,7 @@ void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
   PluginDownloadUrlHelper* download_url_helper =
       new PluginDownloadUrlHelper(url, caller_window, NULL);
   download_url_helper->InitiateDownload(
-      Profile::GetDefaultRequestContext()->GetURLRequestContext());
+      Profile::Deprecated::GetDefaultRequestContext()->GetURLRequestContext());
 }
 #endif
 

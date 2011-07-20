@@ -80,6 +80,8 @@ const char kSwitchFormatString[] = " --%s=\"%s\"";
 // User name which is used in the Guest session.
 const char kGuestUserName[] = "";
 
+}  // namespace
+
 // Resets the proxy configuration service for the default request context.
 class ResetDefaultProxyConfigServiceTask : public Task {
  public:
@@ -91,7 +93,10 @@ class ResetDefaultProxyConfigServiceTask : public Task {
   // Task override.
   virtual void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+    // TODO(willchan): Move this class back into the anonymous namespace after
+    // we stop using this deprecated API.
+    net::URLRequestContextGetter* getter =
+        Profile::Deprecated::GetDefaultRequestContext();
     DCHECK(getter);
     if (getter) {
       getter->GetURLRequestContext()->proxy_service()->ResetConfigService(
@@ -146,8 +151,6 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
 
   DISALLOW_COPY_AND_ASSIGN(TransferDefaultCookiesOnIOThreadTask);
 };
-
-}  // namespace
 
 class LoginUtilsImpl : public LoginUtils,
                        public ProfileManagerObserver {

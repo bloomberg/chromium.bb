@@ -526,7 +526,8 @@ class SafeBrowsingServiceTestHelper
   net::URLRequestStatus::Status FetchUrl(const GURL& url) {
     url_fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
     url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE);
-    url_fetcher_->set_request_context(Profile::GetDefaultRequestContext());
+    url_fetcher_->set_request_context(
+        Profile::Deprecated::GetDefaultRequestContext());
     url_fetcher_->Start();
     ui_test_utils::RunMessageLoop();
     return response_status_;

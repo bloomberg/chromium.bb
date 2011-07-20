@@ -35,10 +35,10 @@ static std::string GetProtocolVersionName(
 URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
     const Config& config, URLFetcher::Delegate* delegate) {
   net::URLRequestContextGetter* getter =
-      Profile::GetDefaultRequestContext();
-  // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
-  // thread. So here, where we access it from the IO thread, if the task runs
-  // before it has gotten lazily initialized yet.
+      Profile::Deprecated::GetDefaultRequestContext();
+  // Profile::Deprecated::GetDefaultRequestContext() is initialized lazily, on
+  // the UI thread. So here, where we access it from the IO thread, if the task
+  // runs before it has gotten lazily initialized yet.
   if (!getter)
     return NULL;
   URLFetcher* fetcher =
@@ -54,10 +54,10 @@ URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
 net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
     const Config& config, net::WebSocketDelegate* delegate) {
   net::URLRequestContextGetter* getter =
-      Profile::GetDefaultRequestContext();
-  // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
-  // thread. So here, where we access it from the IO thread, if the task runs
-  // before it has gotten lazily initialized yet.
+      Profile::Deprecated::GetDefaultRequestContext();
+  // Profile::Deprecated::GetDefaultRequestContext() is initialized lazily, on
+  // the UI thread. So here, where we access it from the IO thread, if the task
+  // runs before it has gotten lazily initialized yet.
   if (!getter)
     return NULL;
   net::WebSocket::Request* request(

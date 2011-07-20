@@ -95,7 +95,7 @@ Profile::Profile()
 }
 
 // static
-const char* Profile::kProfileKey = "__PROFILE__";
+const char* const Profile::kProfileKey = "__PROFILE__";
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // static

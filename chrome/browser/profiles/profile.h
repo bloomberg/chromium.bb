@@ -12,10 +12,20 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "chrome/browser/net/preconnect.h" // TODO: remove this.
 #include "chrome/common/extensions/extension.h"
 
 namespace base {
 class Time;
+}
+
+namespace chrome_browser_net_websocket_experiment {
+class WebSocketExperimentTask;
+}
+
+namespace chromeos {
+class LibCrosServiceLibraryImpl;
+class ResetDefaultProxyConfigServiceTask;
 }
 
 namespace content {
@@ -43,6 +53,10 @@ class PrerenderManager;
 
 namespace quota {
 class QuotaManager;
+}
+
+namespace speech_input {
+class SpeechRecognizer;
 }
 
 namespace webkit_database {
@@ -143,8 +157,40 @@ class Profile {
     virtual void OnProfileCreated(Profile* profile, bool success) = 0;
   };
 
+  // Whitelist access to deprecated API in order to prevent new regressions.
+  class Deprecated {
+   private:
+    friend bool IsGoogleGAIACookieInstalled();
+    friend void chrome_browser_net::PreconnectOnIOThread(
+        const GURL&,
+        chrome_browser_net::UrlInfo::ResolutionMotivation,
+        int);
+
+    friend class AutofillDownloadManager;
+    friend class ChromePluginMessageFilter;
+    friend class DefaultGeolocationArbitratorDependencyFactory;
+    friend class DevToolsHttpProtocolHandler;
+    friend class DevToolsUI;
+    friend class LiveSyncTest;
+    friend class MetricsService;
+    friend class ResolveProxyMsgHelper;
+    friend class SafeBrowsingServiceTestHelper;
+    friend class SdchDictionaryFetcher;
+    friend class Toolbar5Importer;
+    friend class TranslateManager;
+    friend class
+        chrome_browser_net_websocket_experiment::WebSocketExperimentTask;
+    friend class chromeos::LibCrosServiceLibraryImpl;
+    friend class chromeos::ResetDefaultProxyConfigServiceTask;
+    friend class speech_input::SpeechRecognizer;
+
+    static net::URLRequestContextGetter* GetDefaultRequestContext() {
+      return Profile::GetDefaultRequestContext();
+    }
+  };
+
   // Key used to bind profile to the widget with which it is associated.
-  static const char* kProfileKey;
+  static const char* const kProfileKey;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   // Value that represents no local profile id.
@@ -164,12 +210,6 @@ class Profile {
   // Same as above, but uses async initialization.
   static Profile* CreateProfileAsync(const FilePath& path,
                                      Delegate* delegate);
-
-  // Returns the request context for the "default" profile.  This may be called
-  // from any thread.  This CAN return NULL if a first request context has not
-  // yet been created.  If necessary, listen on the UI thread for
-  // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
-  static net::URLRequestContextGetter* GetDefaultRequestContext();
 
   // Returns the name associated with this profile. This name is displayed in
   // the browser frame.
@@ -568,6 +608,15 @@ class Profile {
   static net::URLRequestContextGetter* default_request_context_;
 
  private:
+  // ***DEPRECATED**: You should be passing in the specific profile's
+  // URLRequestContextGetter or using the system URLRequestContextGetter.
+  //
+  // Returns the request context for the "default" profile.  This may be called
+  // from any thread.  This CAN return NULL if a first request context has not
+  // yet been created.  If necessary, listen on the UI thread for
+  // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
+  static net::URLRequestContextGetter* GetDefaultRequestContext();
+
   bool restored_last_session_;
 
   // Accessibility events will only be propagated when the pause

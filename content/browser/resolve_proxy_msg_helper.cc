@@ -91,7 +91,7 @@ bool ResolveProxyMsgHelper::GetProxyService(net::ProxyService** out) const {
 
   // If there is no default request context (say during shut down).
   net::URLRequestContextGetter* context_getter =
-      Profile::GetDefaultRequestContext();
+      Profile::Deprecated::GetDefaultRequestContext();
   if (!context_getter)
     return false;
 
@@ -104,7 +104,8 @@ ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
   // Clear all pending requests if the ProxyService is still alive (if we have a
   // default request context or override).
   if (!pending_requests_.empty() &&
-      (Profile::GetDefaultRequestContext() || proxy_service_override_)) {
+      (Profile::Deprecated::GetDefaultRequestContext() ||
+       proxy_service_override_)) {
     PendingRequest req = pending_requests_.front();
     proxy_service_->CancelPacRequest(req.pac_req);
   }

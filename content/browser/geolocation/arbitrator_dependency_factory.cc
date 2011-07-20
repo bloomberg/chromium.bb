@@ -16,7 +16,7 @@ GeolocationArbitratorDependencyFactory::
 // DefaultGeolocationArbitratorDependencyFactory
 net::URLRequestContextGetter*
 DefaultGeolocationArbitratorDependencyFactory::GetContextGetter() {
-  return Profile::GetDefaultRequestContext();
+  return Profile::Deprecated::GetDefaultRequestContext();
 }
 
 DefaultGeolocationArbitratorDependencyFactory::GetTimeNow
@@ -43,4 +43,3 @@ LocationProviderBase*
 DefaultGeolocationArbitratorDependencyFactory::NewSystemLocationProvider() {
   return ::NewSystemLocationProvider();
 }
-
