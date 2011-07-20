@@ -1188,6 +1188,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
 
   env = env.Clone()
   SetupBrowserEnv(env)
+  extra_deps = files + [env.ChromeBinary()]
 
   if env.Bit('host_mac'):
     # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
@@ -1210,6 +1211,7 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   if not env.Bit('disable_dynamic_plugin_loading'):
     chrome_flags.append('--register-pepper-plugins=%s;application/x-nacl' %
                         GetPPAPIPluginPath(env['TRUSTED_ENV']))
+    extra_deps.append(GetPPAPIPluginPath(env['TRUSTED_ENV']))
     chrome_flags.append('--no-sandbox')
   else:
     chrome_flags.append('--enable-nacl')
@@ -1228,8 +1230,10 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
     osenv.append('NACL_SEL_LDR=%s' % GetSelLdr(env))
+    extra_deps.append(GetSelLdr(env))
     if env.Bit('irt'):
       osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
+      extra_deps.append(env.GetIrtNexe())
 
   # Enable experimental JavaScript APIs.
   osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
@@ -1256,28 +1260,14 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
               '--chrome-flags="%s"' %' '.join(chrome_flags)])
   command.extend(args)
 
-  node = env.CommandTest(target,
+  return env.CommandTest(target,
                          command,
                          # Set to 'huge' so that the browser tester's timeout
                          # takes precedence over the default of the test_suite.
                          size='huge',
                          capture_output=False,
-                         osenv=osenv)
-
-  if not env.Bit('disable_dynamic_plugin_loading'):
-    # Add explicit dependencies on sel_ldr and the PPAPI plugin.
-    if 'force_sel_ldr' not in ARGUMENTS:
-     env.Depends(node, GetSelLdr(env))
-    if 'force_ppapi_plugin' not in ARGUMENTS:
-      env.Depends(node, GetPPAPIPluginPath(env['TRUSTED_ENV']))
-    if env.Bit('irt') and 'force_irt' not in ARGUMENTS:
-      env.Depends(node, env.GetIrtNexe())
-
-  # Add an explicit dependency on the files used by pyauto tests.
-  env.Depends(node, files)
-  env.Depends(node, env.ChromeBinary())
-
-  return node
+                         osenv=osenv,
+                         extra_deps=extra_deps)
 
 pre_base_env.AddMethod(PyAutoTester)
 
