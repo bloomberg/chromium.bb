@@ -123,87 +123,95 @@ class OutOfProcessPPAPITest : public PPAPITest {
   }
 };
 
-TEST_F(PPAPITest, Broker) {
-  RunTest("Broker");
-}
+// Use these macros to run the tests for a specific interface.
+// Most interfaces should be tested with both macros.
+#define TEST_PPAPI_IN_PROCESS(test_name) \
+    TEST_F(PPAPITest, test_name) { \
+      RunTest(#test_name); \
+    }
+#define TEST_PPAPI_OUT_OF_PROCESS(test_name) \
+    TEST_F(OutOfProcessPPAPITest, test_name) { \
+      RunTest(#test_name); \
+    }
 
-TEST_F(PPAPITest, Core) {
-  RunTest("Core");
-}
-TEST_F(OutOfProcessPPAPITest, Core) {
-  RunTest("Core");
-}
+// Similar macros that test over HTTP.
+#define TEST_PPAPI_IN_PROCESS_VIA_HTTP(test_name) \
+    TEST_F(PPAPITest, test_name) { \
+      RunTestViaHTTP(#test_name); \
+    }
+#define TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(test_name) \
+    TEST_F(OutOfProcessPPAPITest, test_name) { \
+      RunTestViaHTTP(#test_name); \
+    }
 
-TEST_F(PPAPITest, CursorControl) {
-  RunTest("CursorControl");
-}
+
+//
+// Interface tests.
+//
+// TODO(ddorwin): Enable the commented TEST_PPAPI_OUT_OF_PROCESS lines.
+
+TEST_PPAPI_IN_PROCESS(Broker)
+//TEST_PPAPI_OUT_OF_PROCESS(Broker)
+
+TEST_PPAPI_IN_PROCESS(Core)
+TEST_PPAPI_OUT_OF_PROCESS(Core)
+
+TEST_PPAPI_IN_PROCESS(CursorControl)
+//TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
 
 TEST_F(PPAPITest, FAILS_Instance) {
   RunTest("Instance");
 }
+//TEST_PPAPI_OUT_OF_PROCESS(Instance)
 
-TEST_F(PPAPITest, Graphics2D) {
-  RunTest("Graphics2D");
-}
+TEST_PPAPI_IN_PROCESS(Graphics2D)
+//TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 
-TEST_F(PPAPITest, ImageData) {
-  RunTest("ImageData");
-}
+TEST_PPAPI_IN_PROCESS(ImageData)
+//TEST_PPAPI_OUT_OF_PROCESS(ImageData)
 
-TEST_F(PPAPITest, Buffer) {
-  RunTest("Buffer");
-}
-TEST_F(OutOfProcessPPAPITest, Buffer) {
-  RunTest("Buffer");
-}
+TEST_PPAPI_IN_PROCESS(Buffer)
+TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-TEST_F(PPAPITest, URLLoader) {
-  RunTestViaHTTP("URLLoader");
-}
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader)
+//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader)
 
-TEST_F(PPAPITest,PaintAggregator) {
-  RunTestViaHTTP("PaintAggregator");
-}
+TEST_PPAPI_IN_PROCESS(PaintAggregator)
+//TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
 
-TEST_F(PPAPITest, Scrollbar) {
-  RunTest("Scrollbar");
-}
+TEST_PPAPI_IN_PROCESS(Scrollbar)
+//TEST_PPAPI_OUT_OF_PROCESS(Scrollbar)
 
-TEST_F(PPAPITest, URLUtil) {
-  RunTest("URLUtil");
-}
+TEST_PPAPI_IN_PROCESS(URLUtil)
+//TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
 
-TEST_F(PPAPITest, CharSet) {
-  RunTest("CharSet");
-}
+TEST_PPAPI_IN_PROCESS(CharSet)
+//TEST_PPAPI_OUT_OF_PROCESS(CharSet)
 
-TEST_F(PPAPITest, Var) {
-  RunTest("Var");
-}
+TEST_PPAPI_IN_PROCESS(Var)
+//TEST_PPAPI_OUT_OF_PROCESS(Var)
 
-TEST_F(PPAPITest, VarDeprecated) {
-  RunTest("VarDeprecated");
-}
+TEST_PPAPI_IN_PROCESS(VarDeprecated)
+//TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 
-TEST_F(PPAPITest, PostMessage) {
-  RunTest("PostMessage");
-}
+TEST_PPAPI_IN_PROCESS(PostMessage)
+//TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
 
-TEST_F(PPAPITest, Memory) {
-  RunTest("Memory");
-}
-TEST_F(OutOfProcessPPAPITest, Memory) {
-  RunTest("Memory");
-}
+TEST_PPAPI_IN_PROCESS(Memory)
+TEST_PPAPI_OUT_OF_PROCESS(Memory)
 
 // http://crbug.com/83443
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
 }
+//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO)
 
-TEST_F(PPAPITest, FileRef) {
-  RunTestViaHTTP("FileRef");
-}
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
+//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
+
+// Enable - see http://crbug.com/83443#c7.
+// TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
+// TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
@@ -215,10 +223,12 @@ TEST_F(PPAPITest, FileRef) {
 TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
+//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DirectoryReader)
 
 #if defined(ENABLE_P2P_APIS)
 // Flaky. http://crbug.com/84295
 TEST_F(PPAPITest, FLAKY_Transport) {
   RunTest("Transport");
 }
+//TEST_PPAPI_OUT_OF_PROCESS(Transport)
 #endif // ENABLE_P2P_APIS
