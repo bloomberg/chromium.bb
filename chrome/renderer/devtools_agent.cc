@@ -64,8 +64,8 @@ DevToolsAgent::DevToolsAgent(RenderView* render_view)
   expose_v8_debugger_protocol_ = cmd->HasSwitch(switches::kRemoteShellPort);
 
   render_view->webview()->setDevToolsAgentClient(this);
-  render_view->webview()->devToolsAgent()->setAgentIdentifierPrefix(
-      WebString::fromUTF8(base::Int64ToString(base::Process::Current().pid())));
+  render_view->webview()->devToolsAgent()->setProcessId(
+      base::Process::Current().pid());
 }
 
 DevToolsAgent::~DevToolsAgent() {
