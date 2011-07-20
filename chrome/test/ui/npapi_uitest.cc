@@ -102,13 +102,8 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL2) {
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
-// Test is flaky on linux/cros builders.  http://crbug.com/71904
-#if defined(OS_POSIX)
-#define MAYBE_GetURLRedirectNotification FLAKY_GetURLRedirectNotification
-#else
-#define MAYBE_GetURLRedirectNotification GetURLRedirectNotification
-#endif
-TEST_F(NPAPITesterBase, MAYBE_GetURLRedirectNotification) {
+// Test is flaky on linux/cros/win builders.  http://crbug.com/71904
+TEST_F(NPAPITesterBase, FLAKY_GetURLRedirectNotification) {
   const FilePath test_case(FILE_PATH_LITERAL("geturl_redirect_notify.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
