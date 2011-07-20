@@ -128,7 +128,8 @@ class Zygote {
       // Exit normally on chromeos because session manager may send SIGTERM
       // right after the process starts and it may fail to send zygote magic
       // number to browser process.
-      _exit(content::RESULT_CODE_NORMAL_EXIT);
+      if (!r)
+        _exit(content::RESULT_CODE_NORMAL_EXIT);
 #else
       CHECK(r) << "Sending zygote magic failed";
 #endif
