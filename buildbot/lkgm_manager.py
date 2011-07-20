@@ -12,6 +12,7 @@ import os
 import re
 import time
 
+from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -120,7 +121,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """Initialize an LKGM Manager.
 
     Args:
-      build_type:  Type of build.  Must be either chrome or binary.
+      build_type:  Type of build.  Must be a pfq type.
     Other args see manifest_version.BuildSpecsManager.
     """
     super(LKGMManager, self).__init__(
@@ -129,11 +130,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         incr_type='branch', clobber=clobber, dry_run=dry_run)
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
-
-    assert build_type in ('chrome', 'binary')
-    if build_type == 'chrome':
+    if build_type == constants.CHROME_PFQ_TYPE:
       self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
     else:
+      assert build_type, constants.PFQ_TYPE
       self.lkgm_subdir = self.LKGM_SUBDIR
 
   def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):

@@ -668,7 +668,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if not success:
       raise ImportantBuilderFailedException(
           'An important build failed with this manifest.')
-    elif self._build_config['build_type'] == 'binary':
+    elif self._build_config['build_type'] == constants.PFQ_TYPE:
       # We only promote for the pfq, not chrome pfq.
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
@@ -690,8 +690,7 @@ class BuildBoardStage(BuilderStage):
     if isinstance(self._build_config['board'], str):
       board = [self._build_config['board']]
     else:
-      assert self._build_config['build_type'] == 'chroot', \
-        'Board array requires chroot type.'
+      assert self._build_config['build_type'] == constants.CHROOT_BUILDER_TYPE
       board = self._build_config['board']
 
     assert isinstance(board, list), 'Board was neither an array or a string.'
@@ -912,10 +911,10 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
       version = manifest_manager.current_version
       extra_args = ['--set-version', version]
 
-    if prebuilt_type == 'chroot':
+    if prebuilt_type == constants.CHROOT_BUILDER_TYPE:
       board = 'amd64'
-    elif prebuilt_type != 'full':
-      assert prebuilt_type in ('binary', 'chrome')
+    elif prebuilt_type != constants.BUILD_FROM_SOURCE_TYPE:
+      assert prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE)
 
       push_overlays = self._build_config['push_overlays']
       if self._build_config['master']:
@@ -934,8 +933,8 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
                   self._prebuilt_type, self._options.chrome_rev,
                   self._options.buildnumber, extra_args + ['--skip-upload'])
 
-        # Master binary bot should upload host preflight prebuilts.
-        if prebuilt_type == 'binary' and push_overlays == 'public':
+        # Master pfq should upload host preflight prebuilts.
+        if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
           extra_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.

@@ -452,15 +452,16 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   else:
     cmd.extend(['--board', board])
 
-  if category == 'chrome':
+  if category == constants.CHROME_PFQ_TYPE:
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     cmd.extend(['--packages=chromeos-chrome',
                 '--key', key.upper()])
-  elif category == 'binary':
+  elif category == constants.PFQ_TYPE:
     cmd.extend(['--key', _PREFLIGHT_BINHOST])
   else:
-    assert category in ('full', 'chroot')
+    assert category in (constants.BUILD_FROM_SOURCE_TYPE,
+                        constants.CHROOT_BUILDER_TYPE)
     # Commit new binhost directly to overlay.
     cmd.extend(['--git-sync',
                 '--key', _FULL_BINHOST])

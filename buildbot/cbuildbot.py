@@ -182,7 +182,8 @@ def RunBuildStages(bot_id, options, build_config):
   elif (options.buildbot and build_config['manifest_version']
         and options.chrome_rev != 'tot'):
     # TODO(sosa): Fix temporary hack for chrome_rev tot.
-    if build_config['build_type'] in ('binary', 'chrome'):
+    if build_config['build_type'] in (constants.PFQ_TYPE,
+                                      constants.CHROME_PFQ_TYPE):
       sync_stage_class = stages.LKGMCandidateSyncStage
       completion_stage_class = stages.LKGMCandidateSyncCompletionStage
     else:
@@ -218,7 +219,7 @@ def RunBuildStages(bot_id, options, build_config):
     if options.build:
       stages.BuildBoardStage(bot_id, options, build_config).Run()
 
-    if build_config['build_type'] == 'chroot':
+    if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
       stages.Results.Report(sys.stdout)
       return stages.Results.Success()

@@ -260,7 +260,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
     self.build_name = 'x86-generic-pre-flight-queue'
-    self.build_type = 'binary'
+    self.build_type = constants.PFQ_TYPE
 
     self.build_config['manifest_version'] = True
     self.build_config['build_type'] = self.build_type
@@ -278,25 +278,25 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     test_config = {}
     test_config['test1'] = {
         'manifest_version': True,
-        'build_type': 'binary',
+        'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
     }
     test_config['test2'] = {
         'manifest_version': True,
-        'build_type': 'binary',
+        'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
     }
     test_config['test3'] = {
         'manifest_version': True,
-        'build_type': 'binary',
+        'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': False,
     }
     test_config['test4'] = {
         'manifest_version': False,
-        'build_type': 'binary',
+        'build_type': constants.PFQ_TYPE,
         'overlays': 'public',
         'important': True,
     }
@@ -714,7 +714,7 @@ class BuildTargetStageTest(AbstractStageTest):
     # Disable most paths by default and selectively enable in tests
 
     self.build_config['vm_tests'] = False
-    self.build_config['build_type'] = 'binary'
+    self.build_config['build_type'] = constants.PFQ_TYPE
     self.build_config['usepkg_chroot'] = False
     self.build_config['fast'] = False
 
@@ -736,7 +736,7 @@ class BuildTargetStageTest(AbstractStageTest):
     """Enable all paths to get line coverage."""
     self.build_config['vm_tests'] = True
     self.options.tests = True
-    self.build_config['build_type'] = 'full'
+    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True
     self.build_config['usepkg_build_packages'] = True
@@ -790,7 +790,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = False
     self.options.tests = True
     self.options.hw_tests = True
-    self.build_config['build_type'] = 'full'
+    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True
     self.build_config['usepkg_build_packages'] = True
@@ -920,7 +920,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    self.build_config['build_type'] = 'chrome'
+    self.build_config['build_type'] = constants.CHROME_PFQ_TYPE
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
@@ -937,7 +937,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
 
   def testPreflightUpload(self):
     """Test uploading of prebuilts for preflight build."""
-    self.build_config['build_type'] = 'binary'
+    self.build_config['build_type'] = constants.PFQ_TYPE
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
@@ -962,8 +962,8 @@ class PublishUprevChangesStageTest(AbstractStageTest):
 
     # Disable most paths by default and selectively enable in tests
 
-    self.build_config['build_type'] = 'full'
-    self.options.chrome_rev = 'tot'
+    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
+    self.options.chrome_rev = constants.CHROME_REV_TOT
     self.options.prebuilts = True
     self.mox.StubOutWithMock(stages.PublishUprevChangesStage,
                              '_GetPortageEnvVar')

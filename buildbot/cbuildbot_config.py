@@ -7,8 +7,8 @@
 Each dictionary entry is in turn a dictionary of config_param->value.
 
 config_param's:
-board -- The board of the image to build.  If build_type is chroot, may
-         be an array of boards to setup.
+board -- The board of the image to build.  If build_type is CHROOT_BUILD_TYPE,
+         may be an array of boards to setup.
 profile -- The profile of the variant to set up and build.
 
 master -- This bot pushes changes to the overlays.
@@ -16,9 +16,6 @@ important -- Master bot uses important bots to determine overall status.
              i.e. if master bot succeeds and other important slaves succeed
              then the master will uprev packages.  This should align
              with info vs. closer except for the master.and options.tests
-hostname -- Needed for 'important' slaves.  The hostname of the bot.  Should
-            match hostname in slaves.cfg in buildbot checkout.
-
 useflags -- emerge use flags to use while setting up the board, building
             packages, making images, etc.
 chromeos_official -- Set the variable CRHOMEOS_OFFICIAL for the build.
@@ -61,7 +58,9 @@ gs_path -- Google Storage path to offload files to.
            'default' - 'gs://chromeos-archive/' + bot_id
            value - Upload to explicit path
 
-build_type -- Type of builder [binary | full | chrome | chroot].
+# TODO(sosa): Deprecate binary.
+build_type -- Type of builder.  Checks constants.VALID_BUILD_TYPES.
+
 prebuilts -- Upload prebuilts for this build.
 
 test_mod -- Create a test mod image for archival.
@@ -111,13 +110,11 @@ def _IsInternalBuild(git_url):
 
 
 default = {
-  'board' : None, # Must be filled in
+  'board' : None,
   'profile' : None,
 
   'master' : False,
   'important' : False,
-
-  'hostname' : None,
 
   'useflags' : None,
   'chromeos_official' : False,
@@ -148,7 +145,7 @@ default = {
 
   'gs_path': GS_PATH_DEFAULT,
 
-  'build_type': 'binary',
+  'build_type': constants.PFQ_TYPE,
   'archive_build_debug' : False,
 
   'test_mod' : False,
@@ -178,7 +175,7 @@ binary = {
   'chroot_replace' : False,
   'quick_unit' : False,
 
-  'build_type': 'full',
+  'build_type': constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
   'test_mod' : True,
   'factory_install_mod' : True,
@@ -197,7 +194,7 @@ full = {
 
   'quick_unit' : False,
 
-  'build_type': 'full',
+  'build_type': constants.BUILD_FROM_SOURCE_TYPE,
   'archive_build_debug' : True,
   'test_mod' : True,
   'factory_install_mod' : True,
@@ -256,14 +253,25 @@ def add_config(name, updates):
 
 add_config('chromiumos-sdk', [full, {
   'board' : ['x86-generic', 'arm-generic', 'amd64-host'],
-  'build_type' : 'chroot',
+  'build_type' : constants.CHROOT_BUILDER_TYPE,
 }])
 
 add_config('x86-generic-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
-  'hostname' : 'chromeosbuild2',
   'important': True,
+
+  'uprev' : True,
+  'overlays': 'public',
+  'push_overlays': 'public',
+  'manifest_version': True,
+}])
+
+add_config('x86-generic-commit-queue', [{
+  'board' : 'x86-generic',
+  'master' : True,
+  'important': True,
+  'build_type': constants.COMMIT_QUEUE_TYPE,
 
   'uprev' : True,
   'overlays': 'public',
@@ -275,7 +283,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'board' : 'x86-generic',
   'master' : True,
 
-  'build_type': 'chrome',
+  'build_type': constants.CHROME_PFQ_TYPE,
   'important': True,
   'uprev' : False,
   'chrome_tests' : True,
@@ -289,7 +297,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
 add_config('arm-generic-chrome-pre-flight-queue', [arm, {
   'board' : 'arm-generic',
 
-  'build_type': 'chrome',
+  'build_type': constants.CHROME_PFQ_TYPE,
   'important': True,
   'uprev' : False,
   'chrome_tests' : True,

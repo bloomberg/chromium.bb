@@ -1,6 +1,7 @@
 # Generated files
 *.pyc
 *~
+buildbot/cbuildbot.log
 buildbot/revisions.pfq
 .project
 .pydevproject
