@@ -15,8 +15,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "content/browser/debugger/devtools_remote.h"
 #include "ipc/ipc_message.h"
 
 class DevToolsProtocolHandler;

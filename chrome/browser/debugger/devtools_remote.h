@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -44,4 +44,4 @@ class OutboundSocketDelegate {
   virtual void Send(const DevToolsRemoteMessage& message) = 0;
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote.h"
 
 class DevToolsRemoteMessage;
 class DevToolsProtocolHandler;
@@ -47,4 +47,4 @@ class DevToolsRemoteService : public DevToolsRemoteListener {
   DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteService);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_SERVICE_H_

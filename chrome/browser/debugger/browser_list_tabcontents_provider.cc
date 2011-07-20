@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/debugger/browser_list_tabcontents_provider.h"
+#include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"

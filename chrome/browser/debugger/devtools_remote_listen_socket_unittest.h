@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -26,9 +26,9 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "content/browser/debugger/devtools_remote.h"
-#include "content/browser/debugger/devtools_remote_listen_socket.h"
-#include "content/browser/debugger/devtools_remote_message.h"
+#include "chrome/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote_listen_socket.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
 #include "net/base/net_util.h"
 #include "net/base/listen_socket.h"
 #include "net/base/winsock_init.h"
@@ -126,4 +126,4 @@ class DevToolsRemoteListenSocketTester :
   virtual ~DevToolsRemoteListenSocketTester();
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_

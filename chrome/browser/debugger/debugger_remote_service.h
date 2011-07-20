@@ -5,14 +5,14 @@
 // This file declares the DebuggerRemoteServiceCommand struct and the
 // DebuggerRemoteService class which handles commands directed to the
 // "V8Debugger" tool.
-#ifndef CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
-#define CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#define CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote.h"
 
 class DevToolsProtocolHandler;
 class DevToolsRemoteMessage;
@@ -124,4 +124,4 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   DISALLOW_COPY_AND_ASSIGN(DebuggerRemoteService);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEBUGGER_REMOTE_SERVICE_H_

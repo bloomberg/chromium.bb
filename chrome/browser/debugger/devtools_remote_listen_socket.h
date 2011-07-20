@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_
 #pragma once
 
 #include <string>
 
-#include "content/browser/debugger/devtools_remote_message.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
 #include "net/base/listen_socket.h"
 
 class DevToolsRemoteListener;
@@ -69,4 +69,4 @@ class DevToolsRemoteListenSocket
   DISALLOW_COPY_AND_ASSIGN(DevToolsRemoteListenSocket);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_H_

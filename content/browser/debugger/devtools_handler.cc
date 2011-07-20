@@ -60,32 +60,32 @@ void DevToolsHandler::OnForwardToClient(const IPC::Message& message) {
 void DevToolsHandler::OnActivateWindow() {
   DevToolsClientHost* client_host = GetOwnerClientHost();
   if (client_host)
-    client_host->Activate();
+    client_host->RequestActivate();
 }
 
 void DevToolsHandler::OnCloseWindow() {
   DevToolsClientHost* client_host = GetOwnerClientHost();
   if (client_host)
-    client_host->Close();
+    client_host->RequestClose();
 }
 
 void DevToolsHandler::OnRequestDockWindow() {
   DevToolsClientHost* client_host = GetOwnerClientHost();
   if (client_host)
-    client_host->SetDocked(true);
+    client_host->RequestSetDocked(true);
 }
 
 void DevToolsHandler::OnRequestUndockWindow() {
   DevToolsClientHost* client_host = GetOwnerClientHost();
   if (client_host)
-    client_host->SetDocked(false);
+    client_host->RequestSetDocked(false);
 }
 
 void DevToolsHandler::OnSaveAs(const std::string& file_name,
                                const std::string& content) {
   DevToolsClientHost* client_host = GetOwnerClientHost();
   if (client_host)
-    client_host->SaveAs(file_name, content);
+    client_host->RequestSaveAs(file_name, content);
 }
 
 void DevToolsHandler::OnRuntimePropertyChanged(const std::string& name,

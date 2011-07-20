@@ -7,7 +7,7 @@
 // Inspired significantly from debugger_remote_service
 // and ../automation/extension_port_container.
 
-#include "content/browser/debugger/extension_ports_remote_service.h"
+#include "chrome/browser/debugger/extension_ports_remote_service.h"
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -15,13 +15,13 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/debugger/devtools_protocol_handler.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
+#include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/devtools_protocol_handler.h"
-#include "content/browser/debugger/devtools_remote_message.h"
-#include "content/browser/debugger/inspectable_tab_proxy.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 

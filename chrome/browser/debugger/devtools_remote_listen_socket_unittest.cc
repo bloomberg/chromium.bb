@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/debugger/devtools_remote_listen_socket_unittest.h"
+#include "chrome/browser/debugger/devtools_remote_listen_socket_unittest.h"
 
 #include <fcntl.h>
 #if defined(OS_POSIX)

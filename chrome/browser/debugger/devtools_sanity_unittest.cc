@@ -318,7 +318,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     if (found) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           new MessageLoop::QuitTask);
-    } else if(attempt < 30) {
+    } else if (attempt < 30) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           NewRunnableFunction(

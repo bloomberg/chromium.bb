@@ -237,7 +237,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   ScheduleAction(action);
 }
 
-void DevToolsWindow::Activate() {
+void DevToolsWindow::RequestActivate() {
   if (!docked_) {
     if (!browser_->window()->IsActive()) {
       browser_->window()->Activate();
@@ -249,7 +249,7 @@ void DevToolsWindow::Activate() {
   }
 }
 
-void DevToolsWindow::SetDocked(bool docked) {
+void DevToolsWindow::RequestSetDocked(bool docked) {
   if (docked_ == docked)
     return;
 
@@ -283,14 +283,14 @@ void DevToolsWindow::SetDocked(bool docked) {
   Show(DEVTOOLS_TOGGLE_ACTION_NONE);
 }
 
-void DevToolsWindow::Close() {
+void DevToolsWindow::RequestClose() {
     DCHECK(docked_);
     NotifyCloseListener();
     InspectedTabClosing();
 }
 
-void DevToolsWindow::SaveAs(const std::string& suggested_file_name,
-                            const std::string& content) {
+void DevToolsWindow::RequestSaveAs(const std::string& suggested_file_name,
+                                   const std::string& content) {
   DevToolsFileUtil::SaveAs(tab_contents_->profile(),
                            suggested_file_name,
                            content);

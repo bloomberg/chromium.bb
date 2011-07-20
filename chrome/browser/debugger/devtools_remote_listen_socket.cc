@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/debugger/devtools_remote_listen_socket.h"
+#include "chrome/browser/debugger/devtools_remote_listen_socket.h"
 
 #include "build/build_config.h"
 
@@ -21,8 +21,8 @@
 #include "base/eintr_wrapper.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "content/browser/debugger/devtools_remote.h"
-#include "content/browser/debugger/devtools_remote_message.h"
+#include "chrome/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
 
 #define CONSUME_BUFFER_CHAR \
   pBuf++;\

@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/debugger/devtools_remote.h"
-#include "content/browser/debugger/devtools_remote_message.h"
+#include "chrome/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DevToolsRemoteMessageTest : public testing::Test {

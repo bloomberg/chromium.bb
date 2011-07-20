@@ -54,11 +54,11 @@ class DevToolsWindow
   virtual void InspectedTabClosing();
   virtual void TabReplaced(TabContents* new_tab);
   virtual RenderViewHost* GetClientRenderViewHost();
-  virtual void Activate();
-  virtual void SetDocked(bool docked);
-  virtual void Close();
-  virtual void SaveAs(const std::string& suggested_file_name,
-                      const std::string& content);
+  virtual void RequestActivate();
+  virtual void RequestSetDocked(bool docked);
+  virtual void RequestClose();
+  virtual void RequestSaveAs(const std::string& suggested_file_name,
+                             const std::string& content);
   RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);

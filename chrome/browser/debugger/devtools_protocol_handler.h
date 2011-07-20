@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
 #pragma once
 
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/debugger/devtools_remote.h"
+#include "chrome/browser/debugger/devtools_remote.h"
 #include "net/base/listen_socket.h"
 
 class InspectableTabProxy;
@@ -73,4 +73,4 @@ class DevToolsProtocolHandler
   DISALLOW_COPY_AND_ASSIGN(DevToolsProtocolHandler);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_PROTOCOL_HANDLER_H_
