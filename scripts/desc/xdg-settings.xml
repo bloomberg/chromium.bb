@@ -8,7 +8,7 @@
   <refentryinfo>
     <title>xdg-settings Manual</title>
     <copyright>
-      <year>2009</year>
+      <year>2009-2011</year>
     </copyright>
     <author>
       <firstname>Mike</firstname>
@@ -38,6 +38,9 @@
       </group>
       <group choice="req">
 	<option>property</option>
+      </group>
+      <group choice="opt">
+        <option>subproperty</option>
       </group>
       <group choice="opt">
 	<option>value</option>
@@ -108,6 +111,19 @@
       </varlistentry>
     </variablelist>
   </refsect1>
+  <refsect1 id="properties">
+    <title>Properties</title>
+    <para>
+      When using xdg-settings to get, check or set a destkop setting, properties
+      and possibly sub-properties are used to specify the setting to be changed.
+    </para>
+    <para>
+      Some properties (such as default-web-browser) fully describe the setting
+      to be changed. Other properties (such as default-url-scheme-handler) require
+      more information (in this case the actual scheme to set the default handler
+      for) which must be provided in a sub-property.
+    </para>
+  </refsect1>
   <refsect1 id="exitcodes">
     <title>Exit Codes</title>
     <para>
@@ -169,6 +185,12 @@
       Set the default web browser to google-chrome.desktop
       <programlisting>
         xdg-settings set default-web-browser google-chrome.desktop
+      </programlisting>
+    </para>
+    <para>
+      Set the default mailto URL scheme handler to be evolution.desktop
+      <programlisting>
+        xdg-settings set default-url-scheme-handler mailto evolution.desktop
       </programlisting>
     </para>
   </refsect1>

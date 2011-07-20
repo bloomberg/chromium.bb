@@ -138,6 +138,30 @@ set_browser_mime()
 }
 
 # }}} MIME utilities
+# {{{ KDE utilities
+
+# Reads the KDE configuration setting, compensating for a bug in some versions of kreadconfig.
+read_kde_config()
+{
+    configfile="$1"
+    configsection="$2"
+    configkey="$3"
+    application="`kreadconfig --file $configfile --group $configsection --key $configkey`"
+    if [ x"$application" != x ]; then
+        echo "$application"
+    else
+        # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so
+        # check by hand if it didn't find anything (oddly kwriteconfig works
+        # fine though).
+        configfile_dir=`kde${KDE_SESSION_VERSION}-config --path config  | cut -d ':' -f 1`
+        configfile_path="$configfile_dir/$configfile"
+        [ ! -f "$configfile_path" ] && return
+        # This will only take the first value if there is more than one.
+        grep "^$configkey"'\[$[^]=]*\]=' "$configfile_path" | head -n 1 | cut -d= -f 2-
+    fi
+}
+
+# }}} KDE utilities
 # {{{ KDE
 
 # Resolves the KDE browser setting to a binary: if prefixed with !, simply removes it;
@@ -171,22 +195,9 @@ resolve_kde_browser_desktop()
     esac
 }
 
-# Reads the KDE browser setting, compensating for a bug in some versions of kreadconfig.
 read_kde_browser()
 {
-    browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
-    if [ x"$browser" != x ]; then
-        echo "$browser"
-    else
-        # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so
-        # check by hand if it didn't find anything (oddly kwriteconfig works
-        # fine though).
-        kdeglobals_dir=`kde${KDE_SESSION_VERSION}-config --path config  | cut -d ':' -f 1`
-        kdeglobals="$kdeglobals_dir/kdeglobals"
-        [ ! -f "$kdeglobals" ] && return
-        # This will only take the first value if there is more than one.
-        grep '^BrowserApplication\[$[^]=]*\]=' "$kdeglobals" | head -n 1 | cut -d= -f 2-
-    fi
+    read_kde_config kdeglobals General BrowserApplication
 }
 
 get_browser_kde()
@@ -442,6 +453,168 @@ set_browser_xfce()
 # }}} xfce
 # }}} default browser
 
+# {{{ default url scheme handler
+
+exit_unimplemented_default_handler()
+{
+    exit_failure_operation_impossible "default-url-scheme-handler not implemented for $DE"
+}
+
+# {{{ KDE
+
+# Recent versions of KDE support default scheme handler applications using the
+# mime type of x-scheme-handler/scheme. Older versions will not support this
+# but do have support for setting a default mail handler. There is also a
+# system in KDE where .protocol files can be used, however this is not
+# supported by this script. When reading a scheme handler we will use the
+# default mail handler for the mailto scheme, otherwise we will use the mime
+# type x-scheme-handler/scheme.
+
+get_url_scheme_handler_kde()
+{
+    if [ "$1" = "mailto" ]; then
+        handler="`read_kde_config emaildefaults PROFILE_Default EmailClient | first_word`"
+        echo "handler is $handler"
+        if [ x"$handler" != x ]; then
+            binary_to_desktop_file "$handler"
+        else
+            get_browser_mime "x-scheme-handler/$1"
+        fi
+    else 
+        get_browser_mime "x-scheme-handler/$1"
+    fi
+}
+
+check_url_scheme_handler_kde()
+{
+    check="`desktop_file_to_binary "$2"`"
+    if [ -z "$check" ]; then
+        echo no
+        exit_success
+    fi
+    if [ x"$1" = "mailto" ]; then
+        binary="`read_kde_config emaildefaults PROFILE_Default EmailClient`"
+        if [ x"$binary" != x"$check" ]; then
+            echo no
+            exit_success
+        fi
+    fi
+    handler="`get_browser_mime x-scheme-handler/$1`"
+    binary="`desktop_file_to_binary "$handler"`"
+    if [ x"$binary" != x"$check" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
+}
+
+set_url_scheme_handler_kde()
+{
+    set_browser_mime "$2" "x-scheme-handler/$1" || return
+    if [ "$1" = "mailto" ]; then
+        binary="`desktop_file_to_binary "$2"`"
+        kwriteconfig --file emaildefaults --group PROFILE_Default --key EmailClient "$binary"
+    fi
+}
+
+# }}} KDE
+# {{{ GNOME
+
+get_url_scheme_handler_gnome()
+{
+    binary="`gconftool-2 --get /desktop/gnome/url-handlers/$1/command | first_word`"
+    if [ x"$binary" != x"" ]; then
+        # gconftool gives the binary (maybe with %s etc. afterward),
+        # but we want the desktop file name, not the binary. So, we
+        # have to find the desktop file to which it corresponds.
+        desktop="`binary_to_desktop_file "$binary"`"
+        basename "$desktop"
+    fi
+}
+
+check_url_scheme_handler_gnome()
+{
+    check="`desktop_file_to_binary "$2"`"
+    if [ -z "$check" ]; then
+        echo no
+        exit_success
+    fi
+    binary="`gconftool-2 --get /desktop/gnome/url-handlers/$1/command | first_word`"
+    if [ x"$binary" != x"$check" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
+}
+
+set_url_scheme_handler_gnome()
+{
+    binary="`desktop_file_to_binary "$2"`"
+    [ "$binary" ] || exit_failure_file_missing
+
+    gconftool-2 --type string --set /desktop/gnome/url-handlers/$1/command "$binary %s"
+    gconftool-2 --type bool --set /desktop/gnome/url-handlers/$1/needs_terminal false
+    gconftool-2 --type bool --set /desktop/gnome/url-handlers/$1/enabled true
+}
+
+# }}} GNOME
+# {{{ GNOME 3.x
+
+get_url_scheme_handler_gnome3()
+{
+    get_browser_mime "x-scheme-handler/$1"
+}
+
+check_url_scheme_handler_gnome3()
+{
+    desktop="$2"
+    check="`desktop_file_to_binary "$2"`"
+    if [ -z "$check" ]; then
+        echo no
+        exit_success
+    fi
+    browser="`get_browser_mime "x-scheme-handler/$1"`"
+    if [ x"$browser" != x"$desktop" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
+}
+
+set_url_scheme_handler_gnome3()
+{
+    binary="`desktop_file_to_binary "$2"`"
+    [ "$binary" ] || exit_failure_file_missing
+    set_browser_mime "$2" || return
+
+    # Set the default browser.
+    set_browser_mime "$2" "x-scheme-handler/$1" || return
+}
+
+# }}} GNOME 3.x
+# {{{ xfce
+
+get_url_scheme_handler_xfce()
+{
+    exit_unimplemented_default_handler "$1"
+}
+
+check_url_scheme_handler_xfce()
+{
+    exit_unimplemented_default_handler "$1"
+}
+
+set_url_scheme_handler_xfce()
+{
+    exit_unimplemented_default_handler "$1"
+}
+
+# }}} xfce
+# }}} default protocol handler
+
 dispatch_specific()
 {
     # The PROP comments in this function are used to generate the output of
@@ -451,6 +624,10 @@ dispatch_specific()
         case "$parm" in
           default-web-browser) # PROP:           Default web browser
             get_browser_$DE
+            ;;
+
+          default-url-scheme-handler) # PROP:    Default handler for URL scheme
+            get_url_scheme_handler_$DE "$1"
             ;;
 
           *)
@@ -464,16 +641,27 @@ dispatch_specific()
             check_browser_$DE "$1"
             ;;
 
+          default-url-scheme-handler)
+            check_desktop_filename "$2"
+            check_url_scheme_handler_$DE "$1" "$2"
+            ;;
+
           *)
             exit_failure_syntax
             ;;
         esac
     else # set
-        [ $# -eq 1 ] || exit_failure_syntax "unexpected/missing argument"
         case "$parm" in
           default-web-browser)
+	    [ $# -eq 1 ] || exit_failure_syntax "unexpected/missing argument"
             check_desktop_filename "$1"
             set_browser_$DE "$1"
+            ;;
+
+          default-url-scheme-handler)
+	    [ $# -eq 2 ] || exit_failure_syntax "unexpected/missing argument"
+            check_desktop_filename "$2"
+            set_url_scheme_handler_$DE "$1" "$2"
             ;;
 
           *)

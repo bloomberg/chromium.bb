@@ -2,12 +2,12 @@
 .\"     Title: xdg-settings
 .\"    Author: Mike Mammarella
 .\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 12/31/2010
+.\"      Date: 07/20/2011
 .\"    Manual: xdg-settings Manual
 .\"    Source: [FIXME: source]
 .\"  Language: English
 .\"
-.TH "XDG\-SETTINGS" "1" "12/31/2010" "[FIXME: source]" "xdg-settings Manual"
+.TH "XDG\-SETTINGS" "1" "07/20/2011" "[FIXME: source]" "xdg-settings Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 xdg-settings \- get various settings from the desktop environment
 .SH "SYNOPSIS"
 .HP \w'\fBxdg\-settings\fR\ 'u
-\fBxdg\-settings\fR {\fB\fIget\fR\fR | \fB\fIcheck\fR\fR | \fB\fIset\fR\fR} {\fBproperty\fR} [\fBvalue\fR]
+\fBxdg\-settings\fR {\fB\fIget\fR\fR | \fB\fIcheck\fR\fR | \fB\fIset\fR\fR} {\fBproperty\fR} [\fBsubproperty\fR] [\fBvalue\fR]
 .HP \w'\fBxdg\-settings\fR\ 'u
 \fBxdg\-settings\fR {\fB\-\-help\fR | \fB\-\-list\fR | \fB\-\-manual\fR | \fB\-\-version\fR}
 .SH "DESCRIPTION"
@@ -60,6 +60,11 @@ Show this manualpage\&.
 .RS 4
 Show the xdg\-utils version information\&.
 .RE
+.SH "PROPERTIES"
+.PP
+When using xdg\-settings to get, check or set a destkop setting, properties and possibly sub\-properties are used to specify the setting to be changed\&.
+.PP
+Some properties (such as default\-web\-browser) fully describe the setting to be changed\&. Other properties (such as default\-url\-scheme\-handler) require more information (in this case the actual scheme to set the default handler for) which must be provided in a sub\-property\&.
 .SH "EXIT CODES"
 .PP
 An exit code of 0 indicates success while a non\-zero exit code indicates failure\&. The following failure codes can be returned:
@@ -123,6 +128,19 @@ Set the default web browser to google\-chrome\&.desktop
 .if n \{\
 .RE
 .\}
+.PP
+Set the default mailto URL scheme handler to be evolution\&.desktop
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+        xdg\-settings set default\-url\-scheme\-handler mailto evolution\&.desktop
+      
+.fi
+.if n \{\
+.RE
+.\}
 .sp
 .SH "AUTHOR"
 .PP
@@ -132,5 +150,5 @@ Author.
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2009
+Copyright \(co 2009-2011
 .br
