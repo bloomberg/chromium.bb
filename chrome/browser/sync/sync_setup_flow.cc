@@ -165,8 +165,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("syncApps",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
   args->SetBoolean("encryptionEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncEncryption));
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSyncEncryption));
 
   syncable::ModelTypeSet encrypted_types;
   service->GetEncryptedDataTypes(&encrypted_types);
