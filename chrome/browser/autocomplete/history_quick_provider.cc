@@ -93,6 +93,10 @@ void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   string16 term_string = autocomplete_input_.text();
+  // TODO(mrossetti): Temporary workaround for http://crbug.com/88498.
+  // Just give up after 50 characters.
+  if (term_string.size() > 50)
+    return;
   term_string = UnescapeURLComponent(term_string,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
   history::InMemoryURLIndex::String16Vector terms(
