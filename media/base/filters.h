@@ -225,8 +225,15 @@ class VideoDecoder : public Filter {
   // Indicate whether decoder provides its own output buffers
   virtual bool ProvidesBuffer() = 0;
 
-  // Returns the media format produced by this decoder.
-  virtual const MediaFormat& media_format() = 0;
+  // Returns the width and height of decoded video in pixels.
+  //
+  // Clients should NOT rely on these values to remain constant. Instead, use
+  // the width/height from decoded video frames themselves.
+  //
+  // TODO(scherkus): why not rely on prerolling and decoding a single frame to
+  // get dimensions?
+  virtual int width() = 0;
+  virtual int height() = 0;
 
  protected:
   // Executes the permanent callback to pass off decoded video.

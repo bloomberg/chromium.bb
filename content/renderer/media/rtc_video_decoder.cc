@@ -11,7 +11,6 @@
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"
-#include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 
@@ -23,7 +22,6 @@ using media::FilterCallback;
 using media::FilterStatusCB;
 using media::kNoTimestamp;
 using media::Limits;
-using media::MediaFormat;
 using media::PIPELINE_OK;
 using media::StatisticsCallback;
 using media::VideoDecoder;
@@ -38,8 +36,7 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
       state_(kUnInitialized) {
 }
 
-RTCVideoDecoder::~RTCVideoDecoder() {
-}
+RTCVideoDecoder::~RTCVideoDecoder() {}
 
 void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
                                  FilterCallback* filter_callback,
@@ -59,10 +56,6 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   lock_.Acquire();
   frame_queue_available_.clear();
   lock_.Release();
-  media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-  media_format_.SetAsInteger(MediaFormat::kHeight, height_);
-  media_format_.SetAsInteger(MediaFormat::kSurfaceType,
-                             static_cast<int>(VideoFrame::YV12));
 
   state_ = kNormal;
 
@@ -141,10 +134,6 @@ void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   cb.Run(PIPELINE_OK);
 }
 
-const MediaFormat& RTCVideoDecoder::media_format() {
-  return media_format_;
-}
-
 void RTCVideoDecoder::ProduceVideoFrame(
     scoped_refptr<VideoFrame> video_frame) {
   if (MessageLoop::current() != message_loop_) {
@@ -163,12 +152,18 @@ bool RTCVideoDecoder::ProvidesBuffer() {
   return true;
 }
 
+int RTCVideoDecoder::width() {
+  return width_;
+}
+
+int RTCVideoDecoder::height() {
+  return height_;
+}
+
 bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
   width_ = width;
   height_ = height;
 
-  media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-  media_format_.SetAsInteger(MediaFormat::kHeight, height_);
   host()->SetVideoSize(width_, height_);
   return true;
 }

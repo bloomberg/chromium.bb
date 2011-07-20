@@ -1,8 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
-
-// Video renderer for media player.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_TOOLS_PLAYER_WTL_WTL_RENDERER_H_
 #define MEDIA_TOOLS_PLAYER_WTL_WTL_RENDERER_H_
@@ -11,11 +9,10 @@
 
 class WtlVideoWindow;
 
+// Video renderer for media player.
 class WtlVideoRenderer : public media::VideoRendererBase {
  public:
   explicit WtlVideoRenderer(WtlVideoWindow* window);
-
-  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
  protected:
   // VideoRendererBase implementation.

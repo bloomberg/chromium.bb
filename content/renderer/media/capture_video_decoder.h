@@ -40,9 +40,10 @@ class CaptureVideoDecoder
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* filter_callback,
                           media::StatisticsCallback* stat_callback);
-  virtual const media::MediaFormat& media_format();
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
   virtual bool ProvidesBuffer();
+  virtual int width();
+  virtual int height();
 
   // VideoCapture::EventHandler implementation.
   virtual void OnStarted(media::VideoCapture* capture);
@@ -88,7 +89,6 @@ class CaptureVideoDecoder
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
   media::VideoCapture::VideoCaptureCapability capability_;
   DecoderState state_;
-  media::MediaFormat media_format_;
   std::deque<scoped_refptr<media::VideoFrame> > available_frames_;
   media::FilterCallback* pending_stop_cb_;
   scoped_ptr<media::StatisticsCallback> statistics_callback_;

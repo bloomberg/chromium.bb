@@ -7,7 +7,6 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
-#include "media/base/media_format.h"
 
 CaptureVideoDecoder::CaptureVideoDecoder(
     base::MessageLoopProxy* message_loop_proxy,
@@ -37,10 +36,6 @@ void CaptureVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
                         filter_callback, stat_callback));
 }
 
-const media::MediaFormat& CaptureVideoDecoder::media_format() {
-  return media_format_;
-}
-
 void CaptureVideoDecoder::ProduceVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   message_loop_proxy_->PostTask(
@@ -52,6 +47,14 @@ void CaptureVideoDecoder::ProduceVideoFrame(
 
 bool CaptureVideoDecoder::ProvidesBuffer() {
   return true;
+}
+
+int CaptureVideoDecoder::width() {
+  return capability_.width;
+}
+
+int CaptureVideoDecoder::height() {
+  return capability_.height;
 }
 
 void CaptureVideoDecoder::Play(media::FilterCallback* callback) {
@@ -137,11 +140,6 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
 
   available_frames_.clear();
-  media_format_.SetAsInteger(media::MediaFormat::kWidth, capability_.width);
-  media_format_.SetAsInteger(media::MediaFormat::kHeight, capability_.height);
-  media_format_.SetAsInteger(
-      media::MediaFormat::kSurfaceFormat,
-      static_cast<int>(media::VideoFrame::YV12));
 
   statistics_callback_.reset(stat_callback);
   filter_callback->Run();
@@ -224,8 +222,6 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
   if (buf->width != capability_.width || buf->height != capability_.height) {
     capability_.width = buf->width;
     capability_.height = buf->height;
-    media_format_.SetAsInteger(media::MediaFormat::kWidth, capability_.width);
-    media_format_.SetAsInteger(media::MediaFormat::kHeight, capability_.height);
     host()->SetVideoSize(capability_.width, capability_.height);
   }
 

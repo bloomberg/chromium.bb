@@ -32,9 +32,10 @@ class RTCVideoDecoder
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* filter_callback,
                           media::StatisticsCallback* stat_callback);
-  virtual const media::MediaFormat& media_format();
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
   virtual bool ProvidesBuffer();
+  virtual int width();
+  virtual int height();
 
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved);
@@ -60,7 +61,6 @@ class RTCVideoDecoder
   size_t height_;
   std::string url_;
   DecoderState state_;
-  media::MediaFormat media_format_;
   std::deque<scoped_refptr<media::VideoFrame> > frame_queue_available_;
   // Used for accessing frame queue from another thread.
   base::Lock lock_;

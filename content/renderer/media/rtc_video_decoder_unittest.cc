@@ -46,7 +46,6 @@ class RTCVideoDecoderTest : public testing::Test {
   static const PipelineStatistics kStatistics;
 
   RTCVideoDecoderTest() {
-    MediaFormat media_format;
     decoder_ = new RTCVideoDecoder(&message_loop_, kUrl);
     renderer_ = new MockVideoRenderer();
 
@@ -96,14 +95,9 @@ TEST_F(RTCVideoDecoderTest, Initialize_Successful) {
   InitializeDecoderSuccessfully();
 
   // Test that the output media format is an uncompressed video surface that
-  // matches the dimensions specified by rtc.
-  const MediaFormat& media_format = decoder_->media_format();
-  int width = 0;
-  int height = 0;
-  EXPECT_TRUE(media_format.GetAsInteger(MediaFormat::kWidth, &width));
-  EXPECT_EQ(kWidth, width);
-  EXPECT_TRUE(media_format.GetAsInteger(MediaFormat::kHeight, &height));
-  EXPECT_EQ(kHeight, height);
+  // matches the dimensions specified by RTC.
+  EXPECT_EQ(kWidth, decoder_->width());
+  EXPECT_EQ(kHeight, decoder_->height());
 }
 
 TEST_F(RTCVideoDecoderTest, DoSeek) {
@@ -164,13 +158,8 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
 
   decoder_->SetSize(new_width, new_height, new_reserved);
 
-  const MediaFormat& media_format = decoder_->media_format();
-  int width = 0;
-  int height = 0;
-  EXPECT_TRUE(media_format.GetAsInteger(MediaFormat::kWidth, &width));
-  EXPECT_EQ(new_width, width);
-  EXPECT_TRUE(media_format.GetAsInteger(MediaFormat::kHeight, &height));
-  EXPECT_EQ(new_height, height);
+  EXPECT_EQ(new_width, decoder_->width());
+  EXPECT_EQ(new_height, decoder_->height());
 
   message_loop_.RunAllPending();
 }

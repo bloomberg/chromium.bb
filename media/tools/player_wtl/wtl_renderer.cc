@@ -12,10 +12,9 @@ WtlVideoRenderer::WtlVideoRenderer(WtlVideoWindow* window)
 
 WtlVideoRenderer::~WtlVideoRenderer() {}
 
-// static
-bool WtlVideoRenderer::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL);
+bool WtlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
+  window_->SetSize(decoder->width(), decoder->height());
+  return true;
 }
 
 void WtlVideoRenderer::OnStop(media::FilterCallback* callback) {
@@ -23,11 +22,6 @@ void WtlVideoRenderer::OnStop(media::FilterCallback* callback) {
     callback->Run();
     delete callback;
   }
-}
-
-bool WtlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
-  window_->SetSize(width(), height());
-  return true;
 }
 
 void WtlVideoRenderer::OnFrameAvailable() {
