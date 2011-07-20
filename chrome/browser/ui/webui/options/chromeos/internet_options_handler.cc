@@ -255,18 +255,24 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("cellularApnLabel",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN));
+  localized_strings->SetString("cellularApnOther",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER));
   localized_strings->SetString("cellularApnUsername",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME));
   localized_strings->SetString("cellularApnPassword",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD));
-  localized_strings->SetString("cellularApnClear",
+  localized_strings->SetString("cellularApnUseDefault",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR));
   localized_strings->SetString("cellularApnSet",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET));
+  localized_strings->SetString("cellularApnCancel",
+      l10n_util::GetStringUTF16(
+          IDS_CANCEL));
 
   localized_strings->SetString("accessSecurityTabLink",
       l10n_util::GetStringUTF16(
@@ -754,6 +760,19 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetBoolean("shareable", shareable);
 }
 
+DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(
+    const chromeos::CellularApn& apn) {
+  DictionaryValue* dictionary = new DictionaryValue();
+  dictionary->SetString("apn", apn.apn);
+  dictionary->SetString("networkId", apn.network_id);
+  dictionary->SetString("username", apn.username);
+  dictionary->SetString("password", apn.password);
+  dictionary->SetString("name", apn.name);
+  dictionary->SetString("localizedName", apn.localized_name);
+  dictionary->SetString("language", apn.language);
+  return dictionary;
+}
+
 void InternetOptionsHandler::PopulateCellularDetails(
     const chromeos::CellularNetwork* cellular,
     DictionaryValue* dictionary) {
@@ -777,17 +796,9 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
 
-  const chromeos::CellularApn& apn = cellular->apn();
-  dictionary->SetString("apn", apn.apn);
-  dictionary->SetString("apn_network_id", apn.network_id);
-  dictionary->SetString("apn_username", apn.username);
-  dictionary->SetString("apn_password", apn.password);
-
-  const chromeos::CellularApn& last_good_apn = cellular->last_good_apn();
-  dictionary->SetString("last_good_apn", last_good_apn.apn);
-  dictionary->SetString("last_good_apn_network_id", last_good_apn.network_id);
-  dictionary->SetString("last_good_apn_username", last_good_apn.username);
-  dictionary->SetString("last_good_apn_password", last_good_apn.password);
+  dictionary->Set("apn", CreateDictionaryFromCellularApn(cellular->apn()));
+  dictionary->Set("lastGoodApn",
+                  CreateDictionaryFromCellularApn(cellular->last_good_apn()));
 
   dictionary->SetBoolean("autoConnect", cellular->auto_connect());
 
@@ -821,6 +832,14 @@ void InternetOptionsHandler::PopulateCellularDetails(
       if (deal && !deal->top_up_url().empty())
         dictionary->SetString("carrierUrl", deal->top_up_url());
     }
+
+    const chromeos::CellularApnList& apn_list = device->provider_apn_list();
+    ListValue* apn_list_value = new ListValue();
+    for (chromeos::CellularApnList::const_iterator it = apn_list.begin();
+         it != apn_list.end(); ++it) {
+      apn_list_value->Append(CreateDictionaryFromCellularApn(*it));
+    }
+    dictionary->Set("providerApnList", apn_list_value);
   }
 
   SetActivationButtonVisibility(cellular, dictionary);

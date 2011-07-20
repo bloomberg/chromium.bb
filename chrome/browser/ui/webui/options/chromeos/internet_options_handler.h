@@ -102,6 +102,11 @@ class InternetOptionsHandler
   // settings into human readable texts.
   base::DictionaryValue* CellularDataPlanToDictionary(
       const chromeos::CellularDataPlan* plan);
+
+  // Converts CellularApn stuct into dictionary for JS.
+  base::DictionaryValue* CreateDictionaryFromCellularApn(
+      const chromeos::CellularApn& apn);
+
   // Creates the map of a network.
   base::ListValue* GetNetwork(const std::string& service_path,
                               const SkBitmap& icon,

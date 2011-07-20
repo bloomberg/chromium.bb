@@ -92,22 +92,114 @@ cr.define('options', function() {
         chrome.send('buyDataPlan', []);
         OptionsPage.closeOverlay();
       });
-      $('cellularApnClear').addEventListener('click', function(event) {
-        $('cellularApn').value = "";
-        $('cellularApnUsername').value = "";
-        $('cellularApnPassword').value = "";
+      $('cellularApnUseDefault').addEventListener('click', function(event) {
         var data = $('connectionState').data;
-        chrome.send('setApn', [String(data.servicePath),
-                               String($('cellularApn').value),
-                               String($('cellularApnUsername').value),
-                               String($('cellularApnPassword').value)]);
+        var apnSelector = $('selectApn');
+
+        if (data.userApnIndex != -1) {
+          apnSelector.remove(data.userApnIndex);
+          data.userApnIndex = -1;
+        }
+
+        if (data.providerApnList.length > 0) {
+          var iApn = 0;
+          data.apn.apn = data.providerApnList[iApn].apn;
+          data.apn.username = data.providerApnList[iApn].username;
+          data.apn.password = data.providerApnList[iApn].password;
+          chrome.send('setApn', [String(data.servicePath),
+                                 String(data.apn.apn),
+                                 String(data.apn.username),
+                                 String(data.apn.password)]);
+          apnSelector.selectedIndex = iApn;
+          data.selectedApn = iApn;
+        } else {
+          data.apn.apn = '';
+          data.apn.username = '';
+          data.apn.password = '';
+          apnSelector.selectedIndex = -1;
+          data.selectedApn = -1;
+        }
+
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-list-view'),
+          false);
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-details-view'),
+          true);
       });
       $('cellularApnSet').addEventListener('click', function(event) {
+        if ($('cellularApn').value == '')
+          return;
+
         var data = $('connectionState').data;
+        var apnSelector = $('selectApn');
+
+        data.apn.apn = String($('cellularApn').value);
+        data.apn.username = String($('cellularApnUsername').value);
+        data.apn.password = String($('cellularApnPassword').value);
         chrome.send('setApn', [String(data.servicePath),
-                               String($('cellularApn').value),
-                               String($('cellularApnUsername').value),
-                               String($('cellularApnPassword').value)]);
+                                String(data.apn.apn),
+                                String(data.apn.username),
+                                String(data.apn.password)]);
+
+        if (data.userApnIndex != -1) {
+          apnSelector.remove(data.userApnIndex);
+          data.userApnIndex = -1;
+        }
+
+        var option = document.createElement('option');
+        option.textContent = data.apn.apn;
+        option.value = -1;
+        option.selected = true;
+        apnSelector.add(option, apnSelector[apnSelector.length - 1]);
+        data.userApnIndex = apnSelector.length - 2
+        data.selectedApn = data.userApnIndex;
+
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-list-view'),
+          false);
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-details-view'),
+          true);
+      });
+      $('cellularApnCancel').addEventListener('click', function(event) {
+        $('selectApn').selectedIndex = $('connectionState').data.selectedApn;
+
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-list-view'),
+          false);
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-details-view'),
+          true);
+      });
+      $('selectApn').addEventListener('change', function(event) {
+        var data = $('connectionState').data;
+        var apnSelector = $('selectApn');
+        if (apnSelector[apnSelector.selectedIndex].value != -1) {
+          chrome.send('setApn', [String(data.servicePath),
+              String(data.providerApnList[apnSelector.selectedIndex].apn),
+              String(data.providerApnList[apnSelector.selectedIndex].username),
+              String(data.providerApnList[apnSelector.selectedIndex].password)
+          ]);
+          data.selectedApn = apnSelector.selectedIndex;
+        } else if (apnSelector.selectedIndex == data.userApnIndex) {
+          chrome.send('setApn', [String(data.servicePath),
+                                 String(data.apn.apn),
+                                 String(data.apn.username),
+                                 String(data.apn.password)]);
+          data.selectedApn = apnSelector.selectedIndex;
+        } else {
+          $('cellularApn').value = data.apn.apn;
+          $('cellularApnUsername').value = data.apn.username;
+          $('cellularApnPassword').value = data.apn.password;
+
+          InternetOptions.prototype.updateHidden_(
+            cr.doc.querySelectorAll('.apn-list-view'),
+            true);
+          InternetOptions.prototype.updateHidden_(
+            cr.doc.querySelectorAll('.apn-details-view'),
+            false);
+        }
       });
       $('sim-card-lock-enabled').addEventListener('click', function(event) {
         var newValue = $('sim-card-lock-enabled').checked;
@@ -135,6 +227,12 @@ cr.define('options', function() {
           [networkType, servicePath, "options"]);
     },
 
+    updateHidden_: function(elements, hidden) {
+      for (var i = 0, el; el = elements[i]; i++) {
+        el.hidden = hidden;
+      }
+    },
+
     /**
      * Update internet page controls.
      * @private
@@ -149,8 +247,8 @@ cr.define('options', function() {
       $('vpn-section').hidden = accesslocked;
       $('remembered-section').hidden = accesslocked;
 
-      // Don't change hidden attribute on OptionsPage divs directly beucase it
-      // is used in supporting infrasture now.
+      // Don't change hidden attribute on OptionsPage divs directly because it
+      // is used in supporting infrastructure now.
       if (accesslocked && DetailsInternetPage.getInstance().visible)
         this.closeOverlay();
     }
@@ -462,18 +560,53 @@ cr.define('options', function() {
         $('operatorName').textContent = data.operatorName;
         $('operatorCode').textContent = data.operatorCode;
         $('imsi').textContent = data.imsi;
-        // If there's no custom APN show default APN that is used. These will be
-        // displayed differently when http://crosbug.com/14290 is fixed.
-        // See also http://crosbug.com/p/4058 for context.
-        if (data.apn != '') {
-          $('cellularApn').value = data.apn;
-          $('cellularApnUsername').value = data.apn_username;
-          $('cellularApnPassword').value = data.apn_password;
-        } else {
-          $('cellularApn').value = data.last_good_apn;
-          $('cellularApnUsername').value = data.last_good_apn_username;
-          $('cellularApnPassword').value = data.last_good_apn_password;
+
+        var apnSelector = $('selectApn');
+        // Clear APN lists, keep only last element that "other".
+        while (apnSelector.length != 1)
+          apnSelector.remove(0);
+        var otherOption = apnSelector[0];
+        data.selectedApn = -1;
+        data.userApnIndex = -1;
+        for (var i = 0; i < data.providerApnList.length; i++) {
+          var option = document.createElement('option');
+          var name = data.providerApnList[i].localizedName;
+          if (name == '' && data.providerApnList[i].name != '')
+            name = data.providerApnList[i].name;
+          if (name == '')
+            name = data.providerApnList[i].apn;
+          else
+            name = name + ' (' + data.providerApnList[i].apn + ')';
+          option.textContent = name;
+          option.value = i;
+          if ((data.apn.apn == data.providerApnList[i].apn &&
+               data.apn.username == data.providerApnList[i].username &&
+               data.apn.password == data.providerApnList[i].password) ||
+              (data.apn.apn == '' &&
+               data.lastGoodApn.apn == data.providerApnList[i].apn &&
+               data.lastGoodApn.username == data.providerApnList[i].username &&
+               data.lastGoodApn.password == data.providerApnList[i].password)) {
+            data.selectedApn = i;
+          }
+          // Insert new option before "other" option.
+          apnSelector.add(option, otherOption);
         }
+        if (data.selectedApn == -1 && data.apn.apn != '') {
+          var option = document.createElement('option');
+          option.textContent = data.apn.apn;
+          option.value = -1;
+          apnSelector.add(option, otherOption);
+          data.selectedApn = apnSelector.length - 2;
+          data.userApnIndex = data.selectedApn;
+        }
+        apnSelector.selectedIndex = data.selectedApn;
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-list-view'),
+          false);
+        InternetOptions.prototype.updateHidden_(
+          cr.doc.querySelectorAll('.apn-details-view'),
+          true);
+
         $('sim-card-lock-enabled').checked = data.simCardLockEnabled;
         InternetOptions.enableSecurityTab(true);
       }

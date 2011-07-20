@@ -162,31 +162,42 @@
           <td class="option-name" i18n-content="errorState"></td>
           <td id="errorState" class="option-value"></td>
         </tr>
-        <tr class="gsm-only">
+        <tr class="gsm-only apn-list-view">
+          <td class="option-name" i18n-content="cellularApnLabel"></td>
+          <td id="cellularApnLabel" class="option-value">
+            <select id="selectApn">
+              <option value="-1" i18n-content="cellularApnOther">
+              </option>
+            </select>
+          </td>
+        </tr>
+        <tr class="gsm-only apn-details-view">
           <td class="option-name" i18n-content="cellularApnLabel"></td>
           <td id="cellularApnLabel" class="option-value">
             <input id="cellularApn" type="text">
           </td>
         </tr>
-        <tr class="gsm-only">
+        <tr class="gsm-only apn-details-view">
           <td class="option-name" i18n-content="cellularApnUsername"></td>
           <td id="cellularApnUsernameLabel" class="option-value">
             <input id="cellularApnUsername" type="text">
           </td>
         </tr>
-        <tr class="gsm-only">
+        <tr class="gsm-only apn-details-view">
           <td class="option-name" i18n-content="cellularApnPassword"></td>
           <td id="cellularApnPasswordLabel" class="option-value">
             <input id="cellularApnPassword" type="password">
           </td>
         </tr>
-        <tr class="gsm-only">
+        <tr class="gsm-only apn-details-view">
           <td class="option-name"></td>
           <td class="option-value">
-            <button id="cellularApnClear"
-                i18n-content="cellularApnClear"></button>
+            <button id="cellularApnUseDefault"
+                i18n-content="cellularApnUseDefault"></button>
             <button id="cellularApnSet"
                 i18n-content="cellularApnSet"></button>
+            <button id="cellularApnCancel"
+                i18n-content="cellularApnCancel"></button>
           </td>
         </tr>
         <tr>

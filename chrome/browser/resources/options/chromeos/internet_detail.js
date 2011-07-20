@@ -80,6 +80,12 @@ cr.define('options.internet', function() {
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .cdma-only'),
           !this.cellular || this.gsm);
+      updateHidden(
+          cr.doc.querySelectorAll('#detailsInternetPage .apn-list-view'),
+          !this.cellular || !this.gsm);
+      updateHidden(
+          cr.doc.querySelectorAll('#detailsInternetPage .apn-details-view'),
+          true);
 
       updateHidden(
           cr.doc.querySelectorAll('#detailsInternetPage .password-details'),

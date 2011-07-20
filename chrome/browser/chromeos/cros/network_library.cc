@@ -816,21 +816,7 @@ static bool ParseApnList(const ListValue* list,
   for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
     if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
       apn_list->resize(apn_list->size() + 1);
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
-      dict->GetStringWithoutPathExpansion(
-          kApnProperty, &apn_list->back().apn);
-      dict->GetStringWithoutPathExpansion(
-          kApnNetworkIdProperty, &apn_list->back().network_id);
-      dict->GetStringWithoutPathExpansion(
-          kApnUsernameProperty, &apn_list->back().username);
-      dict->GetStringWithoutPathExpansion(
-          kApnPasswordProperty, &apn_list->back().password);
-      dict->GetStringWithoutPathExpansion(
-          kApnNameProperty, &apn_list->back().name);
-      dict->GetStringWithoutPathExpansion(
-          kApnLocalizedNameProperty, &apn_list->back().localized_name);
-      dict->GetStringWithoutPathExpansion(
-          kApnLanguageProperty, &apn_list->back().language);
+      apn_list->back().Set(*static_cast<const DictionaryValue*>(*it));
     } else {
       return false;
     }
