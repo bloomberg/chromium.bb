@@ -41,6 +41,7 @@ class TestURLLoader : public TestCase {
   std::string TestIgnoresBogusContentLength();
   std::string TestStreamToFile();
   std::string TestSameOriginRestriction();
+  std::string TestJavascriptURLRestriction();
   std::string TestCrossOriginRequest();
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();

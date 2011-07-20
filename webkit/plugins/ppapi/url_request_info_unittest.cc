@@ -195,10 +195,11 @@ TEST_F(URLRequestInfoTest, SetURL) {
   ASSERT_TRUE(IsExpected(GetURL(), url));
 }
 
-TEST_F(URLRequestInfoTest, SetInvalidURL) {
+TEST_F(URLRequestInfoTest, JavascriptURL) {
   const char* url = "javascript:foo = bar";
-  ASSERT_FALSE(info_->SetStringProperty(
-      PP_URLREQUESTPROPERTY_URL, url));
+  ASSERT_FALSE(info_->RequiresUniversalAccess());
+  info_->SetStringProperty(PP_URLREQUESTPROPERTY_URL, url);
+  ASSERT_TRUE(info_->RequiresUniversalAccess());
 }
 
 TEST_F(URLRequestInfoTest, SetMethod) {

@@ -258,7 +258,10 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
 }
 
 bool PPB_URLRequestInfo_Impl::RequiresUniversalAccess() const {
-  return has_custom_referrer_url_ || has_custom_content_transfer_encoding_;
+  return
+      has_custom_referrer_url_ ||
+      has_custom_content_transfer_encoding_ ||
+      url_util::FindAndCompareScheme(url_, "javascript", NULL);
 }
 
 bool PPB_URLRequestInfo_Impl::SetUndefinedProperty(
@@ -322,9 +325,6 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
   // TODO(darin): Validate input.  Perhaps at a different layer?
   switch (property) {
     case PP_URLREQUESTPROPERTY_URL:
-      // Don't allow Javascript URLs.
-      if (url_util::FindAndCompareScheme(value, "javascript", NULL))
-        return false;
       url_ = value;  // NOTE: This may be a relative URL.
       return true;
     case PP_URLREQUESTPROPERTY_METHOD:

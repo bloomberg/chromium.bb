@@ -51,6 +51,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader);
   RUN_TEST_FORCEASYNC_AND_NOT(IgnoresBogusContentLength);
   RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction);
+  RUN_TEST_FORCEASYNC_AND_NOT(JavascriptURLRestriction);
   RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest);
   RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile);
   RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect);
@@ -316,6 +317,31 @@ std::string TestURLLoader::TestCrossOriginRequest() {
   // We expect success since we allowed a cross-origin request.
   if (rv != PP_OK)
     return ReportError("URLLoader::Open()", rv);
+
+  PASS();
+}
+
+std::string TestURLLoader::TestJavascriptURLRestriction() {
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("javascript:foo = bar");
+
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::URLLoader loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+
+  // We expect a failure.
+  if (rv != PP_ERROR_NOACCESS) {
+    if (rv == PP_OK) {
+      return "URLLoader::Open() failed to block a Javascript request.";
+    } else {
+      return ReportError("URLLoader::Open()", rv);
+    }
+  }
 
   PASS();
 }
