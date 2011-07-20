@@ -12,7 +12,7 @@ chrome.test.runTests([
     // at all. The test expectations in extension_tts_apitest.cc ensure that
     // the first call to tts.speak keeps going until it's interrupted.
     var callbacks = 0;
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 1',
         {
          'enqueue': true,
@@ -25,7 +25,7 @@ chrome.test.runTests([
           chrome.test.assertNoLastError();
           callbacks++;
         });
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 2',
         {
          'enqueue': true,
@@ -37,7 +37,7 @@ chrome.test.runTests([
           chrome.test.assertNoLastError();
           callbacks++;
         });
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 3',
         {
          'enqueue': false,

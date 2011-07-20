@@ -8,6 +8,7 @@
     "bookmarks",
     "tabs",
     "experimental",
+    "tts",
     "<all_urls>"
   ],
   "content_scripts": [
@@ -21,6 +22,5 @@
         "common/extension_bridge.js"
       ]
     }
-  ],
-  "options_page": "chromevox/background/options.html"
+  ]
 }

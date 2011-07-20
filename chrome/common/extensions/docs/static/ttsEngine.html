@@ -1,10 +1,10 @@
 <p id="classSummary">
-Use the <code>chrome.experimental.ttsEngine</code> module to
+Use the <code>chrome.ttsEngine</code> module to
 implement a text-to-speech (TTS) engine using an extension. If your
 extension registers using this API, it will receive events containing
 an utterance to be spoken and other parameters when any extension or packaged
 app uses the
-<a href="experimental.tts.html">experimental.tts</a>
+<a href="tts.html">tts</a>
 module to generate speech. Your extension can then use any available
 web technology to synthesize and output the speech, and send events back
 to the calling function to report the status.
@@ -18,13 +18,10 @@ group.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>To enable this experimental API, visit
-<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
-
 <p>An extension can register itself as a speech engine. By doing so, it
 can intercept some or all calls to functions such as
-<a href="experimental.tts.html#method-speak"><code>speak()</code></a> and
-<a href="experimental.tts.html#method-stop"><code>stop()</code></a>
+<a href="tts.html#method-speak"><code>speak()</code></a> and
+<a href="tts.html#method-stop"><code>stop()</code></a>
 and provide an alternate implementation.
 Extensions are free to use any available web technology
 to provide speech, including streaming audio from a server, HTML5 audio,
@@ -34,13 +31,14 @@ send them as log messages to a remote server.</p>
 
 <h2 id="manifest">Manifest</h2>
 
-<p>To implement a TTS engine, an extension must first declare all voices
+<p>To implement a TTS engine, an extension must
+declare the "ttsEngine" permission and then declare all voices
 it provides in the extension manifest, like this:</p>
 
 <pre>{
   "name": "My TTS Engine",
   "version": "1.0",
-  <b>"permissions": ["experimental"],
+  <b>"permissions": ["ttsEngine"],
   "tts_engine": {
     "voices": [
       {
@@ -121,7 +119,7 @@ not sent by the speech engine; they are generated automatically by Chrome.</p>
 
 <p>Text-to-speech clients can get the voice information from your
 extension's manifest by calling
-<a href="experimental.tts.html#method-getVoices">getVoices()</a>,
+<a href="tts.html#method-getVoices">getVoices()</a>,
 assuming you've registered speech event listeners as described below.</p>
 
 <h2 id="handling_speech_events">Handling speech events</h2>
@@ -142,8 +140,8 @@ var stopListener = function() {
   // (stop all speech)
 };
 
-chrome.experimental.ttsEngine.onSpeak.addListener(speakListener);
-chrome.experimental.ttsEngine.onStop.addListener(stopListener);</pre>
+chrome.ttsEngine.onSpeak.addListener(speakListener);
+chrome.ttsEngine.onStop.addListener(stopListener);</pre>
 
 <p class="warning">
 <b>Important:</b>

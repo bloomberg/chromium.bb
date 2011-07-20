@@ -15,28 +15,28 @@ class ExtensionTtsSpeakFunction
  private:
   virtual ~ExtensionTtsSpeakFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.speak")
+  DECLARE_EXTENSION_FUNCTION_NAME("tts.speak")
 };
 
 class ExtensionTtsStopSpeakingFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsStopSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.stop")
+  DECLARE_EXTENSION_FUNCTION_NAME("tts.stop")
 };
 
 class ExtensionTtsIsSpeakingFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsIsSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.isSpeaking")
+  DECLARE_EXTENSION_FUNCTION_NAME("tts.isSpeaking")
 };
 
 class ExtensionTtsGetVoicesFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsGetVoicesFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.getVoices")
+  DECLARE_EXTENSION_FUNCTION_NAME("tts.getVoices")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_H_

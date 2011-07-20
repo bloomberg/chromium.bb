@@ -5,14 +5,6 @@
 // TTS api test for Chrome on ChromeOS.
 // browser_tests.exe --gtest_filter="TtsApiTest.*"
 
-if (!chrome.tts) {
-  chrome.tts = chrome.experimental.tts;
-}
-
-if (!chrome.ttsEngine) {
-  chrome.ttsEngine = chrome.experimental.ttsEngine;
-}
-
 chrome.test.runTests([
   function testWordCallbacks() {
     // Register listeners for speech functions, enabling this extension

@@ -1,8 +1,8 @@
 <p id="classSummary">
-Use the <code>chrome.experimental.tts</code> module to play synthesized
+Use the <code>chrome.tts</code> module to play synthesized
 text-to-speech (TTS) from your extension or packaged app.
 See also the related
-<a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
+<a href="ttsEngine.html">ttsEngine</a>
 module, which allows an extension to implement a speech engine.
 </p>
 
@@ -14,8 +14,9 @@ group.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>To enable this experimental API, visit
-<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
+<p>You must declare the "tts" permission
+in your extension's manifest to use this API.
+</p>
 
 <p>Chrome provides native support for speech on Windows (using SAPI
 5), Mac OS X, and Chrome OS, using speech synthesis capabilities
@@ -28,21 +29,21 @@ engines.</p>
 <p>Call <code>speak()</code> from your extension or
 packaged app to speak. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.');</pre>
+<pre>chrome.tts.speak('Hello, world.');</pre>
 
 <p>To stop speaking immediately, just call <code>stop()</code>:
 
-<pre>chrome.experimental.tts.stop();</pre>
+<pre>chrome.tts.stop();</pre>
 
 <p>You can provide options that control various properties of the speech,
 such as its rate, pitch, and more. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 2.0});</pre>
+<pre>chrome.tts.speak('Hello, world.', {'rate': 2.0});</pre>
 
 <p>It's also a good idea to specify the language so that a synthesizer
 supporting that language (and regional dialect, if applicable) is chosen.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
 <p>By default, each call to <code>speak()</code> interrupts any
@@ -52,9 +53,9 @@ addition, you can use the <code>enqueue</code> option to cause this
 utterance to be added to a queue of utterances that will be spoken
 when the current utterance has finished.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     'Speak this first.');
-chrome.experimental.tts.speak(
+chrome.tts.speak(
     'Speak this next, when the first sentence is done.', {'enqueue': true});
 </pre>
 
@@ -68,7 +69,7 @@ the callback, check
 <a href="extension.html#property-lastError">chrome.extension.lastError</a>
 to see if there were any errors.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     utterance,
     options,
     function() {
@@ -89,7 +90,7 @@ described below.</p>
 <p>To get more real-time information about the status of synthesized speech,
 pass an event listener in the options to <code>speak()</code>, like this:</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     utterance,
     {
       onEvent: function(event) {
@@ -151,7 +152,7 @@ fragment.</p>
 
 <p>For example:</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     '&lt;?xml version="1.0"?&gt;' +
     '&lt;speak&gt;' +
     '  The &lt;emphasis&gt;second&lt;/emphasis&gt; ' +
@@ -177,7 +178,7 @@ the appropriate voice, or to present the user with a list of choices.</p>
 a function that receives an array of <code>TtsVoice</code> objects as its
 argument:</p>
 
-<pre>chrome.experimental.tts.getVoices(
+<pre>chrome.tts.getVoices(
     function(voices) {
       for (var i = 0; i < voices.length; i++) {
         console.log('Voice ' + i + ':');

@@ -8,7 +8,7 @@
 chrome.test.runTests([
   function testSpeakError() {
     var callbacks = 0;
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'first try',
         {
          'enqueue': true,
@@ -21,7 +21,7 @@ chrome.test.runTests([
         function() {
           chrome.test.assertNoLastError();
         });
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'second try',
         {
          'enqueue': true,

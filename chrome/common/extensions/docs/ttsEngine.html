@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.ttsEngine - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.ttsEngine - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,7 +251,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.ttsEngine</h1>
+        <h1 class="page_title">chrome.ttsEngine</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -280,7 +280,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.ttsEngine</a>
+                <a href="#apiReference">API reference: chrome.ttsEngine</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -301,9 +301,7 @@
                   <li>
                     <a href="#global-events">Events</a>
                     <ol>
-                      <li style="display: none; ">
-                        <a href="#event-anchor">eventName</a>
-                      </li><li>
+                      <li>
                         <a href="#event-onSpeak">onSpeak</a>
                       </li><li>
                         <a href="#event-onStop">onStop</a>
@@ -325,18 +323,18 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><p id="classSummary">
-Use the <code>chrome.experimental.ttsEngine</code> module to
+Use the <code>chrome.ttsEngine</code> module to
 implement a text-to-speech (TTS) engine using an extension. If your
 extension registers using this API, it will receive events containing
 an utterance to be spoken and other parameters when any extension or packaged
 app uses the
-<a href="experimental.tts.html">experimental.tts</a>
+<a href="tts.html">tts</a>
 module to generate speech. Your extension can then use any available
 web technology to synthesize and output the speech, and send events back
 to the calling function to report the status.
@@ -350,13 +348,10 @@ group.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>To enable this experimental API, visit
-<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
-
-</p><p>An extension can register itself as a speech engine. By doing so, it
+<p>An extension can register itself as a speech engine. By doing so, it
 can intercept some or all calls to functions such as
-<a href="experimental.tts.html#method-speak"><code>speak()</code></a> and
-<a href="experimental.tts.html#method-stop"><code>stop()</code></a>
+<a href="tts.html#method-speak"><code>speak()</code></a> and
+<a href="tts.html#method-stop"><code>stop()</code></a>
 and provide an alternate implementation.
 Extensions are free to use any available web technology
 to provide speech, including streaming audio from a server, HTML5 audio,
@@ -366,13 +361,14 @@ send them as log messages to a remote server.</p>
 
 <h2 id="manifest">Manifest</h2>
 
-<p>To implement a TTS engine, an extension must first declare all voices
+<p>To implement a TTS engine, an extension must
+declare the "ttsEngine" permission and then declare all voices
 it provides in the extension manifest, like this:</p>
 
 <pre>{
   "name": "My TTS Engine",
   "version": "1.0",
-  <b>"permissions": ["experimental"],
+  <b>"permissions": ["ttsEngine"],
   "tts_engine": {
     "voices": [
       {
@@ -453,7 +449,7 @@ not sent by the speech engine; they are generated automatically by Chrome.</p>
 
 <p>Text-to-speech clients can get the voice information from your
 extension's manifest by calling
-<a href="experimental.tts.html#method-getVoices">getVoices()</a>,
+<a href="tts.html#method-getVoices">getVoices()</a>,
 assuming you've registered speech event listeners as described below.</p>
 
 <h2 id="handling_speech_events">Handling speech events</h2>
@@ -474,8 +470,8 @@ var stopListener = function() {
   // (stop all speech)
 };
 
-chrome.experimental.ttsEngine.onSpeak.addListener(speakListener);
-chrome.experimental.ttsEngine.onStop.addListener(stopListener);</pre>
+chrome.ttsEngine.onSpeak.addListener(speakListener);
+chrome.ttsEngine.onStop.addListener(stopListener);</pre>
 
 <p class="warning">
 <b>Important:</b>
@@ -494,7 +490,7 @@ dynamically decide whether to handle it.</p>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.ttsEngine</h2>
+        <h2>API reference: chrome.ttsEngine</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -595,60 +591,13 @@ dynamically decide whether to handle it.</p>
             <a name="global-events"></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
-            <div class="apiItem" style="display: none; ">
-              <a></a>
-              <h4>event name</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span><span>, Type opt_param1, Type opt_param2</span>));
-              </div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
-
-                <!-- LISTENER PARAMETERS -->
-                <div>
-                  <h4>Listener parameters</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- EXTRA PARAMETERS -->
-                <div>
-                  <h4>Extra parameters to addListener</h4>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- LISTENER RETURN VALUE -->
-                <h4>Listener returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /description -->
-            </div><div class="apiItem">
+            <div class="apiItem">
               <a name="event-onSpeak"></a>
               <h4>onSpeak</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.ttsEngine.</span><span>onSpeak</span><span class="subdued">.addListener</span>(function(<span>string utterance, object options, function sendTtsEvent</span>) <span class="subdued">{...}</span><span></span>));
+                <span class="subdued">chrome.ttsEngine.</span><span>onSpeak</span><span class="subdued">.addListener</span>(function(<span>string utterance, object options, function sendTtsEvent</span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">
@@ -1280,7 +1229,7 @@ dynamically decide whether to handle it.</p>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.tts.html#type-TtsEvent">TtsEvent</a>
+                        <a href="tts.html#type-TtsEvent">TtsEvent</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1372,7 +1321,7 @@ dynamically decide whether to handle it.</p>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.ttsEngine.</span><span>onStop</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>));
+                <span class="subdued">chrome.ttsEngine.</span><span>onStop</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>));
               </div>
 
               <div class="description">

@@ -8,7 +8,7 @@
 chrome.test.runTests([
   function testChromeOsSpeech() {
     var callbacks = 0;
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 1',
         {
          'onEvent': function(event) {
@@ -19,7 +19,7 @@ chrome.test.runTests([
         function() {
           chrome.test.assertNoLastError();
         });
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 2',
         {
          'onEvent': function(event) {

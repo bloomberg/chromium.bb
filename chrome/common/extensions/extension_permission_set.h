@@ -44,6 +44,7 @@ class ExtensionPermissionMessage {
     kHostsAll,
     kFullAccess,
     kClipboard,
+    kTtsEngine,
     kEnumBoundary
   };
 
@@ -113,6 +114,8 @@ class ExtensionAPIPermission {
     kNotification,
     kProxy,
     kTab,
+    kTts,
+    kTtsEngine,
     kUnlimitedStorage,
     kWebSocketProxyPrivate,
     kWebstorePrivate,

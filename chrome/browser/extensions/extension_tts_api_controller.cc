@@ -21,7 +21,7 @@
 namespace constants = extension_tts_api_constants;
 
 namespace events {
-const char kOnEvent[] = "experimental.ttsEngine.onEvent";
+const char kOnEvent[] = "tts.onEvent";
 };  // namespace events
 
 std::string TtsEventTypeToString(TtsEventType event_type) {

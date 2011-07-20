@@ -299,6 +299,13 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs);
   RegisterExtensionPermission(
+      ExtensionAPIPermission::kTts, "tts", 0,
+      ExtensionPermissionMessage::kNone);
+  RegisterExtensionPermission(
+      ExtensionAPIPermission::kTtsEngine, "ttsEngine",
+      IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
+      ExtensionPermissionMessage::kTtsEngine);
+  RegisterExtensionPermission(
       ExtensionAPIPermission::kWebSocketProxyPrivate,
       "webSocketProxyPrivate", 0,
       ExtensionPermissionMessage::kNone);

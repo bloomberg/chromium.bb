@@ -63,14 +63,6 @@
     "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon",
     "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle",
     "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show",
-    "chrome.experimental.tts.getVoices": "experimental.tts.html#method-getVoices",
-    "chrome.experimental.tts.isSpeaking": "experimental.tts.html#method-isSpeaking",
-    "chrome.experimental.tts.speak": "experimental.tts.html#method-speak",
-    "chrome.experimental.tts.stop": "experimental.tts.html#method-stop",
-    "chrome.experimental.ttsEngine.onEvent": "experimental.ttsEngine.html#event-onEvent",
-    "chrome.experimental.ttsEngine.onSpeak": "experimental.ttsEngine.html#event-onSpeak",
-    "chrome.experimental.ttsEngine.onStop": "experimental.ttsEngine.html#event-onStop",
-    "chrome.experimental.ttsEngine.sendTtsEvent": "experimental.ttsEngine.html#method-sendTtsEvent",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",
     "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget",
     "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted",
@@ -156,6 +148,14 @@
     "chrome.tabs.remove": "tabs.html#method-remove",
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest",
     "chrome.tabs.update": "tabs.html#method-update",
+    "chrome.tts.getVoices": "tts.html#method-getVoices",
+    "chrome.tts.isSpeaking": "tts.html#method-isSpeaking",
+    "chrome.tts.onEvent": "tts.html#event-onEvent",
+    "chrome.tts.speak": "tts.html#method-speak",
+    "chrome.tts.stop": "tts.html#method-stop",
+    "chrome.ttsEngine.onSpeak": "ttsEngine.html#event-onSpeak",
+    "chrome.ttsEngine.onStop": "ttsEngine.html#event-onStop",
+    "chrome.ttsEngine.sendTtsEvent": "ttsEngine.html#method-sendTtsEvent",
     "chrome.windows.create": "windows.html#method-create",
     "chrome.windows.get": "windows.html#method-get",
     "chrome.windows.getAll": "windows.html#method-getAll",
@@ -567,10 +567,7 @@
       "zip_path": "examples\/api\/i18n\/cld.zip"
     },
     {
-      "api_calls": [
-        "chrome.extension.onRequest",
-        "chrome.extension.sendRequest"
-      ],
+      "api_calls": [],
       "description": "Demonstrates making cross domain requests from a content script by putting Twitter trends on Google News.",
       "features": [],
       "icon": "sample-128.png",
@@ -580,13 +577,12 @@
       "protocols": [
         "https:\/\/"
       ],
-      "search_string": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS. CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
+      "search_string": "CONTENT SCRIPT CROSS-DOMAIN XMLHTTPREQUEST EXAMPLE DEMONSTRATES MAKING CROSS DOMAIN REQUESTS FROM A CONTENT SCRIPT BY PUTTING TWITTER TRENDS ON GOOGLE NEWS.",
       "source_files": [
-        "background.html",
         "contentscript.js",
         "manifest.json"
       ],
-      "source_hash": "afb208775dc8842def6ade41a83957ccffa7be1c",
+      "source_hash": "749314ae399dfc5f6759358b384bc55997fed455",
       "zip_path": "examples\/howto\/contentscript_xhr.zip"
     },
     {
@@ -815,7 +811,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "46b426df9ae054648e56756d19e15094f63a0776",
+      "source_hash": "fa560de6c20aa58332872918a330b4df00ab55cd",
       "zip_path": "examples\/api\/devtools\/resources\/chrome-firephp.zip"
     },
     {
@@ -1125,7 +1121,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {

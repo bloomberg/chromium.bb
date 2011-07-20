@@ -8,7 +8,7 @@
 chrome.test.runTests([
   function testWordCallbacks() {
     var callbacks = 0;
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'one two three',
         {
          'onEvent': function(event) {

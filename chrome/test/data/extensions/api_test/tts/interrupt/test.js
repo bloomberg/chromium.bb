@@ -8,7 +8,7 @@
 chrome.test.runTests([
   function testInterrupt() {
     var callbacks = 0;
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 1',
         {
          'enqueue': false,
@@ -21,7 +21,7 @@ chrome.test.runTests([
           chrome.test.assertNoLastError();
           callbacks++;
         });
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'text 2',
         {
          'enqueue': false,

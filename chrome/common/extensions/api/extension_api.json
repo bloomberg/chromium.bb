@@ -507,7 +507,7 @@
     ]
   },
   {
-    "namespace": "experimental.tts",
+    "namespace": "tts",
     "types": [
       {
         "id": "TtsEvent",
@@ -722,10 +722,25 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onEvent",
+        "type": "function",
+        "nodoc": true,
+        "parameters": [
+          {
+            "name": "event",
+            "$ref": "TtsEvent",
+            "description": "The event from the text-to-speech engine indicating the status of this utterance."
+          }
+        ],
+        "description": "Used to pass events back to the function calling speak()."
+      }
     ]
   },
   {
-    "namespace": "experimental.ttsEngine",
+    "namespace": "ttsEngine",
     "functions": [
       {
         "name": "sendTtsEvent",
@@ -818,19 +833,6 @@
         "name": "onStop",
         "type": "function",
         "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking. If an extension receives a call to onStop and speech is already stopped, it should do nothing (not raise an error)."
-      },
-      {
-        "name": "onEvent",
-        "type": "function",
-        "nodoc": true,
-        "parameters": [
-          {
-            "name": "event",
-            "$ref": "TtsEvent",
-            "description": "The event from the text-to-speech engine indicating the status of this utterance."
-          }
-        ],
-        "description": "Used to pass events back to the function calling speak()."
       }
     ]
   },

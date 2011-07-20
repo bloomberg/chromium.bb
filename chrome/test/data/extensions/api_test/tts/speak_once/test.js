@@ -11,7 +11,7 @@ chrome.test.runTests([
       chrome.test.assertEq(11, event.charIndex);
       chrome.test.succeed();
     }
-    chrome.experimental.tts.speak(
+    chrome.tts.speak(
         'hello world',
         {'onEvent': eventListener},
         function() {

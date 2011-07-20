@@ -1,7 +1,7 @@
 {
-  "name": "chrome.experimental.tts",
+  "name": "chrome.ttsEngine",
   "version": "0.1",
-  "description": "browser test for chrome.experimental.tts API",
+  "description": "browser test for chrome.ttsEngine API",
   "background_page": "test.html",
   "tts_engine": {
     "voices": [
@@ -12,5 +12,5 @@
       }
     ]
   },
-  "permissions": ["experimental"]
+  "permissions": ["tts", "ttsEngine"]
 }

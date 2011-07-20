@@ -43,7 +43,7 @@ class ExtensionTtsEngineSendTtsEventFunction : public SyncExtensionFunction {
  private:
   virtual ~ExtensionTtsEngineSendTtsEventFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.ttsEngine.sendTtsEvent")
+  DECLARE_EXTENSION_FUNCTION_NAME("ttsEngine.sendTtsEvent")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_ENGINE_API_H_

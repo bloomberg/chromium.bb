@@ -532,16 +532,16 @@ var chrome = chrome || {};
   function setupTtsEvents() {
     chromeHidden.tts = {};
     chromeHidden.tts.handlers = {};
-    chrome.experimental.ttsEngine.onSpeak.dispatch =
+    chrome.ttsEngine.onSpeak.dispatch =
         function(text, options, requestId) {
           var sendTtsEvent = function(event) {
-            chrome.experimental.ttsEngine.sendTtsEvent(requestId, event);
+            chrome.ttsEngine.sendTtsEvent(requestId, event);
           };
           chrome.Event.prototype.dispatch.apply(
               this, [text, options, sendTtsEvent]);
         };
     try {
-      chrome.experimental.ttsEngine.onEvent.addListener(
+      chrome.tts.onEvent.addListener(
           function(event) {
             var eventHandler = chromeHidden.tts.handlers[event.srcId];
             if (eventHandler) {
@@ -1008,7 +1008,7 @@ var chrome = chrome || {};
       return [requestId, suggestions];
     };
 
-    apiFunctions["experimental.tts.speak"].handleRequest = function() {
+    apiFunctions["tts.speak"].handleRequest = function() {
       var args = arguments;
       if (args.length > 1 && args[1] && args[1].onEvent) {
         var id = GetNextTtsEventId();
@@ -1036,9 +1036,9 @@ var chrome = chrome || {};
   if (!chrome.experimental.accessibility)
     chrome.experimental.accessibility = {};
 
-  if (!chrome.experimental.tts)
-    chrome.experimental.tts = {};
+  if (!chrome.tts)
+    chrome.tts = {};
 
-  if (!chrome.experimental.ttsEngine)
-    chrome.experimental.ttsEngine = {};
+  if (!chrome.ttsEngine)
+    chrome.ttsEngine = {};
 })();

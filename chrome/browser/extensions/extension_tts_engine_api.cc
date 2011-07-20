@@ -18,8 +18,8 @@
 namespace constants = extension_tts_api_constants;
 
 namespace events {
-const char kOnSpeak[] = "experimental.ttsEngine.onSpeak";
-const char kOnStop[] = "experimental.ttsEngine.onStop";
+const char kOnSpeak[] = "ttsEngine.onSpeak";
+const char kOnStop[] = "ttsEngine.onStop";
 };  // namespace events
 
 void GetExtensionVoices(Profile* profile, ListValue* result_voices) {

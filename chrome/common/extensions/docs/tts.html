@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.tts - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.tts - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,7 +251,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.tts</h1>
+        <h1 class="page_title">chrome.tts</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -294,7 +294,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.tts</a>
+                <a href="#apiReference">API reference: chrome.tts</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -318,10 +318,10 @@
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
-                    <a>Events</a>
+                  <li>
+                    <a href="#global-events">Events</a>
                     <ol>
-                      <li>
+                      <li style="display: none; ">
                         <a href="#event-anchor">eventName</a>
                       </li>
                     </ol>
@@ -343,16 +343,16 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><p id="classSummary">
-Use the <code>chrome.experimental.tts</code> module to play synthesized
+Use the <code>chrome.tts</code> module to play synthesized
 text-to-speech (TTS) from your extension or packaged app.
 See also the related
-<a href="experimental.ttsEngine.html">experimental.ttsEngine</a>
+<a href="ttsEngine.html">ttsEngine</a>
 module, which allows an extension to implement a speech engine.
 </p>
 
@@ -364,10 +364,11 @@ group.</p>
 
 <h2 id="overview">Overview</h2>
 
-<p>To enable this experimental API, visit
-<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
+<p>You must declare the "tts" permission
+in your extension's manifest to use this API.
+</p>
 
-</p><p>Chrome provides native support for speech on Windows (using SAPI
+<p>Chrome provides native support for speech on Windows (using SAPI
 5), Mac OS X, and Chrome OS, using speech synthesis capabilities
 provided by the operating system. On all platforms, the user can
 install extensions that register themselves as alternative speech
@@ -378,21 +379,21 @@ engines.</p>
 <p>Call <code>speak()</code> from your extension or
 packaged app to speak. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.');</pre>
+<pre>chrome.tts.speak('Hello, world.');</pre>
 
 <p>To stop speaking immediately, just call <code>stop()</code>:
 
-</p><pre>chrome.experimental.tts.stop();</pre>
+</p><pre>chrome.tts.stop();</pre>
 
 <p>You can provide options that control various properties of the speech,
 such as its rate, pitch, and more. For example:</p>
 
-<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 2.0});</pre>
+<pre>chrome.tts.speak('Hello, world.', {'rate': 2.0});</pre>
 
 <p>It's also a good idea to specify the language so that a synthesizer
 supporting that language (and regional dialect, if applicable) is chosen.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     'Hello, world.', {'lang': 'en-US', 'rate': 2.0});</pre>
 
 <p>By default, each call to <code>speak()</code> interrupts any
@@ -402,9 +403,9 @@ addition, you can use the <code>enqueue</code> option to cause this
 utterance to be added to a queue of utterances that will be spoken
 when the current utterance has finished.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     'Speak this first.');
-chrome.experimental.tts.speak(
+chrome.tts.speak(
     'Speak this next, when the first sentence is done.', {'enqueue': true});
 </pre>
 
@@ -418,7 +419,7 @@ the callback, check
 <a href="extension.html#property-lastError">chrome.extension.lastError</a>
 to see if there were any errors.</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     utterance,
     options,
     function() {
@@ -439,7 +440,7 @@ described below.</p>
 <p>To get more real-time information about the status of synthesized speech,
 pass an event listener in the options to <code>speak()</code>, like this:</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     utterance,
     {
       onEvent: function(event) {
@@ -501,7 +502,7 @@ fragment.</p>
 
 <p>For example:</p>
 
-<pre>chrome.experimental.tts.speak(
+<pre>chrome.tts.speak(
     '&lt;?xml version="1.0"?&gt;' +
     '&lt;speak&gt;' +
     '  The &lt;emphasis&gt;second&lt;/emphasis&gt; ' +
@@ -527,7 +528,7 @@ the appropriate voice, or to present the user with a list of choices.</p>
 a function that receives an array of <code>TtsVoice</code> objects as its
 argument:</p>
 
-<pre>chrome.experimental.tts.getVoices(
+<pre>chrome.tts.getVoices(
     function(voices) {
       for (var i = 0; i &lt; voices.length; i++) {
         console.log('Voice ' + i + ':');
@@ -543,7 +544,7 @@ argument:</p>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.tts</h2>
+        <h2>API reference: chrome.tts</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -575,7 +576,7 @@ argument:</p>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.tts.getVoices</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.tts.getVoices</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -702,7 +703,7 @@ argument:</p>
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.tts.html#type-TtsVoice">TtsVoice</a>
+                        <a href="tts.html#type-TtsVoice">TtsVoice</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -725,7 +726,7 @@ argument:</p>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Array of <a href="experimental.tts.html#type-TtsVoice">TtsVoice</a> objects representing the available voices for speech synthesis.</dd>
+          <dd>Array of <a href="tts.html#type-TtsVoice">TtsVoice</a> objects representing the available voices for speech synthesis.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -782,7 +783,7 @@ argument:</p>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.tts.isSpeaking</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.tts.isSpeaking</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -978,7 +979,7 @@ argument:</p>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.tts.speak</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                  <span>chrome.tts.speak</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>utterance</span></var></span><span class="optional"><span>, </span><span>object</span>
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -1885,7 +1886,7 @@ argument:</p>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.tts.html#type-TtsEvent">TtsEvent</a>
+                        <a href="tts.html#type-TtsEvent">TtsEvent</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2085,7 +2086,7 @@ argument:</p>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.tts.stop</span>(<span style="display: none; "><span>, </span><span></span>
+                  <span>chrome.tts.stop</span>(<span style="display: none; "><span>, </span><span></span>
                       <var><span></span></var></span>)</div>
 
               <div class="description">
@@ -2148,11 +2149,11 @@ argument:</p>
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
-            <a></a>
+          <div id="eventsTemplate" class="apiGroup">
+            <a name="global-events"></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
-            <div class="apiItem">
+            <div class="apiItem" style="display: none; ">
               <a></a>
               <h4>event name</h4>
 
