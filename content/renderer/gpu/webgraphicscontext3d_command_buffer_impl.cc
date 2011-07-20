@@ -106,6 +106,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (web_view && web_view->mainFrame())
     active_url = GURL(web_view->mainFrame()->document().url());
 
+  RendererGLContext* parent_context = NULL;
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
@@ -124,6 +125,22 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
               &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
     }
   } else {
+    bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableAcceleratedCompositing);
+    // If GPU compositing is enabled we need to create a GL context that shares
+    // resources with the compositor's context.
+    if (compositing_enabled) {
+      // Asking for the WebGraphicsContext3D on the WebView will force one to
+      // be created if it doesn't already exist. When the compositor is created
+      // for the view it will use the same context.
+      WebKit::WebGraphicsContext3D* view_context =
+          web_view->graphicsContext3D();
+      if (view_context) {
+        WebGraphicsContext3DCommandBufferImpl* context_impl =
+            static_cast<WebGraphicsContext3DCommandBufferImpl*>(view_context);
+        parent_context = context_impl->context_;
+      }
+    }
     context_ = RendererGLContext::CreateOffscreenContext(
         host,
         gfx::Size(1, 1),
@@ -133,6 +150,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     web_view_ = NULL;
   }
   if (!context_)
+    return false;
+
+  if (!context_->SetParent(parent_context))
     return false;
 
   gl_ = context_->GetImplementation();
@@ -180,14 +200,6 @@ int WebGraphicsContext3DCommandBufferImpl::height() {
 
 bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
   return true;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
-    WebGraphicsContext3D* parent_context) {
-  WebGraphicsContext3DCommandBufferImpl* parent_context_impl =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(parent_context);
-  return context_->SetParent(
-      parent_context_impl ? parent_context_impl->context() : NULL);
 }
 
 WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {

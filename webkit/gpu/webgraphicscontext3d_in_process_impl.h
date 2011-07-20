@@ -65,8 +65,6 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   virtual bool isGLES2Compliant();
 
-  virtual bool setParentContext(WebGraphicsContext3D* parent_context);
-
   virtual void reshape(int width, int height);
 
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize);

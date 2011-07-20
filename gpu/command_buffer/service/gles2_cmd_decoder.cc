@@ -470,7 +470,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          uint32 parent_texture_id);
   virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
   virtual bool UpdateOffscreenFrameBufferSize();
-  void UpdateParentTextureInfo();
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
@@ -2276,36 +2275,21 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     RestoreClearState();
   }
 
-  // Allocate the offscreen saved color texture.
-  DCHECK(offscreen_saved_color_format_);
-  offscreen_saved_color_texture_->AllocateStorage(
-      pending_offscreen_size_, offscreen_saved_color_format_);
+  if (parent_ || IsOffscreenBufferMultisampled()) {
+    DCHECK(offscreen_saved_color_format_);
+    offscreen_saved_color_texture_->AllocateStorage(
+        pending_offscreen_size_, offscreen_saved_color_format_);
 
-  offscreen_saved_frame_buffer_->AttachRenderTexture(
-      offscreen_saved_color_texture_.get());
-  if (offscreen_saved_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-               << "because offscreen saved FBO was incomplete.";
-    return false;
+    offscreen_saved_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
+    if (offscreen_saved_frame_buffer_->CheckStatus() !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+                 << "because offscreen saved FBO was incomplete.";
+      return false;
+    }
   }
 
-  // Clear the offscreen color texture.
-  {
-    ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
-    glClearColor(0, 0, 0, 0);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glDisable(GL_SCISSOR_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
-    RestoreClearState();
-  }
-
-  UpdateParentTextureInfo();
-
-  return true;
-}
-
-void GLES2DecoderImpl::UpdateParentTextureInfo() {
   if (parent_) {
     // Update the info about the offscreen saved color texture in the parent.
     // The reference to the parent is a weak pointer and will become null if the
@@ -2349,7 +2333,19 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         info,
         GL_TEXTURE_WRAP_T,
         GL_CLAMP_TO_EDGE);
+
+    // Clear the offscreen color texture.
+    {
+      ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
+      glClearColor(0, 0, 0, 0);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glDisable(GL_SCISSOR_TEST);
+      glClear(GL_COLOR_BUFFER_BIT);
+      RestoreClearState();
+    }
   }
+
+  return true;
 }
 
 void GLES2DecoderImpl::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
@@ -2452,9 +2448,6 @@ void GLES2DecoderImpl::Destroy() {
 
 bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
                                  uint32 new_parent_texture_id) {
-  if (!offscreen_saved_color_texture_.get())
-    return false;
-
   // Remove the saved frame buffer mapping from the parent decoder. The
   // parent pointer is a weak pointer so it will be null if the parent has
   // already been destroyed.
@@ -2487,8 +2480,6 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
     new_parent_impl->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
 
     parent_ = new_parent_impl->AsWeakPtr();
-
-    UpdateParentTextureInfo();
   } else {
     parent_.reset();
   }
@@ -6501,7 +6492,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       ScopedFrameBufferBinder binder(this,
                                      offscreen_target_frame_buffer_->id());
 
-      if (surface_->IsOffscreen()) {
+      if (parent_) {
         // Copy the target frame buffer to the saved offscreen texture.
         offscreen_saved_color_texture_->Copy(
             offscreen_saved_color_texture_->size(),

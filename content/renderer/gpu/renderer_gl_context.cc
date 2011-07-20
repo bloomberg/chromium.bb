@@ -224,9 +224,6 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
 }
 
 bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
-  if (parent_.get() == new_parent)
-    return true;
-
   // Allocate a texture ID with respect to the parent and change the parent.
   uint32 new_parent_texture_id = 0;
   if (command_buffer_) {
