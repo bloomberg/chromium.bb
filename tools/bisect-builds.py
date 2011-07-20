@@ -14,6 +14,7 @@ it will ask you whether it is good or bad before continuing the search.
 
 # The root URL for storage.
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
+BASE_URL_RECENT = 'http://build.chromium.org/f/chromium/snapshots'
 
 # URL to the ViewVC commit page.
 BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
@@ -39,12 +40,13 @@ import zipfile
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
-  def __init__(self, platform, good_revision, bad_revision):
+  def __init__(self, platform, good_revision, bad_revision, use_recent):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.platform = platform  # What's passed in to the '-a/--archive' option.
     self.good_revision = good_revision
     self.bad_revision = bad_revision
+    self.use_recent = use_recent
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -82,10 +84,19 @@ class PathContext(object):
     return BASE_URL + '/?delimiter=/&prefix=' + self._listing_platform_dir + \
         marker_param
 
+  def GetListingURLRecent(self):
+    """Returns the URL for a directory listing of recent builds."""
+    return BASE_URL_RECENT + '/' + self._listing_platform_dir
+
   def GetDownloadURL(self, revision):
     """Gets the download URL for a build archive of a specific revision."""
-    return "%s/%s%d/%s" % (
-        BASE_URL, self._listing_platform_dir, revision, self.archive_name)
+    if self.use_recent:
+      return "%s/%s%d/%s" % (
+          BASE_URL_RECENT, self._listing_platform_dir, revision,
+          self.archive_name)
+    else:
+      return "%s/%s%d/%s" % (
+          BASE_URL, self._listing_platform_dir, revision, self.archive_name)
 
   def GetLastChangeURL(self):
     """Returns a URL to the LAST_CHANGE file."""
@@ -183,12 +194,27 @@ def ParseDirectoryIndex(context):
   return revisions
 
 
+def ParseDirectoryIndexRecent(context):
+  """Parses the recent builds directory listing into a list of revision
+  numbers."""
+  handle = urllib.urlopen(context.GetListingURLRecent())
+  document = handle.read()
+
+  # Looking for: <a href="92976/">92976/</a>
+  return re.findall(r"<a href=\"(\d+)/\">\1/</a>", document)
+
+
 def GetRevList(context):
   """Gets the list of revision numbers between |good_revision| and
   |bad_revision| of the |context|."""
   # Download the revlist and filter for just the range between good and bad.
   rev_range = range(context.good_revision, context.bad_revision)
-  revlist = map(int, ParseDirectoryIndex(context))
+  revisions = []
+  if context.use_recent:
+    revisions = ParseDirectoryIndexRecent(context)
+  else:
+    revisions = ParseDirectoryIndex(context)
+  revlist = map(int, revisions)
   revlist = filter(lambda r: r in rev_range, revlist)
   revlist.sort()
   return revlist
@@ -219,6 +245,8 @@ def TryRevision(context, rev, profile, args):
     print 'Fetching ' + download_url
     urllib.urlretrieve(download_url, context.archive_name, _ReportHook)
     print
+    # Throw an exception if the download was less than 1000 bytes.
+    if os.path.getsize(context.archive_name) < 1000: raise Exception()
   except Exception, e:
     print('Could not retrieve the download. Sorry.')
     sys.exit(-1)
@@ -251,9 +279,7 @@ def AskIsGoodBuild(rev):
       return response == 'g'
 
 
-def Bisect(good,
-           bad,
-           revlist,
+def Bisect(revlist,
            context,
            try_args=(),
            profile='profile',
@@ -261,8 +287,6 @@ def Bisect(good,
   """Tries to find the exact commit where a regression was introduced by
   running a binary search on all archived builds in a given revision range.
 
-  @param good The index in revlist of the last known good revision.
-  @param bad The index in revlist of the first known bad revision.
   @param revlist A list of chromium revision numbers to check.
   @param context A PathContext object.
   @param try_args A tuple of arguments to pass to the predicate function.
@@ -271,6 +295,8 @@ def Bisect(good,
                    chromium revision is good.
   """
 
+  good = 0
+  bad = len(revlist) - 1
   last_known_good_rev = revlist[good]
   first_known_bad_rev = revlist[bad]
 
@@ -291,7 +317,7 @@ def Bisect(good,
     # Let the user give this rev a spin (in her own profile, if she wants).
     TryRevision(context, test_rev, profile, try_args)
     if predicate(test_rev):
-      last_known_good_rev = revlist[good]
+      last_known_good_rev = test_rev
       good = test + 1
     else:
       bad = test
@@ -319,6 +345,12 @@ def main():
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
                     'Defaults to a clean profile.', default = 'profile')
+  parser.add_option('-r', '--recent',
+                    dest = "recent",
+                    default = False,
+                    action = "store_true",
+                    help = 'Use recent builds from about the last 2 months ' +
+                    'for higher granularity bisecting.')
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -334,7 +366,7 @@ def main():
     return 1
 
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0)
+  context = PathContext(opts.archive, 0, 0, opts.recent)
 
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
@@ -374,16 +406,8 @@ def main():
     print 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     sys.exit(1)
 
-  # If we don't have a |good_rev|, set it to be the first revision possible.
-  if good_rev == 0:
-    good_rev = revlist[0]
-
-  # These are indexes of |revlist|.
-  good = 0
-  bad = len(revlist) - 1
-
   (last_known_good_rev, first_known_bad_rev) = Bisect(
-      good, bad, revlist, context, args, opts.profile)
+      revlist, context, args, opts.profile)
 
   # We're done. Let the user know the results in an official manner.
   print('You are probably looking for build %d.' % first_known_bad_rev)
