@@ -14,48 +14,47 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
 
 #include "native_client/src/include/portability.h"
-
-typedef unsigned char bool;
+#include "native_client/src/shared/utils/types.h"
 
 /* Features needed to show that the architecture is supported. */
 typedef struct nacl_arch_features {
-  bool f_cpuid_supported;  /* CPUID is defined for the hardward. */
-  bool f_cpu_supported;    /* CPU is one we support. */
+  Bool f_cpuid_supported;  /* CPUID is defined for the hardward. */
+  Bool f_cpu_supported;    /* CPU is one we support. */
 } nacl_arch_features;
 
 /* Features we can get about the x86 hardware. */
 typedef struct cpu_feature_struct {
   nacl_arch_features arch_features;
-  bool f_x87;
-  bool f_MMX;
-  bool f_SSE;
-  bool f_SSE2;
-  bool f_SSE3;
-  bool f_SSSE3;
-  bool f_SSE41;
-  bool f_SSE42;
-  bool f_MOVBE;
-  bool f_POPCNT;
-  bool f_CX8;
-  bool f_CX16;
-  bool f_CMOV;
-  bool f_MON;
-  bool f_FXSR;
-  bool f_CLFLUSH;
-  bool f_TSC;
+  Bool f_x87;
+  Bool f_MMX;
+  Bool f_SSE;
+  Bool f_SSE2;
+  Bool f_SSE3;
+  Bool f_SSSE3;
+  Bool f_SSE41;
+  Bool f_SSE42;
+  Bool f_MOVBE;
+  Bool f_POPCNT;
+  Bool f_CX8;
+  Bool f_CX16;
+  Bool f_CMOV;
+  Bool f_MON;
+  Bool f_FXSR;
+  Bool f_CLFLUSH;
+  Bool f_TSC;
   /* These instructions are illegal but included for completeness */
-  bool f_MSR;
-  bool f_VME;
-  bool f_PSN;
-  bool f_VMX;
+  Bool f_MSR;
+  Bool f_VME;
+  Bool f_PSN;
+  Bool f_VMX;
   /* AMD-specific features */
-  bool f_3DNOW;
-  bool f_EMMX;
-  bool f_E3DNOW;
-  bool f_LZCNT;
-  bool f_SSE4A;
-  bool f_LM;
-  bool f_SVM;
+  Bool f_3DNOW;
+  Bool f_EMMX;
+  Bool f_E3DNOW;
+  Bool f_LZCNT;
+  Bool f_SSE4A;
+  Bool f_LM;
+  Bool f_SVM;
 } CPUFeatures;
 
 /* Define the maximum length of a CPUID string.
@@ -114,6 +113,6 @@ extern void GetCPUFeatures(NaClCPUData* data, CPUFeatures *cpuf);
 extern char *GetCPUIDString(NaClCPUData* data);
 
 /* Returns true if CPUID is defined, and the CPU is supported. */
-extern bool NaClArchSupported(NaClCPUData* data);
+extern Bool NaClArchSupported(NaClCPUData* data);
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

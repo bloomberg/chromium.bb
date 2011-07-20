@@ -314,7 +314,7 @@ char *GetCPUIDString(NaClCPUData* data) {
 }
 
 /* Returns true if the given feature is defined by the CPUID. */
-static bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
+static Bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   uint32_t *fv = data->_featurev;
 #if 0
@@ -322,9 +322,9 @@ static bool CheckCPUFeature(NaClCPUData* data, CPUFeatureID fid) {
          fv[f->reg], f->mask);
 #endif
   if (fv[f->reg] & f->mask) {
-    return 1;
+    return TRUE;
   } else {
-    return 0;
+    return FALSE;
   }
 }
 
@@ -346,15 +346,15 @@ static void CheckNaClArchFeatures(NaClCPUData* data,
   }
 }
 
-bool NaClArchSupported(NaClCPUData* data) {
+Bool NaClArchSupported(NaClCPUData* data) {
   nacl_arch_features features;
   CheckNaClArchFeatures(data, &features);
-  return features.f_cpuid_supported && features.f_cpu_supported;
+  return (Bool) (features.f_cpuid_supported && features.f_cpu_supported);
 }
 
 void NaClSetAllCPUFeatures(CPUFeatures *features) {
-  /* Since CPUFeatures is a struct that contains only bools, we could
-   * use any non-zero byte here, but 0xff seems safest.
+  /* Since CPUFeatures is a struct that contains only Bools, we could
+   * use any non-zero value here, but 0xff seems safest.
    */
   memset(features, 0xff, sizeof(*features));
 }

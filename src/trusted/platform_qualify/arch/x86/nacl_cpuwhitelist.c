@@ -48,57 +48,57 @@ static const char* const kNaclCpuWhitelist[] = {
 
 
 
-static bool VerifyCpuList(const char* const cpulist[], int n) {
+static Bool VerifyCpuList(const char* const cpulist[], int n) {
   int i;
   /* check lengths */
   for (i = 0; i < n; i++) {
     if (strlen(cpulist[i]) != kCPUIDStringLength - 1) {
-      return 0;
+      return FALSE;
     }
   }
 
   /* check order */
   for (i = 1; i < n; i++) {
     if (strncmp(cpulist[i-1], cpulist[i], kCPUIDStringLength) >= 0) {
-      return 0;
+      return FALSE;
     }
   }
 
-  return 1;
+  return TRUE;
 }
 
 
-bool NaCl_VerifyBlacklist() {
+Bool NaCl_VerifyBlacklist() {
   return VerifyCpuList(kNaclCpuBlacklist, NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }
 
 
-bool NaCl_VerifyWhitelist() {
+Bool NaCl_VerifyWhitelist() {
   return VerifyCpuList(kNaclCpuWhitelist, NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 
-static bool IsCpuInList(const char *myid, const char* const cpulist[], int n) {
-  return (NULL != bsearch(myid, cpulist, n, sizeof(char*), idcmp));
+static Bool IsCpuInList(const char *myid, const char* const cpulist[], int n) {
+  return (Bool) (NULL != bsearch(myid, cpulist, n, sizeof(char*), idcmp));
 }
 
 
 /* for testing */
-bool NaCl_CPUIsWhitelisted(const char *myid) {
+Bool NaCl_CPUIsWhitelisted(const char *myid) {
   return IsCpuInList(myid,
                      kNaclCpuWhitelist,
                      NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 /* for testing */
-bool NaCl_CPUIsBlacklisted(const char *myid) {
+Bool NaCl_CPUIsBlacklisted(const char *myid) {
   return IsCpuInList(myid,
                      kNaclCpuBlacklist,
                      NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }
 
 
-bool NaCl_ThisCPUIsWhitelisted() {
+Bool NaCl_ThisCPUIsWhitelisted() {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);
@@ -108,7 +108,7 @@ bool NaCl_ThisCPUIsWhitelisted() {
                      NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
-bool NaCl_ThisCPUIsBlacklisted() {
+Bool NaCl_ThisCPUIsBlacklisted() {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);

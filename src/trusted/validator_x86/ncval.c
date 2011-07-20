@@ -513,16 +513,22 @@ static void usage() {
   exit(0);
 }
 
-/* Checks if arg is one of the expected "bool" flags, and if so, sets
+/* Checks if arg is one of the expected "Bool" flags, and if so, sets
  * the corresponding flag and returns true.
- * Note: This only works on bool type. To grok Bool type, call GrokABoolFlag.
  */
-static Bool GrokAboolFlag(const char *arg) {
+static Bool GrokABoolFlag(const char *arg) {
   /* A set of boolean flags to be checked */
   static struct {
     const char *flag_name;
-    bool *flag_ptr;
+    Bool *flag_ptr;
   } flags[] = {
+    { "--segments" , &NACL_FLAGS_analyze_segments },
+    { "--stubout", &NACL_FLAGS_stubout_memory },
+    { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
+    { "-t", &NACL_FLAGS_print_timing },
+    { "--use_iter", &NACL_FLAGS_use_iter },
+    { "--stats", &NACL_FLAGS_stats_print },
+    { "--annotate", &NACL_FLAGS_ncval_annotate },
     { "--x87"    , &ncval_cpu_features.f_x87 },
     { "--MMX"    , &ncval_cpu_features.f_MMX },
     { "--SSE"    , &ncval_cpu_features.f_SSE },
@@ -552,35 +558,6 @@ static Bool GrokAboolFlag(const char *arg) {
     { "--LM"     , &ncval_cpu_features.f_LM },
     { "--SVM"    , &ncval_cpu_features.f_SVM },
   };
-  Bool flag;
-  int i;
-  for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
-    if (GrokBoolFlag(flags[i].flag_name, arg, &flag)) {
-      *flags[i].flag_ptr = flag;
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/* Checks if arg is one of the expected "Bool" flags, and if so, sets
- * the corresponding flag and returns true.
- * Note: This only works on Bool type. To grok bool type, call GrokAboolFlag.
- */
-static Bool GrokABoolFlag(const char *arg) {
-  /* A set of boolean flags to be checked */
-  static struct {
-    const char *flag_name;
-    Bool *flag_ptr;
-  } flags[] = {
-    { "--segments" , &NACL_FLAGS_analyze_segments },
-    { "--stubout", &NACL_FLAGS_stubout_memory },
-    { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
-    { "-t", &NACL_FLAGS_print_timing },
-    { "--use_iter", &NACL_FLAGS_use_iter },
-    { "--stats", &NACL_FLAGS_stats_print },
-    { "--annotate", &NACL_FLAGS_ncval_annotate },
-  };
   int i;
   for (i = 0; i < NACL_ARRAY_SIZE(flags); ++i) {
     if (GrokBoolFlag(flags[i].flag_name, arg, flags[i].flag_ptr)) {
@@ -600,10 +577,7 @@ static int GrokFlags(int argc, const char *argv[]) {
   for (i = 1; i < argc; ++i) {
     Bool flag;
     const char *arg = argv[i];
-    if (GrokAboolFlag(arg) ||
-        GrokABoolFlag(arg) || /* Note: two calls needed for different types:
-                               * bool and Bool.
-                               */
+    if (GrokABoolFlag(arg) ||
         GrokCstringFlag("--hex_text", arg, &NACL_FLAGS_hex_text) ||
         GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
         GrokIntFlag("--max_errors", arg, &NACL_FLAGS_max_reported_errors) ||
