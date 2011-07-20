@@ -6,6 +6,7 @@
 
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,6 +67,8 @@
   }
   [self setDisplayURL:initialUrl_];
   [super awakeFromNib];
+  [self expandNodes:
+      [self bookmarkModel]->expanded_state_tracker()->GetExpandedNodes()];
 }
 
 - (void)nodeRemoved:(const BookmarkNode*)node
@@ -106,7 +109,7 @@
   return okEnabled;
 }
 
-// The the bookmark's URL is assumed to be valid (otherwise the OK button
+// The bookmark's URL is assumed to be valid (otherwise the OK button
 // should not be enabled). Previously existing bookmarks for which the
 // parent has not changed are updated in-place. Those for which the parent
 // has changed are removed with a new node created under the new parent.
@@ -140,6 +143,11 @@
     model->AddURL(newParentNode, newParentNode->child_count(), newTitle,
                   newURL);
   }
+
+  // Update the expanded state.
+  BookmarkExpandedStateTracker::Nodes expanded_nodes = [self getExpandedNodes];
+  [self bookmarkModel]->expanded_state_tracker()->
+      SetExpandedNodes(expanded_nodes);
   return [NSNumber numberWithBool:YES];
 }
 

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
+#include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 
 class BookmarkEditorBaseControllerBridge;
 class BookmarkModel;
@@ -37,6 +38,7 @@ class BookmarkModel;
   NSString* initialName_;
   NSString* displayName_;  // Bound to a text field in the dialog.
   BOOL okEnabled_;  // Bound to the OK button.
+  BOOL creatingNewFolders_;  // True while in createNewFolders.
   // An array of BookmarkFolderInfo where each item describes a folder in the
   // BookmarkNode structure.
   scoped_nsobject<NSArray> folderTreeArray_;
@@ -92,6 +94,12 @@ class BookmarkModel;
 // the original |parentNode_|.  If the tree view is showing but nothing is
 // selected then the root node is returned.
 - (const BookmarkNode*)selectedNode;
+
+// Expands the set of BookmarkNodes in |nodes|.
+- (void)expandNodes:(const BookmarkExpandedStateTracker::Nodes&)nodes;
+
+// Returns the set of expanded BookmarkNodes.
+- (BookmarkExpandedStateTracker::Nodes)getExpandedNodes;
 
 // Select/highlight the given node within the browser tree view.  If the
 // node is nil then select the bookmark bar node.  Exposed for unit test.

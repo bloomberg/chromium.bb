@@ -60,6 +60,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     model.AddURL(folder_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
     model.AddURL(folder_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
     model.AddURL(folder_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
+    model.AddFolder(folder_c_, 4, ASCIIToUTF16("c-4"));
 
     model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
@@ -120,7 +121,7 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   EXPECT_EQ(0, subchild->child_count());
   // c
   child = root.GetChild(2);
-  EXPECT_EQ(4, child->child_count());
+  EXPECT_EQ(5, child->child_count());
   subchild = child->GetChild(0);
   EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(1);
@@ -128,6 +129,8 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   subchild = child->GetChild(2);
   EXPECT_EQ(0, subchild->child_count());
   subchild = child->GetChild(3);
+  EXPECT_EQ(0, subchild->child_count());
+  subchild = child->GetChild(4);
   EXPECT_EQ(0, subchild->child_count());
   // d
   child = root.GetChild(3);
@@ -216,6 +219,29 @@ TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
   [controller_ cancel:nil];
 }
 
+// Verifies expandeNodes and getExpandedNodes.
+TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
+  BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
+
+  // Sets up the state we're going to expand.
+  BookmarkExpandedStateTracker::Nodes nodes;
+  nodes.insert(model.GetBookmarkBarNode());
+  nodes.insert(folder_b_);
+  nodes.insert(folder_c_);
+
+  // Initial state shouldn't match expected state, otherwise this test isn't
+  // really going to test anything.
+  BookmarkExpandedStateTracker::Nodes actual = [controller_ getExpandedNodes];
+  EXPECT_NE(actual, nodes);
+
+  [controller_ expandNodes:nodes];
+
+  actual = [controller_ getExpandedNodes];
+
+  EXPECT_EQ(nodes, actual);
+
+  [controller_ cancel:nil];
+}
 
 class BookmarkFolderInfoTest : public CocoaTest { };
 

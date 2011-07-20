@@ -247,7 +247,7 @@ TEST_F(BookmarkBarFolderControllerTest, ReleaseOnClose) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
- BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
+  BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(parentButton);
 
   // If parent is a BookmarkBarController, grow down.
