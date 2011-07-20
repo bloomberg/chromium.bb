@@ -34,6 +34,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/url_fetcher.h"
+#include "net/base/async_host_resolver.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"
@@ -160,8 +161,24 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     }
   }
 
-  net::HostResolver* global_host_resolver =
+  net::HostResolver* global_host_resolver = NULL;
+  if (command_line.HasSwitch(switches::kDnsServer)) {
+    std::string dns_ip_string =
+      command_line.GetSwitchValueASCII(switches::kDnsServer);
+    net::IPAddressNumber dns_ip_number;
+    if (net::ParseIPLiteralToNumber(dns_ip_string, &dns_ip_number)) {
+      global_host_resolver =
+        net::CreateAsyncHostResolver(parallelism, dns_ip_number, net_log);
+    } else {
+      LOG(ERROR) << "Invalid IP address specified for --dns-server: "
+                 << dns_ip_string;
+    }
+  }
+
+  if (!global_host_resolver) {
+    global_host_resolver =
       net::CreateSystemHostResolver(parallelism, retry_attempts, net_log);
+  }
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
