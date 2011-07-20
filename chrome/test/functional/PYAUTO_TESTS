@@ -165,6 +165,8 @@
       '-sync.SyncTest.testDisableAndEnableDatatypes',
       # crbug.com/88190
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
+      # crbug.com/89784
+      '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
     ],
 
     'mac': [
