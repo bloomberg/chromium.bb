@@ -1996,6 +1996,7 @@
         '../content/browser/in_process_webkit/webkit_thread_unittest.cc',
         '../content/browser/mach_broker_mac_unittest.cc',
         '../content/browser/plugin_service_unittest.cc',
+        '../content/browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         '../content/browser/renderer_host/media/audio_renderer_host_unittest.cc',
         '../content/browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
         '../content/browser/renderer_host/media/video_capture_host_unittest.cc',
