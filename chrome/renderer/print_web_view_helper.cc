@@ -700,6 +700,17 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   return true;
 }
 
+bool PrintWebViewHelper::UpdatePrintSettingsRequestId(
+    const DictionaryValue& job_settings,
+    PrintMsg_Print_Params* params) {
+  if (!job_settings.GetInteger(printing::kPreviewRequestID,
+                               &(params->preview_request_id))) {
+    NOTREACHED();
+    return false;
+  }
+  return true;
+}
+
 bool PrintWebViewHelper::UpdatePrintSettingsCloud(
     const DictionaryValue& job_settings) {
   // Document cookie and pages are set by the
@@ -718,6 +729,8 @@ bool PrintWebViewHelper::UpdatePrintSettingsCloud(
   settings.params.desired_dpi = 72;
   settings.params.selection_only = false;
   settings.params.supports_alpha_blend = false;
+  if (!UpdatePrintSettingsRequestId(job_settings, &(settings.params)))
+    return false;
   // TODO(abodenha@chromium.org) Parse page ranges from the job_settings.
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return true;
@@ -733,11 +746,8 @@ bool PrintWebViewHelper::UpdatePrintSettingsLocal(
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
 
-  if (!job_settings.GetInteger(printing::kPreviewRequestID,
-                               &settings.params.preview_request_id)) {
-    NOTREACHED();
+  if (!UpdatePrintSettingsRequestId(job_settings, &(settings.params)))
     return false;
-  }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),

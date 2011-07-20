@@ -154,6 +154,11 @@ class PrintWebViewHelper : public RenderViewObserver,
   bool InitPrintSettings(WebKit::WebFrame* frame,
                          WebKit::WebNode* node);
 
+  // Parse the request id out of |job_settings| and store it in |params|.
+  // Returns false on failure.
+  bool UpdatePrintSettingsRequestId(const base::DictionaryValue& job_settings,
+                                    PrintMsg_Print_Params* params);
+
   // Update the current print settings with new |job_settings|. |job_settings|
   // dictionary contains print job details such as printer name, number of
   // copies, page range, etc.
