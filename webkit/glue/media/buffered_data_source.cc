@@ -103,8 +103,6 @@ void BufferedDataSource::Initialize(const std::string& url,
   DCHECK(callback);
   initialize_callback_.reset(callback);
 
-  media_format_.SetAsString(media::MediaFormat::kURL, url);
-
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &BufferedDataSource::InitializeTask));

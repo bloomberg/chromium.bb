@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_COMPOSITE_FILTER_H_
 #define MEDIA_BASE_COMPOSITE_FILTER_H_
 
+#include <vector>
+
 #include "base/task.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"

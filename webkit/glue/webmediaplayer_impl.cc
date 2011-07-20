@@ -12,7 +12,6 @@
 #include "media/base/composite_data_source_factory.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
-#include "media/base/media_format.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"

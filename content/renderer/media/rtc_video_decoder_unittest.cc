@@ -29,7 +29,6 @@ using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::Invoke;
 using media::Limits;
-using media::MediaFormat;
 using media::MockStatisticsCallback;
 using media::MockVideoRenderer;
 using media::MockFilterHost;

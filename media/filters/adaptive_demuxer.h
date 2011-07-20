@@ -18,7 +18,6 @@
 #include "media/base/filter_factories.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline.h"
-#include "media/base/media_format.h"
 
 namespace media {
 
@@ -50,7 +49,8 @@ class AdaptiveDemuxerStream : public DemuxerStream {
   typedef base::Callback<void(base::TimeDelta, SeekFunctionCB)> SeekFunction;
 
   // Keeps references to the passed-in streams.  |streams| must be non-empty and
-  // all the streams in it must agree on type and media_format (or be NULL).
+  // all the streams in it must agree on type.
+  //
   // |initial_stream| must be a valid index into |streams| and specifies the
   // current stream on construction.
   AdaptiveDemuxerStream(StreamVector const& streams, int initial_stream);
@@ -68,7 +68,6 @@ class AdaptiveDemuxerStream : public DemuxerStream {
   // DemuxerStream methods.
   virtual void Read(const ReadCallback& read_callback);
   virtual Type type();
-  virtual const MediaFormat& media_format();
   virtual void EnableBitstreamConverter();
   virtual AVStream* GetAVStream();
 

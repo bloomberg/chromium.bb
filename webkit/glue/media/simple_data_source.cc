@@ -91,7 +91,7 @@ void SimpleDataSource::Initialize(
     initialize_callback_.reset(callback);
 
     // Validate the URL.
-    SetURL(GURL(url));
+    url_ = GURL(url);
     if (!url_.is_valid() || !IsProtocolSupportedForMedia(url_)) {
       DoneInitialization_Locked(false);
       return;
@@ -112,10 +112,6 @@ void SimpleDataSource::CancelInitialize() {
   // Post a task to the render thread to cancel loading the resource.
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &SimpleDataSource::CancelTask));
-}
-
-const media::MediaFormat& SimpleDataSource::media_format() {
-  return media_format_;
 }
 
 void SimpleDataSource::Read(int64 position,
@@ -264,12 +260,6 @@ bool SimpleDataSource::HasSingleOrigin() {
 void SimpleDataSource::Abort() {
   DCHECK(MessageLoop::current() == render_loop_);
   frame_ = NULL;
-}
-
-void SimpleDataSource::SetURL(const GURL& url) {
-  url_ = url;
-  media_format_.Clear();
-  media_format_.SetAsString(media::MediaFormat::kURL, url.spec());
 }
 
 void SimpleDataSource::StartTask() {

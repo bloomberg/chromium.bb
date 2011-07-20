@@ -12,10 +12,6 @@
 // NullAudioRenderer can also be used in situations where the client has no
 // audio device or we haven't written an audio implementation for a particular
 // platform yet.
-//
-// It supports any type of MediaFormat as long as the mime type has been set to
-// audio/x-uncompressed.  Playback rate is also supported and NullAudioRenderer
-// will slow down and speed up accordingly.
 
 #include <deque>
 
@@ -47,8 +43,7 @@ class NullAudioRenderer
 
  private:
   // A number to convert bytes written in FillBuffer to milliseconds based on
-  // the audio format.  Calculated in OnInitialize by looking at the decoder's
-  // MediaFormat.
+  // the audio format.
   size_t bytes_per_millisecond_;
 
   // A buffer passed to FillBuffer to advance playback.

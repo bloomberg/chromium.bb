@@ -165,7 +165,6 @@ void AdaptiveDemuxerStream::DCheckSanity() {
 
   bool non_null_stream_seen = false;
   Type type = DemuxerStream::UNKNOWN;
-  const MediaFormat* media_format = NULL;
   for (size_t i = 0; i < streams_.size(); ++i) {
     if (!streams_[i])
       continue;
@@ -173,10 +172,8 @@ void AdaptiveDemuxerStream::DCheckSanity() {
     if (!non_null_stream_seen) {
       non_null_stream_seen = true;
       type = streams_[i]->type();
-      media_format = &streams_[i]->media_format();
     } else {
       DCHECK_EQ(streams_[i]->type(), type);
-      DCHECK(streams_[i]->media_format() == *media_format);
     }
   }
 }
@@ -221,10 +218,6 @@ AVStream* AdaptiveDemuxerStream::GetAVStream() {
 
 DemuxerStream::Type AdaptiveDemuxerStream::type() {
   return current_stream()->type();
-}
-
-const MediaFormat& AdaptiveDemuxerStream::media_format() {
-  return current_stream()->media_format();
 }
 
 void AdaptiveDemuxerStream::EnableBitstreamConverter() {

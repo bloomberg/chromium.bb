@@ -32,7 +32,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/media_format.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
 
@@ -176,9 +175,6 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
   // Returns the type of stream.
   virtual Type type() = 0;
-
-  // Returns the media format of this stream.
-  virtual const MediaFormat& media_format() = 0;
 
   virtual void EnableBitstreamConverter() = 0;
 

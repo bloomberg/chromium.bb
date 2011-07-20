@@ -43,10 +43,6 @@ class BufferedDataSource : public WebDataSource {
   virtual bool IsStreaming();
   virtual void SetPreload(media::Preload preload);
 
-  const media::MediaFormat& media_format() {
-    return media_format_;
-  }
-
   // webkit_glue::WebDataSource implementation.
   virtual void Initialize(const std::string& url,
                           media::PipelineStatusCallback* callback);
@@ -124,8 +120,6 @@ class BufferedDataSource : public WebDataSource {
   void NetworkEventCallback();
 
   void UpdateHostState();
-
-  media::MediaFormat media_format_;
 
   // URL of the resource requested.
   GURL url_;
