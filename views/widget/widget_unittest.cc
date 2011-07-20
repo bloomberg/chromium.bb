@@ -20,6 +20,31 @@
 namespace views {
 namespace {
 
+#if defined(TOOLKIT_USES_GTK)
+// A widget that assumes mouse capture always works.
+class NativeWidgetGtkCapture : public NativeWidgetGtk {
+ public:
+  NativeWidgetGtkCapture(internal::NativeWidgetDelegate* delegate)
+      : NativeWidgetGtk(delegate),
+        mouse_capture_(false) {}
+  virtual ~NativeWidgetGtkCapture() {}
+  virtual void SetMouseCapture() OVERRIDE {
+    mouse_capture_ = true;
+  }
+  virtual void ReleaseMouseCapture() OVERRIDE {
+    mouse_capture_ = false;
+  }
+  virtual bool HasMouseCapture() const OVERRIDE {
+    return mouse_capture_;
+  }
+
+ private:
+  bool mouse_capture_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtkCapture);
+};
+#endif
+
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
@@ -90,7 +115,7 @@ NativeWidget* CreatePlatformNativeWidget(
 #if defined(OS_WIN)
   return new NativeWidgetWin(delegate);
 #elif defined(TOOLKIT_USES_GTK)
-  return new NativeWidgetGtk(delegate);
+  return new NativeWidgetGtkCapture(delegate);
 #endif
 }
 
@@ -186,14 +211,8 @@ TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
   // |child1| and |child11| should be destroyed with |toplevel|.
 }
 
-// Fails on ChromeOS. http://crbug.com/89829
-#if defined(OS_CHROMEOS)
-#define MAYBE_GrabUngrab  DISABLED_GrabUngrab
-#else
-#define MAYBE_GrabUngrab GrabUngrab
-#endif
 // Tests some grab/ungrab events.
-TEST_F(WidgetTest, MAYBE_GrabUngrab) {
+TEST_F(WidgetTest, GrabUngrab) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
   views_delegate.set_default_parent_view(toplevel->GetRootView());
 
@@ -218,14 +237,14 @@ TEST_F(WidgetTest, MAYBE_GrabUngrab) {
   RunPendingMessages();
 
   // Click on child1
-  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 15, 15, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 45, 45, ui::EF_LEFT_BUTTON_DOWN);
   toplevel->OnMouseEvent(pressed);
 
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));
 
-  MouseEvent released(ui::ET_MOUSE_RELEASED, 15, 15, ui::EF_LEFT_BUTTON_DOWN);
+  MouseEvent released(ui::ET_MOUSE_RELEASED, 45, 45, ui::EF_LEFT_BUTTON_DOWN);
   toplevel->OnMouseEvent(released);
 
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
