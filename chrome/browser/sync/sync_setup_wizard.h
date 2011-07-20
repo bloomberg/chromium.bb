@@ -67,9 +67,6 @@ class SyncSetupWizard {
   // not visible.
   void Focus();
 
-  // Show the sync setup tab.
-  void ShowSyncSetup(State state);
-
   // Attaches |handler| to the flow contained in |flow_container_|. Returns NULL
   // if the flow does not exist or if an existing handler is already attached to
   // the flow.

@@ -83,18 +83,6 @@ void SyncSetupWizard::Focus() {
     flow->Focus();
 }
 
-void SyncSetupWizard::ShowSyncSetup(State state) {
-  SyncSetupFlow* flow = flow_container_->get_flow();
-  if (flow) {
-    flow->Focus();
-    return;
-  }
-  Step(state);
-  flow = flow_container_->get_flow();
-  if (flow)
-    flow->ShowSyncSetup();
-}
-
 SyncSetupFlow* SyncSetupWizard::AttachSyncSetupHandler(
     SyncSetupFlowHandler* handler) {
   SyncSetupFlow* flow = flow_container_->get_flow();

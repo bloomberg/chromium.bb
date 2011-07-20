@@ -72,9 +72,6 @@ class SyncSetupFlow {
   // obscured by a browser window.
   void Focus();
 
-  // Show the sync setup ui.
-  void ShowSyncSetup();
-
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
                            const std::string& captcha,

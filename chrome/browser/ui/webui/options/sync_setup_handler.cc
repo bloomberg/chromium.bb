@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
@@ -331,11 +330,6 @@ void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
 
 void SyncSetupHandler::Focus() {
   static_cast<RenderViewHostDelegate*>(web_ui_->tab_contents())->Activate();
-}
-
-void SyncSetupHandler::ShowSyncSetup() {
-  BrowserList::GetLastActiveWithProfile(web_ui_->GetProfile())->ShowOptionsTab(
-      chrome::kSyncSetupSubPage);
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {

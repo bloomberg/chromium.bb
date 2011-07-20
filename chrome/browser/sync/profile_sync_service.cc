@@ -820,20 +820,36 @@ void ProfileSyncService::ShowLoginDialog() {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  wizard_.ShowSyncSetup(SyncSetupWizard::GAIA_LOGIN);
+  ShowSyncSetup(SyncSetupWizard::GAIA_LOGIN);
 
   NotifyObservers();
 }
 
 void ProfileSyncService::ShowErrorUI() {
-  wizard_.ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
+  if (WizardIsVisible()) {
+    wizard_.Focus();
+    return;
+  }
+
+  ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
 }
 
 void ProfileSyncService::ShowConfigure(bool sync_everything) {
+  if (WizardIsVisible()) {
+    wizard_.Focus();
+    return;
+  }
+
   if (sync_everything)
-    wizard_.ShowSyncSetup(SyncSetupWizard::SYNC_EVERYTHING);
+    ShowSyncSetup(SyncSetupWizard::SYNC_EVERYTHING);
   else
-    wizard_.ShowSyncSetup(SyncSetupWizard::CONFIGURE);
+    ShowSyncSetup(SyncSetupWizard::CONFIGURE);
+}
+
+void ProfileSyncService::ShowSyncSetup(SyncSetupWizard::State state) {
+  wizard_.Step(state);
+  BrowserList::GetLastActiveWithProfile(profile())->ShowOptionsTab(
+      chrome::kSyncSetupSubPage);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
