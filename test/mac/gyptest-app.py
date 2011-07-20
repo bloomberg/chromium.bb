@@ -24,8 +24,10 @@ if sys.platform == 'darwin':
                              chdir='app-bundle')
 
   # Info.plist
-  test.built_file_must_exist('Test App Gyp.app/Contents/Info.plist',
-                             chdir='app-bundle')
+  info_plist = test.built_file_path('Test App Gyp.app/Contents/Info.plist',
+                                    chdir='app-bundle')
+  test.must_exist(info_plist)
+  test.must_contain(info_plist, 'com.google.Test App Gyp')  # Variable expansion
 
   # Resources
   test.built_file_must_exist(

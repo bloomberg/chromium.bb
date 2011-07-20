@@ -1027,7 +1027,7 @@ class MakefileWriter:
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
       self.WriteActions(spec['actions'], extra_sources, extra_outputs,
-                        extra_mac_bundle_resources, part_of_all)
+                        extra_mac_bundle_resources, part_of_all, spec)
 
     # Rules must be early like actions.
     if 'rules' in spec:
@@ -1035,7 +1035,7 @@ class MakefileWriter:
                       extra_mac_bundle_resources, part_of_all)
 
     if 'copies' in spec:
-      self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
+      self.WriteCopies(spec['copies'], extra_outputs, part_of_all, spec)
 
     # Bundle resources.
     all_mac_bundle_resources = (
@@ -1119,7 +1119,7 @@ class MakefileWriter:
 
 
   def WriteActions(self, actions, extra_sources, extra_outputs,
-                   extra_mac_bundle_resources, part_of_all):
+                   extra_mac_bundle_resources, part_of_all, spec):
     """Write Makefile code for any 'actions' from the gyp input.
 
     extra_sources: a list that will be filled in with newly generated source
@@ -1146,6 +1146,8 @@ class MakefileWriter:
         extra_sources += outputs
       if int(action.get('process_outputs_as_mac_bundle_resources', False)):
         extra_mac_bundle_resources += outputs
+      if 'TEMP_DIR' in self.GetXcodeEnv(spec):
+        dirs.add('$(TEMP_DIR)')
 
       # Write the actual command.
       command = gyp.common.EncodePOSIXShellList(action['action'])
@@ -1177,7 +1179,10 @@ class MakefileWriter:
       # Only write the 'obj' and 'builddir' rules for the "primary" output (:1);
       # it's superfluous for the "extra outputs", and this avoids accidentally
       # writing duplicate dummy rules for those outputs.
+      # Same for environment.
       self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
+      # Needs to be before builddir is redefined in the next line!
+      self.WriteXcodeEnv(outputs[0], spec, target_relative_path=True)
       self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
 
       for input in inputs:
@@ -1301,7 +1306,7 @@ class MakefileWriter:
     self.WriteLn('')
 
 
-  def WriteCopies(self, copies, extra_outputs, part_of_all):
+  def WriteCopies(self, copies, extra_outputs, part_of_all, spec):
     """Write Makefile code for any 'copies' from the gyp input.
 
     extra_outputs: a list that will be filled in with any outputs of this action
@@ -1321,6 +1326,19 @@ class MakefileWriter:
         path = QuoteSpaces(path)
         output = QuoteSpaces(output)
 
+        # If the output path has variables in it, which happens in practice for
+        # 'copies', writing the environment as target-local doesn't work,
+        # because the variables are already needed for the target name.
+        # Copying the environment variables into global make variables doesn't
+        # work either, because then the .d files will potentially contain spaces
+        # after variable expansion, and .d file handling cannot handle spaces.
+        # As a workaround, manually expand variables at gyp time. Since 'copies'
+        # can't run scripts, there's no need to write the env then.
+        # WriteDoCmd() will escape spaces for .d files.
+        import gyp.generator.xcode as xcode_generator
+        env = self.GetXcodeEnv(spec)
+        output = xcode_generator.ExpandXcodeVariables(output, env)
+        path = xcode_generator.ExpandXcodeVariables(path, env)
         self.WriteDoCmd([output], [path], 'copy', part_of_all)
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
@@ -1377,6 +1395,7 @@ class MakefileWriter:
     else:
       folder = 'Versions/%s/Resources' % self.GetFrameworkVersion(spec)
     dest_plist = os.path.join(self.output, folder, 'Info.plist')
+    self.WriteXcodeEnv(dest_plist, spec)  # plists can contain envvars.
     self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,copy-info-plist',
                     part_of_all=True)
     bundle_deps.append(dest_plist)
@@ -1658,6 +1677,8 @@ class MakefileWriter:
     # and bundle binary. When all dependencies have been built, the bundle
     # needs to be packaged.
     if self.is_mac_bundle:
+      self.WriteXcodeEnv(self.output, spec)  # For postbuilds
+
       # If the framework doesn't contain a binary, then nothing depends
       # on the actions -- make the framework depend on them directly too.
       self.WriteDependencyOnExtraOutputs(self.output, extra_outputs)
@@ -1669,7 +1690,7 @@ class MakefileWriter:
 
       # After the framework is built, package it. Needs to happen before
       # postbuilds, since postbuilds depend on this.
-      if self.type in ['shared_library', 'loadable_module']:
+      if self.type in ('shared_library', 'loadable_module'):
         self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
             self.GetFrameworkVersion(spec))
 
@@ -1948,6 +1969,76 @@ class MakefileWriter:
 
   def WriteLn(self, text=''):
     self.fp.write(text + '\n')
+
+
+  def GetXcodeEnv(self, spec, target_relative_path=False):
+    """Return the environment variables that Xcode would set. See
+    http://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/XcodeBuildSettingRef/1-Build_Setting_Reference/build_setting_ref.html#//apple_ref/doc/uid/TP40003931-CH3-SW153
+    for a full list."""
+    if self.flavor != 'mac': return {}
+
+    def StripProductDir(s):
+      product_dir = generator_default_variables['PRODUCT_DIR']
+      assert s.startswith(product_dir), s
+      return s[len(product_dir) + 1:]
+
+    product_name = spec.get('product_name', self.output)
+
+    built_products_dir = generator_default_variables['PRODUCT_DIR']
+    srcroot = self.path
+    if target_relative_path:
+      built_products_dir = os.path.relpath(built_products_dir, srcroot)
+      srcroot = '.'
+    # These are filled in on a as-needed basis.
+    env = {
+      'BUILT_PRODUCTS_DIR' : built_products_dir,
+      'CONFIGURATION' : '$(BUILDTYPE)',
+      'PRODUCT_NAME' : product_name,
+      'SRCROOT' : srcroot,
+      # This is not true for static libraries, but currently the env is only
+      # written for bundles:
+      'TARGET_BUILD_DIR' : built_products_dir,
+      'TEMP_DIR' : os.path.join(built_products_dir, 'tmp'),
+    }
+    if self.type in ('executable', 'shared_library'):
+      env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
+      # Can't use self.output_binary here because it's not in the products dir.
+      # We really care about the final location of the dylib anyway.
+      env['EXECUTABLE_PATH'] = StripProductDir(
+          self._InstallableTargetInstallPath())
+    if self.is_mac_bundle:
+      # Overwrite this to point to the binary _in_ the bundle.
+      env['EXECUTABLE_PATH'] = StripProductDir(self.output_binary)
+      contents_folder = StripProductDir(self.output)
+      if self.type == 'shared_library':
+        contents_folder = os.path.join(
+            contents_folder, 'Versions', self.GetFrameworkVersion(spec))
+      else:
+        # loadable_modules have a 'Contents' folder like executables.
+        contents_folder = os.path.join(contents_folder, 'Contents')
+      env['CONTENTS_FOLDER_PATH'] = contents_folder
+
+      if self.type == 'shared_library':
+        infoplist_path = os.path.join(
+            contents_folder, 'Resources', 'Info.plist')
+      else:
+        infoplist_path = os.path.join(contents_folder, 'Info.plist')
+      env['INFOPLIST_PATH'] = infoplist_path
+
+    return env
+
+
+  def WriteXcodeEnv(self, target, spec, target_relative_path=False):
+    env = self.GetXcodeEnv(spec, target_relative_path)
+    # For
+    #  foo := a\ b
+    # the escaped space does the right thing. For
+    #  export foo := a\ b
+    # it does not -- the backslash is written to the env as literal character.
+    # Hence, unescape all spaces here.
+    for k in env:
+      v = env[k].replace(r'\ ', ' ')
+      self.WriteLn('%s: export %s := %s' % (target, k, v))
 
 
   def GetFrameworkVersion(self, spec):
