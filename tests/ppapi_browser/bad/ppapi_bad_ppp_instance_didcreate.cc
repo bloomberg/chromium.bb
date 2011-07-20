@@ -57,10 +57,6 @@ PP_Bool HandleDocumentLoad(PP_Instance /*instance*/, PP_Resource /*loader*/) {
   return PP_FALSE;
 }
 
-struct PP_Var GetInstance(PP_Instance /*instance*/) {
-  return PP_MakeNull();
-}
-
 const struct PPP_Instance instance_interface = {
   DidCreate,
   DidDestroy,
