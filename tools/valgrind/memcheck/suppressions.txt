@@ -4968,6 +4968,28 @@
    fun:_Znw*
    fun:_Z11NewCallbackI17PageSnapshotTakerRK8SkBitmapEPN9Callback1IT0_E4TypeEPT_MS9_FvS5_E
 }
+{
+   bug_89938
+   Memcheck:Cond
+   fun:_ZN5views6Widget4ShowEv
+   fun:_ZN11BrowserView4ShowEv
+   fun:_ZN8chromeos11BrowserView12ShowInternalEb
+   fun:_ZN8chromeos11BrowserView4ShowEv
+}
+{
+   bug_89942_a
+   Memcheck:Leak
+   ...
+   fun:_ZN10ZygoteHost11ForkRequestERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EERKSs
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+}
+{
+   bug_89942_b
+   Memcheck:Leak
+   ...
+   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
