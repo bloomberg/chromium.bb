@@ -1231,8 +1231,8 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
     if env.Bit('irt'):
       osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
 
-    # Enable experimental JavaScript APIs.
-    osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
+  # Enable experimental JavaScript APIs.
+  osenv.append('NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1')
 
   # On Posix, make sure that nexe logs do not pollute the console output.
   # Note: If a test fails, the contents of the page are explicitly logged to
