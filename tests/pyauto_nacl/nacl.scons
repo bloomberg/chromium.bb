@@ -181,10 +181,12 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken())
 
 uma_test_files = [
+    env.File('${STAGING_DIR}/nacltest.js'),
+    env.File('${STAGING_DIR}/ppapi_progress_events.js'),
     # Validator failure
-    env.File('${STAGING_DIR}/ppapi_bad_bative.html'),
-    env.File('${STAGING_DIR}/partly_broken${PROGSUFFIX}'),
-    env.File('${STAGING_DIR}/partly_broken.nmf'),
+    env.File('${STAGING_DIR}/ppapi_bad_native.html'),
+    env.File('${STAGING_DIR}/partly_invalid${PROGSUFFIX}'),
+    env.File('${STAGING_DIR}/partly_invalid.nmf'),
     # Data URI
     env.File('${STAGING_DIR}/srpc_hw_data.html'),
     env.File('${STAGING_DIR}/srpc_hw_%s${PROGSUFFIX}' % platform)
@@ -195,8 +197,7 @@ uma_test_files = [
 node = env.PyAutoTester(
     'nacl_uma.out',
     env.File('nacl_uma.py'),
-    # TODO(ncbray): depend on fewer files.
-    files=core_test_files,
+    files=uma_test_files,
     extra_chrome_flags=['--enable-pepper-testing'])
 # Can't test validation errors (partly_broken) in PNaCl.
 env.AddNodeToTestSuite(node,
