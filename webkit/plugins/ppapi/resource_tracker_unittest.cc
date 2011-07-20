@@ -141,8 +141,8 @@ TEST_F(ResourceTrackerTest, Ref) {
 TEST_F(ResourceTrackerTest, DeleteResourceWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PluginInstance> instance2(
-      PluginInstance::Create0_5(delegate(), module(),
-                                GetMockInterface(PPP_INSTANCE_INTERFACE_0_5)));
+      PluginInstance::Create1_0(delegate(), module(),
+                                GetMockInterface(PPP_INSTANCE_INTERFACE_1_0)));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make two resources and take refs on behalf of the "plugin" for each.
@@ -175,8 +175,8 @@ TEST_F(ResourceTrackerTest, DeleteResourceWithInstance) {
 TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PluginInstance> instance2(
-      PluginInstance::Create0_5(delegate(), module(),
-                                GetMockInterface(PPP_INSTANCE_INTERFACE_0_5)));
+      PluginInstance::Create1_0(delegate(), module(),
+                                GetMockInterface(PPP_INSTANCE_INTERFACE_1_0)));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make an object var.

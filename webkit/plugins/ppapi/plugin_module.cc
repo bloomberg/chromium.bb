@@ -73,6 +73,10 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/shared_impl/input_event_impl.h"
+// TODO(dmichael): Delete this include after PPP_Instance_0_5 goes away in m14.
+//                 This is just to get the PPP_INSTANCE_0_5 definition.
+#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -532,8 +536,11 @@ PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   PluginInstance* instance(NULL);
-  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5);
+  const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0);
   if (ppp_instance) {
+    instance = PluginInstance::Create1_0(delegate, this, ppp_instance);
+  } else if ((ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5))) {
+    // TODO(dmichael): Remove support for 0.5 in m14.
     instance = PluginInstance::Create0_5(delegate, this, ppp_instance);
   }
   if (!instance) {

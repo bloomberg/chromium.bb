@@ -67,10 +67,6 @@ bool Instance::HandleDocumentLoad(const URLLoader& /*url_loader*/) {
   return false;
 }
 
-bool Instance::HandleInputEvent(const PP_InputEvent& /*event*/) {
-  return false;
-}
-
 bool Instance::HandleInputEvent(const InputEvent& /*event*/) {
   return false;
 }

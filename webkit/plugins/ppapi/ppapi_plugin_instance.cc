@@ -200,6 +200,18 @@ PluginInstance* PluginInstance::Create0_5(PluginDelegate* delegate,
       new ::ppapi::PPP_Instance_Combined(*interface));
 }
 
+// static
+PluginInstance* PluginInstance::Create1_0(PluginDelegate* delegate,
+                                          PluginModule* module,
+                                          const void* ppp_instance_if_1_0) {
+  const PPP_Instance_1_0* interface =
+      static_cast<const PPP_Instance_1_0*>(ppp_instance_if_1_0);
+  return new PluginInstance(
+      delegate,
+      module,
+      new ::ppapi::PPP_Instance_Combined(*interface));
+}
+
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
     PluginModule* module,
@@ -419,16 +431,16 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
     argc++;
   }
 
-  return PPBoolToBool(instance_interface_->DidCreate(pp_instance(),
-                                                     argc,
-                                                     argn.get(),
-                                                     argv.get()));
+  return PP_ToBool(instance_interface_->DidCreate(pp_instance(),
+                                                  argc,
+                                                  argn.get(),
+                                                  argv.get()));
 }
 
 bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
   Resource::ScopedResourceId resource(loader);
-  return PPBoolToBool(instance_interface_->HandleDocumentLoad(pp_instance(),
-                                                              resource.id));
+  return PP_ToBool(instance_interface_->HandleDocumentLoad(pp_instance(),
+                                                           resource.id));
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -459,7 +471,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
             new PPB_InputEvent_Impl(this, events[i]));
         PP_Resource resource = event_resource->GetReference();
 
-        rv |= PPBoolToBool(plugin_input_event_interface_->HandleInputEvent(
+        rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
             pp_instance(), event_resource->GetReference()));
 
         // Release the reference we took above.
@@ -468,15 +480,19 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
     }
   }
 
-  // For compatibility, also send all input events through the old interface.
+  // For compatibility, also send all input events through the old interface,
+  // if it exists.
   // TODO(brettw) remove this.
-  std::vector<PP_InputEvent> pp_events;
-  CreatePPEvent(event, &pp_events);
+  if (instance_interface_->HandleInputEvent_0_5) {
+    std::vector<PP_InputEvent> pp_events;
+    CreatePPEvent(event, &pp_events);
 
-  // Each input event may generate more than one PP_InputEvent.
-  for (size_t i = 0; i < pp_events.size(); i++) {
-    rv |= PPBoolToBool(instance_interface_->HandleInputEvent(pp_instance(),
-                                                             &pp_events[i]));
+    // Each input event may generate more than one PP_InputEvent.
+    for (size_t i = 0; i < pp_events.size(); i++) {
+      rv |= PP_ToBool(
+          instance_interface_->HandleInputEvent_0_5(pp_instance(),
+                                                    &pp_events[i]));
+    }
   }
 
   if (cursor_.get())
@@ -533,7 +549,7 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
   if (PluginHasFocus() != old_plugin_focus) {
     delegate()->PluginFocusChanged(PluginHasFocus());
     instance_interface_->DidChangeFocus(pp_instance(),
-                                        BoolToPPBool(PluginHasFocus()));
+                                        PP_FromBool(PluginHasFocus()));
   }
 }
 
@@ -545,7 +561,7 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
   has_content_area_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus) {
     instance_interface_->DidChangeFocus(pp_instance(),
-                                        BoolToPPBool(PluginHasFocus()));
+                                        PP_FromBool(PluginHasFocus()));
   }
 }
 
@@ -605,7 +621,7 @@ string16 PluginInstance::GetSelectedText(bool html) {
     return string16();
 
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
-                                                           BoolToPPBool(html));
+                                                           PP_FromBool(html));
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
   Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
@@ -635,7 +651,7 @@ void PluginInstance::Zoom(double factor, bool text_only) {
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadZoomInterface())
     return;
-  plugin_zoom_interface_->Zoom(pp_instance(), factor, BoolToPPBool(text_only));
+  plugin_zoom_interface_->Zoom(pp_instance(), factor, PP_FromBool(text_only));
 }
 
 bool PluginInstance::StartFind(const string16& search_text,
@@ -646,11 +662,11 @@ bool PluginInstance::StartFind(const string16& search_text,
   if (!LoadFindInterface())
     return false;
   find_identifier_ = identifier;
-  return PPBoolToBool(
+  return PP_ToBool(
       plugin_find_interface_->StartFind(
           pp_instance(),
           UTF16ToUTF8(search_text.c_str()).c_str(),
-          BoolToPPBool(case_sensitive)));
+          PP_FromBool(case_sensitive)));
 }
 
 void PluginInstance::SelectFindResult(bool forward) {
@@ -658,7 +674,7 @@ void PluginInstance::SelectFindResult(bool forward) {
   scoped_refptr<PluginInstance> ref(this);
   if (LoadFindInterface())
     plugin_find_interface_->SelectFindResult(pp_instance(),
-                                             BoolToPPBool(forward));
+                                             PP_FromBool(forward));
 }
 
 void PluginInstance::StopFind() {
@@ -1502,7 +1518,7 @@ PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
   // TODO(yzshen): Re-enable it once fullscreen mode is supported on Windows.
 #if !defined(OS_WIN)
-  SetFullscreen(PPBoolToBool(fullscreen), true);
+  SetFullscreen(PP_ToBool(fullscreen), true);
   return PP_TRUE;
 #else
   return PP_FALSE;

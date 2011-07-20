@@ -154,10 +154,7 @@ class Instance {
   /// @param[in] event The input event.
   ///
   /// @return true if @a event was handled, false otherwise.
-  virtual bool HandleInputEvent(const PP_InputEvent& event);
-
-  /// @see InputEvent for an example
-  virtual bool HandleInputEvent(const InputEvent& event);
+  virtual bool HandleInputEvent(const pp::InputEvent& event);
 
   /// Notification of a data stream available after an instance was created
   /// based on the MIME type of a DOMWindow navigation. This only applies to

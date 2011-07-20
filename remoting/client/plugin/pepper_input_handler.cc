@@ -5,11 +5,15 @@
 #include "remoting/client/plugin/pepper_input_handler.h"
 
 #include "ppapi/c/pp_input_event.h"
+#include "ppapi/cpp/input_event.h"
+#include "ppapi/cpp/point.h"
 #include "remoting/client/chromoting_view.h"
 #include "ui/gfx/point.h"
 
 namespace remoting {
 
+using pp::KeyboardInputEvent;
+using pp::MouseInputEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
 
@@ -26,33 +30,31 @@ void PepperInputHandler::Initialize() {
 }
 
 void PepperInputHandler::HandleKeyEvent(bool keydown,
-                                        const PP_InputEvent_Key& event) {
-  SendKeyEvent(keydown, event.key_code);
+                                        const KeyboardInputEvent& event) {
+  SendKeyEvent(keydown, event.GetKeyCode());
 }
 
-void PepperInputHandler::HandleCharacterEvent(
-    const PP_InputEvent_Character& event) {
+void PepperInputHandler::HandleCharacterEvent(const KeyboardInputEvent& event) {
   // TODO(garykac): Coordinate key and char events.
 }
 
-void PepperInputHandler::HandleMouseMoveEvent(
-    const PP_InputEvent_Mouse& event) {
-  gfx::Point p(static_cast<int>(event.x), static_cast<int>(event.y));
+void PepperInputHandler::HandleMouseMoveEvent(const MouseInputEvent& event) {
+  gfx::Point p(static_cast<int>(event.GetMousePosition().x()),
+               static_cast<int>(event.GetMousePosition().y()));
   // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
   // which may be different from the host desktop's co-ordinate system.
   p = view_->ConvertScreenToHost(p);
   SendMouseMoveEvent(p.x(), p.y());
 }
 
-void PepperInputHandler::HandleMouseButtonEvent(
-    bool button_down,
-    const PP_InputEvent_Mouse& event) {
+void PepperInputHandler::HandleMouseButtonEvent(bool button_down,
+                                                const MouseInputEvent& event) {
   MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
-  if (event.button == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+  if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
     button = MouseEvent::BUTTON_LEFT;
-  } else if (event.button == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+  } else if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
     button = MouseEvent::BUTTON_MIDDLE;
-  } else if (event.button == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
+  } else if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
     button = MouseEvent::BUTTON_RIGHT;
   }
 
