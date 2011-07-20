@@ -75,6 +75,13 @@
     'net_error_list': {
       'filepath': 'net/base/net_error_list.h',
     },
+    'net_log': {
+      'filepath': 'net/base/net_log.*|' \
+        'chrome/browser/net/.*net_log.*|' \
+        'chrome/browser/net/passive_log_collector.*|' \
+        'chrome/browser/resources/net_internals/.*|' \
+        'chrome/browser/ui/webui/net_internals_ui.*'
+    },
     'ftp': {
       'filepath': 'ftp',
     },
@@ -260,6 +267,7 @@
                   'erikkay@chromium.org'],
     'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
+    'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'media': ['acolwell+watch@chromium.org', 'ajwong+watch@chromium.org',
               'annacc+watch@chromium.org', 'ddorwin+watch@chromium.org',
@@ -300,7 +308,7 @@
     'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
-                  'dominich+watch@chromium.org'],
+                  'dominich+watch@chromium.org', 'mmenke@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
     'dom_login': ['rharrison@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
