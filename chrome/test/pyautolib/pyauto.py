@@ -25,13 +25,19 @@ to unittest.py
   python pyauto.py test_script
 """
 
+import cStringIO
+import functools
 import hashlib
+import inspect
 import logging
 import optparse
 import os
+import pickle
 import shutil
 import signal
+import socket
 import stat
+import string
 import subprocess
 import sys
 import tempfile
@@ -100,6 +106,7 @@ import pyauto_utils
 import simplejson as json  # found in third_party
 
 _HTTP_SERVER = None
+_REMOTE_PROXY = None
 _OPTIONS = None
 
 
@@ -3527,6 +3534,106 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   ## ChromeOS section -- end
 
 
+class _RemoteProxy():
+  """Class for PyAuto remote method calls.
+
+  Use this class along with RemoteHost.testRemoteHost to establish a PyAuto
+  connection with another machine and make remote PyAuto calls. The RemoteProxy
+  mimics a PyAuto object, so all json-style PyAuto calls can be made on it.
+
+  The remote host acts as a dumb executor that receives method call requests,
+  executes them, and sends all of the results back to the RemoteProxy, including
+  the return value, thrown exceptions, and console output.
+
+  The remote host should be running the same version of PyAuto as the proxy.
+  A mismatch could lead to undefined behavior.
+
+  Example usage:
+    class MyTest(pyauto.PyUITest):
+      def testRemoteExample(self):
+        remote = pyauto._RemoteProxy('127.0.0.1')
+        remote.NavigateToURL('http://www.google.com')
+        title = remote.GetActiveTabTitle()
+        self.assertEqual(title, 'Google')
+  """
+  class RemoteException(Exception):
+    pass
+
+  def __init__(self, address, port=7410, remote_class=PyUITest):
+    # Make remote-call versions of all remote_class methods.
+    for method_name, _ in inspect.getmembers(remote_class, inspect.ismethod):
+      # Ignore private methods.
+      if method_name[0] in string.letters:
+        setattr(self, method_name, functools.partial(
+            self.Call, method_name))
+    self.Connect(address, port)
+
+  def Connect(self, address, port=7410):
+    self._socket = socket.socket()
+    self._socket.connect((address, port))
+
+  def Disconnect(self):
+    if self._socket:
+      self._socket.shutdown(socket.SHUT_RDWR)
+      self._socket.close()
+      self._socket = None
+
+  def Call(self, method_name, *args, **kwargs):
+    # Send request.
+    request = pickle.dumps((method_name, args, kwargs))
+    if self._socket.send(request) != len(request):
+      raise self.RemoteException('Error sending remote method call request.')
+
+    # Receive response.
+    response = self._socket.recv(4096)
+    if not response:
+      raise self.RemoteException('Client disconnected during method call.')
+    result, stdout, stderr, exception = pickle.loads(response)
+
+    # Print any output the client captured, throw any exceptions, and return.
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+    if exception:
+      raise self.RemoteException('%s raised by remote client: %s' %
+                                 (exception[0], exception[1]))
+    return result
+
+
+class PyRemoteUITest(PyUITest):
+  """Convenience class for tests that use a single RemoteProxy.
+
+  This class automatically sets up and tears down a RemoteProxy PyAuto instance.
+  setUp() fires off both remote and local Chrome instances in order.
+  tearDown() closes both Chrome instances in the same order.
+
+  Example usage:
+    class MyTest(pyauto.PyUIRemoteTest):
+      def testRemoteExample(self):
+        self.remote.NavigateToURL('http://www.google.com')
+        title = self.remote.GetActiveTabTitle()
+        self.assertEqual(title, 'Google')
+
+    $ # On remote machine:
+    $ python remote_host.py remote_host.RemoteHost.RunHost
+    $ # On local machine:
+    $ python my_test.py --remote_host=127.0.0.1
+  """
+
+  def __init__(self, *args, **kwargs):
+    global _REMOTE_PROXY
+    assert _REMOTE_PROXY, 'Not connected to remote host.'
+    self.remote = _REMOTE_PROXY
+    PyUITest.__init__(self, *args, **kwargs)
+
+  def setUp(self):
+    self.remote.Call('RemoteSetUp')
+    PyUITest.setUp(self)
+
+  def tearDown(self):
+    self.remote.Call('RemoteTearDown')
+    PyUITest.tearDown(self)
+
+
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""
 
@@ -3548,6 +3655,8 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     global _OPTIONS
     if not _OPTIONS.no_http_server:
       self._StartHTTPServer()
+    if _OPTIONS.remote_host:
+      self._ConnectToRemoteHost(_OPTIONS.remote_host)
 
   def __del__(self):
     # python unittest module is setup such that the suite gets deleted before
@@ -3579,6 +3688,14 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     assert _HTTP_SERVER.Stop(), 'Could not stop http server'
     _HTTP_SERVER = None
     logging.debug('Stopped http server.')
+
+  def _ConnectToRemoteHost(self, address):
+    """Connect to a remote PyAuto instance using a RemoteProxy.
+
+    The RemoteHost instance must already be running."""
+    global _REMOTE_PROXY
+    assert not _REMOTE_PROXY, 'Already connected to a remote host.'
+    _REMOTE_PROXY = _RemoteProxy(address)
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
@@ -3687,6 +3804,9 @@ class Main(object):
     parser.add_option(
         '', '--no-http-server', action='store_true', default=False,
         help='Do not start an http server to serve files in data dir.')
+    parser.add_option(
+        '', '--remote-host', type='string', default=None,
+        help='Connect to a remote host for remote automation.')
     parser.add_option(
         '', '--http-data-dir', type='string',
         default=os.path.join('chrome', 'test', 'data'),
