@@ -357,8 +357,11 @@ const char* kInvalidWebURLs =
     "Invalid value for 'app.urls'.";
 const char* kInvalidZipHash =
     "Required key 'zip_hash' is missing or invalid.";
+const char* kLaunchPathAndExtentAreExclusive =
+    "The 'app.launch.local_path' and 'app.urls' keys cannot both be set.";
 const char* kLaunchPathAndURLAreExclusive =
-    "The 'app.launch.local_path' and 'launch.web_url' keys cannot both be set.";
+    "The 'app.launch.local_path' and 'app.launch.web_url' keys cannot "
+    "both be set.";
 const char* kLaunchURLRequired =
     "Either 'app.launch.local_path' or 'app.launch.web_url' is required.";
 const char* kLocalesMessagesFileMissing =

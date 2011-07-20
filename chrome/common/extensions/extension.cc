@@ -1016,6 +1016,11 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
       return false;
     }
 
+    if (manifest->Get(keys::kWebURLs, NULL)) {
+      *error = errors::kLaunchPathAndExtentAreExclusive;
+      return false;
+    }
+
     std::string launch_path;
     if (!temp->GetAsString(&launch_path)) {
       *error = errors::kInvalidLaunchLocalPath;

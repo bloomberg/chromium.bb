@@ -416,6 +416,8 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
 TEST_F(ExtensionManifestTest, AppLaunchURL) {
   LoadAndExpectError("launch_path_and_url.json",
                      errors::kLaunchPathAndURLAreExclusive);
+  LoadAndExpectError("launch_path_and_extent.json",
+                     errors::kLaunchPathAndExtentAreExclusive);
   LoadAndExpectError("launch_path_invalid_type.json",
                      errors::kInvalidLaunchLocalPath);
   LoadAndExpectError("launch_path_invalid_value.json",
