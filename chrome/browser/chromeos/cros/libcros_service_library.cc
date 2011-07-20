@@ -6,7 +6,7 @@
 
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/browser_thread.h"
 #include "cros/chromeos_libcros_service.h"
 #include "net/base/net_errors.h"
@@ -75,7 +75,8 @@ class LibCrosServiceLibraryImpl : public LibCrosServiceLibrary {
     // chrome executable.  Called on UI thread from dbus request.
     static void ResolveProxyHandler(void* object, const char* source_url);
 
-    void ResolveProxy(const std::string& source_url);
+    void ResolveProxy(const std::string& source_url,
+                      scoped_refptr<net::URLRequestContextGetter> getter);
 
     // Wrapper on UI thread to call LibCrosService::NotifyNetworkProxyResolved.
     void NotifyProxyResolved(Request* request);
@@ -188,15 +189,19 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxyHandler(
     void* object, const char* source_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NetworkProxyLibrary* lib = static_cast<NetworkProxyLibrary*>(object);
-  // source_url will be freed when this function returns, so make a copy of it.
+  // parameters of RunnbaleMethod will be freed when this function returns, so
+  // make a copy of them.
   std::string url(source_url);
+  scoped_refptr<net::URLRequestContextGetter> getter =
+          ProfileManager::GetDefaultProfile()->GetRequestContext();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(lib, &NetworkProxyLibrary::ResolveProxy, url));
+      NewRunnableMethod(lib, &NetworkProxyLibrary::ResolveProxy, url, getter));
 }
 
 // Called on IO thread as task posted from ResolveProxyHandler on UI thread.
 void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxy(
-    const std::string& source_url) {
+    const std::string& source_url,
+    scoped_refptr<net::URLRequestContextGetter> getter) {
   // Make sure we're running on IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -204,25 +209,24 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::ResolveProxy(
   Request* request = new Request(source_url);
   request->notify_task_ = NewRunnableMethod(this,
       &NetworkProxyLibrary::NotifyProxyResolved, request);
-
-  // Retrieve ProxyService from profile's request context.
-  net::URLRequestContextGetter* getter =
-      Profile::Deprecated::GetDefaultRequestContext();
-  net::ProxyService* proxy_service = NULL;
-  if (getter)
-    proxy_service = getter->GetURLRequestContext()->proxy_service();
-
-  // Check that we have valid proxy service and service_connection.
-  if (!proxy_service) {
-     request->error_ = "No proxy service in chrome";
-  } else {
+  {
     base::AutoLock lock(data_lock_);
     // Queue request slot.
     all_requests_.push_back(request);
-    if (!service_connection_)
+    if (!service_connection_)  // Make sure |service_connection_| is valid.
       request->error_ = "LibCrosService not started";
   }
-  if (request->error_ != "") {  // Error string was just set.
+
+  // Retrieve ProxyService from profile's request context.
+  net::ProxyService* proxy_service = NULL;
+  if (request->error_.empty()) {  // No error yet, proceed.
+    if (getter)
+      proxy_service = getter->GetURLRequestContext()->proxy_service();
+    if (!proxy_service)  // Make sure proxy_service is valid.
+      request->error_ = "No proxy service in chrome";
+  }
+
+  if (!request->error_.empty()) {  // Error string was just set.
     LOG(ERROR) << request->error_;
     request->result_ = net::OK;  // Set to OK since error string is set.
   } else {
@@ -255,8 +259,12 @@ void LibCrosServiceLibraryImpl::NetworkProxyLibrary::NotifyProxyResolved(
   }
   std::vector<Request*>::iterator iter =
       std::find(all_requests_.begin(), all_requests_.end(), request);
-  DCHECK(iter != all_requests_.end());
-  all_requests_.erase(iter);
+  if (iter == all_requests_.end()) {
+    LOG(ERROR) << "can't find request slot(" << request->source_url_
+               << ") in proxy-resolution queue";
+  } else {
+    all_requests_.erase(iter);
+  }
   delete request;
 }
 
