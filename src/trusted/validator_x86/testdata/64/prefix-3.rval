@@ -14,6 +14,10 @@ VALIDATOR: 0000000000000026: f3 66 48 ab                                  stosq
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 0000000000000026: f3 66 48 ab                                  stosq
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 000000000000002c: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
 VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %ax, %ax

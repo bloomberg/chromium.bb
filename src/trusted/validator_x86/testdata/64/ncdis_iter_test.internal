@@ -2721,10 +2721,16 @@ NaClExpVector[0] = {
     Nop
 NaClExpVector[0] = {
 };
-0000000000000000: 66 66 90                                     nop
-  [hard coded]                386 
-    Nop
-NaClExpVector[0] = {
+0000000000000000: 66 66 90                                     xchg %ax, %ax
+  90 - r0                     386 OpcodePlusR OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
+    Xchg $r8v, $rAXv
+      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprDest | ExprSize16 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprDest | ExprSize16 },
 };
 0000000000000000: 8d 76 00                                     lea %esi, [%rsi]
   8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o

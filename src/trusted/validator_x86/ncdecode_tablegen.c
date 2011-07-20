@@ -1689,7 +1689,6 @@ static void NaClDefNops() {
   /* nop */
   NaClDefNopSeq("90", 0x90);
   NaClDefNopSeq("6690", 0x90);
-  NaClDefNopSeq("666690", 0x90);
   NaClDefNopLikeSeq("f390", 0x90, InstPause);
   /* nop [%[re]ax] */
   NaClDefNopSeq("0f1f00", 0x1f);

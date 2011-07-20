@@ -1,3 +1,7 @@
+VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
 VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax

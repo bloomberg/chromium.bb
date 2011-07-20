@@ -15066,7 +15066,7 @@ static const uint32_t kNaClPrefixTable[NCDTABLESIZE] = {
   kPrefixLOCK, 0, kPrefixREPNE, kPrefixREP, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-static const NaClInstNode g_OpcodeSeq[96] = {
+static const NaClInstNode g_OpcodeSeq[95] = {
   /* 0 */
   { 0x0f,
     NULL,
@@ -15191,7 +15191,7 @@ static const NaClInstNode g_OpcodeSeq[96] = {
   { 0x66,
     NULL,
     g_OpcodeSeq + 21,
-    g_OpcodeSeq + 93,
+    g_OpcodeSeq + 92,
   },
   /* 21 */
   { 0x0f,
@@ -15317,7 +15317,7 @@ static const NaClInstNode g_OpcodeSeq[96] = {
   { 0x66,
     NULL,
     g_OpcodeSeq + 42,
-    g_OpcodeSeq + 92,
+    g_OpcodeSeq + 91,
   },
   /* 42 */
   { 0x2e,
@@ -15377,7 +15377,7 @@ static const NaClInstNode g_OpcodeSeq[96] = {
   { 0x66,
     NULL,
     g_OpcodeSeq + 52,
-    g_OpcodeSeq + 91,
+    NULL,
   },
   /* 52 */
   { 0x2e,
@@ -15623,21 +15623,15 @@ static const NaClInstNode g_OpcodeSeq[96] = {
   { 0x90,
     g_Opcodes + 1335,
     NULL,
-    NULL,
+    g_OpcodeSeq + 93,
   },
   /* 93 */
-  { 0x90,
-    g_Opcodes + 1335,
-    NULL,
-    g_OpcodeSeq + 94,
-  },
-  /* 94 */
   { 0xf3,
     NULL,
-    g_OpcodeSeq + 95,
+    g_OpcodeSeq + 94,
     NULL,
   },
-  /* 95 */
+  /* 94 */
   { 0x90,
     g_Opcodes + 1336,
     NULL,
