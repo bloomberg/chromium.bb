@@ -22,41 +22,6 @@ int TestPrng::GetNext(int min, int max) {
   return rv;
 }
 
-bool operator==(const HostResolver::RequestInfo& a,
-                const HostResolver::RequestInfo& b) {
-   return a.hostname() == b.hostname() &&
-          a.port() == b.port() &&
-          a.allow_cached_response() == b.allow_cached_response() &&
-          a.priority() == b.priority() &&
-          a.is_speculative() == b.is_speculative() &&
-          a.referrer() == b.referrer();
-}
-
-TestHostResolverObserver::TestHostResolverObserver() {
-}
-
-TestHostResolverObserver::~TestHostResolverObserver() {
-}
-
-void TestHostResolverObserver::OnStartResolution(
-    int id,
-    const HostResolver::RequestInfo& info) {
-  start_log.push_back(StartOrCancelEntry(id, info));
-}
-
-void TestHostResolverObserver::OnFinishResolutionWithStatus(
-    int id,
-    bool was_resolved,
-    const HostResolver::RequestInfo& info) {
-  finish_log.push_back(FinishEntry(id, was_resolved, info));
-}
-
-void TestHostResolverObserver::OnCancelResolution(
-    int id,
-    const HostResolver::RequestInfo& info) {
-  cancel_log.push_back(StartOrCancelEntry(id, info));
-}
-
 bool ConvertStringsToIPAddressList(
     const char* const ip_strings[], size_t size, IPAddressList* address_list) {
   DCHECK(address_list);
