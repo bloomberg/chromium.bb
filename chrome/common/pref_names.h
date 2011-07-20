@@ -389,6 +389,7 @@ extern const char kNTPPromoResourceCache[];
 extern const char kNTPPromoResourceCacheUpdate[];
 extern const char kNTPPromoResourceServer[];
 extern const char kNTPDateResourceServer[];
+extern const char kNTPShownPage[];
 extern const char kNTPShownSections[];
 extern const char kNTPPrefVersion[];
 extern const char kNTPCustomLogoStart[];

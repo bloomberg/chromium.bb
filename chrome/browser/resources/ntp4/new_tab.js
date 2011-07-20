@@ -71,6 +71,19 @@ cr.define('ntp4', function() {
   var trash;
 
   /**
+   * The type of page that is currently shown. The value is a numerical ID.
+   * @type {number}
+   */
+  var shownPage = 0;
+
+  /**
+   * The index of the page that is currently shown, within the page type.
+   * For example if the third Apps page is showing, this will be 2.
+   * @type {number}
+   */
+  var shownPageIndex = 0;
+
+  /**
    * EventTracker for managing event listeners for page events.
    * @type {!EventTracker}
    */
@@ -104,6 +117,9 @@ cr.define('ntp4', function() {
     pageList = getRequiredElement('page-list');
     trash = getRequiredElement('trash');
     trash.hidden = true;
+
+    shownPage = templateData['shown_page_type'];
+    shownPageIndex = templateData['shown_page_index'];
 
     document.querySelector('#notification button').onclick = function(e) {
       hideNotification();
@@ -142,16 +158,7 @@ cr.define('ntp4', function() {
     // Handle the page being changed
     pageList.addEventListener(
         CardSlider.EventType.CARD_CHANGED,
-        function(e) {
-          // Update the active dot
-          var curDot = dotList.getElementsByClassName('selected')[0];
-          if (curDot)
-            curDot.classList.remove('selected');
-          var newPageIndex = e.cardSlider.currentCard;
-          dots[newPageIndex].classList.add('selected');
-
-          updatePageSwitchers();
-        });
+        cardChangedHandler);
 
     cr.ui.decorate($('recently-closed-menu-button'), ntp4.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
@@ -336,6 +343,11 @@ cr.define('ntp4', function() {
     for (var i = 0; i < tilePages.length; i++)
       pageArray[i] = tilePages[i];
     cardSlider.setCards(pageArray, pageNo);
+
+    if (shownPage == templateData['most_visited_page_id'])
+      cardSlider.selectCardByValue(mostVisitedPage);
+    else if (shownPage == templateData['apps_page_id'])
+      cardSlider.selectCardByValue(appsPages[shownPageIndex]);
   }
 
   /**
@@ -497,6 +509,32 @@ cr.define('ntp4', function() {
     } else {
       attribution.hidden = true;
     }
+  }
+
+  /**
+   * Handler for CARD_CHANGED on cardSlider.
+   * @param {Event} e The CARD_CHANGED event.
+   */
+  function cardChangedHandler(e) {
+    var page = e.cardSlider.currentCardValue;
+    if (page.classList.contains('apps-page')) {
+      shownPage = templateData['apps_page_id'];
+      shownPageIndex = getAppsPageIndex(page);
+    } else if (page.classList.contains('most-visited-page')) {
+      shownPage = templateData['most_visited_page_id'];
+      shownPageIndex = 0;
+    } else {
+      console.error('unknown page selected');
+    }
+    chrome.send('pageSelected', [shownPage, shownPageIndex]);
+
+    // Update the active dot
+    var curDot = dotList.getElementsByClassName('selected')[0];
+    if (curDot)
+      curDot.classList.remove('selected');
+    var newPageIndex = e.cardSlider.currentCard;
+    dots[newPageIndex].classList.add('selected');
+    updatePageSwitchers();
   }
 
   /**

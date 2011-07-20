@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
@@ -176,79 +177,6 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
       Details<MetricEventDurationDetails>(&details));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// NewTabPageSetHomePageHandler
-
-// Sets the new tab page as home page when user clicks on "make this my home
-// page" link.
-class NewTabPageSetHomePageHandler : public WebUIMessageHandler {
- public:
-  NewTabPageSetHomePageHandler() {}
-  virtual ~NewTabPageSetHomePageHandler() {}
-
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Callback for "setHomePage".
-  void HandleSetHomePage(const ListValue* args);
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabPageSetHomePageHandler);
-};
-
-void NewTabPageSetHomePageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("setHomePage", NewCallback(
-      this, &NewTabPageSetHomePageHandler::HandleSetHomePage));
-}
-
-void NewTabPageSetHomePageHandler::HandleSetHomePage(
-    const ListValue* args) {
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
-                                                true);
-  ListValue list_value;
-  list_value.Append(new StringValue(
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
-  list_value.Append(new StringValue(
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
-  web_ui_->CallJavascriptFunction("onHomePageSet", list_value);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// NewTabPageClosePromoHandler
-
-// Turns off the promo line permanently when it has been explicitly closed by
-// the user.
-class NewTabPageClosePromoHandler : public WebUIMessageHandler {
- public:
-  NewTabPageClosePromoHandler() {}
-  virtual ~NewTabPageClosePromoHandler() {}
-
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Callback for "closePromo".
-  void HandleClosePromo(const ListValue* args);
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabPageClosePromoHandler);
-};
-
-void NewTabPageClosePromoHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("closePromo", NewCallback(
-      this, &NewTabPageClosePromoHandler::HandleClosePromo));
-}
-
-void NewTabPageClosePromoHandler::HandleClosePromo(
-    const ListValue* args) {
-  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
-  NotificationService* service = NotificationService::current();
-  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                  Source<NewTabPageClosePromoHandler>(this),
-                  NotificationService::NoDetails());
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -299,8 +227,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (service)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
-    AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
-    AddMessageHandler((new NewTabPageClosePromoHandler())->Attach(this));
+    AddMessageHandler((new NewTabPageHandler())->Attach(this));
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
   }
@@ -413,6 +340,7 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
                              0,
                              PrefService::UNSYNCABLE_PREF);
 
+  NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);

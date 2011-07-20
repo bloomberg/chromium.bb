@@ -441,11 +441,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetDouble(1, &source));
   if (args->GetSize() > 2) {
-      CHECK(args->GetBoolean(2, &alt_key));
-      CHECK(args->GetBoolean(3, &ctrl_key));
-      CHECK(args->GetBoolean(4, &meta_key));
-      CHECK(args->GetBoolean(5, &shift_key));
-      CHECK(args->GetDouble(6, &button));
+    CHECK(args->GetBoolean(2, &alt_key));
+    CHECK(args->GetBoolean(3, &ctrl_key));
+    CHECK(args->GetBoolean(4, &meta_key));
+    CHECK(args->GetBoolean(5, &shift_key));
+    CHECK(args->GetDouble(6, &button));
   }
 
   extension_misc::AppLaunchBucket launch_bucket =

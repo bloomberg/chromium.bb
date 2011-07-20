@@ -23,6 +23,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -165,6 +166,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kEnableBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kNTPShownSections, this);
+  pref_change_registrar_.Add(prefs::kNTPShownPage, this);
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -209,7 +211,8 @@ void NTPResourceCache::Observe(int type,
     if (*pref_name == prefs::kShowBookmarkBar ||
         *pref_name == prefs::kEnableBookmarkBar ||
         *pref_name == prefs::kHomePageIsNewTabPage ||
-        *pref_name == prefs::kNTPShownSections) {
+        *pref_name == prefs::kNTPShownSections ||
+        *pref_name == prefs::kNTPShownPage) {
       new_tab_incognito_html_ = NULL;
       new_tab_html_ = NULL;
     } else {
@@ -350,6 +353,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
 #endif
+
+  NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

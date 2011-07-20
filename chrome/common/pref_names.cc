@@ -1113,6 +1113,9 @@ const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
 // Serves dates to determine display of elements on the NTP.
 const char kNTPDateResourceServer[] = "ntp.date_resource_server";
 
+// Which page should be visible on the new tab page v4
+const char kNTPShownPage[] = "ntp.shown_page";
+
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid
 // 2 - Show the most visited sites as a list

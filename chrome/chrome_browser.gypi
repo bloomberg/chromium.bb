@@ -3457,6 +3457,8 @@
         'browser/ui/webui/ntp/foreign_session_handler.h',
         'browser/ui/webui/ntp/most_visited_handler.cc',
         'browser/ui/webui/ntp/most_visited_handler.h',
+        'browser/ui/webui/ntp/new_tab_page_handler.cc',
+        'browser/ui/webui/ntp/new_tab_page_handler.h',
         'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
         'browser/ui/webui/ntp/new_tab_page_sync_handler.h',
         'browser/ui/webui/ntp/new_tab_ui.cc',
