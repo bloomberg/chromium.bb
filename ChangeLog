@@ -1,5 +1,17 @@
 === xdg-utils 1.1.x ===
 
+2011-07-19 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-utils-common.in: support $XDG_CURRENT_DESKTOP
+
+2011-07-13 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-mime : use 'file --mime-type' instead of 'file -i' (BR39166)
+
+2011-05-10 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-mime : handle home dirs with spaces, mimeapps.list not existing.  Thanks to Mike Mammarella. 
+
+2011-05-05 Rex Dieter <rdieter@fedoraproject.org>
+   * xdg-utils-common.in : add missing ;;
+
 2011-05-04 Rex Dieter <rdieter@fedoraproject.org>
    * xdg-utils-common.in : move a couple of utility functions here (from
    xdg-settings), needed for xdg-email
