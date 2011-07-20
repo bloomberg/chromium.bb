@@ -90,10 +90,9 @@ void BookmarkBubbleView::Show(views::Widget* parent,
 
   bookmark_bubble_ = new BookmarkBubbleView(delegate, profile, url,
                                             newly_bookmarked);
-  // TODO(beng): Pass |parent| after V2 is complete.
   Bubble* bubble = Bubble::Show(
-      parent->client_view()->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
-      bookmark_bubble_, bookmark_bubble_);
+      parent, bounds, BubbleBorder::TOP_RIGHT, bookmark_bubble_,
+      bookmark_bubble_);
   // |bubble_| can be set to NULL in BubbleClosing when we close the bubble
   // asynchronously. However, that can happen during the Show call above if the
   // window loses activation while we are getting to ready to show the bubble,
