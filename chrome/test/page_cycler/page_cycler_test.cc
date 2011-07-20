@@ -141,7 +141,7 @@ class PageCyclerTest : public UIPerfTest {
   }
 
   void SetUp() {
-    UITest::SetUp();
+    UIPerfTest::SetUp();
   }
 
   virtual FilePath GetDataPath(const char* name) {
