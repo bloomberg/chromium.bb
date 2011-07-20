@@ -597,9 +597,12 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
 }
 
 void RenderWidget::AnimationCallback() {
+  TRACE_EVENT0("renderer", "RenderWidget::AnimationCallback");
   animation_task_posted_ = false;
-  if (!animation_update_pending_)
+  if (!animation_update_pending_) {
+    TRACE_EVENT0("renderer", "EarlyOut_NoAnimationUpdatePending");
     return;
+  }
   if (!animation_floor_time_.is_null() && IsRenderingVSynced()) {
     // Record when we fired (according to base::Time::Now()) relative to when
     // we posted the task to quantify how much the base::Time/base::TimeTicks
@@ -624,6 +627,7 @@ void RenderWidget::AnimateIfNeeded() {
 
   base::Time now = base::Time::Now();
   if (now >= animation_floor_time_) {
+    TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
     animation_floor_time_ = now +
         base::TimeDelta::FromMilliseconds(animationInterval);
     // Set a timer to call us back after animationInterval before
@@ -940,6 +944,7 @@ void RenderWidget::scheduleComposite() {
 }
 
 void RenderWidget::scheduleAnimation() {
+  TRACE_EVENT0("gpu", "RenderWidget::scheduleAnimation");
   if (!animation_update_pending_) {
     animation_update_pending_ = true;
     if (!animation_task_posted_) {
