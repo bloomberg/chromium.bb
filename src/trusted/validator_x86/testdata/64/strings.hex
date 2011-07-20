@@ -1,3 +1,32 @@
+# Test string operations with 1 memory operand
+# mov %edi,%edi
+# lea (%r15,%rdi,1),%rdi
+# scas %es:(%rdi),%al
+89 ff
+49 8d 3c 3f
+ae
+
+# add %edi,%edi
+# lea (%r15,%rdi,1),%rdi
+# scas %es:(%rdi),%al
+01 ff
+49 8d 3c 3f
+ae
+
+# mov %edi,%edi
+# add %r15,%rdi
+# scas %es:(%rdi),%al
+89 ff
+4c 01 ff
+ae
+
+# mov %edi,%edi
+# lea (%rdi,%r15,1),%rdi
+# scas %es:(%rdi),%al
+89 ff
+4a 8d 3c 3f
+ae
+
 # Test string operations with 2 memory operands.
 # mov %esi,%esi
 # add %r15,%rsi
@@ -41,4 +70,15 @@ a7
 49 8d 3c 3f
 89 f6
 49 8d 34 37
+a7
+
+# add %esi,%esi
+# lea (%r15,%rsi,1),%rsi
+# add %edi,%edi
+# lea (%r15,%rdi,1),%rdi
+# cmpsl %es:(%rdi),%ds:(%rsi)
+01 f6
+49 8d 34 37
+01 ff
+49 8d 3c 3f
 a7
