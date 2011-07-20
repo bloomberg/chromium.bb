@@ -12,6 +12,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
+#include "media/base/video_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_demuxer.h"
 
@@ -128,36 +129,6 @@ void FFmpegVideoDecodeEngine::Initialize(
   }
   event_handler_ = event_handler;
   event_handler_->OnInitializeComplete(info);
-}
-
-// TODO(scherkus): Move this function to a utility class and unit test.
-static void CopyPlane(size_t plane,
-                      scoped_refptr<VideoFrame> video_frame,
-                      const AVFrame* frame,
-                      size_t source_height) {
-  DCHECK_EQ(video_frame->width() % 2, 0u);
-  const uint8* source = frame->data[plane];
-  const size_t source_stride = frame->linesize[plane];
-  uint8* dest = video_frame->data(plane);
-  const size_t dest_stride = video_frame->stride(plane);
-
-  // Calculate amounts to copy and clamp to minium frame dimensions.
-  size_t bytes_per_line = video_frame->width();
-  size_t copy_lines = std::min(video_frame->height(), source_height);
-  if (plane != VideoFrame::kYPlane) {
-    bytes_per_line /= 2;
-    if (video_frame->format() == VideoFrame::YV12) {
-      copy_lines = (copy_lines + 1) / 2;
-    }
-  }
-  bytes_per_line = std::min(bytes_per_line, source_stride);
-
-  // Copy!
-  for (size_t i = 0; i < copy_lines; ++i) {
-    memcpy(dest, source, bytes_per_line);
-    source += source_stride;
-    dest += dest_stride;
-  }
 }
 
 void FFmpegVideoDecodeEngine::ConsumeVideoSample(
@@ -280,10 +251,11 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
   // output, meaning the data is only valid until the next
   // avcodec_decode_video() call.
-  size_t height = codec_context_->height;
-  CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get(), height);
-  CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get(), height);
-  CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get(), height);
+  int y_rows = codec_context_->height;
+  int uv_rows = codec_context_->height / 2;
+  CopyYPlane(av_frame_->data[0], av_frame_->linesize[0], y_rows, video_frame);
+  CopyUPlane(av_frame_->data[1], av_frame_->linesize[1], uv_rows, video_frame);
+  CopyVPlane(av_frame_->data[2], av_frame_->linesize[2], uv_rows, video_frame);
 
   video_frame->SetTimestamp(timestamp);
   video_frame->SetDuration(duration);

@@ -13,7 +13,11 @@
 #include "media/base/limits.h"
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 
+using media::CopyUPlane;
+using media::CopyVPlane;
+using media::CopyYPlane;
 using media::DemuxerStream;
 using media::FilterCallback;
 using media::FilterStatusCB;
@@ -199,28 +203,11 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   video_frame->SetTimestamp(host()->GetTime());
   video_frame->SetDuration(base::TimeDelta::FromMilliseconds(30));
 
-  // TODO(scherkus): deduplicate YUV copying code.
-  uint8* y_plane = video_frame->data(VideoFrame::kYPlane);
-  const uint8* y_plane_src = frame->GetYPlane();
-  for (size_t row = 0; row < video_frame->height(); ++row) {
-    memcpy(y_plane, y_plane_src, frame->GetYPitch());
-    y_plane += video_frame->stride(VideoFrame::kYPlane);
-    y_plane_src += frame->GetYPitch();
-  }
-  uint8* u_plane = video_frame->data(VideoFrame::kUPlane);
-  const uint8* u_plane_src = frame->GetUPlane();
-  for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(u_plane, u_plane_src, frame->GetUPitch());
-    u_plane += video_frame->stride(VideoFrame::kUPlane);
-    u_plane_src += frame->GetUPitch();
-  }
-  uint8* v_plane = video_frame->data(VideoFrame::kVPlane);
-  const uint8* v_plane_src = frame->GetVPlane();
-  for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(v_plane, v_plane_src, frame->GetVPitch());
-    v_plane += video_frame->stride(VideoFrame::kVPlane);
-    v_plane_src += frame->GetVPitch();
-  }
+  int y_rows = frame->GetHeight();
+  int uv_rows = frame->GetHeight() / 2;  // YV12 format.
+  CopyYPlane(frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame);
+  CopyUPlane(frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame);
+  CopyVPlane(frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame);
 
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
