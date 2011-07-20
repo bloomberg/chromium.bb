@@ -10,7 +10,9 @@ Smoke-tests 'settings' blocks.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# 'settings' is only supported for make and scons (and will be removed there as
+# well eventually).
+test = TestGyp.TestGyp(formats=['make', 'scons'])
 test.run_gyp('settings.gyp')
 test.build('test.gyp', test.ALL)
 test.pass_test()
