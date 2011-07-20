@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_UTIL_H_
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
@@ -18,21 +19,12 @@ namespace input_method {
 
 // The list of language that do not have associated input methods in IBus.
 // For these languages, we associate input methods here.
-const struct ExtraLanguage {
+struct ExtraLanguage {
   const char* language_code;
   const char* input_method_id;
-} kExtraLanguages[] = {
-  { "en-AU", "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
-  { "id", "xkb:us::eng" }, // For Indonesian, use US keyboard layout.
-  // The code "fil" comes from app/l10_util.cc.
-  { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
-  // For Netherlands, use US international keyboard layout.
-  { "nl", "xkb:us:intl:eng" },
-  // The code "es-419" comes from app/l10_util.cc.
-  // For Spanish in Latin America, use Latin American keyboard layout.
-  { "es-419", "xkb:latam::spa" },
 };
-// TODO(yusukes): Move |kExtraLanguages| to input_method_util.cc.
+extern const ExtraLanguage kExtraLanguages[];
+extern const size_t kExtraLanguagesLength;
 
 // Converts a string sent from IBus IME engines, which is written in English,
 // into Chrome's string ID, then pulls internationalized resource string from

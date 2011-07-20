@@ -77,7 +77,7 @@ struct IdMaps {
     }
 
     // Go through the languages listed in kExtraLanguages.
-    for (size_t i = 0; i < arraysize(kExtraLanguages); ++i) {
+    for (size_t i = 0; i < kExtraLanguagesLength; ++i) {
       const char* language_code = kExtraLanguages[i].language_code;
       const char* input_method_id = kExtraLanguages[i].input_method_id;
       InputMethodIdToDescriptorMap::const_iterator iter =
@@ -357,6 +357,20 @@ bool GetLocalizedString(const std::string& english_string,
 };
 
 }  // namespace
+
+const ExtraLanguage kExtraLanguages[] = {
+  // Language Code  Input Method ID
+  { "en-AU",        "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
+  { "id",           "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
+  // The code "fil" comes from app/l10_util.cc.
+  { "fil",          "xkb:us::eng" },  // For Filipino, use US keyboard layout.
+  // For Netherlands, use US international keyboard layout.
+  { "nl",           "xkb:us:intl:eng" },
+  // The code "es-419" comes from app/l10_util.cc.
+  // For Spanish in Latin America, use Latin American keyboard layout.
+  { "es-419",       "xkb:latam::spa" },
+};
+const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 
 std::wstring GetString(const std::string& english_string,
                        const std::string& input_method_id) {

@@ -101,8 +101,7 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     language_codes->SetBoolean(language_code, true);
     // Check kExtraLanguages to see if there are languages associated with
     // this input method. If these are present, add these.
-    for (size_t j = 0; j < arraysize(input_method::kExtraLanguages);
-         ++j) {
+    for (size_t j = 0; j < input_method::kExtraLanguagesLength; ++j) {
       const std::string extra_input_method_id =
           input_method::kExtraLanguages[j].input_method_id;
       const std::string extra_language_code =
@@ -130,8 +129,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
     language_codes.insert(language_code);
   }
   // Collect the language codes from kExtraLanguages.
-  for (size_t i = 0; i < arraysize(input_method::kExtraLanguages);
-       ++i) {
+  for (size_t i = 0; i < input_method::kExtraLanguagesLength; ++i) {
     const char* language_code =
         input_method::kExtraLanguages[i].language_code;
     language_codes.insert(language_code);
