@@ -16,7 +16,6 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 
-struct PP_InputEvent;
 struct PP_Rect;
 
 namespace pp {
@@ -35,8 +34,8 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   }
   virtual ~PPP_Instance_Proxy();
 
-  // Return the info for the 0.5 (latest, canonical) version of the interface.
-  static const Info* GetInfo0_5();
+  // Return the info for the 1.0 (latest, canonical) version of the interface.
+  static const Info* GetInfo1_0();
 
   ::ppapi::PPP_Instance_Combined* ppp_instance_target() const {
     return combined_interface_.get();
@@ -57,9 +56,6 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                           const PP_Rect& clip,
                           PP_Bool fullscreen);
   void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
-  void OnMsgHandleInputEvent(PP_Instance instance,
-                             const PP_InputEvent& event,
-                             PP_Bool* result);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
                                const HostResource& url_loader,
                                PP_Bool* result);

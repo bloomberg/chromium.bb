@@ -11,7 +11,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 
@@ -58,14 +57,6 @@ struct ParamTraits<PP_Flash_NetAddress> {
   typedef PP_Flash_NetAddress param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct ParamTraits<PP_InputEvent> {
-  typedef PP_InputEvent param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

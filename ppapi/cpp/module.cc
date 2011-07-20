@@ -110,17 +110,6 @@ void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
   instance->DidChangeFocus(PP_ToBool(has_focus));
 }
 
-PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                                  const PP_InputEvent* event) {
-  Module* module_singleton = Module::Get();
-  if (!module_singleton)
-    return PP_FALSE;
-  Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
-  if (!instance)
-    return PP_FALSE;
-  return PP_FromBool(instance->HandleInputEvent(*event));
-}
-
 PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
                                     PP_Resource pp_url_loader) {
   Module* module_singleton = Module::Get();
@@ -137,7 +126,6 @@ static PPP_Instance instance_interface = {
   &Instance_DidDestroy,
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
-  &Instance_HandleInputEvent,
   &Instance_HandleDocumentLoad
 };
 

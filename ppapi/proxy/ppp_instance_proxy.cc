@@ -65,21 +65,6 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
                                               instance, has_focus));
 }
 
-PP_Bool HandleInputEvent(PP_Instance instance,
-                         const PP_InputEvent* event) {
-  PP_Bool result = PP_FALSE;
-  IPC::Message* msg = new PpapiMsg_PPPInstance_HandleInputEvent(
-      INTERFACE_ID_PPP_INSTANCE, instance, *event, &result);
-  // Make this message not unblock, to avoid re-entrancy problems when the
-  // plugin does a synchronous call to the renderer. This will force any
-  // synchronous calls from the plugin to complete before processing this
-  // message. We avoid deadlock by never un-setting the unblock flag on messages
-  // from the plugin to the renderer.
-  msg->set_unblock(false);
-  HostDispatcher::GetForInstance(instance)->Send(msg);
-  return result;
-}
-
 PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
   PP_Bool result = PP_FALSE;
@@ -112,12 +97,11 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
   return result;
 }
 
-static const PPP_Instance_0_5 instance_interface_0_5 = {
+static const PPP_Instance_1_0 instance_interface_1_0 = {
   &DidCreate,
   &DidDestroy,
   &DidChangeView,
   &DidChangeFocus,
-  &HandleInputEvent,
   &HandleDocumentLoad
 };
 
@@ -135,13 +119,13 @@ PPP_Instance_Proxy::~PPP_Instance_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo0_5() {
+const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo1_0() {
   static const Info info = {
-    &instance_interface_0_5,
-    PPP_INSTANCE_INTERFACE_0_5,
+    &instance_interface_1_0,
+    PPP_INSTANCE_INTERFACE_1_0,
     INTERFACE_ID_PPP_INSTANCE,
     false,
-    &CreateInstanceProxy<PPP_Instance_0_5>,
+    &CreateInstanceProxy<PPP_Instance_1_0>,
   };
   return &info;
 }
@@ -157,8 +141,6 @@ bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDidChangeView)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidChangeFocus,
                         OnMsgDidChangeFocus)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_HandleInputEvent,
-                        OnMsgHandleInputEvent)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_HandleDocumentLoad,
                         OnMsgHandleDocumentLoad)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -222,12 +204,6 @@ void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
 void PPP_Instance_Proxy::OnMsgDidChangeFocus(PP_Instance instance,
                                              PP_Bool has_focus) {
   combined_interface_->DidChangeFocus(instance, has_focus);
-}
-
-void PPP_Instance_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
-                                               const PP_InputEvent& event,
-                                               PP_Bool* result) {
-  *result = combined_interface_->HandleInputEvent(instance, &event);
 }
 
 void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
