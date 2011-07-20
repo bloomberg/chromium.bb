@@ -568,6 +568,12 @@ const GLchar* GLES2GetRequestableExtensionsCHROMIUM() {
 void GLES2RequestExtensionCHROMIUM(const char* extension) {
   gles2::GetGLContext()->RequestExtensionCHROMIUM(extension);
 }
+void GLES2SetLatchCHROMIUM(GLuint latch_id) {
+  gles2::GetGLContext()->SetLatchCHROMIUM(latch_id);
+}
+void GLES2WaitLatchCHROMIUM(GLuint latch_id) {
+  gles2::GetGLContext()->WaitLatchCHROMIUM(latch_id);
+}
 void GLES2RateLimitOffscreenContextCHROMIUM() {
   gles2::GetGLContext()->RateLimitOffscreenContextCHROMIUM();
 }

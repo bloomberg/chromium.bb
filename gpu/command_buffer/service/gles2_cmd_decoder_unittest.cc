@@ -2893,6 +2893,65 @@ TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
   }
 }
 
+TEST_F(GLES2DecoderTest, SetLatch) {
+  bool isAngle = false;
+#if defined(OS_WIN)
+  isAngle = (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+#endif
+  if (!isAngle) {
+    EXPECT_CALL(*gl_, Flush()).Times(3);
+  }
+  const uint32 kLatchId = 1;
+  base::subtle::Atomic32* latches = static_cast<base::subtle::Atomic32*>(
+      shared_memory_base_);
+  const uint32 kInvalidLatchId = kSharedBufferSize / sizeof(*latches);
+  const uint32 kLastValidLatchId = kInvalidLatchId - 1;
+  latches[kLatchId] = 0;
+  latches[kLastValidLatchId] = 0;
+  SetLatchCHROMIUM cmd;
+  // Check out of range latch id.
+  cmd.Init(kInvalidLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(kLatchId);
+  // Check valid latch.
+  EXPECT_EQ(0, latches[kLatchId]);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, latches[kLatchId]);
+  // Check last valid latch.
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
+  cmd.Init(kLastValidLatchId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, latches[kLastValidLatchId]);
+}
+
+TEST_F(GLES2DecoderTest, WaitLatch) {
+  const uint32 kLatchId = 1;
+  base::subtle::Atomic32* latches = static_cast<base::subtle::Atomic32*>(
+      shared_memory_base_);
+  const uint32 kInvalidLatchId =  kSharedBufferSize / sizeof(*latches);
+  const uint32 kLastValidLatchId = kInvalidLatchId - 1;
+  latches[kLatchId] = 0;
+  latches[kLastValidLatchId] = 0;
+  WaitLatchCHROMIUM cmd;
+  // Check out of range latch id.
+  cmd.Init(kInvalidLatchId);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  // Check valid latch.
+  cmd.Init(kLatchId);
+  EXPECT_EQ(0, latches[kLatchId]);
+  EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
+  latches[kLatchId] = 1;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, latches[kLatchId]);
+  // Check last valid latch.
+  cmd.Init(kLastValidLatchId);
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
+  EXPECT_EQ(error::kWaiting, ExecuteCmd(cmd));
+  latches[kLastValidLatchId] = 1;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, latches[kLastValidLatchId]);
+}
+
 TEST_F(GLES2DecoderTest, SetSurfaceCHROMIUMChangesSurfaceForExistentSurface) {
   const int kSurfaceId = 1;
   scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);

@@ -288,4 +288,28 @@ TEST_F(CommandParserTest, TestError) {
   Mock::VerifyAndClearExpectations(api_mock());
 }
 
+TEST_F(CommandParserTest, TestWaiting) {
+  const unsigned int kNumEntries = 5;
+  scoped_ptr<CommandParser> parser(MakeParser(kNumEntries));
+  CommandBufferOffset put = parser->put();
+  CommandHeader header;
+
+  // Generate a command with size 1.
+  header.size = 1;
+  header.command = 3;
+  buffer()[put++].value_header = header;
+
+  parser->set_put(put);
+  // A command that returns kWaiting should not advance the get pointer.
+  AddDoCommandExpect(error::kWaiting, 3, 0, NULL);
+  EXPECT_EQ(error::kWaiting, parser->ProcessAllCommands());
+  EXPECT_EQ(0, parser->get());
+  Mock::VerifyAndClearExpectations(api_mock());
+  // Not waiting should advance the get pointer.
+  AddDoCommandExpect(error::kNoError, 3, 0, NULL);
+  EXPECT_EQ(error::kNoError, parser->ProcessAllCommands());
+  EXPECT_EQ(put, parser->get());
+  Mock::VerifyAndClearExpectations(api_mock());
+}
+
 }  // namespace gpu

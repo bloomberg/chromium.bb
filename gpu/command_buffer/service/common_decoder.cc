@@ -330,4 +330,10 @@ error::Error CommonDecoder::HandleGetBucketData(
   return error::kNoError;
 }
 
+error::Error CommonDecoder::HandleYieldScheduler(
+    uint32 immediate_data_size,
+    const cmd::YieldScheduler& args) {
+  return error::kYield;
+}
+
 }  // namespace gpu

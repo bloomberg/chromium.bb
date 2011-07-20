@@ -78,7 +78,7 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   ~GLInProcessContext();
 
-  void PumpCommands();
+  void PumpCommands(bool sync);
 
   // Create a GLInProcessContext that renders directly to a view. The view and
   // the associated window must not be destroyed until the returned
@@ -384,10 +384,10 @@ void GLInProcessContext::ResizeOffscreen(const gfx::Size& size) {
   }
 }
 
-void GLInProcessContext::PumpCommands() {
+void GLInProcessContext::PumpCommands(bool /* sync */) {
   ::gpu::CommandBuffer::State state;
   do {
-    gpu_scheduler_->PutChanged();
+    gpu_scheduler_->PutChanged(true);
     MessageLoop::current()->RunAllPending();
     state = command_buffer_->GetState();
   } while (state.get_offset != state.put_offset);
@@ -577,9 +577,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   if (!command_buffer_->Initialize(kCommandBufferSize))
     return false;
 
-  gpu_scheduler_ = GpuScheduler::Create(command_buffer_.get(),
-                                        NULL,
-                                        NULL);
+  gpu_scheduler_ = new GpuScheduler(command_buffer_.get(), NULL, NULL);
 
   if (onscreen) {
     if (render_surface == gfx::kNullPluginWindow) {
@@ -1078,11 +1076,19 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
 void WebGraphicsContext3DInProcessCommandBufferImpl::waitLatchCHROMIUM(
     WGC3Duint latch_id)
 {
+  // TODO(gmam): See if we can comment this in.
+  // ClearContext();
+  gl_->WaitLatchCHROMIUM(latch_id);
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::setLatchCHROMIUM(
     WGC3Duint latch_id)
 {
+  // TODO(gmam): See if we can comment this in.
+  // ClearContext();
+  gl_->SetLatchCHROMIUM(latch_id);
+  // required to ensure set command is sent to GPU process
+  gl_->Flush();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::

@@ -6,7 +6,6 @@
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_H_
 #pragma once
 
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -79,15 +78,6 @@ class GpuChannel : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
-  // Whether this channel is able to handle IPC messages.
-  bool IsScheduled();
-
-  // This is called when a command buffer transitions from the unscheduled
-  // state to the scheduled state, which potentially means the channel
-  // transitions from the unscheduled to the scheduled state. When this occurs
-  // deferred IPC messaged are handled.
-  void OnScheduled();
-
   void CreateViewCommandBuffer(
       gfx::PluginWindowHandle window,
       int32 render_view_id,
@@ -141,8 +131,6 @@ class GpuChannel : public IPC::Channel::Listener,
 
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  void HandleDeferredMessages();
-
   int GenerateRouteID();
 
   // Message handlers.
@@ -150,11 +138,11 @@ class GpuChannel : public IPC::Channel::Listener,
   void OnCreateOffscreenCommandBuffer(
       const gfx::Size& size,
       const GPUCreateCommandBufferConfig& init_params,
-      IPC::Message* reply_message);
-  void OnDestroyCommandBuffer(int32 route_id, IPC::Message* reply_message);
+      int32* route_id);
+  void OnDestroyCommandBuffer(int32 route_id);
 
   void OnCreateOffscreenSurface(const gfx::Size& size,
-                                IPC::Message* reply_message);
+                                int* route_id);
   void OnDestroySurface(int route_id);
 
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
@@ -165,8 +153,6 @@ class GpuChannel : public IPC::Channel::Listener,
   GpuChannelManager* gpu_channel_manager_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
-
-  std::queue<IPC::Message*> deferred_messages_;
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
@@ -201,8 +187,6 @@ class GpuChannel : public IPC::Channel::Listener,
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedExtensions disallowed_extensions_;
   GpuWatchdog* watchdog_;
-
-  ScopedRunnableMethodFactory<GpuChannel> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

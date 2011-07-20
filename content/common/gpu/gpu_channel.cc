@@ -33,8 +33,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
       share_group_(new gfx::GLShareGroup),
-      watchdog_(watchdog),
-      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      watchdog_(watchdog) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -87,19 +86,8 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
             << " with type " << message.type();
   }
 
-  // Control messages are not deferred and can be handled out of order with
-  // respect to routed ones.
   if (message.routing_id() == MSG_ROUTING_CONTROL)
     return OnControlMessageReceived(message);
-
-  // If the channel is unscheduled, defer sync and async messages until it is
-  // rescheduled. Also, even if the channel is scheduled, do not allow newly
-  // received messages to be handled before previously received deferred ones;
-  // append them to the deferred queue as well.
-  if (!IsScheduled() || !deferred_messages_.empty()) {
-    deferred_messages_.push(new IPC::Message(message));
-    return true;
-  }
 
   if (!router_.RouteMessage(message)) {
     // Respond to sync messages even if router failed to route.
@@ -109,20 +97,6 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
       Send(reply);
     }
     return false;
-  }
-
-  // If the channel becomes unscheduled as a result of handling the message,
-  // synthesize an IPC message to flush the command buffer that became
-  // unscheduled.
-  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
-       !it.IsAtEnd();
-       it.Advance()) {
-    GpuCommandBufferStub* stub = it.GetCurrentValue();
-    if (!stub->IsScheduled()) {
-      DCHECK(deferred_messages_.empty());
-      deferred_messages_.push(new GpuCommandBufferMsg_Rescheduled(
-          stub->route_id()));
-    }
   }
 
   return true;
@@ -151,30 +125,6 @@ bool GpuChannel::Send(IPC::Message* message) {
   }
 
   return channel_->Send(message);
-}
-
-bool GpuChannel::IsScheduled() {
-  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
-       !it.IsAtEnd();
-       it.Advance()) {
-    GpuCommandBufferStub* stub = it.GetCurrentValue();
-    if (!stub->IsScheduled())
-      return false;
-  }
-
-  return true;
-}
-
-void GpuChannel::OnScheduled() {
-  // Post a task to handle any deferred messages. The deferred message queue is
-  // not emptied here, which ensures that OnMessageReceived will continue to
-  // defer newly received messages until the ones in the queue have all been
-  // handled by HandleDeferredMessages. HandleDeferredMessages is invoked as a
-  // task to prevent reentrancy.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &GpuChannel::HandleDeferredMessages));
 }
 
 void GpuChannel::LoseAllContexts() {
@@ -268,7 +218,7 @@ void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
   // that matches the given render_view_id and delete the route.
   for (StubMap::const_iterator iter(&stubs_); !iter.IsAtEnd(); iter.Advance()) {
     if (iter.GetCurrentValue()->render_view_id() == render_view_id) {
-      OnDestroyCommandBuffer(iter.GetCurrentKey(), NULL);
+      OnDestroyCommandBuffer(iter.GetCurrentKey());
       return;
     }
   }
@@ -276,17 +226,15 @@ void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
 #endif
 
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
-  // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
-  // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_Initialize, OnInitialize)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateOffscreenCommandBuffer,
-                                    OnCreateOffscreenCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
-                                    OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateOffscreenSurface,
-                                    OnCreateOffscreenSurface)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
+        OnCreateOffscreenCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
+        OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenSurface,
+                        OnCreateOffscreenSurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySurface, OnDestroySurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
         OnCreateTransportTexture)
@@ -294,21 +242,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
   return handled;
-}
-
-void GpuChannel::HandleDeferredMessages() {
-  // Empty the deferred queue so OnMessageRecieved does not defer on that
-  // account and to prevent an infinite loop if the scheduler is unscheduled
-  // as a result of handling already deferred messages.
-  std::queue<IPC::Message*> deferred_messages_copy;
-  std::swap(deferred_messages_copy, deferred_messages_);
-
-  while (!deferred_messages_copy.empty()) {
-    scoped_ptr<IPC::Message> message(deferred_messages_copy.front());
-    deferred_messages_copy.pop();
-
-    OnMessageReceived(*message);
-  }
 }
 
 int GpuChannel::GenerateRouteID() {
@@ -328,12 +261,10 @@ void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply_message) {
-  int32 route_id = MSG_ROUTING_NONE;
-
+    int32* route_id) {
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
-  route_id = GenerateRouteID();
+  *route_id = GenerateRouteID();
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
@@ -342,38 +273,36 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       disallowed_extensions_,
       init_params.allowed_extensions,
       init_params.attribs,
-      route_id,
+      *route_id,
       0, 0, watchdog_));
-  router_.AddRoute(route_id, stub.get());
-  stubs_.AddWithID(stub.release(), route_id);
+  router_.AddRoute(*route_id, stub.get());
+  stubs_.AddWithID(stub.release(), *route_id);
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
                "route_id", route_id);
+#else
+  *route_id = MSG_ROUTING_NONE;
 #endif
-
-  GpuChannelMsg_CreateOffscreenCommandBuffer::WriteReplyParams(
-      reply_message,
-      route_id);
-  Send(reply_message);
 }
 
-void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
-                                        IPC::Message* reply_message) {
+void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #if defined(ENABLE_GPU)
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
                "route_id", route_id);
   if (router_.ResolveRoute(route_id)) {
+    GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+    // In case the renderer is currently blocked waiting for a sync reply from
+    // the stub, allow the stub to clean up and unblock pending messages here:
+    if (stub != NULL)
+      stub->CommandBufferWasDestroyed();
     router_.RemoveRoute(route_id);
     stubs_.Remove(route_id);
   }
 #endif
-
-  if (reply_message)
-    Send(reply_message);
 }
 
 void GpuChannel::OnCreateOffscreenSurface(const gfx::Size& size,
-                                          IPC::Message* reply_message) {
-  int route_id = MSG_ROUTING_NONE;
+                                          int* route_id) {
+  *route_id = MSG_ROUTING_NONE;
 
 #if defined(ENABLE_GPU)
   scoped_refptr<gfx::GLSurface> surface(
@@ -381,19 +310,15 @@ void GpuChannel::OnCreateOffscreenSurface(const gfx::Size& size,
   if (!surface.get())
     return;
 
-  route_id = GenerateRouteID();
+  *route_id = GenerateRouteID();
 
   scoped_ptr<GpuSurfaceStub> stub (new GpuSurfaceStub(this,
-                                                      route_id,
+                                                      *route_id,
                                                       surface.release()));
 
-  router_.AddRoute(route_id, stub.get());
-  surfaces_.AddWithID(stub.release(), route_id);
+  router_.AddRoute(*route_id, stub.get());
+  surfaces_.AddWithID(stub.release(), *route_id);
 #endif
-
-  GpuChannelMsg_CreateOffscreenSurface::WriteReplyParams(reply_message,
-                                                         route_id);
-  Send(reply_message);
 }
 
 void GpuChannel::OnDestroySurface(int route_id) {

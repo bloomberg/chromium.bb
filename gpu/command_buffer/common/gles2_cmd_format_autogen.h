@@ -8913,6 +8913,74 @@ COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, header) == 0,
 COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
                OffsetOf_RequestExtensionCHROMIUM_bucket_id_not_4);
 
+struct SetLatchCHROMIUM {
+  typedef SetLatchCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetLatchCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _latch_id) {
+    SetHeader();
+    latch_id = _latch_id;
+  }
+
+  void* Set(void* cmd, GLuint _latch_id) {
+    static_cast<ValueType*>(cmd)->Init(_latch_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 latch_id;
+};
+
+COMPILE_ASSERT(sizeof(SetLatchCHROMIUM) == 8,
+               Sizeof_SetLatchCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(SetLatchCHROMIUM, header) == 0,
+               OffsetOf_SetLatchCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(SetLatchCHROMIUM, latch_id) == 4,
+               OffsetOf_SetLatchCHROMIUM_latch_id_not_4);
+
+struct WaitLatchCHROMIUM {
+  typedef WaitLatchCHROMIUM ValueType;
+  static const CommandId kCmdId = kWaitLatchCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _latch_id) {
+    SetHeader();
+    latch_id = _latch_id;
+  }
+
+  void* Set(void* cmd, GLuint _latch_id) {
+    static_cast<ValueType*>(cmd)->Init(_latch_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 latch_id;
+};
+
+COMPILE_ASSERT(sizeof(WaitLatchCHROMIUM) == 8,
+               Sizeof_WaitLatchCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, header) == 0,
+               OffsetOf_WaitLatchCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(WaitLatchCHROMIUM, latch_id) == 4,
+               OffsetOf_WaitLatchCHROMIUM_latch_id_not_4);
+
 struct SetSurfaceCHROMIUM {
   typedef SetSurfaceCHROMIUM ValueType;
   static const CommandId kCmdId = kSetSurfaceCHROMIUM;

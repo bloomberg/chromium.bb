@@ -69,6 +69,20 @@ class AsyncAPIMock : public AsyncAPIInterface {
   CommandBufferEngine *engine_;
 };
 
+// Allows specialized behavior per command in DoCommand.
+class SpecializedDoCommandAsyncAPIMock : public AsyncAPIMock {
+ public:
+  // Cause DoCommand to sleep more than the GpuScheduler time quantum.
+  static const unsigned int kTestQuantumCommand = 333;
+
+  SpecializedDoCommandAsyncAPIMock();
+  virtual ~SpecializedDoCommandAsyncAPIMock();
+
+  virtual error::Error DoCommand(unsigned int command,
+                                 unsigned int arg_count,
+                                 const void* cmd_data);
+};
+
 namespace gles2 {
 
 class MockShaderTranslator : public ShaderTranslatorInterface {

@@ -21,6 +21,8 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       total_entry_count_(0),
       usable_entry_count_(0),
       token_(0),
+      last_token_read_(-1),
+      get_(0),
       put_(0),
       last_put_sent_(0),
       commands_issued_(0),
@@ -45,6 +47,7 @@ bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
   total_entry_count_ = num_ring_buffer_entries;
   usable_entry_count_ = total_entry_count_ - kJumpEntries;
   put_ = state.put_offset;
+  SynchronizeState(state);
   return true;
 }
 
@@ -54,7 +57,8 @@ CommandBufferHelper::~CommandBufferHelper() {
 bool CommandBufferHelper::FlushSync() {
   time(&last_flush_time_);
   last_put_sent_ = put_;
-  CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
+  CommandBuffer::State state = command_buffer_->FlushSync(put_, get_);
+  SynchronizeState(state);
   return state.error == error::kNoError;
 }
 
@@ -73,7 +77,7 @@ bool CommandBufferHelper::Finish() {
     // has shutdown.
     if (!FlushSync())
       return false;
-  } while (put_ != get_offset());
+  } while (put_ != get_);
 
   return true;
 }
@@ -92,7 +96,7 @@ int32 CommandBufferHelper::InsertToken() {
     TRACE_EVENT0("gpu", "CommandBufferHelper::InsertToken(wrapped)");
     // we wrapped
     Finish();
-    GPU_DCHECK_EQ(token_, last_token_read());
+    GPU_DCHECK_EQ(token_, last_token_read_);
   }
   return token_;
 }
@@ -105,8 +109,8 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (token < 0)
     return;
   if (token > token_) return;  // we wrapped
-  while (last_token_read() < token) {
-    if (get_offset() == put_) {
+  while (last_token_read_ < token) {
+    if (get_ == put_) {
       GPU_LOG(FATAL) << "Empty command buffer while waiting on a token.";
       return;
     }
@@ -115,6 +119,11 @@ void CommandBufferHelper::WaitForToken(int32 token) {
     if (!FlushSync())
       return;
   }
+}
+
+void CommandBufferHelper::YieldScheduler() {
+  cmd::YieldScheduler& cmd = GetCmdSpace<cmd::YieldScheduler>();
+  cmd.Init();
 }
 
 // Waits for available entries, basically waiting until get >= put + count + 1.
@@ -130,9 +139,9 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // need to make sure get wraps first, actually that get is 1 or more (since
     // put will wrap to 0 after we add the jump).
     GPU_DCHECK_LE(1, put_);
-    if (get_offset() > put_ || get_offset() == 0) {
+    if (get_ > put_ || get_ == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
-      while (get_offset() > put_ || get_offset() == 0) {
+      while (get_ > put_ || get_ == 0) {
         // Do not loop forever if the flush fails, meaning the command buffer
         // reader has shutdown.
         if (!FlushSync())
@@ -176,7 +185,13 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
 
 error::Error CommandBufferHelper::GetError() {
   CommandBuffer::State state = command_buffer_->GetState();
+  SynchronizeState(state);
   return static_cast<error::Error>(state.error);
+}
+
+void CommandBufferHelper::SynchronizeState(const CommandBuffer::State& state) {
+  get_ = state.get_offset;
+  last_token_read_ = state.token;
 }
 
 }  // namespace gpu

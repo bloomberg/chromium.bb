@@ -205,6 +205,8 @@
   OP(ResizeCHROMIUM)                                           /* 448 */ \
   OP(GetRequestableExtensionsCHROMIUM)                         /* 449 */ \
   OP(RequestExtensionCHROMIUM)                                 /* 450 */ \
+  OP(SetLatchCHROMIUM)                                         /* 451 */ \
+  OP(WaitLatchCHROMIUM)                                        /* 452 */ \
   OP(SetSurfaceCHROMIUM)                                       /* 453 */ \
   OP(GetMultipleIntegervCHROMIUM)                              /* 454 */ \
   OP(GetProgramInfoCHROMIUM)                                   /* 455 */ \

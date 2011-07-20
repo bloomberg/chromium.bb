@@ -25,7 +25,6 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD2(Initialize, bool(base::SharedMemory* buffer, int32 size));
   MOCK_METHOD0(GetRingBuffer, Buffer());
   MOCK_METHOD0(GetState, State());
-  MOCK_METHOD0(GetLastState, State());
   MOCK_METHOD1(Flush, void(int32 put_offset));
   MOCK_METHOD2(FlushSync, State(int32 put_offset, int32 last_known_get));
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));

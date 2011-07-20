@@ -300,6 +300,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
 // destructor, so that the stub deletes the actual CommandBufferService
 // object that it's hosting.
+// TODO(apatrick): Implement this.
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
@@ -354,12 +355,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_Flush,
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
                     int32 /* put_offset */,
                     uint32 /* flush_count */)
-
-// Asynchronously process any commands known to the GPU process. This is only
-// used in the event that a channel is unscheduled and needs to be flushed
-// again to process any commands issued subsequent to unscheduling. The GPU
-// process actually sends it (deferred) to itself.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
 
 // Return the current state of the command buffer following a request via
 // an AsyncGetState or AsyncFlush message. (This message is sent from the

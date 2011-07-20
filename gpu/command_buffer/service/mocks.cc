@@ -27,6 +27,25 @@ void AsyncAPIMock::SetToken(unsigned int command,
   engine_->set_token(args->token);
 }
 
+SpecializedDoCommandAsyncAPIMock::SpecializedDoCommandAsyncAPIMock() {}
+
+SpecializedDoCommandAsyncAPIMock::~SpecializedDoCommandAsyncAPIMock() {}
+
+error::Error SpecializedDoCommandAsyncAPIMock::DoCommand(
+    unsigned int command,
+    unsigned int arg_count,
+    const void* cmd_data) {
+  if (command == kTestQuantumCommand) {
+    // Surpass the GpuScheduler scheduling quantum.
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    while ((base::TimeTicks::Now() - start_time).InMicroseconds() <
+           GpuScheduler::kMinimumSchedulerQuantumMicros) {
+      base::PlatformThread::Sleep(1);
+    }
+  }
+  return AsyncAPIMock::DoCommand(command, arg_count, cmd_data);
+}
+
 namespace gles2 {
 
 MockShaderTranslator::MockShaderTranslator() {}

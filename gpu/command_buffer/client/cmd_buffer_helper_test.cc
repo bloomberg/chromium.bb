@@ -77,8 +77,8 @@ class CommandBufferHelperTest : public testing::Test {
         .WillRepeatedly(
             Invoke(do_jump_command_.get(), &DoJumpCommand::DoCommand));
 
-    gpu_scheduler_.reset(GpuScheduler::CreateForTests(
-        command_buffer_.get(), NULL, parser_));
+    gpu_scheduler_.reset(new GpuScheduler(
+        command_buffer_.get(), NULL, parser_, 1));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_scheduler_.get(), &GpuScheduler::PutChanged));
 
@@ -184,6 +184,10 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   AddCommandWithExpect(error::kNoError, kUnusedCommandId, 2, args2);
+
+  helper_->Flush();
+  // Check that the engine has work to do now.
+  EXPECT_FALSE(parser_->IsEmpty());
 
   // Wait until it's done.
   helper_->Finish();
