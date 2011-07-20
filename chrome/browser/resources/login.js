@@ -672,3 +672,8 @@ document.addEventListener('DOMContentLoaded', function() {
 document.onselectstart = function(e) {
   e.preventDefault();
 }
+
+// Disable dragging.
+document.ondragstart = function(e) {
+  e.preventDefault();
+}
