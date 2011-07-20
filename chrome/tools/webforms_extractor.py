@@ -24,6 +24,7 @@ Usage: forms_extractor.py [options]
 Options:
   -l LOG_LEVEL, --log_level=LOG_LEVEL,
     LOG_LEVEL: debug, info, warning or error [default: error]
+  -j, --js  extracts javascript elements from web form.
   -h, --help  show this help message and exit
 """
 
@@ -48,6 +49,15 @@ class FormsExtractor(object):
 
   logger = logging.getLogger(__name__)
   log_handlers = {'StreamHandler': None}
+
+  # This pattern is used for retrieving the form location comment located at the
+  # top of each downloaded HTML file indicating where the form originated from.
+  _RE_FORM_LOCATION_PATTERN = re.compile(
+      ur"""
+      <!--Form\s{1}Location:  # Starting of form location comment.
+      .*?                     # Any characters (non-greedy).
+      -->                     # Ending of the form comment.
+      """, re.U | re.S | re.I | re.X)
 
   # This pattern is used for removing all script code.
   _RE_SCRIPT_PATTERN = re.compile(
@@ -92,7 +102,7 @@ class FormsExtractor(object):
       [^<>]*?  # Matches any characters except '<' and '>' (non-greedy).""" +
       _RE_EVENT_EXPR +
       ur"""
-      [^<>]*?  # Matches any characters except '<' and '>' (non-greedy)
+      [^<>]*?  # Matches any characters except '<' and '>' (non-greedy).
       >        # Matches character '>'.
       """, re.U | re.S | re.I | re.X)
 
@@ -107,7 +117,7 @@ class FormsExtractor(object):
   _RE_FORM_PATTERN = re.compile(
       ur"""
       <form       # A new opening '<form' tag.
-      \b          # The end of the word 'form'
+      \b          # The end of the word 'form'.
       .*?         # Any characters (non-greedy).
       >           # Ending of the (opening) tag: '>'.
       .*?         # Any characters (non-greedy) between the tags.
@@ -154,46 +164,67 @@ class FormsExtractor(object):
 
     Args:
       matchobj: A regexp |re.MatchObject| containing text that has at least one
-      event. Example: |<tr class="nav" onmouseover="mOvr1(this);"
-      onmouseout="mOut1(this);">|
+                event. Example: |<tr class="nav" onmouseover="mOvr1(this);"
+                onmouseout="mOut1(this);">|.
+
     Returns:
       The text containing the tag with all the attributes except for the tags
-      with events. Example: |<tr class="nav">|
+      with events. Example: |<tr class="nav">|.
     """
     tag_with_all_attrs = matchobj.group(0)
     return self._RE_EVENT_PATTERN.sub('', tag_with_all_attrs)
 
-  def Extract(self):
+  def Extract(self, strip_js_only):
     """Extracts and saves the extracted registration forms.
 
     Iterates through all the HTML files.
+
+    Args:
+      strip_js_only: If True, only Javascript is stripped from the HTML content.
+                     Otherwise, all non-form elements are stripped.
     """
     pathname_pattern = os.path.join(self._input_dir, self._HTML_FILES_PATTERN)
     html_files = [f for f in glob.glob(pathname_pattern) if os.path.isfile(f)]
     for filename in html_files:
       self.logger.info('Stripping file "%s" ...', filename)
-      with open(filename) as f:
+      with open(filename, 'U') as f:
         html_content = self._RE_TAG_WITH_EVENTS_PATTERN.sub(
             self._SubstituteAllEvents,
             self._RE_HREF_JS_PATTERN.sub(
                 '', self._RE_SCRIPT_PATTERN.sub('', f.read())))
-      forms_iterator = self._RE_FORM_PATTERN.finditer(html_content)
-      for form_number, form_match in enumerate(forms_iterator, start=1):
-        form_content = form_match.group()
 
         form_filename = os.path.split(filename)[1]  # Path dropped.
         form_filename = form_filename.replace(self._HTML_FILE_PREFIX, '', 1)
         (form_filename, extension) = os.path.splitext(form_filename)
         form_filename = (self._FORM_FILE_PREFIX + form_filename +
-                         str(form_number) + extension)
+                         '%s' + extension)
         form_filename = os.path.join(self._output_dir, form_filename)
-        try:
-          with open(form_filename, 'wb') as f:
-            f.write(form_content)
-        except IOError as e:
-          self.logger.error('Error: %s', e)
-          continue
-      self.logger.info('\tFile "%s" extracted SUCCESSFULLY!', filename)
+        if strip_js_only:
+          form_filename = form_filename % ''
+          try:
+            with open(form_filename, 'w') as f:
+              f.write(html_content)
+          except IOError as e:
+            self.logger.error('Error: %s', e)
+            continue
+        else:  # Remove all non form elements.
+          match = self._RE_FORM_LOCATION_PATTERN.search(html_content)
+          if match:
+            form_location_comment = match.group() + os.linesep
+          else:
+            form_location_comment = ''
+          forms_iterator = self._RE_FORM_PATTERN.finditer(html_content)
+          for form_number, form_match in enumerate(forms_iterator, start=1):
+            form_content = form_match.group()
+            numbered_form_filename = form_filename % form_number
+            try:
+              with open(numbered_form_filename, 'w') as f:
+                f.write(form_location_comment)
+                f.write(form_content)
+            except IOError as e:
+              self.logger.error('Error: %s', e)
+              continue
+          self.logger.info('\tFile "%s" extracted SUCCESSFULLY!', filename)
 
 
 def main():
@@ -202,6 +233,9 @@ def main():
   parser.add_option(
       '-l', '--log_level', metavar='LOG_LEVEL', default='error',
       help='LOG_LEVEL: debug, info, warning or error [default: %default]')
+  parser.add_option(
+      '-j', '--js', dest='js', action='store_true', default=False,
+      help='Removes all javascript elements [default: %default]')
 
   (options, args) = parser.parse_args()
   options.log_level = options.log_level.upper()
@@ -209,10 +243,10 @@ def main():
     print 'Wrong log_level argument.'
     parser.print_help()
     sys.exit(1)
-  options.log_level = getattr(logging, options.log_level)
 
+  options.log_level = getattr(logging, options.log_level)
   extractor = FormsExtractor(logging_level=options.log_level)
-  extractor.Extract()
+  extractor.Extract(options.js)
 
 
 if __name__ == '__main__':
