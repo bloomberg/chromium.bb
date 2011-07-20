@@ -48,11 +48,16 @@ example_nexes = [
     'earth_cc',               # earth_cc.html
     'ppapi_bad',              # ppapi_bad.html
     # PPAPI Proxy Tests
-    'ppapi_ppb_core',        # ppapi_ppb_core.html
-    'ppapi_ppb_graphics2d',  # ppapi_ppb_graphics2d.html
-    'ppapi_ppb_file_system', # ppapi_ppb_file_system.html
-    'ppapi_ppb_memory',      # ppapi_ppb_memory.html
-    'ppapi_messaging',       # ppapi_messaging.html
+    'ppapi_ppb_core',              # ppapi_ppb_core.html
+    'ppapi_ppb_graphics2d',        # ppapi_ppb_graphics2d.html
+    'ppapi_ppb_file_system',       # ppapi_ppb_file_system.html
+    'ppapi_ppb_image_data',        # ppapi_ppb_image_data.html
+    'ppapi_ppb_instance',          # ppapi_ppb_instance_data.html
+    'ppapi_ppb_memory',            # ppapi_ppb_memory.html
+    'ppapi_messaging',             # ppapi_messaging.html
+    'ppapi_ppb_scrollbar',         # ppapi_ppb_scrollbar.html
+    'ppapi_ppb_url_request_info',  # ppapi_ppb_url_request_info.html
+    'ppapi_ppp_instance',          # ppapi_ppp_instance.html
     ]
 
 prog_suffix = env['PROGSUFFIX']
