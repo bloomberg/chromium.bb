@@ -182,6 +182,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   PaintState paint_state_;
   views::MenuButton* settings_button_;
+  bool is_settings_button_visible_;
   views::ImageButton* close_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;

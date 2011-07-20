@@ -52,6 +52,10 @@ void Panel::SetExpansionState(ExpansionState new_expansion_state) {
   expansion_state_ = new_expansion_state;
 
   native_panel_->OnPanelExpansionStateChanged(expansion_state_);
+
+  // The minimized panel should not get the focus.
+  if (expansion_state_ == MINIMIZED)
+    Deactivate();
 }
 
 bool Panel::ShouldBringUpTitleBar(int mouse_x, int mouse_y) const {
@@ -61,6 +65,10 @@ bool Panel::ShouldBringUpTitleBar(int mouse_x, int mouse_y) const {
 
   // Let the native panel decide.
   return native_panel_->ShouldBringUpPanelTitleBar(mouse_x, mouse_y);
+}
+
+bool Panel::IsDrawingAttention() const {
+  return native_panel_->IsDrawingAttention();
 }
 
 void Panel::Show() {

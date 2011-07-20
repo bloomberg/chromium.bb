@@ -282,12 +282,18 @@ bool PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels(
 void PanelManager::BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up) {
   for (ActivePanels::const_iterator iter = active_panels_.begin();
        iter != active_panels_.end(); ++iter) {
+    Panel* panel = *iter;
+
+    // Skip any panel that is drawing the attention.
+    if (panel->IsDrawingAttention())
+      continue;
+
     if (bring_up) {
-      if ((*iter)->expansion_state() == Panel::MINIMIZED)
-        (*iter)->SetExpansionState(Panel::TITLE_ONLY);
+      if (panel->expansion_state() == Panel::MINIMIZED)
+        panel->SetExpansionState(Panel::TITLE_ONLY);
     } else {
-      if ((*iter)->expansion_state() == Panel::TITLE_ONLY)
-        (*iter)->SetExpansionState(Panel::MINIMIZED);
+      if (panel->expansion_state() == Panel::TITLE_ONLY)
+        panel->SetExpansionState(Panel::MINIMIZED);
     }
   }
 }

@@ -207,6 +207,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       browser_view_(browser_view),
       paint_state_(NOT_PAINTED),
       settings_button_(NULL),
+      is_settings_button_visible_(false),
       close_button_(NULL),
       title_icon_(NULL),
       title_label_(NULL),
@@ -226,7 +227,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS)));
   settings_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
-  settings_button_->SetVisible(false);
+  settings_button_->SetVisible(is_settings_button_visible_);
   AddChildView(settings_button_);
 
   close_button_ = new views::ImageButton(this);
@@ -330,7 +331,7 @@ void PanelBrowserFrameView::UpdateWindowIcon() {
 void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   // The font and color need to be updated depending on the panel's state.
   PaintState paint_state;
-  if (browser_view_->is_drawing_attention())
+  if (browser_view_->panel()->IsDrawingAttention())
     paint_state = PAINT_FOR_ATTENTION;
   else if (browser_view_->focused())
     paint_state = PAINT_AS_ACTIVE;
@@ -354,6 +355,15 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 }
 
 void PanelBrowserFrameView::Layout() {
+  // If the panel height is smaller than the title-bar height, as in minimized
+  // case, we hide all controls.
+  bool is_control_visible = height() >= kTitleBarHeight;
+  close_button_->SetVisible(is_control_visible);
+  settings_button_->SetVisible(
+      is_control_visible && is_settings_button_visible_);
+  title_icon_->SetVisible(is_control_visible);
+  title_label_->SetVisible(is_control_visible);
+
   // Layout the close button.
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
@@ -714,7 +724,8 @@ void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
 
 void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     bool focused, bool cursor_in_view) {
-  settings_button_->SetVisible(focused || cursor_in_view);
+  is_settings_button_visible_ = focused || cursor_in_view;
+  settings_button_->SetVisible(is_settings_button_visible_);
 }
 
 const Extension* PanelBrowserFrameView::GetExtension() const {

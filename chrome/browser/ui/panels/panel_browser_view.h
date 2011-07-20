@@ -32,7 +32,6 @@ class PanelBrowserView : public BrowserView,
   Panel* panel() const { return panel_.get(); }
   bool closed() const { return closed_; }
   bool focused() const { return focused_; }
-  bool is_drawing_attention() const { return is_drawing_attention_; }
 
   PanelBrowserFrameView* GetFrameView() const;
 
@@ -88,6 +87,7 @@ class PanelBrowserView : public BrowserView,
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
+  virtual bool IsDrawingAttention() const OVERRIDE;
   virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   // Overridden from AnimationDelegate:

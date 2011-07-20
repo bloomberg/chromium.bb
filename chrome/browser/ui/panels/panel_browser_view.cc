@@ -87,7 +87,7 @@ bool PanelBrowserView::CanMaximize() const {
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
-  // No animation if the panel is being dragged.
+  //// No animation if the panel is being dragged.
   if (mouse_dragging_) {
     ::BrowserView::SetBounds(bounds);
     return;
@@ -197,6 +197,9 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       break;
     case Panel::MINIMIZED:
       height = kFullyMinimizedHeight;
+
+      // Start the mouse watcher so that we can bring up the minimized panels.
+      // TODO(jianli): Need to support mouse watching in ChromeOS.
 #if defined(OS_WIN)
       EnsureMouseWatcherStarted();
 #endif
@@ -266,7 +269,11 @@ void PanelBrowserView::DrawAttention() {
   if (panel_->expansion_state() == Panel::MINIMIZED)
     panel_->SetExpansionState(Panel::TITLE_ONLY);
 
-  SchedulePaint();
+  GetFrameView()->SchedulePaint();
+}
+
+bool PanelBrowserView::IsDrawingAttention() const {
+  return is_drawing_attention_;
 }
 
 void PanelBrowserView::DestroyPanelBrowser() {
@@ -287,11 +294,11 @@ void PanelBrowserView::StopDrawingAttention() {
   // user clicks on it to mean to clear the attention.
   attention_cleared_time_ = base::TimeTicks::Now();
 
-  // Bring down the title bar.
+  // Bring up the title bar.
   if (panel_->expansion_state() == Panel::TITLE_ONLY)
-    panel_->SetExpansionState(Panel::MINIMIZED);
+    panel_->SetExpansionState(Panel::EXPANDED);
 
-  SchedulePaint();
+  GetFrameView()->SchedulePaint();
 }
 
 NativePanelTesting* PanelBrowserView::GetNativePanelTesting() {

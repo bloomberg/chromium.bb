@@ -44,6 +44,8 @@ class Panel : public BrowserWindow {
 
   bool ShouldBringUpTitleBar(int mouse_x, int mouse_y) const;
 
+  bool IsDrawingAttention() const;
+
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

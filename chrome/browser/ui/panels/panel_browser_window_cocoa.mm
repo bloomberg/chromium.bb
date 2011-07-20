@@ -142,6 +142,11 @@ void PanelBrowserWindowCocoa::DrawAttention() {
   NOTIMPLEMENTED();
 }
 
+bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
   controller_ = NULL;

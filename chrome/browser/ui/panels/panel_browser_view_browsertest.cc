@@ -87,6 +87,14 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     return static_cast<PanelBrowserView*>(panel->native_panel());
   }
 
+  void WaitTillBoundsAnimationFinished(PanelBrowserView* browser_view) {
+    // The timer for the animation will only kick in as async task.
+    while (browser_view->bounds_animator_->is_animating()) {
+      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+      MessageLoop::current()->RunAllPending();
+    }
+  }
+
   void ValidateDragging(PanelBrowserView** browser_views,
                         size_t num_browser_views,
                         size_t index_to_drag,
@@ -284,6 +292,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     PanelBrowserView* browser_view1 = CreatePanelBrowserView("PanelTest1",
                                                              SHOW_AS_ACTIVE);
     Panel* panel1 = browser_view1->panel_.get();
+    PanelBrowserFrameView* frame_view1 = browser_view1->GetFrameView();
 
     // Test minimizing/restoring an individual panel.
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
@@ -296,14 +305,29 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_TRUE(IsMouseWatcherStarted());
+    EXPECT_FALSE(panel1->IsActive());
+    WaitTillBoundsAnimationFinished(browser_view1);
+    // TODO(jianli): Enable the following checks after the patch to support
+    // minimizing window to 3-pixel line is landed.
+    //EXPECT_FALSE(frame_view1->close_button_->IsVisible());
+    //EXPECT_FALSE(frame_view1->title_icon_->IsVisible());
+    //EXPECT_FALSE(frame_view1->title_label_->IsVisible());
 
     panel1->SetExpansionState(Panel::TITLE_ONLY);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
+    WaitTillBoundsAnimationFinished(browser_view1);
+    EXPECT_TRUE(frame_view1->close_button_->IsVisible());
+    EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
+    EXPECT_TRUE(frame_view1->title_label_->IsVisible());
 
     panel1->SetExpansionState(Panel::EXPANDED);
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
     EXPECT_EQ(initial_height, panel1->GetBounds().height());
+    WaitTillBoundsAnimationFinished(browser_view1);
+    EXPECT_TRUE(frame_view1->close_button_->IsVisible());
+    EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
+    EXPECT_TRUE(frame_view1->title_label_->IsVisible());
 
     panel1->SetExpansionState(Panel::TITLE_ONLY);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
@@ -371,20 +395,20 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     // Test that the attention should not be drawn if the expanded panel is in
     // focus.
     browser_view->DrawAttention();
-    EXPECT_FALSE(browser_view->is_drawing_attention());
+    EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoop::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
     // Test that the attention is drawn when the expanded panel is not in focus.
     panel->Deactivate();
     browser_view->DrawAttention();
-    EXPECT_TRUE(browser_view->is_drawing_attention());
+    EXPECT_TRUE(browser_view->IsDrawingAttention());
     MessageLoop::current()->RunAllPending();
     EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
 
     // Test that the attention is cleared.
     browser_view->StopDrawingAttention();
-    EXPECT_FALSE(browser_view->is_drawing_attention());
+    EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoop::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
@@ -394,7 +418,7 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
     panel->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
     browser_view->DrawAttention();
-    EXPECT_TRUE(browser_view->is_drawing_attention());
+    EXPECT_TRUE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
     MessageLoop::current()->RunAllPending();
     EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
@@ -405,10 +429,15 @@ class PanelBrowserViewTest : public InProcessBrowserTest {
         ShouldBringUpTitleBarForAllMinimizedPanels(
             panel->GetBounds().x(), panel->GetBounds().y()));
 
+    // Test that we cannot bring down the panel that is drawing the attention.
+    PanelManager::GetInstance()->BringUpOrDownTitleBarForAllMinimizedPanels(
+        false);
+    EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
     // Test that the attention is cleared.
     browser_view->StopDrawingAttention();
-    EXPECT_FALSE(browser_view->is_drawing_attention());
-    EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+    EXPECT_FALSE(browser_view->IsDrawingAttention());
+    EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
     MessageLoop::current()->RunAllPending();
     EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
 
@@ -691,10 +720,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
   ASSERT_TRUE(browser_view->bounds_animator_.get());
   EXPECT_TRUE(browser_view->bounds_animator_->is_animating());
   EXPECT_NE(browser_view->GetBounds(), target_bounds);
-  // The timer for the animation will only kick in as async task.
-  while (browser_view->bounds_animator_->is_animating()) {
-    MessageLoop::current()->RunAllPending();
-  }
+  WaitTillBoundsAnimationFinished(browser_view);
   EXPECT_EQ(browser_view->GetBounds(), target_bounds);
 
   // Validates that no animation should be triggered for the panel currently

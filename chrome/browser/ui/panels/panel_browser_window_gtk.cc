@@ -138,6 +138,11 @@ void PanelBrowserWindowGtk::DrawAttention() {
   NOTIMPLEMENTED();
 }
 
+bool PanelBrowserWindowGtk::IsDrawingAttention() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void PanelBrowserWindowGtk::DestroyPanelBrowser() {
   DestroyBrowser();
 }
