@@ -19,6 +19,7 @@ importScripts('byte_reader.js');
 function MetadataDispatcher() {
   importScripts('exif_parser.js');
   importScripts('mpeg_parser.js');
+  importScripts('id3_parser.js');
 
   var patterns = [];
 
