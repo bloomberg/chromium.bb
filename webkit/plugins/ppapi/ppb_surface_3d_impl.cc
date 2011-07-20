@@ -23,7 +23,6 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
     : Resource(instance),
       bound_to_instance_(false),
       swap_initiated_(false),
-      swap_callback_(PP_BlockUntilComplete()),
       context_(NULL) {
 }
 
@@ -58,24 +57,29 @@ int32_t PPB_Surface3D_Impl::GetAttrib(int32_t attribute, int32_t* value) {
 }
 
 int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
-  if (!context_)
-    return PP_ERROR_FAILED;
-
-  if (swap_callback_.func) {
-    // Already a pending SwapBuffers that hasn't returned yet.
-    return PP_ERROR_INPROGRESS;
-  }
-
   if (!callback.func) {
     // Blocking SwapBuffers isn't supported (since we have to be on the main
     // thread).
     return PP_ERROR_BADARGUMENT;
   }
 
-  swap_callback_ = callback;
+  if (swap_callback_.get() && !swap_callback_->completed()) {
+    // Already a pending SwapBuffers that hasn't returned yet.
+    return PP_ERROR_INPROGRESS;
+  }
+
+  if (!context_)
+    return PP_ERROR_FAILED;
+
+  PP_Resource resource_id = GetReferenceNoAddRef();
+  CHECK(resource_id);
+  swap_callback_ = new TrackedCompletionCallback(
+      instance()->module()->GetCallbackTracker(), resource_id, callback);
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
   if (impl)
     context_->gles2_impl()->SwapBuffers();
+  // |SwapBuffers()| should not call us back synchronously, but double-check.
+  DCHECK(!swap_callback_->completed());
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -119,12 +123,14 @@ void PPB_Surface3D_Impl::ViewInitiatedPaint() {
 }
 
 void PPB_Surface3D_Impl::ViewFlushedPaint() {
-  if (swap_initiated_ && swap_callback_.func) {
+  if (swap_initiated_ && swap_callback_.get() && !swap_callback_->completed()) {
     // We must clear swap_callback_ before issuing the callback. It will be
     // common for the plugin to issue another SwapBuffers in response to the
     // callback, and we don't want to think that a callback is already pending.
     swap_initiated_ = false;
-    PP_RunAndClearCompletionCallback(&swap_callback_, PP_OK);
+    scoped_refptr<TrackedCompletionCallback> callback;
+    callback.swap(swap_callback_);
+    callback->Run(PP_OK);  // Will complete abortively if necessary.
   }
 }
 
@@ -136,11 +142,13 @@ void PPB_Surface3D_Impl::OnSwapBuffers() {
   if (bound_to_instance_) {
     instance()->CommitBackingTexture();
     swap_initiated_ = true;
-  } else if (swap_callback_.func) {
+  } else if (swap_callback_.get() && !swap_callback_->completed()) {
     // If we're off-screen, no need to trigger compositing so run the callback
     // immediately.
     swap_initiated_ = false;
-    PP_RunAndClearCompletionCallback(&swap_callback_, PP_OK);
+    scoped_refptr<TrackedCompletionCallback> callback;
+    callback.swap(swap_callback_);
+    callback->Run(PP_OK);  // Will complete abortively if necessary.
   }
 }
 

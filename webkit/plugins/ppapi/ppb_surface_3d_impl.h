@@ -1,12 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_SURFACE_3D_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_SURFACE_3D_IMPL_H_
 
-#include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/thunk/ppb_surface_3d_api.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -69,7 +70,7 @@ class PPB_Surface3D_Impl : public Resource,
 
   // True when the page's SwapBuffers has been issued but not returned yet.
   bool swap_initiated_;
-  PP_CompletionCallback swap_callback_;
+  scoped_refptr<TrackedCompletionCallback> swap_callback_;
 
   // The context this surface is currently bound to.
   PPB_Context3D_Impl* context_;
