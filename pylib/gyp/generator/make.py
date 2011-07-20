@@ -1536,7 +1536,7 @@ class MakefileWriter:
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':
-      return None
+      return ''  # Doesn't have any output.
     elif self.type == 'executable':
       path = os.path.join('$(builddir)')
     else:
