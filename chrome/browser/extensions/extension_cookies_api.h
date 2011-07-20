@@ -18,13 +18,13 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cookie_monster.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace net {
+class CookieList;
 class URLRequestContextGetter;
 }
 
@@ -102,6 +102,7 @@ class GetCookieFunction : public CookiesFunction {
  private:
   void GetCookieOnIOThread();
   void RespondOnUIThread();
+  void GetCookieCallback(const net::CookieList& cookie_list);
 
   std::string name_;
   GURL url_;
@@ -120,6 +121,7 @@ class GetAllCookiesFunction : public CookiesFunction {
  private:
   void GetAllCookiesOnIOThread();
   void RespondOnUIThread();
+  void GetAllCookiesCallback(const net::CookieList& cookie_list);
 
   base::DictionaryValue* details_;
   GURL url_;
@@ -138,6 +140,8 @@ class SetCookieFunction : public CookiesFunction {
  private:
   void SetCookieOnIOThread();
   void RespondOnUIThread();
+  void PullCookie(bool set_cookie_);
+  void PullCookieCallback(const net::CookieList& cookie_list);
 
   GURL url_;
   std::string name_;
@@ -163,6 +167,7 @@ class RemoveCookieFunction : public CookiesFunction {
  private:
   void RemoveCookieOnIOThread();
   void RespondOnUIThread();
+  void RemoveCookieCallback();
 
   GURL url_;
   std::string name_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,15 +78,17 @@ DictionaryValue* CreateCookieStoreValue(Profile* profile,
   return result;
 }
 
-net::CookieList GetCookieListFromStore(
-    net::CookieStore* cookie_store, const GURL& url) {
+void GetCookieListFromStore(
+    net::CookieStore* cookie_store, const GURL& url,
+    const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK(cookie_store);
   net::CookieMonster* monster = cookie_store->GetCookieMonster();
   if (!url.is_empty()) {
     DCHECK(url.is_valid());
-    return monster->GetAllCookiesForURL(url);
+    monster->GetAllCookiesForURLAsync(url, callback);
+  } else {
+    monster->GetAllCookiesAsync(callback);
   }
-  return monster->GetAllCookies();
 }
 
 GURL GetURLFromCanonicalCookie(

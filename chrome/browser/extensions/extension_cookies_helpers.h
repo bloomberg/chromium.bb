@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,8 +52,9 @@ base::DictionaryValue* CreateCookieStoreValue(Profile* profile,
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
 // This can only be called on the IO thread.
-net::CookieList GetCookieListFromStore(
-    net::CookieStore* cookie_store, const GURL& url);
+void GetCookieListFromStore(
+    net::CookieStore* cookie_store, const GURL& url,
+    const net::CookieMonster::GetCookieListCallback& callback);
 
 // Constructs a URL from a cookie's information for use in checking
 // a cookie against the extension's host permissions. The Secure

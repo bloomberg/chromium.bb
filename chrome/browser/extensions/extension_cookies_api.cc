@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_cookies_api.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/task.h"
 #include "base/values.h"
@@ -213,9 +214,13 @@ void GetCookieFunction::GetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
-  net::CookieList cookie_list =
-      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
-  net::CookieList::iterator it;
+  extension_cookies_helpers::GetCookieListFromStore(
+      cookie_store, url_,
+      base::Bind(&GetCookieFunction::GetCookieCallback, this));
+}
+
+void GetCookieFunction::GetCookieCallback(const net::CookieList& cookie_list) {
+  net::CookieList::const_iterator it;
   for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
@@ -274,9 +279,13 @@ void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
-  net::CookieList cookie_list =
-      extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
+  extension_cookies_helpers::GetCookieListFromStore(
+      cookie_store, url_,
+      base::Bind(&GetAllCookiesFunction::GetAllCookiesCallback, this));
+}
 
+void GetAllCookiesFunction::GetAllCookiesCallback(
+    const net::CookieList& cookie_list) {
   const Extension* extension = GetExtension();
   if (extension) {
     ListValue* matching_list = new ListValue();
@@ -372,14 +381,24 @@ void SetCookieFunction::SetCookieOnIOThread() {
   net::CookieMonster* cookie_monster =
       store_context_->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
-  success_ = cookie_monster->SetCookieWithDetails(
+  cookie_monster->SetCookieWithDetailsAsync(
       url_, name_, value_, domain_, path_, expiration_time_,
-      secure_, http_only_);
+      secure_, http_only_, base::Bind(&SetCookieFunction::PullCookie, this));
+}
 
+void SetCookieFunction::PullCookie(bool set_cookie_result) {
   // Pull the newly set cookie.
-  net::CookieList cookie_list =
-      extension_cookies_helpers::GetCookieListFromStore(cookie_monster, url_);
-  net::CookieList::iterator it;
+  net::CookieMonster* cookie_monster =
+      store_context_->GetURLRequestContext()->cookie_store()->
+      GetCookieMonster();
+  success_ = set_cookie_result;
+  extension_cookies_helpers::GetCookieListFromStore(
+      cookie_monster, url_,
+      base::Bind(&SetCookieFunction::PullCookieCallback, this));
+}
+
+void SetCookieFunction::PullCookieCallback(const net::CookieList& cookie_list) {
+  net::CookieList::const_iterator it;
   for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
@@ -447,8 +466,12 @@ void RemoveCookieFunction::RemoveCookieOnIOThread() {
   // Remove the cookie
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteCookie(url_, name_);
+  cookie_store->DeleteCookieAsync(
+      url_, name_,
+      base::Bind(&RemoveCookieFunction::RemoveCookieCallback, this));
+}
 
+void RemoveCookieFunction::RemoveCookieCallback() {
   // Build the callback result
   DictionaryValue* resultDictionary = new DictionaryValue();
   resultDictionary->SetString(keys::kNameKey, name_);
