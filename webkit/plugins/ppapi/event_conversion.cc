@@ -13,8 +13,6 @@
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/input_event_impl.h"
-// TODO(dmichael): Remove this include when PP_InputEvent is gone from m14.
-#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"

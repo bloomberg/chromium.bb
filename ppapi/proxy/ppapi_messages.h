@@ -293,6 +293,10 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPPInstance_DidChangeView,
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPInstance_DidChangeFocus,
                     PP_Instance /* instance */,
                     PP_Bool /* has_focus */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleInputEvent,
+                           PP_Instance /* instance */,
+                           PP_InputEvent /* event */,
+                           PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleDocumentLoad,
                            PP_Instance /* instance */,
                            pp::proxy::HostResource /* url_loader */,
