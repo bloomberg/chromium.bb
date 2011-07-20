@@ -38,6 +38,8 @@ class BrowserAccessibilityWin
       public IDispatchImpl<IAccessible2, &IID_IAccessible2,
                            &LIBID_IAccessible2Lib>,
       public IAccessibleImage,
+      public IAccessibleTable,
+      public IAccessibleTableCell,
       public IAccessibleText,
       public IServiceProvider,
       public ISimpleDOMDocument,
@@ -49,6 +51,8 @@ class BrowserAccessibilityWin
     COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessibleImage)
+    COM_INTERFACE_ENTRY(IAccessibleTable)
+    COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(ISimpleDOMDocument)
@@ -223,6 +227,137 @@ class BrowserAccessibilityWin
                                  LONG* x, LONG* y);
 
   STDMETHODIMP get_imageSize(LONG* height, LONG* width);
+
+  //
+  // IAccessibleTable methods.
+  //
+
+  // get_description - also used by IAccessibleImage
+
+  STDMETHODIMP get_accessibleAt(long row,
+                                long column,
+                                IUnknown** accessible);
+
+  STDMETHODIMP get_caption(IUnknown** accessible);
+
+  STDMETHODIMP get_childIndex(long row_index,
+                              long column_index,
+                              long* cell_index);
+
+  STDMETHODIMP get_columnDescription(long column,
+                                     BSTR* description);
+
+  STDMETHODIMP get_columnExtentAt(long row,
+                                  long column,
+                                  long* n_columns_spanned);
+
+  STDMETHODIMP get_columnHeader(IAccessibleTable** accessible_table,
+                                long* starting_row_index);
+
+  STDMETHODIMP get_columnIndex(long cell_index,
+                               long* column_index);
+
+  STDMETHODIMP get_nColumns(long* column_count);
+
+  STDMETHODIMP get_nRows(long* row_count);
+
+  STDMETHODIMP get_nSelectedChildren(long* cell_count);
+
+  STDMETHODIMP get_nSelectedColumns(long* column_count);
+
+  STDMETHODIMP get_nSelectedRows(long *row_count);
+
+  STDMETHODIMP get_rowDescription(long row,
+                                  BSTR* description);
+
+  STDMETHODIMP get_rowExtentAt(long row,
+                               long column,
+                               long* n_rows_spanned);
+
+  STDMETHODIMP get_rowHeader(IAccessibleTable **accessible_table,
+                             long* starting_column_index);
+
+  STDMETHODIMP get_rowIndex(long cell_index,
+                            long* row_index);
+
+  STDMETHODIMP get_selectedChildren(long max_children,
+                                    long** children,
+                                    long* n_children);
+
+  STDMETHODIMP get_selectedColumns(long max_columns,
+                                   long** columns,
+                                   long* n_columns);
+
+  STDMETHODIMP get_selectedRows(long max_rows,
+                                long** rows,
+                                long* n_rows);
+
+  STDMETHODIMP get_summary(IUnknown** accessible);
+
+  STDMETHODIMP get_isColumnSelected(long column,
+                                    boolean* is_selected);
+
+  STDMETHODIMP get_isRowSelected(long row,
+                                 boolean* is_selected);
+
+  STDMETHODIMP get_isSelected(long row,
+                              long column,
+                              boolean* is_selected);
+
+  STDMETHODIMP get_rowColumnExtentsAtIndex(long index,
+                                           long* row,
+                                           long* column,
+                                           long* row_extents,
+                                           long* column_extents,
+                                           boolean* is_selected);
+
+  STDMETHODIMP selectRow(long row) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHODIMP selectColumn(long column) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHODIMP unselectRow(long row) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHODIMP unselectColumn(long column) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHODIMP get_modelChange(IA2TableModelChange* model_change) {
+    return E_NOTIMPL;
+  }
+
+  //
+  // IAccessibleTableCell methods.
+  //
+
+  STDMETHODIMP get_columnExtent(long* n_columns_spanned);
+
+  STDMETHODIMP get_columnHeaderCells(IUnknown*** cell_accessibles,
+                                     long* n_column_header_cells);
+
+  STDMETHODIMP get_columnIndex(long* column_index);
+
+  STDMETHODIMP get_rowExtent(long* n_rows_spanned);
+
+  STDMETHODIMP get_rowHeaderCells(IUnknown*** cell_accessibles,
+                                  long* n_row_header_cells);
+
+  STDMETHODIMP get_rowIndex(long* row_index);
+
+  STDMETHODIMP get_isSelected(boolean* is_selected);
+
+  STDMETHODIMP get_rowColumnExtents(long* row,
+                                    long* column,
+                                    long* row_extents,
+                                    long* column_extents,
+                                    boolean* is_selected);
+
+  STDMETHODIMP get_table(IUnknown** table);
 
   //
   // IAccessibleText methods.
@@ -457,11 +592,11 @@ class BrowserAccessibilityWin
   // bitmasks defined in webkit/glue/webaccessibility.h.
   void InitRoleAndState();
 
-  // Retrieve the string value of an attribute from the attribute map and
+  // Retrieve the value of an attribute from the string attribute map and
   // if found and nonempty, allocate a new BSTR (with SysAllocString)
   // and return S_OK. If not found or empty, return S_FALSE.
-  HRESULT GetAttributeAsBstr(
-      WebAccessibility::Attribute attribute, BSTR* value_bstr);
+  HRESULT GetStringAttributeAsBstr(
+      WebAccessibility::StringAttribute attribute, BSTR* value_bstr);
 
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(const string16& str);
@@ -481,6 +616,10 @@ class BrowserAccessibilityWin
                     IA2TextBoundaryType boundary,
                     LONG start_offset,
                     LONG direction);
+
+  // Return a pointer to the object corresponding to the given renderer_id,
+  // does not make a new reference.
+  BrowserAccessibilityWin* GetFromRendererID(int32 renderer_id);
 
   // IAccessible role and state.
   int32 ia_role_;

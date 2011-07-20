@@ -155,19 +155,12 @@ struct WebAccessibility {
 
   // Additional optional attributes that can be optionally attached to
   // a node.
-  enum Attribute {
-    // Doc attributes: only make sense when applied to the top-level
-    // Document node.
+  enum StringAttribute {
+    // Document attributes.
     ATTR_DOC_URL,
     ATTR_DOC_TITLE,
     ATTR_DOC_MIMETYPE,
     ATTR_DOC_DOCTYPE,
-    ATTR_DOC_SCROLLX,
-    ATTR_DOC_SCROLLY,
-
-    // Editable text attributes
-    ATTR_TEXT_SEL_START,
-    ATTR_TEXT_SEL_END,
 
     // Attributes that could apply to any node.
     ATTR_ACTION,
@@ -177,7 +170,29 @@ struct WebAccessibility {
     ATTR_HTML_TAG,
     ATTR_SHORTCUT,
     ATTR_URL,
-    NUM_ATTRIBUTES
+    NUM_STRING_ATTRIBUTES
+  };
+
+  enum IntAttribute {
+    // Document attributes.
+    ATTR_DOC_SCROLLX,
+    ATTR_DOC_SCROLLY,
+
+    // Editable text attributes.
+    ATTR_TEXT_SEL_START,
+    ATTR_TEXT_SEL_END,
+
+    // Table attributes.
+    ATTR_TABLE_ROW_COUNT,
+    ATTR_TABLE_COLUMN_COUNT,
+
+    // Table cell attributes.
+    ATTR_TABLE_CELL_COLUMN_INDEX,
+    ATTR_TABLE_CELL_COLUMN_SPAN,
+    ATTR_TABLE_CELL_ROW_INDEX,
+    ATTR_TABLE_CELL_ROW_SPAN,
+
+    NUM_INT_ATTRIBUTES
   };
 
   // Empty constructor, for serialization.
@@ -214,11 +229,13 @@ struct WebAccessibility {
   Role role;
   uint32 state;
   gfx::Rect location;
-  std::map<int32, string16> attributes;
+  std::map<StringAttribute, string16> string_attributes;
+  std::map<IntAttribute, int32> int_attributes;
   std::vector<WebAccessibility> children;
   std::vector<int32> indirect_child_ids;
   std::vector<std::pair<string16, string16> > html_attributes;
   std::vector<int32> line_breaks;
+  std::vector<int32> cell_ids;  // For a table, the cell ids in row-major order.
 };
 
 }  // namespace webkit_glue

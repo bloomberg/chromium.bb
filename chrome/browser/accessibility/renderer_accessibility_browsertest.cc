@@ -59,7 +59,9 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
 
  protected:
   std::string GetAttr(const WebAccessibility& node,
-                      const WebAccessibility::Attribute attr);
+                      const WebAccessibility::StringAttribute attr);
+  int GetIntAttr(const WebAccessibility& node,
+                 const WebAccessibility::IntAttribute attr);
 };
 
 void RendererAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -82,12 +84,27 @@ void RendererAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
 // Convenience method to get the value of a particular WebAccessibility
 // node attribute as a UTF-8 const char*.
 std::string RendererAccessibilityBrowserTest::GetAttr(
-    const WebAccessibility& node, const WebAccessibility::Attribute attr) {
-  std::map<int32, string16>::const_iterator iter = node.attributes.find(attr);
-  if (iter != node.attributes.end())
+    const WebAccessibility& node,
+    const WebAccessibility::StringAttribute attr) {
+  std::map<WebAccessibility::StringAttribute, string16>::const_iterator iter =
+      node.string_attributes.find(attr);
+  if (iter != node.string_attributes.end())
     return UTF16ToUTF8(iter->second);
   else
     return "";
+}
+
+// Convenience method to get the value of a particular WebAccessibility
+// node integer attribute.
+int RendererAccessibilityBrowserTest::GetIntAttr(
+    const WebAccessibility& node,
+    const WebAccessibility::IntAttribute attr) {
+  std::map<WebAccessibility::IntAttribute, int32>::const_iterator iter =
+      node.int_attributes.find(attr);
+  if (iter != node.int_attributes.end())
+    return iter->second;
+  else
+    return -1;
 }
 
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
@@ -172,10 +189,8 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text.role);
   EXPECT_STREQ(
       "input", GetAttr(text, WebAccessibility::ATTR_HTML_TAG).c_str());
-  EXPECT_STREQ(
-      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_START).c_str());
-  EXPECT_STREQ(
-      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_END).c_str());
+  EXPECT_EQ(0, GetIntAttr(text, WebAccessibility::ATTR_TEXT_SEL_START));
+  EXPECT_EQ(0, GetIntAttr(text, WebAccessibility::ATTR_TEXT_SEL_END));
   EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
 
   // TODO(dmazzoni): as soon as more accessibility code is cross-platform,
@@ -203,10 +218,8 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text.role);
   EXPECT_STREQ(
       "input", GetAttr(text, WebAccessibility::ATTR_HTML_TAG).c_str());
-  EXPECT_STREQ(
-      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_START).c_str());
-  EXPECT_STREQ(
-      "13", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_END).c_str());
+  EXPECT_EQ(0, GetIntAttr(text, WebAccessibility::ATTR_TEXT_SEL_START));
+  EXPECT_EQ(13, GetIntAttr(text, WebAccessibility::ATTR_TEXT_SEL_END));
   EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
 }
 
@@ -332,6 +345,75 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   const WebAccessibility& tree = GetWebAccessibilityTree();
   base::hash_set<int> ids;
   RecursiveAssertUniqueIds(tree, &ids);
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformTableSpan) {
+  // +---+---+---+
+  // |   1   | 2 |
+  // +---+---+---+
+  // | 3 |   4   |
+  // +---+---+---+
+
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<table border=1>"
+      " <tr>"
+      "  <td colspan=2>1</td><td>2</td>"
+      " </tr>"
+      " <tr>"
+      "  <td>3</td><td colspan=2>4</td>"
+      " </tr>"
+      "</table>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  const WebAccessibility& table = tree.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_TABLE, table.role);
+  ASSERT_GE(table.children.size(), 5U);
+  EXPECT_EQ(WebAccessibility::ROLE_ROW, table.children[0].role);
+  EXPECT_EQ(WebAccessibility::ROLE_ROW, table.children[1].role);
+  EXPECT_EQ(WebAccessibility::ROLE_COLUMN, table.children[2].role);
+  EXPECT_EQ(WebAccessibility::ROLE_COLUMN, table.children[3].role);
+  EXPECT_EQ(WebAccessibility::ROLE_COLUMN, table.children[4].role);
+  EXPECT_EQ(3, GetIntAttr(table, WebAccessibility::ATTR_TABLE_COLUMN_COUNT));
+  EXPECT_EQ(2, GetIntAttr(table, WebAccessibility::ATTR_TABLE_ROW_COUNT));
+
+  const WebAccessibility& cell1 = table.children[0].children[0];
+  const WebAccessibility& cell2 = table.children[0].children[1];
+  const WebAccessibility& cell3 = table.children[1].children[0];
+  const WebAccessibility& cell4 = table.children[1].children[1];
+
+  ASSERT_EQ(6U, table.cell_ids.size());
+  EXPECT_EQ(cell1.id, table.cell_ids[0]);
+  EXPECT_EQ(cell1.id, table.cell_ids[1]);
+  EXPECT_EQ(cell2.id, table.cell_ids[2]);
+  EXPECT_EQ(cell3.id, table.cell_ids[3]);
+  EXPECT_EQ(cell4.id, table.cell_ids[4]);
+  EXPECT_EQ(cell4.id, table.cell_ids[5]);
+
+  EXPECT_EQ(0, GetIntAttr(cell1,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX));
+  EXPECT_EQ(0, GetIntAttr(cell1,
+                          WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX));
+  EXPECT_EQ(2, GetIntAttr(cell1,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN));
+  EXPECT_EQ(1, GetIntAttr(cell1,
+                          WebAccessibility::ATTR_TABLE_CELL_ROW_SPAN));
+  EXPECT_EQ(2, GetIntAttr(cell2,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX));
+  EXPECT_EQ(1, GetIntAttr(cell2,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN));
+  EXPECT_EQ(0, GetIntAttr(cell3,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX));
+  EXPECT_EQ(1, GetIntAttr(cell3,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN));
+  EXPECT_EQ(1, GetIntAttr(cell4,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX));
+  EXPECT_EQ(2, GetIntAttr(cell4,
+                          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN));
 }
 
 }  // namespace

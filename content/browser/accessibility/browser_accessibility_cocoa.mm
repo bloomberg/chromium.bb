@@ -16,13 +16,16 @@
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
+typedef WebAccessibility::IntAttribute IntAttribute;
+typedef WebAccessibility::StringAttribute StringAttribute;
+
 namespace {
 
 // Returns an autoreleased copy of the WebAccessibility's attribute.
-NSString* NSStringForWebAccessibilityAttribute(
-    const std::map<int32, string16>& attributes,
-    WebAccessibility::Attribute attribute) {
-  std::map<int32, string16>::const_iterator iter =
+NSString* NSStringForStringAttribute(
+    const std::map<StringAttribute, string16>& attributes,
+    StringAttribute attribute) {
+  std::map<StringAttribute, string16>::const_iterator iter =
       attributes.find(attribute);
   NSString* returnValue = @"";
   if (iter != attributes.end()) {
@@ -301,8 +304,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)description {
-  return NSStringForWebAccessibilityAttribute(
-      browserAccessibility_->attributes(),
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
       WebAccessibility::ATTR_DESCRIPTION);
 }
 
@@ -318,8 +321,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)help {
-  return NSStringForWebAccessibilityAttribute(
-      browserAccessibility_->attributes(),
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
       WebAccessibility::ATTR_HELP);
 }
 
@@ -482,12 +485,12 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)url {
-  WebAccessibility::Attribute urlAttribute =
+  StringAttribute urlAttribute =
       [[self role] isEqualToString:@"AXWebArea"] ?
           WebAccessibility::ATTR_DOC_URL :
           WebAccessibility::ATTR_URL;
-  return NSStringForWebAccessibilityAttribute(
-      browserAccessibility_->attributes(),
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
       urlAttribute);
 }
 
@@ -498,8 +501,8 @@ NSDictionary* attributeToMethodNameMap = nil;
   NSString* role = [self role];
   if ([role isEqualToString:@"AXHeading"]) {
     NSString* headingLevel =
-        NSStringForWebAccessibilityAttribute(
-            browserAccessibility_->attributes(),
+        NSStringForStringAttribute(
+            browserAccessibility_->string_attributes(),
             WebAccessibility::ATTR_HTML_TAG);
     if ([headingLevel length] >= 2) {
       return [NSNumber numberWithInt:
@@ -540,10 +543,10 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   // TODO(dtseng): refactor remaining attributes.
   int selStart, selEnd;
-  if (browserAccessibility_->GetAttributeAsInt(
+  if (browserAccessibility_->GetIntAttribute(
           WebAccessibility::ATTR_TEXT_SEL_START, &selStart) &&
       browserAccessibility_->
-          GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_END, &selEnd)) {
+          GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_END, &selEnd)) {
     if (selStart > selEnd)
       std::swap(selStart, selEnd);
     int selLength = selEnd - selStart;

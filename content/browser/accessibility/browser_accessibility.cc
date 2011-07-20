@@ -8,6 +8,9 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+typedef WebAccessibility::IntAttribute IntAttribute;
+typedef WebAccessibility::StringAttribute StringAttribute;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // There's no OS-specific implementation of BrowserAccessibilityManager
 // on Unix, so just instantiate the base class.
@@ -55,13 +58,15 @@ void BrowserAccessibility::Initialize(
   renderer_id_ = src.id;
   name_ = src.name;
   value_ = src.value;
-  attributes_ = src.attributes;
+  string_attributes_ = src.string_attributes;
+  int_attributes_ = src.int_attributes;
   html_attributes_ = src.html_attributes;
   location_ = src.location;
   role_ = src.role;
   state_ = src.state;
   indirect_child_ids_ = src.indirect_child_ids;
   line_breaks_ = src.line_breaks;
+  cell_ids_ = src.cell_ids;
 
   Initialize();
 }
@@ -125,10 +130,8 @@ gfx::Rect BrowserAccessibility::GetBoundsRect() {
   BrowserAccessibility* root = manager_->GetRoot();
   int scroll_x = 0;
   int scroll_y = 0;
-  root->GetAttributeAsInt(
-    WebAccessibility::ATTR_DOC_SCROLLX, &scroll_x);
-  root->GetAttributeAsInt(
-    WebAccessibility::ATTR_DOC_SCROLLY, &scroll_y);
+  root->GetIntAttribute(WebAccessibility::ATTR_DOC_SCROLLX, &scroll_x);
+  root->GetIntAttribute(WebAccessibility::ATTR_DOC_SCROLLY, &scroll_y);
   bounds.Offset(-scroll_x, -scroll_y);
 
   return bounds;
@@ -174,15 +177,12 @@ void BrowserAccessibility::NativeReleaseReference() {
   delete this;
 }
 
-bool BrowserAccessibility::HasAttribute(
-    WebAccessibility::Attribute attribute) {
-  return (attributes_.find(attribute) != attributes_.end());
-}
-
-bool BrowserAccessibility::GetAttribute(
-    WebAccessibility::Attribute attribute, string16* value) {
-  std::map<int32, string16>::iterator iter = attributes_.find(attribute);
-  if (iter != attributes_.end()) {
+bool BrowserAccessibility::GetStringAttribute(
+    StringAttribute attribute,
+    string16* value) {
+  std::map<StringAttribute, string16>::iterator iter =
+      string_attributes_.find(attribute);
+  if (iter != string_attributes_.end()) {
     *value = iter->second;
     return true;
   }
@@ -190,15 +190,14 @@ bool BrowserAccessibility::GetAttribute(
   return false;
 }
 
-bool BrowserAccessibility::GetAttributeAsInt(
-    WebAccessibility::Attribute attribute, int* value_int) {
-  string16 value_str;
+bool BrowserAccessibility::GetIntAttribute(
+    IntAttribute attribute, int* value) {
+  std::map<IntAttribute, int32>::iterator iter =
+      int_attributes_.find(attribute);
+  if (iter != int_attributes_.end()) {
+    *value = iter->second;
+    return true;
+  }
 
-  if (!GetAttribute(attribute, &value_str))
-    return false;
-
-  if (!base::StringToInt(value_str, value_int))
-    return false;
-
-  return true;
+  return false;
 }

@@ -129,7 +129,16 @@ class BrowserAccessibility {
   // Accessors
   //
 
-  const std::map<int32, string16>& attributes() const { return attributes_; }
+  const std::map<WebAccessibility::StringAttribute, string16>&
+  string_attributes() const {
+    return string_attributes_;
+  }
+
+  const std::map<WebAccessibility::IntAttribute, int32>&
+  int_attributes() const {
+    return int_attributes_;
+  }
+
   int32 child_id() const { return child_id_; }
   const std::vector<BrowserAccessibility*>& children() const {
     return children_;
@@ -143,6 +152,9 @@ class BrowserAccessibility {
   }
   const std::vector<int32>& line_breaks() const {
     return line_breaks_;
+  }
+  const std::vector<int32>& cell_ids() const {
+    return cell_ids_;
   }
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
@@ -161,20 +173,14 @@ class BrowserAccessibility {
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
-  // BrowserAccessibilityCocoa needs access to these methods.
-  // Return true if this attribute is in the attributes map.
-  bool HasAttribute(WebAccessibility::Attribute attribute);
-
-  // Retrieve the string value of an attribute from the attribute map and
+  // Retrieve the value of a string attribute from the attribute map and
   // returns true if found.
-  bool GetAttribute(WebAccessibility::Attribute attribute, string16* value);
+  bool GetStringAttribute(WebAccessibility::StringAttribute attribute,
+                          string16* value);
 
-  // Retrieve the value of an attribute from the attribute map and
-  // if found and nonempty, try to convert it to an integer.
-  // Returns true only if both the attribute was found and it was successfully
-  // converted to an integer.
-  bool GetAttributeAsInt(
-      WebAccessibility::Attribute attribute, int* value_int);
+  // Retrieve the value of an integer attribute from the integer attribute
+  // map and returns true if found.
+  bool GetIntAttribute(WebAccessibility::IntAttribute attribute, int* value);
 
  protected:
   BrowserAccessibility();
@@ -204,7 +210,8 @@ class BrowserAccessibility {
   // Accessibility metadata from the renderer
   string16 name_;
   string16 value_;
-  std::map<int32, string16> attributes_;
+  std::map<WebAccessibility::StringAttribute, string16> string_attributes_;
+  std::map<WebAccessibility::IntAttribute, int32> int_attributes_;
   std::vector<std::pair<string16, string16> > html_attributes_;
   int32 role_;
   int32 state_;
@@ -212,6 +219,7 @@ class BrowserAccessibility {
   gfx::Rect location_;
   std::vector<int32> indirect_child_ids_;
   std::vector<int32> line_breaks_;
+  std::vector<int32> cell_ids_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.
   // When we're done with this object and it's removed from our accessibility

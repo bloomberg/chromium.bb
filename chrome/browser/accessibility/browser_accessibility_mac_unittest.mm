@@ -53,7 +53,8 @@ class BrowserAccessibilityTest : public CocoaTest {
     root.location.set_width(500);
     root.location.set_height(100);
     root.role = WebAccessibility::ROLE_WEB_AREA;
-    root.attributes[WebAccessibility::ATTR_HELP] = ASCIIToUTF16("HelpText");
+    root.string_attributes[WebAccessibility::ATTR_HELP] =
+        ASCIIToUTF16("HelpText");
 
     WebAccessibility child1;
     child1.name = ASCIIToUTF16("Child1");
