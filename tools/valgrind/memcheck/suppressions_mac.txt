@@ -1749,3 +1749,10 @@
    fun:_ZN23PanelBrowserWindowCocoa9ShowPanelEv
    fun:_ZN5Panel4ShowEv
 }
+{
+   bug_89889
+   Memcheck:Leak
+   ...
+   fun:+[NSObject alloc]
+   fun:-[PanelWindowControllerCocoa tabContentsView]
+}

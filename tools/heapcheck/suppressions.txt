@@ -1572,3 +1572,9 @@
    fun:ProtocolHandlerRegistry::MaybeCreateJob
    fun:MakeRequest
 }
+{
+   bug_89890
+   Heapcheck:Leak
+   ...
+   fun:safe_browsing::ClientSideDetectionHost::OnDetectedPhishingSite
+}
