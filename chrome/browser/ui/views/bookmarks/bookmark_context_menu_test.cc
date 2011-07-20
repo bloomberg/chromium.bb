@@ -27,11 +27,12 @@ namespace {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  virtual void OpenURL(const GURL& url,
-                       const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition) {
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) {
     urls_.push_back(url);
+    return NULL;
   }
 
   std::vector<GURL> urls_;

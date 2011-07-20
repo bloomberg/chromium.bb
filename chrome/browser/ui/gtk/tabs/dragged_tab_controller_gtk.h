@@ -70,11 +70,11 @@ class DraggedTabControllerGtk : public NotificationObserver,
   };
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition);
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
   virtual void AddNewContents(TabContents* source,

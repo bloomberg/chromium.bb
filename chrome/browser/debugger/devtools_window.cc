@@ -398,15 +398,16 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
 }
 
-void DevToolsWindow::OpenURLFromTab(TabContents* source,
-                                    const GURL& url,
-                                    const GURL& referrer,
-                                    WindowOpenDisposition disposition,
-                                    PageTransition::Type transition) {
+TabContents* DevToolsWindow::OpenURLFromTab(TabContents* source,
+                                            const GURL& url,
+                                            const GURL& referrer,
+                                            WindowOpenDisposition disposition,
+                                            PageTransition::Type transition) {
   if (inspected_tab_) {
-    inspected_tab_->tab_contents()->OpenURL(
+    return inspected_tab_->tab_contents()->OpenURL(
         url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
+  return NULL;
 }
 
 void DevToolsWindow::CallClientFunction(const string16& function_name,

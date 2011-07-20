@@ -362,11 +362,12 @@ ExternalTabContainer*
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, TabContentsDelegate implementation:
 
-void ExternalTabContainer::OpenURLFromTab(TabContents* source,
-                                          const GURL& url,
-                                          const GURL& referrer,
-                                          WindowOpenDisposition disposition,
-                                          PageTransition::Type transition) {
+TabContents* ExternalTabContainer::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
   if (pending()) {
     PendingTopLevelNavigation url_request;
     url_request.disposition = disposition;
@@ -375,7 +376,7 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
     url_request.referrer = referrer;
 
     pending_open_url_requests_.push_back(url_request);
-    return;
+    return NULL;
   }
 
   switch (disposition) {
@@ -408,12 +409,16 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
                 CreateHistoryAddPageArgs(url, details, params));
         tab_contents_->history_tab_helper()->
             UpdateHistoryForNavigation(add_page_args);
+
+        return tab_contents_->tab_contents();
       }
       break;
     default:
       NOTREACHED();
       break;
   }
+
+  return NULL;
 }
 
 void ExternalTabContainer::NavigationStateChanged(const TabContents* source,
@@ -1138,18 +1143,20 @@ TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
   DVLOG(1) << __FUNCTION__;
 }
 
-void TemporaryPopupExternalTabContainer::OpenURLFromTab(
+TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
   if (!automation_)
-    return;
+    return NULL;
 
   if (disposition == CURRENT_TAB) {
     DCHECK(route_all_top_level_navigations_);
     disposition = NEW_FOREGROUND_TAB;
   }
-  ExternalTabContainer::OpenURLFromTab(source, url, referrer, disposition,
-                                       transition);
+  TabContents* new_contents =
+      ExternalTabContainer::OpenURLFromTab(
+          source, url, referrer, disposition, transition);
   // support only one navigation for a dummy tab before it is killed.
   ::DestroyWindow(GetNativeView());
+  return new_contents;
 }

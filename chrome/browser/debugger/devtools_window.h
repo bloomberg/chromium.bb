@@ -90,11 +90,12 @@ class DevToolsWindow
   void CallClientFunction(const string16& function_name,
                           const base::Value& arg);
   // Overridden from TabContentsDelegate.
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  virtual TabContents* OpenURLFromTab(
+      TabContents* source,
+      const GURL& url,
+      const GURL& referrer,
+      WindowOpenDisposition disposition,
+      PageTransition::Type transition);
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,

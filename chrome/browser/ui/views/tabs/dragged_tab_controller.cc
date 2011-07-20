@@ -411,18 +411,20 @@ void DraggedTabController::InitTabDragData(BaseTab* tab,
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, PageNavigator implementation:
 
-void DraggedTabController::OpenURLFromTab(TabContents* source,
-                                          const GURL& url,
-                                          const GURL& referrer,
-                                          WindowOpenDisposition disposition,
-                                          PageTransition::Type transition) {
+TabContents* DraggedTabController::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
   if (source_tab_drag_data()->original_delegate) {
     if (disposition == CURRENT_TAB)
       disposition = NEW_WINDOW;
 
-    source_tab_drag_data()->original_delegate->OpenURLFromTab(
+    return source_tab_drag_data()->original_delegate->OpenURLFromTab(
         source, url, referrer, disposition, transition);
   }
+  return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

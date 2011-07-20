@@ -106,12 +106,16 @@ void BlockedContentContainer::Clear() {
 }
 
 // Overridden from TabContentsDelegate:
-void BlockedContentContainer::OpenURLFromTab(TabContents* source,
-                                             const GURL& url,
-                                             const GURL& referrer,
-                                             WindowOpenDisposition disposition,
-                                             PageTransition::Type transition) {
-  owner_->tab_contents()->OpenURL(url, referrer, disposition, transition);
+TabContents* BlockedContentContainer::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
+  return owner_->tab_contents()->OpenURL(url,
+                                         referrer,
+                                         disposition,
+                                         transition);
 }
 
 void BlockedContentContainer::AddNewContents(TabContents* source,

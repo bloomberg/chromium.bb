@@ -2610,10 +2610,11 @@ GURL Browser::GetHomePage() const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
 
-void Browser::OpenURL(const GURL& url, const GURL& referrer,
-                      WindowOpenDisposition disposition,
-                      PageTransition::Type transition) {
-  OpenURLFromTab(NULL, url, referrer, disposition, transition);
+TabContents* Browser::OpenURL(const GURL& url,
+                              const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) {
+  return OpenURLFromTab(NULL, url, referrer, disposition, transition);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3028,11 +3029,11 @@ void Browser::TabStripEmpty() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabContentsDelegate implementation:
 
-void Browser::OpenURLFromTab(TabContents* source,
-                             const GURL& url,
-                             const GURL& referrer,
-                             WindowOpenDisposition disposition,
-                             PageTransition::Type transition) {
+TabContents* Browser::OpenURLFromTab(TabContents* source,
+                                     const GURL& url,
+                                     const GURL& referrer,
+                                     WindowOpenDisposition disposition,
+                                     PageTransition::Type transition) {
   browser::NavigateParams params(this, url, transition);
   params.source_contents =
     tabstrip_model()->GetTabContentsAt(
@@ -3043,6 +3044,7 @@ void Browser::OpenURLFromTab(TabContents* source,
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   browser::Navigate(&params);
+  return params.target_contents ? params.target_contents->tab_contents() : NULL;
 }
 
 void Browser::NavigationStateChanged(const TabContents* source,

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,18 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
+class TabContents;
 
 class PageNavigator {
  public:
   // Opens a URL with the given disposition.  The transition specifies how this
   // navigation should be recorded in the history system (for example, typed).
-  virtual void OpenURL(const GURL& url, const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition) = 0;
+  // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
+  // opened immediately.
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) = 0;
 
  protected:
   virtual ~PageNavigator() {}

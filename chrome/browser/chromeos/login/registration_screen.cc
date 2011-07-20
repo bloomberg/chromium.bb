@@ -116,11 +116,12 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, TabContentsDelegate implementation:
- void RegistrationScreen::OpenURLFromTab(TabContents* source,
-                                         const GURL& url,
-                                         const GURL& referrer,
-                                         WindowOpenDisposition disposition,
-                                         PageTransition::Type transition) {
+ TabContents* RegistrationScreen::OpenURLFromTab(
+     TabContents* source,
+     const GURL& url,
+     const GURL& referrer,
+     WindowOpenDisposition disposition,
+     PageTransition::Type transition) {
   if (url.spec() == kRegistrationSuccessUrl) {
     source->Stop();
     VLOG(1) << "Registration form completed.";
@@ -135,6 +136,7 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
     // OEM partner doesn't contain links to external URLs.
     LOG(WARNING) << "Navigate to unsupported url: " << url.spec();
   }
+  return NULL;
 }
 
 void RegistrationScreen::HandleKeyboardEvent(

@@ -28,7 +28,7 @@ void HtmlDialogTabContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
-void HtmlDialogTabContentsDelegate::OpenURLFromTab(
+TabContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
   if (profile_) {
@@ -46,7 +46,10 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     params.window_action = browser::NavigateParams::SHOW_WINDOW;
     params.user_gesture = true;
     browser::Navigate(&params);
+    return params.target_contents ?
+        params.target_contents->tab_contents() : NULL;
   }
+  return NULL;
 }
 
 void HtmlDialogTabContentsDelegate::AddNewContents(

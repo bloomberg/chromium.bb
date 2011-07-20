@@ -248,9 +248,10 @@ class TabContents : public PageNavigator,
   // Commands ------------------------------------------------------------------
 
   // Implementation of PageNavigator.
-  virtual void OpenURL(const GURL& url, const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition);
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) OVERRIDE;
 
   // Called by the NavigationController to cause the TabContents to navigate to
   // the current pending entry. The NavigationController should be called back

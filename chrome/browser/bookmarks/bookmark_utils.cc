@@ -71,10 +71,10 @@ class NewBrowserPageNavigator : public PageNavigator {
 
   Browser* browser() const { return browser_; }
 
-  virtual void OpenURL(const GURL& url,
-                       const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition) OVERRIDE {
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) OVERRIDE {
     if (!browser_) {
       Profile* profile = (disposition == OFF_THE_RECORD) ?
           profile_->GetOffTheRecordProfile() : profile_;
@@ -82,7 +82,7 @@ class NewBrowserPageNavigator : public PageNavigator {
       // Always open the first tab in the foreground.
       disposition = NEW_FOREGROUND_TAB;
     }
-    browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
+    return browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
   }
 
  private:

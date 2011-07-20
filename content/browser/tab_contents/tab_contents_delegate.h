@@ -51,11 +51,14 @@ class TabContentsDelegate {
   //
   // A NULL source indicates the current tab (callers should probably use
   // OpenURL() for these cases which does it for you).
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  //
+  // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
+  // opened immediately.
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition);
 
   // Called to inform the delegate that the tab content's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state

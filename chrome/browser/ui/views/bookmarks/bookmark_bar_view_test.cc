@@ -112,10 +112,12 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  virtual void OpenURL(const GURL& url, const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition) {
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) {
     url_ = url;
+    return NULL;
   }
 
   GURL url_;

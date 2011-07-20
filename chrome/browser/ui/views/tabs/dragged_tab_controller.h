@@ -128,11 +128,11 @@ class DraggedTabController : public TabContentsDelegate,
   void InitTabDragData(BaseTab* tab, TabDragData* drag_data);
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

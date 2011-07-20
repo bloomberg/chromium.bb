@@ -679,9 +679,10 @@ class Browser : public TabHandlerDelegate,
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from PageNavigator:
-  virtual void OpenURL(const GURL& url, const GURL& referrer,
-                       WindowOpenDisposition disposition,
-                       PageTransition::Type transition);
+  virtual TabContents* OpenURL(const GURL& url,
+                               const GURL& referrer,
+                               WindowOpenDisposition disposition,
+                               PageTransition::Type transition) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
   virtual void ExecuteCommand(int id);
@@ -816,11 +817,11 @@ class Browser : public TabHandlerDelegate,
   };
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

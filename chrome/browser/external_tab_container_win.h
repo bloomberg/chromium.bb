@@ -115,11 +115,11 @@ class ExternalTabContainer : public TabContentsDelegate,
   static ExternalTabContainer* GetContainerForTab(HWND tab_window);
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition);
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
   virtual void AddNewContents(TabContents* source,
@@ -347,10 +347,11 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
   virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) {}
 
-  virtual void OpenURLFromTab(TabContents* source, const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  virtual TabContents* OpenURLFromTab(TabContents* source,
+                                      const GURL& url,
+                                      const GURL& referrer,
+                                      WindowOpenDisposition disposition,
+                                      PageTransition::Type transition);
 
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {

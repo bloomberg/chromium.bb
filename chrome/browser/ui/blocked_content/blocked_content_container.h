@@ -57,10 +57,11 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Overridden from TabContentsDelegate:
 
   // Forwards OpenURLFromTab to our |owner_|.
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
+  virtual TabContents* OpenURLFromTab(
+      TabContents* source,
+      const GURL& url, const GURL& referrer,
+      WindowOpenDisposition disposition,
+      PageTransition::Type transition) OVERRIDE;
 
   // Forwards AddNewContents to our |owner_|.
   virtual void AddNewContents(TabContents* source,

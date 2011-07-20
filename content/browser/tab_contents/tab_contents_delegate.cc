@@ -15,11 +15,13 @@
 TabContentsDelegate::TabContentsDelegate() {
 }
 
-void TabContentsDelegate::OpenURLFromTab(TabContents* source,
-                                         const GURL& url,
-                                         const GURL& referrer,
-                                         WindowOpenDisposition disposition,
-                                         PageTransition::Type transition) {
+TabContents* TabContentsDelegate::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
+  return NULL;
 }
 
 void TabContentsDelegate::NavigationStateChanged(const TabContents* source,
