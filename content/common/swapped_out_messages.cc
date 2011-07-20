@@ -66,6 +66,10 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
     case ViewHostMsg_RunBeforeUnloadConfirm::ID:
     // Sends an ACK.
     case ViewHostMsg_AccessibilityNotifications::ID:
+#if defined(USE_X11)
+    // Synchronous message when leaving a page with plugin.
+    case ViewHostMsg_DestroyPluginContainer::ID:
+#endif
       return true;
     default:
       break;
