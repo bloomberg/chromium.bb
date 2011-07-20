@@ -588,9 +588,31 @@ function getAppStartupMode() {
   return mode;
 }
 
+/**
+ * Enable or disable scale-to-fit.
+ *
+ * @return {void} Nothing.
+ */
 remoting.toggleScaleToFit = function() {
   remoting.scaleToFit = !remoting.scaleToFit;
   remoting.session.toggleScaleToFit(remoting.scaleToFit);
+}
+
+/**
+ * Disconnect the remoting client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.disconnect = function() {
+  if (remoting.session) {
+    remoting.session.disconnect();
+    remoting.session = null;
+    remoting.debug.log('Disconnected.');
+    remoting.setClientMode('unconnected');
+    var accessCode = document.getElementById('access-code-entry');
+    accessCode.value = '';
+    setGlobalMode(remoting.AppMode.CLIENT);
+  }
 }
 
 }());

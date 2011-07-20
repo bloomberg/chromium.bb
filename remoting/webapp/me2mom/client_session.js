@@ -11,7 +11,7 @@
  * should be purely thought of as a controller of sorts.
  */
 
-"use strict";
+'use strict';
 
 var remoting = remoting || {};
 
@@ -85,6 +85,13 @@ remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
 remoting.ClientSession.prototype.API_MIN_VERSION_ = 1;
 
 /**
+ * The id of the client plugin
+ *
+ * @const
+ */
+remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
+
+/**
  * Callback to invoke when the state is changed.
  *
  * @type {function(remoting.ClientSession.State):void}
@@ -92,19 +99,18 @@ remoting.ClientSession.prototype.API_MIN_VERSION_ = 1;
 remoting.ClientSession.prototype.onStateChange = null;
 
 /**
- * Adds <embed> tag to |container| and readies the sesion object.
+ * Adds <embed> element to |container| and readies the sesion object.
  *
  * @param {Element} container The element to add the plugin to.
  * @param {string} oauth2AccessToken A valid OAuth2 access token.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container, oauth2AccessToken) {
   this.plugin = document.createElement('embed');
-  this.plugin.id = 'session-client-plugin';
+  this.plugin.id = this.PLUGIN_ID;
   this.plugin.src = 'about://none';
   this.plugin.type = 'pepper-application/x-chromoting';
-  this.plugin.className = 'client-plugin';
   container.appendChild(this.plugin);
 
   if (!this.isPluginVersionSupported_(this.plugin)) {
@@ -129,7 +135,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   this.plugin.desktopSizeUpdate = function() { that.onDesktopSizeChanged_(); };
 
   // For IT2Me, we are pre-authorized so there is no login challenge.
-  this.plugin.loginChallenge = function () {};
+  this.plugin.loginChallenge = function() {};
 
   // TODO(garykac): Clean exit if |connect| isn't a function.
   if (typeof this.plugin.connect === 'function') {
@@ -141,10 +147,36 @@ remoting.ClientSession.prototype.createPluginAndConnect =
 };
 
 /**
+ * Deletes the <embed> element from the container and disconnects.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.disconnect = function() {
+  var plugin = document.getElementById(this.PLUGIN_ID);
+  if (plugin) {
+    plugin.parentNode.removeChild(plugin);
+  }
+  var parameters = {
+    'to': this.hostJid,
+    'payload_xml':
+        '<jingle xmlns="urn:xmpp:jingle:1"' +
+               ' action="session-terminate"' +
+               ' initiator="' + this.clientJid + '"' +
+               ' sid="' + this.sessionId + '">' +
+          '<reason><success/></reason>' +
+        '</jingle>',
+    'id': 'session_terminate',
+    'type': 'set',
+    'host_jid': this.hostJid
+  };
+  this.sendIqWithParameters_(parameters);
+}
+
+/**
  * Sends an IQ stanza via the http xmpp proxy.
  *
  * @param {string} msg XML string of IQ stanza to send to server.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIq_ = function(msg) {
   remoting.debug.log('Sending Iq: ' + msg);
@@ -153,23 +185,40 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   // TODO(ajwong): Can the plugin just return these fields broken out.
   var parser = new DOMParser();
   var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
+  var jingleNode = iqNode.firstChild;
   var serializer = new XMLSerializer();
   var parameters = {
     'to': iqNode.getAttribute('to'),
-    'payload_xml': serializer.serializeToString(iqNode.firstChild),
+    'payload_xml': serializer.serializeToString(jingleNode),
     'id': iqNode.getAttribute('id') || '1',
     'type': iqNode.getAttribute('type'),
     'host_jid': this.hostJid
   };
 
+  this.sendIqWithParameters_(parameters);
+
+  var action = jingleNode.getAttribute('action');
+  if (jingleNode.nodeName == 'jingle' && action == 'session-initiate') {
+    // The session id is needed in order to close the session later.
+    this.sessionId = jingleNode.getAttribute('sid');
+  }
+};
+
+/**
+ * Sends an IQ stanza via the http xmpp proxy.
+ *
+ * @param {(string|Object.<string>)} paramters Parameters to include.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.sendIqWithParameters_ = function(parameters) {
   remoting.xhr.post(this.HTTP_XMPP_PROXY_ + '/sendIq', function(xhr) {},
                     parameters, {}, true);
-};
+}
 
 /**
  * Executes a poll loop on the server for more IQ packet to feed to the plugin.
  *
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.feedIq_ = function() {
   var that = this;
@@ -195,7 +244,7 @@ remoting.ClientSession.prototype.feedIq_ = function() {
 
 /**
  * @param {Element} plugin The embed element for the plugin.
- * @return {boolean}
+ * @return {boolean} True if the plugin and web-app versions are compatible.
  */
 remoting.ClientSession.prototype.isPluginVersionSupported_ = function(plugin) {
   return this.API_VERSION_ >= plugin.apiMinVersion &&
@@ -206,7 +255,7 @@ remoting.ClientSession.prototype.isPluginVersionSupported_ = function(plugin) {
  * Registers a new connection with the HttpXmpp proxy.
  *
  * @param {string} oauth2AccessToken A valid OAuth2 access token.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.registerConnection_ =
     function(oauth2AccessToken) {
@@ -246,7 +295,7 @@ remoting.ClientSession.prototype.registerConnection_ =
  * Callback that the plugin invokes to indicate that the connection
  * status has changed.
  */
-remoting.ClientSession.prototype.connectionInfoUpdateCallback = function () {
+remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
   var state = this.plugin.status;
 
   // TODO(ajwong): We're doing silly type translation here. Any way to avoid?
@@ -268,7 +317,7 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function () {
 
 /**
  * @param {remoting.ClientSession.State} state The new state for the session.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.setState_ = function(state) {
   this.state = state;
@@ -281,7 +330,7 @@ remoting.ClientSession.prototype.setState_ = function(state) {
  * This is a callback that gets called when the desktop size contained in the
  * the plugin has changed.
  *
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
   var width = this.plugin.desktopWidth;
@@ -295,18 +344,18 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * Informs the plugin that it should scale itself.
  *
  * @param {boolean} shouldScale If the plugin should scale itself.
- * @return {void}
+ * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.toggleScaleToFit = function (shouldScale) {
+remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
   this.plugin.setScaleToFit(shouldScale);
 };
 
 /**
  * Returns an associative array with a set of stats for this connection.
  *
- * @return {Object}
+ * @return {Object} The connection statistics.
  */
-remoting.ClientSession.prototype.stats = function () {
+remoting.ClientSession.prototype.stats = function() {
   return {
     'video_bandwidth': this.plugin.videoBandwidth,
     'capture_latency': this.plugin.videoCaptureLatency,
