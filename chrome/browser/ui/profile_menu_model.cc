@@ -163,9 +163,6 @@ ProfileMenuModel::ProfileMenuModel(Browser* browser)
     AddItem(COMMAND_CREATE_NEW_PROFILE, l10n_util::GetStringFUTF16(
         IDS_PROFILES_CREATE_NEW_PROFILE_OPTION, short_product_name));
   }
-
-  AddItemWithStringId(COMMAND_DELETE_PROFILE,
-                      IDS_PROFILES_DELETE_PROFILE);
 }
 
 ProfileMenuModel::~ProfileMenuModel() {
@@ -199,10 +196,6 @@ void ProfileMenuModel::ExecuteCommand(int command_id) {
       break;
     case COMMAND_CREATE_NEW_PROFILE:
       ProfileManager::CreateMultiProfileAsync();
-      break;
-    case COMMAND_DELETE_PROFILE:
-      g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-          browser_->profile()->GetPath());
       break;
     default:
       NOTREACHED();

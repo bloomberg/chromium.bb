@@ -18,7 +18,6 @@ class ProfileMenuModel : public ui::SimpleMenuModel,
     COMMAND_PROFILE_NAME,
     COMMAND_CHOOSE_AVATAR_ICON,
     COMMAND_CUSTOMIZE_PROFILE,
-    COMMAND_DELETE_PROFILE,
     COMMAND_CREATE_NEW_PROFILE,
     COMMAND_SWITCH_PROFILE_MENU,
     // The profiles submenu contains a menu item for each profile. For the i'th
