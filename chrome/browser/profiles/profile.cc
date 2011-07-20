@@ -75,6 +75,9 @@ net::URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
 
+// Used to tag the first profile launched in a Chrome session.
+bool g_first_profile_launched = true;
+
 void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
                                        void* otr_profile) {
   ExtensionWebRequestEventRouter::GetInstance()->OnOTRProfileCreated(
@@ -91,7 +94,9 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 
 Profile::Profile()
     : restored_last_session_(false),
+      first_launched_(g_first_profile_launched),
       accessibility_pause_level_(0) {
+  g_first_profile_launched = false;
 }
 
 // static

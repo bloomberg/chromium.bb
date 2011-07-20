@@ -37,7 +37,7 @@
 
 namespace {
 
-ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
+ChromeWebUIDataSource* CreatePluginsUIHTMLSource(bool enable_controls) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIPluginsHost);
 
@@ -70,6 +70,13 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
   source->AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
   source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
+
+  if (!enable_controls) {
+    source->AddLocalizedString("pluginsDisabledHeader",
+                               IDS_PLUGINS_DISABLED_HEADER);
+    source->AddLocalizedString("pluginsDisabledText",
+                               IDS_PLUGINS_DISABLED_TEXT);
+  }
 
   source->set_json_path("strings.js");
   source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
@@ -175,6 +182,11 @@ void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
+  // If a non-first-profile user tries to trigger these methods sneakily,
+  // forbid it.
+  if (!web_ui_->GetProfile()->first_launched())
+    return;
+
   // Be robust in accepting badness since plug-ins display HTML (hence
   // JavaScript).
   if (args->GetSize() != 3)
@@ -291,7 +303,8 @@ PluginsUI::PluginsUI(TabContents* contents) : ChromeWebUI(contents) {
 
   // Set up the chrome://plugins/ source.
   contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      CreatePluginsUIHTMLSource());
+      CreatePluginsUIHTMLSource(contents->profile()->GetOriginalProfile()->
+          first_launched()));
 }
 
 
