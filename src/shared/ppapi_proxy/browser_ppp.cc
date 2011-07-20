@@ -11,6 +11,7 @@
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_find.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_input_event.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_messaging.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_printing.h"
@@ -19,9 +20,12 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_widget.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
+#include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppb_rpc.h"
+#include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_printing_dev.h"
 #include "native_client/src/third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -30,8 +34,6 @@
 #include "native_client/src/third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "native_client/src/third_party/ppapi/c/ppp.h"
-#include "srpcgen/ppb_rpc.h"
-#include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
 
@@ -94,9 +96,12 @@ int32_t BrowserPpp::InitializeModule(
   if (ppp_instance_interface_ == NULL) {  // PPP_Instance is required.
     return PP_ERROR_NOINTERFACE;
   }
-  // PPB_Messaging is optional, so it's OK for this to return NULL.
+  // PPB_Messaging and PPP_InputEvent are optional, so it's OK for them to
+  // return NULL.
   ppp_messaging_interface_ = reinterpret_cast<const PPP_Messaging*>(
         GetPluginInterface(PPP_MESSAGING_INTERFACE));
+  ppp_input_event_interface_ = reinterpret_cast<const PPP_InputEvent*>(
+        GetPluginInterface(PPP_INPUT_EVENT_INTERFACE));
   return PP_OK;
 }
 
@@ -128,6 +133,9 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   } else if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
     ppp_interface =
         reinterpret_cast<const void*>(BrowserMessaging::GetInterface());
+  } else if (strcmp(interface_name, PPP_INPUT_EVENT_INTERFACE) == 0) {
+    ppp_interface =
+       reinterpret_cast<const void*>(BrowserInputEvent::GetInterface());
   } else if (strcmp(interface_name, PPP_FIND_DEV_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserFind::GetInterface());

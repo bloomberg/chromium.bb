@@ -99,6 +99,23 @@ class PppFindRpcServer {
   void operator=(const PppFindRpcServer);
 };  // class PppFindRpcServer
 
+class PppInputEventRpcServer {
+ public:
+  static void PPP_InputEvent_HandleInputEvent(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource resource,
+      nacl_abi_size_t event_data_bytes, char* event_data,
+      nacl_abi_size_t character_text_bytes, char* character_text,
+      int32_t* handled);
+
+ private:
+  PppInputEventRpcServer();
+  PppInputEventRpcServer(const PppInputEventRpcServer&);
+  void operator=(const PppInputEventRpcServer);
+};  // class PppInputEventRpcServer
+
 class PppInstanceRpcServer {
  public:
   static void PPP_Instance_DidCreate(

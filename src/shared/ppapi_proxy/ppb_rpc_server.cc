@@ -1027,6 +1027,37 @@ static void PPB_ImageData_DescribeDispatcher(
   );
 }
 
+static void PPB_InputEvent_RequestInputEventsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbInputEventRpcServer::PPB_InputEvent_RequestInputEvents(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_InputEvent_ClearInputEventRequestDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbInputEventRpcServer::PPB_InputEvent_ClearInputEventRequest(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival
+  );
+}
+
 static void PPB_Instance_BindGraphicsDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1874,6 +1905,8 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_ImageData_Create:iiCi:i", PPB_ImageData_CreateDispatcher },
   { "PPB_ImageData_IsImageData:i:i", PPB_ImageData_IsImageDataDispatcher },
   { "PPB_ImageData_Describe:i:Chii", PPB_ImageData_DescribeDispatcher },
+  { "PPB_InputEvent_RequestInputEvents:iii:i", PPB_InputEvent_RequestInputEventsDispatcher },
+  { "PPB_InputEvent_ClearInputEventRequest:ii:", PPB_InputEvent_ClearInputEventRequestDispatcher },
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },

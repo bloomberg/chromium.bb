@@ -145,6 +145,26 @@ NaClSrpcError PppFindRpcClient::PPP_Find_StopFind(
   return retval;
 }
 
+NaClSrpcError PppInputEventRpcClient::PPP_InputEvent_HandleInputEvent(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource resource,
+    nacl_abi_size_t event_data_bytes, char* event_data,
+    nacl_abi_size_t character_text_bytes, char* character_text,
+    int32_t* handled)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_InputEvent_HandleInputEvent:iiCC:i",
+      instance,
+      resource,
+      event_data_bytes, event_data,
+      character_text_bytes, character_text,
+      handled
+  );
+  return retval;
+}
+
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
     NaClSrpcChannel* channel,
     PP_Instance instance,

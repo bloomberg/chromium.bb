@@ -12,6 +12,7 @@
 #include "native_client/src/third_party/ppapi/c/ppb.h"
 #include "native_client/src/third_party/ppapi/c/ppb_core.h"
 #include "native_client/src/third_party/ppapi/c/ppb_var.h"
+#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
 #include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
 
 struct NaClSrpcChannel;
@@ -44,6 +45,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
 const PPB_Var* PPBVarInterface();  // shared
+const PPP_InputEvent* PPPInputEventInterface();
 const PPP_Messaging* PPPMessagingInterface();
 
 // Get thread creation/join functions.

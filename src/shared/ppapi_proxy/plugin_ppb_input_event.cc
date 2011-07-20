@@ -1,0 +1,303 @@
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
+
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_input_event.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
+#include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
+
+namespace {
+
+using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::GetMainSrpcChannel;
+using ppapi_proxy::PluginInputEvent;
+using ppapi_proxy::PluginResource;
+
+// InputEvent ------------------------------------------------------------------
+
+int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
+  DebugPrintf("PPB_InputEvent::RequestInputEvents: instance=%"NACL_PRIu32", "
+              "event_classes=%"NACL_PRIu32"\n",
+              instance, event_classes);
+  uint32_t success = 0;
+  NaClSrpcError srpc_result =
+      PpbInputEventRpcClient::PPB_InputEvent_RequestInputEvents(
+          GetMainSrpcChannel(),
+          instance,
+          static_cast<int32_t>(event_classes),
+          false,  // false -> Don't filter.
+          reinterpret_cast<int32_t*>(&success));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
+    return success;
+  }
+  return PP_ERROR_FAILED;
+}
+
+int32_t RequestFilteringInputEvents(PP_Instance instance,
+                                    uint32_t event_classes) {
+  DebugPrintf("PPB_InputEvent::RequestFilteringInputEvents: instance="
+              "%"NACL_PRIu32", event_classes=%"NACL_PRIu32"\n",
+              instance, event_classes);
+  uint32_t success = 0;
+  NaClSrpcError srpc_result =
+      PpbInputEventRpcClient::PPB_InputEvent_RequestInputEvents(
+          GetMainSrpcChannel(),
+          instance,
+          static_cast<int32_t>(event_classes),
+          true,  // true -> Filter.
+          reinterpret_cast<int32_t*>(&success));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
+    return success;
+  }
+  return PP_ERROR_FAILED;
+}
+
+void ClearInputEventRequest(PP_Instance instance,
+                            uint32_t event_classes) {
+  DebugPrintf("PPB_InputEvent::ClearInputEventRequest: instance=%"NACL_PRIu32
+              ", event_classes=%"NACL_PRIu32"\n",
+              instance, event_classes);
+    PpbInputEventRpcClient::PPB_InputEvent_ClearInputEventRequest(
+        GetMainSrpcChannel(),
+        instance,
+        static_cast<int32_t>(event_classes));
+}
+
+// Helper RAII class to get the PluginInputEvent from the PP_Resource and hold
+// it with a scoped_refptr. Also does a DebugPrintf.
+class InputEventGetter {
+ public:
+  InputEventGetter(PP_Resource resource, const char* function_name) {
+    DebugPrintf("PPB_InputEvent::%s: resource=%"NACL_PRIu32"\n",
+                function_name,
+                resource);
+    input_event_ =
+        PluginResource::GetAs<PluginInputEvent>(resource);
+  }
+
+  PluginInputEvent* get() {
+    return input_event_.get();
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(InputEventGetter);
+  scoped_refptr<PluginInputEvent> input_event_;
+};
+// This macro is for starting a resource function. It makes sure resource_arg
+// is of type PluginInputEvent, and returns error_return if it's not.
+#define BEGIN_RESOURCE_THUNK(function_name, resource_arg, error_return) \
+  InputEventGetter input_event(resource_arg, function_name); \
+  if (!input_event.get()) { \
+    return error_return; \
+  } \
+  do {} while(0)
+
+PP_Bool IsInputEvent(PP_Resource resource) {
+  BEGIN_RESOURCE_THUNK("IsInputEvent", resource, PP_FALSE);
+  return PP_TRUE;
+}
+
+#define IMPLEMENT_RESOURCE_THUNK(function, resource_arg, error_return) \
+  BEGIN_RESOURCE_THUNK(#function, resource_arg, error_return); \
+  return input_event.get()->function()
+
+PP_InputEvent_Type GetType(PP_Resource event) {
+  IMPLEMENT_RESOURCE_THUNK(GetType, event, PP_INPUTEVENT_TYPE_UNDEFINED);
+}
+
+PP_TimeTicks GetTimeStamp(PP_Resource event) {
+  IMPLEMENT_RESOURCE_THUNK(GetTimeStamp, event, 0.0);
+}
+
+uint32_t GetModifiers(PP_Resource event) {
+  IMPLEMENT_RESOURCE_THUNK(GetModifiers, event, 0);
+}
+
+// Mouse -----------------------------------------------------------------------
+
+PP_Bool IsMouseInputEvent(PP_Resource resource) {
+  if (!IsInputEvent(resource))
+    return PP_FALSE;
+  PP_InputEvent_Type type = GetType(resource);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_MOUSEDOWN ||
+                     type == PP_INPUTEVENT_TYPE_MOUSEUP ||
+                     type == PP_INPUTEVENT_TYPE_MOUSEMOVE ||
+                     type == PP_INPUTEVENT_TYPE_MOUSEENTER ||
+                     type == PP_INPUTEVENT_TYPE_MOUSELEAVE ||
+                     type == PP_INPUTEVENT_TYPE_CONTEXTMENU);
+}
+
+PP_InputEvent_MouseButton GetMouseButton(PP_Resource mouse_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetMouseButton, mouse_event,
+                           PP_INPUTEVENT_MOUSEBUTTON_NONE);
+}
+
+PP_Point GetMousePosition(PP_Resource mouse_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetMousePosition, mouse_event, PP_MakePoint(0, 0));
+}
+
+int32_t GetMouseClickCount(PP_Resource mouse_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetMouseClickCount, mouse_event, 0);
+}
+
+// Wheel -----------------------------------------------------------------------
+
+PP_Bool IsWheelInputEvent(PP_Resource resource) {
+  if (!IsInputEvent(resource))
+    return PP_FALSE;
+  PP_InputEvent_Type type = GetType(resource);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_MOUSEWHEEL);
+}
+
+PP_FloatPoint GetWheelDelta(PP_Resource wheel_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetWheelDelta, wheel_event, PP_MakeFloatPoint(0, 0));
+}
+
+PP_FloatPoint GetWheelTicks(PP_Resource wheel_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetWheelTicks, wheel_event, PP_MakeFloatPoint(0, 0));
+}
+
+PP_Bool GetWheelScrollByPage(PP_Resource wheel_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetWheelScrollByPage, wheel_event, PP_FALSE);
+}
+
+PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
+  if (!IsInputEvent(resource))
+    return PP_FALSE;
+  PP_InputEvent_Type type = GetType(resource);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_KEYDOWN ||
+                     type == PP_INPUTEVENT_TYPE_KEYUP ||
+                     type == PP_INPUTEVENT_TYPE_CHAR);
+}
+
+uint32_t GetKeyCode(PP_Resource key_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetKeyCode, key_event, 0);
+}
+
+PP_Var GetCharacterText(PP_Resource character_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetCharacterText, character_event,
+                           PP_MakeUndefined());
+}
+
+}  // namespace
+
+namespace ppapi_proxy {
+
+// static
+const PPB_InputEvent* PluginInputEvent::GetInterface() {
+  static const PPB_InputEvent input_event_interface = {
+    RequestInputEvents,
+    RequestFilteringInputEvents,
+    ClearInputEventRequest,
+    IsInputEvent,
+    ::GetType,
+    ::GetTimeStamp,
+    ::GetModifiers
+  };
+  return &input_event_interface;
+}
+
+// static
+const PPB_MouseInputEvent* PluginInputEvent::GetMouseInterface() {
+  static const PPB_MouseInputEvent mouse_input_event_interface = {
+    IsMouseInputEvent,
+    ::GetMouseButton,
+    ::GetMousePosition,
+    ::GetMouseClickCount
+  };
+  return &mouse_input_event_interface;
+}
+
+// static
+const PPB_WheelInputEvent* PluginInputEvent::GetWheelInterface() {
+  static const PPB_WheelInputEvent wheel_input_event_interface = {
+    IsWheelInputEvent,
+    ::GetWheelDelta,
+    ::GetWheelTicks,
+    ::GetWheelScrollByPage
+  };
+  return &wheel_input_event_interface;
+}
+
+// static
+const PPB_KeyboardInputEvent* PluginInputEvent::GetKeyboardInterface() {
+  static const PPB_KeyboardInputEvent keyboard_input_event_interface = {
+    IsKeyboardInputEvent,
+    ::GetKeyCode,
+    ::GetCharacterText
+  };
+  return &keyboard_input_event_interface;
+}
+
+PluginInputEvent::PluginInputEvent()
+    : character_text_(PP_MakeUndefined()) {
+}
+
+void PluginInputEvent::Init(const InputEventData& input_event_data,
+                            PP_Var character_text) {
+  input_event_data_ = input_event_data;
+  character_text_ = character_text;
+}
+
+PluginInputEvent::~PluginInputEvent() {
+  // Release the character text.  This is a no-op if it's not a string.
+  PPBVarInterface()->Release(character_text_);
+}
+
+PP_InputEvent_Type PluginInputEvent::GetType() const {
+  return input_event_data_.event_type;
+}
+
+PP_TimeTicks PluginInputEvent::GetTimeStamp() const {
+  return input_event_data_.event_time_stamp;
+}
+
+uint32_t PluginInputEvent::GetModifiers() const {
+  return input_event_data_.event_modifiers;
+}
+
+PP_InputEvent_MouseButton PluginInputEvent::GetMouseButton() const {
+  return input_event_data_.mouse_button;
+}
+
+PP_Point PluginInputEvent::GetMousePosition() const {
+  return input_event_data_.mouse_position;
+}
+
+int32_t PluginInputEvent::GetMouseClickCount() const {
+  return input_event_data_.mouse_click_count;
+}
+
+PP_FloatPoint PluginInputEvent::GetWheelDelta() const {
+  return input_event_data_.wheel_delta;
+}
+
+PP_FloatPoint PluginInputEvent::GetWheelTicks() const {
+  return input_event_data_.wheel_ticks;
+}
+
+PP_Bool PluginInputEvent::GetWheelScrollByPage() const {
+  return input_event_data_.wheel_scroll_by_page;
+}
+
+uint32_t PluginInputEvent::GetKeyCode() const {
+  return input_event_data_.key_code;
+}
+
+PP_Var PluginInputEvent::GetCharacterText() const {
+  PPBVarInterface()->AddRef(character_text_);
+  return character_text_;
+}
+
+}  // namespace ppapi_proxy
+

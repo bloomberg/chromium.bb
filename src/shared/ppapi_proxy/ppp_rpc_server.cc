@@ -147,6 +147,23 @@ static void PPP_Find_StopFindDispatcher(
   );
 }
 
+static void PPP_InputEvent_HandleInputEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppInputEventRpcServer::PPP_InputEvent_HandleInputEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPP_Instance_DidCreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -388,6 +405,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Find_StartFind:iCi:i", PPP_Find_StartFindDispatcher },
   { "PPP_Find_SelectFindResult:ii:", PPP_Find_SelectFindResultDispatcher },
   { "PPP_Find_StopFind:i:", PPP_Find_StopFindDispatcher },
+  { "PPP_InputEvent_HandleInputEvent:iiCC:i", PPP_InputEvent_HandleInputEventDispatcher },
   { "PPP_Instance_DidCreate:iiCC:i", PPP_Instance_DidCreateDispatcher },
   { "PPP_Instance_DidDestroy:i:", PPP_Instance_DidDestroyDispatcher },
   { "PPP_Instance_DidChangeView:iII:", PPP_Instance_DidChangeViewDispatcher },

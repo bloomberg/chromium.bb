@@ -25,6 +25,8 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
+#include "native_client/src/third_party/ppapi/cpp/input_event.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
@@ -698,7 +700,6 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
   }
 }
 
-
 bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
   PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
                  static_cast<void*>(this)));
@@ -706,13 +707,27 @@ bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
     return false;  // event is not handled here.
   } else {
     bool handled = pp::PPBoolToBool(
-      ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
-          pp_instance(), &event));
-    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (handled=%d)\n", handled));
+        ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
+            pp_instance(), &event));
+    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (old) (handled=%d)\n",
+                   handled));
     return handled;
   }
 }
 
+bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
+  PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
+                 static_cast<void*>(this)));
+  if ((ppapi_proxy_ == NULL) || !(ppapi_proxy_->ppp_input_event_interface())) {
+    return false;  // event is not handled here.
+  } else {
+    bool handled = pp::PPBoolToBool(
+        ppapi_proxy_->ppp_input_event_interface()->HandleInputEvent(
+            pp_instance(), event.pp_resource()));
+    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (handled=%d)\n", handled));
+    return handled;
+  }
+}
 
 bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",

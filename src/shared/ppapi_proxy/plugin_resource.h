@@ -21,6 +21,7 @@ namespace ppapi_proxy {
   F(PluginFont) \
   F(PluginGraphics2D) \
   F(PluginImageData) \
+  F(PluginInputEvent) \
   F(PluginSurface3D)
 
 // Forward declaration of PluginResource classes.
@@ -43,35 +44,29 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
     return resource ? resource->Cast<T>() : NULL;
   }
 
+  // Adopt the given PP_Resource as type T. Use this function for resources that
+  // the browser provides to the plugin with an incremented ref count (i.e.,
+  // calls AddRefResource); it initializes the browser refcount to 1 or
+  // increments it if the resource already exists.
   // Returns NULL if the resource is invalid or is a different type.
   template<typename T>
   static scoped_refptr<T> AdoptAs(PP_Resource res);
+
+  // Adopt the given PP_Resource as type T. Use this function for resources
+  // when the browser drops the refcount immediately. These resources are
+  // typically meant to be cached on the plugin side, with little or no
+  // interaction back to the browser. For an example, see PluginInputEvent.
+  // This is like AdoptAs above, except it initializes the browser_refcount to
+  // 0 for resources that are new to the plugin, and does not increment the
+  // browser_refcount for resources that exist.
+  // Returns NULL if the resource is invalid or is a different type.
+  template<typename T>
+  static scoped_refptr<T> AdoptAsWithNoBrowserCount(PP_Resource res);
 
   // Cast the resource into a specified type. This will return NULL if the
   // resource does not match the specified type. Specializations of this
   // template call into As* functions.
   template <typename T> T* Cast() { return NULL; }
-
-  // Returns an resource id of this object. If the object doesn't have a
-  // resource id, new one is created with plugin refcount of 1. If it does,
-  // the refcount is incremented. Use this when you need to return a new
-  // reference to the plugin.
-  PP_Resource GetReference();
-
-  // When you need to ensure that a resource has a reference, but you do not
-  // want to increase the refcount (for example, if you need to call a plugin
-  // callback function with a reference), you can use this class. For example:
-  //
-  // plugin_callback(.., ScopedResourceId(resource).id, ...);
-  class ScopedResourceId {
-   public:
-    explicit ScopedResourceId(PluginResource* resource)
-        : id(resource->GetReference()) {}
-    ~ScopedResourceId() {
-      PluginResourceTracker::Get()->UnrefResource(id);
-    }
-    const PP_Resource id;
-  };
 
  protected:
   virtual bool InitFromBrowserResource(PP_Resource resource) = 0;
@@ -90,19 +85,6 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
   #define IMPLEMENT_RESOURCE(RESOURCE)  \
       virtual RESOURCE* As##RESOURCE() { return this; }
 
-  // If referenced by a plugin, holds the id of this resource object. Do not
-  // access this member directly, because it is possible that the plugin holds
-  // no references to the object, and therefore the resource_id_ is zero. Use
-  // either GetReference() to obtain a new resource_id and increase the
-  // refcount, or TemporaryReference when you do not want to increase the
-  // refcount.
-  PP_Resource resource_id_;
-
-  // Called by the resource tracker when the last plugin reference has been
-  // dropped. You cannot use resource_id_ after this function is called!
-  friend class PluginResourceTracker;
-  void StoppedTracking();
-
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
 };
 
@@ -118,21 +100,22 @@ FOR_ALL_RESOURCES(DEFINE_RESOURCE_CAST)
 #undef FOR_ALL_RESOURCES
 
 template<typename T> scoped_refptr<T>
-PluginResourceTracker::AdoptBrowserResource(PP_Resource res) {
+PluginResourceTracker::AdoptBrowserResource(PP_Resource res,
+                                            size_t browser_refcount) {
   ResourceMap::iterator result = live_resources_.find(res);
   // Do we have it already?
   if (result == live_resources_.end()) {
     // No - try to create a new one.
     scoped_refptr<T> new_resource = new T();
     if (new_resource->InitFromBrowserResource(res)) {
-      AddResource(new_resource, res);
+      AddResource(new_resource, res, browser_refcount);
       return new_resource;
     } else {
       return scoped_refptr<T>();
     }
   } else {
-    // Consume one more browser refcount.
-    ++result->second.browser_refcount;
+    // Consume more browser refcounts (unless browser_refcount is 0).
+    result->second.browser_refcount += browser_refcount;
     return result->second.resource->Cast<T>();
   }
 }
@@ -143,8 +126,22 @@ scoped_refptr<T> PluginResource::AdoptAs(PP_Resource res) {
   if (!res)
     return NULL;
 
-  // Adopt the resource.
-  return PluginResourceTracker::Get()->AdoptBrowserResource<T>(res);
+  // Adopt the resource with 1 browser-side refcount.
+  const size_t browser_refcount = 1;
+  return PluginResourceTracker::Get()->AdoptBrowserResource<T>(
+      res, browser_refcount);
+}
+
+template<typename T>
+scoped_refptr<T> PluginResource::AdoptAsWithNoBrowserCount(PP_Resource res) {
+  // Short-circuit if null resource.
+  if (!res)
+    return NULL;
+
+  // Adopt the resource with 0 browser-side refcount.
+  const size_t browser_refcount = 0;
+  return PluginResourceTracker::Get()->AdoptBrowserResource<T>(
+      res, browser_refcount);
 }
 
 }  // namespace ppapi_proxy

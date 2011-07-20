@@ -19,6 +19,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_input_event.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_memory.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_messaging.h"
@@ -32,8 +33,8 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_surface_3d.h"
+#include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
 
@@ -59,9 +60,14 @@ InterfaceMapElement interface_map[] = {
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
+  { PPB_INPUT_EVENT_INTERFACE, PluginInputEvent::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
+  { PPB_KEYBOARD_INPUT_EVENT_INTERFACE,
+    PluginInputEvent::GetKeyboardInterface(), true },
   { PPB_MEMORY_DEV_INTERFACE, PluginMemory::GetInterface(), true },
   { PPB_MESSAGING_INTERFACE, PluginMessaging::GetInterface(), true },
+  { PPB_MOUSE_INPUT_EVENT_INTERFACE, PluginInputEvent::GetMouseInterface(),
+    true },
   { PPB_OPENGLES2_DEV_INTERFACE, PluginContext3D::GetOpenGLESInterface(),
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
@@ -73,6 +79,8 @@ InterfaceMapElement interface_map[] = {
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
     true },
   { PPB_VAR_INTERFACE, PluginVar::GetInterface(), true },
+  { PPB_WHEEL_INPUT_EVENT_INTERFACE, PluginInputEvent::GetWheelInterface(),
+    true },
   { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },
   { PPB_ZOOM_DEV_INTERFACE, PluginZoom::GetInterface(), true },
 };

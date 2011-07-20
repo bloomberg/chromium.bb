@@ -196,9 +196,22 @@ const PPB_ImageDataTrusted* PPBImageDataTrustedInterface() {
   return ppb;
 }
 
+const PPB_InputEvent* PPBInputEventInterface() {
+  static const PPB_InputEvent* ppb = static_cast<const PPB_InputEvent*>(
+      GetBrowserInterfaceSafe(PPB_INPUT_EVENT_INTERFACE));
+  return ppb;
+}
+
 const PPB_Instance* PPBInstanceInterface() {
   static const PPB_Instance* ppb = static_cast<const PPB_Instance*>(
       GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
+  return ppb;
+}
+
+const PPB_KeyboardInputEvent* PPBKeyboardInputEventInterface() {
+  static const PPB_KeyboardInputEvent* ppb =
+      static_cast<const PPB_KeyboardInputEvent*>(
+          GetBrowserInterfaceSafe(PPB_KEYBOARD_INPUT_EVENT_INTERFACE));
   return ppb;
 }
 
@@ -212,6 +225,13 @@ const PPB_Messaging* PPBMessagingInterface() {
   static const PPB_Messaging* ppb =
       static_cast<const PPB_Messaging*>(
           GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
+  return ppb;
+}
+
+const PPB_MouseInputEvent* PPBMouseInputEventInterface() {
+  static const PPB_MouseInputEvent* ppb =
+      static_cast<const PPB_MouseInputEvent*>(
+          GetBrowserInterfaceSafe(PPB_MOUSE_INPUT_EVENT_INTERFACE));
   return ppb;
 }
 
@@ -240,6 +260,13 @@ const PPB_Var* PPBVarInterface() {
   static const PPB_Var* ppb =
       static_cast<const PPB_Var*>(
           GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
+  return ppb;
+}
+
+const PPB_WheelInputEvent* PPBWheelInputEventInterface() {
+  static const PPB_WheelInputEvent* ppb =
+      static_cast<const PPB_WheelInputEvent*>(
+          GetBrowserInterfaceSafe(PPB_WHEEL_INPUT_EVENT_INTERFACE));
   return ppb;
 }
 

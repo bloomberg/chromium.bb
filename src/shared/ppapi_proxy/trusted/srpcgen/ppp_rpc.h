@@ -91,6 +91,22 @@ class PppFindRpcClient {
   void operator=(const PppFindRpcClient);
 };  // class PppFindRpcClient
 
+class PppInputEventRpcClient {
+ public:
+  static NaClSrpcError PPP_InputEvent_HandleInputEvent(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource resource,
+      nacl_abi_size_t event_data_bytes, char* event_data,
+      nacl_abi_size_t character_text_bytes, char* character_text,
+      int32_t* handled);
+
+ private:
+  PppInputEventRpcClient();
+  PppInputEventRpcClient(const PppInputEventRpcClient&);
+  void operator=(const PppInputEventRpcClient);
+};  // class PppInputEventRpcClient
+
 class PppInstanceRpcClient {
  public:
   static NaClSrpcError PPP_Instance_DidCreate(

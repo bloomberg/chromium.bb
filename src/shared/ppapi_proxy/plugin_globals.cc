@@ -10,9 +10,9 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "srpcgen/ppp_rpc.h"
 
 
 #define NACL_SEND_FD 6
@@ -80,6 +80,16 @@ const PPB_Memory_Dev* PPBMemoryInterface() {
 const PPB_Var* PPBVarInterface() {
   return static_cast<const PPB_Var*>(
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
+}
+
+const PPP_InputEvent* PPPInputEventInterface() {
+  static const PPP_InputEvent* ppp_input_event =
+      static_cast<const PPP_InputEvent*>(
+          ::PPP_GetInterface(PPP_INPUT_EVENT_INTERFACE));
+  // This helper is only used from interface function proxies; a NULL return
+  // means something is wrong with the proxy.
+  CHECK(ppp_input_event != NULL);
+  return ppp_input_event;
 }
 
 const PPP_Messaging* PPPMessagingInterface() {

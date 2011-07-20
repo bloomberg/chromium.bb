@@ -11,14 +11,13 @@
 
 namespace ppapi_proxy {
 
-// Complex PP_Var types (such as strings and objects) have a copy of the
-// variant's contents cached by the proxy.  This is done so that PP_Vars can
-// be reference counted, and their contents accessed "locally" by NaCl modules
-// without having to perform a complete round trip to the browser for each
-// such operation.
+// Complex PP_Var types (such as strings) have a copy of the variant's contents
+// cached by the proxy.  This is done so that PP_Vars can be reference counted,
+// and their contents accessed "locally" by NaCl modules without having to
+// perform a complete round trip to the browser for each such operation.
 //
 // Note: this class is intended to be sub-classed to handle specific content
-// types such as strings, objects or arrays.
+// types such as strings, dictionaries, or arrays.
 class ProxyVar {
  public:
   virtual ~ProxyVar() {}

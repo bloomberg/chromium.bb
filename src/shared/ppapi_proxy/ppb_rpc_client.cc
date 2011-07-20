@@ -1075,6 +1075,38 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Describe(
   return retval;
 }
 
+NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_RequestInputEvents(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t event_classes,
+    int32_t filtered,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_InputEvent_RequestInputEvents:iii:i",
+      instance,
+      event_classes,
+      filtered,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_ClearInputEventRequest(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t event_classes)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_InputEvent_ClearInputEventRequest:ii:",
+      instance,
+      event_classes
+  );
+  return retval;
+}
+
 NaClSrpcError PpbInstanceRpcClient::PPB_Instance_BindGraphics(
     NaClSrpcChannel* channel,
     PP_Instance instance,

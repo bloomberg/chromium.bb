@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,11 @@ class PluginResourceTracker {
   // Prohibit creation other then by the Singleton class.
   PluginResourceTracker();
 
-  // Adds the given resource to the tracker and assigns it a resource ID and
-  // refcount of 1. Used only by the Resource class.
-  void AddResource(PluginResource* resource, PP_Resource id);
+  // Adds the given resource to the tracker and assigns it a resource ID, local
+  // refcount of 1, and initializes the browser reference count to
+  // |browser_refcount|. Used only by the Resource class.
+  void AddResource(PluginResource* resource, PP_Resource id,
+                   size_t browser_refcount);
 
   // The returned pointer will be NULL if there is no resource. Note that this
   // return value is a scoped_refptr so that we ensure the resource is valid
@@ -57,8 +59,9 @@ class PluginResourceTracker {
   // Get or create a new PluginResource from a browser resource.
   // If we are already tracking this resource, we bump its browser_refcount to
   // reflect that we took ownership of it. If this is a new resource, we create
-  // a PluginResource for it with browser_refcount 1.
-  template<typename T> scoped_refptr<T> AdoptBrowserResource(PP_Resource res);
+  // a PluginResource for it with the given browser_refcount.
+  template<typename T> scoped_refptr<T> AdoptBrowserResource(
+      PP_Resource res, size_t browser_refcount);
 
   // Try to get a browser-side refcount for an existing resource.
   void ObtainBrowserResource(PP_Resource res);
@@ -73,7 +76,7 @@ class PluginResourceTracker {
     scoped_refptr<PluginResource> resource;
     size_t browser_refcount;
     size_t plugin_refcount;
-    explicit ResourceAndRefCounts(PluginResource* r);
+    ResourceAndRefCounts(PluginResource* r, size_t browser_refcount);
     ~ResourceAndRefCounts();
   };
   typedef std::map<PP_Resource, ResourceAndRefCounts> ResourceMap;

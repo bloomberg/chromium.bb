@@ -11,18 +11,19 @@
 #include <string>
 
 // NaCl
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/module.h"
-#include "ppapi/cpp/var.h"
+#include "native_client/src/third_party/ppapi/cpp/input_event.h"
+#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "native_client/src/third_party/ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/cpp/point.h"
+#include "native_client/src/third_party/ppapi/cpp/var.h"
 
 namespace {
 const char* const kEventsPropertyName = "events";
 
 // Convert a given modifier to a descriptive string.  Note that the actual
-// declared type of modifier in each of the event structs (e.g.,
-// PP_InputEvent_Key.modifier) is uint32_t, but it is expected to be
-// interpreted as a bitfield of 'or'ed PP_InputEvent_Modifier values.
+// declared type of modifier in each of the event classes is uint32_t, but it is
+// expected to be interpreted as a bitfield of 'or'ed PP_InputEvent_Modifier
+// values.
 std::string ModifierToString(uint32_t modifier) {
   std::string s;
   if (modifier & PP_INPUTEVENT_MODIFIER_SHIFTKEY) {
@@ -87,61 +88,51 @@ class EventInstance : public pp::Instance {
   explicit EventInstance(PP_Instance instance)
       : pp::Instance(instance) {
     std::printf("EventInstance created.\n");
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
+    RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
   }
   virtual ~EventInstance() {}
 
-  void KeyEvent(PP_InputEvent_Key key,
-                PP_TimeTicks time,
-                const std::string& kind) {
+  void GotKeyEvent(const pp::KeyboardInputEvent& key_event,
+                   const std::string& kind) {
     std::ostringstream stream;
     stream << pp_instance() << ":"
-           << " Key event:" << kind.c_str()
-           << " modifier:" << ModifierToString(key.modifier)
-           << " key_code:" << key.key_code
-           << " time:" << time
+           << " Key event:" << kind
+           << " modifier:" << ModifierToString(key_event.GetModifiers())
+           << " key_code:" << key_event.GetKeyCode()
+           << " time:" << key_event.GetTimeStamp()
+           << " text:" << key_event.GetCharacterText().DebugString()
            << "\n";
     std::printf("%s", stream.str().c_str());
     PostMessage(stream.str());
   }
 
-  void MouseEvent(PP_InputEvent_Mouse mouse_event,
-                  PP_TimeTicks time,
-                  const std::string& kind) {
+  void GotMouseEvent(const pp::MouseInputEvent& mouse_event,
+                     const std::string& kind) {
     std::ostringstream stream;
     stream << pp_instance() << ":"
-           << " Mouse event:" << kind.c_str()
-           << " modifier:" << ModifierToString(mouse_event.modifier).c_str()
-           << " button:" << MouseButtonToString(mouse_event.button).c_str()
-           << " x:" << mouse_event.x
-           << " y:" << mouse_event.y
-           << " click_count:" << mouse_event.click_count
-           << " time:" << time
+           << " Mouse event:" << kind
+           << " modifier:" << ModifierToString(mouse_event.GetModifiers())
+           << " button:" << MouseButtonToString(mouse_event.GetMouseButton())
+           << " x:" << mouse_event.GetMousePosition().x()
+           << " y:" << mouse_event.GetMousePosition().y()
+           << " click_count:" << mouse_event.GetMouseClickCount()
+           << " time:" << mouse_event.GetTimeStamp()
            << "\n";
     std::printf("%s", stream.str().c_str());
     PostMessage(stream.str());
   }
 
-  void CharEvent(PP_InputEvent_Character char_event, PP_TimeTicks time) {
-    std::ostringstream stream;
-    stream << pp_instance() << ": Character event."
-           << " modifier:" << ModifierToString(char_event.modifier).c_str()
-           << " text:" << char_event.text
-           << " time:" << time
-           << "\n";
-    std::printf("%s", stream.str().c_str());
-    PostMessage(stream.str());
-  }
-
-  void WheelEvent(PP_InputEvent_Wheel wheel_event, PP_TimeTicks time) {
+  void GotWheelEvent(const pp::WheelInputEvent& wheel_event) {
     std::ostringstream stream;
     stream << pp_instance() << ": Wheel event."
-           << " modifier:" << ModifierToString(wheel_event.modifier).c_str()
-           << " deltax:" << wheel_event.delta_x
-           << " deltay:" << wheel_event.delta_y
-           << " wheel_ticks_x:" << wheel_event.wheel_ticks_x
-           << " wheel_ticks_y:" << wheel_event.wheel_ticks_y
+           << " modifier:" << ModifierToString(wheel_event.GetModifiers())
+           << " deltax:" << wheel_event.GetWheelDelta().x()
+           << " deltay:" << wheel_event.GetWheelDelta().y()
+           << " wheel_ticks_x:" << wheel_event.GetWheelTicks().x()
+           << " wheel_ticks_y:" << wheel_event.GetWheelTicks().y()
            << " scroll_by_page:"
-           << (wheel_event.scroll_by_page ? "true" : "false")
+           << (wheel_event.GetScrollByPage() ? "true" : "false")
            << "\n";
     std::printf("%s", stream.str().c_str());
     PostMessage(stream.str());
@@ -149,44 +140,44 @@ class EventInstance : public pp::Instance {
 
   // Handle an incoming input event by switching on type and dispatching
   // to the appropriate subtype handler.
-  virtual bool HandleInputEvent(const PP_InputEvent& event) {
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
     std::printf("HandleInputEvent called\n");
-    switch (event.type) {
+    switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_UNDEFINED:
         std::printf("Undefined event.\n");
         break;
       case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-        MouseEvent(event.u.mouse, event.time_stamp, "Down");
+        GotMouseEvent(pp::MouseInputEvent(event), "Down");
         break;
       case PP_INPUTEVENT_TYPE_MOUSEUP:
-        MouseEvent(event.u.mouse, event.time_stamp, "Up");
+        GotMouseEvent(pp::MouseInputEvent(event), "Up");
         break;
       case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-        MouseEvent(event.u.mouse, event.time_stamp, "Move");
+        GotMouseEvent(pp::MouseInputEvent(event), "Move");
         break;
       case PP_INPUTEVENT_TYPE_MOUSEENTER:
-        MouseEvent(event.u.mouse, event.time_stamp, "Enter");
+        GotMouseEvent(pp::MouseInputEvent(event), "Enter");
         break;
       case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-        MouseEvent(event.u.mouse, event.time_stamp, "Leave");
+        GotMouseEvent(pp::MouseInputEvent(event), "Leave");
         break;
       case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
-        WheelEvent(event.u.wheel, event.time_stamp);
+        GotWheelEvent(pp::WheelInputEvent(event));
         break;
       case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-        KeyEvent(event.u.key, event.time_stamp, "RawKeyDown");
+        GotKeyEvent(pp::KeyboardInputEvent(event), "RawKeyDown");
         break;
       case PP_INPUTEVENT_TYPE_KEYDOWN:
-        KeyEvent(event.u.key, event.time_stamp, "Down");
+        GotKeyEvent(pp::KeyboardInputEvent(event), "Down");
         break;
       case PP_INPUTEVENT_TYPE_KEYUP:
-        KeyEvent(event.u.key, event.time_stamp, "Up");
+        GotKeyEvent(pp::KeyboardInputEvent(event), "Up");
         break;
       case PP_INPUTEVENT_TYPE_CHAR:
-        CharEvent(event.u.character, event.time_stamp);
+        GotKeyEvent(pp::KeyboardInputEvent(event), "Character");
         break;
       default:
-        std::printf("Unrecognized event type: %d\n", event.type);
+        std::printf("Unrecognized event type: %d\n", event.GetType());
         assert(false);
         return false;
     }

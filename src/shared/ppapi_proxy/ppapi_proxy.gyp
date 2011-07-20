@@ -25,6 +25,7 @@
         'browser_ppb_font_rpc_server.cc',
         'browser_ppb_graphics_2d_rpc_server.cc',
         'browser_ppb_image_data_rpc_server.cc',
+        'browser_ppb_input_event_rpc_server.cc',
         'browser_ppb_instance_rpc_server.cc',
         'browser_ppb_messaging_rpc_server.cc',
         'browser_ppb_pdf_rpc_server.cc',
@@ -37,6 +38,7 @@
         'browser_ppb_widget_rpc_server.cc',
         'browser_ppb_zoom_rpc_server.cc',
         'browser_ppp_find.cc',
+        'browser_ppp_input_event.cc',
         'browser_ppp_instance.cc',
         'browser_ppp_messaging.cc',
         'browser_ppp_printing.cc',
@@ -46,6 +48,7 @@
         'browser_ppp_zoom.cc',
         'browser_ppp.cc',
         'browser_upcall.cc',
+        'input_event_data.cc',
         'object_serialize.cc',
         'utility.cc',
         # Autogerated files

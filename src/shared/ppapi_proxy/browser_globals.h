@@ -25,6 +25,7 @@
 #include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_graphics_2d.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
+#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
 #include "native_client/src/third_party/ppapi/c/ppb_instance.h"
 #include "native_client/src/third_party/ppapi/c/ppb_messaging.h"
 #include "native_client/src/third_party/ppapi/c/ppb_url_loader.h"
@@ -96,8 +97,11 @@ const PPB_Font_Dev* PPBFontInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
+const PPB_InputEvent* PPBInputEventInterface();
 const PPB_Instance* PPBInstanceInterface();
+const PPB_KeyboardInputEvent* PPBKeyboardInputEventInterface();
 const PPB_Memory_Dev* PPBMemoryInterface();  // shared
+const PPB_MouseInputEvent* PPBMouseInputEventInterface();
 const PPB_Messaging* PPBMessagingInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
@@ -107,6 +111,7 @@ const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();
 const PPB_Var* PPBVarInterface();  // shared
+const PPB_WheelInputEvent* PPBWheelInputEventInterface();
 const PPB_Widget_Dev* PPBWidgetInterface();
 const PPB_Zoom_Dev* PPBZoomInterface();
 

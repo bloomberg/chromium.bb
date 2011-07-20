@@ -21,6 +21,8 @@ namespace plugin {
 class PluginPpapi;
 }
 
+struct PPP_InputEvent;
+
 namespace ppapi_proxy {
 
 class BrowserPpp {
@@ -28,7 +30,8 @@ class BrowserPpp {
   BrowserPpp(NaClSrpcChannel* main_channel,
              plugin::PluginPpapi* plugin)
       : main_channel_(main_channel), plugin_pid_(0), plugin_(plugin),
-        ppp_instance_interface_(NULL), ppp_messaging_interface_(NULL) {}
+        ppp_instance_interface_(NULL), ppp_messaging_interface_(NULL),
+        ppp_input_event_interface_(NULL) {}
   ~BrowserPpp() {}
 
   int32_t InitializeModule(PP_Module module_id,
@@ -49,6 +52,10 @@ class BrowserPpp {
     return ppp_messaging_interface_;
   }
 
+  const PPP_InputEvent* ppp_input_event_interface() const {
+    return ppp_input_event_interface_;
+  }
+
   NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
   plugin::PluginPpapi* plugin() { return plugin_; }
@@ -64,6 +71,7 @@ class BrowserPpp {
   // Set on module initialization.
   const PPP_Instance* ppp_instance_interface_;
   const PPP_Messaging* ppp_messaging_interface_;
+  const PPP_InputEvent* ppp_input_event_interface_;
 
   // The thread used to handle calls on other than the main thread.
   struct NaClThread upcall_thread_;

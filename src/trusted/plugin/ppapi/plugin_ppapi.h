@@ -66,7 +66,11 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   virtual void DidChangeFocus(bool has_focus);
 
   // Handles input events delivered from the browser to this plugin element.
+  // TODO(dmichael): Remove this.
   virtual bool HandleInputEvent(const PP_InputEvent& event);
+
+  // Handles input events delivered from the browser to this plugin element.
+  virtual bool HandleInputEvent(const pp::InputEvent& event);
 
   // Handles gaining or losing focus.
   virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);

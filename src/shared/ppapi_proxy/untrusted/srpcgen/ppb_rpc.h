@@ -463,6 +463,25 @@ class PpbImageDataRpcClient {
   void operator=(const PpbImageDataRpcClient);
 };  // class PpbImageDataRpcClient
 
+class PpbInputEventRpcClient {
+ public:
+  static NaClSrpcError PPB_InputEvent_RequestInputEvents(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t event_classes,
+      int32_t filtered,
+      int32_t* success);
+  static NaClSrpcError PPB_InputEvent_ClearInputEventRequest(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t event_classes);
+
+ private:
+  PpbInputEventRpcClient();
+  PpbInputEventRpcClient(const PpbInputEventRpcClient&);
+  void operator=(const PpbInputEventRpcClient);
+};  // class PpbInputEventRpcClient
+
 class PpbInstanceRpcClient {
  public:
   static NaClSrpcError PPB_Instance_BindGraphics(
