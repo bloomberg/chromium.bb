@@ -186,8 +186,14 @@ TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
   // |child1| and |child11| should be destroyed with |toplevel|.
 }
 
+// Fails on ChromeOS. http://crbug.com/89829
+#if defined(OS_CHROMEOS)
+#define MAYBE_GrabUngrab  DISABLED_GrabUngrab
+#else
+#define MAYBE_GrabUngrab GrabUngrab
+#endif
 // Tests some grab/ungrab events.
-TEST_F(WidgetTest, GrabUngrab) {
+TEST_F(WidgetTest, MAYBE_GrabUngrab) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
   views_delegate.set_default_parent_view(toplevel->GetRootView());
 
