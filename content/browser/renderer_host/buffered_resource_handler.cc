@@ -387,12 +387,12 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
     return false;
 
   if (need_plugin_list) {
-    if (!webkit::npapi::PluginList::Singleton()->PluginsLoaded()) {
+    if (webkit::npapi::PluginList::Singleton()->stale()) {
       *need_plugin_list = true;
       return true;
     }
   } else {
-    DCHECK(webkit::npapi::PluginList::Singleton()->PluginsLoaded());
+    DCHECK(!webkit::npapi::PluginList::Singleton()->stale());
   }
 
   // Finally, check the plugin list.

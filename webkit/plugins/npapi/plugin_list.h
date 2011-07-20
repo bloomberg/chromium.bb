@@ -62,9 +62,6 @@ class PluginList {
   // by a command line switch.
   static bool DebugPluginLoading();
 
-  // Returns true iff the plugin list has been loaded already.
-  bool PluginsLoaded();
-
   // Cause the plugin list to refresh next time they are accessed, regardless
   // of whether they are already loaded.
   void RefreshPlugins();
@@ -206,6 +203,10 @@ class PluginList {
   // version.
   void DisableOutdatedPluginGroups();
 
+  // Returns true if the plugin list is stale, i.e. it will need to be
+  // (re)loaded on the next access.
+  bool stale() { return plugins_need_refresh_; }
+
   virtual ~PluginList();
 
  protected:
@@ -297,8 +298,6 @@ class PluginList {
   //
   // Internals
   //
-  // Set to true when the LoadPlugins method has finished.
-  bool plugins_loaded_;
 
   // If true, we reload plugins even if they've been loaded already.
   bool plugins_need_refresh_;

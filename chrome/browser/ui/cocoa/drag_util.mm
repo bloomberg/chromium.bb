@@ -81,7 +81,7 @@ static BOOL IsSupportedFileURL(const GURL& url) {
   // Check whether there is a plugin that supports the mime type. (e.g. PDF)
   webkit::npapi::PluginList* list = webkit::npapi::PluginList::Singleton();
   webkit::npapi::WebPluginInfo info;
-  if (list->PluginsLoaded() &&
+  if (!list->stale() &&
       list->GetPluginInfo(GURL(), mime_type, false, &info, NULL)) {
     return webkit::npapi::IsPluginEnabled(info);
   }
