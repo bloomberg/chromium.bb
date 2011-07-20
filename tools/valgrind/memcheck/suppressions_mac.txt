@@ -1748,5 +1748,4 @@
    fun:-[PanelWindowControllerCocoa revealAnimatedWithFrame:]
    fun:_ZN23PanelBrowserWindowCocoa9ShowPanelEv
    fun:_ZN5Panel4ShowEv
-   fun:_ZN51PanelBrowserWindowCocoaTest_TitlebarViewCreate_Test8TestBodyEv
 }
