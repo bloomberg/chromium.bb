@@ -4375,12 +4375,6 @@
    fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
 }
 {
-   bug_82186
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13BookmarkModel30CreateRootNodeFromStarredEntryERKN7history12StarredEntryE
-}
-{
    bug_82716a
    Memcheck:Leak
    fun:_Znw*
