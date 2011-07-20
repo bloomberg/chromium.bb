@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import socket
+import sys
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import repository
@@ -520,12 +521,11 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
                                  redirect_stderr=True,
                                  combine_stdout_stderr=True)
   except cros_lib.RunCommandError:
-    if result and result.output:
-      Warning(result.output)
-
     raise
   finally:
     os.umask(old_umask)
+    if result and result.output:
+      sys.stdout.write(result.output)
 
   archive_url = None
   archive_dir = None
