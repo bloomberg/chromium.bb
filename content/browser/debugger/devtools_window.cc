@@ -75,6 +75,13 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 }
 
 // static
+DevToolsWindow* DevToolsWindow::GetDevToolsWindowForTest() {
+  if (instances_.empty())
+    return NULL;
+  return instances_.back();
+}
+
+// static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   return new DevToolsWindow(profile, NULL, false, true);

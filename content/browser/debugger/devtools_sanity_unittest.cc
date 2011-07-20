@@ -18,8 +18,10 @@
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/devtools_window.h"
+#include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/test/test_server.h"
@@ -60,11 +62,42 @@ const char kPageWithContentScript[] =
 const char kChunkedTestPage[] = "chunked";
 const char kSlowTestPage[] =
     "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
+const char kSharedWorkerTestPage[] =
+    "files/workers/workers_ui_shared_worker.html";
 
+void RunTestFuntion(DevToolsWindow* window, const char* test_name) {
+  std::string result;
+
+  // At first check that JavaScript part of the front-end is loaded by
+  // checking that global variable uiTests exists(it's created after all js
+  // files have been loaded) and has runTest method.
+  ASSERT_TRUE(
+      ui_test_utils::ExecuteJavaScriptAndExtractString(
+          window->GetRenderViewHost(),
+          L"",
+          L"window.domAutomationController.send("
+          L"'' + (window.uiTests && (typeof uiTests.runTest)));",
+          &result));
+
+  if (result == "function") {
+    ASSERT_TRUE(
+        ui_test_utils::ExecuteJavaScriptAndExtractString(
+            window->GetRenderViewHost(),
+            L"",
+            UTF8ToWide(base::StringPrintf("uiTests.runTest('%s')",
+                                          test_name)),
+            &result));
+    EXPECT_EQ("[OK]", result);
+  } else {
+    FAIL() << "DevTools front-end is broken.";
+  }
+}
 
 class DevToolsSanityTest : public InProcessBrowserTest {
  public:
-  DevToolsSanityTest() {
+  DevToolsSanityTest()
+      : window_(NULL),
+        inspected_rvh_(NULL) {
     set_show_window(true);
     EnableDOMAutomation();
   }
@@ -72,31 +105,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
  protected:
   void RunTest(const std::string& test_name, const std::string& test_page) {
     OpenDevToolsWindow(test_page);
-    std::string result;
-
-    // At first check that JavaScript part of the front-end is loaded by
-    // checking that global variable uiTests exists(it's created after all js
-    // files have been loaded) and has runTest method.
-    ASSERT_TRUE(
-        ui_test_utils::ExecuteJavaScriptAndExtractString(
-            client_contents_->render_view_host(),
-            L"",
-            L"window.domAutomationController.send("
-            L"'' + (window.uiTests && (typeof uiTests.runTest)));",
-            &result));
-
-    if (result == "function") {
-      ASSERT_TRUE(
-          ui_test_utils::ExecuteJavaScriptAndExtractString(
-              client_contents_->render_view_host(),
-              L"",
-              UTF8ToWide(base::StringPrintf("uiTests.runTest('%s')",
-                                            test_name.c_str())),
-              &result));
-      EXPECT_EQ("[OK]", result);
-    } else {
-      FAIL() << "DevTools front-end is broken.";
-    }
+    RunTestFuntion(window_, test_name.c_str());
     CloseDevToolsWindow();
   }
 
@@ -108,8 +117,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     inspected_rvh_ = GetInspectedTab()->render_view_host();
     window_ = DevToolsWindow::OpenDevToolsWindow(inspected_rvh_);
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
-    client_contents_ = client_rvh->delegate()->GetAsTabContents();
-    ui_test_utils::WaitForNavigation(&client_contents_->controller());
+    TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
+    ui_test_utils::WaitForNavigation(&client_contents->controller());
   }
 
   TabContents* GetInspectedTab() {
@@ -129,7 +138,6 @@ class DevToolsSanityTest : public InProcessBrowserTest {
       BrowserClosedObserver close_observer(browser);
   }
 
-  TabContents* client_contents_;
   DevToolsWindow* window_;
   RenderViewHost* inspected_rvh_;
 };
@@ -245,6 +253,108 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
+
+
+// Used to block until a navigation completes.
+class LoadStopObserver : public NotificationObserver {
+ public:
+  explicit LoadStopObserver(const NotificationSource& source) : done_(false) {
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
+    ui_test_utils::RunMessageLoop();
+  }
+
+ private:
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (type == content::NOTIFICATION_LOAD_STOP) {
+      if (done_)
+        return;
+      done_ = true;
+      MessageLoopForUI::current()->Quit();
+    }
+  }
+
+  NotificationRegistrar registrar_;
+  bool done_;
+  DISALLOW_COPY_AND_ASSIGN(LoadStopObserver);
+};
+
+
+class WorkerDevToolsSanityTest : public InProcessBrowserTest {
+ public:
+  WorkerDevToolsSanityTest() : window_(NULL) {
+    set_show_window(true);
+    EnableDOMAutomation();
+  }
+
+ protected:
+  void RunTest(const char* test_name, const char* test_page) {
+    ASSERT_TRUE(test_server()->Start());
+    GURL url = test_server()->GetURL(test_page);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    OpenDevToolsWindowForFirstSharedWorker();
+    RunTestFuntion(window_, test_name);
+    CloseDevToolsWindow();
+  }
+
+  static void OpenDevToolsWindowForFirstSharedWorkerOnIOThread(int attempt) {
+    BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+    bool found = false;
+    for (; !iter.Done(); ++iter) {
+      WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+      const WorkerProcessHost::Instances& instances = worker->instances();
+      for (WorkerProcessHost::Instances::const_iterator i = instances.begin();
+           i != instances.end(); ++i) {
+        if (!i->shared())
+          continue;
+        WorkerDevToolsManagerIO::GetInstance()->OpenDevToolsForWorker(
+            worker->id(), i->worker_route_id());
+        found = true;
+        break;
+      }
+    }
+    if (found) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          new MessageLoop::QuitTask);
+    } else if(attempt < 30) {
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          NewRunnableFunction(
+              &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, attempt + 1),
+          100);
+    } else {
+      FAIL() << "Shared worker not found.";
+    }
+
+  }
+
+  void OpenDevToolsWindowForFirstSharedWorker() {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
+        &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, 1));
+    ui_test_utils::RunMessageLoop();
+    window_ = DevToolsWindow::GetDevToolsWindowForTest();
+    ASSERT_TRUE(window_ != NULL);
+
+    RenderViewHost* client_rvh = window_->GetRenderViewHost();
+    TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
+    if (client_contents->is_loading()) {
+      LoadStopObserver(
+          Source<NavigationController>(&client_contents->controller()));
+    }
+  }
+
+  void CloseDevToolsWindow() {
+    Browser* browser = window_->browser();
+    browser->CloseAllTabs();
+    BrowserClosedObserver close_observer(browser);
+  }
+
+  DevToolsWindow* window_;
+};
+
+
 // Tests scripts panel showing.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
@@ -315,13 +425,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   std::string result;
   ASSERT_TRUE(
       ui_test_utils::ExecuteJavaScriptAndExtractString(
-          client_contents_->render_view_host(),
+          window_->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
           L"'' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
   CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
+  RunTest("testSharedWorker", kSharedWorkerTestPage);
 }
 
 }  // namespace

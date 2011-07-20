@@ -37,6 +37,7 @@ class DevToolsWindow
   static const char kDevToolsApp[];
   static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
   static DevToolsWindow* FindDevToolsWindow(RenderViewHost* window_rvh);
+  static DevToolsWindow* GetDevToolsWindowForTest();
 
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
