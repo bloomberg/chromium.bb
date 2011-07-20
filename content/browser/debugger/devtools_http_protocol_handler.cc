@@ -16,13 +16,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/devtools_messages.h"
 #include "grit/devtools_frontend_resources.h"
 #include "googleurl/src/gurl.h"
@@ -90,8 +89,53 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   int connection_id_;
 };
 
-}  // namespace
+static int next_id = 1;
 
+class TabContentsIDHelper : public TabContentsObserver {
+ public:
+
+  static int GetID(TabContents* tab) {
+    TabContentsToIdMap::iterator it = tabcontents_to_id_.find(tab);
+    if (it != tabcontents_to_id_.end())
+      return it->second;
+    TabContentsIDHelper* wrapper = new TabContentsIDHelper(tab);
+    return wrapper->id_;
+  }
+
+  static TabContents* GetTabContents(int id) {
+    IdToTabContentsMap::iterator it = id_to_tabcontents_.find(id);
+    if (it != id_to_tabcontents_.end())
+      return it->second;
+    return NULL;
+  }
+
+ private:
+  explicit TabContentsIDHelper(TabContents* tab)
+      : TabContentsObserver(tab),
+        id_(next_id++) {
+    id_to_tabcontents_[id_] = tab;
+    tabcontents_to_id_[tab] = id_;
+  }
+
+  virtual ~TabContentsIDHelper() {}
+
+  virtual void TabContentsDestroyed(TabContents* tab) {
+    id_to_tabcontents_.erase(id_);
+    tabcontents_to_id_.erase(tab);
+    delete this;
+  }
+
+  int id_;
+  typedef std::map<int, TabContents*> IdToTabContentsMap;
+  static IdToTabContentsMap id_to_tabcontents_;
+  typedef std::map<TabContents*, int> TabContentsToIdMap;
+  static TabContentsToIdMap tabcontents_to_id_;
+};
+
+TabContentsIDHelper::IdToTabContentsMap TabContentsIDHelper::id_to_tabcontents_;
+TabContentsIDHelper::TabContentsToIdMap TabContentsIDHelper::tabcontents_to_id_;
+
+}  // namespace
 
 // static
 scoped_refptr<DevToolsHttpProtocolHandler> DevToolsHttpProtocolHandler::Start(
@@ -244,7 +288,7 @@ static PageList GeneratePageList(
   for (Tabs::iterator it = inspectable_tabs.begin();
        it != inspectable_tabs.end(); ++it) {
 
-    TabContentsWrapper* tab_contents = *it;
+    TabContents* tab_contents = *it;
     NavigationController& controller = tab_contents->controller();
 
     NavigationEntry* entry = controller.GetActiveEntry();
@@ -252,10 +296,9 @@ static PageList GeneratePageList(
       continue;
 
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-        GetDevToolsClientHostFor(tab_contents->tab_contents()->
-                                      render_view_host());
+        GetDevToolsClientHostFor(tab_contents->render_view_host());
     PageInfo page_info;
-    page_info.id = tab_contents->restore_tab_helper()->session_id().id();
+    page_info.id = TabContentsIDHelper::GetID(tab_contents);
     page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
     page_info.title = UTF16ToUTF8(EscapeForHTML(entry->title()));
@@ -316,7 +359,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
     return;
   }
 
-  TabContents* tab_contents = GetTabContents(id);
+  TabContents* tab_contents = TabContentsIDHelper::GetTabContents(id);
   if (tab_contents == NULL) {
     Send500(connection_id, "No such page id: " + page_id);
     return;
@@ -515,17 +558,4 @@ void DevToolsHttpProtocolHandler::AcceptWebSocket(
                         &net::HttpServer::AcceptWebSocket,
                         connection_id,
                         request));
-}
-
-TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {
-  InspectableTabs inspectable_tabs =
-      tab_contents_provider_->GetInspectableTabs();
-
-  for (InspectableTabs::iterator it = inspectable_tabs.begin();
-       it != inspectable_tabs.end(); ++it) {
-    TabContentsWrapper* tab = *it;
-    if (tab->restore_tab_helper()->session_id().id() == session_id)
-      return tab->tab_contents();
-  }
-  return NULL;
 }

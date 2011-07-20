@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/test_render_view_host.h"

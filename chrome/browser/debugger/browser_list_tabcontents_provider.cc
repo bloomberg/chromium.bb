@@ -6,6 +6,7 @@
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 DevToolsHttpProtocolHandler::InspectableTabs
 BrowserListTabContentsProvider::GetInspectableTabs() {
@@ -14,7 +15,7 @@ BrowserListTabContentsProvider::GetInspectableTabs() {
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();
     for (int i = 0, size = model->count(); i < size; ++i)
-      tabs.push_back(model->GetTabContentsAt(i));
+      tabs.push_back(model->GetTabContentsAt(i)->tab_contents());
   }
   return tabs;
 }

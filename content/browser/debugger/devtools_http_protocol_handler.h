@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_HTTP_PROTOCOL_HANDLER_H_
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -18,14 +19,13 @@
 class DevToolsClientHost;
 class DevToolsHttpServer;
 class TabContents;
-class TabContentsWrapper;
 
 class DevToolsHttpProtocolHandler
     : public net::HttpServer::Delegate,
       public net::URLRequest::Delegate,
       public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
  public:
-  typedef std::vector<TabContentsWrapper*> InspectableTabs;
+  typedef std::vector<TabContents*> InspectableTabs;
   class TabContentsProvider {
    public:
     TabContentsProvider() {}
@@ -90,8 +90,6 @@ class DevToolsHttpProtocolHandler
                const std::string& message);
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
-
-  TabContents* GetTabContents(int session_id);
 
   std::string ip_;
   int port_;
