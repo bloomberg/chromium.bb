@@ -19,6 +19,21 @@
 
 struct NaClSymbolTable;
 
+/* Define the maximum number of instruction operands (over
+ * all instructions) we will allow.  Note: before compression,
+ * there should a little less than 3000 operands. Hence,
+ * 10000 is a (very) safe value to use as a limit, and should
+ * not need to be changed.
+ */
+#define NACL_MAX_OPERANDS_TOTAL 10000
+
+/* Define the maximum number of instructions we will allow.
+ * Note: before compression there should be less than 3000
+ * instructions. Hence, 10000 is a (very) safe value to use
+ * as a limit, and should not need to be changed.
+ */
+#define NACL_MAX_INSTRUCTIONS_TOTAL 10000
+
 /* Report the given fatal error, and then quit. */
 void NaClFatal(const char* s);
 

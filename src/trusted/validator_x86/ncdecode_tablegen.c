@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 
@@ -39,6 +38,7 @@
 #include "native_client/src/trusted/validator_x86/nacl_regsgen.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
+#include "native_client/src/trusted/validator_x86/nc_compress.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -49,9 +49,6 @@
 
 /* Define the default buffer size to use. */
 #define BUFFER_SIZE 256
-
-/* Define the number of possible bytes values. */
-#define NACL_NUM_BYTE_VALUES 256
 
 /* Model an NaClInst, sorted by OpcodeInModRm values. */
 typedef struct NaClMrmInst {
@@ -146,15 +143,6 @@ static NaClMrmInst* NaClInstMrmTable[NCDTABLESIZE]
 /* Holds encodings of prefix bytes. */
 static const char* NaClPrefixTable[NCDTABLESIZE];
 
-
-/* Define the maximum number of instruction operands (over
- * all instructions) we will allow.  Note: before compression,
- * there should a little less than 3000 operands. Hence,
- * 10000 is a (very) safe value to use as a limit, and should
- * not need to be changed.
- */
-#define NACL_MAX_OPERANDS_TOTAL 10000
-
 /* Holds operands for instructions, as they are constructed. */
 static NaClOp NaClOperands[NACL_MAX_OPERANDS_TOTAL];
 
@@ -175,6 +163,14 @@ static NaClOp NaClOpsCompressed[NACL_MAX_OPERANDS_TOTAL];
  * defines the number of elements in NaClOpsCompressed.
  */
 static size_t nacl_ops_compressed_size = 0;
+
+/* Holds a compressed version of modeled instructions, so that
+ * duplicate instructions share space.
+ */
+static NaClModeledInst* NaClInstsCompressed[NACL_MAX_INSTRUCTIONS_TOTAL];
+
+/* Holds the number of elements in NaClInstsCompressed. */
+static size_t nacl_inst_compressed_size = 0;
 
 /* Prints out the opcode prefix being defined, the opcode pattern
  * being defined, and the given error message. Then aborts the
@@ -1748,36 +1744,11 @@ static void NaClBuildInstTables() {
   NaClSymbolTableDestroy(st);
 }
 
-/* Return the number of instruction rules pointed to by the parameter. */
-static int NaClInstListLength(NaClModeledInst* next) {
-  int count = 0;
-  while (NULL != next) {
-    ++count;
-    next = next->next_rule;
-  }
-  return count;
-}
-
 static int NaClInstMrmListLength(NaClMrmInst* next) {
   int count = 0;
   while (NULL != next) {
     ++count;
     next = next->next;
-  }
-  return count;
-}
-
-/* Collect the number of opcode (instructions) in the given table,
- * and return the number found.
- */
-static int NaClCountNumberInsts() {
-  int i;
-  NaClInstPrefix prefix;
-  int count = 0;
-  for (i = 0; i < NCDTABLESIZE; ++i) {
-    for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
-      count += NaClInstListLength(NaClInstTable[i][prefix]);
-    }
   }
   return count;
 }
@@ -1940,8 +1911,8 @@ size_t NaClOpOffset(const NaClOp* op) {
  * assumed to be in an array static initializer.
  */
 static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
-                                  int index, const NaClModeledInst* inst,
-                                  int lookahead) {
+                                  size_t index, const NaClModeledInst* inst,
+                                  size_t lookahead) {
   gprintf(f, "  /* %d */\n", index);
   gprintf(f, "  { %s,\n", NaClInstTypeString(inst->insttype));
   gprintf(f, "    ");
@@ -2000,18 +1971,6 @@ static void NaClPrintPrefixTable(struct Gio* f) {
   gprintf(f, "\n};\n\n");
 }
 
-static int NaClCountInstSeqs(const NaClModeledInstNode* root) {
-  if (root == NULL) {
-    return 0;
-  } else {
-    int count = 0;
-    if (NULL != root->matching_inst) count++;
-    count += NaClCountInstSeqs(root->success);
-    count += NaClCountInstSeqs(root->fail);
-    return count;
-  }
-}
-
 static int NaClCountInstNodes(const NaClModeledInstNode* root) {
   if (NULL == root) {
     return 0;
@@ -2037,8 +1996,21 @@ static void NaClPrintInstTrieEdge(const NaClModeledInstNode* edge,
   gprintf(f, ",\n");
 }
 
+/* Finds the index to use for the given instruction, assuming
+ * it is a compressed instruction.
+ */
+static size_t NaClFindInstIndex(const NaClModeledInst* inst) {
+  size_t i;
+  if (NULL == inst) return 0;
+  for (i = 0; i < nacl_inst_compressed_size; ++i) {
+    if (inst == NaClInstsCompressed[i]) return i;
+  }
+  NaClFatal("Unable to find instruction index\n");
+  /* NOT REACHED */
+  return 0;
+}
+
 static void NaClPrintInstTrieNode(const NaClModeledInstNode* root,
-                                  int g_opcode_index,
                                   int root_index, struct Gio* f) {
   if (NULL == root) {
     return;
@@ -2049,134 +2021,31 @@ static void NaClPrintInstTrieNode(const NaClModeledInstNode* root,
     if (NULL == root->matching_inst) {
       gprintf(f, "NULL");
     } else {
-      gprintf(f, "g_Opcodes + %d", g_opcode_index);
-      ++g_opcode_index;
+      gprintf(f, "g_Opcodes + %d", NaClFindInstIndex(root->matching_inst));
     }
     gprintf(f, ",\n");
     NaClPrintInstTrieEdge(root->success, &next_index, f);
     NaClPrintInstTrieEdge(root->fail, &next_index, f);
     gprintf(f, "  },\n");
     next_index = root_index + 1;
-    NaClPrintInstTrieNode(root->success, g_opcode_index, next_index, f);
-    g_opcode_index += NaClCountInstSeqs(root->success);
+    NaClPrintInstTrieNode(root->success, next_index, f);
     next_index += NaClCountInstNodes(root->success);
-    NaClPrintInstTrieNode(root->fail, g_opcode_index, next_index, f);
+    NaClPrintInstTrieNode(root->fail, next_index, f);
   }
 }
 
 /* Prints out the contents of the opcode sequence overrides into the
  * given file.
  */
-static void NaClPrintInstSeqTrie(int g_opcode_index,
-                                 const NaClModeledInstNode* root,
+static void NaClPrintInstSeqTrie(const NaClModeledInstNode* root,
                                  struct Gio* f) {
   /* Make sure trie isn't empty, since empty arrays create warning messages. */
   int num_trie_nodes;
   if (root == NULL) root = NaClNewInstNode(0);
   num_trie_nodes = NaClCountInstNodes(root);
   gprintf(f, "static const NaClInstNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
-  NaClPrintInstTrieNode(root, g_opcode_index, 0, f);
+  NaClPrintInstTrieNode(root, 0, f);
   gprintf(f, "};\n");
-}
-
-static void NaClPrintInstsInInstTrie(int current_index,
-                                     const NaClModeledInstNode* root,
-                                     struct Gio* f) {
-  if (NULL == root) return;
-  if (NULL != root->matching_inst) {
-    NaClInstPrintInternal(f, TRUE, current_index, root->matching_inst, 0);
-    current_index++;
-  }
-  NaClPrintInstsInInstTrie(current_index, root->success, f);
-  current_index += NaClCountInstSeqs(root->success);
-  NaClPrintInstsInInstTrie(current_index, root->fail, f);
-}
-
-/* Returns true if the given operands are equal. */
-static Bool NaClOpSame(const NaClOp* op1, const NaClOp* op2) {
-  if ((op1->kind == op2->kind) && (op1->flags == op2->flags)) {
-    if (NULL == op1->format_string) {
-      return NULL == op2->format_string;
-    } else if (NULL != op2->format_string) {
-      return 0 == strcmp(op1->format_string, op2->format_string);
-    }
-  }
-  return FALSE;
-}
-
-/* Compress the operands in the given instruction. */
-static void NaClInstOpCompress(NaClModeledInst* inst) {
-  size_t i;
-  Bool found = FALSE;  /* until proven otherwise */
-  if (NULL == inst) return;
-  if (inst->num_operands <= nacl_ops_compressed_size) {
-    /* Note: Be sure to not overflow compressed array by stopping when
-     * there is no more room for the operands of the given instruction.
-     */
-    for (i = 0; i <= nacl_ops_compressed_size - inst->num_operands; ++i) {
-      size_t j;
-      Bool matches = TRUE;  /* until proven otherwise */
-      for (j = 0; j < inst->num_operands; ++j) {
-        if (!NaClOpSame(inst->operands + j, NaClOpsCompressed + i + j)) {
-          matches = FALSE;
-          break;
-        }
-      }
-      if (matches) {
-        /* Operands already in compressed table, use copy. */
-        inst->operands = NaClOpsCompressed + i;
-        found = TRUE;
-        break;
-      }
-    }
-  }
-  if (!found) {
-    /* If reached, not in compressed table. Add. */
-    for (i = 0; i < inst->num_operands; ++i) {
-      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].kind =
-          inst->operands[i].kind;
-      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].flags =
-          inst->operands[i].flags;
-      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].format_string
-          = inst->operands[i].format_string;
-    }
-    inst->operands = NaClOpsCompressed + nacl_ops_compressed_size;
-    nacl_ops_compressed_size += inst->num_operands;
-  }
-  NaClInstOpCompress(inst->next_rule);
-}
-
-/* Compress operands of all instructions reachable from
- * the given node.
- */
-static void NaClOpNodeCompress(const NaClModeledInstNode* node) {
-  if (NULL == node) return;
-  NaClInstOpCompress(node->matching_inst);
-  NaClOpNodeCompress(node->success);
-  NaClOpNodeCompress(node->fail);
-}
-
-/* Walks over the modeled instructions and replaces duplicate
- * operand entries.
- */
-static void NaClOpCompress() {
-  int i;
-  NaClInstPrefix prefix;
-  fprintf(stderr, "Note: %"NACL_PRIuS" operands before compression, ",
-          nacl_operands_size);
-  /* Compress operand of the undefined instruction. */
-  NaClInstOpCompress(undefined_inst);
-
-  /* Compress all operands of instructions in the instruction opcode tables. */
-  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
-    for (i = 0; i < NCDTABLESIZE; ++i) {
-      NaClInstOpCompress(NaClInstTable[i][prefix]);
-    }
-  }
-
-  /* Compress all operands of instructions in the instruction trie. */
-  NaClOpNodeCompress(inst_node_root);
-  fprintf(stderr, "%"NACL_PRIuS" after.\n", nacl_ops_compressed_size);
 }
 
 /* Prints out the array of (compressed) operands. */
@@ -2191,58 +2060,21 @@ static void NaClPrintOperandTable(struct Gio* f) {
   gprintf(f, "};\n\n");
 }
 
-/* Print out the contents of the defined instructions into the given file. */
-static void NaClPrintDecodeTables(struct Gio* f) {
-  int i;
+static void NaClPrintInstTable(struct Gio* f) {
+  size_t i;
   NaClInstPrefix prefix;
-  int count = 0;
 
-  /* lookup_index holds the number of the opcode (instruction) that
-   * begins the list of instructions for the corresponding opcode
-   * in NaClOpcodeTable.
-   */
-  int lookup_index[NCDTABLESIZE][NaClInstPrefixEnumSize];
-
-  /* Build table of all possible instructions. Note that we build
-   * build the list of instructions by using a "g_NaClOpcodes" address.
-   */
-  int num_opcodes = NaClCountNumberInsts();
-  int num_seq_opcodes = NaClCountInstSeqs(inst_node_root);
-
-  NaClPrintOperandTable(f);
-
+  /* Print out instruction table. */
   gprintf(f,
           "static const NaClInst g_Opcodes[%d] = {\n",
-          num_opcodes + num_seq_opcodes);
-  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
-    for (i = 0; i < NCDTABLESIZE; ++i) {
-      /* Build the list of instructions by knowing that the next
-       * element in the list will always follow the current entry,
-       * when added to the array.
-       */
-      const NaClModeledInst* next = NaClInstTable[i][prefix];
-      if (NULL == next) {
-        lookup_index[i][prefix] = -1;
-      } else {
-        int lookahead = count + 1;
-        lookup_index[i][prefix] = count;
-        while (NULL != next) {
-          NaClInstPrintTablegen(f, count, next, lookahead);
-          next = next->next_rule;
-          ++lookahead;
-          ++count;
-        }
-      }
-    }
+          nacl_inst_compressed_size);
+  for (i = 0; i < nacl_inst_compressed_size; ++i) {
+    const NaClModeledInst* next = NaClInstsCompressed[i];
+    NaClInstPrintInternal(f, TRUE, i, next, NaClFindInstIndex(next->next_rule));
   }
-  NaClPrintInstsInInstTrie(num_opcodes, inst_node_root, f);
   gprintf(f, "};\n\n");
 
-  /* Print out the undefined opcode */
-  gprintf(f, "static const NaClInst g_Undefined_Opcode = \n");
-  NaClInstPrintInternal(f, FALSE, 0, undefined_inst, 0);
-
-  /* Now print lookup table of rules. */
+  /* Now print lookup table of rulees. */
   gprintf(f,
           "static const NaClInst* "
           "g_OpcodeTable[NaClInstPrefixEnumSize][NCDTABLESIZE] = {\n");
@@ -2259,17 +2091,21 @@ static void NaClPrintDecodeTables(struct Gio* f) {
       if (NULL == next) {
         gprintf(f, "NULL");
       } else {
-        gprintf(f, "g_Opcodes + %d", lookup_index[i][prefix]);
+        gprintf(f, "g_Opcodes + %d", NaClFindInstIndex(next));
       }
       gprintf(f, "  ,\n");
     }
     gprintf(f, "},\n");
   }
   gprintf(f, "};\n\n");
+}
 
+/* Print out the contents of the defined instructions into the given file. */
+static void NaClPrintDecodeTables(struct Gio* f) {
+  NaClPrintOperandTable(f);
+  NaClPrintInstTable(f);
   NaClPrintPrefixTable(f);
-
-  NaClPrintInstSeqTrie(num_opcodes, inst_node_root, f);
+  NaClPrintInstSeqTrie(inst_node_root, f);
 }
 
 /* Print out the sequence of bytes used to encode an instruction sequence. */
@@ -2434,6 +2270,26 @@ static void FillInMissingOperandsDescs() {
   FillInTrieMissingOperandsDescs(inst_node_root);
 }
 
+static void NaClDoCompression() {
+  NaClInstTables inst_tables;
+
+  /* Don't compress if output is to be readable! */
+  if (NACL_FLAGS_human_readable) return;
+
+  /* Set up arguments to pass to the compression routines. */
+  inst_tables.inst_table = &NaClInstTable;
+  inst_tables.inst_node_root = &inst_node_root;
+  inst_tables.inst_compressed = &NaClInstsCompressed;
+  inst_tables.inst_compressed_size = &nacl_inst_compressed_size;
+  inst_tables.operands = NaClOperands;
+  inst_tables.operands_size = &nacl_operands_size;
+  inst_tables.ops_compressed = NaClOpsCompressed;
+  inst_tables.ops_compressed_size = &nacl_ops_compressed_size;
+  inst_tables.undefined_inst = &undefined_inst;
+
+  NaClOpCompress(&inst_tables);
+}
+
 int main(const int argc, const char* argv[]) {
   struct GioFile gfile;
   struct Gio* g = (struct Gio*) &gfile;
@@ -2452,7 +2308,7 @@ int main(const int argc, const char* argv[]) {
   NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
   FillInMissingOperandsDescs();
-  NaClOpCompress();
+  NaClDoCompression();
 
   if (new_argc == 1) {
     GioFileRefCtor(&gfile, stdout);

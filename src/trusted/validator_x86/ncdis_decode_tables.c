@@ -14,7 +14,7 @@
 #endif
 
 static const NaClDecodeTables kDecoderTables = {
-  &g_Undefined_Opcode,
+  g_Opcodes + 0,
   (const nacl_inst_table_type*)(&g_OpcodeTable),
   kNaClPrefixTable,
   g_OpcodeSeq

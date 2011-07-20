@@ -130,6 +130,7 @@ gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 ncdecode_tablegen = gen_env.ComponentProgram(
     'ncdecode_tablegen',
     ['ncdecode_tablegen.c',
+     'nc_compress.c',
      'ncdecode_forms.c',
      'zero_extends.c',
      'nc_def_jumps.c',
