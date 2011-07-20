@@ -696,7 +696,7 @@
         'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/chrome_process_util_uitest.cc',
         'test/gpu/gpu_uitest.cc',
-        'test/ui/dom_checker_uitest.cc',
+        'test/ui/dom_checker_uitest.cc',  # moving to performance_ui_tests
         'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
@@ -3098,6 +3098,7 @@
         'test/startup/shutdown_test.cc',
         'test/startup/startup_test.cc',
         'test/tab_switching/tab_switching_test.cc',
+        'test/ui/dom_checker_uitest.cc',
         'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/sunspider_uitest.cc',
         'test/ui/v8_benchmark_uitest.cc',
