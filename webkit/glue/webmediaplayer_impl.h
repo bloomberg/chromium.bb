@@ -79,6 +79,7 @@ class WebFrame;
 namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
+class MediaStreamClient;
 class WebVideoRenderer;
 
 class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
@@ -187,7 +188,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
                      media::FilterCollection* collection,
-                     media::MessageLoopFactory* message_loop_factory);
+                     media::MessageLoopFactory* message_loop_factory,
+                     MediaStreamClient* media_stream_client);
   virtual ~WebMediaPlayerImpl();
 
   // Finalizes initialization of the object.
@@ -330,6 +332,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   scoped_ptr<media::ChunkDemuxerFactory> chunk_demuxer_factory_;
   scoped_ptr<media::MediaDataSink> media_data_sink_;
+
+  MediaStreamClient* media_stream_client_;
 
 #if WEBKIT_USING_CG
   scoped_ptr<skia::PlatformCanvas> skia_canvas_;

@@ -623,7 +623,8 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client,
                                           collection.release(),
-                                          message_loop_factory.release()));
+                                          message_loop_factory.release(),
+                                          NULL));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }
