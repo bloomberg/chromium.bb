@@ -59,7 +59,7 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
                                   PP_CompletionCallback callback) {
   // Should not allow multiple opens.
   if (called_open_)
-    return PP_ERROR_FAILED;
+    return PP_ERROR_INPROGRESS;
   called_open_ = true;
 
   if (type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
