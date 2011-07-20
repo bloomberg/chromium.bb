@@ -319,9 +319,6 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
     classification_request_->Cancel();
   }
   browse_info_.reset(new BrowseInfo);
-  browse_info_->url = params.url;
-  browse_info_->referrer = params.referrer;
-  browse_info_->transition = params.transition;
 
   // Notify the renderer if it should classify this URL.
   classification_request_ = new ShouldClassifyUrlRequest(params,
@@ -362,13 +359,6 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    if (browse_info_->url.spec() != verdict->url()) {
-      // I'm not sure we can DCHECK on this one so we keep stats around to see
-      // whether this actually happens in practice.
-      UMA_HISTOGRAM_COUNTS("SBClientPhishing.BrowserRendererUrlMismatch", 1);
-      VLOG(2) << "Browser and renderer URL do not match: "
-              << browse_info_->url.spec() << " vs. " << verdict->url();
-    }
     // Start browser-side feature extraction.  Once we're done it will send
     // the client verdict request.
     feature_extractor_->ExtractFeatures(

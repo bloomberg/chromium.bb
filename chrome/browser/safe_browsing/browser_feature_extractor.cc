@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -34,8 +35,13 @@ const char kFirstHttpHostVisitMoreThan24hAgo[] =
     "FirstHttpHostVisitMoreThan24hAgo";
 const char kFirstHttpsHostVisitMoreThan24hAgo[] =
     "FirstHttpsHostVisitMoreThan24hAgo";
+
+const char kHostPrefix[] = "Host";
+const char kRedirectPrefix[] = "Redirect";
+const char kReferrer[] = "Referrer";
 const char kHasSSLReferrer[] = "HasSSLReferrer";
 const char kPageTransitionType[] = "PageTransitionType";
+const char kIsFirstNavigation[] = "IsFirstNavigation";
 const char kBadIpFetch[] = "BadIpFetch=";
 }  // namespace features
 
@@ -52,6 +58,55 @@ static void AddFeature(const std::string& feature_name,
   feature->set_name(feature_name);
   feature->set_value(feature_value);
   VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
+}
+
+static void AddNavigationFeatures(const std::string& feature_prefix,
+                                  const NavigationController& controller,
+                                  int index,
+                                  ClientPhishingRequest* request) {
+  NavigationEntry* entry = controller.GetEntryAtIndex(index);
+  bool is_secure_referrer = entry->referrer().SchemeIsSecure();
+  if (!is_secure_referrer) {
+    AddFeature(StringPrintf("%s%s=%s",
+                            feature_prefix.c_str(),
+                            features::kReferrer,
+                            entry->referrer().spec().c_str()),
+               1.0,
+               request);
+  }
+  AddFeature(feature_prefix + features::kHasSSLReferrer,
+             is_secure_referrer ? 1.0 : 0.0,
+             request);
+  AddFeature(feature_prefix + features::kPageTransitionType,
+             static_cast<double>(
+                 PageTransition::StripQualifier(entry->transition_type())),
+             request);
+  AddFeature(feature_prefix + features::kIsFirstNavigation,
+             index == 0 ? 1.0 : 0.0,
+             request);
+}
+
+static void PossiblyAddRedirectNavigationFeatures(
+    const std::string& feature_prefix,
+    const NavigationController& controller,
+    int index,
+    ClientPhishingRequest* request) {
+  NavigationEntry* entry = controller.GetEntryAtIndex(index);
+  // Add additional features for the start of the redirect chain, if this entry
+  // is part of one and the chain starts on a different page.
+  if (PageTransition::IsRedirect(entry->transition_type()) &&
+      (entry->transition_type() & PageTransition::CHAIN_START) == 0) {
+    for (index--; index >= 0; index--) {
+      entry = controller.GetEntryAtIndex(index);
+      if (entry->transition_type() & PageTransition::CHAIN_START) {
+        AddNavigationFeatures(feature_prefix + features::kRedirectPrefix,
+                              controller,
+                              index,
+                              request);
+        return;
+      }
+    }
+  }
 }
 
 BrowserFeatureExtractor::BrowserFeatureExtractor(
@@ -97,6 +152,60 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
     DLOG(ERROR) << "ExtractFeatures called without a callback object";
     return;
   }
+
+  // Extract features pertaining to this navigation.
+  const NavigationController& controller = tab_->controller();
+  int url_index = -1;
+  int first_host_index = -1;
+
+  GURL request_url(request->url());
+  int index = controller.GetCurrentEntryIndex();
+  // The url that we are extracting features for should already be commited.
+  DCHECK_NE(index, -1);
+  for (; index >= 0; index--) {
+    NavigationEntry* entry = controller.GetEntryAtIndex(index);
+    if (url_index == -1 && entry->url() == request_url) {
+      // It's possible that we've been on the on the possibly phishy url before
+      // in this tab, so make sure that we use the latest navigation for
+      // features.
+      // Note that it's possible that the url_index should always be the
+      // latest entry, but I'm worried about possible races during a navigation
+      // and transient entries (i.e. interstiatials) so for now we will just
+      // be cautious.
+      url_index = index;
+    } else if (index < url_index) {
+      if (entry->url().host() == request_url.host()) {
+        first_host_index = index;
+      } else {
+        // We have found the possibly phishing url, but we are no longer on the
+        // host. No reason to look back any further.
+        break;
+      }
+    }
+  }
+
+  // Add features pertaining to how we got to
+  //   1) The candidate url
+  //   2) The redirect leading to the candidate url (assuming there was one).
+  //   3) The first url on the same host as the candidate url (assuming that
+  //      it's different from the candidate url).
+  //   4) The redirect leading to the first url on the host (assuming there was
+  //      one).
+  if (url_index != -1) {
+    AddNavigationFeatures("", controller, url_index, request);
+    PossiblyAddRedirectNavigationFeatures("", controller, url_index, request);
+  }
+  if (first_host_index != -1) {
+    AddNavigationFeatures(features::kHostPrefix,
+                          controller,
+                          first_host_index,
+                          request);
+    PossiblyAddRedirectNavigationFeatures(features::kHostPrefix,
+                                          controller,
+                                          first_host_index,
+                                          request);
+  }
+
   ExtractBrowseInfoFeatures(*info, request);
   pending_extractions_.insert(std::make_pair(request, callback));
   MessageLoop::current()->PostTask(
@@ -109,17 +218,6 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
 void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
     const BrowseInfo& info,
     ClientPhishingRequest* request) {
-  bool is_secure_referrer = info.referrer.SchemeIsSecure();
-  if (!is_secure_referrer) {
-    request->set_referrer_url(info.referrer.spec());
-  }
-  AddFeature(features::kHasSSLReferrer,
-             is_secure_referrer ? 1.0 : 0.0,
-             request);
-  AddFeature(features::kPageTransitionType,
-             static_cast<double>(
-                 PageTransition::StripQualifier(info.transition)),
-             request);
   if (service_) {
     for (std::set<std::string>::const_iterator it = info.ips.begin();
          it != info.ips.end(); ++it) {

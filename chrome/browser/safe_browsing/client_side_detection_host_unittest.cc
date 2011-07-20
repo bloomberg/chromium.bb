@@ -61,6 +61,14 @@ ACTION(QuitUIMessageLoop) {
   MessageLoopForUI::current()->Quit();
 }
 
+// It's kind of insane that InvokeArgument doesn't work with callbacks, but it
+// doesn't seem like it.
+ACTION_TEMPLATE(InvokeCallbackArgument,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_2_VALUE_PARAMS(p0, p1)) {
+  return ::std::tr1::get<k>(args)->Run(p0, p1);
+}
+
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
@@ -251,18 +259,24 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
 TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   ClientPhishingRequest verdict;
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(SaveArg<1>(&cb));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -277,18 +291,24 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
 TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   ClientPhishingRequest verdict;
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(SaveArg<1>(&cb));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -303,6 +323,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
 TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   // Case 3: client thinks the page is phishing and so does the server.
   // We show an interstitial.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   GURL phishing_url("http://phishingurl.com/");
   ClientPhishingRequest verdict;
@@ -310,12 +335,13 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(SaveArg<1>(&cb));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -357,6 +383,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   // before the server responds with a verdict.  After a while the
   // server responds for both requests with a phishing verdict.  Only
   // a single interstitial is shown for the second URL.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
   ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
   GURL phishing_url("http://phishingurl.com/");
   ClientPhishingRequest verdict;
@@ -364,14 +395,21 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb), QuitUIMessageLoop()));
+      .WillOnce(SaveArg<1>(&cb));
   OnDetectedPhishingSite(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
+
+  // Set this back to a normal browser feature extractor since we're using
+  // NavigateAndCommit() and it's easier to use the real thing than setting up
+  // mock expectations.
+  SetFeatureExtractor(new BrowserFeatureExtractor(contents(),
+                                                  csd_service_.get()));
   GURL other_phishing_url("http://other_phishing_url.com/bla");
   ExpectPreClassificationChecks(other_phishing_url, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse);

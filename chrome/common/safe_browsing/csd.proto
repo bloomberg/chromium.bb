@@ -56,7 +56,8 @@ message ClientPhishingRequest {
 
   // The referrer URL.  This field might not be set, for example, in the case
   // where the referrer uses HTTPs.
-  optional string referrer_url = 9;
+  // OBSOLETE: Use feature 'Referrer=<referrer>' instead.
+  optional string OBSOLETE_referrer_url = 9;
 }
 
 message ClientPhishingResponse {

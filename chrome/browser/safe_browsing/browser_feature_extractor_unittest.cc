@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/browser/history/history.h"
@@ -21,6 +22,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/page_transition_types.h"
+#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,6 +67,26 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
     return profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   }
 
+  // This is similar to NavigateAndCommit that is in test_tab_contents, but
+  // allows us to specify the referrer and page_transition_type.
+  void NavigateAndCommit(const GURL& url,
+                         const GURL& referrer,
+                         PageTransition::Type type) {
+    contents()->controller().LoadURL(url, referrer, type);
+
+    static int page_id = 0;
+    ViewHostMsg_FrameNavigate_Params params;
+    InitNavigateParams(&params, ++page_id, url, type);
+    params.referrer = referrer;
+
+    RenderViewHost* rvh = contents()->pending_rvh();
+    if (!rvh) {
+      rvh = contents()->render_view_host();
+    }
+    contents()->ProceedWithCrossSiteNavigation();
+    contents()->TestDidNavigate(rvh, params);
+  }
+
   bool ExtractFeatures(ClientPhishingRequest* request) {
     StartExtractFeatures(request);
     MessageLoop::current()->Run();
@@ -99,7 +121,6 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
   scoped_ptr<BrowseInfo> browse_info_;
   scoped_ptr<MockClientSideDetectionService> service_;
 
-
  private:
   void ExtractFeaturesDone(bool success, ClientPhishingRequest* request) {
     ASSERT_EQ(0U, success_.count(request));
@@ -112,6 +133,7 @@ class BrowserFeatureExtractorTest : public RenderViewHostTestHarness {
 
 TEST_F(BrowserFeatureExtractorTest, UrlNotInHistory) {
   ClientPhishingRequest request;
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
   request.set_url("http://www.google.com/");
   request.set_client_score(0.5);
   EXPECT_FALSE(ExtractFeatures(&request));
@@ -121,6 +143,7 @@ TEST_F(BrowserFeatureExtractorTest, RequestNotInitialized) {
   ClientPhishingRequest request;
   request.set_url("http://www.google.com/");
   // Request is missing the score value.
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
   EXPECT_FALSE(ExtractFeatures(&request));
 }
 
@@ -149,6 +172,8 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
                              history::RedirectList(), history::SOURCE_BROWSED,
                              false);
 
+  contents()->NavigateAndCommit(GURL("http://www.foo.com/bar.html"));
+
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/bar.html");
   request.set_client_score(0.5);
@@ -156,7 +181,7 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
   std::map<std::string, double> features;
   GetFeatureMap(request, &features);
 
-  EXPECT_EQ(10U, features.size());
+  EXPECT_EQ(12U, features.size());
   EXPECT_DOUBLE_EQ(2.0, features[features::kUrlHistoryVisitCount]);
   EXPECT_DOUBLE_EQ(1.0,
                    features[features::kUrlHistoryVisitCountMoreThan24hAgo]);
@@ -173,7 +198,9 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
   EXPECT_TRUE(ExtractFeatures(&request));
   features.clear();
   GetFeatureMap(request, &features);
-  EXPECT_EQ(9U, features.size());
+  // We have less features because we didn't Navigate to this page, so we don't
+  // have Referrer, IsFirstNavigation, HasSSLReferrer, etc.
+  EXPECT_EQ(7U, features.size());
   EXPECT_DOUBLE_EQ(1.0, features[features::kUrlHistoryVisitCount]);
   EXPECT_DOUBLE_EQ(0.0,
                    features[features::kUrlHistoryVisitCountMoreThan24hAgo]);
@@ -188,11 +215,13 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
 TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
   history_service()->AddPage(GURL("http://www.foo.com/bar.html"),
                              history::SOURCE_BROWSED);
+  contents()->NavigateAndCommit(GURL("http:/www.foo.com/bar.html"));
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/bar.html");
   request.set_client_score(0.5);
   StartExtractFeatures(&request);
 
+  contents()->NavigateAndCommit(GURL("http://www.foo.com/goo.html"));
   ClientPhishingRequest request2;
   request2.set_url("http://www.foo.com/goo.html");
   request2.set_client_score(1.0);
@@ -208,33 +237,187 @@ TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
 TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   history_service()->AddPage(GURL("http://www.foo.com/"),
                              history::SOURCE_BROWSED);
+  history_service()->AddPage(GURL("http://www.foo.com/page.html"),
+                             history::SOURCE_BROWSED);
+  history_service()->AddPage(GURL("http://www.bar.com/"),
+                             history::SOURCE_BROWSED);
+  history_service()->AddPage(GURL("http://www.bar.com/other_page.html"),
+                             history::SOURCE_BROWSED);
+  history_service()->AddPage(GURL("http://www.baz.com/"),
+                             history::SOURCE_BROWSED);
+
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/");
   request.set_client_score(0.5);
-
-  browse_info_->url = GURL("http://www.foo.com/");
-  browse_info_->referrer = GURL("http://google.com/");
-  browse_info_->transition =
-      PageTransition::LINK | PageTransition::FORWARD_BACK;
+  NavigateAndCommit(GURL("http://www.foo.com/"),
+                    GURL("http://google.com/"),
+                    PageTransition::AUTO_BOOKMARK |
+                    PageTransition::FORWARD_BACK);
 
   EXPECT_TRUE(ExtractFeatures(&request));
   std::map<std::string, double> features;
   GetFeatureMap(request, &features);
 
-  EXPECT_EQ("http://google.com/", request.referrer_url());
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s=%s",
+                                  features::kReferrer,
+                                  "http://google.com/")]);
   EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
-  EXPECT_EQ(0.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(2.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(1.0, features[features::kIsFirstNavigation]);
 
   request.Clear();
-  request.set_url("http://www.foo.com/");
+  request.set_url("http://www.foo.com/page.html");
   request.set_client_score(0.5);
+  NavigateAndCommit(GURL("http://www.foo.com/page.html"),
+                    GURL("http://www.foo.com"),
+                    PageTransition::TYPED |
+                    PageTransition::CHAIN_START |
+                    PageTransition::CLIENT_REDIRECT);
 
-  browse_info_->referrer = GURL("https://bankofamerica.com/");
-  browse_info_->transition =
-      PageTransition::TYPED | PageTransition::FORWARD_BACK;
+  EXPECT_TRUE(ExtractFeatures(&request));
+  features.clear();
+  GetFeatureMap(request, &features);
+
+  EXPECT_EQ(1,
+            features[StringPrintf("%s=%s",
+                                  features::kReferrer,
+                                  "http://www.foo.com/")]);
+  EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
+  EXPECT_EQ(1.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s=%s",
+                                  features::kHostPrefix,
+                                  features::kReferrer,
+                                  "http://google.com/")]);
+  EXPECT_EQ(2.0,
+            features[StringPrintf("%s%s",
+                                  features::kHostPrefix,
+                                  features::kPageTransitionType)]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s",
+                                  features::kHostPrefix,
+                                  features::kIsFirstNavigation)]);
+  // Make sure that we aren't adding redirect features since we are the first
+  // redirect in a chain.
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kPageTransitionType)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kIsFirstNavigation)));
+
+  request.Clear();
+  request.set_url("http://www.bar.com/");
+  request.set_client_score(0.5);
+  NavigateAndCommit(GURL("http://www.bar.com/"),
+                    GURL("http://www.foo.com/page.html"),
+                    PageTransition::LINK |
+                    PageTransition::CHAIN_END |
+                    PageTransition::CLIENT_REDIRECT);
+
+  EXPECT_TRUE(ExtractFeatures(&request));
+  features.clear();
+  GetFeatureMap(request, &features);
+
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s=%s",
+                                  features::kReferrer,
+                                  "http://www.foo.com/page.html")]);
+  EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
+  EXPECT_EQ(0.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s=%s",
+                                  features::kRedirectPrefix,
+                                  features::kReferrer,
+                                  "http://www.foo.com/")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s",
+                                  features::kRedirectPrefix,
+                                  features::kPageTransitionType)]);
+  EXPECT_EQ(0.0,
+            features[StringPrintf("%s%s",
+                                  features::kRedirectPrefix,
+                                  features::kIsFirstNavigation)]);
+  // Should not have host features.
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kHostPrefix,
+                                        features::kPageTransitionType)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kHostPrefix,
+                                        features::kIsFirstNavigation)));
+
+  request.Clear();
+  request.set_url("http://www.bar.com/other_page.html");
+  request.set_client_score(0.5);
+  NavigateAndCommit(GURL("http://www.bar.com/other_page.html"),
+                    GURL("http://www.bar.com/"),
+                    PageTransition::LINK);
+
+  EXPECT_TRUE(ExtractFeatures(&request));
+  features.clear();
+  GetFeatureMap(request, &features);
+
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s=%s",
+                                  features::kReferrer,
+                                  "http://www.bar.com/")]);
+  EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
+  EXPECT_EQ(0.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s%s=%s",
+                                  features::kHostPrefix,
+                                  features::kRedirectPrefix,
+                                  features::kReferrer,
+                                  "http://www.foo.com/")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s%s",
+                                  features::kHostPrefix,
+                                  features::kRedirectPrefix,
+                                  features::kPageTransitionType)]);
+  EXPECT_EQ(0.0,
+            features[StringPrintf("%s%s%s",
+                                  features::kHostPrefix,
+                                  features::kRedirectPrefix,
+                                  features::kIsFirstNavigation)]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s=%s",
+                                  features::kHostPrefix,
+                                  features::kReferrer,
+                                  "http://www.foo.com/page.html")]);
+  EXPECT_EQ(0.0,
+            features[StringPrintf("%s%s",
+                                  features::kHostPrefix,
+                                  features::kPageTransitionType)]);
+  EXPECT_EQ(0.0,
+            features[StringPrintf("%s%s",
+                                  features::kHostPrefix,
+                                  features::kIsFirstNavigation)]);
+  // Should not have redirect features.
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kPageTransitionType)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kIsFirstNavigation)));
+  request.Clear();
+  request.set_url("http://www.baz.com/");
+  request.set_client_score(0.5);
+  NavigateAndCommit(GURL("http://www.baz.com"),
+                    GURL("https://bankofamerica.com"),
+                    PageTransition::GENERATED);
+
   browse_info_->ips.insert("193.5.163.8");
   browse_info_->ips.insert("23.94.78.1");
-
   EXPECT_CALL(*service_, IsBadIpAddress("193.5.163.8")).WillOnce(Return(true));
   EXPECT_CALL(*service_, IsBadIpAddress("23.94.78.1")).WillOnce(Return(false));
 
@@ -242,9 +425,26 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   features.clear();
   GetFeatureMap(request, &features);
 
-  EXPECT_FALSE(request.has_referrer_url());
   EXPECT_EQ(1.0, features[features::kHasSSLReferrer]);
-  EXPECT_EQ(1.0, features[features::kPageTransitionType]);
+  EXPECT_EQ(5.0, features[features::kPageTransitionType]);
+  // Should not have redirect or host features.
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kPageTransitionType)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kRedirectPrefix,
+                                        features::kIsFirstNavigation)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kHostPrefix,
+                                        features::kPageTransitionType)));
+  EXPECT_EQ(0U,
+            features.count(StringPrintf("%s%s",
+                                        features::kHostPrefix,
+                                        features::kIsFirstNavigation)));
+  EXPECT_EQ(5.0, features[features::kPageTransitionType]);
   EXPECT_EQ(1.0, features[std::string(features::kBadIpFetch) + "193.5.163.8"]);
   EXPECT_FALSE(features.count(std::string(features::kBadIpFetch) +
                               "23.94.78.1"));

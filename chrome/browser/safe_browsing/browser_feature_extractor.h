@@ -21,8 +21,6 @@
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
 #include "content/browser/cancelable_request.h"
-#include "content/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 
 class HistoryService;
 class TabContents;
@@ -32,17 +30,6 @@ class ClientPhishingRequest;
 class ClientSideDetectionService;
 
 struct BrowseInfo {
-  // The URL that is being classified.  This is redundant information but
-  // we keep it around to verify that the URL that comes back from the
-  // renderer is unchanged.
-  GURL url;
-
-  // The referrer URL.
-  GURL referrer;
-
-  // How did we get to the URL?
-  PageTransition::Type transition;
-
   // List of IPv4 and IPv6 addresses from which content was requested
   // while browsing to the |url|.
   std::set<std::string> ips;
@@ -85,10 +72,20 @@ extern const char kFirstHttpsHostVisitMoreThan24hAgo[];
 ////////////////////////////////////////////////////
 // Browse features.
 ////////////////////////////////////////////////////
+// Note that these features may have the following prefixes appended to them
+// that tell for which page type the feature pertains.
+extern const char kHostPrefix[];
+extern const char kRedirectPrefix[];
+
+// Referrer
+extern const char kReferrer[];
 // True if the referrer was stripped because it is an SSL referrer.
 extern const char kHasSSLReferrer[];
 // Stores the page transition.  See: PageTransition.  We strip the qualifier.
 extern const char kPageTransitionType[];
+// True if this navigation is the first for this tab.
+extern const char kIsFirstNavigation[];
+
 // Resource was fetched from a known bad IP address.
 extern const char kBadIpFetch[];
 }  // namespace features
