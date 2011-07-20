@@ -502,6 +502,9 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
+// Enables TLS origin bound certificate extension.
+const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
+
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
 
