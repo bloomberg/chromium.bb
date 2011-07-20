@@ -168,6 +168,7 @@ extern const char kEnableScreenLock[];
 extern const char kShowPlanNotifications[];
 extern const char kShow3gPromoNotification[];
 extern const char kLastUsedFileBrowserHandlers[];
+extern const char kUseSharedProxies[];
 #endif
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -27,9 +28,44 @@ static const char kProxySocks[]          = "cros.session.proxy.socks";
 static const char kProxySocksPort[]      = "cros.session.proxy.socksport";
 static const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
 
+static const char* const kProxySettings[] = {
+  kProxyPacUrl,
+  kProxySingleHttp,
+  kProxySingleHttpPort,
+  kProxyHttpUrl,
+  kProxyHttpPort,
+  kProxyHttpsUrl,
+  kProxyHttpsPort,
+  kProxyType,
+  kProxySingle,
+  kProxyFtpUrl,
+  kProxyFtpPort,
+  kProxySocks,
+  kProxySocksPort,
+  kProxyIgnoreList,
+};
+
 //------------------ ProxyCrosSettingsProvider: public methods -----------------
 
 ProxyCrosSettingsProvider::ProxyCrosSettingsProvider() { }
+
+void ProxyCrosSettingsProvider::SetCurrentNetwork(const std::string& network) {
+  if (!GetConfigService()->UISetCurrentNetwork(network))
+    return;
+  for (size_t i = 0; i < arraysize(kProxySettings); ++i)
+    CrosSettings::Get()->FireObservers(kProxySettings[i]);
+}
+
+void ProxyCrosSettingsProvider::MakeActiveNetworkCurrent() {
+  if (!GetConfigService()->UIMakeActiveNetworkCurrent())
+    return;
+  for (size_t i = 0; i < arraysize(kProxySettings); ++i)
+    CrosSettings::Get()->FireObservers(kProxySettings[i]);
+}
+
+bool ProxyCrosSettingsProvider::IsUsingSharedProxies() const {
+  return GetConfigService()->use_shared_proxies();
+}
 
 void ProxyCrosSettingsProvider::DoSet(const std::string& path,
                                       Value* in_value) {
@@ -38,9 +74,6 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
   }
 
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
-  // Don't persist settings to device for guest session.
-  config_service->UISetPersistToDevice(
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession));
   // Retrieve proxy config.
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
@@ -200,29 +233,31 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
                                     Value** out_value) const {
   bool found = false;
   bool managed = false;
-  Value* data;
+  Value* data = NULL;
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
   if (path == kProxyPacUrl) {
-    // For auto-detect mode, there should be no pac url.
-    // For pac-script mode, there should be a pac url that is taking effect.
-    // For manual modes, the pac url, if previously cached, will be disabled.
-    if (config.mode !=
-            chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT &&
+    // Only show pacurl for pac-script mode.
+    if (config.mode ==
+            chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
       data = Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
-      found = true;
     }
+    found = true;
   } else if (path == kProxySingleHttp) {
-    found = (data = CreateServerHostValue(config.single_proxy));
+    data = CreateServerHostValue(config.single_proxy);
+    found = true;
   } else if (path == kProxySingleHttpPort) {
-    found = (data = CreateServerPortValue(config.single_proxy));
+    data = CreateServerPortValue(config.single_proxy);
+    found = true;
   } else if (path == kProxyHttpUrl) {
-    found = (data = CreateServerHostValue(config.http_proxy));
+    data = CreateServerHostValue(config.http_proxy);
+    found = true;
   } else if (path == kProxyHttpsUrl) {
-    found = (data = CreateServerHostValue(config.https_proxy));
+    data = CreateServerHostValue(config.https_proxy);
+    found = true;
   } else if (path == kProxyType) {
     if (config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT ||
@@ -243,17 +278,23 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
     found = true;
   } else if (path == kProxyFtpUrl) {
-    found = (data = CreateServerHostValue(config.ftp_proxy));
+    data = CreateServerHostValue(config.ftp_proxy);
+    found = true;
   } else if (path == kProxySocks) {
-    found = (data = CreateServerHostValue(config.socks_proxy));
+    data = CreateServerHostValue(config.socks_proxy);
+    found = true;
   } else if (path == kProxyHttpPort) {
-    found = (data = CreateServerPortValue(config.http_proxy));
+    data = CreateServerPortValue(config.http_proxy);
+    found = true;
   } else if (path == kProxyHttpsPort) {
-    found = (data = CreateServerPortValue(config.https_proxy));
+    data = CreateServerPortValue(config.https_proxy);
+    found = true;
   } else if (path == kProxyFtpPort) {
-    found = (data = CreateServerPortValue(config.ftp_proxy));
+    data = CreateServerPortValue(config.ftp_proxy);
+    found = true;
   } else if (path == kProxySocksPort) {
-    found = (data = CreateServerPortValue(config.socks_proxy));
+    data = CreateServerPortValue(config.socks_proxy);
+    found = true;
   } else if (path == kProxyIgnoreList) {
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
@@ -265,6 +306,8 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
   }
   if (found) {
     DictionaryValue* dict = new DictionaryValue;
+    if (!data)
+      data = Value::CreateStringValue("");
     dict->Set("value", data);
     dict->SetBoolean("managed", managed);
     *out_value = dict;

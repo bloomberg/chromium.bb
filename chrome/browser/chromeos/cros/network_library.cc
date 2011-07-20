@@ -163,6 +163,7 @@ const char kEntriesProperty[] = "Entries";
 const char kDevicesProperty[] = "Devices";
 const char kProviderProperty[] = "Provider";
 const char kHostProperty[] = "Host";
+const char* kProxyConfigProperty = "ProxyConfig";
 
 // Flimflam property names for SIMLock status.
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
@@ -516,6 +517,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PROFILE,
   PROPERTY_INDEX_PROFILES,
   PROPERTY_INDEX_PROVIDER,
+  PROPERTY_INDEX_PROXY_CONFIG,
   PROPERTY_INDEX_ROAMING_STATE,
   PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
@@ -609,6 +611,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kProfileProperty, PROPERTY_INDEX_PROFILE },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
   { kProviderProperty, PROPERTY_INDEX_PROVIDER },
+  { kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
   { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
   { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { kScanningProperty, PROPERTY_INDEX_SCANNING },
@@ -1212,6 +1215,8 @@ bool Network::ParseValue(int index, const Value* value) {
       return value->GetAsBoolean(&auto_connect_);
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
       return value->GetAsBoolean(&save_credentials_);
+    case PROPERTY_INDEX_PROXY_CONFIG:
+      return value->GetAsString(&proxy_config_);
     default:
       break;
   }
@@ -1383,6 +1388,10 @@ std::string Network::GetErrorString() const {
           IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
+}
+
+void Network::SetProxyConfig(const std::string& proxy_config) {
+  SetStringProperty(kProxyConfigProperty, proxy_config, &proxy_config_);
 }
 
 void Network::SendTpmPin(const std::string& tpm_pin) {
@@ -2113,7 +2122,7 @@ bool WifiNetwork::SetHexSsid(const std::string& ssid_hex) {
   // Converts ascii hex dump (eg. "49656c6c6f") to string (eg. "Hello").
   std::vector<uint8> ssid_raw;
   if (!base::HexStringToBytes(ssid_hex, &ssid_raw)) {
-    LOG(ERROR) << "Iligal hex char is found in WiFi.HexSSID.";
+    LOG(ERROR) << "Illegal hex char is found in WiFi.HexSSID.";
     ssid_raw.clear();
     return false;
   }
@@ -5120,6 +5129,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
     wifi1->set_connecting(true);
     wifi1->set_active(true);
     wifi1->set_encryption(SECURITY_NONE);
+    wifi1->set_profile_type(PROFILE_SHARED);
     AddNetwork(wifi1);
 
     WifiNetwork* wifi2 = new WifiNetwork("fw2");
@@ -5127,6 +5137,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
     wifi2->set_strength(70);
     wifi2->set_connected(false);
     wifi2->set_encryption(SECURITY_NONE);
+    wifi2->set_profile_type(PROFILE_SHARED);
     AddNetwork(wifi2);
 
     WifiNetwork* wifi3 = new WifiNetwork("fw3");
@@ -5135,6 +5146,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
     wifi3->set_connected(false);
     wifi3->set_encryption(SECURITY_WEP);
     wifi3->set_passphrase_required(true);
+    wifi3->set_profile_type(PROFILE_USER);
     AddNetwork(wifi3);
 
     WifiNetwork* wifi4 = new WifiNetwork("fw4");

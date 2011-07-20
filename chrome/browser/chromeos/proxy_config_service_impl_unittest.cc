@@ -221,7 +221,7 @@ const struct {
       NULL,                       // pac_url
       "www.google.com",           // single_uri
       NULL, NULL, NULL, NULL,     // per-proto
-      ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // bypass_rules
+      "*.google.com, *foo.com:99, 1.2.3.4:22, 127.0.0.1/8",  // bypass_rules
     },
 
     // Expected result.
@@ -251,6 +251,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
       const ProxyConfigServiceImpl::ProxyConfig& init_config) {
     // Instantiate proxy config service with |init_config|.
     config_service_ = new ProxyConfigServiceImpl(init_config);
+    config_service_->SetTesting();
   }
 
   void SetAutomaticProxy(
@@ -305,8 +306,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
         break;
     }
     if (input.bypass_rules) {
-      init_config->bypass_rules.ParseFromStringUsingSuffixMatching(
-          input.bypass_rules);
+      init_config->bypass_rules.ParseFromString(input.bypass_rules);
     }
   }
 
@@ -467,7 +467,7 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
         config_service()->UISetProxyConfigToSingleProxy(
             net::ProxyServer::FromURI(input.single_uri, MK_SCHM(HTTP)));
         if (input.bypass_rules) {
-          bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
+          bypass_rules.ParseFromString(input.bypass_rules);
           config_service()->UISetProxyConfigBypassRules(bypass_rules);
         }
         break;
@@ -489,7 +489,7 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
               net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS5)));
         }
         if (input.bypass_rules) {
-          bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
+          bypass_rules.ParseFromString(input.bypass_rules);
           config_service()->UISetProxyConfigBypassRules(bypass_rules);
         }
         break;
@@ -584,7 +584,7 @@ TEST_F(ProxyConfigServiceImplTest, ProxyChangedObserver) {
   EXPECT_TRUE(io_config.Equals(observer.config()));
 }
 
-TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
+TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserializeForNetwork) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     if (!tests[i].is_valid)
       continue;
@@ -597,11 +597,11 @@ TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
 
     // Serialize source_config into std::string.
     std::string serialized_value;
-    EXPECT_TRUE(source_config.Serialize(&serialized_value));
+    EXPECT_TRUE(source_config.SerializeForNetwork(&serialized_value));
 
     // Deserialize std:string into target_config.
     ProxyConfigServiceImpl::ProxyConfig target_config;
-    EXPECT_TRUE(target_config.Deserialize(serialized_value));
+    EXPECT_TRUE(target_config.DeserializeForNetwork(serialized_value));
 
     // Compare the configs after serialization and deserialization.
     net::ProxyConfig net_src_cfg;

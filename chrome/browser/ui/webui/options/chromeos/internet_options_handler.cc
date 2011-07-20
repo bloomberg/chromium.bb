@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -50,8 +51,8 @@
 static const char kOtherNetworksFakePath[] = "?";
 
 InternetOptionsHandler::InternetOptionsHandler()
-    : chromeos::CrosOptionsPageUIHandler(
-          new chromeos::UserCrosSettingsProvider) {
+    : chromeos::CrosOptionsPageUIHandler(NULL),
+      proxy_settings_(NULL) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
@@ -110,6 +111,10 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("buyplan_button",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_BUY_PLAN));
+
+  localized_strings->SetString("changeProxyButton",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -317,6 +322,8 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
+  localized_strings->SetString("useSharedProxies",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES));
   localized_strings->SetString("enableDataRoaming",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING));
   localized_strings->SetString("generalNetworkingTitle",
@@ -641,6 +648,11 @@ void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
 void InternetOptionsHandler::PopulateDictionaryDetails(
     const chromeos::Network* network) {
   DCHECK(network);
+  bool use_shared_proxies = false;
+  if (proxy_settings()) {
+    proxy_settings()->SetCurrentNetwork(network->service_path());
+    use_shared_proxies = proxy_settings()->IsUsingSharedProxies();
+  }
   DictionaryValue dictionary;
   std::string hardware_address;
   chromeos::NetworkIPConfigVector ipconfigs = cros_->GetIPConfigs(
@@ -668,6 +680,11 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connecting", network->connecting());
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
+  bool remembered = (network->profile_type() != chromeos::PROFILE_NONE);
+  dictionary.SetBoolean("proxyConfigurable",
+      (remembered && (network->profile_type() == chromeos::PROFILE_USER ||
+                      use_shared_proxies)) ||
+      (type == chromeos::TYPE_ETHERNET && use_shared_proxies));
 
   // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
   bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(
@@ -709,6 +726,16 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
 
   web_ui_->CallJavascriptFunction(
       "options.InternetOptions.showDetailedInfo", dictionary);
+}
+
+chromeos::ProxyCrosSettingsProvider* InternetOptionsHandler::proxy_settings() {
+  if (!proxy_settings_) {
+    proxy_settings_ = static_cast<chromeos::ProxyCrosSettingsProvider*>(
+      chromeos::CrosSettings::Get()->GetProvider("cros.session.proxy"));
+    if (!proxy_settings_)
+      NOTREACHED() << "Error getting access to proxy cros settings provider";
+  }
+  return proxy_settings_;
 }
 
 void InternetOptionsHandler::PopulateWifiDetails(
@@ -936,6 +963,7 @@ void InternetOptionsHandler::HandleVPNButtonClick(
     }
   }
 }
+
 void InternetOptionsHandler::RefreshCellularPlanCallback(
     const ListValue* args) {
   std::string service_path;

@@ -92,12 +92,6 @@ var OptionsPage = options.OptionsPage;
           chrome.send('promptForDownloadAction',
               [String($('promptForDownload').checked)]);
         };
-      } else {
-        $('proxiesConfigureButton').onclick = function(event) {
-          OptionsPage.navigateToPage('proxy');
-          chrome.send('coreOptionsUserMetricsAction',
-              ['Options_ShowProxySettings']);
-        };
       }
 
       $('sslCheckRevocation').onclick = function(event) {
@@ -218,8 +212,10 @@ var OptionsPage = options.OptionsPage;
 
   // Set the enabled state for the proxy settings button.
   AdvancedOptions.SetupProxySettingsSection = function(disabled, label) {
-    $('proxiesConfigureButton').disabled = disabled;
-    $('proxiesLabel').textContent = label;
+    if (!cr.isChromeOS) {
+      $('proxiesConfigureButton').disabled = disabled;
+      $('proxiesLabel').textContent = label;
+    }
   };
 
   // Set the checked state for the sslCheckRevocation checkbox.

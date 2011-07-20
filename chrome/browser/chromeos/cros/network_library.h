@@ -354,6 +354,8 @@ class Network {
 
   const std::string& unique_id() const { return unique_id_; }
 
+  const std::string& proxy_config() const { return proxy_config_; }
+
   void set_notify_failure(bool state) { notify_failure_ = state; }
 
   // We don't have a setter for |favorite_| because to unfavorite a network is
@@ -371,6 +373,8 @@ class Network {
 
   // Return a string representation of the error code.
   std::string GetErrorString() const;
+
+  void SetProxyConfig(const std::string& proxy_config);
 
   // Return true if the network must be in the user profile (e.g. has certs).
   virtual bool RequiresUserProfile() const;
@@ -438,6 +442,7 @@ class Network {
   bool favorite_;
   bool auto_connect_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
+  std::string proxy_config_;
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;

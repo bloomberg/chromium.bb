@@ -123,6 +123,8 @@ class Preferences : public NotificationObserver {
 
   BooleanPrefMember enable_screen_lock_;
 
+  BooleanPrefMember use_shared_proxies_;
+
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 

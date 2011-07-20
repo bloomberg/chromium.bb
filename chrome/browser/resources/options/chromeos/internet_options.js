@@ -82,6 +82,12 @@ cr.define('options', function() {
         event.target.disabled = true;
         chrome.send('disableCellular', []);
       });
+      $('change-proxy').addEventListener('click', function(event) {
+        OptionsPage.closeOverlay();
+        OptionsPage.showPageByName('proxy', false);
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ShowProxySettings']);
+      });
       $('buyplanDetails').addEventListener('click', function(event) {
         chrome.send('buyDataPlan', []);
         OptionsPage.closeOverlay();
@@ -339,6 +345,9 @@ cr.define('options', function() {
     // Hide the dhcp/static radio if needed.
     $('ipTypeDHCPDiv').hidden = !data.showStaticIPConfig;
     $('ipTypeStaticDiv').hidden = !data.showStaticIPConfig;
+
+    // Hide change-proxy-section if proxy is not configurable.
+    $('change-proxy-section').hidden = !data.proxyConfigurable;
 
     var ipConfigList = $('ipConfigList');
     ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;

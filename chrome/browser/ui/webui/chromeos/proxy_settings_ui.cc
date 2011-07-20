@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
@@ -67,7 +68,8 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 namespace chromeos {
 
 ProxySettingsUI::ProxySettingsUI(TabContents* contents)
-    : ChromeWebUI(contents) {
+    : ChromeWebUI(contents),
+      proxy_settings_(NULL) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 
@@ -101,6 +103,18 @@ void ProxySettingsUI::InitializeHandlers() {
   for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
     (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
   }
+  if (proxy_settings())
+    proxy_settings()->MakeActiveNetworkCurrent();
+}
+
+chromeos::ProxyCrosSettingsProvider* ProxySettingsUI::proxy_settings() {
+  if (!proxy_settings_) {
+    proxy_settings_ = static_cast<chromeos::ProxyCrosSettingsProvider*>(
+      chromeos::CrosSettings::Get()->GetProvider("cros.session.proxy"));
+    if (!proxy_settings_)
+      NOTREACHED() << "Error getting access to proxy cros settings provider";
+  }
+  return proxy_settings_;
 }
 
 }  // namespace chromeos

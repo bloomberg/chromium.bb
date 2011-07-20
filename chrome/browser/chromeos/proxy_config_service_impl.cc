@@ -12,8 +12,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/json_value_serializer.h"
 
 namespace em = enterprise_management;
 
@@ -191,50 +193,7 @@ ProxyConfigServiceImpl::ProxyConfig::ManualProxy*
   return NULL;
 }
 
-bool ProxyConfigServiceImpl::ProxyConfig::Serialize(std::string* output) {
-  em::DeviceProxySettingsProto proxy_proto;
-  switch (mode) {
-    case MODE_DIRECT: {
-      proxy_proto.set_proxy_mode(ProxyPrefs::kDirectProxyModeName);
-      break;
-    }
-    case MODE_AUTO_DETECT: {
-      proxy_proto.set_proxy_mode(ProxyPrefs::kAutoDetectProxyModeName);
-      break;
-    }
-    case MODE_PAC_SCRIPT: {
-      proxy_proto.set_proxy_mode(ProxyPrefs::kPacScriptProxyModeName);
-      if (!automatic_proxy.pac_url.is_empty())
-        proxy_proto.set_proxy_pac_url(automatic_proxy.pac_url.spec());
-      break;
-    }
-    case MODE_SINGLE_PROXY: {
-      proxy_proto.set_proxy_mode(ProxyPrefs::kFixedServersProxyModeName);
-      if (single_proxy.server.is_valid())
-        proxy_proto.set_proxy_server(single_proxy.server.ToURI());
-      break;
-    }
-    case MODE_PROXY_PER_SCHEME: {
-      proxy_proto.set_proxy_mode(ProxyPrefs::kFixedServersProxyModeName);
-      std::string spec;
-      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
-      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
-      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
-      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
-      if (!spec.empty())
-        proxy_proto.set_proxy_server(spec);
-      break;
-    }
-    default: {
-      NOTREACHED() << "Unrecognized proxy config mode";
-      break;
-    }
-  }
-  proxy_proto.set_proxy_bypass_list(bypass_rules.ToString());
-  return proxy_proto.SerializeToString(output);
-}
-
-bool ProxyConfigServiceImpl::ProxyConfig::Deserialize(
+bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForDevice(
     const std::string& input) {
   em::DeviceProxySettingsProto proxy_proto;
   if (!proxy_proto.ParseFromString(input))
@@ -291,6 +250,52 @@ bool ProxyConfigServiceImpl::ProxyConfig::Deserialize(
   return true;
 }
 
+bool ProxyConfigServiceImpl::ProxyConfig::SerializeForNetwork(
+    std::string* output) {
+  scoped_ptr<DictionaryValue> proxy_dict(ToPrefProxyConfig());
+  if (!proxy_dict.get())
+    return false;
+  JSONStringValueSerializer serializer(output);
+  return serializer.Serialize(*proxy_dict.get());
+}
+
+bool ProxyConfigServiceImpl::ProxyConfig::DeserializeForNetwork(
+    const std::string& input) {
+  JSONStringValueSerializer serializer(input);
+  scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
+  if (!value.get() || value->GetType() != Value::TYPE_DICTIONARY)
+    return false;
+  DictionaryValue* proxy_dict = static_cast<DictionaryValue*>(value.get());
+  return FromPrefProxyConfig(proxy_dict);
+}
+
+bool ProxyConfigServiceImpl::ProxyConfig::Equals(
+    const ProxyConfig& other) const {
+  if (mode != other.mode)
+    return false;
+  switch (mode) {
+    case MODE_DIRECT:
+    case MODE_AUTO_DETECT:
+      return true;
+    case MODE_PAC_SCRIPT:
+      return automatic_proxy.pac_url == other.automatic_proxy.pac_url;
+    case MODE_SINGLE_PROXY:
+      return single_proxy.server == other.single_proxy.server &&
+          bypass_rules.Equals(other.bypass_rules);
+    case MODE_PROXY_PER_SCHEME:
+      return http_proxy.server == other.http_proxy.server &&
+          https_proxy.server == other.https_proxy.server &&
+          ftp_proxy.server == other.ftp_proxy.server &&
+          socks_proxy.server == other.socks_proxy.server &&
+          bypass_rules.Equals(other.bypass_rules);
+    default: {
+      NOTREACHED() << "Unrecognized proxy config mode";
+      break;
+    }
+  }
+  return false;
+}
+
 std::string ProxyConfigServiceImpl::ProxyConfig::ToString() const {
   return ProxyConfigToString(*this);
 }
@@ -315,74 +320,245 @@ void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
   *spec += server.ToURI();
 }
 
+DictionaryValue* ProxyConfigServiceImpl::ProxyConfig::ToPrefProxyConfig() {
+  switch (mode) {
+    case MODE_DIRECT: {
+      return ProxyConfigDictionary::CreateDirect();
+    }
+    case MODE_AUTO_DETECT: {
+      return ProxyConfigDictionary::CreateAutoDetect();
+    }
+    case MODE_PAC_SCRIPT: {
+      return ProxyConfigDictionary::CreatePacScript(
+          automatic_proxy.pac_url.spec(), false);
+    }
+    case MODE_SINGLE_PROXY: {
+      std::string spec;
+      if (single_proxy.server.is_valid())
+        spec = single_proxy.server.ToURI();
+      return ProxyConfigDictionary::CreateFixedServers(
+           spec, bypass_rules.ToString());
+    }
+    case MODE_PROXY_PER_SCHEME: {
+      std::string spec;
+      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
+      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
+      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
+      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
+      return ProxyConfigDictionary::CreateFixedServers(
+        spec, bypass_rules.ToString());
+    }
+    default:
+      break;
+  }
+  NOTREACHED() << "Unrecognized proxy config mode for preference";
+  return NULL;
+}
+
+bool ProxyConfigServiceImpl::ProxyConfig::FromPrefProxyConfig(
+    const DictionaryValue* dict) {
+  ProxyConfigDictionary proxy_dict(dict);
+
+  *this = ProxyConfigServiceImpl::ProxyConfig();  // Reset to default.
+
+  ProxyPrefs::ProxyMode proxy_mode;
+  if (!proxy_dict.GetMode(&proxy_mode)) {
+    // Fall back to system settings if the mode preference is invalid.
+    return false;
+  }
+
+  switch (proxy_mode) {
+    case ProxyPrefs::MODE_SYSTEM:
+      // Use system settings, so we shouldn't use |this| proxy config.
+      return false;
+    case ProxyPrefs::MODE_DIRECT:
+      // Ignore all the other proxy config preferences if the use of a proxy
+      // has been explicitly disabled.
+      return true;
+    case ProxyPrefs::MODE_AUTO_DETECT:
+      mode = MODE_AUTO_DETECT;
+      return true;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      std::string proxy_pac;
+      if (!proxy_dict.GetPacUrl(&proxy_pac)) {
+        LOG(ERROR) << "Proxy settings request PAC script but do not specify "
+                   << "its URL. Falling back to direct connection.";
+        return true;
+      }
+      GURL proxy_pac_url(proxy_pac);
+      if (!proxy_pac_url.is_valid()) {
+        LOG(ERROR) << "Invalid proxy PAC url: " << proxy_pac;
+        return true;
+      }
+      mode = MODE_PAC_SCRIPT;
+      automatic_proxy.pac_url = proxy_pac_url;
+      return true;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      std::string proxy_server;
+      if (!proxy_dict.GetProxyServer(&proxy_server)) {
+        LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
+                   << "specify their URLs. Falling back to direct connection.";
+        return true;
+      }
+      net::ProxyConfig::ProxyRules proxy_rules;
+      proxy_rules.ParseFromString(proxy_server);
+      if (proxy_rules.type == net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY) {
+        mode = MODE_SINGLE_PROXY;
+        single_proxy.server = proxy_rules.single_proxy;
+      } else if (proxy_rules.type ==
+                 net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME) {
+        mode = MODE_PROXY_PER_SCHEME;
+        http_proxy.server = proxy_rules.proxy_for_http;
+        https_proxy.server = proxy_rules.proxy_for_https;
+        ftp_proxy.server = proxy_rules.proxy_for_ftp;
+        socks_proxy.server = proxy_rules.fallback_proxy;
+      } else {
+        LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
+                   << "have valid proxy rules type. "
+                   << "Falling back to direct connection.";
+        return true;
+      }
+
+      std::string proxy_bypass;
+      if (proxy_dict.GetBypassList(&proxy_bypass)) {
+        bypass_rules.ParseFromString(proxy_bypass);
+      }
+      return true;
+    }
+    case ProxyPrefs::kModeCount: {
+      // Fall through to NOTREACHED().
+    }
+  }
+  NOTREACHED() << "Unknown proxy mode, falling back to system settings.";
+  return false;
+}
+
 //------------------- ProxyConfigServiceImpl: public methods -------------------
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl()
-    : can_post_task_(false),
-      config_availability_(net::ProxyConfigService::CONFIG_PENDING),
-      persist_to_device_(true),
-      persist_to_device_pending_(false) {
+    : testing_(false),
+      can_post_task_(false),
+      config_availability_(net::ProxyConfigService::CONFIG_UNSET),
+      use_shared_proxies_(false) {
   // Start async fetch of proxy config from settings persisted on device.
-  // TODO(kuan): retrieve config from policy and owner and merge them
-  bool use_default = true;
   if (CrosLibrary::Get()->EnsureLoaded()) {
     retrieve_property_op_ = SignedSettings::CreateRetrievePropertyOp(
         kSettingProxyEverywhere, this);
     if (retrieve_property_op_) {
       retrieve_property_op_->Execute();
       VLOG(1) << "Start retrieving proxy setting from device";
-      use_default = false;
     } else {
       VLOG(1) << "Fail to retrieve proxy setting from device";
     }
   }
-  if (use_default)
-    config_availability_ = net::ProxyConfigService::CONFIG_UNSET;
+
+  NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
+  OnActiveNetworkChanged(network_lib, network_lib->active_network());
+  network_lib->AddNetworkManagerObserver(this);
+
   can_post_task_ = true;
 }
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(const ProxyConfig& init_config)
-    : can_post_task_(true),
+    : testing_(false),
+      can_post_task_(true),
       config_availability_(net::ProxyConfigService::CONFIG_VALID),
-      persist_to_device_(false),
-      persist_to_device_pending_(false) {
-  reference_config_ = init_config;
+      use_shared_proxies_(false) {
+  active_config_ = init_config;
   // Update the IO-accessible copy in |cached_config_| as well.
-  cached_config_ = reference_config_;
+  cached_config_ = active_config_;
 }
 
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
+  NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+  if (netlib) {
+    netlib->RemoveNetworkManagerObserver(this);
+    netlib->RemoveObserverForAllNetworks(this);
+  }
 }
 
 void ProxyConfigServiceImpl::UIGetProxyConfig(ProxyConfig* config) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
   // Simply returns the copy on the UI thread.
-  *config = reference_config_;
+  *config = current_ui_config_;
+}
+
+bool ProxyConfigServiceImpl::UISetCurrentNetwork(
+    const std::string& current_network) {
+  // Should be called from UI thread.
+  CheckCurrentlyOnUIThread();
+  if (current_ui_network_ == current_network)
+    return false;
+  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+      current_network);
+  if (!network) {
+    LOG(ERROR) << "can't find requested network " << current_network;
+    return false;
+  }
+  current_ui_network_ = current_network;
+  current_ui_config_ = ProxyConfig();
+  if (!network->proxy_config().empty())
+    current_ui_config_.DeserializeForNetwork(network->proxy_config());
+  VLOG(1) << "current ui network: "
+          << (network->name().empty() ? current_ui_network_ : network->name())
+          << ", proxy mode: " << current_ui_config_.mode;
+  return true;
+}
+
+bool ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
+  // Should be called from UI thread.
+  CheckCurrentlyOnUIThread();
+  if (current_ui_network_ == active_network_)
+    return false;
+  current_ui_network_ = active_network_;
+  current_ui_config_ = active_config_;
+  VLOG(1) << "current ui network: " << current_ui_network_
+          << ", proxy mode: " << current_ui_config_.mode;
+  return true;
+}
+
+void ProxyConfigServiceImpl::UISetUseSharedProxies(bool use_shared) {
+  // Should be called from UI thread.
+  CheckCurrentlyOnUIThread();
+  if (use_shared_proxies_ == use_shared)
+    return;
+  use_shared_proxies_ = use_shared;
+  VLOG(1) << "use_shared_proxies = " << use_shared_proxies_;
+  if (active_network_.empty())
+    return;
+  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+      active_network_);
+  if (!network) {
+    LOG(ERROR) << "can't find requested network " << active_network_;
+    return;
+  }
+  DetermineConfigFromNetwork(network);
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToDirect() {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  reference_config_.mode = ProxyConfig::MODE_DIRECT;
-  OnUISetProxyConfig(persist_to_device_);
+  current_ui_config_.mode = ProxyConfig::MODE_DIRECT;
+  OnUISetProxyConfig();
   return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToAutoDetect() {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  reference_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
-  OnUISetProxyConfig(persist_to_device_);
+  current_ui_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
+  OnUISetProxyConfig();
   return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  reference_config_.mode = ProxyConfig::MODE_PAC_SCRIPT;
-  reference_config_.automatic_proxy.pac_url = pac_url;
-  OnUISetProxyConfig(persist_to_device_);
+  current_ui_config_.mode = ProxyConfig::MODE_PAC_SCRIPT;
+  current_ui_config_.automatic_proxy.pac_url = pac_url;
+  OnUISetProxyConfig();
   return true;
 }
 
@@ -390,9 +566,9 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
     const net::ProxyServer& server) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  reference_config_.mode = ProxyConfig::MODE_SINGLE_PROXY;
-  reference_config_.single_proxy.server = server;
-  OnUISetProxyConfig(persist_to_device_);
+  current_ui_config_.mode = ProxyConfig::MODE_SINGLE_PROXY;
+  current_ui_config_.single_proxy.server = server;
+  OnUISetProxyConfig();
   return true;
 }
 
@@ -400,14 +576,14 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
     const std::string& scheme, const net::ProxyServer& server) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  ProxyConfig::ManualProxy* proxy = reference_config_.MapSchemeToProxy(scheme);
+  ProxyConfig::ManualProxy* proxy = current_ui_config_.MapSchemeToProxy(scheme);
   if (!proxy) {
     NOTREACHED() << "Cannot set proxy: invalid scheme [" << scheme << "]";
     return false;
   }
-  reference_config_.mode = ProxyConfig::MODE_PROXY_PER_SCHEME;
+  current_ui_config_.mode = ProxyConfig::MODE_PROXY_PER_SCHEME;
   proxy->server = server;
-  OnUISetProxyConfig(persist_to_device_);
+  OnUISetProxyConfig();
   return true;
 }
 
@@ -415,15 +591,15 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
     const net::ProxyBypassRules& bypass_rules) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  if (reference_config_.mode != ProxyConfig::MODE_SINGLE_PROXY &&
-      reference_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
+  if (current_ui_config_.mode != ProxyConfig::MODE_SINGLE_PROXY &&
+      current_ui_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
     NOTREACHED();
     VLOG(1) << "Cannot set bypass rules for proxy mode ["
-             << reference_config_.mode << "]";
+             << current_ui_config_.mode << "]";
     return false;
   }
-  reference_config_.bypass_rules = bypass_rules;
-  OnUISetProxyConfig(persist_to_device_);
+  current_ui_config_.bypass_rules = bypass_rules;
+  OnUISetProxyConfig();
   return true;
 }
 
@@ -445,70 +621,70 @@ net::ProxyConfigService::ConfigAvailability
     ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
   // Should be called from IO thread.
   CheckCurrentlyOnIOThread();
-  if (config_availability_ == net::ProxyConfigService::CONFIG_VALID)
+  if (config_availability_ == net::ProxyConfigService::CONFIG_VALID) {
+    VLOG(1) << "returning proxy mode=" << cached_config_.mode;
     cached_config_.ToNetProxyConfig(net_config);
-
+  }
   return config_availability_;
-}
-
-void ProxyConfigServiceImpl::OnSettingsOpCompleted(
-    SignedSettings::ReturnCode code,
-    bool value) {
-  if (SignedSettings::SUCCESS == code)
-    VLOG(1) << "Stored proxy setting to device";
-  else
-    LOG(WARNING) << "Error storing proxy setting to device";
-  store_property_op_ = NULL;
-  if (persist_to_device_pending_)
-    PersistConfigToDevice();
 }
 
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     SignedSettings::ReturnCode code,
     std::string value) {
   retrieve_property_op_ = NULL;
-  if (SignedSettings::SUCCESS == code) {
-    VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
-    if (reference_config_.Deserialize(value)) {
-      IOSetProxyConfig(reference_config_,
-                       net::ProxyConfigService::CONFIG_VALID);
-      return;
-    } else {
-      LOG(WARNING) << "Error deserializing device's proxy setting";
-    }
-  } else {
+  if (code != SignedSettings::SUCCESS) {
     LOG(WARNING) << "Error retrieving proxy setting from device";
+    device_config_.clear();
+    return;
   }
+  VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
+  ProxyConfig device_config;
+  if (!device_config.DeserializeForDevice(value) ||
+      !device_config.SerializeForNetwork(&device_config_)) {
+    LOG(WARNING) << "Can't deserialize device setting or serialize for network";
+    device_config_.clear();
+    return;
+  }
+  if (!active_network_.empty()) {
+    VLOG(1) << "try migrating device config to " << active_network_;
+    SetProxyConfigForNetwork(active_network_, device_config_, true);
+  }
+}
 
-  // Update the configuration state on the IO thread.
-  IOSetProxyConfig(reference_config_, net::ProxyConfigService::CONFIG_UNSET);
+void ProxyConfigServiceImpl::OnNetworkManagerChanged(
+    NetworkLibrary* network_lib) {
+  VLOG(1) << "OnNetworkManagerChanged";
+  OnActiveNetworkChanged(network_lib, network_lib->active_network());
+}
+
+void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
+    const Network* network) {
+  if (!network)
+    return;
+  VLOG(1) << "OnNetworkChanged: "
+          << (network->name().empty() ? network->service_path() :
+                                        network->name());
+  // We only care about active network.
+  if (network == network_lib->active_network())
+    OnActiveNetworkChanged(network_lib, network);
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------
 
-void ProxyConfigServiceImpl::PersistConfigToDevice() {
-  DCHECK(!store_property_op_);
-  persist_to_device_pending_ = false;
-  std::string value;
-  if (!reference_config_.Serialize(&value)) {
-    LOG(WARNING) << "Error serializing proxy config";
+void ProxyConfigServiceImpl::OnUISetProxyConfig() {
+  if (testing_) {
+    active_config_ = current_ui_config_;
+    IOSetProxyConfig(active_config_, net::ProxyConfigService::CONFIG_VALID);
     return;
   }
-  store_property_op_ = SignedSettings::CreateStorePropertyOp(
-      kSettingProxyEverywhere, value, this);
-  store_property_op_->Execute();
-  VLOG(1) << "Start storing proxy setting to device, value=" << value;
-}
-
-void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
-  IOSetProxyConfig(reference_config_, net::ProxyConfigService::CONFIG_VALID);
-  if (persist_to_device && CrosLibrary::Get()->EnsureLoaded()) {
-    if (store_property_op_) {
-      persist_to_device_pending_ = true;
-      VLOG(1) << "Pending persisting proxy setting to device";
-    } else {
-      PersistConfigToDevice();
-    }
+  if (current_ui_network_.empty())
+    return;
+  // Update config to flimflam.
+  std::string value;
+  if (current_ui_config_.SerializeForNetwork(&value)) {
+    VLOG(1) << "set proxy (mode=" << current_ui_config_.mode
+            << ") for " << current_ui_network_;
+    SetProxyConfigForNetwork(current_ui_network_, value, false);
   }
 }
 
@@ -528,7 +704,13 @@ void ProxyConfigServiceImpl::IOSetProxyConfig(
   }
 
   // Now guaranteed to be on the correct thread.
-  VLOG(1) << "Proxy configuration changed";
+
+  if (config_availability_ == new_availability &&
+      cached_config_.Equals(new_config))
+    return;
+
+  VLOG(1) << "Proxy changed: mode=" << new_config.mode
+          << ", avail=" << new_availability;
   cached_config_ = new_config;
   config_availability_ = new_availability;
   // Notify observers of new proxy config.
@@ -540,6 +722,81 @@ void ProxyConfigServiceImpl::IOSetProxyConfig(
   }
   FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
                     OnProxyConfigChanged(net_config, config_availability_));
+}
+
+void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
+    const Network* active_network) {
+  std::string new_network;
+  if (active_network)
+    new_network = active_network->service_path();
+  if (active_network_ == new_network)
+    return;
+
+  // If there was a previous active network, remove it as observer.
+  if (!active_network_.empty())
+    network_lib->RemoveNetworkObserver(active_network_, this);
+
+  active_network_ = new_network;
+
+  if (active_network_.empty()) {
+    VLOG(1) << "new active network: empty";
+    active_config_ = ProxyConfig();
+    IOSetProxyConfig(active_config_, net::ProxyConfigService::CONFIG_UNSET);
+    return;
+  }
+
+  VLOG(1) << "new active network: path=" << active_network->service_path()
+          << ", name=" << active_network->name()
+          << ", profile=" << active_network->profile_path()
+          << ", proxy=" << active_network->proxy_config();
+
+  // Register observer for new network.
+  network_lib->AddNetworkObserver(active_network_, this);
+
+  // If necessary, migrate config to flimflam.
+  if (active_network->proxy_config().empty() && !device_config_.empty()) {
+    VLOG(1) << "try migrating device config to " << active_network_;
+    SetProxyConfigForNetwork(active_network_, device_config_, true);
+  } else {
+    DetermineConfigFromNetwork(active_network);
+  }
+}
+
+void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
+    const std::string& network_path, const std::string& value,
+    bool only_set_if_empty) {
+  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+      network_path);
+  if (!network) {
+    NOTREACHED() << "can't find requested network " << network_path;
+    return;
+  }
+  if (!only_set_if_empty || network->proxy_config().empty()) {
+    network->SetProxyConfig(value);
+    VLOG(1) << "set proxy for "
+            << (network->name().empty() ? network_path : network->name())
+            << ", value=" << value;
+    if (network_path == active_network_)
+      DetermineConfigFromNetwork(network);
+  }
+}
+
+void ProxyConfigServiceImpl::DetermineConfigFromNetwork(
+    const Network* network) {
+  active_config_ = ProxyConfig();  // Default is DIRECT mode (i.e. no proxy).
+  net::ProxyConfigService::ConfigAvailability available =
+      net::ProxyConfigService::CONFIG_UNSET;
+  // If network is shared but user doesn't use shared proxies, use direct mode.
+  if (network->profile_type() == PROFILE_SHARED && !use_shared_proxies_) {
+    VLOG(1) << "shared network and !use_shared_proxies, using direct";
+    available = net::ProxyConfigService::CONFIG_VALID;
+  } else if (!network->proxy_config().empty() &&
+             active_config_.DeserializeForNetwork(network->proxy_config())) {
+    // Network is private or shared with user using shared proxies.
+    VLOG(1) << "using proxy of network, mode=" << active_config_.mode;
+    available = net::ProxyConfigService::CONFIG_VALID;
+  }
+  IOSetProxyConfig(active_config_, available);
 }
 
 void ProxyConfigServiceImpl::CheckCurrentlyOnIOThread() {

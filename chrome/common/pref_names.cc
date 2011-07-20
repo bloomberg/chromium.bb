@@ -489,6 +489,10 @@ const char kShow3gPromoNotification[] =
 // Map of timestamps of the last used file browser tasks.
 const char kLastUsedFileBrowserHandlers[] =
     "filebrowser.handler.lastused";
+
+// A boolean pref that uses shared proxies.
+const char kUseSharedProxies[] = "settings.use_shared_proxies";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

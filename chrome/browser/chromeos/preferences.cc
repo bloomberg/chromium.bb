@@ -9,12 +9,14 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/system/touchpad_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -186,6 +188,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   // The map of timestamps of the last used file browser handlers.
   prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
                                 PrefService::UNSYNCABLE_PREF);
+
+  // Use shared proxies default to off.
+  prefs->RegisterBooleanPref(prefs::kUseSharedProxies,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -253,6 +260,8 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
+
+  use_shared_proxies_.Init(prefs::kUseSharedProxies, prefs, this);
 
   // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
@@ -439,6 +448,11 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
     CrosLibrary::Get()->GetPowerLibrary()->EnableScreenLock(
         enable_screen_lock_.GetValue());
+  }
+
+  if (!pref_name || *pref_name == prefs::kUseSharedProxies) {
+    g_browser_process->chromeos_proxy_config_service_impl()->
+        UISetUseSharedProxies(use_shared_proxies_.GetValue());
   }
 }
 

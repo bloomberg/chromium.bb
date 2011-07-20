@@ -83,8 +83,10 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON },
     { "proxiesLabel",
       IDS_OPTIONS_PROXIES_LABEL },
+#if !defined(OS_CHROMEOS)
     { "proxiesConfigureButton",
       IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
+#endif
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
     { "sslGroupDescription",

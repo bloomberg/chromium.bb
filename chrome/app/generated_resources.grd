@@ -10627,6 +10627,9 @@ ls' lab.">
       <message name="IDS_OPTIONS_SETTINGS_ADD_VPN" desc="In the settings tab, the text on the button to add a private network.">
         Add private network
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES" desc="In the settings tab, the text next to the checkbox for using shared proxies.">
+        Use shared proxies
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="In the settings tab, the text next to the checkbox for data roaming.">
         Allow mobile data roaming
       </message>
@@ -10851,6 +10854,9 @@ ls' lab.">
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
         DNS server:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="For ethernet and remembered services, change proxy button text in chrome:settings/internet.">
+        Change proxy settings...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
         Hardware address:

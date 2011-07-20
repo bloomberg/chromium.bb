@@ -98,7 +98,7 @@ cr.define('options', function() {
      * @param {Event} e Click Event.
      */
     toggleSingle_: function(e) {
-      if($('proxyAllProtocols').value) {
+      if ($('proxyAllProtocols').checked) {
         $('multiProxy').style.display = 'none';
         $('singleProxy').style.display = 'block';
       } else {

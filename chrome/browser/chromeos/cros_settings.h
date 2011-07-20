@@ -69,6 +69,9 @@ class CrosSettings : public base::NonThreadSafe {
   void AddSettingsObserver(const char* path, NotificationObserver* obs);
   void RemoveSettingsObserver(const char* path, NotificationObserver* obs);
 
+  // Returns the provider that handles settings with the path or prefix.
+  CrosSettingsProvider* GetProvider(const std::string& path) const;
+
  private:
   // List of ChromeOS system settings providers.
   std::vector<CrosSettingsProvider*> providers_;
@@ -82,7 +85,6 @@ class CrosSettings : public base::NonThreadSafe {
 
   CrosSettings();
   ~CrosSettings();
-  CrosSettingsProvider* GetProvider(const std::string& path) const;
   friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
