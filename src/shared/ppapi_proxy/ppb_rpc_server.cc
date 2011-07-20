@@ -1058,6 +1058,67 @@ static void PPB_InputEvent_ClearInputEventRequestDispatcher(
   );
 }
 
+static void PPB_InputEvent_CreateMouseInputEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbInputEventRpcServer::PPB_InputEvent_CreateMouseInputEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.dval,
+      inputs[3]->u.ival,
+      inputs[4]->u.ival,
+      inputs[5]->u.ival,
+      inputs[6]->u.ival,
+      inputs[7]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_InputEvent_CreateWheelInputEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbInputEventRpcServer::PPB_InputEvent_CreateWheelInputEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval,
+      inputs[2]->u.ival,
+      inputs[3]->u.dval,
+      inputs[4]->u.dval,
+      inputs[5]->u.dval,
+      inputs[6]->u.dval,
+      inputs[7]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_InputEvent_CreateKeyboardInputEventDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbInputEventRpcServer::PPB_InputEvent_CreateKeyboardInputEvent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.dval,
+      inputs[3]->u.ival,
+      inputs[4]->u.ival,
+      inputs[5]->u.count, inputs[5]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_Instance_BindGraphicsDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1770,7 +1831,7 @@ static void PPB_Widget_HandleEventDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[1]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -1907,6 +1968,9 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_ImageData_Describe:i:Chii", PPB_ImageData_DescribeDispatcher },
   { "PPB_InputEvent_RequestInputEvents:iii:i", PPB_InputEvent_RequestInputEventsDispatcher },
   { "PPB_InputEvent_ClearInputEventRequest:ii:", PPB_InputEvent_ClearInputEventRequestDispatcher },
+  { "PPB_InputEvent_CreateMouseInputEvent:iidiiiii:i", PPB_InputEvent_CreateMouseInputEventDispatcher },
+  { "PPB_InputEvent_CreateWheelInputEvent:ididdddi:i", PPB_InputEvent_CreateWheelInputEventDispatcher },
+  { "PPB_InputEvent_CreateKeyboardInputEvent:iidiiC:i", PPB_InputEvent_CreateKeyboardInputEventDispatcher },
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:i:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Messaging_PostMessage:iC:", PPB_Messaging_PostMessageDispatcher },
@@ -1954,7 +2018,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_URLResponseInfo_GetBodyAsFileRef:i:i", PPB_URLResponseInfo_GetBodyAsFileRefDispatcher },
   { "PPB_Widget_IsWidget:i:i", PPB_Widget_IsWidgetDispatcher },
   { "PPB_Widget_Paint:iCi:i", PPB_Widget_PaintDispatcher },
-  { "PPB_Widget_HandleEvent:iC:i", PPB_Widget_HandleEventDispatcher },
+  { "PPB_Widget_HandleEvent:ii:i", PPB_Widget_HandleEventDispatcher },
   { "PPB_Widget_GetLocation:i:Ci", PPB_Widget_GetLocationDispatcher },
   { "PPB_Widget_SetLocation:iC:", PPB_Widget_SetLocationDispatcher },
   { "PPB_Zoom_ZoomChanged:id:", PPB_Zoom_ZoomChangedDispatcher },

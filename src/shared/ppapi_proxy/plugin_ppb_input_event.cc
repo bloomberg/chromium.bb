@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
@@ -20,8 +22,11 @@ namespace {
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::GetMainSrpcChannel;
+using ppapi_proxy::kInvalidResourceId;
+using ppapi_proxy::kMaxVarSize;
 using ppapi_proxy::PluginInputEvent;
 using ppapi_proxy::PluginResource;
+using ppapi_proxy::Serialize;
 
 // InputEvent ------------------------------------------------------------------
 
@@ -125,6 +130,37 @@ uint32_t GetModifiers(PP_Resource event) {
 
 // Mouse -----------------------------------------------------------------------
 
+PP_Resource CreateMouseInputEvent(PP_Instance instance,
+                                  PP_InputEvent_Type type,
+                                  PP_TimeTicks time_stamp,
+                                  uint32_t modifiers,
+                                  PP_InputEvent_MouseButton mouse_button,
+                                  PP_Point mouse_position,
+                                  int32_t click_count) {
+  DebugPrintf("PPB_InputEvent::CreateMouseInputEvent: instance="
+              "%"NACL_PRIu32", type=%d, time_stamp=%lf, modifiers="
+              "%"NACL_PRIu32", mouse_button=%d, x=%"NACL_PRId32", y="
+              "%"NACL_PRId32", click_count=%d\n",
+              instance, type, time_stamp, modifiers, mouse_button,
+              mouse_position.x, mouse_position.y, click_count);
+  PP_Resource resource_id = kInvalidResourceId;
+  NaClSrpcError srpc_result =
+      PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
+          GetMainSrpcChannel(),
+          instance,
+          static_cast<int32_t>(type),
+          time_stamp,
+          static_cast<int32_t>(modifiers),
+          static_cast<int32_t>(mouse_button),
+          mouse_position.x,
+          mouse_position.y,
+          click_count,
+          &resource_id);
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return resource_id;
+  return kInvalidResourceId;
+}
+
 PP_Bool IsMouseInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;
@@ -152,6 +188,36 @@ int32_t GetMouseClickCount(PP_Resource mouse_event) {
 
 // Wheel -----------------------------------------------------------------------
 
+PP_Resource CreateWheelInputEvent(PP_Instance instance,
+                                  PP_TimeTicks time_stamp,
+                                  uint32_t modifiers,
+                                  PP_FloatPoint wheel_delta,
+                                  PP_FloatPoint wheel_ticks,
+                                  PP_Bool scroll_by_page) {
+  DebugPrintf("PPB_InputEvent::CreateWheelInputEvent: instance="
+              "%"NACL_PRIu32", time_stamp=%lf, modifiers="
+              "%"NACL_PRIu32", delta.x=%d, delta.y=%d, ticks.x=%d, ticks.y=%d, "
+              "scroll_by_page=%s\n",
+              instance, time_stamp, modifiers, wheel_delta.x, wheel_delta.y,
+              wheel_ticks.x, wheel_ticks.y, scroll_by_page ? "true" : "false");
+  PP_Resource resource_id = kInvalidResourceId;
+  NaClSrpcError srpc_result =
+      PpbInputEventRpcClient::PPB_InputEvent_CreateWheelInputEvent(
+          GetMainSrpcChannel(),
+          instance,
+          static_cast<double>(time_stamp),
+          static_cast<int32_t>(modifiers),
+          wheel_delta.x,
+          wheel_delta.y,
+          wheel_ticks.x,
+          wheel_ticks.y,
+          static_cast<int32_t>(scroll_by_page),
+          &resource_id);
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return resource_id;
+  return kInvalidResourceId;
+}
+
 PP_Bool IsWheelInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;
@@ -169,6 +235,37 @@ PP_FloatPoint GetWheelTicks(PP_Resource wheel_event) {
 
 PP_Bool GetWheelScrollByPage(PP_Resource wheel_event) {
   IMPLEMENT_RESOURCE_THUNK(GetWheelScrollByPage, wheel_event, PP_FALSE);
+}
+
+PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     uint32_t key_code,
+                                     struct PP_Var character_text) {
+  DebugPrintf("PPB_InputEvent::CreateKeyboardInputEvent: instance="
+              "%"NACL_PRIu32", type=%d, time_stamp=%lf, modifiers="
+              "%"NACL_PRIu32", key_code=%"NACL_PRIu32"\n",
+              instance, type, time_stamp, modifiers, key_code);
+  // Serialize the character_text Var.
+  uint32_t text_size = kMaxVarSize;
+  nacl::scoped_array<char> text_bytes(Serialize(&character_text, 1,
+                                                &text_size));
+  PP_Resource resource_id = kInvalidResourceId;
+  NaClSrpcError srpc_result =
+      PpbInputEventRpcClient::PPB_InputEvent_CreateKeyboardInputEvent(
+          GetMainSrpcChannel(),
+          instance,
+          static_cast<int32_t>(type),
+          static_cast<double>(time_stamp),
+          static_cast<int32_t>(modifiers),
+          static_cast<int32_t>(key_code),
+          text_size,
+          text_bytes.get(),
+          &resource_id);
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return resource_id;
+  return kInvalidResourceId;
 }
 
 PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
@@ -210,6 +307,7 @@ const PPB_InputEvent* PluginInputEvent::GetInterface() {
 // static
 const PPB_MouseInputEvent* PluginInputEvent::GetMouseInterface() {
   static const PPB_MouseInputEvent mouse_input_event_interface = {
+    CreateMouseInputEvent,
     IsMouseInputEvent,
     ::GetMouseButton,
     ::GetMousePosition,
@@ -221,6 +319,7 @@ const PPB_MouseInputEvent* PluginInputEvent::GetMouseInterface() {
 // static
 const PPB_WheelInputEvent* PluginInputEvent::GetWheelInterface() {
   static const PPB_WheelInputEvent wheel_input_event_interface = {
+    CreateWheelInputEvent,
     IsWheelInputEvent,
     ::GetWheelDelta,
     ::GetWheelTicks,
@@ -232,6 +331,7 @@ const PPB_WheelInputEvent* PluginInputEvent::GetWheelInterface() {
 // static
 const PPB_KeyboardInputEvent* PluginInputEvent::GetKeyboardInterface() {
   static const PPB_KeyboardInputEvent keyboard_input_event_interface = {
+    CreateKeyboardInputEvent,
     IsKeyboardInputEvent,
     ::GetKeyCode,
     ::GetCharacterText

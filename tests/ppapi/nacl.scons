@@ -27,14 +27,6 @@ cpp_headers = ['native_client/src/third_party/ppapi/' +
 # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
 cpp_dev_headers = gyp_extract.GypTargetSources(
     ppapi_cpp_gypi, 'ppapi_cpp_objects', 'cpp/dev/[^/]*\.h')
-# If this test includes file-related dev headers, it gets conflicting names
-# because pp_file_info.h and pp_file_info_dev.h use the same names.
-# file_system_dev.h and friends are set to be removed for m14, so this is a
-# temporary problem.
-# TODO(sanga): Remove these special cases.
-cpp_dev_headers.remove('cpp/dev/file_io_dev.h');
-cpp_dev_headers.remove('cpp/dev/file_ref_dev.h');
-cpp_dev_headers.remove('cpp/dev/file_system_dev.h');
 cpp_dev_headers = ['native_client/src/third_party/ppapi/' +
     header_file for header_file in cpp_dev_headers]
 

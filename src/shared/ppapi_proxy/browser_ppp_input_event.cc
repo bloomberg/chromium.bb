@@ -95,10 +95,11 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
   if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
-  PP_Bool handled_bool = static_cast<PP_Bool>(handled);
   // The 'handled' int should only ever have a value matching one of PP_FALSE
   // or PP_TRUE. Otherwise, there's an error in the proxy.
-  DCHECK((handled_bool == PP_FALSE) || (handled_bool == PP_TRUE));
+  DCHECK((handled == static_cast<int32_t>(PP_FALSE) ||
+         (handled == static_cast<int32_t>(PP_TRUE))));
+  PP_Bool handled_bool = static_cast<PP_Bool>(handled);
   return handled_bool;
 }
 

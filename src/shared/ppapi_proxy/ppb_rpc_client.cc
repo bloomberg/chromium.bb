@@ -1107,6 +1107,86 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_ClearInputEventRequest(
   return retval;
 }
 
+NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t type,
+    double time_stamp,
+    int32_t modifiers,
+    int32_t mouse_button,
+    int32_t mouse_position_x,
+    int32_t mouse_position_y,
+    int32_t click_count,
+    PP_Resource* resource_id)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_InputEvent_CreateMouseInputEvent:iidiiiii:i",
+      instance,
+      type,
+      time_stamp,
+      modifiers,
+      mouse_button,
+      mouse_position_x,
+      mouse_position_y,
+      click_count,
+      resource_id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateWheelInputEvent(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    double time_stamp,
+    int32_t modifiers,
+    double wheel_delta_x,
+    double wheel_delta_y,
+    double wheel_ticks_x,
+    double wheel_ticks_y,
+    int32_t scroll_by_page,
+    PP_Resource* resource_id)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_InputEvent_CreateWheelInputEvent:ididdddi:i",
+      instance,
+      time_stamp,
+      modifiers,
+      wheel_delta_x,
+      wheel_delta_y,
+      wheel_ticks_x,
+      wheel_ticks_y,
+      scroll_by_page,
+      resource_id
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateKeyboardInputEvent(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t type,
+    double time_stamp,
+    int32_t modifiers,
+    int32_t key_code,
+    nacl_abi_size_t character_text_bytes, char* character_text,
+    PP_Resource* resource_id)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_InputEvent_CreateKeyboardInputEvent:iidiiC:i",
+      instance,
+      type,
+      time_stamp,
+      modifiers,
+      key_code,
+      character_text_bytes, character_text,
+      resource_id
+  );
+  return retval;
+}
+
 NaClSrpcError PpbInstanceRpcClient::PPB_Instance_BindGraphics(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -1826,14 +1906,14 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_Paint(
 NaClSrpcError PpbWidgetRpcClient::PPB_Widget_HandleEvent(
     NaClSrpcChannel* channel,
     PP_Resource widget,
-    nacl_abi_size_t event_bytes, char* event,
+    PP_Resource event,
     int32_t* handled)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Widget_HandleEvent:iC:i",
+      "PPB_Widget_HandleEvent:ii:i",
       widget,
-      event_bytes, event,
+      event,
       handled
   );
   return retval;

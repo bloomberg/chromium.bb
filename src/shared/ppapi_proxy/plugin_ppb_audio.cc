@@ -18,7 +18,6 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/src/third_party/ppapi/c/ppb_audio.h"
 #include "native_client/src/third_party/ppapi/c/ppb_audio_config.h"
-#include "native_client/src/third_party/ppapi/cpp/common.h"
 #include "native_client/src/third_party/ppapi/cpp/module_impl.h"
 #include "srpcgen/ppb_rpc.h"
 #include "srpcgen/ppp_rpc.h"

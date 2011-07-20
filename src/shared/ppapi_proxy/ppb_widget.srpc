@@ -23,7 +23,7 @@
           },
           {'name': 'PPB_Widget_HandleEvent',
            'inputs': [['widget', 'PP_Resource'],
-                      ['event', 'char[]'],           # PP_InputEvent
+                      ['event', 'PP_Resource'],           # PP_InputEvent
                      ],
            'outputs': [['handled', 'int32_t'],       # PP_Bool
                       ]

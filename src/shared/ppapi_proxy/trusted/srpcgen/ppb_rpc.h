@@ -543,6 +543,40 @@ class PpbInputEventRpcServer {
       NaClSrpcClosure* done,
       PP_Instance instance,
       int32_t event_classes);
+  static void PPB_InputEvent_CreateMouseInputEvent(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t type,
+      double time_stamp,
+      int32_t modifiers,
+      int32_t mouse_button,
+      int32_t mouse_position_x,
+      int32_t mouse_position_y,
+      int32_t click_count,
+      PP_Resource* resource_id);
+  static void PPB_InputEvent_CreateWheelInputEvent(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      double time_stamp,
+      int32_t modifiers,
+      double wheel_delta_x,
+      double wheel_delta_y,
+      double wheel_ticks_x,
+      double wheel_ticks_y,
+      int32_t scroll_by_page,
+      PP_Resource* resource_id);
+  static void PPB_InputEvent_CreateKeyboardInputEvent(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t type,
+      double time_stamp,
+      int32_t modifiers,
+      int32_t key_code,
+      nacl_abi_size_t character_text_bytes, char* character_text,
+      PP_Resource* resource_id);
 
  private:
   PpbInputEventRpcServer();
@@ -892,7 +926,7 @@ class PpbWidgetRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource widget,
-      nacl_abi_size_t event_bytes, char* event,
+      PP_Resource event,
       int32_t* handled);
   static void PPB_Widget_GetLocation(
       NaClSrpcRpc* rpc,

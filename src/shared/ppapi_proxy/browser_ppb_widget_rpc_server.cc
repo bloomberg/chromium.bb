@@ -59,15 +59,11 @@ void PpbWidgetRpcServer::PPB_Widget_HandleEvent(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource widget,
-    nacl_abi_size_t event_size, char* event,
+    PP_Resource pp_event,
     int32_t* handled) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  if (event_size != sizeof(struct PP_InputEvent))
-    return;
-  struct PP_InputEvent* pp_event =
-      reinterpret_cast<struct PP_InputEvent*>(event);
   *handled = PPBWidgetInterface()->HandleEvent(widget, pp_event);
 
   DebugPrintf("PPB_Widget::HandleEvent: widget=%"NACL_PRIu32"\n",

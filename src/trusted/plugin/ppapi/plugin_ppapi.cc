@@ -706,7 +706,7 @@ bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
   if (ppapi_proxy_ == NULL) {
     return false;  // event is not handled here.
   } else {
-    bool handled = pp::PPBoolToBool(
+    bool handled = PP_ToBool(
         ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
             pp_instance(), &event));
     PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (old) (handled=%d)\n",
@@ -721,7 +721,7 @@ bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
   if ((ppapi_proxy_ == NULL) || !(ppapi_proxy_->ppp_input_event_interface())) {
     return false;  // event is not handled here.
   } else {
-    bool handled = pp::PPBoolToBool(
+    bool handled = PP_ToBool(
         ppapi_proxy_->ppp_input_event_interface()->HandleInputEvent(
             pp_instance(), event.pp_resource()));
     PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (handled=%d)\n", handled));
@@ -740,7 +740,7 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
     // perform requests on it later.
     return true;
   } else {
-    return pp::PPBoolToBool(
+    return PP_ToBool(
         ppapi_proxy_->ppp_instance_interface()->HandleDocumentLoad(
             pp_instance(), url_loader.pp_resource()));
   }

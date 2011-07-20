@@ -68,20 +68,17 @@ PP_Bool Paint(
   return PP_FALSE;
 }
 
-PP_Bool HandleEvent(
-    PP_Resource widget,
-    const struct PP_InputEvent* event) {
-  DebugPrintf("PPB_Widget::HandleEvent: "
-              "event type=%"NACL_PRIu32"\n", event->type);
+PP_Bool HandleEvent(PP_Resource widget, PP_Resource event) {
+  DebugPrintf("PPB_Widget::HandleEvent: widget=%"NACL_PRId32", "
+              "event=%"NACL_PRId32"\n",
+              widget, event);
 
   int32_t handled = 0;
   NaClSrpcError srpc_result =
-      PpbWidgetRpcClient::PPB_Widget_HandleEvent(
-          GetMainSrpcChannel(),
-          widget,
-          kPPInputEventBytes,
-          reinterpret_cast<char*>(const_cast<struct PP_InputEvent*>(event)),
-          &handled);
+      PpbWidgetRpcClient::PPB_Widget_HandleEvent(GetMainSrpcChannel(),
+                                                 widget,
+                                                 event,
+                                                 &handled);
 
   DebugPrintf("PPB_Widget::HandleEvent: %s\n",
               NaClSrpcErrorString(srpc_result));
