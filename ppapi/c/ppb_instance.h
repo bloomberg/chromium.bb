@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_instance.idl modified Mon Jul 18 12:54:08 2011. */
+/* From ppb_instance.idl modified Wed Jul 20 11:13:48 2011. */
 
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
@@ -37,15 +37,14 @@
 
 struct PPB_Instance {
   /**
-   * BindGraphics() binds the given graphics as the current drawing surface.
-   * The contents of this device is what will be displayed in the module's
+   * BindGraphics() binds the given graphics as the current display surface.
+   * The contents of this device is what will be displayed in the instance's
    * area on the web page. The device must be a 2D or a 3D device.
    *
    * You can pass a <code>NULL</code> resource as the device parameter to
    * unbind all devices from the given instance. The instance will then appear
    * transparent. Re-binding the same device will return <code>PP_TRUE</code>
-   * and will do nothing. Unbinding a device will drop any pending flush
-   * callbacks.
+   * and will do nothing.
    *
    * Any previously-bound device will be released. It is an error to bind
    * a device when it is already bound to another instance. If you want
@@ -65,11 +64,11 @@ struct PPB_Instance {
    */
   PP_Bool (*BindGraphics)(PP_Instance instance, PP_Resource device);
   /**
-   * IsFullFrame() determines if the module instance is full-frame (repr).
-   * Such a module represents the entire document in a frame rather than an
-   * embedded resource. This can happen if the user does a top-level
-   * navigation or the page specifies an iframe to a resource with a MIME
-   * type registered by the module.
+   * IsFullFrame() determines if the instance is full-frame. Such an instance
+   * represents the entire document in a frame rather than an embedded
+   * resource. This can happen if the user does a top-level navigation or the
+   * page specifies an iframe to a resource with a MIME type registered by the
+   * module.
    *
    * @param[in] instance A <code>PP_Instance</code> indentifying one instance
    * of a module.

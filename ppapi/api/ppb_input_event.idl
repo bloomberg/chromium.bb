@@ -8,7 +8,7 @@
  */
 
 label Chrome {
-  M14 = 0.1
+  M14 = 1.0
 };
 
 /**
@@ -59,7 +59,7 @@ enum PP_InputEvent_Type {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_WHEEL class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEWHEEL  = 5,
+  PP_INPUTEVENT_TYPE_WHEEL  = 5,
 
   /**
    * Notification that a key transitioned from "up" to "down".
@@ -196,7 +196,7 @@ enum PP_InputEvent_Class {
   PP_INPUTEVENT_CLASS_IME = 1 << 4
 };
 
-[version=0.1, macro="PPB_INPUT_EVENT_INTERFACE"]
+[version=1.0, macro="PPB_INPUT_EVENT_INTERFACE"]
 interface PPB_InputEvent {
   /**
    * Request that input events corresponding to the given input events are
@@ -341,8 +341,22 @@ interface PPB_InputEvent {
   uint32_t GetModifiers([in] PP_Resource event);
 };
 
-[version=0.1, macro="PPB_MOUSE_INPUT_EVENT_INTERFACE"]
+[version=1.0, macro="PPB_MOUSE_INPUT_EVENT_INTERFACE"]
 interface PPB_MouseInputEvent {
+  /**
+   * Creates a mouse input event with the given parameters. Normally you will
+   * get a mouse event passed through the HandleInputEvent and will not need
+   * to create them, but some applications may want to create their own for
+   * internal use. The type must be one of the mouse event types.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers,
+                     [in] PP_InputEvent_MouseButton mouse_button,
+                     [in] PP_Point mouse_position,
+                     [in] int32_t click_count);
+
   /**
    * Determines if a resource is a mouse event.
    *
@@ -357,7 +371,7 @@ interface PPB_MouseInputEvent {
    * value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and leave
    * events, and for all non-mouse events.
    */
-  PP_InputEvent_MouseButton GetMouseButton([in] PP_Resource mouse_event);
+  PP_InputEvent_MouseButton GetButton([in] PP_Resource mouse_event);
 
   /**
    * Returns the pixel location of a mouse input event.
@@ -366,16 +380,29 @@ interface PPB_MouseInputEvent {
    * left of the instance receiving the event. These values can be negative for
    * mouse drags. The return value will be (0, 0) for non-mouse events.
    */
-  [returnByValue] PP_Point GetMousePosition([in] PP_Resource mouse_event);
+  [returnByValue] PP_Point GetPosition([in] PP_Resource mouse_event);
 
   /**
    * TODO(brettw) figure out exactly what this means.
    */
-  int32_t GetMouseClickCount([in] PP_Resource mouse_event);
+  int32_t GetClickCount([in] PP_Resource mouse_event);
 };
 
-[version=0.1, macro="PPB_WHEEL_INPUT_EVENT_INTERFACE"]
+[version=1.0, macro="PPB_WHEEL_INPUT_EVENT_INTERFACE"]
 interface PPB_WheelInputEvent {
+  /**
+   * Creates a wheel input event with the given parameters. Normally you will
+   * get a wheel event passed through the HandleInputEvent and will not need
+   * to create them, but some applications may want to create their own for
+   * internal use.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers,
+                     [in] PP_FloatPoint wheel_delta,
+                     [in] PP_FloatPoint wheel_ticks,
+                     [in] PP_Bool scroll_by_page);
+
   /**
    * Determines if a resource is a wheel event.
    *
@@ -404,7 +431,7 @@ interface PPB_WheelInputEvent {
    * possible, for example, on some trackpads and newer mice that don't have
    * "clicks".
    */
-  PP_FloatPoint GetWheelDelta([in] PP_Resource wheel_event);
+  PP_FloatPoint GetDelta([in] PP_Resource wheel_event);
 
   /**
    * The number of "clicks" of the scroll wheel that have produced the
@@ -424,7 +451,7 @@ interface PPB_WheelInputEvent {
    * reaches positive or negative one. This should represent a similar amount
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
-  PP_FloatPoint GetWheelTicks([in] PP_Resource wheel_event);
+  PP_FloatPoint GetTicks([in] PP_Resource wheel_event);
 
   /**
    * Indicates if the scroll delta x/y indicates pages or lines to
@@ -436,8 +463,21 @@ interface PPB_WheelInputEvent {
   PP_Bool GetScrollByPage([in] PP_Resource wheel_event);
 };
 
-[version=0.1, macro="PPB_KEYBOARD_INPUT_EVENT_INTERFACE"]
+[version=1.0, macro="PPB_KEYBOARD_INPUT_EVENT_INTERFACE"]
 interface PPB_KeyboardInputEvent {
+  /**
+   * Creates a keyboard input event with the given parameters. Normally you
+   * will get a keyboard event passed through the HandleInputEvent and will not
+   * need to create them, but some applications may want to create their own
+   * for internal use. The type must be one of the keyboard event types.
+   */
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers,
+                     [in] uint32_t key_code,
+                     [in] PP_Var character_text);
+
   /**
    * Determines if a resource is a keyboard event.
    *

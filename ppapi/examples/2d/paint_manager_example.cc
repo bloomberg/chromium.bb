@@ -50,18 +50,18 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
         pp::MouseInputEvent mouse_event(event);
         // Update the square on a mouse down.
-        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-          UpdateSquare(static_cast<int>(mouse_event.GetMousePosition().x()),
-                       static_cast<int>(mouse_event.GetMousePosition().y()));
+        if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+          UpdateSquare(static_cast<int>(mouse_event.GetPosition().x()),
+                       static_cast<int>(mouse_event.GetPosition().y()));
         }
         return true;
       }
       case PP_INPUTEVENT_TYPE_MOUSEMOVE: {
         pp::MouseInputEvent mouse_event(event);
         // Update the square on a drag.
-        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-          UpdateSquare(static_cast<int>(mouse_event.GetMousePosition().x()),
-                       static_cast<int>(mouse_event.GetMousePosition().y()));
+        if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+          UpdateSquare(static_cast<int>(mouse_event.GetPosition().x()),
+                       static_cast<int>(mouse_event.GetPosition().y()));
         }
         return true;
       }

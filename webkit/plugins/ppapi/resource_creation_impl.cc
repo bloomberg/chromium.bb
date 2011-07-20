@@ -237,7 +237,7 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
     PP_TimeTicks time_stamp,
     uint32_t modifiers,
     PP_InputEvent_MouseButton mouse_button,
-    PP_Point mouse_position,
+    const PP_Point* mouse_position,
     int32_t click_count) {
   if (type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
       type != PP_INPUTEVENT_TYPE_MOUSEUP &&
@@ -251,7 +251,7 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
   data.event_time_stamp = time_stamp;
   data.event_modifiers = modifiers;
   data.mouse_button = mouse_button;
-  data.mouse_position = mouse_position;
+  data.mouse_position = *mouse_position;
   data.mouse_click_count = click_count;
 
   return PPB_InputEvent_Impl::Create(instance_, data);
@@ -296,15 +296,15 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
     PP_Instance instance,
     PP_TimeTicks time_stamp,
     uint32_t modifiers,
-    PP_FloatPoint wheel_delta,
-    PP_FloatPoint wheel_ticks,
+    const PP_FloatPoint* wheel_delta,
+    const PP_FloatPoint* wheel_ticks,
     PP_Bool scroll_by_page) {
   InputEventData data;
-  data.event_type = PP_INPUTEVENT_TYPE_MOUSEWHEEL;
+  data.event_type = PP_INPUTEVENT_TYPE_WHEEL;
   data.event_time_stamp = time_stamp;
   data.event_modifiers = modifiers;
-  data.wheel_delta = wheel_delta;
-  data.wheel_ticks = wheel_ticks;
+  data.wheel_delta = *wheel_delta;
+  data.wheel_ticks = *wheel_ticks;
   data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
 
   return PPB_InputEvent_Impl::Create(instance_, data);

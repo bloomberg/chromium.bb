@@ -96,26 +96,25 @@ MouseInputEvent::MouseInputEvent(Instance* instance,
     return;
   PassRefFromConstructor(get_interface<PPB_MouseInputEvent>()->Create(
       instance->pp_instance(), type, time_stamp, modifiers, mouse_button,
-      mouse_position, click_count));
+      &mouse_position.pp_point(), click_count));
 }
 
-PP_InputEvent_MouseButton MouseInputEvent::GetMouseButton() const {
+PP_InputEvent_MouseButton MouseInputEvent::GetButton() const {
   if (!has_interface<PPB_MouseInputEvent>())
     return PP_INPUTEVENT_MOUSEBUTTON_NONE;
-  return get_interface<PPB_MouseInputEvent>()->GetMouseButton(pp_resource());
+  return get_interface<PPB_MouseInputEvent>()->GetButton(pp_resource());
 }
 
-Point MouseInputEvent::GetMousePosition() const {
+Point MouseInputEvent::GetPosition() const {
   if (!has_interface<PPB_MouseInputEvent>())
     return Point();
-  return get_interface<PPB_MouseInputEvent>()->GetMousePosition(pp_resource());
+  return get_interface<PPB_MouseInputEvent>()->GetPosition(pp_resource());
 }
 
-int32_t MouseInputEvent::GetMouseClickCount() const {
+int32_t MouseInputEvent::GetClickCount() const {
   if (!has_interface<PPB_MouseInputEvent>())
     return 0;
-  return get_interface<PPB_MouseInputEvent>()->GetMouseClickCount(
-      pp_resource());
+  return get_interface<PPB_MouseInputEvent>()->GetClickCount(pp_resource());
 }
 
 // WheelInputEvent -------------------------------------------------------------
@@ -144,20 +143,21 @@ WheelInputEvent::WheelInputEvent(Instance* instance,
   if (!has_interface<PPB_WheelInputEvent>())
     return;
   PassRefFromConstructor(get_interface<PPB_WheelInputEvent>()->Create(
-      instance->pp_instance(), time_stamp, modifiers, wheel_delta,
-      wheel_ticks, PP_FromBool(scroll_by_page)));
+      instance->pp_instance(), time_stamp, modifiers,
+      &wheel_delta.pp_float_point(), &wheel_ticks.pp_float_point(),
+      PP_FromBool(scroll_by_page)));
 }
 
-FloatPoint WheelInputEvent::GetWheelDelta() const {
+FloatPoint WheelInputEvent::GetDelta() const {
   if (!has_interface<PPB_WheelInputEvent>())
     return FloatPoint();
-  return get_interface<PPB_WheelInputEvent>()->GetWheelDelta(pp_resource());
+  return get_interface<PPB_WheelInputEvent>()->GetDelta(pp_resource());
 }
 
-FloatPoint WheelInputEvent::GetWheelTicks() const {
+FloatPoint WheelInputEvent::GetTicks() const {
   if (!has_interface<PPB_WheelInputEvent>())
     return FloatPoint();
-  return get_interface<PPB_WheelInputEvent>()->GetWheelTicks(pp_resource());
+  return get_interface<PPB_WheelInputEvent>()->GetTicks(pp_resource());
 }
 
 bool WheelInputEvent::GetScrollByPage() const {

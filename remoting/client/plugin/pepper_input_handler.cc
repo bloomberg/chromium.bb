@@ -39,8 +39,8 @@ void PepperInputHandler::HandleCharacterEvent(const KeyboardInputEvent& event) {
 }
 
 void PepperInputHandler::HandleMouseMoveEvent(const MouseInputEvent& event) {
-  gfx::Point p(static_cast<int>(event.GetMousePosition().x()),
-               static_cast<int>(event.GetMousePosition().y()));
+  gfx::Point p(static_cast<int>(event.GetPosition().x()),
+               static_cast<int>(event.GetPosition().y()));
   // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
   // which may be different from the host desktop's co-ordinate system.
   p = view_->ConvertScreenToHost(p);
@@ -50,11 +50,11 @@ void PepperInputHandler::HandleMouseMoveEvent(const MouseInputEvent& event) {
 void PepperInputHandler::HandleMouseButtonEvent(bool button_down,
                                                 const MouseInputEvent& event) {
   MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
-  if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
     button = MouseEvent::BUTTON_LEFT;
-  } else if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
+  } else if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
     button = MouseEvent::BUTTON_MIDDLE;
-  } else if (event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
+  } else if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
     button = MouseEvent::BUTTON_RIGHT;
   }
 

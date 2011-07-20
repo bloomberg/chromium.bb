@@ -3,13 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppp_instance.idl modified Wed Jul 20 11:17:15 2011. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
@@ -17,8 +16,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_time.h"
-#include "ppapi/c/ppb_input_event.h"
 
 /**
  * @file

@@ -85,7 +85,7 @@ PP_Resource CreateMouseInputEvent(PP_Instance instance,
                                   PP_TimeTicks time_stamp,
                                   uint32_t modifiers,
                                   PP_InputEvent_MouseButton mouse_button,
-                                  PP_Point mouse_position,
+                                  const PP_Point* mouse_position,
                                   int32_t click_count) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
@@ -141,8 +141,8 @@ const PPB_MouseInputEvent g_ppb_mouse_input_event_thunk = {
 PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                   PP_TimeTicks time_stamp,
                                   uint32_t modifiers,
-                                  PP_FloatPoint wheel_delta,
-                                  PP_FloatPoint wheel_ticks,
+                                  const PP_FloatPoint* wheel_delta,
+                                  const PP_FloatPoint* wheel_ticks,
                                   PP_Bool scroll_by_page) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
@@ -156,7 +156,7 @@ PP_Bool IsWheelInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
-  return PP_FromBool(type == PP_INPUTEVENT_TYPE_MOUSEWHEEL);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_WHEEL);
 }
 
 PP_FloatPoint GetWheelDelta(PP_Resource wheel_event) {

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Tue Jul 12 15:22:36 2011. */
+/* From ppb_input_event.idl modified Wed Jul 20 12:19:12 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -68,7 +68,7 @@ typedef enum {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_WHEEL class.
    */
-  PP_INPUTEVENT_TYPE_MOUSEWHEEL = 5,
+  PP_INPUTEVENT_TYPE_WHEEL = 5,
   /**
    * Notification that a key transitioned from "up" to "down".
    * TODO(brettw) differentiate from KEYDOWN.
@@ -204,8 +204,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Class, 4);
  * @addtogroup Interfaces
  * @{
  */
-#define PPB_INPUT_EVENT_INTERFACE_0_1 "PPB_InputEvent;0.1"
-#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_0_1
+#define PPB_INPUT_EVENT_INTERFACE_1_0 "PPB_InputEvent;1.0"
+#define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_InputEvent {
   /**
@@ -343,8 +343,8 @@ struct PPB_InputEvent {
   uint32_t (*GetModifiers)(PP_Resource event);
 };
 
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1 "PPB_MouseInputEvent;0.1"
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_0_1
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0 "PPB_MouseInputEvent;1.0"
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_MouseInputEvent {
   /**
@@ -358,9 +358,8 @@ struct PPB_MouseInputEvent {
                         PP_TimeTicks time_stamp,
                         uint32_t modifiers,
                         PP_InputEvent_MouseButton mouse_button,
-                        struct PP_Point mouse_position,
+                        const struct PP_Point* mouse_position,
                         int32_t click_count);
-
   /**
    * Determines if a resource is a mouse event.
    *
@@ -374,7 +373,7 @@ struct PPB_MouseInputEvent {
    * value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and leave
    * events, and for all non-mouse events.
    */
-  PP_InputEvent_MouseButton (*GetMouseButton)(PP_Resource mouse_event);
+  PP_InputEvent_MouseButton (*GetButton)(PP_Resource mouse_event);
   /**
    * Returns the pixel location of a mouse input event.
    *
@@ -382,15 +381,15 @@ struct PPB_MouseInputEvent {
    * left of the instance receiving the event. These values can be negative for
    * mouse drags. The return value will be (0, 0) for non-mouse events.
    */
-  struct PP_Point (*GetMousePosition)(PP_Resource mouse_event);
+  struct PP_Point (*GetPosition)(PP_Resource mouse_event);
   /**
    * TODO(brettw) figure out exactly what this means.
    */
-  int32_t (*GetMouseClickCount)(PP_Resource mouse_event);
+  int32_t (*GetClickCount)(PP_Resource mouse_event);
 };
 
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1 "PPB_WheelInputEvent;0.1"
-#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_0_1
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0 "PPB_WheelInputEvent;1.0"
+#define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_WheelInputEvent {
   /**
@@ -402,10 +401,9 @@ struct PPB_WheelInputEvent {
   PP_Resource (*Create)(PP_Instance instance,
                         PP_TimeTicks time_stamp,
                         uint32_t modifiers,
-                        struct PP_FloatPoint wheel_delta,
-                        struct PP_FloatPoint wheel_ticks,
+                        const struct PP_FloatPoint* wheel_delta,
+                        const struct PP_FloatPoint* wheel_ticks,
                         PP_Bool scroll_by_page);
-
   /**
    * Determines if a resource is a wheel event.
    *
@@ -433,7 +431,7 @@ struct PPB_WheelInputEvent {
    * possible, for example, on some trackpads and newer mice that don't have
    * "clicks".
    */
-  struct PP_FloatPoint (*GetWheelDelta)(PP_Resource wheel_event);
+  struct PP_FloatPoint (*GetDelta)(PP_Resource wheel_event);
   /**
    * The number of "clicks" of the scroll wheel that have produced the
    * event. The value may have system-specific acceleration applied to it,
@@ -452,7 +450,7 @@ struct PPB_WheelInputEvent {
    * reaches positive or negative one. This should represent a similar amount
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
-  struct PP_FloatPoint (*GetWheelTicks)(PP_Resource wheel_event);
+  struct PP_FloatPoint (*GetTicks)(PP_Resource wheel_event);
   /**
    * Indicates if the scroll delta x/y indicates pages or lines to
    * scroll by.
@@ -463,9 +461,9 @@ struct PPB_WheelInputEvent {
   PP_Bool (*GetScrollByPage)(PP_Resource wheel_event);
 };
 
-#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1 "PPB_KeyboardInputEvent;0.1"
+#define PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0 "PPB_KeyboardInputEvent;1.0"
 #define PPB_KEYBOARD_INPUT_EVENT_INTERFACE \
-    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_0_1
+    PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0
 
 struct PPB_KeyboardInputEvent {
   /**
@@ -480,7 +478,6 @@ struct PPB_KeyboardInputEvent {
                         uint32_t modifiers,
                         uint32_t key_code,
                         struct PP_Var character_text);
-
   /**
    * Determines if a resource is a keyboard event.
    *

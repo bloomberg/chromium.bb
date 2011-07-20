@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/pp_input_event.h"
 
 // TODO(dmichael): This is here only for temporary backwards compatibility so
 // that NaCl and other plugins aren't broken while the change propagates. This

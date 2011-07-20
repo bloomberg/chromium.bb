@@ -24,10 +24,9 @@ class MyInstance : public pp::InstancePrivate {
     switch (event.GetType()) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
         pp::MouseInputEvent mouse_event(event);
-        if (mouse_event.GetMouseButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+        if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT)
           ShowFileChooser(false);
-        else if (mouse_event.GetMouseButton()
-            == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
+        else if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT)
           ShowFileChooser(true);
         else
           return false;

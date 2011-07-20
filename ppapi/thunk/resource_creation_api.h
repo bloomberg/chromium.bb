@@ -97,7 +97,7 @@ class ResourceCreationAPI {
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
       PP_InputEvent_MouseButton mouse_button,
-      PP_Point mouse_position,
+      const PP_Point* mouse_position,
       int32_t click_count) = 0;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) = 0;
@@ -116,8 +116,8 @@ class ResourceCreationAPI {
       PP_Instance instance,
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
-      PP_FloatPoint wheel_delta,
-      PP_FloatPoint wheel_ticks,
+      const PP_FloatPoint* wheel_delta,
+      const PP_FloatPoint* wheel_ticks,
       PP_Bool scroll_by_page) = 0;
 
   static const ::pp::proxy::InterfaceID interface_id =

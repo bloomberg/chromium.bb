@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_messaging.idl modified Wed Jul 13 16:51:47 2011. */
+/* From ppp_messaging.idl modified Mon Jul 18 10:06:08 2011. */
 
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_

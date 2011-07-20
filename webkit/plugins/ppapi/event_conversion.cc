@@ -47,7 +47,7 @@ PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
     case WebInputEvent::ContextMenu:
       return PP_INPUTEVENT_TYPE_CONTEXTMENU;
     case WebInputEvent::MouseWheel:
-      return PP_INPUTEVENT_TYPE_MOUSEWHEEL;
+      return PP_INPUTEVENT_TYPE_WHEEL;
     case WebInputEvent::RawKeyDown:
       return PP_INPUTEVENT_TYPE_RAWKEYDOWN;
     case WebInputEvent::KeyDown:
@@ -263,7 +263,7 @@ void InputEventDataToPPInputEvent(const InputEventData& data,
       result->u.mouse.y = static_cast<float>(data.mouse_position.y);
       result->u.mouse.click_count = data.mouse_click_count;
       break;
-    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
+    case PP_INPUTEVENT_TYPE_WHEEL:
       result->u.wheel.modifier = data.event_modifiers;
       result->u.wheel.delta_x = data.wheel_delta.x;
       result->u.wheel.delta_y = data.wheel_delta.y;
@@ -341,7 +341,7 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
     case PP_INPUTEVENT_TYPE_CONTEXTMENU:
       web_input_event.reset(BuildMouseEvent(event));
       break;
-    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
+    case PP_INPUTEVENT_TYPE_WHEEL:
       web_input_event.reset(BuildMouseWheelEvent(event));
       break;
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:

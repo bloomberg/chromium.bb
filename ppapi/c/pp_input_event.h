@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_input_event.idl modified Sat Jul 16 16:50:26 2011. */
+/* From pp_input_event.idl modified Wed Jul 20 11:21:44 2011. */
 
 #ifndef PPAPI_C_PP_INPUT_EVENT_H_
 #define PPAPI_C_PP_INPUT_EVENT_H_
@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_input_event.h"
 
 /**
@@ -190,7 +189,6 @@ struct PP_InputEvent_Wheel {
   PP_Bool scroll_by_page;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
-
 /**
  * @}
  */

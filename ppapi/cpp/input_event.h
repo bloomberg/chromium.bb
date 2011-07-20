@@ -94,7 +94,7 @@ class MouseInputEvent : public InputEvent {
   /// @return The mouse button associated with mouse down and up events. This
   /// value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and leave
   /// events, and for all non-mouse events.
-  PP_InputEvent_MouseButton GetMouseButton() const;
+  PP_InputEvent_MouseButton GetButton() const;
 
   /// Returns the pixel location of a mouse input event. This value is in
   /// floating-point units to support high-resolution input events.
@@ -102,10 +102,10 @@ class MouseInputEvent : public InputEvent {
   /// @return The point associated with the mouse event, relative to the upper-
   /// left of the instance receiving the event. These values can be negative for
   /// mouse drags. The return value will be (0, 0) for non-mouse events.
-  Point GetMousePosition() const;
+  Point GetPosition() const;
 
   // TODO(brettw) figure out exactly what this means.
-  int32_t GetMouseClickCount() const;
+  int32_t GetClickCount() const;
 };
 
 class WheelInputEvent : public InputEvent {
@@ -145,12 +145,12 @@ class WheelInputEvent : public InputEvent {
   /// only generate integer scroll amounts. But fractional values are also
   /// possible, for example, on some trackpads and newer mice that don't have
   /// "clicks".
-  FloatPoint GetWheelDelta() const;
+  FloatPoint GetDelta() const;
 
   /// The number of "clicks" of the scroll wheel that have produced the
   /// event. The value may have system-specific acceleration applied to it,
   /// depending on the device. The positive and negative meanings are the same
-  /// as for GetWheelDelta().
+  /// as for GetDelta().
   ///
   /// If you are scrolling, you probably want to use the delta values.  These
   /// tick events can be useful if you aren't doing actual scrolling and don't
@@ -163,7 +163,7 @@ class WheelInputEvent : public InputEvent {
   /// fractional click values from multiple messages until the total value
   /// reaches positive or negative one. This should represent a similar amount
   /// of scrolling as for a mouse that has a discrete mouse wheel.
-  FloatPoint GetWheelTicks() const;
+  FloatPoint GetTicks() const;
 
   // Indicates if the scroll delta x/y indicates pages or lines to
   // scroll by.
