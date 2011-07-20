@@ -28,15 +28,14 @@ const int kTcpAckDelayMilliseconds = 10;
 
 // Helper method to create a SSL client socket.
 net::SSLClientSocket* CreateSSLClientSocket(
-    net::StreamSocket* socket, const std::string& cert_der,
+    net::StreamSocket* socket, const std::string& der_cert,
     net::CertVerifier* cert_verifier) {
   net::SSLConfig ssl_config;
 
   // Certificate provided by the host doesn't need authority.
   net::SSLConfig::CertAndStatus cert_and_status;
   cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
-  cert_and_status.cert = net::X509Certificate::CreateFromBytes(
-      cert_der.data(), cert_der.length());
+  cert_and_status.der_cert = der_cert;
   ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
   // SSLClientSocket takes ownership of the adapter.
