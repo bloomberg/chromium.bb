@@ -54,7 +54,7 @@ TEST_F(BookmarkNodeDataTest, BogusRead) {
 // read it.
 TEST_F(BookmarkNodeDataTest, JustURL) {
   const GURL url("http://google.com");
-  const std::wstring title(L"title");
+  const string16 title(ASCIIToUTF16("title"));
 
   ui::OSExchangeData data;
   data.SetURL(url, title);
@@ -106,7 +106,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
 
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
-  std::wstring read_title;
+  string16 read_title;
   EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &read_title));
   EXPECT_EQ(url, read_url);
   EXPECT_EQ(title, read_title);
