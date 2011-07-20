@@ -49,26 +49,6 @@ ByteReader.readString = function(dataView, pos, size, opt_end) {
   return String.fromCharCode.apply(null, codes);
 };
 
-/**
- * Read as a sequence of characters, returning them as a single string.
- *
- * This is a static utility function.  There is a member function with the
- * same name which side-effects the current read position.
- */
-ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
-  ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
-
-  var codes = [];
-
-  for (var i = 0; i < size; ++i) {
-    var code = dataView.getUint8(pos + i);
-    if (code == 0) break;
-    codes.push(code);
-  }
-
-  return String.fromCharCode.apply(null, codes);
-};
-
 ByteReader.base64Alphabet_ =
     ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/').
     split('');
@@ -228,30 +208,6 @@ ByteReader.prototype.readString = function(size, opt_end) {
   this.pos_ += size;
   return rv;
 };
-
-
-/**
- * Read as a sequence of characters, returning them as a single string.
- *
- * Adjusts the current position on success.  Throws an exception if the
- * read would go past the end of the buffer.
- */
-ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
-  var rv = ByteReader.readNullTerminatedString(this.view_,
-                                               this.pos_,
-                                               size,
-                                               opt_end);
-  this.pos_ += rv.length;
-
-  if (rv.length < size) {
-    // If we've stopped reading because we found '0' but didn't hit size limit
-    // then we should skip additional '0' character
-    this.pos_++;
-  }
-
-  return rv;
-};
-
 
 /**
  * Read as an array of numbers.

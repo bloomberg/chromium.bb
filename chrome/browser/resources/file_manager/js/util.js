@@ -166,20 +166,4 @@ var util = {
     return fmt(this.scale_[i], this.units_[i]);
   },
 
-  /**
-   * Utility function to read specified range of bytes from file
-   * @param file {File} file to read
-   * @param begin {int} starting byte(included)
-   * @param end {int} last byte(excluded)
-   * @param callback {function(File, Uint8Array)} callback to invoke
-   * @param onError {function(err)} error handler
-   */
-  readFileBytes: function(file, begin, end, callback, onError) {
-    var fileReader = new FileReader();
-    fileReader.onerror = onError;
-    fileReader.onloadend = function() {
-      callback(file, new ByteReader(fileReader.result))
-    };
-    fileReader.readAsArrayBuffer(file.webkitSlice(begin, end));
-  }
 };
