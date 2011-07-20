@@ -429,7 +429,7 @@ void *__nc_adopt_thread(void) {
 /* pthread functions */
 
 int pthread_create(pthread_t *thread_id,
-                   pthread_attr_t *attr,
+                   const pthread_attr_t *attr,
                    void *(*start_routine) (void *),
                    void *arg) {
   int retval = EAGAIN;

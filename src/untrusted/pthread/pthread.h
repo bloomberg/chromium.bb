@@ -408,7 +408,7 @@ typedef struct {
 * @return 0 for success, non-zero error code otherwise.
 */
 extern int pthread_create(pthread_t *thread_id,
-                          pthread_attr_t *attr,
+                          const pthread_attr_t *attr,
                           void *(*start_routine) (void *p),
                           void *arg);
 
