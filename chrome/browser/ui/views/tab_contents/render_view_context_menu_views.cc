@@ -14,6 +14,7 @@
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuViews, public:
@@ -21,14 +22,16 @@
 RenderViewContextMenuViews::RenderViewContextMenuViews(
     TabContents* tab_contents,
     const ContextMenuParams& params)
-    : RenderViewContextMenu(tab_contents, params) {
+    : RenderViewContextMenu(tab_contents, params),
+      menu_(NULL) {
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
 void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
-  menu_->RunMenuAt(source_tab_contents_->view()->GetTopLevelNativeWindow(),
+  menu_runner_->RunMenuAt(
+      source_tab_contents_->view()->GetTopLevelNativeWindow(),
       NULL, gfx::Rect(gfx::Point(x, y), gfx::Size()),
       views::MenuItemView::TOPLEFT, true);
 }
@@ -40,7 +43,7 @@ void RenderViewContextMenuViews::SetExternal() {
 #endif
 
 void RenderViewContextMenuViews::UpdateMenuItemStates() {
-  menu_delegate_->BuildMenu(menu_.get());
+  menu_delegate_->BuildMenu(menu_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +51,8 @@ void RenderViewContextMenuViews::UpdateMenuItemStates() {
 
 void RenderViewContextMenuViews::PlatformInit() {
   menu_delegate_.reset(new views::MenuModelAdapter(&menu_model_));
-  menu_.reset(new views::MenuItemView(menu_delegate_.get()));
+  menu_ = new views::MenuItemView(menu_delegate_.get());
+  menu_runner_.reset(new views::MenuRunner(menu_));
   UpdateMenuItemStates();
 }
 

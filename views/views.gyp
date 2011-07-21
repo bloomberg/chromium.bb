@@ -134,6 +134,8 @@
         'controls/menu/menu_item_view_win.cc',
         'controls/menu/menu_model_adapter.cc',
         'controls/menu/menu_model_adapter.h',
+        'controls/menu/menu_runner.cc',
+        'controls/menu/menu_runner.h',
         'controls/menu/menu_scroll_view_container.cc',
         'controls/menu/menu_scroll_view_container.h',
         'controls/menu/menu_separator.h',
