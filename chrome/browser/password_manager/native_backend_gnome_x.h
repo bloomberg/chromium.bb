@@ -70,21 +70,21 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
 
   virtual ~NativeBackendGnome();
 
-  virtual bool Init();
+  virtual bool Init() OVERRIDE;
 
   // Implements NativeBackend interface.
-  virtual bool AddLogin(const webkit_glue::PasswordForm& form);
-  virtual bool UpdateLogin(const webkit_glue::PasswordForm& form);
-  virtual bool RemoveLogin(const webkit_glue::PasswordForm& form);
-  virtual bool RemoveLoginsCreatedBetween(const base::Time& delete_begin,
-                                          const base::Time& delete_end);
+  virtual bool AddLogin(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual bool UpdateLogin(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual bool RemoveLogin(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual bool RemoveLoginsCreatedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual bool GetLogins(const webkit_glue::PasswordForm& form,
-                         PasswordFormList* forms);
+                         PasswordFormList* forms) OVERRIDE;
   virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                        const base::Time& get_end,
-                                       PasswordFormList* forms);
-  virtual bool GetAutofillableLogins(PasswordFormList* forms);
-  virtual bool GetBlacklistLogins(PasswordFormList* forms);
+                                       PasswordFormList* forms) OVERRIDE;
+  virtual bool GetAutofillableLogins(PasswordFormList* forms) OVERRIDE;
+  virtual bool GetBlacklistLogins(PasswordFormList* forms) OVERRIDE;
 
  private:
   // Adds a login form without checking for one to replace first.

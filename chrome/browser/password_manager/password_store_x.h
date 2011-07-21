@@ -76,19 +76,19 @@ class PasswordStoreX : public PasswordStoreDefault {
   virtual ~PasswordStoreX();
 
   // Implements PasswordStore interface.
-  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end);
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginsCreatedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form);
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+                             const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
 
   // Sort logins by origin, like the ORDER BY clause in login_database.cc.
   void SortLoginsByOrigin(NativeBackend::PasswordFormList* list);

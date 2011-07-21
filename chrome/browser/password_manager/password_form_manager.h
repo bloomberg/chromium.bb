@@ -74,7 +74,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<webkit_glue::PasswordForm*>& result);
+      const std::vector<webkit_glue::PasswordForm*>& result) OVERRIDE;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.

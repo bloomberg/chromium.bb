@@ -29,21 +29,21 @@ class PasswordStoreDefault : public PasswordStore {
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
-  virtual void Shutdown();
-  virtual void ReportMetricsImpl();
-  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end);
+  virtual void Shutdown() OVERRIDE;
+  virtual void ReportMetricsImpl() OVERRIDE;
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginsCreatedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form);
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+                             const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
 
   scoped_refptr<WebDataService> web_data_service_;
 

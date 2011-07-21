@@ -28,29 +28,29 @@ class PasswordStoreMac : public PasswordStore {
   PasswordStoreMac(MacKeychain* keychain, LoginDatabase* login_db);
 
   // Initializes |thread_| and |notification_service_|.
-  virtual bool Init();
+  virtual bool Init() OVERRIDE;
 
  protected:
   virtual ~PasswordStoreMac();
 
   // Schedules tasks on |thread_|.
-  virtual void ScheduleTask(Task* task);
+  virtual void ScheduleTask(Task* task) OVERRIDE;
 
  private:
-  virtual void ReportMetricsImpl();
-  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                              const base::Time& delete_end);
+  virtual void ReportMetricsImpl() OVERRIDE;
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void RemoveLoginsCreatedBetweenImpl(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit_glue::PasswordForm& form);
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+                             const webkit_glue::PasswordForm& form) OVERRIDE;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) OVERRIDE;
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) OVERRIDE;
   virtual bool FillAutofillableLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
-      std::vector<webkit_glue::PasswordForm*>* forms);
+      std::vector<webkit_glue::PasswordForm*>* forms) OVERRIDE;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation
