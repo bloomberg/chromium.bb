@@ -64,8 +64,8 @@ RenderProcessImpl::RenderProcessImpl()
   // Out of process dev tools rely upon auto break behavior.
   webkit_glue::SetJavaScriptFlags(
       "--debugger-auto-break"
-      // Enable lazy in-memory profiling.
-      " --prof --prof-lazy --logfile=*");
+      // Enable on-demand profiling.
+      " --prof --prof-lazy");
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
