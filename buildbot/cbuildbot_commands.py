@@ -25,6 +25,9 @@ _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
                              'chromeos/binhost')
+_GSUTIL_PATH = '/b/scripts/slave/gsutil'
+_GS_GEN_INDEX = '/b/scripts/gsd_generate_index/gsd_generate_index.py'
+_GS_ACL = '/home/chrome-bot/slave_archive_acl'
 
 
 # =========================== Command Helpers =================================
@@ -330,15 +333,14 @@ def RemoteRunPyAuto(buildroot, board, remote_ip, internal_test):
                          print_cmd=True)
 
 
-def ArchiveTestResults(buildroot, test_results_dir):
-  """Archives the test results into a tarball and returns a path to it.
+def ArchiveTestResults(buildroot, test_results_dir, upload_url, debug):
+  """Archives the test results into a tarball and uploads it.
 
   Arguments:
     buildroot: Root directory where build occurs
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
-  Returns:
-    Path to the newly archived test results.
+    upload_url: Google Storage location for test tarball.
   """
   try:
     test_results_dir = test_results_dir.lstrip('/')
@@ -354,7 +356,14 @@ def ArchiveTestResults(buildroot, test_results_dir):
                             '--directory=%s' % results_path,
                             '.'])
     shutil.rmtree(results_path)
-    return archive_tarball
+
+    if upload_url and not debug:
+      tarball_url = '%s/%s' % (upload_url, 'test_results.tgz')
+      cros_lib.OldRunCommand([_GSUTIL_PATH,
+                              'cp',
+                              archive_tarball,
+                              tarball_url])
+
   except Exception, e:
     cros_lib.Warning('========================================================')
     cros_lib.Warning('------>  We failed to archive test results. <-----------')
@@ -471,21 +480,16 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   cros_lib.OldRunCommand(cmd, cwd=cwd)
 
 
-def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
-                       test_tarball, archive_path, debug=False):
+def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
+                       set_version, archive_path, debug=False):
   """Archives build artifacts and returns URL to archived location."""
 
   # Fixed properties
   keep_max = 3
 
-  if buildconfig['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-    gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
-  else:
-    gsutil_archive = buildconfig['gs_path']
-
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./archive_build.sh',
-         '--build_number', str(buildnumber),
+         '--set_version', str(set_version),
          '--to', os.path.join(archive_path, bot_id),
          '--keep_max', str(keep_max),
          '--board', buildconfig['board'],
@@ -494,10 +498,8 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   # If we archive to Google Storage
   if gsutil_archive:
     cmd += ['--gsutil_archive', gsutil_archive,
-            '--acl', '/home/chrome-bot/slave_archive_acl',
-            '--gsd_gen_index',
-            '/b/scripts/gsd_generate_index/gsd_generate_index.py',
-            '--gsutil', '/b/scripts/slave/gsutil',
+            '--acl', _GS_ACL,
+            '--gsutil', _GSUTIL_PATH,
             ]
 
   # Give the right args to archive_build.
@@ -505,7 +507,6 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
   if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
-  if test_tarball: cmd.extend(['--test_tarball', test_tarball])
   if debug: cmd.append('--debug')
   if buildconfig.get('factory_install_mod', True):
     cmd.append('--factory_install_mod')
@@ -517,45 +518,17 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   try:
     # Files created in our archive dir should be publically accessable.
     old_umask = os.umask(022)
-    result = cros_lib.RunCommand(cmd, cwd=cwd, redirect_stdout=True,
-                                 redirect_stderr=True,
-                                 combine_stdout_stderr=True)
-  except cros_lib.RunCommandError:
-    raise
+    cros_lib.RunCommand(cmd, cwd=cwd)
   finally:
     os.umask(old_umask)
-    if result and result.output:
-      sys.stdout.write(result.output)
 
-  archive_url = None
-  archive_dir = None
-  url_re = re.compile('^%s=(.*)$' % _CROS_ARCHIVE_URL)
-  dir_re = re.compile('^archive to dir\:(.*)$')
-  for line in result.output.splitlines():
-    url_match = url_re.match(line)
-    if url_match:
-      archive_url = url_match.group(1).strip()
-
-    dir_match = dir_re.match(line)
-    if dir_match:
-      archive_dir = dir_match.group(1).strip()
-
-  # assert archive_url, 'Archive Build Failed to Provide Archive URL'
-  assert archive_dir, 'Archive Build Failed to Provide Archive Directory'
-
-  # If we didn't upload to Google Storage, no URL should have been
-  # returned. However, we can instead build one based on the HTTP
-  # server on the buildbot.
-  if not gsutil_archive:
-    # '/var/www/archive/build/version' becomes:
-    # 'archive/build/version'
-    http_offset = archive_dir.index('archive/')
-    http_dir = archive_dir[http_offset:]
-
-    # 'http://botname/archive/build/version'
-    archive_url = 'http://' + socket.gethostname() + '/' + http_dir
-
-  return archive_url, archive_dir
+def UpdateIndex(gsutil_archive, set_version):
+  """Update _index.html page in Google Storage."""
+  cros_lib.RunCommand([_GS_GEN_INDEX,
+                       '--gsutil', _GSUTIL_PATH,
+                       '--acl', _GS_ACL,
+                       '-p', set_version,
+                       gsutil_archive])
 
 
 def UploadSymbols(buildroot, board, official):

@@ -163,7 +163,7 @@ class Results:
     cls._previous = [line.strip() for line in file.readlines()]
 
   @classmethod
-  def Report(cls, file):
+  def Report(cls, file, archive_url=None):
     """Generate a user friendly text display of the results data."""
     results = cls._results_log
 
@@ -217,9 +217,9 @@ class Results:
 
     file.write(line)
 
-    if BuilderStage.archive_url:
+    if archive_url:
       file.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      file.write('%s  %s\n' % (edge, BuilderStage.archive_url))
+      file.write('%s  %s\n' % (edge, archive_url))
       file.write(line)
 
     if first_exception:
@@ -235,10 +235,8 @@ class BuilderStage(object):
 
   # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
   # implemented.
-  test_tarball = None
   overlays = None
   push_overlays = None
-  archive_url = None
 
   # Class variable that stores the branch to build and test
   _tracking_branch = None
@@ -793,6 +791,10 @@ class BuildTargetStage(BuilderStage):
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
+  def __init__(self, bot_id, options, build_config, upload_url):
+    super(TestStage, self).__init__(bot_id, options, build_config)
+    self._upload_url = upload_url
+
   def _CreateTestRoot(self):
     """Returns a temporary directory for test results in chroot.
 
@@ -806,6 +808,9 @@ class TestStage(BuilderStage):
     # Relative directory.
     (_, _, relative_path) = test_root.partition(chroot)
     return relative_path
+
+  def GetTestTarball(self):
+    return self._test_tarball
 
   def _PerformStage(self):
     if self._build_config['unittests']:
@@ -830,8 +835,9 @@ class TestStage(BuilderStage):
                                   os.path.join(test_results_dir,
                                                'chrome_results'))
       finally:
-        BuilderStage.test_tarball = commands.ArchiveTestResults(
-            self._build_root, test_results_dir)
+        commands.ArchiveTestResults(
+            self._build_root, test_results_dir, self._upload_url,
+            self._options.debug)
 
 
 class TestHWStage(NonHaltingBuilderStage):
@@ -870,17 +876,59 @@ class RemoteTestStatusStage(BuilderStage):
 
 class ArchiveStage(NonHaltingBuilderStage):
   """Archives build and test artifacts for developer consumption."""
-  def _PerformStage(self):
-    if self._options.buildbot:
-      archive_path = '/var/www/archive'
+  def __init__(self, bot_id, options, build_config):
+    super(ArchiveStage, self).__init__(bot_id, options, build_config)
+    if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
+      self._gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
     else:
-      archive_path = os.path.join(self._build_root, 'trybot_archive')
-      # Clear artifacts from previous run
-      shutil.rmtree(archive_path, ignore_errors=True)
+      self._gsutil_archive = build_config['gs_path']
 
-    BuilderStage.archive_url, archive_dir = commands.LegacyArchiveBuild(
+    image_id = os.readlink(self.GetImageDirSymlink())
+    self._set_version = '%s-b%s' % (image_id, self._options.buildnumber)
+    if self._options.buildbot:
+      self._local_archive_path = '/var/www/archive'
+    else:
+      self._local_archive_path = os.path.join(self._build_root,
+                                              'trybot_archive')
+
+  def GetGSUploadLocation(self):
+    """Get the Google Storage location where we should upload artifacts."""
+    if self._gsutil_archive:
+      return '%s/%s' % (self._gsutil_archive, self._set_version)
+    else:
+      return None
+
+  def GetDownloadUrl(self):
+    """Get the URL where we can download artifacts."""
+    if self._gsutil_archive:
+      upload_location = self.GetGSUploadLocation()
+      url_prefix = 'https://sandbox.google.com/storage/'
+      url = '%s/_index.html' % upload_location
+      return url.replace('gs://', url_prefix)
+    else:
+      # '/var/www/archive/build/version' becomes:
+      # 'archive/build/version'
+      http_offset = archive_dir.index('archive/')
+      http_dir = archive_dir[http_offset:]
+
+      # 'http://botname/archive/build/version'
+      return 'http://' + socket.getfqdn() + '/' + http_dir
+
+  def GetLocalArchivePath(self):
+    return os.path.join(self._local_archive_path, self._set_version)
+
+  def UpdateIndex(self):
+    if not self._options.debug:
+      commands.UpdateIndex(self._gsutil_archive, self._set_version)
+
+  def _PerformStage(self):
+    if not self._options.buildbot:
+      # Trybot: Clear artifacts from previous run.
+      shutil.rmtree(self._local_archive_path, ignore_errors=True)
+
+    commands.LegacyArchiveBuild(
         self._build_root, self._bot_id, self._build_config,
-        self._options.buildnumber, BuilderStage.test_tarball, archive_path,
+        self._gsutil_archive, self._set_version, self._local_archive_path,
         self._options.debug)
 
     if not self._options.debug and self._build_config['upload_symbols']:
@@ -894,7 +942,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       commands.PushImages(self._build_root,
                           board=self._build_config['board'],
                           branch_name='master',
-                          archive_dir=archive_dir)
+                          archive_dir=self.GetLocalArchivePath())
 
 
 class UploadPrebuiltsStage(NonHaltingBuilderStage):

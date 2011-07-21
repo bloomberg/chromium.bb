@@ -460,7 +460,7 @@ class TestStageTest(AbstractStageTest):
     self.fake_results_dir = '/tmp/fake_results_dir'
 
   def ConstructStage(self):
-    return stages.TestStage(self.bot_id, self.options, self.build_config)
+    return stages.TestStage(self.bot_id, self.options, self.build_config, None)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -486,7 +486,8 @@ class TestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           full=True)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir, None,
+                                False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -514,7 +515,8 @@ class TestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           full=False)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir, None,
+                                False)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -823,6 +825,10 @@ class ArchiveStageTest(AbstractStageTest):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    self.mox.StubOutWithMock(os, 'readlink')
+    latest_image_dir = self.build_root + '/src/build/images/x86-generic/latest'
+    cbuildbot_link = '%s-cbuildbot' % latest_image_dir
+    os.readlink(cbuildbot_link).AndReturn('myimage')
 
     self._build_config = self.build_config.copy()
     self._build_config['upload_symbols'] = True
@@ -839,8 +845,7 @@ class ArchiveStageTest(AbstractStageTest):
 
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,
-        self.options.buildnumber, None, mox.IgnoreArg(),
-        self.options.debug).AndReturn((None, '/archive/dir'))
+        mox.IgnoreArg(), 'myimage-b1234', mox.IgnoreArg(), self.options.debug)
 
     commands.UploadSymbols(self.build_root,
                            board=self._build_config['board'],
@@ -849,7 +854,7 @@ class ArchiveStageTest(AbstractStageTest):
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
                         branch_name='master',
-                        archive_dir='/archive/dir')
+                        archive_dir=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -866,8 +871,8 @@ class ArchiveStageTest(AbstractStageTest):
     shutil.rmtree(mox.Regex(r'^%s' % self.build_root), ignore_errors=True)
     commands.LegacyArchiveBuild(
         self.build_root, self.bot_id, self._build_config,
-        self.options.buildnumber, None, mox.Regex(r'^%s' % self.build_root),
-        self.options.debug).AndReturn((None, '/archive/dir'))
+        mox.IgnoreArg(), 'myimage-b1234', mox.Regex(r'^%s' % self.build_root),
+        self.options.debug)
 
     commands.UploadSymbols(self.build_root,
                            board=self._build_config['board'],
@@ -876,7 +881,7 @@ class ArchiveStageTest(AbstractStageTest):
     commands.PushImages(self.build_root,
                         board=self._build_config['board'],
                         branch_name='master',
-                        archive_dir='/archive/dir')
+                        archive_dir=mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1207,7 +1212,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     manifest_manager.current_version = "release_tag_string"
     stages.ManifestVersionedSyncStage.manifest_manager = manifest_manager
 
-    stages.BuilderStage.archive_url = 'result_url'
+    archive_url = 'result_url'
 
     # Store off a known set of results and generate a report
     stages.Results.Clear()
@@ -1215,7 +1220,7 @@ class BuildStagesResultsTest(unittest.TestCase):
 
     results = StringIO.StringIO()
 
-    stages.Results.Report(results)
+    stages.Results.Report(results, archive_url)
 
     expectedResults = (
         "************************************************************\n"

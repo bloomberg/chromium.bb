@@ -207,6 +207,9 @@ def RunBuildStages(bot_id, options, build_config):
   prebuilts = options.prebuilts and build_config['prebuilts']
   bg = bg_stages.BackgroundStages()
   bg_started = False
+  archive_stage = None
+  archive_url = None
+  upload_url = None
 
   try:
     if options.sync:
@@ -235,12 +238,18 @@ def RunBuildStages(bot_id, options, build_config):
     if prebuilts:
       bg.AddStage(stages.UploadPrebuiltsStage(bot_id, options, build_config))
 
+    if options.archive:
+      archive_stage = stages.ArchiveStage(bot_id, options, build_config)
+      archive_url = archive_stage.GetDownloadUrl()
+      upload_url = archive_stage.GetGSUploadLocation()
+      bg.AddStage(archive_stage)
+
     if not bg.Empty():
       bg.start()
       bg_started = True
 
     if options.tests:
-      stages.TestStage(bot_id, options, build_config).Run()
+      stages.TestStage(bot_id, options, build_config, upload_url).Run()
 
     if options.hw_tests:
       stages.TestHWStage(bot_id, options, build_config).Run()
@@ -264,14 +273,7 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
 
-  if not build_config['master'] and completion_stage:
-    # Report success or failure to the master.
-    completion_stage.Run()
-
-  if build_success and options.archive:
-    stages.ArchiveStage(bot_id, options, build_config).Run()
-
-  if build_config['master'] and completion_stage:
+  if completion_stage:
     # Wait for slave builds to complete.
     completion_stage.Run()
 
@@ -292,7 +294,13 @@ def RunBuildStages(bot_id, options, build_config):
 
   # Tell the buildbot to break out the report as a final step
   print '\n\n\n@@@BUILD_STEP Report@@@\n'
-  stages.Results.Report(sys.stdout)
+
+  # Update the _index.html file with the test artifacts and build artifacts
+  # uploaded by the Test and Archive stages.
+  if archive_stage:
+    archive_stage.UpdateIndex()
+
+  stages.Results.Report(sys.stdout, archive_url)
 
   return stages.Results.Success()
 

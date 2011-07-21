@@ -70,10 +70,8 @@ class CBuildBotTest(mox.MoxTestBase):
                             '.'])
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
-    return_ball = commands.ArchiveTestResults(buildroot, test_results_dir)
+    commands.ArchiveTestResults(buildroot, test_results_dir, None, False)
     self.mox.VerifyAll()
-    self.assertEqual(return_ball, archive_tarball)
-
 
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""
@@ -199,7 +197,6 @@ class CBuildBotTest(mox.MoxTestBase):
     """Test Legacy Archive Command, with minimal values."""
     buildroot = '/bob'
     buildnumber = 4
-    test_tarball = None
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'
@@ -213,42 +210,29 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(socket, 'gethostname')
 
-    output_obj = cros_lib.CommandResult()
-    output_obj.output = ('archive to dir: /var/archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://gs/archive/url \n')
-
     cros_lib.RunCommand(['./archive_build.sh',
-                         '--build_number', '4',
+                         '--set_version', 'myversion',
                          '--to', '/var/www/archive/bot_id',
                          '--keep_max', '3',
                          '--board', buildconfig['board'],
                          '--noarchive_debug',
                          '--notest_mod'],
-                        combine_stdout_stderr=True,
-                        cwd='/bob/src/scripts',
-                        redirect_stderr=True,
-                        redirect_stdout=True).AndReturn(output_obj)
-
-    socket.gethostname().AndReturn('testhost')
+                        cwd='/bob/src/scripts')
 
     self.mox.ReplayAll()
-    result = commands.LegacyArchiveBuild(buildroot,
-                                         'bot_id',
-                                         buildconfig,
-                                         buildnumber,
-                                         test_tarball,
-                                         '/var/www/archive',
-                                         debug=False)
+    commands.LegacyArchiveBuild(buildroot,
+                                'bot_id',
+                                buildconfig,
+                                None,
+                                'myversion',
+                                '/var/www/archive',
+                                debug=False)
     self.mox.VerifyAll()
-
-    self.assertTrue(result == ('http://testhost/archive/dir',
-                               '/var/archive/dir'), result)
 
   def testLegacyArchiveBuildMaximum(self):
     """Test Legacy Archive Command, with all values."""
     buildroot = '/bob'
     buildnumber = 4
-    test_tarball = '/path/test.tar.gz'
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'
@@ -262,42 +246,29 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(socket, 'gethostname')
 
-    output_obj = cros_lib.CommandResult()
-    output_obj.output = ('archive to dir: /var/archive/dir \n'
-                         'CROS_ARCHIVE_URL=http://gs/archive/url \n')
-
     cros_lib.RunCommand(['./archive_build.sh',
-                         '--build_number', '4',
+                         '--set_version', 'myversion',
                          '--to', '/var/www/archive/bot_id',
                          '--keep_max', '3',
                          '--board', 'config_board',
                          '--gsutil_archive', 'gs://gs/path',
                          '--acl', '/home/chrome-bot/slave_archive_acl',
-                         '--gsd_gen_index',
-                         '/b/scripts/gsd_generate_index/gsd_generate_index.py',
                          '--gsutil', '/b/scripts/slave/gsutil',
                          '--factory_test_mod',
-                         '--test_tarball', test_tarball,
                          '--debug',
                          '--factory_install_mod',
                          '--useflags', 'use_a use_b'],
-                        combine_stdout_stderr=True,
-                        cwd='/bob/src/scripts',
-                        redirect_stderr=True,
-                        redirect_stdout=True).AndReturn(output_obj)
+                        cwd='/bob/src/scripts')
 
     self.mox.ReplayAll()
-    result = commands.LegacyArchiveBuild(buildroot,
-                                         'bot_id',
-                                         buildconfig,
-                                         buildnumber,
-                                         test_tarball,
-                                         '/var/www/archive',
-                                         debug=True)
+    commands.LegacyArchiveBuild(buildroot,
+                                'bot_id',
+                                buildconfig,
+                                buildconfig['gs_path'],
+                                'myversion',
+                                '/var/www/archive',
+                                debug=True)
     self.mox.VerifyAll()
-
-    self.assertTrue(result == ('http://gs/archive/url',
-                               '/var/archive/dir'), result)
 
   def testUploadSymbols(self):
     """Test UploadSymbols Command."""
