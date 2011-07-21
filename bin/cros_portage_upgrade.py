@@ -17,11 +17,12 @@ import tempfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
 import merge_package_status as mps
 
-# TODO(mtennant): I see comments next to cros_build_lib.Info,Warning,Die that
-# they are deprecated and to be replaced by those in operation module.
+oper = operation.Operation('cros_portage_upgrade')
+oper.verbose = True # Without verbose Info messages don't show up.
 
 # TODO(mtennant): Use this class to replace the 'info' dictionary used
 # throughout. In the meantime, it simply serves as documentation for
@@ -565,10 +566,10 @@ class Upgrader(object):
       # Determine whether upgrade of this package is requested.
       if self._PkgUpgradeRequested(info):
         if self._PkgUpgradeStaged(upstream_cpv):
-          cros_lib.Info('Determined that %s is already staged.' % upstream_cpv)
+          oper.Info('Determined that %s is already staged.' % upstream_cpv)
           info['upgraded_cpv'] = upstream_cpv
         elif cpv_cmp_upstream > 0:
-          cros_lib.Info('Copying %s from upstream.' % upstream_cpv)
+          oper.Info('Copying %s from upstream.' % upstream_cpv)
           info['upgraded_cpv'] = self._CopyUpstreamPackage(upstream_cpv)
 
       if info['upgraded_cpv']:
@@ -652,13 +653,13 @@ class Upgrader(object):
     for info in infolist:
       if info['upgraded_cpv']:
         if info['emerge_ok']:
-          cros_lib.Info('Confirmed %s can be emerged on %s after upgrade.' %
-                        (info['upgraded_cpv'], self._curr_board))
+          oper.Info('Confirmed %s can be emerged on %s after upgrade.' %
+                    (info['upgraded_cpv'], self._curr_board))
         else:
           emerge_ok = False
-          cros_lib.Warning('Unable to emerge %s after upgrade.\n'
-                           'The output of "%s" follows:\n' %
-                           (info['upgraded_cpv'], info['emerge_cmd']))
+          oper.Warning('Unable to emerge %s after upgrade.\n'
+                       'The output of "%s" follows:\n' %
+                       (info['upgraded_cpv'], info['emerge_cmd']))
           print info['emerge_output']
 
     if not emerge_ok:
@@ -677,11 +678,11 @@ class Upgrader(object):
     except RuntimeError:
       # Failure to emerge the upgraded package(s) must stop the upgrade, or
       # else the later logic will merrily commit the upgrade changes.
-      cros_lib.Die('Failed to complete upgrades on %s (see above).  Address'
-                   ' the emerge errors before continuing.\n'
-                   'To reset your changes instead::\n'
-                   ' cd %s; git reset --hard; cd -' %
-                   (self._curr_board, self._stable_repo))
+      oper.Die('Failed to complete upgrades on %s (see above).  Address'
+               ' the emerge errors before continuing.\n'
+               'To reset your changes instead::\n'
+               ' cd %s; git reset --hard; cd -' %
+               (self._curr_board, self._stable_repo))
       # Allow the changes to stay staged so that the user can attempt to address
       # the issue (perhaps an edit to package.mask is required, or another
       # package must also be upgraded).
@@ -758,8 +759,8 @@ class Upgrader(object):
     # list.
     if not self._upstream:
       dash_q = '-q' if not self._verbose else ''
-      cros_lib.Info('Checking out cros/gentoo at %s as upstream reference.' %
-                    self._upstream_repo)
+      oper.Info('Checking out cros/gentoo at %s as upstream reference.' %
+                self._upstream_repo)
       self._RunGit(self._upstream_repo, 'checkout %s cros/gentoo' % dash_q)
 
     # An empty directory is needed to trick equery later.
@@ -769,8 +770,8 @@ class Upgrader(object):
     """Undo any checkout of upstream gentoo that was done."""
     if not self._upstream:
       dash_q = '-q' if not self._verbose else ''
-      cros_lib.Info('Undoing checkout of cros/gentoo at %s.' %
-                    self._upstream_repo)
+      oper.Info('Undoing checkout of cros/gentoo at %s.' %
+                self._upstream_repo)
       self._RunGit(self._upstream_repo, 'checkout %s cros/master' % dash_q)
 
     os.rmdir(self._emptydir)
@@ -854,23 +855,23 @@ class Upgrader(object):
         message = self._CreateCommitMessage(commit_lines)
         self._RunGit(self._stable_repo, "commit -am '%s'" % message)
 
-      cros_lib.Warning('Upgrade changes committed (see above),'
-                       ' but message needs edit BY YOU:\n'
-                       ' cd %s; git commit --amend; cd -' %
-                       self._stable_repo)
+      oper.Warning('Upgrade changes committed (see above),'
+                   ' but message needs edit BY YOU:\n'
+                   ' cd %s; git commit --amend; cd -' %
+                   self._stable_repo)
 
       if key_lines:
-        cros_lib.Warning('Because one or more unstable versions are involved'
-                         ' you must add line(s) like the following to\n'
-                         ' %s:\n%s\n'
-                         'This is needed before testing, and should be pushed'
-                         ' in a separate changelist BEFORE the\n'
-                         'the changes in portage-stable.' %
-                         (self._GetPkgKeywordsFile(),
-                          '\n'.join(key_lines)))
-      cros_lib.Info('If you wish to undo these changes instead:\n'
-                    ' cd %s; git reset --hard HEAD^; cd -' %
-                    self._stable_repo)
+        oper.Warning('Because one or more unstable versions are involved'
+                     ' you must add line(s) like the following to\n'
+                     ' %s:\n%s\n'
+                     'This is needed before testing, and should be pushed'
+                     ' in a separate changelist BEFORE the\n'
+                     'the changes in portage-stable.' %
+                     (self._GetPkgKeywordsFile(),
+                      '\n'.join(key_lines)))
+      oper.Info('If you wish to undo these changes instead:\n'
+                ' cd %s; git reset --hard HEAD^; cd -' %
+                self._stable_repo)
 
   def PreRunChecks(self):
     """Run any board-independent validation checks before Run is called."""
@@ -922,8 +923,7 @@ class Upgrader(object):
 
     if csv:
       filehandle = open(csv, 'w')
-      # TODO(mtennant): change to cros_lib.Info
-      print "Writing package status as csv to %s" % csv
+      oper.Info('Writing package status as csv to %s' % csv)
       self._master_table.WriteCSV(filehandle)
       filehandle.close()
 
@@ -962,6 +962,7 @@ def main():
             '--upgrade dbus\n'
             '> cros_portage_upgrade --unstable-ok --board=x86-mario '
             '--upgrade-deep gdata\n'
+            '\n'
             )
 
   class MyOptParser(optparse.OptionParser):
@@ -1008,27 +1009,27 @@ def main():
 
   if not options.board and not options.host:
     parser.print_help()
-    cros_lib.Die('Board (or host) is required.')
+    oper.Die('Board (or host) is required.')
 
   if not args:
     parser.print_help()
-    cros_lib.Die('No packages provided.')
+    oper.Die('No packages provided.')
 
   # The --upgrade and --upgrade-deep options are mutually exclusive.
   if options.upgrade_deep and options.upgrade:
     parser.print_help()
-    cros_lib.Die('The --upgrade and --upgrade-deep options ' +
-                 'are mutually exclusive.')
+    oper.Die('The --upgrade and --upgrade-deep options ' +
+             'are mutually exclusive.')
 
   # If upstream portage is provided, verify that it is a valid directory.
   if options.upstream and not os.path.isdir(options.upstream):
     parser.print_help()
-    cros_lib.Die('Argument to --upstream must be a valid directory.')
+    oper.Die('Argument to --upstream must be a valid directory.')
 
   # If --to-csv given verify file can be opened for write.
   if options.csv_file and not os.access(options.csv_file, os.W_OK):
     parser.print_help()
-    cros_lib.Die('Unable to open %s for writing.' % options.csv_file)
+    oper.Die('Unable to open %s for writing.' % options.csv_file)
 
   upgrader = Upgrader(options, args)
   upgrader.PreRunChecks()
@@ -1045,13 +1046,13 @@ def main():
   for board in boards:
     if (board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board)):
       parser.print_help()
-      cros_lib.Die('You must setup the %s board first.' % board)
+      oper.Die('You must setup the %s board first.' % board)
 
   try:
     upgrader.PrepareToRun()
 
     for board in boards:
-      cros_lib.Info('Running with board %s' % board)
+      oper.Info('Running with board %s' % board)
       upgrader.RunBoard(board)
 
   finally:

@@ -15,12 +15,15 @@ import gdata.spreadsheet.service
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import chromite.lib.table as table
-import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.operation as operation
 import chromite.lib.upgrade_table as utable
 import merge_package_status as mps
 
 REAL_SS_KEY='tJuuSuHmrEMqdL5b8dkgBIA'
 TEST_SS_KEY='t3RE08XLO2f1vTiV4N-w2ng'
+
+oper = operation.Operation('upload_package_status')
+oper.verbose = True # Without verbose Info messages don't show up.
 
 def _PrepColForSS(col):
   """Translate a column name for spreadsheet "list" interface."""
@@ -328,7 +331,7 @@ def main():
 
   if len(args) < 1:
     parser.print_help()
-    cros_lib.Die("One csv_file is required.")
+    oper.Die("One csv_file is required.")
 
   # If email or password provided, the other is required.  If neither is
   # provided, then either cred_file or token_file must be provided and
@@ -336,24 +339,24 @@ def main():
   if options.email or options.password:
     if not (options.email and options.password):
       parser.print_help()
-      cros_lib.Die("The email/password options must be used together.")
+      oper.Die("The email/password options must be used together.")
   elif not options.token_file and not options.cred_file:
     parser.print_help()
-    cros_lib.Die("Either email/password, cred-file, or token-file required.")
+    oper.Die("Either email/password, cred-file, or token-file required.")
   elif not ((options.token_file and os.path.exists(options.token_file)) or
             (options.cred_file and os.path.exists(options.cred_file))):
     parser.print_help()
-    cros_lib.Die("Without email/password cred-file or token-file must exist.")
+    oper.Die("Without email/password cred-file or token-file must exist.")
   elif (options.token_file and os.path.exists(options.token_file) and
         options.cred_file and os.path.exists(options.cred_file)):
     parser.print_help()
-    cros_lib.Die("Without email/password, both cred-file and token-file " +
+    oper.Die("Without email/password, both cred-file and token-file " +
                  "is ambiguous.")
 
   # --ss-key and --test-spreadsheet are mutually exclusive.
   if options.ss_key and options.test_ss:
     parser.print_help()
-    cros_lib.Die("Cannot specify --ss-key and --test-spreadsheet together.")
+    oper.Die("Cannot specify --ss-key and --test-spreadsheet together.")
 
   # Load the given csv file.
   csv_table = LoadTable(args[0])

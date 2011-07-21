@@ -13,7 +13,7 @@ import re
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-import chromite.lib.cros_build_lib as cros_lib
+import chromite.lib.operation as operation
 import chromite.lib.table as table
 import chromite.lib.upgrade_table as utable
 
@@ -22,6 +22,9 @@ COL_SLOT = utable.UpgradeTable.COL_SLOT
 COL_TARGET = utable.UpgradeTable.COL_TARGET
 COL_OVERLAY = utable.UpgradeTable.COL_OVERLAY
 ID_COLS = [COL_PACKAGE, COL_SLOT]
+
+oper = operation.Operation('merge_package_status')
+oper.verbose = True # Without verbose Info messages don't show up.
 
 # A bit of hard-coding with knowledge of how cros targets work.
 CHROMEOS_TARGET_ORDER = ['chromeos', 'chromeos-dev', 'chromeos-test']
@@ -242,10 +245,10 @@ def main():
   # Check required options
   if not options.outpath:
     parser.print_help()
-    cros_lib.Die("The --out option is required.")
+    oper.Die("The --out option is required.")
   if len(args) < 1:
     parser.print_help()
-    cros_lib.Die("At least one input_csv_file is required.")
+    oper.Die("At least one input_csv_file is required.")
 
   csv_table = LoadAndMergeTables(args)
 

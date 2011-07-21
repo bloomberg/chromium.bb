@@ -343,3 +343,32 @@ class Operation:
     self._Out(None, self._color.Color(self._color.BLUE, line),
         display=self.verbose, newline=True)
     self._FinishLine(display=True)
+
+  def Warning(self, line):
+    """Output a line of warning text to the display.
+
+    Args:
+      line: text to output (without \n on the end)
+    """
+    self._Out(None, self._color.Color(self._color.YELLOW, line),
+        display=True, newline=True)
+    self._FinishLine(display=True)
+
+  def Error(self, line):
+    """Output a line of error text to the display.
+
+    Args:
+      line: text to output (without \n on the end)
+    """
+    self._Out(None, self._color.Color(self._color.RED, line),
+        display=True, newline=True)
+    self._FinishLine(display=True)
+
+  def Die(self, line):
+    """Output a line of error text to the display and die.
+
+    Args:
+      line: text to output (without \n on the end)
+    """
+    self.Error(line)
+    sys.exit(1)
