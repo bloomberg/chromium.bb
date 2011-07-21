@@ -530,77 +530,157 @@ class TestHWStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.TestHWStage(self.bot_id, self.options, self.build_config)
 
-  def testHWTest1(self):
-    """Tests if remote tests commands are called
-    when remoteip option is set."""
+  def testHWTestOneTest(self):
+    """HW test with 1 test, with reimaging and remote IP set in options."""
     self.bot_id = 'x86-generic-chrome-pre-flight-queue'
     self.build_config = config.config[self.bot_id].copy()
+    self.build_config['hw_tests'] = [('test_Test',)]
+    self.build_config['hw_tests_reimage'] = True
     ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RemoteRunPyAuto')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
                             ip)
-    commands.RemoteRunPyAuto(self.build_root,
-                            self.build_config['board'],
-                            ip,
-                            internal_test=False)
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test',
+                           ())
 
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
 
-  def testHWTest2(self):
-    """Tests if remote tests commands are called
-    when remote_ip config is set."""
+  def testHWTestOneTestWithArgs(self):
+    """HW test with 1 test with arguments."""
     self.bot_id = 'x86-generic-chrome-pre-flight-queue'
     self.build_config = config.config[self.bot_id].copy()
-    ip = self.build_config['remote_ip'] = '1.1.1.1'
+    self.build_config['hw_tests'] = [('test_Test', 'abc',)]
+    self.build_config['hw_tests_reimage'] = True
+    ip = self.options.remote_ip = '1.1.1.1'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RemoteRunPyAuto')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
                             ip)
-    commands.RemoteRunPyAuto(self.build_root,
-                            self.build_config['board'],
-                            ip,
-                            internal_test=False)
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test',
+                           ('abc'))
 
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
 
-  def testHWTest3(self):
-    """Tests if remote tests commands are called
-    when both remoteip option and remote_ip config are set."""
+  def testHWTestNoTests(self):
+    """HW test with no tests."""
     self.bot_id = 'x86-generic-chrome-pre-flight-queue'
     self.build_config = config.config[self.bot_id].copy()
+    self.build_config['hw_tests'] = None
+    self.build_config['hw_tests_reimage'] = True
     ip = self.options.remote_ip = '1.1.1.1'
-    self.build_config['remote_ip'] = '2.2.2.2'
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
-    self.mox.StubOutWithMock(commands, 'RemoteRunPyAuto')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHWTestTwoTests(self):
+    """HW test with 2 tests, with reimaging and remote IP set in options."""
+    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
+    self.build_config = config.config[self.bot_id].copy()
+    self.build_config['hw_tests'] = [('test_Test',), ('test_Test2',)]
+    self.build_config['hw_tests_reimage'] = True
+    ip = self.options.remote_ip = '1.1.1.1'
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
 
     os.path.isdir(self.build_root + '/.repo').AndReturn(True)
     commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
                             mox.IgnoreArg(),
                             ip)
-    commands.RemoteRunPyAuto(self.build_root,
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test',
+                           ())
+
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test2',
+                           ())
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHWTestNoReimage(self):
+    """HW test with 1 test, with no reimaging and remote IP set in options."""
+    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
+    self.build_config = config.config[self.bot_id].copy()
+    self.build_config['hw_tests'] = [('test_Test',)]
+    self.build_config['hw_tests_reimage'] = False
+    ip = self.options.remote_ip = '1.1.1.1'
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test',
+                           ())
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testHWTestConfigIP(self):
+    """HW test with 1 test, with reimaging and remote IP set in config."""
+    self.bot_id = 'x86-generic-chrome-pre-flight-queue'
+    self.build_config = config.config[self.bot_id].copy()
+    self.build_config['hw_tests'] = [('test_Test',)]
+    self.build_config['hw_tests_reimage'] = True
+    ip = '1.1.1.1'
+    self.build_config['remote_ip'] = ip
+
+    self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
+    self.mox.StubOutWithMock(commands, 'UpdateRemoteHW')
+    self.mox.StubOutWithMock(commands, 'RunRemoteTest')
+
+    os.path.isdir(self.build_root + '/.repo').AndReturn(True)
+    commands.UpdateRemoteHW(self.build_root,
                             self.build_config['board'],
-                            ip,
-                            internal_test=False)
+                            mox.IgnoreArg(),
+                            ip)
+    commands.RunRemoteTest(self.build_root,
+                           self.build_config['board'],
+                           ip,
+                           'test_Test',
+                           ())
 
     self.mox.ReplayAll()
     self.RunStage()

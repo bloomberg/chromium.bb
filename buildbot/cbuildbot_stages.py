@@ -860,6 +860,9 @@ class TestStage(BuilderStage):
 class TestHWStage(NonHaltingBuilderStage):
   """Stage that performs testing on actual HW."""
   def _PerformStage(self):
+    if not self._build_config['hw_tests']:
+      return
+
     if self._options.remote_ip:
       ip = self._options.remote_ip
     elif self._build_config['remote_ip']:
@@ -867,14 +870,21 @@ class TestHWStage(NonHaltingBuilderStage):
     else:
       raise Exception('Please specify remote_ip.')
 
-    commands.UpdateRemoteHW(self._build_root,
-                            self._build_config['board'],
-                            self.GetImageDirSymlink(),
-                            ip)
-    commands.RemoteRunPyAuto(self._build_root,
+    if self._build_config['hw_tests_reimage']:
+      commands.UpdateRemoteHW(self._build_root,
+                              self._build_config['board'],
+                              self.GetImageDirSymlink(),
+                              ip)
+
+    for test in self._build_config['hw_tests']:
+      test_name = test[0]
+      test_args = test[1:]
+
+      commands.RunRemoteTest(self._build_root,
                              self._build_config['board'],
                              ip,
-                             internal_test=False)
+                             test_name,
+                             test_args)
 
 
 class TestSDKStage(BuilderStage):

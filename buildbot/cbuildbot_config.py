@@ -45,6 +45,10 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
 quick_vm -- If vm_tests is true, run a minimal au test harness suite.
 
 remote_ip -- IP of the remote Chromium OS machine used for testing.
+hw_tests -- A list of autotests and arguments to run on remote hardware.
+            The format is [(test1, argument, argument,), (test2,), ...]
+hw_tests_reimage -- Whether to reimage the remote device before running
+                    hw_tests.
 
 fast -- Use parallel_emerge for faster (but slightly more risky) builds.
 usepkg_chroot -- Use binary packages for make_chroot. (emerge --usepkg)
@@ -142,6 +146,8 @@ default = {
   'vm_tests' : True,
   'quick_vm' : True,
 
+  'hw_tests' : None,
+  'hw_tests_reimage' : True,
   'remote_ip' : None,
 
   'gs_path': GS_PATH_DEFAULT,
@@ -292,6 +298,7 @@ add_config('x86-generic-chrome-pre-flight-queue', [{
   'push_overlays': 'public',
   'manifest_version': True,
 
+  'hw_tests' : [('desktopui_PyAutoFunctionalTests', 'CONTINUOUS')],
   'remote_ip' : '172.22.75.211',
 }])
 
@@ -472,6 +479,10 @@ add_config('x86-alex-toolchain', [internal, full, official, {
   'prebuilts' : False,
   'latest_toolchain' : True,
   'useflags' : ['chrome_internal'],
+  'hw_tests' : [('platform_GCC',)],
+  'hw_tests_reimage' : False,
+  'remote_ip' : '172.18.221.163',
+  'use_lkgm' : True,
 }])
 
 add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
@@ -481,6 +492,7 @@ add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
   'prebuilts' : False,
   'latest_toolchain' : True,
   'useflags' : ['chrome_internal'],
+  'use_lkgm' : True,
 }])
 
 add_config('arm-tegra2_seaboard-tangent-private-release',
