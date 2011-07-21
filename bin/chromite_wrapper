@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -26,9 +26,9 @@ Since this script is _copied_, it should remain small and not use internal libs.
 
 """
 
-# Python imports.
 import os
 import sys
+
 
 def Search(path):
   """Return an iterator of lists of places to look for chromite."""
@@ -51,46 +51,50 @@ def Search(path):
       yield [path]
       path, prev_path = os.path.dirname(path), path
 
-# Decide what the name of the called binary will be.
-our_name = os.path.basename(sys.argv[0])
 
-# Some tools map to an arbitrary path, rather than to a .py file of the same
-# exact name. By default, we pick the tool from chromite/bin/
-TOOLS_MAP = {
-  'chromite' : 'shell.main'
-}
-our_name = TOOLS_MAP.get(our_name, 'bin.' + our_name)
+def main():
+  # Decide what the name of the called binary will be.
+  our_name = os.path.basename(sys.argv[0])
+  # Some tools map to an arbitrary path, rather than to a .py file of the same
+  # exact name. By default, we pick the tool from chromite/bin/
+  TOOLS_MAP = {
+    'chromite' : 'shell.main'
+  }
+  our_name = TOOLS_MAP.get(our_name, 'bin.' + our_name)
 
-for path in Search(os.getcwd()):
-  sys.path = path + sys.path
-  try:
-    exec 'import chromite.' + our_name + ' as our_tool'
-    break
-  except ImportError, e:
-    # Just in case there is actually something wrong with Chromite, print
-    # a sensible error. We match only the end of the string so that we can
-    # handle an error within the chromite directory.
-    # The full error is 'No module named (chromite.)shell.main'
-    # Note: If you hit the directory containing chromite on the way up, then
-    # the error will be 'No module named shell.main' so we must check only the
-    # shell.main part.
-    if not str(e).endswith(our_name):
-      raise
+  for path in Search(os.getcwd()):
+    sys.path = path + sys.path
+    try:
+      exec 'import chromite.' + our_name + ' as our_tool'
+      break
+    except ImportError, e:
+      # Just in case there is actually something wrong with Chromite, print
+      # a sensible error. We match only the end of the string so that we can
+      # handle an error within the chromite directory.
+      # The full error is 'No module named (chromite.)shell.main'
+      # Note: If you hit the directory containing chromite on the way up, then
+      # the error will be 'No module named shell.main' so we must check only the
+      # shell.main part.
+      if not str(e).endswith(our_name):
+        raise
 
-    # We've got different modules named chromite in the tree, pulling in the
-    # wrong one will break the right one.  So unload it.
-    if 'chromite' in sys.modules:
-      del sys.modules['chromite']
-    sys.path = sys.path[len(path):]
-else:
-  # TODO(dianders): Should we actually print out the 'repo init' call that
-  # the user should use?
-  sys.stderr.write(
-      "ERROR: Couldn't find the chromite tool.\n"
-      "\n"
-      "Please change to a directory inside your Chromium OS source tree\n"
-      "and retry.  If you need to setup a Chromium OS source tree, see:\n"
-      "  http://www.chromium.org/chromium-os/developer-guide\n")
-  sys.exit(1)
+      # We've got different modules named chromite in the tree, pulling in the
+      # wrong one will break the right one.  So unload it.
+      if 'chromite' in sys.modules:
+        del sys.modules['chromite']
+      sys.path = sys.path[len(path):]
+  else:
+    # TODO(dianders): Should we actually print out the 'repo init' call that
+    # the user should use?
+    sys.stderr.write(
+        "ERROR: Couldn't find the chromite tool.\n"
+        "\n"
+        "Please change to a directory inside your Chromium OS source tree\n"
+        "and retry.  If you need to setup a Chromium OS source tree, see:\n"
+        "  http://www.chromium.org/chromium-os/developer-guide\n")
+    return 1
+  return our_tool.main()
 
-our_tool.main()
+
+if __name__ == '__main__':
+  sys.exit(main())
