@@ -66,16 +66,6 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
-  // If the scheduler is unscheduled, defer sync and async messages until it is
-  // rescheduled. Also, even if the scheduler is scheduled, do not allow newly
-  // received messages to be handled before previously received deferred ones;
-  // append them to the deferred queue as well.
-  if ((scheduler_.get() && !scheduler_->IsScheduled()) ||
-      !deferred_messages_.empty()) {
-    deferred_messages_.push(new IPC::Message(message));
-    return true;
-  }
-
   // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
   // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
@@ -87,6 +77,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Flush, OnFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateTransferBuffer,
                                     OnCreateTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_RegisterTransferBuffer,
@@ -120,6 +111,10 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+bool GpuCommandBufferStub::IsScheduled() {
+  return !scheduler_.get() || scheduler_->IsScheduled();
+}
+
 void GpuCommandBufferStub::OnInitialize(
     base::SharedMemoryHandle ring_buffer,
     int32 size,
@@ -144,9 +139,9 @@ void GpuCommandBufferStub::OnInitialize(
 
   // Initialize the CommandBufferService and GpuScheduler.
   if (command_buffer_->Initialize(&shared_memory, size)) {
-    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
-                                           channel_,
-                                           NULL));
+    scheduler_.reset(gpu::GpuScheduler::Create(command_buffer_.get(),
+                                               channel_,
+                                               NULL));
     if (scheduler_->Initialize(
         handle_,
         initial_size_,
@@ -162,10 +157,8 @@ void GpuCommandBufferStub::OnInitialize(
           NewCallback(this, &GpuCommandBufferStub::OnParseError));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
-      scheduler_->SetLatchCallback(base::Bind(
-          &GpuChannel::OnLatchCallback, base::Unretained(channel_), route_id_));
       scheduler_->SetScheduledCallback(
-          NewCallback(this, &GpuCommandBufferStub::OnScheduled));
+          NewCallback(channel_, &GpuChannel::OnScheduled));
       scheduler_->SetTokenCallback(base::Bind(
           &GpuCommandBufferStub::OnSetToken, base::Unretained(this)));
       if (watchdog_)
@@ -264,22 +257,45 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
                                    uint32 flush_count,
                                    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
-  gpu::CommandBuffer::State state;
+  gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (flush_count - last_flush_count_ >= 0x8000000U) {
     // We received this message out-of-order. This should not happen but is here
     // to catch regressions. Ignore the message.
     NOTREACHED() << "Received an AsyncFlush message out-of-order";
-    state = command_buffer_->GetState();
+    GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
+    Send(reply_message);
   } else {
     last_flush_count_ = flush_count;
-    state = command_buffer_->FlushSync(put_offset, last_known_get);
-  }
-  if (state.error == gpu::error::kLostContext &&
-      gfx::GLContext::LosesAllContextsOnContextLost())
-    channel_->LoseAllContexts();
 
-  GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
-  Send(reply_message);
+    // Reply immediately if the client was out of date with the current get
+    // offset.
+    bool reply_immediately = state.get_offset != last_known_get;
+    if (reply_immediately) {
+      GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
+      Send(reply_message);
+    }
+
+    // Process everything up to the put offset.
+    state = command_buffer_->FlushSync(put_offset, last_known_get);
+
+    // Lose all contexts if the context was lost.
+    if (state.error == gpu::error::kLostContext &&
+        gfx::GLContext::LosesAllContextsOnContextLost()) {
+      channel_->LoseAllContexts();
+    }
+
+    // Then if the client was up-to-date with the get offset, reply to the
+    // synchronpous IPC only after processing all commands are processed. This
+    // prevents the client from "spinning" when it fills up the command buffer.
+    // Otherwise, since the state has changed since the immediate reply, send
+    // an asyncronous state update back to the client.
+    if (!reply_immediately) {
+      GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
+      Send(reply_message);
+    } else {
+      ReportState();
+    }
+  }
 }
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
@@ -292,10 +308,15 @@ void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
     // to catch regressions. Ignore the message.
     NOTREACHED() << "Received a Flush message out-of-order";
   }
-  // TODO(piman): Do this everytime the scheduler finishes processing a batch of
-  // commands.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      task_factory_.NewRunnableMethod(&GpuCommandBufferStub::ReportState));
+
+  ReportState();
+}
+
+void GpuCommandBufferStub::OnRescheduled() {
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+  command_buffer_->Flush(state.put_offset);
+
+  ReportState();
 }
 
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
@@ -377,33 +398,6 @@ void GpuCommandBufferStub::OnSwapBuffers() {
 void GpuCommandBufferStub::OnCommandProcessed() {
   if (watchdog_)
     watchdog_->CheckArmed();
-}
-
-void GpuCommandBufferStub::HandleDeferredMessages() {
-  // Empty the deferred queue so OnMessageRecieved does not defer on that
-  // account and to prevent an infinite loop if the scheduler is unscheduled
-  // as a result of handling already deferred messages.
-  std::queue<IPC::Message*> deferred_messages_copy;
-  std::swap(deferred_messages_copy, deferred_messages_);
-
-  while (!deferred_messages_copy.empty()) {
-    scoped_ptr<IPC::Message> message(deferred_messages_copy.front());
-    deferred_messages_copy.pop();
-
-    OnMessageReceived(*message);
-  }
-}
-
-void GpuCommandBufferStub::OnScheduled() {
-  // Post a task to handle any deferred messages. The deferred message queue is
-  // not emptied here, which ensures that OnMessageReceived will continue to
-  // defer newly received messages until the ones in the queue have all been
-  // handled by HandleDeferredMessages. HandleDeferredMessages is invoked as a
-  // task to prevent reentrancy.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &GpuCommandBufferStub::HandleDeferredMessages));
 }
 
 #if defined(OS_MACOSX)
@@ -492,19 +486,6 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
   }
 }
 #endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
-
-void GpuCommandBufferStub::CommandBufferWasDestroyed() {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::CommandBufferWasDestroyed");
-  // In case the renderer is currently blocked waiting for a sync reply from
-  // the stub, this method allows us to cleanup and unblock pending messages.
-  if (scheduler_.get()) {
-    while (!scheduler_->IsScheduled())
-      scheduler_->SetScheduled(true);
-  }
-  // Handle any deferred messages now that the scheduler is not blocking
-  // message handling.
-  HandleDeferredMessages();
-}
 
 void GpuCommandBufferStub::AddSetTokenCallback(
     const base::Callback<void(int32)>& callback) {

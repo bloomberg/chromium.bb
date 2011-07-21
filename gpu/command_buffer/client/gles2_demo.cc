@@ -56,9 +56,9 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
   if (!command_buffer->Initialize(size))
     return NULL;
 
-  GpuScheduler* gpu_scheduler = new GpuScheduler(command_buffer.get(),
-                                                 NULL,
-                                                 NULL);
+  GpuScheduler* gpu_scheduler = GpuScheduler::Create(command_buffer.get(),
+                                                     NULL,
+                                                     NULL);
   if (!gpu_scheduler->Initialize(reinterpret_cast<HWND>(hwnd),
                                  gfx::Size(),
                                  false,

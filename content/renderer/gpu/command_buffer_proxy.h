@@ -49,6 +49,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
+  virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
@@ -96,11 +97,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 #if defined(OS_MACOSX)
   virtual void SetWindowSize(const gfx::Size& size);
 #endif
-
-  // Get the last state received from the service without synchronizing.
-  State GetLastState() {
-    return last_state_;
-  }
 
  private:
 

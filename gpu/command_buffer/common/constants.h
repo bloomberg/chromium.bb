@@ -21,28 +21,12 @@ namespace error {
     kUnknownCommand,
     kInvalidArguments,
     kLostContext,
-    kGenericError,
-
-    // This is not an error. It is returned by WaitLatch when it is blocked.
-    // When blocked, the context will not reschedule itself until another
-    // context executes a SetLatch command.
-    kWaiting,
-
-    // This is not an error either. It just hints the scheduler that it can exit
-    // its loop, update state, and schedule other command buffers.
-    kYield
+    kGenericError
   };
 
   // Return true if the given error code is an actual error.
   inline bool IsError(Error error) {
-    switch (error) {
-      case kNoError:
-      case kWaiting:
-      case kYield:
-        return false;
-      default:
-        return true;
-    }
+    return error != kNoError;
   }
 
   // Provides finer grained information about why the context was lost.

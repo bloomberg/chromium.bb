@@ -158,7 +158,6 @@ namespace cmd {
   OP(SetBucketDataImmediate)        /*  9 */ \
   OP(GetBucketSize)                 /* 10 */ \
   OP(GetBucketData)                 /* 11 */ \
-  OP(YieldScheduler)                /* 12 */ \
 
 // Common commands.
 enum CommandId {
@@ -642,32 +641,6 @@ COMPILE_ASSERT(offsetof(GetBucketData, shared_memory_id) == 16,
                Offsetof_GetBucketData_shared_memory_id_not_16);
 COMPILE_ASSERT(offsetof(GetBucketData, shared_memory_offset) == 20,
                Offsetof_GetBucketData_shared_memory_offset_not_20);
-
-// A Yield command. Hints the scheduler that this is a good point to update the
-// state and schedule other command buffers.
-struct YieldScheduler {
-  typedef YieldScheduler ValueType;
-  static const CommandId kCmdId = kYieldScheduler;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init() {
-    SetHeader();
-  }
-  static void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(YieldScheduler) == 4, Sizeof_YieldScheduler_is_not_4);
-COMPILE_ASSERT(offsetof(YieldScheduler, header) == 0,
-               Offsetof_YieldScheduler_header_not_0);
 
 }  // namespace cmd
 

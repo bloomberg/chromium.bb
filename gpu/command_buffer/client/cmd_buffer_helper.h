@@ -83,11 +83,6 @@ class CommandBufferHelper {
   //   the value of the token to wait for.
   void WaitForToken(int32 token);
 
-  // Inserts a yield command, signaling the scheduler that this is a good point
-  // to update the state and schedule other command buffers. This is
-  // particularly useful after inserting a token that will be waited on.
-  void YieldScheduler();
-
   // Called prior to each command being issued. Waits for a certain amount of
   // space to be available. Returns address of space.
   CommandBufferEntry* GetSpace(uint32 entries);
@@ -121,7 +116,11 @@ class CommandBufferHelper {
   }
 
   int32 last_token_read() const {
-    return last_token_read_;
+    return command_buffer_->GetLastState().token;
+  }
+
+  int32 get_offset() const {
+    return command_buffer_->GetLastState().get_offset;
   }
 
   error::Error GetError();
@@ -221,11 +220,9 @@ class CommandBufferHelper {
 
   // Returns the number of available entries (they may not be contiguous).
   int32 AvailableEntries() {
-    return (get_ - put_ - 1 + usable_entry_count_) % usable_entry_count_;
+    return (get_offset() - put_ - 1 + usable_entry_count_) %
+        usable_entry_count_;
   }
-
-  // Synchronize with current service state.
-  void SynchronizeState(const CommandBuffer::State& state);
 
   CommandBuffer* command_buffer_;
   Buffer ring_buffer_;
@@ -233,8 +230,6 @@ class CommandBufferHelper {
   int32 total_entry_count_;  // the total number of entries
   int32 usable_entry_count_;  // the usable number (ie, minus space for jump)
   int32 token_;
-  int32 last_token_read_;
-  int32 get_;
   int32 put_;
   int32 last_put_sent_;
   int commands_issued_;

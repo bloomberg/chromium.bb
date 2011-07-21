@@ -29,6 +29,7 @@ class CommandBufferService : public CommandBuffer {
   virtual bool Initialize(base::SharedMemory* buffer, int32 size);
   virtual Buffer GetRingBuffer();
   virtual State GetState();
+  virtual State GetLastState();
   virtual void Flush(int32 put_offset);
   virtual State FlushSync(int32 put_offset, int32 last_known_get);
   virtual void SetGetOffset(int32 get_offset);
@@ -50,7 +51,7 @@ class CommandBufferService : public CommandBuffer {
   // writer a means of waiting for the reader to make some progress before
   // attempting to write more to the command buffer. Takes ownership of
   // callback.
-  virtual void SetPutOffsetChangeCallback(Callback1<bool>::Type* callback);
+  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
   virtual void SetParseErrorCallback(Callback0::Type* callback);
 
  private:
@@ -58,7 +59,7 @@ class CommandBufferService : public CommandBuffer {
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
-  scoped_ptr<Callback1<bool>::Type> put_offset_change_callback_;
+  scoped_ptr<Callback0::Type> put_offset_change_callback_;
   scoped_ptr<Callback0::Type> parse_error_callback_;
   std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;

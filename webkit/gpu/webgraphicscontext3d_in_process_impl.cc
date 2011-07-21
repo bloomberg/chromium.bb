@@ -707,6 +707,7 @@ void WebGraphicsContext3DInProcessImpl::waitLatchCHROMIUM(
 void WebGraphicsContext3DInProcessImpl::setLatchCHROMIUM(
     WGC3Duint latch_id)
 {
+  glFlush();
 }
 
 WebString WebGraphicsContext3DInProcessImpl::

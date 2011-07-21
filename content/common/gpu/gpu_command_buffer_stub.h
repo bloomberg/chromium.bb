@@ -52,6 +52,9 @@ class GpuCommandBufferStub
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
+  // Whether this command buffer can currently handle IPC messages.
+  bool IsScheduled();
+
   // Get the GLContext associated with this object.
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
@@ -88,10 +91,6 @@ class GpuCommandBufferStub
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
 #endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
 
-  // Called when the command buffer was destroyed, and the stub should now
-  // unblock itself and handle pending messages.
-  void CommandBufferWasDestroyed();
-
   // Register a callback to be Run() whenever the underlying scheduler receives
   // a set_token() call.  The callback will be Run() with the just-set token as
   // its only parameter.  Multiple callbacks may be registered.
@@ -111,6 +110,7 @@ class GpuCommandBufferStub
                uint32 flush_count,
                IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
+  void OnRescheduled();
   void OnCreateTransferBuffer(int32 size,
                               int32 id_request,
                               IPC::Message* reply_message);
@@ -127,8 +127,6 @@ class GpuCommandBufferStub
 
   void OnSwapBuffers();
   void OnCommandProcessed();
-  void HandleDeferredMessages();
-  void OnScheduled();
   void OnParseError();
 
 #if defined(OS_MACOSX)
@@ -166,7 +164,6 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  std::queue<IPC::Message*> deferred_messages_;
   std::vector<base::Callback<void(int32)> > set_token_callbacks_;
 
   // SetParent may be called before Initialize, in which case we need to keep

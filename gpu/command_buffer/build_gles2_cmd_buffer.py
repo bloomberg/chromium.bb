@@ -217,8 +217,6 @@ GL_APICALL void         GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLidBi
 GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
-GL_APICALL void         GL_APIENTRY glSetLatchCHROMIUM (GLuint latch_id);
-GL_APICALL void         GL_APIENTRY glWaitLatchCHROMIUM (GLuint latch_id);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
@@ -426,8 +424,6 @@ _CMD_ID_TABLE = {
   'ResizeCHROMIUM':                                            448,
   'GetRequestableExtensionsCHROMIUM':                          449,
   'RequestExtensionCHROMIUM':                                  450,
-  'SetLatchCHROMIUM':                                          451,
-  'WaitLatchCHROMIUM':                                         452,
   'SetSurfaceCHROMIUM':                                        453,
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
@@ -1736,12 +1732,6 @@ _FUNCTION_INFO = {
     'cmd_args': 'uint32 bucket_id',
     'extension': True,
     'chromium': True,
-  },
-  'SetLatchCHROMIUM': {
-    'type': 'Custom',
-  },
-  'WaitLatchCHROMIUM': {
-    'type': 'Custom',
   },
   'RateLimitOffscreenContextCHROMIUM': {
     'gen_cmd': False,

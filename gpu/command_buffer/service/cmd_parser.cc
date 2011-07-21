@@ -64,7 +64,7 @@ error::Error CommandParser::ProcessCommand() {
   }
 
   // If get was not set somewhere else advance it.
-  if (result != error::kWaiting && get == get_)
+  if (get == get_)
     get_ = (get + header.size) % entry_count_;
   return result;
 }

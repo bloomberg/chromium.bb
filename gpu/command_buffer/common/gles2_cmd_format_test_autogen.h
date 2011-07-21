@@ -3510,32 +3510,6 @@ TEST(GLES2FormatTest, RequestExtensionCHROMIUM) {
   EXPECT_EQ(static_cast<uint32>(11), cmd.bucket_id);
 }
 
-TEST(GLES2FormatTest, SetLatchCHROMIUM) {
-  SetLatchCHROMIUM cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11));
-  EXPECT_EQ(static_cast<uint32>(SetLatchCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.latch_id);
-}
-
-TEST(GLES2FormatTest, WaitLatchCHROMIUM) {
-  WaitLatchCHROMIUM cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11));
-  EXPECT_EQ(static_cast<uint32>(WaitLatchCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.latch_id);
-}
-
 TEST(GLES2FormatTest, SetSurfaceCHROMIUM) {
   SetSurfaceCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(

@@ -78,17 +78,18 @@ class CommandBuffer {
   // Returns the current status.
   virtual State GetState() = 0;
 
+  // Returns the last state without synchronizing with the service.
+  virtual State GetLastState();
+
   // The writer calls this to update its put offset. This ensures the reader
-  // sees the latest added commands, and will eventually process them.
+  // sees the latest added commands, and will eventually process them. On the
+  // service side, commands are processed up to the given put_offset before
+  // subsequent Flushes on the same GpuChannel.
   virtual void Flush(int32 put_offset) = 0;
 
   // The writer calls this to update its put offset. This function returns the
-  // reader's most recent get offset. Does not return until after the put offset
-  // change callback has been invoked. Returns -1 if the put offset is invalid.
-  // If last_known_get is different from the reader's current get pointer, this
-  // function will return immediately, otherwise it guarantees that the reader
-  // has processed some commands before returning (assuming the command buffer
-  // isn't empty and there is no error).
+  // reader's most recent get offset. Does not return until all pending commands
+  // have been executed.
   virtual State FlushSync(int32 put_offset, int32 last_known_get) = 0;
 
   // Sets the current get offset. This can be called from any thread.
