@@ -76,29 +76,24 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
   return m1.raw_score >= m2.raw_score;
 }
 
-struct InMemoryURLIndex::TermCharWordSet {
-  TermCharWordSet()  // Required for STL resize().
-      : char_(0),
-        word_id_set_(),
-        used_(false) {}
-  TermCharWordSet(const char16& uni_char,
-                  const WordIDSet& word_id_set,
-                  bool used)
-      : char_(uni_char),
-        word_id_set_(word_id_set),
-        used_(used) {}
+InMemoryURLIndex::SearchTermCacheItem::SearchTermCacheItem(
+    const WordIDSet& word_id_set,
+    const HistoryIDSet& history_id_set)
+    : word_id_set_(word_id_set),
+      history_id_set_(history_id_set),
+      used_(true) {}
 
-  // Predicate for STL algorithm use.
-  bool is_not_used() const { return !used_; }
-
-  char16 char_;
-  WordIDSet word_id_set_;
-  bool used_;  // true if this set has been used for the current term search.
-};
+InMemoryURLIndex::SearchTermCacheItem::SearchTermCacheItem()
+    : used_(true) {}
 
 // Comparison function for sorting TermMatches by their offsets.
 bool MatchOffsetLess(const TermMatch& m1, const TermMatch& m2) {
   return m1.offset < m2.offset;
+}
+
+// Comparison function for sorting search terms by descending length.
+bool LengthGreater(const string16& string_a, const string16& string_b) {
+  return string_a.length() > string_b.length();
 }
 
 // std::accumulate helper function to add up TermMatches' lengths.
@@ -249,8 +244,8 @@ void InMemoryURLIndex::ClearPrivateData() {
   word_map_.clear();
   char_word_map_.clear();
   word_id_history_map_.clear();
-  term_char_word_set_cache_.clear();
   history_info_map_.clear();
+  search_term_cache_.clear();
 }
 
 bool InMemoryURLIndex::RestoreFromCacheFile() {
@@ -349,7 +344,7 @@ void InMemoryURLIndex::UpdateURL(URLID row_id, const URLRow& row) {
     history_info_map_.erase(row_id);
   }
   // This invalidates the cache.
-  term_char_word_set_cache_.clear();
+  search_term_cache_.clear();
   // TODO(mrossetti): Record this transaction in the cache.
 }
 
@@ -361,7 +356,7 @@ void InMemoryURLIndex::DeleteURL(URLID row_id) {
   // will propagate to the user.
   history_info_map_.erase(row_id);
   // This invalidates the word cache.
-  term_char_word_set_cache_.clear();
+  search_term_cache_.clear();
   // TODO(mrossetti): Record this transaction in the cache.
 }
 
@@ -371,9 +366,9 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     const String16Vector& terms) {
   ScoredHistoryMatches scored_items;
   if (!terms.empty()) {
-    // Reset used_ flags for term_char_word_set_cache_. We use a basic mark-
-    // and-sweep approach.
-    ResetTermCharWordSetCache();
+    // Reset used_ flags for search_term_cache_. We use a basic mark-and-sweep
+    // approach.
+    ResetSearchTermCache();
 
     // Lowercase the terms.
     // TODO(mrossetti): Another opportunity for a transform algorithm.
@@ -382,7 +377,7 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
          term_iter != terms.end(); ++term_iter)
       lower_terms.push_back(base::i18n::ToLower(*term_iter));
 
-    String16Vector::value_type all_terms(JoinString(lower_terms, ' '));
+    string16 all_terms(JoinString(lower_terms, ' '));
     HistoryIDSet history_id_set = HistoryIDSetFromWords(all_terms);
 
     // Don't perform any scoring (and don't return any matches) if the
@@ -409,23 +404,22 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     }
   }
 
-  // Remove any stale TermCharWordSet's.
-  term_char_word_set_cache_.erase(
-      std::remove_if(term_char_word_set_cache_.begin(),
-                     term_char_word_set_cache_.end(),
-                     std::mem_fun_ref(&TermCharWordSet::is_not_used)),
-      term_char_word_set_cache_.end());
+  // Remove any stale SearchTermCacheItems.
+  for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
+       cache_iter != search_term_cache_.end(); ) {
+    if (!cache_iter->second.used_)
+      search_term_cache_.erase(cache_iter++);
+    else
+      ++cache_iter;
+  }
+
   return scored_items;
 }
 
-void InMemoryURLIndex::ResetTermCharWordSetCache() {
-  // TODO(mrossetti): Consider keeping more of the cache around for possible
-  // repeat searches, except a 'shortcuts' approach might be better for that.
-  // TODO(mrossetti): Change TermCharWordSet to a class and use for_each.
-  for (TermCharWordSetVector::iterator iter =
-       term_char_word_set_cache_.begin();
-       iter != term_char_word_set_cache_.end(); ++iter)
-    iter->used_ = false;
+void InMemoryURLIndex::ResetSearchTermCache() {
+  for (SearchTermCacheMap::iterator iter = search_term_cache_.begin();
+       iter != search_term_cache_.end(); ++iter)
+    iter->second.used_ = false;
 }
 
 InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDSetFromWords(
@@ -436,49 +430,124 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDSetFromWords(
   // a string like "http://www.somewebsite.com" which, from our perspective,
   // is four words: 'http', 'www', 'somewebsite', and 'com'.
   HistoryIDSet history_id_set;
-  String16Set words = WordSetFromString16(uni_string);
-  bool first_word = true;
-  for (String16Set::iterator iter = words.begin();
-       iter != words.end(); ++iter) {
-    String16Set::value_type uni_word = *iter;
-    HistoryIDSet term_history_id_set =
-        InMemoryURLIndex::HistoryIDsForTerm(uni_word);
-    if (first_word) {
-      history_id_set.swap(term_history_id_set);
-      first_word = false;
-    } else {
-      HistoryIDSet old_history_id_set(history_id_set);
+  String16Vector terms = WordVectorFromString16(uni_string, true);
+  // Sort the terms into the longest first as such are likely to narrow down
+  // the results quicker. Also, single character terms are the most expensive
+  // to process so save them for last.
+  std::sort(terms.begin(), terms.end(), LengthGreater);
+  for (String16Vector::iterator iter = terms.begin(); iter != terms.end();
+       ++iter) {
+    string16 uni_word = *iter;
+    HistoryIDSet term_history_set = HistoryIDsForTerm(uni_word);
+    if (term_history_set.empty()) {
       history_id_set.clear();
-      std::set_intersection(old_history_id_set.begin(),
-                            old_history_id_set.end(),
-                            term_history_id_set.begin(),
-                            term_history_id_set.end(),
-                            std::inserter(history_id_set,
-                                          history_id_set.begin()));
+      break;
+    }
+    if (iter == terms.begin()) {
+      history_id_set.swap(term_history_set);
+    } else {
+      HistoryIDSet new_history_id_set;
+      std::set_intersection(history_id_set.begin(), history_id_set.end(),
+                            term_history_set.begin(), term_history_set.end(),
+                            std::inserter(new_history_id_set,
+                                          new_history_id_set.begin()));
+      history_id_set.swap(new_history_id_set);
     }
   }
   return history_id_set;
 }
 
 InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
-    const string16& uni_word) {
-  InMemoryURLIndex::HistoryIDSet history_id_set;
+    const string16& term) {
+  if (term.empty())
+    return HistoryIDSet();
 
-  // For each unique character in the word, in order of first appearance, get
-  // the char/word_id map entry and intersect with the set in an incremental
-  // manner.
-  Char16Vector uni_chars = Char16VectorFromString16(uni_word);
-  WordIDSet word_id_set(WordIDSetForTermChars(uni_chars));
+  // TODO(mrossetti): Consider optimizing for very common terms such as
+  // 'http[s]', 'www', 'com', etc. Or collect the top 100 more frequently
+  // occuring words in the user's searches.
 
-  // TODO(mrossetti): At this point, as a possible optimization, we could
-  // scan through all candidate words and make sure the |uni_word| is a
-  // substring within the candidate words, eliminating those which aren't.
-  // I'm not sure it would be worth the effort. And remember, we've got to do
-  // a final substring match in order to get the highlighting ranges later
-  // in the process in any case.
+  size_t term_length = term.length();
+  InMemoryURLIndex::WordIDSet word_id_set;
+  if (term_length > 1) {
+    // See if this term or a prefix thereof is present in the cache.
+    SearchTermCacheMap::iterator best_prefix(search_term_cache_.end());
+    for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
+         cache_iter != search_term_cache_.end(); ++cache_iter) {
+      if (StartsWith(term, cache_iter->first, false) &&
+          (best_prefix == search_term_cache_.end() ||
+           cache_iter->first.length() > best_prefix->first.length()))
+        best_prefix = cache_iter;
+    }
+
+    // If a prefix was found then determine the leftover characters to be used
+    // for further refining the results from that prefix.
+    Char16Set prefix_chars;
+    string16 leftovers(term);
+    if (best_prefix != search_term_cache_.end()) {
+      // If the prefix is an exact match for the term then grab the cached
+      // results and we're done.
+      size_t prefix_length = best_prefix->first.length();
+      if (prefix_length == term_length) {
+        best_prefix->second.used_ = true;
+        return best_prefix->second.history_id_set_;
+      }
+
+      // Otherwise we have a handy starting point.
+      // If there are no history results for this prefix then we can bail early
+      // as there will be no history results for the full term.
+      if (best_prefix->second.history_id_set_.empty()) {
+        search_term_cache_[term] = SearchTermCacheItem();
+        return HistoryIDSet();
+      }
+      word_id_set = best_prefix->second.word_id_set_;
+      prefix_chars = Char16SetFromString16(best_prefix->first);
+      leftovers = term.substr(prefix_length);
+    }
+
+    // Filter for each remaining, unique character in the term.
+    Char16Set leftover_chars = Char16SetFromString16(leftovers);
+    Char16Set unique_chars;
+    std::set_difference(leftover_chars.begin(), leftover_chars.end(),
+                        prefix_chars.begin(), prefix_chars.end(),
+                        std::inserter(unique_chars, unique_chars.begin()));
+
+    // Reduce the word set with any leftover, unprocessed characters.
+    if (!unique_chars.empty()) {
+      WordIDSet leftover_set(WordIDSetForTermChars(unique_chars));
+      // We might come up empty on the leftovers.
+      if (leftover_set.empty()) {
+        search_term_cache_[term] = SearchTermCacheItem();
+        return HistoryIDSet();
+      }
+      // Or there may not have been a prefix from which to start.
+      if (prefix_chars.empty()) {
+        word_id_set.swap(leftover_set);
+      } else {
+        WordIDSet new_word_id_set;
+        std::set_intersection(word_id_set.begin(), word_id_set.end(),
+                              leftover_set.begin(), leftover_set.end(),
+                              std::inserter(new_word_id_set,
+                                            new_word_id_set.begin()));
+        word_id_set.swap(new_word_id_set);
+      }
+    }
+
+    // We must filter the word list because the resulting word set surely
+    // contains words which do not have the search term as a proper subset.
+    for (WordIDSet::iterator word_set_iter = word_id_set.begin();
+         word_set_iter != word_id_set.end(); ) {
+      if (word_list_[*word_set_iter].find(term) == string16::npos)
+        word_id_set.erase(word_set_iter++);
+      else
+        ++word_set_iter;
+    }
+  } else {
+    word_id_set = WordIDSetForTermChars(Char16SetFromString16(term));
+  }
 
   // If any words resulted then we can compose a set of history IDs by unioning
   // the sets from each word.
+  HistoryIDSet history_id_set;
   if (!word_id_set.empty()) {
     for (WordIDSet::iterator word_id_iter = word_id_set.begin();
          word_id_iter != word_id_set.end(); ++word_id_iter) {
@@ -491,6 +560,11 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
       }
     }
   }
+
+  // Record a new cache entry for this word if the term is longer than
+  // a single character.
+  if (term_length > 1)
+    search_term_cache_[term] = SearchTermCacheItem(word_id_set, history_id_set);
 
   return history_id_set;
 }
@@ -533,37 +607,22 @@ InMemoryURLIndex::String16Vector InMemoryURLIndex::WordVectorFromString16(
 }
 
 // static
-InMemoryURLIndex::Char16Vector InMemoryURLIndex::Char16VectorFromString16(
-    const string16& uni_word) {
-  InMemoryURLIndex::Char16Vector characters;
-  InMemoryURLIndex::Char16Set unique_characters;
-  for (string16::const_iterator iter = uni_word.begin();
-       iter != uni_word.end(); ++iter) {
-    if (!unique_characters.count(*iter)) {
-      unique_characters.insert(*iter);
-      characters.push_back(*iter);
-    }
-  }
-  return characters;
-}
-
-// static
 InMemoryURLIndex::Char16Set InMemoryURLIndex::Char16SetFromString16(
-    const string16& uni_word) {
+    const string16& term) {
   Char16Set characters;
-  for (string16::const_iterator iter = uni_word.begin();
-       iter != uni_word.end(); ++iter)
+  for (string16::const_iterator iter = term.begin(); iter != term.end();
+       ++iter)
     characters.insert(*iter);
   return characters;
 }
 
-void InMemoryURLIndex::AddWordToIndex(const string16& uni_word,
+void InMemoryURLIndex::AddWordToIndex(const string16& term,
                                       HistoryID history_id) {
-  WordMap::iterator word_pos = word_map_.find(uni_word);
+  WordMap::iterator word_pos = word_map_.find(term);
   if (word_pos != word_map_.end())
     UpdateWordHistory(word_pos->second, history_id);
   else
-    AddWordHistory(uni_word, history_id);
+    AddWordHistory(term, history_id);
 }
 
 void InMemoryURLIndex::UpdateWordHistory(WordID word_id, HistoryID history_id) {
@@ -575,20 +634,20 @@ void InMemoryURLIndex::UpdateWordHistory(WordID word_id, HistoryID history_id) {
 
 // Add a new word to the word list and the word map, and then create a
 // new entry in the word/history map.
-void InMemoryURLIndex::AddWordHistory(const string16& uni_word,
+void InMemoryURLIndex::AddWordHistory(const string16& term,
                                       HistoryID history_id) {
-  word_list_.push_back(uni_word);
+  word_list_.push_back(term);
   WordID word_id = word_list_.size() - 1;
-  word_map_[uni_word] = word_id;
+  word_map_[term] = word_id;
   HistoryIDSet history_id_set;
   history_id_set.insert(history_id);
   word_id_history_map_[word_id] = history_id_set;
   // For each character in the newly added word (i.e. a word that is not
   // already in the word index), add the word to the character index.
-  Char16Set characters = Char16SetFromString16(uni_word);
+  Char16Set characters = Char16SetFromString16(term);
   for (Char16Set::iterator uni_char_iter = characters.begin();
        uni_char_iter != characters.end(); ++uni_char_iter) {
-    Char16Set::value_type uni_char = *uni_char_iter;
+    char16 uni_char = *uni_char_iter;
     CharWordIDMap::iterator char_iter = char_word_map_.find(uni_char);
     if (char_iter != char_word_map_.end()) {
       // Update existing entry in the char/word index.
@@ -604,29 +663,11 @@ void InMemoryURLIndex::AddWordHistory(const string16& uni_word,
 }
 
 InMemoryURLIndex::WordIDSet InMemoryURLIndex::WordIDSetForTermChars(
-    const InMemoryURLIndex::Char16Vector& uni_chars) {
-  size_t index = CachedResultsIndexForTerm(uni_chars);
-
-  // If there were no unprocessed characters in the search term |uni_chars|
-  // then we can use the cached one as-is as the results with no further
-  // filtering.
-  if (index != kNoCachedResultForTerm && index == uni_chars.size() - 1)
-    return term_char_word_set_cache_[index].word_id_set_;
-
-  // Some or all of the characters remain to be indexed so trim the cache.
-  if (index + 1 < term_char_word_set_cache_.size())
-    term_char_word_set_cache_.resize(index + 1);
+    const Char16Set& term_chars) {
   WordIDSet word_id_set;
-  // Take advantage of our cached starting point, if any.
-  Char16Vector::const_iterator c_iter = uni_chars.begin();
-  if (index != kNoCachedResultForTerm) {
-    word_id_set = term_char_word_set_cache_[index].word_id_set_;
-    c_iter += index + 1;
-  }
-  // Now process the remaining characters in the search term.
-  for (; c_iter != uni_chars.end(); ++c_iter) {
-    Char16Vector::value_type uni_char = *c_iter;
-    CharWordIDMap::iterator char_iter = char_word_map_.find(uni_char);
+  for (Char16Set::const_iterator c_iter = term_chars.begin();
+       c_iter != term_chars.end(); ++c_iter) {
+    CharWordIDMap::iterator char_iter = char_word_map_.find(*c_iter);
     if (char_iter == char_word_map_.end()) {
       // A character was not found so there are no matching results: bail.
       word_id_set.clear();
@@ -640,35 +681,20 @@ InMemoryURLIndex::WordIDSet InMemoryURLIndex::WordIDSetForTermChars(
       break;
     }
 
-    if (word_id_set.empty()) {
+    if (c_iter == term_chars.begin()) {
+      // First character results becomes base set of results.
       word_id_set = char_word_id_set;
     } else {
-      WordIDSet old_word_id_set(word_id_set);
-      word_id_set.clear();
-      std::set_intersection(old_word_id_set.begin(),
-                            old_word_id_set.end(),
-                            char_word_id_set.begin(),
-                            char_word_id_set.end(),
-                            std::inserter(word_id_set,
-                            word_id_set.begin()));
+      // Subsequent character results get intersected in.
+      WordIDSet new_word_id_set;
+      std::set_intersection(word_id_set.begin(), word_id_set.end(),
+                            char_word_id_set.begin(), char_word_id_set.end(),
+                            std::inserter(new_word_id_set,
+                                          new_word_id_set.begin()));
+      word_id_set.swap(new_word_id_set);
     }
-    // Add this new char/set instance to the cache.
-    term_char_word_set_cache_.push_back(TermCharWordSet(
-        uni_char, word_id_set, true));
   }
   return word_id_set;
-}
-
-size_t InMemoryURLIndex::CachedResultsIndexForTerm(
-    const InMemoryURLIndex::Char16Vector& uni_chars) {
-  TermCharWordSetVector::iterator t_iter = term_char_word_set_cache_.begin();
-  for (Char16Vector::const_iterator c_iter = uni_chars.begin();
-       (c_iter != uni_chars.end()) &&
-       (t_iter != term_char_word_set_cache_.end()) &&
-       (*c_iter == t_iter->char_);
-       ++c_iter, ++t_iter)
-    t_iter->used_ = true;  // Update the cache.
-  return t_iter - term_char_word_set_cache_.begin() - 1;
 }
 
 // static
@@ -681,7 +707,7 @@ TermMatches InMemoryURLIndex::MatchTermInString(const string16& term,
   TermMatches matches;
   for (size_t location = short_string.find(term); location != string16::npos;
        location = short_string.find(term, location + 1)) {
-    matches.push_back(TermMatch(term_num, location, term.size()));
+    matches.push_back(TermMatch(term_num, location, term.length()));
   }
   return matches;
 }
@@ -691,8 +717,7 @@ TermMatches InMemoryURLIndex::SortAndDeoverlap(const TermMatches& matches) {
   if (matches.empty())
     return matches;
   TermMatches sorted_matches = matches;
-  std::sort(sorted_matches.begin(), sorted_matches.end(),
-            MatchOffsetLess);
+  std::sort(sorted_matches.begin(), sorted_matches.end(), MatchOffsetLess);
   TermMatches clean_matches;
   TermMatch last_match = sorted_matches[0];
   clean_matches.push_back(last_match);
@@ -775,10 +800,10 @@ ScoredHistoryMatch InMemoryURLIndex::ScoredMatchForURL(
   // Get partial scores based on term matching. Note that the score for
   // each of the URL and title are adjusted by the fraction of the
   // terms appearing in each.
-  int url_score = ScoreComponentForMatches(match.url_matches, url.size()) *
+  int url_score = ScoreComponentForMatches(match.url_matches, url.length()) *
       match.url_matches.size() / terms.size();
   int title_score =
-      ScoreComponentForMatches(match.title_matches, title.size()) *
+      ScoreComponentForMatches(match.title_matches, title.length()) *
       match.title_matches.size() / terms.size();
   // Arbitrarily pick the best.
   // TODO(mrossetti): It might make sense that a term which appears in both the
@@ -1086,7 +1111,7 @@ void InMemoryURLIndex::SaveHistoryInfoMap(
     map_entry->set_history_id(iter->first);
     const URLRow& url_row(iter->second);
     // Note: We only save information that contributes to the index so there
-    // is no need to save term_char_word_set_cache_ (not persistent),
+    // is no need to save search_term_cache_ (not persistent),
     // languages_, etc.
     map_entry->set_visit_count(url_row.visit_count());
     map_entry->set_typed_count(url_row.typed_count());

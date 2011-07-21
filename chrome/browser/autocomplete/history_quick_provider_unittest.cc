@@ -69,7 +69,7 @@ struct TestURLInfo {
   {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
   {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
   {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
-   "Dogs & Cats & Mice", 1, 1, 0},
+   "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
 };
 
 class HistoryQuickProviderTest : public TestingBrowserProcessTest,
@@ -83,16 +83,20 @@ class HistoryQuickProviderTest : public TestingBrowserProcessTest,
   virtual void OnProviderUpdate(bool updated_matches);
 
  protected:
-  void SetUp() {
-    profile_.reset(new TestingProfile());
-    profile_->CreateHistoryService(true, false);
-    profile_->CreateBookmarkModel(true);
-    profile_->BlockUntilBookmarkModelLoaded();
-    history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    EXPECT_TRUE(history_service_);
-    provider_ = new HistoryQuickProvider(this, profile_.get());
-    FillData();
-  }
+  class SetShouldContain : public std::unary_function<const std::string&,
+                                                      std::set<std::string> > {
+   public:
+    explicit SetShouldContain(const ACMatches& matched_urls);
+
+    void operator()(const std::string& expected);
+
+    std::set<std::string> LeftOvers() const { return matches_; }
+
+   private:
+    std::set<std::string> matches_;
+  };
+
+  void SetUp();
 
   void TearDown() {
     provider_ = NULL;
@@ -120,6 +124,17 @@ class HistoryQuickProviderTest : public TestingBrowserProcessTest,
  private:
   scoped_refptr<HistoryQuickProvider> provider_;
 };
+
+void HistoryQuickProviderTest::SetUp() {
+  profile_.reset(new TestingProfile());
+  profile_->CreateHistoryService(true, false);
+  profile_->CreateBookmarkModel(true);
+  profile_->BlockUntilBookmarkModelLoaded();
+  history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  EXPECT_TRUE(history_service_);
+  provider_ = new HistoryQuickProvider(this, profile_.get());
+  FillData();
+}
 
 void HistoryQuickProviderTest::OnProviderUpdate(bool updated_matches) {
   MessageLoop::current()->Quit();
@@ -155,29 +170,24 @@ void HistoryQuickProviderTest::FillData() {
   provider_->SetIndexForTesting(index);
 }
 
-class SetShouldContain : public std::unary_function<const std::string&,
-                                                    std::set<std::string> > {
- public:
-  explicit SetShouldContain(const ACMatches& matched_urls) {
-    for (ACMatches::const_iterator iter = matched_urls.begin();
-         iter != matched_urls.end(); ++iter)
-      matches_.insert(iter->destination_url.spec());
-  }
+HistoryQuickProviderTest::SetShouldContain::SetShouldContain(
+    const ACMatches& matched_urls) {
+  for (ACMatches::const_iterator iter = matched_urls.begin();
+       iter != matched_urls.end(); ++iter)
+    matches_.insert(iter->destination_url.spec());
+}
 
-  void operator()(const std::string& expected) {
-    EXPECT_EQ(1U, matches_.erase(expected)) << "Results did not contain '"
-        << expected << "' but should have.";
-  }
+void HistoryQuickProviderTest::SetShouldContain::operator()(
+    const std::string& expected) {
+  EXPECT_EQ(1U, matches_.erase(expected))
+      << "Results did not contain '" << expected << "' but should have.";
+}
 
-  std::set<std::string> LeftOvers() const { return matches_; }
-
- private:
-  std::set<std::string> matches_;
-};
 
 void HistoryQuickProviderTest::RunTest(const string16 text,
                                        std::vector<std::string> expected_urls,
                                        std::string expected_top_result) {
+  SCOPED_TRACE(text);  // Minimal hint to query being run.
   std::sort(expected_urls.begin(), expected_urls.end());
 
   MessageLoop::current()->RunAllPending();
@@ -215,23 +225,28 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
 }
 
 TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
-  string16 text(ASCIIToUTF16("slashdot"));
   std::string expected_url("http://slashdot.org/favorite_page.html");
   std::vector<std::string> expected_urls;
   expected_urls.push_back(expected_url);
-  RunTest(text, expected_urls, expected_url);
+  RunTest(ASCIIToUTF16("slashdot"), expected_urls, expected_url);
+}
+
+TEST_F(HistoryQuickProviderTest, MultiTermTitleMatch) {
+  std::string expected_url(
+      "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back(expected_url);
+  RunTest(ASCIIToUTF16("mice other animals"), expected_urls, expected_url);
 }
 
 TEST_F(HistoryQuickProviderTest, NonWordLastCharacterMatch) {
-  string16 text(ASCIIToUTF16("slashdot.org/"));
   std::string expected_url("http://slashdot.org/favorite_page.html");
   std::vector<std::string> expected_urls;
   expected_urls.push_back(expected_url);
-  RunTest(text, expected_urls, expected_url);
+  RunTest(ASCIIToUTF16("slashdot.org/"), expected_urls, expected_url);
 }
 
 TEST_F(HistoryQuickProviderTest, MultiMatch) {
-  string16 text(ASCIIToUTF16("foo"));
   std::vector<std::string> expected_urls;
   // Scores high because of typed_count.
   expected_urls.push_back("http://foo.com/");
@@ -239,52 +254,51 @@ TEST_F(HistoryQuickProviderTest, MultiMatch) {
   expected_urls.push_back("http://foo.com/dir/another/");
   // Scores high because of high visit count.
   expected_urls.push_back("http://foo.com/dir/another/again/myfile.html");
-  RunTest(text, expected_urls, "http://foo.com/");
+  RunTest(ASCIIToUTF16("foo"), expected_urls, "http://foo.com/");
 }
 
 TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
-  string16 text(ASCIIToUTF16("xyz"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://xyzabcdefghijklmnopqrstuvw.com/a");
   expected_urls.push_back("http://abcxyzdefghijklmnopqrstuvw.com/a");
   expected_urls.push_back("http://abcdefxyzghijklmnopqrstuvw.com/a");
-  RunTest(text, expected_urls, "http://xyzabcdefghijklmnopqrstuvw.com/a");
+  RunTest(ASCIIToUTF16("xyz"), expected_urls,
+          "http://xyzabcdefghijklmnopqrstuvw.com/a");
 }
 
 TEST_F(HistoryQuickProviderTest, VisitCountMatches) {
-  string16 text(ASCIIToUTF16("visitedest"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://visitedest.com/y/a");
   expected_urls.push_back("http://visitedest.com/y/b");
   expected_urls.push_back("http://visitedest.com/x/c");
-  RunTest(text, expected_urls, "http://visitedest.com/y/a");
+  RunTest(ASCIIToUTF16("visitedest"), expected_urls,
+          "http://visitedest.com/y/a");
 }
 
 TEST_F(HistoryQuickProviderTest, TypedCountMatches) {
-  string16 text(ASCIIToUTF16("typeredest"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://typeredest.com/y/a");
   expected_urls.push_back("http://typeredest.com/y/b");
   expected_urls.push_back("http://typeredest.com/x/c");
-  RunTest(text, expected_urls, "http://typeredest.com/y/a");
+  RunTest(ASCIIToUTF16("typeredest"), expected_urls,
+          "http://typeredest.com/y/a");
 }
 
 TEST_F(HistoryQuickProviderTest, DaysAgoMatches) {
-  string16 text(ASCIIToUTF16("daysagoest"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://daysagoest.com/y/a");
   expected_urls.push_back("http://daysagoest.com/y/b");
   expected_urls.push_back("http://daysagoest.com/x/c");
-  RunTest(text, expected_urls, "http://daysagoest.com/y/a");
+  RunTest(ASCIIToUTF16("daysagoest"), expected_urls,
+          "http://daysagoest.com/y/a");
 }
 
 TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
-  string16 text(ASCIIToUTF16("ice"));
   std::vector<std::string> expected_urls;
   std::string url(
       "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
   expected_urls.push_back(url);
-  RunTest(text, expected_urls, url);
+  RunTest(ASCIIToUTF16("ice"), expected_urls, url);
   // Verify that the matches' ACMatchClassifications offsets are in range.
   ACMatchClassifications content(ac_matches_[0].contents_class);
   // The max offset accounts for 6 occurrences of '%20' plus the 'http://'.
@@ -293,7 +307,7 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
        citer != content.end(); ++citer)
     EXPECT_LT(citer->offset, max_offset);
   ACMatchClassifications description(ac_matches_[0].description_class);
-  std::string page_title("Dogs & Cats & Mice");
+  std::string page_title("Dogs & Cats & Mice & Other Animals");
   for (ACMatchClassifications::const_iterator diter = description.begin();
        diter != description.end(); ++diter)
     EXPECT_LT(diter->offset, page_title.length());

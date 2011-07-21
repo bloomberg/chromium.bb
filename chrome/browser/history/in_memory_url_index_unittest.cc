@@ -43,121 +43,164 @@ class InMemoryURLIndexTest : public testing::Test,
 
  protected:
   // Test setup.
-  virtual void SetUp() {
-    // Create and populate a working copy of the URL history database.
-    FilePath history_proto_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &history_proto_path);
-    history_proto_path = history_proto_path.Append(
-        FILE_PATH_LITERAL("History"));
-    history_proto_path = history_proto_path.Append(TestDBName());
-    EXPECT_TRUE(file_util::PathExists(history_proto_path));
+  virtual void SetUp();
 
-    std::ifstream proto_file(history_proto_path.value().c_str());
-    static const size_t kCommandBufferMaxSize = 2048;
-    char sql_cmd_line[kCommandBufferMaxSize];
+  // Allows the database containing the test data to be customized by
+  // subclasses.
+  virtual FilePath::StringType TestDBName() const;
 
-    sql::Connection& db(GetDB());
-    {
-      sql::Transaction transaction(&db);
-      transaction.Begin();
-      while (!proto_file.eof()) {
-        proto_file.getline(sql_cmd_line, kCommandBufferMaxSize);
-        if (!proto_file.eof()) {
-          // We only process lines which begin with a upper-case letter.
-          // TODO(mrossetti): Can iswupper() be used here?
-          if (sql_cmd_line[0] >= 'A' && sql_cmd_line[0] <= 'Z') {
-            std::string sql_cmd(sql_cmd_line);
-            sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line));
-            EXPECT_TRUE(sql_stmt.Run());
-          }
-        }
-      }
-      transaction.Commit();
-    }
-    proto_file.close();
-
-    // Update the last_visit_time table column
-    // such that it represents a time relative to 'now'.
-    sql::Statement statement(db.GetUniqueStatement(
-        "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
-    EXPECT_TRUE(statement);
-    base::Time time_right_now = base::Time::NowFromSystemTime();
-    base::TimeDelta day_delta = base::TimeDelta::FromDays(1);
-    {
-      sql::Transaction transaction(&db);
-      transaction.Begin();
-      while (statement.Step()) {
-        URLRow row;
-        FillURLRow(statement, &row);
-        base::Time last_visit = time_right_now;
-        for (int64 i = row.last_visit().ToInternalValue(); i > 0; --i)
-          last_visit -= day_delta;
-        row.set_last_visit(last_visit);
-        UpdateURLRow(row.id(), row);
-      }
-      transaction.Commit();
-    }
-  }
-
-  virtual FilePath::StringType TestDBName() const {
-      return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
-  }
-
+  // Convenience function to create a URLRow with basic data for |url|, |title|,
+  // |visit_count|, and |typed_count|. |last_visit_ago| gives the number of
+  // days from now to set the URL's last_visit.
   URLRow MakeURLRow(const char* url,
                     const char* title,
                     int visit_count,
                     int last_visit_ago,
-                    int typed_count) {
-    URLRow row(GURL(url), 0);
-    row.set_title(UTF8ToUTF16(title));
-    row.set_visit_count(visit_count);
-    row.set_typed_count(typed_count);
-    row.set_last_visit(base::Time::NowFromSystemTime() -
-                       base::TimeDelta::FromDays(last_visit_ago));
-    return row;
-  }
+                    int typed_count);
 
-  InMemoryURLIndex::String16Vector Make1Term(const char* term) {
-    InMemoryURLIndex::String16Vector terms;
-    terms.push_back(UTF8ToUTF16(term));
-    return terms;
-  }
-
+  // Convenience functions for easily creating vectors of search terms.
+  InMemoryURLIndex::String16Vector Make1Term(const char* term) const;
   InMemoryURLIndex::String16Vector Make2Terms(const char* term_1,
-                                              const char* term_2) {
-    InMemoryURLIndex::String16Vector terms;
-    terms.push_back(UTF8ToUTF16(term_1));
-    terms.push_back(UTF8ToUTF16(term_2));
-    return terms;
-  }
+                                              const char* term_2) const;
+
+  // Validates that the given |term| is contained in |cache| and that it is
+  // marked as in-use.
+  void CheckTerm(const InMemoryURLIndex::SearchTermCacheMap& cache,
+                 string16 term) const;
 
   scoped_ptr<InMemoryURLIndex> url_index_;
 };
 
+void InMemoryURLIndexTest::SetUp() {
+  // Create and populate a working copy of the URL history database.
+  FilePath history_proto_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &history_proto_path);
+  history_proto_path = history_proto_path.Append(
+      FILE_PATH_LITERAL("History"));
+  history_proto_path = history_proto_path.Append(TestDBName());
+  EXPECT_TRUE(file_util::PathExists(history_proto_path));
+
+  std::ifstream proto_file(history_proto_path.value().c_str());
+  static const size_t kCommandBufferMaxSize = 2048;
+  char sql_cmd_line[kCommandBufferMaxSize];
+
+  sql::Connection& db(GetDB());
+  {
+    sql::Transaction transaction(&db);
+    transaction.Begin();
+    while (!proto_file.eof()) {
+      proto_file.getline(sql_cmd_line, kCommandBufferMaxSize);
+      if (!proto_file.eof()) {
+        // We only process lines which begin with a upper-case letter.
+        // TODO(mrossetti): Can iswupper() be used here?
+        if (sql_cmd_line[0] >= 'A' && sql_cmd_line[0] <= 'Z') {
+          std::string sql_cmd(sql_cmd_line);
+          sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line));
+          EXPECT_TRUE(sql_stmt.Run());
+        }
+      }
+    }
+    transaction.Commit();
+  }
+  proto_file.close();
+
+  // Update the last_visit_time table column
+  // such that it represents a time relative to 'now'.
+  sql::Statement statement(db.GetUniqueStatement(
+      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
+  EXPECT_TRUE(statement);
+  base::Time time_right_now = base::Time::NowFromSystemTime();
+  base::TimeDelta day_delta = base::TimeDelta::FromDays(1);
+  {
+    sql::Transaction transaction(&db);
+    transaction.Begin();
+    while (statement.Step()) {
+      URLRow row;
+      FillURLRow(statement, &row);
+      base::Time last_visit = time_right_now;
+      for (int64 i = row.last_visit().ToInternalValue(); i > 0; --i)
+        last_visit -= day_delta;
+      row.set_last_visit(last_visit);
+      UpdateURLRow(row.id(), row);
+    }
+    transaction.Commit();
+  }
+}
+
+FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
+    return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
+}
+
+URLRow InMemoryURLIndexTest::MakeURLRow(const char* url,
+                  const char* title,
+                  int visit_count,
+                  int last_visit_ago,
+                  int typed_count) {
+  URLRow row(GURL(url), 0);
+  row.set_title(UTF8ToUTF16(title));
+  row.set_visit_count(visit_count);
+  row.set_typed_count(typed_count);
+  row.set_last_visit(base::Time::NowFromSystemTime() -
+                     base::TimeDelta::FromDays(last_visit_ago));
+  return row;
+}
+
+InMemoryURLIndex::String16Vector InMemoryURLIndexTest::Make1Term(
+    const char* term) const {
+  InMemoryURLIndex::String16Vector terms;
+  terms.push_back(UTF8ToUTF16(term));
+  return terms;
+}
+
+InMemoryURLIndex::String16Vector InMemoryURLIndexTest::Make2Terms(
+    const char* term_1,
+    const char* term_2) const {
+  InMemoryURLIndex::String16Vector terms;
+  terms.push_back(UTF8ToUTF16(term_1));
+  terms.push_back(UTF8ToUTF16(term_2));
+  return terms;
+}
+
+void InMemoryURLIndexTest::CheckTerm(
+    const InMemoryURLIndex::SearchTermCacheMap& cache,
+    string16 term) const {
+  InMemoryURLIndex::SearchTermCacheMap::const_iterator cache_iter(
+      cache.find(term));
+  ASSERT_NE(cache.end(), cache_iter)
+      << "Cache does not contain '" << term << "' but should.";
+  InMemoryURLIndex::SearchTermCacheItem cache_item = cache_iter->second;
+  EXPECT_TRUE(cache_item.used_)
+      << "Cache item '" << term << "' should be marked as being in use.";
+}
+
 class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
-  FilePath::StringType TestDBName() const {
-    return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
-  }
+  FilePath::StringType TestDBName() const;
 };
+
+FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
+  return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
+}
 
 class ExpandedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
-  virtual void SetUp() {
-    InMemoryURLIndexTest::SetUp();
-    // Add 600 more history items.
-    // NOTE: Keep the string length constant at least the length of the format
-    // string plus 5 to account for a 3 digit number and terminator.
-    char url_format[] = "http://www.google.com/%d";
-    const size_t kMaxLen = arraysize(url_format) + 5;
-    char url_string[kMaxLen + 1];
-    for (int i = 0; i < 600; ++i) {
-      base::snprintf(url_string, kMaxLen, url_format, i);
-      URLRow row(MakeURLRow(url_string, "Google Search", 20, 0, 20));
-      AddURL(row);
-    }
-  }
+  virtual void SetUp();
 };
+
+void ExpandedInMemoryURLIndexTest::SetUp() {
+  InMemoryURLIndexTest::SetUp();
+  // Add 600 more history items.
+  // NOTE: Keep the string length constant at least the length of the format
+  // string plus 5 to account for a 3 digit number and terminator.
+  char url_format[] = "http://www.google.com/%d";
+  const size_t kMaxLen = arraysize(url_format) + 5;
+  char url_string[kMaxLen + 1];
+  for (int i = 0; i < 600; ++i) {
+    base::snprintf(url_string, kMaxLen, url_format, i);
+    URLRow row(MakeURLRow(url_string, "Google Search", 20, 0, 20));
+    AddURL(row);
+  }
+}
 
 TEST_F(InMemoryURLIndexTest, Construction) {
   url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
@@ -185,13 +228,12 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
 TEST_F(InMemoryURLIndexTest, Retrieval) {
   url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
   url_index_->Init(this, "en,ja,hi,zh");
-  InMemoryURLIndex::String16Vector terms;
   // The term will be lowercased by the search.
 
   // See if a very specific term gives a single result.
-  terms.push_back(ASCIIToUTF16("DrudgeReport"));
-  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
-  EXPECT_EQ(1U, matches.size());
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(Make1Term("DrudgeReport"));
+  ASSERT_EQ(1U, matches.size());
 
   // Verify that we got back the result we expected.
   EXPECT_EQ(5, matches[0].url_info.id());
@@ -199,18 +241,14 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
 
   // Search which should result in multiple results.
-  terms.clear();
-  terms.push_back(ASCIIToUTF16("drudge"));
-  matches = url_index_->HistoryItemsForTerms(terms);
+  matches = url_index_->HistoryItemsForTerms(Make1Term("drudge"));
   ASSERT_EQ(2U, matches.size());
   // The results should be in descending score order.
   EXPECT_GE(matches[0].raw_score, matches[1].raw_score);
 
   // Search which should result in nearly perfect result.
-  terms.clear();
-  terms.push_back(ASCIIToUTF16("https"));
-  terms.push_back(ASCIIToUTF16("NearlyPerfectResult"));
-  matches = url_index_->HistoryItemsForTerms(terms);
+  matches = url_index_->HistoryItemsForTerms(Make2Terms("https",
+                                                        "NearlyPerfectResult"));
   ASSERT_EQ(1U, matches.size());
   // The results should have a very high score.
   EXPECT_GT(matches[0].raw_score, 900);
@@ -221,7 +259,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.title());
 
   // Search which should result in very poor result.
-  terms.clear();
+  InMemoryURLIndex::String16Vector terms;
   terms.push_back(ASCIIToUTF16("z"));
   terms.push_back(ASCIIToUTF16("y"));
   terms.push_back(ASCIIToUTF16("x"));
@@ -236,26 +274,21 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.title());
 
   // Search which will match at the end of an URL with encoded characters.
-  terms.clear();
-  terms.push_back(ASCIIToUTF16("ice"));
-  matches = url_index_->HistoryItemsForTerms(terms);
+  matches = url_index_->HistoryItemsForTerms(Make1Term("ice"));
   ASSERT_EQ(1U, matches.size());
 }
 
 TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
   url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
   url_index_->Init(this, "en,ja,hi,zh");
-  InMemoryURLIndex::String16Vector terms;
 
   // A search for 'w' should short-circuit and not return any matches.
-  terms.push_back(ASCIIToUTF16("w"));
-  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(Make1Term("w"));
   EXPECT_TRUE(matches.empty());
 
   // A search for 'working' should not short-circuit.
-  terms.clear();
-  terms.push_back(ASCIIToUTF16("working"));
-  matches = url_index_->HistoryItemsForTerms(terms);
+  matches = url_index_->HistoryItemsForTerms(Make1Term("working"));
   EXPECT_EQ(1U, matches.size());
 }
 
@@ -271,7 +304,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
   terms.push_back(ASCIIToUTF16("RATE"));
   terms.push_back(ASCIIToUTF16("DROPS"));
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
-  EXPECT_EQ(1U, matches.size());
+  ASSERT_EQ(1U, matches.size());
 
   // Verify that we got back the result we expected.
   EXPECT_EQ(1, matches[0].url_info.id());
@@ -282,19 +315,34 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
       matches[0].url_info.title());
 }
 
-TEST_F(InMemoryURLIndexTest, Char16Utilities) {
-  string16 term = ASCIIToUTF16("drudgereport");
-  string16 expected = ASCIIToUTF16("drugepot");
-  EXPECT_EQ(expected.size(),
-            InMemoryURLIndex::Char16SetFromString16(term).size());
-  InMemoryURLIndex::Char16Vector c_vector =
-      InMemoryURLIndex::Char16VectorFromString16(term);
-  ASSERT_EQ(expected.size(), c_vector.size());
+TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
+  url_index_.reset(new InMemoryURLIndex());
+  url_index_->Init(this, "en,ja,hi,zh");
 
-  InMemoryURLIndex::Char16Vector::const_iterator c_iter = c_vector.begin();
-  for (string16::const_iterator s_iter = expected.begin();
-       s_iter != expected.end(); ++s_iter, ++c_iter)
-    EXPECT_EQ(*s_iter, *c_iter);
+  // The presence of duplicate characters should succeed. Exercise by cycling
+  // through a string with several duplicate characters.
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(Make1Term("ABRA"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(28, matches[0].url_info.id());
+  EXPECT_EQ("http://www.ddj.com/windows/184416623",
+            matches[0].url_info.url().spec());
+
+  matches = url_index_->HistoryItemsForTerms(Make1Term("ABRACAD"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(28, matches[0].url_info.id());
+
+  matches = url_index_->HistoryItemsForTerms(Make1Term("ABRACADABRA"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(28, matches[0].url_info.id());
+
+  matches = url_index_->HistoryItemsForTerms(Make1Term("ABRACADABR"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(28, matches[0].url_info.id());
+
+  matches = url_index_->HistoryItemsForTerms(Make1Term("ABRACA"));
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(28, matches[0].url_info.id());
 }
 
 TEST_F(InMemoryURLIndexTest, StaticFunctions) {
@@ -396,48 +444,74 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   // Verify that match results for previously typed characters are retained
   // (in the term_char_word_set_cache_) and reused, if possible, in future
   // autocompletes.
+  typedef InMemoryURLIndex::SearchTermCacheMap::iterator CacheIter;
+  typedef InMemoryURLIndex::SearchTermCacheItem CacheItem;
+
   url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy"))));
   url_index_->Init(this, "en,ja,hi,zh");
 
-  // Verify that we can find something that already exists.
+  InMemoryURLIndex::SearchTermCacheMap& cache(url_index_->search_term_cache_);
+
+  // The cache should be empty at this point.
+  EXPECT_EQ(0U, cache.size());
+
+  // Now simulate typing search terms into the omnibox and check the state of
+  // the cache as each item is 'typed'.
+
+  // Simulate typing "r" giving "r" in the simulated omnibox. The results for
+  // 'r' will be not cached because it is only 1 character long.
   InMemoryURLIndex::String16Vector terms;
-  string16 term = ASCIIToUTF16("drudgerepo");
-  terms.push_back(term);
-  EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(terms).size());
+  string16 term_r = ASCIIToUTF16("r");
+  terms.push_back(term_r);
+  url_index_->HistoryItemsForTerms(terms);
+  EXPECT_EQ(0U, cache.size());
 
-  {
-    // Exercise the term matching cache with the same term.
-    InMemoryURLIndex::Char16Vector uni_chars =
-        InMemoryURLIndex::Char16VectorFromString16(term);
-    EXPECT_EQ(uni_chars.size(), 7U);  // Equivalent to 'degopru'
-    EXPECT_EQ(6U, url_index_->CachedResultsIndexForTerm(uni_chars));
-  }
+  // Simulate typing "re" giving "r re" in the simulated omnibox.
+  string16 term_re = ASCIIToUTF16("re");
+  terms.push_back(term_re);
+  // 're' should be cached at this point but not 'r' as it is a single
+  // character.
+  ASSERT_EQ(2U, terms.size());
+  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(1U, cache.size());
+  CheckTerm(cache, term_re);
 
-  {
-    // Back off a character.
-    InMemoryURLIndex::Char16Vector uni_chars =
-        InMemoryURLIndex::Char16VectorFromString16(ASCIIToUTF16("drudgerep"));
-    EXPECT_EQ(6U, uni_chars.size());  // Equivalent to 'degpru'
-    EXPECT_EQ(5U, url_index_->CachedResultsIndexForTerm(uni_chars));
-  }
+  // Simulate typing "reco" giving "r re reco" in the simulated omnibox.
+  string16 term_reco = ASCIIToUTF16("reco");
+  terms.push_back(term_reco);
+  // 're' and 'reco' should be cached at this point but not 'r' as it is a
+  // single character.
+  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(2U, cache.size());
+  CheckTerm(cache, term_re);
+  CheckTerm(cache, term_reco);
 
-  {
-    // Add a couple of characters.
-    InMemoryURLIndex::Char16Vector uni_chars =
-        InMemoryURLIndex::Char16VectorFromString16(
-            ASCIIToUTF16("drudgereporta"));
-    EXPECT_EQ(9U, uni_chars.size());  // Equivalent to 'adegoprtu'
-    EXPECT_EQ(6U, url_index_->CachedResultsIndexForTerm(uni_chars));
-  }
+  terms.clear();  // Simulate pressing <ESC>.
 
-  {
-    // Use different string.
-    InMemoryURLIndex::Char16Vector uni_chars =
-        InMemoryURLIndex::Char16VectorFromString16(ASCIIToUTF16("abcde"));
-    EXPECT_EQ(5U, uni_chars.size());
-    EXPECT_EQ(static_cast<size_t>(-1),
-              url_index_->CachedResultsIndexForTerm(uni_chars));
-  }
+  // Simulate typing "mort".
+  string16 term_mort = ASCIIToUTF16("mort");
+  terms.push_back(term_mort);
+  // Since we now have only one search term, the cached results for 're' and
+  // 'reco' should be purged, giving us only 1 item in the cache (for 'mort').
+  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(1U, cache.size());
+  CheckTerm(cache, term_mort);
+
+  // Simulate typing "reco" giving "mort reco" in the simulated omnibox.
+  terms.push_back(term_reco);
+  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(2U, cache.size());
+  CheckTerm(cache, term_mort);
+  CheckTerm(cache, term_reco);
+
+  // Simulate a <DELETE> by removing the 'reco' and adding back the 'rec'.
+  terms.resize(terms.size() - 1);
+  string16 term_rec = ASCIIToUTF16("rec");
+  terms.push_back(term_rec);
+  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(2U, cache.size());
+  CheckTerm(cache, term_mort);
+  CheckTerm(cache, term_rec);
 }
 
 TEST_F(InMemoryURLIndexTest, Scoring) {

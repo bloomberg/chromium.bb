@@ -176,10 +176,12 @@ class InMemoryURLIndex {
 
  private:
   friend class AddHistoryMatch;
+  friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheFilePath);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Char16Utilities);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, NonUniqueTermCharacterSets);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, StaticFunctions);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
@@ -214,18 +216,35 @@ class InMemoryURLIndex {
   typedef std::set<HistoryID> HistoryIDSet;
   typedef std::map<WordID, HistoryIDSet> WordIDHistoryMap;
 
-  // Support caching of term character results so that we can optimize
-  // searches which build upon a previous search. Each entry in this vector
-  // represents a progressive reduction of the result set for each unique
-  // character found in the search term, with each character being taken as
-  // initially encountered. For example, once the results for the search
-  // term of "mextexarkana" have been fully determined, this vector will
-  // contain one entry for the characters: m, e, x, t, a, r, k, & n, in
-  // that order. The result sets will naturally shrink in size for each
-  // subsequent character as the sets intersections are taken in an
-  // incremental manner.
-  struct TermCharWordSet;
-  typedef std::vector<TermCharWordSet> TermCharWordSetVector;
+
+  // Support caching of term results so that we can optimize searches which
+  // build upon a previous search. Each entry in this map represents one
+  // search term from the most recent search. For example, if the user had
+  // typed "google blog trans" and then typed an additional 'l' (at the end,
+  // of course) then there would be four items in the cache: 'blog', 'google',
+  // 'trans', and 'transl'. All would be marked as being in use except for the
+  // 'trans' item; its cached data would have been used when optimizing the
+  // construction of the search results candidates for 'transl' but then would
+  // no longer needed.
+  //
+  // Items stored in the search term cache. If a search term exactly matches one
+  // in the cache then we can quickly supply the proper |history_id_set_| (and
+  // marking the cache item as being |used_|. If we find a prefix for a search
+  // term in the cache (which is very likely to occur as the user types each
+  // term into the omnibox) then we can short-circuit the index search for those
+  // characters in the prefix by returning the |word_id_set|. In that case we do
+  // not mark the item as being |used_|.
+  struct SearchTermCacheItem {
+    SearchTermCacheItem(const WordIDSet& word_id_set,
+                        const HistoryIDSet& history_id_set);
+    // Creates a cache item for a term which has no results.
+    SearchTermCacheItem();
+
+    WordIDSet word_id_set_;
+    HistoryIDSet history_id_set_;
+    bool used_;  // True if this item has been used for the current term search.
+  };
+  typedef std::map<string16, SearchTermCacheItem> SearchTermCacheMap;
 
   // TODO(rohitrao): Probably replace this with QueryResults.
   typedef std::vector<URLRow> URLRowVector;
@@ -262,19 +281,8 @@ class InMemoryURLIndex {
   // Breaks a string down into individual words.
   static String16Set WordSetFromString16(const string16& uni_string);
 
-  // Given a vector of Char16s, representing the characters the user has typed
-  // into the omnibox, finds words containing those characters. If any
-  // existing, cached set is a proper subset then starts with that cached
-  // set. Updates the previously-typed-character cache.
-  WordIDSet WordIDSetForTermChars(const Char16Vector& uni_chars);
-
-  // Given a vector of Char16s in |uni_chars|, compare those characters, in
-  // order, with the previously searched term, returning the index of the
-  // cached results in the term_char_word_set_cache_ of the set with best
-  // matching number of characters. Returns kNoCachedResultForTerm if there
-  // was no match at all (i.e. the first character of |uni-chars| is not the
-  // same as the character of the first entry in term_char_word_set_cache_).
-  size_t CachedResultsIndexForTerm(const Char16Vector& uni_chars);
+  // Given a set of Char16s, finds words containing those characters.
+  WordIDSet WordIDSetForTermChars(const Char16Set& term_chars);
 
   // Creates a TermMatches which has an entry for each occurrence of the string
   // |term| found in the string |string|. Mark each match with |term_num| so
@@ -288,10 +296,6 @@ class InMemoryURLIndex {
 
   // Indexes one URL history item.
   bool IndexRow(const URLRow& row);
-
-  // Breaks a string down into unique, individual characters in the order
-  // in which the characters are first encountered in the |uni_word| string.
-  static Char16Vector Char16VectorFromString16(const string16& uni_word);
 
   // Breaks the |uni_word| string down into its individual characters.
   // Note that this is temporarily intended to work on a single word, but
@@ -315,18 +319,16 @@ class InMemoryURLIndex {
   // |history_id| as the initial element of the word's set.
   void AddWordHistory(const string16& uni_word, HistoryID history_id);
 
-  // Clears the search term cache. This cache holds on to the intermediate
-  // word results for each previously typed character to eliminate the need
-  // to re-perform set operations for previously typed characters.
-  void ResetTermCharWordSetCache();
+  // Clears |used_| for each item in the search term cache.
+  void ResetSearchTermCache();
 
   // Composes a set of history item IDs by intersecting the set for each word
   // in |uni_string|.
   HistoryIDSet HistoryIDSetFromWords(const string16& uni_string);
 
   // Helper function to HistoryIDSetFromWords which composes a set of history
-  // ids for the given term given in |uni_word|.
-  HistoryIDSet HistoryIDsForTerm(const string16& uni_word);
+  // ids for the given term given in |term|.
+  HistoryIDSet HistoryIDsForTerm(const string16& term);
 
   // Calculates a raw score for this history item by first determining
   // if all of the terms in |terms_vector| occur in |row| and, if so,
@@ -405,8 +407,12 @@ class InMemoryURLIndex {
   WordMap word_map_;
   CharWordIDMap char_word_map_;
   WordIDHistoryMap word_id_history_map_;
-  TermCharWordSetVector term_char_word_set_cache_;
   HistoryInfoMap history_info_map_;
+
+  // Cache of search terms.
+  SearchTermCacheMap search_term_cache_;
+
+  // Languages used during the word-breaking process during indexing.
   std::string languages_;
 
   // Only URLs with a whitelisted scheme are indexed.
