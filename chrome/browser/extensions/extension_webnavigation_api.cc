@@ -32,8 +32,11 @@ const char* kValidSchemes[] = {
   chrome::kFtpScheme,
 };
 
-// Returns 0 if the navigation happens in the main frame, or the frame ID
+// Returns the frame ID as it will be passed to the extension:
+// 0 if the navigation happens in the main frame, or the frame ID
 // modulo 32 bits otherwise.
+// Keep this in sync with the GetFrameId() function in
+// extension_webrequest_api.cc.
 int GetFrameId(bool is_main_frame, int64 frame_id) {
   return is_main_frame ? 0 : static_cast<int>(frame_id);
 }

@@ -72,6 +72,15 @@ COMPILE_ASSERT(
 
 #define ARRAYEND(array) (array + arraysize(array))
 
+// Returns the frame ID as it will be passed to the extension:
+// 0 if the navigation happens in the main frame, or the frame ID
+// modulo 32 bits otherwise.
+// Keep this in sync with the GetFrameId() function in
+// extension_webnavigation_api.cc.
+int GetFrameId(bool is_main_frame, int64 frame_id) {
+  return is_main_frame ? 0 : static_cast<int>(frame_id);
+}
+
 bool IsWebRequestEvent(const std::string& event_name) {
   return std::find(kWebRequestEvents, ARRAYEND(kWebRequestEvents),
                    event_name) != ARRAYEND(kWebRequestEvents);
@@ -108,6 +117,8 @@ bool ParseResourceType(const std::string& type_str,
 }
 
 void ExtractRequestInfo(net::URLRequest* request,
+                        bool* is_main_frame,
+                        int64* frame_id,
                         int* tab_id,
                         int* window_id,
                         ResourceType::Type* resource_type) {
@@ -118,6 +129,8 @@ void ExtractRequestInfo(net::URLRequest* request,
       ResourceDispatcherHost::InfoForRequest(request);
   ExtensionTabIdMap::GetInstance()->GetTabAndWindowId(
       info->child_id(), info->route_id(), tab_id, window_id);
+  *frame_id = info->frame_id();
+  *is_main_frame = info->is_main_frame();
 
   // Restrict the resource type to the values we care about.
   ResourceType::Type* iter =
@@ -346,10 +359,15 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   if (!HasWebRequestScheme(request->url()))
     return net::OK;
 
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  int frame_id_for_extension = -1;
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
+  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id, &window_id,
+                     &resource_type);
+  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -368,6 +386,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                   base::Uint64ToString(request->identifier()));
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kMethodKey, request->method());
+  dict->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
   dict->SetInteger(keys::kTabIdKey, tab_id);
   dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
   dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
@@ -494,6 +513,16 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (listeners.empty())
     return;
 
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  int frame_id_for_extension = -1;
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id,
+                     &window_id, &resource_type);
+  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
+
   int http_status_code = request->GetResponseCode();
 
   std::string response_ip = request->GetSocketAddress().host();
@@ -505,6 +534,9 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
+  dict->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
+  dict->SetInteger(keys::kTabIdKey, tab_id);
+  dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
@@ -892,10 +924,13 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     const std::string& event_name,
     net::URLRequest* request,
     int* extra_info_spec) {
+  bool is_main_frame = false;
+  int64 frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
   ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfo(request, &tab_id, &window_id, &resource_type);
+  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id, &window_id,
+                     &resource_type);
 
   return GetMatchingListeners(
       profile, extension_info_map, event_name, request->url(),

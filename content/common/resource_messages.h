@@ -92,6 +92,13 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
+
+  // True if |frame_id| is the main frame of a RenderView.
+  IPC_STRUCT_MEMBER(bool, is_main_frame)
+
+  // Identifies the frame within the RenderView that sent the request.
+  // -1 if unknown / invalid.
+  IPC_STRUCT_MEMBER(int64, frame_id)
 IPC_STRUCT_END()
 
 // Resource messages sent from the browser to the renderer.

@@ -130,6 +130,7 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/request_extra_data.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
@@ -2596,6 +2597,9 @@ void RenderView::willSendRequest(
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
+  bool is_top_frame = (frame == top_frame);
+  request.setExtraData(
+      new RequestExtraData(is_top_frame, frame->identifier()));
 
   GURL request_url(request.url());
   GURL new_url;

@@ -62,6 +62,7 @@ function expect(data, order, filter, extraInfoSpec) {
   capturedEventData = [];
   expectedEventOrder = order;
   eventsCaptured = chrome.test.callbackAdded();
+  tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   removeListeners();
   initListeners(filter || {}, extraInfoSpec || []);
 }
@@ -129,6 +130,22 @@ function captureEvent(name, details) {
   if (expectedEventData.length > currentIndex) {
     retval = expectedEventData[currentIndex].retval;
   }
+
+  // Check that the frameId can be used to reliably determine the URL of the
+  // frame that caused requests.
+  if (name == "onBeforeRequest" || name == "onBeforeRedirect") {
+    chrome.test.assertTrue('frameId' in details &&
+                           typeof details.frameId === 'number');
+    chrome.test.assertTrue('tabId' in details &&
+                            typeof details.tabId === 'number');
+    var key = details.tabId + "-" + details.frameId;
+    if (details.type == "main_frame" || details.type == "sub_frame") {
+      tabAndFrameUrls[key] =
+          name == "onBeforeRedirect" ? details.redirectUrl : details.url;
+    }
+    details.frameUrl = tabAndFrameUrls[key] || "unknown frame URL";
+  }
+  delete details.frameId;
 
   delete details.requestId;
   delete details.timeStamp;
@@ -232,7 +249,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("simpleLoad/a.html")
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html")
           }
         },
         { label: "a-onResponseStarted",
@@ -270,7 +288,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: URL_HTTP_SIMPLE_LOAD_REDIRECT
+            url: URL_HTTP_SIMPLE_LOAD_REDIRECT,
+            frameUrl: URL_HTTP_SIMPLE_LOAD_REDIRECT
           }
         },
         { label: "onBeforeSendHeaders-1",
@@ -294,6 +313,9 @@ runTests([
             redirectUrl: URL_HTTP_SIMPLE_LOAD,
             statusCode: 301,
             responseHeadersExist: true,
+            tabId: tabId,
+            type: "main_frame",
+            frameUrl: URL_HTTP_SIMPLE_LOAD,
             ip: "127.0.0.1",
             fromCache: false,
             statusLine: "HTTP/1.0 301 Moved Permanently"
@@ -305,7 +327,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: URL_HTTP_SIMPLE_LOAD
+            url: URL_HTTP_SIMPLE_LOAD,
+            frameUrl: URL_HTTP_SIMPLE_LOAD
           }
         },
         { label: "onBeforeSendHeaders-2",
@@ -367,7 +390,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("complexLoad/a.html")
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
           }
         },
         { label: "b.html-onBeforeRequest",
@@ -376,7 +400,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "sub_frame",
-            url: getURL("complexLoad/b.html")
+            url: getURL("complexLoad/b.html"),
+            frameUrl: getURL("complexLoad/b.html")
           }
         },
         { label: "b.jpg-onBeforeRequest",
@@ -385,7 +410,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "image",
-            url: getURL("complexLoad/b.jpg")
+            url: getURL("complexLoad/b.jpg"),
+            frameUrl: getURL("complexLoad/b.html")
           }
         },
         { label: "a.html-onResponseStarted",
@@ -466,7 +492,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("complexLoad/a.html")
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
           },
           retval: {cancel: true}
         },
@@ -503,7 +530,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("complexLoad/a.html")
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
           },
           retval: {redirectUrl: getURL("simpleLoad/a.html")}
         },
@@ -522,7 +550,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("simpleLoad/a.html")
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html"),
           },
         },
         { label: "onResponseStarted",
@@ -564,7 +593,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("complexLoad/a.html")
+            url: getURL("complexLoad/a.html"),
+            frameUrl: getURL("complexLoad/a.html")
           }
         },
         { label: "b-onBeforeRequest",
@@ -573,7 +603,9 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "image",
-            url: getURL("complexLoad/b.jpg")
+            url: getURL("complexLoad/b.jpg"),
+            // As we do not listed to sub-frames we do not know the frameUrl.
+            frameUrl: "unknown frame URL"
           }
         },
         { label: "a-onResponseStarted",
@@ -640,7 +672,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: getURL("does_not_exist.html")
+            url: getURL("does_not_exist.html"),
+            frameUrl: getURL("does_not_exist.html")
           }
         },
         { label: "onErrorOccurred",
@@ -670,7 +703,8 @@ runTests([
             method: "GET",
             tabId: tabId,
             type: "main_frame",
-            url: URL_ECHO_USER_AGENT
+            url: URL_ECHO_USER_AGENT,
+            frameUrl: URL_ECHO_USER_AGENT
           }
         },
         { label: "onBeforeSendHeaders",

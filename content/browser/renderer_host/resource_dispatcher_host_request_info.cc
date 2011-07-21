@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,8 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     int route_id,
     int origin_pid,
     int request_id,
+    bool is_main_frame,
+    int64 frame_id,
     ResourceType::Type resource_type,
     uint64 upload_size,
     bool is_download,
@@ -29,6 +31,8 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
       route_id_(route_id),
       origin_pid_(origin_pid),
       request_id_(request_id),
+      is_main_frame_(is_main_frame),
+      frame_id_(frame_id),
       pending_data_count_(0),
       is_download_(is_download),
       allow_download_(allow_download),

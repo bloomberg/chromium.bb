@@ -506,6 +506,8 @@ void ResourceDispatcherHost::BeginRequest(
           route_id,
           request_data.origin_pid,
           request_id,
+          request_data.is_main_frame,
+          request_data.frame_id,
           request_data.resource_type,
           upload_size,
           false,  // is download
@@ -643,6 +645,8 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                route_id,
                                                0,
                                                request_id_,
+                                               false,     // is_main_frame
+                                               -1,        // frame_id
                                                ResourceType::SUB_RESOURCE,
                                                0,         // upload_size
                                                download,  // is_download

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       int route_id,
       int origin_pid,
       int request_id,
+      bool is_main_frame,
+      int64 frame_id,
       ResourceType::Type resource_type,
       uint64 upload_size,
       bool is_download,
@@ -95,6 +97,12 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
 
   // Unique identifier for this resource request.
   int request_id() const { return request_id_; }
+
+  // True if |frame_id_| represents a main frame in the RenderView.
+  bool is_main_frame() const { return is_main_frame_; }
+
+  // Frame ID that sent this resource request. -1 if unknown / invalid.
+  int64 frame_id() const { return frame_id_; }
 
   // Number of messages we've sent to the renderer that we haven't gotten an
   // ACK for. This allows us to avoid having too many messages in flight.
@@ -206,6 +214,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int route_id_;
   int origin_pid_;
   int request_id_;
+  bool is_main_frame_;
+  int64 frame_id_;
   int pending_data_count_;
   bool is_download_;
   bool allow_download_;

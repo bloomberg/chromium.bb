@@ -92,6 +92,8 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.appcache_host_id = request_info.appcache_host_id;
   request_.download_to_file = request_info.download_to_file;
   request_.has_user_gesture = request_info.has_user_gesture;
+  request_.is_main_frame = request_info.is_main_frame;
+  request_.frame_id = request_info.frame_id;
 }
 
 IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {

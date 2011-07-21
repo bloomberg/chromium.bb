@@ -246,6 +246,13 @@ class ResourceLoaderBridge {
 
     // True if the request was user initiated.
     bool has_user_gesture;
+
+    // True if |frame_id| represents a main frame of a RenderView.
+    bool is_main_frame;
+
+    // Identifies the frame within the RenderView that sent the request.
+    // -1 if unknown / invalid.
+    int64 frame_id;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not

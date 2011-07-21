@@ -30,6 +30,7 @@
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/request_extra_data.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -442,6 +443,14 @@ void WebURLLoaderImpl::Context::Start(
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
+  request_info.frame_id = -1;
+  request_info.is_main_frame = false;
+  if (request.extraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.extraData());
+    request_info.frame_id = extra_data->frame_identifier();
+    request_info.is_main_frame = extra_data->is_main_frame();
+  }
   bridge_.reset(ResourceLoaderBridge::Create(request_info));
 
   if (!request.httpBody().isNull()) {

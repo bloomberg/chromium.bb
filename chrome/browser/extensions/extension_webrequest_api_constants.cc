@@ -7,6 +7,7 @@
 namespace extension_webrequest_api_constants {
 
 const char kErrorKey[] = "error";
+const char kFrameIdKey[] = "frameId";
 const char kFromCache[] = "fromCache";
 const char kIpKey[] = "ip";
 const char kMethodKey[] = "method";
