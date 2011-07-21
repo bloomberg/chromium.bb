@@ -148,10 +148,10 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 #if defined(OS_WIN)
     const string16& title = relative_path.value();
 #elif defined(OS_POSIX)
-    const string16& title = WideToUTF16(
-        base::SysNativeMBToWide(relative_path.value()));
+    const string16& title = ASCIIToUTF16("/") +
+        WideToUTF16(base::SysNativeMBToWide(relative_path.value()));
 #endif
-    data_.append(net::GetDirectoryListingHeader(ASCIIToUTF16("/") + title));
+    data_.append(net::GetDirectoryListingHeader(title));
   }
 
   typedef std::vector<base::FileUtilProxy::Entry>::const_iterator EntryIterator;
@@ -162,14 +162,14 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
     const string16& name =
         WideToUTF16(base::SysNativeMBToWide(it->name));
 #endif
-    // TODO(adamk): Add file size?
     data_.append(net::GetDirectoryListingEntry(
-        name, std::string(), it->is_directory, 0, base::Time()));
+        name, std::string(), it->is_directory, it->size,
+        it->last_modified_time));
   }
 
-  if (has_more)
+  if (has_more) {
     GetNewOperation()->ReadDirectory(request_->url());
-  else {
+  } else {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
   }

@@ -20,12 +20,14 @@
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "unicode/regex.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -126,21 +128,78 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     TestRequestHelper(url, false);
   }
 
+  FileSystemOperationContext* NewOperationContext(const FilePath& path) {
+    FileSystemOperationContext* context(new FileSystemOperationContext(
+        file_system_context_, file_util()));
+
+    context->set_src_origin_url(GURL("http://remote"));
+    context->set_src_virtual_path(path);
+    context->set_src_type(fileapi::kFileSystemTypeTemporary);
+    context->set_allowed_bytes_growth(1024);
+    return context;
+  }
+
   void CreateDirectory(const base::StringPiece dir_name) {
     FilePath path = FilePath().AppendASCII(dir_name);
-    FileSystemFileUtil* file_util = file_system_context_->path_manager()->
-        sandbox_provider()->GetFileSystemFileUtil();
-    FileSystemOperationContext context(file_system_context_, file_util);
-    context.set_src_origin_url(GURL("http://remote"));
-    context.set_src_virtual_path(path);
-    context.set_src_type(fileapi::kFileSystemTypeTemporary);
-    context.set_allowed_bytes_growth(1024);
-
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
-        &context,
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->CreateDirectory(
+        context.get(),
         path,
         false /* exclusive */,
         false /* recursive */));
+  }
+
+  void EnsureFileExists(const base::StringPiece file_name) {
+    FilePath path = FilePath().AppendASCII(file_name);
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->EnsureFileExists(
+        context.get(), path, NULL));
+  }
+
+  void TruncateFile(const base::StringPiece file_name, int64 length) {
+    FilePath path = FilePath().AppendASCII(file_name);
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->Truncate(
+        context.get(), path, length));
+  }
+
+  PlatformFileError GetFileInfo(const FilePath& path,
+                   base::PlatformFileInfo* file_info,
+                   FilePath* platform_file_path) {
+    scoped_ptr<FileSystemOperationContext> context(NewOperationContext(path));
+    return file_util()->GetFileInfo(context.get(), path,
+                                    file_info, platform_file_path);
+  }
+
+  void VerifyListingEntry(const std::string& entry_line,
+                          const std::string& name,
+                          const std::string& url,
+                          bool is_directory,
+                          int64 size) {
+#define STR "([^\"]*)"
+    icu::UnicodeString pattern("^<script>addRow\\(\"" STR "\",\"" STR
+                               "\",(0|1),\"" STR "\",\"" STR "\"\\);</script>");
+#undef STR
+    icu::UnicodeString input(entry_line.c_str());
+
+    UErrorCode status = U_ZERO_ERROR;
+    icu::RegexMatcher match(pattern, input, 0, status);
+
+    EXPECT_TRUE(match.find());
+    EXPECT_EQ(5, match.groupCount());
+    EXPECT_EQ(icu::UnicodeString(name.c_str()), match.group(1, status));
+    EXPECT_EQ(icu::UnicodeString(url.c_str()), match.group(2, status));
+    EXPECT_EQ(icu::UnicodeString(is_directory ? "1" : "0"),
+              match.group(3, status));
+    icu::UnicodeString size_string(FormatBytesUnlocalized(size).c_str());
+    EXPECT_EQ(size_string, match.group(4, status));
+
+    base::Time date;
+    icu::UnicodeString date_ustr(match.group(5, status));
+    std::wstring date_wstr;
+    UTF16ToWide(date_ustr.getBuffer(), date_ustr.length(), &date_wstr);
+    EXPECT_TRUE(base::Time::FromString(date_wstr.c_str(), &date));
+    EXPECT_FALSE(date.is_null());
   }
 
   GURL CreateFileSystemURL(const std::string path) {
@@ -154,6 +213,11 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     net::URLRequestJob* temp = job_;
     job_ = NULL;
     return temp;
+  }
+
+  FileSystemFileUtil* file_util() {
+    return file_system_context_->path_manager()->sandbox_provider()->
+        GetFileSystemFileUtil();
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
@@ -178,12 +242,13 @@ net::URLRequestJob* FileSystemDirURLRequestJobTest::job_ = NULL;
 
 namespace {
 
-// TODO(adamk): Write tighter tests once we've decided on a format for directory
-// listing responses.
 TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
   CreateDirectory("foo");
   CreateDirectory("foo/bar");
   CreateDirectory("foo/bar/baz");
+
+  EnsureFileExists("foo/bar/hoge");
+  TruncateFile("foo/bar/hoge", 10);
 
   TestRequest(CreateFileSystemURL("foo/bar/"));
 
@@ -191,6 +256,22 @@ TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
   EXPECT_EQ(1, delegate_->response_started_count());
   EXPECT_FALSE(delegate_->received_data_before_response());
   EXPECT_GT(delegate_->bytes_received(), 0);
+
+  std::istringstream in(delegate_->data_received());
+  std::string line;
+  EXPECT_TRUE(std::getline(in, line));
+
+#if defined(OS_WIN)
+  EXPECT_EQ("<script>start(\"foo\\\\bar\");</script>", line);
+#elif defined(OS_POSIX)
+  EXPECT_EQ("<script>start(\"/foo/bar\");</script>", line);
+#endif
+
+  EXPECT_TRUE(std::getline(in, line));
+  VerifyListingEntry(line, "baz", "baz", true, 0);
+
+  EXPECT_TRUE(std::getline(in, line));
+  VerifyListingEntry(line, "hoge", "hoge", false, 10);
 }
 
 TEST_F(FileSystemDirURLRequestJobTest, InvalidURL) {
