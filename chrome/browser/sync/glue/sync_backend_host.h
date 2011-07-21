@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -60,8 +61,9 @@ class SyncFrontend {
   SyncFrontend() {}
 
   // The backend has completed initialization and it is now ready to accept and
-  // process changes.
-  virtual void OnBackendInitialized() = 0;
+  // process changes.  If success is false, initialization wasn't able to be
+  // completed and should be retried.
+  virtual void OnBackendInitialized(bool success) = 0;
 
   // The backend queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
@@ -164,7 +166,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       sync_api::ConfigureReason reason,
-      CancelableTask* ready_task,
+      base::Callback<void(bool)> ready_task,
       bool enable_nigori);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -407,7 +409,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Called to handle updating frontend thread components whenever we may
     // need to alert the frontend that the backend is intialized.
-    void HandleInitializationCompletedOnFrontendLoop();
+    void HandleInitializationCompletedOnFrontendLoop(bool success);
 
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
@@ -525,7 +527,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // InitializationComplete passes through the SyncBackendHost to forward
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
-  virtual void HandleInitializationCompletedOnFrontendLoop();
+  virtual void HandleInitializationCompletedOnFrontendLoop(bool success);
 
   // Posts a nudge request on the sync thread.
   virtual void RequestNudge(const tracked_objects::Location& location);
@@ -566,7 +568,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // A task that should be called once data type configuration is
     // complete.
-    scoped_ptr<CancelableTask> ready_task;
+    base::Callback<void(bool)> ready_task;
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.
@@ -585,7 +587,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   static PendingConfigureDataTypesState* MakePendingConfigModeState(
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
-      CancelableTask* ready_task,
+      base::Callback<void(bool)> ready_task,
       ModelSafeRoutingInfo* routing_info,
       sync_api::ConfigureReason reason,
       bool nigori_enabled);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -289,7 +290,7 @@ SyncBackendHost::PendingConfigureDataTypesState*
     SyncBackendHost::MakePendingConfigModeState(
         const DataTypeController::TypeMap& data_type_controllers,
         const syncable::ModelTypeSet& types,
-        CancelableTask* ready_task,
+        base::Callback<void(bool)> ready_task,
         ModelSafeRoutingInfo* routing_info,
         sync_api::ConfigureReason reason,
         bool nigori_enabled) {
@@ -327,7 +328,7 @@ SyncBackendHost::PendingConfigureDataTypesState*
     }
   }
 
-  state->ready_task.reset(ready_task);
+  state->ready_task = ready_task;
   state->initial_types = types;
   state->reason = reason;
   return state;
@@ -337,7 +338,7 @@ void SyncBackendHost::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
     sync_api::ConfigureReason reason,
-    CancelableTask* ready_task,
+    base::Callback<void(bool)> ready_task,
     bool enable_nigori) {
   // Only one configure is allowed at a time.
   DCHECK(!pending_config_mode_state_.get());
@@ -409,7 +410,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     VLOG(1) << "SyncBackendHost(" << this << "): No new types added. "
             << "Calling ready_task directly";
     // No new types - just notify the caller that the types are available.
-    pending_config_mode_state_->ready_task->Run();
+    pending_config_mode_state_->ready_task.Run(true);
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());
 
@@ -843,7 +844,6 @@ void SyncBackendHost::Core::OnChangesComplete(
   processor->CommitChangesFromSyncModel();
 }
 
-
 void SyncBackendHost::Core::OnSyncCycleCompleted(
     const SyncSessionSnapshot* snapshot) {
   host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
@@ -877,12 +877,9 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
       if (state->added_types.test(*it))
         found_all_added &= snapshot->initial_sync_ended.test(*it);
     }
-    if (!found_all_added) {
-      DLOG(WARNING) << "Update didn't return updates for all types requested."
-                    << "Possible connection failure?";
-    } else {
-      state->ready_task->Run();
-    }
+    state->ready_task.Run(found_all_added);
+    if (!found_all_added)
+      return;
   }
 
   if (host_->initialized())
@@ -898,22 +895,29 @@ void SyncBackendHost::Core::OnInitializationComplete() {
   // can definitely be null in here.
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
-                        &Core::HandleInitializationCompletedOnFrontendLoop));
+                        &Core::HandleInitializationCompletedOnFrontendLoop,
+                        true));
 
   // Initialization is complete, so we can schedule recurring SaveChanges.
   host_->sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::StartSavingChanges));
 }
 
-void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop() {
+void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
+    bool success) {
   if (!host_)
     return;
-  host_->HandleInitializationCompletedOnFrontendLoop();
+  host_->HandleInitializationCompletedOnFrontendLoop(success);
 }
 
-void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
+void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
+    bool success) {
   if (!frontend_)
     return;
+  if (!success) {
+    frontend_->OnBackendInitialized(false);
+    return;
+  }
 
   bool setup_completed =
       profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
@@ -925,7 +929,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
     if (setup_completed)
       core_->sync_manager()->RefreshEncryption();
     initialization_state_ = INITIALIZED;
-    frontend_->OnBackendInitialized();
+    frontend_->OnBackendInitialized(true);
     return;
   }
 
@@ -934,8 +938,9 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
       DataTypeController::TypeMap(),
       syncable::ModelTypeSet(),
       sync_api::CONFIGURE_REASON_NEW_CLIENT,
-      NewRunnableMethod(core_.get(),
-          &SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop),
+      base::Bind(
+          &SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop,
+          core_.get()),
       true);
 }
 

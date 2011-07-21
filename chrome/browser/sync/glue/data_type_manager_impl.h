@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 
@@ -58,7 +59,7 @@ class DataTypeManagerImpl : public DataTypeManager {
       std::vector<DataTypeController*>* needs_start);
 
   void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
-  void DownloadReady();
+  void DownloadReady(bool success);
   void NotifyStart();
   void NotifyDone(ConfigureResult result,
       const tracked_objects::Location& location);
@@ -90,7 +91,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   // valid value only if needs_reconfigure_ is set.
   sync_api::ConfigureReason last_configure_reason_;
 
-  ScopedRunnableMethodFactory<DataTypeManagerImpl> method_factory_;
+  base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 
   // The last time Restart() was called.
   base::Time last_restart_time_;

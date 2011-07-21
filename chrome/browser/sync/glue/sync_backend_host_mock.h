@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "base/task.h"
+#include "base/callback.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "content/common/content_notification_types.h"
@@ -25,7 +25,7 @@ class SyncBackendHostMock : public SyncBackendHost {
                void(const DataTypeController::TypeMap&,
                     const std::set<syncable::ModelType>&,
                     sync_api::ConfigureReason,
-                    CancelableTask*,
+                    base::Callback<void(bool)>,
                     bool));
   MOCK_METHOD0(StartSyncingWithServer, void());
 };

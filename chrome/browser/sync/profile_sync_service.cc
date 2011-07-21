@@ -553,7 +553,14 @@ void ProfileSyncService::OnUnrecoverableError(
         &ProfileSyncService::Shutdown, true));
 }
 
-void ProfileSyncService::OnBackendInitialized() {
+void ProfileSyncService::OnBackendInitialized(bool success) {
+  if (!success) {
+    // If backend initialization failed, abort.  We only want to blow away
+    // state (DBs, etc) if this was a first-time scenario that failed.
+    Shutdown(!HasSyncSetupCompleted());
+    return;
+  }
+
   backend_initialized_ = true;
 
   js_event_handlers_.SetBackend(backend_->GetJsBackend());

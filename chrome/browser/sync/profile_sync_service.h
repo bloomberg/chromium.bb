@@ -188,7 +188,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void SetSyncSetupCompleted();
 
   // SyncFrontend implementation.
-  virtual void OnBackendInitialized();
+  virtual void OnBackendInitialized(bool success);
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
   virtual void OnStopSyncingPermanently();

@@ -31,9 +31,11 @@ using ::testing::_;
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     bool set_initial_sync_ended_on_init,
-    bool synchronous_init)
+    bool synchronous_init,
+    bool fail_initial_download)
     : browser_sync::SyncBackendHost(profile),
-      synchronous_init_(synchronous_init) {
+      synchronous_init_(synchronous_init),
+      fail_initial_download_(fail_initial_download) {
   ON_CALL(*this, RequestNudge(_)).WillByDefault(
       testing::Invoke(this,
                       &SyncBackendHostForProfileSyncTest::
@@ -47,7 +49,7 @@ void SyncBackendHostForProfileSyncTest::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
     sync_api::ConfigureReason reason,
-    CancelableTask* ready_task,
+    base::Callback<void(bool)> ready_task,
     bool nigori_enabled) {
   SyncBackendHost::ConfigureDataTypes(data_type_controllers, types,
                                       reason, ready_task, nigori_enabled);
@@ -64,6 +66,10 @@ void SyncBackendHostForProfileSyncTest::
        i != enabled_types.end(); ++i) {
     sync_ended.set(i->first);
   }
+
+  if (fail_initial_download_)
+    sync_ended.reset();
+
   core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
@@ -135,7 +141,9 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
   if (initialization_state_ == DOWNLOADING_NIGORI) {
     syncable::ModelTypeBitSet sync_ended;
-    sync_ended.set(syncable::NIGORI);
+
+    if (!fail_initial_download_)
+      sync_ended.set(syncable::NIGORI);
     std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
     core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
@@ -179,7 +187,8 @@ TestProfileSyncService::TestProfileSyncService(
           synchronous_backend_initialization),
       synchronous_sync_configuration_(false),
       initial_condition_setup_task_(initial_condition_setup_task),
-      set_initial_sync_ended_on_init_(true) {
+      set_initial_sync_ended_on_init_(true),
+      fail_initial_download_(false) {
   RegisterPreferences();
   SetSyncSetupCompleted();
 }
@@ -202,42 +211,44 @@ void TestProfileSyncService::SetInitialSyncEndedForEnabledTypes() {
   }
 }
 
-void TestProfileSyncService::OnBackendInitialized() {
-  // Set this so below code can access GetUserShare().
-  backend_initialized_ = true;
-
-  // Set up any nodes the test wants around before model association.
-  if (initial_condition_setup_task_) {
-    initial_condition_setup_task_->Run();
-    initial_condition_setup_task_ = NULL;
-  }
-
-  // Pretend we downloaded initial updates and set initial sync ended bits
-  // if we were asked to.
+void TestProfileSyncService::OnBackendInitialized(bool success) {
   bool send_passphrase_required = false;
-  if (set_initial_sync_ended_on_init_) {
-    UserShare* user_share = GetUserShare();
-    DirectoryManager* dir_manager = user_share->dir_manager.get();
+  if (success) {
+    // Set this so below code can access GetUserShare().
+    backend_initialized_ = true;
 
-    ScopedDirLookup dir(dir_manager, user_share->name);
-    if (!dir.good())
-      FAIL();
-
-    if (!dir->initial_sync_ended_for_type(syncable::NIGORI)) {
-      ProfileSyncServiceTestHelper::CreateRoot(
-          syncable::NIGORI, GetUserShare(),
-          id_factory());
-
-      // A side effect of adding the NIGORI mode (normally done by the syncer)
-      // is a decryption attempt, which will fail the first time.
-      send_passphrase_required = true;
+    // Set up any nodes the test wants around before model association.
+    if (initial_condition_setup_task_) {
+      initial_condition_setup_task_->Run();
+      initial_condition_setup_task_ = NULL;
     }
 
-    SetInitialSyncEndedForEnabledTypes();
+    // Pretend we downloaded initial updates and set initial sync ended bits
+    // if we were asked to.
+    if (set_initial_sync_ended_on_init_) {
+      UserShare* user_share = GetUserShare();
+      DirectoryManager* dir_manager = user_share->dir_manager.get();
+
+      ScopedDirLookup dir(dir_manager, user_share->name);
+      if (!dir.good())
+        FAIL();
+
+      if (!dir->initial_sync_ended_for_type(syncable::NIGORI)) {
+        ProfileSyncServiceTestHelper::CreateRoot(
+            syncable::NIGORI, GetUserShare(),
+            id_factory());
+
+        // A side effect of adding the NIGORI mode (normally done by the
+        // syncer) is a decryption attempt, which will fail the first time.
+        send_passphrase_required = true;
+      }
+
+      SetInitialSyncEndedForEnabledTypes();
+    }
   }
 
-  ProfileSyncService::OnBackendInitialized();
-  if (send_passphrase_required)
+  ProfileSyncService::OnBackendInitialized(success);
+  if (success && send_passphrase_required)
     OnPassphraseRequired(sync_api::REASON_DECRYPTION);
 
   // TODO(akalin): Figure out a better way to do this.
@@ -262,12 +273,16 @@ void TestProfileSyncService::dont_set_initial_sync_ended_on_init() {
 void TestProfileSyncService::set_synchronous_sync_configuration() {
   synchronous_sync_configuration_ = true;
 }
+void TestProfileSyncService::fail_initial_download() {
+  fail_initial_download_ = true;
+}
 
 void TestProfileSyncService::CreateBackend() {
   backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
       profile(),
       set_initial_sync_ended_on_init_,
-      synchronous_backend_initialization_));
+      synchronous_backend_initialization_,
+      fail_initial_download_));
 }
 
 std::string TestProfileSyncService::GetLsidForAuthBootstraping() {

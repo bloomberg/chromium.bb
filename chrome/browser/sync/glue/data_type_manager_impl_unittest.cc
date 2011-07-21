@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/task.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
@@ -318,10 +317,9 @@ void DoConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,
     sync_api::ConfigureReason reason,
-    CancelableTask* ready_task,
+    base::Callback<void(bool)> ready_task,
     bool enable_nigori) {
-  ready_task->Run();
-  delete ready_task;
+  ready_task.Run(true);
 }
 
 void QuitMessageLoop() {
@@ -465,7 +463,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
-  CancelableTask* task;
+  base::Callback<void(bool)> task;
   // Grab the task the first time this is called so we can configure
   // before it is finished.
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).
@@ -483,8 +481,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
 
   // Running the task will queue a restart task to the message loop, and
   // eventually get us configured.
-  task->Run();
-  delete task;
+  task.Run(true);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 
@@ -500,7 +497,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
-  CancelableTask* task;
+  base::Callback<void(bool)> task;
   // Grab the task the first time this is called so we can stop
   // before it is finished.
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).
@@ -517,6 +514,5 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
 
   // It should be perfectly safe to run this task even though the DTM
   // has been stopped.
-  task->Run();
-  delete task;
+  task.Run(true);
 }

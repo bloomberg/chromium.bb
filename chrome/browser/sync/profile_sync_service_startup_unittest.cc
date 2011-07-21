@@ -267,3 +267,18 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   service_->Initialize();
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
+
+TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
+  profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+
+  // Preload the tokens.
+  profile_.GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "sync_token");
+  service_->fail_initial_download();
+
+  service_->Initialize();
+  EXPECT_FALSE(service_->sync_initialized());
+  EXPECT_FALSE(service_->GetBackendForTest());
+}

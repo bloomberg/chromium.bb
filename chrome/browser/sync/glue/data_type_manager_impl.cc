@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -68,7 +70,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(sync_api::CONFIGURE_REASON_UNKNOWN),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
@@ -210,12 +212,18 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
       controllers_,
       last_requested_types_,
       reason,
-      method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady),
+      base::Bind(&DataTypeManagerImpl::DownloadReady,
+                 weak_ptr_factory_.GetWeakPtr()),
       enable_nigori);
 }
 
-void DataTypeManagerImpl::DownloadReady() {
+void DataTypeManagerImpl::DownloadReady(bool success) {
   DCHECK(state_ == DOWNLOAD_PENDING);
+
+  if (!success) {
+    NotifyDone(UNRECOVERABLE_ERROR, FROM_HERE);
+    return;
+  }
 
   state_ = CONFIGURING;
   StartNextType();
@@ -247,8 +255,10 @@ void DataTypeManagerImpl::StartNextType() {
     // Unwind the stack before executing configure. The method configure and its
     // callees are not re-entrant.
     MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&DataTypeManagerImpl::Configure,
-            last_requested_types_, last_configure_reason_));
+        base::Bind(&DataTypeManagerImpl::Configure,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   last_requested_types_,
+                   last_configure_reason_));
 
     needs_reconfigure_ = false;
     last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
@@ -357,7 +367,7 @@ void DataTypeManagerImpl::Stop() {
   if (download_pending) {
     // If Stop() is called while waiting for download, cancel all
     // outstanding tasks.
-    method_factory_.RevokeAll();
+    weak_ptr_factory_.InvalidateWeakPtrs();
     FinishStopAndNotify(ABORTED, FROM_HERE);
     return;
   }

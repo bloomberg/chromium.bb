@@ -7,8 +7,7 @@
 namespace browser_sync {
 
 ACTION(InvokeTask) {
-  arg3->Run();
-  delete arg3;
+  arg3.Run(true);
 }
 
 SyncBackendHostMock::SyncBackendHostMock() {
