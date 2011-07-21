@@ -8,6 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
+#include "chrome/browser/policy/mock_cloud_policy_data_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/policy_notifier.h"
@@ -20,20 +21,9 @@ namespace policy {
 
 const char kTestToken[] = "device_token_fetcher_test_auth_token";
 
-using testing::Mock;
 using testing::_;
-
-class MockTokenAvailableObserver : public CloudPolicyDataStore::Observer {
- public:
-  MockTokenAvailableObserver() {}
-  virtual ~MockTokenAvailableObserver() {}
-
-  MOCK_METHOD0(OnDeviceTokenChanged, void());
-  MOCK_METHOD0(OnCredentialsChanged, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTokenAvailableObserver);
-};
+using testing::AnyNumber;
+using testing::Mock;
 
 class DeviceTokenFetcherTest : public testing::Test {
  protected:
@@ -46,7 +36,9 @@ class DeviceTokenFetcherTest : public testing::Test {
   virtual void SetUp() {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("DeviceTokenFetcherTest")));
-    service_.set_backend(&backend_);
+    EXPECT_CALL(service_, CreateBackend())
+        .Times(AnyNumber())
+        .WillRepeatedly(MockDeviceManagementServiceProxyBackend(&backend_));
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     data_store_->AddObserver(&observer_);
   }
@@ -67,7 +59,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   MockDeviceManagementService service_;
   scoped_ptr<CloudPolicyCacheBase> cache_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
-  MockTokenAvailableObserver observer_;
+  MockCloudPolicyDataStoreObserver observer_;
   PolicyNotifier notifier_;
   ScopedTempDir temp_user_data_dir_;
 

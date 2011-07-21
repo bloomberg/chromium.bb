@@ -21,6 +21,7 @@
 namespace policy {
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -52,7 +53,9 @@ class CloudPolicyControllerTest : public testing::Test {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest")));
     token_fetcher_.reset(new MockDeviceTokenFetcher(cache_.get()));
-    service_.set_backend(&backend_);
+    EXPECT_CALL(service_, CreateBackend())
+        .Times(AnyNumber())
+        .WillRepeatedly(MockDeviceManagementServiceProxyBackend(&backend_));
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
   }
 

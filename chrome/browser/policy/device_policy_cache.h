@@ -42,6 +42,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
 
  private:
   friend class DevicePolicyCacheTest;
+  friend class DevicePolicyCacheTestHelper;
 
   // Alternate c'tor allowing tests to mock out the SignedSettingsHelper
   // singleton.

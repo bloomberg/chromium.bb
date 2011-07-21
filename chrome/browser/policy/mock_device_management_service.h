@@ -8,9 +8,11 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -26,19 +28,19 @@ class ProxyDeviceManagementBackend : public DeviceManagementBackend {
       const std::string& auth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
-      DeviceRegisterResponseDelegate* delegate);
+      DeviceRegisterResponseDelegate* delegate) OVERRIDE;
 
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
-      DeviceUnregisterResponseDelegate* delegate);
+      DeviceUnregisterResponseDelegate* delegate) OVERRIDE;
 
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       const em::DevicePolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate);
+      DevicePolicyResponseDelegate* delegate) OVERRIDE;
 
  private:
   DeviceManagementBackend* backend_;  // weak
@@ -50,16 +52,36 @@ class MockDeviceManagementService : public DeviceManagementService {
   MockDeviceManagementService();
   virtual ~MockDeviceManagementService();
 
-  void set_backend(DeviceManagementBackend* backend) {
-    backend_ = backend;
+  MOCK_METHOD0(CreateBackend, DeviceManagementBackend*());
+  MOCK_METHOD1(StartJob, void(DeviceManagementJob*));
+
+  // This method bypasses the mocked version and calls the superclass'
+  // CreateBackend(), returning a "real" backend.
+  DeviceManagementBackend* CreateBackendNotMocked() {
+    return DeviceManagementService::CreateBackend();
   }
 
-  virtual DeviceManagementBackend* CreateBackend();
+  // This method bypasses the mocked version and calls the superclass'
+  // StartJob.
+  void StartJobNotMocked(DeviceManagementJob* job) {
+    DeviceManagementService::StartJob(job);
+  }
 
  private:
-  DeviceManagementBackend* backend_;  // weak
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementService);
 };
+
+// Use this to make CreateBackend return a ProxyDeviceManagementBackend for
+// the given |backend|.
+ACTION_P(MockDeviceManagementServiceProxyBackend, backend) {
+  return new ProxyDeviceManagementBackend(backend);
+}
+
+// Use this to make StartJob send a faked response to the job immediately.
+ACTION_P4(MockDeviceManagementServiceRespondToJob, status, response_code,
+          cookies, data) {
+  arg0->HandleResponse(status, response_code, cookies, data);
+}
 
 }  // namespace policy
 

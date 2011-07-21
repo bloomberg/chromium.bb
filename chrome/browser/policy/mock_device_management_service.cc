@@ -38,13 +38,8 @@ void ProxyDeviceManagementBackend::ProcessPolicyRequest(
 }
 
 MockDeviceManagementService::MockDeviceManagementService()
-    : DeviceManagementService(""),
-      backend_(NULL) {}
+    : DeviceManagementService("") {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
-
-DeviceManagementBackend* MockDeviceManagementService::CreateBackend() {
-  return new ProxyDeviceManagementBackend(backend_);
-}
 
 }  // namespace policy

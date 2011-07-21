@@ -316,6 +316,9 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
       case DeviceManagementBackend::kErrorServiceManagementNotSupported:
         sample = kMetricTokenFetchManagementNotSupported;
         break;
+      case DeviceManagementBackend::kErrorResponseDecoding:
+        sample = kMetricTokenFetchBadResponse;
+        break;
       default:
         sample = kMetricTokenFetchServerFailed;
         break;
@@ -404,6 +407,9 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
         break;
       case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
         sample = kMetricPolicyFetchInvalidToken;
+        break;
+      case DeviceManagementBackend::kErrorResponseDecoding:
+        sample = kMetricPolicyFetchBadResponse;
         break;
       default:
         sample = kMetricPolicyFetchServerFailed;

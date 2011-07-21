@@ -120,6 +120,7 @@ void UserPolicyTokenLoader::StoreOnFileThread(const std::string& token,
   if (file_util::WriteFile(cache_file_, data.c_str(), size) != size) {
     LOG(WARNING) << "Failed to write " << cache_file_.value();
     SampleUMA(kMetricTokenStoreFailed);
+    return;
   }
 
   SampleUMA(kMetricTokenStoreSucceeded);

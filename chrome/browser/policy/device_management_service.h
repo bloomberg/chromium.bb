@@ -72,12 +72,13 @@ class DeviceManagementService : public URLFetcher::Delegate {
   // callback.
   void RemoveJob(DeviceManagementJob* job);
 
+ protected:
+  // Starts the given job.
+  virtual void StartJob(DeviceManagementJob* job);
+
  private:
   typedef std::map<const URLFetcher*, DeviceManagementJob*> JobFetcherMap;
   typedef std::deque<DeviceManagementJob*> JobQueue;
-
-  // Starts the given job.
-  void StartJob(DeviceManagementJob* job);
 
   // URLFetcher::Delegate override.
   virtual void OnURLFetchComplete(const URLFetcher* source,

@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/device_policy_cache.h"
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/mock_signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "policy/configuration_policy_type.h"
@@ -22,40 +23,6 @@ using ::chromeos::SignedSettings;
 using ::chromeos::SignedSettingsHelper;
 using ::testing::_;
 using ::testing::InSequence;
-
-class MockSignedSettingsHelper : public SignedSettingsHelper {
- public:
-  MockSignedSettingsHelper() {}
-  virtual ~MockSignedSettingsHelper() {}
-
-  MOCK_METHOD2(StartStorePolicyOp, void(const em::PolicyFetchResponse&,
-                                        SignedSettingsHelper::Callback*));
-  MOCK_METHOD1(StartRetrievePolicyOp, void(SignedSettingsHelper::Callback*));
-  MOCK_METHOD1(CancelCallback, void(SignedSettingsHelper::Callback*));
-
-  // This test doesn't need these methods, but since they're pure virtual in
-  // SignedSettingsHelper, they must be implemented:
-  MOCK_METHOD2(StartCheckWhitelistOp, void(const std::string&,
-                                           SignedSettingsHelper::Callback*));
-  MOCK_METHOD3(StartWhitelistOp, void(const std::string&, bool,
-                                      SignedSettingsHelper::Callback*));
-  MOCK_METHOD3(StartStorePropertyOp, void(const std::string&,
-                                          const std::string&,
-                                          SignedSettingsHelper::Callback*));
-  MOCK_METHOD2(StartRetrieveProperty, void(const std::string&,
-                                           SignedSettingsHelper::Callback*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSignedSettingsHelper);
-};
-
-ACTION_P(MockSignedSettingsHelperStorePolicy, status_code) {
-  arg1->OnStorePolicyCompleted(status_code);
-}
-
-ACTION_P2(MockSignedSettingsHelperRetrievePolicy, status_code, policy) {
-  arg0->OnRetrievePolicyCompleted(status_code, policy);
-}
 
 void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
                              const std::string& user,
@@ -136,7 +103,7 @@ class DevicePolicyCacheTest : public testing::Test {
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   EnterpriseInstallAttributes install_attributes_;
   scoped_ptr<CloudPolicyDataStore> data_store_;
-  MockSignedSettingsHelper signed_settings_helper_;
+  chromeos::MockSignedSettingsHelper signed_settings_helper_;
   scoped_ptr<DevicePolicyCache> cache_;
 
  private:
@@ -183,6 +150,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
       MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
                                              new_policy));
+  EXPECT_CALL(signed_settings_helper_, CancelCallback(_));
   cache_->SetPolicy(new_policy);
   testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   FundamentalValue updated_expected(300);
