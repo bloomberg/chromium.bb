@@ -1723,15 +1723,6 @@ void TabContents::OnIgnoredUIEvent() {
   }
 }
 
-void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
-                                      int new_request_id) {
-  // Allows the TabContents to react when a cross-site response is ready to be
-  // delivered to a pending RenderViewHost.  We must first run the onunload
-  // handler of the old RenderViewHost before we can allow it to proceed.
-  render_manager_.OnCrossSiteResponse(new_render_process_host_id,
-                                      new_request_id);
-}
-
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,
                                        bool is_during_unload) {
   // Don't show hung renderer dialog for a swapped out RVH.

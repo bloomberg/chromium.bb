@@ -667,8 +667,6 @@ class TabContents : public PageNavigator,
   virtual WebPreferences GetWebkitPrefs();
   virtual void OnUserGesture();
   virtual void OnIgnoredUIEvent();
-  virtual void OnCrossSiteResponse(int new_render_process_host_id,
-                                   int new_request_id);
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
                                     bool is_during_unload);
   virtual void RendererResponsive(RenderViewHost* render_view_host);
