@@ -18,10 +18,7 @@ SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
 UTMAN=tools/llvm/utman.sh
 
 # Rough test running time classification for ARM which is our bottleneck
-# BUG=http://code.google.com/p/nativeclient/issues/detail?id=2036
-# 254.gap disabled for llvm/llvm-gcc 128002/126872
-
-FAST_ARM="176.gcc 181.mcf 197.parser"
+FAST_ARM="176.gcc 181.mcf 197.parser 254.gap"
 MEDIUM_ARM="164.gzip 175.vpr 179.art 186.crafty 252.eon \
             256.bzip2 255.vortex 300.twolf"
 SLOW_ARM="177.mesa 183.equake 188.ammp 253.perlbmk"
