@@ -297,15 +297,6 @@ LEAK
 ...
 ntdll.dll!CsrNewThread
 
-# http://code.google.com/p/drmemory/issues/detail?id=395
-UNINITIALIZED READ
-...
-*!gfx::PlatformFontWin::CreateHFontRef
-*!gfx::PlatformFontWin::GetBaseFontRef
-*!gfx::PlatformFontWin::PlatformFontWin
-*!gfx::PlatformFont::CreateDefault
-*!gfx::Font::Font
-
 # http://code.google.com/p/drmemory/issues/detail?id=397
 UNINITIALIZED READ
 system call NtDeviceIoControlFile InputBuffer
