@@ -525,7 +525,7 @@ def UpdateIndex(gsutil_archive, set_version):
   """Update _index.html page in Google Storage."""
   cros_lib.RunCommand([_GS_GEN_INDEX,
                        '--gsutil', _GSUTIL_PATH,
-                       '--acl', _GS_ACL,
+                       '-a', _GS_ACL,
                        '-p', set_version,
                        gsutil_archive])
 
