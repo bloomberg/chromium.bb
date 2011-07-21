@@ -3,9 +3,9 @@ noinst_PROGRAMS = $(clients_programs) 		\
 	$(simple_clients_programs)
 
 if BUILD_SIMPLE_CLIENTS
-simple_clients_programs = simple-client simple-shm
-simple_client_SOURCES = simple-client.c
-simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
+simple_clients_programs = simple-egl simple-shm
+simple_egl_SOURCES = simple-egl.c
+simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 simple_shm_SOURCES = simple-shm.c
 simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
