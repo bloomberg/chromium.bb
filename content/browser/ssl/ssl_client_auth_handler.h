@@ -46,16 +46,17 @@ class SSLClientAuthHandler
   // Like CertificateSelected, but does not send SSL_CLIENT_AUTH_CERT_SELECTED
   // notification.  Used to avoid notification re-spamming when other
   // certificate selectors act on a notification matching the same host.
-  void CertificateSelectedNoNotify(net::X509Certificate* cert);
+  virtual void CertificateSelectedNoNotify(net::X509Certificate* cert);
 
   // Returns the SSLCertRequestInfo for this handler.
   net::SSLCertRequestInfo* cert_request_info() { return cert_request_info_; }
 
+ protected:
+  virtual ~SSLClientAuthHandler();
+
  private:
   friend class BrowserThread;
   friend class DeleteTask<SSLClientAuthHandler>;
-
-  virtual ~SSLClientAuthHandler();
 
   // Notifies that the user has selected a cert.
   // Called on the IO thread.

@@ -201,6 +201,7 @@
         '../content/browser/renderer_host/test_backing_store.h',
         '../content/browser/renderer_host/test_render_view_host.cc',
         '../content/browser/renderer_host/test_render_view_host.h',
+        '../content/browser/ssl/ssl_client_auth_handler_mock.h',
         '../content/browser/tab_contents/test_tab_contents.cc',
         '../content/browser/tab_contents/test_tab_contents.h',
         '../content/common/notification_observer_mock.cc',
@@ -467,6 +468,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/npapi/npapi.gyp:npapi',
         # run time dependency
@@ -490,8 +492,9 @@
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
-        'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/views/menu_item_view_test.cc',
+        'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
+        'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/webui/workers_ui_browsertest.cc',
         'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
         'test/interactive_ui/infobars_uitest.cc',
@@ -622,7 +625,11 @@
               },
             },
           },  # configurations
-        }],  # OS=="win"
+        }, { # else: OS != "win"
+          'sources!': [
+            'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
+          ],
+        }],  # OS != "win"
       ],  # conditions
     },
     {

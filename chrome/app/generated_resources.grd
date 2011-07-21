@@ -2710,6 +2710,12 @@ are declared in build/common.gypi.
       </message>
 
 
+      <!-- Win certificate selector dialog strings.  -->
+      <message name="IDS_CERT_SELECTOR_TABLE_CERT_FORMAT" desc="Format for a certificate row in the certificate selector table.">
+        <ph name="SUBJECT">$1<ex>FOAF ME Cert http://foaf.me/test</ex></ph> (<ph name="ISSUER">$2<ex>FOAF.ME</ex></ph>)
+      </message>
+
+
       <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as Linux. -->
       <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
         This site has requested that you identify yourself with a certificate:
