@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
+        + 'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
+
 var g_slideshow_data = null;
 
 /**
@@ -1401,7 +1404,10 @@ FileManager.prototype = {
    */
   FileManager.prototype.updatePreview_ = function() {
     // Clear the preview image first, in case the thumbnail takes long to load.
-    this.previewImage_.src = '';
+    // Do not set url to empty string in plugins because it crashes browser,
+    // instead we use empty 1x1 gif
+    this.previewImage_.src = EMPTY_IMAGE_URI;
+
     // The transparent-background class is used to display the checkerboard
     // background for image thumbnails.  We don't want to display it for
     // non-thumbnail preview images.
