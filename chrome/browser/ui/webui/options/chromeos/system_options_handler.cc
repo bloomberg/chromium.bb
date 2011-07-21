@@ -14,8 +14,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/json_value_serializer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,25 +105,5 @@ void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
   args->GetString(0, &checked_str);
   bool accessibility_enabled = (checked_str == "true");
 
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kAccessibilityEnabled, accessibility_enabled);
-
-  ExtensionAccessibilityEventRouter::GetInstance()->
-      SetAccessibilityEnabled(accessibility_enabled);
-
-  // Load/Unload ChromeVox
-  ExtensionService* extension_service =
-      web_ui_->tab_contents()->profile()->GetExtensionService();
-  std::string manifest = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_CHROMEVOX_MANIFEST).as_string();
-  FilePath path = FilePath(extension_misc::kAccessExtensionPath)
-      .AppendASCII(extension_misc::kChromeVoxDirectoryName);
-  ExtensionService::ComponentExtensionInfo info(manifest, path);
-  if (accessibility_enabled) { // Load ChromeVox
-    extension_service->register_component_extension(info);
-    extension_service->LoadComponentExtension(info);
-  } else { // Unload ChromeVox
-    extension_service->UnloadComponentExtension(info);
-    extension_service->UnregisterComponentExtension(info);
-  }
+  chromeos::accessibility::EnableAccessibility(accessibility_enabled);
 }

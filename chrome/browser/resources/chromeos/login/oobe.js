@@ -34,6 +34,17 @@ cr.define('cr.ui', function() {
      */
     currentStep_: 0,
 
+    oobeKeyDown: function(e) {
+      var keystroke = String.fromCharCode(e.keyCode);
+      switch (keystroke) {
+        case 'Z':
+          if (e.altKey && e.ctrlKey) {
+            chrome.send('toggleAccessibility', []);
+            break;
+          }
+      } // switch
+    },
+
     /**
      * Appends buttons to the button strip.
      * @param {Array} buttons Array with the buttons to append.
@@ -217,6 +228,10 @@ cr.define('cr.ui', function() {
     $('security-ok-button').addEventListener('click', function(event) {
       $('popup-overlay').hidden = true;
     });
+
+    document.addEventListener('keydown', function(e) {
+      Oobe.getInstance().oobeKeyDown(e);
+    }, true);
 
     chrome.send('screenStateInitialize', []);
   };

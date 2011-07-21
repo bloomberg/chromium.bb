@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -32,6 +33,7 @@ namespace {
 
 // JS API callbacks names.
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
+const char kJsApiToggleAccessibility[] = "toggleAccessibility";
 
 }  // namespace
 
@@ -75,6 +77,7 @@ class CoreOobeHandler : public BaseScreenHandler {
  private:
   // Handlers for JS WebUI messages.
   void OnInitialized(const ListValue* args);
+  void OnToggleAccessibility(const ListValue* args);
 
   OobeUI* oobe_ui_;
 
@@ -122,12 +125,18 @@ void CoreOobeHandler::Initialize() {
 }
 
 void CoreOobeHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback(kJsApiToggleAccessibility,
+      NewCallback(this, &CoreOobeHandler::OnToggleAccessibility));
   web_ui_->RegisterMessageCallback(kJsApiScreenStateInitialize,
       NewCallback(this, &CoreOobeHandler::OnInitialized));
 }
 
 void CoreOobeHandler::OnInitialized(const ListValue* args) {
   oobe_ui_->InitializeHandlers();
+}
+
+void CoreOobeHandler::OnToggleAccessibility(const ListValue* args) {
+  accessibility::ToggleAccessibility();
 }
 
 // OobeUI ----------------------------------------------------------------------

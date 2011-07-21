@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -35,7 +36,13 @@ WebUILoginView::WebUILoginView()
     : status_area_(NULL),
       profile_(NULL),
       webui_login_(NULL),
-      status_window_(NULL) {
+      status_window_(NULL),
+      accel_toggle_accessibility_(
+          views::Accelerator(ui::VKEY_Z, false, true, true)) {
+  // Accelerator events will be sent to this window until the WebUI dialog gains
+  // focus via keyboard or mouse input, so we have to watch for the
+  // accessibility hotkey here as well.
+  AddAccelerator(accel_toggle_accessibility_);
 }
 
 WebUILoginView::~WebUILoginView() {
@@ -57,6 +64,16 @@ void WebUILoginView::Init() {
 
 std::string WebUILoginView::GetClassName() const {
   return kViewClassName;
+}
+
+bool WebUILoginView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator == accel_toggle_accessibility_) {
+    accessibility::ToggleAccessibility();
+  } else {
+    return false;
+  }
+  return true;
 }
 
 gfx::NativeWindow WebUILoginView::GetNativeWindow() const {

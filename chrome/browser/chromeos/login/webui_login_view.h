@@ -41,6 +41,8 @@ class WebUILoginView : public views::View,
   virtual void Init();
 
   // Overridden from views::Views:
+  virtual bool AcceleratorPressed(
+      const views::Accelerator& accelerator) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from StatusAreaHost:
@@ -102,6 +104,8 @@ class WebUILoginView : public views::View,
   // TODO(nkostylev): Temporary solution till we have
   // RenderWidgetHostViewViews working.
   views::Widget* status_window_;
+
+  views::Accelerator accel_toggle_accessibility_;
 
   // Proxy settings dialog that can be invoked from network menu.
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
