@@ -366,36 +366,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Transport_Thunk();
 #endif
 
-  // Support pre-1.0 version strings of stable interfaces until the changes
-  // have rippled through the system (especially NaCl tree).
-  // TODO(dmichael): Remove this.
-  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_AudioConfig_Thunk();
-  if (strcmp(name, PPB_AUDIO_INTERFACE_0_6) == 0)
-    return ::ppapi::thunk::GetPPB_Audio_Thunk();
-  if (strcmp(name, PPB_FILEIO_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_FileIO_Thunk();
-  if (strcmp(name, PPB_FILEREF_INTERFACE_0_9) == 0)
-    return ::ppapi::thunk::GetPPB_FileRef_Thunk();
-  if (strcmp(name, PPB_FILESYSTEM_INTERFACE_0_7) == 0)
-    return ::ppapi::thunk::GetPPB_FileSystem_Thunk();
-  if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE_0_4) == 0)
-    return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
-  if (strcmp(name, PPB_IMAGEDATA_INTERFACE_0_3) == 0)
-    return ::ppapi::thunk::GetPPB_ImageData_Thunk();
-  if (strcmp(name, PPB_INSTANCE_INTERFACE_0_5) == 0)
-    return ::ppapi::thunk::GetPPB_Instance_1_0_Thunk();
-  if (strcmp(name, PPB_MESSAGING_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_Messaging_Thunk();
-  if (strcmp(name, PPB_URLLOADER_INTERFACE_0_2) == 0)
-    return ::ppapi::thunk::GetPPB_URLLoader_Thunk();
-  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE_0_2) == 0)
-    return ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
-  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_URLResponseInfo_Thunk();
-  if (strcmp(name, PPB_VAR_INTERFACE_0_5) == 0)
-    return Var::GetInterface();
-
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
