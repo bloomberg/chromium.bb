@@ -137,7 +137,7 @@ void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
       bitmap.height(),
       static_cast<int>(bitmap.rowBytes()),
       90 /* quality */,
-      &bitmap_data->data()));
+      &bitmap_data->data));
   ASSERT_LT(0, file_util::WriteFile(
       file_path,
       reinterpret_cast<const char*>(bitmap_data->front()),

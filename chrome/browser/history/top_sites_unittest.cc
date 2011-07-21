@@ -108,7 +108,7 @@ class TopSitesQuerier {
 // thumbnail data, which is stored as jpgs.
 SkBitmap ExtractThumbnail(const RefCountedBytes& t1) {
   scoped_ptr<SkBitmap> image(gfx::JPEGCodec::Decode(t1.front(),
-                                                    t1.size()));
+                                                    t1.data.size()));
   return image.get() ? *image : SkBitmap();
 }
 
@@ -116,11 +116,11 @@ SkBitmap ExtractThumbnail(const RefCountedBytes& t1) {
 bool ThumbnailsAreEqual(RefCountedBytes* t1, RefCountedBytes* t2) {
   if (!t1 || !t2)
     return false;
-  if (t1->size() != t2->size())
+  if (t1->data.size() != t2->data.size())
     return false;
-  return std::equal(t1->data().begin(),
-                    t1->data().end(),
-                    t2->data().begin());
+  return std::equal(t1->data.begin(),
+                    t1->data.end(),
+                    t2->data.begin());
 }
 
 }  // namespace

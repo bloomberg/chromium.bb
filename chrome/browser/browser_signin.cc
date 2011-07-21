@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_signin.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -67,7 +68,10 @@ void BrowserSigninResourcesSource::StartDataRequest(const std::string& path,
     response = jstemplate_builder::GetI18nTemplateHtml(html, &dict);
   }
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&response));
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(response.size());
+  std::copy(response.begin(), response.end(), html_bytes->data.begin());
+  SendResponse(request_id, html_bytes);
 }
 
 class BrowserSigninHtml : public HtmlDialogUIDelegate,

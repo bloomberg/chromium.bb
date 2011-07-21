@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/callback.h"
@@ -377,10 +378,14 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
 
   SetFontAndTextDirection(&localized_strings);
 
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       bug_report_html_, &localized_strings);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html.size());
+  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
 }
 
 

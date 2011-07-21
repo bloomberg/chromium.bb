@@ -85,10 +85,14 @@ void TaskManagerUIHTMLSource::StartDataRequest(const std::string& path,
   static const base::StringPiece task_manager_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_TASK_MANAGER_HTML));
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       task_manager_html, &localized_strings);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html.size());
+  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
 }
 
 }  // namespace

@@ -483,13 +483,19 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
     jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
     jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
-    SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+    html_bytes->data.resize(full_html.size());
+    std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+    SendResponse(request_id, html_bytes);
     return;
   }
 
-  std::string data_string("<p style='color:red'>Failed to read resource" +
+  const std::string data_string("<p style='color:red'>Failed to read resource" +
       EscapeForHTML(filename) + "</p>");
-  SendResponse(request_id, base::RefCountedString::TakeString(&data_string));
+  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
+  bytes->data.resize(data_string.size());
+  std::copy(data_string.begin(), data_string.end(), bytes->data.begin());
+  SendResponse(request_id, bytes);
 }
 
 std::string NetInternalsHTMLSource::GetMimeType(const std::string&) const {

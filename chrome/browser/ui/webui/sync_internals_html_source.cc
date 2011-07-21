@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_internals_html_source.h"
 
+#include <algorithm>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
@@ -35,7 +37,10 @@ void SyncInternalsHTMLSource::StartDataRequest(const std::string& path,
   jstemplate_builder::AppendJsonHtml(&localized_strings, &html);
   jstemplate_builder::AppendI18nTemplateProcessHtml(&html);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&html));
+  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes());
+  bytes->data.resize(html.size());
+  std::copy(html.begin(), html.end(), bytes->data.begin());
+  SendResponse(request_id, bytes);
 }
 
 std::string SyncInternalsHTMLSource::GetMimeType(

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/sessions_ui.h"
 
-#include <algorithm>
-
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -79,7 +77,11 @@ void SessionsUIHTMLSource::StartDataRequest(const std::string& path,
                                               &localized_strings);
   jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html.size());
+  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

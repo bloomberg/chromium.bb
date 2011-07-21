@@ -101,7 +101,11 @@ void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
     std::string json_string;
     base::JSONWriter::Write(&workers_list, false, &json_string);
 
-    SendResponse(request_id, base::RefCountedString::TakeString(&json_string));
+    scoped_refptr<RefCountedBytes> json_bytes(new RefCountedBytes());
+    json_bytes->data.resize(json_string.size());
+    std::copy(json_string.begin(), json_string.end(), json_bytes->data.begin());
+
+    SendResponse(request_id, json_bytes);
 }
 
 class WorkersDOMHandler : public WebUIMessageHandler {

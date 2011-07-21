@@ -329,7 +329,7 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-  FillBitmap(kFaviconSize, kFaviconSize, &data->data());
+  FillBitmap(kFaviconSize, kFaviconSize, &data->data);
   history_handler->favicon_data_.image_data = data;
 
   // Send history response.
@@ -442,7 +442,7 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-  FillBitmap(kFaviconSize, kFaviconSize, &data->data());
+  FillBitmap(kFaviconSize, kFaviconSize, &data->data);
   history_handler->favicon_data_.image_data = data;
 
   // Send history response.
@@ -529,7 +529,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-  FillBitmap(kFaviconSize, kFaviconSize, &data->data());
+  FillBitmap(kFaviconSize, kFaviconSize, &data->data);
   history_handler->favicon_data_.image_data = data;
 
   // Send history response.
@@ -671,7 +671,7 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   history_handler->favicon_data_.expired = true;
   history_handler->favicon_data_.icon_url = new_icon_url;
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-  FillBitmap(kFaviconSize, kFaviconSize, &data->data());
+  FillBitmap(kFaviconSize, kFaviconSize, &data->data);
   history_handler->favicon_data_.image_data = data;
   history_handler->InvokeCallback();
 
@@ -800,7 +800,7 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   handler->favicon_data_.icon_type = history::TOUCH_ICON;
   handler->favicon_data_.icon_url = latest_icon_url;
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-  FillBitmap(kFaviconSize, kFaviconSize, &data->data());
+  FillBitmap(kFaviconSize, kFaviconSize, &data->data);
   handler->favicon_data_.image_data = data;
 
   handler->InvokeCallback();

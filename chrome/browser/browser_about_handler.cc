@@ -1421,8 +1421,10 @@ void AboutSource::StartDataRequest(const std::string& path,
 }
 
 void AboutSource::FinishDataRequest(const std::string& html, int request_id) {
-  std::string html_copy(html);
-  SendResponse(request_id, base::RefCountedString::TakeString(&html_copy));
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(html.size());
+  std::copy(html.begin(), html.end(), html_bytes->data.begin());
+  SendResponse(request_id, html_bytes);
 }
 
 std::string AboutSource::GetMimeType(const std::string& path) const {

@@ -1511,19 +1511,19 @@ void HistoryBackend::GetPageThumbnailDirectly(
     if (GetMostRecentRedirectsFrom(page_url, &redirects) &&
         !redirects.empty()) {
       if ((url_id = db_->GetRowForURL(redirects.back(), NULL)))
-        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data());
+        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data);
     }
 
     // If we don't have a thumbnail from redirects, try the URL directly.
     if (!success) {
       if ((url_id = db_->GetRowForURL(page_url, NULL)))
-        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data());
+        success = thumbnail_db_->GetPageThumbnail(url_id, &(*data)->data);
     }
 
     // In this rare case, we start to mine the older redirect sessions
     // from the visit table to try to find a thumbnail.
     if (!success) {
-      success = GetThumbnailFromOlderRedirect(page_url, &(*data)->data());
+      success = GetThumbnailFromOlderRedirect(page_url, &(*data)->data);
     }
 
     if (!success)
@@ -1693,7 +1693,7 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
       scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
       favicon.known_icon = true;
       Time last_updated;
-      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
+      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data,
                                     NULL)) {
         favicon.expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFaviconRefetchDays);
@@ -1729,7 +1729,7 @@ void HistoryBackend::GetFaviconForURL(
     if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) &&
         (icon_mappings.front().icon_type & icon_types) &&
         thumbnail_db_->GetFavicon(icon_mappings.front().icon_id, &last_updated,
-                                  &data->data(), &favicon.icon_url)) {
+                                  &data->data, &favicon.icon_url)) {
       favicon.known_icon = true;
       favicon.expired = (Time::Now() - last_updated) >
           TimeDelta::FromDays(kFaviconRefetchDays);

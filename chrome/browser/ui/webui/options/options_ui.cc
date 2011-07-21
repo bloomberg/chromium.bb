@@ -115,22 +115,35 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_incognito,
                                            int request_id) {
-  scoped_refptr<RefCountedMemory> response_bytes;
+  scoped_refptr<RefCountedBytes> response_bytes(new RefCountedBytes);
   SetFontAndTextDirection(localized_strings_.get());
 
   if (path == kLocalizedStringsFile) {
     // Return dynamically-generated strings from memory.
-    std::string strings_js;
-    jstemplate_builder::AppendJsonJS(localized_strings_.get(), &strings_js);
-    response_bytes = base::RefCountedString::TakeString(&strings_js);
+    std::string template_data;
+    jstemplate_builder::AppendJsonJS(localized_strings_.get(), &template_data);
+    response_bytes->data.resize(template_data.size());
+    std::copy(template_data.begin(),
+              template_data.end(),
+              response_bytes->data.begin());
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.
-    response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS_BUNDLE_JS);
+    static const base::StringPiece options_javascript(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OPTIONS_BUNDLE_JS));
+    response_bytes->data.resize(options_javascript.size());
+    std::copy(options_javascript.begin(),
+              options_javascript.end(),
+              response_bytes->data.begin());
   } else {
     // Return (and cache) the main options html page as the default.
-    response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS_HTML);
+    static const base::StringPiece options_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_OPTIONS_HTML));
+    response_bytes->data.resize(options_html.size());
+    std::copy(options_html.begin(),
+              options_html.end(),
+              response_bytes->data.begin());
   }
 
   SendResponse(request_id, response_bytes);

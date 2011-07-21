@@ -141,15 +141,14 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 
   wrapper->print_view_manager()->OverrideTitle(tab_contents());
 
-  const unsigned char* preview_data =
-      static_cast<unsigned char*>(shared_buf->memory());
+  char* preview_data = static_cast<char*>(shared_buf->memory());
   uint32 preview_data_size = params.data_size;
 
-  // TODO(joth): This seems like a good match for using RefCountedStaticMemory
-  // to avoid the memory copy, but the SetPrintPreviewData call chain below
-  // needs updating to accept the RefCountedMemory* base class.
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data().assign(preview_data, preview_data + preview_data_size);
+  html_bytes->data.resize(preview_data_size);
+  std::vector<unsigned char>::iterator it = html_bytes->data.begin();
+  for (uint32 i = 0; i < preview_data_size; ++i, ++it)
+    *it = *(preview_data + i);
 
   print_preview_ui->SetPrintPreviewData(html_bytes.get());
   print_preview_ui->OnPreviewDataIsAvailable(
