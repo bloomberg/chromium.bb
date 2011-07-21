@@ -55,7 +55,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
       logger_(this) {
-  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
+  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 }
 
