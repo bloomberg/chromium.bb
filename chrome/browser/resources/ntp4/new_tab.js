@@ -164,7 +164,9 @@ cr.define('ntp4', function() {
     chrome.send('getRecentlyClosedTabs');
 
     mostVisitedPage = new ntp4.MostVisitedPage();
-    appendTilePage(mostVisitedPage, 'Most Visited');
+    appendTilePage(mostVisitedPage,
+                   localStrings.getString('mostvisited'),
+                   false);
     chrome.send('getMostVisited');
   }
 
@@ -255,7 +257,7 @@ cr.define('ntp4', function() {
           pageName = pageNames[appsPages.length];
 
         var origPageCount = appsPages.length;
-        appendTilePage(new ntp4.AppsPage(), pageName);
+        appendTilePage(new ntp4.AppsPage(), pageName, true);
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -355,13 +357,14 @@ cr.define('ntp4', function() {
    *
    * @param {TilePage} page The page element.
    * @param {string} title The title of the tile page.
+   * @param {bool} titleIsEditable If true, the title can be changed.
    */
-  function appendTilePage(page, title) {
+  function appendTilePage(page, title, titleIsEditable) {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
     var animate = page.classList.contains('temporary');
-    var newDot = new ntp4.NavDot(page, title, animate);
+    var newDot = new ntp4.NavDot(page, title, titleIsEditable, animate);
 
     dotList.appendChild(newDot);
     page.navigationDot = newDot;
@@ -391,7 +394,7 @@ cr.define('ntp4', function() {
   function enterRearrangeMode(e) {
     var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendTilePage(tempPage, '');
+    appendTilePage(tempPage, '', true);
     updateSliderCards();
   }
 

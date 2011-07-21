@@ -15,14 +15,15 @@ cr.define('ntp4', function() {
    * Creates a new navigation dot.
    * @param {TilePage} page The associated TilePage.
    * @param {string} title The title of the navigation dot.
+   * @param {bool} titleIsEditable If true, the title can be changed.
    * @param {bool} animate If true, animates into existence.
    * @constructor
    * @extends {HTMLLIElement}
    */
-  function NavDot(page, title, animate) {
+  function NavDot(page, title, titleIsEditable, animate) {
     var dot = cr.doc.createElement('li');
     dot.__proto__ = NavDot.prototype;
-    dot.initialize(page, title, animate);
+    dot.initialize(page, title, titleIsEditable, animate);
 
     return dot;
   }
@@ -30,13 +31,14 @@ cr.define('ntp4', function() {
   NavDot.prototype = {
     __proto__: HTMLLIElement.prototype,
 
-    initialize: function(page, title, animate) {
+    initialize: function(page, title, titleIsEditable, animate) {
       this.className = 'dot';
       this.setAttribute('tabindex', 0);
       this.setAttribute('role', 'button');
 
       this.page_ = page;
       this.title_ = title;
+      this.titleIsEditable_ = titleIsEditable;
 
       var selectionBar = this.ownerDocument.createElement('div');
       selectionBar.className = 'selection-bar';
@@ -104,8 +106,10 @@ cr.define('ntp4', function() {
      * @private
      */
     onDoubleClick_: function(e) {
-      this.input_.focus();
-      this.input_.select();
+      if (this.titleIsEditable_) {
+        this.input_.focus();
+        this.input_.select();
+      }
     },
 
     /**
