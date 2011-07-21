@@ -2359,14 +2359,36 @@ nacl_env = pre_base_env.Clone(
 
     LIBS = [],
     LINKFLAGS = ['${EXTRA_LINKFLAGS}', '${RPATH_LINK_FLAGS}'],
+    )
 
-    # This is the address at which a user executable is expected to
-    # place its data segment in order to be compatible with the
-    # integrated runtime (IRT) library.
-    IRT_DATA_REGION_START = '0x10000000',
+# This is the address at which a user executable is expected to place its
+# data segment in order to be compatible with the integrated runtime (IRT)
+# library.  This address should not be changed lightly.
+irt_compatible_rodata_addr = 0x10000000
+# This is the address at which the IRT's own code will be located.
+# It must be below irt_compatible_rodata and leave enough space for
+# the code segment of the IRT.  It should be as close as possible to
+# irt_compatible_rodata so as to leave the maximum contiguous area
+# available for the dynamic code loading area that falls below it.
+# This can be adjusted as necessary for the actual size of the IRT code.
+irt_code_addr = irt_compatible_rodata_addr - (4 << 20) # max 4M IRT code
+# This is the address at which the IRT's own data will be located.  The
+# 32-bit sandboxes limit the address space to 1GB; the initial thread's
+# stack sits at the top of the address space and extends down for
+# NACL_DEFAULT_STACK_MAX (src/trusted/service_runtime/sel_ldr.h) below.
+# So this must be below there, and leave enough space for the IRT's own
+# data segment.  It should be as high as possible so as to leave the
+# maximum contiguous area available for the user's data and break below.
+# This can be adjusted as necessary for the actual size of the IRT data
+# (that is RODATA, rounded up to 64k, plus writable data).
+# 1G (address space) - 16M (NACL_DEFAULT_STACK_MAX) - 1MB (IRT rodata+data)
+irt_data_addr = (1 << 30) - (16 << 20) - (1 << 20)
+
+nacl_env.Replace(
+    IRT_DATA_REGION_START = '%#.8x' % irt_compatible_rodata_addr,
     # Load addresses of the IRT's code and data segments.
-    IRT_BLOB_CODE_START = '0x08000000',
-    IRT_BLOB_DATA_START = '0x18000000',
+    IRT_BLOB_CODE_START = '%#.8x' % irt_code_addr,
+    IRT_BLOB_DATA_START = '%#.8x' % irt_data_addr,
     )
 
 # These add on to those set in pre_base_env, above.
