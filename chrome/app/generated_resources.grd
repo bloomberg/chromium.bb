@@ -7215,6 +7215,9 @@ ls' lab.">
       <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
         Firmware
       </message>
+      <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
+        Platform
+      </message>
       <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
         Loading&#x2026;
       </message>

@@ -8,7 +8,13 @@
           <span i18n-content="browser"></span>
           <span i18n-content="browser_version"></span>
         </div>
-        <div><span i18n-content="os"></span> <span id="osVersion0">
+        <div>
+<if expr="not pp_ifdef('chromeos')">
+          <span i18n-content="os"></span> <span id="osVersion0">
+</if>
+<if expr="pp_ifdef('chromeos')">
+          <span i18n-content="platform"></span> <span id="osVersion0">
+</if>
           <span class="loading" i18n-content="loading"></span></span></div>
         <div><span i18n-content="firmware"></span> <span id="osFirmware0">
           <span class="loading" i18n-content="loading"></span></span></div>
@@ -39,7 +45,12 @@
       <div i18n-content="browser_version"></div>
     </section>
     <section>
+<if expr="not pp_ifdef('chromeos')">
       <h3 i18n-content="os"></h3>
+</if>
+<if expr="pp_ifdef('chromeos')">
+      <h3 i18n-content="platform"></h3>
+</if>
       <div id="osVersion1">
         <span class="loading" i18n-content="loading"></span>
       </div>

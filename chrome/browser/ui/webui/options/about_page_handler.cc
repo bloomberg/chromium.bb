@@ -110,6 +110,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
     { "product", IDS_PRODUCT_OS_NAME },
     { "os", IDS_PRODUCT_OS_NAME },
+    { "platform", IDS_PLATFORM_LABEL },
     { "loading", IDS_ABOUT_PAGE_LOADING },
     { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
     { "update_status", IDS_UPGRADE_CHECK_STARTED },

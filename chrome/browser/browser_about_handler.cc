@@ -1098,6 +1098,8 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
                                chrome::VersionInfo::GetVersionStringModifier());
   localized_strings->SetString("os_name",
                                l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS));
+  localized_strings->SetString("platform",
+                               l10n_util::GetStringUTF16(IDS_PLATFORM_LABEL));
   localized_strings->SetString("os_type", version_info.OSType());
   localized_strings->SetString("webkit_version", webkit_version);
   localized_strings->SetString("js_engine", js_engine);

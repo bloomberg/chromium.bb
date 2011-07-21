@@ -48,7 +48,6 @@ using views::Widget;
 namespace {
 
 const SkColor kVersionColor = 0xff5c739f;
-const char kPlatformLabel[] = "cros:";
 
 // Returns the corresponding step id for step constant.
 int GetStepId(size_t step) {
@@ -418,10 +417,9 @@ void BackgroundView::UpdateVersionLabel() {
   label_text += ' ';
   label_text += version_info.Version();
   label_text += " (";
-  // TODO(rkc): Fix this. This needs to be in a resource file, but we have had
-  // to put it in for merge into R12. Also, look at rtl implications for this
-  // entire string composition code.
-  label_text += kPlatformLabel;
+  // TODO(rkc): Fix this for RTL.
+  // http://code.google.com/p/chromium-os/issues/detail?id=17621
+  label_text += l10n_util::GetStringUTF8(IDS_PLATFORM_LABEL);
   label_text += ' ';
   label_text += version_text_;
   label_text += ')';
