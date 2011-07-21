@@ -16,7 +16,6 @@ namespace gpu {
 bool GpuScheduler::Initialize(
     gfx::PluginWindowHandle window,
     const gfx::Size& size,
-    bool software,
     const gles2::DisallowedExtensions& disallowed_extensions,
     const char* allowed_extensions,
     const std::vector<int32>& attribs,
@@ -24,10 +23,9 @@ bool GpuScheduler::Initialize(
   // Create either a view or pbuffer based GLSurface.
   scoped_refptr<gfx::GLSurface> surface;
   if (window) {
-    surface = gfx::GLSurface::CreateViewGLSurface(software, window);
+    surface = gfx::GLSurface::CreateViewGLSurface(window);
   } else {
-    surface = gfx::GLSurface::CreateOffscreenGLSurface(software,
-                                                       gfx::Size(1, 1));
+    surface = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
   }
 
   if (!surface.get()) {

@@ -41,8 +41,7 @@ class GpuCommandBufferStub
       int32 route_id,
       int32 renderer_id,
       int32 render_view_id,
-      GpuWatchdog* watchdog,
-      bool software);
+      GpuWatchdog* watchdog);
 
   virtual ~GpuCommandBufferStub();
 
@@ -156,7 +155,6 @@ class GpuCommandBufferStub
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
   int32 route_id_;
-  bool software_;
   uint32 last_flush_count_;
 
   // The following two fields are used on Mac OS X to identify the window

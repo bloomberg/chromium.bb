@@ -36,8 +36,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     int32 route_id,
     int32 renderer_id,
     int32 render_view_id,
-    GpuWatchdog* watchdog,
-    bool software)
+    GpuWatchdog* watchdog)
     : channel_(channel),
       handle_(handle),
       initial_size_(size),
@@ -45,7 +44,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       route_id_(route_id),
-      software_(software),
       last_flush_count_(0),
       renderer_id_(renderer_id),
       render_view_id_(render_view_id),
@@ -150,7 +148,6 @@ void GpuCommandBufferStub::OnInitialize(
     if (scheduler_->Initialize(
         handle_,
         initial_size_,
-        software_,
         disallowed_extensions_,
         allowed_extensions_.c_str(),
         requested_attribs_,

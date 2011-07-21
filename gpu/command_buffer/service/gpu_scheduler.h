@@ -63,7 +63,6 @@ class GpuScheduler : public CommandBufferEngine {
   // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
-                  bool software,
                   const gles2::DisallowedExtensions& disallowed_extensions,
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
