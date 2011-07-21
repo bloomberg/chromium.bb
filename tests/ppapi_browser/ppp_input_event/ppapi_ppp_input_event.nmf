@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "ppapi_ppp_input_event_x86-32.nexe"},
+    "x86-64": {"url": "ppapi_ppp_input_event_x86-64.nexe"},
+    "arm": {"url": "ppapi_ppp_input_event_arm.nexe"}
+  }
+}

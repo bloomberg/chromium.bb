@@ -656,12 +656,21 @@ function TestStatus(tester, name, async) {
 
   // This function takes an array of messages and asserts that the nexe
   // calls PostMessage with each of these messages, in order.
-  this.expectMessageSequence = function(plugin, messages) {
+  // Arguments:
+  //   plugin - The DOM object for the NaCl plugin
+  //   messages - An array of expected responses
+  //   callback - An optional callback function that takes the current message
+  //              string as an argument
+  this.expectMessageSequence = function(plugin, messages, callback) {
     this.assert(messages.length > 0, 'Must provide at least one message');
+    var local_messages = messages.slice();
     var listener = this.wrap(function(message) {
       plugin.removeEventListener('message', listener, false);
-      this_.assertEqual(message.data, messages.shift());
-      if (messages.length == 0) {
+      this_.assertEqual(message.data, local_messages.shift());
+      if (callback !== undefined) {
+        callback(message.data);
+      }
+      if (local_messages.length == 0) {
         this_.pass();
       } else {
         plugin.addEventListener('message', listener, false);

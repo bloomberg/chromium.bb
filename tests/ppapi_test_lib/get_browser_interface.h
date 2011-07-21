@@ -19,15 +19,19 @@ struct PPB_FileIO;
 struct PPB_FileSystem;
 struct PPB_Graphics2D;
 struct PPB_ImageData;
+struct PPB_InputEvent;
 struct PPB_Instance;
+struct PPB_KeyboardInputEvent;
 struct PPB_Memory_Dev;
 struct PPB_Messaging;
+struct PPB_MouseInputEvent;
 struct PPB_Surface3D_Dev;
 struct PPB_Testing_Dev;
 struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
 struct PPB_URLResponseInfo;
 struct PPB_Var;
+struct PPB_WheelInputEvent;
 
 // Looks up the interface and returns its pointer or NULL.
 const void* GetBrowserInterface(const char* interface_name);
@@ -42,12 +46,16 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCore();
 const PPB_Graphics2D* PPBGraphics2D();
 const PPB_ImageData* PPBImageData();
+const PPB_InputEvent* PPBInputEvent();
 const PPB_Instance* PPBInstance();
+const PPB_KeyboardInputEvent* PPBKeyboardInputEvent();
 const PPB_Messaging* PPBMessaging();
+const PPB_MouseInputEvent* PPBMouseInputEvent();
 const PPB_URLLoader* PPBURLLoader();
 const PPB_URLRequestInfo* PPBURLRequestInfo();
 const PPB_URLResponseInfo* PPBURLResponseInfo();
 const PPB_Var* PPBVar();
+const PPB_WheelInputEvent* PPBWheelInputEvent();
 
 //
 // Experimental (aka Dev) interfaces.

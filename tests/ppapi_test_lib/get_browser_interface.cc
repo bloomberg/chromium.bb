@@ -17,6 +17,7 @@
 #include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
 #include "native_client/src/third_party/ppapi/c/ppb_graphics_2d.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
+#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
 #include "native_client/src/third_party/ppapi/c/ppb_instance.h"
 #include "native_client/src/third_party/ppapi/c/ppb_messaging.h"
 #include "native_client/src/third_party/ppapi/c/ppb_url_loader.h"
@@ -61,14 +62,29 @@ const PPB_ImageData* PPBImageData() {
       GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
 }
 
+const PPB_InputEvent* PPBInputEvent() {
+  return reinterpret_cast<const PPB_InputEvent*>(
+      GetBrowserInterfaceSafe(PPB_INPUT_EVENT_INTERFACE));
+}
+
 const PPB_Instance* PPBInstance() {
   return reinterpret_cast<const PPB_Instance*>(
       GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
 }
 
+const PPB_KeyboardInputEvent* PPBKeyboardInputEvent() {
+  return reinterpret_cast<const PPB_KeyboardInputEvent*>(
+      GetBrowserInterfaceSafe(PPB_KEYBOARD_INPUT_EVENT_INTERFACE));
+}
+
 const PPB_Messaging* PPBMessaging() {
   return reinterpret_cast<const PPB_Messaging*>(
       GetBrowserInterfaceSafe(PPB_MESSAGING_INTERFACE));
+}
+
+const PPB_MouseInputEvent* PPBMouseInputEvent() {
+  return reinterpret_cast<const PPB_MouseInputEvent*>(
+      GetBrowserInterfaceSafe(PPB_MOUSE_INPUT_EVENT_INTERFACE));
 }
 
 const PPB_URLLoader* PPBURLLoader() {
@@ -90,6 +106,12 @@ const PPB_Var* PPBVar() {
   return reinterpret_cast<const PPB_Var*>(
       GetBrowserInterfaceSafe(PPB_VAR_INTERFACE));
 }
+
+const PPB_WheelInputEvent* PPBWheelInputEvent() {
+  return reinterpret_cast<const PPB_WheelInputEvent*>(
+      GetBrowserInterfaceSafe(PPB_WHEEL_INPUT_EVENT_INTERFACE));
+}
+
 
 // Dev interfaces.
 
