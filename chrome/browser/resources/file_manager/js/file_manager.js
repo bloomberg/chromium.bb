@@ -100,6 +100,9 @@ function FileManager(dialogDom, rootEntries, params) {
   this.addEventListener('selection-summarized',
                         this.onSelectionSummarized_.bind(this));
 
+  chrome.fileBrowserHandler.onExecute.addListener(
+    this.onFileTaskExecute_.bind(this));
+
   this.initCommands_();
   this.initDom_();
   this.initDialogType_();
@@ -1334,25 +1337,21 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
-    // Check internal tasks first.
-    var task_parts = event.srcElement.task.taskId.split('|');
-    if (task_parts[0] == this.getExtensionId_()) {
-      if (task_parts[1] == 'preview') {
-        g_slideshow_data = this.selection.urls;
-        chrome.tabs.create({url: "slideshow.html"});
-      } else if (task_parts[1] == 'play') {
-        chrome.fileBrowserPrivate.viewFiles(this.selection.urls,
-            event.srcElement.task.taskId);
-      } else if (task_parts[1] == 'enqueue') {
-        chrome.fileBrowserPrivate.viewFiles(this.selection.urls,
-            event.srcElement.task.taskId);
-      }
-      return;
-    }
-
     chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
                                           this.selection.urls);
-  }
+  };
+
+  FileManager.prototype.onFileTaskExecute_ = function(id, details) {
+    var urls = details.entries.map(function(entry) {
+        return entry.toURL();
+    });
+    if (id == 'preview') {
+      g_slideshow_data = urls;
+      chrome.tabs.create({url: "slideshow.html"});
+    } else if (id == 'play' || id == 'enqueue') {
+      chrome.fileBrowserPrivate.viewFiles(urls, id);
+    }
+  };
 
   /**
    * Update the breadcrumb display to reflect the current directory.

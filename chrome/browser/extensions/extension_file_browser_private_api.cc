@@ -1024,7 +1024,6 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
        ++iter) {
     FileManagerUtil::ViewItem(*iter, internal_task_id == kEnqueueTaskId);
   }
-  UpdateFileHandlerUsageStats(profile_, internal_task_id);
   SendResponse(true);
 }
 
