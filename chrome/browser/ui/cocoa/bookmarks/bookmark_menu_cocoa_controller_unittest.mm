@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
@@ -47,7 +47,7 @@
 }
 
 - (void)openURLForNode:(const BookmarkNode*)node {
-  std::string url = node->GetURL().possibly_invalid_spec();
+  std::string url = node->url().possibly_invalid_spec();
   if (url.find("http://0.com") != std::string::npos)
     opened_[0] = YES;
   if (url.find("http://1.com") != std::string::npos)

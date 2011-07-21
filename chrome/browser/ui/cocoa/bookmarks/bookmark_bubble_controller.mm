@@ -275,7 +275,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 
 - (IBAction)remove:(id)sender {
   [self stopPulsingBookmarkButton];
-  model_->SetURLStarred(node_->GetURL(), node_->GetTitle(), false);
+  model_->SetURLStarred(node_->url(), node_->GetTitle(), false);
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   node_ = NULL;  // no longer valid
   [self ok:sender];

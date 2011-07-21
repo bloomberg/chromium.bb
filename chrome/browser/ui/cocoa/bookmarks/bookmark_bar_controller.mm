@@ -624,8 +624,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [sender bookmarkNode];
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  RecordAppLaunch(browser_->profile(), node->GetURL());
-  [self openURL:node->GetURL() disposition:disposition];
+  RecordAppLaunch(browser_->profile(), node->url());
+  [self openURL:node->url() disposition:disposition];
 
   if (!animate)
     [self closeFolderAndStopTrackingMenus];
@@ -660,20 +660,20 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node)
-    [self openURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
+    [self openURL:node->url() disposition:NEW_FOREGROUND_TAB];
   [self closeAllBookmarkFolders];
 }
 
 - (IBAction)openBookmarkInNewWindow:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node)
-    [self openURL:node->GetURL() disposition:NEW_WINDOW];
+    [self openURL:node->url() disposition:NEW_WINDOW];
 }
 
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node)
-    [self openURL:node->GetURL() disposition:OFF_THE_RECORD];
+    [self openURL:node->url() disposition:OFF_THE_RECORD];
 }
 
 - (IBAction)editBookmark:(id)sender {
@@ -1204,7 +1204,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = bookmarkModel_->GetNodeByID(tag);
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  [self openURL:node->GetURL() disposition:disposition];
+  [self openURL:node->url() disposition:disposition];
 }
 
 // For the given root node of the bookmark bar, show or hide (as

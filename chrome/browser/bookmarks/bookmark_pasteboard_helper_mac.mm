@@ -68,7 +68,7 @@ void ConvertPlistToElements(NSArray* input,
       NSString* title = [uriDictionary objectForKey:@"title"];
       NSString* urlString = [pboardBookmark objectForKey:@"URLString"];
       new_node->set_title(base::SysNSStringToUTF16(title));
-      new_node->SetURL(GURL(base::SysNSStringToUTF8(urlString)));
+      new_node->set_url(GURL(base::SysNSStringToUTF8(urlString)));
     }
     BookmarkNodeData::Element e = BookmarkNodeData::Element(new_node.get());
     if(is_folder)

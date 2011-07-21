@@ -295,7 +295,7 @@ void BookmarkEditorView::Init() {
   GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
     title = details_.existing_node->GetTitle();
-    url = details_.existing_node->GetURL();
+    url = details_.existing_node->url();
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = UTF16ToWide(
         l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));

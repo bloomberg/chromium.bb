@@ -147,7 +147,7 @@ void OpenAllImpl(const BookmarkNode* node,
       disposition = NEW_BACKGROUND_TAB;
     else
       disposition = initial_disposition;
-    (*navigator)->OpenURL(node->GetURL(), GURL(), disposition,
+    (*navigator)->OpenURL(node->url(), GURL(), disposition,
                           PageTransition::AUTO_BOOKMARK);
     if (!*opened_url) {
       *opened_url = true;
@@ -212,9 +212,9 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
       DoesBookmarkTextContainWords(
           base::i18n::ToLower(node->GetTitle()), words) ||
       DoesBookmarkTextContainWords(
-          base::i18n::ToLower(UTF8ToUTF16(node->GetURL().spec())), words) ||
+          base::i18n::ToLower(UTF8ToUTF16(node->url().spec())), words) ||
       DoesBookmarkTextContainWords(base::i18n::ToLower(
-          net::FormatUrl(node->GetURL(), languages, net::kFormatUrlOmitNothing,
+          net::FormatUrl(node->url(), languages, net::kFormatUrlOmitNothing,
                          UnescapeRule::NORMAL, NULL, NULL, NULL)), words);
 }
 
@@ -672,7 +672,8 @@ void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
     GetURLAndTitleToBookmark(tab_contents, url, title);
 }
 
-void GetURLsForOpenTabs(Browser* browser,
+void GetURLsForOpenTabs(
+    Browser* browser,
     std::vector<std::pair<GURL, string16> >* urls) {
   for (int i = 0; i < browser->tab_count(); ++i) {
     std::pair<GURL, string16> entry;

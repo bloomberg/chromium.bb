@@ -1096,8 +1096,8 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
       event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
 
   if (node->is_url()) {
-    RecordAppLaunch(profile_, node->GetURL());
-    page_navigator_->OpenURL(node->GetURL(), GURL(),
+    RecordAppLaunch(profile_, node->url());
+    page_navigator_->OpenURL(node->url(), GURL(),
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
   } else {
     bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile_,
@@ -1280,7 +1280,7 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
-    BookmarkButton* button = new BookmarkButton(this, node->GetURL(),
+    BookmarkButton* button = new BookmarkButton(this, node->url(),
         UTF16ToWide(node->GetTitle()), profile_);
     ConfigureButton(node, button);
     return button;

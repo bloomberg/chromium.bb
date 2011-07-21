@@ -222,7 +222,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   DictionaryValue* object_args = new DictionaryValue();
   object_args->SetString(keys::kTitleKey, node->GetTitle());
   if (node->is_url())
-    object_args->SetString(keys::kUrlKey, node->GetURL().spec());
+    object_args->SetString(keys::kUrlKey, node->url().spec());
   args.Append(object_args);
 
   std::string json_args;
@@ -734,7 +734,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
       std::string bucket_id;
       bucket_id += UTF16ToUTF8(node->parent()->GetTitle());
       bucket_id += UTF16ToUTF8(node->GetTitle());
-      bucket_id += node->GetURL().spec();
+      bucket_id += node->url().spec();
       buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
     }
   }

@@ -315,8 +315,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
   void Step3() {
     // We should have navigated to URL f1a.
     ASSERT_TRUE(navigator_.url_ ==
-                model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->
-                GetURL());
+                model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->url());
 
     // Make sure button is no longer pushed.
     views::TextButton* button = GetBookmarkButton(0);
@@ -532,9 +531,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
   }
 
   void Step4() {
-    EXPECT_EQ(navigator_.url_,
-              model_->other_node()->GetChild(0)->GetURL());
-
+    EXPECT_EQ(navigator_.url_, model_->other_node()->GetChild(0)->url());
     Done();
   }
 
@@ -548,7 +545,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
  protected:
   virtual void DoTestOnMessageLoop() {
     url_dragging_ =
-        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->GetURL();
+        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->url();
 
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
@@ -603,7 +600,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   }
 
   void Step5() {
-    GURL url = model_->GetBookmarkBarNode()->GetChild(0)->GetChild(1)->GetURL();
+    GURL url = model_->GetBookmarkBarNode()->GetChild(0)->GetChild(1)->url();
     EXPECT_EQ(url_dragging_, url);
     Done();
   }
@@ -642,7 +639,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     ASSERT_TRUE(navigator_.url_ ==
-                model_->GetBookmarkBarNode()->GetChild(4)->GetURL());
+                model_->GetBookmarkBarNode()->GetChild(4)->url());
     Done();
   }
 
@@ -656,7 +653,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
  protected:
   virtual void DoTestOnMessageLoop() {
     url_dragging_ =
-        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->GetURL();
+        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->url();
 
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
@@ -714,7 +711,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   }
 
   void Step5() {
-    ASSERT_TRUE(model_->other_node()->GetChild(0)->GetURL() == url_dragging_);
+    ASSERT_TRUE(model_->other_node()->GetChild(0)->url() == url_dragging_);
     Done();
   }
 
@@ -729,7 +726,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
  protected:
   virtual void DoTestOnMessageLoop() {
     url_dragging_ =
-        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->GetURL();
+        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->url();
 
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
@@ -800,7 +797,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   void Step6() {
     // Make sure drop was processed.
     GURL final_url = model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->
-        GetChild(1)->GetURL();
+        GetChild(1)->url();
     ASSERT_TRUE(final_url == url_dragging_);
     Done();
   }
@@ -978,7 +975,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
   void Step8() {
     ASSERT_TRUE(
-        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->GetURL() ==
+        model_->GetBookmarkBarNode()->GetChild(0)->GetChild(0)->url() ==
         navigator_.url_);
     Done();
   }

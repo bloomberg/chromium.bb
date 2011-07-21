@@ -27,7 +27,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
   }
 
   if (!node->is_folder()) {
-    dict->SetString(keys::kUrlKey, node->GetURL().spec());
+    dict->SetString(keys::kUrlKey, node->url().spec());
   } else {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is
     // seconds.
@@ -110,4 +110,4 @@ bool RemoveNode(BookmarkModel* model,
   return true;
 }
 
-}
+}  // namespace extension_bookmark_helpers

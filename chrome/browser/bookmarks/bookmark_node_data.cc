@@ -30,7 +30,7 @@ BookmarkNodeData::Element::Element() : is_url(false), id_(0) {
 
 BookmarkNodeData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
-      url(node->GetURL()),
+      url(node->url()),
       title(node->GetTitle()),
       id_(node->id()) {
   for (int i = 0; i < node->child_count(); ++i)

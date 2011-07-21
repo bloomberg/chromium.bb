@@ -715,7 +715,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
     int64 tag = [bar_ nodeIdFromMenuTag:[item tag]];
     const BookmarkNode* node = model->GetNodeByID(tag);
     EXPECT_TRUE(node);
-    EXPECT_EQ(gurl, node->GetURL());
+    EXPECT_EQ(gurl, node->url());
   }
 
   // Test with an actual folder as well
@@ -752,7 +752,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
 
   [bar_ openBookmark:button];
-  EXPECT_EQ(noOpenBar()->urls_[0], node->GetURL());
+  EXPECT_EQ(noOpenBar()->urls_[0], node->url());
   EXPECT_EQ(noOpenBar()->dispositions_[0], CURRENT_TAB);
 }
 
@@ -933,9 +933,9 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
   NSMenuItem* item = ItemForBookmarkBarMenu(middle_node);
   [bar_ deleteBookmark:item];
   EXPECT_EQ(2, parent->child_count());
-  EXPECT_EQ(parent->GetChild(0)->GetURL(), GURL(urls[0]));
+  EXPECT_EQ(parent->GetChild(0)->url(), GURL(urls[0]));
   // node 2 moved into spot 1
-  EXPECT_EQ(parent->GetChild(1)->GetURL(), GURL(urls[2]));
+  EXPECT_EQ(parent->GetChild(1)->url(), GURL(urls[2]));
 }
 
 // TODO(jrg): write a test to confirm that nodeFaviconLoaded calls
@@ -1050,14 +1050,14 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
   [bar_ addURLs:nsurls withTitles:nstitles at:NSZeroPoint];
   EXPECT_EQ(4, parent->child_count());
   for (int i = 0; i < parent->child_count(); ++i) {
-    GURL gurl = parent->GetChild(i)->GetURL();
+    GURL gurl = parent->GetChild(i)->url();
     if (gurl.scheme() == "http" ||
         gurl.scheme() == "javascript") {
-      EXPECT_EQ(parent->GetChild(i)->GetURL(), GURL(urls[i]));
+      EXPECT_EQ(parent->GetChild(i)->url(), GURL(urls[i]));
     } else {
       // Be flexible if the scheme needed to be added.
       std::string gurl_string = gurl.spec();
-      std::string my_string = parent->GetChild(i)->GetURL().spec();
+      std::string my_string = parent->GetChild(i)->url().spec();
       EXPECT_NE(gurl_string.find(my_string), std::string::npos);
     }
     EXPECT_EQ(parent->GetChild(i)->GetTitle(), ASCIIToUTF16(titles[i]));

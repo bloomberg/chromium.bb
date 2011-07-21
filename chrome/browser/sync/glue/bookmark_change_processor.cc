@@ -55,7 +55,7 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
   dst->SetIsFolder(src->is_folder());
   dst->SetTitle(UTF16ToWideHack(src->GetTitle()));
   if (!src->is_folder())
-    dst->SetURL(src->GetURL());
+    dst->SetURL(src->url());
   SetSyncNodeFavicon(src, model, dst);
 }
 
@@ -534,15 +534,15 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   // destination URL, which is not correct, but since the favicon URL
   // is used as a key in the history's thumbnail DB, this gives us a value
   // which does not collide with others.
-  GURL fake_icon_url = bookmark_node->GetURL();
+  GURL fake_icon_url = bookmark_node->url();
 
   HistoryService* history =
       profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
-  history->AddPageNoVisitForBookmark(bookmark_node->GetURL());
-  favicon_service->SetFavicon(bookmark_node->GetURL(),
+  history->AddPageNoVisitForBookmark(bookmark_node->url());
+  favicon_service->SetFavicon(bookmark_node->url(),
                               fake_icon_url,
                               icon_bytes_vector,
                               history::FAVICON);

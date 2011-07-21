@@ -109,7 +109,7 @@ TEST_F(BookmarkContextMenuControllerTest, DeleteURL) {
   nodes.push_back(model_->GetBookmarkBarNode()->GetChild(0));
   BookmarkContextMenuController controller(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes);
-  GURL url = model_->GetBookmarkBarNode()->GetChild(0)->GetURL();
+  GURL url = model_->GetBookmarkBarNode()->GetChild(0)->url();
   ASSERT_TRUE(controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_REMOVE));
   // Delete the URL.
   controller.ExecuteCommand(IDC_BOOKMARK_BAR_REMOVE);
@@ -125,7 +125,7 @@ TEST_F(BookmarkContextMenuControllerTest, OpenAll) {
 
   // Should have navigated to F1's child, but not F11's child.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());
-  ASSERT_TRUE(folder->GetChild(0)->GetURL() == navigator_.urls_[0]);
+  ASSERT_TRUE(folder->GetChild(0)->url() == navigator_.urls_[0]);
 }
 
 // Tests the enabled state of the menus when supplied an empty vector.
@@ -302,8 +302,8 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
 
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_url());
   ASSERT_EQ(old_count + 1, model_->GetBookmarkBarNode()->child_count());
-  ASSERT_EQ(model_->GetBookmarkBarNode()->GetChild(0)->GetURL(),
-            model_->GetBookmarkBarNode()->GetChild(1)->GetURL());
+  ASSERT_EQ(model_->GetBookmarkBarNode()->GetChild(0)->url(),
+            model_->GetBookmarkBarNode()->GetChild(1)->url());
 
   controller.reset(new BookmarkContextMenuController(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes));

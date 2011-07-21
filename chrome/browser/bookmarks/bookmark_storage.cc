@@ -97,7 +97,7 @@ class BookmarkStorage::LoadTask : public Task {
   // Adds node to the model's index, recursing through all children as well.
   void AddBookmarksToIndex(BookmarkNode* node) {
     if (node->is_url()) {
-      if (node->GetURL().is_valid())
+      if (node->url().is_valid())
         details_->index()->Add(node);
     } else {
       for (int i = 0; i < node->child_count(); ++i)

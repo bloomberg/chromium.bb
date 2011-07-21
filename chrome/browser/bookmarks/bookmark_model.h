@@ -63,8 +63,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   int64 id() const { return id_; }
   void set_id(int64 id) { id_ = id; }
 
-  const GURL& GetURL() const { return url_; }
-  void SetURL(const GURL& url) { url_ = url; }
+  const GURL& url() const { return url_; }
+  void set_url(const GURL& url) { url_ = url; }
 
   Type type() const { return type_; }
   void set_type(Type type) { type_ = type; }
@@ -345,7 +345,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   class NodeURLComparator {
    public:
     bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) const {
-      return n1->GetURL() < n2->GetURL();
+      return n1->url() < n2->url();
     }
   };
 

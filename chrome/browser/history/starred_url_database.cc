@@ -85,7 +85,7 @@ void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
 void ResetBookmarkNode(const history::StarredEntry& entry,
                        BookmarkNode* node) {
   DCHECK(entry.type != history::StarredEntry::URL ||
-         entry.url == node->GetURL());
+         entry.url == node->url());
 
   node->set_date_added(entry.date_added);
   node->set_date_folder_modified(entry.date_folder_modified);

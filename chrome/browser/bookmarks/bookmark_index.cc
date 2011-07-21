@@ -132,7 +132,7 @@ void BookmarkIndex::ExtractBookmarkNodePairs(
        i != match.nodes_end(); ++i) {
     history::URLRow url;
     if (url_db)
-      url_db->GetRowForURL((*i)->GetURL(), &url);
+      url_db->GetRowForURL((*i)->url(), &url);
     NodeTypedCountPair pair(*i, url.typed_count());
     node_typed_counts->push_back(pair);
   }

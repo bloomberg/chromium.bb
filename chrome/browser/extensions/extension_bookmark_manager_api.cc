@@ -88,7 +88,7 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
   dict->SetString(keys::kParentIdKey, parent_id_string);
 
   if (node.is_url())
-    dict->SetString(keys::kUrlKey, node.GetURL().spec());
+    dict->SetString(keys::kUrlKey, node.url().spec());
 
   dict->SetString(keys::kTitleKey, node.GetTitle());
 

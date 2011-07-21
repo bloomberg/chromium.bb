@@ -374,7 +374,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     }
     EXPECT_EQ(bnode->is_folder(), gnode.GetIsFolder());
     if (bnode->is_url())
-      EXPECT_EQ(bnode->GetURL(), gnode.GetURL());
+      EXPECT_EQ(bnode->url(), gnode.GetURL());
 
     // Check for position matches.
     int browser_index = bnode->parent()->GetIndexOf(bnode);
@@ -447,7 +447,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     const BookmarkNode* bnode =
         model_associator_->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-    EXPECT_EQ(GURL(url), bnode->GetURL());
+    EXPECT_EQ(GURL(url), bnode->url());
   }
 
   void ExpectBrowserNodeParent(int64 sync_id, int64 parent_sync_id) {
@@ -1080,7 +1080,7 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
     if (item.url) {
       EXPECT_FALSE(child_node->is_folder());
       EXPECT_TRUE(child_node->is_url());
-      EXPECT_EQ(child_node->GetURL(), GURL(item.url));
+      EXPECT_EQ(child_node->url(), GURL(item.url));
     } else {
       EXPECT_TRUE(child_node->is_folder());
       EXPECT_FALSE(child_node->is_url());

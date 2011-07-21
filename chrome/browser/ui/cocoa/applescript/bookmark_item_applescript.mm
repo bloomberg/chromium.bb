@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,7 @@
   if (!bookmarkNode_)
     return tempURL_;
 
-  const GURL& url = bookmarkNode_->GetURL();
-  return base::SysUTF8ToNSString(url.spec());
+  return base::SysUTF8ToNSString(bookmarkNode_->url().spec());
 }
 
 - (void)setURL:(NSString*)aURL {

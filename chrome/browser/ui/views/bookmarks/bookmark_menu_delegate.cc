@@ -97,7 +97,7 @@ std::wstring BookmarkMenuDelegate::GetTooltipText(
   const BookmarkNode* node = menu_id_to_node_map_[id];
   if (node->is_url())
     return BookmarkBarView::CreateToolTipForURLAndTitle(
-        screen_loc, node->GetURL(), UTF16ToWide(node->GetTitle()), profile_);
+        screen_loc, node->url(), UTF16ToWide(node->GetTitle()), profile_);
   return std::wstring();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
     // a 10.6-only release, it can be replaced with |-clearContents|.)
     [pboard declareTypes:[NSArray array] owner:nil];
   } else {
-    const std::string spec = node->GetURL().spec();
+    const std::string spec = node->url().spec();
     NSString* url = base::SysUTF8ToNSString(spec);
     NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]

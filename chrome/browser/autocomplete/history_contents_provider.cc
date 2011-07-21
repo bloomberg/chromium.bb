@@ -282,7 +282,7 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
 
 void HistoryContentsProvider::AddBookmarkTitleMatchToResults(
     const bookmark_utils::TitleMatch& match) {
-  history::URLResult url_result(match.node->GetURL(), match.match_positions);
+  history::URLResult url_result(match.node->url(), match.match_positions);
   url_result.set_title(match.node->GetTitle());
   results_.AppendURLBySwapping(&url_result);
 }

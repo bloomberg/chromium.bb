@@ -168,7 +168,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
       profile_->GetBookmarkModel()->GetBookmarkBarNode();
   ASSERT_EQ(ASCIIToUTF16("new_a"), bb_node->GetChild(0)->GetTitle());
   // The URL shouldn't have changed.
-  ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->GetURL());
+  ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->url());
 }
 
 // Changes the url and makes sure parent/visual order doesn't change.
@@ -186,7 +186,7 @@ TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
       profile_->GetBookmarkModel()->GetBookmarkBarNode();
   ASSERT_EQ(ASCIIToUTF16("a"), bb_node->GetChild(0)->GetTitle());
   // The URL should have changed.
-  ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->GetURL());
+  ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->url());
   ASSERT_TRUE(node_time == bb_node->GetChild(0)->date_added());
 }
 
@@ -199,7 +199,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 
   const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
-  ASSERT_TRUE(GURL(base_path() + "a") == other_node->GetChild(2)->GetURL());
+  ASSERT_TRUE(GURL(base_path() + "a") == other_node->GetChild(2)->url());
 }
 
 // Moves 'a' to be a child of the other node and changes its url to new_a.
@@ -215,7 +215,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
 
   const BookmarkNode* other_node = profile_->GetBookmarkModel()->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
-  ASSERT_TRUE(GURL(base_path() + "new_a") == other_node->GetChild(2)->GetURL());
+  ASSERT_TRUE(GURL(base_path() + "new_a") == other_node->GetChild(2)->url());
   ASSERT_TRUE(node_time == other_node->GetChild(2)->date_added());
 }
 
@@ -269,7 +269,7 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
   const BookmarkNode* new_node = bb_node->GetChild(3);
 
   EXPECT_EQ(ASCIIToUTF16("new_a"), new_node->GetTitle());
-  EXPECT_TRUE(GURL(base_path() + "a") == new_node->GetURL());
+  EXPECT_TRUE(GURL(base_path() + "a") == new_node->url());
 }
 
 // Brings up the editor with no tree and modifies the url.
@@ -289,7 +289,7 @@ TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
   const BookmarkNode* new_node = other_node->GetChild(0);
 
   EXPECT_EQ(ASCIIToUTF16("new_a"), new_node->GetTitle());
-  EXPECT_TRUE(GURL(base_path() + "a") == new_node->GetURL());
+  EXPECT_TRUE(GURL(base_path() + "a") == new_node->url());
 }
 
 // Brings up the editor with no tree and modifies only the title.
@@ -337,7 +337,7 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
   EXPECT_EQ(WideToUTF16Hack(details.urls[0].second), new_child->GetTitle());
-  EXPECT_EQ(details.urls[0].first, new_child->GetURL());
+  EXPECT_EQ(details.urls[0].first, new_child->url());
 }
 
 // Creates a new folder and selects a different folder for the folder to appear
@@ -366,5 +366,5 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
   // Make sure the child url/title match.
   EXPECT_EQ(BookmarkNode::URL, new_child->type());
   EXPECT_EQ(WideToUTF16Hack(details.urls[0].second), new_child->GetTitle());
-  EXPECT_EQ(details.urls[0].first, new_child->GetURL());
+  EXPECT_EQ(details.urls[0].first, new_child->url());
 }

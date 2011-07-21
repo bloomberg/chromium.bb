@@ -353,7 +353,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
     title = UTF16ToUTF8(details_.existing_node->GetTitle());
-    url = details_.existing_node->GetURL();
+    url = details_.existing_node->url();
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
   } else if (details_.type == EditDetails::NEW_URL) {

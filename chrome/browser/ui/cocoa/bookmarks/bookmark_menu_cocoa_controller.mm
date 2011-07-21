@@ -39,7 +39,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 + (NSString*)tooltipForNode:(const BookmarkNode*)node {
   NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-  std::string url_string = node->GetURL().possibly_invalid_spec();
+  std::string url_string = node->url().possibly_invalid_spec();
   NSString* url = [NSString stringWithUTF8String:url_string.c_str()];
   if ([title length] == 0)
     return url;
@@ -92,7 +92,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
     browser = Browser::Create(bridge_->GetProfile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  browser->OpenURL(node->GetURL(), GURL(), disposition,
+  browser->OpenURL(node->url(), GURL(), disposition,
                    PageTransition::AUTO_BOOKMARK);
 }
 
@@ -150,4 +150,3 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 }
 
 @end  // BookmarkMenuCocoaController
-

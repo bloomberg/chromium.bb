@@ -287,17 +287,16 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // 3. Google Docs (docs.google.com) 50
   // 4. Google Maps (maps.google.com) 40
   EXPECT_EQ(4, static_cast<int>(matches.size()));
-  EXPECT_EQ(data[0].url, matches[0].node->GetURL());
-  EXPECT_EQ(data[3].url, matches[1].node->GetURL());
-  EXPECT_EQ(data[2].url, matches[2].node->GetURL());
-  EXPECT_EQ(data[1].url, matches[3].node->GetURL());
+  EXPECT_EQ(data[0].url, matches[0].node->url());
+  EXPECT_EQ(data[3].url, matches[1].node->url());
+  EXPECT_EQ(data[2].url, matches[2].node->url());
+  EXPECT_EQ(data[1].url, matches[3].node->url());
 
   matches.clear();
   // Select top two matches.
   model->GetBookmarksWithTitlesMatching(ASCIIToUTF16("google"), 2, &matches);
 
   EXPECT_EQ(2, static_cast<int>(matches.size()));
-  EXPECT_EQ(data[0].url, matches[0].node->GetURL());
-  EXPECT_EQ(data[3].url, matches[1].node->GetURL());
+  EXPECT_EQ(data[0].url, matches[0].node->url());
+  EXPECT_EQ(data[3].url, matches[1].node->url());
 }
-

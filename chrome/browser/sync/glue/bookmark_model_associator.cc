@@ -63,7 +63,7 @@ class BookmarkComparer {
     if (result != 0)
       return result < 0;
 
-    return node1->GetURL() < node2->GetURL();
+    return node1->url() < node2->url();
   }
 };
 
@@ -283,7 +283,7 @@ bool BookmarkModelAssociator::NodesMatch(const BookmarkNode* bookmark,
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;
   if (bookmark->is_url()) {
-    if (bookmark->GetURL() != sync_node->GetURL())
+    if (bookmark->url() != sync_node->GetURL())
       return false;
   }
   // Don't compare favicons here, because they are not really

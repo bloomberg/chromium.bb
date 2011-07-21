@@ -410,15 +410,13 @@ void BookmarkFaviconFetcher::Observe(int type,
 }
 
 void BookmarkFaviconFetcher::ExtractUrls(const BookmarkNode* node) {
-  if (BookmarkNode::URL == node->type()) {
-    std::string url = node->GetURL().spec();
-    if (!url.empty()) {
+  if (node->is_url()) {
+    std::string url = node->url().spec();
+    if (!url.empty())
       bookmark_urls_.push_back(url);
-    }
   } else {
-    for (int i = 0; i < node->child_count(); ++i) {
+    for (int i = 0; i < node->child_count(); ++i)
       ExtractUrls(node->GetChild(i));
-    }
   }
 }
 

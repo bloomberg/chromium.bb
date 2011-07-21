@@ -99,9 +99,8 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
                << node_b->GetTitle();
     return false;
   }
-  if (node_a->GetURL() != node_b->GetURL()) {
-    LOG(ERROR) << "URL mismatch: " << node_a->GetURL() << " vs. "
-               << node_b->GetURL();
+  if (node_a->url() != node_b->url()) {
+    LOG(ERROR) << "URL mismatch: " << node_a->url() << " vs. " << node_b->url();
     return false;
   }
   if (node_a->parent()->GetIndexOf(node_a) !=
@@ -180,7 +179,7 @@ bool BookmarkModelVerifier::ContainsDuplicateBookmarks(
     if (node->is_folder())
       continue;
     std::vector<const BookmarkNode*> nodes;
-    model->GetNodesByURL(node->GetURL(), &nodes);
+    model->GetNodesByURL(node->url(), &nodes);
     EXPECT_TRUE(nodes.size() >= 1);
     for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
          it != nodes.end(); ++it) {
@@ -294,7 +293,7 @@ void BookmarkModelVerifier::SetFavicon(
     BookmarkModel* model,
     const BookmarkNode* node,
     const std::vector<unsigned char>& icon_bytes_vector) {
-  urls_with_favicons_.insert(node->GetURL());
+  urls_with_favicons_.insert(node->url());
   if (use_verifier_model_) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(model, node, &v_node);
@@ -314,7 +313,7 @@ const SkBitmap& BookmarkModelVerifier::GetFavicon(
     const BookmarkNode* node) const {
   // If a favicon wasn't explicitly set for a particular URL, simply return its
   // blank favicon.
-  if (urls_with_favicons_.find(node->GetURL()) == urls_with_favicons_.end()) {
+  if (urls_with_favicons_.find(node->url()) == urls_with_favicons_.end()) {
     return node->favicon();
   }
   // If a favicon was explicitly set, we may need to wait for it to be loaded

@@ -101,7 +101,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
                    base::Int64ToString(node->date_added().ToInternalValue()));
   if (node->is_url()) {
     value->SetString(kTypeKey, kTypeURL);
-    std::string url = node->GetURL().possibly_invalid_spec();
+    std::string url = node->url().possibly_invalid_spec();
     value->SetString(kURLKey, url);
     UpdateChecksumWithUrlNode(id, title, url);
   } else {

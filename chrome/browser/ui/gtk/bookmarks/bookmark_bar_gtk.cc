@@ -1133,7 +1133,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   DCHECK(node->is_url());
   DCHECK(page_navigator_);
 
-  RecordAppLaunch(profile_, node->GetURL());
+  RecordAppLaunch(profile_, node->url());
   bookmark_utils::OpenAll(window_->GetNativeHandle(),
                           profile_, page_navigator_, node,
                           gtk_util::DispositionForCurrentButtonPressEvent());

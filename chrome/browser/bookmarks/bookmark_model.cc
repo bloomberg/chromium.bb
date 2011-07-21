@@ -310,7 +310,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
     return;
   }
 
-  if (node->GetURL() == url)
+  if (node->url() == url)
     return;
 
   BookmarkNode* mutable_node = AsMutable(node);
@@ -328,7 +328,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
       ++i;
     nodes_ordered_by_url_set_.erase(i);
 
-    mutable_node->SetURL(url);
+    mutable_node->set_url(url);
     nodes_ordered_by_url_set_.insert(mutable_node);
   }
 
@@ -348,7 +348,7 @@ void BookmarkModel::GetNodesByURL(const GURL& url,
   base::AutoLock url_lock(url_lock_);
   BookmarkNode tmp_node(url);
   NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(&tmp_node);
-  while (i != nodes_ordered_by_url_set_.end() && (*i)->GetURL() == url) {
+  while (i != nodes_ordered_by_url_set_.end() && (*i)->url() == url) {
     nodes->push_back(*i);
     ++i;
   }
@@ -370,7 +370,7 @@ void BookmarkModel::GetBookmarks(std::vector<GURL>* urls) {
   const GURL* last_url = NULL;
   for (NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.begin();
        i != nodes_ordered_by_url_set_.end(); ++i) {
-    const GURL* url = &((*i)->GetURL());
+    const GURL* url = &((*i)->url());
     // Only add unique URLs.
     if (!last_url || *url != *last_url)
       urls->push_back(*url);
@@ -547,7 +547,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
     while (*i != node)
       ++i;
     nodes_ordered_by_url_set_.erase(i);
-    removed_urls->insert(node->GetURL());
+    removed_urls->insert(node->url());
 
     index_->Remove(node);
   }
@@ -681,7 +681,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 
   if (node->is_url() && !was_bookmarked) {
     history::URLsStarredDetails details(true);
-    details.changed_urls.insert(node->GetURL());
+    details.changed_urls.insert(node->url());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_URLS_STARRED,
         Source<Profile>(profile_),
@@ -754,13 +754,13 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (node->is_folder())
     return;
 
-  DCHECK(node->GetURL().is_valid());
+  DCHECK(node->url().is_valid());
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      node->GetURL(), history::FAVICON, &load_consumer_,
+      node->url(), history::FAVICON, &load_consumer_,
       NewCallback(this, &BookmarkModel::OnFaviconDataAvailable));
   load_consumer_.SetClientData(favicon_service, handle, node);
   node->set_favicon_load_handle(handle);

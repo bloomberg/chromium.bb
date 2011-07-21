@@ -210,7 +210,7 @@ TEST_F(BookmarkModelTest, AddURL) {
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
-  ASSERT_TRUE(url == new_node->GetURL());
+  ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
   ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
 
@@ -230,7 +230,7 @@ TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
 
   ASSERT_EQ(1, root->child_count());
   ASSERT_EQ(title, new_node->GetTitle());
-  ASSERT_TRUE(url == new_node->GetURL());
+  ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
   ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
 
@@ -328,7 +328,7 @@ TEST_F(BookmarkModelTest, SetURL) {
   model_.SetURL(node, url);
   AssertObserverCount(0, 0, 0, 1, 0);
   observer_details_.ExpectEquals(node, NULL, -1, -1);
-  EXPECT_EQ(url, node->GetURL());
+  EXPECT_EQ(url, node->url());
 }
 
 TEST_F(BookmarkModelTest, Move) {
@@ -837,7 +837,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     const BookmarkNode* child = bbn->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(ASCIIToUTF16("Google"), child->GetTitle());
-    ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com"));
+    ASSERT_TRUE(child->url() == GURL("http://www.google.com"));
 
     child = bbn->GetChild(1);
     ASSERT_TRUE(child->is_folder());
@@ -848,7 +848,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     child = parent->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(ASCIIToUTF16("Google Advertising"), child->GetTitle());
-    ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/intl/en/ads/"));
+    ASSERT_TRUE(child->url() == GURL("http://www.google.com/intl/en/ads/"));
 
     child = parent->GetChild(1);
     ASSERT_TRUE(child->is_folder());
@@ -859,7 +859,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     child = parent->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(ASCIIToUTF16("Google Business Solutions"), child->GetTitle());
-    ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/services/"));
+    ASSERT_TRUE(child->url() == GURL("http://www.google.com/services/"));
 
     parent = bb_model_->other_node();
     ASSERT_EQ(2, parent->child_count());
@@ -872,7 +872,7 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
     child = parent->GetChild(1);
     ASSERT_EQ(BookmarkNode::URL, child->type());
     ASSERT_EQ(ASCIIToUTF16("About Google"), child->GetTitle());
-    ASSERT_TRUE(child->GetURL() ==
+    ASSERT_TRUE(child->url() ==
                 GURL("http://www.google.com/intl/en/about.html"));
 
     parent = bb_model_->synced_node();

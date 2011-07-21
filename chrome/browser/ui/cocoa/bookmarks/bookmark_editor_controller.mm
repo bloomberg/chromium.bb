@@ -52,7 +52,7 @@
   // arrived here from an "Add Page..." item in a context menu.
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
-    std::string url_string = node_->GetURL().possibly_invalid_spec();
+    std::string url_string = node_->url().possibly_invalid_spec();
     initialUrl_.reset([[NSString stringWithUTF8String:url_string.c_str()]
                         retain]);
   } else {
