@@ -242,7 +242,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // invalid to avoid accessing it past this point.  Note: only do this after
     // the DestroyInstance message in case the window object is scripted by the
     // plugin in NPP_Destroy.
-    window_script_object_->OnPluginDestroyed();
+    window_script_object_->DeleteSoon(false);
   }
 
   plugin_ = NULL;

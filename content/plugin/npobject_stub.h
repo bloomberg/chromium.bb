@@ -38,17 +38,19 @@ class NPObjectStub : public IPC::Channel::Listener,
                const GURL& page_url);
   virtual ~NPObjectStub();
 
+  // Cause the stub to ignore any further IPC messages, and to tear itself down
+  // the next time control returns to the message loop.
+  // The NPObject will be released only if |release_npobject| is true.
+  // This is used for the window script object stub in the renderer, which is
+  // freed with NPN_DeallocateObject to avoid leaks, and so we must not try to
+  // release it.
+  void DeleteSoon(bool release_npobject);
+
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
-  // Called when the plugin widget that this NPObject came from is destroyed.
-  // This is needed because the renderer calls NPN_DeallocateObject on the
-  // window script object on destruction to avoid leaks.
-  void OnPluginDestroyed();
-
   // NPObjectBase implementation.
   virtual NPObject* GetUnderlyingNPObject();
-
   virtual IPC::Channel::Listener* GetChannelListener();
 
  private:

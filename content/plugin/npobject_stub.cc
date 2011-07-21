@@ -36,26 +36,21 @@ NPObjectStub::NPObjectStub(
 
 NPObjectStub::~NPObjectStub() {
   channel_->RemoveRoute(route_id_);
+  CHECK(!npobject_);
+}
+
+void NPObjectStub::DeleteSoon(bool release_npobject) {
   if (npobject_) {
     channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
-    WebBindings::releaseObject(npobject_);
+    if (release_npobject)
+      WebBindings::releaseObject(npobject_);
+    npobject_ = NULL;
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 }
 
 bool NPObjectStub::Send(IPC::Message* msg) {
   return channel_->Send(msg);
-}
-
-void NPObjectStub::OnPluginDestroyed() {
-  channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
-  // We null out the underlying NPObject pointer since it's not valid anymore (
-  // ScriptController manually deleted the object).  As a result,
-  // OnMessageReceived won't dispatch any more messages.  Since this includes
-  // OnRelease, this object won't get deleted until OnChannelError which might
-  // not happen for a long time if this renderer process has a long lived
-  // plugin instance to the same process.  So we delete this object manually.
-  npobject_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 NPObject* NPObjectStub::GetUnderlyingNPObject() {
@@ -68,7 +63,6 @@ IPC::Channel::Listener* NPObjectStub::GetChannelListener() {
 
 bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
   content::GetContentClient()->SetActiveURL(page_url_);
-
   if (!npobject_) {
     if (msg.is_sync()) {
       // The object could be garbage because the frame has gone away, so
@@ -101,14 +95,12 @@ bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NPObjectStub::OnChannelError() {
-  // If npobject_ is NULLed out, that means a DeleteSoon is happening.
-  if (npobject_)
-    delete this;
+  DeleteSoon(true);
 }
 
 void NPObjectStub::OnRelease(IPC::Message* reply_msg) {
   Send(reply_msg);
-  delete this;
+  DeleteSoon(true);
 }
 
 void NPObjectStub::OnHasMethod(const NPIdentifier_Param& name,
@@ -133,7 +125,6 @@ void NPObjectStub::OnInvoke(bool is_default,
                             const NPIdentifier_Param& method,
                             const std::vector<NPVariant_Param>& args,
                             IPC::Message* reply_msg) {
-  scoped_refptr<PluginChannelBase> local_channel = channel_;
   bool return_value = false;
   NPVariant_Param result_param;
   NPVariant result_var;
@@ -145,11 +136,11 @@ void NPObjectStub::OnInvoke(bool is_default,
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
     if (!CreateNPVariant(
-            args[i], local_channel, &(args_var[i]), containing_window_,
+            args[i], channel_, &(args_var[i]), containing_window_,
             page_url_)) {
       NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
                                            return_value);
-      local_channel->Send(reply_msg);
+      channel_->Send(reply_msg);
       return;
     }
   }
@@ -187,10 +178,10 @@ void NPObjectStub::OnInvoke(bool is_default,
   delete[] args_var;
 
   CreateNPVariantParam(
-      result_var, local_channel, &result_param, true, containing_window_,
+      result_var, channel_, &result_param, true, containing_window_,
       page_url_);
   NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param, return_value);
-  local_channel->Send(reply_msg);
+  channel_->Send(reply_msg);
 }
 
 void NPObjectStub::OnHasProperty(const NPIdentifier_Param& name,
@@ -328,7 +319,6 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
 
 void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
                                IPC::Message* reply_msg) {
-  scoped_refptr<PluginChannelBase> local_channel = channel_;
   bool return_value = false;
   NPVariant_Param result_param;
   NPVariant result_var;
@@ -339,11 +329,11 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
     if (!CreateNPVariant(
-           args[i], local_channel, &(args_var[i]), containing_window_,
+           args[i], channel_, &(args_var[i]), containing_window_,
            page_url_)) {
       NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
                                            return_value);
-      local_channel->Send(reply_msg);
+      channel_->Send(reply_msg);
       return;
     }
   }
@@ -367,10 +357,10 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
   delete[] args_var;
 
   CreateNPVariantParam(
-      result_var, local_channel, &result_param, true, containing_window_,
+      result_var, channel_, &result_param, true, containing_window_,
       page_url_);
   NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param, return_value);
-  local_channel->Send(reply_msg);
+  channel_->Send(reply_msg);
 }
 
 void NPObjectStub::OnEvaluate(const std::string& script,
@@ -380,12 +370,6 @@ void NPObjectStub::OnEvaluate(const std::string& script,
     NOTREACHED() << "Should only be called on NPObjects in the renderer";
     return;
   }
-
-  // Grab a reference to the underlying channel, as the NPObjectStub
-  // instance can be destroyed in the context of NPN_Evaluate. This
-  // can happen if the containing plugin instance is destroyed in
-  // NPN_Evaluate.
-  scoped_refptr<PluginChannelBase> local_channel = channel_;
 
   NPVariant result_var;
   NPString script_string;
@@ -397,8 +381,7 @@ void NPObjectStub::OnEvaluate(const std::string& script,
 
   NPVariant_Param result_param;
   CreateNPVariantParam(
-      result_var, local_channel, &result_param, true, containing_window_,
-      page_url_);
+      result_var, channel_, &result_param, true, containing_window_, page_url_);
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
-  local_channel->Send(reply_msg);
+  channel_->Send(reply_msg);
 }
