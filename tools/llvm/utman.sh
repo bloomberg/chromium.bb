@@ -219,7 +219,7 @@ readonly LLVM_GCC_REV=e093fe8c5603
 readonly NEWLIB_REV=9bef47f82918
 readonly BINUTILS_REV=14dd509248e5
 readonly COMPILER_RT_REV=1a3a6ffb31ea
-readonly GOOGLE_PERFTOOLS_REV=867799d6e777
+readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
 # Update these revs when you want to experiment with rebasing to a newer
 # version of llvm and llvm-gcc
