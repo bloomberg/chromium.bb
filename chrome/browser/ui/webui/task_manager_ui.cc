@@ -54,24 +54,31 @@ void TaskManagerUIHTMLSource::StartDataRequest(const std::string& path,
                                              bool is_incognito,
                                              int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE));
-  localized_strings.SetString("about_memory_link",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
-  localized_strings.SetString("close_window",
+  localized_strings.SetString("CLOSE_WINDOW",
       l10n_util::GetStringUTF16(IDS_CLOSE));
-  localized_strings.SetString("kill_process",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
-  localized_strings.SetString("process_id_column",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PROCESS_ID_COLUMN));
-  localized_strings.SetString("page_column",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PAGE_COLUMN));
-  localized_strings.SetString("network_column",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NET_COLUMN));
-  localized_strings.SetString("cpu_column",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_CPU_COLUMN));
-  localized_strings.SetString("private_memory_column",
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN));
+
+#define SET_LOCALIZED_STRING(STRINGS, ID) \
+    (STRINGS.SetString(#ID, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_##ID)))
+
+  SET_LOCALIZED_STRING(localized_strings, TITLE);
+  SET_LOCALIZED_STRING(localized_strings, ABOUT_MEMORY_LINK);
+  SET_LOCALIZED_STRING(localized_strings, KILL);
+  SET_LOCALIZED_STRING(localized_strings, PROCESS_ID_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, PAGE_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, NET_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, CPU_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, PHYSICAL_MEM_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, SHARED_MEM_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, PRIVATE_MEM_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, GOATS_TELEPORTED_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, WEBCORE_IMAGE_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, WEBCORE_SCRIPTS_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, WEBCORE_CSS_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, FPS_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, SQLITE_MEMORY_USED_COLUMN);
+  SET_LOCALIZED_STRING(localized_strings, JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
+
+#undef SET_LOCALIZED_STRING
 
   SetFontAndTextDirection(&localized_strings);
 

@@ -512,6 +512,34 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
   return true;
 }
 
+bool TaskManagerModel::GetWebCoreCacheStats(
+    int index, WebKit::WebCache::ResourceTypeStats* result) const {
+  if (!resources_[index]->ReportsCacheStats())
+    return false;
+
+  *result = resources_[index]->GetWebCoreCacheStats();
+  return true;
+}
+
+bool TaskManagerModel::GetFPS(int index, float* result) const {
+  *result = 0;
+  if (!resources_[index]->ReportsFPS())
+    return false;
+
+  *result = resources_[index]->GetFPS();
+  return true;
+}
+
+bool TaskManagerModel::GetSqliteMemoryUsedBytes(
+    int index, size_t* result) const {
+  *result = 0;
+  if (!resources_[index]->ReportsSqliteMemoryUsed())
+    return false;
+
+  *result = resources_[index]->SqliteMemoryUsedBytes();
+  return true;
+}
+
 bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
   *result = 0;
   if (!resources_[index]->ReportsV8MemoryStats())

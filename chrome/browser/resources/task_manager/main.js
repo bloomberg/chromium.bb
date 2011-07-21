@@ -11,11 +11,22 @@ cr.addSingletonGetter(TaskManager);
  * Default columns (column_id, label_id, width, is_default)
  * @const
  */
-var DEFAULT_COLUMNS = [['title', 'page_column', 300, true],
-                       ['networkUsage', 'network_column', 85, true],
-                       ['cpuUsage', 'cpu_column', 80, true],
-                       ['privateMemory', 'private_memory_column', 80, true],
-                       ['processId', 'process_id_column', 120, false]];
+var DEFAULT_COLUMNS = [
+    ['title', 'PAGE_COLUMN', 300, true],
+    ['physicalMemory', 'PHYSICAL_MEM_COLUMN', 80, true],
+    ['sharedMemory', 'SHARED_MEM_COLUMN', 80, false],
+    ['privateMemory', 'PRIVATE_MEM_COLUMN', 80, false],
+    ['cpuUsage', 'CPU_COLUMN', 80, true],
+    ['networkUsage', 'NET_COLUMN', 85, true],
+    ['processId', 'PROCESS_ID_COLUMN', 100, false],
+    ['webCoreImageCacheSize', 'WEBCORE_IMAGE_CACHE_COLUMN', 120, false],
+    ['webCoreScriptsCacheSize', 'WEBCORE_SCRIPTS_CACHE_COLUMN', 120, false],
+    ['webCoreCSSCacheSize', 'WEBCORE_CSS_CACHE_COLUMN', 120, false],
+    ['fps', 'FPS_COLUMN', 50, true],
+    ['sqliteMemoryUsed', 'SQLITE_MEMORY_USED_COLUMN', 80, false],
+    ['goatsTeleported', 'GOATS_TELEPORTED_COLUMN', 80, false],
+    ['v8MemoryAllocatedSize', 'JAVASCRIPT_MEMORY_ALLOCATED_COLUMN', 120, false],
+];
 
 var localStrings = new LocalStrings();
 
@@ -116,18 +127,24 @@ TaskManager.prototype = {
 
     // Initializes compare functions for column sort.
     var dm = this.dataModel_;
-    dm.setCompareFunction('networkUsage', function(a, b) {
-        var value_id = 'networkUsageValue';
-        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
-    });
-    dm.setCompareFunction('cpuUsage', function(a, b) {
-        var value_id = 'cpuUsageValue';
-        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
-    });
-    dm.setCompareFunction('privateMemory', function(a, b) {
-        var value_id = 'privateMemoryValue';
-        return dm.defaultValuesCompareFunction(a[value_id][0], b[value_id][0]);
-    });
+    // Columns to sort by value instead of itself.
+    var columns_sorted_by_value = [
+        'cpuUsage', 'physicalMemory', 'sharedMemory', 'privateMemory',
+        'networkUsage', 'webCoreImageCacheSize', 'webCoreScriptsCacheSize',
+        'webCoreCSSCacheSize', 'fps', 'sqliteMemoryUsed', 'goatsTeleported',
+        'v8MemoryAllocatedSize'];
+
+    for (var i in columns_sorted_by_value) {
+      var column_id = columns_sorted_by_value[i];
+      var compare_func = function() {
+          var value_id = column_id + 'Value';
+          return function(a, b) {
+              return dm.defaultValuesCompareFunction(a[value_id][0],
+                                                     b[value_id][0]);
+          };
+      }();
+      dm.setCompareFunction(column_id, compare_func);
+    }
 
     this.initTable_();
     this.initColumnMenu_();

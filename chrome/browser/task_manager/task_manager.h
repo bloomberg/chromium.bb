@@ -268,6 +268,19 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // resource index.
   bool GetPhysicalMemory(int index, size_t* result) const;
 
+  // Gets the statuses of webkit. Return false if the resource for the given row
+  // isn't a renderer.
+  bool GetWebCoreCacheStats(int index,
+                            WebKit::WebCache::ResourceTypeStats* result) const;
+
+  // Gets the fps of the given page. Return false if the resource for the given
+  // row isn't a renderer.
+  bool GetFPS(int index, float* result) const;
+
+  // Gets the sqlite memory (in byte). Return false if the resource for the
+  // given row doesn't report information.
+  bool GetSqliteMemoryUsedBytes(int index, size_t* result) const;
+
   // Gets the amount of memory allocated for javascript. Returns false if the
   // resource for the given row isn't a renderer.
   bool GetV8Memory(int index, size_t* result) const;
