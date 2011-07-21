@@ -2230,6 +2230,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::IsEnterpriseDevice;
   handler_map["FetchEnterprisePolicy"] =
       &TestingAutomationProvider::FetchEnterprisePolicy;
+  handler_map["GetEnterprisePolicyInfo"] =
+      &TestingAutomationProvider::GetEnterprisePolicyInfo;
 
   handler_map["GetUpdateInfo"] = &TestingAutomationProvider::GetUpdateInfo;
   handler_map["UpdateCheck"] = &TestingAutomationProvider::UpdateCheck;

@@ -95,6 +95,10 @@ class BrowserPolicyConnector : public NotificationObserver {
                             const FilePath& policy_dir,
                             TokenService* token_service);
 
+  // Only used in testing.
+  const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
+  const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
+
  private:
   friend class ::TestingBrowserProcess;
 

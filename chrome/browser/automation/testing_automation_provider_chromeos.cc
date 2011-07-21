@@ -6,9 +6,9 @@
 
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -21,7 +21,11 @@
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_cache_base.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "policy/policy_constants.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
@@ -132,8 +136,8 @@ void UpdateCheckCallback(void* user_data, chromeos::UpdateResult result,
   delete reply;
 }
 
-const std::string VPNProviderTypeToString(chromeos::VirtualNetwork::ProviderType
-                                       provider_type) {
+const std::string VPNProviderTypeToString(
+    chromeos::VirtualNetwork::ProviderType provider_type) {
   switch (provider_type) {
     case chromeos::VirtualNetwork::PROVIDER_TYPE_L2TP_IPSEC_PSK:
       return std::string("L2TP_IPSEC_PSK");
@@ -144,6 +148,49 @@ const std::string VPNProviderTypeToString(chromeos::VirtualNetwork::ProviderType
     default:
       return std::string("UNSUPPORTED_PROVIDER_TYPE");
   }
+}
+
+const char* EnterpriseStatusToString(
+    policy::CloudPolicySubsystem::PolicySubsystemState state) {
+  switch (state) {
+    case policy::CloudPolicySubsystem::UNENROLLED:
+      return "UNENROLLED";
+    case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
+      return "BAD_GAIA_TOKEN";
+    case policy::CloudPolicySubsystem::UNMANAGED:
+      return "UNMANAGED";
+    case policy::CloudPolicySubsystem::NETWORK_ERROR:
+      return "NETWORK_ERROR";
+    case policy::CloudPolicySubsystem::LOCAL_ERROR:
+      return "LOCAL_ERROR";
+    case policy::CloudPolicySubsystem::TOKEN_FETCHED:
+      return "TOKEN_FETCHED";
+    case policy::CloudPolicySubsystem::SUCCESS:
+      return "SUCCESS";
+    default:
+      return "UNKNOWN_STATE";
+  }
+}
+
+// Fills the supplied DictionaryValue with all policy settings held by the
+// given CloudPolicySubsystem (Device or User subsystems) at the given
+// PolicyLevel (Mandatory or Recommended policies).
+DictionaryValue* CreateDictionaryWithPolicies(
+    policy::CloudPolicySubsystem* policy_subsystem,
+    policy::CloudPolicyCacheBase::PolicyLevel policy_level) {
+  DictionaryValue* dict = new DictionaryValue;
+  policy::CloudPolicyCacheBase* policy_cache =
+      policy_subsystem->GetCloudPolicyCacheBase();
+  if (policy_cache) {
+    const policy::PolicyMap* policy_map = policy_cache->policy(policy_level);
+    if (policy_map) {
+      policy::PolicyMap::const_iterator i;
+      for (i = policy_map->begin(); i != policy_map->end(); i++)
+        dict->Set(policy::key::kMapPolicyString[i->first],
+                  i->second->DeepCopy());
+    }
+  }
+  return dict;
 }
 
 }  // namespace
@@ -708,7 +755,7 @@ void TestingAutomationProvider::FetchEnterprisePolicy(
     return;
   }
   policy::CloudPolicySubsystem* policy_subsystem =
-      connector->device_cloud_policy_subsystem();
+      connector->user_cloud_policy_subsystem();
   if (policy_subsystem) {
     new CloudPolicyObserver(this, reply_message, connector, policy_subsystem);
     connector->FetchDevicePolicy();
@@ -716,6 +763,67 @@ void TestingAutomationProvider::FetchEnterprisePolicy(
     AutomationJSONReply(this, reply_message).SendError(
         "Unable to access CloudPolicySubsystem");
   }
+}
+
+void TestingAutomationProvider::GetEnterprisePolicyInfo(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (!connector) {
+    reply.SendError("Unable to access BrowserPolicyConnector");
+    return;
+  }
+  policy::CloudPolicySubsystem* user_cloud_policy =
+      connector->user_cloud_policy_subsystem();
+  policy::CloudPolicySubsystem* device_cloud_policy =
+      connector->device_cloud_policy_subsystem();
+  const policy::CloudPolicyDataStore* user_data_store =
+      connector->GetUserCloudPolicyDataStore();
+  const policy::CloudPolicyDataStore* device_data_store =
+      connector->GetDeviceCloudPolicyDataStore();
+  if (!user_cloud_policy || !device_cloud_policy) {
+    reply.SendError("Unable to access a CloudPolicySubsystem");
+    return;
+  }
+  if (!user_data_store || !device_data_store) {
+    reply.SendError("Unable to access a CloudPolicyDataStore");
+    return;
+  }
+
+  // Get various policy related fields.
+  return_value->SetString("enterprise_domain",
+                          connector->GetEnterpriseDomain());
+  return_value->SetString("user_cloud_policy",
+      EnterpriseStatusToString(user_cloud_policy->state()));
+  return_value->SetString("device_cloud_policy",
+      EnterpriseStatusToString(device_cloud_policy->state()));
+  return_value->SetString("device_id", device_data_store->device_id());
+  return_value->SetString("device_token", device_data_store->device_token());
+  return_value->SetString("gaia_token", device_data_store->gaia_token());
+  return_value->SetString("machine_id", device_data_store->machine_id());
+  return_value->SetString("machine_model", device_data_store->machine_model());
+  return_value->SetString("user_name", device_data_store->user_name());
+  return_value->SetBoolean("device_token_cache_loaded",
+                           device_data_store->token_cache_loaded());
+  return_value->SetBoolean("user_token_cache_loaded",
+                           user_data_store->token_cache_loaded());
+  // Get PolicyMaps.
+  return_value->Set("device_mandatory_policies",
+                    CreateDictionaryWithPolicies(device_cloud_policy,
+                        policy::CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+  return_value->Set("user_mandatory_policies",
+                    CreateDictionaryWithPolicies(user_cloud_policy,
+                        policy::CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+  return_value->Set("device_recommended_policies",
+      CreateDictionaryWithPolicies(device_cloud_policy,
+          policy::CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+  return_value->Set("user_recommended_policies",
+      CreateDictionaryWithPolicies(user_cloud_policy,
+          policy::CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+  reply.SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,

@@ -99,6 +99,8 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
             'namespace key {\n\n')
     for policy_name in _GetPolicyNameList(template_file_contents):
       f.write('extern const char k' + policy_name + '[];\n')
+    f.write('\n// Only used in testing.'
+            '\nextern const char* kMapPolicyString[];\n')
     f.write('\n}  // namespace key\n\n'
             '}  // namespace policy\n\n'
             '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
@@ -124,6 +126,11 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
     f.write('namespace key {\n\n')
     for policy_name in _GetPolicyNameList(template_file_contents):
       f.write('const char k%s[] = "%s";\n' % (policy_name, policy_name))
+    f.write('\n// Only used in testing.'
+            '\nconst char* kMapPolicyString[] = {\n    ')
+    for policy_name in _GetPolicyNameList(template_file_contents):
+      f.write('\n    "%s",' % policy_name)
+    f.write('\n};\n')
     f.write('\n}  // namespace key\n\n'
             '}  // namespace policy\n')
 

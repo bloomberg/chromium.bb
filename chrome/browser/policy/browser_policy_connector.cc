@@ -138,6 +138,20 @@ ConfigurationPolicyProvider*
   return recommended_cloud_provider_.get();
 }
 
+const CloudPolicyDataStore*
+    BrowserPolicyConnector::GetDeviceCloudPolicyDataStore() const {
+#if defined(OS_CHROMEOS)
+  return device_data_store_.get();
+#else
+  return NULL;
+#endif
+}
+
+const CloudPolicyDataStore*
+    BrowserPolicyConnector::GetUserCloudPolicyDataStore() const {
+  return user_data_store_.get();
+}
+
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateManagedPlatformProvider() {
   const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =

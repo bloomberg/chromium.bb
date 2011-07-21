@@ -193,6 +193,10 @@ void CloudPolicySubsystem::CreateCloudPolicyController() {
                                 notifier_.get()));
 }
 
+CloudPolicyCacheBase* CloudPolicySubsystem::GetCloudPolicyCacheBase() const {
+  return cloud_policy_cache_.get();
+}
+
 CloudPolicySubsystem::CloudPolicySubsystem()
     : refresh_pref_name_(NULL) {}
 

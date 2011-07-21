@@ -3426,6 +3426,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     result = self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     return result.get('enterprise')
 
+  def GetEnterprisePolicyInfo(self):
+    """Get details about enterprise policy on chromeos.
+
+    Returns:
+      A dictionary including information about the enterprise policy.
+      Sample:
+        {u'device_token_cache_loaded': True,
+         u'device_cloud_policy_state': u'success',
+         u'device_id': u'11111-222222222-33333333-4444444',
+         u'device_mandatory_policies': {},
+         u'device_recommended_policies': {},
+         u'device_token': u'ABjmT7nqGWTHRLO',
+         u'enterprise_domain': u'example.com',
+         u'gaia_token': u'',
+         u'machine_id': u'123456789',
+         u'machine_model': u'COMPUTER',
+         u'user_cache_loaded': True,
+         u'user_cloud_policy_state': u'success',
+         u'user_mandatory_policies': {u'AuthSchemes': u'',
+                                      u'AutoFillEnabled': True,
+                                      u'ChromeOsLockOnIdleSuspend': True}
+         u'user_recommended_policies': {},
+         u'user_name': u'user@example.com'}
+    """
+    cmd_dict = { 'command': 'GetEnterprisePolicyInfo' }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def FetchEnterprisePolicy(self):
     """Fetch enterprise policy from server.
 
@@ -3433,13 +3460,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     fails. This is separate from any auto policy fetches the device may perform
     on its own.
 
+    Returns:
+      The dictionary of policy info obtained from GetEnterprisePolicyInfo().
+
     Raises:
       pyauto_errors.JSONInterfaceError if the fetch fails.
     """
     cmd_dict = {
         'command': 'FetchEnterprisePolicy',
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+    return self.GetEnterprisePolicyInfo()
 
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.

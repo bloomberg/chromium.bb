@@ -1207,6 +1207,9 @@ class TestingAutomationProvider : public AutomationProvider,
   void FetchEnterprisePolicy(DictionaryValue* args,
                              IPC::Message* reply_message);
 
+  void GetEnterprisePolicyInfo(DictionaryValue* args,
+                               IPC::Message* reply_message);
+
 
   void GetUpdateInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
