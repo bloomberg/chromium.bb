@@ -5,7 +5,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_extensions_sync_test.h"
-#include "chrome/test/live_sync/live_sync_timing_helper.h"
+#include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
 // TODO(braffert): Replicate these tests for apps.
 
@@ -19,10 +19,10 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 // TODO(braffert): Move this class into its own .h/.cc files.  What should the
 // class files be named as opposed to the file containing the tests themselves?
-class PerformanceLiveExtensionsSyncTest
+class ExtensionsSyncPerfTest
     : public TwoClientLiveExtensionsSyncTest {
  public:
-  PerformanceLiveExtensionsSyncTest() : extension_number_(0) {}
+  ExtensionsSyncPerfTest() : extension_number_(0) {}
 
   // Adds |num_extensions| new unique extensions to |profile|.
   void AddExtensions(int profile, int num_extensions);
@@ -39,17 +39,17 @@ class PerformanceLiveExtensionsSyncTest
 
  private:
   int extension_number_;
-  DISALLOW_COPY_AND_ASSIGN(PerformanceLiveExtensionsSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsSyncPerfTest);
 };
 
-void PerformanceLiveExtensionsSyncTest::AddExtensions(int profile,
+void ExtensionsSyncPerfTest::AddExtensions(int profile,
                                                       int num_extensions) {
   for (int i = 0; i < num_extensions; ++i) {
     InstallExtension(GetProfile(profile), extension_number_++);
   }
 }
 
-void PerformanceLiveExtensionsSyncTest::UpdateExtensions(int profile) {
+void ExtensionsSyncPerfTest::UpdateExtensions(int profile) {
   std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
   for (std::vector<int>::iterator it = extensions.begin();
        it != extensions.end(); ++it) {
@@ -61,7 +61,7 @@ void PerformanceLiveExtensionsSyncTest::UpdateExtensions(int profile) {
   }
 }
 
-void PerformanceLiveExtensionsSyncTest::RemoveExtensions(int profile) {
+void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
   for (std::vector<int>::iterator it = extensions.begin();
        it != extensions.end(); ++it) {
@@ -69,7 +69,7 @@ void PerformanceLiveExtensionsSyncTest::RemoveExtensions(int profile) {
   }
 }
 
-void PerformanceLiveExtensionsSyncTest::Cleanup() {
+void ExtensionsSyncPerfTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveExtensions(i);
   }
@@ -78,12 +78,12 @@ void PerformanceLiveExtensionsSyncTest::Cleanup() {
 }
 
 // TCM ID - 7563874.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddExtensions(0, kNumExtensions);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   InstallExtensionsPendingForSync(GetProfile(1));
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Add) {
 }
 
 // TCM ID - 7655397.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Update) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddExtensions(0, kNumExtensions);
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Update) {
 
   UpdateExtensions(0);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
   // TODO(braffert): Compare timings against some target value.
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Update) {
 }
 
 // TCM ID - 7567721.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Delete) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddExtensions(0, kNumExtensions);
@@ -118,34 +118,34 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, Delete) {
 
   RemoveExtensions(0);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
   // TODO(braffert): Compare timings against some target value.
   VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
-IN_PROC_BROWSER_TEST_F(PerformanceLiveExtensionsSyncTest, DISABLED_Benchmark) {
+IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, DISABLED_Benchmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < kNumBenchmarkPoints; ++i) {
     int num_extensions = kBenchmarkPoints[i];
     AddExtensions(0, num_extensions);
     base::TimeDelta dt_add =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     InstallExtensionsPendingForSync(GetProfile(1));
     VLOG(0) << std::endl << "Add: " << num_extensions << " "
             << dt_add.InSecondsF();
 
     UpdateExtensions(0);
     base::TimeDelta dt_update =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     VLOG(0) << std::endl << "Update: " << num_extensions << " "
             << dt_update.InSecondsF();
 
     RemoveExtensions(0);
     base::TimeDelta dt_delete =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     VLOG(0) << std::endl << "Delete: " << num_extensions << " "
             << dt_delete.InSecondsF();
 

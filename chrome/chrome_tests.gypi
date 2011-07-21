@@ -3498,8 +3498,6 @@
         'test/live_sync/live_sync_extension_helper.h',
         'test/live_sync/live_sync_test.cc',
         'test/live_sync/live_sync_test.h',
-        'test/live_sync/live_sync_timing_helper.cc',
-        'test/live_sync/live_sync_timing_helper.h',
         'test/live_sync/many_client_live_bookmarks_sync_test.cc',
         'test/live_sync/many_client_live_passwords_sync_test.cc',
         'test/live_sync/many_client_live_preferences_sync_test.cc',
@@ -3509,11 +3507,6 @@
         'test/live_sync/multiple_client_live_preferences_sync_test.cc',
         'test/live_sync/multiple_client_live_sessions_sync_test.cc',
         'test/live_sync/multiple_client_live_typed_urls_sync_test.cc',
-        'test/live_sync/performance_live_autofill_sync_test.cc',
-        'test/live_sync/performance_live_bookmarks_sync_test.cc',
-        'test/live_sync/performance_live_extensions_sync_test.cc',
-        'test/live_sync/performance_live_passwords_sync_test.cc',
-        'test/live_sync/performance_live_typed_urls_sync_test.cc',
         'test/live_sync/single_client_live_apps_sync_test.cc',
         'test/live_sync/single_client_live_bookmarks_sync_test.cc',
         'test/live_sync/single_client_live_extensions_sync_test.cc',
@@ -3593,6 +3586,115 @@
           'sources!': [
             'app/chrome_dll.rc',
             'app/chrome_version.rc.version',
+            'test/data/resource.rc',
+          ],
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../views/views.gyp:views',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'sync_performance_tests',
+      'type': 'executable',
+      'dependencies': [
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'chrome',
+        'test_support_common',
+        '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+        '<(INTERMEDIATE_DIR)',
+        '<(protoc_out_dir)',
+      ],
+      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'sources': [
+        'browser/password_manager/password_form_data.cc',
+        'test/out_of_proc_test_runner.cc',
+        'test/live_sync/bookmark_model_verifier.cc',
+        'test/live_sync/bookmark_model_verifier.h',
+        'test/live_sync/live_autofill_sync_test.cc',
+        'test/live_sync/live_autofill_sync_test.h',
+        'test/live_sync/live_bookmarks_sync_test.cc',
+        'test/live_sync/live_bookmarks_sync_test.h',
+        'test/live_sync/live_extensions_sync_test.cc',
+        'test/live_sync/live_extensions_sync_test.h',
+        'test/live_sync/live_passwords_sync_test.cc',
+        'test/live_sync/live_passwords_sync_test.h',
+        'test/live_sync/live_typed_urls_sync_test.cc',
+        'test/live_sync/live_typed_urls_sync_test.h',
+        'test/live_sync/live_sync_extension_helper.cc',
+        'test/live_sync/live_sync_extension_helper.h',
+        'test/live_sync/live_sync_test.cc',
+        'test/live_sync/live_sync_test.h',
+        'test/live_sync/performance/autofill_sync_perf_test.cc',
+        'test/live_sync/performance/bookmarks_sync_perf_test.cc',
+        'test/live_sync/performance/extensions_sync_perf_test.cc',
+        'test/live_sync/performance/sync_timing_helper.cc',
+        'test/live_sync/performance/sync_timing_helper.h',
+        'test/live_sync/performance/passwords_sync_perf_test.cc',
+        'test/live_sync/performance/typed_urls_sync_perf_test.cc',
+      ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+           'dependencies': [
+             '../build/linux/system.gyp:gtk',
+             '../build/linux/system.gyp:ssl',
+           ],
+        }],
+        ['OS=="mac"', {
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+          # The sync_integration_tests do not run on mac without this flag.
+          # Search for comments about "xcode_settings" elsewhere in this file.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
+        ['OS=="win"', {
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+          'dependencies': [
+            'chrome_dll_version',
+            'installer_util_strings',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
+                },
+              },
+            },
+          },
+        }, { # else: OS != "win"
+          'sources!': [
+            'app/chrome_dll.rc',
+            'app/chrome_dll_version.rc.version',
             'test/data/resource.rc',
           ],
         }],
