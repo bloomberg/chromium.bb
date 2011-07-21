@@ -53,8 +53,8 @@ class SK_API PlatformDevice : public SkDevice {
   virtual bool IsNativeFontRenderingAllowed() { return true; }
 
   // Loads a SkPath into the GDI context. The path can there after be used for
-  // clipping or as a stroke.
-  static void LoadPathToDC(HDC context, const SkPath& path);
+  // clipping or as a stroke. Returns false if the path failed to be loaded.
+  static bool LoadPathToDC(HDC context, const SkPath& path);
 
   // Loads a SkRegion into the GDI context.
   static void LoadClippingRegionToDC(HDC context, const SkRegion& region,

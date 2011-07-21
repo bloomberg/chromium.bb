@@ -62,7 +62,7 @@ void PlatformDevice::EndPlatformPaint() {
 }
 
 // static
-void PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
+bool PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
   switch (path.getFillType()) {
     case SkPath::kWinding_FillType: {
       int res = SetPolyFillMode(context, WINDING);
@@ -80,11 +80,13 @@ void PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
     }
   }
   BOOL res = BeginPath(context);
-  SkASSERT(res != 0);
+  if (!res) {
+      return false;
+  }
 
   CubicPaths paths;
   if (!SkPathToCubicPaths(&paths, path))
-    return;
+    return false;
 
   std::vector<POINT> points;
   for (CubicPaths::const_iterator path(paths.begin()); path != paths.end();
@@ -119,6 +121,7 @@ void PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
     res = EndPath(context);
     SkASSERT(res != 0);
   }
+  return true;
 }
 
 // static
