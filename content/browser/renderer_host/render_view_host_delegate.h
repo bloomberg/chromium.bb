@@ -327,7 +327,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                 uint64 upload_position, uint64 upload_size) {}
 
   // Notification that a worker process has crashed.
-  void WorkerCrashed() {}
+  virtual void WorkerCrashed() {}
 
   // The page wants the hosting window to activate/deactivate itself (it
   // called the JavaScript window.focus()/blur() method).
