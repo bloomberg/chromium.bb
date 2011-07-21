@@ -6,7 +6,7 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
-#include "chrome/test/live_sync/performance/sync_timing_helper.h"
+#include "chrome/test/live_sync/live_sync_timing_helper.h"
 
 static const int kNumProfiles = 150;
 
@@ -18,10 +18,10 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 // TODO(braffert): Move this class into its own .h/.cc files.  What should the
 // class files be named as opposed to the file containing the tests themselves?
-class AutofillSyncPerfTest
+class PerformanceLiveAutofillSyncTest
     : public TwoClientLiveAutofillSyncTest {
  public:
-  AutofillSyncPerfTest() : guid_number_(0), name_number_(0) {}
+  PerformanceLiveAutofillSyncTest() : guid_number_(0), name_number_(0) {}
 
   // Adds |num_profiles| new autofill profiles to the sync profile |profile|.
   void AddProfiles(int profile, int num_profiles);
@@ -54,10 +54,10 @@ class AutofillSyncPerfTest
 
   int guid_number_;
   int name_number_;
-  DISALLOW_COPY_AND_ASSIGN(AutofillSyncPerfTest);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceLiveAutofillSyncTest);
 };
 
-void AutofillSyncPerfTest::AddProfiles(int profile,
+void PerformanceLiveAutofillSyncTest::AddProfiles(int profile,
                                                   int num_profiles) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
@@ -70,7 +70,7 @@ void AutofillSyncPerfTest::AddProfiles(int profile,
   SetProfiles(profile, &autofill_profiles);
 }
 
-void AutofillSyncPerfTest::UpdateProfiles(int profile) {
+void PerformanceLiveAutofillSyncTest::UpdateProfiles(int profile) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
@@ -81,19 +81,19 @@ void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   SetProfiles(profile, &autofill_profiles);
 }
 
-void AutofillSyncPerfTest::RemoveProfiles(int profile) {
+void PerformanceLiveAutofillSyncTest::RemoveProfiles(int profile) {
   std::vector<AutofillProfile> empty;
   SetProfiles(profile, &empty);
 }
 
-void AutofillSyncPerfTest::Cleanup() {
+void PerformanceLiveAutofillSyncTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveProfiles(i);
   }
   ASSERT_TRUE(AwaitQuiescence());
 }
 
-const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
+const AutofillProfile PerformanceLiveAutofillSyncTest::NextAutofillProfile() {
   AutofillProfile profile;
   autofill_test::SetProfileInfoWithGuid(&profile, NextGUID().c_str(),
                                         NextName().c_str(), "", "", "", "", "",
@@ -101,29 +101,29 @@ const AutofillProfile AutofillSyncPerfTest::NextAutofillProfile() {
   return profile;
 }
 
-const std::string AutofillSyncPerfTest::NextGUID() {
+const std::string PerformanceLiveAutofillSyncTest::NextGUID() {
   return IntToGUID(guid_number_++);
 }
 
-const std::string AutofillSyncPerfTest::IntToGUID(int n) {
+const std::string PerformanceLiveAutofillSyncTest::IntToGUID(int n) {
   return StringPrintf("00000000-0000-0000-0000-%012X", n);
 }
 
-const std::string AutofillSyncPerfTest::NextName() {
+const std::string PerformanceLiveAutofillSyncTest::NextName() {
   return IntToName(name_number_++);
 }
 
-const std::string AutofillSyncPerfTest::IntToName(int n) {
+const std::string PerformanceLiveAutofillSyncTest::IntToName(int n) {
   return StringPrintf("Name%d" , n);
 }
 
 // TCM ID - 7557873.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveAutofillSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfiles(0, kNumProfiles);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumProfiles, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Add) {
 }
 
 // TCM ID - 7549835.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Update) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveAutofillSyncTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfiles(0, kNumProfiles);
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Update) {
 
   UpdateProfiles(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumProfiles, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Update) {
 }
 
 // TCM ID - 7553678.
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Delete) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveAutofillSyncTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfiles(0, kNumProfiles);
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Delete) {
 
   RemoveProfiles(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
@@ -165,14 +165,14 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Delete) {
   VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, DISABLED_Benchmark) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveAutofillSyncTest, DISABLED_Benchmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < kNumBenchmarkPoints; ++i) {
     int num_profiles = kBenchmarkPoints[i];
     AddProfiles(0, num_profiles);
     base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_profiles, GetProfileCount(0));
     ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Add: " << num_profiles << " "
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, DISABLED_Benchmark) {
 
     UpdateProfiles(0);
     base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_profiles, GetProfileCount(0));
     ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Update: " << num_profiles << " "
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, DISABLED_Benchmark) {
 
     RemoveProfiles(0);
     base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(0, GetProfileCount(0));
     ASSERT_TRUE(AllProfilesMatch());
     VLOG(0) << std::endl << "Delete: " << num_profiles << " "

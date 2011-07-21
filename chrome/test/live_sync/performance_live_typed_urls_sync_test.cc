@@ -4,7 +4,7 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/performance/sync_timing_helper.h"
+#include "chrome/test/live_sync/live_sync_timing_helper.h"
 #include "chrome/test/live_sync/live_typed_urls_sync_test.h"
 
 static const size_t kNumUrls = 150;
@@ -17,10 +17,10 @@ static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 // TODO(braffert): Move this class into its own .h/.cc files.  What should the
 // class files be named as opposed to the file containing the tests themselves?
-class TypedUrlsSyncPerfTest
+class PerformanceLiveTypedUrlsSyncTest
     : public TwoClientLiveTypedUrlsSyncTest {
  public:
-  TypedUrlsSyncPerfTest() : url_number(0) {}
+  PerformanceLiveTypedUrlsSyncTest() : url_number(0) {}
 
   // Adds |num_urls| new unique typed urls to |profile|.
   void AddURLs(int profile, int num_urls);
@@ -43,16 +43,16 @@ class TypedUrlsSyncPerfTest
   GURL IntToURL(int n);
 
   int url_number;
-  DISALLOW_COPY_AND_ASSIGN(TypedUrlsSyncPerfTest);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceLiveTypedUrlsSyncTest);
 };
 
-void TypedUrlsSyncPerfTest::AddURLs(int profile, int num_urls) {
+void PerformanceLiveTypedUrlsSyncTest::AddURLs(int profile, int num_urls) {
   for (int i = 0; i < num_urls; ++i) {
     AddUrlToHistory(profile, NextURL());
   }
 }
 
-void TypedUrlsSyncPerfTest::UpdateURLs(int profile) {
+void PerformanceLiveTypedUrlsSyncTest::UpdateURLs(int profile) {
   std::vector<history::URLRow> urls = GetTypedUrlsFromClient(profile);
   for (std::vector<history::URLRow>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
@@ -60,7 +60,7 @@ void TypedUrlsSyncPerfTest::UpdateURLs(int profile) {
   }
 }
 
-void TypedUrlsSyncPerfTest::RemoveURLs(int profile) {
+void PerformanceLiveTypedUrlsSyncTest::RemoveURLs(int profile) {
   std::vector<history::URLRow> urls = GetTypedUrlsFromClient(profile);
   for (std::vector<history::URLRow>::const_iterator it = urls.begin();
        it != urls.end(); ++it) {
@@ -68,7 +68,7 @@ void TypedUrlsSyncPerfTest::RemoveURLs(int profile) {
   }
 }
 
-void TypedUrlsSyncPerfTest::Cleanup() {
+void PerformanceLiveTypedUrlsSyncTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveURLs(i);
   }
@@ -77,21 +77,21 @@ void TypedUrlsSyncPerfTest::Cleanup() {
   AssertAllProfilesHaveSameURLsAsVerifier();
 }
 
-GURL TypedUrlsSyncPerfTest::NextURL() {
+GURL PerformanceLiveTypedUrlsSyncTest::NextURL() {
   return IntToURL(url_number++);
 }
 
-GURL TypedUrlsSyncPerfTest::IntToURL(int n) {
+GURL PerformanceLiveTypedUrlsSyncTest::IntToURL(int n) {
   return GURL(StringPrintf("http://history%d.google.com/", n));
 }
 
 // TCM ID - 7985716.
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveTypedUrlsSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddURLs(0, kNumUrls);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Add) {
 }
 
 // TCM ID - 7981755.
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Update) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveTypedUrlsSyncTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddURLs(0, kNumUrls);
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Update) {
 
   UpdateURLs(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Update) {
 }
 
 // TCM ID - 7651271
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Delete) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveTypedUrlsSyncTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddURLs(0, kNumUrls);
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Delete) {
 
   RemoveURLs(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
@@ -133,21 +133,21 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Delete) {
   VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
-IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, DISABLED_Benchmark) {
+IN_PROC_BROWSER_TEST_F(PerformanceLiveTypedUrlsSyncTest, DISABLED_Benchmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (size_t i = 0; i < kNumBenchmarkPoints; ++i) {
     size_t num_urls = kBenchmarkPoints[i];
     AddURLs(0, num_urls);
     base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_urls, GetTypedUrlsFromClient(0).size());
     AssertAllProfilesHaveSameURLsAsVerifier();
     VLOG(0) << std::endl << "Add: " << num_urls << " " << dt_add.InSecondsF();
 
     UpdateURLs(0);
     base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_urls, GetTypedUrlsFromClient(0).size());
     AssertAllProfilesHaveSameURLsAsVerifier();
     VLOG(0) << std::endl << "Update: " << num_urls << " "
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, DISABLED_Benchmark) {
 
     RemoveURLs(0);
     base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
     AssertAllProfilesHaveSameURLsAsVerifier();
     VLOG(0) << std::endl << "Delete: " << num_urls << " "

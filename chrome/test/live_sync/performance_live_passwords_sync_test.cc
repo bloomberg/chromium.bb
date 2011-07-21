@@ -6,7 +6,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_passwords_sync_test.h"
-#include "chrome/test/live_sync/performance/sync_timing_helper.h"
+#include "chrome/test/live_sync/live_sync_timing_helper.h"
 
 static const int kNumPasswords = 150;
 
@@ -18,10 +18,10 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 // TODO(braffert): Move this class into its own .h/.cc files.  What should the
 // class files be named as opposed to the file containing the tests themselves?
-class PasswordsSyncPerfTest
+class PerformanceLivePasswordsSyncTest
     : public TwoClientLivePasswordsSyncTest {
  public:
-  PasswordsSyncPerfTest() : password_number_(0) {}
+  PerformanceLivePasswordsSyncTest() : password_number_(0) {}
 
   // Adds |num_logins| new unique passwords to |profile|.
   void AddLogins(int profile, int num_logins);
@@ -43,16 +43,16 @@ class PasswordsSyncPerfTest
   std::string NextPassword();
 
   int password_number_;
-  DISALLOW_COPY_AND_ASSIGN(PasswordsSyncPerfTest);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceLivePasswordsSyncTest);
 };
 
-void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
+void PerformanceLivePasswordsSyncTest::AddLogins(int profile, int num_logins) {
   for (int i = 0; i < num_logins; ++i) {
     AddLogin(GetPasswordStore(profile), NextLogin());
   }
 }
 
-void PasswordsSyncPerfTest::UpdateLogins(int profile) {
+void PerformanceLivePasswordsSyncTest::UpdateLogins(int profile) {
   std::vector<webkit_glue::PasswordForm> logins;
   GetLogins(GetPasswordStore(profile), logins);
   for (std::vector<webkit_glue::PasswordForm>::iterator it = logins.begin();
@@ -62,11 +62,11 @@ void PasswordsSyncPerfTest::UpdateLogins(int profile) {
   }
 }
 
-void PasswordsSyncPerfTest::RemoveLogins(int profile) {
+void PerformanceLivePasswordsSyncTest::RemoveLogins(int profile) {
   LivePasswordsSyncTest::RemoveLogins(GetPasswordStore(profile));
 }
 
-void PasswordsSyncPerfTest::Cleanup() {
+void PerformanceLivePasswordsSyncTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveLogins(i);
   }
@@ -75,21 +75,21 @@ void PasswordsSyncPerfTest::Cleanup() {
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
 
-webkit_glue::PasswordForm PasswordsSyncPerfTest::NextLogin() {
+webkit_glue::PasswordForm PerformanceLivePasswordsSyncTest::NextLogin() {
   return CreateTestPasswordForm(password_number_++);
 }
 
-std::string PasswordsSyncPerfTest::NextPassword() {
+std::string PerformanceLivePasswordsSyncTest::NextPassword() {
   return base::StringPrintf("password%d", password_number_++);
 }
 
 // TCM ID - 7567749.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Add) {
+IN_PROC_BROWSER_TEST_F(PerformanceLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddLogins(0, kNumPasswords);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Add) {
 }
 
 // TCM ID - 7365093.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Update) {
+IN_PROC_BROWSER_TEST_F(PerformanceLivePasswordsSyncTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddLogins(0, kNumPasswords);
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Update) {
 
   UpdateLogins(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Update) {
 }
 
 // TCM ID - 7557852.
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Delete) {
+IN_PROC_BROWSER_TEST_F(PerformanceLivePasswordsSyncTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddLogins(0, kNumPasswords);
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Delete) {
 
   RemoveLogins(0);
   base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -131,14 +131,14 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Delete) {
   VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, DISABLED_Benchmark) {
+IN_PROC_BROWSER_TEST_F(PerformanceLivePasswordsSyncTest, DISABLED_Benchmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < kNumBenchmarkPoints; ++i) {
     int num_passwords = kBenchmarkPoints[i];
     AddLogins(0, num_passwords);
     base::TimeDelta dt_add =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_passwords, GetPasswordCount(0));
     ASSERT_TRUE(AllProfilesContainSamePasswordForms());
     VLOG(0) << std::endl << "Add: " << num_passwords << " "
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, DISABLED_Benchmark) {
 
     UpdateLogins(0);
     base::TimeDelta dt_update =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_passwords, GetPasswordCount(0));
     ASSERT_TRUE(AllProfilesContainSamePasswordForms());
     VLOG(0) << std::endl << "Update: " << num_passwords << " "
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, DISABLED_Benchmark) {
 
     RemoveLogins(0);
     base::TimeDelta dt_delete =
-        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(0, GetPasswordCount(0));
     ASSERT_TRUE(AllProfilesContainSamePasswordForms());
     VLOG(0) << std::endl << "Delete: " << num_passwords << " "
