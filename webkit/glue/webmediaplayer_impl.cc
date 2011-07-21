@@ -16,6 +16,7 @@
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
 #include "media/filters/adaptive_demuxer.h"
+#include "media/filters/chunk_demuxer_factory.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -265,6 +266,52 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
     video_renderer_->PutCurrentFrame(frame);
 }
 
+void WebMediaPlayerImpl::Proxy::DemuxerOpened(media::ChunkDemuxer* demuxer) {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::DemuxerOpenedTask,
+      scoped_refptr<media::ChunkDemuxer>(demuxer)));
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerClosed() {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &WebMediaPlayerImpl::Proxy::DemuxerClosedTask));
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerFlush() {
+  if (chunk_demuxer_.get())
+    chunk_demuxer_->FlushData();
+}
+
+bool WebMediaPlayerImpl::Proxy::DemuxerAppend(const uint8* data,
+                                              size_t length) {
+  if (chunk_demuxer_.get())
+    return chunk_demuxer_->AppendData(data, length);
+  return false;
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerEndOfStream(
+    media::PipelineStatus status) {
+  if (chunk_demuxer_.get())
+    chunk_demuxer_->EndOfStream(status);
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerShutdown() {
+  if (chunk_demuxer_.get())
+    chunk_demuxer_->Shutdown();
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerOpenedTask(
+    const scoped_refptr<media::ChunkDemuxer>& demuxer) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  chunk_demuxer_ = demuxer;
+  if (webmediaplayer_)
+    webmediaplayer_->OnDemuxerOpened();
+}
+
+void WebMediaPlayerImpl::Proxy::DemuxerClosedTask() {
+  chunk_demuxer_ = NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // WebMediaPlayerImpl implementation
 
@@ -341,17 +388,25 @@ bool WebMediaPlayerImpl::Initialize(
     data_source_factory->AddFactory(simple_data_source_factory.release());
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
-    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory());
-  }
-
   scoped_ptr<media::DemuxerFactory> demuxer_factory(
       new media::FFmpegDemuxerFactory(data_source_factory.release(),
                                       pipeline_message_loop));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
     demuxer_factory.reset(new media::AdaptiveDemuxerFactory(
         demuxer_factory.release()));
-    chunk_demuxer_factory_.reset(new media::ChunkDemuxerFactory());
+
+    std::string sourceUrl;
+
+    // TODO(acolwell): Uncomment once WebKit changes are checked in.
+    // https://bugs.webkit.org/show_bug.cgi?id=64731
+    //sourceUrl = GetClient()->sourceURL().spec();
+
+    if (!sourceUrl.empty()) {
+      demuxer_factory.reset(
+          new media::ChunkDemuxerFactory(sourceUrl,
+                                         demuxer_factory.release(),
+                                         proxy_));
+    }
   }
   filter_collection_->SetDemuxerFactory(demuxer_factory.release());
 
@@ -390,12 +445,6 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
     }
   }
 
-  if (chunk_demuxer_factory_.get() &&
-      chunk_demuxer_factory_->IsUrlSupported(url.spec())) {
-    media_data_sink_.reset(chunk_demuxer_factory_->CreateMediaDataSink());
-    filter_collection_->SetDemuxerFactory(chunk_demuxer_factory_.release());
-  }
-
   // Handle any volume changes that occured before load().
   setVolume(GetClient()->volume());
   // Get the preload value.
@@ -428,16 +477,6 @@ void WebMediaPlayerImpl::pause() {
   paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
   paused_time_ = pipeline_->GetCurrentTime();
-}
-
-bool WebMediaPlayerImpl::appendData(const unsigned char* data,
-                                    unsigned length) {
-  DCHECK(MessageLoop::current() == main_loop_);
-
-  if (!media_data_sink_.get())
-    return false;
-
-  return media_data_sink_->AppendData(data, length);
 }
 
 bool WebMediaPlayerImpl::supportsFullscreen() const {
@@ -474,8 +513,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
 
   seeking_ = true;
 
-  if (media_data_sink_.get())
-    media_data_sink_->Flush();
+  proxy_->DemuxerFlush();
 
   // Kick off the asynchronous seek!
   pipeline_->Seek(
@@ -788,6 +826,35 @@ void WebMediaPlayerImpl::putCurrentFrame(
   }
 }
 
+// TODO(acolwell): Uncomment once WebKit changes are checked in.
+// https://bugs.webkit.org/show_bug.cgi?id=64731
+/*
+bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
+                                      unsigned length) {
+  DCHECK(MessageLoop::current() == main_loop_);
+  return proxy_->DemuxerAppend(data, length);
+}
+
+void WebMediaPlayerImpl::sourceEndOfStream(
+    WebKit::WebMediaPlayer::EndOfStreamStatus status) {
+  DCHECK(MessageLoop::current() == main_loop_);
+  media::PipelineStatus pipeline_status = media::PIPELINE_OK;
+
+  switch(status) {
+    case WebKit::WebMediaPlayer::EosNetworkError:
+      pipeline_status = media::PIPELINE_ERROR_NETWORK;
+      break;
+    case WebKit::WebMediaPlayer::EosDecodeError:
+      pipeline_status = media::PIPELINE_ERROR_DECODE;
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
+
+  proxy_->DemuxerEndOfStream(pipeline_status);
+}
+*/
+
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
   Destroy();
   main_loop_ = NULL;
@@ -908,6 +975,14 @@ void WebMediaPlayerImpl::OnNetworkEvent(PipelineStatus status) {
   }
 }
 
+void WebMediaPlayerImpl::OnDemuxerOpened() {
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  // TODO(acolwell): Uncomment once WebKit changes are checked in.
+  // https://bugs.webkit.org/show_bug.cgi?id=64731
+  //GetClient()->sourceOpened();
+}
+
 void WebMediaPlayerImpl::SetNetworkState(
     WebKit::WebMediaPlayer::NetworkState state) {
   DCHECK(MessageLoop::current() == main_loop_);
@@ -929,11 +1004,10 @@ void WebMediaPlayerImpl::Destroy() {
 
   // Tell the data source to abort any pending reads so that the pipeline is
   // not blocked when issuing stop commands to the other filters.
-  if (proxy_)
+  if (proxy_) {
     proxy_->AbortDataSources();
-
-  if (media_data_sink_.get())
-    media_data_sink_->Shutdown();
+    proxy_->DemuxerShutdown();
+  }
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.

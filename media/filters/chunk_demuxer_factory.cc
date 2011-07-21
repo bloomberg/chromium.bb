@@ -30,55 +30,34 @@ static void InitDone(MessageLoop* message_loop,
                          NewRunnableFunction(&DoInitDone, cb, demuxer, status));
 }
 
-MediaDataSink::MediaDataSink(const scoped_refptr<ChunkDemuxer>& demuxer)
-    : demuxer_(demuxer) {
+ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
+                                         DemuxerFactory* delegate_factory,
+                                         ChunkDemuxerClient* client)
+    : url_(url),
+      delegate_factory_(delegate_factory),
+      client_(client) {
+  DCHECK(delegate_factory_.get());
 }
-
-MediaDataSink::~MediaDataSink() {}
-
-void MediaDataSink::Flush() {
-  demuxer_->FlushData();
-}
-
-bool MediaDataSink::AppendData(const uint8* data, unsigned length) {
-  return demuxer_->AppendData(data, length);
-}
-
-void MediaDataSink::Shutdown() {
-  demuxer_->Shutdown();
-}
-
-const char ChunkDemuxerFactory::kURLPrefix[] = "x-media-chunks:";
-
-ChunkDemuxerFactory::ChunkDemuxerFactory() {}
 
 ChunkDemuxerFactory::~ChunkDemuxerFactory() {}
 
-bool ChunkDemuxerFactory::IsUrlSupported(const std::string& url) const {
-  return (url.find(kURLPrefix) == 0);
-}
-
-MediaDataSink* ChunkDemuxerFactory::CreateMediaDataSink() {
-  demuxer_ = new ChunkDemuxer();
-  return new MediaDataSink(demuxer_);
-}
-
 void ChunkDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
-  if (!IsUrlSupported(url) || !demuxer_.get()) {
-    cb->Run(DEMUXER_ERROR_COULD_NOT_OPEN, static_cast<Demuxer*>(NULL));
-    delete cb;
+  // Check to see if this is the URL we are looking for. If not delegate
+  // building to the delegate factory.
+  if (url != url_) {
+    delegate_factory_->Build(url, cb);
     return;
   }
 
+  scoped_refptr<ChunkDemuxer> demuxer(new ChunkDemuxer(client_));
   // Call Init() on demuxer. Note that ownership is being passed to the
   // callback here.
-  demuxer_->Init(base::Bind(&InitDone, MessageLoop::current(), cb,
-                            scoped_refptr<Demuxer>(demuxer_.get())));
-  demuxer_ = NULL;
+  demuxer->Init(base::Bind(&InitDone, MessageLoop::current(), cb,
+                           scoped_refptr<Demuxer>(demuxer.get())));
 }
 
 DemuxerFactory* ChunkDemuxerFactory::Clone() const {
-  return new ChunkDemuxerFactory();
+  return new ChunkDemuxerFactory(url_, delegate_factory_->Clone(), client_);
 }
 
 }  // namespace media
