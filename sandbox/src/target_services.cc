@@ -1,11 +1,14 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/src/target_services.h"
 
+#include <process.h>
+
 #include "base/basictypes.h"
 #include "sandbox/src/crosscall_client.h"
+#include "sandbox/src/handle_closer_agent.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/restricted_token_utils.h"
 #include "sandbox/src/sandbox.h"
@@ -38,6 +41,19 @@ bool FlushCachedRegHandles() {
           FlushRegKey(HKEY_USERS));
 }
 
+// Checks if we have handle entries pending and runs the closer.
+bool CloseOpenHandles() {
+  if (sandbox::HandleCloserAgent::NeedsHandlesClosed()) {
+    sandbox::HandleCloserAgent handle_closer;
+
+    handle_closer.InitializeHandlesToClose();
+    if (!handle_closer.CloseHandles())
+      return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -67,6 +83,8 @@ void TargetServicesBase::LowerToken() {
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_FLUSHANDLES);
   if (ERROR_SUCCESS != ::RegDisablePredefinedCache())
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CACHEDISABLE);
+  if (!CloseOpenHandles())
+    ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CLOSEHANDLES);
 }
 
 ProcessState* TargetServicesBase::GetState() {
