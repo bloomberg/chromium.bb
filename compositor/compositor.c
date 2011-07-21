@@ -1028,14 +1028,13 @@ surface_attach(struct wl_client *client,
 		       &es->buffer_destroy_listener.link);
 
 	if (es->visual == NULL)
-		fprintf(stderr, "initial attach for surface %p\n", surface);
-
-	if (es->visual == NULL)
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 
 	es->visual = buffer->visual;
-	wlsc_surface_configure(es, es->x + x, es->y + y,
-			       buffer->width, buffer->height);
+	if (x != 0 || y != 0 ||
+	    es->width != buffer->width || es->height != buffer->height)
+		wlsc_surface_configure(es, es->x + x, es->y + y,
+				       buffer->width, buffer->height);
 
 	wlsc_buffer_attach(buffer, surface);
 
