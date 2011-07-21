@@ -315,34 +315,36 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
 
 void PPB_URLLoader_Impl::didFinishLoading(WebURLLoader* loader,
                                           double finish_time) {
-  done_status_ = PP_OK;
-  if (user_buffer_ || is_streaming_to_file_) {
-    RunCallback(done_status_);
-  } else {
-    DCHECK(!pending_callback_.get() || pending_callback_->completed());
-  }
+  FinishLoading(PP_OK);
 }
 
 void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
                                  const WebURLError& error) {
+  int32_t pp_error = PP_ERROR_FAILED;
   if (error.domain.equals(WebString::fromUTF8(net::kErrorDomain))) {
     // TODO(bbudge): Extend pp_errors.h to cover interesting network errors
     // from the net error domain.
     switch (error.reason) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:
-        done_status_ = PP_ERROR_NOACCESS;
-        break;
-      default:
-        done_status_ = PP_ERROR_FAILED;
+        pp_error = PP_ERROR_NOACCESS;
         break;
     }
   } else {
     // It's a WebKit error.
-    done_status_ = PP_ERROR_NOACCESS;
+    pp_error = PP_ERROR_NOACCESS;
   }
 
-  RunCallback(done_status_);
+  FinishLoading(pp_error);
+}
+
+void PPB_URLLoader_Impl::FinishLoading(int32_t done_status) {
+  done_status_ = done_status;
+  // If the client hasn't called any function that takes a callback since
+  // the initial call to Open, or called ReadResponseBody and got a
+  // synchronous return, then the callback will be NULL.
+  if (pending_callback_.get() && !pending_callback_->completed())
+    RunCallback(done_status_);
 }
 
 int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {

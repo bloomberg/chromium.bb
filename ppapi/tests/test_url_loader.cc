@@ -56,6 +56,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(StreamToFile);
   RUN_TEST_FORCEASYNC_AND_NOT(AuditURLRedirect);
   RUN_TEST_FORCEASYNC_AND_NOT(AbortCalls);
+  RUN_TEST_FORCEASYNC_AND_NOT(UntendedLoad);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
@@ -438,6 +439,48 @@ std::string TestURLLoader::TestAbortCalls() {
 
   // TODO(viettrungluu): More abort tests (but add basic tests first).
   // Also test that Close() aborts properly. crbug.com/69457
+
+  PASS();
+}
+
+std::string TestURLLoader::TestUntendedLoad() {
+  pp::URLRequestInfo request(instance_);
+  request.SetURL("test_url_loader_data/hello.txt");
+  request.SetRecordDownloadProgress(true);
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+
+  pp::URLLoader loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("URLLoader::Open", rv);
+
+  // We received the response callback. Yield until the network code has called
+  // the loader's didReceiveData and didFinishLoading methods before we give it
+  // another callback function, to make sure the loader works with no callback.
+  int64_t bytes_received = 0;
+  int64_t total_bytes_to_be_received = 0;
+  while (true) {
+    loader.GetDownloadProgress(&bytes_received, &total_bytes_to_be_received);
+    if (total_bytes_to_be_received <= 0)
+      return ReportError("URLLoader::GetDownloadProgress total size",
+          total_bytes_to_be_received);
+    if (bytes_received == total_bytes_to_be_received)
+      break;
+    pp::Module::Get()->core()->CallOnMainThread(10, callback);
+    callback.WaitForResult();
+  }
+
+  // The loader should now have the data and have finished successfully.
+  std::string body;
+  std::string error = ReadEntireResponseBody(&loader, &body);
+  if (!error.empty())
+    return error;
+  if (body != "hello\n")
+    return ReportError("Couldn't read data", rv);
 
   PASS();
 }

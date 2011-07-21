@@ -119,6 +119,8 @@ class PPB_URLLoader_Impl : public Resource,
   bool RecordDownloadProgress() const;
   bool RecordUploadProgress() const;
 
+  void FinishLoading(int32_t done_status);
+
   // If true, then the plugin instance is a full-frame plugin and we're just
   // wrapping the main document's loader (i.e. loader_ is null).
   bool main_document_loader_;

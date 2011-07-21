@@ -45,6 +45,7 @@ class TestURLLoader : public TestCase {
   std::string TestCrossOriginRequest();
   std::string TestAuditURLRedirect();
   std::string TestAbortCalls();
+  std::string TestUntendedLoad();
 
   const PPB_FileIOTrusted* file_io_trusted_interface_;
 };
