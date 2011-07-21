@@ -94,6 +94,8 @@ static const char kWWWDotGoogleDotCom[] = "www.google.com";
 static const char kMailDotGoogleDotCom[] = "mail.google.com";
 static const char kPlusDotGoogleDotCom[] = "plus.google.com";
 static const char kDocsDotGoogleDotCom[] = "docs.google.com";
+static const char kSitesDotGoogleDotCom[] = "sites.google.com";
+static const char kPicasawebDotGoogleDotCom[] = "picasaweb.google.com";
 static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
 static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
 static const char kDotJS[] = ".js";
@@ -121,6 +123,10 @@ enum {
   INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,
   INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
   INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
   INSECURE_CONTENT_NUM_EVENTS
 };
 
@@ -466,6 +472,14 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kSitesDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kPicasawebDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,
@@ -514,6 +528,14 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   } else if (host == kDocsDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kSitesDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kPicasawebDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
