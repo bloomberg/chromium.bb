@@ -40,10 +40,21 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not load manifest url.');
-// 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe.
+// 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe,
+// given both a nexe and a portable program to choose from.
 testProgressEventStateMachine(
     tester,
     'nonexistent_nexe',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not load nexe url.');
+// 'nonexistent_nexe_only' loads a manifest, then tries to load a nonexistent
+// nexe, given only a nexe to choose from.
+testProgressEventStateMachine(
+    tester,
+    'nonexistent_nexe_only',
     1,  // progressMinCount
     1,  // errorCount
     0,  // abortCount
@@ -124,6 +135,7 @@ function runTests() {
       $('cross_origin'),
       $('cross_manifest'),
       $('nonexistent_nexe'),
+      $('nonexistent_nexe_only'),
       $('nonexistent_manifest'),
       $('bad_manifest'),
       $('bad_manifest_uses_nexes'),
@@ -199,6 +211,13 @@ setListeners($('body'));
       src="ppapi_bad_doesnotexist.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
+    <embed id="nonexistent_nexe_only"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_doesnotexist_nexe_only.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+
     <embed id="bad_magic"
       class="naclModule"
       width=100 height=20

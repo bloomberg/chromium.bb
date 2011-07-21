@@ -2,7 +2,6 @@
   "program": {
     "x86-32": {"url": "doesnotexist.nexe"},
     "x86-64": {"url": "doesnotexist.nexe"},
-    "arm": {"url": "doesnotexist.nexe"},
-    "portable": {"url": "doesnotexist.pexe"}
+    "arm": {"url": "doesnotexist.nexe"}
   }
 }

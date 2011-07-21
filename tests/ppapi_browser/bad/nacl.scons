@@ -19,6 +19,7 @@ ppapi_bad_files = [
   'ppapi_bad.html',
   'ppapi_bad_crossorigin.nmf',
   'ppapi_bad_doesnotexist.nmf',
+  'ppapi_bad_doesnotexist_nexe_only.nmf',
   'ppapi_bad_magic.nmf',
   'ppapi_bad_manifest_uses_nexes.nmf',
   'ppapi_bad_manifest_bad_files.nmf',

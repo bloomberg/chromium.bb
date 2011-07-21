@@ -166,6 +166,8 @@ class BrowserLauncher(object):
       env['NACL_IRT_LIBRARY'] = self.options.irt_library
     if self.options.enable_experimental_js:
       env['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
+    if self.options.prefer_portable_in_manifest:
+      env['NACL_PREFER_PORTABLE_IN_MANIFEST'] = '1'
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
     print 'LAUNCHING: %s' % ' '.join(cmd)
     sys.stdout.flush()

@@ -122,7 +122,8 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
     } else {
       // TODO(jvoung): Make a generic load error, or just use ERROR_UNKNOWN?
       error_info.SetReport(ERROR_UNKNOWN,
-                           "PnaclCoordinator: could not load url: " + url);
+                           "PNaCl module load failed: could not load url: " +
+                           url);
       ReportLoadError(error_info);
     }
     return -1;
@@ -131,7 +132,7 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
     // TODO(jvoung): Make a generic load error, or just use ERROR_UNKNOWN?
     error_info.SetReport(ERROR_UNKNOWN,
-                         "PnaclCoordinator: could not dup file handle for: " +
+                         "PNaCl module load failed: could not dup fd for: " +
                          url);
     ReportLoadError(error_info);
     return -1;

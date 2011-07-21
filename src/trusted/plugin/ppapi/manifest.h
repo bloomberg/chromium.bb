@@ -36,6 +36,10 @@ class Manifest {
       dictionary_(Json::nullValue) { }
   ~Manifest() { }
 
+  // Determines whether portable programs are chosen in manifest files over
+  // native programs. Normally the native version is selected if available.
+  static bool PreferPortable();
+
   // Initialize the manifest object for use by later lookups.  The return
   // value is true if the manifest parses correctly and matches the schema.
   bool Init(const nacl::string& json, ErrorInfo* error_info);

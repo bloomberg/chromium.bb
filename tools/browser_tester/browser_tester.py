@@ -40,6 +40,10 @@ def BuildArgParser():
   parser.add_option('--enable_experimental_js', dest='enable_experimental_js',
                     action='store_true', default=False,
                     help='Allow use of experimental JavaScript APIs')
+  parser.add_option('--prefer_portable_in_manifest',
+                    dest='prefer_portable_in_manifest',
+                    action='store_true', default=False,
+                    help='Use portable programs in manifest if available.')
   parser.add_option('-f', '--file', dest='files', action='append',
                     type='string', default=[],
                     metavar='FILENAME',

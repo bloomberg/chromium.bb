@@ -163,7 +163,8 @@ node = bitcode_env.PPAPIBrowserTester(
     'pnacl_test_example.out',
     url='pnacl_test_example.html',
     files=[borrowed_file], # the rest are in "map_files"
-    map_files=map_files_toolchain + map_files_page)
+    map_files=map_files_toolchain + map_files_page,
+    args=['--prefer_portable_in_manifest'])
 
 # Make sure the files are actually staged when this test runs.
 env.Depends(node, replicates_toolchain + replicates_page)

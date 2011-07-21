@@ -6,6 +6,8 @@
 
 #include "native_client/src/trusted/plugin/ppapi/manifest.h"
 
+#include <stdlib.h>
+
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
@@ -163,15 +165,24 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
                              nacl::string* url,
                              nacl::string* error_string,
                              bool* is_portable) {
-  if (url == NULL || error_string == NULL)
+  if (url == NULL || error_string == NULL || is_portable == NULL)
     return false;
 
   if (!IsValidISADictionary(dictionary, sandbox_isa, error_string))
     return false;
 
+  const char* isa_string;
+  // The call to IsValidISADictionary() above guarantees that either
+  // sandbox_isa or kPortableKey is present in the dictionary.
+  bool has_portable = dictionary.isMember(kPortableKey);
   bool has_isa = dictionary.isMember(sandbox_isa);
-  const char *isa_string = has_isa ? sandbox_isa.c_str() : kPortableKey;
-  *is_portable = !has_isa;
+  if ((has_portable && Manifest::PreferPortable()) || !has_isa) {
+    *is_portable = true;
+    isa_string = kPortableKey;
+  } else {
+    *is_portable = false;
+    isa_string = sandbox_isa.c_str();
+  }
 
   const Json::Value& json_url = dictionary[isa_string][kUrlKey];
   *url = json_url.asString();
@@ -181,6 +192,10 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
 
 
 }  // namespace
+
+bool Manifest::PreferPortable() {
+  return getenv("NACL_PREFER_PORTABLE_IN_MANIFEST") != NULL;
+}
 
 bool Manifest::Init(const nacl::string& manifest_json, ErrorInfo* error_info) {
   if (error_info == NULL) {
@@ -305,7 +320,7 @@ bool Manifest::ResolveURL(const nacl::string& relative_url,
 bool Manifest::GetProgramURL(nacl::string* full_url,
                              ErrorInfo* error_info,
                              bool* is_portable) {
-  if (full_url == NULL || error_info == NULL)
+  if (full_url == NULL || error_info == NULL || is_portable == NULL)
     return false;
 
   Json::Value program = dictionary_[kProgramKey];
