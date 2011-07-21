@@ -137,11 +137,6 @@ class PageCyclerTest : public UIPerfTest {
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
                                         "--expose_gc");
-    launch_arguments_.AppendSwitch(switches::kNoDefaultBrowserCheck);
-  }
-
-  void SetUp() {
-    UIPerfTest::SetUp();
   }
 
   virtual FilePath GetDataPath(const char* name) {
