@@ -526,8 +526,8 @@ var MostVisited = (function() {
 
     // Thumbnail hovering
 
-    // TODO(mmenke):  Either implement prerendering based on hovering,
-    //                or remove this code.
+    // TODO(mmenke):  Either implement preconnect/prerendering based on
+    //                hovering, or remove this code.
 
     /**
      * Record the time the mouse has been hovering over a thumbnail.
@@ -538,13 +538,13 @@ var MostVisited = (function() {
       if (!this.hoverStartTime_)
         return;
       var hoverDuration = (new Date()).getTime() - this.hoverStartTime_;
-      if (hoverDuration > 4000)
-        hoverDuration = 4000;
+      if (hoverDuration > 500)
+        hoverDuration = 500;
       chrome.send('recordInHistogram',
                   [clicked ? 'NewTabPage.HoverTimeClicked'
                            : 'NewTabPage.HoverTimeNotClicked',
                    hoverDuration,
-                   4000]);
+                   500]);
       this.hoverStartTime_ = null;
     },
 
