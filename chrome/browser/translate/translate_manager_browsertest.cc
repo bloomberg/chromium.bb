@@ -271,6 +271,8 @@ class NavEntryCommittedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
 };
 
+namespace {
+
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   static TestRenderViewContextMenu* CreateContextMenu(
@@ -310,6 +312,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
 };
+
+}  // namespace
 
 TEST_F(TranslateManagerTest, NormalTranslate) {
   // Simulate navigating to a page.

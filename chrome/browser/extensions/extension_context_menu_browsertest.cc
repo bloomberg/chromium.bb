@@ -21,6 +21,7 @@
 using ui::MenuModel;
 using WebKit::WebContextMenuData;
 
+namespace {
 // This test class helps us sidestep platform-specific issues with popping up a
 // real context menu, while still running through the actual code in
 // RenderViewContextMenu where extension items get added and executed.
@@ -112,6 +113,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     return false;
   }
 };
+
+}  // namespace
 
 class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
  public:
