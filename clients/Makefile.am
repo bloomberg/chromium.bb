@@ -1,15 +1,25 @@
-noinst_PROGRAMS =				\
-	gears					\
+noinst_PROGRAMS = $(clients_programs) 		\
+	$(poppler_programs) 			\
+	$(simple_clients_programs)
+
+if BUILD_SIMPLE_CLIENTS
+simple_clients_programs = simple-client simple-shm
+simple_client_SOURCES = simple-client.c
+simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
+
+simple_shm_SOURCES = simple-shm.c
+simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
+endif
+
+if BUILD_CLIENTS
+clients_programs = gears			\
 	flower					\
 	screenshot				\
 	terminal				\
 	image					\
-	$(poppler_programs)			\
 	dnd					\
 	smoke					\
 	resizor					\
-	simple-client				\
-	simple-shm				\
 	eventdemo
 
 noinst_LIBRARIES = libtoytoolkit.a
@@ -55,12 +65,6 @@ smoke_LDADD = $(toolkit_libs)
 resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
 
-simple_client_SOURCES = simple-client.c
-simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
-
-simple_shm_SOURCES = simple-shm.c
-simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
-
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
 
@@ -69,6 +73,7 @@ BUILT_SOURCES =					\
 	screenshooter-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
+endif
 
 @wayland_scanner_rules@
 
