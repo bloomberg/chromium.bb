@@ -101,10 +101,10 @@ rm -rf ../toolchain
 rm -rf /tmp/.org.chromium.Chromium.*
 
 echo @@@BUILD_STEP show-config@@@
-UTMAN_BUILDBOT=true ${UTMAN} show-config
+UTMAN_BUILDBOT=true UTMAN_USE_MQ=true ${UTMAN} show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
-UTMAN_BUILDBOT=true ${UTMAN} untrusted_sdk pnacl-toolchain.tgz
+UTMAN_BUILDBOT=true UTMAN_USE_MQ=true ${UTMAN} untrusted_sdk pnacl-toolchain.tgz
 chmod a+r pnacl-toolchain.tgz
 
 echo @@@BUILD_STEP untar_toolchain@@@

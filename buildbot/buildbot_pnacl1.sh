@@ -333,10 +333,10 @@ mode-test-all-fast() {
 
   # First build everything.
   echo "@@@BUILD_STEP scons build @@@"
-  scons-tests "arm x86-32 x86-64" "--verbose --mode=opt-host,nacl -j${concur}" ""
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" ""
   # Then test everything.
   echo "@@@BUILD_STEP scons smoke_tests @@@"
-  scons-tests "arm x86-32 x86-64" "--verbose --mode=opt-host,nacl -j${concur}" \
+  scons-tests "arm x86-32 x86-64" "--mode=opt-host,nacl -j${concur}" \
     "smoke_tests"
   # browser tests are run with -j1 on the bots
   browser-tests "arm x86-32 x86-64" "--verbose --mode=opt-host,nacl -j1"

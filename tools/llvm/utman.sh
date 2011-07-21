@@ -41,8 +41,8 @@ source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
-# Set to true to use the MQ setup
-readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-false}
+# Set to false to go back to compiling with the old pnacl-sfi branch
+readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-true}
 
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
@@ -3258,6 +3258,9 @@ setup-hg-mq() {
   hg-update-llvm-gcc-mq-patches
 
   StepBanner "Forcing symlink to appropriate queue "
+  # rm first otherwise the symlink can wind up in the patch queue repo
+  rm -f "${TC_SRC_LLVM}/.hg/patches"
+  rm -f "${TC_SRC_LLVM_GCC}/.hg/patches"
   ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
   ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
 
