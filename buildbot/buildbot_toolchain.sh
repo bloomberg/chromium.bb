@@ -51,7 +51,7 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   # snapshot on the trybots.
   echo @@@BUILD_STEP archive_build@@@
   (
-    gsutil=buildbot/gsutil.sh
+    gsutil=../buildbot/gsutil.sh
     GS_BASE=gs://nativeclient-archive2/toolchain
     ${gsutil} -h Cache-Control:no-cache cp -a public-read \
       naclsdk.tgz \
