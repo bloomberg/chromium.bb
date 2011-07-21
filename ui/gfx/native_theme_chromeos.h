@@ -22,6 +22,8 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
                                 State state,
                                 const ExtraParams& extra) const OVERRIDE;
 
+  virtual int GetPopupListBoxMinimumRowHeight() const OVERRIDE;
+
   // NativeThemeLinux overrides
   virtual void PaintScrollbarTrack(SkCanvas* canvas,
       Part part, State state,
