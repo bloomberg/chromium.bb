@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/scoped_ptr.h"
 #include "net/base/dns_test_util.h"
+#include "net/base/host_cache.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
 #include "net/base/sys_addrinfo.h"
@@ -71,7 +72,6 @@ class AsyncHostResolverTest : public testing::Test {
             kT3IpAddresses + arraysize(kT3IpAddresses)),
         test_prng_(std::deque<int>(
             transaction_ids, transaction_ids + arraysize(transaction_ids))) {
-
     rand_int_cb_ = base::Bind(&TestPrng::GetNext,
                               base::Unretained(&test_prng_));
     // AF_INET only for now.
@@ -132,7 +132,7 @@ class AsyncHostResolverTest : public testing::Test {
     resolver_.reset(
         new AsyncHostResolver(
             dns_server, kMaxTransactions, kMaxPendingRequests, rand_int_cb_,
-            &factory_, NULL));
+            HostCache::CreateDefaultCache(), &factory_, NULL));
   }
 
  protected:
@@ -177,12 +177,28 @@ TEST_F(AsyncHostResolverTest, IPv6LiteralLookup) {
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 }
 
-TEST_F(AsyncHostResolverTest, CachedOnlyLookup) {
+TEST_F(AsyncHostResolverTest, CachedLookup) {
   info0_.set_only_use_cached_response(true);
-  int rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+  int rv = resolver_->Resolve(info0_, &addrlist0_, NULL, NULL,
                               BoundNetLog());
-  // When caching is added, this should succeed.
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+
+  // Cache the result of |info0_| lookup.
+  info0_.set_only_use_cached_response(false);
+  rv = resolver_->Resolve(info0_, &addrlist0_, &callback0_, NULL,
+                          BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = callback0_.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  VerifyAddressList(ip_addresses0_, kPortNum, addrlist0_);
+
+  // Now lookup |info0_| from cache only, store results in |addrlist1_|,
+  // should succeed synchronously.
+  info0_.set_only_use_cached_response(true);
+  rv = resolver_->Resolve(info0_, &addrlist1_, NULL, NULL,
+                              BoundNetLog());
+  EXPECT_EQ(OK, rv);
+  VerifyAddressList(ip_addresses0_, kPortNum, addrlist1_);
 }
 
 TEST_F(AsyncHostResolverTest, InvalidHostNameLookup) {

@@ -80,6 +80,7 @@ HostResolver* CreateAsyncHostResolver(size_t max_concurrent_resolves,
       max_transactions,
       max_pending_requests,
       base::Bind(&base::RandInt),
+      HostCache::CreateDefaultCache(),
       NULL,
       net_log);
   return resolver;
@@ -111,7 +112,7 @@ class AsyncHostResolver::Request {
   RequestPriority priority() const { return info_.priority(); }
   const BoundNetLog& source_net_log() const { return source_net_log_; }
   const BoundNetLog& request_net_log() const { return request_net_log_; }
-  const AddressList* addresses() const { return addresses_; }
+  void set_addresses(const AddressList& addresses) { *addresses_ = addresses; }
 
   void OnComplete(int result, const IPAddressList& ip_addresses) {
     DCHECK(callback_);
@@ -136,12 +137,14 @@ AsyncHostResolver::AsyncHostResolver(const IPEndPoint& dns_server,
                                      size_t max_transactions,
                                      size_t max_pending_requests,
                                      const RandIntCallback& rand_int_cb,
+                                     HostCache* cache,
                                      ClientSocketFactory* factory,
                                      NetLog* net_log)
     : max_transactions_(max_transactions),
       max_pending_requests_(max_pending_requests),
       dns_server_(dns_server),
       rand_int_cb_(rand_int_cb),
+      cache_(cache),
       factory_(factory),
       next_request_id_(0),
       net_log_(net_log) {
@@ -176,22 +179,26 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
     rv = ResolveAsIp(info, ip_number, addresses);
   else if (!DNSDomainFromDot(info.hostname(), &dns_name))
     rv = ERR_NAME_NOT_RESOLVED;
-  else if (info.only_use_cached_response())  // TODO(agayev): support caching
-    rv = ERR_NAME_NOT_RESOLVED;
 
   Request* request = CreateNewRequest(
       info, dns_name, callback, addresses, source_net_log);
 
   OnStart(request);
+  if (rv == ERR_UNEXPECTED) {
+    if (ServeFromCache(request))
+      rv = OK;
+    else if (info.only_use_cached_response())
+      rv = ERR_NAME_NOT_RESOLVED;
+  }
+
   if (rv != ERR_UNEXPECTED) {
     OnFinish(request, rv);
     delete request;
-    return rv;
+    return rv;  // Synchronous resolution ends here.
   }
 
   if (out_req)
     *out_req = reinterpret_cast<RequestHandle>(request);
-
   if (AttachToRequestList(request))
     return ERR_IO_PENDING;
   if (transactions_.size() < max_transactions_)
@@ -285,7 +292,6 @@ void AsyncHostResolver::OnTransactionComplete(
     int result,
     const DnsTransaction* transaction,
     const IPAddressList& ip_addresses) {
-
   DCHECK(std::find(transactions_.begin(), transactions_.end(), transaction)
          != transactions_.end());
   DCHECK(requestlist_map_.find(transaction->key()) != requestlist_map_.end());
@@ -300,6 +306,27 @@ void AsyncHostResolver::OnTransactionComplete(
     request->OnComplete(result, ip_addresses);
   }
 
+  // It is possible that the requests that caused |transaction| to be
+  // created are cancelled by the time |transaction| completes.  In that
+  // case |requests| would be empty.  We are knowingly throwing away the
+  // result of a DNS resolution in that case, because (a) if there are no
+  // requests, we do not have info to obtain a key from, (b) DnsTransaction
+  // does not have info(), adding one into it just temporarily doesn't make
+  // sense, since HostCache will be replaced with RR cache soon, (c)
+  // recreating info from DnsTransaction::Key adds a lot of temporary
+  // code/functions (like converting back from qtype to AddressFamily.)
+  // Also, we only cache positive results.  All of this will change when RR
+  // cache is added.
+  if (result == OK && cache_.get() && !requests.empty()) {
+    Request* request = requests.front();
+    HostResolver::RequestInfo info = request->info();
+    HostCache::Key key(
+        info.hostname(), info.address_family(), info.host_resolver_flags());
+    AddressList addrlist =
+      AddressList::CreateFromIPAddressList(ip_addresses, info.port());
+    cache_->Set(key, result, addrlist, base::TimeTicks::Now());
+  }
+
   // Cleanup requests.
   STLDeleteElements(&requests);
   requestlist_map_.erase(transaction->key());
@@ -308,6 +335,31 @@ void AsyncHostResolver::OnTransactionComplete(
   delete transaction;
   transactions_.remove(transaction);
   ProcessPending();
+}
+
+bool AsyncHostResolver::ServeFromCache(Request* request) const {
+  // Sanity check -- it shouldn't be the case that allow_cached_response is
+  // false while only_use_cached_response is true.
+  DCHECK(request->info().allow_cached_response() ||
+         !request->info().only_use_cached_response());
+
+  if (!cache_.get() || !request->info().allow_cached_response())
+    return false;
+
+  HostResolver::RequestInfo info = request->info();
+  HostCache::Key key(info.hostname(), info.address_family(),
+                     info.host_resolver_flags());
+  const HostCache::Entry* cache_entry = cache_->Lookup(
+      key, base::TimeTicks::Now());
+  if (cache_entry) {
+    request->request_net_log().AddEvent(
+        NetLog::TYPE_ASYNC_HOST_RESOLVER_CACHE_HIT, NULL);
+    DCHECK_EQ(OK, cache_entry->error);
+    request->set_addresses(
+        CreateAddressListUsingPort(cache_entry->addrlist, info.port()));
+    return true;
+  }
+  return false;
 }
 
 AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
@@ -378,7 +430,7 @@ AsyncHostResolver::Request* AsyncHostResolver::Insert(Request* request) {
   return NULL;
 }
 
-size_t AsyncHostResolver::GetNumPending() {
+size_t AsyncHostResolver::GetNumPending() const {
   size_t num_pending = 0;
   for (size_t i = 0; i < arraysize(pending_requests_); ++i)
     num_pending += pending_requests_[i].size();

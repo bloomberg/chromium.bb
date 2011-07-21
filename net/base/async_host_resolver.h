@@ -14,6 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_family.h"
 #include "net/base/dns_transaction.h"
+#include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log.h"
@@ -33,6 +34,7 @@ class NET_API AsyncHostResolver
                     size_t max_transactions,
                     size_t max_pending_requests_,
                     const RandIntCallback& rand_int,
+                    HostCache* cache,
                     ClientSocketFactory* factory,
                     NetLog* net_log);
   virtual ~AsyncHostResolver();
@@ -89,6 +91,9 @@ class NET_API AsyncHostResolver
   // Called when a request has been cancelled.
   void OnCancel(Request* request);
 
+  // Tries to serve request from cache.
+  bool ServeFromCache(Request* request) const;
+
   // If there is an in-progress transaction for Request->key(), this will
   // attach |request| to the respective list.
   bool AttachToRequestList(Request* request);
@@ -104,7 +109,7 @@ class NET_API AsyncHostResolver
   Request* Insert(Request* request);
 
   // Returns the number of pending requests.
-  size_t GetNumPending();
+  size_t GetNumPending() const;
 
   // Removes and returns a pointer to the lowest/highest priority request
   // from |pending_requests_|.
@@ -135,6 +140,9 @@ class NET_API AsyncHostResolver
 
   // Callback to be passed to DnsTransaction for generating DNS query ids.
   RandIntCallback rand_int_cb_;
+
+  // Cache of host resolution results.
+  scoped_ptr<HostCache> cache_;
 
   // Also passed to DnsTransaction; it's a dependency injection to aid
   // testing, outside of unit tests, its value is always NULL.
