@@ -86,6 +86,8 @@ InMemoryURLIndex::SearchTermCacheItem::SearchTermCacheItem(
 InMemoryURLIndex::SearchTermCacheItem::SearchTermCacheItem()
     : used_(true) {}
 
+InMemoryURLIndex::SearchTermCacheItem::~SearchTermCacheItem() {}
+
 // Comparison function for sorting TermMatches by their offsets.
 bool MatchOffsetLess(const TermMatch& m1, const TermMatch& m2) {
   return m1.offset < m2.offset;
