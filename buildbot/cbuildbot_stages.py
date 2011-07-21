@@ -906,13 +906,8 @@ class ArchiveStage(NonHaltingBuilderStage):
       url = '%s/_index.html' % upload_location
       return url.replace('gs://', url_prefix)
     else:
-      # '/var/www/archive/build/version' becomes:
-      # 'archive/build/version'
-      http_offset = archive_dir.index('archive/')
-      http_dir = archive_dir[http_offset:]
-
       # 'http://botname/archive/build/version'
-      return 'http://' + socket.getfqdn() + '/' + http_dir
+      return 'http://' + socket.getfqdn() + '/archive/' + self._set_version
 
   def GetLocalArchivePath(self):
     return os.path.join(self._local_archive_path, self._set_version)
