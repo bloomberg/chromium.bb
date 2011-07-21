@@ -302,7 +302,7 @@ x11_output_set_icon(struct x11_compositor *c,
 }
 
 static int
-x11_compositor_create_output(struct x11_compositor *c,
+x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen)
 {
 	static const char name[] = "Wayland Compositor";
@@ -341,7 +341,7 @@ x11_compositor_create_output(struct x11_compositor *c,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current = &output->mode;
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
+	wlsc_output_init(&output->base, &c->base, x, y, width, height,
 			 WL_OUTPUT_FLIPPED);
 
 	values[1] = c->null_cursor;
@@ -539,10 +539,11 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 		case XCB_MOTION_NOTIFY:
 			motion_notify = (xcb_motion_notify_event_t *) event;
+			output = x11_compositor_find_output(c, motion_notify->event);
 			notify_motion(c->base.input_device,
 				      motion_notify->time,
-				      motion_notify->event_x,
-				      motion_notify->event_y);
+				      output->base.x + motion_notify->event_x,
+				      output->base.y + motion_notify->event_y);
 			break;
 
 		case XCB_EXPOSE:
@@ -560,19 +561,20 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			notify_pointer_focus(c->base.input_device,
 					     enter_notify->time,
 					     &output->base,
-					     enter_notify->event_x,
-					     enter_notify->event_y);
+					     output->base.x + enter_notify->event_x,
+					     output->base.y + enter_notify->event_y);
 			break;
 
 		case XCB_LEAVE_NOTIFY:
 			enter_notify = (xcb_enter_notify_event_t *) event;
 			if (enter_notify->state >= Button1Mask)
 				break;
+			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
 					     enter_notify->time,
 					     NULL,
-					     enter_notify->event_x,
-					     enter_notify->event_y);
+					     output->base.x + enter_notify->event_x,
+					     output->base.y + enter_notify->event_y);
 			break;
 
 		case XCB_CLIENT_MESSAGE:
@@ -681,11 +683,12 @@ x11_destroy(struct wlsc_compositor *ec)
 
 static struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display,
-		      int width, int height, int fullscreen)
+		      int width, int height, int count, int fullscreen)
 {
 	struct x11_compositor *c;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
+	int i, x;
 
 	c = malloc(sizeof *c);
 	if (c == NULL)
@@ -719,8 +722,12 @@ x11_compositor_create(struct wl_display *display,
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
 
-	if (x11_compositor_create_output(c, width, height, fullscreen) < 0)
-		return NULL;
+	for (i = 0, x = 0; i < count; i++) {
+		if (x11_compositor_create_output(c, x, 0, width, height,
+						 fullscreen) < 0)
+			return NULL;
+		x += width;
+	}
 
 	if (x11_input_create(c) < 0)
 		return NULL;
@@ -742,11 +749,11 @@ backend_init(struct wl_display *display, char *options);
 WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
-	int width = 1024, height = 640, fullscreen = 0, i;
+	int width = 1024, height = 640, fullscreen = 0, count = 1, i;
 	char *p, *value;
 
 	static char * const tokens[] = {
-		"width", "height", "fullscreen", NULL
+		"width", "height", "fullscreen", "output-count", NULL
 	};
 	
 	p = options;
@@ -761,8 +768,12 @@ backend_init(struct wl_display *display, char *options)
 		case 2:
 			fullscreen = 1;
 			break;
+		case 3:
+			count = strtol(value, NULL, 0);
+			break;
 		}
 	}
 
-	return x11_compositor_create(display, width, height, fullscreen);
+	return x11_compositor_create(display,
+				     width, height, count, fullscreen);
 }
