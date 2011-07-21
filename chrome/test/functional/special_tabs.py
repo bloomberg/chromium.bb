@@ -24,6 +24,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'about:about': 'chrome://about',
     'about:appcache-internals': 'chrome://appcache-internals',
     'about:credits': 'chrome://credits',
+    'about:dns': 'chrome://dns',
     'about:histograms': 'chrome://histograms',
     'about:plugins': 'chrome://plugins',
     'about:sync': 'chrome://sync-internals',
@@ -49,6 +50,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits', 'CSP': False },
     'chrome://downloads': { 'title': 'Downloads' },
+    'chrome://dns': { 'title': 'About DNS' },
     'chrome://extensions': { 'title': 'Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
@@ -110,7 +112,21 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://flags': { 'CSP': False },
 
     # OVERRIDE - title and page different on CrOS
-    'chrome://settings': { 'title': 'Settings - Basics' },
+    'chrome://settings/about': { 'title': 'Settings - About' },
+    'chrome://settings/accounts': { 'title': 'Settings - Users' },
+    'chrome://settings/advanced': { 'title': 'Settings - Under the Hood' },
+    'chrome://settings/autofill': { 'title': 'Settings - Autofill Settings' },
+    'chrome://settings/browser': { 'title': 'Settings - Basics' },
+    'chrome://settings/clearBrowserData':
+      { 'title': 'Settings - Clear Browsing Data' },
+    'chrome://settings/content': { 'title': 'Settings - Content Settings' },
+    'chrome://settings/internet': { 'title': 'Settings - Internet' },
+    'chrome://settings/languages':
+      { 'title': 'Settings - Languages and Input' },
+    'chrome://settings/passwords': { 'title': 'Settings - Passwords' },
+    'chrome://settings/personal': { 'title': 'Settings - Personal Stuff' },
+    'chrome://settings/proxy': { 'title': 'Proxy' },
+    'chrome://settings/system': { 'title': 'Settings - System' },
   }
 
   broken_chromeos_special_url_tabs = {
