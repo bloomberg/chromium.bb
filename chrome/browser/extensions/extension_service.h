@@ -44,6 +44,7 @@ class ExtensionBookmarkEventRouter;
 class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
 class ExtensionCookiesEventRouter;
+class ExtensionFileBrowserEventRouter;
 class ExtensionHistoryEventRouter;
 class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
@@ -471,6 +472,12 @@ class ExtensionService
     return browser_event_router_.get();
   }
 
+#if defined(OS_CHROMEOS)
+  ExtensionFileBrowserEventRouter* file_browser_event_router() {
+    return file_browser_event_router_.get();
+  }
+#endif
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because ExtensionServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -728,6 +735,10 @@ class ExtensionService
   scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
 
   scoped_ptr<ExtensionWebNavigationEventRouter> web_navigation_event_router_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<ExtensionFileBrowserEventRouter> file_browser_event_router_;
+#endif
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

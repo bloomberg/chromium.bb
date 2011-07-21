@@ -646,13 +646,6 @@ ExtensionService::~ExtensionService() {
     ExternalExtensionProviderInterface* provider = i->get();
     provider->ServiceShutdown();
   }
-
-#if defined(OS_CHROMEOS)
-  if (event_routers_initialized_) {
-    ExtensionFileBrowserEventRouter::GetInstance()->
-        StopObservingFileSystemEvents();
-  }
-#endif
 }
 
 void ExtensionService::InitEventRouters() {
@@ -678,8 +671,9 @@ void ExtensionService::InitEventRouters() {
   web_navigation_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
-  ExtensionFileBrowserEventRouter::GetInstance()->ObserveFileSystemEvents(
-      profile_);
+  file_browser_event_router_.reset(
+      new ExtensionFileBrowserEventRouter(profile_));
+  file_browser_event_router_->ObserveFileSystemEvents();
   // Lazy initialization.
   chromeos::ExtensionInputMethodEventRouter::GetInstance();
 

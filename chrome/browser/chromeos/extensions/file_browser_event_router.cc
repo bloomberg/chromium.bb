@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 
 #include "base/json/json_writer.h"
-#include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -55,17 +54,20 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
-ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter()
-    : delegate_(new ExtensionFileBrowserEventRouter::FileWatcherDelegate()),
-      profile_(NULL) {
+ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
+    Profile* profile)
+    : delegate_(new ExtensionFileBrowserEventRouter::FileWatcherDelegate(this)),
+      profile_(profile) {
 }
 
 ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
   DCHECK(file_watchers_.empty());
   STLDeleteValues(&file_watchers_);
 
-  if (!profile_)
+  if (!profile_) {
+    NOTREACHED();
     return;
+  }
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
     return;
   chromeos::MountLibrary* lib =
@@ -74,17 +76,11 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
   profile_ = NULL;
 }
 
-// static
-ExtensionFileBrowserEventRouter*
-  ExtensionFileBrowserEventRouter::GetInstance() {
-  return Singleton<ExtensionFileBrowserEventRouter>::get();
-}
-
-void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents(
-    Profile* profile) {
-  if (!profile)
+void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
+  if (!profile_) {
+    NOTREACHED();
     return;
-  profile_ = profile;
+  }
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
     return;
   if (chromeos::UserManager::Get()->user_is_logged_in()) {
@@ -131,17 +127,6 @@ void ExtensionFileBrowserEventRouter::RemoveFileWatch(
     delete iter->second;
     file_watchers_.erase(iter);
   }
-}
-
-void ExtensionFileBrowserEventRouter::StopObservingFileSystemEvents() {
-  if (!profile_)
-    return;
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-  chromeos::MountLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  lib->RemoveObserver(this);
-  profile_ = NULL;
 }
 
 void ExtensionFileBrowserEventRouter::DiskChanged(
@@ -361,7 +346,8 @@ ExtensionFileBrowserEventRouter::NotificationMap::iterator
 
 
 // ExtensionFileBrowserEventRouter::WatcherDelegate methods.
-ExtensionFileBrowserEventRouter::FileWatcherDelegate::FileWatcherDelegate() {
+ExtensionFileBrowserEventRouter::FileWatcherDelegate::FileWatcherDelegate(
+    ExtensionFileBrowserEventRouter* router) : router_(router) {
 }
 
 void ExtensionFileBrowserEventRouter::FileWatcherDelegate::OnFilePathChanged(
@@ -387,6 +373,5 @@ void ExtensionFileBrowserEventRouter::FileWatcherDelegate::OnFilePathError(
 void
 ExtensionFileBrowserEventRouter::FileWatcherDelegate::HandleFileWatchOnUIThread(
      const FilePath& local_path, bool got_error) {
-  ExtensionFileBrowserEventRouter::GetInstance()->HandleFileWatchNotification(
-      local_path, got_error);
+  router_->HandleFileWatchNotification(local_path, got_error);
 }

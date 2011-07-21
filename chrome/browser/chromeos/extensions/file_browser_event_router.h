@@ -28,12 +28,11 @@ class SystemNotification;
 class ExtensionFileBrowserEventRouter
     : public chromeos::MountLibrary::Observer {
  public:
-  static ExtensionFileBrowserEventRouter* GetInstance();
-
-  // Starts/stops observing file system change events. Currently only
+  explicit ExtensionFileBrowserEventRouter(Profile* profile);
+  virtual ~ExtensionFileBrowserEventRouter();
+  // Starts observing file system change events. Currently only
   // MountLibrary events are being observed.
-  void ObserveFileSystemEvents(Profile* profile);
-  void StopObservingFileSystemEvents();
+  void ObserveFileSystemEvents();
 
   // File watch setup routines.
   bool AddFileWatch(const FilePath& file_path,
@@ -44,12 +43,11 @@ class ExtensionFileBrowserEventRouter
 
   // MountLibrary::Observer overrides.
   virtual void DiskChanged(chromeos::MountLibraryEventType event,
-                           const chromeos::MountLibrary::Disk* disk);
+                           const chromeos::MountLibrary::Disk* disk) OVERRIDE;
   virtual void DeviceChanged(chromeos::MountLibraryEventType event,
-                             const std::string& device_path);
+                             const std::string& device_path) OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionFileBrowserEventRouter>;
   typedef std::map<std::string, linked_ptr<chromeos::SystemNotification> >
       NotificationMap;
   typedef std::map<std::string, std::string> MountPointMap;
@@ -70,7 +68,7 @@ class ExtensionFileBrowserEventRouter
   // Helper class for passing through file watch notification events.
   class FileWatcherDelegate : public base::files::FilePathWatcher::Delegate {
    public:
-    FileWatcherDelegate();
+    explicit FileWatcherDelegate(ExtensionFileBrowserEventRouter* router);
 
    private:
     // base::files::FilePathWatcher::Delegate overrides.
@@ -78,10 +76,9 @@ class ExtensionFileBrowserEventRouter
     virtual void OnFilePathError(const FilePath& path) OVERRIDE;
 
     void HandleFileWatchOnUIThread(const FilePath& local_path, bool got_error);
-  };
 
-  ExtensionFileBrowserEventRouter();
-  virtual ~ExtensionFileBrowserEventRouter();
+    ExtensionFileBrowserEventRouter* router_;
+  };
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::MountLibrary::Disk* disk);

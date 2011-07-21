@@ -479,15 +479,15 @@ void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
 bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& virtual_path,
     const std::string& extension_id) {
-  return ExtensionFileBrowserEventRouter::GetInstance()->AddFileWatch(
-      local_path, virtual_path, extension_id);
+  return profile_->GetExtensionService()->file_browser_event_router()->
+      AddFileWatch(local_path, virtual_path, extension_id);
 }
 
 bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& unused,
     const std::string& extension_id) {
-  ExtensionFileBrowserEventRouter::GetInstance()->RemoveFileWatch(
-      local_path, extension_id);
+  profile_->GetExtensionService()->file_browser_event_router()->
+      RemoveFileWatch(local_path, extension_id);
   return true;
 }
 
