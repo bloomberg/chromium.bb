@@ -1,6 +1,6 @@
-// Copyright 2010 The Native Client Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // These tests excersize sysbrk() and sbrk().  The expected return values and
 // the values for errno are as described here:
@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/nacl_syscalls.h>
 
 #include <cstdio>
@@ -19,13 +20,16 @@
 
 #include "native_client/tests/syscalls/test.h"
 
+/*
+ * This is defined by the linker as the address of the end of our data segment.
+ * That's where the break starts out by default.
+ */
+extern "C" {
+  extern char end;
+}
+
 namespace {
 // Note: these parameters to sysbrk are not supposed to be const.
-
-// This is an address inside the 1Gb allowable limit for NaCl modules.
-// Really, we should get a legitimate address range from getrlimit() or
-// pass a valid range in on the command line.
-void* kSysbreakBase = reinterpret_cast<void*>(0x800000);
 
 // The defined error return address.
 void* kSysbrkErrorAddress = reinterpret_cast<void*>(-1);
@@ -54,15 +58,21 @@ int TestCurrentBreakAddr() {
 
 // Try to reset the program's break address to a legitimate value.
 int TestSysbrk() {
+  // Round up to the end of the page that's our last initial data page.
+  // Then add 10MB for good measure to be out of the way of any allocations
+  // that might have been done before we got here.
+  void* const sysbrkBase = reinterpret_cast<void*>
+    (((reinterpret_cast<uintptr_t>(&end) + 0xffff) & -0x10000) + (10 << 20));
+
   START_TEST("TestSysbrk");
 
   // Clear errno incase a previous function set it.
   errno = 0;
 
-  void* break_addr = sysbrk(kSysbreakBase);
+  void* break_addr = sysbrk(sysbrkBase);
   EXPECT(NULL != break_addr);
   EXPECT(kSysbrkErrorAddress != break_addr);
-  EXPECT(kSysbreakBase == break_addr);
+  EXPECT(sysbrkBase == break_addr);
   EXPECT(0 == errno);
   END_TEST();
 }

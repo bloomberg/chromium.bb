@@ -82,13 +82,23 @@ void CheckErrno(int expected) {
 #endif
 
 const int kExitOk = 69;
-const int kSysbreakBase = 0x800000;
 const int kMmapBase     = 0xa00000;
 const int kMmapSize     = 0x10000;
 const int kInvalidFileDescriptor = 100;
 
+/*
+ * This is defined by the linker as the address of the end of our data segment.
+ * That's where the break starts out by default.
+ */
+extern char end;
 
 int main() {
+  /*
+   * Round up to the end of the page that's our last initial data page.
+   * Then add 10MB for good measure to be out of the way of any allocations
+   * that might have been done before we got here.
+   */
+  const int sysbrkBase = ((((intptr_t) &end) + 0xffff) & -0x10000) + (10 << 20);
   void *map_result;
   int  i;
 
@@ -102,14 +112,14 @@ int main() {
   PrintInt(i);
   if (0 == i) Error("bad sysbrk() value\n");
 
-  if (kSysbreakBase < i) {
-    Error("INTERNAL ERROR: kSysbreakBase too small\n");
+  if (sysbrkBase < i) {
+    Error("INTERNAL ERROR: sysbrkBase too small\n");
   }
 
   myprint("\nsysbrk()\n");
-  i = (int) sysbrk((void *) kSysbreakBase);
+  i = (int) sysbrk((void *) sysbrkBase);
   PrintInt(i);
-  if (kSysbreakBase != i) Error("bad sysbrk() value\n");
+  if (sysbrkBase != i) Error("bad sysbrk() value\n");
 
   myprint("\nmmap()\n");
   i = (int) mmap(0, kMmapSize,
