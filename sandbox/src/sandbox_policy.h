@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,6 +172,12 @@ class TargetPolicy {
   // a chance to initialize itself. Typically, dlls that cause the target
   // to crash go here.
   virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
+
+  // Adds a handle that will be closed in the target process after lockdown.
+  // A NULL value for handle_name indicates all handles of the specified type.
+  // An empty string for handle_name indicates the handle is unnamed.
+  virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
+                                            const wchar_t* handle_name) = 0;
 };
 
 }  // namespace sandbox

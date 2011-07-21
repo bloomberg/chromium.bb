@@ -47,7 +47,8 @@ enum TerminationCodes {
   SBOX_FATAL_INTEGRITY = 7006,       // Could not set the integrity level.
   SBOX_FATAL_DROPTOKEN = 7007,       // Could not lower the token.
   SBOX_FATAL_FLUSHANDLES = 7008,     // Failed to flush registry handles.
-  SBOX_FATAL_CACHEDISABLE = 7009     // Failed to forbid HCKU caching.
+  SBOX_FATAL_CACHEDISABLE = 7009,    // Failed to forbid HCKU caching.
+  SBOX_FATAL_CLOSEHANDLES = 7010     // Failed to close pending handles.
 };
 
 class TargetServices;

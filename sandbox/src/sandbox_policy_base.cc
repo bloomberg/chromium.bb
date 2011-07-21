@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,6 +227,9 @@ bool PolicyBase::AddTarget(TargetProcess* target) {
   if (!SetupAllInterceptions(target))
     return false;
 
+  if (!SetupHandleCloser(target))
+    return false;
+
   // Initialize the sandbox infrastructure for the target.
   if (ERROR_SUCCESS != target->Init(this, policy_, kIPCMemSize, kPolMemSize))
     return false;
@@ -446,6 +449,10 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
 
   // Finally, setup imports on the target so the interceptions can work.
   return SetupNtdllImports(target);
+}
+
+bool PolicyBase::SetupHandleCloser(TargetProcess* target) {
+  return handle_closer_.InitializeTargetHandles(target);
 }
 
 }  // namespace sandbox
