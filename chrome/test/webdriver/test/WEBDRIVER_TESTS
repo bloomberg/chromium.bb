@@ -41,6 +41,8 @@
     # Flaky. crbug.com/77495.
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
     # Flaky. crbug.com/77495.
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
+    # Flaky. crbug.com/77495.
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
     # This test causes the test after to fail occassionally. See
     # crbug.com/72027. This is because we are not waiting for navigation
