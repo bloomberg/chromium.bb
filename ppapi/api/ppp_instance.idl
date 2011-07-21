@@ -217,7 +217,7 @@ interface PPP_Instance {
 
 #inline c
 
-typedef struct PPP_Instance PPP_Instance_0_5;
+typedef struct PPP_Instance PPP_Instance_1_0;
 
 #endinl
 
