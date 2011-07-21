@@ -2557,6 +2557,7 @@ irt_variant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
+    'tests/bigalloc/nacl.scons',
     'tests/blob_library_loading/nacl.scons',
     'tests/browser_dynamic_library/nacl.scons',
     'tests/browser_startup_time/nacl.scons',
