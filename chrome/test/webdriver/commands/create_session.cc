@@ -7,13 +7,18 @@
 #include <sstream>
 #include <string>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/zip.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
@@ -89,9 +94,45 @@ void CreateSession::ExecutePost(Response* const response) {
   if (capabilities->GetStringWithoutPathExpansion("chrome.binary", &path))
     browser_exe = FilePath(path);
 
+  ScopedTempDir temp_dir;
+  FilePath temp_user_data_dir;
+
+  std::string base64_profile;
+  if (capabilities->GetStringWithoutPathExpansion("chrome.profile",
+                                                  &base64_profile)) {
+    if (!temp_dir.CreateUniqueTempDir()) {
+      response->SetError(new Error(
+          kUnknownError, "Could not create temporary directory."));
+      return;
+    }
+
+    std::string data;
+    if (!base::Base64Decode(base64_profile, &data)) {
+      response->SetError(new Error(
+          kBadRequest, "Invalid base64 encoded user profile"));
+      return;
+    }
+
+    FilePath temp_profile_zip = temp_dir.path().AppendASCII("profile.zip");
+    if (!file_util::WriteFile(temp_profile_zip, data.c_str(), data.length())) {
+      response->SetError(new Error(
+          kUnknownError, "Could not write temporary profile zip file."));
+      return;
+    }
+
+    temp_user_data_dir = temp_dir.path().AppendASCII("user_data_dir");
+    if (!Unzip(temp_profile_zip, temp_user_data_dir)) {
+      response->SetError(new Error(
+          kBadRequest, "Could not unarchive provided user profile"));
+      return;
+    }
+  }
+
   // Session manages its own liftime, so do not call delete.
   Session* session = new Session();
-  Error* error = session->Init(browser_exe, command_line_options);
+  Error* error = session->Init(browser_exe,
+                               temp_user_data_dir,
+                               command_line_options);
   if (error) {
     response->SetError(error);
     return;

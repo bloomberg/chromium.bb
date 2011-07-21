@@ -71,6 +71,7 @@ Session::~Session() {
 }
 
 Error* Session::Init(const FilePath& browser_exe,
+                     const FilePath& user_data_dir,
                      const CommandLine& options) {
   if (!thread_.Start()) {
     delete this;
@@ -82,6 +83,7 @@ Error* Session::Init(const FilePath& browser_exe,
       this,
       &Session::InitOnSessionThread,
       browser_exe,
+      user_data_dir,
       options,
       &error));
   if (error)
@@ -1058,13 +1060,17 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
 }
 
 void Session::InitOnSessionThread(const FilePath& browser_exe,
+                                  const FilePath& user_data_dir,
                                   const CommandLine& options,
                                   Error** error) {
   automation_.reset(new Automation());
-  if (browser_exe.empty())
-    automation_->Init(options, error);
-  else
-    automation_->InitWithBrowserPath(browser_exe, options, error);
+  if (browser_exe.empty()) {
+    automation_->Init(options, user_data_dir, error);
+  } else {
+    automation_->InitWithBrowserPath(
+        browser_exe, user_data_dir, options, error);
+  }
+
   if (*error)
     return;
 

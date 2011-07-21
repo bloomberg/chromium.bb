@@ -124,6 +124,7 @@ Automation::Automation() {}
 Automation::~Automation() {}
 
 void Automation::Init(const CommandLine& options,
+                      const FilePath& user_data_dir,
                       Error** error) {
   FilePath browser_exe;
   if (!GetDefaultChromeExe(&browser_exe)) {
@@ -131,10 +132,11 @@ void Automation::Init(const CommandLine& options,
     return;
   }
 
-  InitWithBrowserPath(browser_exe, options, error);
+  InitWithBrowserPath(browser_exe, user_data_dir, options, error);
 }
 
 void Automation::InitWithBrowserPath(const FilePath& browser_exe,
+                                     const FilePath& user_data_dir,
                                      const CommandLine& options,
                                      Error** error) {
   if (!file_util::PathExists(browser_exe)) {
@@ -150,17 +152,19 @@ void Automation::InitWithBrowserPath(const FilePath& browser_exe,
   command.AppendSwitch(switches::kDisablePromptOnRepost);
   command.AppendSwitch(switches::kDomAutomationController);
   command.AppendSwitch(switches::kFullMemoryCrashReport);
-  command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
   command.AppendSwitch(switches::kNoDefaultBrowserCheck);
   command.AppendSwitch(switches::kNoFirstRun);
   command.AppendSwitchASCII(switches::kTestType, "webdriver");
+
+  if (user_data_dir.empty())
+    command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
 
   command.AppendArguments(options, false);
 
   launcher_.reset(new AnonymousProxyLauncher(false));
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile
-      FilePath(),  // template_user_data
+      user_data_dir,  // template_user_data
       base::Closure(),
       command,
       true,  // include_testing_id

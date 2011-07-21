@@ -60,10 +60,13 @@ class Session {
   ~Session();
 
   // Starts the session thread and a new browser, using the exe found at
-  // |browser_exe|. If |browser_exe| is empty, it will search in all the default
-  // locations. Returns true on success. On failure, the session will delete
+  // |browser_exe| and duplicating the provided |user_data_dir|.
+  // If |browser_exe| is empty, it will search in all the default locations.
+  // It |user_data_dir| is empty, it will use a temporary dir.
+  // Returns true on success. On failure, the session will delete
   // itself and return an error code.
   Error* Init(const FilePath& browser_exe,
+              const FilePath& user_data_dir,
               const CommandLine& options);
 
   // Terminates this session and deletes itself.
@@ -289,6 +292,7 @@ class Session {
       Task* task,
       base::WaitableEvent* done_event);
   void InitOnSessionThread(const FilePath& browser_exe,
+                           const FilePath& user_data_dir,
                            const CommandLine& options,
                            Error** error);
   void TerminateOnSessionThread();

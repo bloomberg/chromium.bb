@@ -9,11 +9,15 @@ If your test is testing a specific part of the WebDriver API, consider adding
 it to the appropriate place in the WebDriver tree instead.
 """
 
+import binascii
+from distutils import archive_util
 import hashlib
 import os
 import platform
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
 import urllib
 import urllib2
@@ -273,6 +277,39 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
                     'Binary not found: ' + binary_path)
     capabilities = {'chrome.binary': binary_path}
     self.GetNewDriver(capabilities)
+
+  def testUserProfile(self):
+    """Test starting WebDriver session with custom profile."""
+
+    # Open a new session and save the user profile.
+    profile_dir = tempfile.mkdtemp()
+    capabilities = {'chrome.switches': ['--user-data-dir=' + profile_dir]}
+    driver = self.GetNewDriver(capabilities)
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    # Create a cookie.
+    cookie_dict = {}
+    cookie_dict['name'] = 'test_user_profile'
+    cookie_dict['value'] = 'chrome profile'
+    cookie_dict['expiry'] = time.time() + 120
+    driver.add_cookie(cookie_dict)
+    driver.quit()
+
+    user_profile_zip = archive_util.make_archive('profile', 'zip',
+                                                 root_dir=profile_dir,
+                                                 base_dir='Default')
+    f = open(user_profile_zip, 'r')
+    base64_user_profile = binascii.b2a_base64(f.read()).strip()
+    f.close()
+    os.remove(user_profile_zip)
+
+    # Start new session with the saved user profile.
+    capabilities = {'chrome.profile': base64_user_profile}
+    driver = self.GetNewDriver(capabilities)
+    driver.get(GetTestDataUrl() + '/test_page.html')
+    cookie_dict = driver.get_cookie('test_user_profile')
+    self.assertNotEqual(cookie_dict, None)
+    self.assertEqual(cookie_dict['value'], 'chrome profile')
+    driver.quit()
 
 
 class CookieTest(ChromeDriverTest):
