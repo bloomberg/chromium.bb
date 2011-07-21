@@ -155,7 +155,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
       for (int j = 0; j < (*i)->tab_count(); ++j) {
         TabContentsWrapper* tab = (*i)->GetTabContentsWrapperAt(j);
         DCHECK(tab);
-        if (IsValidTab(*(tab->tab_contents()))) {
+        if (IsValidTab(*tab)) {
           found_tabs = true;
           window_s.add_tab(tab->restore_tab_helper()->session_id().id());
           if (reload_tabs) {
@@ -213,7 +213,7 @@ void SessionModelAssociator::ReassociateTabs(
 
 void SessionModelAssociator::ReassociateTab(const TabContentsWrapper& tab) {
   DCHECK(CalledOnValidThread());
-  if (!IsValidTab(*(tab.tab_contents())))
+  if (!IsValidTab(tab))
     return;
 
   int64 sync_id;
@@ -841,7 +841,7 @@ bool SessionModelAssociator::SessionWindowHasNoTabsToSync(
 }
 
 // Valid local tab?
-bool SessionModelAssociator::IsValidTab(const TabContents& tab) {
+bool SessionModelAssociator::IsValidTab(const TabContentsWrapper& tab) {
   DCHECK(CalledOnValidThread());
   if ((tab.profile() == sync_service_->profile() ||
        sync_service_->profile() == NULL)) {

@@ -28,7 +28,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 
 class Profile;
 class ProfileSyncService;
@@ -170,7 +169,7 @@ class SessionModelAssociator
   // Control which local tabs we're interested in syncing.
   // Ensures the profile matches sync's profile and that the tab has at least
   // one navigation entry and is not an empty tab.
-  bool IsValidTab(const TabContents& tab);
+  bool IsValidTab(const TabContentsWrapper& tab);
 
   // Control which foreign tabs we're interested in displaying.
   // Checks that the tab has navigations and is not a new tab.
