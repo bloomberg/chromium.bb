@@ -191,6 +191,14 @@ UNADDRESSABLE ACCESS
 *!SetEnvironmentVariable*
 
 # http://code.google.com/p/drmemory/issues/detail?id=60
+UNINITIALIZED READ
+USP10.dll!*
+...
+USP10.dll!ScriptStringAnalyse
+
+UNADDRESSABLE ACCESS
+system call NtUserGetClassInfo* WNDCLASS*.lpszClassName
+
 LEAK
 IMM32.dll!ImmGetIMCCSize
 IMM32.dll!ImmLockClientImc
