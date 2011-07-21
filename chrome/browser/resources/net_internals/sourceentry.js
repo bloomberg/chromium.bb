@@ -321,7 +321,6 @@ SourceEntry.prototype.getDescription = function() {
           description = connectJobSourceEntry.getDescription();
       }
       break;
-    case LogSourceType.ASYNC_HOST_RESOLVER_REQUEST:
     case LogSourceType.DNS_TRANSACTION:
       description = e.params.hostname;
       break;
