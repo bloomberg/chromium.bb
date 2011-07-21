@@ -196,11 +196,6 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
-  // Fire the action to select the tab.
-  if ([[controller_ target] respondsToSelector:[controller_ action]])
-    [[controller_ target] performSelector:[controller_ action]
-                               withObject:self];
-
   // Check for rapid tab closure.
   if ([theEvent type] == NSLeftMouseUp) {
     NSPoint upLocation = [theEvent locationInWindow];
@@ -218,9 +213,15 @@ const CGFloat kRapidCloseDist = 2.5;
                                 fromView:nil];
       if ([self hitTest:hitLocation] == closeButton_) {
         [controller_ closeTab:self];
+        return;
       }
     }
   }
+
+  // Fire the action to select the tab.
+  if ([[controller_ target] respondsToSelector:[controller_ action]])
+    [[controller_ target] performSelector:[controller_ action]
+                               withObject:self];
 
   // Messaging the drag controller with |-endDrag:| would seem like the right
   // thing to do here. But, when a tab has been detached, the controller's
