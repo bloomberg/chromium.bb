@@ -85,43 +85,9 @@ NaClSyncStatus NaClCondVarBroadcast(struct NaClCondVar *cvp) {
 
 NaClSyncStatus NaClCondVarWait(struct NaClCondVar *cvp,
                                struct NaClMutex   *mp) {
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  /*
-   * BUG: Qemu emulation of condwait appears to be broken, and
-   * sometimes threads in a condwait will continue to block even after
-   * the condvar is signaled.  This is an ugly workaround.
-   */
-  static struct nacl_abi_timespec const poll_time = {
-    0, 250 * NACL_NANOS_PER_MILLI,
-  };
-
-  /*
-   * Spurious wakeups from cond_wait, as well as cond_timedwait, are
-   * permitted.
-   */
-  NaClSyncStatus status;
-  status = NaClCondVarTimedWaitRelative(cvp, mp, &poll_time);
-  switch (status) {
-    case NACL_SYNC_OK:
-    case NACL_SYNC_CONDVAR_TIMEDOUT:
-    case NACL_SYNC_CONDVAR_INTR:
-      return NACL_SYNC_OK;
-    case NACL_SYNC_INTERNAL_ERROR:
-    case NACL_SYNC_BUSY:
-    case NACL_SYNC_MUTEX_INVALID:
-    case NACL_SYNC_MUTEX_DEADLOCK:
-    case NACL_SYNC_MUTEX_PERMISSION:
-    case NACL_SYNC_MUTEX_INTERRUPTED:
-    case NACL_SYNC_SEM_INTERRUPTED:
-    case NACL_SYNC_SEM_RANGE_ERROR:
-      return status;
-  }
-  return NACL_SYNC_INTERNAL_ERROR;
-#else
   reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->Wait(
       *(reinterpret_cast<NaCl::Lock *>(mp->lock)));
   return NACL_SYNC_OK;
-#endif
 }
 
 NaClSyncStatus NaClCondVarTimedWaitRelative(
