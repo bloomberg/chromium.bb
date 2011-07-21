@@ -39,17 +39,12 @@ void ChromeLogger::Log(LogLevel level, const char* file, int line,
       log_severity = logging::LOG_ERROR;
       break;
   }
-  // We treat LOG(INFO) as VLOG(1).
-  if ((log_severity >= logging::GetMinLogLevel()) &&
-      ((log_severity != logging::LOG_INFO) ||
-      (1 <= logging::GetVlogLevelHelper(file, ::strlen(file))))) {
-    va_list ap;
-    va_start(ap, format);
-    std::string result;
-    base::StringAppendV(&result, format, ap);
-    logging::LogMessage(file, line, log_severity).stream() << result;
-    va_end(ap);
-  }
+  va_list ap;
+  va_start(ap, format);
+  std::string result;
+  base::StringAppendV(&result, format, ap);
+  logging::LogMessage(file, line, log_severity).stream() << result;
+  va_end(ap);
 }
 
 ChromeScheduler::ChromeScheduler()
