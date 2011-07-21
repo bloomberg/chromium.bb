@@ -198,6 +198,7 @@ create_display(void)
 
 	display = malloc(sizeof *display);
 	display->display = wl_display_connect(NULL);
+	assert(display->display);
 
 	wl_display_add_global_listener(display->display,
 				       display_handle_global, display);
