@@ -482,7 +482,8 @@ class Widget : public internal::NativeWidgetDelegate,
         const_cast<const Widget*>(this)->client_view());
   }
   const ClientView* client_view() const {
-    return non_client_view()->client_view();
+    // non_client_view_ may be NULL, especially during creation.
+    return non_client_view_ ? non_client_view_->client_view() : NULL;
   }
 
 #if defined(UNIT_TEST)

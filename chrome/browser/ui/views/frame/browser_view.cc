@@ -1687,7 +1687,9 @@ void BrowserView::OnWidgetMove() {
   // Comment out for one cycle to see if this fixes dist tests.
   // tabstrip_->DestroyDragController();
 
-  status_bubble_->Reposition();
+  // status_bubble_ may be NULL if this is invoked during construction.
+  if (status_bubble_.get())
+    status_bubble_->Reposition();
 
   BrowserBubbleHost::WindowMoved();
 
