@@ -440,6 +440,11 @@ wlsc_xserver_bind(struct wl_client *client,
 	struct wlsc_xserver *wxs =
 		container_of(global, struct wlsc_xserver, xserver.object);
 
+	/* If it's a different client than the xserver we launched,
+	 * don't start the wm. */
+	if (client != wxs->client)
+		return;
+
 	wxs->wm = wlsc_wm_create(wxs);
 	if (wxs == NULL) {
 		fprintf(stderr, "failed to create wm\n");
