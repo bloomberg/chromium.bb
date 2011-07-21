@@ -46,8 +46,6 @@ class ClientSession : public protocol::HostStub,
                 protocol::InputStub* input_stub);
 
   // protocol::HostStub interface.
-  virtual void SuggestResolution(
-      const protocol::SuggestResolutionRequest* msg, Task* done);
   virtual void BeginSessionRequest(
       const protocol::LocalLoginCredentials* credentials, Task* done);
 

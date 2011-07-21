@@ -266,14 +266,6 @@ void ChromotingClient::Initialize() {
 
 ////////////////////////////////////////////////////////////////////////////
 // ClientStub control channel interface.
-void ChromotingClient::NotifyResolution(
-    const protocol::NotifyResolutionRequest* msg, Task* done) {
-  logger_->Log(logging::LOG_INFO, "NotifyResolution change");
-  NOTIMPLEMENTED();
-  done->Run();
-  delete done;
-}
-
 void ChromotingClient::BeginSessionResponse(
     const protocol::LocalLoginStatus* msg, Task* done) {
   if (message_loop() != MessageLoop::current()) {

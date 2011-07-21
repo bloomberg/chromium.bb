@@ -70,8 +70,6 @@ class MockHostStub : public HostStub {
   MockHostStub();
   ~MockHostStub();
 
-  MOCK_METHOD2(SuggestResolution, void(const SuggestResolutionRequest* msg,
-                                       Task* done));
   MOCK_METHOD2(BeginSessionRequest,
                void(const LocalLoginCredentials* credentials, Task* done));
 

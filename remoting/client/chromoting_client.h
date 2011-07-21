@@ -69,19 +69,18 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual void SetViewport(int x, int y, int width, int height);
 
   // ConnectionToHost::HostEventCallback implementation.
-  virtual void OnConnectionOpened(protocol::ConnectionToHost* conn);
-  virtual void OnConnectionClosed(protocol::ConnectionToHost* conn);
-  virtual void OnConnectionFailed(protocol::ConnectionToHost* conn);
+  virtual void OnConnectionOpened(protocol::ConnectionToHost* conn) OVERRIDE;
+  virtual void OnConnectionClosed(protocol::ConnectionToHost* conn) OVERRIDE;
+  virtual void OnConnectionFailed(protocol::ConnectionToHost* conn) OVERRIDE;
 
   // ClientStub implementation.
-  virtual void NotifyResolution(const protocol::NotifyResolutionRequest* msg,
-                                Task* done);
   virtual void BeginSessionResponse(const protocol::LocalLoginStatus* msg,
-                                    Task* done);
+                                    Task* done) OVERRIDE;
 
   // VideoStub implementation.
-  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
-  virtual int GetPendingPackets();
+  virtual void ProcessVideoPacket(const VideoPacket* packet,
+                                  Task* done) OVERRIDE;
+  virtual int GetPendingPackets() OVERRIDE;
 
  private:
   struct QueuedVideoPacket {

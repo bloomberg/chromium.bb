@@ -35,8 +35,6 @@ class HostControlSender : public HostStub {
   explicit HostControlSender(net::Socket* socket);
   virtual ~HostControlSender();
 
-  virtual void SuggestResolution(
-      const SuggestResolutionRequest* msg, Task* done);
   virtual void BeginSessionRequest(
       const LocalLoginCredentials* credentials, Task* done);
 

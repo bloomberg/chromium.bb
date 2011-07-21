@@ -25,8 +25,6 @@ class ClientStub {
   ClientStub() {}
   virtual ~ClientStub() {}
 
-  virtual void NotifyResolution(const NotifyResolutionRequest* msg,
-                                Task* done) = 0;
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
                                     Task* done) = 0;
 

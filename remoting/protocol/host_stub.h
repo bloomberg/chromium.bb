@@ -17,15 +17,12 @@ namespace remoting {
 namespace protocol {
 
 class LocalLoginCredentials;
-class SuggestResolutionRequest;
 
 class HostStub {
  public:
   HostStub() {};
   virtual ~HostStub() {};
 
-  virtual void SuggestResolution(
-      const SuggestResolutionRequest* msg, Task* done) = 0;
   virtual void BeginSessionRequest(
       const LocalLoginCredentials* credentials, Task* done) = 0;
 

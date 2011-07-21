@@ -13,6 +13,7 @@
 #define REMOTING_PROTOCOL_CLIENT_STUB_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/client_stub.h"
 
@@ -35,10 +36,8 @@ class ClientControlSender : public ClientStub {
   explicit ClientControlSender(net::Socket* socket);
   virtual ~ClientControlSender();
 
-  virtual void NotifyResolution(const NotifyResolutionRequest* msg,
-                                Task* done);
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
-                                    Task* done);
+                                    Task* done) OVERRIDE;
 
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.

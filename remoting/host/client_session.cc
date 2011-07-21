@@ -38,17 +38,6 @@ ClientSession::ClientSession(
 ClientSession::~ClientSession() {
 }
 
-void ClientSession::SuggestResolution(
-    const protocol::SuggestResolutionRequest* msg, Task* done) {
-  base::ScopedTaskRunner done_runner(done);
-
-  if (!authenticated_) {
-    LOG(WARNING) << "Invalid control message received "
-                 << "(client not authenticated).";
-    return;
-  }
-}
-
 void ClientSession::BeginSessionRequest(
     const protocol::LocalLoginCredentials* credentials, Task* done) {
   DCHECK(event_handler_);

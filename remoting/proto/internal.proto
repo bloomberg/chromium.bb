@@ -17,8 +17,6 @@ package remoting.protocol;
 
 // Represents a message being sent on the control channel.
 message ControlMessage {
-  optional SuggestResolutionRequest suggest_resolution = 1;
-  optional NotifyResolutionRequest notify_resolution = 2;
   optional BeginSessionRequest begin_session_request = 3;
   optional BeginSessionResponse begin_session_response = 4;
 }
