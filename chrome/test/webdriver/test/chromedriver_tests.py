@@ -309,6 +309,11 @@ class ScreenshotTest(ChromeDriverTest):
     self._driver = self.GetNewDriver()
 
   def testScreenCaptureAgainstReference(self):
+    # This has regressed on linux because of tighter sandbox restrictions.
+    # See crbug.com/89777.
+    if IsLinux():
+      return
+
     # Create a red square of 2000x2000 pixels.
     url = GetFileURLForPath(os.path.join(DataDir(),
                                          self.REDBOX))
