@@ -992,24 +992,23 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 {
 	struct wlsc_compositor *ec = es->compositor;
 	struct wlsc_output *output;
+	pixman_region32_t region;
+	uint32_t max, area;
+	pixman_box32_t *e;
 
-	struct wlsc_output *tmp = es->output;
-	es->output = NULL;
-
+	max = 0;
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (pixman_region32_contains_point(&output->region,
-						   es->x, es->y, NULL)) {
-			if (output != tmp)
-				printf("assiging surface %p to output %p\n",
-				       es, output);
+		pixman_region32_init_rect(&region,
+					  es->x, es->y, es->width, es->height);
+		pixman_region32_intersect(&region, &region, &output->region);
+
+		e = pixman_region32_extents(&region);
+		area = (e->x2 - e->x1) * (e->y2 - e->y1);
+
+		if (area >= max) {
 			es->output = output;
+			max = area;
 		}
-	}
-	
-	if (es->output == NULL) {
-		printf("no output found\n");
-		es->output = container_of(ec->output_list.next,
-					  struct wlsc_output, link);
 	}
 }
 
