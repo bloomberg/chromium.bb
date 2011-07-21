@@ -79,7 +79,11 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 #endif
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
+    bool software,
     const gfx::Size& size) {
+  if (software)
+    return NULL;
+
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,

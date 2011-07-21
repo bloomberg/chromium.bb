@@ -11,6 +11,8 @@
 #include "ui/gfx/gl/gl_context.h"
 
 typedef void* EGLContext;
+typedef void* EGLDisplay;
+typedef void* EGLConfig;
 
 namespace gfx {
 
@@ -34,6 +36,8 @@ class GLContextEGL : public GLContext {
 
  private:
   EGLContext context_;
+  EGLDisplay display_;
+  EGLConfig config_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextEGL);
 };

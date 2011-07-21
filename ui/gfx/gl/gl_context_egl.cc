@@ -24,7 +24,7 @@ extern "C" {
 namespace gfx {
 
 std::string GLContextEGL::GetExtensions() {
-  const char* extensions = eglQueryString(GLSurfaceEGL::GetDisplay(),
+  const char* extensions = eglQueryString(display_,
                                           EGL_EXTENSIONS);
   if (!extensions)
     return GLContext::GetExtensions();
@@ -51,9 +51,13 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface) {
     EGL_NONE
   };
 
+  GLSurfaceEGL* egl_surface = static_cast<GLSurfaceEGL*>(compatible_surface);
+  display_ = egl_surface->GetDisplay();
+  config_ = egl_surface->GetConfig();
+
   context_ = eglCreateContext(
-      GLSurfaceEGL::GetDisplay(),
-      GLSurfaceEGL::GetConfig(),
+      display_,
+      config_,
       share_group() ? share_group()->GetHandle() : NULL,
       kContextAttributes);
   if (!context_) {
@@ -68,7 +72,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface) {
 
 void GLContextEGL::Destroy() {
   if (context_) {
-    if (!eglDestroyContext(GLSurfaceEGL::GetDisplay(), context_)) {
+    if (!eglDestroyContext(display_, context_)) {
       LOG(ERROR) << "eglDestroyContext failed with error "
                  << GetLastEGLErrorString();
     }
@@ -82,7 +86,7 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
   if (IsCurrent(surface))
       return true;
 
-  if (!eglMakeCurrent(GLSurfaceEGL::GetDisplay(),
+  if (!eglMakeCurrent(display_,
                       surface->GetHandle(),
                       surface->GetHandle(),
                       context_)) {
@@ -98,7 +102,7 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
-  eglMakeCurrent(GLSurfaceEGL::GetDisplay(),
+  eglMakeCurrent(display_,
                  EGL_NO_SURFACE,
                  EGL_NO_SURFACE,
                  EGL_NO_CONTEXT);
@@ -123,7 +127,7 @@ void* GLContextEGL::GetHandle() {
 
 void GLContextEGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  if (!eglSwapInterval(GLSurfaceEGL::GetDisplay(), interval)) {
+  if (!eglSwapInterval(display_, interval)) {
     LOG(ERROR) << "eglSwapInterval failed with error "
                << GetLastEGLErrorString();
   }

@@ -71,7 +71,7 @@ void GpuChannelManager::OnEstablishChannel(int renderer_id) {
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
   if (iter == gpu_channels_.end())
-    channel = new GpuChannel(this, watchdog_, renderer_id);
+    channel = new GpuChannel(this, watchdog_, renderer_id, false);
   else
     channel = iter->second;
 

@@ -111,7 +111,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   scoped_ptr<GpuScheduler> gpu_scheduler(
       new GpuScheduler(command_buffer_.get(), NULL, NULL));
   if (!gpu_scheduler->Initialize(
-      win, gfx::Size(), gpu::gles2::DisallowedExtensions(), NULL,
+      win, gfx::Size(), false, gpu::gles2::DisallowedExtensions(), NULL,
       attribs, NULL))
     return EGL_NO_SURFACE;
 

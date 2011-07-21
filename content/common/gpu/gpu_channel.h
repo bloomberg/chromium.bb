@@ -48,7 +48,8 @@ class GpuChannel : public IPC::Channel::Listener,
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              GpuWatchdog* watchdog,
-             int renderer_id);
+             int renderer_id,
+             bool software);
   virtual ~GpuChannel();
 
   bool Init(base::MessageLoopProxy* io_message_loop,
@@ -187,6 +188,7 @@ class GpuChannel : public IPC::Channel::Listener,
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedExtensions disallowed_extensions_;
   GpuWatchdog* watchdog_;
+  bool software_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };
