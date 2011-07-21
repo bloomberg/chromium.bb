@@ -44,6 +44,8 @@ deps = {
   "native_client/src/third_party/valgrind/bin":
     Var("native_client_trunk") + "/src/third_party/valgrind/bin@" +
     Var("valgrind_rev"),
+  "native_client/tools/perf_expectations":
+    Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
   "native_client/src/third_party/ppapi":
