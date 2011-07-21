@@ -13,10 +13,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
-#include "native_client/src/shared/ppapi_proxy/browser_ppp_input_event.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
 #include "native_client/src/third_party/ppapi/c/pp_var.h"
 #include "native_client/src/third_party/ppapi/c/ppp_instance.h"
@@ -141,26 +139,6 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
               NaClSrpcErrorString(srpc_result));
 }
 
-PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
-  DebugPrintf("PPP_Instance::HandleInputEvent: instance=%"NACL_PRIu32"\n",
-              instance);
-  int32_t success;
-  char* event_data = const_cast<char*>(reinterpret_cast<const char*>(event));
-  NaClSrpcError srpc_result =
-      PppInstanceRpcClient::PPP_Instance_HandleInputEvent(
-          GetMainSrpcChannel(instance),
-          instance,
-          sizeof(*event),
-          event_data,
-          &success);
-  DebugPrintf("PPP_Instance::HandleInputEvent: %s\n",
-              NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK) {
-    return PP_FALSE;
-  }
-  return static_cast<PP_Bool>(success != 0);
-}
-
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIu32", "
               "url_loader=%"NACL_PRIu32"\n", instance, url_loader);
@@ -188,7 +166,6 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     DidDestroy,
     DidChangeView,
     DidChangeFocus,
-    HandleInputEvent,
     HandleDocumentLoad
   };
   return &instance_interface;

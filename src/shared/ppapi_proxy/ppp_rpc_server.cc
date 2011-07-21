@@ -226,21 +226,6 @@ static void PPP_Instance_DidChangeFocusDispatcher(
   );
 }
 
-static void PPP_Instance_HandleInputEventDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->u.count, inputs[1]->arrays.carr,
-      &(outputs[0]->u.ival)
-  );
-}
-
 static void PPP_Instance_HandleDocumentLoadDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -410,7 +395,6 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Instance_DidDestroy:i:", PPP_Instance_DidDestroyDispatcher },
   { "PPP_Instance_DidChangeView:iII:", PPP_Instance_DidChangeViewDispatcher },
   { "PPP_Instance_DidChangeFocus:ib:", PPP_Instance_DidChangeFocusDispatcher },
-  { "PPP_Instance_HandleInputEvent:iC:i", PPP_Instance_HandleInputEventDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Messaging_HandleMessage:iC:", PPP_Messaging_HandleMessageDispatcher },
   { "PPP_Printing_QuerySupportedFormats:i:Ci", PPP_Printing_QuerySupportedFormatsDispatcher },

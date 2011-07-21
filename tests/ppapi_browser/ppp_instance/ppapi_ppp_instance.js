@@ -6,21 +6,6 @@ function startsWith(str, prefix) {
   return (str.indexOf(prefix) === 0);
 }
 
-function simulateMouseEvent(target, eventName) {
-  var event = document.createEvent('MouseEvents');
-  event.initMouseEvent(
-      eventName,
-      true,                       // bubbles
-      true,                       // cancelable
-      document.defaultView,
-      1,                          // one click
-      0, 0, 0, 0,                 // no co-ordinates
-      false, false, false, false, // no key modifiers
-      0,                          // button: 0 - left, 1 - middle, 2 - right
-      null);                      // no related targets
-  target.dispatchEvent(event);
-}
-
 function setupTests(tester, plugin) {
   //////////////////////////////////////////////////////////////////////////////
   // Test Helpers
@@ -72,37 +57,6 @@ function setupTests(tester, plugin) {
     plugin.tabIndex = 0;
     plugin.focus();
     plugin.blur();
-  });
-
-  tester.addAsyncTest('PPP_Instance::HandleInputEvent_Handled', function(test) {
-    addTestListener(test, 'HandleInputEvent');
-    // TODO(polina): why does this forward and bubble the event even though it
-    // was handled? Based on headers, the handlers below should contain
-    // test.fail(). Figure out if this is a bug (crbug.com/88728) or if the
-    // header comments are off.
-    var event = 'mousedown';
-    plugin.addEventListener(
-        event,
-        function(e) { test.log('plugin received ' + event); },
-        false);
-    plugin.parentNode.addEventListener(
-        event,
-        function(e) { test.log('plugin.parentNode received ' + event); },
-        false);
-    simulateMouseEvent(plugin, event);
-  });
-
-  tester.addAsyncTest('PPP_Instance::HandleInputEvent_Bubbled', function(test) {
-    var forwarded = false;
-    var bubbled = false;
-    var event = 'mouseup';
-    addTestListener(test, 'HandleInputEvent',
-                    function() { return forwarded && bubbled; });
-    plugin.addEventListener(event,
-                            function(e) { forwarded = true; }, false);
-    plugin.parentNode.addEventListener(event,
-                                       function(e) { bubbled = true; }, false);
-    simulateMouseEvent(plugin, event);
   });
 
   // TODO(polina/bbudge/abarth):

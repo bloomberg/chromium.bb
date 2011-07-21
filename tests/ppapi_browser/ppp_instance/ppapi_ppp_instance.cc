@@ -66,19 +66,6 @@ void DidChangeFocus(PP_Instance instance,
   TEST_PASSED;
 }
 
-PP_Bool HandleInputEvent(PP_Instance instance,
-                         const struct PP_InputEvent* event) {
-  printf("--- PPP_Instance::HandleInputEvent event=%d\n", event->type);
-  EXPECT(instance == pp_instance());
-
-  TEST_PASSED;
-
-  if (event->type == PP_INPUTEVENT_TYPE_MOUSEDOWN)
-    return PP_TRUE;  // Do not forward to the web page.
-  else
-    return PP_FALSE;  // Forward to the web page.
-}
-
 PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
   NACL_NOTREACHED();  // Only called for full-frame plugins.
@@ -90,7 +77,6 @@ const PPP_Instance ppp_instance_interface = {
   DidDestroy,
   DidChangeView,
   DidChangeFocus,
-  HandleInputEvent,
   HandleDocumentLoad
 };
 

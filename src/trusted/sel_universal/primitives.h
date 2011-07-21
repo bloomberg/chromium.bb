@@ -23,6 +23,24 @@ enum {
   CUSTOM_EVENT_READ_CALLBACK
 };
 
+// TODO(robertm): Make sel_universal work without relying on the old input
+// events. http://code.google.com/p/nativeclient/issues/detail?id=2066
+// This just defines a pretend PP_InputEvent so that sel_universal can compile.
+// sel_universal will not work until this issue is fixed.
+union PP_InputEventData {
+  struct PP_InputEvent_Key key;
+  struct PP_InputEvent_Character character;
+  struct PP_InputEvent_Mouse mouse;
+  struct PP_InputEvent_Wheel wheel;
+  char padding[64];
+};
+struct PP_InputEvent {
+  PP_InputEvent_Type type;
+  int32_t padding;
+  PP_TimeTicks time_stamp;
+  union PP_InputEventData u;
+};
+
 struct PP_InputEvent_User {
   int callback;   // this is often the handle for a callback on the nexe side
   int result;     // this is often the result for the callback

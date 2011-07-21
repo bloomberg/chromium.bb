@@ -113,10 +113,10 @@ class EventInstance : public pp::Instance {
     stream << pp_instance() << ":"
            << " Mouse event:" << kind
            << " modifier:" << ModifierToString(mouse_event.GetModifiers())
-           << " button:" << MouseButtonToString(mouse_event.GetMouseButton())
-           << " x:" << mouse_event.GetMousePosition().x()
-           << " y:" << mouse_event.GetMousePosition().y()
-           << " click_count:" << mouse_event.GetMouseClickCount()
+           << " button:" << MouseButtonToString(mouse_event.GetButton())
+           << " x:" << mouse_event.GetPosition().x()
+           << " y:" << mouse_event.GetPosition().y()
+           << " click_count:" << mouse_event.GetClickCount()
            << " time:" << mouse_event.GetTimeStamp()
            << "\n";
     std::printf("%s", stream.str().c_str());
@@ -127,10 +127,10 @@ class EventInstance : public pp::Instance {
     std::ostringstream stream;
     stream << pp_instance() << ": Wheel event."
            << " modifier:" << ModifierToString(wheel_event.GetModifiers())
-           << " deltax:" << wheel_event.GetWheelDelta().x()
-           << " deltay:" << wheel_event.GetWheelDelta().y()
-           << " wheel_ticks_x:" << wheel_event.GetWheelTicks().x()
-           << " wheel_ticks_y:" << wheel_event.GetWheelTicks().y()
+           << " deltax:" << wheel_event.GetDelta().x()
+           << " deltay:" << wheel_event.GetDelta().y()
+           << " wheel_ticks_x:" << wheel_event.GetTicks().x()
+           << " wheel_ticks_y:" << wheel_event.GetTicks().y()
            << " scroll_by_page:"
            << (wheel_event.GetScrollByPage() ? "true" : "false")
            << "\n";
@@ -161,7 +161,7 @@ class EventInstance : public pp::Instance {
       case PP_INPUTEVENT_TYPE_MOUSELEAVE:
         GotMouseEvent(pp::MouseInputEvent(event), "Leave");
         break;
-      case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
+      case PP_INPUTEVENT_TYPE_WHEEL:
         GotWheelEvent(pp::WheelInputEvent(event));
         break;
       case PP_INPUTEVENT_TYPE_RAWKEYDOWN:

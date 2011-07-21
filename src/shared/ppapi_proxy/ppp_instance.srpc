@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -40,14 +40,6 @@
                       ['has_focus', 'bool'],  # PP_Bool
                       ],
            'outputs': []
-          },
-          # Processes an event sent to an instance.
-          {'name': 'PPP_Instance_HandleInputEvent',
-           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
-                      ['event_data', 'char[]'],  # PP_InputEvent*
-                      ],
-           'outputs': [['success', 'int32_t']  # PP_Bool
-                      ]
           },
           # Passes URL information to a full-frame instance.
           {'name': 'PPP_Instance_HandleDocumentLoad',

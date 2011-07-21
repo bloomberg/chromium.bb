@@ -48,11 +48,6 @@ void DidChangeView(PP_Instance /*instance*/,
 void DidChangeFocus(PP_Instance /*instance*/, PP_Bool /*has_focus*/) {
 }
 
-PP_Bool HandleInputEvent(PP_Instance /*instance*/,
-                         const struct PP_InputEvent* /*event*/) {
-  return PP_FALSE;
-}
-
 PP_Bool HandleDocumentLoad(PP_Instance /*instance*/, PP_Resource /*loader*/) {
   return PP_FALSE;
 }
@@ -62,7 +57,6 @@ const struct PPP_Instance instance_interface = {
   DidDestroy,
   DidChangeView,
   DidChangeFocus,
-  HandleInputEvent,
   HandleDocumentLoad
 };
 

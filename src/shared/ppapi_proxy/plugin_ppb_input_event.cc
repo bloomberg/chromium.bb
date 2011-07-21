@@ -135,14 +135,14 @@ PP_Resource CreateMouseInputEvent(PP_Instance instance,
                                   PP_TimeTicks time_stamp,
                                   uint32_t modifiers,
                                   PP_InputEvent_MouseButton mouse_button,
-                                  PP_Point mouse_position,
+                                  const PP_Point* mouse_position,
                                   int32_t click_count) {
   DebugPrintf("PPB_InputEvent::CreateMouseInputEvent: instance="
               "%"NACL_PRIu32", type=%d, time_stamp=%lf, modifiers="
               "%"NACL_PRIu32", mouse_button=%d, x=%"NACL_PRId32", y="
               "%"NACL_PRId32", click_count=%d\n",
               instance, type, time_stamp, modifiers, mouse_button,
-              mouse_position.x, mouse_position.y, click_count);
+              mouse_position->x, mouse_position->y, click_count);
   PP_Resource resource_id = kInvalidResourceId;
   NaClSrpcError srpc_result =
       PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
@@ -152,8 +152,8 @@ PP_Resource CreateMouseInputEvent(PP_Instance instance,
           time_stamp,
           static_cast<int32_t>(modifiers),
           static_cast<int32_t>(mouse_button),
-          mouse_position.x,
-          mouse_position.y,
+          mouse_position->x,
+          mouse_position->y,
           click_count,
           &resource_id);
   if (srpc_result == NACL_SRPC_RESULT_OK)
@@ -191,15 +191,16 @@ int32_t GetMouseClickCount(PP_Resource mouse_event) {
 PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                   PP_TimeTicks time_stamp,
                                   uint32_t modifiers,
-                                  PP_FloatPoint wheel_delta,
-                                  PP_FloatPoint wheel_ticks,
+                                  const PP_FloatPoint* wheel_delta,
+                                  const PP_FloatPoint* wheel_ticks,
                                   PP_Bool scroll_by_page) {
   DebugPrintf("PPB_InputEvent::CreateWheelInputEvent: instance="
               "%"NACL_PRIu32", time_stamp=%lf, modifiers="
               "%"NACL_PRIu32", delta.x=%d, delta.y=%d, ticks.x=%d, ticks.y=%d, "
               "scroll_by_page=%s\n",
-              instance, time_stamp, modifiers, wheel_delta.x, wheel_delta.y,
-              wheel_ticks.x, wheel_ticks.y, scroll_by_page ? "true" : "false");
+              instance, time_stamp, modifiers, wheel_delta->x, wheel_delta->y,
+              wheel_ticks->x, wheel_ticks->y,
+              (scroll_by_page ? "true" : "false"));
   PP_Resource resource_id = kInvalidResourceId;
   NaClSrpcError srpc_result =
       PpbInputEventRpcClient::PPB_InputEvent_CreateWheelInputEvent(
@@ -207,10 +208,10 @@ PP_Resource CreateWheelInputEvent(PP_Instance instance,
           instance,
           static_cast<double>(time_stamp),
           static_cast<int32_t>(modifiers),
-          wheel_delta.x,
-          wheel_delta.y,
-          wheel_ticks.x,
-          wheel_ticks.y,
+          wheel_delta->x,
+          wheel_delta->y,
+          wheel_ticks->x,
+          wheel_ticks->y,
           static_cast<int32_t>(scroll_by_page),
           &resource_id);
   if (srpc_result == NACL_SRPC_RESULT_OK)
@@ -222,7 +223,7 @@ PP_Bool IsWheelInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;
   PP_InputEvent_Type type = GetType(resource);
-  return PP_FromBool(type == PP_INPUTEVENT_TYPE_MOUSEWHEEL);
+  return PP_FromBool(type == PP_INPUTEVENT_TYPE_WHEEL);
 }
 
 PP_FloatPoint GetWheelDelta(PP_Resource wheel_event) {

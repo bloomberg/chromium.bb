@@ -2662,7 +2662,10 @@ nonvariant_tests = [
     # http://code.google.com/p/nativeclient/issues/detail?id=2060
     # 'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_messaging/nacl.scons',
-    'tests/ppapi_simple_tests/nacl.scons',
+
+    # TODO(robertm): Make sel_universal work without relying on the old input
+    # events. http://code.google.com/p/nativeclient/issues/detail?id=2066
+    # 'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',

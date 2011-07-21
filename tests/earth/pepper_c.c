@@ -178,12 +178,6 @@ static void Instance_DidChangeFocus(PP_Instance pp_instance,
                                     PP_Bool has_focus) {
 }
 
-static PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                                         const struct PP_InputEvent* event) {
-  /* We don't handle any events. */
-  return PP_FALSE;
-}
-
 static PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
                                            PP_Resource pp_url_loader) {
   return PP_FALSE;
@@ -194,7 +188,6 @@ static struct PPP_Instance instance_interface = {
   &Instance_DidDestroy,
   &Instance_DidChangeView,
   &Instance_DidChangeFocus,
-  &Instance_HandleInputEvent,
   &Instance_HandleDocumentLoad
 };
 

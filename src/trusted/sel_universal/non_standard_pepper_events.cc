@@ -12,7 +12,6 @@
 #include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 
-
 PP_InputEvent_User* GetUserEvent(PP_InputEvent* event) {
   return reinterpret_cast<PP_InputEvent_User*>(&event->u);
 }

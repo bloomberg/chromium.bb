@@ -704,21 +704,6 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
   }
 }
 
-bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
-  PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
-                 static_cast<void*>(this)));
-  if (ppapi_proxy_ == NULL) {
-    return false;  // event is not handled here.
-  } else {
-    bool handled = PP_ToBool(
-        ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
-            pp_instance(), &event));
-    PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (old) (handled=%d)\n",
-                   handled));
-    return handled;
-  }
-}
-
 bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
   PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
                  static_cast<void*>(this)));

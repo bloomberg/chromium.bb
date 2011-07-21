@@ -128,11 +128,6 @@ class PppInstanceRpcClient {
       NaClSrpcChannel* channel,
       PP_Instance instance,
       bool has_focus);
-  static NaClSrpcError PPP_Instance_HandleInputEvent(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      nacl_abi_size_t event_data_bytes, char* event_data,
-      int32_t* success);
   static NaClSrpcError PPP_Instance_HandleDocumentLoad(
       NaClSrpcChannel* channel,
       PP_Instance instance,

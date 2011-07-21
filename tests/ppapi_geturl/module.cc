@@ -115,11 +115,6 @@ void Instance_DidChangeFocus(PP_Instance /*pp_instance*/,
                              PP_Bool /*has_focus*/) {
 }
 
-PP_Bool Instance_HandleInputEvent(PP_Instance /*pp_instance*/,
-                                  const PP_InputEvent* /*event*/) {
-  return PP_FALSE;
-}
-
 PP_Bool Instance_HandleDocumentLoad(PP_Instance /*pp_instance*/,
                                     PP_Resource /*pp_url_loader*/) {
   return PP_FALSE;
@@ -210,7 +205,6 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   instance_interface.DidDestroy = Instance_DidDestroy;
   instance_interface.DidChangeView = Instance_DidChangeView;
   instance_interface.DidChangeFocus = Instance_DidChangeFocus;
-  instance_interface.HandleInputEvent = Instance_HandleInputEvent;
   instance_interface.HandleDocumentLoad = Instance_HandleDocumentLoad;
 
   memset(&messaging_interface, 0, sizeof(messaging_interface));

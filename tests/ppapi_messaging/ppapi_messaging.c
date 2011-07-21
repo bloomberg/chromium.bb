@@ -112,13 +112,6 @@ void DidChangeFocus(PP_Instance instance,
   UNREFERENCED_PARAMETER(has_focus);
 }
 
-PP_Bool HandleInputEvent(PP_Instance instance,
-                         const struct PP_InputEvent* event) {
-  UNREFERENCED_PARAMETER(instance);
-  UNREFERENCED_PARAMETER(event);
-  return PP_TRUE;
-}
-
 static PP_Bool HandleDocumentLoad(PP_Instance instance,
                                   PP_Resource url_loader) {
   UNREFERENCED_PARAMETER(instance);
@@ -145,7 +138,6 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
       DidDestroy,
       DidChangeView,
       DidChangeFocus,
-      HandleInputEvent,
       HandleDocumentLoad
     };
     return &instance_interface;

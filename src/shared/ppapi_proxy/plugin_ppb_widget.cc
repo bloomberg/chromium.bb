@@ -21,8 +21,6 @@ namespace {
 
 const nacl_abi_size_t kPPRectBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_Rect));
-const nacl_abi_size_t kPPInputEventBytes =
-    static_cast<nacl_abi_size_t>(sizeof(struct PP_InputEvent));
 
 PP_Bool IsWidget(PP_Resource resource) {
   DebugPrintf("PPB_Widget::IsWidget: "

@@ -98,7 +98,7 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateMouseInputEvent(
         static_cast<PP_TimeTicks>(time_stamp),
         static_cast<uint32_t>(modifiers),
         static_cast<PP_InputEvent_MouseButton>(mouse_button),
-        mouse_position,
+        &mouse_position,
         click_count);
   DebugPrintf("PPB_InputEvent::CreateMouseInputEvent: resource_id="
               "%"NACL_PRId32"\n",
@@ -173,8 +173,8 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateWheelInputEvent(
         instance,
         static_cast<PP_TimeTicks>(time_stamp),
         static_cast<uint32_t>(modifiers),
-        wheel_delta,
-        wheel_ticks,
+        &wheel_delta,
+        &wheel_ticks,
         static_cast<PP_Bool>(scroll_by_page));
   DebugPrintf("PPB_InputEvent::CreateWheelInputEvent: resource_id="
               "%"NACL_PRId32"\n",

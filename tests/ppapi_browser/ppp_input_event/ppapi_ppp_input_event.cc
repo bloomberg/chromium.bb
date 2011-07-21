@@ -43,8 +43,8 @@ std::string InputEventTypeToString(PP_InputEvent_Type type) {
       return "PP_INPUTEVENT_TYPE_MOUSEENTER";
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
       return "PP_INPUTEVENT_TYPE_MOUSELEAVE";
-    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
-      return "PP_INPUTEVENT_TYPE_MOUSEWHEEL";
+    case PP_INPUTEVENT_TYPE_WHEEL:
+      return "PP_INPUTEVENT_TYPE_WHEEL";
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
       return "PP_INPUTEVENT_TYPE_RAWKEYDOWN";
     case PP_INPUTEVENT_TYPE_KEYDOWN:
@@ -140,12 +140,11 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
   message << InputEventTypeToString(type) << ":" <<
       InputEventModifierToString(modifiers);
   if (PPBMouseInputEvent()->IsMouseInputEvent(event)) {
-    PP_Point point = PPBMouseInputEvent()->GetMousePosition(event);
+    PP_Point point = PPBMouseInputEvent()->GetPosition(event);
     message << ":" << MouseButtonToString(
-        PPBMouseInputEvent()->GetMouseButton(event));
+        PPBMouseInputEvent()->GetButton(event));
     message << ":Position=" << point.x << "," << point.y;
-    message << ":ClickCount="
-        << PPBMouseInputEvent()->GetMouseClickCount(event);
+    message << ":ClickCount=" << PPBMouseInputEvent()->GetClickCount(event);
   }
   // Here's a example of what a complete response would look like for a mouse
   // click (broken into multiple lines for readability):

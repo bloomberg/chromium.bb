@@ -141,12 +141,6 @@ class PppInstanceRpcServer {
       NaClSrpcClosure* done,
       PP_Instance instance,
       bool has_focus);
-  static void PPP_Instance_HandleInputEvent(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      nacl_abi_size_t event_data_bytes, char* event_data,
-      int32_t* success);
   static void PPP_Instance_HandleDocumentLoad(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

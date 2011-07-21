@@ -39,18 +39,18 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_CONTEXTMENU:
       data.mouse_button =
-          PPBMouseInputEventInterface()->GetMouseButton(input_event);
+          PPBMouseInputEventInterface()->GetButton(input_event);
       data.mouse_position =
-          PPBMouseInputEventInterface()->GetMousePosition(input_event);
+          PPBMouseInputEventInterface()->GetPosition(input_event);
       data.mouse_click_count =
-          PPBMouseInputEventInterface()->GetMouseClickCount(input_event);
+          PPBMouseInputEventInterface()->GetClickCount(input_event);
       break;
     // This event uses the PPB_WheelInputEvent interface.
-    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
+    case PP_INPUTEVENT_TYPE_WHEEL:
       data.wheel_delta =
-          PPBWheelInputEventInterface()->GetWheelDelta(input_event);
+          PPBWheelInputEventInterface()->GetDelta(input_event);
       data.wheel_ticks =
-          PPBWheelInputEventInterface()->GetWheelTicks(input_event);
+          PPBWheelInputEventInterface()->GetTicks(input_event);
       data.wheel_scroll_by_page =
           PPBWheelInputEventInterface()->GetScrollByPage(input_event);
       break;

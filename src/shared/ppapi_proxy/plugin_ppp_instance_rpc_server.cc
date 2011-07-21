@@ -176,31 +176,6 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
-    NaClSrpcRpc* rpc,
-    NaClSrpcClosure* done,
-    // inputs
-    PP_Instance instance,
-    uint32_t event_data_bytes, char* event_data,
-    // outputs
-    int32_t* success) {
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  NaClSrpcClosureRunner runner(done);
-  *success = kMethodFailure;
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL ||
-      instance_interface->HandleInputEvent == NULL) {
-    rpc->result = NACL_SRPC_RESULT_OK;
-    return;
-  }
-  const PP_InputEvent* event =
-      reinterpret_cast<const PP_InputEvent*>(event_data);
-  bool handled = instance_interface->HandleInputEvent(instance, event);
-  DebugPrintf("PPP_Instance::HandleInputEvent: handled=%d\n", handled);
-  *success = handled ? kMethodSuccess : kMethodFailure;
-  rpc->result = NACL_SRPC_RESULT_OK;
-}
-
 void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
