@@ -148,70 +148,88 @@ class OutOfProcessPPAPITest : public PPAPITest {
 //
 // Interface tests.
 //
-// TODO(ddorwin): Enable the commented TEST_PPAPI_OUT_OF_PROCESS lines.
 
 TEST_PPAPI_IN_PROCESS(Broker)
-//TEST_PPAPI_OUT_OF_PROCESS(Broker)
+TEST_PPAPI_OUT_OF_PROCESS(Broker)
 
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
 
 TEST_PPAPI_IN_PROCESS(CursorControl)
-//TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
+TEST_PPAPI_OUT_OF_PROCESS(CursorControl)
 
-TEST_F(PPAPITest, FAILS_Instance) {
-  RunTest("Instance");
-}
-//TEST_PPAPI_OUT_OF_PROCESS(Instance)
+TEST_PPAPI_IN_PROCESS(Instance)
+TEST_PPAPI_OUT_OF_PROCESS(Instance)
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
+// Disabled because it times out: http://crbug.com/89961
 //TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 
 TEST_PPAPI_IN_PROCESS(ImageData)
-//TEST_PPAPI_OUT_OF_PROCESS(ImageData)
+TEST_PPAPI_OUT_OF_PROCESS(ImageData)
 
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader)
-//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader)
+// http://crbug.com/89961
+TEST_F(OutOfProcessPPAPITest, FAILS_URLLoader) {
+  RunTestViaHTTP("URLLoader");
+}
 
 TEST_PPAPI_IN_PROCESS(PaintAggregator)
-//TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
+TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
 
 TEST_PPAPI_IN_PROCESS(Scrollbar)
-//TEST_PPAPI_OUT_OF_PROCESS(Scrollbar)
+// http://crbug.com/89961
+TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
+  RunTest("Scrollbar");
+}
 
 TEST_PPAPI_IN_PROCESS(URLUtil)
-//TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
+TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
 
 TEST_PPAPI_IN_PROCESS(CharSet)
-//TEST_PPAPI_OUT_OF_PROCESS(CharSet)
+TEST_PPAPI_OUT_OF_PROCESS(CharSet)
 
 TEST_PPAPI_IN_PROCESS(Var)
-//TEST_PPAPI_OUT_OF_PROCESS(Var)
+// http://crbug.com/89961
+TEST_F(OutOfProcessPPAPITest, FAILS_Var) {
+  RunTest("Var");
+}
 
 TEST_PPAPI_IN_PROCESS(VarDeprecated)
+// Disabled because it times out: http://crbug.com/89961
 //TEST_PPAPI_OUT_OF_PROCESS(VarDeprecated)
 
 TEST_PPAPI_IN_PROCESS(PostMessage)
+// Disabled because it times out: http://crbug.com/89961
 //TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
 
-// http://crbug.com/83443
+// http://crbug.com/90039 and http://crbug.com/83443 (Mac)
 TEST_F(PPAPITest, FAILS_FileIO) {
   RunTestViaHTTP("FileIO");
 }
-//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO)
+TEST_F(OutOfProcessPPAPITest, FAILS_FileIO) {
+  RunTestViaHTTP("FileIO");
+}
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
+// Disabled because it times out: http://crbug.com/89961
 //TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
 
-// Enable - see http://crbug.com/83443#c7.
-// TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
-// TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
+// Fails only on Windows: http://crbug.com/90040
+#if defined(OS_WIN)
+TEST_F(OutOfProcessPPAPITest, FAILS_FileSystem) {
+  RunTest("FileSystem");
+}
+#else
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
+#endif
 
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
@@ -223,12 +241,18 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
-//TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DirectoryReader)
+// http://crbug.com/89961
+TEST_F(OutOfProcessPPAPITest, FAILS_DirectoryReader) {
+  RunTestViaHTTP("DirectoryReader");
+}
 
 #if defined(ENABLE_P2P_APIS)
 // Flaky. http://crbug.com/84295
 TEST_F(PPAPITest, FLAKY_Transport) {
   RunTest("Transport");
 }
-//TEST_PPAPI_OUT_OF_PROCESS(Transport)
+// http://crbug.com/89961
+TEST_F(OutOfProcessPPAPITest, FAILS_Transport) {
+  RunTestViaHTTP("Transport");
+}
 #endif // ENABLE_P2P_APIS
