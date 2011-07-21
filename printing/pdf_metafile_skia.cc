@@ -84,7 +84,7 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
 bool PdfMetafileSkia::FinishPage() {
   DCHECK(data_->current_page_.get());
 
-  data_->pdf_doc_.appendPage(data_->current_page_);
+  data_->pdf_doc_.appendPage(data_->current_page_.get());
   page_outstanding_ = false;
   return true;
 }
@@ -242,7 +242,7 @@ PdfMetafileSkia::PdfMetafileSkia()
 PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {
   SkPDFDocument pdf_doc;
   SkDynamicMemoryWStream pdf_stream;
-  if (!pdf_doc.appendPage(data_->current_page_))
+  if (!pdf_doc.appendPage(data_->current_page_.get()))
     return NULL;
 
   if (!pdf_doc.emitPDF(&pdf_stream))
