@@ -55,7 +55,7 @@ install-lkgr-toolchains() {
 
 # copy data to well known archive server
 push-data-to-archive-server() {
-  /b/build/scripts/slave/gsutil -h Cache-Control:no-cache cp -a public-read \
+  buildbot/gsutil.sh -h Cache-Control:no-cache cp -a public-read \
     $1 \
     gs://nativeclient-archive2/$2
 }
