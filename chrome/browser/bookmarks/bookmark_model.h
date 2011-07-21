@@ -69,9 +69,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   Type type() const { return type_; }
   void set_type(Type type) { type_ = type; }
 
-  // Returns the time the bookmark/folder was added.
+  // Returns the time the node was added.
   const base::Time& date_added() const { return date_added_; }
-  // Sets the time the bookmark/folder was added.
   void set_date_added(const base::Time& date) { date_added_ = date; }
 
   // Returns the last time the folder was modified. This is only maintained
@@ -83,7 +82,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     date_folder_modified_ = date;
   }
 
-  // Convenience for testing if this nodes represents a folder. A folder is a
+  // Convenience for testing if this node represents a folder. A folder is a
   // node whose type is not URL.
   bool is_folder() const { return type_ != URL; }
   bool is_url() const { return type_ == URL; }
@@ -108,9 +107,6 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     favicon_load_handle_ = handle;
   }
 
-  // Called when the favicon becomes invalid.
-  void InvalidateFavicon();
-
   // Accessor method for controlling the visibility of a bookmark node/sub-tree.
   // Note that visibility is not propagated down the tree hierarchy so if a
   // parent node is marked as invisible, a child node may return "Visible". This
@@ -128,6 +124,9 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   // A helper function to initialize various fields during construction.
   void Initialize(int64 id);
+
+  // Called when the favicon becomes invalid.
+  void InvalidateFavicon();
 
   // The unique identifier for this node.
   int64 id_;
@@ -354,9 +353,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // obtain a lock on url_lock_.
   bool IsBookmarkedNoLock(const GURL& url);
 
-  // Overriden to notify the observer the favicon has been loaded.
-  void FaviconLoaded(const BookmarkNode* node);
-
   // Removes the node from internal maps and recurses through all children. If
   // the node is a url, its url is added to removed_urls.
   //
@@ -367,7 +363,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkModel takes ownership of |details|.
   void DoneLoading(BookmarkLoadDetails* details);
 
-  // Populates nodes_ordered_by_url_set_ from root.
+  // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
 
   // Removes the node from its parent, sends notification, and deletes it.
@@ -401,10 +397,13 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // favicon service.
   void LoadFavicon(BookmarkNode* node);
 
+  // Called to notify the observers that the favicon has been loaded.
+  void FaviconLoaded(const BookmarkNode* node);
+
   // If we're waiting on a favicon for node, the load request is canceled.
   void CancelPendingFaviconLoadRequests(BookmarkNode* node);
 
-  // NotificationObserver.
+  // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -451,8 +450,8 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Set of nodes ordered by URL. This is not a map to avoid copying the
   // urls.
-  // WARNING: nodes_ordered_by_url_set_ is accessed on multiple threads. As
-  // such, be sure and wrap all usage of it around url_lock_.
+  // WARNING: |nodes_ordered_by_url_set_| is accessed on multiple threads. As
+  // such, be sure and wrap all usage of it around |url_lock_|.
   typedef std::multiset<BookmarkNode*, NodeURLComparator> NodesOrderedByURLSet;
   NodesOrderedByURLSet nodes_ordered_by_url_set_;
   base::Lock url_lock_;
