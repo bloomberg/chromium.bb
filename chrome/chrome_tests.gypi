@@ -1467,6 +1467,7 @@
         'browser/instant/instant_loader_manager_unittest.cc',
         'browser/instant/promo_counter_unittest.cc',
         'browser/internal_auth_unittest.cc',
+        'browser/language_usage_metrics_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/media/media_internals_unittest.cc',
         'browser/metrics/display_utils_unittest.cc',
