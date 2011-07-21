@@ -148,10 +148,17 @@ AsyncHostResolver::AsyncHostResolver(const IPEndPoint& dns_server,
 }
 
 AsyncHostResolver::~AsyncHostResolver() {
+  // Destroy request lists.
   for (KeyRequestListMap::iterator it = requestlist_map_.begin();
        it != requestlist_map_.end(); ++it)
     STLDeleteElements(&it->second);
+
+  // Destroy transactions.
   STLDeleteElements(&transactions_);
+
+  // Destroy pending requests.
+  for (size_t i = 0; i < arraysize(pending_requests_); ++i)
+    STLDeleteElements(&pending_requests_[i]);
 }
 
 int AsyncHostResolver::Resolve(const RequestInfo& info,
@@ -160,7 +167,6 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
                                RequestHandle* out_req,
                                const BoundNetLog& source_net_log) {
   DCHECK(addresses);
-
   IPAddressNumber ip_number;
   std::string dns_name;
   int rv = ERR_UNEXPECTED;
@@ -318,9 +324,8 @@ AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
       NetLog::SOURCE_ASYNC_HOST_RESOLVER_REQUEST);
 
   int id = next_request_id_++;
-  Request* request = new Request(
+  return new Request(
       source_net_log, request_net_log, id, info, key, callback, addresses);
-  return request;
 }
 
 bool AsyncHostResolver::AttachToRequestList(Request* request) {
