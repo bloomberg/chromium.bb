@@ -34,8 +34,7 @@ class FrameRateTest : public UIPerfTest {
     return test_path;
   }
 
-  void RunTest(const std::string& name, const std::string& gesture,
-               const std::string& suffix) {
+  void RunTest(const std::string& name, const std::string& suffix) {
     FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
@@ -48,13 +47,12 @@ class FrameRateTest : public UIPerfTest {
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab->NavigateToURL(net::FilePathToFileURL(test_path)));
 
-    // Start the test.
-    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start('" +
-        gesture + "');")));
+    // Start the tests.
+    ASSERT_TRUE(tab->NavigateToURLAsync(GURL("javascript:__start_all();")));
 
-    // Block until the test completes.
+    // Block until the tests completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
-        tab, L"", L"window.domAutomationController.send(!__running);",
+        tab, L"", L"window.domAutomationController.send(!__running_all);",
         TestTimeouts::huge_test_timeout_ms()));
 
     // Read out the results.
@@ -62,7 +60,7 @@ class FrameRateTest : public UIPerfTest {
     ASSERT_TRUE(tab->ExecuteAndExtractString(
         L"",
         L"window.domAutomationController.send("
-        L"JSON.stringify(__calc_results()));",
+        L"JSON.stringify(__calc_results_total()));",
         &json));
 
     std::map<std::string, std::string> results;
@@ -70,10 +68,19 @@ class FrameRateTest : public UIPerfTest {
 
     ASSERT_TRUE(results.find("mean") != results.end());
     ASSERT_TRUE(results.find("sigma") != results.end());
+    ASSERT_TRUE(results.find("gestures") != results.end());
+    ASSERT_TRUE(results.find("means") != results.end());
+    ASSERT_TRUE(results.find("sigmas") != results.end());
+
+    std::cout << "Gestures: " + results["gestures"] + "\n";
+    std::cout << "Means:    " + results["means"] + "\n";
+    std::cout << "Sigmas:   " + results["sigmas"] + "\n";
+    PrintResultList("fps", suffix, "", results["means"],
+                    "frames-per-second", true);
 
     std::string mean_and_error = results["mean"] + "," + results["sigma"];
-    PrintResultMeanAndError("fps" + suffix, "", "", mean_and_error,
-                            "frames-per-second", false);
+    PrintResultMeanAndError("fps", suffix, "", mean_and_error,
+                            "frames-per-second", true);
   }
 };
 
@@ -85,17 +92,13 @@ class FrameRateTest_Reference : public FrameRateTest {
   }
 };
 
-#define FRAME_RATE_TEST(content, gesture) \
-TEST_F(FrameRateTest, content##_##gesture) { \
-  RunTest(#content, #gesture, ""); \
+#define ALL_FRAME_RATE_TESTS(content) \
+TEST_F(FrameRateTest, content) { \
+  RunTest(#content, ""); \
 } \
-TEST_F(FrameRateTest_Reference, content##_##gesture) { \
-  RunTest(#content, #gesture, "_ref"); \
+TEST_F(FrameRateTest_Reference, content) { \
+  RunTest(#content, "_ref"); \
 }
-
-FRAME_RATE_TEST(blank, steady);
-FRAME_RATE_TEST(blank, reading);
-FRAME_RATE_TEST(blank, mouse_wheel);
-FRAME_RATE_TEST(blank, mac_fling);
+ALL_FRAME_RATE_TESTS(blank);
 
 }  // namespace

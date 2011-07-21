@@ -2,8 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview  Perform various "gestures" and calculate average frame rate.
+ * "Gestures" are recorded scrolling behaviors in terms of time (ms) and
+ * absolute positions.
+ *
+ * How to run a single gesture:
+ *  1) Open a webpage to test (must include this javascript).
+ *  2) Type "__start('name_of_gesture')" in the javascript console.
+ *  3) Wait for gesture to finish.
+ *  4) Type "__calc_results()" in the console to see the test results.
+ *
+ * How to run all gestures:
+ *  1) Open a webpage to test (must include this javascript).
+ *  2) Type "__start_all()" in the javascript console.
+ *  3) Wait for all gestures to finish.
+ *  4) Type "__calc_results_total()" in the console to see the test results.
+ *
+ * How to record a new gesture:
+ *  1) Open a webpage to record from (must include this javascript).
+ *  2) Type "__start_recording()" in the javascript console.
+ *  3) Perform any gestures you wish to record.
+ *  4) Type "__stop()" in the javascript console.
+ *  5) Copy the output from "JSON.stringify(__recording)" in the console.
+ *  6) Paste the output in this file as a new member of __gestures.
+ *  7) Copy the formatting from other gestures.
+ *    Example:
+ *      new_gesture_name: [
+ *        {"time_ms":1, "y":0},
+ *        ... pasted output ...
+ *      ],
+ *
+ * @author jrt@chromium.org (Joe Tessler)
+ */
+
 var __running = false;
+var __running_all = false;
 var __old_title = "";
+var __raf_is_live = false;
 var __raf;
 
 var __t_last;
@@ -13,12 +49,15 @@ var __t_est_squared_total;
 var __t_count;
 var __t_start;
 
+var __queued_gesture_functions;
+var __results;
+
 var __recording = [];
 var __advance_gesture;
 var __gestures = {
   steady: [
     {"time_ms":1, "y":0},
-    {"time_ms":2, "y":10}
+    {"time_ms":5, "y":10}
   ],
   reading: [
     {"time_ms":1, "y":0},
@@ -128,6 +167,38 @@ function __calc_results() {
   return R;
 }
 
+function __calc_results_total() {
+  if (!__results) {
+    return;
+  }
+  var size = __results.gestures.length;
+  var mean = 0;
+  var variance = 0;
+  var sigma;
+
+  // Remove any intial caching test(s).
+  while (__results.means.length != size) {
+    __results.means.shift();
+    __results.sigmas.shift();
+  }
+  for (var i = 0; i < size; i++) {
+    mean += __results.means[i];
+    variance += __results.sigmas[i] * __results.sigmas[i];
+  }
+  mean /= size;
+  variance /= size;
+  sigma = Math.sqrt(variance);
+
+  var results = new Object();
+  // GTest expects a comma-separated string for lists.
+  results.gestures = __results.gestures.join(",");
+  results.means = __results.means.join(",");
+  results.sigmas = __results.sigmas.join(",");
+  results.mean = mean;
+  results.sigma = sigma;
+  return results;
+}
+
 function __update_fps() {
   var t_now = new Date().getTime();
   if (window.__t_last) {
@@ -198,10 +269,11 @@ function __sched_update() {
       __raf = mozRequestAnimationFrame;
   }
   __raf(function() {
-    if (!__running)
-      return;
-    __update_fps();
-    __advance_gesture();
+    __raf_is_live = true;
+    if (__running) {
+      __update_fps();
+      __advance_gesture();
+    }
     __sched_update();
   });
 }
@@ -226,18 +298,53 @@ function __start(gesture_function) {
 
   __old_title = document.title;
   __advance_gesture = gesture_function;
-  __running = true;
   __t_start = new Date().getTime();
-  __sched_update();
+  __running = true;
+  if (!__raf_is_live) {
+    __sched_update();
+  }
+}
+
+function __start_all() {
+  __queued_gesture_functions = [];
+  __results = {
+    gestures: [],
+    means: [],
+    sigmas: [],
+  };
+
+  for (var gesture in __gestures) {
+    __results.gestures.push(gesture);
+    __queued_gesture_functions.push(gesture);
+  }
+  __running_all = true;
+  // Run steady gesture once to cache the webpage layout for subsequent tests.
+  __start("steady");
 }
 
 function __stop() {
   __running = false;
   document.title = __old_title;
+
+  if (__running_all) {
+    var results = __calc_results();
+    __results.means.push(results.mean);
+    __results.sigmas.push(results.sigma);
+
+    if(__queued_gesture_functions.length > 0) {
+      document.body.scrollTop = 0;
+      __init_stats();
+      __start(__queued_gesture_functions.shift());
+    } else {
+      __running_all = false;
+    }
+  }
 }
 
 function __reset() {
-  __stop();
+  __running = false;
+  __running_all = false;
+  document.title = __old_title;
   document.body.scrollTop = 0;
   __init_stats();
 }
