@@ -3,6 +3,7 @@ bin_PROGRAMS = wayland-compositor
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
+	-DBINDIR='"$(bindir)"'			\
 	$(COMPOSITOR_CFLAGS)
 
 wayland_compositor_LDFLAGS = -export-dynamic

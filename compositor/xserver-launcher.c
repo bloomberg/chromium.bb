@@ -483,8 +483,8 @@ wlsc_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 		snprintf(logfile, sizeof logfile,
 			 "/tmp/x-log-%d", mxs->display);
 
-		if (execl("/usr/bin/Xorg",
-			  "/usr/bin/Xorg",
+		if (execl(BINDIR "/Xorg",
+			  BINDIR "/Xorg",
 			  display,
 			  "-wayland",
 			  "-rootless",
