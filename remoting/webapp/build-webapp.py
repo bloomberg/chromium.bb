@@ -44,7 +44,7 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def buildWebApp(mimetype, destination, zip_path, plugin, files):
+def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -54,6 +54,7 @@ def buildWebApp(mimetype, destination, zip_path, plugin, files):
     zipfile: A string with path to the zipfile to create containing the
              contents of |destination|.
     plugin: A string with path to the binary plugin for this webapp.
+    name_suffix: A string to append to the webapp's title.
     files: An array of strings listing the paths for resources to include
            in this webapp.
   """
@@ -107,6 +108,11 @@ def buildWebApp(mimetype, destination, zip_path, plugin, files):
                  '"PLUGINS": "PLACEHOLDER"',
                   '"plugins": [\n    { "path": "' + pluginName +'" }\n  ]')
 
+  # Add the name suffix.
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'NAME_SUFFIX',
+                 name_suffix)
+
   # Now massage files with our mimetype.
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  'HOST_PLUGIN_MIMETYPE',
@@ -122,7 +128,8 @@ def main():
            '<mime-type> <dst> <zip-path> <plugin> <other files...>')
     sys.exit(1)
 
-  buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5:])
+  buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
+              sys.argv[5], sys.argv[6:])
 
 
 if __name__ == '__main__':

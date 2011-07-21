@@ -22,14 +22,25 @@
         ],  # conditions
         'plugin_extension': 'plugin',
         'plugin_prefix': '',
+        'name_suffix': '- Mac',
       }],
       ['os_posix == 1 and OS != "mac"', {
         'plugin_extension': 'so',
         'plugin_prefix': 'lib',
       }],
+      ['OS=="linux" and chromeos==1', {
+        'name_suffix': '- Chromebook',
+      }],
+      ['OS=="linux" and chromeos==0 and target_arch=="x64"', {
+        'name_suffix': '- Linux - 64',
+      }],
+      ['OS=="linux" and chromeos==0 and target_arch!="x64"', {
+        'name_suffix': '- Linux',
+      }],
       ['OS=="win"', {
         'plugin_extension': 'dll',
         'plugin_prefix': '',
+        'name_suffix': '- Windows',
       }],
     ],
     'remoting_it2me_files': [
@@ -222,6 +233,7 @@
             '<(_output_dir)',
             '<(_zip_path)',
             '<(_plugin_path)',
+            '<(name_suffix)',
             '<@(remoting_it2me_files)',
           ],
         },
