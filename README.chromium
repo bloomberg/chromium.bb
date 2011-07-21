@@ -3,7 +3,7 @@ URL: http://portland.freedesktop.org/wiki/
 Version: 3ba869a97b737fd308502a7f9e63bda202891642
 
 Description:
-This directory contains a copy of xdg-utils obtained from git on 2011-05-10,
+This directory contains a copy of xdg-utils obtained from git on 2011-07-20,
 with this command:
 
 git clone git://anongit.freedesktop.org/xdg/xdg-utils xdg-utils
