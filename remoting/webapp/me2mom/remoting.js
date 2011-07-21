@@ -353,6 +353,7 @@ function onStateChanged_() {
     }
   } else if (state == plugin.CONNECTED) {
     remoting.setHostMode('shared');
+    disableTimeoutCountdown_();
   } else if (state == plugin.DISCONNECTED) {
     setGlobalMode(remoting.AppMode.HOST);
     remoting.setHostMode('unshared');
