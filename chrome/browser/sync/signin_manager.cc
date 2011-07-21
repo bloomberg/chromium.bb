@@ -40,6 +40,10 @@ void SigninManager::Initialize(Profile* profile) {
   }
 }
 
+bool SigninManager::IsInitialized() const {
+  return profile_ != NULL;
+}
+
 void SigninManager::CleanupNotificationRegistration() {
 #if !defined(OS_CHROMEOS)
   if (registrar_.IsRegistered(this,

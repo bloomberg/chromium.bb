@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
@@ -57,8 +58,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
     profile_.CreateRequestContext();
-    service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                              "test", true, NULL));
+    CreateSyncService();
     service_->AddObserver(&observer_);
     service_->set_synchronous_sync_configuration();
   }
@@ -75,6 +75,12 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
  protected:
+  // Overridden below by ProfileSyncServiceStartupCrosTest.
+  virtual void CreateSyncService() {
+    service_.reset(new TestProfileSyncService(&factory_, &profile_,
+                                              "", true, NULL));
+  }
+
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
@@ -89,6 +95,14 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;
   ProfileSyncServiceObserverMock observer_;
+};
+
+class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
+ protected:
+  virtual void CreateSyncService() {
+    service_.reset(new TestProfileSyncService(&factory_, &profile_,
+                                              "test_user", true, NULL));
+  }
 };
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
@@ -109,20 +123,39 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(3);
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
   EXPECT_CALL(*data_type_manager, state()).
+      WillOnce(Return(DataTypeManager::CONFIGURED)).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
+  service_->OnUserSubmittedAuth("test_user", "", "", "");
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
 
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);
   service_->OnUserChoseDatatypes(false, set);
+  EXPECT_TRUE(service_->ShouldPushChanges());
+}
+
+TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
+  profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
+  EXPECT_CALL(*data_type_manager, state()).
+      WillOnce(Return(DataTypeManager::CONFIGURED)).
+      WillOnce(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+
+  profile_.GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "sync_token");
+  service_->Initialize();
+  EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
@@ -137,6 +170,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
   // Pre load the tokens
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
 }
 
@@ -150,6 +184,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
   // Service should not be started by Initialize() since it's managed.
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
 }
 
@@ -160,6 +195,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
 
   // The service should stop when switching to managed mode.
@@ -185,6 +221,7 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
   Mock::VerifyAndClearExpectations(data_type_manager);
 
@@ -264,6 +301,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
 
   profile_.GetTokenService()->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }

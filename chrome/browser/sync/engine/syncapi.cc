@@ -2292,6 +2292,14 @@ void SyncManager::SyncInternal::OnServerConnectionEvent(
     FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
         OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
   }
+
+  if (event.connection_code ==
+      browser_sync::HttpResponse::SYNC_SERVER_ERROR) {
+    ObserverList<SyncManager::Observer> temp_obs_list;
+    CopyObservers(&temp_obs_list);
+    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+        OnAuthError(AuthError(AuthError::CONNECTION_FAILED)));
+  }
 }
 
 void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
@@ -2516,7 +2524,8 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
         CopyObservers(&temp_obs_list);
         FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
                           OnPassphraseRequired(sync_api::REASON_DECRYPTION));
-      } else if (!cryptographer->is_ready()) {
+      } else if (!cryptographer->is_ready() &&
+                 event.snapshot->initial_sync_ended.test(syncable::NIGORI)) {
         VLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                 << "ready";
         ObserverList<SyncManager::Observer> temp_obs_list;

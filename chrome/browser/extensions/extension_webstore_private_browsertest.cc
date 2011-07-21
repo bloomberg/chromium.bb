@@ -12,6 +12,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -34,7 +35,7 @@ const char kTestUrlHostname[] = "www.example.com";
 class FakeProfileSyncService : public ProfileSyncService {
  public:
   FakeProfileSyncService()
-      : ProfileSyncService(NULL, NULL, ""),
+      : ProfileSyncService(NULL, NULL, new SigninManager(), ""),
         setup_(false) {
   }
   virtual ~FakeProfileSyncService() {}

@@ -1,4 +1,3 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +8,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -24,6 +24,23 @@ using syncable::DirectoryManager;
 using syncable::ModelType;
 using syncable::ScopedDirLookup;
 using sync_api::UserShare;
+
+namespace {
+
+class FakeSigninManager : public SigninManager {
+ public:
+  FakeSigninManager() {}
+  virtual ~FakeSigninManager() {}
+
+  virtual void StartSignIn(const std::string& username,
+                           const std::string& password,
+                           const std::string& login_token,
+                           const std::string& login_captcha) OVERRIDE {
+    SetUsername(username);
+  }
+};
+
+}  // namespace
 
 namespace browser_sync {
 
@@ -178,11 +195,11 @@ browser_sync::SyncBackendHostForProfileSyncTest*
 
 TestProfileSyncService::TestProfileSyncService(
     ProfileSyncFactory* factory,
-                       Profile* profile,
-                       const std::string& test_user,
-                       bool synchronous_backend_initialization,
-                       Task* initial_condition_setup_task)
-    : ProfileSyncService(factory, profile, test_user),
+    Profile* profile,
+    const std::string& test_user,
+    bool synchronous_backend_initialization,
+    Task* initial_condition_setup_task)
+    : ProfileSyncService(factory, profile, new FakeSigninManager(), test_user),
       synchronous_backend_initialization_(
           synchronous_backend_initialization),
       synchronous_sync_configuration_(false),

@@ -69,6 +69,7 @@ static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
 
 ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
+                                       SigninManager* signin_manager,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
       passphrase_required_reason_(sync_api::REASON_PASSPHRASE_NOT_REQUIRED),
@@ -79,6 +80,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       backend_initialized_(false),
       is_auth_in_progress_(false),
       wizard_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      signin_(signin_manager),
       unrecoverable_error_detected_(false),
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
@@ -147,13 +149,12 @@ void ProfileSyncService::Initialize() {
   // In Chrome, we integrate a SigninManager which works with the sync
   // setup wizard to kick off the TokenService. CrOS does its own plumbing
   // for the TokenService in login and does not normally rely on signin_,
-  // so only intiailize this if the token service has not been initialized
+  // so only initialize this if the token service has not been initialized
   // (e.g. the browser crashed or is being debugged).
   if (cros_user_.empty() ||
       !profile_->GetTokenService()->Initialized()) {
     // Will load tokens from DB and broadcast Token events after.
     // Note: We rely on signin_ != NULL unless !cros_user_.empty().
-    signin_.reset(new SigninManager());
     signin_->Initialize(profile_);
   }
 
@@ -181,11 +182,15 @@ void ProfileSyncService::RegisterAuthNotifications() {
                  chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
                  Source<TokenService>(profile_->GetTokenService()));
   registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
+                 Source<TokenService>(profile_->GetTokenService()));
+  registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSyncOAuth)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_COOKIE_CHANGED,
@@ -459,9 +464,7 @@ void ProfileSyncService::DisableForUser() {
   ClearPreferences();
   Shutdown(true);
 
-  if (signin_.get()) {
-    signin_->SignOut();
-  }
+  signin_->SignOut();
 
   NotifyObservers();
 }
@@ -576,6 +579,7 @@ void ProfileSyncService::OnBackendInitialized(bool success) {
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
       ShowConfigure(true);
+      return;
     } else {
       SetSyncSetupCompleted();
     }
@@ -927,11 +931,10 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
   auth_start_time_ = base::TimeTicks::Now();
 
-  if (!signin_.get()) {
-    // In ChromeOS we sign in during login, so we do not instantiate signin_.
+  if (!signin_->IsInitialized()) {
+    // In ChromeOS we sign in during login, so we do not initialize signin_.
     // If this function gets called, we need to re-authenticate (e.g. for
-    // two factor signin), so instantiate signin_ here.
-    signin_.reset(new SigninManager());
+    // two factor signin), so initialize signin_ here.
     signin_->Initialize(profile_);
   }
 
@@ -1339,6 +1342,12 @@ void ProfileSyncService::Observe(int type,
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
       GoogleServiceAuthError error =
           *(Details<const GoogleServiceAuthError>(details).ptr());
+      UpdateAuthErrorState(error);
+      break;
+    }
+    case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {
+      GoogleServiceAuthError error(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
       UpdateAuthErrorState(error);
       break;
     }

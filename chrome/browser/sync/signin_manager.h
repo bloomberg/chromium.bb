@@ -45,6 +45,7 @@ class SigninManager : public GaiaAuthConsumer , public NotificationObserver {
 
   // If user was signed in, load tokens from DB if available.
   void Initialize(Profile* profile);
+  bool IsInitialized() const;
 
   // If a user is signed in, this will return their name.
   // Otherwise, it will return an empty string.
@@ -56,10 +57,12 @@ class SigninManager : public GaiaAuthConsumer , public NotificationObserver {
   // Attempt to sign in this user. If successful, set a preference indicating
   // the signed in user and send out a notification, then start fetching tokens
   // for the user.
-  void StartSignIn(const std::string& username,
-                   const std::string& password,
-                   const std::string& login_token,
-                   const std::string& login_captcha);
+  // This is overridden for test subclasses that don't want to issue auth
+  // requests.
+  virtual void StartSignIn(const std::string& username,
+                           const std::string& password,
+                           const std::string& login_token,
+                           const std::string& login_captcha);
 
   // Used when a second factor access code was required to complete a signin
   // attempt.

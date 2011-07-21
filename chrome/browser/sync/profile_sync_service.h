@@ -141,8 +141,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Sync server URL for dev channel users
   static const char* kDevServerUrl;
 
-  ProfileSyncService(ProfileSyncFactory* factory_,
+  ProfileSyncService(ProfileSyncFactory* factory,
                      Profile* profile,
+                     SigninManager* signin,  // Service takes ownership.
                      const std::string& cros_user);
   virtual ~ProfileSyncService();
 
@@ -521,6 +522,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
  private:
   friend class ProfileSyncServicePasswordTest;
   friend class TestProfileSyncService;
+  friend class ProfileSyncServiceForWizardTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
 
   // If |delete_sync_data_folder| is true, then this method will delete all

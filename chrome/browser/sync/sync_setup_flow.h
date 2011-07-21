@@ -101,6 +101,7 @@ class SyncSetupFlow {
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, NonFatalError);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, CrosAuthSetup);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

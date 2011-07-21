@@ -8,7 +8,10 @@
 #include <ostream>
 
 #include "base/logging.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -61,8 +64,15 @@ void SyncSetupWizard::Step(State advance_state) {
       return;
     // No flow is in progress, and we have never escorted the user all the
     // way through the wizard flow.
+    State end_state = DONE;
+    if (!service_->cros_user().empty() &&
+        !service_->profile()->GetPrefs()->GetBoolean(
+            prefs::kSyncSuppressStart)) {
+      end_state = GAIA_SUCCESS;
+    }
     flow_container_->set_flow(
-        SyncSetupFlow::Run(service_, flow_container_, advance_state, DONE));
+        SyncSetupFlow::Run(service_, flow_container_, advance_state,
+                           end_state));
   } else {
     // No flow in progress, but we've finished the wizard flow once before.
     // This is just a discrete run.

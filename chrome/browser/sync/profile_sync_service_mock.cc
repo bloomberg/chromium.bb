@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 ProfileSyncServiceMock::ProfileSyncServiceMock()
-    : ProfileSyncService(NULL, NULL, "") {
+    : ProfileSyncService(NULL, NULL, new SigninManager(), "") {
 }
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {

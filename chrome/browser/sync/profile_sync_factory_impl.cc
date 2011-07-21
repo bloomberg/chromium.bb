@@ -41,6 +41,7 @@
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -89,7 +90,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
     const std::string& cros_user) {
 
   ProfileSyncService* pss = new ProfileSyncService(
-      this, profile_, cros_user);
+      this, profile_, new SigninManager(), cros_user);
   return pss;
 }
 
