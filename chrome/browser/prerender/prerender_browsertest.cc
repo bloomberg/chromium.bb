@@ -1447,13 +1447,73 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
 #if defined(ENABLE_SAFE_BROWSING)
 // Ensures that we do not prerender pages with a safe browsing
 // interstitial.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SafeBrowsingPage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingTopLevel) {
   GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
   GetSafeBrowsingService()->SetResultForUrl(
       url, SafeBrowsingService::URL_MALWARE);
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_SAFE_BROWSING, 1);
 }
+
+// Ensures that server redirects to a malware page will cancel prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderSafeBrowsingServerRedirect) {
+  GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
+  GetSafeBrowsingService()->SetResultForUrl(
+      url, SafeBrowsingService::URL_MALWARE);
+  PrerenderTestURL(CreateServerRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_SAFE_BROWSING,
+                   1);
+}
+
+// Ensures that client redirects to a malware page will cancel prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderSafeBrowsingClientRedirect) {
+  GURL url = test_server()->GetURL("files/prerender/prerender_page.html");
+  GetSafeBrowsingService()->SetResultForUrl(
+      url, SafeBrowsingService::URL_MALWARE);
+  PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
+                   FINAL_STATUS_SAFE_BROWSING,
+                   1);
+}
+
+// Ensures that we do not prerender pages which have a malware subresource.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
+  GURL image_url = test_server()->GetURL("files/prerender/image.jpeg");
+  GetSafeBrowsingService()->SetResultForUrl(
+      image_url, SafeBrowsingService::URL_MALWARE);
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path,
+                   FINAL_STATUS_SAFE_BROWSING,
+                   1);
+}
+
+// Ensures that we do not prerender pages which have a malware iframe.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
+  GURL iframe_url = test_server()->GetURL(
+      "files/prerender/prerender_embedded_content.html");
+  GetSafeBrowsingService()->SetResultForUrl(
+      iframe_url, SafeBrowsingService::URL_MALWARE);
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_iframe.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path,
+                   FINAL_STATUS_SAFE_BROWSING,
+                   1);
+}
+
 #endif
 
 // Checks that a local storage read will not cause prerender to fail.
