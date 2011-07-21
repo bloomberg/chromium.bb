@@ -2648,10 +2648,14 @@ nonvariant_tests = [
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_example_events/nacl.scons',
     'tests/ppapi_example_font/nacl.scons',
-    'tests/ppapi_example_gles2/nacl.scons',
+    # TODO(dspringer): re-enable these once the 3D ABI has stabilized.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=2060
+    # 'tests/ppapi_example_gles2/nacl.scons',
     'tests/ppapi_example_post_message/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
-    'tests/ppapi_gles_book/nacl.scons',
+    # TODO(dspringer): re-enable these once the 3D ABI has stabilized.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=2060
+    # 'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_messaging/nacl.scons',
     'tests/ppapi_simple_tests/nacl.scons',
     'tests/ppapi_test_example/nacl.scons',

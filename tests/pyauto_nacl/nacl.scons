@@ -30,44 +30,48 @@ ppapi_geturl_files = CreateDefaultDeps('ppapi_geturl') + [
 ppapi_example_2d_files = CreateDefaultDeps('ppapi_example_2d')
 ppapi_example_audio_files = CreateDefaultDeps('ppapi_example_audio')
 ppapi_example_font_files = CreateDefaultDeps('ppapi_example_font')
-ppapi_example_gles2_files = CreateDefaultDeps('ppapi_example_gles2')
+# TODO(dspringer): Re-enable this once the 3D ABI has stabilized.  See
+# http://code.google.com/p/nativeclient/issues/detail?id=2060
+# ppapi_example_gles2_files = CreateDefaultDeps('ppapi_example_gles2')
 ppapi_example_post_message_files = CreateDefaultDeps(
     'ppapi_example_post_message')
-ppapi_gles_book_hello_triangle_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_hello_triangle'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_hello_triangle.nmf')]
-ppapi_gles_book_mip_map_2d_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_mip_map_2d'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_mip_map_2d.nmf')]
-ppapi_gles_book_simple_texture_2d_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_2d'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_2d.nmf')]
-ppapi_gles_book_simple_texture_cubemap_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_cubemap'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_cubemap.nmf')]
-ppapi_gles_book_simple_vertex_shader_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_vertex_shader'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_simple_vertex_shader.nmf')]
-ppapi_gles_book_stencil_test_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_stencil_test'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_stencil_test.nmf')]
-ppapi_gles_book_texture_wrap_files = [
-    env.File('${STAGING_DIR}/ppapi_gles_book.html'),
-    env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap'
-             '_%s.nexe' % platform),
-    env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap.nmf')]
+# TODO(dspringer): Re-enable this once the 3D ABI has stabilized. See
+# http://code.google.com/p/nativeclient/issues/detail?id=2060
+# ppapi_gles_book_hello_triangle_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_hello_triangle'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_hello_triangle.nmf')]
+# ppapi_gles_book_mip_map_2d_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_mip_map_2d'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_mip_map_2d.nmf')]
+# ppapi_gles_book_simple_texture_2d_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_2d'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_2d.nmf')]
+# ppapi_gles_book_simple_texture_cubemap_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_cubemap'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_texture_cubemap.nmf')]
+# ppapi_gles_book_simple_vertex_shader_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_vertex_shader'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_simple_vertex_shader.nmf')]
+# ppapi_gles_book_stencil_test_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_stencil_test'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_stencil_test.nmf')]
+# ppapi_gles_book_texture_wrap_files = [
+#     env.File('${STAGING_DIR}/ppapi_gles_book.html'),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap'
+#              '_%s.nexe' % platform),
+#     env.File('${STAGING_DIR}/ppapi_gles_book_texture_wrap.nmf')]
 ppapi_ppb_core_files = CreateDefaultDeps('ppapi_ppb_core')
 ppapi_ppb_file_system_files = CreateDefaultDeps('ppapi_ppb_file_system')
 ppapi_ppb_graphics2d_files = CreateDefaultDeps('ppapi_ppb_graphics2d')
@@ -111,16 +115,22 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_example_2d_files +
                    ppapi_example_audio_files +
                    ppapi_example_font_files +
-                   ppapi_example_gles2_files +
+                   # TODO(dspringer): Re-enable this once the 3D ABI has
+                   # stabilized.  See
+                   # http://code.google.com/p/nativeclient/issues/detail?id=2060
+                   # ppapi_example_gles2_files +
                    ppapi_example_post_message_files +
                    ppapi_geturl_files +
-                   ppapi_gles_book_hello_triangle_files +
-                   ppapi_gles_book_mip_map_2d_files +
-                   ppapi_gles_book_simple_texture_2d_files +
-                   ppapi_gles_book_simple_texture_cubemap_files +
-                   ppapi_gles_book_simple_vertex_shader_files +
-                   ppapi_gles_book_stencil_test_files +
-                   ppapi_gles_book_texture_wrap_files +
+                   # TODO(dspringer): Re-enable these once the 3D ABI has
+                   # stabilized.  See
+                   # http://code.google.com/p/nativeclient/issues/detail?id=2060
+                   # ppapi_gles_book_hello_triangle_files +
+                   # ppapi_gles_book_mip_map_2d_files +
+                   # ppapi_gles_book_simple_texture_2d_files +
+                   # ppapi_gles_book_simple_texture_cubemap_files +
+                   # ppapi_gles_book_simple_vertex_shader_files +
+                   # ppapi_gles_book_stencil_test_files +
+                   # ppapi_gles_book_texture_wrap_files +
                    ppapi_ppb_core_files +
                    ppapi_ppb_file_system_files +
                    ppapi_ppb_graphics2d_files +

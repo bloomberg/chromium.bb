@@ -92,31 +92,45 @@ class NaClTest(pyauto.PyUITest):
   def testReloadGetURL(self):
     self.reloader('ppapi_geturl.html', 'PPAPI')
 
-  def testReloadGLESBookHelloTriangle(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookHelloTriangle(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_hello_triangle.nmf', 'PPAPI')
 
-  def testReloadGLESBookMipMap2D(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookMipMap2D(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_mip_map_2d.nmf', 'PPAPI')
 
-  def testReloadGLESBookSimpleTexture2D(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookSimpleTexture2D(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_simple_texture_2d.nmf', 'PPAPI')
 
-  def testReloadGLESBookSimpleTextureCubemap(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookSimpleTextureCubemap(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_simple_texture_cubemap.nmf', 'PPAPI')
 
-  def testReloadGLESBookSimpleVertexShader(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookSimpleVertexShader(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_simple_vertex_shader.nmf', 'PPAPI')
 
-  def testReloadGLESBookStencilTest(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookStencilTest(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_stencil_test.nmf', 'PPAPI')
 
-  def testReloadGLESBookTextureWrap(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestReloadGLESBookTextureWrap(self):
     self.reloader('ppapi_gles_book.html?manifest='
                   'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
 

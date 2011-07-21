@@ -81,31 +81,45 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncGetURL(self):
     self.surfAwayAsync('ppapi_geturl.html', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookHelloTriangle(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookHelloTriangle(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_hello_triangle.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookMipMap2D(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookMipMap2D(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_mip_map_2d.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookSimpleTexture2D(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookSimpleTexture2D(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_simple_texture_2d.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookSimpleTextureCubemap(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookSimpleTextureCubemap(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_simple_texture_cubemap.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookSimpleVertexShade(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookSimpleVertexShade(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_simple_vertex_shader.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookStencilTest(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookStencilTest(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_stencil_test.nmf', 'PPAPI')
 
-  def testSurfAwayAsyncGLESBookTextureWrap(self):
+  # TODO(dspringer): enable test when 3D ABI is stable.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2060
+  def disabledTestSurfAwayAsyncGLESBookTextureWrap(self):
     self.surfAwayAsync('ppapi_gles_book.html?manifest='
                        'ppapi_gles_book_texture_wrap.nmf', 'PPAPI')
 

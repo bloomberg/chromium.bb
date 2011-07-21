@@ -20,20 +20,22 @@ class NaClTest(pyauto.PyUITest):
            # ('ppapi_example_gles2.html', 1),
            ('ppapi_example_post_message.html', 1),
            ('ppapi_geturl.html', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_hello_triangle.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_mip_map_2d.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_simple_texture_2d.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_simple_texture_cubemap.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_simple_vertex_shader.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_stencil_test.nmf', 1),
-           ('ppapi_gles_book.html?manifest='
-            'ppapi_gles_book_texture_wrap.nmf', 1),
+           # TODO(dspringer): enable tests when 3D ABI is stable.
+           # http://code.google.com/p/nativeclient/issues/detail?id=2060
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_hello_triangle.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_mip_map_2d.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_simple_texture_2d.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_simple_texture_cubemap.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_simple_vertex_shader.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_stencil_test.nmf', 1),
+           # ('ppapi_gles_book.html?manifest='
+           #  'ppapi_gles_book_texture_wrap.nmf', 1),
            ('ppapi_progress_events.html', 1),
            ('ppapi_ppb_core.html', 1),
            ('ppapi_ppb_file_system.html', 1),
