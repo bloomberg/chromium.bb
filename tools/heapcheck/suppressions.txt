@@ -1624,3 +1624,10 @@
    ...
    fun:views::View::*
 }
+# This one is the most scary
+{
+   bug_90013_e
+   Heapcheck:Leak
+   ...
+   fun:??
+}
