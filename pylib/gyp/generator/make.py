@@ -809,6 +809,9 @@ class XcodeSettings(object):
       ldflag = AbsolutifyPrefix(ldflag, '-Wl,-exported_symbols_list ')
       ldflags.append(ldflag)
 
+    if self._Test('DEAD_CODE_STRIPPING', 'YES', default='NO'):
+      ldflags.append('-Wl,-dead_strip')
+
     if self._Test('PREBINDING', 'YES', default='NO'):
       ldflags.append('-Wl,-prebind')
 
