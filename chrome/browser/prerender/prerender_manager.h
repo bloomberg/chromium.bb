@@ -195,6 +195,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
 
+  PrerenderTracker* prerender_tracker() { return prerender_tracker_; }
+
  protected:
   // Test that needs needs access to internal functions.
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);

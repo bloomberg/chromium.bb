@@ -566,9 +566,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(prerender_manager());
     prerender_manager()->mutable_config().rate_limit_enabled = false;
-
-    // This is needed to exit the event loop once the prerendered page has
-    // stopped loading or was cancelled.
+    prerender_manager()->mutable_config().https_allowed = true;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(total_navigations,
@@ -789,8 +787,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
-                   FINAL_STATUS_HTTPS,
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestURL();
 }
 
 // Checks that client-issued redirects to an https page will cancel prerenders.
@@ -800,8 +799,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(CreateClientRedirect(https_url.spec()),
-                   FINAL_STATUS_HTTPS,
-                   1);
+                   FINAL_STATUS_USED,
+                   2);
+  NavigateToDestURL();
 }
 
 // Checks that client-issued redirects within an iframe in a prerendered
@@ -879,8 +879,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(CreateServerRedirect(https_url.spec()),
-                   FINAL_STATUS_HTTPS,
+                   FINAL_STATUS_USED,
                    1);
+  NavigateToDestURL();
 }
 
 // Checks that server-issued redirects within an iframe in a prerendered
@@ -1294,9 +1295,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
                    1);
 }
 
-// Checks that a top-level page which would trigger an SSL error is simply
-// canceled. Note that this happens before checking the cert, since an https
-// URL should not be sent out.
+// Checks that a top-level page which would trigger an SSL error is canceled.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   net::TestServer::HTTPSOptions https_options;
   https_options.server_certificate =
@@ -1306,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
-                   FINAL_STATUS_HTTPS,
+                   FINAL_STATUS_SSL_ERROR,
                    1);
 }
 
@@ -1396,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
-  PrerenderTestURL(https_url, FINAL_STATUS_HTTPS, 1);
+  PrerenderTestURL(https_url, FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 1);
 }
 
 // Checks that an SSL Client Certificate request that originates from a

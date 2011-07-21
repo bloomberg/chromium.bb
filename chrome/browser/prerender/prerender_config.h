@@ -24,6 +24,9 @@ struct Config {
 
   // Maximum age for a prerendered page until it is removed.
   base::TimeDelta max_age;
+
+  // Is https allowed?
+  bool https_allowed;
 };
 
 }  // namespace prerender

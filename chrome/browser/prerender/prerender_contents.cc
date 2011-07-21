@@ -438,17 +438,21 @@ void PrerenderContents::OnUpdateFaviconURL(
 }
 
 bool PrerenderContents::AddAliasURL(const GURL& url) {
-  if (!url.SchemeIs(chrome::kHttpScheme)) {
-    if (url.SchemeIs(chrome::kHttpsScheme))
-      Destroy(FINAL_STATUS_HTTPS);
-    else
-      Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
+  const bool http = url.SchemeIs(chrome::kHttpScheme);
+  const bool https = url.SchemeIs(chrome::kHttpsScheme);
+  if (!(http || https)) {
+    Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
+    return false;
+  }
+  if (https && !prerender_manager_->config().https_allowed) {
+    Destroy(FINAL_STATUS_HTTPS);
     return false;
   }
   if (prerender_manager_->HasRecentlyBeenNavigatedTo(url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }
+
   alias_urls_.push_back(url);
   prerender_tracker_->AddPrerenderURLOnUIThread(url);
   return true;

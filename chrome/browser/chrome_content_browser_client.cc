@@ -25,6 +25,8 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -57,6 +59,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
@@ -506,6 +509,27 @@ void ChromeContentBrowserClient::AllowCertificateError(
     SSLCertErrorHandler* handler,
     bool overridable,
     Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+  // If the tab is being prerendered, cancel the prerender and the request.
+  TabContents* tab = tab_util::GetTabContentsByID(
+      handler->render_process_host_id(),
+      handler->tab_contents_id());
+  if (!tab) {
+    NOTREACHED();
+    return;
+  }
+  prerender::PrerenderManager* prerender_manager =
+      tab->profile()->GetPrerenderManager();
+  if (prerender_manager && prerender_manager->IsTabContentsPrerendering(tab)) {
+    if (prerender_manager->prerender_tracker()->TryCancel(
+            handler->render_process_host_id(),
+            handler->tab_contents_id(),
+            prerender::FINAL_STATUS_SSL_ERROR)) {
+      handler->CancelRequest();
+      return;
+    }
+  }
+
+  // Otherwise, display an SSL blocking page.
   SSLBlockingPage* blocking_page = new SSLBlockingPage(
       handler, overridable, callback);
   blocking_page->Show();

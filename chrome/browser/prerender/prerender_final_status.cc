@@ -44,6 +44,7 @@ const char* kFinalStatusNames[] = {
   "SSL Client Certificate Requested",
   "Cache or History Cleared",
   "Cancelled",
+  "SSL Error",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
