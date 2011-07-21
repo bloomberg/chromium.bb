@@ -204,17 +204,11 @@ def ParseDirectoryIndexRecent(context):
   return re.findall(r"<a href=\"(\d+)/\">\1/</a>", document)
 
 
-def GetRevList(context):
-  """Gets the list of revision numbers between |good_revision| and
+def FilterRevList(context, revlist):
+  """Filter revlist to the revisions between |good_revision| and
   |bad_revision| of the |context|."""
   # Download the revlist and filter for just the range between good and bad.
   rev_range = range(context.good_revision, context.bad_revision)
-  revisions = []
-  if context.use_recent:
-    revisions = ParseDirectoryIndexRecent(context)
-  else:
-    revisions = ParseDirectoryIndex(context)
-  revlist = map(int, revisions)
   revlist = filter(lambda r: r in rev_range, revlist)
   revlist.sort()
   return revlist
@@ -345,12 +339,6 @@ def main():
   parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
                     help = 'Profile to use; this will not reset every run. ' +
                     'Defaults to a clean profile.', default = 'profile')
-  parser.add_option('-r', '--recent',
-                    dest = "recent",
-                    default = False,
-                    action = "store_true",
-                    help = 'Use recent builds from about the last 2 months ' +
-                    'for higher granularity bisecting.')
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -366,7 +354,7 @@ def main():
     return 1
 
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(opts.archive, 0, 0, opts.recent)
+  context = PathContext(opts.archive, 0, 0, use_recent=False)
 
   # Pick a starting point, try to get HEAD for this.
   if opts.bad:
@@ -400,8 +388,35 @@ def main():
   context.good_revision = good_rev
   context.bad_revision = bad_rev
 
-  # Get a list of revisions to bisect across.
-  revlist = GetRevList(context)
+  # Get recent revision list and check whether it's sufficient.
+  all_revs_recent = map(int, ParseDirectoryIndexRecent(context))
+  all_revs_recent.sort()
+  # Skipping 0 since it might be deleted off the server soon:
+  all_revs_recent = all_revs_recent[1:]
+  oldest_recent_rev = all_revs_recent[0]
+  if good_rev >= oldest_recent_rev:
+    # The range is within recent builds, so switch on use_recent.
+    context.use_recent = True
+  elif bad_rev >= oldest_recent_rev:
+    # The range spans both old and recent builds.
+    # If oldest_recent_rev is good, we bisect the recent builds.
+    context.use_recent = True
+    TryRevision(context, oldest_recent_rev, opts.profile, args)
+    if AskIsGoodBuild(oldest_recent_rev):
+      # context.use_recent is True
+      context.good_revision = oldest_recent_rev
+    else:
+      context.use_recent = False
+      context.bad_revision = oldest_recent_rev
+
+  all_revs = []
+  if context.use_recent:
+    all_revs = all_revs_recent
+  else:
+    all_revs = map(int, ParseDirectoryIndex(context))
+
+  # Filter list of revisions to bisect across.
+  revlist = FilterRevList(context, all_revs)
   if len(revlist) < 2:  # Don't have enough builds to bisect
     print 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     sys.exit(1)
