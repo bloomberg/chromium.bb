@@ -205,6 +205,26 @@
    fun:Syncer::SyncShare
 }
 {
+   bug_32623
+   Heapcheck:Leak
+   ...
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   ...
+   fun:ssl_InitSessionCacheLocks
+   fun:lock_cache
+   fun:ssl_LookupSID
+   fun:ssl2_BeginClientHandshake
+   fun:ssl_Do1stHandshake
+   fun:SSL_ForceHandshake
+   fun:net::SSLClientSocketNSS::DoHandshake
+   fun:net::SSLClientSocketNSS::DoHandshakeLoop
+   fun:net::SSLClientSocketNSS::Connect
+   fun:net::SSLConnectJob::DoSSLConnect
+   fun:net::SSLConnectJob::DoLoop
+   fun:net::SSLConnectJob::OnIOComplete
+}
+{
    bug_17540
    Heapcheck:Leak
    fun:base::MessagePumpLibevent::WatchFileDescriptor
@@ -1431,8 +1451,8 @@
    bug_81796_a
    Heapcheck:Leak
    fun:base::MessageLoopProxy::CreateForCurrentThread
-   fun:IPC::ChannelProxy::Context::Context
-   fun:IPC::ChannelProxy::ChannelProxy
+   fun:*Context
+   fun:*ChannelProxy
    fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
 }
 {
