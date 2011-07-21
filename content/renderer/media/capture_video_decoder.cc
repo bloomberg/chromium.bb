@@ -7,6 +7,11 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
+#include "media/base/video_util.h"
+
+using media::CopyYPlane;
+using media::CopyUPlane;
+using media::CopyVPlane;
 
 CaptureVideoDecoder::CaptureVideoDecoder(
     base::MessageLoopProxy* message_loop_proxy,
@@ -241,26 +246,15 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 
   uint8* buffer = buf->memory_pointer;
 
-  // TODO(wjia): de-duplicating pixel date copying code.
-  uint8* y_plane = video_frame->data(media::VideoFrame::kYPlane);
-  for (size_t row = 0; row < video_frame->height(); ++row) {
-    memcpy(y_plane, buffer, capability_.width);
-    y_plane += video_frame->stride(media::VideoFrame::kYPlane);
-    buffer += capability_.width;
-  }
-  size_t uv_width = capability_.width / 2;
-  uint8* u_plane = video_frame->data(media::VideoFrame::kUPlane);
-  for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(u_plane, buffer, uv_width);
-    u_plane += video_frame->stride(media::VideoFrame::kUPlane);
-    buffer += uv_width;
-  }
-  uint8* v_plane = video_frame->data(media::VideoFrame::kVPlane);
-  for (size_t row = 0; row < video_frame->height(); row += 2) {
-    memcpy(v_plane, buffer, uv_width);
-    v_plane += video_frame->stride(media::VideoFrame::kVPlane);
-    buffer += uv_width;
-  }
+  int y_width = capability_.width;
+  int y_height = capability_.height;
+  int uv_width = capability_.width / 2;
+  int uv_height = capability_.height / 2;  // YV12 format.
+  CopyYPlane(buffer, y_width, y_height, video_frame);
+  buffer += y_width * y_height;
+  CopyUPlane(buffer, uv_width, uv_height, video_frame);
+  buffer += uv_width * uv_height;
+  CopyVPlane(buffer, uv_width, uv_height, video_frame);
 
   VideoFrameReady(video_frame);
   capture->FeedBuffer(buf);

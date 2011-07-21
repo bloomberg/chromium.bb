@@ -31,31 +31,33 @@ class CaptureVideoDecoder
   virtual ~CaptureVideoDecoder();
 
   // Filter implementation.
-  virtual void Play(media::FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, const media::FilterStatusCB& cb);
-  virtual void Pause(media::FilterCallback* callback);
-  virtual void Stop(media::FilterCallback* callback);
+  virtual void Play(media::FilterCallback* callback) OVERRIDE;
+  virtual void Seek(base::TimeDelta time,
+                    const media::FilterStatusCB& cb) OVERRIDE;
+  virtual void Pause(media::FilterCallback* callback) OVERRIDE;
+  virtual void Stop(media::FilterCallback* callback) OVERRIDE;
 
   // Decoder implementation.
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* filter_callback,
-                          media::StatisticsCallback* stat_callback);
-  virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
-  virtual bool ProvidesBuffer();
-  virtual int width();
-  virtual int height();
+                          media::StatisticsCallback* stat_callback) OVERRIDE;
+  virtual void ProduceVideoFrame(
+      scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
+  virtual bool ProvidesBuffer() OVERRIDE;
+  virtual int width() OVERRIDE;
+  virtual int height() OVERRIDE;
 
   // VideoCapture::EventHandler implementation.
-  virtual void OnStarted(media::VideoCapture* capture);
-  virtual void OnStopped(media::VideoCapture* capture);
-  virtual void OnPaused(media::VideoCapture* capture);
-  virtual void OnError(media::VideoCapture* capture, int error_code);
+  virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
   virtual void OnBufferReady(
       media::VideoCapture* capture,
-      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);
+      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
-      const media::VideoCaptureParams& device_info);
+      const media::VideoCaptureParams& device_info) OVERRIDE;
 
  private:
   friend class CaptureVideoDecoderTest;
