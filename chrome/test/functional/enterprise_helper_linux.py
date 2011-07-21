@@ -18,6 +18,7 @@ def main():
     os.chmod(filename, 0755)
   elif sys.argv[1] == 'setup_dir':
     os.system('mkdir -p %s' % sys.argv[2])
+    os.system('chmod -R 755 /etc/opt/chrome/')
   elif sys.argv[1] == 'remove_dir':
     os.system('rm -rf %s' % sys.argv[2])
   else:
