@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2010 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -678,6 +678,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
         raise
     else:
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
+      assert not is_bundle, (
+          'mac_bundle targets cannot have type none (target "%s")' %
+          target_name)
 
     target_product_name = spec.get('product_name')
     if target_product_name is not None:

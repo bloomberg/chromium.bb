@@ -986,11 +986,12 @@ class MakefileWriter:
     # Bundles are directories with a certain subdirectory structure, instead of
     # just a single file. Bundle rules do not produce a binary but also package
     # resources into that directory.
-    # Due to an accident (gpu_demo_framework_ppapi has mac_bundle: 1 in its
-    # direct_dependent_settings and all.gyp somehow depends on that), all.gyp
-    # has a mac_bundle: 1, type: none target. TODO(thakis): Fix this.
     self.is_mac_bundle = (int(spec.get('mac_bundle', 0)) != 0 and
-        self.type != 'none' and self.flavor == 'mac')
+        self.flavor == 'mac')
+    if self.is_mac_bundle:
+      assert self.type != 'none', (
+          'mac_bundle targets cannot have type none (target "%s")' %
+          self.target)
 
     deps, link_deps = self.ComputeDeps(spec)
 
