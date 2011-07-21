@@ -29,14 +29,10 @@ TextfieldsUIHTMLSource::TextfieldsUIHTMLSource()
 void TextfieldsUIHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_incognito,
                                               int request_id) {
-  const std::string full_html = ResourceBundle::GetSharedInstance()
+  std::string full_html = ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_TEXTFIELDS_HTML).as_string();
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 std::string TextfieldsUIHTMLSource::GetMimeType(

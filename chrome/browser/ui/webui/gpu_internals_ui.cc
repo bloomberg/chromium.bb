@@ -175,11 +175,7 @@ void GpuHTMLSource::StartDataRequest(const std::string& path,
   jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 std::string GpuHTMLSource::GetMimeType(const std::string&) const {

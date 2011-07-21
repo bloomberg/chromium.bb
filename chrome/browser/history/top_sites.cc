@@ -605,8 +605,9 @@ bool TopSites::EncodeBitmap(const SkBitmap& bitmap,
     return false;
   }
   // As we're going to cache this data, make sure the vector is only as big as
-  // it needs to be.
-  (*bytes)->data = data;
+  // it needs to be, as JPEGCodec::Encode() over-allocates data.capacity().
+  // (In a C++0x future, we can just call shrink_to_fit() in Encode())
+  (*bytes)->data() = data;
   return true;
 }
 

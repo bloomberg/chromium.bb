@@ -171,7 +171,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 
 NTPResourceCache::~NTPResourceCache() {}
 
-RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
+RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_incognito) {
     if (!new_tab_incognito_html_.get())
@@ -184,7 +184,7 @@ RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
                       : new_tab_html_.get();
 }
 
-RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
+RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_incognito) {
     if (!new_tab_incognito_css_.get())
@@ -259,10 +259,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       incognito_tab_html, &localized_strings);
 
-  new_tab_incognito_html_ = new RefCountedBytes;
-  new_tab_incognito_html_->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(),
-            new_tab_incognito_html_->data.begin());
+  new_tab_incognito_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
 void NTPResourceCache::CreateNewTabHTML() {
@@ -437,9 +434,7 @@ void NTPResourceCache::CreateNewTabHTML() {
     }
   }
 
-  new_tab_html_ = new RefCountedBytes;
-  new_tab_html_->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), new_tab_html_->data.begin());
+  new_tab_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
@@ -472,10 +467,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   std::string full_css = ReplaceStringPlaceholders(
       new_tab_theme_css, subst, NULL);
 
-  new_tab_incognito_css_ = new RefCountedBytes;
-  new_tab_incognito_css_->data.resize(full_css.size());
-  std::copy(full_css.begin(), full_css.end(),
-            new_tab_incognito_css_->data.begin());
+  new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
 }
 
 void NTPResourceCache::CreateNewTabCSS() {
@@ -570,8 +562,5 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Create the string from our template and the replacements.
   std::string css_string;
   css_string = ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
-  new_tab_css_ = new RefCountedBytes;
-  new_tab_css_->data.resize(css_string.size());
-  std::copy(css_string.begin(), css_string.end(),
-            new_tab_css_->data.begin());
+  new_tab_css_ = base::RefCountedString::TakeString(&css_string);
 }

@@ -158,14 +158,10 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
     static const base::StringPiece print_html(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_PRINT_PREVIEW_HTML));
-    const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+    std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
         print_html, &localized_strings);
 
-    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-    html_bytes->data.resize(full_html.size());
-    std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-    SendResponse(request_id, html_bytes);
+    SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
     return;
   } else if (preview_data_requested && data->front()) {
     // Print Preview data.

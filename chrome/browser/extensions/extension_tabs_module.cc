@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -1263,7 +1264,7 @@ void CaptureVisibleTabFunction::Observe(int type,
 // and call SendResponse().
 void CaptureVisibleTabFunction::SendResultFromBitmap(
     const SkBitmap& screen_capture) {
-  scoped_refptr<RefCountedBytes> image_data(new RefCountedBytes);
+  std::vector<unsigned char> data;
   SkAutoLockPixels screen_capture_lock(screen_capture);
   bool encoded = false;
   std::string mime_type;
@@ -1276,14 +1277,14 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
           screen_capture.height(),
           static_cast<int>(screen_capture.rowBytes()),
           image_quality_,
-          &image_data->data);
+          &data);
       mime_type = keys::kMimeTypeJpeg;
       break;
     case FORMAT_PNG:
       encoded = gfx::PNGCodec::EncodeBGRASkBitmap(
           screen_capture,
           true,  // Discard transparency.
-          &image_data->data);
+          &data);
       mime_type = keys::kMimeTypePng;
       break;
     default:
@@ -1297,11 +1298,8 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
   }
 
   std::string base64_result;
-  std::string stream_as_string;
-  stream_as_string.resize(image_data->data.size());
-  memcpy(&stream_as_string[0],
-      reinterpret_cast<const char*>(&image_data->data[0]),
-      image_data->data.size());
+  base::StringPiece stream_as_string(
+      reinterpret_cast<const char*>(vector_as_array(&data)), data.size());
 
   base::Base64Encode(stream_as_string, &base64_result);
   base64_result.insert(0, base::StringPrintf("data:%s;base64,",

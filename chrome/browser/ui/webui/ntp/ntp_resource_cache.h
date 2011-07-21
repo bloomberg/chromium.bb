@@ -14,7 +14,7 @@
 #include "content/common/notification_registrar.h"
 
 class Profile;
-class RefCountedBytes;
+class RefCountedMemory;
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
 // regenerate them all the time.
@@ -24,8 +24,8 @@ class NTPResourceCache : public NotificationObserver,
   explicit NTPResourceCache(Profile* profile);
   virtual ~NTPResourceCache();
 
-  RefCountedBytes* GetNewTabHTML(bool is_incognito);
-  RefCountedBytes* GetNewTabCSS(bool is_incognito);
+  RefCountedMemory* GetNewTabHTML(bool is_incognito);
+  RefCountedMemory* GetNewTabCSS(bool is_incognito);
 
   // NotificationObserver interface.
   virtual void Observe(int type,
@@ -36,14 +36,14 @@ class NTPResourceCache : public NotificationObserver,
   Profile* profile_;
 
   void CreateNewTabIncognitoHTML();
-  scoped_refptr<RefCountedBytes> new_tab_incognito_html_;
+  scoped_refptr<RefCountedMemory> new_tab_incognito_html_;
   void CreateNewTabHTML();
-  scoped_refptr<RefCountedBytes> new_tab_html_;
+  scoped_refptr<RefCountedMemory> new_tab_html_;
 
   void CreateNewTabIncognitoCSS();
-  scoped_refptr<RefCountedBytes> new_tab_incognito_css_;
+  scoped_refptr<RefCountedMemory> new_tab_incognito_css_;
   void CreateNewTabCSS();
-  scoped_refptr<RefCountedBytes> new_tab_css_;
+  scoped_refptr<RefCountedMemory> new_tab_css_;
 
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
