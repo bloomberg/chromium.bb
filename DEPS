@@ -132,7 +132,7 @@ deps = {
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
   "src/third_party/webgl_conformance":
-    "/trunk/deps/third_party/webgl/sdk/tests@91578",
+    "/trunk/deps/third_party/webgl/sdk/tests@93218",
 
   # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
