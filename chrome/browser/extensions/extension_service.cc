@@ -304,8 +304,9 @@ void ExtensionServiceBackend::CheckExtensionFileAccess(
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.
   bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD) &&
-      !frontend_->extension_prefs()->HasAllowFileAccessSetting(id);
+      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
+  if (frontend_->extension_prefs()->HasAllowFileAccessSetting(id))
+    allow_file_access = frontend_->extension_prefs()->AllowFileAccess(id);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -1004,11 +1005,44 @@ void ExtensionService::LoadExtension(const FilePath& extension_path) {
 }
 
 void ExtensionService::LoadExtensionFromCommandLine(
-    const FilePath& extension_path) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(backend_.get(),
-                        &ExtensionServiceBackend::LoadSingleExtension,
-                        extension_path, false));
+    const FilePath& path_in) {
+
+  // Load extensions from the command line synchronously to avoid a race
+  // between extension loading and loading an URL from the command line.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  FilePath extension_path = path_in;
+  file_util::AbsolutePath(&extension_path);
+
+  std::string id = Extension::GenerateIdForPath(extension_path);
+  bool allow_file_access =
+      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
+  if (extension_prefs()->HasAllowFileAccessSetting(id))
+    allow_file_access = extension_prefs()->AllowFileAccess(id);
+
+  int flags = Extension::NO_FLAGS;
+  if (allow_file_access)
+    flags |= Extension::ALLOW_FILE_ACCESS;
+  if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
+    flags |= Extension::STRICT_ERROR_CHECKS;
+
+  std::string error;
+  scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
+      extension_path,
+      Extension::LOAD,
+      flags,
+      &error));
+
+  if (!extension) {
+    ReportExtensionLoadError(
+        extension_path,
+        error,
+        chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+        true);
+    return;
+  }
+
+  OnLoadSingleExtension(extension, false);
 }
 
 void ExtensionService::LoadComponentExtensions() {
