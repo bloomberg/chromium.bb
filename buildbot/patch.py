@@ -219,13 +219,15 @@ def PrepareLocalPatches(patches, manifest_branch):
     cmd = ['git', 'format-patch', '%s..%s' % ('m/' + manifest_branch, branch),
            '-o', patch_dir]
     cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
+    if not len(os.listdir(patch_dir)):
+      raise PatchException('No changes found in %s:%s' % (project, branch))
 
     # Store remote tracking branch for verification during patch stage.
     try:
       tracking_branch = _GetRemoteTrackingBranch(project_dir, branch)
     except cros_lib.NoTrackingBranchException:
-      raise PatchException('branch %s in project %s needs to track a remote '
-                           'branch!' % (branch, project))
+      raise PatchException('%s:%s needs to track a remote branch!'
+                           % (project,branch))
 
     patch_info.append(LocalPatch(project, tracking_branch, patch_dir, branch))
 
