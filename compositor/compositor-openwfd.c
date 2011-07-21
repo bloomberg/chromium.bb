@@ -589,8 +589,11 @@ vt_func(struct wlsc_compositor *compositor, int event)
 	return;
 }
 
+static const char default_seat[] = "seat0";
+
 static struct wlsc_compositor *
-wfd_compositor_create(struct wl_display *display, int connector)
+wfd_compositor_create(struct wl_display *display,
+		      int connector, const char *seat)
 {
 	struct wfd_compositor *ec;
 	struct wl_event_loop *loop;
@@ -644,7 +647,7 @@ wfd_compositor_create(struct wl_display *display, int connector)
 		return NULL;
 	}
 
-	evdev_input_add_devices(&ec->base, ec->udev);
+	evdev_input_add_devices(&ec->base, ec->udev, seat);
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->wfd_source =
@@ -663,18 +666,23 @@ WL_EXPORT struct wlsc_compositor *
 backend_init(struct wl_display *display, char *options)
 {
 	int connector = 0, i;
+	const char *seat;
 	char *p, *value;
 
-	static char * const tokens[] = { "connector", NULL };
+	static char * const tokens[] = { "connector", "seat", NULL };
 	
 	p = options;
+	seat = default_seat;
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
 		switch (i) {
 		case 0:
 			connector = strtol(value, NULL, 0);
 			break;
+		case 1:
+			seat = value;
+			break;
 		}
 	}
 
-	return wfd_compositor_create(display, connector);
+	return wfd_compositor_create(display, connector, seat);
 }
