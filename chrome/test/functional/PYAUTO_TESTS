@@ -427,6 +427,13 @@
     ],
   },
 
+  # ChromeOS flash tests.
+  'CHROMEOS_FLASH': {
+    'chromeos': [
+      'flash',
+    ],
+  },
+
   # ChromeOS login tests.
   'CHROMEOS_LOGIN': {
     'chromeos': [
