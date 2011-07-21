@@ -68,7 +68,9 @@ void DidChangeFocus(PP_Instance instance,
 
 PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
-  NACL_NOTREACHED();  // Only called for full-frame plugins.
+  // Only called for full-frame plugins. For coverage see:
+  // tests/ppapi_browser/extension_mime_handler/
+  NACL_NOTREACHED();
   return PP_FALSE;
 }
 

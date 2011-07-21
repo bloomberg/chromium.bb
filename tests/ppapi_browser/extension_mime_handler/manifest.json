@@ -1,0 +1,13 @@
+{
+  "name": "NaCl_MIMETest",
+  "version": "0.1",
+  "description": "Tests NaCl MIME type handling capabilities.",
+  "permissions": [
+    "experimental",
+    "nativeclient"
+  ],
+  "nacl_modules": [{
+    "path": "ppapi_extension_mime_handler.nmf",
+    "mime_type": "application/pdf"
+  }]
+}

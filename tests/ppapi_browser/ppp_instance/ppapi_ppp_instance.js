@@ -59,14 +59,8 @@ function setupTests(tester, plugin) {
     plugin.blur();
   });
 
-  // TODO(polina/bbudge/abarth):
   // PPP_Instance::HandleDocumentLoad is only used with full-frame plugins.
-  // See if we can test this in a content handling extension test:
-  // write an extension that contains a simple NEXE and then have an extension
-  // API test that shows that, when you have that extension installed, the nexe
-  // loads. There might be a way to load an extension in chrome using a
-  // command-line parameter if you have an instance of chrome in your testing
-  // harness.
+  // This is tested in tests/ppapi_browser/extension_mime_handler/
 
   tester.addAsyncTest('PPP_Instance::DidDestroy', function(test) {
     // Destroy the plugin triggering PPP_Instance::DidDestroy.

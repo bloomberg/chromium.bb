@@ -16,8 +16,9 @@ namespace {
 
 // Tests PPB_Instance::IsFullFrame().
 void TestIsFullFrame() {
-  // TODO(elijahtaylor): Need a test when IsFullFrame is true, should be
-  // covered by http://code.google.com/p/nativeclient/issues/detail?id=1932
+  // Note: IsFullFrame returning PP_TRUE is only possible when a plugin
+  // is a content handler.  For coverage, see:
+  // tests/ppapi_browser/extension_mime_handler/
   PP_Bool full_frame = PPBInstance()->IsFullFrame(pp_instance());
   EXPECT(full_frame == PP_FALSE);
 
