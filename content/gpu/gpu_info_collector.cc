@@ -20,7 +20,7 @@ namespace {
 
 scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
   scoped_refptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
+      gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
   if (!surface.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLSurface failed";
     return NULL;
