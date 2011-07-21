@@ -7,7 +7,9 @@
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
 import mox
+import os
 import sys
+import tempfile
 import unittest
 
 import constants
@@ -115,10 +117,15 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
     self.patches = ['my/project:mybranch']
 
+    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
+    self.mox.StubOutWithMock(os, 'listdir')
     self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
     self.mox.StubOutWithMock(cros_lib, 'GetCurrentBranch')
     self.mox.StubOutWithMock(cros_patch, '_GetRemoteTrackingBranch')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+    tempfile.mkdtemp(prefix=mox.IgnoreArg()).AndReturn('/tmp/trybot1')
+    os.listdir(mox.IgnoreArg()).AndReturn('test.patch')
 
   def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
     """Check the returned LocalPatchInfo against golden values."""
