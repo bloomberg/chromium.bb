@@ -23,6 +23,10 @@
         'plugin_extension': 'plugin',
         'plugin_prefix': '',
         'name_suffix': '- Mac',
+        'remoting_it2me_os_files': [
+          'resources/mac/chromoting128.png',
+          'resources/mac/chromoting16.png',
+        ],
       }],
       ['os_posix == 1 and OS != "mac"', {
         'plugin_extension': 'so',
@@ -30,21 +34,36 @@
       }],
       ['OS=="linux" and chromeos==1', {
         'name_suffix': '- Chromebook',
+        'remoting_it2me_os_files': [
+          'resources/chromeos/chromoting128.png',
+          'resources/chromeos/chromoting16.png',
+        ],
       }],
       ['OS=="linux" and chromeos==0 and target_arch=="x64"', {
         'name_suffix': '- Linux - 64',
+        'remoting_it2me_os_files': [
+          'resources/linux/chromoting128.png',
+          'resources/linux/chromoting16.png',
+        ],
       }],
       ['OS=="linux" and chromeos==0 and target_arch!="x64"', {
         'name_suffix': '- Linux',
+        'remoting_it2me_os_files': [
+          'resources/linux/chromoting128.png',
+          'resources/linux/chromoting16.png',
+        ],
       }],
       ['OS=="win"', {
         'plugin_extension': 'dll',
         'plugin_prefix': '',
         'name_suffix': '- Windows',
+        'remoting_it2me_os_files': [
+          'resources/win/chromoting128.png',
+          'resources/win/chromoting16.png',
+        ],
       }],
     ],
     'remoting_it2me_files': [
-      'resources/chromoting128.png',
       'webapp/me2mom/choice.css',
       'webapp/me2mom/choice.html',
       'webapp/me2mom/client_session.js',
@@ -205,6 +224,7 @@
       'sources': [
         'webapp/build-webapp.py',
         '<@(remoting_it2me_files)',
+        '<@(remoting_it2me_os_files)',
       ],
       # Can't use a 'copies' because we need to manipulate
       # the manifest file to get the right plugin name.
@@ -222,6 +242,7 @@
             'webapp/build-webapp.py',
             '<(_plugin_path)',
             '<@(remoting_it2me_files)',
+            '<@(remoting_it2me_os_files)',
           ],
           'outputs': [
             '<(_output_dir)',
@@ -235,6 +256,7 @@
             '<(_plugin_path)',
             '<(name_suffix)',
             '<@(remoting_it2me_files)',
+            '<@(remoting_it2me_os_files)',
           ],
         },
       ],

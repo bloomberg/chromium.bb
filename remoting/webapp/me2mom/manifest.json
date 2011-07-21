@@ -8,7 +8,8 @@
     }
   },
   "icons": {
-    "128": "chromoting128.png"
+    "128": "chromoting128.png",
+    "16": "chromoting16.png"
   },
   "content_scripts": [
     {
