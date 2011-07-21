@@ -29,8 +29,13 @@
   height: 70px;
   overflow: hidden;
   width: 270px;
+  direction: ltr;
 }
 
 .font-settings-huge {
   float: right;
+}
+
+html[dir=rtl] .font-settings-huge {
+  float: left;
 }
