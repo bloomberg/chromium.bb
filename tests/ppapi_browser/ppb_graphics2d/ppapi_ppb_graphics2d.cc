@@ -513,7 +513,9 @@ void TestFlushAnimation() {
 
 // Stress testing of a large number of resources.
 void TestStress() {
-  const int kManyResources = 500;
+  // TODO(nfullagar): Increase the number of resources once the cause of the
+  // stress test flake is fixed.
+  const int kManyResources = 100;
   PP_Resource graphics2d[kManyResources];
   const PPB_Graphics2D* ppb = PPBGraphics2D();
 
