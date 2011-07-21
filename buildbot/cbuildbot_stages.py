@@ -914,7 +914,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     return os.path.join(self._local_archive_path, self._set_version)
 
   def UpdateIndex(self):
-    if not self._options.debug:
+    if self._gsutil_archive and not self._options.debug:
       commands.UpdateIndex(self._gsutil_archive, self._set_version)
 
   def _PerformStage(self):
