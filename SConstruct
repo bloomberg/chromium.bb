@@ -1256,6 +1256,9 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
     osenv.append('NACL_EXE_STDERR=%s' %
                  os.environ.get('NACL_EXE_STDERR', '/dev/null'))
 
+  # Enable PPAPI Dev interfaces for testing.
+  osenv.append('NACL_ENABLE_PPAPI_DEV=1')
+
   # Construct a relative path to the staging directory from where pyauto's HTTP
   # server should serve files. The relative path is the portion of $STAGING_DIR
   # that follows $MAIN_DIR, prefixed with 'native_client'.
@@ -2635,6 +2638,7 @@ nonvariant_tests = [
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_browser/ppb_core/nacl.scons',
+    'tests/ppapi_browser/ppb_dev/nacl.scons',
     'tests/ppapi_browser/ppb_file_system/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
     'tests/ppapi_browser/ppb_image_data/nacl.scons',

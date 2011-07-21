@@ -532,6 +532,7 @@ PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
   return plugin;
 }
 
+
 // All failures of this function will show up as "Missing Plugin-in", so
 // there is no need to log to JS console that there was an initialization
 // failure. Note that module loading functions will log their own errors.
@@ -578,8 +579,10 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     const char* manifest_url = LookupArgument(kSrcManifestAttribute);
     // If the MIME type is foreign, then 'src' will be the URL for the content
     // and 'nacl' will be the URL for the manifest.
-    if (IsForeignMIMEType())
-        manifest_url = LookupArgument(kNaClManifestAttribute);
+    if (IsForeignMIMEType()) {
+      manifest_url = LookupArgument(kNaClManifestAttribute);
+      enable_dev_interface_ = RequiresDevInterface(manifest_url);
+    }
     // Use the document URL as the base for resolving relative URLs to find the
     // manifest.  This takes into account the setting of <base> tags that
     // precede the embed/object.
@@ -626,6 +629,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       last_error_string_(""),
       ppapi_proxy_(NULL),
+      enable_dev_interface_(false),
       replayDidChangeView(false),
       replayHandleDocumentLoad(false),
       nexe_size_(0) {
@@ -875,6 +879,21 @@ void PluginPpapi::BitcodeDidTranslate(int32_t pp_error) {
   } else {
     ReportLoadError(error_info);
   }
+}
+
+// Check manifest_url and return whether or not to enable PPAPI Dev interfaces.
+// Returning true here will enable the PPAPI Dev interfaces regardless of
+// the environment variable NACL_ENABLE_PPAPI_DEV.
+bool PluginPpapi::RequiresDevInterface(const nacl::string& manifest_url) {
+  const char* extensions[] = {
+      "chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh/",  // PDF
+  };
+  for (size_t i = 0; i < sizeof(extensions) / sizeof(const char*); ++i) {
+    if (manifest_url.find(extensions[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,

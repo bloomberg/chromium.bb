@@ -72,9 +72,11 @@ def EscapeSpaces(path):
   return path
 
 
-def MakeEnv(debug):
+def MakeEnv(options):
   env = dict(os.environ)
-  if debug:
+  # Enable PPAPI Dev interfaces for testing.
+  env['NACL_ENABLE_PPAPI_DEV'] = str(options.enable_ppapi_dev)
+  if options.debug:
     env['PPAPI_BROWSER_DEBUG'] = '1'
     env['NACL_PLUGIN_DEBUG'] = '1'
     env['NACL_PPAPI_PROXY_DEBUG'] = '1'
@@ -182,7 +184,7 @@ class BrowserLauncher(object):
     if self.options.tool is not None:
       self.tool_log_dir = self.CreateToolLogDir()
     cmd = self.MakeCmd(url, port)
-    self.Launch(cmd, MakeEnv(self.options.debug))
+    self.Launch(cmd, MakeEnv(self.options))
 
 
 def EnsureDirectory(path):

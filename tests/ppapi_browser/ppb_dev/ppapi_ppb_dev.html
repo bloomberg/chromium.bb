@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright (c) 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+//<![CDATA[
+function setupTests(tester, plugin) {
+  function testAndAssertStatus(test, name, status) {
+    var messageListener = test.wrap(function(message) {
+      plugin.removeEventListener('message', messageListener, false);
+      test.assertEqual(message.data, name + ':' + status);
+      test.pass();
+    });
+    plugin.addEventListener('message', messageListener, false);
+    plugin.postMessage(name);
+  }
+
+  tester.addAsyncTest('PPB_Dev::GetDevInterfaces',
+    function(test) {
+      testAndAssertStatus(test, 'TestGetDevInterfaces', 'PASSED');
+    }
+  );
+}
+//]]>
+    </script>
+    <title>PPAPI Dev Interface Test</title>
+  </head>
+  <body>
+    <h1>PPAPI Dev Interface Test</h1>
+  NOTE: requires --enable-pepper-testing.  Also, this test should be run with
+  PPAPI Dev interfaces disabled; the environment variable NACL_ENABLE_PPAPI_DEV
+  should be set to 0 or unset.
+  <br><br>
+  <table>
+  <tr>
+  <td>
+    <embed type="application/x-nacl" id="test_nexe"
+           name="nacl_module"
+           src="ppapi_ppb_dev.nmf"
+           style="background-color:#FFFFFF"
+           width="90" height="90" />
+  <table>
+  <br>
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

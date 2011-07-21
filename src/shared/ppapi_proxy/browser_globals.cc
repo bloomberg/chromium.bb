@@ -5,6 +5,8 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <map>
 
 #include "native_client/src/include/nacl_macros.h"
@@ -32,11 +34,33 @@ std::map<PP_Instance, BrowserPpp*>* instance_to_ppp_map = NULL;
 std::map<NaClSrpcChannel*, PP_Module>* channel_to_module_id_map = NULL;
 std::map<NaClSrpcChannel*, PP_Instance>* channel_to_instance_id_map = NULL;
 
-// The function pointer from the browser
+// The function pointer from the browser, and whether or not the plugin
+// is requesting PPAPI Dev interfaces to be available.
 // Set by SetPPBGetInterface().
-PPB_GetInterface get_interface;
+PPB_GetInterface get_interface = NULL;
+bool plugin_requests_dev_interface = false;
 
 }  // namespace
+
+// By default, disable developer (Dev) interfaces.  To enable developer
+// interfaces, set the environment variable NACL_ENABLE_PPAPI_DEV to 1.
+// Also, the plugin can request whether or not to enable dev interfaces.
+bool DevInterfaceEnabled() {
+  static bool first = true;
+  static bool env_dev_enabled = false;
+  if (first) {
+    const char *nacl_enable_ppapi_dev = getenv("NACL_ENABLE_PPAPI_DEV");
+    if (NULL != nacl_enable_ppapi_dev) {
+      int v = strtol(nacl_enable_ppapi_dev, (char **) 0, 0);
+      if (v != 0) {
+        env_dev_enabled = true;
+      }
+    }
+    first = false;
+  }
+  return env_dev_enabled || plugin_requests_dev_interface;
+}
+
 
 void SetBrowserPppForInstance(PP_Instance instance, BrowserPpp* browser_ppp) {
   // If there was no map, create one.
@@ -141,16 +165,27 @@ NaClSrpcChannel* GetMainSrpcChannel(PP_Instance instance) {
   return LookupBrowserPppForInstance(instance)->main_channel();
 }
 
-void SetPPBGetInterface(PPB_GetInterface get_interface_function) {
+void SetPPBGetInterface(PPB_GetInterface get_interface_function,
+                        bool dev_interface) {
   get_interface = get_interface_function;
+  plugin_requests_dev_interface = dev_interface;
 }
 
 const void* GetBrowserInterface(const char* interface_name) {
+  // Reject suspiciously long interface strings.
+  const size_t kMaxLength = 1024;
+  if (NULL == memchr(interface_name, '\0', kMaxLength)) {
+    return NULL;
+  }
+  // If dev interface is not enabled, reject interfaces containing "(Dev)"
+  if (!DevInterfaceEnabled() && strstr(interface_name, "(Dev)") != NULL) {
+    return NULL;
+  }
   return (*get_interface)(interface_name);
 }
 
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
-  const void* ppb_interface = (*get_interface)(interface_name);
+  const void* ppb_interface = GetBrowserInterface(interface_name);
   if (ppb_interface == NULL)
     DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
   CHECK(ppb_interface != NULL);

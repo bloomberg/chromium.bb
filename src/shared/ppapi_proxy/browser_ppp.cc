@@ -45,7 +45,7 @@ int32_t BrowserPpp::InitializeModule(
     PP_Module module_id,
     PPB_GetInterface get_browser_interface) {
   DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
-  SetPPBGetInterface(get_browser_interface);
+  SetPPBGetInterface(get_browser_interface, plugin_->enable_dev_interface());
   SetBrowserPppForInstance(plugin_->pp_instance(), this);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
       BrowserUpcall::Start(&upcall_thread_, main_channel_));

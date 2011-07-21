@@ -90,6 +90,9 @@ def BuildArgParser():
   parser.add_option('--browser_flag', dest='browser_flags', action='append',
                     type='string', default=[],
                     help='Additional flags for the chrome command.')
+  parser.add_option('--enable_ppapi_dev', dest='enable_ppapi_dev',
+                    action='store', type='int', default=1,
+                    help='Enable/disable PPAPI Dev interfaces while testing.')
 
   return parser
 

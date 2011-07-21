@@ -155,6 +155,8 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   static const char* const kNaClMIMEType;
   // Tests if the MIME type is not a NaCl MIME type.
   bool IsForeignMIMEType() const;
+  // Returns true if PPAPI Dev interfaces should be allowed.
+  bool enable_dev_interface() { return enable_dev_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
@@ -175,6 +177,9 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
 
   PnaclCoordinator pnacl_;
+
+  // Check url and decide if PPAPI Dev interfaces are required.
+  bool RequiresDevInterface(const nacl::string& manifest_url);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
@@ -264,6 +269,9 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   // (InitializeModule, Shutdown, and GetInterface).
   // TODO(sehr): this should be a scoped_ptr for shutdown.
   ppapi_proxy::BrowserPpp* ppapi_proxy_;
+
+  // PPAPI Dev interfaces are disabled by default.
+  bool enable_dev_interface_;
 
   // If we get a DidChangeView event before the nexe is loaded, we store it and
   // replay it to nexe after it's loaded.
