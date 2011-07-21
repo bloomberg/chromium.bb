@@ -129,6 +129,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_FILE_NO_FILE_LABEL;
     case WebLocalizedString::MultipleFileUploadText:
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
+    case WebLocalizedString::DetailsLabel:
+      return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::SearchableIndexIntroduction:
       return IDS_SEARCHABLE_INDEX_INTRO;
     case WebLocalizedString::SearchMenuNoRecentSearchesText:

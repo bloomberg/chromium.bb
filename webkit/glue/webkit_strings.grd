@@ -257,6 +257,9 @@ below:
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
 
+      <message name="IDS_DETAILS_WITHOUT_SUMMARY_LABEL" desc="Clickable label to show detailed information or to hide the detailed information.">
+        Details
+      </message>
       <message name="IDS_SEARCHABLE_INDEX_INTRO" desc="Text that appears at the start of nearly-obsolete web pages in the form of a 'searchable index'.">
         This is a searchable index. Enter search keywords: '''
       </message>
