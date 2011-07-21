@@ -45,7 +45,6 @@ ModifierKey kCustomizableKeys[] = {
 // These are the input method IDs that shouldn't remap the right alt key.
 const char* kKeepRightAltInputMethods[] = {
   "xkb:de:neo:ger",
-  "mozc-hangul",
   "xkb:il::heb",
   "xkb:gb:extd:eng",
   "xkb:fr::fra",
@@ -56,6 +55,7 @@ const char* kKeepRightAltInputMethods[] = {
   "xkb:ca:eng:eng",
   "xkb:es::spa",
   "xkb:it::ita",
+  "hangul",
   "xkb:ua::ukr",
   "xkb:ch:fr:fra",
   "xkb:bg::bul",
