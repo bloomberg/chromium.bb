@@ -67,9 +67,9 @@ deps = {
     'src/third_party/skia/gpu':
         Var('git_url') + '/external/skia/gpu.git@9184fc4807ab3819f294371b9cb48f772e94d4e1',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@06926b12c5bbc420ddd07860060c8cae042900af',
+        Var('git_url') + '/external/skia/include.git@489eddd0cdfdb12dde092ac6a28c1a5ba3a716dd',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@3f22060b95b4b7049dd33213724eb2887ac85987',
+        Var('git_url') + '/external/skia/src.git@1e61ac711a1cd41e336330d98a0dade21c646305',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@ff7deb69dcaabf939d45fca80ad507219e938412',
     'src/third_party/snappy/src':
