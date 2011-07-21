@@ -19,7 +19,7 @@ AcceleratedSurfaceContainerTouch::AcceleratedSurfaceContainerTouch(
   compositor_->MakeCurrent();
 
   image_ = eglCreateImageKHR(
-      gfx::GLSurfaceEGL::GetDisplay(), EGL_NO_CONTEXT,
+      gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
       EGL_NATIVE_PIXMAP_KHR, reinterpret_cast<void*>(surface_handle), NULL);
 
   glGenTextures(1, &texture_id_);
@@ -33,7 +33,7 @@ AcceleratedSurfaceContainerTouch::AcceleratedSurfaceContainerTouch(
 }
 
 AcceleratedSurfaceContainerTouch::~AcceleratedSurfaceContainerTouch() {
-  eglDestroyImageKHR(gfx::GLSurfaceEGL::GetDisplay(), image_);
+  eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
   glFlush();
 }
 

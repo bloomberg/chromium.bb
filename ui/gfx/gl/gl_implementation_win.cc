@@ -12,6 +12,10 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
+#if defined(ENABLE_SWIFTSHADER)
+#include "software_renderer_d3d9.h"
+#endif
+
 namespace gfx {
 
 namespace {
@@ -71,6 +75,13 @@ bool InitializeGLBindings(GLImplementation implementation) {
       FilePath module_path;
       if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
+
+#if defined(ENABLE_SWIFTSHADER)
+      base::NativeLibrary swiftshader_library = base::LoadNativeLibrary(
+          module_path.Append(L"swiftshader_d3d9.dll"), NULL);
+
+      SetupSoftwareRenderer();
+#endif
 
       // Load libglesv2.dll before libegl.dll because the latter is dependent on
       // the former and if there is another version of libglesv2.dll in the dll

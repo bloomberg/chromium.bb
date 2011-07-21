@@ -157,7 +157,7 @@ void GpuVideoDecodeAccelerator::Initialize(const std::vector<uint32>& configs) {
   DCHECK(stub_ && stub_->scheduler());
   OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
   omx_decoder->SetEglState(
-      gfx::GLSurfaceEGL::GetDisplay(),
+      gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->scheduler()->decoder()->GetGLContext()->GetHandle());
   video_decode_accelerator_ = omx_decoder;
   video_decode_accelerator_->Initialize(configs);

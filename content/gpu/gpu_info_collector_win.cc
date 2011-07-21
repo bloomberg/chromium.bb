@@ -72,7 +72,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // Need to handle the case when running on top of real EGL/GLES2 drivers.
 
   egl::Display* display = static_cast<egl::Display*>(
-      gfx::GLSurfaceEGL::GetDisplay());
+      gfx::GLSurfaceEGL::GetHardwareDisplay());
   if (!display) {
     LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
     return false;
