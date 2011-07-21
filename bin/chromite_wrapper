@@ -58,7 +58,8 @@ def main():
   # Some tools map to an arbitrary path, rather than to a .py file of the same
   # exact name. By default, we pick the tool from chromite/bin/
   TOOLS_MAP = {
-    'chromite' : 'shell.main'
+    'chromite' : 'shell.main',
+    'cbuildbot' : 'buildbot.cbuildbot',
   }
   our_name = TOOLS_MAP.get(our_name, 'bin.' + our_name)
 
