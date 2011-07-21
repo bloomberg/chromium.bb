@@ -45,11 +45,14 @@ typedef struct _ChromeMallocZone {
     struct malloc_introspection_t	*introspect;
     unsigned	version;
     
-    /* aligned memory allocation. The callback may be NULL. */
-	void *(*memalign)(struct _malloc_zone_t *zone, size_t alignment, size_t size);  // version >= 5
+    /* aligned memory allocation. The callback may be NULL. Present in version >= 5. */
+    void *(*memalign)(struct _malloc_zone_t *zone, size_t alignment, size_t size);
     
-    /* free a pointer known to be in zone and known to have the given size. The callback may be NULL. */
-    void (*free_definite_size)(struct _malloc_zone_t *zone, void *ptr, size_t size);  // version >= 6
+    /* free a pointer known to be in zone and known to have the given size. The callback may be NULL. Present in version >= 6.*/
+    void (*free_definite_size)(struct _malloc_zone_t *zone, void *ptr, size_t size);
+
+    /* Empty out caches in the face of memory pressure. The callback may be NULL. Present in version >= 8. */
+    size_t 	(*pressure_relief)(struct _malloc_zone_t *zone, size_t goal);
 } ChromeMallocZone;
 
 #endif  // THIRD_PARTY_APPLE_APSL_MALLOC_H_

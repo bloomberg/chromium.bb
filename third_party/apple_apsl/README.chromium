@@ -6,16 +6,15 @@ Security Critical: yes
 Four files are excerpted here:
 
 malloc.h from:
-http://www.opensource.apple.com/source/Libc/Libc-583/include/malloc/malloc.h
+http://www.opensource.apple.com/source/Libc/Libc-763.11/include/malloc/malloc.h
 
 Modifications:
 - Modified #ifdef guards.
 - Removed everything but the definition of malloc_zone_t.
 - Renamed _malloc_zone_t to ChromeMallocZone to avoid possible name conflicts.
-- Added a few comments.
 
 CFRuntime.h from:
-http://www.opensource.apple.com/source/CF/CF-550/CFRuntime.h
+http://www.opensource.apple.com/source/CF/CF-635/CFRuntime.h
 
 Modifications:
 - Modified #ifdef guards.
@@ -23,7 +22,8 @@ Modifications:
 - Renamed CFRuntimeBase to ChromeCFRuntimeBase to avoid possible name conflicts.
 
 CFBase.h from:
-http://opensource.apple.com/source/CF/CF-550/CFBase.c
+http://www.opensource.apple.com/source/CF/CF-550/CFBase.c
+http://www.opensource.apple.com/source/CF/CF-635/CFBase.c
 
 Modifications:
 - Renamed the file to CFBase.h.
@@ -31,9 +31,8 @@ Modifications:
 - Added an #include of the CFRuntime.h file.
 - Removed everything but the definition of __CFAllocator.
 - Modified the reference of CFRuntimeBase to ChromeCFRuntimeBase.
-- Renamed __CFAllocator to ChromeCFAllocatorLeopards to avoid possible name
-  conflicts.
-- Added a presumed definition of ChromeCFAllocatorLion.
+- Renamed __CFAllocator to ChromeCFAllocatorLeopards (from CF-550) and to
+  ChromeCFAllocatorLion (from CF-635) to avoid possible name conflicts.
 
 cssmapplePriv.h from:
 http://www.opensource.apple.com/source/libsecurity_cssm/libsecurity_cssm-31536/lib/cssmapplePriv.h
