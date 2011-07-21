@@ -32,8 +32,8 @@ PLATFORM_MAPPING = {
                    'linux_arm-trusted'],
     },
     'mac': {
-        'x86-32': ['mac_x86', 'mac_x86_newlib'],
-        'x86-64': ['mac_x86', 'mac_x86_newlib'],
+        'x86-32': ['mac_x86', 'mac_x86_newlib', 'pnacl_darwin_i386_newlib'],
+        'x86-64': ['mac_x86', 'mac_x86_newlib', 'pnacl_darwin_i386_newlib'],
     },
 }
 

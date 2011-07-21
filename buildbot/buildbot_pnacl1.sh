@@ -151,18 +151,12 @@ single-scons-test() {
 }
 
 single-browser-test() {
-  # Although we could use the "browser_headless=1" Scons option, it runs
-  # xvfb-run once per Chromium invocation.  This is good for isolating
-  # the tests, but xvfb-run has a stupid fixed-period sleep, which would
-  # slow down the tests unnecessarily.
-  local XVFB_PREFIX="xvfb-run --auto-servernum"
   local platform=$1
   local extra=$2
   local test=$3
   echo "@@@BUILD_STEP scons [${platform}] [${test}] [$(relevant ${extra})]@@@"
-  ${XVFB_PREFIX} \
-     ${SCONS_COMMON} ${extra} SILENT=1 platform=${platform} ${test} || \
-         handle-error
+  ${SCONS_COMMON} ${extra} browser_headless=1 SILENT=1 platform=${platform} \
+    ${test} || handle-error
 }
 
 scons-tests() {

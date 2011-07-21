@@ -66,11 +66,10 @@ case ${BUILD_OS}-${BUILD_ARCH}-${BUILD_LIBMODE} in
     RUN_TESTS=""
     ;;
   mac-32-newlib)
-    # We don't test X86-32 because it is flaky.
     # We can't test ARM because we do not have QEMU for Mac.
     # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
     TOOLCHAIN_LABEL=pnacl_darwin_i386_newlib
-    RUN_TESTS=""
+    RUN_TESTS="x86-32 x86-32-pic x86-32-browser"
     ;;
   mac-32-glibc)
     TOOLCHAIN_LABEL=pnacl_darwin_i386_glibc
