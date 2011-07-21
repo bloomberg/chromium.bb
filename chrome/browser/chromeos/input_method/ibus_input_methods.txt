@@ -108,7 +108,7 @@ m17n:vi:vni	us	vi
 # feature.
 
 # Other languages
-hangul	kr(kr104)	ko
+mozc-hangul	kr(kr104)	ko
 
 # ibus-m17n input methods.
 m17n:ar:kbd	us	ar

@@ -119,7 +119,7 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
-    InputMethodDescriptor desc = GetDesc("hangul", "us", "ko");
+    InputMethodDescriptor desc = GetDesc("mozc-hangul", "us", "ko");
     EXPECT_EQ(L"Korean input method",
               InputMethodMenu::GetTextForMenu(desc));
   }

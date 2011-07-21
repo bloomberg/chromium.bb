@@ -92,7 +92,6 @@ LABEL_MAP = {
 };
 
 INPUT_METHOD_ID_TO_OVERLAY_ID = {
-  'hangul': 'ko',
   'm17n:ar:kbd': 'ar',
   'm17n:fa:isiri': 'ar',
   'm17n:hi:itrans': 'hi',
@@ -108,6 +107,7 @@ INPUT_METHOD_ID_TO_OVERLAY_ID = {
   'mozc': 'en_US',
   'mozc-chewing': 'zh_TW',
   'mozc-dv': 'en_US_dvorak',
+  'mozc-hangul': 'ko',
   'mozc-jp': 'ja',
   'pinyin': 'zh_CN',
   'pinyin-dv': 'en_US_dvorak',
