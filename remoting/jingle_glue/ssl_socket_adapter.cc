@@ -68,13 +68,14 @@ int SSLSocketAdapter::BeginSSL() {
   // are correct for us, so we don't use the config service to initialize this
   // object.
   net::SSLConfig ssl_config;
+  net::SSLClientSocketContext context;
+  context.cert_verifier = cert_verifier_.get();
 
   transport_socket_->set_addr(talk_base::SocketAddress(hostname_, 0));
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           transport_socket_, net::HostPortPair(hostname_, 443), ssl_config,
-          NULL /* ssl_host_info */,
-          cert_verifier_.get()));
+          NULL /* ssl_host_info */, context));
 
   int result = ssl_socket_->Connect(&connected_callback_);
 

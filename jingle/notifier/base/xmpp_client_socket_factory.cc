@@ -8,6 +8,7 @@
 #include "jingle/notifier/base/fake_ssl_client_socket.h"
 #include "jingle/notifier/base/proxy_resolving_client_socket.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -40,9 +41,13 @@ net::StreamSocket* XmppClientSocketFactory::CreateTransportClientSocket(
 net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
     net::ClientSocketHandle* transport_socket,
     const net::HostPortPair& host_and_port) {
+  net::SSLClientSocketContext context;
+  context.cert_verifier =
+      request_context_getter_->GetURLRequestContext()->cert_verifier();
+  // TODO(rkn): context.origin_bound_cert_service is NULL because the
+  // OriginBoundCertService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket, host_and_port, ssl_config_, NULL,
-      request_context_getter_->GetURLRequestContext()->cert_verifier(), NULL);
+      transport_socket, host_and_port, ssl_config_, NULL, context);
 }
 
 

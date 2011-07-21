@@ -40,9 +40,11 @@ net::SSLClientSocket* CreateSSLClientSocket(
 
   // SSLClientSocket takes ownership of the adapter.
   net::HostPortPair host_and_pair(JingleSession::kChromotingContentName, 0);
+  net::SSLClientSocketContext context;
+  context.cert_verifier = cert_verifier;
   net::SSLClientSocket* ssl_socket =
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          socket, host_and_pair, ssl_config, NULL, cert_verifier);
+          socket, host_and_pair, ssl_config, NULL, context);
   return ssl_socket;
 }
 

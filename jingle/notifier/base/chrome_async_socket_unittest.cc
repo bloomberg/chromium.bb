@@ -22,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "talk/base/sigslot.h"
 #include "talk/base/socketaddress.h"
@@ -137,9 +138,10 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
       const net::HostPortPair& host_and_port) {
+    net::SSLClientSocketContext context;
+    context.cert_verifier = &cert_verifier_;
     return mock_client_socket_factory_->CreateSSLClientSocket(
-        transport_socket, host_and_port, ssl_config_, NULL, &cert_verifier_,
-        NULL);
+        transport_socket, host_and_port, ssl_config_, NULL, context);
   }
 
  private:

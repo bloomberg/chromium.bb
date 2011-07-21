@@ -45,6 +45,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.client_socket_factory = NULL;
   session_params.host_resolver = request_context->host_resolver();
   session_params.cert_verifier = request_context->cert_verifier();
+  // TODO(rkn): This is NULL because OriginBoundCertService is not thread safe.
+  session_params.origin_bound_cert_service = NULL;
   session_params.dnsrr_resolver = request_context->dnsrr_resolver();
   session_params.dns_cert_checker = request_context->dns_cert_checker();
   session_params.proxy_service = request_context->proxy_service();
