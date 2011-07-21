@@ -171,7 +171,9 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
   // because this may cause us to lose the current cursor position in the
   // element.
   // Secondly, we focus the target element.
-  // Thirdly, we check if the new active element is the target element. If not,
+  // Thirdly, if the target element is newly focused and is a text input, we
+  // set the cursor position at the end.
+  // Fourthly, we check if the new active element is the target element. If not,
   // we throw an error.
   // Additional notes:
   //   - |document.activeElement| is the currently focused element, or body if
@@ -188,6 +190,10 @@ Error* Session::SendKeys(const WebElementId& element, const string16& keys) {
       "if (elem != prevActiveElem && prevActiveElem)"
       "  prevActiveElem.blur();"
       "elem.focus();"
+      "if (elem != prevActiveElem && elem.value && elem.value.length &&"
+      "    elem.setSelectionRange) {"
+      "  elem.setSelectionRange(elem.value.length, elem.value.length);"
+      "}"
       "if (elem != doc.activeElement)"
       "  throw new Error('Failed to send keys because cannot focus element.');";
   Value* unscoped_result = NULL;

@@ -480,6 +480,23 @@ class TypingTest(ChromeDriverTest):
     body.send_keys(' there')
     self.assertEquals('hi there', body.text)
 
+  def testAppendsToTextInput(self):
+    self._driver.get(GetTestDataUrl() + '/keyboard.html')
+    text_elem = self._driver.find_element_by_name('input')
+    text_elem.send_keys(' text')
+    self.assertEquals('more text', text_elem.get_attribute('value'))
+    area_elem = self._driver.find_element_by_name('area')
+    area_elem.send_keys(' text')
+    self.assertEquals('more text', area_elem.get_attribute('value'))
+
+  def testTextAreaKeepsCursorPosition(self):
+    self._driver.get(GetTestDataUrl() + '/keyboard.html')
+    area_elem = self._driver.find_element_by_name('area')
+    area_elem.send_keys(' text')
+    area_elem.send_keys(Keys.LEFT * 9)
+    area_elem.send_keys('much ')
+    self.assertEquals('much more text', area_elem.get_attribute('value'))
+
 
 class UrlBaseTest(unittest.TestCase):
   """Tests that the server can be configured for a different URL base."""
