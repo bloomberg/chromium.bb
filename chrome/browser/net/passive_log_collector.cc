@@ -78,6 +78,8 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_EXPONENTIAL_BACKOFF_THROTTLING] =
       &exponential_backoff_throttling_tracker_;
   trackers_[net::NetLog::SOURCE_DNS_TRANSACTION] = &dns_transaction_tracker_;
+  trackers_[net::NetLog::SOURCE_ASYNC_HOST_RESOLVER_REQUEST] =
+      &async_host_resolver_request_tracker_;
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
     DCHECK(trackers_[i]) << "Unhandled SourceType: " << i;
@@ -690,6 +692,33 @@ PassiveLogCollector::DnsTransactionTracker::DoAddEntry(
     SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_DNS_TRANSACTION &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  }
+  return ACTION_NONE;
+}
+
+//----------------------------------------------------------------------------
+// AsyncHostResolverRequestTracker
+//----------------------------------------------------------------------------
+
+const size_t
+PassiveLogCollector::AsyncHostResolverRequestTracker::kMaxNumSources = 100;
+
+const size_t
+PassiveLogCollector::AsyncHostResolverRequestTracker::kMaxGraveyardSize = 15;
+
+PassiveLogCollector::
+    AsyncHostResolverRequestTracker::AsyncHostResolverRequestTracker()
+        : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::AsyncHostResolverRequestTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry,
+    SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_ASYNC_HOST_RESOLVER_REQUEST &&
       entry.phase == net::NetLog::PHASE_END) {
     return ACTION_MOVE_TO_GRAVEYARD;
   }
