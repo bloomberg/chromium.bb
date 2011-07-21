@@ -96,7 +96,7 @@ found in the LICENSE file.
             control your computer.
           </div>
           <div class="centered-button">
-            <button id="share-button" class="auth-status-control"
+            <button id="share-button" class="auth-status-control big-button"
                     type="button" onclick="remoting.tryShare();">
               Share this computer
             </button>
@@ -132,7 +132,8 @@ found in the LICENSE file.
             Your desktop is currently being shared.
           </div>
           <div class="centered-button">
-            <button type="button" onclick="remoting.cancelShare();">
+            <button type="button" class="big-button"
+                    onclick="remoting.cancelShare();">
               Stop sharing
             </button>
           </div>
@@ -143,7 +144,7 @@ found in the LICENSE file.
             Unable to get access token.
           </div>
           <div class="centered-button">
-            <button type="button" class="auth-status-control"
+            <button type="button" class="auth-status-control big-button"
                     onclick="remoting.setHostMode('unshared');">
               OK
             </button>
@@ -165,7 +166,7 @@ found in the LICENSE file.
               </label>
               <input id="access-code-entry" class="auth-status-control"
                      type="text"/>
-              <button id="connect-button" class="auth-status-control"
+              <button id="connect-button" class="auth-status-control big-button"
                       type="submit">
                 Connect
               </button>
@@ -196,7 +197,7 @@ found in the LICENSE file.
             <div id="server-response"></div>.
           </div>
           <div class="centered-button">
-            <button type="button" class="auth-status-control"
+            <button type="button" class="auth-status-control big-button"
                     onclick="remoting.setClientMode('unconnected');">
               OK
             </button>
@@ -225,7 +226,7 @@ found in the LICENSE file.
         <div id="waiting-footer">
           <img src="spinner.gif">
           <span class="waiting icon-label">waiting for connection&hellip;</span>
-          <button id="cancel-button"
+          <button id="cancel-button big-button"
                   onclick="remoting.cancelPendingOperation();">
             Cancel
           </button>
