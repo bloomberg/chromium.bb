@@ -879,9 +879,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN10disk_cache11BackendImpl10MatchEntryERKSsjbNS_4AddrEPb
-   fun:_ZN10disk_cache11BackendImpl13OpenEntryImplERKSs
-   fun:_ZN10disk_cache11BackendImpl13SyncOpenEntryERKSsPPNS_5EntryE
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
 }
