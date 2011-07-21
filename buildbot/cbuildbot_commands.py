@@ -8,7 +8,6 @@ import constants
 import os
 import re
 import shutil
-import socket
 import sys
 
 from chromite.buildbot import cbuildbot_config
