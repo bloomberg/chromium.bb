@@ -4733,14 +4733,22 @@ ListValue* TestingAutomationProvider::GetListFromAutofillProfiles(
        it != autofill_profiles.end(); ++it) {
     AutofillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
-    // For each of the types, if it has a value, add it to the dictionary.
+    // For each of the types, if it has one or more values, add those values
+    // to the dictionary.
     for (std::map<AutofillFieldType, std::string>::iterator
          type_it = autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
-      string16 value = profile->GetInfo(type_it->first);
-      if (value.length()) {  // If there was something stored for that value.
-        profile_info->SetString(type_it->second, value);
+      std::vector<string16> value_list;
+      profile->GetMultiInfo(type_it->first, &value_list);
+      ListValue* values_to_return = new ListValue;
+      for (std::vector<string16>::iterator value_it = value_list.begin();
+           value_it != value_list.end(); ++value_it) {
+        string16 value = *value_it;
+        if (value.length())  // If there was something stored for that value.
+          values_to_return->Append(new StringValue(value));
       }
+      if (!values_to_return->empty())
+        profile_info->Set(type_it->second, values_to_return);
     }
     profiles->Append(profile_info);
   }
@@ -4782,7 +4790,7 @@ TestingAutomationProvider::GetAutofillProfilesFromList(
     const ListValue& profiles, std::string* error_message) {
   std::vector<AutofillProfile> autofill_profiles;
   DictionaryValue* profile_info = NULL;
-  string16 current_value;
+  ListValue* current_value = NULL;
 
   std::map<AutofillFieldType, std::string> autofill_type_to_string =
       GetAutofillFieldToStringMap();
@@ -4796,12 +4804,22 @@ TestingAutomationProvider::GetAutofillProfilesFromList(
          autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       if (profile_info->HasKey(type_it->second)) {
-        if (profile_info->GetString(type_it->second,
-                                    &current_value)) {
-          profile.SetInfo(type_it->first, current_value);
+        if (profile_info->GetList(type_it->second, &current_value)) {
+          std::vector<string16> value_list;
+          for (ListValue::iterator list_it = current_value->begin();
+               list_it != current_value->end(); ++list_it) {
+            string16 value;
+            if ((*list_it)->GetAsString(&value)) {
+              value_list.insert(value_list.end(), value);
+            } else {
+              *error_message = "All list values must be strings";
+              return autofill_profiles;
+            }
+          }
+          profile.SetMultiInfo(type_it->first, value_list);
         } else {
-          *error_message= "All values must be strings";
-          break;
+          *error_message= "All values must be lists";
+          return autofill_profiles;
         }
       }
     }

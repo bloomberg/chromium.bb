@@ -172,7 +172,7 @@ class DatasetGenerator(object):
     Returns:
       A zip code matched to the corresponding city.
     """
-    city_selected = self.next_dict['ADDRESS_HOME_CITY']
+    city_selected = self.next_dict['ADDRESS_HOME_CITY'][0]
     index = self.city_construct[0][1].index(city_selected)
     return self.zip_construct[index]
 
@@ -216,11 +216,11 @@ class DatasetGenerator(object):
     self.next_dict = {}
     for key, method_or_value in self.fields:
       if not method_or_value:
-        self.next_dict[key] = ''
+        self.next_dict[key] = ['']
       elif type(method_or_value) in [str, unicode]:
-        self.next_dict[key] = '%s' % method_or_value
+        self.next_dict[key] = ['%s' % method_or_value]
       else:
-        self.next_dict[key] = method_or_value()
+        self.next_dict[key] = [method_or_value()]
     return self.next_dict
 
   def GenerateDataset(self, num_of_dict_to_generate=10):
@@ -254,8 +254,8 @@ class DatasetGenerator(object):
           output_file.write(output_line)
           output_file.write(os.linesep)
         self.logger.info(
-            '%d: %s' % (self.dict_no, output_line.encode(sys.stdout.encoding,
-                                                         'ignore')))
+            '%d: [%s]' % (self.dict_no, output_line.encode(sys.stdout.encoding,
+                                                           'ignore')))
 
       if output_file:
         output_file.write(']')

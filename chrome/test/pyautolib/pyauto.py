@@ -1587,22 +1587,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                           tab_index=0, window_index=0):
     """Set the autofill profile to contain the given profiles and credit cards.
 
-       If profiles or credit_cards are specified, they will overwrite existing
-       profiles and credit cards. To update profiles and credit cards, get the
-       existing ones with the GetAutofillProfile function and then append new
-       profiles to the list and call this function.
+    If profiles or credit_cards are specified, they will overwrite existing
+    profiles and credit cards. To update profiles and credit cards, get the
+    existing ones with the GetAutofillProfile function and then append new
+    profiles to the list and call this function.
+
+    Autofill profiles (not credit cards) support multiple values for some of the
+    fields. To account for this, all values in a profile must be specified as
+    a list of strings. If a form field only has a single value associated with
+    it, that value must still be specified as a list containing a single string.
 
     Args:
       profiles: (optional) a list of dictionaries representing each profile to
       add. Example:
       [{
-        'NAME_FIRST': 'Bob',
-        'NAME_LAST': 'Smith',
-        'ADDRESS_HOME_ZIP': '94043',
+        'NAME_FIRST': ['Bob',],
+        'NAME_LAST': ['Smith',],
+        'ADDRESS_HOME_ZIP': ['94043',],
       },
       {
-        'EMAIL_ADDRESS': 'sue@example.com',
-        'COMPANY_NAME': 'Company X',
+        'EMAIL_ADDRESS': ['sue@example.com',],
+        'COMPANY_NAME': ['Company X',],
       }]
 
       Other possible keys are:
@@ -1611,8 +1616,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'ADDRESS_HOME_CITY', 'ADDRESS_HOME_STATE', 'ADDRESS_HOME_ZIP',
       'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_WHOLE_NUMBER',
       'PHONE_FAX_WHOLE_NUMBER'
-
-      All values must be strings.
 
       credit_cards: (optional) a list of dictionaries representing each credit
       card to add. Example:
@@ -1653,10 +1656,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Return the profile including all profiles and credit cards currently
        saved as a list of dictionaries.
 
-       The format of the returned dictionary is described above in
-       FillAutofillProfile. The general format is:
-       {'profiles': [list of profile dictionaries as described above],
-        'credit_cards': [list of credit card dictionaries as described above]}
+    The format of the returned dictionary is described above in
+    FillAutofillProfile. The general format is:
+    {'profiles': [list of profile dictionaries as described above],
+     'credit_cards': [list of credit card dictionaries as described above]}
 
     Args:
        tab_index: tab index, defaults to 0.
