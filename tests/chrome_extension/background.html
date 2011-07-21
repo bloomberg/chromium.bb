@@ -79,13 +79,13 @@
 
             // Send the test result back to the main html page to check.
             // The main page will make sure the nexe loaded and that the
-            // TestSimpleAsync test passed.
+            // TestSimple test passed.
             responseCallback(response);
           };
 
           // Kick off the test.  The test will respond via post message.
           nacl_module.addEventListener("message", messageListener, false);
-          nacl_module.postMessage("TestSimpleAsync");
+          nacl_module.postMessage("TestSimple");
         } catch (err) {
           // Trying to kick off the test failed, and threw a Javascript
           // exception.  Send the exception back to the main page so it can be
