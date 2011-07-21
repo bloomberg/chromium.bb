@@ -103,14 +103,14 @@ void PepperViewProxy::SetViewport(int x, int y, int width, int height) {
     view_->SetViewport(x, y, width, height);
 }
 
-gfx::Point PepperViewProxy::ConvertScreenToHost(const gfx::Point& p) const {
+pp::Point PepperViewProxy::ConvertScreenToHost(const pp::Point& p) const {
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.
   DCHECK(CurrentlyOnPluginThread());
 
   if (view_)
     return view_->ConvertScreenToHost(p);
-  return gfx::Point();
+  return pp::Point();
 }
 
 void PepperViewProxy::AllocateFrame(

@@ -4,11 +4,9 @@
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
-#include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
-#include "remoting/client/chromoting_view.h"
-#include "ui/gfx/point.h"
+#include "remoting/client/plugin/pepper_view_proxy.h"
 
 namespace remoting {
 
@@ -19,8 +17,9 @@ using protocol::MouseEvent;
 
 PepperInputHandler::PepperInputHandler(ClientContext* context,
                                        protocol::ConnectionToHost* connection,
-                                       ChromotingView* view)
-  : InputHandler(context, connection, view) {
+                                       PepperViewProxy* view)
+    : InputHandler(context, connection, view),
+      pepper_view_(view) {
 }
 
 PepperInputHandler::~PepperInputHandler() {
@@ -30,32 +29,40 @@ void PepperInputHandler::Initialize() {
 }
 
 void PepperInputHandler::HandleKeyEvent(bool keydown,
-                                        const KeyboardInputEvent& event) {
+                                        const pp::KeyboardInputEvent& event) {
   SendKeyEvent(keydown, event.GetKeyCode());
 }
 
-void PepperInputHandler::HandleCharacterEvent(const KeyboardInputEvent& event) {
+void PepperInputHandler::HandleCharacterEvent(
+    const pp::KeyboardInputEvent& event) {
   // TODO(garykac): Coordinate key and char events.
 }
 
-void PepperInputHandler::HandleMouseMoveEvent(const MouseInputEvent& event) {
-  gfx::Point p(static_cast<int>(event.GetPosition().x()),
-               static_cast<int>(event.GetPosition().y()));
+void PepperInputHandler::HandleMouseMoveEvent(
+    const pp::MouseInputEvent& event) {
   // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
   // which may be different from the host desktop's co-ordinate system.
-  p = view_->ConvertScreenToHost(p);
+  pp::Point p = pepper_view_->ConvertScreenToHost(event.GetPosition());
   SendMouseMoveEvent(p.x(), p.y());
 }
 
-void PepperInputHandler::HandleMouseButtonEvent(bool button_down,
-                                                const MouseInputEvent& event) {
+void PepperInputHandler::HandleMouseButtonEvent(
+    bool button_down,
+    const pp::MouseInputEvent& event) {
   MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
-  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-    button = MouseEvent::BUTTON_LEFT;
-  } else if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
-    button = MouseEvent::BUTTON_MIDDLE;
-  } else if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
-    button = MouseEvent::BUTTON_RIGHT;
+  switch (event.GetButton()) {
+    case PP_INPUTEVENT_MOUSEBUTTON_LEFT:
+      button = MouseEvent::BUTTON_LEFT;
+      break;
+    case PP_INPUTEVENT_MOUSEBUTTON_MIDDLE:
+      button = MouseEvent::BUTTON_MIDDLE;
+      break;
+    case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
+      button = MouseEvent::BUTTON_RIGHT;
+      break;
+    case PP_INPUTEVENT_MOUSEBUTTON_NONE:
+      // Leave button undefined.
+      break;
   }
 
   if (button != MouseEvent::BUTTON_UNDEFINED) {

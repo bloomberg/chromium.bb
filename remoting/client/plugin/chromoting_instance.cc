@@ -201,14 +201,17 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
       return true;
     }
 
-    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYDOWN: {
+      pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
+      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEYDOWN key=%d", key.GetKeyCode());
+      pih->HandleKeyEvent(true, key);
+      return true;
+    }
+
     case PP_INPUTEVENT_TYPE_KEYUP: {
-      pp::KeyboardInputEvent key_event(event);
-      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEY%s key=%d",
-          (event.GetType()==PP_INPUTEVENT_TYPE_KEYDOWN ? "DOWN" : "UP"),
-          key_event.GetKeyCode());
-      pih->HandleKeyEvent(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN,
-                          key_event);
+      pp::KeyboardInputEvent key = pp::KeyboardInputEvent(event);
+      logger_.VLog(3, "PP_INPUTEVENT_TYPE_KEYUP key=%d", key.GetKeyCode());
+      pih->HandleKeyEvent(false, key);
       return true;
     }
 
@@ -217,8 +220,10 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
       return true;
     }
 
-    default:
+    default: {
+      LOG(INFO) << "Unhandled input event: " << event.GetType();
       break;
+    }
   }
 
   return false;

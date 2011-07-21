@@ -73,10 +73,6 @@ class ChromotingView {
   // extends past the end of the backing store, it is filled with black.
   virtual void SetViewport(int x, int y, int width, int height) = 0;
 
-  // Converts screen co-ordinates to host co-ordinates, and clips to the host
-  // screen.
-  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const = 0;
-
  protected:
   // Framebuffer for the decoder.
   scoped_refptr<media::VideoFrame> frame_;

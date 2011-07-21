@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "media/base/video_frame.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/point.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
 
@@ -40,7 +41,6 @@ class PepperView : public ChromotingView,
   virtual void UpdateLoginStatus(bool success, const std::string& info)
       OVERRIDE;
   virtual void SetViewport(int x, int y, int width, int height) OVERRIDE;
-  virtual gfx::Point ConvertScreenToHost(const gfx::Point& p) const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
@@ -55,6 +55,10 @@ class PepperView : public ChromotingView,
                                     UpdatedRects* rects,
                                     Task* done);
 
+  // Converts screen co-ordinates to host co-ordinates, and clips to the host
+  // screen.
+  pp::Point ConvertScreenToHost(const pp::Point& p) const;
+
   // Sets the size of the visible screen area that this object can render into.
   void SetScreenSize(int width, int height);
 
@@ -68,13 +72,13 @@ class PepperView : public ChromotingView,
 
   // Blits the pixels in |r| in the backing store into the corresponding
   // rectangle in the scaled backing store. Returns that rectangle.
-  gfx::Rect UpdateScaledBackingStore(const gfx::Rect& r);
+  pp::Rect UpdateScaledBackingStore(const pp::Rect& r);
 
   // Blanks out a rectangle in an image.
-  void BlankRect(pp::ImageData& image_data, const gfx::Rect& rect);
+  void BlankRect(pp::ImageData& image_data, const pp::Rect& rect);
 
   // Converts host co-ordinates to screen co-ordinates.
-  gfx::Point ConvertHostToScreen(const gfx::Point& p) const;
+  pp::Point ConvertHostToScreen(const pp::Point& p) const;
 
   // Sets the screen scale. A value of 1.0 indicates no scaling.
   void SetScreenScale(double screen_scale);

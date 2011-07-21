@@ -7,9 +7,11 @@
 
 #include "remoting/client/input_handler.h"
 
-struct PP_InputEvent_Character;
-struct PP_InputEvent_Key;
-struct PP_InputEvent_Mouse;
+namespace pp {
+class KeyboardInputEvent;
+class MouseInputEvent;
+class WheelInputEvent;
+}
 
 namespace pp {
 class KeyboardInputEvent;
@@ -18,11 +20,13 @@ class MouseInputEvent;
 
 namespace remoting {
 
+class PepperViewProxy;
+
 class PepperInputHandler : public InputHandler {
  public:
   PepperInputHandler(ClientContext* context,
                      protocol::ConnectionToHost* connection,
-                     ChromotingView* view);
+                     PepperViewProxy* view);
   virtual ~PepperInputHandler();
 
   virtual void Initialize();
@@ -35,6 +39,8 @@ class PepperInputHandler : public InputHandler {
                               const pp::MouseInputEvent& event);
 
  private:
+  PepperViewProxy* pepper_view_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);
 };
 

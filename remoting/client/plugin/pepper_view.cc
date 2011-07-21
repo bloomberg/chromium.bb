@@ -130,10 +130,10 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
     }
 
     if (DoScaling()) {
-      gfx::Rect r_scaled = UpdateScaledBackingStore(r);
+      pp::Rect r_scaled = UpdateScaledBackingStore(
+          pp::Rect(r.x(), r.y(), r.width(), r.height()));
       graphics2d_.PaintImageData(*scaled_backing_store_.get(), pp::Point(0, 0),
-                                 pp::Rect(r_scaled.x(), r_scaled.y(),
-                                          r_scaled.width(), r_scaled.height()));
+                                 r_scaled);
     } else {
       // Pepper Graphics 2D has a strange and badly documented API that the
       // point here is the offset from the source rect. Why?
@@ -149,18 +149,18 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   TraceContext::tracer()->PrintString("End Paint Frame.");
 }
 
-gfx::Rect PepperView::UpdateScaledBackingStore(const gfx::Rect& r) {
+pp::Rect PepperView::UpdateScaledBackingStore(const pp::Rect& r) {
   const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
   // Find the updated rectangle in the scaled backing store.
-  gfx::Point top_left = ConvertHostToScreen(r.origin());
-  gfx::Point bottom_right = ConvertHostToScreen(gfx::Point(r.right(),
-                                                           r.bottom()));
+  pp::Point top_left = ConvertHostToScreen(r.point());
+  pp::Point bottom_right = ConvertHostToScreen(pp::Point(r.right(),
+                                                         r.bottom()));
   int r_scaled_left = top_left.x();
   int r_scaled_right = bottom_right.x();
   int r_scaled_top = top_left.y();
   int r_scaled_bottom = bottom_right.y();
   if (r_scaled_right <= r_scaled_left || r_scaled_bottom <= r_scaled_top)
-    return gfx::Rect(r_scaled_left, r_scaled_top, 0, 0);
+    return pp::Rect(r_scaled_left, r_scaled_top, 0, 0);
 
   // Allow for the fact that ConvertHostToScreen and ConvertScreenToHost aren't
   // exact inverses.
@@ -179,7 +179,7 @@ gfx::Rect PepperView::UpdateScaledBackingStore(const gfx::Rect& r) {
 
   // Blit from the backing store to the scaled backing store.
   for (int y_scaled = r_scaled_top; y_scaled < r_scaled_bottom; y_scaled++) {
-    int y = ConvertScreenToHost(gfx::Point(0, y_scaled)).y();
+    int y = ConvertScreenToHost(pp::Point(0, y_scaled)).y();
     // Special case where each pixel is a word.
     if ((kBytesPerPixel == 4) && (backing_store_->stride() % 4 == 0) &&
         (scaled_backing_store_->stride() % 4 == 0)) {
@@ -206,11 +206,11 @@ gfx::Rect PepperView::UpdateScaledBackingStore(const gfx::Rect& r) {
       }
     }
   }
-  return gfx::Rect(r_scaled_left, r_scaled_top, r_scaled_right - r_scaled_left,
-                   r_scaled_bottom - r_scaled_top);
+  return pp::Rect(r_scaled_left, r_scaled_top, r_scaled_right - r_scaled_left,
+                  r_scaled_bottom - r_scaled_top);
 }
 
-void PepperView::BlankRect(pp::ImageData& image_data, const gfx::Rect& rect) {
+void PepperView::BlankRect(pp::ImageData& image_data, const pp::Rect& rect) {
   const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
   for (int y = rect.y(); y < rect.bottom(); y++) {
     uint8* to = reinterpret_cast<uint8*>(image_data.data()) +
@@ -285,7 +285,7 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
   instance_->GetScriptableObject()->SetDesktopSize(host_width_, host_height_);
 }
 
-gfx::Point PepperView::ConvertScreenToHost(const gfx::Point& p) const {
+pp::Point PepperView::ConvertScreenToHost(const pp::Point& p) const {
   DCHECK(CurrentlyOnPluginThread());
 
   int x = static_cast<int>(p.x() / screen_scale_);
@@ -294,11 +294,11 @@ gfx::Point PepperView::ConvertScreenToHost(const gfx::Point& p) const {
   int y = static_cast<int>(p.y() / screen_scale_);
   y = std::min(y, host_height_ - 1);
   y = std::max(y, 0);
-  return gfx::Point(x, y);
+  return pp::Point(x, y);
 }
 
-gfx::Point PepperView::ConvertHostToScreen(const gfx::Point& p) const {
-  return gfx::Point(static_cast<int>(p.x() * screen_scale_),
+pp::Point PepperView::ConvertHostToScreen(const pp::Point& p) const {
+  return pp::Point(static_cast<int>(p.x() * screen_scale_),
                     static_cast<int>(p.y() * screen_scale_));
 }
 
@@ -314,18 +314,18 @@ void PepperView::RefreshPaint() {
   if (DoScaling()) {
     // Render from the whole backing store, to the scaled backing store, at the
     // current scale.
-    gfx::Rect updated_rect = UpdateScaledBackingStore(gfx::Rect(
+    pp::Rect updated_rect = UpdateScaledBackingStore(pp::Rect(
         host_width_, host_height_));
     // If the scale has just decreased, then there is stale raster data
     // to the right of, and below, the scaled copy of the host screen that's
     // just been rendered into the scaled backing store.
     // So blank out everything to the east of that copy...
-    BlankRect(*scaled_backing_store_, gfx::Rect(
+    BlankRect(*scaled_backing_store_, pp::Rect(
         updated_rect.right(), 0,
         scaled_backing_store_->size().width() - updated_rect.right(),
         updated_rect.bottom()));
     // ...and everything to the south and south-east.
-    BlankRect(*scaled_backing_store_, gfx::Rect(
+    BlankRect(*scaled_backing_store_, pp::Rect(
         0, updated_rect.bottom(), scaled_backing_store_->size().width(),
         scaled_backing_store_->size().height() - updated_rect.bottom()));
     graphics2d_.PaintImageData(*scaled_backing_store_.get(), pp::Point(0, 0),
@@ -384,7 +384,7 @@ void PepperView::ResizeInternals() {
   // to host screen co-ordinates.
   screen_x_to_host_x_.reset(new int[client_width_]);
   for (int x = 0; x < client_width_; x++)
-    screen_x_to_host_x_[x] = ConvertScreenToHost(gfx::Point(x, 0)).x();
+    screen_x_to_host_x_[x] = ConvertScreenToHost(pp::Point(x, 0)).x();
 }
 
 bool PepperView::DoScaling() const {
