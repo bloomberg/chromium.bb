@@ -185,7 +185,7 @@ const struct EnglishToResouceId {
 #endif  // if defined(GOOGLE_CHROME_BUILD)
   { "zinnia-japanese",
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD },
-  { "hangul", IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD },
+  { "mozc-hangul", IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD },
 
   // For ibus-xkb-layouts engine: third_party/ibus-xkb-layouts/files
   { "xkb:jp::jpn", IDS_STATUSBAR_LAYOUT_JAPAN },
