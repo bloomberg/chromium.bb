@@ -57,16 +57,13 @@ void DispatchEvent(Profile* profile,
 void DispatchOnBeforeNavigate(TabContents* tab_contents,
                               int64 frame_id,
                               bool is_main_frame,
-                              const GURL& validated_url,
-                              uint64 request_id) {
+                              const GURL& validated_url) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
   dict->SetString(keys::kUrlKey, validated_url.spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -310,7 +307,7 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   DispatchOnBeforeNavigate(
-      tab_contents(), frame_id, is_main_frame, validated_url, 0);
+      tab_contents(), frame_id, is_main_frame, validated_url);
 }
 
 void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
@@ -433,8 +430,7 @@ void ExtensionWebNavigationTabObserver::NavigatedReferenceFragment(
   DispatchOnBeforeNavigate(tab_contents(),
                            frame_id,
                            is_main_frame,
-                           url,
-                           0);
+                           url);
   DispatchOnCommitted(tab_contents(),
                       frame_id,
                       is_main_frame,

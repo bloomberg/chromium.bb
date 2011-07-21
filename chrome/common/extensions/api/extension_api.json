@@ -3853,7 +3853,6 @@
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
               "url": {"type": "string"},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
-              "requestId": {"type": "string", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
             }
           }

@@ -13,7 +13,6 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('referenceFragment/a.html') }],
@@ -36,7 +35,6 @@ function runTests() {
               url: getURL('referenceFragment/a.html') }],
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('referenceFragment/a.html#anchor') }],

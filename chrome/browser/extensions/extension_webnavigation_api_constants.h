@@ -13,7 +13,6 @@ namespace extension_webnavigation_api_constants {
 // Keys.
 extern const char kErrorKey[];
 extern const char kFrameIdKey[];
-extern const char kRequestIdKey[];
 extern const char kSourceTabIdKey[];
 extern const char kSourceUrlKey[];
 extern const char kTabIdKey[];

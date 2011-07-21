@@ -13,7 +13,6 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/nonexistant.html') }],
@@ -31,7 +30,6 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/d.html') }],
@@ -44,7 +42,6 @@ function runTests() {
               url: getURL('failures/d.html') }],
           [ "onBeforeNavigate",
             { frameId: 1,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/c.html') }],
@@ -72,7 +69,6 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/a.html') }],
@@ -85,7 +81,6 @@ function runTests() {
               url: getURL('failures/a.html') }],
           [ "onBeforeNavigate",
             { frameId: 1,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/b.html') }],
@@ -118,7 +113,6 @@ function runTests() {
               url: getURL('failures/a.html') }],
           [ "onBeforeNavigate",
             { frameId: 1,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('failures/c.html') }],

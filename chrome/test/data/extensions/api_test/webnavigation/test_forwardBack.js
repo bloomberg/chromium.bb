@@ -14,7 +14,6 @@ function runTests() {
         expect([
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('forwardBack/a.html') }],
@@ -37,7 +36,6 @@ function runTests() {
               url: getURL('forwardBack/a.html') }],
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('forwardBack/b.html') }],
@@ -60,7 +58,6 @@ function runTests() {
               url: getURL('forwardBack/b.html') }],
           [ "onBeforeNavigate",
             { frameId: 0,
-              requestId: "0",
               tabId: 0,
               timeStamp: 0,
               url: getURL('forwardBack/a.html') }],
