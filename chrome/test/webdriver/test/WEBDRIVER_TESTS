@@ -26,16 +26,13 @@
     'children_finding_tests',
     # Cookie tests try to set the domain explicitly to 'localhost', which
     # is not allowed.
-#   'cookie_tests',
+    #'cookie_tests',
     'correct_event_firing_tests',
     'driver_element_finding_test',
     'element_attribute_tests',
-    # Async execution has not been implemented.
-    # 'executing_async_javascript_test',
+    'executing_async_javascript_test',
     'executing_javascript_test',
     'form_handling_tests',
-    # This test is flaky, probably because of form submission race.
-    '-form_handling_tests.FormHandlingTests.testShouldClickOnSubmitInputElements',
     'frame_switching_tests',
     # Test is asserting the wrong thing.
     '-frame_switching_tests.FrameSwitchingTest.testShouldReturnFrameTitleNotWindowTitle',

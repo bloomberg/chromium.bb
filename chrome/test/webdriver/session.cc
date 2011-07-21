@@ -36,7 +36,6 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -276,14 +275,6 @@ Error* Session::GetURL(std::string* url) {
   return NULL;
 }
 
-Error* Session::GetURL(GURL* url) {
-  std::string url_spec;
-  Error* error = GetURL(&url_spec);
-  if (!error)
-    *url = GURL(url_spec);
-  return error;
-}
-
 Error* Session::GetTitle(std::string* tab_title) {
   std::string script =
       "if (document.title)"
@@ -397,37 +388,6 @@ Error* Session::GetCookies(const std::string& url, ListValue** cookies) {
   return error;
 }
 
-bool Session::GetCookiesDeprecated(const GURL& url, std::string* cookies) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::GetCookiesDeprecated,
-      current_target_.window_id,
-      url,
-      cookies,
-      &success));
-  return success;
-}
-
-bool Session::GetCookieByNameDeprecated(const GURL& url,
-                                        const std::string& cookie_name,
-                                        std::string* cookie) {
-  std::string cookies;
-  if (!GetCookiesDeprecated(url, &cookies))
-    return false;
-
-  std::string namestr = cookie_name + "=";
-  std::string::size_type idx = cookies.find(namestr);
-  if (idx != std::string::npos) {
-    cookies.erase(0, idx + namestr.length());
-    *cookie = cookies.substr(0, cookies.find(";"));
-  } else {
-    cookie->clear();
-  }
-
-  return true;
-}
-
 Error* Session::DeleteCookie(const std::string& url,
                            const std::string& cookie_name) {
   Error* error = NULL;
@@ -440,19 +400,6 @@ Error* Session::DeleteCookie(const std::string& url,
   return error;
 }
 
-bool Session::DeleteCookieDeprecated(const GURL& url,
-                                     const std::string& cookie_name) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::DeleteCookieDeprecated,
-      current_target_.window_id,
-      url,
-      cookie_name,
-      &success));
-  return success;
-}
-
 Error* Session::SetCookie(const std::string& url,
                           DictionaryValue* cookie_dict) {
   Error* error = NULL;
@@ -463,18 +410,6 @@ Error* Session::SetCookie(const std::string& url,
       cookie_dict,
       &error));
   return error;
-}
-
-bool Session::SetCookieDeprecated(const GURL& url, const std::string& cookie) {
-  bool success = false;
-  RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::SetCookieDeprecated,
-      current_target_.window_id,
-      url,
-      cookie,
-      &success));
-  return success;
 }
 
 Error* Session::GetWindowIds(std::vector<int>* window_ids) {

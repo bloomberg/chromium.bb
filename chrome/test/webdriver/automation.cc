@@ -32,7 +32,6 @@
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/webdriver/frame_path.h"
 #include "chrome/test/webdriver/webdriver_error.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/point.h"
 
 #if defined(OS_WIN)
@@ -416,7 +415,7 @@ void Automation::NavigateToURL(int tab_id,
   AutomationMsg_NavigationResponseValues navigate_response;
   std::string error_msg;
   if (!SendNavigateToURLJSONRequest(automation(), windex, tab_index,
-                                    GURL(url), 1, &navigate_response,
+                                    url, 1, &navigate_response,
                                     &error_msg)) {
     *error = new Error(kUnknownError, error_msg);
     return;
@@ -469,21 +468,6 @@ void Automation::GetCookies(const std::string& url,
     *error = new Error(kUnknownError, error_msg);
 }
 
-void Automation::GetCookiesDeprecated(int tab_id,
-                                      const GURL& gurl,
-                                      std::string* cookies,
-                                      bool* success) {
-  int windex = 0, tab_index = 0;
-  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
-  if (error.get()) {
-    *success = false;
-    return;
-  }
-
-  *success = SendGetCookiesJSONRequestDeprecated(
-      automation(), windex, gurl.possibly_invalid_spec(), cookies);
-}
-
 void Automation::DeleteCookie(const std::string& url,
                               const std::string& cookie_name,
                               Error** error) {
@@ -494,48 +478,12 @@ void Automation::DeleteCookie(const std::string& url,
   }
 }
 
-void Automation::DeleteCookieDeprecated(int tab_id,
-                                        const GURL& gurl,
-                                        const std::string& cookie_name,
-                                        bool* success) {
-  int windex = 0, tab_index = 0;
-  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
-  if (error.get()) {
-    *success = false;
-    return;
-  }
-
-  *success = SendDeleteCookieJSONRequestDeprecated(
-      automation(),
-      windex,
-      gurl.possibly_invalid_spec(),
-      cookie_name);
-}
-
 void Automation::SetCookie(const std::string& url,
                            DictionaryValue* cookie_dict,
                            Error** error) {
   std::string error_msg;
   if (!SendSetCookieJSONRequest(automation(), url, cookie_dict, &error_msg))
     *error = new Error(kUnknownError, error_msg);
-}
-
-void Automation::SetCookieDeprecated(int tab_id,
-                                     const GURL& gurl,
-                                     const std::string& cookie,
-                                     bool* success) {
-  int windex = 0, tab_index = 0;
-  scoped_ptr<Error> error(GetIndicesForTab(tab_id, &windex, &tab_index));
-  if (error.get()) {
-    *success = false;
-    return;
-  }
-
-  *success = SendSetCookieJSONRequestDeprecated(
-      automation(),
-      windex,
-      gurl.possibly_invalid_spec(),
-      cookie);
 }
 
 void Automation::GetTabIds(std::vector<int>* tab_ids,

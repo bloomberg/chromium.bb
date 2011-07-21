@@ -21,7 +21,6 @@
 
 class CommandLine;
 class FilePath;
-class GURL;
 
 namespace base {
 class DictionaryValue;
@@ -118,19 +117,11 @@ class Session {
   Error* GoBack();
   Error* Reload();
   Error* GetURL(std::string* url);
-  Error* GetURL(GURL* url);
   Error* GetTitle(std::string* tab_title);
   Error* GetScreenShot(std::string* png);
-
   Error* GetCookies(const std::string& url, base::ListValue** cookies);
-  bool GetCookiesDeprecated(const GURL& url, std::string* cookies);
-  bool GetCookieByNameDeprecated(const GURL& url,
-                                 const std::string& cookie_name,
-                                 std::string* cookie);
   Error* DeleteCookie(const std::string& url, const std::string& cookie_name);
-  bool DeleteCookieDeprecated(const GURL& url, const std::string& cookie_name);
   Error* SetCookie(const std::string& url, base::DictionaryValue* cookie_dict);
-  bool SetCookieDeprecated(const GURL& url, const std::string& cookie);
 
   // Gets all the currently existing window IDs. Returns true on success.
   Error* GetWindowIds(std::vector<int>* window_ids);

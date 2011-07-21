@@ -847,8 +847,6 @@
         '../third_party/webdriver/atoms.h',
         'test/webdriver/automation.h',
         'test/webdriver/automation.cc',
-        'test/webdriver/cookie.h',
-        'test/webdriver/cookie.cc',
         'test/webdriver/dispatch.h',
         'test/webdriver/dispatch.cc',
         'test/webdriver/frame_path.h',
@@ -994,7 +992,6 @@
       'sources': [
         '../base/test/run_all_unittests.cc',
         'test/webdriver/commands/set_timeout_commands_unittest.cc',
-        'test/webdriver/cookie_unittest.cc',
         'test/webdriver/dispatch_unittest.cc',
         'test/webdriver/frame_path_unittest.cc',
         'test/webdriver/http_response_unittest.cc',

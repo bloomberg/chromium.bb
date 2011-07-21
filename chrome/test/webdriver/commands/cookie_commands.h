@@ -30,8 +30,6 @@ class CookieCommand : public WebDriverCommand {
                 const base::DictionaryValue* const parameters);
   virtual ~CookieCommand();
 
-  virtual bool Init(Response* const response);
-
   virtual bool DoesDelete();
   virtual bool DoesGet();
   virtual bool DoesPost();
@@ -41,9 +39,6 @@ class CookieCommand : public WebDriverCommand {
   virtual void ExecutePost(Response* const response);
 
  private:
-  GURL current_url_;
-  bool uses_new_interface_;
-
   DISALLOW_COPY_AND_ASSIGN(CookieCommand);
 };
 
@@ -58,15 +53,12 @@ class NamedCookieCommand : public WebDriverCommand {
 
   virtual bool Init(Response* const response);
 
- protected:
   virtual bool DoesDelete();
 
   virtual void ExecuteDelete(Response* const response);
 
  private:
-  GURL current_url_;
   std::string cookie_name_;
-  bool uses_new_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(NamedCookieCommand);
 };

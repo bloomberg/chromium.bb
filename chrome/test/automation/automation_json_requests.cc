@@ -137,7 +137,7 @@ bool SendNavigateToURLJSONRequest(
     AutomationMessageSender* sender,
     int browser_index,
     int tab_index,
-    const GURL& url,
+    const std::string& url,
     int navigation_count,
     AutomationMsg_NavigationResponseValues* nav_response,
     std::string* error_msg) {
@@ -145,7 +145,7 @@ bool SendNavigateToURLJSONRequest(
   dict.SetString("command", "NavigateToURL");
   dict.SetInteger("windex", browser_index);
   dict.SetInteger("tab_index", tab_index);
-  dict.SetString("url", url.possibly_invalid_spec());
+  dict.SetString("url", url);
   dict.SetInteger("navigation_count", navigation_count);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg))
@@ -303,22 +303,6 @@ bool SendGetCookiesJSONRequest(
   return true;
 }
 
-bool SendGetCookiesJSONRequestDeprecated(
-    AutomationMessageSender* sender,
-    int browser_index,
-    const std::string& url,
-    std::string* cookies) {
-  DictionaryValue dict;
-  dict.SetString("command", "GetCookies");
-  dict.SetInteger("windex", browser_index);
-  dict.SetString("url", url);
-  DictionaryValue reply_dict;
-  std::string error_msg;
-  if (!SendAutomationJSONRequest(sender, dict, &reply_dict, &error_msg))
-    return false;
-  return reply_dict.GetString("cookies", cookies);
-}
-
 bool SendDeleteCookieJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
@@ -332,21 +316,6 @@ bool SendDeleteCookieJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
 }
 
-bool SendDeleteCookieJSONRequestDeprecated(
-    AutomationMessageSender* sender,
-    int browser_index,
-    const std::string& url,
-    const std::string& cookie_name) {
-  DictionaryValue dict;
-  dict.SetString("command", "DeleteCookie");
-  dict.SetInteger("windex", browser_index);
-  dict.SetString("url", url);
-  dict.SetString("name", cookie_name);
-  DictionaryValue reply_dict;
-  std::string error_msg;
-  return SendAutomationJSONRequest(sender, dict, &reply_dict, &error_msg);
-}
-
 bool SendSetCookieJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,
@@ -358,21 +327,6 @@ bool SendSetCookieJSONRequest(
   dict.Set("cookie", cookie_dict->DeepCopy());
   DictionaryValue reply_dict;
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg);
-}
-
-bool SendSetCookieJSONRequestDeprecated(
-    AutomationMessageSender* sender,
-    int browser_index,
-    const std::string& url,
-    const std::string& cookie) {
-  DictionaryValue dict;
-  dict.SetString("command", "SetCookie");
-  dict.SetInteger("windex", browser_index);
-  dict.SetString("url", url);
-  dict.SetString("cookie", cookie);
-  DictionaryValue reply_dict;
-  std::string error_msg;
-  return SendAutomationJSONRequest(sender, dict, &reply_dict, &error_msg);
 }
 
 bool SendGetTabIdsJSONRequest(
