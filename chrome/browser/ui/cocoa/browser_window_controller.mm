@@ -157,12 +157,21 @@
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
+enum {
+  NSWindowAnimationBehaviorDefault = 0,
+  NSWindowAnimationBehaviorNone = 2,
+  NSWindowAnimationBehaviorDocumentWindow = 3,
+  NSWindowAnimationBehaviorUtilityWindow = 4,
+  NSWindowAnimationBehaviorAlertPanel = 5
+};
+typedef NSInteger NSWindowAnimationBehavior;
+
 @interface NSWindow (LionSDKDeclarations)
 - (void)setRestorable:(BOOL)flag;
+- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_7
-
 
 @implementation BrowserWindowController
 
@@ -218,6 +227,10 @@
     // prevents the browser from being able to quit <http://crbug.com/79113>.
     if ([window respondsToSelector:@selector(setRestorable:)])
       [window setRestorable:NO];
+
+    // Get the windows to swish in on Lion.
+    if ([window respondsToSelector:@selector(setAnimationBehavior:)])
+      [window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
 
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
