@@ -2540,6 +2540,7 @@
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/history/history_browsertest.cc',
         'browser/idbbindingutilities_browsertest.cc',
+        'browser/importer/toolbar_importer_utils_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/plugin_data_remover_browsertest.cc',

@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/string_split.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -24,30 +26,51 @@ namespace toolbar_importer_utils {
 
 void OnGetCookies(const base::Callback<void(bool)>& callback,
                   const std::string& cookies) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<std::string> cookie_list;
   base::SplitString(cookies, kSplitStringToken, &cookie_list);
   for (std::vector<std::string>::iterator current = cookie_list.begin();
        current != cookie_list.end();
        ++current) {
     size_t position = (*current).find(kGoogleDomainSecureCookieId);
-    if (position == 0)
+    if (position == 0) {
       callback.Run(true);
-    return;
+      return;
+    }
   }
   callback.Run(false);
 }
 
+void OnFetchComplete(const base::Callback<void(bool)>& callback,
+                     const std::string& cookies) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnGetCookies, callback, cookies));
+}
+
+void FetchCookiesOnIOThread(
+    const base::Callback<void(bool)>& callback,
+    net::URLRequestContextGetter* context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::CookieStore* store = context_getter->
+      GetURLRequestContext()->cookie_store();
+  GURL url(kGoogleDomainUrl);
+  net::CookieOptions options;
+  options.set_include_httponly();  // The SID cookie might be httponly.
+  store->GetCookiesWithOptionsAsync(
+      url, options,
+      base::Bind(&toolbar_importer_utils::OnFetchComplete, callback));
+}
+
 void IsGoogleGAIACookieInstalled(const base::Callback<void(bool)>& callback,
                                  Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null()) {
-    net::CookieStore* store =
-        profile->GetRequestContext()->GetURLRequestContext()->cookie_store();
-    GURL url(kGoogleDomainUrl);
-    net::CookieOptions options;
-    options.set_include_httponly();  // The SID cookie might be httponly.
-    store->GetCookiesWithOptionsAsync(
-        url, options,
-        base::Bind(&toolbar_importer_utils::OnGetCookies, callback));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&FetchCookiesOnIOThread,
+                   callback, base::Unretained(profile->GetRequestContext())));
   }
 }
 
