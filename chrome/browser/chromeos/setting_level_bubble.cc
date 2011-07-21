@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 
 namespace {
@@ -22,7 +23,8 @@ namespace {
 const int kBubbleShowTimeoutSec = 2;
 const int kAnimationDurationMs = 200;
 
-// Horizontal relative position: 0 - leftmost, 0.5 - center, 1 - rightmost.
+// Horizontal position of the center of the bubble on the screen: 0 is left
+// edge, 0.5 is center, 1 is right edge.
 const double kBubbleXRatio = 0.5;
 
 // Vertical gap from the bottom of the screen in pixels.
@@ -99,23 +101,28 @@ void SettingLevelBubble::ShowBubble(int percent) {
     icon = decrease_icon_;
 
   if (!bubble_) {
-    views::Widget* widget = GetToplevelWidget();
-    if (widget == NULL)
+    views::Widget* parent_widget = GetToplevelWidget();
+    if (parent_widget == NULL)
       return;
     DCHECK(view_ == NULL);
     view_ = new SettingLevelBubbleView;
     view_->Init(icon, previous_percent_);
-    // Calculate position of the bubble.
-    gfx::Rect bounds = widget->GetClientAreaScreenBounds();
+
+    // Calculate the position in screen coordinates that the bubble should
+    // "point" at (since we use BubbleBorder::FLOAT, this position actually
+    // specifies the center of the bubble).
+    const gfx::Rect monitor_area =
+        views::Screen::GetMonitorAreaNearestWindow(
+            GTK_WIDGET(parent_widget->GetNativeWindow()));
     const gfx::Size view_size = view_->GetPreferredSize();
-    // Note that (x, y) is the point of the center of the bubble.
-    const int x = view_size.width() / 2 +
-        kBubbleXRatio * (bounds.width() - view_size.width());
-    const int y = bounds.height() - view_size.height() / 2 - kBubbleBottomGap;
+    const gfx::Rect position_relative_to(
+        monitor_area.x() + kBubbleXRatio * monitor_area.width(),
+        monitor_area.bottom() - view_size.height() / 2 - kBubbleBottomGap,
+        0, 0);
 
     // ShowFocusless doesn't set ESC accelerator.
-    bubble_ = Bubble::ShowFocusless(widget,  // parent
-                                    gfx::Rect(x, y, 0, 20),
+    bubble_ = Bubble::ShowFocusless(parent_widget,
+                                    position_relative_to,
                                     BubbleBorder::FLOAT,
                                     view_,  // contents
                                     this,   // delegate
