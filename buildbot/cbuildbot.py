@@ -582,6 +582,19 @@ def _CreateParser():
   return parser
 
 
+def _PostParseCheck(options):
+  """Perform some usage validation after we've parsed the arguments
+
+  Args:
+    options: The options object returned by optparse
+  """
+  if cros_lib.IsInsideChroot():
+    cros_lib.Die('Please run cbuildbot from outside the chroot.')
+
+  if options.lkgm and (options.local_patches or options.gerrit_patches):
+    cros_lib.Die('Patching is not supported with --lkgm option.')
+
+
 def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
@@ -592,6 +605,8 @@ def main(argv=None):
   if options.list:
     _PrintValidConfigs()
     sys.exit(0)
+
+  _PostParseCheck(options)
 
   if len(args) >= 1:
     bot_id = args[-1]

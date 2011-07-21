@@ -6,7 +6,6 @@
 
 """Unittests for build stages."""
 
-import getpass
 import mox
 import os
 import sys
@@ -200,6 +199,13 @@ class FullInterfaceTest(unittest.TestCase):
   _BUILD_ROOT = '/b/test_build1'
 
   def setUp(self):
+    def fake_real_path(path):
+      """Used to mock out os.path.realpath"""
+      if path == FullInterfaceTest._BUILD_ROOT:
+        return path
+      else:
+        raise TestFailedException('Unexpected os.path.realpath(%s) call' % path)
+
     self.mox = mox.Mox()
 
     # Create the parser before we stub out os.path.exists() - which the parser
@@ -211,6 +217,7 @@ class FullInterfaceTest(unittest.TestCase):
     # the end of every test.
     self.mox.StubOutWithMock(parser, 'error')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'exists')
+    self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
     self.mox.StubOutWithMock(cbuildbot, '_GetInput')
@@ -219,12 +226,12 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithSudoProcess')
     self.mox.StubOutWithMock(cbuildbot.os.path, 'realpath')
 
+    cbuildbot.os.path.realpath = fake_real_path
     parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
+    cros_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
     cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')
-    (cbuildbot.os.path.realpath('/b/test_build1').InAnyOrder().
-        AndReturn('/b/test_build1'))
     cbuildbot._RunBuildStagesWrapper(
         mox.IgnoreArg(),
         mox.IgnoreArg(),
@@ -288,7 +295,6 @@ class FullInterfaceTest(unittest.TestCase):
 
   def testValidateClobberForClobberOption(self):
     """Test that we ask for clobber confirmation for trybot runs."""
-    os.path.realpath(self._BUILD_ROOT).InAnyOrder().AndReturn(self._BUILD_ROOT)
     self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
     cbuildbot._ValidateClobber(self._BUILD_ROOT)
     self.mox.ReplayAll()
@@ -297,11 +303,22 @@ class FullInterfaceTest(unittest.TestCase):
 
   def testNoClobberConfirmationForBuildBotBuilds(self):
     """Test that we don't ask for clobber confirmation for --buildbot runs."""
-    os.path.realpath(self._BUILD_ROOT).InAnyOrder().AndReturn(self._BUILD_ROOT)
     self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber', '--buildbot',
                     'x86-generic-pre-flight-queue'])
+
+  def testBuildbotDiesInChroot(self):
+    """Buildbot should quit if run inside a chroot."""
+    # Need to do this since a cros_lib.IsInsideChroot() call is already queued
+    # up in setup() and we can't Reset() an individual mock.
+    new_is_inside_chroot = self.mox.CreateMockAnything()
+    new_is_inside_chroot().InAnyOrder().AndReturn(True)
+    cros_lib.IsInsideChroot = new_is_inside_chroot
+    self.mox.ReplayAll()
+    self.assertRaises(TestExitedException, cbuildbot.main,
+                      ['-r', self._BUILD_ROOT, 'x86-generic-pre-flight-queue'])
+
 
 if __name__ == '__main__':
   unittest.main()
