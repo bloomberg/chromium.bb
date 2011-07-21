@@ -1598,3 +1598,29 @@
    ...
    fun:safe_browsing::ClientSideDetectionHost::OnDetectedPhishingSite
 }
+
+# These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
+{
+   bug_90013_a
+   Heapcheck:Leak
+   ...
+   fun:gtk_views_fixed_new
+}
+{
+   bug_90013_b
+   Heapcheck:Leak
+   ...
+   fun:g_type_class_meta_marshal
+}
+{
+   bug_90013_c
+   Heapcheck:Leak
+   ...
+   fun:find_invisible_char
+}
+{
+   bug_90013_d
+   Heapcheck:Leak
+   ...
+   fun:views::View::*
+}
