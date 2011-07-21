@@ -59,7 +59,7 @@ simple_client_SOURCES = simple-client.c
 simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 simple_shm_SOURCES = simple-shm.c
-simple_shm_LDADD = $(CLIENT_LIBS) -lrt -lm
+simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)

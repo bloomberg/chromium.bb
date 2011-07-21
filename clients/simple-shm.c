@@ -25,9 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <math.h>
 #include <assert.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
 
