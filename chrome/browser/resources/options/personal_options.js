@@ -5,6 +5,7 @@
 cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
+  var ArrayDataModel = cr.ui.ArrayDataModel;
 
   // State variables.
   var syncEnabled = false;
@@ -32,6 +33,8 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
+
+      // Sync.
       $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
       };
@@ -44,17 +47,48 @@ cr.define('options', function() {
       $('customize-sync').onclick = function(event) {
         SyncSetupOverlay.showSetupUI();
       };
+
+      // Profiles.
+      var profilesList = $('profiles-list');
+      options.personal_options.ProfileList.decorate(profilesList);
+      profilesList.autoExpands = true;
+
+      profilesList.onchange = function(event) {
+        var selectedProfile = profilesList.selectedItem;
+        var hasSelection = selectedProfile != null;
+        $('profiles-manage').disabled = !hasSelection;
+        $('profiles-delete').disabled = !hasSelection;
+      };
+      $('profiles-create').onclick = function(event) {
+        chrome.send('createProfile');
+      };
+      $('profiles-manage').onclick = function(event) {
+        var selectedProfile = self.getSelectedProfileItem_();
+        if (selectedProfile)
+          ManageProfileOverlay.showManageDialog(selectedProfile);
+      };
+      $('profiles-delete').onclick = function(event) {
+        var selectedProfile = self.getSelectedProfileItem_();
+        if (selectedProfile)
+          ManageProfileOverlay.showDeleteDialog(selectedProfile);
+      };
+
+      // Passwords.
       $('manage-passwords').onclick = function(event) {
         OptionsPage.navigateToPage('passwords');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
       };
+
+      // Autofill.
       $('autofill-settings').onclick = function(event) {
         OptionsPage.navigateToPage('autofill');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutofillSettings']);
       };
+
+      // Appearance.
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
       };
@@ -145,16 +179,60 @@ cr.define('options', function() {
       $('sync-action-link').hidden = !status.length;
     },
 
+    /**
+     * Display or hide the profiles section of the page. This is used for
+     * multi-profile settings.
+     * @param {boolean} visible True to show the section.
+     * @private
+     */
     setProfilesSectionVisible_: function(visible) {
-      $('profiles-create').hidden = !visible;
+      $('profiles-section').hidden = !visible;
     },
 
-    setNewProfileButtonEnabled_: function(enabled) {
-      $('new-profile').disabled = !enabled;
-      if (enabled)
-        $('profiles-create').classList.remove('disabled');
-      else
-        $('profiles-create').classList.add('disabled');
+    /**
+     * Get the selected profile item from the profile list. This also works
+     * correctly if the list is not displayed.
+     * @return {Object} the profile item object, or null if nothing is selected.
+     * @private
+     */
+    getSelectedProfileItem_: function() {
+      var profilesList = $('profiles-list');
+      if (profilesList.hidden) {
+        if (profilesList.dataModel.length > 0)
+          return profilesList.dataModel.item(0);
+      } else {
+        return profilesList.selectedItem;
+      }
+      return null;
+    },
+
+    /**
+     * Display the correct dialog layout, depending on how many profiles are
+     * available.
+     * @param {number} numProfiles The number of profiles to display.
+     */
+    setProfileViewSingle_: function(numProfiles) {
+      $('profiles-list').hidden = numProfiles <= 1;
+      $('profiles-manage').hidden = numProfiles <= 1;
+      $('profiles-delete').hidden = numProfiles <= 1;
+    },
+
+    /**
+     * Adds all |profiles| to the list.
+     * @param {Array.<Object>} An array of profile info objects.
+     *     each object is of the form:
+     *       profileInfo = {
+     *         name: "Profile Name",
+     *         iconURL: "chrome://path/to/icon/image",
+     *         filePath: "/path/to/profile/data/on/disk",
+     *         isCurrentProfile: false
+     *       };
+     */
+    setProfilesInfo_: function(profiles) {
+      this.setProfileViewSingle_(profiles.length);
+      // add it to the list, even if the list is hidden so we can access it
+      // later.
+      $('profiles-list').dataModel = new ArrayDataModel(profiles);
     },
 
     setStartStopButtonVisible_: function(visible) {
@@ -228,8 +306,8 @@ cr.define('options', function() {
     'setSyncStatusErrorVisible',
     'setSyncActionLinkEnabled',
     'setSyncActionLinkLabel',
+    'setProfilesInfo',
     'setProfilesSectionVisible',
-    'setNewProfileButtonEnabled',
     'setStartStopButtonVisible',
     'setStartStopButtonEnabled',
     'setStartStopButtonLabel',

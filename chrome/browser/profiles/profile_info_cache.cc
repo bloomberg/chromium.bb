@@ -43,27 +43,6 @@ const int kDefaultAvatarIconResources[] = {
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
 
-// Checks if the given URL points to one of the default avatar icons. if it is,
-// returns true and its index through |icon_index|. If not, returns false.
-bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
-  DCHECK(icon_index);
-  if (url.find(kDefaultUrlPrefix) != 0)
-    return false;
-
-  int int_value = -1;
-  if (base::StringToInt(url.begin() + strlen(kDefaultUrlPrefix),
-                        url.end(),
-                        &int_value)) {
-    if (int_value < 0 ||
-        int_value >= static_cast<int>(kDefaultAvatarIconsCount))
-      return false;
-    *icon_index = int_value;
-    return true;
-  }
-
-  return false;
-}
-
 } // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
@@ -109,6 +88,11 @@ void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
+
+  NotificationService::current()->Notify(
+    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+    NotificationService::AllSources(),
+    NotificationService::NoDetails());
 }
 
 size_t ProfileInfoCache::GetNumberOfProfiles() const {
@@ -220,18 +204,42 @@ const FilePath& ProfileInfoCache::GetUserDataDir() const {
   return user_data_dir_;
 }
 
+// static
 size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
   return kDefaultAvatarIconsCount;
 }
 
+// static
 int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
   DCHECK_LT(index, GetDefaultAvatarIconCount());
   return kDefaultAvatarIconResources[index];
 }
 
+// static
 std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
   DCHECK_LT(index, kDefaultAvatarIconsCount);
   return StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
+}
+
+// static
+bool ProfileInfoCache::IsDefaultAvatarIconUrl(const std::string& url,
+                                              size_t* icon_index) {
+  DCHECK(icon_index);
+  if (url.find(kDefaultUrlPrefix) != 0)
+    return false;
+
+  int int_value = -1;
+  if (base::StringToInt(url.begin() + strlen(kDefaultUrlPrefix),
+                        url.end(),
+                        &int_value)) {
+    if (int_value < 0 ||
+        int_value >= static_cast<int>(kDefaultAvatarIconsCount))
+      return false;
+    *icon_index = int_value;
+    return true;
+  }
+
+  return false;
 }
 
 const DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(

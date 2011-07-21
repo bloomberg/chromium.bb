@@ -23,6 +23,7 @@ var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
+var ManageProfileOverlay = options.ManageProfileOverlay;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
@@ -150,6 +151,8 @@ function load() {
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               PersonalOptions.getInstance());
 
   if (cr.isChromeOS) {

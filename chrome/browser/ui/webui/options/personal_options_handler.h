@@ -53,6 +53,20 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   NotificationRegistrar registrar_;
 #endif
 
+  // Sends an array of Profile objects to javascript.
+  // Each object is of the form:
+  //   profileInfo = {
+  //     name: "Profile Name",
+  //     iconURL: "chrome://path/to/icon/image",
+  //     filePath: "/path/to/profile/data/on/disk",
+  //     isCurrentProfile: false
+  //   };
+  void SendProfilesInfo();
+
+  // Asynchronously opens a new browser window to create a new profile.
+  // |args| is not used.
+  void CreateProfile(const ListValue* args);
+
   // True if the multiprofiles switch is enabled.
   bool multiprofile_;
 

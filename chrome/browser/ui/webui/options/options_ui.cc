@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
+#include "chrome/browser/ui/webui/options/manage_profile_handler.h"
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options/personal_options_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
@@ -232,6 +233,7 @@ OptionsUI::OptionsUI(TabContents* contents)
 #else
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
 #endif
+  AddOptionsPageUIHandler(localized_strings, new ManageProfileHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());

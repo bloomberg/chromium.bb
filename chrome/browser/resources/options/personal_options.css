@@ -9,7 +9,7 @@
 }
 
 #sync-buttons {
-  margin: 10px 0;
+  margin-top: 10px;
 }
 
 #start-stop-sync {
@@ -17,12 +17,13 @@
   margin-right: 5px;
 }
 
-#profiles-create {
-  margin-top: 15px;
+#profiles-list {
+  min-height: 0;
+  margin-bottom: 10px;
 }
 
-#profiles-create-button {
-  margin: 10px 0;
+.profile-item-current {
+  font-weight: bold;
 }
 
 #themes-gallery-div {

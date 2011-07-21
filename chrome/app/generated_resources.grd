@@ -8369,14 +8369,20 @@ ls' lab.">
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Create new profile
+          Create new profile...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Create New Profile
+          Create New Profile...
         </message>
       </if>
+      <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
+        Manage...
+      </message>
+      <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
+        Delete...
+      </message>
       <message name="IDS_PROFILES_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
         Using Chrome profile <ph name="USER_EMAIL_ADDRESS">
           $1<ex>foo@gmail.com</ex>
@@ -13009,6 +13015,57 @@ ls' lab.">
     </message>
     <message name="IDS_NEW_PROFILE_SETUP_SUMMARY_CONCLUSION" desc="Text at the end of the summary that describes what to do next.">
       Choose a name and an avatar, then click Create to create a new profile.
+    </message>
+
+    <!-- Manage Profile Dialog -->
+    <if expr="pp_ifdef('use_titlecase')">
+      <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
+        Manage Profile
+      </message>
+      <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="In Title Case: Label next to the profile name text field.">
+        Profile Name:
+      </message>
+      <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="In Title Case: Label next to the profile avatar icon chooser.">
+        Profile Icon:
+      </message>
+    </if>
+    <if expr="not pp_ifdef('use_titlecase')">
+      <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
+        Manage profile
+      </message>
+      <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
+        Profile name:
+      </message>
+      <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
+        Profile icon:
+      </message>
+    </if>
+    <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
+      Whoops, this name is already in use!
+    </message>
+
+    <!-- Delete Profile Dialog -->
+    <if expr="pp_ifdef('use_titlecase')">
+      <message name="IDS_PROFILES_DELETE_TITLE" desc="In Title Case: Title of the delete profile dialog">
+        Delete Profile
+      </message>
+      <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="In Title Case: The text to display on the button to confirm deleting the profile.">
+        Delete
+      </message>
+    </if>
+    <if expr="not pp_ifdef('use_titlecase')">
+      <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
+        Delete profile
+      </message>
+      <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
+        Delete
+      </message>
+    </if>
+    <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
+      Are you sure you want to delete profile "<ph name="PROFILE_NAME">$1<ex>Default Profile</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
+    </message>
+    <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
+      <ph name="PROFILE_NAME">$1<ex>Default Profile</ex></ph> (current profile)
     </message>
 
     </messages>
