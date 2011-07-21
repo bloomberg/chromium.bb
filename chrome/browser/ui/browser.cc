@@ -69,6 +69,7 @@
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_finder.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -1152,7 +1153,10 @@ TabContents* Browser::AddRestoredTab(
     bool pin,
     bool from_last_session,
     SessionStorageNamespace* session_storage_namespace) {
-  TabContentsWrapper* wrapper = TabContentsFactory(profile(), NULL,
+  GURL restore_url = navigations.at(selected_navigation).virtual_url();
+  TabContentsWrapper* wrapper = TabContentsFactory(
+      profile(),
+      tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
       MSG_ROUTING_NONE,
       GetSelectedTabContents(),
       session_storage_namespace);
@@ -1198,7 +1202,10 @@ void Browser::ReplaceRestoredTab(
     bool from_last_session,
     const std::string& extension_app_id,
     SessionStorageNamespace* session_storage_namespace) {
-  TabContentsWrapper* wrapper = TabContentsFactory(profile(), NULL,
+  GURL restore_url = navigations.at(selected_navigation).virtual_url();
+  TabContentsWrapper* wrapper = TabContentsFactory(
+      profile(),
+      tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
       MSG_ROUTING_NONE,
       GetSelectedTabContents(),
       session_storage_namespace);

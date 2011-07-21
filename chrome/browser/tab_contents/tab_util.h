@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_UTIL_H_
 #pragma once
 
+class GURL;
+class Profile;
+class SiteInstance;
 class TabContents;
 
 namespace tab_util {
@@ -14,6 +17,13 @@ namespace tab_util {
 // NULL if the tab has been closed or some other error occurs.
 // Should only be called from the UI thread, since it accesses TabContent.
 TabContents* GetTabContentsByID(int render_process_host_id, int routing_id);
+
+// Returns a new SiteInstance for WebUI and app URLs. Returns the SiteInstance
+// for |source_contents| if it represents the same website as |url|. Returns
+// NULL otherwise.
+SiteInstance* GetSiteInstanceForNewTab(TabContents* source_contents,
+                                       Profile* profile,
+                                       const GURL& url);
 
 }  // namespace tab_util
 

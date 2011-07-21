@@ -12,15 +12,14 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
@@ -28,33 +27,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 namespace {
-
-// Returns an appropriate SiteInstance for WebUI URLs, or the SiteInstance for
-// |source_contents| if it represents the same website as |url|.  Returns NULL
-// otherwise.
-SiteInstance* GetSiteInstance(TabContents* source_contents, Profile* profile,
-                              const GURL& url) {
-  // If url is a WebUI or extension, we need to be sure to use the right type
-  // of renderer process up front.  Otherwise, we create a normal SiteInstance
-  // as part of creating the tab.
-  ExtensionService* service = profile->GetExtensionService();
-  if (ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, url) ||
-      (service && service->GetExtensionByWebExtent(url))) {
-    return SiteInstance::CreateSiteInstanceForURL(profile, url);
-  }
-
-  if (!source_contents)
-    return NULL;
-
-  // Don't use this logic when "--process-per-tab" is specified.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab) &&
-      SiteInstance::IsSameWebSite(source_contents->profile(),
-                                  source_contents->GetURL(),
-                                  url)) {
-    return source_contents->GetSiteInstance();
-  }
-  return NULL;
-}
 
 // Returns true if the specified Browser can open tabs. Not all Browsers support
 // multiple tabs, such as app frames and popups. This function returns false for
@@ -412,7 +384,8 @@ void Navigate(NavigateParams* params) {
       params->target_contents =
           Browser::TabContentsFactory(
               params->browser->profile(),
-              GetSiteInstance(source_contents, params->browser->profile(), url),
+              tab_util::GetSiteInstanceForNewTab(
+                  source_contents, params->browser->profile(), url),
               MSG_ROUTING_NONE,
               source_contents,
               NULL);

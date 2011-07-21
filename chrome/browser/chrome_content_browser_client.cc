@@ -83,7 +83,6 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
   // chrome-extension:// URL for their site, so we can ignore that wrinkle here.
   SiteInstance* site_instance = render_view_host->site_instance();
   const GURL& site = site_instance->site();
-  RenderProcessHost* process = render_view_host->process();
 
   if (!site.SchemeIs(chrome::kExtensionScheme))
     return;
@@ -109,6 +108,8 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
   // TODO(creis): Use this to replace SetInstalledAppForRenderer below.
   process_manager->RegisterExtensionSiteInstance(site_instance->id(),
                                                  extension->id());
+
+  RenderProcessHost* process = render_view_host->process();
 
   if (extension->is_app()) {
     render_view_host->Send(

@@ -670,8 +670,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
   // is safe to use a normal pointer here.
   SiteInstance* new_instance = curr_instance;
   bool force_swap = ShouldSwapProcessesForNavigation(
-          delegate_->GetLastCommittedNavigationEntryForRenderManager(),
-          &entry);
+      delegate_->GetLastCommittedNavigationEntryForRenderManager(), &entry);
   if (ShouldTransitionCrossSite() || force_swap)
     new_instance = GetSiteInstanceForEntry(entry, curr_instance);
 
