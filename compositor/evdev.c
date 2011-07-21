@@ -237,6 +237,9 @@ evdev_input_add_devices(struct wlsc_compositor *c,
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(udev, path);
 
+		if (strncmp("event", udev_device_get_sysname(device), 5) != 0)
+			continue;
+
                 device_seat =
 			udev_device_get_property_value(device, "ID_SEAT");
 		if (!device_seat)
