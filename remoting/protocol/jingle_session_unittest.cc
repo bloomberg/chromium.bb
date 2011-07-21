@@ -641,8 +641,7 @@ TEST_F(JingleSessionTest, Connect) {
 }
 
 // Verify that data can be transmitted over the event channel.
-// TODO(wez): See crbug.com/88726
-TEST_F(JingleSessionTest, FLAKY_TestControlChannel) {
+TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -657,8 +656,7 @@ TEST_F(JingleSessionTest, FLAKY_TestControlChannel) {
 }
 
 // Verify that data can be transmitted over the video channel.
-// TODO(wez): See crbug.com/88726
-TEST_F(JingleSessionTest, FLAKY_TestVideoChannel) {
+TEST_F(JingleSessionTest, TestVideoChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -673,8 +671,7 @@ TEST_F(JingleSessionTest, FLAKY_TestVideoChannel) {
 }
 
 // Verify that data can be transmitted over the event channel.
-// TODO(wez): See crbug.com/88726
-TEST_F(JingleSessionTest, FLAKY_TestEventChannel) {
+TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
