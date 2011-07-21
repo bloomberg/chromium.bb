@@ -4984,6 +4984,19 @@
    fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
    fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
 }
+{
+   bug_90057
+   Memcheck:Leak
+   ...
+   fun:_ZN3net13CookieMonster9InitStoreEv
+   fun:_ZN3net13CookieMonster15InitIfNecessaryEv
+   fun:_ZN3net13CookieMonster30GetAllCookiesForURLWithOptionsERK4GURLRKNS_13CookieOptionsE
+   fun:_ZN3net13CookieMonster19GetAllCookiesForURLERK4GURL
+   fun:_ZN22ResourceDispatcherHost13CanGetCookiesEPN3net10URLRequestE
+   fun:_ZN3net10URLRequest13CanGetCookiesEv
+   fun:_ZN3net13URLRequestJob13CanGetCookiesEv
+   fun:_ZN3net17URLRequestHttpJob23AddCookieHeaderAndStartEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
