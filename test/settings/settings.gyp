@@ -10,5 +10,11 @@
       # In real life, this would set 'cflags' etc and other targets
       # would depend on it.
     },
+    {
+      # This is needed so scons will actually generate a SConstruct
+      # (which it doesn't do for settings targets alone).
+      'target_name': 'junk1',
+      'type': 'none',
+    },
   ],
 }
