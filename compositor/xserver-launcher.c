@@ -564,7 +564,7 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 	int fd;
 
 	mxs = malloc(sizeof *mxs);
-	memset(mxs, 0, sizeof mxs);
+	memset(mxs, 0, sizeof *mxs);
 
 	mxs->process.cleanup = wlsc_xserver_cleanup;
 	mxs->wl_display = display;
