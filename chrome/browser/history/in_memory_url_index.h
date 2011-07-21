@@ -240,6 +240,8 @@ class InMemoryURLIndex {
     // Creates a cache item for a term which has no results.
     SearchTermCacheItem();
 
+    ~SearchTermCacheItem();
+
     WordIDSet word_id_set_;
     HistoryIDSet history_id_set_;
     bool used_;  // True if this item has been used for the current term search.
