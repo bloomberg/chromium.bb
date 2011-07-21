@@ -41,15 +41,18 @@ class WebGLConformanceTests : public UITest {
   }
 
   void RunTest(const std::string& url) {
-    FilePath test_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_path);
-    test_path = test_path.Append(FILE_PATH_LITERAL("gpu"));
-
-    FilePath webgl_conformance_path = test_path.Append(
+    FilePath webgl_conformance_path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
+    webgl_conformance_path = webgl_conformance_path.Append(
+        FILE_PATH_LITERAL("third_party"));
+    webgl_conformance_path = webgl_conformance_path.Append(
         FILE_PATH_LITERAL("webgl_conformance"));
     ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
 
+    FilePath test_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+    test_path = test_path.Append(FILE_PATH_LITERAL("gpu"));
     test_path = test_path.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -58,9 +61,8 @@ class WebGLConformanceTests : public UITest {
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab->NavigateToURL(net::FilePathToFileURL(test_path)));
 
-    // Start the test. Note: prepend the WebGL conformance test directory.
     ASSERT_TRUE(tab->NavigateToURLAsync(
-        GURL("javascript:start('webgl_conformance/" + url + "');")));
+        GURL("javascript:start('" + url + "');")));
 
     // Block until the test completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(

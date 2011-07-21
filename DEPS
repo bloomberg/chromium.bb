@@ -131,7 +131,7 @@ deps = {
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
-  "src/chrome/test/data/gpu/webgl_conformance":
+  "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@91578",
 
   # We run these layout tests as UI tests. Since many of the buildbots that

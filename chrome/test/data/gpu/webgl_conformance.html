@@ -1,9 +1,10 @@
 <html>
 <head>
 <script type="text/javascript"
-        src="webgl_conformance/resources/webgl-test-harness.js">
+        src="../../../../third_party/webgl_conformance/resources/webgl-test-harness.js">
 </script>
 <script>
+var BASE_URL = "../../../../third_party/webgl_conformance/";
 var running;
 var result;
 var message;
@@ -70,7 +71,7 @@ function start(start_url) {
   var iframe = document.getElementById("testframe");
   var testHarness = new WebGLTestHarnessModule.TestHarness(
       iframe,
-      start_url,
+      BASE_URL + start_url,
       report);
   window.webglTestHarness = testHarness;
   window.webglTestHarness.runTests();

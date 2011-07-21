@@ -39,7 +39,7 @@ HEADER_GUARD_END = """
 """
 
 # Assume this script is run from the src/chrome/ directory.
-INPUT_DIR = "test/data/gpu/webgl_conformance"
+INPUT_DIR = "../third_party/webgl_conformance"
 INPUT_FILE = "00_test_list.txt"
 
 def main(argv):
