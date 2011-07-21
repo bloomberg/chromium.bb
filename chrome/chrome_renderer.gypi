@@ -122,6 +122,8 @@
         'renderer/page_click_tracker.h',
         'renderer/page_load_histograms.cc',
         'renderer/page_load_histograms.h',
+        'renderer/plugin_uma.cc',
+        'renderer/plugin_uma.h',
         'renderer/prerender/prerender_helper.cc',
         'renderer/prerender/prerender_helper.h',
         'renderer/print_web_view_helper.cc',

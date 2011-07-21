@@ -1953,6 +1953,7 @@
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
+        'renderer/plugin_uma_unittest.cc',
         'renderer/renderer_about_handler_unittest.cc',
         'renderer/safe_browsing/features_unittest.cc',
         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',

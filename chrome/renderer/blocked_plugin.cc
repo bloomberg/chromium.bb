@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/plugin_uma.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -200,6 +201,10 @@ void BlockedPlugin::LoadPlugin() {
     container->reportGeometry();
     plugin_->ReplayReceivedData(new_plugin);
     plugin_->destroy();
+  } else {
+    MissingPluginReporter::GetInstance()->ReportPluginMissing(
+        plugin_params_.mimeType.utf8(),
+        plugin_params_.url);
   }
 }
 

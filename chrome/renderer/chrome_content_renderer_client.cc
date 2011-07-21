@@ -47,6 +47,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
+#include "chrome/renderer/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
@@ -261,7 +262,25 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       RenderView* render_view,
       WebFrame* frame,
       const WebPluginParams& original_params) {
+  bool is_default_plugin;
+  WebPlugin* plugin = CreatePluginImpl(render_view,
+                                       frame,
+                                       original_params,
+                                       &is_default_plugin);
+  if (!plugin || is_default_plugin)
+    MissingPluginReporter::GetInstance()->ReportPluginMissing(
+        original_params.mimeType.utf8(),
+        original_params.url);
+  return plugin;
+}
+
+WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
+      RenderView* render_view,
+      WebFrame* frame,
+      const WebPluginParams& original_params,
+      bool* is_default_plugin) {
   bool found = false;
+  *is_default_plugin = false;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   webkit::npapi::WebPluginInfo info;
   GURL url(original_params.url);
@@ -275,6 +294,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     return NULL;
   if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
+
+  *is_default_plugin =
+    info.path.value() == webkit::npapi::kDefaultPluginLibraryName;
 
   if (orig_mime_type == actual_mime_type) {
     UMA_HISTOGRAM_ENUMERATION(kPluginTypeMismatch,

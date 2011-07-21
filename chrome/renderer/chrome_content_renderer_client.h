@@ -74,6 +74,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
 
  private:
+  WebKit::WebPlugin* CreatePluginImpl(
+      RenderView* render_view,
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      bool* is_default_plugin);
+
   WebKit::WebPlugin* CreatePluginPlaceholder(
       RenderView* render_view,
       WebKit::WebFrame* frame,
