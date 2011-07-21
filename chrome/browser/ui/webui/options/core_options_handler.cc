@@ -383,9 +383,11 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref)
     return;
 
-  for (PreferenceCallbackMap::const_iterator iter =
-      pref_callback_map_.find(*pref_name);
-      iter != pref_callback_map_.end(); ++iter) {
+  std::pair<PreferenceCallbackMap::const_iterator,
+            PreferenceCallbackMap::const_iterator> range;
+  range = pref_callback_map_.equal_range(*pref_name);
+  for (PreferenceCallbackMap::const_iterator iter = range.first;
+       iter != range.second; ++iter) {
     const std::wstring& callback_function = iter->second;
     ListValue result_value;
     result_value.Append(Value::CreateStringValue(pref_name->c_str()));
