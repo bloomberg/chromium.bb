@@ -824,6 +824,9 @@ const char kPrint[]                         = "print";
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";
 
+// Selects directory of profile to associate with the first browser launched.
+const char kProfileDirectory[]              = "profile-directory";
+
 // Starts the sampling based profiler for the browser process at
 // startup. This will only work if chrome has been built with
 // the gyp variable profiling=1. The output will go to the value

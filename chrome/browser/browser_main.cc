@@ -900,10 +900,22 @@ void InitializeBrokerServices(const MainFunctionParams& parameters,
 // fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
 Profile* CreateProfile(const MainFunctionParams& parameters,
-                       const FilePath& user_data_dir) {
-  Profile* profile = ProfileManager::IsMultipleProfilesEnabled() ?
-      g_browser_process->profile_manager()->GetLastUsedProfile(user_data_dir) :
-      g_browser_process->profile_manager()->GetDefaultProfile(user_data_dir);
+                       const FilePath& user_data_dir,
+                       const CommandLine& parsed_command_line) {
+  Profile* profile;
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
+    if (parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
+      g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
+          parsed_command_line.GetSwitchValueASCII(
+              switches::kProfileDirectory));
+    }
+    profile = g_browser_process->profile_manager()->GetLastUsedProfile(
+        user_data_dir);
+  } else {
+    profile = g_browser_process->profile_manager()->GetDefaultProfile(
+        user_data_dir);
+  }
+
   if (profile)
     return profile;
 
@@ -1659,7 +1671,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  Profile* profile = CreateProfile(parameters, user_data_dir);
+  Profile* profile = CreateProfile(parameters, user_data_dir,
+                                   parsed_command_line);
   if (!profile)
     return content::RESULT_CODE_NORMAL_EXIT;
 

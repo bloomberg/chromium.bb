@@ -229,6 +229,7 @@ extern const char kPrerenderSwitchValueEnabled[];
 extern const char kPrerenderSwitchValuePrefetchOnly[];
 extern const char kPrint[];
 extern const char kProductVersion[];
+extern const char kProfileDirectory[];
 extern const char kProfilingAtStart[];
 extern const char kProfilingFile[];
 extern const char kProfilingFlush[];
