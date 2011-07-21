@@ -5,12 +5,17 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_button.h"
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "chrome/browser/ui/profile_menu_model.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/common/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -20,17 +25,50 @@
 @interface AvatarButton (Private)
 - (IBAction)buttonClicked:(id)sender;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image;
+- (void)updateMenu;
+- (void)updateAvatar;
 @end
+
+namespace AvatarButtonInternal {
+
+class Observer : public NotificationObserver {
+ public:
+  Observer(AvatarButton* button) : button_(button) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+  // NotificationObserver:
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
+        [button_ updateAvatar];
+        [button_ updateMenu];
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+
+  AvatarButton* button_;  // Weak; owns this.
+};
+
+}  // namespace AvatarButtonInternal
+
+////////////////////////////////////////////////////////////////////////////////
 
 @implementation AvatarButton
 
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     browser_ = browser;
-    model_.reset(new ProfileMenuModel(browser_));
-    menuController_.reset(
-        [[MenuController alloc] initWithModel:model_.get()
-                       useWithPopUpButtonCell:NO]);
+    [self updateMenu];
 
     // This view's single child view is a button with the same size and width as
     // the parent. Set it to automatically resize to the size of this view and
@@ -52,10 +90,8 @@
     if (browser_->profile()->IsOffTheRecord()) {
       [self setImage:gfx::GetCachedImageWithName(@"otr_icon.pdf")];
     } else {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      [self setImage:rb.GetNativeImageNamed(IDR_PROFILE_AVATAR_1).ToNSImage()];
-      [button_ setToolTip:
-          base::SysUTF8ToNSString(browser_->profile()->GetProfileName())];
+      observer_.reset(new AvatarButtonInternal::Observer(self));
+      [self updateAvatar];
     }
   }
   return self;
@@ -68,6 +104,8 @@
 - (void)setImage:(NSImage*)image {
   [button_ setImage:[self compositeImageWithShadow:image]];
 }
+
+// Private /////////////////////////////////////////////////////////////////////
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(button_.get(), sender);
@@ -104,6 +142,26 @@
   [destination unlockFocus];
 
   return [destination.release() autorelease];
+}
+
+// Rebuilds the menu and menu controller.
+- (void)updateMenu {
+  model_.reset(new ProfileMenuModel(browser_));
+  menuController_.reset([[MenuController alloc] initWithModel:model_.get()
+                                       useWithPopUpButtonCell:NO]);
+}
+
+// Updates the avatar information from the profile cache.
+- (void)updateAvatar {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index =
+      cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath());
+  if (index != std::string::npos) {
+    [self setImage:cache.GetAvatarIconOfProfileAtIndex(index).ToNSImage()];
+    const string16& name = cache.GetNameOfProfileAtIndex(index);
+    [button_ setToolTip:base::SysUTF16ToNSString(name)];
+  }
 }
 
 @end

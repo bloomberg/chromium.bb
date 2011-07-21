@@ -15,6 +15,10 @@ class Browser;
 @class MenuController;
 class ProfileMenuModel;
 
+namespace AvatarButtonInternal {
+class Observer;
+}
+
 // The AvatarButton sits in the top of the window frame when using multi-
 // profiles. It shows the current profile's avatar, or, when in Incognito, the
 // spy dude. With multi-profiles, clicking will open the profile menu; in
@@ -31,6 +35,9 @@ class ProfileMenuModel;
 
   // Cocoa bridge that creates the NSMenu from the |model_|.
   scoped_nsobject<MenuController> menuController_;
+
+  // Notification bridge for profile info updates.
+  scoped_ptr<AvatarButtonInternal::Observer> observer_;
 }
 
 // Designated initializer.
