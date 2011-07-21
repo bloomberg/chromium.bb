@@ -27,15 +27,13 @@
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdog* watchdog,
-                       int renderer_id,
-                       bool software)
+                       int renderer_id)
     : gpu_channel_manager_(gpu_channel_manager),
       renderer_id_(renderer_id),
       renderer_process_(base::kNullProcessHandle),
       renderer_pid_(base::kNullProcessId),
       share_group_(new gfx::GLShareGroup),
-      watchdog_(watchdog),
-      software_(software) {
+      watchdog_(watchdog) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -166,7 +164,7 @@ void GpuChannel::CreateViewCommandBuffer(
       this, window, gfx::Size(), disallowed_extensions_,
       init_params.allowed_extensions,
       init_params.attribs, *route_id, renderer_id_, render_view_id,
-      watchdog_, software_));
+      watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -276,8 +274,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       init_params.allowed_extensions,
       init_params.attribs,
       *route_id,
-      0, 0, watchdog_,
-      software_));
+      0, 0, watchdog_));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
@@ -309,7 +306,7 @@ void GpuChannel::OnCreateOffscreenSurface(const gfx::Size& size,
 
 #if defined(ENABLE_GPU)
   scoped_refptr<gfx::GLSurface> surface(
-       gfx::GLSurface::CreateOffscreenGLSurface(software_, size));
+       gfx::GLSurface::CreateOffscreenGLSurface(size));
   if (!surface.get())
     return;
 

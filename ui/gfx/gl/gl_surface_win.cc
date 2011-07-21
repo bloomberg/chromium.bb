@@ -168,7 +168,6 @@ void NativeViewGLSurfaceOSMesa::UpdateSize() {
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
-    bool software,
     gfx::PluginWindowHandle window) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
@@ -180,7 +179,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return surface;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(software,
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
           window));
       if (!surface->Initialize())
         return NULL;
@@ -188,8 +187,6 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return surface;
     }
     case kGLImplementationDesktopGL: {
-      if (software)
-        return NULL;
       scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceWGL(
           window));
       if (!surface->Initialize())
@@ -206,7 +203,6 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    bool software,
     const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
@@ -218,15 +214,13 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       return surface;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(software, size));
+      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(size));
       if (!surface->Initialize())
         return NULL;
 
       return surface;
     }
     case kGLImplementationDesktopGL: {
-      if (software)
-        return NULL;
       scoped_refptr<GLSurface> surface(new PbufferGLSurfaceWGL(size));
       if (!surface->Initialize())
         return NULL;

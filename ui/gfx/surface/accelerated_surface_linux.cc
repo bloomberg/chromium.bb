@@ -14,7 +14,7 @@
 AcceleratedSurface::AcceleratedSurface(const gfx::Size& size)
     : size_(size) {
   Display* dpy = gfx::GLSurfaceEGL::GetNativeDisplay();
-  EGLDisplay edpy = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay edpy = gfx::GLSurfaceEGL::GetDisplay();
 
   XID window = XDefaultRootWindow(dpy);
   XWindowAttributes gwa;
@@ -42,6 +42,6 @@ AcceleratedSurface::AcceleratedSurface(const gfx::Size& size)
 
 AcceleratedSurface::~AcceleratedSurface() {
   glDeleteTextures(1, &texture_);
-  eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
+  eglDestroyImageKHR(gfx::GLSurfaceEGL::GetDisplay(), image_);
   XFreePixmap(gfx::GLSurfaceEGL::GetNativeDisplay(), pixmap_);
 }

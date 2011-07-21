@@ -380,7 +380,7 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
     : size_(size),
       started_(false) {
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, widget);
+  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(widget);
   gl_context_ = SharedResources::GetInstance()->
       CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());

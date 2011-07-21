@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/gl/egl_util.h"
 
 // This header must come after the above third-party include, as
@@ -27,9 +26,6 @@ namespace {
 EGLConfig g_config;
 EGLDisplay g_display;
 EGLNativeDisplayType g_native_display;
-EGLConfig g_software_config;
-EGLDisplay g_software_display;
-EGLNativeDisplayType g_software_native_display;
 }
 
 GLSurfaceEGL::GLSurfaceEGL() {
@@ -89,84 +85,39 @@ bool GLSurfaceEGL::InitializeOneOff() {
     return false;
   }
 
+  scoped_array<EGLConfig> configs(new EGLConfig[num_configs]);
   if (!eglChooseConfig(g_display,
                        kConfigAttribs,
-                       &g_config,
-                       1,
+                       configs.get(),
+                       num_configs,
                        &num_configs)) {
     LOG(ERROR) << "eglChooseConfig failed with error "
                << GetLastEGLErrorString();
     return false;
   }
 
+  g_config = configs[0];
+
   initialized = true;
-
-#if defined(USE_X11)
-  return true;
-#else
-  g_software_native_display = EGL_SOFTWARE_DISPLAY_ANGLE;
-#endif
-  g_software_display = eglGetDisplay(g_software_native_display);
-  if (!g_software_display) {
-    return true;
-  }
-
-  if (!eglInitialize(g_software_display, NULL, NULL)) {
-    return true;
-  }
-
-  if (!eglChooseConfig(g_software_display,
-                       kConfigAttribs,
-                       NULL,
-                       0,
-                       &num_configs)) {
-    g_software_display = NULL;
-    return true;
-  }
-
-  if (num_configs == 0) {
-    g_software_display = NULL;
-    return true;
-  }
-
-  if (!eglChooseConfig(g_software_display,
-                       kConfigAttribs,
-                       &g_software_config,
-                       1,
-                       &num_configs)) {
-    g_software_display = NULL;
-    return false;
-  }
-
   return true;
 }
 
 EGLDisplay GLSurfaceEGL::GetDisplay() {
-  return software_ ? g_software_display : g_display;
-}
-
-EGLConfig GLSurfaceEGL::GetConfig() {
-  return software_ ? g_software_config : g_config;
-}
-
-EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
   return g_display;
 }
 
-EGLDisplay GLSurfaceEGL::GetSoftwareDisplay() {
-  return g_software_display;
+EGLConfig GLSurfaceEGL::GetConfig() {
+  return g_config;
 }
 
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
   return g_native_display;
 }
 
-NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
-                                               gfx::PluginWindowHandle window)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::PluginWindowHandle window)
     : window_(window),
       surface_(NULL)
 {
-  software_ = software;
 }
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
@@ -176,14 +127,9 @@ NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
 bool NativeViewGLSurfaceEGL::Initialize() {
   DCHECK(!surface_);
 
-  if (!GetDisplay()) {
-    LOG(ERROR) << "Trying to create surface with invalid display.";
-    return false;
-  }
-
   // Create a surface for the native window.
-  surface_ = eglCreateWindowSurface(GetDisplay(),
-                                    GetConfig(),
+  surface_ = eglCreateWindowSurface(g_display,
+                                    g_config,
                                     window_,
                                     NULL);
 
@@ -199,7 +145,7 @@ bool NativeViewGLSurfaceEGL::Initialize() {
 
 void NativeViewGLSurfaceEGL::Destroy() {
   if (surface_) {
-    if (!eglDestroySurface(GetDisplay(), surface_)) {
+    if (!eglDestroySurface(g_display, surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
                  << GetLastEGLErrorString();
     }
@@ -212,7 +158,7 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceEGL::SwapBuffers() {
-  if (!eglSwapBuffers(GetDisplay(), surface_)) {
+  if (!eglSwapBuffers(g_display, surface_)) {
     VLOG(1) << "eglSwapBuffers failed with error "
             << GetLastEGLErrorString();
     return false;
@@ -224,8 +170,8 @@ bool NativeViewGLSurfaceEGL::SwapBuffers() {
 gfx::Size NativeViewGLSurfaceEGL::GetSize() {
   EGLint width;
   EGLint height;
-  if (!eglQuerySurface(GetDisplay(), surface_, EGL_WIDTH, &width) ||
-      !eglQuerySurface(GetDisplay(), surface_, EGL_HEIGHT, &height)) {
+  if (!eglQuerySurface(g_display, surface_, EGL_WIDTH, &width) ||
+      !eglQuerySurface(g_display, surface_, EGL_HEIGHT, &height)) {
     NOTREACHED() << "eglQuerySurface failed with error "
                  << GetLastEGLErrorString();
     return gfx::Size();
@@ -238,10 +184,9 @@ EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }
 
-PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(bool software, const gfx::Size& size)
+PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),
       surface_(NULL) {
-  software_ = software;
 }
 
 PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
@@ -251,19 +196,14 @@ PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
 bool PbufferGLSurfaceEGL::Initialize() {
   DCHECK(!surface_);
 
-  if (!GetDisplay()) {
-    LOG(ERROR) << "Trying to create surface with invalid display.";
-    return false;
-  }
-
   const EGLint pbuffer_attribs[] = {
     EGL_WIDTH, size_.width(),
     EGL_HEIGHT, size_.height(),
     EGL_NONE
   };
 
-  surface_ = eglCreatePbufferSurface(GetDisplay(),
-                                     GetConfig(),
+  surface_ = eglCreatePbufferSurface(g_display,
+                                     g_config,
                                      pbuffer_attribs);
   if (!surface_) {
     LOG(ERROR) << "eglCreatePbufferSurface failed with error "
@@ -277,7 +217,7 @@ bool PbufferGLSurfaceEGL::Initialize() {
 
 void PbufferGLSurfaceEGL::Destroy() {
   if (surface_) {
-    if (!eglDestroySurface(GetDisplay(), surface_)) {
+    if (!eglDestroySurface(g_display, surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
                  << GetLastEGLErrorString();
     }

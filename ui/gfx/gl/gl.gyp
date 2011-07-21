@@ -20,7 +20,6 @@
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gl',
       },
       'include_dirs': [
-        '<(DEPTH)/third_party/swiftshader/include',
         '<(DEPTH)/third_party/mesa/MesaLib/include',
         '<(gl_binding_output_dir)',
       ],

@@ -61,7 +61,6 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
                                                  NULL);
   if (!gpu_scheduler->Initialize(reinterpret_cast<HWND>(hwnd),
                                  gfx::Size(),
-                                 false,
                                  gpu::gles2::DisallowedExtensions(),
                                  NULL,
                                  std::vector<int32>(),

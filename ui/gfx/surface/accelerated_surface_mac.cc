@@ -36,8 +36,7 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
     return false;
 
-  gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
-      false, gfx::Size(1, 1));
+  gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
   if (!gl_surface_.get()) {
     Destroy();
     return false;

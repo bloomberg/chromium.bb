@@ -33,14 +33,9 @@ class GLSurfaceEGL : public GLSurface {
   virtual ~GLSurfaceEGL();
 
   static bool InitializeOneOff();
-  EGLDisplay GetDisplay();
-  EGLConfig GetConfig();
-  static EGLDisplay GetHardwareDisplay();
-  static EGLDisplay GetSoftwareDisplay();
+  static EGLDisplay GetDisplay();
+  static EGLConfig GetConfig();
   static EGLNativeDisplayType GetNativeDisplay();
-
-protected:
-  bool software_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
@@ -49,8 +44,7 @@ protected:
 // Encapsulates an EGL surface bound to a view.
 class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit NativeViewGLSurfaceEGL(bool software,
-                                  gfx::PluginWindowHandle window);
+  explicit NativeViewGLSurfaceEGL(gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
@@ -71,7 +65,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 // Encapsulates a pbuffer EGL surface.
 class PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
+  explicit PbufferGLSurfaceEGL(const gfx::Size& size);
   virtual ~PbufferGLSurfaceEGL();
 
   // Implement GLSurface.
