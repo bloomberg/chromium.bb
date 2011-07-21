@@ -1051,6 +1051,9 @@ void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
 }
 
 void BrowserView::ShowTaskManager() {
+#if defined(TOUCH_UI)
+  TaskManagerDialog::Show();
+#else
   // Uses WebUI TaskManager when swiches is set. It is beta feature.
   if (CommandLine::ForCurrentProcess()
         ->HasSwitch(switches::kEnableWebUITaskManager)) {
@@ -1058,6 +1061,7 @@ void BrowserView::ShowTaskManager() {
   } else {
     browser::ShowTaskManager();
   }
+#endif  // defined(TOUCH_UI)
 }
 
 void BrowserView::ShowBackgroundPages() {
