@@ -493,7 +493,7 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
   // TabIconView we host is initialized, so we need to NULL check the selected
   // TabContents because in this condition there is not yet a selected tab.
   TabContents* current_tab = browser_view_->GetSelectedTabContents();
-  return current_tab ? current_tab->is_loading() : false;
+  return current_tab ? current_tab->IsLoading() : false;
 }
 
 SkBitmap OpaqueBrowserFrameView::GetFaviconForTabIconView() {

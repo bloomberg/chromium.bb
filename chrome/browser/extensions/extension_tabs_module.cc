@@ -187,12 +187,13 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
                                                   TabStripModel* tab_strip,
                                                   int tab_index) {
   DictionaryValue* result = new DictionaryValue();
+  bool is_loading = contents->IsLoading();
   result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetTabId(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
   result->SetInteger(keys::kWindowIdKey,
                      ExtensionTabUtil::GetWindowIdOfTab(contents));
   result->SetString(keys::kUrlKey, contents->GetURL().spec());
-  result->SetString(keys::kStatusKey, GetTabStatusText(contents->is_loading()));
+  result->SetString(keys::kStatusKey, GetTabStatusText(is_loading));
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->active_index());
   result->SetBoolean(keys::kPinnedKey,
@@ -201,7 +202,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
   result->SetBoolean(keys::kIncognitoKey,
                      contents->profile()->IsOffTheRecord());
 
-  if (!contents->is_loading()) {
+  if (!is_loading) {
     NavigationEntry* entry = contents->controller().GetActiveEntry();
     if (entry) {
       if (entry->favicon().is_valid())

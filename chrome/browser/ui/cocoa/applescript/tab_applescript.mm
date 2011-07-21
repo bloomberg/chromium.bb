@@ -135,7 +135,7 @@
 }
 
 - (NSNumber*)loading {
-  BOOL loadingValue = tabContents_->tab_contents()->is_loading() ? YES : NO;
+  BOOL loadingValue = tabContents_->tab_contents()->IsLoading() ? YES : NO;
   return [NSNumber numberWithBool:loadingValue];
 }
 

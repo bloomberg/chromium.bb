@@ -1378,7 +1378,7 @@ private:
   } else if (contents->tab_contents()->waiting_for_response()) {
     newState = kTabWaiting;
     throbberImage = throbberWaitingImage;
-  } else if (contents->tab_contents()->is_loading()) {
+  } else if (contents->tab_contents()->IsLoading()) {
     newState = kTabLoading;
     throbberImage = throbberLoadingImage;
   }

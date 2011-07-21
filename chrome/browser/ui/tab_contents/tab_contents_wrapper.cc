@@ -296,7 +296,7 @@ string16 TabContentsWrapper::GetDefaultTitle() {
 }
 
 string16 TabContentsWrapper::GetStatusText() const {
-  if (!tab_contents()->is_loading() ||
+  if (!tab_contents()->IsLoading() ||
       tab_contents()->load_state() == net::LOAD_STATE_IDLE) {
     return string16();
   }

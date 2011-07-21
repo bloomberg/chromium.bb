@@ -90,7 +90,7 @@ class TabContentsDelegate {
 
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
-  // loading feedback. See TabContents::is_loading()
+  // loading feedback. See TabContents::IsLoading()
   virtual void LoadingStateChanged(TabContents* source);
 
   // Notifies the delegate that the page has made some progress loading.

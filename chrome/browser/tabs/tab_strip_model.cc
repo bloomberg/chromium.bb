@@ -383,7 +383,7 @@ bool TabStripModel::CloseTabContentsAt(int index, uint32 close_types) {
 bool TabStripModel::TabsAreLoading() const {
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter) {
-    if ((*iter)->contents->tab_contents()->is_loading())
+    if ((*iter)->contents->tab_contents()->IsLoading())
       return true;
   }
   return false;

@@ -212,7 +212,7 @@ void NavigationControllerRestoredObserver::Observe(
 
 bool NavigationControllerRestoredObserver::FinishedRestoring() {
   return (!controller_->needs_reload() && !controller_->pending_entry() &&
-          !controller_->tab_contents()->is_loading());
+          !controller_->tab_contents()->IsLoading());
 }
 
 void NavigationControllerRestoredObserver::SendDone() {
@@ -246,7 +246,7 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED, source);
 
-  if (include_current_navigation && controller->tab_contents()->is_loading())
+  if (include_current_navigation && controller->tab_contents()->IsLoading())
     navigation_started_ = true;
 }
 

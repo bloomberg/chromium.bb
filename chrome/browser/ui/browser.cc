@@ -2940,7 +2940,7 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
   UpdateToolbar(true);
 
   // Update reload/stop state.
-  UpdateReloadStopState(new_contents->tab_contents()->is_loading(), true);
+  UpdateReloadStopState(new_contents->tab_contents()->IsLoading(), true);
 
   // Update commands to reflect current state.
   UpdateCommandsForTabState();
@@ -3150,14 +3150,14 @@ void Browser::LoadingStateChanged(TabContents* source) {
 
   TabContents* selected_contents = GetSelectedTabContents();
   if (source == selected_contents) {
-    UpdateReloadStopState(source->is_loading(), false);
+    bool is_loading = source->IsLoading();
+    UpdateReloadStopState(is_loading, false);
     if (GetStatusBubble()) {
       GetStatusBubble()->SetStatus(
           GetSelectedTabContentsWrapper()->GetStatusText());
     }
 
-    if (!source->is_loading() &&
-        pending_web_app_action_ == UPDATE_SHORTCUT) {
+    if (!is_loading && pending_web_app_action_ == UPDATE_SHORTCUT) {
       // Schedule a shortcut update when web application info is available if
       // last committed entry is not NULL. Last committed entry could be NULL
       // when an interstitial page is injected (e.g. bad https certificate,
@@ -4169,7 +4169,7 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // changed_flags.
   }
 
-  if (changed_flags & TabContents::INVALIDATE_TITLE && !source->is_loading()) {
+  if (changed_flags & TabContents::INVALIDATE_TITLE && !source->IsLoading()) {
     // To correctly calculate whether the title changed while not loading
     // we need to process the update synchronously. This state only matters for
     // the TabStripModel, so we notify the TabStripModel now and notify others

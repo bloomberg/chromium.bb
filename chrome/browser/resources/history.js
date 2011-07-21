@@ -386,6 +386,7 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
     this.complete_ = true;
     this.view_.onModelReady();
     this.changed = false;
+    chrome.send('setIsLoading', ['false']);
   } else {
     // If we can't fill the requested page, ask for more data unless a request
     // is still in-flight.
@@ -423,6 +424,7 @@ HistoryModel.prototype.getSearchResults_ = function(depth) {
   }
 
   this.inFlight_ = true;
+  chrome.send('setIsLoading', ['true']);
 };
 
 /**

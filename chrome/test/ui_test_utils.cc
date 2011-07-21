@@ -356,7 +356,7 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
 void WaitForLoadStop(TabContents* tab) {
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
-  if (!tab->is_loading() && !tab->render_manager()->pending_render_view_host())
+  if (!tab->IsLoading() && !tab->render_manager()->pending_render_view_host())
     return;
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_LOAD_STOP,

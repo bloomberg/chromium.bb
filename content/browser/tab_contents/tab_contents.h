@@ -164,8 +164,9 @@ class TabContents : public PageNavigator,
   // the user is invited to type into it.
   virtual bool ShouldDisplayURL();
 
-  // Return whether this tab contents is loading a resource.
-  bool is_loading() const { return is_loading_; }
+  // Return whether this tab contents is loading a resource, or whether its
+  // web_ui is.
+  bool IsLoading() const;
 
   // Returns whether this tab contents is waiting for a first-response for the
   // main resource of the page. This controls whether the throbber state is

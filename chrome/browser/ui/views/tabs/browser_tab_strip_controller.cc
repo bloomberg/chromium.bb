@@ -30,7 +30,7 @@
 
 static TabRendererData::NetworkState TabContentsNetworkState(
     TabContents* contents) {
-  if (!contents || !contents->is_loading())
+  if (!contents || !contents->IsLoading())
     return TabRendererData::NETWORK_STATE_NONE;
   if (contents->waiting_for_response())
     return TabRendererData::NETWORK_STATE_WAITING;
@@ -449,7 +449,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->url = contents->GetURL();
-  data->loading = contents->is_loading();
+  data->loading = contents->IsLoading();
   data->crashed_status = contents->crashed_status();
   data->incognito = contents->profile()->IsOffTheRecord();
   data->show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();

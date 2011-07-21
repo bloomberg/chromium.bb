@@ -625,7 +625,7 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
 void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
   DCHECK(app_mode_favicon_);
 
-  if (tab_contents && tab_contents->is_loading()) {
+  if (tab_contents && tab_contents->IsLoading()) {
     GdkPixbuf* icon_pixbuf =
         throbber_.GetNextFrame(tab_contents->waiting_for_response());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);

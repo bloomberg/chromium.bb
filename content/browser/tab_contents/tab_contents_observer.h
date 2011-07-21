@@ -67,7 +67,7 @@ class TabContentsObserver : public IPC::Channel::Listener,
 
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
-  // loading feedback. See TabContents::is_loading()
+  // loading feedback. See TabContents::IsLoading()
   virtual void LoadingStateChanged(TabContents* contents) { }
   // Called to inform the delegate that the tab content's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state

@@ -35,7 +35,7 @@ DictionaryValue* ExtensionBrowserEventRouter::TabEntry::UpdateLoadState(
   // The tab may go in & out of loading (for instance if iframes navigate).
   // We only want to respond to the first change from loading to !loading after
   // the NAV_ENTRY_COMMITTED was fired.
-  if (!complete_waiting_on_load_ || contents->is_loading())
+  if (!complete_waiting_on_load_ || contents->IsLoading())
     return NULL;
 
   // Send "complete" state change.

@@ -320,7 +320,7 @@ void TabRendererGtk::UpdateData(TabContents* contents,
 
   // Loading state also involves whether we show the favicon, since that's where
   // we display the throbber.
-  data_.loading = contents->is_loading();
+  data_.loading = contents->IsLoading();
   data_.show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();
 }
 

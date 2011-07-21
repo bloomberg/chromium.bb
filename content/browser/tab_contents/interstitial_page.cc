@@ -369,7 +369,7 @@ void InterstitialPage::DidNavigate(
   // by the UI tests) expects to consider a navigation as complete. Without
   // this, navigating in a UI test to a URL that triggers an interstitial would
   // hang.
-  tab_was_loading_ = tab_->is_loading();
+  tab_was_loading_ = tab_->IsLoading();
   tab_->SetIsLoading(false, NULL);
 }
 

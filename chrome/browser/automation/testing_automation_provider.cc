@@ -3318,7 +3318,7 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
     if (instant->GetPreviewContents() &&
         instant->GetPreviewContents()->tab_contents()) {
       TabContents* contents = instant->GetPreviewContents()->tab_contents();
-      info->SetBoolean("loading", contents->is_loading());
+      info->SetBoolean("loading", contents->IsLoading());
       info->SetString("location", contents->GetURL().spec());
       info->SetString("title", contents->GetTitle());
     }

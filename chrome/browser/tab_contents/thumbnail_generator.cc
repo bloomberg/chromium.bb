@@ -461,7 +461,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);
-  score.load_completed = (!tab_contents->is_loading() && !load_interrupted_);
+  score.load_completed = (!load_interrupted_ && !tab_contents->IsLoading());
 
   top_sites->SetPageThumbnail(url, thumbnail, score);
   VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();

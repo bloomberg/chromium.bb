@@ -78,7 +78,6 @@ HistoryUIHTMLSource::HistoryUIHTMLSource()
     : ChromeWebUIDataSource(chrome::kChromeUIHistoryHost) {
   AddLocalizedString("loading", IDS_HISTORY_LOADING);
   AddLocalizedString("title", IDS_HISTORY_TITLE);
-  AddLocalizedString("loading", IDS_HISTORY_LOADING);
   AddLocalizedString("newest", IDS_HISTORY_NEWEST);
   AddLocalizedString("newer",  IDS_HISTORY_NEWER);
   AddLocalizedString("older", IDS_HISTORY_OLDER);

@@ -340,7 +340,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
-    if (client_contents->is_loading()) {
+    if (client_contents->IsLoading()) {
       LoadStopObserver(
           Source<NavigationController>(&client_contents->controller()));
     }

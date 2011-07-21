@@ -389,6 +389,10 @@ bool TabContents::ShouldDisplayURL() {
   return true;
 }
 
+bool TabContents::IsLoading() const {
+  return is_loading_ || (web_ui() && web_ui()->IsLoading());
+}
+
 void TabContents::AddObserver(TabContentsObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -1773,7 +1777,7 @@ void TabContents::LoadStateChanged(const GURL& url,
       content::GetContentClient()->browser()->GetAcceptLangs(this));
   if (load_state_ == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
-  if (is_loading())
+  if (IsLoading())
     NotifyNavigationStateChanged(INVALIDATE_LOAD | INVALIDATE_TAB);
 }
 

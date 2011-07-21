@@ -1170,7 +1170,7 @@ void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
   // information needed for handling update requests from Windows.)
   window->SetTitle(contents->tab_contents()->GetTitle());
   window->SetFavicon(contents->favicon_tab_helper()->GetFavicon());
-  window->Update(contents->tab_contents()->is_loading());
+  window->Update(contents->tab_contents()->IsLoading());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
