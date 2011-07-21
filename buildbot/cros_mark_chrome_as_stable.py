@@ -21,8 +21,6 @@ import filecmp
 import optparse
 import os
 import re
-import sys
-import urllib
 
 import cros_mark_as_stable
 from cros_build_lib import RunCommand, Info, Warning

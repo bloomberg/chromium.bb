@@ -202,7 +202,6 @@ def RunBuildStages(bot_id, options, build_config):
     if options.clean:
       commands.PreFlightRinse(options.buildroot)
 
-  build_success = False
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
   bg = bg_stages.BackgroundStages()
@@ -232,8 +231,6 @@ def RunBuildStages(bot_id, options, build_config):
 
     if options.build:
       stages.BuildTargetStage(bot_id, options, build_config).Run()
-
-    build_success = True
 
     if prebuilts:
       bg.AddStage(stages.UploadPrebuiltsStage(bot_id, options, build_config))

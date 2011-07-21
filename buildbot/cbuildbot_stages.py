@@ -128,8 +128,8 @@ class Results:
     else:
       return
 
-    _, _, _, time = cls._results_log[index]
-    cls._results_log[index] = name, result, description, time
+    _, _, _, run_time = cls._results_log[index]
+    cls._results_log[index] = name, result, description, run_time
 
   @classmethod
   def Get(cls):

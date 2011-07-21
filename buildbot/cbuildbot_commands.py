@@ -6,11 +6,8 @@
 
 import constants
 import os
-import re
 import shutil
-import sys
 
-from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -517,7 +514,6 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
   useflags = buildconfig.get('useflags')
   if useflags: cmd.extend(['--useflags', ' '.join(useflags)])
 
-  result = None
   try:
     # Files created in our archive dir should be publically accessable.
     old_umask = os.umask(022)

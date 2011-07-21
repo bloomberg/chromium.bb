@@ -9,6 +9,7 @@ import os
 import Queue
 import sys
 import tempfile
+import traceback
 
 from chromite.buildbot import cbuildbot_stages as stages
 

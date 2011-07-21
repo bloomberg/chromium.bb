@@ -19,7 +19,6 @@ import sys
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
-from chromite.buildbot import cbuildbot_commands as commands
 from chromite.lib import cros_build_lib
 
 

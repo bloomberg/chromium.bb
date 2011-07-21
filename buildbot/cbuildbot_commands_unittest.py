@@ -93,7 +93,6 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testUploadPublicPrebuilts(self):
     """Test _UploadPrebuilts with a public location."""
-    binhost = 'http://www.example.com'
     buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
@@ -106,7 +105,6 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testUploadPrivatePrebuilts(self):
     """Test _UploadPrebuilts with a private location."""
-    binhost = 'http://www.example.com'
     buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-%s/%s/%d/prebuilts/' %
@@ -120,7 +118,6 @@ class CBuildBotTest(mox.MoxTestBase):
 
   def testChromePrebuilts(self):
     """Test _UploadPrebuilts for Chrome prebuilts."""
-    binhost = 'http://www.example.com'
     buildnumber = 4
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
@@ -196,7 +193,6 @@ class CBuildBotTest(mox.MoxTestBase):
   def testLegacyArchiveBuildMinimal(self):
     """Test Legacy Archive Command, with minimal values."""
     buildroot = '/bob'
-    buildnumber = 4
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'
@@ -232,7 +228,6 @@ class CBuildBotTest(mox.MoxTestBase):
   def testLegacyArchiveBuildMaximum(self):
     """Test Legacy Archive Command, with all values."""
     buildroot = '/bob'
-    buildnumber = 4
 
     buildconfig = {}
     buildconfig['board'] = 'config_board'

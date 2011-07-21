@@ -1,13 +1,15 @@
 #!/usr/bin/python
 
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # TODO(petkov): Integrate this utility into the build system in a more
 # consistent way -- e.g., create an ebuild that pulls the utility from a
 # mirrored upstream repo with a patch or upstream the patch.
 
-import fileinput
 import optparse
 import os
-import pprint
 import re
 import sys
 import json
@@ -189,7 +191,6 @@ def treeify_syms(symbols, strip_prefix=None):
 def jsonify_tree(tree, name):
     children = []
     total = 0
-    files = 0
     subtree_total = None
 
     for key, val in tree.iteritems():

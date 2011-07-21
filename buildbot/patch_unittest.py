@@ -7,7 +7,6 @@
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
 import mox
-import os
 import sys
 import unittest
 
