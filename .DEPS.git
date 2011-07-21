@@ -123,7 +123,7 @@ deps_os = {
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
-            Var('git_url') + '/chromium/deps/xdg-utils.git@c1f3b268e700f3a3c7fdf49d83dc4bb9d95fdb4a',
+            Var('git_url') + '/chromium/deps/xdg-utils.git@7b903508c0dea743114236c35866a9131121ba61',
     },
     'win':
     {
