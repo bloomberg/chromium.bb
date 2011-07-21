@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.13",
+  "version": "1.14",
   "entries": [
     {
       "id": 1,
@@ -130,7 +130,7 @@
     {
       "id": 12,
       "description": "Drivers older than 2009-01 on Windows are assumed to be buggy.",
-      "cr_bugs": [72979],
+      "cr_bugs": [72979, 89802],
       "os": {
         "type": "win"
       },
@@ -138,6 +138,16 @@
         "op": "<",
         "number": "2009.1"
       },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086",
+          "device_id": ["0x29a2"],
+          "driver_version": {
+            "op": ">=",
+            "number": "7.15.10.1624"
+          }
+        }
+      ],
       "blacklist": [
         "all"
       ]
