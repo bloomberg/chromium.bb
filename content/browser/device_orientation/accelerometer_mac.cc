@@ -143,7 +143,11 @@ const AccelerometerMac::SensorDescriptor
   // Tested by sfiera, pjw on a 13" MacBook Air.
   { "MacBookAir2,1", NULL, { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Note: MacBookAir3,1 (11" MacBook Air) and MacBookAir3,2 (13" MacBook Air)
+  // Note:
+  // - MacBookAir3,1 (11" MacBook Air, late 2010)
+  // - MacBookAir3,2 (13" MacBook Air, late 2010)
+  // - MacBookAir4,1 (11" MacBook Air, mid 2011)
+  // - MacBookAir4,2 (13" MacBook Air, mid 2011)
   // have no accelerometer sensors.
 
   // Tested by crc on a 15" MacBook Pro.
