@@ -537,6 +537,9 @@ xserver_set_window_id(struct wl_client *client, struct xserver *xserver,
 	struct wlsc_wm *wm = wxs->wm;
 	struct wlsc_wm_window *window;
 
+	if (client != wxs->client)
+		return;
+
 	window = wl_hash_table_lookup(wm->window_hash, id);
 	if (window == NULL) {
 		fprintf(stderr, "set_window_id for unknown window %d\n", id);
