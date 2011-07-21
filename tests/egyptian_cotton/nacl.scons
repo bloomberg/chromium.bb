@@ -106,6 +106,9 @@ high_thread_count_args = ['-n', str(high_thread_count_nthreads)]
 
 if env.Bit('nacl_glibc'):
   high_thread_count_args.append('-m')
+elif env.Bit('tests_use_irt'):
+  # With the IRT, there is less address space available for thread stacks.
+  high_thread_count_args += ['-s', str(0x2000)]
 
 tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
