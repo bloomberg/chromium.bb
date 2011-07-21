@@ -1,8 +1,7 @@
-/*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 html, body {
   margin: 0;
   width: 100%;
@@ -23,6 +22,7 @@ list > * {
   -webkit-padding-end: 20px;
   text-decoration: none;
   white-space: nowrap;
+  display: -webkit-box;
 }
 
 list > * > * {
@@ -42,11 +42,22 @@ list > * > .label {
 
 list > * > .url {
   display: none;
+  -webkit-box-flex: 1;  
+  direction: ltr; /* URLs always read LTR */
 }
 
 list > :hover > .url,
 list > [selected] > .url {
-  display: inline;
+  display: block;
+}
+
+/* Handle proper padding for URL field in an RTL context, where field order is
+ * |div.url||div.label| - so we need padding at the right of URL, not at the
+ * left. And since url is always LTR, that is padding at the end, not the start.
+ */
+html[dir=rtl] .url {
+  -webkit-padding-end: 20px;  
+  -webkit-padding-start: 0;
 }
 
 html[dir=rtl] list .label {
@@ -102,9 +113,7 @@ html[dir=rtl] list > * > button {
   left: 3px;
 }
 
-/*
-/* Edit mode
-*/
+/* Edit mode */
 
 list [editing] .label input,
 list [editing] .url input {

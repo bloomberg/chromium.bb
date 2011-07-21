@@ -377,13 +377,12 @@ cr.define('bmm', function() {
 
       this.draggable = true;
 
-      var labelEl = this.ownerDocument.createElement('span');
+      var labelEl = this.ownerDocument.createElement('div');
       labelEl.className = 'label';
       labelEl.textContent = bookmarkNode.title;
 
-      var urlEl = this.ownerDocument.createElement('span');
+      var urlEl = this.ownerDocument.createElement('div');
       urlEl.className = 'url';
-      urlEl.dir = 'ltr';
 
       if (bmm.isFolder(bookmarkNode)) {
         this.className = 'folder';
