@@ -324,6 +324,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
       "password_element", UTF16ToUTF8(form.password_element).c_str(),
       "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
       "signon_realm", form.signon_realm.c_str(),
+      "application", app_string,
       NULL);
 }
 
