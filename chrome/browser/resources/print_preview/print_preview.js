@@ -468,6 +468,8 @@ function fileSelectionCancelled() {
  *                 the default printer is a cloud printer.
  */
 function setDefaultPrinter(printer_name, cloudPrintData) {
+  // Add a placeholder value so the printer list looks valid.
+  addDestinationListOption('', '', true, true, true);
   if (printer_name) {
     defaultOrLastUsedPrinterName = printer_name;
     if (cloudPrintData) {
@@ -476,11 +478,7 @@ function setDefaultPrinter(printer_name, cloudPrintData) {
                                    addCloudPrinters,
                                    doUpdateCloudPrinterCapabilities);
     } else {
-      addDestinationListOption('',
-                               defaultOrLastUsedPrinterName,
-                               true,
-                               true,
-                               true);
+      $('printer-list')[0].value = defaultOrLastUsedPrinterName;
       updateControlsWithSelectedPrinterCapabilities();
     }
   }
@@ -493,6 +491,10 @@ function setDefaultPrinter(printer_name, cloudPrintData) {
  * @param {Array} printers Array of printer info objects.
  */
 function setPrinters(printers) {
+  var printerList = $('printer-list');
+  // Remove empty entry added by setDefaultPrinter.
+  if (printerList[0] && printerList[0].textContent == '')
+    printerList.remove(0);
   for (var i = 0; i < printers.length; ++i) {
     var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
@@ -524,7 +526,7 @@ function setPrinters(printers) {
         MANAGE_CLOUD_PRINTERS, false, false, false);
   }
 
-  $('printer-list').disabled = false;
+  printerList.disabled = false;
 
   if (!hasRequestedPreview())
     updateControlsWithSelectedPrinterCapabilities();
@@ -636,9 +638,13 @@ function trackCloudPrinterAdded(id) {
 function addCloudPrinters(printers) {
   var isFirstPass = false;
   var showMorePrintersOption = false;
+  var printerList = $('printer-list');
 
   if (firstCloudPrintOptionPos == lastCloudPrintOptionPos) {
     isFirstPass = true;
+    // Remove empty entry added by setDefaultPrinter.
+    if (printerList[0] && printerList[0].textContent == '')
+      printerList.remove(0);
     var option = addDestinationListOptionAtPosition(
         lastCloudPrintOptionPos++,
         localStrings.getString('cloudPrinters'),
@@ -712,7 +718,6 @@ function addCloudPrinters(printers) {
                                        true,
                                        false);
   }
-  var printerList = $('printer-list')
   var selectedPrinter = printerList.selectedIndex;
   if (selectedPrinter < 0)
     return null;
