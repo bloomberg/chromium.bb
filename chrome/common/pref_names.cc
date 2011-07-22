@@ -1321,6 +1321,14 @@ const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";
 // String which specifies where to store the disk cache.
 const char kDiskCacheDir[] = "browser.disk_cache_dir";
 
+// Specifies the release channel that the device should be locked to.
+// Possible values: "stable-channel", "beta-channel", "dev-channel", or an
+// empty string, in which case the value will be ignored.
+// TODO(dubroy): This preference may not be necessary once
+// http://crosbug.com/17015 is implemented and the update engine can just
+// fetch the correct value from the policy.
+const char kChromeOsReleaseChannel[] = "cros.system.releaseChannel";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

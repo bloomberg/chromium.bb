@@ -496,6 +496,8 @@ extern const char kClearPluginLSODataEnabled[];
 
 extern const char kDiskCacheDir[];
 
+extern const char kChromeOsReleaseChannel[];
+
 extern const char kRegisteredBackgroundContents[];
 
 extern const char kAuthSchemes[];

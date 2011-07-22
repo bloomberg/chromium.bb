@@ -346,8 +346,9 @@ void DevicePolicyCache::DecodeDevicePolicy(
     std::string channel = policy.release_channel().release_channel();
     mandatory->Set(
         kPolicyChromeOsReleaseChannel, Value::CreateStringValue(channel));
-    // TODO: We should probably set the release track somewhere else, but this
-    // policy is a work-in-progress (http://crosbug.com/15382).
+    // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
+    // have to pass the channel in here, only ping the update engine to tell
+    // it to fetch the channel from the policy.
     chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
   }
 }

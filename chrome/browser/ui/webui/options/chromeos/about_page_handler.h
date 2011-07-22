@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_ABOUT_PAGE_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS_ABOUT_PAGE_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_ABOUT_PAGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_ABOUT_PAGE_HANDLER_H_
 
 #include <string>
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
-#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#endif
+
+namespace chromeos {
 
 // ChromeOS about page UI handler.
-class AboutPageHandler : public OptionsPageUIHandler {
+class AboutPageHandler : public CrosOptionsPageUIHandler {
+
  public:
   AboutPageHandler();
   virtual ~AboutPageHandler();
@@ -32,25 +34,24 @@ class AboutPageHandler : public OptionsPageUIHandler {
   // "beta-channel" and "dev-channel".
   void SetReleaseTrack(const base::ListValue* args);
 
-#if defined(OS_CHROMEOS)
   // Initiates update check.
   void CheckNow(const base::ListValue* args);
 
   // Restarts the system.
   void RestartNow(const base::ListValue* args);
 
-  // Callback from chromeos::VersionLoader giving the version.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+  // Callback from VersionLoader giving the version.
+  void OnOSVersion(VersionLoader::Handle handle,
                    std::string version);
-  void OnOSFirmware(chromeos::VersionLoader::Handle handle,
+  void OnOSFirmware(VersionLoader::Handle handle,
                     std::string firmware);
-  void UpdateStatus(const chromeos::UpdateLibrary::Status& status);
+  void UpdateStatus(const UpdateLibrary::Status& status);
 
   // UpdateEngine Callback handler.
   static void UpdateSelectedChannel(void* user_data, const char* channel);
 
   // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
+  VersionLoader loader_;
 
   // Used to request the version.
   CancelableRequestConsumer consumer_;
@@ -62,9 +63,10 @@ class AboutPageHandler : public OptionsPageUIHandler {
   int progress_;
   bool sticky_;
   bool started_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_ABOUT_PAGE_HANDLER_H_
+} // namespace chromeos
+
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_ABOUT_PAGE_HANDLER_H_

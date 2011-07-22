@@ -128,6 +128,15 @@ cr.define('options', function() {
       $('checkNow').disabled = !enable;
     },
 
+    setReleaseChannel_: function(channel) {
+      // Write the value into the pref which will end up in the policy.
+      // Eventually, the update engine will use the policy value as the
+      // source truth for the update channel (see http://crosbug/17015).
+      Preferences.setStringPref("cros.system.releaseChannel", channel);
+      this.selectedChannel_ = channel;
+      chrome.send('SetReleaseTrack', [channel]);
+    },
+
     selectedOptionOnChange_: function(value) {
       if (value == 'dev-channel') {
         // Open confirm dialog.
@@ -140,16 +149,14 @@ cr.define('options', function() {
           function() {
             // Ok, so set release track and update selected channel.
             $('channelWarningBlock').hidden = false;
-            chrome.send('SetReleaseTrack', [value]);
-            self.selectedChannel_ = value; },
+            self.setReleaseChannel_(value); },
           function() {
             // Cancel, so switch back to previous selected channel.
             self.updateSelectedOption_(self.selectedChannel_); }
           );
       } else {
         $('channelWarningBlock').hidden = true;
-        chrome.send('SetReleaseTrack', [value]);
-        this.selectedChannel_ = value;
+        this.setReleaseChannel_(value);
       }
     },
 

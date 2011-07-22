@@ -101,12 +101,12 @@ void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
   }
 }
 
-// Create a settings boolean value with "managed" and "disabled" property.
+// Create a settings value with "managed" and "disabled" property.
 // "managed" property is true if the setting is managed by administrator.
 // "disabled" property is true if the UI for the setting should be disabled.
-Value* CreateSettingsBooleanValue(bool value, bool managed, bool disabled) {
+Value* CreateSettingsValue(Value *value, bool managed, bool disabled) {
   DictionaryValue* dict = new DictionaryValue;
-  dict->Set("value", Value::CreateBooleanValue(value));
+  dict->Set("value", value);
   dict->Set("managed", Value::CreateBooleanValue(managed));
   dict->Set("disabled", Value::CreateBooleanValue(disabled));
   return dict;
@@ -237,6 +237,16 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         UpdateCacheBool(path, bool_value, USE_VALUE_SUPPLIED);
 
         VLOG(1) << "Set cros setting " << path << "=" << value;
+      }
+    } else if (IsControlledStringSetting(path)) {
+      std::string value;
+      if (in_value->GetAsString(&value)) {
+        SignedSettingsHelper::Get()->StartStorePropertyOp(path, value, this);
+        UpdateCacheString(path, value, USE_VALUE_SUPPLIED);
+
+        VLOG(1) << "Set cros setting " << path << "=" << value;
+      } else {
+        NOTREACHED() << "Unable to convert string value.";
       }
     } else if (path == kDeviceOwner) {
       VLOG(1) << "Setting owner is not supported. Please use "
@@ -562,17 +572,22 @@ void UserCrosSettingsProvider::DoSet(const std::string& path,
 
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
-  if (IsControlledBooleanSetting(path)) {
-    PrefService* prefs = g_browser_process->local_state();
-    *out_value = CreateSettingsBooleanValue(
-        prefs->GetBoolean(path.c_str()),
-        g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
-        !UserManager::Get()->current_user_is_owner());
-    return true;
-  } else if (path == kAccountsPrefUsers) {
+  if (path == kAccountsPrefUsers) {
     ListValue* user_list = new ListValue;
     GetUserWhitelist(user_list);
     *out_value = user_list;
+    return true;
+  }
+
+  if (IsControlledBooleanSetting(path) || IsControlledStringSetting(path)) {
+    PrefService* prefs = g_browser_process->local_state();
+    const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
+    const Value *pref_value = pref->GetValue();
+
+    *out_value = CreateSettingsValue(
+        pref_value->DeepCopy(),
+        g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
+        !UserManager::Get()->current_user_is_owner());
     return true;
   }
 
@@ -581,7 +596,8 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.accounts.", true) ||
-      ::StartsWithASCII(path, "cros.signed.", true);
+      ::StartsWithASCII(path, "cros.signed.", true) ||
+      ::StartsWithASCII(path, "cros.system.", true);
 }
 
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {

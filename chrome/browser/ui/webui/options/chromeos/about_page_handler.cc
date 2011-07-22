@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/about_page_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/about_page_handler.h"
 
 #include <vector>
 
@@ -31,13 +31,12 @@
 #include "v8/include/v8.h"
 #endif
 
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#endif
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 
 namespace {
 
@@ -49,10 +48,8 @@ const char kBeginLinkChr[] = "BEGIN_LINK_CHR";
 const char kBeginLinkOss[] = "BEGIN_LINK_OSS";
 const char kEndLinkChr[] = "END_LINK_CHR";
 const char kEndLinkOss[] = "END_LINK_OSS";
-#if defined(OS_CHROMEOS)
 const char kBeginLinkCrosOss[] = "BEGIN_LINK_CROS_OSS";
 const char kEndLinkCrosOss[] = "END_LINK_CROS_OSS";
-#endif
 
 // Returns a substring [start, end) from |text|.
 std::string StringSubRange(const std::string& text, size_t start,
@@ -63,10 +60,10 @@ std::string StringSubRange(const std::string& text, size_t start,
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
+namespace chromeos {
 
 class AboutPageHandler::UpdateObserver
-    : public chromeos::UpdateLibrary::Observer {
+    : public UpdateLibrary::Observer {
  public:
   explicit UpdateObserver(AboutPageHandler* handler) : page_handler_(handler) {}
   virtual ~UpdateObserver() {}
@@ -74,7 +71,7 @@ class AboutPageHandler::UpdateObserver
   AboutPageHandler* page_handler() const { return page_handler_; }
 
  private:
-  virtual void UpdateStatusChanged(chromeos::UpdateLibrary* object) {
+  virtual void UpdateStatusChanged(UpdateLibrary* object) {
     page_handler_->UpdateStatus(object->status());
   }
 
@@ -83,30 +80,25 @@ class AboutPageHandler::UpdateObserver
   DISALLOW_COPY_AND_ASSIGN(UpdateObserver);
 };
 
-#endif
-
 AboutPageHandler::AboutPageHandler()
-#if defined(OS_CHROMEOS)
-    : progress_(-1),
+    : CrosOptionsPageUIHandler(
+          new UserCrosSettingsProvider),
+      progress_(-1),
       sticky_(false),
       started_(false)
-#endif
 {}
 
 AboutPageHandler::~AboutPageHandler() {
-#if defined(OS_CHROMEOS)
   if (update_observer_.get()) {
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->
+    CrosLibrary::Get()->GetUpdateLibrary()->
         RemoveObserver(update_observer_.get());
   }
-#endif
 }
 
 void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-#if defined (OS_CHROMEOS)
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
     { "product", IDS_PRODUCT_OS_NAME },
     { "os", IDS_PRODUCT_OS_NAME },
@@ -115,10 +107,6 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
     { "update_status", IDS_UPGRADE_CHECK_STARTED },
     { "restart_now", IDS_RELAUNCH_AND_UPDATE },
-#else
-    { "product", IDS_PRODUCT_NAME },
-    { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
-#endif
     { "browser", IDS_PRODUCT_NAME },
     { "more_info", IDS_ABOUT_PAGE_MORE_INFO },
     { "copyright", IDS_ABOUT_VERSION_COPYRIGHT },
@@ -197,7 +185,6 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_1" : "license_link_0", chrome::kChromeUICreditsURL);
 
-#if defined(OS_CHROMEOS)
   std::string cros_text =
       l10n_util::GetStringUTF8(IDS_ABOUT_CROS_VERSION_LICENSE);
 
@@ -215,7 +202,6 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
                      cros_link_end));
   localized_strings->SetString("cros_license_link_0",
       chrome::kChromeUIOSCreditsURL);
-#endif
 
   // webkit
 
@@ -261,26 +247,23 @@ void AboutPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("SetReleaseTrack",
       NewCallback(this, &AboutPageHandler::SetReleaseTrack));
 
-#if defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("CheckNow",
       NewCallback(this, &AboutPageHandler::CheckNow));
   web_ui_->RegisterMessageCallback("RestartNow",
       NewCallback(this, &AboutPageHandler::RestartNow));
-#endif
 }
 
 void AboutPageHandler::PageReady(const ListValue* args) {
-#if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
   loader_.EnablePlatformVersions(true);
   loader_.GetVersion(&consumer_,
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
-                     chromeos::VersionLoader::VERSION_FULL);
+                     VersionLoader::VERSION_FULL);
   loader_.GetFirmware(&consumer_,
                       NewCallback(this, &AboutPageHandler::OnOSFirmware));
 
-  chromeos::UpdateLibrary* update_library =
-      chromeos::CrosLibrary::Get()->GetUpdateLibrary();
+  UpdateLibrary* update_library =
+      CrosLibrary::Get()->GetUpdateLibrary();
 
   update_observer_.reset(new UpdateObserver(this));
   update_library->AddObserver(update_observer_.get());
@@ -298,60 +281,55 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // page handler and ensure it does not get deleted before the callback.
   update_library->GetReleaseTrack(UpdateSelectedChannel,
                                   update_observer_.get());
-#endif
 }
 
 void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
+  if (!UserManager::Get()->current_user_is_owner()) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
   const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
-  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
-#endif
+  CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
 }
-
-#if defined(OS_CHROMEOS)
 
 void AboutPageHandler::CheckNow(const ListValue* args) {
   // Make sure that libcros is loaded and OOBE is complete.
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-      (!chromeos::WizardController::default_controller() ||
-        chromeos::WizardController::IsDeviceRegistered())) {
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->
+  if (CrosLibrary::Get()->EnsureLoaded() &&
+      (!WizardController::default_controller() ||
+        WizardController::IsDeviceRegistered())) {
+    CrosLibrary::Get()->GetUpdateLibrary()->
         RequestUpdateCheck(NULL,   // no callback
                            NULL);  // no userdata
   }
 }
 
 void AboutPageHandler::RestartNow(const ListValue* args) {
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
+  CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
 }
 
 void AboutPageHandler::UpdateStatus(
-    const chromeos::UpdateLibrary::Status& status) {
+    const UpdateLibrary::Status& status) {
   string16 message;
   std::string image = "up-to-date";
   bool enabled = false;
 
   switch (status.status) {
-    case chromeos::UPDATE_STATUS_IDLE:
+    case UPDATE_STATUS_IDLE:
       if (!sticky_) {
         message = l10n_util::GetStringFUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE,
             l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
         enabled = true;
       }
       break;
-    case chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+    case UPDATE_STATUS_CHECKING_FOR_UPDATE:
       message = l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED);
       sticky_ = false;
       break;
-    case chromeos::UPDATE_STATUS_UPDATE_AVAILABLE:
+    case UPDATE_STATUS_UPDATE_AVAILABLE:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE);
       started_ = true;
       break;
-    case chromeos::UPDATE_STATUS_DOWNLOADING:
+    case UPDATE_STATUS_DOWNLOADING:
     {
       int progress = static_cast<int>(status.download_progress * 100.0);
       if (progress != progress_) {
@@ -362,15 +340,15 @@ void AboutPageHandler::UpdateStatus(
       started_ = true;
     }
       break;
-    case chromeos::UPDATE_STATUS_VERIFYING:
+    case UPDATE_STATUS_VERIFYING:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING);
       started_ = true;
       break;
-    case chromeos::UPDATE_STATUS_FINALIZING:
+    case UPDATE_STATUS_FINALIZING:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING);
       started_ = true;
       break;
-    case chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED);
       image = "available";
       sticky_ = true;
@@ -395,7 +373,7 @@ void AboutPageHandler::UpdateStatus(
     // "Checking for update..." needs to be shown for a while, so users
     // can read it, hence insert delay for this.
     scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
-        status.status == chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE));
+        status.status == UPDATE_STATUS_CHECKING_FOR_UPDATE));
     web_ui_->CallJavascriptFunction("AboutPage.updateStatusCallback",
                                     *update_message, *insert_delay);
 
@@ -408,12 +386,12 @@ void AboutPageHandler::UpdateStatus(
                                     *image_string);
   }
   // We'll change the "Check For Update" button to "Restart" button.
-  if (status.status == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+  if (status.status == UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     web_ui_->CallJavascriptFunction("AboutPage.changeToRestartButton");
   }
 }
 
-void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
+void AboutPageHandler::OnOSVersion(VersionLoader::Handle handle,
                                    std::string version) {
   if (version.size()) {
     scoped_ptr<Value> version_string(Value::CreateStringValue(version));
@@ -422,7 +400,7 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
   }
 }
 
-void AboutPageHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
+void AboutPageHandler::OnOSFirmware(VersionLoader::Handle handle,
                                     std::string firmware) {
   if (firmware.size()) {
     scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
@@ -440,7 +418,7 @@ void AboutPageHandler::UpdateSelectedChannel(void* user_data,
     return;
   }
   UpdateObserver* observer = static_cast<UpdateObserver*>(user_data);
-  if (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->HasObserver(observer)) {
+  if (CrosLibrary::Get()->GetUpdateLibrary()->HasObserver(observer)) {
     // If UpdateLibrary still has the observer, then the page handler is valid.
     AboutPageHandler* handler = observer->page_handler();
     scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
@@ -449,4 +427,4 @@ void AboutPageHandler::UpdateSelectedChannel(void* user_data,
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+} // namespace chromeos

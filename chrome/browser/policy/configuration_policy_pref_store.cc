@@ -280,6 +280,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
     prefs::kEnableScreenLock },
+  { Value::TYPE_STRING, kPolicyChromeOsReleaseChannel,
+    prefs::kChromeOsReleaseChannel },
 #endif
 };
 

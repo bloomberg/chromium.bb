@@ -630,6 +630,10 @@ void StorePropertyOp::SetInPolicy(const std::string& prop,
     bool success = pol.mutable_device_proxy_settings()->ParseFromString(value);
     DCHECK(success);
 
+  } else if (prop == kReleaseChannel) {
+    em::ReleaseChannelProto* release_channel = pol.mutable_release_channel();
+    release_channel->set_release_channel(value);
+
   } else {
     NOTREACHED();
   }
@@ -755,7 +759,7 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
   } else if (prop == kReleaseChannel) {
     if (!pol.has_release_channel() ||
         !pol.release_channel().has_release_channel())
-      return "";           // Default: don't change the release channel
+      return "";           // Default to an invalid channel (will be ignored).
     return pol.release_channel().release_channel();
 
   }
