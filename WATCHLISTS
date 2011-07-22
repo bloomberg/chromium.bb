@@ -296,7 +296,7 @@
                  'simonmorris+watch@chromium.org',
                  'wez+watch@chromium.org'],
     'ntp': ['estade+watch@chromium.org'],
-    'cookie_monster': ['rdsmith@chromium.org'],
+    'cookie_monster': ['rdsmith@chromium.org', 'erikwright@chromium.org'],
     'autofill': ['dhollowa@chromium.org', 'georgey@chromium.org',
                  'isherman@chromium.org'],
     'webdata': ['dhollowa@chromium.org'],
