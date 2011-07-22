@@ -30,7 +30,7 @@ class TextureGL : public Texture {
                          const gfx::Size& overall_size) OVERRIDE;
 
   // Draws the texture.
-  virtual void Draw(const ui::Transform& transform) OVERRIDE;
+  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
  protected:
   TextureGL(CompositorGL* compositor, const gfx::Size& size);
@@ -38,7 +38,7 @@ class TextureGL : public Texture {
 
   // Actually draws the texture.
   void DrawInternal(const TextureProgramGL& program,
-                    const ui::Transform& transform);
+                    const ui::TextureDrawParams& params);
 
   unsigned int texture_id_;
   gfx::Size size_;

@@ -51,13 +51,16 @@ void Layer::SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin) {
 }
 
 void Layer::Draw() {
-  ui::Transform transform;
+  ui::TextureDrawParams texture_draw_params;
   for (Layer* layer = this; layer; layer = layer->parent_) {
-    transform.ConcatTransform(layer->transform_);
-    transform.ConcatTranslate(static_cast<float>(layer->bounds_.x()),
-                              static_cast<float>(layer->bounds_.y()));
+    texture_draw_params.transform.ConcatTransform(layer->transform_);
+    texture_draw_params.transform.ConcatTranslate(
+        static_cast<float>(layer->bounds_.x()),
+        static_cast<float>(layer->bounds_.y()));
   }
-  texture_->Draw(transform);
+  // Only blend for child layers. The root layer will clobber the cleared bg.
+  texture_draw_params.blend = parent_ != NULL;
+  texture_->Draw(texture_draw_params);
 }
 
 }  // namespace ui

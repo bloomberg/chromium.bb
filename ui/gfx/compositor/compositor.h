@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
@@ -17,7 +18,19 @@ class Size;
 }
 
 namespace ui {
-class Transform;
+
+struct TextureDrawParams {
+  TextureDrawParams() : transform(), blend(false) {}
+
+  // The transform to be applied to the texture.
+  ui::Transform transform;
+
+  // If this is true, then the texture is blended with the pixels behind it.
+  // Otherwise, the drawn pixels clobber the old pixels.
+  bool blend;
+
+  // Copy and assignment are allowed.
+};
 
 // Textures are created by a Compositor for managing an accelerated view.
 // Any time a View with a texture needs to redraw itself it invokes SetBitmap().
@@ -36,7 +49,7 @@ class Texture : public base::RefCounted<Texture> {
                          const gfx::Size& overall_size) = 0;
 
   // Draws the texture.
-  virtual void Draw(const ui::Transform& transform) = 0;
+  virtual void Draw(const ui::TextureDrawParams& params) = 0;
 
  protected:
   virtual ~Texture() {}

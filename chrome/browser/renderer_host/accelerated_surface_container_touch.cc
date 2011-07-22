@@ -44,14 +44,19 @@ void AcceleratedSurfaceContainerTouch::SetBitmap(
   NOTIMPLEMENTED();
 }
 
-void AcceleratedSurfaceContainerTouch::Draw(const ui::Transform& transform) {
+void AcceleratedSurfaceContainerTouch::Draw(
+    const ui::TextureDrawParams& params) {
   DCHECK(compositor_->program_no_swizzle());
+
+  ui::TextureDrawParams modified_params = params;
 
   // Texture from GPU is flipped horizontally.
   ui::Transform flipped;
   flipped.SetScaleY(-1.0);
   flipped.SetTranslateY(size_.height());
-  flipped.ConcatTransform(transform);
+  flipped.ConcatTransform(params.transform);
 
-  DrawInternal(*compositor_->program_no_swizzle(), flipped);
+  modified_params.transform = flipped;
+
+  DrawInternal(*compositor_->program_no_swizzle(), modified_params);
 }

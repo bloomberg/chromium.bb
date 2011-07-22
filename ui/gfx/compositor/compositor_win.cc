@@ -55,7 +55,7 @@ class ViewTexture : public Texture {
   virtual void SetBitmap(const SkBitmap& bitmap,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
-  virtual void Draw(const ui::Transform& transform) OVERRIDE;
+  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
  private:
   ~ViewTexture();
@@ -244,8 +244,8 @@ void ViewTexture::SetBitmap(const SkBitmap& bitmap,
   }
 }
 
-void ViewTexture::Draw(const ui::Transform& transform) {
-  compositor_->UpdatePerspective(transform, view_size_);
+void ViewTexture::Draw(const ui::TextureDrawParams& params) {
+  compositor_->UpdatePerspective(params.transform, view_size_);
 
   // Make texture active.
   RETURN_IF_FAILED(

@@ -24,7 +24,7 @@ class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
 
-  virtual void Draw(const ui::Transform& transform) OVERRIDE;
+  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
  protected:
   ~AcceleratedSurfaceContainerTouch();

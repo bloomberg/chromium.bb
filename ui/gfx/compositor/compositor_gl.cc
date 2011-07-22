@@ -328,13 +328,18 @@ void TextureGL::SetBitmap(const SkBitmap& bitmap,
   }
 }
 
-void TextureGL::Draw(const ui::Transform& transform) {
+void TextureGL::Draw(const ui::TextureDrawParams& params) {
   DCHECK(compositor_->program_swizzle());
-  DrawInternal(*compositor_->program_swizzle(), transform);
+  DrawInternal(*compositor_->program_swizzle(), params);
 }
 
 void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
-                             const ui::Transform& transform) {
+                             const ui::TextureDrawParams& params) {
+  if (params.blend)
+    glEnable(GL_BLEND);
+  else
+    glDisable(GL_BLEND);
+
   program.Use();
 
   glActiveTexture(GL_TEXTURE0);
@@ -349,7 +354,7 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   t.ConcatTranslate(0, -size_.height());
   t.ConcatScale(1, -1);
 
-  t.ConcatTransform(transform);  // Add view transform.
+  t.ConcatTransform(params.transform);  // Add view transform.
 
   t.ConcatTranslate(0, -window_size.height());
   t.ConcatScale(1, -1);
@@ -385,7 +390,6 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
       CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
   glColorMask(true, true, true, true);
-  glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -419,18 +423,14 @@ void CompositorGL::NotifyStart() {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
   glViewport(0, 0, size_.width(), size_.height());
+  glColorMask(true, true, true, true);
 
 #if defined(DEBUG)
   // Clear to 'psychedelic' purple to make it easy to spot un-rendered regions.
   glClearColor(223.0 / 255, 0, 1, 1);
-#else
-  // Clear to transparent black.
-  glClearColor(0, 0, 0, 0);
-#endif
-  glColorMask(true, true, true, true);
   glClear(GL_COLOR_BUFFER_BIT);
-  // Disable alpha writes, since we're using blending anyways.
-  glColorMask(true, true, true, false);
+#endif
+  // Do not clear in release: root layer is responsible for drawing every pixel.
 }
 
 void CompositorGL::NotifyEnd() {
