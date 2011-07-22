@@ -38,7 +38,7 @@ class PPB_VideoDecoder_Impl : public Resource,
   // ResourceObjectBase overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
-  // PPB_VideoDecoder implementation.
+  // PPB_VideoDecoder_API implementation.
   virtual int32_t Initialize(PP_Resource context_id,
                              const PP_VideoConfigElement* dec_config,
                              PP_CompletionCallback callback) OVERRIDE;

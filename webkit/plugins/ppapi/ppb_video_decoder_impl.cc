@@ -184,8 +184,10 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     return;
 
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
+  ScopedResourceId resource(this);
   ppp_videodecoder_->ProvidePictureBuffers(
-      instance()->pp_instance(), requested_num_of_buffers, out_dim);
+      instance()->pp_instance(), resource.id, requested_num_of_buffers,
+      out_dim);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
@@ -195,22 +197,26 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
-  ppp_videodecoder_->PictureReady(instance()->pp_instance(), output);
+  ScopedResourceId resource(this);
+  ppp_videodecoder_->PictureReady(
+      instance()->pp_instance(), resource.id, output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
   if (!ppp_videodecoder_)
     return;
 
+  ScopedResourceId resource(this);
   ppp_videodecoder_->DismissPictureBuffer(
-      instance()->pp_instance(), picture_buffer_id);
+      instance()->pp_instance(), resource.id, picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
   if (!ppp_videodecoder_)
     return;
 
-  ppp_videodecoder_->EndOfStream(instance()->pp_instance());
+  ScopedResourceId resource(this);
+  ppp_videodecoder_->EndOfStream(instance()->pp_instance(), resource.id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
@@ -218,11 +224,12 @@ void PPB_VideoDecoder_Impl::NotifyError(
   if (!ppp_videodecoder_)
     return;
 
+  ScopedResourceId resource(this);
   // TODO(vrk): This is assuming VideoDecodeAccelerator::Error and
   // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
   // merge these two enums.
-  ppp_videodecoder_->NotifyError(instance()->pp_instance(),
+  ppp_videodecoder_->NotifyError(instance()->pp_instance(), resource.id,
                                  static_cast<PP_VideoDecodeError_Dev>(error));
 }
 

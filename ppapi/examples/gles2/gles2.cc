@@ -40,7 +40,8 @@
 
 namespace {
 
-class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
+class GLES2DemoInstance : public pp::Instance,
+                          public pp::Graphics3DClient_Dev,
                           public pp::VideoDecoderClient_Dev {
  public:
   GLES2DemoInstance(PP_Instance instance, pp::Module* module);
@@ -60,12 +61,14 @@ class GLES2DemoInstance : public pp::Instance, public pp::Graphics3DClient_Dev,
   }
 
   // pp::VideoDecoderClient_Dev implementation.
-  virtual void ProvidePictureBuffers(
-      uint32_t req_num_of_bufs, PP_Size dimensions);
-  virtual void DismissPictureBuffer(int32_t picture_buffer_id);
-  virtual void PictureReady(const PP_Picture_Dev& picture);
-  virtual void EndOfStream();
-  virtual void NotifyError(PP_VideoDecodeError_Dev error);
+  virtual void ProvidePictureBuffers(PP_Resource decoder,
+                                     uint32_t req_num_of_bufs,
+                                     PP_Size dimensions);
+  virtual void DismissPictureBuffer(PP_Resource decoder,
+                                    int32_t picture_buffer_id);
+  virtual void PictureReady(PP_Resource decoder, const PP_Picture_Dev& picture);
+  virtual void EndOfStream(PP_Resource decoder);
+  virtual void NotifyError(PP_Resource decoder, PP_VideoDecodeError_Dev error);
 
  private:
   enum { kNumConcurrentDecodes = 7 };
@@ -278,7 +281,7 @@ void GLES2DemoInstance::DecodeNextNALU() {
 }
 
 void GLES2DemoInstance::ProvidePictureBuffers(
-    uint32_t req_num_of_bufs, PP_Size dimensions) {
+    PP_Resource /* decoder */, uint32_t req_num_of_bufs, PP_Size dimensions) {
   std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; i++) {
     PP_PictureBuffer_Dev buffer;
@@ -291,14 +294,16 @@ void GLES2DemoInstance::ProvidePictureBuffers(
   video_decoder_->AssignPictureBuffers(buffers);
 }
 
-void GLES2DemoInstance::DismissPictureBuffer(int32_t picture_buffer_id) {
+void GLES2DemoInstance::DismissPictureBuffer(PP_Resource /* decoder */,
+                                             int32_t picture_buffer_id) {
   PictureBufferMap::iterator it = buffers_by_id_.find(picture_buffer_id);
   assert(it != buffers_by_id_.end());
   DeleteTexture(it->second.texture_id);
   buffers_by_id_.erase(it);
 }
 
-void GLES2DemoInstance::PictureReady(const PP_Picture_Dev& picture) {
+void GLES2DemoInstance::PictureReady(PP_Resource /* decoder */,
+                                     const PP_Picture_Dev& picture) {
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
   if (is_painting_) {
@@ -311,10 +316,11 @@ void GLES2DemoInstance::PictureReady(const PP_Picture_Dev& picture) {
   Render(it->second);
 }
 
-void GLES2DemoInstance::EndOfStream() {
+void GLES2DemoInstance::EndOfStream(PP_Resource /* decoder */) {
 }
 
-void GLES2DemoInstance::NotifyError(PP_VideoDecodeError_Dev error) {
+void GLES2DemoInstance::NotifyError(PP_Resource /* decoder */,
+                                    PP_VideoDecodeError_Dev error) {
   LogError(this).s() << "Received error: " << error;
   assert(!"Unexpected error; see stderr for details");
 }
@@ -391,7 +397,7 @@ void GLES2DemoInstance::PaintFinished(int32_t result, int picture_buffer_id) {
   while (!pictures_pending_paint_.empty() && !is_painting_) {
     PP_Picture_Dev picture = pictures_pending_paint_.front();
     pictures_pending_paint_.pop_front();
-    PictureReady(picture);
+    PictureReady(0 /* ignored */, picture);
   }
 }
 

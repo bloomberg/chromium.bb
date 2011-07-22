@@ -23,23 +23,26 @@ class VideoDecoderClient_Dev {
   virtual ~VideoDecoderClient_Dev();
 
   // Callback to provide buffers for the decoded output pictures.
-  virtual void ProvidePictureBuffers(
-      uint32_t req_num_of_bufs,
-      struct PP_Size dimensions) = 0;
+  virtual void ProvidePictureBuffers(PP_Resource decoder,
+                                     uint32_t req_num_of_bufs,
+                                     struct PP_Size dimensions) = 0;
 
   // Callback for decoder to deliver unneeded picture buffers back to the
   // plugin.
-  virtual void DismissPictureBuffer(int32_t picture_buffer_id) = 0;
+  virtual void DismissPictureBuffer(PP_Resource decoder,
+                                    int32_t picture_buffer_id) = 0;
 
   // Callback to deliver decoded pictures ready to be displayed.
-  virtual void PictureReady(const PP_Picture_Dev& picture) = 0;
+  virtual void PictureReady(PP_Resource decoder,
+                            const PP_Picture_Dev& picture) = 0;
 
   // Callback to notify that decoder has decoded end of stream marker and has
   // outputted all displayable pictures.
-  virtual void EndOfStream() = 0;
+  virtual void EndOfStream(PP_Resource decoder) = 0;
 
   // Callback to notify about decoding errors.
-  virtual void NotifyError(PP_VideoDecodeError_Dev error) = 0;
+  virtual void NotifyError(PP_Resource decoder,
+                           PP_VideoDecodeError_Dev error) = 0;
 
  private:
   Instance* associated_instance_;
