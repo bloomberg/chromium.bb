@@ -488,10 +488,13 @@ void CrxInstaller::CompleteInstall() {
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   std::string error;
+  int flags = extension_->creation_flags() | Extension::REQUIRE_KEY;
+  if (is_gallery_install())
+    flags |= Extension::FROM_WEBSTORE;
   extension_ = extension_file_util::LoadExtension(
       version_dir,
       install_source_,
-      Extension::REQUIRE_KEY,
+      flags,
       &error);
   CHECK(error.empty()) << error;
 

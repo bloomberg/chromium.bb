@@ -1230,7 +1230,7 @@ Extension::Extension(const FilePath& path, Location location)
       launch_width_(0),
       launch_height_(0),
       wants_file_access_(false),
-      from_webstore_(false) {
+      creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());
   path_ = MaybeNormalizePath(path);
 }
@@ -1417,7 +1417,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  from_webstore_ = (flags & FROM_WEBSTORE) != 0;
+  creation_flags_ = flags;
 
   // Make a copy of the manifest so we can store it in prefs.
   manifest_value_.reset(source.DeepCopy());

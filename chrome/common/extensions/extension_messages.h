@@ -111,6 +111,9 @@ struct ExtensionMsg_Loaded_Params {
 
   // We keep this separate so that it can be used in logging.
   std::string id;
+
+  // Send creation flags so extension is initialized identically.
+  int creation_flags;
 };
 
 namespace IPC {

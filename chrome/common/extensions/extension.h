@@ -507,7 +507,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
 
   bool wants_file_access() const { return wants_file_access_; }
-  bool from_webstore() const { return from_webstore_; }
+  int creation_flags() const { return creation_flags_; }
+  bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
 
   const std::string& content_security_policy() const {
     return content_security_policy_;
@@ -794,8 +795,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // granted it that access).
   bool wants_file_access_;
 
-  // Whether the extension was installed from the web store.
-  bool from_webstore_;
+  // The flags that were passed to InitFromValue.
+  int creation_flags_;
 
   // The Content-Security-Policy for this extension.  Extensions can use
   // Content-Security-Policies to mitigate cross-site scripting and other
