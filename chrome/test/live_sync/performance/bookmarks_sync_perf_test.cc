@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
-#include "chrome/test/live_sync/live_sync_timing_helper.h"
+#include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
 static const int kNumBookmarks = 150;
 
@@ -16,10 +16,10 @@ static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
 
 // TODO(braffert): Move this class into its own .h/.cc files.  What should the
 // class files be named as opposed to the file containing the tests themselves?
-class PerformanceLiveBookmarksSyncTest
+class BookmarksSyncPerfTest
     : public TwoClientLiveBookmarksSyncTest {
  public:
-  PerformanceLiveBookmarksSyncTest() : url_number(0), url_title_number(0) {}
+  BookmarksSyncPerfTest() : url_number(0), url_title_number(0) {}
 
   // Adds |num_urls| new unique bookmarks to the bookmark bar for |profile|.
   void AddURLs(int profile, int num_urls);
@@ -43,29 +43,30 @@ class PerformanceLiveBookmarksSyncTest
 
   int url_number;
   int url_title_number;
-  DISALLOW_COPY_AND_ASSIGN(PerformanceLiveBookmarksSyncTest);
+  DISALLOW_COPY_AND_ASSIGN(BookmarksSyncPerfTest);
 };
 
-void PerformanceLiveBookmarksSyncTest::AddURLs(int profile, int num_urls) {
+void BookmarksSyncPerfTest::AddURLs(int profile, int num_urls) {
   for (int i = 0; i < num_urls; ++i) {
     ASSERT_TRUE(AddURL(
         profile, 0, NextIndexedURLTitle(), GURL(NextIndexedURL())) != NULL);
   }
 }
 
-void PerformanceLiveBookmarksSyncTest::UpdateURLs(int profile) {
+void BookmarksSyncPerfTest::UpdateURLs(int profile) {
   for (int i = 0; i < GetBookmarkBarNode(profile)->child_count(); ++i) {
     ASSERT_TRUE(SetURL(profile, GetBookmarkBarNode(profile)->GetChild(i),
                        GURL(NextIndexedURL())));
   }
 }
 
-void PerformanceLiveBookmarksSyncTest::RemoveURLs(int profile) {
-  while (!GetBookmarkBarNode(profile)->empty())
+void BookmarksSyncPerfTest::RemoveURLs(int profile) {
+  while (GetBookmarkBarNode(profile)->child_count()) {
     Remove(profile, GetBookmarkBarNode(profile), 0);
+  }
 }
 
-void PerformanceLiveBookmarksSyncTest::Cleanup() {
+void BookmarksSyncPerfTest::Cleanup() {
   for (int i = 0; i < num_clients(); ++i) {
     RemoveURLs(i);
   }
@@ -74,22 +75,22 @@ void PerformanceLiveBookmarksSyncTest::Cleanup() {
   ASSERT_TRUE(AllModelsMatch());
 }
 
-std::string PerformanceLiveBookmarksSyncTest::NextIndexedURL() {
+std::string BookmarksSyncPerfTest::NextIndexedURL() {
   return IndexedURL(url_number++);
 }
 
-std::wstring PerformanceLiveBookmarksSyncTest::NextIndexedURLTitle() {
+std::wstring BookmarksSyncPerfTest::NextIndexedURLTitle() {
   return IndexedURLTitle(url_title_number++);
 }
 
 // TCM ID - 7556828.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
   AddURLs(0, kNumBookmarks);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(AllModelsMatch());
 
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Add) {
 }
 
 // TCM ID - 7564762.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Update) {
+IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
@@ -107,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Update) {
 
   UpdateURLs(0);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(AllModelsMatch());
 
@@ -116,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Update) {
 }
 
 // TCM ID - 7566626.
-IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Delete) {
+IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
@@ -125,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Delete) {
 
   RemoveURLs(0);
   base::TimeDelta dt =
-      LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
   ASSERT_TRUE(AllModelsMatch());
 
@@ -133,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, Delete) {
   VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
 }
 
-IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
+IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, DISABLED_Benchmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
@@ -141,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
     int num_bookmarks = kBenchmarkPoints[i];
     AddURLs(0, num_bookmarks);
     base::TimeDelta dt_add =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
     ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Add: " << num_bookmarks << " "
@@ -149,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
 
     UpdateURLs(0);
     base::TimeDelta dt_update =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(num_bookmarks, GetBookmarkBarNode(0)->child_count());
     ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Update: " << num_bookmarks << " "
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceLiveBookmarksSyncTest, DISABLED_Benchmark) {
 
     RemoveURLs(0);
     base::TimeDelta dt_delete =
-        LiveSyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+        SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
     ASSERT_EQ(0, GetBookmarkBarNode(0)->child_count());
     ASSERT_TRUE(AllModelsMatch());
     VLOG(0) << std::endl << "Delete: " << num_bookmarks << " "

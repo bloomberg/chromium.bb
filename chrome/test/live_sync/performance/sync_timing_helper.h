@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TIMING_HELPER_H_
-#define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TIMING_HELPER_H_
+#ifndef CHROME_TEST_LIVE_SYNC_PERFORMANCE_SYNC_TIMING_HELPER_H_
+#define CHROME_TEST_LIVE_SYNC_PERFORMANCE_SYNC_TIMING_HELPER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -16,10 +16,10 @@ class TimeDelta;
 
 class ProfileSyncServiceHarness;
 
-class LiveSyncTimingHelper {
+class SyncTimingHelper {
  public:
-  LiveSyncTimingHelper();
-  ~LiveSyncTimingHelper();
+  SyncTimingHelper();
+  ~SyncTimingHelper();
 
   // Returns the time taken for |client| to complete a single sync cycle.
   static base::TimeDelta TimeSyncCycle(ProfileSyncServiceHarness* client);
@@ -35,7 +35,7 @@ class LiveSyncTimingHelper {
       std::vector<ProfileSyncServiceHarness*>& clients);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LiveSyncTimingHelper);
+  DISALLOW_COPY_AND_ASSIGN(SyncTimingHelper);
 };
 
-#endif  // CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TIMING_HELPER_H_
+#endif  // CHROME_TEST_LIVE_SYNC_PERFORMANCE_SYNC_TIMING_HELPER_H_

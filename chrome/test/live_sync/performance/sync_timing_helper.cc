@@ -2,31 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_sync_timing_helper.h"
+#include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-LiveSyncTimingHelper::LiveSyncTimingHelper() {}
+SyncTimingHelper::SyncTimingHelper() {}
 
-LiveSyncTimingHelper::~LiveSyncTimingHelper() {}
+SyncTimingHelper::~SyncTimingHelper() {}
 
-base::TimeDelta LiveSyncTimingHelper::TimeSyncCycle(
+// static
+base::TimeDelta SyncTimingHelper::TimeSyncCycle(
     ProfileSyncServiceHarness* client) {
   base::Time start = base::Time::Now();
   EXPECT_TRUE(client->AwaitSyncCycleCompletion("Timing sync cycle."));
   return base::Time::Now() - start;
 }
 
-base::TimeDelta LiveSyncTimingHelper::TimeMutualSyncCycle(
+// static
+base::TimeDelta SyncTimingHelper::TimeMutualSyncCycle(
     ProfileSyncServiceHarness* client, ProfileSyncServiceHarness* partner) {
   base::Time start = base::Time::Now();
   EXPECT_TRUE(client->AwaitMutualSyncCycleCompletion(partner));
   return base::Time::Now() - start;
 }
 
-base::TimeDelta LiveSyncTimingHelper::TimeUntilQuiescence(
+// static
+base::TimeDelta SyncTimingHelper::TimeUntilQuiescence(
     std::vector<ProfileSyncServiceHarness*>& clients) {
   base::Time start = base::Time::Now();
   EXPECT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients));
