@@ -914,8 +914,9 @@ class ArchiveStage(NonHaltingBuilderStage):
     return os.path.join(self._local_archive_path, self._set_version)
 
   def UpdateIndex(self):
-    if self._gsutil_archive and not self._options.debug:
-      commands.UpdateIndex(self._gsutil_archive, self._set_version)
+    upload_url = self.GetGSUploadLocation()
+    if upload_url and not self._options.debug:
+      commands.UpdateIndex(upload_url)
 
   def _PerformStage(self):
     if not self._options.buildbot:

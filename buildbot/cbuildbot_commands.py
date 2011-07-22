@@ -521,13 +521,15 @@ def LegacyArchiveBuild(buildroot, bot_id, buildconfig, gsutil_archive,
   finally:
     os.umask(old_umask)
 
-def UpdateIndex(gsutil_archive, set_version):
-  """Update _index.html page in Google Storage."""
+def UpdateIndex(upload_url):
+  """Update _index.html page in Google Storage.
+
+  upload_url: Google Storage location where we want an updated index.
+  """
   cros_lib.RunCommand([_GS_GEN_INDEX,
                        '--gsutil', _GSUTIL_PATH,
                        '-a', _GS_ACL,
-                       '-p', set_version,
-                       gsutil_archive])
+                       upload_url])
 
 
 def UploadSymbols(buildroot, board, official):
