@@ -362,6 +362,10 @@ def ArchiveTestResults(buildroot, test_results_dir, upload_url, debug):
                               'cp',
                               archive_tarball,
                               tarball_url])
+      cros_lib.OldRunCommand([_GSUTIL_PATH,
+                              'setacl',
+                              _GS_ACL,
+                              tarball_url])
 
   except Exception, e:
     cros_lib.Warning('========================================================')
