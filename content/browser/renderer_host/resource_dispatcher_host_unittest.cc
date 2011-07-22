@@ -78,6 +78,8 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.request_context = 0;
   request.appcache_host_id = appcache::kNoHostId;
   request.download_to_file = false;
+  request.is_main_frame = true;
+  request.frame_id = 0;
   return request;
 }
 
