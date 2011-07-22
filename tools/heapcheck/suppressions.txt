@@ -880,7 +880,7 @@
    Heapcheck:Leak
    ...
    fun:RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget
-   fun:TabContentsViewGtk::CreateNewFullscreenWidget
+   fun:*::CreateNewFullscreenWidget
    fun:RenderViewHost::CreateNewFullscreenWidget
    fun:RenderViewHostTest_CreateFullscreenWidget_Test::TestBody
 }
