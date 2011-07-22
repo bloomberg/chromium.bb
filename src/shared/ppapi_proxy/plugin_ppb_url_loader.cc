@@ -76,7 +76,6 @@ int32_t Open(PP_Resource loader,
 int32_t FollowRedirect(PP_Resource loader,
                        struct PP_CompletionCallback callback) {
   DebugPrintf("PPB_URLLoader::FollowRedirect: loader=%"NACL_PRIu32"\n", loader);
-  NACL_UNTESTED();
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
@@ -100,7 +99,6 @@ PP_Bool GetUploadProgress(PP_Resource loader,
                           int64_t* total_bytes_to_be_sent) {
   DebugPrintf("PPB_URLLoader::GetUploadProgress: loader=%"NACL_PRIu32"\n",
               loader);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =
@@ -123,7 +121,6 @@ PP_Bool GetDownloadProgress(PP_Resource loader,
                             int64_t* total_bytes_to_be_received) {
   DebugPrintf("PPB_URLLoader::GetDownloadProgress: loader=%"NACL_PRIu32"\n",
               loader);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =
