@@ -244,6 +244,7 @@
       'chromeos_update',
       'chromeos_wifi_sanity',
       'chromeos_firmware_version_checker',
+      'chromeos_prefs',
 
       # ===========================
       # Permanently-disabled tests.
