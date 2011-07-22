@@ -39,8 +39,9 @@ cr.define('enterpriseEnrollment', function() {
   }
 
   function showInitialScreen() {
-    var args = JSON.parse(chrome.dialogArguments);
-    showScreen(args.initialScreen);
+    showScreen('login-screen');
+    document.addEventListener('keydown', onKeydown);
+    $('gaialogin').contentWindow.addEventListener('keydown', onKeydown);
   }
 
   function onKeydown(e) {
@@ -52,9 +53,7 @@ cr.define('enterpriseEnrollment', function() {
   }
 
   function onLoad() {
-    showInitialScreen();
-    document.addEventListener('keydown', onKeydown);
-    $('gaialogin').contentWindow.addEventListener('keydown', onKeydown);
+    chrome.send('enrollmentScreenReady', []);
   }
 
   return {

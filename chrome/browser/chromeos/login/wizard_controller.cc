@@ -226,7 +226,7 @@ chromeos::EnterpriseEnrollmentScreen*
   if (!enterprise_enrollment_screen_.get()) {
     enterprise_enrollment_screen_.reset(
         new chromeos::EnterpriseEnrollmentScreen(
-            oobe_display_->GetEnterpriseEnrollmentScreenActor()));
+            this, oobe_display_->GetEnterpriseEnrollmentScreenActor()));
   }
   return enterprise_enrollment_screen_.get();
 }

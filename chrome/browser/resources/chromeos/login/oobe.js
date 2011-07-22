@@ -216,6 +216,7 @@ cr.define('cr.ui', function() {
     oobe.NetworkScreen.register();
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
+    oobe.EnrollmentScreen.register();
     if (localStrings.getString('authType') == 'webui')
       login.SigninScreen.register();
     else

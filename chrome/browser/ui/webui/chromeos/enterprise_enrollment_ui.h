@@ -8,8 +8,12 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 namespace chromeos {
+
+class EnterpriseEnrollmentScreenActor;
+class SingleEnterpriseEnrollmentScreenHandler;
 
 // WebUI implementation that handles the enterprise enrollment dialog in the
 // Chrome OS login flow.
@@ -33,20 +37,17 @@ class EnterpriseEnrollmentUI : public ChromeWebUI {
   explicit EnterpriseEnrollmentUI(TabContents* contents);
   virtual ~EnterpriseEnrollmentUI();
 
-  // Overriden from WebUI.
+  // Overridden from WebUI.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
 
   // Gets the URL for loading the UI.
   static GURL GetURL();
 
-  // Gets the controller the given |web_ui| is associated with. Returns NULL if
-  // there is no controller set.
-  static Controller* GetController(WebUI* web_ui);
-
-  // Sets the controller on a tab contents.
-  static void SetController(TabContents* contents, Controller* controller);
+  EnterpriseEnrollmentScreenActor* GetActor();
 
  private:
+  SingleEnterpriseEnrollmentScreenHandler* handler_;
+
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentUI);
 };
 

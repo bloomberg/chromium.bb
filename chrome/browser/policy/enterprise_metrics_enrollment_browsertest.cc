@@ -92,12 +92,12 @@ class EnterpriseMetricsEnrollmentTest : public WizardInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, EnrollmentStart) {
-  screen_->Authenticate("", "", "", "");
+  screen_->OnAuthSubmitted("", "", "", "");
   CheckSample(policy::kMetricEnrollmentStarted);
 }
 
 IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, EnrollmentCancelled) {
-  screen_->CancelEnrollment();
+  screen_->OnAuthCancelled();
   CheckSample(policy::kMetricEnrollmentCancelled);
 }
 

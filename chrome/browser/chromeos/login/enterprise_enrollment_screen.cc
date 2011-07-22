@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
@@ -20,9 +21,13 @@ namespace chromeos {
 const int kLockRetryIntervalMs = 500;
 
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
-    ViewScreenDelegate* delegate)
-    : ViewScreen<EnterpriseEnrollmentView>(delegate),
+    ScreenObserver* observer,
+    EnterpriseEnrollmentScreenActor* actor)
+    : WizardScreen(observer),
+      actor_(actor),
+      is_showing_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
+  actor_->SetController(this);
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
   chromeos::CryptohomeLibrary* cryptohome =
@@ -38,10 +43,11 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
 
 EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
 
-void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
-                                              const std::string& password,
-                                              const std::string& captcha,
-                                              const std::string& access_code) {
+void EnterpriseEnrollmentScreen::OnAuthSubmitted(
+    const std::string& user,
+    const std::string& password,
+    const std::string& captcha,
+    const std::string& access_code) {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                             policy::kMetricEnrollmentStarted,
                             policy::kMetricEnrollmentSize);
@@ -64,21 +70,21 @@ void EnterpriseEnrollmentScreen::Authenticate(const std::string& user,
   }
 }
 
-void EnterpriseEnrollmentScreen::CancelEnrollment() {
+void EnterpriseEnrollmentScreen::OnAuthCancelled() {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                             policy::kMetricEnrollmentCancelled,
                             policy::kMetricEnrollmentSize);
   auth_fetcher_.reset();
   registrar_.reset();
   g_browser_process->browser_policy_connector()->DeviceStopAutoRetry();
-  ScreenObserver* observer = delegate()->GetObserver();
-  observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
+  get_screen_observer()->OnExit(
+      ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED);
 }
 
-void EnterpriseEnrollmentScreen::CloseConfirmation() {
+void EnterpriseEnrollmentScreen::OnConfirmationClosed() {
   auth_fetcher_.reset();
-  ScreenObserver* observer = delegate()->GetObserver();
-  observer->OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+  get_screen_observer()->OnExit(
+      ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
 }
 
 bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
@@ -95,8 +101,7 @@ bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
         // this means we might only want to reenroll with the DMServer so lock
         // the username to what has been stored in the InstallAttrs already.
         *user = value;
-        if (view())
-          view()->set_editable_user(false);
+        actor_->SetEditableUser(false);
         return true;
       }
     }
@@ -137,8 +142,8 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenSuccess(
     UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                               policy::kMetricEnrollmentOtherFailed,
                               policy::kMetricEnrollmentSize);
-    if (view())
-      view()->ShowFatalEnrollmentError();
+    if (is_showing_)
+      actor_->ShowFatalEnrollmentError();
     return;
   }
 
@@ -169,20 +174,20 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
     policy::CloudPolicySubsystem::PolicySubsystemState state,
     policy::CloudPolicySubsystem::ErrorDetails error_details) {
 
-  if (view()) {
+  if (is_showing_) {
     switch (state) {
       case policy::CloudPolicySubsystem::UNENROLLED:
         // Still working...
         return;
       case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
       case policy::CloudPolicySubsystem::LOCAL_ERROR:
-        view()->ShowFatalEnrollmentError();
+        actor_->ShowFatalEnrollmentError();
         break;
       case policy::CloudPolicySubsystem::UNMANAGED:
-        view()->ShowAccountError();
+        actor_->ShowAccountError();
         break;
       case policy::CloudPolicySubsystem::NETWORK_ERROR:
-        view()->ShowNetworkEnrollmentError();
+        actor_->ShowNetworkEnrollmentError();
         break;
       case policy::CloudPolicySubsystem::TOKEN_FETCHED:
         WriteInstallAttributesData();
@@ -193,10 +198,9 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                                   policy::kMetricEnrollmentOK,
                                   policy::kMetricEnrollmentSize);
-        view()->ShowConfirmationScreen();
+        actor_->ShowConfirmationScreen();
         return;
     }
-
     // We have an error.
     if (state == policy::CloudPolicySubsystem::UNMANAGED) {
       UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
@@ -216,15 +220,11 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
   g_browser_process->browser_policy_connector()->DeviceStopAutoRetry();
 }
 
-EnterpriseEnrollmentView* EnterpriseEnrollmentScreen::AllocateView() {
-  return new EnterpriseEnrollmentView(this);
-}
-
 void EnterpriseEnrollmentScreen::HandleAuthError(
     const GoogleServiceAuthError& error) {
   scoped_ptr<GaiaAuthFetcher> scoped_killer(auth_fetcher_.release());
 
-  if (!view())
+  if (!is_showing_)
     return;
 
   switch (error.state()) {
@@ -232,7 +232,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
       UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                                 policy::kMetricEnrollmentNetworkFailed,
                                 policy::kMetricEnrollmentSize);
-      view()->ShowNetworkEnrollmentError();
+      actor_->ShowNetworkEnrollmentError();
       return;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
@@ -241,7 +241,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
       UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                                 policy::kMetricEnrollmentLoginFailed,
                                 policy::kMetricEnrollmentSize);
-      view()->ShowAuthError(error);
+      actor_->ShowAuthError(error);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
@@ -249,7 +249,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
       UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                                 policy::kMetricEnrollmentNotSupported,
                                 policy::kMetricEnrollmentSize);
-      view()->ShowAccountError();
+      actor_->ShowAccountError();
       return;
     case GoogleServiceAuthError::NONE:
     case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
@@ -260,7 +260,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
       UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
                                 policy::kMetricEnrollmentNetworkFailed,
                                 policy::kMetricEnrollmentSize);
-      view()->ShowFatalAuthError();
+      actor_->ShowFatalAuthError();
       return;
   }
 
@@ -273,9 +273,6 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
 void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   // Since this method is also called directly.
   runnable_method_factory_.RevokeAll();
-
-  if (!view())
-    return;
 
   switch (g_browser_process->browser_policy_connector()->LockDevice(user_)) {
     case policy::EnterpriseInstallAttributes::LOCK_SUCCESS: {
@@ -297,13 +294,13 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_BACKEND_ERROR: {
-      view()->ShowFatalEnrollmentError();
+      actor_->ShowFatalEnrollmentError();
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_WRONG_USER: {
       LOG(ERROR) << "Enrollment can not proceed because the InstallAttrs "
                  << "has been locked already!";
-      view()->ShowFatalEnrollmentError();
+      actor_->ShowFatalEnrollmentError();
       return;
     }
   }
@@ -311,11 +308,18 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   NOTREACHED();
 }
 
+void EnterpriseEnrollmentScreen::PrepareToShow() {
+  actor_->PrepareToShow();
+}
+
 void EnterpriseEnrollmentScreen::Show() {
-  ViewScreen<EnterpriseEnrollmentView>::Show();
-  // Make the focus go initially to the DOMView, so that the email input field
-  // receives the focus.
-  view()->RequestFocus();
+  is_showing_ = true;
+  actor_->Show();
+}
+
+void EnterpriseEnrollmentScreen::Hide() {
+  is_showing_ = false;
+  actor_->Hide();
 }
 
 }  // namespace chromeos

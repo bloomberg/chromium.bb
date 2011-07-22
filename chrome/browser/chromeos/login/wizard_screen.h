@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
+
 namespace chromeos {
 
 class ScreenObserver;
@@ -30,6 +32,7 @@ class WizardScreen {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
   friend class NetworkScreenTest;
   friend class UpdateScreenTest;
 

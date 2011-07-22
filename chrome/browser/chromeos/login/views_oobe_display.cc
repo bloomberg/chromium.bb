@@ -5,9 +5,10 @@
 #include <vector>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/views_enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_eula_screen_actor.h"
-#include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/views_network_screen_actor.h"
+#include "chrome/browser/chromeos/login/views_oobe_display.h"
 #include "chrome/browser/chromeos/login/views_update_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -197,8 +198,13 @@ EulaScreenActor* ViewsOobeDisplay::GetEulaScreenActor() {
   return eula_screen_actor_.get();
 }
 
-ViewScreenDelegate* ViewsOobeDisplay::GetEnterpriseEnrollmentScreenActor() {
-  return this;
+EnterpriseEnrollmentScreenActor* ViewsOobeDisplay::
+    GetEnterpriseEnrollmentScreenActor() {
+  if (enterprise_enrollment_screen_actor_ == NULL) {
+    enterprise_enrollment_screen_actor_.reset(
+        new ViewsEnterpriseEnrollmentScreenActor(this));
+  }
+  return enterprise_enrollment_screen_actor_.get();
 }
 
 UserImageScreenActor* ViewsOobeDisplay::GetUserImageScreenActor() {

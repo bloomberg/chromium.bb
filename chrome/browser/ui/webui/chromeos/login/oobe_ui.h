@@ -35,7 +35,7 @@ class OobeUI : public OobeDisplay,
   virtual UpdateScreenActor* GetUpdateScreenActor();
   virtual NetworkScreenActor* GetNetworkScreenActor();
   virtual EulaScreenActor* GetEulaScreenActor();
-  virtual ViewScreenDelegate* GetEnterpriseEnrollmentScreenActor();
+  virtual EnterpriseEnrollmentScreenActor* GetEnterpriseEnrollmentScreenActor();
   virtual UserImageScreenActor* GetUserImageScreenActor();
   virtual ViewScreenDelegate* GetRegistrationScreenActor();
   virtual ViewScreenDelegate* GetHTMLPageScreenActor();
@@ -55,6 +55,7 @@ class OobeUI : public OobeDisplay,
   UpdateScreenActor* update_screen_actor_;
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
+  EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
   SigninScreenHandler* signin_screen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);

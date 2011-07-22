@@ -4,15 +4,15 @@
 
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -27,40 +27,77 @@
 
 namespace chromeos {
 
-static base::LazyInstance<
-    PropertyAccessor<EnterpriseEnrollmentUI::Controller*> >
-        g_enrollment_ui_controller_property(base::LINKER_INITIALIZED);
-
 static const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 
-// WebUIMessageHandler implementation which handles events occuring on the page,
-// such as the user pressing the signin button.
-class EnterpriseEnrollmentMessageHandler : public WebUIMessageHandler {
+// Work around EnterpriseEnrollmentScreenHandler, which is suitable for the
+// stand alone enterprise enrollment screen (views implementation).
+class SingleEnterpriseEnrollmentScreenHandler
+    : public EnterpriseEnrollmentScreenHandler {
  public:
-  EnterpriseEnrollmentMessageHandler();
-  virtual ~EnterpriseEnrollmentMessageHandler();
+  SingleEnterpriseEnrollmentScreenHandler();
+  virtual ~SingleEnterpriseEnrollmentScreenHandler() {}
 
-  // WebUIMessageHandler implementation.
+  // Overridden from EnterpriseEnrollmentScreenHandler:
+  virtual void ShowConfirmationScreen() OVERRIDE;
+  virtual void SetController(
+      EnterpriseEnrollmentUI::Controller* controller_) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
   // Handlers for WebUI messages.
-  void HandleSubmitAuth(const ListValue* args);
-  void HandleCancelAuth(const ListValue* args);
-  void HandleConfirmationClose(const ListValue* args);
+  void HandleScreenReady(const ListValue* args);
 
-  // Gets the currently installed enrollment controller (if any).
-  EnterpriseEnrollmentUI::Controller* GetController();
+  bool show_when_controller_is_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentMessageHandler);
+  DISALLOW_COPY_AND_ASSIGN(SingleEnterpriseEnrollmentScreenHandler);
 };
+
+SingleEnterpriseEnrollmentScreenHandler::
+    SingleEnterpriseEnrollmentScreenHandler()
+    : show_when_controller_is_set_(false) {
+}
+
+void SingleEnterpriseEnrollmentScreenHandler::ShowConfirmationScreen() {
+  RenderViewHost* render_view_host =
+      web_ui_->tab_contents()->render_view_host();
+  render_view_host->ExecuteJavascriptInWebFrame(
+      string16(),
+      UTF8ToUTF16("enterpriseEnrollment.showScreen('confirmation-screen');"));
+}
+
+void SingleEnterpriseEnrollmentScreenHandler::SetController(
+    EnterpriseEnrollmentUI::Controller* controller) {
+  EnterpriseEnrollmentScreenHandler::SetController(controller);
+  if (show_when_controller_is_set_) {
+    show_when_controller_is_set_ = false;
+    HandleScreenReady(NULL);
+  }
+}
+
+void SingleEnterpriseEnrollmentScreenHandler::RegisterMessages() {
+  EnterpriseEnrollmentScreenHandler::RegisterMessages();
+  web_ui_->RegisterMessageCallback(
+      "enrollmentScreenReady",
+      NewCallback(this,
+                  &SingleEnterpriseEnrollmentScreenHandler::HandleScreenReady));
+}
+
+void SingleEnterpriseEnrollmentScreenHandler::HandleScreenReady(
+    const ListValue* value) {
+  if (!controller_) {
+    show_when_controller_is_set_ = true;
+    return;
+  }
+  SetupGaiaStrings();
+  web_ui_->CallJavascriptFunction("enterpriseEnrollment.showInitialScreen");
+}
 
 // A data source that provides the resources for the enterprise enrollment page.
 // The enterprise enrollment page requests the HTML and other resources from
 // this source.
 class EnterpriseEnrollmentDataSource : public ChromeURLDataManager::DataSource {
  public:
-  EnterpriseEnrollmentDataSource();
+  explicit EnterpriseEnrollmentDataSource(DictionaryValue* localized_strings);
 
   // DataSource implementation.
   virtual void StartDataRequest(const std::string& path,
@@ -71,176 +108,34 @@ class EnterpriseEnrollmentDataSource : public ChromeURLDataManager::DataSource {
  private:
   virtual ~EnterpriseEnrollmentDataSource();
 
-  // Saves i18n string for |resource_id| to the |key| property of |dictionary|.
-  static void AddString(DictionaryValue* dictionary,
-                        const std::string& key,
-                        int resource_id);
-  static void AddString(DictionaryValue* dictionary,
-                        const std::string& key,
-                        int resource_id,
-                        const string16& arg1);
+  scoped_ptr<DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentDataSource);
 };
 
-EnterpriseEnrollmentMessageHandler::EnterpriseEnrollmentMessageHandler() {}
-
-EnterpriseEnrollmentMessageHandler::~EnterpriseEnrollmentMessageHandler() {}
-
-void EnterpriseEnrollmentMessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
-      "SubmitAuth",
-      NewCallback(
-          this, &EnterpriseEnrollmentMessageHandler::HandleSubmitAuth));
-  web_ui_->RegisterMessageCallback(
-      "DialogClose",
-      NewCallback(
-          this, &EnterpriseEnrollmentMessageHandler::HandleCancelAuth));
-  web_ui_->RegisterMessageCallback(
-      "confirmationClose",
-      NewCallback(
-          this, &EnterpriseEnrollmentMessageHandler::HandleConfirmationClose));
-}
-
-void EnterpriseEnrollmentMessageHandler::HandleSubmitAuth(
-    const ListValue* value) {
-  EnterpriseEnrollmentUI::Controller* controller = GetController();
-  if (!controller) {
-    NOTREACHED();
-    return;
-  }
-
-  // Value carries single list entry, which is a json-encoded string that
-  // contains the auth parameters (see gaia_login.js).
-  std::string json_params;
-  if (!value->GetString(0, &json_params)) {
-    NOTREACHED();
-    return;
-  }
-
-  // Check the value type.
-  scoped_ptr<Value> params(base::JSONReader::Read(json_params, false));
-  if (!params.get() || !params->IsType(Value::TYPE_DICTIONARY)) {
-    NOTREACHED();
-    return;
-  }
-
-  // Read the parameters.
-  DictionaryValue* params_dict = static_cast<DictionaryValue*>(params.get());
-  std::string user;
-  std::string pass;
-  std::string captcha;
-  std::string access_code;
-  if (!params_dict->GetString("user", &user) ||
-      !params_dict->GetString("pass", &pass) ||
-      !params_dict->GetString("captcha", &captcha) ||
-      !params_dict->GetString("access_code", &access_code)) {
-    NOTREACHED();
-    return;
-  }
-
-  controller->OnAuthSubmitted(user, pass, captcha, access_code);
-}
-
-void EnterpriseEnrollmentMessageHandler::HandleCancelAuth(
-    const ListValue* value) {
-  EnterpriseEnrollmentUI::Controller* controller = GetController();
-  if (!controller) {
-    NOTREACHED();
-    return;
-  }
-
-  controller->OnAuthCancelled();
-}
-
-void EnterpriseEnrollmentMessageHandler::HandleConfirmationClose(
-    const ListValue* value) {
-  EnterpriseEnrollmentUI::Controller* controller = GetController();
-  if (!controller) {
-    NOTREACHED();
-    return;
-  }
-
-  controller->OnConfirmationClosed();
-}
-
-EnterpriseEnrollmentUI::Controller*
-    EnterpriseEnrollmentMessageHandler::GetController() {
-  return EnterpriseEnrollmentUI::GetController(web_ui_);
-}
-
-EnterpriseEnrollmentDataSource::EnterpriseEnrollmentDataSource()
+EnterpriseEnrollmentDataSource::EnterpriseEnrollmentDataSource(
+    DictionaryValue* localized_strings)
     : DataSource(chrome::kChromeUIEnterpriseEnrollmentHost,
-                 MessageLoop::current()) {}
+                 MessageLoop::current()),
+      localized_strings_(localized_strings) {
+}
 
 void EnterpriseEnrollmentDataSource::StartDataRequest(const std::string& path,
                                                       bool is_off_the_record,
                                                       int request_id) {
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
 
-  DictionaryValue strings;
   std::string response;
   if (path.empty()) {
-    AddString(&strings, "loginHeader",
-              IDS_ENTERPRISE_ENROLLMENT_LOGIN_HEADER),
-    AddString(&strings, "loginExplain",
-              IDS_ENTERPRISE_ENROLLMENT_LOGIN_EXPLAIN,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-    AddString(&strings, "cloudHeader",
-              IDS_ENTERPRISE_ENROLLMENT_CLOUD_HEADER),
-    AddString(&strings, "cloudExplain",
-              IDS_ENTERPRISE_ENROLLMENT_CLOUD_EXPLAIN);
-    AddString(&strings, "accesscontrolHeader",
-              IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_HEADER),
-    AddString(&strings, "accesscontrolExplain",
-              IDS_ENTERPRISE_ENROLLMENT_ACCESSCONTROL_EXPLAIN);
-    AddString(&strings, "confirmationHeader",
-              IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_HEADER);
-    AddString(&strings, "confirmationMessage",
-              IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_MESSAGE);
-    AddString(&strings, "confirmationClose",
-              IDS_ENTERPRISE_ENROLLMENT_CONFIRMATION_CLOSE);
-
     static const base::StringPiece html(
         resource_bundle.GetRawDataResource(IDR_ENTERPRISE_ENROLLMENT_HTML));
-    SetFontAndTextDirection(&strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+    response =
+        jstemplate_builder::GetI18nTemplateHtml(html, localized_strings_.get());
   } else if (path == kEnterpriseEnrollmentGaiaLoginPath) {
-    strings.SetString("invalidpasswordhelpurl", "");
-    strings.SetString("invalidaccessaccounturl", "");
-    strings.SetString("cannotaccessaccount", "");
-    strings.SetString("cannotaccessaccounturl", "");
-    strings.SetString("createaccount", "");
-    strings.SetString("createnewaccounturl", "");
-    strings.SetString("getaccesscodehelp", "");
-    strings.SetString("getaccesscodeurl", "");
-
-    // None of the strings used here currently have sync-specific wording in
-    // them.  We have a unit test to catch if that happens.
-    strings.SetString("introduction", "");
-    AddString(&strings, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
-    AddString(&strings, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
-    AddString(&strings, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);
-    AddString(&strings, "emaillabel", IDS_SYNC_LOGIN_EMAIL);
-    AddString(&strings, "passwordlabel", IDS_SYNC_LOGIN_PASSWORD);
-    AddString(&strings, "invalidcredentials",
-              IDS_SYNC_INVALID_USER_CREDENTIALS);
-    AddString(&strings, "signin", IDS_SYNC_SIGNIN);
-    AddString(&strings, "couldnotconnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT);
-    AddString(&strings, "cancel", IDS_CANCEL);
-    AddString(&strings, "settingup", IDS_SYNC_LOGIN_SETTING_UP);
-    AddString(&strings, "success", IDS_SYNC_SUCCESS);
-    AddString(&strings, "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN);
-    AddString(&strings, "captchainstructions",
-              IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS);
-    AddString(&strings, "invalidaccesscode",
-              IDS_SYNC_INVALID_ACCESS_CODE_LABEL);
-    AddString(&strings, "enteraccesscode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL);
-
     static const base::StringPiece html(resource_bundle.GetRawDataResource(
         IDR_GAIA_LOGIN_HTML));
-    SetFontAndTextDirection(&strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+    response =
+        jstemplate_builder::GetI18nTemplateHtml(html, localized_strings_.get());
   }
 
   // Send the response.
@@ -257,69 +152,31 @@ std::string EnterpriseEnrollmentDataSource::GetMimeType(
 
 EnterpriseEnrollmentDataSource::~EnterpriseEnrollmentDataSource() {}
 
-void EnterpriseEnrollmentDataSource::AddString(DictionaryValue* dictionary,
-                                               const std::string& key,
-                                               int resource_id) {
-  dictionary->SetString(key, l10n_util::GetStringUTF16(resource_id));
-}
-
-void EnterpriseEnrollmentDataSource::AddString(DictionaryValue* dictionary,
-                                               const std::string& key,
-                                               int resource_id,
-                                               const string16& arg1) {
-  dictionary->SetString(key, l10n_util::GetStringFUTF16(resource_id, arg1));
-}
-
 EnterpriseEnrollmentUI::EnterpriseEnrollmentUI(TabContents* contents)
-    : ChromeWebUI(contents) {}
+    : ChromeWebUI(contents), handler_(NULL) {}
 
 EnterpriseEnrollmentUI::~EnterpriseEnrollmentUI() {}
 
 void EnterpriseEnrollmentUI::RenderViewCreated(
     RenderViewHost* render_view_host) {
-  // Bail out early if the controller doesn't exist or web ui is disabled.
-  if (!GetController(this) || !(bindings_ & BindingsPolicy::WEB_UI))
+  // Bail out early if web ui is disabled.
+  if (!(bindings_ & BindingsPolicy::WEB_UI))
     return;
 
-  WebUIMessageHandler* handler = new EnterpriseEnrollmentMessageHandler();
-  AddMessageHandler(handler->Attach(this));
+  handler_ = new SingleEnterpriseEnrollmentScreenHandler();
+  AddMessageHandler(handler_->Attach(this));
 
+  scoped_ptr<DictionaryValue> localized_strings(new DictionaryValue);
+  handler_->GetLocalizedStrings(localized_strings.get());
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(
+      localized_strings.get());
   // Set up the data source, so the enrollment page can be loaded.
   tab_contents()->profile()->GetChromeURLDataManager()->AddDataSource(
-      new EnterpriseEnrollmentDataSource());
-
-  std::string user;
-  bool has_init_user = GetController(this)->GetInitialUser(&user);
-  if (!has_init_user)
-    user = "";
-  // Set the arguments for showing the gaia login page.
-  DictionaryValue args;
-  args.SetString("user", user);
-  args.SetInteger("error", 0);
-  args.SetBoolean("editable_user", !has_init_user);
-  args.SetString("initialScreen", "login-screen");
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-  render_view_host->SetWebUIProperty("dialogArguments", json_args);
+      new EnterpriseEnrollmentDataSource(localized_strings.release()));
 }
 
-// static
-EnterpriseEnrollmentUI::Controller* EnterpriseEnrollmentUI::GetController(
-    WebUI* ui) {
-  Controller** controller =
-      g_enrollment_ui_controller_property.Get().GetProperty(
-          ui->tab_contents()->property_bag());
-
-  return controller ? *controller : NULL;
-}
-
-// static
-void EnterpriseEnrollmentUI::SetController(
-    TabContents* contents,
-    EnterpriseEnrollmentUI::Controller* controller) {
-  g_enrollment_ui_controller_property.Get().SetProperty(
-      contents->property_bag(),
-      controller);
+EnterpriseEnrollmentScreenActor* EnterpriseEnrollmentUI::GetActor() {
+  return handler_;
 }
 
 }  // namespace chromeos

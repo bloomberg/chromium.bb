@@ -11,11 +11,12 @@
 
 namespace chromeos {
 
+class EnterpriseEnrollmentScreenActor;
 class EulaScreenActor;
+class NetworkScreenActor;
 class ScreenObserver;
 class UpdateScreenActor;
 class UserImageScreenActor;
-class NetworkScreenActor;
 // TODO(altimofeev): use real actors instead
 class ViewScreenDelegate;
 class WizardScreen;
@@ -33,13 +34,14 @@ class OobeDisplay {
   virtual void HideScreen(WizardScreen* screen) = 0;
 
   // Pointers to actors which should be used by the specific screens. Actors
-  // must be owned by the OobeDisplay implementaion.
+  // must be owned by the OobeDisplay implementation.
   virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
   virtual NetworkScreenActor* GetNetworkScreenActor() = 0;
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
+  virtual EnterpriseEnrollmentScreenActor*
+      GetEnterpriseEnrollmentScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   // TODO(altimofeev): use real actors instead.
-  virtual ViewScreenDelegate* GetEnterpriseEnrollmentScreenActor() = 0;
   virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;
   virtual ViewScreenDelegate* GetHTMLPageScreenActor() = 0;
 };

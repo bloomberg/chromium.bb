@@ -179,8 +179,13 @@ hr.bottomshadow {
 #oobe.connect #connect-dot,
 #oobe.eula #eula-dot,
 #oobe.signin #signin-dot,
+#oobe.enrollment #signin-dot,
 #oobe.photo #photo-dot {
   opacity: 0.4;
+}
+
+#enrollment-dot {
+  display: none;
 }
 
 #connect table {
@@ -335,4 +340,70 @@ button {
   right: 0;
   top: 0;
   z-index: 5;
+}
+
+#enroll-login-screen {
+  display: -webkit-box;
+  width: 630px;
+}
+
+#enroll-login-info {
+  width: 310px;
+}
+
+.enroll-login-item {
+  font-size: 0.9em;
+  margin: 16px 8px;
+}
+
+.enroll-login-item-content {
+  -webkit-margin-start: 52px;
+}
+
+.enroll-login-item-header {
+  font-weight: bold;
+  margin: 0 8px 0 0;
+}
+
+.enroll-login-item-image {
+  position: absolute;
+}
+
+#enroll-login-form {
+  height: 100%;
+  width: 310px;
+}
+
+#gaia-local-login {
+  border: none;
+  height: 100%;
+  vertical-align: top;
+  width: 100%;
+}
+
+#enroll-confirmation-header {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+#enroll-confirmation-content {
+  height: 1.5em;
+  margin-top: -.75em;
+  text-align: center;
+  top: 50%;
+  width: 100%;
+}
+
+#enroll-confirmation-image {
+  vertical-align: middle;
+}
+
+#enroll-confirmation-footer {
+  bottom: 0;
+  text-align: end;
+  width: 100%;
+}
+
+#close-button.visible {
+  display: inline-block;
 }

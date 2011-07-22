@@ -29,23 +29,23 @@ class EnterpriseEnrollmentScreenTest : public WizardInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(controller() != NULL);
 
-  MockScreenObserver mock_screen_observer;
-  ViewsOobeDisplay* views_oobe_display =
-      static_cast<ViewsOobeDisplay*>(controller()->oobe_display_);
-  views_oobe_display->SetScreenObserver(&mock_screen_observer);
-
   EnterpriseEnrollmentScreen* enterprise_enrollment_screen =
       controller()->GetEnterpriseEnrollmentScreen();
   ASSERT_TRUE(enterprise_enrollment_screen != NULL);
+
+  MockScreenObserver mock_screen_observer;
+  static_cast<WizardScreen*>(enterprise_enrollment_screen)->screen_observer_ =
+      &mock_screen_observer;
 
   ASSERT_EQ(controller()->current_screen(), enterprise_enrollment_screen);
 
   EXPECT_CALL(mock_screen_observer,
               OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_CANCELLED));
-  enterprise_enrollment_screen->CancelEnrollment();
+  enterprise_enrollment_screen->OnAuthCancelled();
   Mock::VerifyAndClearExpectations(&mock_screen_observer);
 
-  views_oobe_display->SetScreenObserver(NULL);
+  static_cast<WizardScreen*>(enterprise_enrollment_screen)->screen_observer_ =
+      controller();
 }
 
 }  // namespace chromeos

@@ -11,10 +11,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enterprise_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -34,6 +36,9 @@ namespace {
 // JS API callbacks names.
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
 const char kJsApiToggleAccessibility[] = "toggleAccessibility";
+
+// Path for the enterprise enrollment gaia page hosting.
+const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 
 }  // namespace
 
@@ -68,7 +73,7 @@ class CoreOobeHandler : public BaseScreenHandler {
   virtual ~CoreOobeHandler();
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(DictionaryValue* localized_strings);
+  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
   virtual void Initialize();
 
   // WebUIMessageHandler implementation.
@@ -94,15 +99,23 @@ OobeUIHTMLSource::OobeUIHTMLSource(DictionaryValue* localized_strings)
 void OobeUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_incognito,
                                         int request_id) {
-  static const base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_OOBE_HTML));
-
-  const std::string& full_html = jstemplate_builder::GetI18nTemplateHtml(
-      html, localized_strings_.get());
+  std::string response;
+  if (path.empty()) {
+    static const base::StringPiece html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_OOBE_HTML));
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, localized_strings_.get());
+  } else if (path == kEnterpriseEnrollmentGaiaLoginPath) {
+    static const base::StringPiece html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_GAIA_LOGIN_HTML));
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, localized_strings_.get());
+  }
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes());
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+  html_bytes->data.resize(response.size());
+  std::copy(response.begin(), response.end(), html_bytes->data.begin());
 
   SendResponse(request_id, html_bytes);
 }
@@ -116,9 +129,10 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
 CoreOobeHandler::~CoreOobeHandler() {
 }
 
-void CoreOobeHandler::GetLocalizedStrings(DictionaryValue* localized_strings) {
-  localized_strings->SetString("productName",
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+void CoreOobeHandler::GetLocalizedStrings(
+    base::DictionaryValue* localized_strings) {
+  localized_strings->SetString(
+      "productName", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
 void CoreOobeHandler::Initialize() {
@@ -161,6 +175,11 @@ OobeUI::OobeUI(TabContents* contents)
   update_screen_actor_ = update_screen_handler;
   AddScreenHandler(update_screen_handler);
 
+  EnterpriseEnrollmentScreenHandler* enterprise_enrollment_screen_handler =
+      new EnterpriseEnrollmentScreenHandler;
+  enterprise_enrollment_screen_actor_ = enterprise_enrollment_screen_handler;
+  AddScreenHandler(enterprise_enrollment_screen_handler);
+
   signin_screen_handler_ = new SigninScreenHandler;
   AddScreenHandler(signin_screen_handler_);
 
@@ -200,9 +219,9 @@ EulaScreenActor* OobeUI::GetEulaScreenActor() {
   return eula_screen_actor_;
 }
 
-ViewScreenDelegate* OobeUI::GetEnterpriseEnrollmentScreenActor() {
-  NOTIMPLEMENTED();
-  return NULL;
+EnterpriseEnrollmentScreenActor* OobeUI::
+    GetEnterpriseEnrollmentScreenActor() {
+  return enterprise_enrollment_screen_actor_;
 }
 
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
@@ -220,7 +239,7 @@ ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
   return NULL;
 }
 
-void OobeUI::GetLocalizedStrings(DictionaryValue* localized_strings) {
+void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 1; i < handlers_.size(); ++i) {
     static_cast<BaseScreenHandler*>(handlers_[i])->

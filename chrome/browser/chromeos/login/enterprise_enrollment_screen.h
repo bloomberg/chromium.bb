@@ -13,54 +13,40 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
-#include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
 
-// Controller interface for driving the enterprise enrollment UI.
-class EnterpriseEnrollmentController {
- public:
-  // Runs authentication with the given parameters.
-  virtual void Authenticate(const std::string& user,
-                            const std::string& password,
-                            const std::string& captcha,
-                            const std::string& access_code) = 0;
-
-  // Cancels the enrollment operation.
-  virtual void CancelEnrollment() = 0;
-
-  // Closes the confirmation window.
-  virtual void CloseConfirmation() = 0;
-
-  // Returns whether the GAIA login should be prepolutated with an user and if
-  // yes which one.
-  virtual bool GetInitialUser(std::string* user) = 0;
-};
+class ScreenObserver;
+class EnterpriseEnrollmentScreenActor;
 
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
 class EnterpriseEnrollmentScreen
-    : public ViewScreen<EnterpriseEnrollmentView>,
-      public EnterpriseEnrollmentController,
+    : public WizardScreen,
+      public EnterpriseEnrollmentUI::Controller,
       public GaiaAuthConsumer,
       public policy::CloudPolicySubsystem::Observer {
  public:
-  explicit EnterpriseEnrollmentScreen(ViewScreenDelegate* delegate);
+  EnterpriseEnrollmentScreen(ScreenObserver* observer,
+                             EnterpriseEnrollmentScreenActor* actor);
   virtual ~EnterpriseEnrollmentScreen();
 
-  // Override from ViewScreen:
+  // WizardScreen implementation:
+  virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
-  // EnterpriseEnrollmentController implementation:
-  virtual void Authenticate(const std::string& user,
-                            const std::string& password,
-                            const std::string& captcha,
-                            const std::string& access_code) OVERRIDE;
-  virtual void CancelEnrollment() OVERRIDE;
-  virtual void CloseConfirmation() OVERRIDE;
+  // EnterpriseEnrollmentUI::Controller implementation:
+  virtual void OnAuthSubmitted(const std::string& user,
+                               const std::string& password,
+                               const std::string& captcha,
+                               const std::string& access_code) OVERRIDE;
+  virtual void OnAuthCancelled() OVERRIDE;
+  virtual void OnConfirmationClosed() OVERRIDE;
   virtual bool GetInitialUser(std::string* user) OVERRIDE;
 
   // GaiaAuthConsumer implementation:
@@ -79,16 +65,14 @@ class EnterpriseEnrollmentScreen
       policy::CloudPolicySubsystem::PolicySubsystemState state,
       policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
 
- protected:
-  // Overriden from ViewScreen:
-  virtual EnterpriseEnrollmentView* AllocateView() OVERRIDE;
-
  private:
   void HandleAuthError(const GoogleServiceAuthError& error);
 
   // Starts the Lockbox storage process.
   void WriteInstallAttributesData();
 
+  EnterpriseEnrollmentScreenActor* actor_;
+  bool is_showing_;
   scoped_ptr<GaiaAuthFetcher> auth_fetcher_;
   std::string user_;
   std::string captcha_token_;

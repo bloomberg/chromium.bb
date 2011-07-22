@@ -26,59 +26,34 @@ class Label;
 
 namespace chromeos {
 
-class EnterpriseEnrollmentController;
 class ScreenObserver;
+class EnterpriseEnrollmentScreenActor;
 
 // Implements the UI for the enterprise enrollment screen in OOBE.
-class EnterpriseEnrollmentView : public views::View,
-                                 public EnterpriseEnrollmentUI::Controller {
+class EnterpriseEnrollmentView : public views::View {
  public:
-  explicit EnterpriseEnrollmentView(EnterpriseEnrollmentController* controller);
+  explicit EnterpriseEnrollmentView(
+      EnterpriseEnrollmentUI::Controller* controller);
   virtual ~EnterpriseEnrollmentView();
-
-  void set_editable_user(bool editable);
 
   // Initialize view controls and layout.
   void Init();
 
-  // Switches to the confirmation screen.
-  void ShowConfirmationScreen();
+  EnterpriseEnrollmentScreenActor* GetActor();
 
-  // Show an authentication error.
-  void ShowAuthError(const GoogleServiceAuthError& error);
-  void ShowAccountError();
-  void ShowFatalAuthError();
-  void ShowFatalEnrollmentError();
-  void ShowNetworkEnrollmentError();
-
-  // EnterpriseEnrollmentUI::Controller implementation.
-  virtual void OnAuthSubmitted(const std::string& user,
-                               const std::string& password,
-                               const std::string& captcha,
-                               const std::string& access_code) OVERRIDE;
-  virtual void OnAuthCancelled() OVERRIDE;
-  virtual void OnConfirmationClosed() OVERRIDE;
-  virtual bool GetInitialUser(std::string* user) OVERRIDE;
-
-  // Overriden from views::View:
+  // Overridden from views::View:
   virtual void RequestFocus() OVERRIDE;
 
  private:
-  // Updates the gaia login box.
-  void UpdateGaiaLogin(const base::DictionaryValue& args);
-
-  // Display the given i18n string as error message.
-  void ShowError(int message_id);
-
   // Overriden from views::View:
   virtual void Layout() OVERRIDE;
 
-  EnterpriseEnrollmentController* controller_;
+  EnterpriseEnrollmentUI::Controller* controller_;
+
+  EnterpriseEnrollmentScreenActor* actor_;
 
   // Controls.
   WebPageDomView* enrollment_page_view_;
-
-  bool editable_user_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentView);
 };

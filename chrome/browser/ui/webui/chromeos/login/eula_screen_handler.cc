@@ -55,7 +55,7 @@ void EulaScreenHandler::SetDelegate(Delegate* delegate) {
 }
 
 void EulaScreenHandler::GetLocalizedStrings(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   localized_strings->SetString("eulaScreenTitle",
       l10n_util::GetStringUTF16(IDS_EULA_SCREEN_TITLE));
   localized_strings->SetString("checkboxLogging",
@@ -114,7 +114,7 @@ void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
                                   tpm_password_value);
 }
 
-void EulaScreenHandler::HandleOnExit(const ListValue* args) {
+void EulaScreenHandler::HandleOnExit(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
   bool accepted = false;
@@ -131,7 +131,7 @@ void EulaScreenHandler::HandleOnExit(const ListValue* args) {
   delegate_->OnExit(accepted, is_usage_stats_checked);
 }
 
-void EulaScreenHandler::HandleOnLearnMore(const ListValue* args) {
+void EulaScreenHandler::HandleOnLearnMore(const base::ListValue* args) {
   if (!help_app_.get()) {
     views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
     help_app_ = new HelpAppLauncher(login_window->GetNativeWindow());
@@ -139,7 +139,7 @@ void EulaScreenHandler::HandleOnLearnMore(const ListValue* args) {
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
 }
 
-void EulaScreenHandler::HandleOnTpmPopupOpened(const ListValue* args) {
+void EulaScreenHandler::HandleOnTpmPopupOpened(const base::ListValue* args) {
   if (!delegate_)
     return;
   delegate_->InitiatePasswordFetch();
