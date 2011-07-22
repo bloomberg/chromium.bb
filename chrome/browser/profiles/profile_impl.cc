@@ -569,9 +569,12 @@ void ProfileImpl::RegisterComponentExtensions() {
       FILE_PATH_LITERAL("web_store"),
       IDR_WEBSTORE_MANIFEST));
 
+#if !defined(OS_CHROMEOS)
+  // Cloud Print component app. Not required on Chrome OS.
   component_extensions.push_back(std::make_pair(
       FILE_PATH_LITERAL("cloud_print"),
       IDR_CLOUDPRINT_MANIFEST));
+#endif  // !defined(OS_CHROMEOS)
 
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
     iter != component_extensions.end(); ++iter) {

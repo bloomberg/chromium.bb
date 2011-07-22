@@ -45,6 +45,7 @@ class ExtensionChromeAuthPrivateApiTest : public ExtensionApiTest {
   }
 };
 
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionChromeAuthPrivateApiTest,
                        SetCloudPrintCredentialsSuccessHosted) {
   // Run this as a hosted app. Since we have overridden the cloud print service
@@ -56,6 +57,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionChromeAuthPrivateApiTest,
   ASSERT_TRUE(RunPageTest(page_url.spec()));
   SetCloudPrintCredentialsFunction::SetTestMode(false);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ExtensionChromeAuthPrivateApiTest,
                        SetCloudPrintCredentialsFailureInstalled) {

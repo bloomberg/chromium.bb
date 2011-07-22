@@ -17,7 +17,9 @@ bool IsCloudPrintEnableURL(Profile* profile, const GURL& url) {
   const Extension* cloud_print_app = service->GetExtensionById(
       extension_misc::kCloudPrintAppId, false);
   if (!cloud_print_app) {
+#if !defined(OS_CHROMEOS)
     NOTREACHED();
+#endif  // !defined(OS_CHROMEOS)
     return false;
   }
   return (service->GetExtensionByWebExtent(url) == cloud_print_app);
