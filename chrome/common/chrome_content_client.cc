@@ -100,16 +100,16 @@ void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
     }
   }
 
-  // Handle the Native Client plugin just like the PDF plugin.
+  // Handle the Native Client just like the PDF plugin. This means that it is
+  // enabled by default. This allows apps installed from the Chrome Web Store
+  // to use NaCl even if the command line switch isn't set. For other uses of
+  // NaCl we check for the command line switch.
   static bool skip_nacl_file_check = false;
   if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
     if (skip_nacl_file_check || file_util::PathExists(path)) {
       PepperPluginInfo nacl;
       nacl.path = path;
       nacl.name = kNaClPluginName;
-      // Enable the Native Client Plugin based on the command line.
-      nacl.enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaCl);
       webkit::npapi::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
                                                       kNaClPluginExtension,
                                                       kNaClPluginDescription);

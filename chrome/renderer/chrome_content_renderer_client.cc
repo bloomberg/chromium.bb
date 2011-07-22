@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/external_ipc_fuzzer.h"
@@ -98,6 +99,9 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 
 namespace {
+
+const char* kNaClPluginMimeType = "application/x-nacl";
+const char* kNaClPluginManifestAttribute = "nacl";
 
 // Constants for UMA statistic collection.
 static const char kPluginTypeMismatch[] = "Plugin.PluginTypeMismatch";
@@ -395,6 +399,52 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
       return CreatePluginPlaceholder(
           render_view, frame, params, *group, IDR_CLICK_TO_PLAY_PLUGIN_HTML,
           IDS_PLUGIN_LOAD, true, true);
+    }
+
+    // Enforce Chrome WebStore restriction on the Native Client plugin.
+    if (info.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) {
+      bool allow_nacl = cmd->HasSwitch(switches::kEnableNaCl);
+      if (!allow_nacl) {
+        GURL nexe_url;
+        if (actual_mime_type == kNaClPluginMimeType) {
+          nexe_url = url;  // Normal embedded NaCl plugin.
+        } else {
+          // Content type handling NaCl plugin; the "nacl" param on the
+          // MIME type holds the nexe URL.
+          string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
+          for (size_t i = 0; i < info.mime_types.size(); ++i) {
+            if (info.mime_types[i].mime_type == actual_mime_type) {
+              const webkit::npapi::WebPluginMimeType& content_type =
+                  info.mime_types[i];
+              for (size_t i = 0;
+                  i < content_type.additional_param_names.size(); ++i) {
+                if (content_type.additional_param_names[i] == nacl_attr) {
+                  nexe_url = GURL(content_type.additional_param_values[i]);
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+
+        // Create the NaCl plugin only if the .nexe is part of an extension
+        // that was installed from the Chrome Web Store, or part of a component
+        // extension.
+        const Extension* extension =
+            extension_dispatcher_->extensions()->GetByURL(nexe_url);
+        allow_nacl = extension &&
+            (extension->from_webstore() ||
+            extension->location() == Extension::COMPONENT);
+      }
+
+      if (!allow_nacl) {
+        // TODO(bbudge) Webkit will crash if this is a full-frame plug-in and
+        // we return NULL. Prepare a patch to fix that, and return NULL here.
+        return CreatePluginPlaceholder(
+            render_view, frame, params, *group, IDR_BLOCKED_PLUGIN_HTML,
+            IDS_PLUGIN_BLOCKED, false, false);
+      }
     }
 
     bool pepper_plugin_was_registered = false;
