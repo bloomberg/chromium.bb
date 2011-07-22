@@ -391,6 +391,15 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   if (target_url_.path() == "/search")
     return false;
 
+  // Make sure there as at least one text field.
+  bool has_text_field = false;
+  for (std::vector<AutofillField*>::const_iterator it = begin();
+       it != end() && !has_text_field; ++it) {
+    has_text_field |= (*it)->form_control_type != ASCIIToUTF16("select-one");
+  }
+  if (!has_text_field)
+    return false;
+
   return !require_method_post || (method_ == POST);
 }
 

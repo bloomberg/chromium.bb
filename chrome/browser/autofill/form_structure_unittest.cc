@@ -196,6 +196,84 @@ TEST(FormStructureTest, IsAutofillable) {
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 }
 
+TEST(FormStructureTest, ShouldBeParsed) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  // We need at least three text fields to be parseable.
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
+                                               ASCIIToUTF16("username"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+
+  // We now have three text fields, though only two are auto-fillable.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                                               ASCIIToUTF16("lastname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+
+  // The method must be 'post', though we can intentionally ignore this
+  // criterion for the sake of providing a helpful warning message to the user.
+  form.method = ASCIIToUTF16("get");
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->IsAutofillable(true));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(false));
+
+  // The target cannot include http(s)://*/search...
+  form.method = ASCIIToUTF16("post");
+  form.action = GURL("http://google.com/search?q=hello");
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+
+  // But search can be in the URL.
+  form.action = GURL("http://search.com/?q=hello");
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+
+  // The form need only have three fields, but at least one must be a text
+  // field.
+  form.fields.clear();
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Email"),
+                                               ASCIIToUTF16("email"),
+                                               string16(),
+                                               ASCIIToUTF16("email"),
+                                               0,
+                                               false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("State"),
+                                               ASCIIToUTF16("state"),
+                                               string16(),
+                                               ASCIIToUTF16("select-one"),
+                                               0,
+                                               false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Country"),
+                                               ASCIIToUTF16("country"),
+                                               string16(),
+                                               ASCIIToUTF16("select-one"),
+                                               0,
+                                               false));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
+
+  form.fields[0].form_control_type = ASCIIToUTF16("select-one");
+  form_structure.reset(new FormStructure(form));
+  EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+}
+
 TEST(FormStructureTest, HeuristicsContactInfo) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
