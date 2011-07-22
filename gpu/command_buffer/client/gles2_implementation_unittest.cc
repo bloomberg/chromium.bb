@@ -5,6 +5,8 @@
 // Tests for the Command Buffer Helper.
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
+
+#include <GLES2/gl2ext.h>
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +60,6 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     state_.put_offset = put_offset;
     state_.get_offset = put_offset;
     OnFlush(transfer_buffer_buffer_.ptr);
-
     return state_;
   }
 
@@ -189,7 +190,7 @@ struct Str7 {
 // Test fixture for CommandBufferHelper test.
 class GLES2ImplementationTest : public testing::Test {
  protected:
-  static const int32 kNumCommandEntries = 100;
+  static const int32 kNumCommandEntries = 400;
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
   static const size_t kTransferBufferSize = 256;
@@ -261,7 +262,9 @@ class GLES2ImplementationTest : public testing::Test {
         kTransferBufferId,
         false));
 
-    EXPECT_CALL(*command_buffer_, OnFlush(_)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*command_buffer_, OnFlush(_))
+        .Times(1)
+        .RetiresOnSaturation();
     helper_->CommandBufferHelper::Finish();
     Buffer ring_buffer = command_buffer_->GetRingBuffer();
     commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
@@ -270,6 +273,14 @@ class GLES2ImplementationTest : public testing::Test {
   }
 
   virtual void TearDown() {
+  }
+
+  const void* GetPut() {
+    return helper_->GetSpace(0);
+  }
+
+  size_t MaxTransferBufferSize() {
+    return kTransferBufferSize - GLES2Implementation::kStartingOffset;
   }
 
   void ClearCommands() {
@@ -302,6 +313,16 @@ class GLES2ImplementationTest : public testing::Test {
     uint32 offset = offset_;
     offset_ += RoundToAlignment(size);
     return offset;
+  }
+
+  void* GetTransferAddressFromOffset(uint32 offset, size_t size) {
+    EXPECT_LE(offset + size, transfer_buffer_.size);
+    return static_cast<int8*>(transfer_buffer_.ptr) + offset;
+  }
+
+  template <typename T>
+  T* GetTransferAddressFromOffsetAs(uint32 offset, size_t size) {
+    return static_cast<T*>(GetTransferAddressFromOffset(offset, size));
   }
 
   Buffer transfer_buffer_;
@@ -1317,6 +1338,351 @@ TEST_F(GLES2ImplementationTest, GetIntegerCacheWrite) {
       .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
       .RetiresOnSaturation();
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+}
+
+static bool ComputeImageDataSizes(
+    int width, int height, int format, int type, int unpack_alignment,
+    uint32* size, uint32* unpadded_row_size, uint32* padded_row_size) {
+  uint32 temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 1, format, type, unpack_alignment, &temp_size)) {
+    return false;
+  }
+  *unpadded_row_size = temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 2, format, type, unpack_alignment, &temp_size)) {
+    return false;
+  }
+  *padded_row_size = temp_size - *unpadded_row_size;
+  return GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment, size);
+}
+
+static bool CheckRect(
+    int width, int height, GLenum format, GLenum type, int alignment,
+    bool flip_y, const uint8* r1, const uint8* r2) {
+  uint32 size = 0;
+  uint32 unpadded_row_size = 0;
+  uint32 padded_row_size = 0;
+  if (!ComputeImageDataSizes(
+      width, height, format, type, alignment, &size, &unpadded_row_size,
+      &padded_row_size)) {
+    return false;
+  }
+
+  int r2_stride = flip_y ? -static_cast<int>(padded_row_size) : padded_row_size;
+  r2 = flip_y ? (r2 + (height - 1) * padded_row_size) : r2;
+
+  for (int y = 0; y < height; ++y) {
+    if (memcmp(r1, r2, unpadded_row_size) != 0) {
+      return false;
+    }
+    r1 += padded_row_size;
+    r2 += r2_stride;
+  }
+  return true;
+}
+
+ACTION_P8(CheckRectAction, width, height, format, type, alignment, flip_y,
+          r1, r2) {
+  EXPECT_TRUE(CheckRect(
+      width, height, format, type, alignment, flip_y, r1, r2));
+}
+
+// Test TexImage2D with and without flip_y
+TEST_F(GLES2ImplementationTest, TexImage2D) {
+  struct Cmds {
+    TexImage2D tex_image_2d;
+    cmd::SetToken set_token;
+  };
+  struct Cmds2 {
+    TexImage2D tex_image_2d;
+    cmd::SetToken set_token;
+  };
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLsizei kWidth = 3;
+  const GLsizei kHeight = 4;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+  static uint8 pixels[] = {
+    11, 12, 13, 13, 14, 15, 15, 16, 17, 101, 102, 103,
+    21, 22, 23, 23, 24, 25, 25, 26, 27, 201, 202, 203,
+    31, 32, 33, 33, 34, 35, 35, 36, 37, 123, 124, 125,
+    41, 42, 43, 43, 44, 45, 45, 46, 47,
+  };
+  uint32 offset = AllocateTransferBuffer(sizeof(pixels));
+  Cmds expected;
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTransferBufferId, offset);
+  expected.set_token.Init(GetNextToken());
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels, GetTransferAddressFromOffsetAs<uint8>(offset, sizeof(pixels))));
+
+  ClearCommands();
+  uint32 offset2 = AllocateTransferBuffer(sizeof(pixels));
+  Cmds2 expected2;
+  expected2.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTransferBufferId, offset2);
+  expected2.set_token.Init(GetNextToken());
+  const void* commands2 = GetPut();
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels);
+  EXPECT_EQ(0, memcmp(&expected2, commands2, sizeof(expected2)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, true,
+      pixels, GetTransferAddressFromOffsetAs<uint8>(offset2, sizeof(pixels))));
+}
+
+// Test TexImage2D with 2 writes
+TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
+  struct Cmds {
+    TexImage2D tex_image_2d;
+    TexSubImage2D tex_sub_image_2d1;
+    cmd::SetToken set_token1;
+    TexSubImage2D tex_sub_image_2d2;
+    cmd::SetToken set_token2;
+  };
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+  const GLsizei kWidth = 3;
+
+  uint32 size = 0;
+  uint32 unpadded_row_size = 0;
+  uint32 padded_row_size = 0;
+  ASSERT_TRUE(ComputeImageDataSizes(
+      kWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, &unpadded_row_size, &padded_row_size));
+  const GLsizei kHeight = (MaxTransferBufferSize() / padded_row_size) * 2;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSize(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size));
+  uint32 half_size = 0;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSize(
+      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment,
+      &half_size));
+
+  scoped_array<uint8> pixels(new uint8[size]);
+  for (uint32 ii = 0; ii < size; ++ii) {
+    pixels[ii] = static_cast<uint8>(ii);
+  }
+  uint32 offset1 = AllocateTransferBuffer(half_size);
+  uint32 offset2 = AllocateTransferBuffer(half_size);
+  Cmds expected;
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      0, 0);
+  expected.tex_sub_image_2d1.Init(
+      kTarget, kLevel, 0, 0, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId, offset1, true);
+  expected.set_token1.Init(GetNextToken());
+  expected.tex_sub_image_2d2.Init(
+      kTarget, kLevel, 0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId, offset2, true);
+  expected.set_token2.Init(GetNextToken());
+
+  // TODO(gman): Make it possible to run this test
+  // EXPECT_CALL(*command_buffer_, OnFlush(_))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment,
+  //         false, pixels.get(),
+  //         GetTransferAddressFromOffsetAs<uint8>(offset1, half_size)))
+  //     .RetiresOnSaturation();
+
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels.get());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels.get() + kHeight / 2 * padded_row_size,
+      GetTransferAddressFromOffsetAs<uint8>(offset2, half_size)));
+
+  ClearCommands();
+  const void* commands2 = GetPut();
+  uint32 offset3 = AllocateTransferBuffer(half_size);
+  uint32 offset4 = AllocateTransferBuffer(half_size);
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      0, 0);
+  expected.tex_sub_image_2d1.Init(
+      kTarget, kLevel, 0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId, offset3, true);
+  expected.set_token1.Init(GetNextToken());
+  expected.tex_sub_image_2d2.Init(
+      kTarget, kLevel, 0, 0, kWidth, kHeight / 2, kFormat, kType,
+      kTransferBufferId, offset4, true);
+  expected.set_token2.Init(GetNextToken());
+
+  // TODO(gman): Make it possible to run this test
+  // EXPECT_CALL(*command_buffer_, OnFlush(_))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment,
+  //         true, pixels.get(),
+  //         GetTransferAddressFromOffsetAs<uint8>(offset3, half_size)))
+  //     .RetiresOnSaturation();
+
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels.get());
+  EXPECT_EQ(0, memcmp(&expected, commands2, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment, true,
+      pixels.get() + kHeight / 2 * padded_row_size,
+      GetTransferAddressFromOffsetAs<uint8>(offset4, half_size)));
+}
+
+// Test TexImage2D with sub rows
+TEST_F(GLES2ImplementationTest, TexImage2DSubRows) {
+  struct Cmds {
+    TexImage2D tex_image_2d;
+    TexSubImage2D tex_sub_image_2d1;
+    cmd::SetToken set_token1;
+    TexSubImage2D tex_sub_image_2d2;
+    cmd::SetToken set_token2;
+    TexSubImage2D tex_sub_image_2d3;
+    cmd::SetToken set_token3;
+    TexSubImage2D tex_sub_image_2d4;
+    cmd::SetToken set_token4;
+  };
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+  const GLsizei kHeight = 2;
+  const GLsizei kWidth = (MaxTransferBufferSize() / 3) * 2;
+
+  uint32 size = 0;
+  uint32 unpadded_row_size = 0;
+  uint32 padded_row_size = 0;
+  ASSERT_TRUE(ComputeImageDataSizes(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, &unpadded_row_size, &padded_row_size));
+  uint32 part_size = kWidth * 3 / 2;
+
+  scoped_array<uint8> pixels(new uint8[size]);
+  for (uint32 ii = 0; ii < size; ++ii) {
+    pixels[ii] = static_cast<uint8>(ii);
+  }
+  uint32 offset1 = AllocateTransferBuffer(part_size);
+  uint32 offset2 = AllocateTransferBuffer(part_size);
+  uint32 offset3 = AllocateTransferBuffer(part_size);
+  uint32 offset4 = AllocateTransferBuffer(part_size);
+  Cmds expected;
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      0, 0);
+  expected.tex_sub_image_2d1.Init(
+      kTarget, kLevel, 0, 0, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset1, true);
+  expected.set_token1.Init(GetNextToken());
+  expected.tex_sub_image_2d2.Init(
+      kTarget, kLevel, kWidth / 2, 0, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset2, true);
+  expected.set_token2.Init(GetNextToken());
+  expected.tex_sub_image_2d3.Init(
+      kTarget, kLevel, 0, 1, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset3, true);
+  expected.set_token3.Init(GetNextToken());
+  expected.tex_sub_image_2d4.Init(
+      kTarget, kLevel, kWidth / 2, 1, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset4, true);
+  expected.set_token4.Init(GetNextToken());
+
+  // TODO(gman): Make it possible to run this test
+  // EXPECT_CALL(*command_buffer_, OnFlush(_))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get(),
+  //         GetTransferAddressFromOffsetAs<uint8>(offset1, part_size)))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get() + part_size,
+  //         GetTransferAddressFromOffsetAs<uint8>(offset2, part_size)))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get() + padded_row_size,
+  //         GetTransferAddressFromOffsetAs<uint8>(offset3, part_size)))
+  //     .RetiresOnSaturation();
+
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels.get());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels.get() + padded_row_size + part_size,
+      GetTransferAddressFromOffsetAs<uint8>(offset4, part_size)));
+
+  ClearCommands();
+  const void* commands2 = GetPut();
+  offset1 = AllocateTransferBuffer(part_size);
+  offset2 = AllocateTransferBuffer(part_size);
+  offset3 = AllocateTransferBuffer(part_size);
+  offset4 = AllocateTransferBuffer(part_size);
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      0, 0);
+  expected.tex_sub_image_2d1.Init(
+      kTarget, kLevel, 0, 1, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset1, true);
+  expected.set_token1.Init(GetNextToken());
+  expected.tex_sub_image_2d2.Init(
+      kTarget, kLevel, kWidth / 2, 1, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset2, true);
+  expected.set_token2.Init(GetNextToken());
+  expected.tex_sub_image_2d3.Init(
+      kTarget, kLevel, 0, 0, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset3, true);
+  expected.set_token3.Init(GetNextToken());
+  expected.tex_sub_image_2d4.Init(
+      kTarget, kLevel, kWidth / 2, 0, kWidth / 2, 1, kFormat, kType,
+      kTransferBufferId, offset4, true);
+  expected.set_token4.Init(GetNextToken());
+
+  // TODO(gman): Make it possible to run this test
+  // EXPECT_CALL(*command_buffer_, OnFlush(_))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get(),
+  //         GetTransferAddressFromOffsetAs<uint8>(offset1, part_size)))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get() + part_size,
+  //         GetTransferAddressFromOffsetAs<uint8>(offset2, part_size)))
+  //     .WillOnce(CheckRectAction(
+  //         kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+  //         pixels.get() + padded_row_size,
+  //         GetTransferAddressFromOffsetAs<uint8>(offset3, part_size)))
+  //     .RetiresOnSaturation();
+
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels.get());
+  EXPECT_EQ(0, memcmp(&expected, commands2, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth / 2, 1, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels.get() + padded_row_size + part_size,
+      GetTransferAddressFromOffsetAs<uint8>(offset4, part_size)));
 }
 
 }  // namespace gles2

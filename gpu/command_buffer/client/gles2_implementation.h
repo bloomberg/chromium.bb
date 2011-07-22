@@ -379,6 +379,9 @@ class GLES2Implementation {
   GLsizei GetMaxIndexInElementArrayBuffer(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
+  bool CopyRectToBufferFlipped(
+      const void* pixels, GLsizei width, GLsizei height, GLenum format,
+      GLenum type, void* buffer);
   void TexSubImage2DImpl(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, const void* pixels,
@@ -422,6 +425,9 @@ class GLES2Implementation {
 
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
+
+  // unpack yflip as last set by glPixelstorei
+  bool unpack_flip_y_;
 
   scoped_array<TextureUnit> texture_units_;
 

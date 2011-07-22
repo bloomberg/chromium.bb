@@ -240,6 +240,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x8DF3, "GL_LOW_INT", },
   { 0x8B53, "GL_INT_VEC2", },
   { 0x8B52, "GL_FLOAT_VEC4", },
+  { 0x9240, "GL_UNPACK_FLIP_Y_CHROMIUM", },
   { 0x8B51, "GL_FLOAT_VEC3", },
   { 0x8B50, "GL_FLOAT_VEC2", },
   { 0x812F, "GL_CLAMP_TO_EDGE", },

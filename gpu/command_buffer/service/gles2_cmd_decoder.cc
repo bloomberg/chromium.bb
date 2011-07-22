@@ -5657,6 +5657,21 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
                "glTexImage2D: unknown texture for target");
     return error::kNoError;
   }
+
+  GLsizei tex_width = 0;
+  GLsizei tex_height = 0;
+  GLenum tex_type = 0;
+  GLenum tex_format = 0;
+  bool level_is_same =
+      info->GetLevelSize(target, level, &tex_width, &tex_height) &&
+      info->GetLevelType(target, level, &tex_type, &tex_format) &&
+      width == tex_width && height == tex_height &&
+      type == tex_type && format == tex_format;
+
+  if (level_is_same && !pixels) {
+    return error::kNoError;
+  }
+
   scoped_array<int8> zero;
   if (!pixels) {
     zero.reset(new int8[pixels_size]);
@@ -5668,19 +5683,10 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     state_dirty_ = true;
   }
 
-  if (!teximage2d_faster_than_texsubimage2d_) {
-    GLsizei tex_width = 0;
-    GLsizei tex_height = 0;
-    GLenum tex_type = 0;
-    GLenum tex_format = 0;
-    if (info->GetLevelSize(target, level, &tex_width, &tex_height) &&
-        info->GetLevelType(target, level, &tex_type, &tex_format) &&
-        width == tex_width && height == tex_height &&
-        type == tex_type && format == tex_format) {
-      glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
-      tex_image_2d_failed_ = false;
-      return error::kNoError;
-    }
+  if (!teximage2d_faster_than_texsubimage2d_ && level_is_same) {
+    glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+    tex_image_2d_failed_ = false;
+    return error::kNoError;
   }
 
   CopyRealGLErrorsToWrapper();

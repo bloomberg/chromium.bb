@@ -5,6 +5,8 @@
 // A class to emulate GLES2 over command buffers.
 
 #include "../client/gles2_implementation.h"
+
+#include <GLES2/gl2ext.h>
 #include <GLES2/gles2_command_buffer.h>
 #include "../client/mapped_memory.h"
 #include "../common/gles2_cmd_utils.h"
@@ -443,6 +445,7 @@ GLES2Implementation::GLES2Implementation(
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4),
+      unpack_flip_y_(false),
       active_texture_unit_(0),
       bound_framebuffer_(0),
       bound_renderbuffer_(0),
@@ -1017,14 +1020,17 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       << GLES2Util::GetStringPixelStore(pname) << ", "
       << param << ")");
   switch (pname) {
-  case GL_PACK_ALIGNMENT:
-      pack_alignment_ = param;
-      break;
-  case GL_UNPACK_ALIGNMENT:
-      unpack_alignment_ = param;
-      break;
-  default:
-      break;
+    case GL_PACK_ALIGNMENT:
+        pack_alignment_ = param;
+        break;
+    case GL_UNPACK_ALIGNMENT:
+        unpack_alignment_ = param;
+        break;
+    case GL_UNPACK_FLIP_Y_CHROMIUM:
+        unpack_flip_y_ = (param != 0);
+        return;
+    default:
+        break;
   }
   helper_->PixelStorei(pname, param);
 }
@@ -1231,6 +1237,45 @@ void GLES2Implementation::CompressedTexSubImage2D(
   helper_->SetBucketSize(kResultBucketId, 0);
 }
 
+bool GLES2Implementation::CopyRectToBufferFlipped(
+    const void* pixels,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    void* buffer) {
+  if (width == 0 || height == 0) {
+    return true;
+  }
+
+  uint32 temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 1, format, type, unpack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
+    return false;
+  }
+  GLsizeiptr unpadded_row_size = temp_size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, 2, format, type, unpack_alignment_, &temp_size)) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
+    return false;
+  }
+  GLsizeiptr padded_row_size = temp_size - unpadded_row_size;
+  if (padded_row_size < 0 || unpadded_row_size < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexSubImage2D: size to large");
+    return false;
+  }
+
+  const int8* source = static_cast<const int8*>(pixels);
+  int8* dest = static_cast<int8*>(buffer) + padded_row_size * (height - 1);
+  for (; height; --height) {
+    memcpy(dest, source, unpadded_row_size);
+    dest -= padded_row_size;
+    source += padded_row_size;
+  }
+  return true;
+}
+
 void GLES2Implementation::TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
@@ -1269,10 +1314,19 @@ void GLES2Implementation::TexImage2D(
   }
 
   void* buffer = transfer_buffer_.Alloc(size);
-  memcpy(buffer, pixels, size);
-  helper_->TexImage2D(
-      target, level, internalformat, width, height, border, format, type,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+  bool copy_success = true;
+  if (unpack_flip_y_) {
+    copy_success = CopyRectToBufferFlipped(
+        pixels, width, height, format, type, buffer);
+  } else {
+    memcpy(buffer, pixels, size);
+  }
+
+  if (copy_success) {
+    helper_->TexImage2D(
+        target, level, internalformat, width, height, border, format, type,
+        transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+  }
   transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
 }
 
@@ -1323,6 +1377,7 @@ void GLES2Implementation::TexSubImage2DImpl(
     return;
   }
 
+  GLsizei original_height = height;
   if (padded_row_size <= max_size) {
     // Transfer by rows.
     GLint max_rows = max_size / std::max(padded_row_size,
@@ -1331,9 +1386,18 @@ void GLES2Implementation::TexSubImage2DImpl(
       GLint num_rows = std::min(height, max_rows);
       GLsizeiptr part_size = num_rows * padded_row_size;
       void* buffer = transfer_buffer_.Alloc(part_size);
-      memcpy(buffer, source, part_size);
+      GLint y;
+      if (unpack_flip_y_) {
+        bool copy_success = CopyRectToBufferFlipped(
+            source, width, num_rows, format, type, buffer);
+        GPU_DCHECK(copy_success);
+        y = original_height - yoffset - num_rows;
+      } else {
+        memcpy(buffer, source, part_size);
+        y = yoffset;
+      }
       helper_->TexSubImage2D(
-          target, level, xoffset, yoffset, width, num_rows, format, type,
+          target, level, xoffset, y, width, num_rows, format, type,
           transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
@@ -1357,8 +1421,9 @@ void GLES2Implementation::TexSubImage2DImpl(
         GLsizeiptr part_size = num_pixels * element_size;
         void* buffer = transfer_buffer_.Alloc(part_size);
         memcpy(buffer, row_source, part_size);
+        GLint y = unpack_flip_y_ ? (original_height - yoffset - 1) : yoffset;
         helper_->TexSubImage2D(
-            target, level, temp_xoffset, yoffset, temp_width, 1, format, type,
+            target, level, temp_xoffset, y, num_pixels, 1, format, type,
             transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
         transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
         row_source += part_size;
@@ -1537,14 +1602,25 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
   GPU_CLIENT_LOG("[" << this << "] glGetString("
       << GLES2Util::GetStringStringType(name) << ")");
   const char* result = NULL;
-  // Clear the bucket so if the command fails nothing will be in it.
+  // Clears the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetString(name, kResultBucketId);
   std::string str;
   if (GetBucketAsString(kResultBucketId, &str)) {
-    // Because of WebGL the extensions can change. We have to cache each
-    // unique result since we don't know when the client will stop referring to
-    // a previous one it queries.
+    // Adds extensions implemented on client side only.
+    switch (name) {
+      case GL_EXTENSIONS:
+        str += std::string(str.empty() ? "" : " ") +
+            "GL_CHROMIUM_map_sub "
+            "GL_CHROMIUM_flipy";
+        break;
+      default:
+        break;
+    }
+
+    // Because of WebGL the extensions can change. We have to cache each unique
+    // result since we don't know when the client will stop referring to a
+    // previous one it queries.
     GLStringMap::iterator it = gl_strings_.find(name);
     if (it == gl_strings_.end()) {
       std::set<std::string> strings;

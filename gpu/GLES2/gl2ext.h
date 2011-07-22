@@ -902,10 +902,10 @@ typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2DCHROMIUM) (const void* mem);
 #ifdef GL_GLEXT_PROTOTYPES
 #define glCopyTextureToParentTextureCHROMIUM GLES2_GET_FUN(CopyTextureToParentTextureCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void* GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLuint id, GLuint id2);
+GL_APICALL void GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLuint id, GLuint id2);
 #endif
 #else
-typedef void* (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURECHROMIUM) (GLuint id, GLuint id2);
+typedef void (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURECHROMIUM) (GLuint id, GLuint id2);
 #endif
 #endif
 
@@ -1001,13 +1001,24 @@ typedef void (GL_APIENTRYP PFNGLRATELIMITOFFSCREENCONTEXTCHROMIUM) ();
 #define glGetMultipleIntegervCHROMIUM  GLES2_GET_FUN(GetMultipleIntegervCHROMIUM)
 #define glGetProgramInfoCHROMIUM  GLES2_GET_FUN(GetProgramInfovCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void GL_APIENTRY glGetMultipleIntegervCHROMIUM (void);
+GL_APICALL void GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void GL_APIENTRY glGetProgrmaInfoCHROMIUM (GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 #endif
 #else
 typedef void (GL_APIENTRYP PFNGLGETMULTIPLEINTEGERVCHROMIUM) ();
 typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUM) ();
 #endif
+#endif
+
+/* GL_CHROMIUM_flipy */
+/*
+ * This extension provides GL_UNPACK_FLIP_Y_CHROMIUM as a parameter to
+ * glPixelStorei. When true images submitted to glTexImage2D and glTexSubImage2D
+ * are flipped vertically.
+ */
+#ifndef GL_CHROMIUM_flipy
+#define GL_CHROMIUM_flipy 1
+#define GL_UNPACK_FLIP_Y_CHROMIUM 0x9240
 #endif
 
 /* GL_ARB_robustness */
