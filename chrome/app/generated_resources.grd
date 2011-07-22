@@ -12716,6 +12716,9 @@ ls' lab.">
       <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
         Sorry, your email or password could not be verified. Try connecting to a network first.
       </message>
+      <message name="IDS_LOGIN_ERROR_ADD_USER_OFFLINE" desc="Error message that shows up when user tries to add user without a connected network.">
+        To add a user, please connect to a network first.
+      </message>
       <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't sign in because nework library couldn't be loaded">
         Can't access network library
       </message>
