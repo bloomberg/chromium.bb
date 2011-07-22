@@ -93,9 +93,9 @@ bool RemoveNode(BookmarkModel* model,
     return false;
   }
   if (node == model->root_node() ||
+      node == model->bookmark_bar_node() ||
       node == model->other_node() ||
-      node == model->synced_node() ||
-      node == model->GetBookmarkBarNode()) {
+      node == model->synced_node()) {
     *error = keys::kModifySpecialError;
     return false;
   }

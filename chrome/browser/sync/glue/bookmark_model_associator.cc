@@ -356,7 +356,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
                << "are running against an out-of-date server?";
     return false;
   }
-  if (!AssociateTaggedPermanentNode(bookmark_model_->GetBookmarkBarNode(),
+  if (!AssociateTaggedPermanentNode(bookmark_model_->bookmark_bar_node(),
                                     kBookmarkBarTag)) {
     LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
                << "are running against an out-of-date server?";
@@ -373,7 +373,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
     return false;
   }
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
-      bookmark_model_->GetBookmarkBarNode()->id());
+      bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, sync_api::kInvalidId);
   int64 other_bookmarks_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->other_node()->id());
@@ -532,7 +532,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
   // Build a bookmark node ID index since we are going to repeatedly search for
   // bookmark nodes by their IDs.
   BookmarkNodeIdIndex id_index;
-  id_index.AddAll(bookmark_model_->GetBookmarkBarNode());
+  id_index.AddAll(bookmark_model_->bookmark_bar_node());
   id_index.AddAll(bookmark_model_->other_node());
   id_index.AddAll(bookmark_model_->synced_node());
 
@@ -566,7 +566,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
 
     // Don't try to call NodesMatch on permanent nodes like bookmark bar and
     // other bookmarks. They are not expected to match.
-    if (node != bookmark_model_->GetBookmarkBarNode() &&
+    if (node != bookmark_model_->bookmark_bar_node() &&
         node != bookmark_model_->synced_node() &&
         node != bookmark_model_->other_node() &&
         !NodesMatch(node, &sync_parent))

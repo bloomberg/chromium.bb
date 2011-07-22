@@ -95,7 +95,7 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
   EXPECT_FALSE([cell menu]);
 
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* node = model->GetBookmarkBarNode();
+  const BookmarkNode* node = model->bookmark_bar_node();
   [cell setEmpty:NO];
   [cell setBookmarkNode:node];
   EXPECT_TRUE([cell showsBorderOnlyWhileMouseInside]);
@@ -111,7 +111,7 @@ TEST_F(BookmarkButtonCellTest, BookmarkNode) {
   scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
 
-  const BookmarkNode* node = model.GetBookmarkBarNode();
+  const BookmarkNode* node = model.bookmark_bar_node();
   [cell setBookmarkNode:node];
   EXPECT_EQ(node, [cell bookmarkNode]);
 
@@ -157,7 +157,7 @@ TEST_F(BookmarkButtonCellTest, Awake) {
 // Subfolder arrow details.
 TEST_F(BookmarkButtonCellTest, FolderArrow) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* bar = model->GetBookmarkBarNode();
+  const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
                                            ASCIIToUTF16("title"),
                                            GURL("http://www.google.com"));

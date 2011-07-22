@@ -859,6 +859,6 @@ void WrenchMenu::CreateBookmarkMenu() {
                                browser_->window()->GetNativeHandle(),
                                first_bookmark_command_id_));
   bookmark_menu_delegate_->Init(
-      this, bookmark_menu_, model->GetBookmarkBarNode(), 0,
+      this, bookmark_menu_, model->bookmark_bar_node(), 0,
       BookmarkMenuDelegate::SHOW_OTHER_FOLDER);
 }

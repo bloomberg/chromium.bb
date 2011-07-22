@@ -58,19 +58,19 @@ TEST_F(BookmarkExpandedStateTrackerTest, SetExpandedNodes) {
   EXPECT_TRUE(tracker->GetExpandedNodes().empty());
 
   BookmarkExpandedStateTracker::Nodes nodes;
-  nodes.insert(model->GetBookmarkBarNode());
+  nodes.insert(model->bookmark_bar_node());
   tracker->SetExpandedNodes(nodes);
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());
 
   // Add a folder and mark it expanded.
-  const BookmarkNode* n1 = model->AddFolder(model->GetBookmarkBarNode(), 0,
+  const BookmarkNode* n1 = model->AddFolder(model->bookmark_bar_node(), 0,
                                             ASCIIToUTF16("x"));
   nodes.insert(n1);
   tracker->SetExpandedNodes(nodes);
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());
 
   // Remove the folder, which should remove it from the list of expanded nodes.
-  model->Remove(model->GetBookmarkBarNode(), 0);
+  model->Remove(model->bookmark_bar_node(), 0);
   nodes.erase(n1);
   n1 = NULL;
   EXPECT_EQ(nodes, tracker->GetExpandedNodes());

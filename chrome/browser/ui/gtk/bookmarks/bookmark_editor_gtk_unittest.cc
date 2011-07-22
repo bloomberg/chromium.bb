@@ -76,14 +76,14 @@ class BookmarkEditorGtkTest : public testing::Test {
   void AddTestData() {
     std::string test_base = base_path();
 
-    model_->AddURL(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("a"),
+    model_->AddURL(model_->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
                    GURL(test_base + "a"));
     const BookmarkNode* f1 =
-        model_->AddFolder(model_->GetBookmarkBarNode(), 1, ASCIIToUTF16("F1"));
+        model_->AddFolder(model_->bookmark_bar_node(), 1, ASCIIToUTF16("F1"));
     model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
     const BookmarkNode* f11 = model_->AddFolder(f1, 1, ASCIIToUTF16("F11"));
     model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
-    model_->AddFolder(model_->GetBookmarkBarNode(), 2, ASCIIToUTF16("F2"));
+    model_->AddFolder(model_->bookmark_bar_node(), 2, ASCIIToUTF16("F2"));
 
     // Children of the other node.
     model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
@@ -158,7 +158,7 @@ TEST_F(BookmarkEditorGtkTest, EditTitleKeepsPosition) {
   editor.ApplyEdits(&bookmark_bar_node);
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->GetBookmarkBarNode();
+      profile_->GetBookmarkModel()->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("new_a"), bb_node->GetChild(0)->GetTitle());
   // The URL shouldn't have changed.
   ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->url());
@@ -179,7 +179,7 @@ TEST_F(BookmarkEditorGtkTest, EditURLKeepsPosition) {
   editor.ApplyEdits(&bookmark_bar_node);
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->GetBookmarkBarNode();
+      profile_->GetBookmarkModel()->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("a"), bb_node->GetChild(0)->GetTitle());
   // The URL should have changed.
   ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->url());
@@ -258,7 +258,7 @@ TEST_F(BookmarkEditorGtkTest, MoveToNewParent) {
   editor.ApplyEdits(&f2_iter);
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->GetBookmarkBarNode();
+      profile_->GetBookmarkModel()->bookmark_bar_node();
   const BookmarkNode* mf2 = bb_node->GetChild(1);
 
   // F2 in the model should have two children now: F21 and the node edited.
@@ -290,7 +290,7 @@ TEST_F(BookmarkEditorGtkTest, NewURL) {
   editor.ApplyEdits(&bookmark_bar_node);
 
   const BookmarkNode* bb_node =
-      profile_->GetBookmarkModel()->GetBookmarkBarNode();
+      profile_->GetBookmarkModel()->bookmark_bar_node();
   ASSERT_EQ(4, bb_node->child_count());
 
   const BookmarkNode* new_node = bb_node->GetChild(3);

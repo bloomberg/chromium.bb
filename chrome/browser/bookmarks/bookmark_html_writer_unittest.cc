@@ -187,7 +187,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   base::Time t3(t1 + base::TimeDelta::FromHours(1));
   base::Time t4(t1 + base::TimeDelta::FromHours(1));
   const BookmarkNode* f1 = model->AddFolder(
-      model->GetBookmarkBarNode(), 0, f1_title);
+      model->bookmark_bar_node(), 0, f1_title);
   model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
   profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1,
       history::SOURCE_BROWSED);
@@ -196,7 +196,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   message_loop.RunAllPending();
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
-  model->AddURLWithCreationTime(model->GetBookmarkBarNode(),
+  model->AddURLWithCreationTime(model->bookmark_bar_node(),
                                 1, url3_title, url3, t3);
 
   model->AddURLWithCreationTime(model->other_node(), 0, url1_title, url1, t1);
@@ -204,7 +204,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   const BookmarkNode* f3 = model->AddFolder(model->other_node(), 2, f3_title);
   const BookmarkNode* f4 = model->AddFolder(f3, 0, f4_title);
   model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
-  model->AddURLWithCreationTime(model->GetBookmarkBarNode(), 2, url4_title,
+  model->AddURLWithCreationTime(model->bookmark_bar_node(), 2, url4_title,
                                 url4, t4);
   model->AddURLWithCreationTime(model->synced_node(), 0, url1_title, url1, t1);
 

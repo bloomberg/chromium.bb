@@ -42,7 +42,7 @@ class BookmarkAllTabsControllerTest : public CocoaTest {
 
   BookmarkAllTabsControllerTest() {
     BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
-    const BookmarkNode* root = model.GetBookmarkBarNode();
+    const BookmarkNode* root = model.bookmark_bar_node();
     folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
     model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
     model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));

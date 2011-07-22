@@ -76,7 +76,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
-  const BookmarkNode* root = model->GetBookmarkBarNode();
+  const BookmarkNode* root = model->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("blah"));
   const BookmarkNode* node = model->AddURL(root, 0, title, url);
@@ -119,7 +119,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
-  const BookmarkNode* root = model->GetBookmarkBarNode();
+  const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
   const BookmarkNode* g11 = model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
   const BookmarkNode* g12 = model->AddFolder(g1, 0, ASCIIToUTF16("g12"));
@@ -158,7 +158,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
-  const BookmarkNode* root = model->GetBookmarkBarNode();
+  const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
@@ -197,7 +197,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
-  const BookmarkNode* root = model->GetBookmarkBarNode();
+  const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));

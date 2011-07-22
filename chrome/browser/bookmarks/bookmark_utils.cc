@@ -488,9 +488,9 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
 
   if (nodes.size() < max_count) {
     // Add the bookmark bar and other nodes if there is space.
-    if (find(nodes.begin(), nodes.end(), model->GetBookmarkBarNode()) ==
+    if (find(nodes.begin(), nodes.end(), model->bookmark_bar_node()) ==
         nodes.end()) {
-      nodes.push_back(model->GetBookmarkBarNode());
+      nodes.push_back(model->bookmark_bar_node());
     }
 
     if (nodes.size() < max_count &&

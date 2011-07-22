@@ -71,7 +71,7 @@ TEST_F(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty) {
 TEST_F(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark) {
   BookmarkModel* model = profile_->GetBookmarkModel();
 
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* parent = model->bookmark_bar_node();
   model->AddURL(parent, parent->child_count(),
                 ASCIIToUTF16("title"), GURL("http://one.com"));
 
@@ -82,7 +82,7 @@ TEST_F(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark) {
 TEST_F(BookmarkBarGtkUnittest, BuildsButtons) {
   BookmarkModel* model = profile_->GetBookmarkModel();
 
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* parent = model->bookmark_bar_node();
   model->AddURL(parent, parent->child_count(),
                 ASCIIToUTF16("title"), GURL("http://one.com"));
   model->AddURL(parent, parent->child_count(),

@@ -27,7 +27,7 @@ class BookmarkEditorControllerTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
-    default_parent_ = model->GetBookmarkBarNode();
+    default_parent_ = model->bookmark_bar_node();
     default_name_ = "http://www.zim-bop-a-dee.com/";
     default_title_ = ASCIIToUTF16("ooh title");
     const BookmarkNode* default_node = model->AddURL(default_parent_, 0,
@@ -138,7 +138,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
-    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    const BookmarkNode* parent = model->bookmark_bar_node();
     controller_ = [[BookmarkEditorController alloc]
                    initWithParentWindow:test_window()
                                 profile:browser_helper_.profile()
@@ -172,7 +172,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
-    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    const BookmarkNode* parent = model->bookmark_bar_node();
     default_title_ = ASCIIToUTF16("wooh title");
     url_name_ = "http://www.zoom-baby-doo-da.com/";
     const BookmarkNode* node = model->AddURL(parent, 0, default_title_,
@@ -227,7 +227,7 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     //            b-1
     //            b-2
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-    const BookmarkNode* root = model.GetBookmarkBarNode();
+    const BookmarkNode* root = model.bookmark_bar_node();
     folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
     model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
     model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
@@ -299,7 +299,7 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
 TEST_F(BookmarkEditorControllerTreeTest, VerifyBookmarkTestModel) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   model.root_node();
-  const BookmarkNode& root(*model.GetBookmarkBarNode());
+  const BookmarkNode& root(*model.bookmark_bar_node());
   EXPECT_EQ(4, root.child_count());
   const BookmarkNode* child = root.GetChild(0);
   EXPECT_EQ(3, child->child_count());

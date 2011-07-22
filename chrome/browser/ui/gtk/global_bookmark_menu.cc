@@ -97,7 +97,7 @@ void GlobalBookmarkMenu::RebuildMenu() {
 
   ClearBookmarkMenu();
 
-  const BookmarkNode* bar_node = model->GetBookmarkBarNode();
+  const BookmarkNode* bar_node = model->bookmark_bar_node();
   if (!bar_node->empty()) {
     AddBookmarkMenuItem(bookmark_menu_.get(), gtk_separator_menu_item_new());
     AddNodeToMenu(bar_node, bookmark_menu_.get());

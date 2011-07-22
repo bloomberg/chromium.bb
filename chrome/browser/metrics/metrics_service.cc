@@ -1565,7 +1565,7 @@ void MetricsService::LogBookmarks(const BookmarkNode* node,
 
 void MetricsService::LogBookmarks(BookmarkModel* model) {
   DCHECK(model);
-  LogBookmarks(model->GetBookmarkBarNode(),
+  LogBookmarks(model->bookmark_bar_node(),
                prefs::kNumBookmarksOnBookmarkBar,
                prefs::kNumFoldersOnBookmarkBar);
   LogBookmarks(model->other_node(),

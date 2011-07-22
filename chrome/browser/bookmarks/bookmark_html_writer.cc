@@ -390,14 +390,13 @@ BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
 }
 
 void BookmarkFaviconFetcher::ExportBookmarks() {
-  ExtractUrls(profile_->GetBookmarkModel()->GetBookmarkBarNode());
+  ExtractUrls(profile_->GetBookmarkModel()->bookmark_bar_node());
   ExtractUrls(profile_->GetBookmarkModel()->other_node());
   ExtractUrls(profile_->GetBookmarkModel()->synced_node());
-  if (!bookmark_urls_.empty()) {
+  if (!bookmark_urls_.empty())
     FetchNextFavicon();
-  } else {
+  else
     ExecuteWriter();
-  }
 }
 
 void BookmarkFaviconFetcher::Observe(int type,

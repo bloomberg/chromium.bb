@@ -16,7 +16,7 @@ TEST_F(BookmarkBarViewTest, SwitchProfile) {
   profile()->BlockUntilBookmarkModelLoaded();
 
   profile()->GetBookmarkModel()->AddURL(
-      profile()->GetBookmarkModel()->GetBookmarkBarNode(),
+      profile()->GetBookmarkModel()->bookmark_bar_node(),
       0,
       ASCIIToUTF16("blah"),
       GURL("http://www.google.com"));

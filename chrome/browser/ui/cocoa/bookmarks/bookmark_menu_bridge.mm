@@ -72,7 +72,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
   ClearBookmarkMenu(bookmark_menu);
 
   // Add bookmark bar items, if any.
-  const BookmarkNode* barNode = model->GetBookmarkBarNode();
+  const BookmarkNode* barNode = model->bookmark_bar_node();
   CHECK(barNode);
   if (!barNode->empty()) {
     [bookmark_menu addItem:[NSMenuItem separatorItem]];

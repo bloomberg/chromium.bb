@@ -500,14 +500,14 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
     if (!child->IsVisible())
       break;
     if (child->bounds().Contains(adjusted_loc))
-      return model_->GetBookmarkBarNode()->GetChild(i);
+      return model_->bookmark_bar_node()->GetChild(i);
   }
 
   // Then the overflow button.
   if (overflow_button_->IsVisible() &&
       overflow_button_->bounds().Contains(adjusted_loc)) {
     *model_start_index = GetFirstHiddenNodeIndex();
-    return model_->GetBookmarkBarNode();
+    return model_->bookmark_bar_node();
   }
 
   // And finally the other folder.
@@ -523,9 +523,9 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
     const BookmarkNode* node) {
   if (node == model_->other_node())
     return other_bookmarked_button_;
-  if (node == model_->GetBookmarkBarNode())
+  if (node == model_->bookmark_bar_node())
     return overflow_button_;
-  int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
+  int index = model_->bookmark_bar_node()->GetIndexOf(node);
   if (index == -1 || !node->is_folder())
     return NULL;
   return static_cast<views::MenuButton*>(child_at(index));
@@ -782,9 +782,9 @@ int BookmarkBarView::OnDragUpdated(const DropTargetEvent& event) {
     if (location.button_type == DROP_OTHER_FOLDER)
       node = model_->other_node();
     else if (location.button_type == DROP_OVERFLOW)
-      node = model_->GetBookmarkBarNode();
+      node = model_->bookmark_bar_node();
     else
-      node = model_->GetBookmarkBarNode()->GetChild(location.index);
+      node = model_->bookmark_bar_node()->GetChild(location.index);
     StartShowFolderDropMenuTimer(node);
   }
 
@@ -817,7 +817,7 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
 
   const BookmarkNode* root =
       (drop_info_->location.button_type == DROP_OTHER_FOLDER) ?
-      model_->other_node() : model_->GetBookmarkBarNode();
+      model_->other_node() : model_->bookmark_bar_node();
   int index = drop_info_->location.index;
 
   if (index != -1) {
@@ -901,7 +901,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {
   DCHECK(button_count == 0);  // If non-zero it means Load was invoked more than
                               // once, or we didn't properly clear things.
                               // Either of which shouldn't happen
-  const BookmarkNode* node = model_->GetBookmarkBarNode();
+  const BookmarkNode* node = model_->bookmark_bar_node();
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
   for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
@@ -961,7 +961,7 @@ void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
                                                     const BookmarkNode* node) {
-  if (node != model_->GetBookmarkBarNode())
+  if (node != model_->bookmark_bar_node())
     return;  // We only care about reordering of the bookmark bar node.
 
   // Remove the existing buttons.
@@ -997,7 +997,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       button->PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
       drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
                                            data);
-      WriteBookmarkDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
+      WriteBookmarkDragData(model_->bookmark_bar_node()->GetChild(i), data);
       return;
     }
   }
@@ -1019,7 +1019,7 @@ int BookmarkBarView::GetDragOperationsForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       return bookmark_utils::BookmarkDragOperation(
-          profile_, model_->GetBookmarkBarNode()->GetChild(i));
+          profile_, model_->bookmark_bar_node()->GetChild(i));
     }
   }
   NOTREACHED();
@@ -1035,7 +1035,7 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
       press_pt.y() < p.y()) {
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
       if (sender == GetBookmarkButton(i)) {
-        const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
+        const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
         // If the folder button was dragged, show the menu instead.
         if (node && node->is_folder()) {
           views::MenuButton* menu_button =
@@ -1057,12 +1057,12 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
   if (view == other_bookmarked_button_) {
     node = model_->other_node();
   } else if (view == overflow_button_) {
-    node = model_->GetBookmarkBarNode();
+    node = model_->bookmark_bar_node();
     start_index = GetFirstHiddenNodeIndex();
   } else {
     int button_index = GetIndexOf(view);
     DCHECK_NE(-1, button_index);
-    node = model_->GetBookmarkBarNode()->GetChild(button_index);
+    node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
   bookmark_menu_ = new BookmarkMenuController(
@@ -1088,7 +1088,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   } else {
     int index = GetIndexOf(sender);
     DCHECK_NE(-1, index);
-    node = model_->GetBookmarkBarNode()->GetChild(index);
+    node = model_->bookmark_bar_node()->GetChild(index);
   }
   DCHECK(page_navigator_);
 
@@ -1128,11 +1128,11 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
     DCHECK(bookmark_button_index != -1 &&
            bookmark_button_index < GetBookmarkButtonCount());
     const BookmarkNode* node =
-        model_->GetBookmarkBarNode()->GetChild(bookmark_button_index);
+        model_->bookmark_bar_node()->GetChild(bookmark_button_index);
     nodes.push_back(node);
     parent = node->parent();
   } else {
-    parent = model_->GetBookmarkBarNode();
+    parent = model_->bookmark_bar_node();
     nodes.push_back(parent);
   }
   // Browser may be null during testing.
@@ -1320,7 +1320,7 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
   UpdateOtherBookmarksVisibility();
-  if (parent != model_->GetBookmarkBarNode()) {
+  if (parent != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
@@ -1344,7 +1344,7 @@ void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
   // No need to start throbbing again as the bookmark bubble can't be up at
   // the same time as the user reorders.
 
-  if (parent != model_->GetBookmarkBarNode()) {
+  if (parent != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
@@ -1358,11 +1358,11 @@ void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
                                               const BookmarkNode* node) {
-  if (node->parent() != model_->GetBookmarkBarNode()) {
+  if (node->parent() != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
-  int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
+  int index = model_->bookmark_bar_node()->GetIndexOf(node);
   DCHECK_NE(-1, index);
   views::TextButton* button = GetBookmarkButton(index);
   gfx::Size old_pref = button->GetPreferredSize();
@@ -1390,7 +1390,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     return;
 
   int start_index = 0;
-  if (node == model_->GetBookmarkBarNode())
+  if (node == model_->bookmark_bar_node())
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
@@ -1462,7 +1462,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
     int button_w = button->width();
     if (button_x < button_w) {
       found = true;
-      const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
+      const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
       if (node->is_folder()) {
         if (button_x <= views::kDropBetweenPixels) {
           location->index = i;
@@ -1510,7 +1510,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   if (location->on) {
     const BookmarkNode* parent = (location->button_type == DROP_OTHER_FOLDER) ?
         model_->other_node() :
-        model_->GetBookmarkBarNode()->GetChild(location->index);
+        model_->bookmark_bar_node()->GetChild(location->index);
     location->operation =
         bookmark_utils::BookmarkDropOperation(profile_, event, data, parent,
                                               parent->child_count());
@@ -1522,7 +1522,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
   } else {
     location->operation =
         bookmark_utils::BookmarkDropOperation(profile_, event, data,
-                                              model_->GetBookmarkBarNode(),
+                                              model_->bookmark_bar_node(),
                                               location->index);
   }
 }
@@ -1540,7 +1540,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
 
   // Determine which visible button is showing the bookmark (or is an ancestor
   // of the bookmark).
-  const BookmarkNode* bbn = model_->GetBookmarkBarNode();
+  const BookmarkNode* bbn = model_->bookmark_bar_node();
   const BookmarkNode* parent_on_bb = node;
   while (parent_on_bb) {
     const BookmarkNode* parent = parent_on_bb->parent();
@@ -1568,7 +1568,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
 views::CustomButton* BookmarkBarView::DetermineViewToThrobFromRemove(
     const BookmarkNode* parent,
     int old_index) {
-  const BookmarkNode* bbn = model_->GetBookmarkBarNode();
+  const BookmarkNode* bbn = model_->bookmark_bar_node();
   const BookmarkNode* old_node = parent;
   int old_index_on_bb = old_index;
   while (old_node && old_node != bbn) {

@@ -39,7 +39,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     //             b-31
     //            b-4
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-    const BookmarkNode* root = model.GetBookmarkBarNode();
+    const BookmarkNode* root = model.bookmark_bar_node();
     folder_a_ = model.AddFolder(root, 0, ASCIIToUTF16("a"));
     model.AddURL(folder_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
     model.AddURL(folder_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
@@ -89,7 +89,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
 
 TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-  const BookmarkNode& root(*model.GetBookmarkBarNode());
+  const BookmarkNode& root(*model.bookmark_bar_node());
   EXPECT_EQ(4, root.child_count());
   // a
   const BookmarkNode* child = root.GetChild(0);
@@ -169,7 +169,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
 
 TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
   BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* bar = model->GetBookmarkBarNode();
+  const BookmarkNode* bar = model->bookmark_bar_node();
   // Create 2 folders which are children of the bar.
   [controller_ selectTestNodeInBrowser:bar];
   [controller_ newFolder:nil];
@@ -195,7 +195,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
 
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
@@ -208,7 +208,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
 
 TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
 
   // Add a folder node to the model, and verify it can be selected in the tree:
   const BookmarkNode* folder_added = model.AddFolder(
@@ -225,7 +225,7 @@ TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
 
   // Sets up the state we're going to expand.
   BookmarkExpandedStateTracker::Nodes nodes;
-  nodes.insert(model.GetBookmarkBarNode());
+  nodes.insert(model.bookmark_bar_node());
   nodes.insert(folder_b_);
   nodes.insert(folder_c_);
 

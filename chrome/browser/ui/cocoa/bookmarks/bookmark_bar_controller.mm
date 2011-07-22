@@ -296,7 +296,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [otherBookmarksButton_ setIsContinuousPulsing:doPulse];
     return;
   }
-  if (node->parent() == bookmarkModel_->GetBookmarkBarNode()) {
+  if (node->parent() == bookmarkModel_->bookmark_bar_node()) {
     [offTheSideButton_ setIsContinuousPulsing:doPulse];
     return;
   }
@@ -537,10 +537,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
   // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
-  if ((node == nil) ||
-      (node == bookmarkModel_->other_node()) ||
-      (node == bookmarkModel_->synced_node()) ||
-      (node == bookmarkModel_->GetBookmarkBarNode()))
+  if (node == nil ||
+      node == bookmarkModel_->bookmark_bar_node() ||
+      node == bookmarkModel_->other_node() ||
+      node == bookmarkModel_->synced_node())
     return NO;
   return YES;
 }
@@ -731,7 +731,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   const BookmarkNode* node = [self nodeFromMenuItem:sender];
   if (node) {
     int index = -1;
-    if (node != bookmarkModel_->GetBookmarkBarNode() && !node->is_folder()) {
+    if (node != bookmarkModel_->bookmark_bar_node() && !node->is_folder()) {
       const BookmarkNode* parent = node->parent();
       index = parent->GetIndexOf(node) + 1;
       if (index > parent->child_count())
@@ -780,7 +780,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (IBAction)addPage:(id)sender {
   const BookmarkNode* parent = [self nodeFromMenuItem:sender];
   if (!parent)
-    parent = bookmarkModel_->GetBookmarkBarNode();
+    parent = bookmarkModel_->bookmark_bar_node();
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        parent,
@@ -870,8 +870,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
-   setBookmarkNode:bookmarkModel_->GetBookmarkBarNode()];
-  int bookmarkChildren = bookmarkModel_->GetBookmarkBarNode()->child_count();
+   setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
+  int bookmarkChildren = bookmarkModel_->bookmark_bar_node()->child_count();
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
   } else {
@@ -1370,7 +1370,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Now that the model is loaded, set the bookmark bar root as the node
 // represented by the bookmark bar (default, background) menu.
 - (void)setNodeForBarMenu {
-  const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+  const BookmarkNode* node = bookmarkModel_->bookmark_bar_node();
   BookmarkMenu* menu = static_cast<BookmarkMenu*>([[self view] menu]);
 
   // Make sure types are compatible
@@ -1565,7 +1565,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)redistributeButtonsOnBarAsNeeded {
-  const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+  const BookmarkNode* node = bookmarkModel_->bookmark_bar_node();
   NSInteger barCount = node->child_count();
 
   // Determine the current maximum extent of the visible buttons.
@@ -1975,7 +1975,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere on the bar, so find the right spot.
-    destParent = bookmarkModel_->GetBookmarkBarNode();
+    destParent = bookmarkModel_->bookmark_bar_node();
     destIndex = [self indexForDragToPoint:point];
   }
 
@@ -2085,7 +2085,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   // Brute force nuke and build.
   savedFrameWidth_ = NSWidth([[self view] frame]);
-  const BookmarkNode* node = model->GetBookmarkBarNode();
+  const BookmarkNode* node = model->bookmark_bar_node();
   [self clearBookmarkBar];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
@@ -2115,7 +2115,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [newController addButtonForNode:newNode atIndex:newIndex];
   // If we go from 0 --> 1 bookmarks we may need to hide the
   // "bookmarks go here" text container.
-  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
+  [self showOrHideNoItemContainerForNode:model->bookmark_bar_node()];
   // Cope with chevron or "Other Bookmarks" buttons possibly changing state.
   [self reconfigureBookmarkBar];
 }
@@ -2142,7 +2142,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
   // If the bar is one of the parents we may need to update the visibility
   // of the "bookmarks go here" presentation.
-  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
+  [self showOrHideNoItemContainerForNode:model->bookmark_bar_node()];
   // Cope with chevron or "Other Bookmarks" buttons possibly changing state.
   [self reconfigureBookmarkBar];
 }
@@ -2159,7 +2159,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [parentController removeButton:index animate:YES];
   // If we go from 1 --> 0 bookmarks we may need to show the
   // "bookmarks go here" text container.
-  [self showOrHideNoItemContainerForNode:model->GetBookmarkBarNode()];
+  [self showOrHideNoItemContainerForNode:model->bookmark_bar_node()];
   // If we deleted the only item on the "off the side" menu we no
   // longer need to show it.
   [self reconfigureBookmarkBar];
@@ -2625,7 +2625,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex = [button bookmarkNode]->child_count();
   } else {
     // Else we're dropping somewhere on the bar, so find the right spot.
-    destParent = bookmarkModel_->GetBookmarkBarNode();
+    destParent = bookmarkModel_->bookmark_bar_node();
     destIndex = [self indexForDragToPoint:point];
   }
 
@@ -2679,7 +2679,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // A button is being added to the bar and removed from off-the-side.
       // By now the node has already been inserted into the model so the
       // button to be added is represented by |toIndex|.
-      const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+      const BookmarkNode* node = bookmarkModel_->bookmark_bar_node();
       const BookmarkNode* movedNode = node->GetChild(toIndex);
       DCHECK(movedNode);
       [self addButtonForNode:movedNode atIndex:toIndex];
@@ -2726,7 +2726,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     (const BookmarkNode*)node {
   // See if it's in the bar, then if it is in the hierarchy of visible
   // folder menus.
-  if (bookmarkModel_->GetBookmarkBarNode() == node)
+  if (bookmarkModel_->bookmark_bar_node() == node)
     return self;
   return [folderController_ controllerForNode:node];
 }

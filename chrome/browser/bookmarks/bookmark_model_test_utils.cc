@@ -33,8 +33,8 @@ void BookmarkModelTestUtils::AssertNodesEqual(const BookmarkNode* expected,
 void BookmarkModelTestUtils::AssertModelsEqual(BookmarkModel* expected,
                                                BookmarkModel* actual,
                                                bool check_ids) {
-  AssertNodesEqual(expected->GetBookmarkBarNode(),
-                   actual->GetBookmarkBarNode(),
+  AssertNodesEqual(expected->bookmark_bar_node(),
+                   actual->bookmark_bar_node(),
                    check_ids);
   AssertNodesEqual(expected->other_node(),
                    actual->other_node(),

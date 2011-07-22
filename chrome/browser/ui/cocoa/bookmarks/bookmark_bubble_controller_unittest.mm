@@ -104,7 +104,7 @@ int BookmarkBubbleControllerTest::edits_;
 // parent window)
 TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            GURL("http://www.google.com"));
@@ -119,7 +119,7 @@ TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
 // Test that we can handle closing the parent window
 TEST_F(BookmarkBubbleControllerTest, TestClosingParentWindow) {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            GURL("http://www.google.com"));
@@ -137,7 +137,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   // Create some folders, including a nested folder
   BookmarkModel* model = GetBookmarkModel();
   EXPECT_TRUE(model);
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
                                                ASCIIToUTF16("one"));
@@ -188,7 +188,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
   // Create some folders, including a nested folder
   BookmarkModel* model = GetBookmarkModel();
   EXPECT_TRUE(model);
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
                                                ASCIIToUTF16("one"));
@@ -225,7 +225,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
 // Click on edit; bubble gets closed.
 TEST_F(BookmarkBubbleControllerTest, TestEdit) {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            GURL("http://www.google.com"));
@@ -244,7 +244,7 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
 TEST_F(BookmarkBubbleControllerTest, TestClose) {
     BookmarkModel* model = GetBookmarkModel();
     const BookmarkNode* node = model->AddURL(
-        model->GetBookmarkBarNode(), 0, ASCIIToUTF16("Bookie markie title"),
+        model->bookmark_bar_node(), 0, ASCIIToUTF16("Bookie markie title"),
         GURL("http://www.google.com"));
   EXPECT_EQ(edits_, 0);
 
@@ -265,7 +265,7 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
 TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
   BookmarkModel* model = GetBookmarkModel();
   EXPECT_TRUE(model);
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   const BookmarkNode* node = model->AddURL(bookmarkBarNode,
                                            0,
@@ -294,7 +294,7 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
 TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
   BookmarkModel* model = GetBookmarkModel();
   EXPECT_TRUE(model);
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   for (int i=0; i<2; i++) {
     const BookmarkNode* node = model->AddURL(bookmarkBarNode,
@@ -325,7 +325,7 @@ TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
 // Confirm happiness with nodes with the same Name
 TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
                                                ASCIIToUTF16("NAME"));
@@ -351,7 +351,7 @@ TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
 TEST_F(BookmarkBubbleControllerTest, TestRemove) {
   BookmarkModel* model = GetBookmarkModel();
   GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            gurl);
@@ -368,7 +368,7 @@ TEST_F(BookmarkBubbleControllerTest, TestRemove) {
 TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
   BookmarkModel* model = GetBookmarkModel();
   GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0, ASCIIToUTF16("super-title"),
                                            gurl);
   BookmarkBubbleController* controller = ControllerForNode(node);
@@ -387,7 +387,7 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkModel* model = GetBookmarkModel();
   GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            gurl);
@@ -409,7 +409,7 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
 TEST_F(BookmarkBubbleControllerTest, EscapeDoesntTouchExistingBookmark) {
   BookmarkModel* model = GetBookmarkModel();
   GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            gurl);
@@ -425,7 +425,7 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
   // Create some folders, including a nested folder
   BookmarkModel* model = GetBookmarkModel();
   EXPECT_TRUE(model);
-  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  const BookmarkNode* bookmarkBarNode = model->bookmark_bar_node();
   EXPECT_TRUE(bookmarkBarNode);
   const BookmarkNode* node1 = model->AddFolder(bookmarkBarNode, 0,
                                                ASCIIToUTF16("one"));
@@ -458,7 +458,7 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
 TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
 
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0,
                                            ASCIIToUTF16("Bookie markie title"),
                                            GURL("http://www.google.com"));

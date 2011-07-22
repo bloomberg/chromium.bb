@@ -25,7 +25,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
 
   // We special case the placement of these, so remove them from the list, then
   // fix up the order.
-  RemoveNode(model->GetBookmarkBarNode());
+  RemoveNode(model->bookmark_bar_node());
   RemoveNode(model->synced_node());
   RemoveNode(model->other_node());
   RemoveNode(node->parent());
@@ -40,7 +40,7 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
     nodes_.erase(nodes_.begin() + kMaxMRUFolders, nodes_.end());
 
   // And put the bookmark bar and other nodes at the end of the list.
-  nodes_.push_back(model->GetBookmarkBarNode());
+  nodes_.push_back(model->bookmark_bar_node());
   nodes_.push_back(model->other_node());
   if (model->synced_node()->IsVisible()) {
     nodes_.push_back(model->synced_node());

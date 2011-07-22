@@ -130,7 +130,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
 
   BookmarkBarFolderControllerTest() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    const BookmarkNode* parent = model->bookmark_bar_node();
     const BookmarkNode* folderA = model->AddFolder(parent,
                                                    parent->child_count(),
                                                    ASCIIToUTF16("folder"));
@@ -290,7 +290,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
 // until end of screen again, then right.
 TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* parent = model->bookmark_bar_node();
   const BookmarkNode* folder = parent;
 
   const int count = 100;
@@ -681,7 +681,7 @@ class BookmarkBarFolderControllerMenuTest : public CocoaTest {
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   WithNoAnimation at_all;
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -754,7 +754,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -818,7 +818,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -883,7 +883,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveWithinFolder) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -932,7 +932,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveWithinFolder) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -969,7 +969,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
@@ -1021,7 +1021,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragWindowResizing) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string
       model_string("a b:[ b1 b2 b3 ] reallyReallyLongBookmarkName c ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1061,7 +1061,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragWindowResizing) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b 2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
 
@@ -1124,7 +1124,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, ControllerForNode) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
 
@@ -1159,7 +1159,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, ControllerForNode) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2b 3b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
 
@@ -1167,7 +1167,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   std::string actualModelString = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
-  const BookmarkNode* parent = model.GetBookmarkBarNode();
+  const BookmarkNode* parent = model.bookmark_bar_node();
   const BookmarkNode* folder = model.AddFolder(parent,
                                                parent->child_count(),
                                                ASCIIToUTF16("BIG"));
@@ -1254,7 +1254,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
 // See http://crbug.com/46101
 TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const BookmarkNode* folder = model.AddFolder(root,
                                                root->child_count(),
                                                ASCIIToUTF16("BIG"));
@@ -1320,7 +1320,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1381,7 +1381,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1423,7 +1423,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1468,7 +1468,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1524,7 +1524,7 @@ class BookmarkBarFolderControllerClosingTest : public
 
 TEST_F(BookmarkBarFolderControllerClosingTest, DeleteClosesFolder) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
-  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b ] "
                                  "2f3b ] 3b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);

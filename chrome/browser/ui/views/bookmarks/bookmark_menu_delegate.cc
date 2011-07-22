@@ -217,7 +217,7 @@ int BookmarkMenuDelegate::OnPerformDrop(
     case views::MenuDelegate::DROP_BEFORE:
       if (drop_node == model->other_node()) {
         // This can happen with SHOW_OTHER_FOLDER.
-        drop_parent = model->GetBookmarkBarNode();
+        drop_parent = model->bookmark_bar_node();
         index_to_drop_at = drop_parent->child_count();
       }
       break;

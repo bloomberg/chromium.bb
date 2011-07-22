@@ -178,12 +178,12 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkModel. You need not invoke this directly.
   void Load();
 
-  // Returns the root node. The bookmark bar node and other node are children of
-  // the root node.
+  // Returns the root node. The 'bookmark bar' node and 'other' node are
+  // children of the root node.
   const BookmarkNode* root_node() { return &root_; }
 
-  // Returns the bookmark bar node. This is NULL until loaded.
-  const BookmarkNode* GetBookmarkBarNode() { return bookmark_bar_node_; }
+  // Returns the 'bookmark bar' node. This is NULL until loaded.
+  const BookmarkNode* bookmark_bar_node() { return bookmark_bar_node_; }
 
   // Returns the 'other' node. This is NULL until loaded.
   const BookmarkNode* other_node() { return other_node_; }

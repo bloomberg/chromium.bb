@@ -497,7 +497,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
          fromParent:(const BookmarkNode*)parent {
   if (node->is_folder()) {
     if (parentNode_ == node || parentNode_->HasAncestor(node)) {
-      parentNode_ = [self bookmarkModel]->GetBookmarkBarNode();
+      parentNode_ = [self bookmarkModel]->bookmark_bar_node();
       if (configuration_ != BookmarkEditor::SHOW_TREE) {
         // The user can't select a different folder, so just close up shop.
         [self cancel:self];

@@ -117,8 +117,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   bookmark_utils::CopyToClipboard(&model, nodes, false);
 
   // And make sure we can paste a bookmark from the clipboard.
-  EXPECT_TRUE(
-      bookmark_utils::CanPasteFromClipboard(model.GetBookmarkBarNode()));
+  EXPECT_TRUE(bookmark_utils::CanPasteFromClipboard(model.bookmark_bar_node()));
 
   // Write some text to the clipboard.
   {
@@ -128,6 +127,6 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
   // Now we shouldn't be able to paste from the clipboard.
   EXPECT_FALSE(
-      bookmark_utils::CanPasteFromClipboard(model.GetBookmarkBarNode()));
+      bookmark_utils::CanPasteFromClipboard(model.bookmark_bar_node()));
 }
 #endif

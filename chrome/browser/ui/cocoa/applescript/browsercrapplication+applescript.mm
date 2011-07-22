@@ -106,7 +106,7 @@
 
   BookmarkFolderAppleScript* bookmarksBar =
       [[[BookmarkFolderAppleScript alloc]
-          initWithBookmarkNode:model->GetBookmarkBarNode()] autorelease];
+          initWithBookmarkNode:model->bookmark_bar_node()] autorelease];
   [bookmarksBar setContainer:self
                     property:AppleScript::kBookmarkFoldersProperty];
   return bookmarksBar;

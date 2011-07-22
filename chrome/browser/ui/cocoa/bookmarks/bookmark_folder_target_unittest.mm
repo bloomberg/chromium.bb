@@ -5,14 +5,14 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 
 @interface OCMockObject(PreventRetainCycle)
 - (void)clearRecordersAndExpectations;
@@ -35,7 +35,7 @@ class BookmarkFolderTargetTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-    bmbNode_ = model->GetBookmarkBarNode();
+    bmbNode_ = model->bookmark_bar_node();
   }
   virtual void TearDown() {
     pool_.Recycle();

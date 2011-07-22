@@ -35,7 +35,7 @@ BookmarkModel* LiveBookmarksSyncTest::GetBookmarkModel(int index) {
 }
 
 const BookmarkNode* LiveBookmarksSyncTest::GetBookmarkBarNode(int index) {
-  return GetBookmarkModel(index)->GetBookmarkBarNode();
+  return GetBookmarkModel(index)->bookmark_bar_node();
 }
 
 const BookmarkNode* LiveBookmarksSyncTest::GetOtherNode(int index) {

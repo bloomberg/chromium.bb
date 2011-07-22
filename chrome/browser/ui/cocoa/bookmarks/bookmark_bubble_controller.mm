@@ -115,7 +115,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 // until we find something visible to pulse.
 - (void)startPulsingBookmarkButton:(const BookmarkNode*)node  {
   while (node) {
-    if ((node->parent() == model_->GetBookmarkBarNode()) ||
+    if ((node->parent() == model_->bookmark_bar_node()) ||
         (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
       NSValue *value = [NSValue valueWithPointer:node];

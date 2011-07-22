@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   // within the extension.
   BookmarkModel* model = profile->GetBookmarkModel();
   ui_test_utils::WaitForBookmarkModelToLoad(model);
-  const BookmarkNode* bar = model->GetBookmarkBarNode();
+  const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(bar, 0, ASCIIToUTF16("Folder"));
   model->AddURL(bar, 1, ASCIIToUTF16("AAA"), GURL("http://aaa.example.com"));
   model->AddURL(folder, 0, ASCIIToUTF16("BBB"), GURL("http://bbb.example.com"));

@@ -39,7 +39,7 @@ class BookmarkModelObserverForCocoaTest : public CocoaTest {
 
 TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0, ASCIIToUTF16("super"),
                                            GURL("http://www.google.com"));
 

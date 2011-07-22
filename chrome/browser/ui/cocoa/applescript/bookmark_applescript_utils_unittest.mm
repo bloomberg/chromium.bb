@@ -51,11 +51,11 @@ BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
   [appDelegate_.get() setHelper:&helper_];
   DCHECK([NSApp delegate] == nil);
   [NSApp setDelegate:appDelegate_];
-  const BookmarkNode* root = model().GetBookmarkBarNode();
+  const BookmarkNode* root = model().bookmark_bar_node();
   const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
   model_test_utils::AddNodesFromModelString(model(), root, modelString);
   bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
-      initWithBookmarkNode:model().GetBookmarkBarNode()]);
+      initWithBookmarkNode:model().bookmark_bar_node()]);
 }
 
 BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {

@@ -44,7 +44,8 @@ BookmarkCodec::BookmarkCodec()
 BookmarkCodec::~BookmarkCodec() {}
 
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
-  return Encode(model->GetBookmarkBarNode(), model->other_node(),
+  return Encode(model->bookmark_bar_node(),
+                model->other_node(),
                 model->synced_node());
 }
 

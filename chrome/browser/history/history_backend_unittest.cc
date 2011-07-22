@@ -283,7 +283,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // Star row1.
   bookmark_model_.AddURL(
-      bookmark_model_.GetBookmarkBarNode(), 0, string16(), row1.url());
+      bookmark_model_.bookmark_bar_node(), 0, string16(), row1.url());
 
   // Set full text index for each one.
   backend_->text_database_->AddPageData(row1.url(), row1_id, visit1_id,
@@ -577,7 +577,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   EXPECT_TRUE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
 
   // If the URL is bookmarked, it should get added to history with 0 visits.
-  bookmark_model_.AddURL(bookmark_model_.GetBookmarkBarNode(), 0, string16(),
+  bookmark_model_.AddURL(bookmark_model_.bookmark_bar_node(), 0, string16(),
                          url3);
   backend_->SetImportedFavicons(favicons);
   EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);

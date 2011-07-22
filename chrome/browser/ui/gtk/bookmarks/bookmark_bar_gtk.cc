@@ -486,7 +486,7 @@ void BookmarkBarGtk::Hide(BookmarkBar::State old_state,
 }
 
 void BookmarkBarGtk::CreateAllBookmarkButtons() {
-  const BookmarkNode* bar = model_->GetBookmarkBarNode();
+  const BookmarkNode* bar = model_->bookmark_bar_node();
   DCHECK(bar && model_->other_node());
 
   // Create a button for each of the children on the bookmark bar.
@@ -507,7 +507,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
 
 void BookmarkBarGtk::SetInstructionState() {
   if (model_)
-    show_instructions_ = model_->GetBookmarkBarNode()->empty();
+    show_instructions_ = model_->bookmark_bar_node()->empty();
 
   gtk_widget_set_visible(bookmark_toolbar_.get(), !show_instructions_);
   gtk_widget_set_visible(instructions_, show_instructions_);
@@ -595,7 +595,7 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
       break;
 
     if (showing_folders &&
-        model_->GetBookmarkBarNode()->GetChild(rv)->is_folder()) {
+        model_->bookmark_bar_node()->GetChild(rv)->is_folder()) {
       showing_folders->push_back(gtk_bin_get_child(GTK_BIN(tool_item)));
     }
     rv++;
@@ -709,7 +709,7 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
   const BookmarkNode* parent_on_bb = NULL;
   for (const BookmarkNode* parent = node; parent;
        parent = parent->parent()) {
-    if (parent->parent() == model_->GetBookmarkBarNode()) {
+    if (parent->parent() == model_->bookmark_bar_node()) {
       parent_on_bb = parent;
       break;
     }
@@ -722,7 +722,7 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
     widget_to_throb = other_bookmarks_button_;
   } else {
     int hidden = GetFirstHiddenBookmark(0, NULL);
-    int idx = model_->GetBookmarkBarNode()->GetIndexOf(parent_on_bb);
+    int idx = model_->bookmark_bar_node()->GetIndexOf(parent_on_bb);
 
     if (hidden >= 0 && hidden <= idx) {
       widget_to_throb = overflow_button_;
@@ -861,7 +861,7 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
                                        const BookmarkNode* parent,
                                        int index) {
   const BookmarkNode* node = parent->GetChild(index);
-  if (parent != model_->GetBookmarkBarNode()) {
+  if (parent != model_->bookmark_bar_node()) {
     StartThrobbing(node);
     return;
   }
@@ -884,7 +884,7 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
                                          const BookmarkNode* parent,
                                          int old_index,
                                          const BookmarkNode* node) {
-  if (parent != model_->GetBookmarkBarNode()) {
+  if (parent != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
@@ -904,11 +904,11 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
                                          const BookmarkNode* node) {
-  if (node->parent() != model_->GetBookmarkBarNode()) {
+  if (node->parent() != model_->bookmark_bar_node()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
-  int index = model_->GetBookmarkBarNode()->GetIndexOf(node);
+  int index = model_->bookmark_bar_node()->GetIndexOf(node);
   DCHECK(index != -1);
 
   GtkToolItem* item = gtk_toolbar_get_nth_item(
@@ -925,7 +925,7 @@ void BookmarkBarGtk::BookmarkNodeFaviconChanged(BookmarkModel* model,
 
 void BookmarkBarGtk::BookmarkNodeChildrenReordered(BookmarkModel* model,
                                                    const BookmarkNode* node) {
-  if (node != model_->GetBookmarkBarNode())
+  if (node != model_->bookmark_bar_node())
     return;  // We only care about reordering of the bookmark bar node.
 
   // Purge and rebuild the bar.
@@ -1048,7 +1048,7 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
   if (widget == other_bookmarks_button_)
     return model_->other_node();
   else if (widget == event_box_.get() || widget == overflow_button_)
-    return model_->GetBookmarkBarNode();
+    return model_->bookmark_bar_node();
 
   // Search the contents of |bookmark_toolbar_| for the corresponding widget
   // and find its index.
@@ -1066,7 +1066,7 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
   g_list_free(children);
 
   if (index_to_use != -1)
-    return model_->GetBookmarkBarNode()->GetChild(index_to_use);
+    return model_->bookmark_bar_node()->GetChild(index_to_use);
 
   return NULL;
 }
@@ -1083,12 +1083,12 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   std::vector<const BookmarkNode*> nodes;
   if (sender == other_bookmarks_button_) {
     nodes.push_back(node);
-    parent = model_->GetBookmarkBarNode();
+    parent = model_->bookmark_bar_node();
   } else if (sender != bookmark_toolbar_.get()) {
     nodes.push_back(node);
     parent = node->parent();
   } else {
-    parent = model_->GetBookmarkBarNode();
+    parent = model_->bookmark_bar_node();
     nodes.push_back(parent);
   }
 
@@ -1259,13 +1259,13 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
   gboolean dnd_success = FALSE;
   gboolean delete_selection_data = FALSE;
 
-  const BookmarkNode* dest_node = model_->GetBookmarkBarNode();
+  const BookmarkNode* dest_node = model_->bookmark_bar_node();
   gint index;
   if (widget == bookmark_toolbar_.get()) {
     index = gtk_toolbar_get_drop_index(
       GTK_TOOLBAR(bookmark_toolbar_.get()), x, y);
   } else if (widget == instructions_) {
-    dest_node = model_->GetBookmarkBarNode();
+    dest_node = model_->bookmark_bar_node();
     index = 0;
   } else {
     index = GetToolbarIndexForDragOverFolder(widget, x);
