@@ -7,9 +7,13 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "net/base/io_buffer.h"
+#include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/appcache/appcache_histograms.h"
 #include "webkit/appcache/appcache_quota_client.h"
+#include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_storage_impl.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -267,6 +271,136 @@ void AppCacheService::GetInfoHelper::OnAllInfo(
   delete this;
 }
 
+// CheckResponseHelper -------
+
+class AppCacheService::CheckResponseHelper : AsyncHelper {
+ public:
+  CheckResponseHelper(
+      AppCacheService* service, const GURL& manifest_url, int64 cache_id,
+      int64 response_id)
+      : AsyncHelper(service, NULL),
+        manifest_url_(manifest_url),
+        cache_id_(cache_id),
+        response_id_(response_id),
+        kIOBufferSize(32 * 1024),
+        expected_total_size_(0),
+        amount_headers_read_(0),
+        amount_data_read_(0),
+        ALLOW_THIS_IN_INITIALIZER_LIST(read_info_callback_(
+            this, &CheckResponseHelper::OnReadInfoComplete)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(read_data_callback_(
+            this, &CheckResponseHelper::OnReadDataComplete)) {
+  }
+
+  virtual void Start() {
+    service_->storage()->LoadOrCreateGroup(manifest_url_, this);
+  }
+
+  virtual void Cancel() {
+    AppCacheHistograms::CountCheckResponseResult(
+        AppCacheHistograms::CHECK_CANCELED);
+    response_reader_.reset();
+    AsyncHelper::Cancel();
+  }
+
+ private:
+  virtual void OnGroupLoaded(AppCacheGroup* group, const GURL& manifest_url);
+  void OnReadInfoComplete(int result);
+  void OnReadDataComplete(int result);
+
+  // Inputs describing what to check.
+  GURL manifest_url_;
+  int64 cache_id_;
+  int64 response_id_;
+
+  // Internals used to perform the checks.
+  const int kIOBufferSize;
+  scoped_refptr<AppCache> cache_;
+  scoped_ptr<AppCacheResponseReader> response_reader_;
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
+  scoped_refptr<net::IOBuffer> data_buffer_;
+  int64 expected_total_size_;
+  int amount_headers_read_;
+  int amount_data_read_;
+  net::CompletionCallbackImpl<CheckResponseHelper> read_info_callback_;
+  net::CompletionCallbackImpl<CheckResponseHelper> read_data_callback_;
+  DISALLOW_COPY_AND_ASSIGN(CheckResponseHelper);
+};
+
+void AppCacheService::CheckResponseHelper::OnGroupLoaded(
+    AppCacheGroup* group, const GURL& manifest_url) {
+  DCHECK_EQ(manifest_url_, manifest_url);
+  if (!group || !group->newest_complete_cache() || group->is_being_deleted() ||
+      group->is_obsolete()) {
+    AppCacheHistograms::CountCheckResponseResult(
+        AppCacheHistograms::MANIFEST_OUT_OF_DATE);
+    delete this;
+    return;
+  }
+
+  cache_ = group->newest_complete_cache();
+  const AppCacheEntry* entry = cache_->GetEntryWithResponseId(response_id_);
+  if (!entry) {
+    if (cache_->cache_id() == cache_id_) {
+      AppCacheHistograms::CountCheckResponseResult(
+          AppCacheHistograms::ENTRY_NOT_FOUND);
+      service_->DeleteAppCacheGroup(manifest_url_, NULL);
+    } else {
+      AppCacheHistograms::CountCheckResponseResult(
+          AppCacheHistograms::RESPONSE_OUT_OF_DATE);
+    }
+    delete this;
+    return;
+  }
+
+  // Verify that we can read the response info and data.
+  expected_total_size_ = entry->response_size();
+  response_reader_.reset(service_->storage()->CreateResponseReader(
+      manifest_url_, response_id_));
+  info_buffer_ = new HttpResponseInfoIOBuffer();
+  response_reader_->ReadInfo(info_buffer_, &read_info_callback_);
+}
+
+void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
+  if (result < 0) {
+    AppCacheHistograms::CountCheckResponseResult(
+        AppCacheHistograms::READ_HEADERS_ERROR);
+    service_->DeleteAppCacheGroup(manifest_url_, NULL);
+    delete this;
+    return;
+  }
+  amount_headers_read_ = result;
+
+  // Start reading the data.
+  data_buffer_ = new net::IOBuffer(kIOBufferSize);
+  response_reader_->ReadData(data_buffer_, kIOBufferSize,
+                             &read_data_callback_);
+}
+
+void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
+  if (result > 0) {
+    // Keep reading until we've read thru everything or failed to read.
+    amount_data_read_ += result;
+    response_reader_->ReadData(data_buffer_, kIOBufferSize,
+                               &read_data_callback_);
+    return;
+  }
+
+  AppCacheHistograms::CheckResponseResultType check_result;
+  if (result < 0)
+    check_result = AppCacheHistograms::READ_DATA_ERROR;
+  else if (info_buffer_->response_data_size != amount_data_read_ ||
+           expected_total_size_ != amount_data_read_ + amount_headers_read_)
+    check_result = AppCacheHistograms::UNEXPECTED_DATA_SIZE;
+  else
+    check_result = AppCacheHistograms::RESPONSE_OK;
+  AppCacheHistograms::CountCheckResponseResult(check_result);
+
+  if (check_result != AppCacheHistograms::RESPONSE_OK)
+    service_->DeleteAppCacheGroup(manifest_url_, NULL);
+  delete this;
+}
+
 
 // AppCacheService -------
 
@@ -326,6 +460,14 @@ void AppCacheService::DeleteAppCacheGroup(const GURL& manifest_url,
 void AppCacheService::DeleteAppCachesForOrigin(
     const GURL& origin,  net::CompletionCallback* callback) {
   DeleteOriginHelper* helper = new DeleteOriginHelper(this, origin, callback);
+  helper->Start();
+}
+
+void AppCacheService::CheckAppCacheResponse(const GURL& manifest_url,
+                                            int64 cache_id,
+                                            int64 response_id) {
+  CheckResponseHelper* helper = new CheckResponseHelper(
+      this, manifest_url, cache_id, response_id);
   helper->Start();
 }
 

@@ -55,6 +55,7 @@ class AppCache : public base::RefCounted<AppCache> {
 
   // Do not store the returned object as it could be deleted anytime.
   AppCacheEntry* GetEntry(const GURL& url);
+  const AppCacheEntry* GetEntryWithResponseId(int64 response_id);
 
   const EntryMap& entries() const { return entries_; }
 

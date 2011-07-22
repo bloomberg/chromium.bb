@@ -113,11 +113,11 @@ class AppCacheResponseIO {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_len_;
   net::CompletionCallback* user_callback_;
+  ScopedRunnableMethodFactory<AppCacheResponseIO> method_factory_;
 
  private:
   void OnRawIOComplete(int result);
 
-  ScopedRunnableMethodFactory<AppCacheResponseIO> method_factory_;
   scoped_refptr<net::CancelableCompletionCallback<AppCacheResponseIO> >
       raw_callback_;
 };
@@ -139,8 +139,9 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   // contain a NULL http_info when ReadInfo is called. The 'callback' is a
   // required parameter.
   // Should only be called where there is no Read operation in progress.
-  void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                net::CompletionCallback* callback);
+  // (virtual for testing)
+  virtual void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
+                        net::CompletionCallback* callback);
 
   // Reads data from storage. Always returns the result of the read
   // asynchronously through the 'callback'. Returns the number of bytes read
@@ -149,8 +150,9 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   // at which time the callback is invoked with either a negative error code
   // or the number of bytes read. The 'callback' is a required parameter.
   // Should only be called where there is no Read operation in progress.
-  void ReadData(net::IOBuffer* buf, int buf_len,
-                net::CompletionCallback* callback);
+  // (virtual for testing)
+  virtual void ReadData(net::IOBuffer* buf, int buf_len,
+                        net::CompletionCallback* callback);
 
   // Returns true if there is a read operation, for data or info, pending.
   bool IsReadPending() { return IsIOPending(); }
@@ -160,7 +162,7 @@ class AppCacheResponseReader : public AppCacheResponseIO {
   // to the first call to the ReadData method.
   void SetReadRange(int offset, int length);
 
- private:
+ protected:
   friend class AppCacheStorageImpl;
   friend class MockAppCacheStorage;
 

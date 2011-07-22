@@ -91,6 +91,11 @@ class AppCacheService {
   virtual void DeleteAppCachesForOrigin(const GURL& origin,
                                         net::CompletionCallback* callback);
 
+  // Checks the integrity of 'response_id' by reading the headers and data.
+  // If it cannot be read, the cache group for 'manifest_url' is deleted.
+  void CheckAppCacheResponse(const GURL& manifest_url_, int64 cache_id,
+                             int64 response_id);
+
   // Context for use during cache updates, should only be accessed
   // on the IO thread. We do NOT add a reference to the request context,
   // it is the callers responsibility to ensure that the pointer
@@ -145,6 +150,7 @@ class AppCacheService {
   class DeleteHelper;
   class DeleteOriginHelper;
   class GetInfoHelper;
+  class CheckResponseHelper;
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;

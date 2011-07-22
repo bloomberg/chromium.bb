@@ -70,6 +70,15 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   return (it != entries_.end()) ? &(it->second) : NULL;
 }
 
+const AppCacheEntry* AppCache::GetEntryWithResponseId(int64 response_id) {
+  for (EntryMap::const_iterator iter = entries_.begin();
+       iter !=  entries_.end(); ++iter) {
+    if (iter->second.response_id() == response_id)
+      return &iter->second;
+  }
+  return NULL;
+}
+
 GURL AppCache::GetFallbackEntryUrl(const GURL& namespace_url) const {
   size_t count = fallback_namespaces_.size();
   for (size_t i = 0; i < count; ++i) {

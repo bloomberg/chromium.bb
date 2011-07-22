@@ -17,6 +17,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/appcache/appcache_service.h"
 
 namespace appcache {
 
@@ -134,8 +135,9 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
     // from the appcache.
     cache_entry_not_found_ = true;
     NotifyRestartRequired();
+    storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
+                                               entry_.response_id());
   }
-  storage_ = NULL;  // no longer needed
 }
 
 const net::HttpResponseInfo* AppCacheURLRequestJob::http_info() const {
@@ -187,13 +189,15 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
 
 void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(is_delivering_appcache_response());
-  if (result == 0)
+  if (result == 0) {
     NotifyDone(net::URLRequestStatus());
-  else if (result < 0)
+  } else if (result < 0) {
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
-  else
+    storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
+                                               entry_.response_id());
+  } else {
     SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
-
+  }
   NotifyReadComplete(result);
 }
 

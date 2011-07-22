@@ -16,6 +16,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_disk_cache.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
@@ -53,6 +54,7 @@ class MockAppCacheStorage : public AppCacheStorage {
 
  private:
   friend class AppCacheRequestHandlerTest;
+  friend class AppCacheServiceTest;
   friend class AppCacheUpdateJobTest;
 
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
@@ -86,7 +88,10 @@ class MockAppCacheStorage : public AppCacheStorage {
   void AddStoredGroup(AppCacheGroup* group);
   void RemoveStoredGroup(AppCacheGroup* group);
   bool IsGroupStored(const AppCacheGroup* group) {
-    return stored_groups_.find(group->manifest_url()) != stored_groups_.end();
+    return IsGroupForManifestStored(group->manifest_url());
+  }
+  bool IsGroupForManifestStored(const GURL& manifest_url) {
+    return stored_groups_.find(manifest_url) != stored_groups_.end();
   }
 
   // These helpers determine when certain operations should complete
@@ -150,6 +155,10 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulated_appcache_info_ = info;
   }
 
+  void SimulateResponseReader(AppCacheResponseReader* reader) {
+    simulated_reader_.reset(reader);
+  }
+
   StoredCacheMap stored_caches_;
   StoredGroupMap stored_groups_;
   DoomedResponseIds doomed_response_ids_;
@@ -169,6 +178,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
   scoped_refptr<AppCacheInfoCollection> simulated_appcache_info_;
+  scoped_ptr<AppCacheResponseReader> simulated_reader_;
 
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, BasicFindMainResponse);
   FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,

@@ -132,6 +132,7 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
 }
 
 void AppCacheResponseIO::OnRawIOComplete(int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
   raw_callback_->Release();  // Balance the AddRefs
   OnIOComplete(result);
 }
@@ -214,11 +215,12 @@ void AppCacheResponseReader::SetReadRange(int offset, int length) {
 void AppCacheResponseReader::OnIOComplete(int result) {
   if (result >= 0) {
     if (info_buffer_.get()) {
-      // Deserialize the http info structure.
+      // Deserialize the http info structure, ensuring we got headers.
       Pickle pickle(buffer_->data(), result);
       scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
       bool response_truncated = false;
-      if (!info->InitFromPickle(pickle, &response_truncated)) {
+      if (!info->InitFromPickle(pickle, &response_truncated) ||
+          !info->headers) {
         InvokeUserCompletionCallback(net::ERR_FAILED);
         return;
       }
@@ -289,6 +291,7 @@ void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
   DCHECK(callback && !IsWritePending());
   DCHECK(info_buf && info_buf->http_info.get());
   DCHECK(!buffer_.get() && !info_buffer_.get());
+  DCHECK(info_buf->http_info->headers);
 
   info_buffer_ = info_buf;
   user_callback_ = callback;  // cleared on completion

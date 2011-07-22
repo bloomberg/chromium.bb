@@ -15,4 +15,12 @@ void AppCacheHistograms::CountInitResult(InitResultType init_result) {
        init_result, NUM_INIT_RESULT_TYPES);
 }
 
+// static
+void AppCacheHistograms::CountCheckResponseResult(
+    CheckResponseResultType result) {
+  UMA_HISTOGRAM_ENUMERATION(
+       "appcache.CheckResponseResult",
+       result, NUM_CHECK_RESPONSE_RESULT_TYPES);
+}
+
 }  // namespace appcache
