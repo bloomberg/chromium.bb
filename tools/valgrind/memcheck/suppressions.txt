@@ -4096,16 +4096,6 @@
    fun:_ZN12browser_sync12SyncerThread16DoSyncSessionJobERKNS0_14SyncSessionJobE
 }
 {
-   bug_79569
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos18NetworkLibraryImpl12InitTestDataEv
-   fun:_ZN8chromeos18NetworkLibraryImplC1Ev
-   fun:_ZN8chromeos14NetworkLibrary7GetImplEb
-   fun:_ZN8chromeos11CrosLibrary7LibraryINS_14NetworkLibraryEE14GetDefaultImplEb
-   fun:_ZN8chromeos11CrosLibrary17GetNetworkLibraryEv
-}
-{
    bug_79651
    Memcheck:Leak
    ...
@@ -4870,30 +4860,6 @@
    fun:_ZNK4base8CallbackIFvvEE3RunEv
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-}
-{
-   bug_89684_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos22NetworkLibraryImplStub4InitEv
-   fun:_ZN8chromeos14NetworkLibrary7GetImplEb
-   fun:_ZN8chromeos11CrosLibrary7LibraryINS_14NetworkLibraryEE14GetDefaultImplEb
-   fun:_ZN8chromeos11CrosLibrary17GetNetworkLibraryEv
-}
-{
-   bug_89684_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos22NetworkLibraryImplBase24AddNetworkDeviceObserverERKSsPNS_14NetworkLibrary21NetworkDeviceObserverE
-   fun:_ZN8chromeos17NetworkMenuButton28RefreshNetworkDeviceObserverEPNS_14NetworkLibraryE
-}
-{
-   bug_89684_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos22NetworkLibraryImplBase18AddNetworkObserverERKSsPNS_14NetworkLibrary15NetworkObserverE
-   fun:_ZN8chromeos22ProxyConfigServiceImpl22OnActiveNetworkChangedEPNS_14NetworkLibraryEPKNS_7NetworkE
-   fun:_ZN8chromeos22ProxyConfigServiceImplC1Ev
 }
 {
    bug_89785a

@@ -102,7 +102,7 @@ const int kRecentPlanPaymentHours = 6;
 const int kDefaultSimUnlockRetriesCount = 999;
 
 // Format of the Carrier ID: <carrier name> (<carrier country>).
-const char* kCarrierIdFormat = "%s (%s)";
+const char kCarrierIdFormat[] = "%s (%s)";
 
 // Type of a pending SIM operation.
 enum SimOperationType {
@@ -115,20 +115,26 @@ enum SimOperationType {
 
 // D-Bus interface string constants.
 
-// Flimflam property names.
-const char kSecurityProperty[] = "Security";
-const char kPassphraseProperty[] = "Passphrase";
-const char kIdentityProperty[] = "Identity";
-const char kPassphraseRequiredProperty[] = "PassphraseRequired";
-const char kSaveCredentialsProperty[] = "SaveCredentials";
-const char kProfilesProperty[] = "Profiles";
-const char kServicesProperty[] = "Services";
-const char kServiceWatchListProperty[] = "ServiceWatchList";
+// Flimflam manager properties.
 const char kAvailableTechnologiesProperty[] = "AvailableTechnologies";
 const char kEnabledTechnologiesProperty[] = "EnabledTechnologies";
 const char kConnectedTechnologiesProperty[] = "ConnectedTechnologies";
 const char kDefaultTechnologyProperty[] = "DefaultTechnology";
 const char kOfflineModeProperty[] = "OfflineMode";
+const char kActiveProfileProperty[] = "ActiveProfile";
+const char kProfilesProperty[] = "Profiles";
+const char kServicesProperty[] = "Services";
+const char kServiceWatchListProperty[] = "ServiceWatchList";
+const char kDevicesProperty[] = "Devices";
+const char kPortalURLProperty[] = "PortalURL";
+const char kCheckPortalListProperty[] = "CheckPortalList";
+
+// Flimflam service properties.
+const char kSecurityProperty[] = "Security";
+const char kPassphraseProperty[] = "Passphrase";
+const char kIdentityProperty[] = "Identity";
+const char kPassphraseRequiredProperty[] = "PassphraseRequired";
+const char kSaveCredentialsProperty[] = "SaveCredentials";
 const char kSignalStrengthProperty[] = "Strength";
 const char kNameProperty[] = "Name";
 const char kStateProperty[] = "State";
@@ -158,12 +164,10 @@ const char kAutoConnectProperty[] = "AutoConnect";
 const char kIsActiveProperty[] = "IsActive";
 const char kModeProperty[] = "Mode";
 const char kErrorProperty[] = "Error";
-const char kActiveProfileProperty[] = "ActiveProfile";
 const char kEntriesProperty[] = "Entries";
-const char kDevicesProperty[] = "Devices";
 const char kProviderProperty[] = "Provider";
 const char kHostProperty[] = "Host";
-const char* kProxyConfigProperty = "ProxyConfig";
+const char kProxyConfigProperty[] = "ProxyConfig";
 
 // Flimflam property names for SIMLock status.
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
@@ -458,29 +462,30 @@ enum PropertyIndex {
   PROPERTY_INDEX_CELLULAR_APN,
   PROPERTY_INDEX_CELLULAR_APN_LIST,
   PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN,
+  PROPERTY_INDEX_CHECK_PORTAL_LIST,
   PROPERTY_INDEX_CONNECTABLE,
   PROPERTY_INDEX_CONNECTED_TECHNOLOGIES,
   PROPERTY_INDEX_CONNECTIVITY_STATE,
   PROPERTY_INDEX_DEFAULT_TECHNOLOGY,
   PROPERTY_INDEX_DEVICE,
   PROPERTY_INDEX_DEVICES,
-  PROPERTY_INDEX_EAP_IDENTITY,
-  PROPERTY_INDEX_EAP_METHOD,
-  PROPERTY_INDEX_EAP_PHASE_2_AUTH,
   PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
-  PROPERTY_INDEX_EAP_CLIENT_CERT,
-  PROPERTY_INDEX_EAP_CERT_ID,
-  PROPERTY_INDEX_EAP_CLIENT_CERT_NSS,
-  PROPERTY_INDEX_EAP_PRIVATE_KEY,
-  PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD,
-  PROPERTY_INDEX_EAP_KEY_ID,
   PROPERTY_INDEX_EAP_CA_CERT,
   PROPERTY_INDEX_EAP_CA_CERT_ID,
   PROPERTY_INDEX_EAP_CA_CERT_NSS,
-  PROPERTY_INDEX_EAP_USE_SYSTEM_CAS,
-  PROPERTY_INDEX_EAP_PIN,
-  PROPERTY_INDEX_EAP_PASSWORD,
+  PROPERTY_INDEX_EAP_CERT_ID,
+  PROPERTY_INDEX_EAP_CLIENT_CERT,
+  PROPERTY_INDEX_EAP_CLIENT_CERT_NSS,
+  PROPERTY_INDEX_EAP_IDENTITY,
+  PROPERTY_INDEX_EAP_KEY_ID,
   PROPERTY_INDEX_EAP_KEY_MGMT,
+  PROPERTY_INDEX_EAP_METHOD,
+  PROPERTY_INDEX_EAP_PASSWORD,
+  PROPERTY_INDEX_EAP_PHASE_2_AUTH,
+  PROPERTY_INDEX_EAP_PIN,
+  PROPERTY_INDEX_EAP_PRIVATE_KEY,
+  PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD,
+  PROPERTY_INDEX_EAP_USE_SYSTEM_CAS,
   PROPERTY_INDEX_ENABLED_TECHNOLOGIES,
   PROPERTY_INDEX_ERROR,
   PROPERTY_INDEX_ESN,
@@ -508,14 +513,15 @@ enum PropertyIndex {
   PROPERTY_INDEX_MODE,
   PROPERTY_INDEX_MODEL_ID,
   PROPERTY_INDEX_NAME,
-  PROPERTY_INDEX_NETWORK_TECHNOLOGY,
   PROPERTY_INDEX_NETWORKS,
+  PROPERTY_INDEX_NETWORK_TECHNOLOGY,
   PROPERTY_INDEX_OFFLINE_MODE,
   PROPERTY_INDEX_OPERATOR_CODE,
   PROPERTY_INDEX_OPERATOR_NAME,
   PROPERTY_INDEX_PASSPHRASE,
   PROPERTY_INDEX_PASSPHRASE_REQUIRED,
   PROPERTY_INDEX_PAYMENT_URL,
+  PROPERTY_INDEX_PORTAL_URL,
   PROPERTY_INDEX_POWERED,
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILE,
@@ -545,38 +551,39 @@ enum PropertyIndex {
   PROPERTY_INDEX_WIFI_PHY_MODE,
 };
 
-StringToEnum<PropertyIndex>::Pair property_index_table[] = {
+StringToEnum<PropertyIndex>::Pair property_index_table[] =  {
   { kActivationStateProperty, PROPERTY_INDEX_ACTIVATION_STATE },
   { kActiveProfileProperty, PROPERTY_INDEX_ACTIVE_PROFILE },
   { kAutoConnectProperty, PROPERTY_INDEX_AUTO_CONNECT },
   { kAvailableTechnologiesProperty, PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES },
-  { kCellularAllowRoamingProperty, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING },
-  { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
-  { kCellularApnListProperty, PROPERTY_INDEX_CELLULAR_APN_LIST },
-  { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
   { kCarrierProperty, PROPERTY_INDEX_CARRIER },
+  { kCellularAllowRoamingProperty, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING },
+  { kCellularApnListProperty, PROPERTY_INDEX_CELLULAR_APN_LIST },
+  { kCellularApnProperty, PROPERTY_INDEX_CELLULAR_APN },
+  { kCellularLastGoodApnProperty, PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN },
+  { kCheckPortalListProperty, PROPERTY_INDEX_CHECK_PORTAL_LIST },
   { kConnectableProperty, PROPERTY_INDEX_CONNECTABLE },
   { kConnectedTechnologiesProperty, PROPERTY_INDEX_CONNECTED_TECHNOLOGIES },
   { kDefaultTechnologyProperty, PROPERTY_INDEX_DEFAULT_TECHNOLOGY },
   { kDeviceProperty, PROPERTY_INDEX_DEVICE },
   { kDevicesProperty, PROPERTY_INDEX_DEVICES },
-  { kEapIdentityProperty, PROPERTY_INDEX_EAP_IDENTITY },
-  { kEapMethodProperty, PROPERTY_INDEX_EAP_METHOD },
-  { kEapPhase2AuthProperty, PROPERTY_INDEX_EAP_PHASE_2_AUTH },
   { kEapAnonymousIdentityProperty, PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY },
-  { kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
-  { kEapCertIDProperty, PROPERTY_INDEX_EAP_CERT_ID },
-  { kEapClientCertNssProperty, PROPERTY_INDEX_EAP_CLIENT_CERT_NSS },
-  { kEapPrivateKeyProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY },
-  { kEapPrivateKeyPasswordProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD },
-  { kEapKeyIDProperty, PROPERTY_INDEX_EAP_KEY_ID },
-  { kEapCaCertProperty, PROPERTY_INDEX_EAP_CA_CERT },
   { kEapCaCertIDProperty, PROPERTY_INDEX_EAP_CA_CERT_ID },
   { kEapCaCertNssProperty, PROPERTY_INDEX_EAP_CA_CERT_NSS },
-  { kEapUseSystemCAsProperty, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS },
-  { kEapPinProperty, PROPERTY_INDEX_EAP_PIN },
-  { kEapPasswordProperty, PROPERTY_INDEX_EAP_PASSWORD },
+  { kEapCaCertProperty, PROPERTY_INDEX_EAP_CA_CERT },
+  { kEapCertIDProperty, PROPERTY_INDEX_EAP_CERT_ID },
+  { kEapClientCertNssProperty, PROPERTY_INDEX_EAP_CLIENT_CERT_NSS },
+  { kEapClientCertProperty, PROPERTY_INDEX_EAP_CLIENT_CERT },
+  { kEapIdentityProperty, PROPERTY_INDEX_EAP_IDENTITY },
+  { kEapKeyIDProperty, PROPERTY_INDEX_EAP_KEY_ID },
   { kEapKeyMgmtProperty, PROPERTY_INDEX_EAP_KEY_MGMT },
+  { kEapMethodProperty, PROPERTY_INDEX_EAP_METHOD },
+  { kEapPasswordProperty, PROPERTY_INDEX_EAP_PASSWORD },
+  { kEapPhase2AuthProperty, PROPERTY_INDEX_EAP_PHASE_2_AUTH },
+  { kEapPinProperty, PROPERTY_INDEX_EAP_PIN },
+  { kEapPrivateKeyPasswordProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY_PASSWORD },
+  { kEapPrivateKeyProperty, PROPERTY_INDEX_EAP_PRIVATE_KEY },
+  { kEapUseSystemCAsProperty, PROPERTY_INDEX_EAP_USE_SYSTEM_CAS },
   { kEnabledTechnologiesProperty, PROPERTY_INDEX_ENABLED_TECHNOLOGIES },
   { kErrorProperty, PROPERTY_INDEX_ERROR },
   { kEsnProperty, PROPERTY_INDEX_ESN },
@@ -613,12 +620,14 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kPassphraseProperty, PROPERTY_INDEX_PASSPHRASE },
   { kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
   { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
+  { kPortalURLProperty, PROPERTY_INDEX_PORTAL_URL },
   { kPoweredProperty, PROPERTY_INDEX_POWERED },
   { kProfileProperty, PROPERTY_INDEX_PROFILE },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
   { kProviderProperty, PROPERTY_INDEX_PROVIDER },
   { kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
   { kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
+  { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { kScanningProperty, PROPERTY_INDEX_SCANNING },
   { kSecurityProperty, PROPERTY_INDEX_SECURITY },
@@ -627,7 +636,6 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kServicesProperty, PROPERTY_INDEX_SERVICES },
   { kServingOperatorProperty, PROPERTY_INDEX_SERVING_OPERATOR },
   { kSignalStrengthProperty, PROPERTY_INDEX_SIGNAL_STRENGTH },
-  { kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { kStateProperty, PROPERTY_INDEX_STATE },
   { kSupportNetworkScanProperty, PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
   { kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
@@ -2661,7 +2669,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
 
   typedef ObserverList<NetworkDeviceObserver> NetworkDeviceObserverList;
   typedef std::map<std::string, NetworkDeviceObserverList*>
-  NetworkDeviceObserverMap;
+      NetworkDeviceObserverMap;
 
   typedef std::map<std::string, Network*> NetworkMap;
   typedef std::map<std::string, int> PriorityMap;
@@ -2732,6 +2740,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   void DeleteNetworks();
   void DeleteRememberedNetworks();
   void DeleteDevice(const std::string& device_path);
+  void DeleteDeviceFromDeviceObserversMap(const std::string& device_path);
 
   // Profile management functions.
   void SetProfileType(Network* network, NetworkProfileType type);
@@ -2888,6 +2897,9 @@ NetworkLibraryImplBase::~NetworkLibraryImplBase() {
   DeleteNetworks();
   DeleteRememberedNetworks();
   STLDeleteValues(&data_plan_map_);
+  STLDeleteValues(&device_map_);
+  STLDeleteValues(&network_device_observers_);
+  STLDeleteValues(&network_observers_);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2974,6 +2986,17 @@ void NetworkLibraryImplBase::RemoveNetworkDeviceObserver(
       network_device_observers_.find(device_path);
   if (map_iter != network_device_observers_.end()) {
     map_iter->second->RemoveObserver(observer);
+  }
+}
+
+void NetworkLibraryImplBase::DeleteDeviceFromDeviceObserversMap(
+    const std::string& device_path) {
+  // Delete all device observers associated with this device.
+  NetworkDeviceObserverMap::iterator map_iter =
+      network_device_observers_.find(device_path);
+  if (map_iter != network_device_observers_.end()) {
+    delete map_iter->second;
+    network_device_observers_.erase(map_iter);
   }
 }
 
@@ -3889,6 +3912,7 @@ void NetworkLibraryImplBase::DeleteDevice(const std::string& device_path) {
   NetworkDevice* device = found->second;
   device_map_.erase(found);
   delete device;
+  DeleteDeviceFromDeviceObserversMap(device_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -4212,7 +4236,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   // NetworkDevice list management functions.
   void UpdateNetworkDeviceList(const ListValue* devices);
-  void DeleteDeviceFromDeviceObserversMap(const std::string& device_path);
   void ParseNetworkDevice(const std::string& device_path,
                           const DictionaryValue* info);
 
@@ -4908,8 +4931,12 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       UpdateNetworkDeviceList(vlist);
       break;
     }
+    case PROPERTY_INDEX_PORTAL_URL:
+    case PROPERTY_INDEX_CHECK_PORTAL_LIST:
+      // Currently we ignore PortalURL and CheckPortalList.
+      break;
     default:
-      LOG(WARNING) << "Unhandled key: " << key;
+      LOG(WARNING) << "Manager: Unhandled key: " << key;
       break;
   }
   base::TimeDelta delta = base::TimeTicks::Now() - start;
@@ -5362,25 +5389,12 @@ void NetworkLibraryImplCros::NetworkDeviceUpdate(
   if (device_path) {
     if (!info) {
       // device no longer exists.
-      std::string device_str(device_path);
-      networklib->DeleteDevice(device_str);
-      networklib->DeleteDeviceFromDeviceObserversMap(device_str);
+      networklib->DeleteDevice(std::string(device_path));
     } else {
       DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
       networklib->ParseNetworkDevice(std::string(device_path), dict);
     }
-  }
-}
-
-void NetworkLibraryImplCros::DeleteDeviceFromDeviceObserversMap(
-    const std::string& device_path) {
-  // Delete all device observers associated with this device.
-  NetworkDeviceObserverMap::iterator map_iter =
-      network_device_observers_.find(device_path);
-  if (map_iter != network_device_observers_.end()) {
-    delete map_iter->second;
-    network_device_observers_.erase(map_iter);
   }
 }
 
