@@ -36,13 +36,6 @@ ACTION_P(InvokeCallback, callback_result) {
   delete arg0;
 }
 
-// TODO(skrul) This test fails on the mac. See http://crbug.com/33443
-#if defined(OS_MACOSX)
-#define SKIP_MACOSX(test) DISABLED_##test
-#else
-#define SKIP_MACOSX(test) test
-#endif
-
 // TODO(chron): Test not using cros_user flag and use signin_
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
@@ -105,7 +98,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   }
 };
 
-TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
+TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
 
@@ -158,7 +151,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
-TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
+TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
   EXPECT_CALL(*data_type_manager, state()).
@@ -174,7 +167,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
   service_->Initialize();
 }
 
-TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
+TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   profile_.GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
@@ -188,7 +181,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
   service_->Initialize();
 }
 
-TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
+TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(2);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
@@ -280,7 +273,7 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   service_->ResetClearServerDataState();
 }
 
-TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
+TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureResult configure_result =
       DataTypeManager::ASSOCIATION_FAILED;
