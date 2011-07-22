@@ -51,13 +51,6 @@ void MessagePumpX::DisableGtkMessagePump() {
   use_gtk_message_pump = false;
 }
 
-// static
-Display* MessagePumpX::GetDefaultXDisplay() {
-  static GdkDisplay* display = gdk_display_get_default();
-  return display ? GDK_DISPLAY_XDISPLAY(display) : NULL;
-}
-
-
 bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
   return (!use_gtk_message_pump || capture_x_events_[xev->type])
       && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
@@ -93,7 +86,7 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
 }
 
 bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
-  Display* display = GetDefaultXDisplay();
+  Display* display = MessageLoopForUI::current()->GetDisplay();
   if (!display || !GetDispatcher())
     return g_main_context_iteration(context, block);
 
@@ -199,7 +192,7 @@ void MessagePumpX::InitializeEventsToCapture(void) {
 }
 
 void MessagePumpX::InitializeXInput2(void) {
-  Display* display = GetDefaultXDisplay();
+  Display* display = MessageLoopForUI::current()->GetDisplay();
   if (!display)
     return;
 

@@ -9,7 +9,6 @@
 #include <X11/extensions/XInput2.h>
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "ui/base/x/x11_util.h"
 
 namespace {
 
@@ -20,8 +19,8 @@ int GetXInputOpCode() {
   int event;
   int error;
 
-  if (!XQueryExtension(
-          ui::GetXDisplay(), kExtensionName, &xi_opcode, &event, &error)) {
+  Display* display = MessageLoopForUI::current()->GetDisplay();
+  if (!XQueryExtension(display, kExtensionName, &xi_opcode, &event, &error)) {
     VLOG(1) << "X Input extension not available: error=" << error;
     return -1;
   }
@@ -38,7 +37,7 @@ void SelectXInputEvents() {
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
 
-  Display* display = ui::GetXDisplay();
+  Display* display = MessageLoopForUI::current()->GetDisplay();
   XISelectEvents(display, DefaultRootWindow(display), &evmask, 1);
 }
 

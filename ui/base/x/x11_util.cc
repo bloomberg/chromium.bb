@@ -20,7 +20,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -97,7 +96,12 @@ bool XDisplayExists() {
 }
 
 Display* GetXDisplay() {
-  return base::MessagePumpForUI::GetDefaultXDisplay();
+  static Display* display = NULL;
+
+  if (!display)
+    display = gdk_x11_get_default_xdisplay();
+
+  return display;
 }
 
 static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
