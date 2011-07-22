@@ -1139,7 +1139,7 @@ void BaseTransaction::Lock() {
 
   time_acquired_ = base::TimeTicks::Now();
   const base::TimeDelta elapsed = time_acquired_ - start_time;
-  VLOG_LOC(from_here_, 1)
+  VLOG_LOC(from_here_, 2)
       << name_ << " transaction waited "
       << elapsed.InSecondsF() << " seconds.";
 }
@@ -1147,7 +1147,7 @@ void BaseTransaction::Lock() {
 void BaseTransaction::Unlock() {
   dirkernel_->transaction_mutex.Release();
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  VLOG_LOC(from_here_, 1)
+  VLOG_LOC(from_here_, 2)
         << name_ << " transaction completed in " << elapsed.InSecondsF()
         << " seconds.";
 }
