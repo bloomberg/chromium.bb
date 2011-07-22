@@ -84,7 +84,7 @@ for r in all_reports:
                          for url in all_reports[r]]):
     # Include mac suppressions if the report is only present on Mac
     cur_supp = common_suppressions + mac_suppressions
-  elif set([False]) == set([not re.search("Linux%20Heapcheck", url)\
+  elif set([False]) == set([not re.search("%20Heapcheck", url)\
                          for url in all_reports[r]]):
     cur_supp = common_suppressions + heapcheck_suppressions
   else:
