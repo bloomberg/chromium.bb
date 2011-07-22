@@ -75,6 +75,8 @@ void RegisterPluginInterface(const char* interface_name,
                              const void* ppp_interface);
 
 // Helper for creating user callbacks whose invocation will be reported to JS.
+// Callback setting allows for synchronous completion to make it easier to
+// test error conditions.
 // WARNING: Do not reuse this callback if the operation that took it as an arg
 // returned PP_OK_COMPLETIONPENDING. The wrapper allocates data on creation
 // and then deallocates it when the callback is invoked.

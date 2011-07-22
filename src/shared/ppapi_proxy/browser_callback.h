@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@ namespace ppapi_proxy {
 
 // Returns a PP_CompletionCallback that will call the remote implementation of
 // a callback by |callback_id| on the plugin side on |srpc_channel|.
+// This callback allows for optimized synchronous completion.
 // Allocates data that will be deleted by the underlying callback function.
 // Returns NULL callback on failure.
 struct PP_CompletionCallback MakeRemoteCompletionCallback(

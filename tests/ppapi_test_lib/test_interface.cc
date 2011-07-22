@@ -119,9 +119,10 @@ PP_CompletionCallback MakeTestableCompletionCallback(
   CallbackInfo* callback_info = new(std::nothrow) CallbackInfo;
   CHECK(callback_info != NULL);
   callback_info->callback_name = callback_name;
-  callback_info->user_callback = PP_MakeCompletionCallback(func, user_data);
+  callback_info->user_callback =
+    PP_MakeOptionalCompletionCallback(func, user_data);
 
-  return PP_MakeCompletionCallback(CallbackWrapper, callback_info);
+  return PP_MakeOptionalCompletionCallback(CallbackWrapper, callback_info);
 }
 
 PP_CompletionCallback MakeTestableCompletionCallback(

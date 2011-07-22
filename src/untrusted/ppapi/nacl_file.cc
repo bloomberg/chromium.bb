@@ -21,6 +21,8 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_nacl_file.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
@@ -37,6 +39,7 @@
 // TODO(nfullagar): Finer grained locking for better performance.
 // TODO(nfullagar): Use dup() to manufacture unique descriptors.
 
+using ppapi_proxy::MayForceCallback;
 
 namespace {
 
@@ -57,7 +60,6 @@ enum EntryStatus {
 struct FileEntry {
   PP_Instance instance;
   PP_CompletionCallback callback;    // user supplied callback
-  bool chain;                        // required for SteamAsFile work around
   char* url;                         // name of url (or filename) from LoadUrl()
   int real_descriptor;               // shared descriptor of open file
   pthread_mutex_t completion_mutex;  // locked: LoadUrl() to completion callback
@@ -103,9 +105,7 @@ void UrlDidLoad(void* user_data, int32_t pp_error) {
   }
   // Other threads waiting inside __wrap_open on this lock will proceed.
   pthread_mutex_unlock(&entry->completion_mutex);
-  // Chain to the user supplied completion callback.
-  if (entry->chain)
-    PP_RunCompletionCallback(&entry->callback, pp_error);
+  PP_RunCompletionCallback(&entry->callback, pp_error);
   // TODO(nfullagar): Failed files should be removed from the file list...
 }
 }  // namespace
@@ -117,20 +117,20 @@ int32_t LoadUrl(PP_Instance instance,
   // must be called from the main PPAPI thread.
   if (PP_FALSE == ppapi_proxy::PPBCoreInterface()->IsMainThread()) {
     NACL_UNTESTED();
-    return PP_ERROR_FAILED;
+    return MayForceCallback(callback, PP_ERROR_FAILED);
   }
   // TODO(nfullagar): Add support for blocking version.
   if (NULL == callback.func)
-    return PP_ERROR_BADARGUMENT;
+    return MayForceCallback(callback, PP_ERROR_BADARGUMENT);
 
   FileEntry* entry = new(std::nothrow) FileEntry;
   if (NULL == entry)
-    return PP_ERROR_NOMEMORY;
+    return MayForceCallback(callback, PP_ERROR_NOMEMORY);
   entry->instance = instance;
   entry->url = strdup(url);
   if (NULL == entry->url) {
     delete entry;
-    return PP_ERROR_NOMEMORY;
+    return MayForceCallback(callback, PP_ERROR_NOMEMORY);
   }
   entry->callback = callback;
   entry->load_status = kStatusInprogress;
@@ -145,21 +145,10 @@ int32_t LoadUrl(PP_Instance instance,
   pthread_mutex_unlock(&global_nacl_file_mutex);
 
   PP_CompletionCallback loaded = PP_MakeCompletionCallback(UrlDidLoad, entry);
-  // TODO(nfullagar): remove |chain| work-around once StreamAsFile() and
-  // friends invoke callbacks PPAPI style.
-  entry->chain = true;
+  loaded.flags = callback.flags;
   int32_t pp_error = ppapi_proxy::StreamAsFile(instance, url, loaded);
-  if (PP_OK == pp_error) {
-    // Operation completed synchronously; explicitly schedule the callback to
-    // mimic asynchronous behavior. Due to this, LoadUrl() as it is now, will
-    // never return PP_OK.
-    pp_error = PP_OK_COMPLETIONPENDING;
-    ppapi_proxy::PPBCoreInterface()->CallOnMainThread(0, loaded, pp_error);
-  } else if (PP_OK_COMPLETIONPENDING != pp_error) {
-    entry->chain = false;
-    PP_RunCompletionCallback(&loaded, pp_error);
-  }
-  return pp_error;
+  CHECK(pp_error != PP_OK);  // Never succeeds synchronously.
+  return MayForceCallback(loaded, pp_error);  // loaded runs callback.
 }
 
 // Generally, __wrap_open(), __wrap_read(), __wrap_lseek(), __wrap_close() can
@@ -322,4 +311,3 @@ off_t __wrap_lseek(int descriptor, off_t offset, int whence) {
   pthread_mutex_unlock(&global_nacl_file_mutex);
   return offset;
 }
-

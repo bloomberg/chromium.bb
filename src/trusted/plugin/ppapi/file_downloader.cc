@@ -34,12 +34,20 @@ void FileDownloader::Initialize(PluginPpapi* instance) {
   CHECK(instance_ == NULL);  // Can only initialize once.
   instance_ = instance;
   callback_factory_.Initialize(this);
+  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
 }
 
 
 bool FileDownloader::Open(const nacl::string& url,
                           DownloadFlags flags,
                           const pp::CompletionCallback& callback) {
+  PLUGIN_PRINTF(("FileDownloader::Open (url=%s)\n", url.c_str()));
+  if (callback.pp_completion_callback().func == NULL ||
+      instance_ == NULL ||
+      file_io_trusted_interface_ == NULL)
+    return false;
+
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
   url_to_open_ = url;
@@ -49,8 +57,6 @@ bool FileDownloader::Open(const nacl::string& url,
   buffer_.clear();
   pp::Module* module = pp::Module::Get();
   pp::URLRequestInfo url_request(instance_);
-  int32_t pp_error = PP_OK;
-
 
   do {
     // Reset the url loader and file reader.
@@ -75,8 +81,12 @@ bool FileDownloader::Open(const nacl::string& url,
       if (streaming_to_buffer()) {
         grant_universal_access = true;
       } else {
-        pp_error = PP_ERROR_BADARGUMENT;
-        break;
+        // Open is to invoke a callback on success or failure. Schedule
+        // it asynchronously to follow PPAPI's convention and avoid reentrancy.
+        pp::Core* core = pp::Module::Get()->core();
+        core->CallOnMainThread(0, callback, PP_ERROR_NOACCESS);
+        PLUGIN_PRINTF(("FileDownloader::Open (pp_error=PP_ERROR_NOACCESS)\n"));
+        return true;
       }
     }
 
@@ -84,7 +94,7 @@ bool FileDownloader::Open(const nacl::string& url,
       const PPB_URLLoaderTrusted* url_loaded_trusted =
           static_cast<const PPB_URLLoaderTrusted*>(
           module->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
-      if (url_loaded_trusted)
+      if (url_loaded_trusted != NULL)
         url_loaded_trusted->GrantUniversalAccess(url_loader_.pp_resource());
     }
 
@@ -93,13 +103,6 @@ bool FileDownloader::Open(const nacl::string& url,
 
     if (streaming_to_file()) {
       file_reader_ = pp::FileIO(instance_);
-      file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
-        module->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
-      if (file_io_trusted_interface_ == NULL) {
-        // Interface not supported by our browser
-        pp_error = PP_ERROR_NOINTERFACE;
-        break;
-      }
       url_request.SetStreamToFile(true);
     }
   } while (0);
@@ -111,21 +114,15 @@ bool FileDownloader::Open(const nacl::string& url,
     start_notify = &FileDownloader::URLBufferStartNotify;
 
   // Request asynchronous download of the url providing an on-load callback.
+  // As long as this step is guaranteed to be asynchronous, we can call
+  // synchronously all other internal callbacks that eventually result in the
+  // invocation of the user callback. The user code will not be reentered.
   pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(start_notify);
-  bool async_notify_ok = false;
-  if (pp_error == PP_OK) {
-    pp_error = url_loader_.Open(url_request, onload_callback);
-    async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
-    PLUGIN_PRINTF(("FileDownloader::Open (async_notify_ok=%d)\n",
-                   async_notify_ok));
-  }
-  if (!async_notify_ok) {
-    // Call manually to free allocated memory and report errors.  This calls
-    // |file_open_notify_callback_| with |pp_error| as the parameter.
-    onload_callback.Run(pp_error);
-  }
-  return async_notify_ok;
+      callback_factory_.NewRequiredCallback(start_notify);
+  int32_t pp_error = url_loader_.Open(url_request, onload_callback);
+  PLUGIN_PRINTF(("FileDownloader::Open (pp_error=%"NACL_PRId32")\n", pp_error));
+  CHECK(pp_error == PP_OK_COMPLETIONPENDING);
+  return true;
 }
 
 int32_t FileDownloader::GetPOSIXFileDescriptor() {
@@ -222,9 +219,10 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
 
   if (!InitialResponseIsValid(pp_error))
     return;
-  // Finish streaming the body asynchronously providing a callback.
+  // Finish streaming the body providing an optional callback.
   pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(&FileDownloader::URLLoadFinishNotify);
+      callback_factory_.NewOptionalCallback(
+          &FileDownloader::URLLoadFinishNotify);
   pp_error = url_loader_.FinishStreamingToFile(onload_callback);
   bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (async_notify_ok=%d)\n",
@@ -267,9 +265,9 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
     return;
   }
 
-  // Open the file asynchronously providing a callback.
+  // Open the file providing an optional callback.
   pp::CompletionCallback onopen_callback =
-      callback_factory_.NewCallback(&FileDownloader::FileOpenNotify);
+      callback_factory_.NewOptionalCallback(&FileDownloader::FileOpenNotify);
   pp_error = file_reader_.Open(file, PP_FILEOPENFLAG_READ, onopen_callback);
   bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (async_notify_ok=%d)\n",
@@ -289,7 +287,7 @@ void FileDownloader::URLBufferStartNotify(int32_t pp_error) {
     return;
   // Finish streaming the body asynchronously providing a callback.
   pp::CompletionCallback onread_callback =
-      callback_factory_.NewCallback(&FileDownloader::URLReadBodyNotify);
+      callback_factory_.NewOptionalCallback(&FileDownloader::URLReadBodyNotify);
   pp_error = url_loader_.ReadResponseBody(temp_buffer_,
                                           kTempBufferSize,
                                           onread_callback);
@@ -311,7 +309,8 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
   } else {
     buffer_.insert(buffer_.end(), temp_buffer_, temp_buffer_ + pp_error);
     pp::CompletionCallback onread_callback =
-        callback_factory_.NewCallback(&FileDownloader::URLReadBodyNotify);
+        callback_factory_.NewOptionalCallback(
+            &FileDownloader::URLReadBodyNotify);
     pp_error = url_loader_.ReadResponseBody(temp_buffer_,
                                             kTempBufferSize,
                                             onread_callback);
@@ -321,7 +320,6 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
     }
   }
 }
-
 
 void FileDownloader::FileOpenNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::FileOpenNotify (pp_error=%"NACL_PRId32")\n",

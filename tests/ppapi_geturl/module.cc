@@ -84,20 +84,14 @@ PP_Bool Instance_DidCreate(PP_Instance pp_instance,
   PP_CompletionCallback html_cb =
       PP_MakeCompletionCallback(HTMLLoaded, url_count);
   int32_t result = LoadUrl(pp_instance, "ppapi_geturl_success.html", html_cb);
-  if (PP_OK_COMPLETIONPENDING != result)
-    PP_RunCompletionCallback(&html_cb, result);
 
   PP_CompletionCallback robot_cb =
       PP_MakeCompletionCallback(RobotLoaded, url_count);
   result = LoadUrl(pp_instance, "http://www.google.com/robots.txt", robot_cb);
-  if (PP_OK_COMPLETIONPENDING != result)
-    PP_RunCompletionCallback(&robot_cb, result);
 
   PP_CompletionCallback non_exist_cb =
       PP_MakeCompletionCallback(NonExistLoaded, url_count);
   result = LoadUrl(pp_instance, "ppapi_nonexistent_url.html", non_exist_cb);
-  if (PP_OK_COMPLETIONPENDING != result)
-    PP_RunCompletionCallback(&non_exist_cb, result);
 
   return PP_TRUE;
 }

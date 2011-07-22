@@ -123,6 +123,7 @@ class ReaderStreamAsFile {
 
   void ReadMore() {
     pp::CompletionCallback cc(ReadCompleteCallback, this);
+    cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
     int32_t rv = file_io_->Read(current_offset_, buffer_, chunk_size_, cc);
     if (rv == PP_OK) {
       cc.Run(rv);
@@ -151,10 +152,7 @@ class ReaderStreamAsFile {
 
     pp::CompletionCallback cc(OpenFileCompleteCallback, this);
     int32_t rv = file_io_->Open(*file_ref_, PP_FILEOPENFLAG_READ, cc);
-
-    if (rv == PP_OK) {
-      cc.Run(rv);
-    } else if (rv != PP_OK_COMPLETIONPENDING) {
+    if (rv != PP_OK_COMPLETIONPENDING) {
       Message("Error: OpenFile unexpected rv");
     }
   }
@@ -171,6 +169,7 @@ class ReaderStreamAsFile {
 
   void Finish() {
     pp::CompletionCallback cc(FinishCompleteCallback, this);
+    cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
     int32_t rv = loader_.FinishStreamingToFile(cc);
     if (rv == PP_OK) {
       cc.Run(rv);
@@ -203,9 +202,7 @@ class ReaderStreamAsFile {
 
     pp::CompletionCallback cc(OpenURLCompleteCallback, this);
     int32_t rv = loader_.Open(request, cc);
-    if (rv == PP_OK) {
-      cc.Run(rv);
-    } else if (rv != PP_OK_COMPLETIONPENDING) {
+    if (rv != PP_OK_COMPLETIONPENDING) {
       Message("Error: OpenURL unexpected rv");
     }
   }
@@ -257,6 +254,7 @@ class ReaderResponseBody {
 
   void ReadMore() {
     pp::CompletionCallback cc(ReadCompleteCallback, this);
+    cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
     int rv = loader_.ReadResponseBody(buffer_, chunk_size_, cc);
     if (rv == PP_OK) {
       cc.Run(rv);
@@ -295,9 +293,7 @@ class ReaderResponseBody {
 
     pp::CompletionCallback cc(LoadCompleteCallback, this);
     int32_t rv = loader_.Open(request, cc);
-    if (rv == PP_OK) {
-      cc.Run(rv);
-    } else if (rv != PP_OK_COMPLETIONPENDING) {
+    if (rv != PP_OK_COMPLETIONPENDING) {
       Message("Error: ReaderResponseBody: unexpected rv");
     }
   }

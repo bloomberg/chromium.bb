@@ -47,13 +47,10 @@ class FileDownloader {
   void Initialize(PluginPpapi* instance);
 
   // Issues a GET on |url| downloading the response into a file. The file is
-  // then opened and a file descriptor is made available. Returns immediately
-  // indicating if the above steps could be scheduled asynchronously. The
-  // |callback| will always be called with a code indicating success or failure
-  // of any of the steps.  Fails if Initialize() has not been called.
-  // NOTE: If you call Open() before Initialize() has been called or if the
-  // FileIOTrustedInterface is not available, then |callback| will not be called
-  // and you get a false return value.
+  // then opened and a file descriptor is made available.
+  // Returns true when callback is scheduled to be called on success or failure.
+  // Returns false if callback is NULL, Initialize() has not been called or if
+  // the PPB_FileIO_Trusted interface is not available.
   bool Open(const nacl::string& url,
             DownloadFlags flags,
             const pp::CompletionCallback& callback);

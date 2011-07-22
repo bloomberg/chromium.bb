@@ -1172,7 +1172,8 @@ void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
       if (SelectLLCURLFromManifest(&llc_url, &error_info) &&
           SelectLDURLFromManifest(&ld_url, &error_info)) {
         pp::CompletionCallback translate_callback =
-            callback_factory_.NewCallback(&PluginPpapi::BitcodeDidTranslate);
+            callback_factory_.NewCallback(
+                &PluginPpapi::BitcodeDidTranslate);
         // Will always call the callback on success or failure.
         pnacl_.BitcodeToNative(program_url,
                                llc_url,
@@ -1182,9 +1183,10 @@ void PluginPpapi::ProcessNaClManifest(const nacl::string& manifest_json) {
       }
     } else {
       pp::CompletionCallback open_callback =
-          callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+          callback_factory_.NewRequiredCallback(&PluginPpapi::NexeFileDidOpen);
       // Will always call the callback on success or failure.
-      nexe_downloader_.Open(program_url, DOWNLOAD_TO_FILE, open_callback);
+      CHECK(
+          nexe_downloader_.Open(program_url, DOWNLOAD_TO_FILE, open_callback));
       return;
     }
   }
@@ -1223,18 +1225,20 @@ void PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewCallback(&PluginPpapi::NaClManifestBufferReady);
+        callback_factory_.NewRequiredCallback(
+            &PluginPpapi::NaClManifestBufferReady);
     // Will always call the callback on success or failure.
-    nexe_downloader_.Open(nmf_resolved_url.AsString(),
-                          DOWNLOAD_TO_BUFFER,
-                          open_callback);
+    CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
+                                DOWNLOAD_TO_BUFFER,
+                                open_callback));
   } else {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
+        callback_factory_.NewRequiredCallback(
+            &PluginPpapi::NaClManifestFileDidOpen);
     // Will always call the callback on success or failure.
-    nexe_downloader_.Open(nmf_resolved_url.AsString(),
-                          DOWNLOAD_TO_FILE,
-                          open_callback);
+    CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
+                                DOWNLOAD_TO_FILE,
+                                open_callback));
   }
 }
 
@@ -1363,9 +1367,8 @@ void PluginPpapi::UrlAsNaClDesc(const nacl::string& url,
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
   pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForUrlAsNaClDesc,
-                                    downloader,
-                                    js_callback);
+      callback_factory_.NewRequiredCallback(
+          &PluginPpapi::UrlDidOpenForUrlAsNaClDesc, downloader, js_callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -1378,7 +1381,7 @@ void PluginPpapi::UrlAsNaClDesc(const nacl::string& url,
     return;
   }
   // Will always call the callback on success or failure.
-  downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
+  CHECK(downloader->Open(url, DOWNLOAD_TO_FILE, open_callback));
 }
 
 
@@ -1389,9 +1392,8 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
   pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForStreamAsFile,
-                                    downloader,
-                                    callback);
+      callback_factory_.NewRequiredCallback(
+          &PluginPpapi::UrlDidOpenForStreamAsFile, downloader, callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -1403,7 +1405,7 @@ bool PluginPpapi::StreamAsFile(const nacl::string& url,
                    plugin_base_url().c_str()));
     return false;
   }
-  // Will always call the callback on success or failure.
+  // If true, will always call the callback on success or failure.
   return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
 }
 

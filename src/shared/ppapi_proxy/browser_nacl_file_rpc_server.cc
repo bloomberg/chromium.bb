@@ -80,4 +80,3 @@ void NaClFileRpcServer::GetFileDesc(
     DebugPrintf("NaClFile::GetFileDesc is disabled (and experimental.)\n");
   }
 }
-

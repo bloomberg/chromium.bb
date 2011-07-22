@@ -125,7 +125,7 @@ void PpbAudioRpcServer::PPB_Audio_Create(
     return;
   }
   data = new StreamCreatedCallbackData(instance, audio_id);
-  callback = PP_MakeCompletionCallback(StreamCreatedCallback, data);
+  callback = PP_MakeOptionalCompletionCallback(StreamCreatedCallback, data);
   int32_t pp_error = audio->Open(audio_id, config, callback);
   DebugPrintf("PPB_Audio::Create: pp_error=%"NACL_PRIu32"\n", pp_error);
   // If the Open() call failed, pass failure code and explicitly

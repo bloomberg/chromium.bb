@@ -100,7 +100,8 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
     remote_callback->read_buffer = *buffer;
   }
 
-  return PP_MakeCompletionCallback(RunRemoteCallback, remote_callback);
+  return PP_MakeOptionalCompletionCallback(
+      RunRemoteCallback, remote_callback);
 }
 
 struct PP_CompletionCallback MakeRemoteCompletionCallback(

@@ -101,7 +101,7 @@ void ReadCallback(void* user_data, int32_t pp_error_or_bytes) {
   } else {
     buffer_pos += pp_error_or_bytes;
     PP_CompletionCallback callback =
-        PP_MakeCompletionCallback(ReadCallback, user_data);
+        PP_MakeOptionalCompletionCallback(ReadCallback, user_data);
     pp_error_or_bytes =
         PPBURLLoader()->ReadResponseBody(url_loader,
                                          buffer + buffer_pos,
@@ -116,7 +116,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
   void* user_data = reinterpret_cast<void*>(url_loader);
   PP_CompletionCallback callback =
-      PP_MakeCompletionCallback(ReadCallback, user_data);
+      PP_MakeOptionalCompletionCallback(ReadCallback, user_data);
   int32_t pp_error_or_bytes = PPBURLLoader()->ReadResponseBody(url_loader,
                                                                buffer,
                                                                kMaxFileSize,

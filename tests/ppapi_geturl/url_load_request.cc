@@ -167,14 +167,10 @@ bool UrlLoadRequest::Load(bool as_file, std::string url) {
   if (set_url != PP_TRUE || set_method != PP_TRUE || set_file != PP_TRUE) {
     return ReportFailure("PPB_URLRequestInfo::SetProperty: failed");
   }
-  int32_t pp_error = loader_interface_->Open(
+  loader_interface_->Open(
       loader_,
       request_,
       PP_MakeCompletionCallback(::OpenCallback, this));
-  CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
-  if (pp_error != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
-    return ReportFailure("PPB_URLLoader::Open: ", pp_error);
-  }
   return true;
 }
 
@@ -238,30 +234,20 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
 }
 
 void UrlLoadRequest::ReadResponseBody() {
-  int32_t pp_error_or_bytes = loader_interface_->ReadResponseBody(
+  loader_interface_->ReadResponseBody(
       loader_,
       buffer_,
       sizeof(buffer_),
       PP_MakeCompletionCallback(::ReadResponseBodyCallback, this));
-  if (pp_error_or_bytes >= PP_OK) {  // Synchronous read, callback ignored.
-    ReadResponseBodyCallback(pp_error_or_bytes);
-  } else if (pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
-    ReportFailure("PPB_URLLoader::ReadResponseBody: ", pp_error_or_bytes);
-  }
 }
 
 void UrlLoadRequest::ReadFileBody() {
-  int32_t pp_error_or_bytes = fileio_interface_->Read(
+  fileio_interface_->Read(
       fileio_,
       read_offset_,
       buffer_,
       sizeof(buffer_),
       PP_MakeCompletionCallback(::ReadFileBodyCallback, this));
-  if (pp_error_or_bytes >= PP_OK) {  // Synchronous read, callback ignored.
-    ReadFileBodyCallback(pp_error_or_bytes);
-  } else if (pp_error_or_bytes != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
-    ReportFailure("PPB_FILEIO::Read: ", pp_error_or_bytes);
-  }
 }
 
 void UrlLoadRequest::OpenCallback(int32_t pp_error) {
@@ -299,14 +285,9 @@ void UrlLoadRequest::OpenCallback(int32_t pp_error) {
   }
 
   if (as_file_) {
-    int32_t pp_error = loader_interface_->FinishStreamingToFile(
+    loader_interface_->FinishStreamingToFile(
         loader_,
         PP_MakeCompletionCallback(::FinishStreamingToFileCallback, this));
-    if (pp_error == PP_OK) {  // Reached EOF.
-      FinishStreamingToFileCallback(pp_error);
-    } else if (pp_error != PP_OK_COMPLETIONPENDING) {  // Asynch failure.
-      ReportFailure("PPB_URLLoader::FinishStreamingToFile: ", pp_error);
-    }
   } else {
     ReadResponseBody();
   }
@@ -323,15 +304,11 @@ void UrlLoadRequest::FinishStreamingToFileCallback(int32_t pp_error) {
     ReportFailure("UrlLoadRequest::FinishStreamingToFileCallback: null file");
     return;
   }
-  pp_error = fileio_interface_->Open(
+  fileio_interface_->Open(
       fileio_,
       fileref,
       PP_FILEOPENFLAG_READ,
       PP_MakeCompletionCallback(::OpenFileBodyCallback, this));
-  CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
-  if (pp_error != PP_OK_COMPLETIONPENDING)  {  // Async failure.
-    ReportFailure("PPB_FileIO::Open: ", pp_error);
-  }
 }
 
 void UrlLoadRequest::ReadResponseBodyCallback(int32_t pp_error_or_bytes) {
