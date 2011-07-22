@@ -85,7 +85,8 @@ WebPreferences::WebPreferences()
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
       should_print_backgrounds(false),
-      enable_scroll_animator(false) {
+      enable_scroll_animator(false),
+      hixie76_websocket_protocol_enabled(false) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -236,6 +237,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
   settings->setEnableScrollAnimator(enable_scroll_animator);
+  settings->setHixie76WebSocketProtocolEnabled(
+      hixie76_websocket_protocol_enabled);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }
