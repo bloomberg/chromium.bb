@@ -124,8 +124,10 @@ class RequestHandler(object):
     rmsg = dm.DeviceManagementRequest()
     rmsg.ParseFromString(self._request)
 
-    logging.debug('auth -> ' + self._headers.getheader('Authorization', ''))
-    logging.debug('deviceid -> ' + self.GetUniqueParam('deviceid'))
+    logging.debug('gaia auth token -> ' +
+                  self._headers.getheader('Authorization', ''))
+    logging.debug('oauth token -> ' + str(self.GetUniqueParam('oauth_token')))
+    logging.debug('deviceid -> ' + str(self.GetUniqueParam('deviceid')))
     self.DumpMessage('Request', rmsg)
 
     request_type = self.GetUniqueParam('request')
@@ -147,14 +149,21 @@ class RequestHandler(object):
       return (400, 'Invalid request parameter')
 
   def CheckGoogleLogin(self):
-    """Extracts the GoogleLogin auth token from the HTTP request, and
-    returns it. Returns None if the token is not present.
+    """Extracts the auth token from the request and returns it. The token may
+    either be a GoogleLogin token from an Authorization header, or an OAuth V2
+    token from the oauth_token query parameter. Returns None if no token is
+    present.
     """
+    oauth_token = self.GetUniqueParam('oauth_token')
+    if oauth_token:
+      return oauth_token
+
     match = re.match('GoogleLogin auth=(\\w+)',
                      self._headers.getheader('Authorization', ''))
-    if not match:
-      return None
-    return match.group(1)
+    if match:
+      return match.group(1)
+
+    return None
 
   def ProcessRegister(self, msg):
     """Handles a register request.
