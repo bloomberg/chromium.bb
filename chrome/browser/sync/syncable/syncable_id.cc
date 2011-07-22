@@ -58,6 +58,12 @@ Id Id::GetLexicographicSuccessor() const {
   return id;
 }
 
+bool Id::ContainsStringCaseInsensitive(
+    const std::string& lowercase_query) const {
+  DCHECK_EQ(StringToLowerASCII(lowercase_query), lowercase_query);
+  return StringToLowerASCII(s_).find(lowercase_query) != std::string::npos;
+}
+
 // static
 Id Id::GetLeastIdForLexicographicComparison() {
   Id id;

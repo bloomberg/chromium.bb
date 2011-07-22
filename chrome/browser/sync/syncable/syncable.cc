@@ -239,11 +239,16 @@ bool EntryKernel::ContainsString(const std::string& lowercase_query) const {
 
   // Now go through all the string fields to see if the value is there.
   for (int i = STRING_FIELDS_BEGIN; i < STRING_FIELDS_END; ++i) {
-    std::string value = ref(static_cast<StringField>(i));
-
-    StringToLowerASCII(&value);
-    if (value.find(lowercase_query) != std::string::npos)
+    if (StringToLowerASCII(ref(static_cast<StringField>(i))).find(
+            lowercase_query) != std::string::npos)
       return true;
+  }
+
+  for (int i = ID_FIELDS_BEGIN; i < ID_FIELDS_END; ++i) {
+    const Id& id = ref(static_cast<IdField>(i));
+    if (id.ContainsStringCaseInsensitive(lowercase_query)) {
+      return true;
+    }
   }
   return false;
 }
