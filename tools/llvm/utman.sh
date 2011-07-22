@@ -213,9 +213,10 @@ else
 fi
 
 # Current milestones in each repo
-# hg-update-all uses these
+# hg-update-pnacl-sfi uses these
 readonly LLVM_REV=9ca0d1b53734
 readonly LLVM_GCC_REV=e093fe8c5603
+# hg-update-non-llvm uses these
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=14dd509248e5
 readonly COMPILER_RT_REV=1a3a6ffb31ea
@@ -342,10 +343,15 @@ hg-info-all() {
   hg-info "${TC_SRC_LLVM_GCC_MQ_PATCHES}"  ${LLVM_MQ_REV}
 }
 
-#@ hg-update-all      - Update all repos to the latest stable rev
-hg-update-all() {
+#@ hg-update-llvm-pnacl-sfi      - Update LLVM/LLVM-GCC repos without MQ
+hg-update-llvm-pnacl-sfi() {
   hg-update-llvm-gcc
   hg-update-llvm
+}
+
+#@ hg-update-non-llvm  - Update all repos to the latest stable rev,
+# other than LLVM and LLVM-GCC (they are handled separately via MQ)
+hg-update-non-llvm() {
   hg-update-newlib
   hg-update-binutils
   hg-update-compiler-rt
@@ -353,7 +359,6 @@ hg-update-all() {
   hg-update-llvm-mq-patches
   hg-update-llvm-gcc-mq-patches
 }
-
 
 hg-assert-safe-to-update() {
   local name="$1"
@@ -735,9 +740,10 @@ everything() {
     setup-hg-mq
   else
     StepBanner "Updating all hg sources"
-    hg-update-all
+    hg-update-llvm-pnacl-sfi
   fi
 
+  hg-update-non-llvm
   everything-post-hg
 }
 
