@@ -654,7 +654,7 @@ PluginPpapi::~PluginPpapi() {
   if (ppapi_proxy_ != NULL) {
     HistogramTimeLarge(
         "NaCl.ModuleUptime.Normal",
-        (shutdown_start-ready_time_) / NACL_MICROS_PER_MILLI);
+        (shutdown_start - ready_time_) / NACL_MICROS_PER_MILLI);
   }
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
@@ -984,6 +984,13 @@ void PluginPpapi::ReportDeadNexe() {
   PLUGIN_PRINTF(("PluginPpapi::ReportDeadNexe\n"));
 
   if (nacl_ready_state() == DONE) {  // After loadEnd.
+    int64_t crash_time = NaClGetTimeOfDayMicroseconds();
+    // Crashes will be more likely near startup, so use a medium histogram
+    // instead of a large one.
+    HistogramTimeMedium(
+        "NaCl.ModuleUptime.Crash",
+        (crash_time - ready_time_) / NACL_MICROS_PER_MILLI);
+
     EnqueueProgressEvent("crash",
                          LENGTH_IS_NOT_COMPUTABLE,
                          kUnknownBytes,
@@ -995,8 +1002,6 @@ void PluginPpapi::ReportDeadNexe() {
   // NOTE: not all crashes during load will make it here.
   // Those in BrowserPpp::InitializeModule and creation of PPP interfaces
   // will just get reported back as PP_ERROR_FAILED.
-
-  // TODO(ncbray): add extra tracking here for UMA.
 }
 
 void PluginPpapi::ShutdownProxy() {
