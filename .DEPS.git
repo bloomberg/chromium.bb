@@ -58,6 +58,8 @@ deps = {
         Var('git_url') + '/chromium/deps/libvpx.git@23e067305b541d58bccb822a279644077f613a49',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@7f9bebe3906fb30f0632f9d010754d12dd6c02d7',
+    'src/third_party/pyftpdlib/src':
+        Var('git_url') + '/external/pyftpdlib.git@3647f3cafa367c9576f29bde2f7b6d1b7d2983b3',
     'src/third_party/pylib':
         Var('git_url') + '/native_client/src/third_party/pylib.git@be1b3e269cb698f969a5a630a026628cc6d6cc78',
     'src/third_party/safe_browsing/testing':
