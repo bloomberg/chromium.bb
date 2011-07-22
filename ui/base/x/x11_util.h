@@ -39,6 +39,10 @@ namespace ui {
 // Check if there's an open connection to an X server.
 UI_API bool XDisplayExists();
 // Return an X11 connection for the current, primary display.
+
+// TODO(oshima|evan): This assume there is one display and dosn't work
+// undef mutiple displays/monitor environment. Remove this and change the
+// chrome codebase to get the display from window.
 UI_API Display* GetXDisplay();
 
 // X shared memory comes in three flavors:

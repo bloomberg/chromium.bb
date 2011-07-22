@@ -14,6 +14,7 @@
 #include <gtk/gtk.h>
 
 typedef union _XEvent XEvent;
+typedef struct _XDisplay Display;
 
 namespace base {
 
@@ -58,7 +59,7 @@ class MessagePumpDispatcher {
 };
 
 // This class implements a message-pump for dispatching X events.
-class MessagePumpX : public MessagePumpGlib {
+class BASE_API MessagePumpX : public MessagePumpGlib {
  public:
   MessagePumpX();
   virtual ~MessagePumpX();
@@ -73,6 +74,9 @@ class MessagePumpX : public MessagePumpGlib {
   // Disables Gtk/Gdk event pumping. This will be used when
   // NativeWidgetX is enabled.
   static void DisableGtkMessagePump();
+
+  // Returns default X Display.
+  static Display* GetDefaultXDisplay();
 
  private:
   // Some XEvent's can't be directly read from X event queue and will go
