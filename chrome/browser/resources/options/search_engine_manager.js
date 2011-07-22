@@ -14,7 +14,7 @@ cr.define('options', function() {
     this.activeNavTab = null;
     OptionsPage.call(this, 'searchEngines',
                      templateData.searchEngineManagerPageTabTitle,
-                     'searchEngineManagerPage');
+                     'search-engine-manager-page');
   }
 
   cr.addSingletonGetter(SearchEngineManager);
@@ -43,13 +43,13 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      this.defaultsList_ = $('defaultSearchEngineList');
+      this.defaultsList_ = $('default-search-engine-list');
       this.setUpList_(this.defaultsList_);
 
-      this.othersList_ = $('otherSearchEngineList');
+      this.othersList_ = $('other-search-engine-list');
       this.setUpList_(this.othersList_);
 
-      this.extensionList_ = $('extensionKeywordList');
+      this.extensionList_ = $('extension-keyword-list');
       this.setUpList_(this.extensionList_);
     },
 
@@ -89,9 +89,9 @@ cr.define('options', function() {
       this.othersList_.dataModel = othersModel;
 
       if (keywords.length > 0) {
-        $('extensionKeywordListTitle').hidden = false;
-        $('extensionKeywordList').hidden = false;
-        $('manageExtensionLink').hidden = false;
+        $('extension-keyword-list-title').hidden = false;
+        $('extension-keyword-list').hidden = false;
+        $('manage-extension-link').hidden = false;
         var extensionsModel = new ArrayDataModel(keywords);
         this.extensionList_.dataModel = extensionsModel;
       }
