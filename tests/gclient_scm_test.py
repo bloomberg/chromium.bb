@@ -453,6 +453,7 @@ class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.force = False
       self.reset = False
       self.nohooks = False
+      self.merge = False
 
   sample_git_import = """blob
 mark :1
