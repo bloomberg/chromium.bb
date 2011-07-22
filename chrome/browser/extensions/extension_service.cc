@@ -1172,13 +1172,14 @@ void ExtensionService::LoadAllExtensions() {
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);
 
-  int app_count = 0;
+  int app_user_count = 0;
+  int app_external_count = 0;
   int hosted_app_count = 0;
   int packaged_app_count = 0;
   int user_script_count = 0;
-  int extension_count = 0;
+  int extension_user_count = 0;
+  int extension_external_count = 0;
   int theme_count = 0;
-  int external_count = 0;
   int page_action_count = 0;
   int browser_action_count = 0;
   ExtensionList::iterator ex;
@@ -1215,20 +1216,30 @@ void ExtensionService::LoadAllExtensions() {
         ++user_script_count;
         break;
       case Extension::TYPE_HOSTED_APP:
-        ++app_count;
         ++hosted_app_count;
+        if (Extension::IsExternalLocation(location)) {
+          ++app_external_count;
+        } else {
+          ++app_user_count;
+        }
         break;
       case Extension::TYPE_PACKAGED_APP:
-        ++app_count;
         ++packaged_app_count;
+        if (Extension::IsExternalLocation(location)) {
+          ++app_external_count;
+        } else {
+          ++app_user_count;
+        }
         break;
       case Extension::TYPE_EXTENSION:
       default:
-        ++extension_count;
+        if (Extension::IsExternalLocation(location)) {
+          ++extension_external_count;
+        } else {
+          ++extension_user_count;
+        }
         break;
     }
-    if (Extension::IsExternalLocation(location))
-      ++external_count;
     if ((*ex)->page_action() != NULL)
       ++page_action_count;
     if ((*ex)->browser_action() != NULL)
@@ -1237,13 +1248,20 @@ void ExtensionService::LoadAllExtensions() {
     RecordPermissionMessagesHistogram(
         ex->get(), "Extensions.Permissions_Load");
   }
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp", app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp",
+                           app_user_count + app_external_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAppUser", app_user_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadAppExternal", app_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadHostedApp", hosted_app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPackagedApp", packaged_app_count);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension", extension_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension",
+                           extension_user_count + extension_external_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtensionUser",
+                           extension_user_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtensionExternal",
+                           extension_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExternal", external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
