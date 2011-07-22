@@ -134,6 +134,10 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   EXPECT_EQ(2UL, origins.size());
   EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
   EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
+
+  // Delete and let cleanup tasks run prior to returning.
+  appcache_service = NULL;
+  message_loop_.RunAllPending();
 }
 
 TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
@@ -166,6 +170,10 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   EXPECT_EQ(1UL, origins.size());
   EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
   EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) == origins.end());
+
+  // Delete and let cleanup tasks run prior to returning.
+  appcache_service = NULL;
+  message_loop_.RunAllPending();
 }
 
 }  // namespace appcache
