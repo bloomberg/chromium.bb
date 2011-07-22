@@ -242,7 +242,6 @@ def RunBuildStages(bot_id, options, build_config):
       archive_stage = stages.ArchiveStage(bot_id, options, build_config)
       archive_url = archive_stage.GetDownloadUrl()
       upload_url = archive_stage.GetGSUploadLocation()
-      bg.AddStage(archive_stage)
 
     if not bg.Empty():
       bg.start()
@@ -273,9 +272,15 @@ def RunBuildStages(bot_id, options, build_config):
     completion_stage = completion_stage_class(bot_id, options, build_config,
                                               success=build_and_test_success)
 
+  if archive_stage and build_config['master']:
+    archive_stage.Run()
+
   if completion_stage:
     # Wait for slave builds to complete.
     completion_stage.Run()
+
+  if archive_stage and not build_config['master']:
+    archive_stage.Run()
 
   # Wait for remaining stages to finish. Ignore any errors.
   if bg_started:
