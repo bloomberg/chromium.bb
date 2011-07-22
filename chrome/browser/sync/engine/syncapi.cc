@@ -1966,7 +1966,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     const std::string& passphrase, bool is_explicit) {
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
-    VLOG(1) << "Rejecting empty passphrase.";
+    NOTREACHED() << "Rejecting empty passphrase.";
     ObserverList<SyncManager::Observer> temp_obs_list;
     CopyObservers(&temp_obs_list);
     FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,

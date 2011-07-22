@@ -94,13 +94,6 @@ cr.define('options', function() {
       chrome.send('SyncSetupDidClosePage');
     },
 
-    sendPassphraseAndClose_: function() {
-      var f = $('choose-data-types-form');
-      var result = JSON.stringify({"passphrase": f.passphrase.value});
-      chrome.send('SyncSetupPassphrase', [result]);
-      return false;
-    },
-
     getEncryptionRadioCheckedValue_: function() {
       var f = $('choose-data-types-form');
       for (var i = 0; i < f.encrypt.length; ++i) {
@@ -192,7 +185,7 @@ cr.define('options', function() {
 
       var f = $('choose-data-types-form');
       if (this.getPassphraseRadioCheckedValue_() != "explicit" ||
-          f.option[0].disabled)
+          $('google-option').disabled)
         return true;
 
       var customPassphrase = $('custom-passphrase');
@@ -221,6 +214,7 @@ cr.define('options', function() {
       }
 
       var f = $('choose-data-types-form');
+      // Must be done before we disable input elements.
       if (!this.checkPassphraseMatch_())
         return;
 
@@ -232,6 +226,19 @@ cr.define('options', function() {
         document.getElementById('sync-select-datatypes').selectedIndex == 0;
       var usePassphrase = this.getPassphraseRadioCheckedValue_() == 'explicit';
       var encryptAllData = this.getEncryptionRadioCheckedValue_() == 'all';
+
+      var customPassphrase;
+      // If we were prompted for an existing passphrase, use it.
+      if (!$('sync-existing-passphrase-container').hidden)
+        customPassphrase = f.passphrase.value;
+      else
+        customPassphrase = $('custom-passphrase').value;
+
+      // If the user has not actually entered a passphrase (for example on
+      // customize when the passphrase box is hidden), we don't attempt to reset
+      // the passphrase.
+      if (customPassphrase.length == 0)
+        usePassphrase = false;
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
@@ -248,7 +255,7 @@ cr.define('options', function() {
           "syncSessions": syncAll || $('sessions-checkbox').checked,
           "encryptAllData": encryptAllData,
           "usePassphrase": usePassphrase,
-          "passphrase": $('custom-passphrase').value
+          "passphrase": customPassphrase
       });
       chrome.send('SyncSetupConfigure', [result]);
     },
@@ -446,16 +453,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Reveals the UI for entering a custom passphrase after initial setup. This
-     * may happen if the user forgot to enter the correct (or any) custom
-     * passphrase during initial setup.
+     * Reveals the UI for entering a custom passphrase during initial setup.
+     * This happens if the user has previously enabled a custom passphrase on a
+     * different machine.
      * @param {Array} args The args that contain the passphrase UI
      *     configuration.
      * @private
      */
     showPassphraseContainer_: function(args) {
-      $('choose-data-types-form').onsubmit =
-          this.sendPassphraseAndClose_.bind(this);
       $('sync-custom-passphrase-container').hidden = true;
       $('sync-existing-passphrase-container').hidden = false;
 

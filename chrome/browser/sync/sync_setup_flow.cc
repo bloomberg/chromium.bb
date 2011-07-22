@@ -267,10 +267,14 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
          !configuration.use_secondary_passphrase ||
          configuration.secondary_passphrase.length() > 0);
 
-  if (configuration.use_secondary_passphrase &&
-      !service_->IsUsingSecondaryPassphrase()) {
-    service_->SetPassphrase(configuration.secondary_passphrase, true, true);
-    tried_creating_explicit_passphrase_ = true;
+  if (configuration.use_secondary_passphrase) {
+    if (!service_->IsUsingSecondaryPassphrase()) {
+      service_->SetPassphrase(configuration.secondary_passphrase, true, true);
+      tried_creating_explicit_passphrase_ = true;
+    } else {
+      service_->SetPassphrase(configuration.secondary_passphrase, true, false);
+      tried_setting_explicit_passphrase_ = true;
+    }
   }
 
   service_->OnUserChoseDatatypes(configuration.sync_everything,
@@ -326,8 +330,7 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return (current_state_ != SyncSetupWizard::GAIA_LOGIN &&
-              current_state_ != SyncSetupWizard::GAIA_SUCCESS);
+      return true;  // The server can abort whenever it wants.
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||

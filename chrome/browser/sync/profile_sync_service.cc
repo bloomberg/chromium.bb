@@ -736,6 +736,8 @@ void ProfileSyncService::OnPassphraseRequired(
     return;
   }
 
+  VLOG(1) << "Passphrase required with reason: "
+          << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
   // We will skip the passphrase prompt and suppress the warning if the
@@ -789,16 +791,13 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
+    // This will always trigger a SYNC_CONFIGURE_DONE on completion, which will
+    // step the UI wizard into DONE state (even if no datatypes have changed).
     data_type_manager_->Configure(types,
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
   }
 
   NotifyObservers();
-
-  // TODO(tim): We shouldn't call this if !HasSyncSetupCompleted and the user
-  // isn't actually at the ENTER_PASSPHRASE screen.  It results in a
-  // LOG(WARNING) currently.
-  wizard_.Step(SyncSetupWizard::DONE);
 }
 
 void ProfileSyncService::OnEncryptionComplete(
@@ -1124,12 +1123,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   GetPreferredDataTypes(&types);
   if (IsPassphraseRequiredForDecryption()) {
     if (IsEncryptedDatatypeEnabled()) {
-      // We need a passphrase still. Prompt the user for a passphrase, and
-      // DataTypeManager::Configure() will get called once the passphrase is
-      // accepted.
-      VLOG(0) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
+      // We need a passphrase still. We don't bother to attempt to configure
+      // until we receive an OnPassphraseAccepted (which triggers a configure).
+      VLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
               << "because a passphrase required";
-      OnPassphraseRequired(passphrase_required_reason_);
       return;
     } else {
       // We've been informed that a passphrase is required for decryption, but
@@ -1215,6 +1212,8 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        bool is_explicit,
                                        bool is_creation) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
+    VLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit")
+            << " passphrase " << (is_creation ? " for creation" : "");
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     if (is_explicit) {

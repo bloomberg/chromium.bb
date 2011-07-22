@@ -402,9 +402,6 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   wizard_->Step(SyncSetupWizard::DONE);
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
-  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
-
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
