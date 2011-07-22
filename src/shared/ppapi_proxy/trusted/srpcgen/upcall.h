@@ -10,6 +10,7 @@
 
 #ifndef GEN_PPAPI_PROXY_UPCALL_H_
 #define GEN_PPAPI_PROXY_UPCALL_H_
+
 #ifndef __native_client__
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
@@ -17,6 +18,7 @@
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
+
 class PppUpcallRpcServer {
  public:
   static void PPB_Core_CallOnMainThread(
@@ -36,6 +38,7 @@ class PpbUpcalls {
  public:
   static NaClSrpcHandlerDesc srpc_methods[];
 };  // class PpbUpcalls
+
 
 #endif  // GEN_PPAPI_PROXY_UPCALL_H_
 

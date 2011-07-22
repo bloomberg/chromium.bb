@@ -10,6 +10,7 @@
 
 #ifndef GEN_PPAPI_PROXY_PPB_RPC_H_
 #define GEN_PPAPI_PROXY_PPB_RPC_H_
+
 #ifndef __native_client__
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
@@ -17,6 +18,7 @@
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
+
 class NaClFileRpcClient {
  public:
   static NaClSrpcError StreamAsFile(
@@ -842,6 +844,7 @@ class PpbZoomRpcClient {
   PpbZoomRpcClient(const PpbZoomRpcClient&);
   void operator=(const PpbZoomRpcClient);
 };  // class PpbZoomRpcClient
+
 
 
 

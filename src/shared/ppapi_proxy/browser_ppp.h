@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
@@ -29,14 +30,22 @@ class BrowserPpp {
  public:
   BrowserPpp(NaClSrpcChannel* main_channel,
              plugin::PluginPpapi* plugin)
-      : main_channel_(main_channel), plugin_pid_(0), plugin_(plugin),
-        ppp_instance_interface_(NULL), ppp_messaging_interface_(NULL),
-        ppp_input_event_interface_(NULL) {}
+      : main_channel_(main_channel),
+        plugin_pid_(0),
+        plugin_(plugin),
+        ppp_instance_interface_(NULL),
+        ppp_messaging_interface_(NULL),
+        ppp_input_event_interface_(NULL) {
+    CHECK(main_channel_ != NULL);
+  }
+
   ~BrowserPpp() {}
 
   int32_t InitializeModule(PP_Module module_id,
                            PPB_GetInterface get_browser_interface);
-  void ShutdownModule();
+
+  void ShutdownChannel();
+  void ShutdownModule();  // PPP_ShutdownModule + ShutdownChannel.
   // Returns an interface pointer or NULL.
   const void* GetPluginInterface(const char* interface_name);
   // Returns an interface pointer or fails on a NULL CHECK.
@@ -56,12 +65,18 @@ class BrowserPpp {
     return ppp_input_event_interface_;
   }
 
+  bool is_valid() const { return (main_channel_ != NULL); }
+  static bool is_valid(BrowserPpp* proxy) {
+    return (proxy != NULL && proxy->is_valid());
+  }
+
   NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
   plugin::PluginPpapi* plugin() { return plugin_; }
 
  private:
   // The "main" SRPC channel used to communicate with the plugin.
+  // NULL if proxy has been shutdown or nexe crashed.
   NaClSrpcChannel* main_channel_;
   // The PID of the plugin.
   int plugin_pid_;

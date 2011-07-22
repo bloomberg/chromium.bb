@@ -72,6 +72,9 @@ class Plugin : public PortableHandle {
   // Report the error code that sel_ldr produces when starting a nexe.
   virtual void ReportSelLdrLoadStatus(int status) = 0;
 
+  // Report the error when nexe dies after loading.
+  virtual void ReportDeadNexe() = 0;
+
   // Get the method signature so ScriptableHandle can marshal the inputs
   virtual bool InitParams(uintptr_t method_id,
                           CallType call_type,

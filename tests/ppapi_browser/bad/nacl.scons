@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
+# Tests fatal errors that occur during loading.
+# (See ppapi_browser/crash for fatal errors that occur after loading).
+# TODO(polina): rename the directory and browser test to bad_load
+#
 # Manual testing with localhost:5103/scons-out/.../staging/ppapi_bad.html:
 #   scons --mode=nacl ppapi_bad
 # Automatic testing:
@@ -31,7 +35,12 @@ ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 
 
 # Compile all nexes embedded into the above html
-for kind in [ 'ppp_initialize', 'no_ppp_instance', 'ppp_instance_didcreate' ]:
+for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
+              'no_ppp_instance', 'get_ppp_instance_crash',
+              'get_ppp_messaging_crash', 'get_ppp_printing_crash',
+              'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
+              'event_replay_crash'
+              ]:
   bad_nmf = 'ppapi_bad_%s.nmf' % kind
   bad_nexe = ('ppapi_bad_%s_%s' % (kind, env.get('TARGET_FULLARCH')))
   env.ComponentProgram(bad_nexe,

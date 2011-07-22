@@ -680,7 +680,7 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
   PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
 
-  if (ppapi_proxy_ == NULL) {
+  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     // Store this event and replay it when the proxy becomes available.
     replayDidChangeView = true;
     replayDidChangeViewPosition = position;
@@ -696,7 +696,7 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
 void PluginPpapi::DidChangeFocus(bool has_focus) {
   PLUGIN_PRINTF(("PluginPpapi::DidChangeFocus (this=%p)\n",
                  static_cast<void*>(this)));
-  if (ppapi_proxy_ == NULL) {
+  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     return;
   } else {
     ppapi_proxy_->ppp_instance_interface()->DidChangeFocus(
@@ -704,10 +704,12 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
   }
 }
 
+
 bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
   PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
                  static_cast<void*>(this)));
-  if ((ppapi_proxy_ == NULL) || !(ppapi_proxy_->ppp_input_event_interface())) {
+  if (!BrowserPpp::is_valid(ppapi_proxy_) ||
+      ppapi_proxy_->ppp_input_event_interface() == NULL) {
     return false;  // event is not handled here.
   } else {
     bool handled = PP_ToBool(
@@ -718,10 +720,11 @@ bool PluginPpapi::HandleInputEvent(const pp::InputEvent& event) {
   }
 }
 
+
 bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",
                  static_cast<void*>(this)));
-  if (ppapi_proxy_ == NULL) {
+  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
     // Store this event and replay it when the proxy becomes available.
     replayHandleDocumentLoad = true;
     replayHandleDocumentLoadURLLoader = url_loader;
@@ -739,7 +742,7 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 void PluginPpapi::HandleMessage(const pp::Var& message) {
   PLUGIN_PRINTF(("PluginPpapi::HandleMessage (this=%p)\n",
                  static_cast<void*>(this)));
-  if (ppapi_proxy_ != NULL &&
+  if (BrowserPpp::is_valid(ppapi_proxy_) &&
       ppapi_proxy_->ppp_messaging_interface() != NULL) {
     ppapi_proxy_->ppp_messaging_interface()->HandleMessage(
         pp_instance(), message.pp_var());
@@ -909,7 +912,7 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
   nacl::scoped_ptr<BrowserPpp> ppapi_proxy(
       new(std::nothrow) BrowserPpp(srpc_channel, this));
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
-                 reinterpret_cast<void*>(ppapi_proxy.get())));
+                 static_cast<void*>(ppapi_proxy.get())));
   if (ppapi_proxy.get() == NULL) {
     error_info->SetReport(ERROR_START_PROXY_ALLOC,
                           "could not allocate proxy memory.");
@@ -967,22 +970,46 @@ bool PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
     // Release our reference on this loader.
     replayHandleDocumentLoadURLLoader = pp::URLLoader();
   }
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (success=true)\n"));
-  return true;
+  bool is_valid_proxy = BrowserPpp::is_valid(ppapi_proxy_);
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (is_valid_proxy=%d)\n",
+                 is_valid_proxy));
+  if (!is_valid_proxy) {
+    error_info->SetReport(ERROR_START_PROXY_CRASH,
+                          "instance crashed after creation.");
+  }
+  return is_valid_proxy;
 }
 
+void PluginPpapi::ReportDeadNexe() {
+  PLUGIN_PRINTF(("PluginPpapi::ReportDeadNexe\n"));
+
+  if (nacl_ready_state() == DONE) {  // After loadEnd.
+    EnqueueProgressEvent("crash",
+                         LENGTH_IS_NOT_COMPUTABLE,
+                         kUnknownBytes,
+                         kUnknownBytes);
+    CHECK(ppapi_proxy_ != NULL && !ppapi_proxy_->is_valid());
+    ShutdownProxy();
+  }
+  // else LoadNaClModule and NexeFileDidOpen will provide error handling.
+  // NOTE: not all crashes during load will make it here.
+  // Those in BrowserPpp::InitializeModule and creation of PPP interfaces
+  // will just get reported back as PP_ERROR_FAILED.
+
+  // TODO(ncbray): add extra tracking here for UMA.
+}
 
 void PluginPpapi::ShutdownProxy() {
   PLUGIN_PRINTF(("PluginPpapi::ShutdownProxy (ppapi_proxy=%p)\n",
                 reinterpret_cast<void*>(ppapi_proxy_)));
-  if (ppapi_proxy_ != NULL) {
+  if (BrowserPpp::is_valid(ppapi_proxy_)) {
     // TODO(polina): put this back when we figure out why pyauto_reload_test
     // is unhappy about it.
     // ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
     ppapi_proxy_->ShutdownModule();
-    delete ppapi_proxy_;
-    ppapi_proxy_ = NULL;
   }
+  delete ppapi_proxy_;
+  ppapi_proxy_ = NULL;
 }
 
 void PluginPpapi::NaClManifestBufferReady(int32_t pp_error) {

@@ -83,6 +83,9 @@ PP_Instance LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel);
 NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc);
 NaClSrpcChannel* GetMainSrpcChannel(PP_Instance);
 
+// Invalidates the proxy and alerts the plugin about a dead nexe.
+void CleanUpAfterDeadNexe(PP_Instance instance);
+
 // Support for getting PPB_ browser interfaces.
 // Safe version CHECK's for NULL.
 void SetPPBGetInterface(PPB_GetInterface get_interface_function,

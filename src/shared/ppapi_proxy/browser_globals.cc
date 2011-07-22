@@ -14,6 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 
 namespace ppapi_proxy {
 
@@ -163,6 +164,14 @@ NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {
 
 NaClSrpcChannel* GetMainSrpcChannel(PP_Instance instance) {
   return LookupBrowserPppForInstance(instance)->main_channel();
+}
+
+void CleanUpAfterDeadNexe(PP_Instance instance) {
+  BrowserPpp* proxy = LookupBrowserPppForInstance(instance);
+  if (proxy == NULL)
+    return;
+  proxy->ShutdownChannel();
+  proxy->plugin()->ReportDeadNexe();  // Deletes the proxy.
 }
 
 void SetPPBGetInterface(PPB_GetInterface get_interface_function,

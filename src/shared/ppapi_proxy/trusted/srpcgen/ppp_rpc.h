@@ -10,6 +10,7 @@
 
 #ifndef GEN_PPAPI_PROXY_PPP_RPC_H_
 #define GEN_PPAPI_PROXY_PPP_RPC_H_
+
 #ifndef __native_client__
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
@@ -17,6 +18,7 @@
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
+
 class CompletionCallbackRpcClient {
  public:
   static NaClSrpcError RunCompletionCallback(
@@ -236,6 +238,7 @@ class PppZoomRpcClient {
   PppZoomRpcClient(const PppZoomRpcClient&);
   void operator=(const PppZoomRpcClient);
 };  // class PppZoomRpcClient
+
 
 
 

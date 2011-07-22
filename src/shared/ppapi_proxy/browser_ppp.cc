@@ -47,11 +47,11 @@ int32_t BrowserPpp::InitializeModule(
   DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
   SetPPBGetInterface(get_browser_interface, plugin_->enable_dev_interface());
   SetBrowserPppForInstance(plugin_->pp_instance(), this);
+  CHECK(main_channel_ != NULL);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
       BrowserUpcall::Start(&upcall_thread_, main_channel_));
-  if (wrapper.get() == NULL) {
+  if (wrapper.get() == NULL)
     return PP_ERROR_FAILED;
-  }
   // Set up the callbacks allowed on the main channel.
   NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
       calloc(1, sizeof(*service)));
@@ -83,40 +83,55 @@ int32_t BrowserPpp::InitializeModule(
                                          &plugin_pid_,
                                          &pp_error);
   DebugPrintf("PPP_InitializeModule: %s\n", NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK) {
+  if (srpc_result == NACL_SRPC_RESULT_INTERNAL)  // Nexe died.
+    ShutdownChannel();
+  if (srpc_result != NACL_SRPC_RESULT_OK)
     return PP_ERROR_FAILED;
-  }
   DebugPrintf("PPP_InitializeModule: pp_error=%"NACL_PRId32"\n", pp_error);
-  if (pp_error != PP_OK) {
+  if (pp_error != PP_OK)
     return pp_error;
-  }
   const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE);
   DebugPrintf("PPP_InitializeModule: ppp_instance=%p\n", ppp_instance);
   ppp_instance_interface_ = reinterpret_cast<const PPP_Instance*>(ppp_instance);
-  if (ppp_instance_interface_ == NULL) {  // PPP_Instance is required.
+  if (ppp_instance_interface_ == NULL)  // PPP_Instance is required.
     return PP_ERROR_NOINTERFACE;
-  }
   // PPB_Messaging and PPP_InputEvent are optional, so it's OK for them to
   // return NULL.
   ppp_messaging_interface_ = reinterpret_cast<const PPP_Messaging*>(
         GetPluginInterface(PPP_MESSAGING_INTERFACE));
   ppp_input_event_interface_ = reinterpret_cast<const PPP_InputEvent*>(
         GetPluginInterface(PPP_INPUT_EVENT_INTERFACE));
+  if (!is_valid())  // Nexe died in PPP_GetInterface.
+    return PP_ERROR_FAILED;
   return PP_OK;
 }
 
+void BrowserPpp::ShutdownChannel() {
+  DebugPrintf("ShutdownChannel: main_channel=%p\n",
+              static_cast<void*>(main_channel_));
+  UnsetBrowserPppForInstance(plugin_->pp_instance());
+  UnsetModuleIdForSrpcChannel(main_channel_);
+  UnsetInstanceIdForSrpcChannel(main_channel_);
+  main_channel_ = NULL;
+}
+
 void BrowserPpp::ShutdownModule() {
-  DebugPrintf("PPP_ShutdownModule\n");
+  DebugPrintf("PPP_ShutdownModule: main_channel=%p\n",
+              static_cast<void*>(main_channel_));
+  if (main_channel_ == NULL)
+    return;
   NaClSrpcError srpc_result =
       PppRpcClient::PPP_ShutdownModule(main_channel_);
   DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
-  NaClThreadJoin(&upcall_thread_);
-  UnsetModuleIdForSrpcChannel(main_channel_);
-  UnsetInstanceIdForSrpcChannel(main_channel_);
+  if (srpc_result != NACL_SRPC_RESULT_INTERNAL)  // Nexe is still alive.
+    NaClThreadJoin(&upcall_thread_);
+  ShutdownChannel();
 }
 
 const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   DebugPrintf("PPP_GetInterface('%s')\n", interface_name);
+  if (!is_valid())
+    return NULL;
   int32_t exports_interface_name;
   NaClSrpcError srpc_result =
       PppRpcClient::PPP_GetInterface(main_channel_,
@@ -124,6 +139,9 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
                                      &exports_interface_name);
   DebugPrintf("PPP_GetInterface('%s'): %s\n",
               interface_name, NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_INTERNAL)  // Nexe died.
+    ShutdownChannel();
+
   const void* ppp_interface = NULL;
   if (srpc_result != NACL_SRPC_RESULT_OK || !exports_interface_name) {
     ppp_interface = NULL;

@@ -106,6 +106,16 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not initialize module.');
+// 'bad_ppp_initialize_crash' loads a manifest, then loads a nexe that crashes
+// before initializing PPAPI module
+testProgressEventStateMachine(
+    tester,
+    'bad_ppp_initialize_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
 // 'bad_no_ppp_instance' loads a manifest, then loads a nexe that fails to
 // get the required PPP_Instance interface
 testProgressEventStateMachine(
@@ -116,6 +126,38 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not initialize module.');
+// 'bad_get_ppp_instance_crash' loads a manifest, then loads a nexe that crashes
+// when getting the required PPP_Instance interface
+testProgressEventStateMachine(
+    tester,
+    'bad_get_ppp_instance_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
+// 'bad_get_ppp_messaging_crash' loads a manifest, then loads a nexe that
+// crashes when getting the optional PPP_Messaging interface, which is done
+// on init.
+testProgressEventStateMachine(
+    tester,
+    'bad_get_ppp_messaging_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not initialize module.');
+// 'bad_get_ppp_printing_crash' loads a manifest, then loads a nexe that crashes
+// when getting the optional PPP_Printing interface, which is done right after
+// creation, but before loadEnd is dispatched.
+testProgressEventStateMachine(
+    tester,
+    'bad_get_ppp_printing_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: instance crashed after creation.');
 // 'bad_ppp_instance_didcreate' loads a manifest, then loads a nexe that fails
 // to create the instance
 testProgressEventStateMachine(
@@ -126,6 +168,27 @@ testProgressEventStateMachine(
     0,  // abortCount
     0,  // loadCount
     'NaCl module load failed: could not create instance.');
+// 'bad_ppp_instance_didcreate_crash' loads a manifest, then loads a nexe that
+// crashes before creating the instance.
+testProgressEventStateMachine(
+    tester,
+    'bad_ppp_instance_didcreate_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: could not create instance.');
+// 'bad_event_replay_crash' loads a manifest, then loads a nexe and replays
+// the events that occured during loading causing the nexe to crash before
+// proxy start-up was completed.
+testProgressEventStateMachine(
+    tester,
+    'bad_event_replay_crash',
+    1,  // progressMinCount
+    1,  // errorCount
+    0,  // abortCount
+    0,  // loadCount
+    'NaCl module load failed: instance crashed after creation.');
 
 // The driver invoked when the body has finished loading.
 function runTests() {
@@ -141,8 +204,15 @@ function runTests() {
       $('bad_manifest_uses_nexes'),
       $('bad_manifest_bad_files'),
       $('bad_ppp_initialize'),
+      $('bad_ppp_initialize_crash'),
       $('bad_no_ppp_instance'),
-      $('bad_ppp_instance_didcreate'));
+      $('bad_get_ppp_instance_crash'),
+      $('bad_get_ppp_messaging_crash'),
+      $('bad_get_ppp_printing_crash'),
+      $('bad_ppp_instance_didcreate'),
+      $('bad_ppp_instance_didcreate_crash'),
+      $('bad_even_replay_crash')
+  );
 
   tester.run();
 }
@@ -232,16 +302,52 @@ setListeners($('body'));
       src="ppapi_bad_ppp_initialize.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
+    <embed id="bad_ppp_initialize_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_ppp_initialize_crash.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
     <embed id="bad_no_ppp_instance"
       class="naclModule"
       width=100 height=20
       src="ppapi_bad_no_ppp_instance.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
+    <embed id="bad_get_ppp_instance_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_get_ppp_instance_crash.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="bad_get_ppp_messaging_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_get_ppp_messaging_crash.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="bad_get_ppp_printing_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_get_ppp_printing_crash.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
     <embed id="bad_ppp_instance_didcreate"
       class="naclModule"
       width=100 height=20
       src="ppapi_bad_ppp_instance_didcreate.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="bad_ppp_instance_didcreate_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_ppp_instance_didcreate_crash.nmf"
+      style="background-color:gray"
+      type="application/x-nacl" />
+    <embed id="bad_event_replay_crash"
+      class="naclModule"
+      width=100 height=20
+      src="ppapi_bad_event_replay_crash.nmf"
       style="background-color:gray"
       type="application/x-nacl" />
 

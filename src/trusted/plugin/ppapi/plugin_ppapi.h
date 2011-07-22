@@ -112,6 +112,9 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   // Report the error code that sel_ldr produces when starting a nexe.
   virtual void ReportSelLdrLoadStatus(int status);
 
+  // Report nexe death after load to JS and shut down the proxy.
+  void ReportDeadNexe();
+
   // Called back by CallOnMainThread.  Dispatches the first enqueued progress
   // event.
   void DispatchProgressEvent(int32_t result);
@@ -245,7 +248,7 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
                                  PP_CompletionCallback pp_callback);
 
   // Shuts down the proxy for PPAPI nexes.
-  void ShutdownProxy();
+  void ShutdownProxy();  // Nexe shutdown + proxy deletion.
 
   // Handles the __setAsyncCallback() method.  Spawns a thread to receive
   // IMC messages from the NaCl process and pass them on to Javascript.

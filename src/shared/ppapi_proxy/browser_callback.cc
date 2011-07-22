@@ -10,9 +10,11 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
@@ -71,6 +73,8 @@ void RunRemoteCallback(void* user_data, int32_t result) {
           read_buffer.get());
   DebugPrintf("RunRemoteCallback: %s\n",
               NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_INTERNAL)
+    CleanUpAfterDeadNexe(instance);
 }
 
 }  // namespace

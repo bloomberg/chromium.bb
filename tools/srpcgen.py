@@ -24,7 +24,7 @@ import getopt
 import sys
 import os
 
-AUTOGEN_COMMENT = """\
+COPYRIGHT_AND_AUTOGEN_COMMENT = """\
 // Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -36,21 +36,24 @@ AUTOGEN_COMMENT = """\
 // NaCl Simple Remote Procedure Call interface abstractions.
 """
 
-HEADER_START = """\
-#ifndef xyz
-#define xyz
+HEADER_INCLUDE_GUARD_START = """\
+#ifndef %(include_guard)s
+#define %(include_guard)s
+"""
+
+HEADER_INCLUDE_GUARD_END = """\
+\n\n#endif  // %(include_guard)s
+"""
+
+HEADER_FILE_INCLUDES = """\
 #ifndef __native_client__
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-"""
-
-HEADER_END = """\
-\n\n#endif  // xyz
+%(EXTRA_INCLUDES)s
 """
 
 SOURCE_FILE_INCLUDES = """\
-#include "xyz"
+#include "%(srpcgen_h)s"
 #ifdef __native_client__
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
@@ -58,8 +61,13 @@ SOURCE_FILE_INCLUDES = """\
 #else
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+%(EXTRA_INCLUDES)s
 """
+
+# For both .cc and .h files.
+EXTRA_INCLUDES = [
+  '#include "native_client/src/shared/srpc/nacl_srpc.h"',
+]
 
 types = {'bool': ['b', 'bool', 'u.bval', ''],
          'char[]': ['C', 'char*', 'arrays.carr', 'u.count'],
@@ -76,14 +84,47 @@ types = {'bool': ['b', 'bool', 'u.bval', ''],
          'string': ['s', 'char*', 'arrays.str', ''],
         }
 
+def AddInclude(name):
+  """Adds an include to the include section of both .cc and .h files."""
+  EXTRA_INCLUDES.append('#include "%s"' % name)
 
-def AddHeader(name):
-  """Adds a header to both the .cc and .h files."""
-  global HEADER_START
-  global SOURCE_FILE_INCLUDES
 
-  HEADER_START += "#include \"%s\"\n" % name
-  SOURCE_FILE_INCLUDES += "#include \"%s\"\n" % name
+def HeaderFileIncludes():
+  """Includes are sorted alphabetically."""
+  EXTRA_INCLUDES.sort()
+  return HEADER_FILE_INCLUDES % {
+      'EXTRA_INCLUDES': '\n'.join(EXTRA_INCLUDES),
+      }
+
+
+def SourceFileIncludes(srpcgen_h_file):
+  """Includes are sorted alphabetically."""
+  EXTRA_INCLUDES.sort()
+  return SOURCE_FILE_INCLUDES % {
+      'EXTRA_INCLUDES': '\n'.join(EXTRA_INCLUDES),
+      'srpcgen_h': srpcgen_h_file
+      }
+
+
+def PrintHeaderFileTop(output, include_guard):
+  """Prints the header of the .h file including copyright,
+     header comment, include guard and includes."""
+  print >>output, COPYRIGHT_AND_AUTOGEN_COMMENT
+  print >>output, HEADER_INCLUDE_GUARD_START % {'include_guard': include_guard}
+  print >>output, HeaderFileIncludes()
+
+
+def PrintHeaderFileBottom(output, include_guard):
+  """Prints the footer of the .h file including copyright,
+     header comment, include guard and includes."""
+  print >>output, HEADER_INCLUDE_GUARD_END % {'include_guard': include_guard}
+
+
+def PrintSourceFileTop(output, srpcgen_h_file):
+  """Prints the header of the .cc file including copyright,
+     header comment and includes."""
+  print >>output, COPYRIGHT_AND_AUTOGEN_COMMENT
+  print >>output, SourceFileIncludes(srpcgen_h_file)
 
 
 def CountName(name):
@@ -136,8 +177,8 @@ def FormatRpcPrototype(is_server, class_name, indent, rpc):
 
 def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
   """Prints out the header file containing the prototypes for the RPCs."""
-  print >>output, AUTOGEN_COMMENT
-  s = HEADER_START.replace('xyz', guard_name)
+  PrintHeaderFileTop(output, guard_name)
+  s = ''
   # iterate over all the specified interfaces
   if is_server:
     suffix = 'Server'
@@ -158,11 +199,11 @@ def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
     s += ' public:\n'
     s += '  static NaClSrpcHandlerDesc srpc_methods[];\n'
     s += '};  // class %s' % interface_name
-  s += HEADER_END.replace('xyz', guard_name)
   print >>output, s
+  PrintHeaderFileBottom(output, guard_name)
 
 
-def PrintServerFile(output, include_name, interface_name, specs):
+def PrintServerFile(output, header_name, interface_name, specs):
   """Print the server (stub) .cc file."""
 
   def FormatDispatchPrototype(indent, rpc):
@@ -216,19 +257,23 @@ def PrintServerFile(output, include_name, interface_name, specs):
         else:
           s = '%s%s%s%s' % (addr_prefix, prefix, type_info[2], addr_suffix)
         return s
+      # end FormatArg
       s = ''
       num = 0
       for arg in args:
         s += ',\n%s    %s' % (indent, FormatArg(is_output, num, arg))
         num += 1
       return s
+    # end FormatArgs
     s = '%s::%s(\n%s    rpc,\n' % (class_name, rpc['name'], indent)
     s += '%s    done' % indent
     s += FormatArgs(False, rpc['inputs'])
     s += FormatArgs(True, rpc['outputs'])
     s += '\n%s)' % indent
     return s
-  print >>output, AUTOGEN_COMMENT
+  # end FormatCall
+
+  PrintSourceFileTop(output, header_name)
   s = 'namespace {\n\n'
   for spec in specs:
     class_name = spec['name'] + 'Server'
@@ -249,12 +294,29 @@ def PrintServerFile(output, include_name, interface_name, specs):
     for rpc in rpcs:
       s += FormatMethodString(rpc)
   s += '  { NULL, NULL }\n};\n'
-  print >>output, SOURCE_FILE_INCLUDES.replace('xyz', include_name)
   print >>output, s
 
 
-def PrintClientFile(output, include_name, specs):
+def PrintClientFile(output, header_name, specs):
   """Prints the client (proxy) .cc file."""
+
+  def InstanceInputArg(rpc):
+    """Returns the name of the PP_Instance arg or None if there is none."""
+    for arg in rpc['inputs']:
+      if arg[1] == 'PP_Instance':
+        return arg[0]
+    return None
+
+  def DeadNexeHandling(rpc, retval):
+    """Generates the code necessary to handle death of a nexe during the rpc
+       call. This is only possible if PP_Instance arg is present, otherwise"""
+    instance = InstanceInputArg(rpc);
+    if instance is not None:
+      check = ('  if (%s == NACL_SRPC_RESULT_INTERNAL)\n'
+               '    ppapi_proxy::CleanUpAfterDeadNexe(%s);\n')
+      return check % (retval, instance)
+    return ''  # No handling
+
 
   def FormatCall(rpc):
     """Format a call to the generic dispatcher, NaClSrpcInvokeBySignature."""
@@ -276,18 +338,24 @@ def PrintClientFile(output, include_name, specs):
           s += '%s, ' % CountName(arg[0])
         s += arg[0]
         return s
+      # end FormatArg
       s = ''
       for arg in args:
         s += ',\n      %s' % FormatArg(arg)
       return s
+    #end FormatArgs
     s = '(\n      channel,\n      "%s:%s:%s"' % (rpc['name'],
                                                  FormatTypes(rpc['inputs']),
                                                  FormatTypes(rpc['outputs']))
     s += FormatArgs(rpc['inputs'])
     s += FormatArgs(rpc['outputs']) + '\n  )'
     return s
-  print >>output, AUTOGEN_COMMENT
-  print >>output, SOURCE_FILE_INCLUDES.replace('xyz', include_name)
+  # end FormatCall
+
+  # We need this to handle dead nexes.
+  if header_name.startswith('trusted'):
+    AddInclude('native_client/src/shared/ppapi_proxy/browser_globals.h')
+  PrintSourceFileTop(output, header_name)
   s = ''
   for spec in specs:
     class_name = spec['name'] + 'Client'
@@ -296,6 +364,8 @@ def PrintClientFile(output, include_name, specs):
       s += '%s  {\n' % FormatRpcPrototype('', class_name + '::', '', rpc)
       s += '  NaClSrpcError retval;\n'
       s += '  retval = NaClSrpcInvokeBySignature%s;\n' % FormatCall(rpc)
+      if header_name.startswith('trusted'):
+        s += DeadNexeHandling(rpc, 'retval')
       s += '  return retval;\n'
       s += '}\n\n'
   print >>output, s
@@ -350,9 +420,9 @@ def main(argv):
       ppapi = True
 
   if ppapi:
-    AddHeader("native_client/src/third_party/ppapi/c/pp_instance.h")
-    AddHeader("native_client/src/third_party/ppapi/c/pp_module.h")
-    AddHeader("native_client/src/third_party/ppapi/c/pp_resource.h")
+    AddInclude("native_client/src/third_party/ppapi/c/pp_instance.h")
+    AddInclude("native_client/src/third_party/ppapi/c/pp_module.h")
+    AddInclude("native_client/src/third_party/ppapi/c/pp_resource.h")
 
   # Convert to forward slash paths if needed
   h_file_name = "/".join(h_file_name.split("\\"))

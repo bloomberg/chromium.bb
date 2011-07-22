@@ -2659,6 +2659,7 @@ nonvariant_tests = [
     'tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
+    'tests/ppapi_browser/crash/nacl.scons',
     'tests/ppapi_browser/extension_mime_handler/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
     'tests/ppapi_browser/ppb_core/nacl.scons',

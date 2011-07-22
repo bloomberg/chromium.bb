@@ -402,10 +402,12 @@ bool Plugin::StartSrpcServices(NaClSubprocess* subprocess,
 bool Plugin::StartJSObjectProxy(NaClSubprocess* subprocess,
                                 ErrorInfo* error_info) {
   if (!subprocess->StartJSObjectProxy(this, error_info)) {
-    // TODO(sehr,polina): rename the below to ExperimentalSRPCApisAreEnabled.
-    if (ExperimentalJavaScriptApisAreEnabled()) {
-      // It is not an error for the proxy to fail to start if experimental
-      // APIs are enabled.  This means we have an SRPC nexe.
+    // TODO(sehr,polina): rename the function and env var
+    // to ExperimentalJavaScriptApisAreEnabled.
+    if (error_info->error_code() == ERROR_START_PROXY_CHECK_PPP &&
+        ExperimentalJavaScriptApisAreEnabled()) {
+      // It is not an error for the proxy to fail to find PPP methods if
+      // experimental APIs are enabled. This means we have an SRPC nexe.
       error_info->Reset();
     } else {
       return false;

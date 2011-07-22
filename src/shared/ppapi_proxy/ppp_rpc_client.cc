@@ -16,6 +16,7 @@
 #else
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
+#include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
@@ -98,6 +99,8 @@ NaClSrpcError PppAudioRpcClient::PPP_Audio_StreamCreated(
       out_shm_size,
       out_socket
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -116,6 +119,8 @@ NaClSrpcError PppFindRpcClient::PPP_Find_StartFind(
       case_sensitive,
       supports_find
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -130,6 +135,8 @@ NaClSrpcError PppFindRpcClient::PPP_Find_SelectFindResult(
       instance,
       forward
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -142,6 +149,8 @@ NaClSrpcError PppFindRpcClient::PPP_Find_StopFind(
       "PPP_Find_StopFind:i:",
       instance
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -162,6 +171,8 @@ NaClSrpcError PppInputEventRpcClient::PPP_InputEvent_HandleInputEvent(
       character_text_bytes, character_text,
       handled
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -182,6 +193,8 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
       argv_bytes, argv,
       success
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -194,6 +207,8 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidDestroy(
       "PPP_Instance_DidDestroy:i:",
       instance
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -210,6 +225,8 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeView(
       position_bytes, position,
       clip_bytes, clip
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -224,6 +241,8 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
       instance,
       has_focus
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -240,6 +259,8 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleDocumentLoad(
       url_loader,
       success
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -254,6 +275,8 @@ NaClSrpcError PppMessagingRpcClient::PPP_Messaging_HandleMessage(
       instance,
       message_bytes, message
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -270,6 +293,8 @@ NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
       formats_bytes, formats,
       format_count
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -286,6 +311,8 @@ NaClSrpcError PppPrintingRpcClient::PPP_Printing_Begin(
       print_settings_bytes, print_settings,
       pages_required
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -304,6 +331,8 @@ NaClSrpcError PppPrintingRpcClient::PPP_Printing_PrintPages(
       page_range_count,
       image_data
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -316,6 +345,8 @@ NaClSrpcError PppPrintingRpcClient::PPP_Printing_End(
       "PPP_Printing_End:i:",
       instance
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -332,6 +363,8 @@ NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_ValueChanged(
       scrollbar,
       value
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -348,6 +381,8 @@ NaClSrpcError PppSelectionRpcClient::PPP_Selection_GetSelectedText(
       html,
       selected_text_bytes, selected_text
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -364,6 +399,8 @@ NaClSrpcError PppWidgetRpcClient::PPP_Widget_Invalidate(
       widget,
       dirty_rect_bytes, dirty_rect
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
@@ -380,6 +417,8 @@ NaClSrpcError PppZoomRpcClient::PPP_Zoom_Zoom(
       factor,
       text_only
   );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
   return retval;
 }
 
