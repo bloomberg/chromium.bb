@@ -47,8 +47,7 @@ GpuDataManager::GpuDataManager()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GPUInfo gpu_info;
-  allows_gpu_access_ =
-      gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+  gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
   UpdateGpuInfo(gpu_info);
 
 #if defined(OS_MACOSX)
@@ -143,8 +142,6 @@ GpuFeatureFlags GpuDataManager::GetGpuFeatureFlags() {
 }
 
 bool GpuDataManager::GpuAccessAllowed() {
-  if (!allows_gpu_access_)
-    return false;
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
