@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 
 // The WebUI for chrome://view-cert
-class CertificateViewerUI : public ChromeWebUI {
+class CertificateViewerUI : public HtmlDialogUI {
  public:
   explicit CertificateViewerUI(TabContents* contents);
   virtual ~CertificateViewerUI();

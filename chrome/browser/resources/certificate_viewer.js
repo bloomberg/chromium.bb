@@ -13,21 +13,9 @@ cr.define('cert_viewer', function() {
     $('close').onclick = function() {
       window.close();
     }
+    var args = JSON.parse(chrome.dialogArguments);
     i18nTemplate.process(document, templateData);
-    requestCertificate();
-  }
-
-  /**
-   * Requests certificate information. The requested certificate is identified
-   * by a unique handle.
-   **/
-  function requestCertificate() {
-    var params = parseQueryParams(location);
-
-    // If a certificate identifier hasn't been specified, do nothing.
-    // @TODO(flackr) Display some sort of default / error page.
-    if (params['cert'])
-      chrome.send('requestCertificateInfo', [params['cert']]);
+    chrome.send('requestCertificateInfo', [args.cert]);
   }
 
   /**

@@ -47,9 +47,8 @@ class CertificateViewerDialog : private HtmlDialogUIDelegate {
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
 
-  // The URL of the dialog of the form chrome://view-cert/?cert=X where X is the
-  // hex encoded pointer to the certificate being displayed.
-  GURL dialogURL_;
+  // The argument string for the dialog which passes the certificate pointer.
+  std::string json_args_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   std::wstring title_;

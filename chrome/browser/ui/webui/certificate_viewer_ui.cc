@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 CertificateViewerUI::CertificateViewerUI(TabContents* contents)
-    : ChromeWebUI(contents) {
+    : HtmlDialogUI(contents) {
 
   // Set up the chrome://view-cert source.
   ChromeWebUIDataSource* html_source =

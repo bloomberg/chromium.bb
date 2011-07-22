@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/webui/certificate_viewer.h"
@@ -44,18 +45,10 @@ std::string PointerToHexString(const void* pointer) {
 
 CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
     : cert_(cert) {
-  // Construct the certificate viewer URL to view the stored certificate.
-  // TODO(flackr): The certificate pointer could be passed through DialogArgs,
-  //     however GetDialogArgs is currently not called in Linux builds. When
-  //     GTK dialogs are fixed or replaced with Views move the certificate
-  //     pointer to DialogArgs to remove the potential of entering a URL which
-  //     may crash the browser.
-  GURL::Replacements replacements;
-  std::string query_string = "cert=" + PointerToHexString(cert_);
-  replacements.SetQuery(query_string.c_str(), url_parse::Component(0,
-      query_string.length()));
-  dialogURL_ = GURL(chrome::kChromeUICertificateViewerURL).
-      ReplaceComponents(replacements);
+  // Construct the JSON string with a pointer to the stored certificate.
+  DictionaryValue args;
+  args.SetString("cert", PointerToHexString(cert_));
+  base::JSONWriter::Write(&args, false, &json_args_);
 
   // Construct the dialog title from the certificate.
   net::X509Certificate::OSCertHandles cert_chain;
@@ -75,7 +68,7 @@ std::wstring CertificateViewerDialog::GetDialogTitle() const {
 }
 
 GURL CertificateViewerDialog::GetDialogContentURL() const {
-  return dialogURL_;
+  return GURL(chrome::kChromeUICertificateViewerURL);
 }
 
 void CertificateViewerDialog::GetWebUIMessageHandlers(
@@ -87,7 +80,7 @@ void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 std::string CertificateViewerDialog::GetDialogArgs() const {
-  return std::string();
+  return json_args_;
 }
 
 void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
