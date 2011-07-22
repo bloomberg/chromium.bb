@@ -2528,7 +2528,7 @@ void GLES2DecoderImpl::DoCopyTextureToParentTextureCHROMIUM(
 }
 
 void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(TOUCH_UI)
   // Make sure that we are done drawing to the back buffer before resizing.
   glFinish();
 #endif
@@ -2740,7 +2740,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     }
     info->MarkAsValid();
   } else {
-    service_id = 0;
+    service_id = surface_->GetBackingFrameBufferObject();
   }
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {

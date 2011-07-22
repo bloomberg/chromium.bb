@@ -82,6 +82,7 @@ bool GLContextWGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  surface->OnMakeCurrent();
   return true;
 }
 

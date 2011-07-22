@@ -280,6 +280,20 @@
             'common/native_web_keyboard_event_views.cc',
           ],
         }],
+        ['touchui==1', {
+          'sources': [
+            'common/gpu/image_transport_surface_linux.h',
+            'common/gpu/image_transport_surface_linux.cc',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/angle/include',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lXcomposite',
+            ],
+          },
+        }],
         ['enable_gpu==1', {
           'dependencies': [
             '../gpu/gpu.gyp:command_buffer_service',

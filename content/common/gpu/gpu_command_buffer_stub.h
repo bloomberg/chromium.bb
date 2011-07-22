@@ -58,6 +58,9 @@ class GpuCommandBufferStub
   // Get the GLContext associated with this object.
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
+  // Get the GpuChannel associated with this object.
+  GpuChannel* channel() const { return channel_; }
+
   // Identifies the renderer process.
   int32 renderer_id() const { return renderer_id_; }
 
@@ -81,15 +84,10 @@ class GpuCommandBufferStub
 
   void ViewResized();
 
-#if defined(TOUCH_UI)
-  void AcceleratedSurfaceIOSurfaceSet(uint64 surface_id);
-  void AcceleratedSurfaceReleased(uint64 surface_id);
-#endif  // defined(TOUCH_UI)
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
-#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
+#endif  // defined(OS_MACOSX)
 
   // Register a callback to be Run() whenever the underlying scheduler receives
   // a set_token() call.  The callback will be Run() with the just-set token as
@@ -97,6 +95,9 @@ class GpuCommandBufferStub
   void AddSetTokenCallback(const base::Callback<void(int32)>& callback);
 
  private:
+  // Cleans up and sends reply if OnInitialize failed.
+  void OnInitializeFailed(IPC::Message* reply_message);
+
   // Message handlers:
   void OnInitialize(base::SharedMemoryHandle ring_buffer,
                     int32 size,
@@ -131,11 +132,8 @@ class GpuCommandBufferStub
 
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
   void SwapBuffersCallback();
-#endif  // defined(TOUCH_UI)
+#endif  // defined(OS_MACOSX)
 
   void ResizeCallback(gfx::Size size);
   void ReportState();

@@ -52,8 +52,12 @@ class NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual void* GetHandle();
   virtual void* GetConfig();
 
- private:
+ protected:
+  NativeViewGLSurfaceGLX();
+
   gfx::PluginWindowHandle window_;
+
+ private:
   void* config_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceGLX);
 };

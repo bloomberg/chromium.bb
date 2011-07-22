@@ -200,7 +200,7 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
 void RenderWidgetHostViewViews::AcceleratedSurfaceSetIOSurface(
     int32 width, int32 height, uint64 surface_id) {
   accelerated_surface_containers_[surface_id] =
-    new AcceleratedSurfaceContainerTouch(
+    AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
         static_cast<ui::CompositorGL*>(GetWidget()->GetCompositor()),
         gfx::Size(width, height),
         surface_id);

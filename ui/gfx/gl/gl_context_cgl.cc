@@ -64,6 +64,7 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  surface->OnMakeCurrent();
   return true;
 }
 

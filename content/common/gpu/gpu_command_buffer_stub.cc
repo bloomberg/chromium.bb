@@ -22,6 +22,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/wrapped_window_proc.h"
+#elif defined(TOUCH_UI)
+#include "content/common/gpu/image_transport_surface_linux.h"
 #endif
 
 using gpu::Buffer;
@@ -115,13 +117,18 @@ bool GpuCommandBufferStub::IsScheduled() {
   return !scheduler_.get() || scheduler_->IsScheduled();
 }
 
+void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
+  scheduler_.reset();
+  command_buffer_.reset();
+  GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, false);
+  Send(reply_message);
+}
+
 void GpuCommandBufferStub::OnInitialize(
     base::SharedMemoryHandle ring_buffer,
     int32 size,
     IPC::Message* reply_message) {
   DCHECK(!command_buffer_.get());
-
-  bool result = false;
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
@@ -142,6 +149,41 @@ void GpuCommandBufferStub::OnInitialize(
     scheduler_.reset(gpu::GpuScheduler::Create(command_buffer_.get(),
                                                channel_,
                                                NULL));
+#if defined(TOUCH_UI)
+    if (software_) {
+      OnInitializeFailed(reply_message);
+      return;
+    }
+
+    scoped_refptr<gfx::GLSurface> surface;
+    if (handle_)
+      surface = ImageTransportSurface::CreateSurface(this);
+    else
+      surface = gfx::GLSurface::CreateOffscreenGLSurface(software_,
+                                                         gfx::Size(1, 1));
+    if (!surface.get()) {
+      LOG(ERROR) << "GpuCommandBufferStub: failed to create surface.";
+      OnInitializeFailed(reply_message);
+      return;
+    }
+
+    scoped_refptr<gfx::GLContext> context(
+        gfx::GLContext::CreateGLContext(channel_->share_group(),
+                                        surface.get()));
+    if (!context.get()) {
+      LOG(ERROR) << "GpuCommandBufferStub: failed to create context.";
+      OnInitializeFailed(reply_message);
+      return;
+    }
+
+    if (scheduler_->InitializeCommon(
+        surface,
+        context,
+        initial_size_,
+        disallowed_extensions_,
+        allowed_extensions_.c_str(),
+        requested_attribs_)) {
+#else
     if (scheduler_->Initialize(
         handle_,
         initial_size_,
@@ -150,6 +192,7 @@ void GpuCommandBufferStub::OnInitialize(
         allowed_extensions_.c_str(),
         requested_attribs_,
         channel_->share_group())) {
+#endif
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(scheduler_.get(),
                       &gpu::GpuScheduler::PutChanged));
@@ -165,7 +208,7 @@ void GpuCommandBufferStub::OnInitialize(
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
       if (handle_) {
         // This context conceptually puts its output directly on the
         // screen, rendered by the accelerated plugin layer in
@@ -175,12 +218,19 @@ void GpuCommandBufferStub::OnInitialize(
             NewCallback(this,
                         &GpuCommandBufferStub::SwapBuffersCallback));
       }
-#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
+#endif  // defined(OS_MACOSX)
 
       // Set up a pathway for resizing the output window or framebuffer at the
       // right time relative to other GL commands.
+#if defined(TOUCH_UI)
+      if (handle_ == gfx::kNullPluginWindow) {
+        scheduler_->SetResizeCallback(
+            NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
+      }
+#else
       scheduler_->SetResizeCallback(
           NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
+#endif
 
       if (parent_stub_for_initialization_) {
         scheduler_->SetParent(parent_stub_for_initialization_->scheduler_.get(),
@@ -189,14 +239,13 @@ void GpuCommandBufferStub::OnInitialize(
         parent_texture_for_initialization_ = 0;
       }
 
-      result = true;
     } else {
-      scheduler_.reset();
-      command_buffer_.reset();
+      OnInitializeFailed(reply_message);
+      return;
     }
   }
 
-  GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, result);
+  GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
 }
 
@@ -438,34 +487,7 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
 
   scheduler_->SetScheduled(false);
 }
-#endif  // defined(OS_MACOSX)
 
-#if defined(TOUCH_UI)
-void GpuCommandBufferStub::SwapBuffersCallback() {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::SwapBuffersCallback");
-  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.renderer_id = renderer_id_;
-  params.render_view_id = render_view_id_;
-  params.surface_id = scheduler_->GetFrontSurfaceId();
-  params.route_id = route_id();
-  params.swap_buffers_count = scheduler_->swap_buffers_count();
-  gpu_channel_manager->Send(
-      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-
-  scheduler_->SetScheduled(false);
-}
-
-void GpuCommandBufferStub::AcceleratedSurfaceIOSurfaceSet(uint64 surface_id) {
-  scheduler_->SetScheduled(true);
-}
-
-void GpuCommandBufferStub::AcceleratedSurfaceReleased(uint64 surface_id) {
-  scheduler_->ReleaseSurface(surface_id);
-}
-#endif  // defined(TOUCH_UI)
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
 void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     uint64 swap_buffers_count) {
   TRACE_EVENT1("gpu",
@@ -485,7 +507,7 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
     scheduler_->SetScheduled(true);
   }
 }
-#endif  // defined(OS_MACOSX) || defined(TOUCH_UI)
+#endif  // defined(OS_MACOSX)
 
 void GpuCommandBufferStub::AddSetTokenCallback(
     const base::Callback<void(int32)>& callback) {
@@ -510,31 +532,6 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
                                   route_id_,
                                   size));
 
-    scheduler_->SetScheduled(false);
-#elif defined(TOUCH_UI)
-    if (scheduler_->GetBackSurfaceId()) {
-      GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-      params.renderer_id = renderer_id_;
-      params.render_view_id = render_view_id_;
-      params.identifier = scheduler_->GetBackSurfaceId();
-      params.route_id = route_id();
-
-      GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-      gpu_channel_manager->Send(
-          new GpuHostMsg_AcceleratedSurfaceRelease(params));
-    }
-    scheduler_->CreateBackSurface(size);
-    GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
-    params.renderer_id = renderer_id_;
-    params.render_view_id = render_view_id_;
-    params.width = size.width();
-    params.height = size.height();
-    params.identifier = scheduler_->GetBackSurfaceId();
-    params.route_id = route_id();
-
-    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    gpu_channel_manager->Send(
-        new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
     scheduler_->SetScheduled(false);
 #endif
   }

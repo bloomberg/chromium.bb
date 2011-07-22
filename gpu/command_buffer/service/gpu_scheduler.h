@@ -24,8 +24,6 @@
 
 #if defined(OS_MACOSX)
 #include "ui/gfx/surface/accelerated_surface_mac.h"
-#elif defined(TOUCH_UI)
-#include "ui/gfx/surface/accelerated_surface_linux.h"
 #endif
 
 namespace gfx {
@@ -55,7 +53,8 @@ class GpuScheduler : public CommandBufferEngine {
 
   virtual ~GpuScheduler();
 
-  // Perform platform specific and common initialization.
+  // Platform specific code to create GLContexts and GLSurfaces that are
+  // handed off to the next function.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
                   bool software,
@@ -63,6 +62,15 @@ class GpuScheduler : public CommandBufferEngine {
                   const char* allowed_extensions,
                   const std::vector<int32>& attribs,
                   gfx::GLShareGroup* share_group);
+
+  // Takes ownership of GLSurface and GLContext.
+  bool InitializeCommon(
+      const scoped_refptr<gfx::GLSurface>& surface,
+      const scoped_refptr<gfx::GLContext>& context,
+      const gfx::Size& size,
+      const gles2::DisallowedExtensions& disallowed_extensions,
+      const char* allowed_extensions,
+      const std::vector<int32>& attribs);
 
   void Destroy();
   void DestroyCommon();
@@ -93,7 +101,7 @@ class GpuScheduler : public CommandBufferEngine {
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreenFrameBuffer(const gfx::Size& size);
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   // To prevent the GPU process from overloading the browser process,
   // we need to track the number of swap buffers calls issued and
   // acknowledged per on-screen context, and keep the GPU from getting
@@ -104,9 +112,7 @@ class GpuScheduler : public CommandBufferEngine {
   uint64 acknowledged_swap_buffers_count() const;
   void set_acknowledged_swap_buffers_count(
       uint64 acknowledged_swap_buffers_count);
-#endif
 
-#if defined(OS_MACOSX)
   // Needed only on Mac OS X, which does not render into an on-screen
   // window and therefore requires the backing store to be resized
   // manually. Returns an opaque identifier for the new backing store.
@@ -124,16 +130,6 @@ class GpuScheduler : public CommandBufferEngine {
   virtual uint64 GetSurfaceId();
 
   void DidDestroySurface();
-#endif
-
-#if defined(TOUCH_UI)
-  virtual void CreateBackSurface(const gfx::Size& size);
-  // Should not be back_surface_ or front_surface_.
-  virtual void ReleaseSurface(uint64 surface_id);
-
-  // Returns the id of the surface (or 0 if no such surface has been created).
-  virtual uint64 GetBackSurfaceId();
-  virtual uint64 GetFrontSurfaceId();
 #endif
 
   // Sets a callback that is called when a glResizeCHROMIUM command
@@ -155,26 +151,11 @@ class GpuScheduler : public CommandBufferEngine {
   // Get the GLES2Decoder associated with this scheduler.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
- protected:
-  // Perform common initialization. Takes ownership of GLSurface and GLContext.
-  bool InitializeCommon(
-      const scoped_refptr<gfx::GLSurface>& surface,
-      const scoped_refptr<gfx::GLContext>& context,
-      const gfx::Size& size,
-      const gles2::DisallowedExtensions& disallowed_extensions,
-      const char* allowed_extensions,
-      const std::vector<int32>& attribs);
-
-
  private:
   // If a group is not passed in one will be created.
   GpuScheduler(CommandBuffer* command_buffer,
                gles2::GLES2Decoder* decoder,
                CommandParser* parser);
-
-  // Called via a callback just before we are supposed to call the
-  // user's resize callback.
-  void WillResize(gfx::Size size);
 
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
@@ -193,22 +174,13 @@ class GpuScheduler : public CommandBufferEngine {
 
   scoped_ptr<Callback0::Type> scheduled_callback_;
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   uint64 swap_buffers_count_;
   uint64 acknowledged_swap_buffers_count_;
-#endif
-
-#if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;
-#elif defined(TOUCH_UI)
-  std::map<uint64, scoped_refptr<AcceleratedSurface> >
-      surfaces_;
-  scoped_refptr<AcceleratedSurface> back_surface_;
-  scoped_refptr<AcceleratedSurface> front_surface_;
 #endif
 
   ScopedRunnableMethodFactory<GpuScheduler> method_factory_;
-  scoped_ptr<Callback1<gfx::Size>::Type> wrapped_resize_callback_;
   scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
   scoped_ptr<Callback0::Type> command_processed_callback_;
   base::Callback<void(int32)> set_token_callback_;

@@ -3844,6 +3844,11 @@
           'include_dirs': [
             '../third_party/angle/include',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lXcomposite',
+            ],
+          },
         }],
         ['webui_certificate_viewer==0', {
           'sources/': [

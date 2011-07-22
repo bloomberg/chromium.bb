@@ -171,6 +171,7 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  surface->OnMakeCurrent();
   return true;
 }
 

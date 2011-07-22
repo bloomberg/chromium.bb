@@ -22,6 +22,7 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+class ChildThread;
 class GpuChannel;
 class GpuWatchdog;
 struct GPUCreateCommandBufferConfig;
@@ -39,7 +40,7 @@ struct GPUCreateCommandBufferConfig;
 class GpuChannelManager : public IPC::Channel::Listener,
                           public IPC::Message::Sender {
  public:
-  GpuChannelManager(IPC::Message::Sender* browser_channel,
+  GpuChannelManager(ChildThread* gpu_child_thread,
                     GpuWatchdog* watchdog,
                     base::MessageLoopProxy* io_message_loop,
                     base::WaitableEvent* shutdown_event);
@@ -58,6 +59,10 @@ class GpuChannelManager : public IPC::Channel::Listener,
 
   ScopedRunnableMethodFactory<GpuChannelManager> method_factory_;
 
+  int GenerateRouteID();
+  void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
+  void RemoveRoute(int32 routing_id);
+
  private:
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
@@ -71,19 +76,9 @@ class GpuChannelManager : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params);
   void OnResizeViewACK(int32 renderer_id, int32 command_buffer_route_id);
 
-#if defined(TOUCH_UI)
-  void OnAcceleratedSurfaceSetIOSurfaceACK(
-      int renderer_id, int32 route_id, uint64 surface_id);
-  void OnAcceleratedSurfaceReleaseACK(
-      int renderer_id, int32 route_id, uint64 surface_id);
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwappedACK(
       int renderer_id, int32 route_id, uint64 swap_buffers_count);
-#endif
-
-#if defined(OS_MACOSX)
   void OnDestroyCommandBuffer(int renderer_id, int32 renderer_view_id);
 #endif
 
@@ -92,10 +87,8 @@ class GpuChannelManager : public IPC::Channel::Listener,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   base::WaitableEvent* shutdown_event_;
 
-  // Either an IPC channel to the browser or, if the GpuChannelManager is
-  // running in the browser process, a Sender implementation that will post
-  // IPC messages to the UI thread.
-  IPC::Message::Sender* browser_channel_;
+  // Used to send and receive IPC messages from the browser process.
+  ChildThread* gpu_child_thread_;
 
   // These objects manage channels to individual renderer processes there is
   // one channel for each renderer process that has connected to this GPU

@@ -270,15 +270,6 @@ bool GpuProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-#if defined(TOUCH_UI)
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kUseGL) != gfx::kGLImplementationEGLName) {
-    LOG(ERROR) << "GPU process needs EGL_KHR_image_pixmap extension. "
-               << "Try --use-gl=egl on the command line.";
-    return false;
-  }
-#endif
-
   if (in_process_) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpuWatchdog);

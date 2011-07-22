@@ -68,7 +68,7 @@ bool GpuScheduler::InitializeCommon(
   if (!context->MakeCurrent(surface))
     return false;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(TOUCH_UI)
   // Set up swap interval for onscreen contexts.
   if (!surface->IsOffscreen()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
@@ -129,7 +129,7 @@ bool GpuScheduler::SetParent(GpuScheduler* parent_scheduler,
     return decoder_->SetParent(NULL, 0);
 }
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
 namespace {
 const unsigned int kMaxOutstandingSwapBuffersCallsPerOnscreenContext = 1;
 }
@@ -156,11 +156,7 @@ void GpuScheduler::PutChanged() {
 
 #if defined(OS_MACOSX)
   bool do_rate_limiting = surface_.get() != NULL;
-#elif defined(TOUCH_UI)
-  bool do_rate_limiting = back_surface_.get() != NULL;
-#endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
   // Don't swamp the browser process with SwapBuffers calls it can't handle.
   DCHECK(!do_rate_limiting ||
          swap_buffers_count_ - acknowledged_swap_buffers_count_ == 0);
@@ -239,10 +235,7 @@ void GpuScheduler::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
 }
 
 void GpuScheduler::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
-  wrapped_resize_callback_.reset(callback);
-  decoder_->SetResizeCallback(
-      NewCallback(this,
-                  &GpuScheduler::WillResize));
+  decoder_->SetResizeCallback(callback);
 }
 
 void GpuScheduler::SetSwapBuffersCallback(
@@ -271,17 +264,11 @@ GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
       decoder_(decoder),
       parser_(parser),
       unscheduled_count_(0),
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
       swap_buffers_count_(0),
       acknowledged_swap_buffers_count_(0),
 #endif
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-}
-
-void GpuScheduler::WillResize(gfx::Size size) {
-  if (wrapped_resize_callback_.get()) {
-    wrapped_resize_callback_->Run(size);
-  }
 }
 
 }  // namespace gpu

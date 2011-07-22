@@ -159,19 +159,15 @@ IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
 
 #if defined(TOUCH_UI)
 // Tells the GPU process that it's safe to start rendering to the surface.
-IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceSetIOSurfaceACK,
-                     int /* renderer_id */,
-                     int32 /* route_id */,
-                     uint64 /* surface_id */)
+IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_SetSurfaceACK,
+                    uint64 /* surface_id */)
 
-// Tells the GPU process the surface has been released.
-IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceReleaseACK,
-                     int /* renderer_id */,
-                     int32 /* route_id */,
-                     uint64 /* surface_id */)
+// Tells the GPU process that the browser process handled the swap
+// buffers request with the given number.
+IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
 #endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
 // Tells the GPU process that the browser process handled the swap
 // buffers request with the given number. Note that it is possible
 // for the browser process to coalesce frames; it is not guaranteed
@@ -181,9 +177,7 @@ IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                      int /* renderer_id */,
                      int32 /* route_id */,
                      uint64 /* swap_buffers_count */)
-#endif
 
-#if defined(OS_MACOSX)
 // Requests the GPU process to destroy the command buffer and remove the
 // associated route. Further messages to this command buffer will result in a
 // channel error.

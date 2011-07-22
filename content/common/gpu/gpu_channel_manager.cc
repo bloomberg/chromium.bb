@@ -4,19 +4,20 @@
 
 #include "content/common/gpu/gpu_channel_manager.h"
 
+#include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 
-GpuChannelManager::GpuChannelManager(IPC::Message::Sender* browser_channel,
+GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
                                      GpuWatchdog* watchdog,
                                      base::MessageLoopProxy* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
-      browser_channel_(browser_channel),
+      gpu_child_thread_(gpu_child_thread),
       watchdog_(watchdog) {
-  DCHECK(browser_channel);
+  DCHECK(gpu_child_thread);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);
 }
@@ -27,6 +28,20 @@ GpuChannelManager::~GpuChannelManager() {
 
 void GpuChannelManager::RemoveChannel(int renderer_id) {
   gpu_channels_.erase(renderer_id);
+}
+
+int GpuChannelManager::GenerateRouteID() {
+  static int last_id = 0;
+  return ++last_id;
+}
+
+void GpuChannelManager::AddRoute(int32 routing_id,
+                                 IPC::Channel::Listener* listener) {
+  gpu_child_thread_->AddRoute(routing_id, listener);
+}
+
+void GpuChannelManager::RemoveRoute(int32 routing_id) {
+  gpu_child_thread_->RemoveRoute(routing_id);
 }
 
 bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
@@ -41,17 +56,9 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
 #endif
-#if defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceSetIOSurfaceACK,
-                        OnAcceleratedSurfaceSetIOSurfaceACK)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceReleaseACK,
-                        OnAcceleratedSurfaceReleaseACK)
-#endif
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                         OnAcceleratedSurfaceBuffersSwappedACK)
-#endif
-#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
 #endif
@@ -61,7 +68,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool GpuChannelManager::Send(IPC::Message* msg) {
-  return browser_channel_->Send(msg);
+  return gpu_child_thread_->Send(msg);
 }
 
 void GpuChannelManager::OnEstablishChannel(int renderer_id) {
@@ -138,27 +145,7 @@ void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
   channel->ViewResized(command_buffer_route_id);
 }
 
-#if defined(TOUCH_UI)
-void GpuChannelManager::OnAcceleratedSurfaceSetIOSurfaceACK(
-    int renderer_id, int32 route_id, uint64 surface_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceIOSurfaceSet(route_id, surface_id);
-}
-
-void GpuChannelManager::OnAcceleratedSurfaceReleaseACK(
-    int renderer_id, int32 route_id, uint64 surface_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceReleased(route_id, surface_id);
-}
-#endif
-
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX)
 void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
     int renderer_id, int32 route_id, uint64 swap_buffers_count) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
@@ -167,9 +154,7 @@ void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
   scoped_refptr<GpuChannel> channel = iter->second;
   channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
 }
-#endif
 
-#if defined(OS_MACOSX)
 void GpuChannelManager::OnDestroyCommandBuffer(
     int renderer_id, int32 renderer_view_id) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);

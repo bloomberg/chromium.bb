@@ -21,4 +21,7 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
   return 0;
 }
 
+void GLSurface::OnMakeCurrent() {
+}
+
 }  // namespace gfx

@@ -243,8 +243,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceSetIOSurface(
 #elif defined(TOUCH_UI)
   view->AcceleratedSurfaceSetIOSurface(
       params.width, params.height, params.identifier);
-  Send(new GpuMsg_AcceleratedSurfaceSetIOSurfaceACK(
-      params.renderer_id, params.route_id, params.identifier));
+  Send(new AcceleratedSurfaceMsg_SetSurfaceACK(
+      params.route_id, params.identifier));
 #endif
 }
 
@@ -271,8 +271,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       params.swap_buffers_count);
 #elif defined(TOUCH_UI)
   view->AcceleratedSurfaceBuffersSwapped(params.surface_id);
-  Send(new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-      params.renderer_id, params.route_id, params.swap_buffers_count));
+  Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
 #endif
 }
 
@@ -290,9 +289,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
   if (!view)
     return;
   view->AcceleratedSurfaceRelease(params.identifier);
-
-  Send(new GpuMsg_AcceleratedSurfaceReleaseACK(
-      params.renderer_id, params.route_id, params.identifier));
 }
 
 #endif

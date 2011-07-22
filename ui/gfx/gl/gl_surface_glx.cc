@@ -104,6 +104,11 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window)
     config_(NULL) {
 }
 
+NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX()
+  : window_(0),
+    config_(NULL) {
+}
+
 NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
   Destroy();
 }

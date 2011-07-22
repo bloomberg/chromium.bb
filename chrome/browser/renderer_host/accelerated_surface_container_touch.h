@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "ui/gfx/compositor/compositor_gl.h"
 
 // Helper class for storing image data from the GPU process renderered
@@ -16,20 +15,22 @@
 // or destroyed.
 class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
  public:
-  AcceleratedSurfaceContainerTouch(ui::CompositorGL* compositor,
-                                   const gfx::Size& size,
-                                   uint64 surface_handle);
+  static AcceleratedSurfaceContainerTouch* CreateAcceleratedSurfaceContainer(
+      ui::CompositorGL* compositor,
+      const gfx::Size& size,
+      uint64 surface_handle);
 
+  // TextureGL implementation
   virtual void SetBitmap(const SkBitmap& bitmap,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
 
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
-
  protected:
-  ~AcceleratedSurfaceContainerTouch();
+  AcceleratedSurfaceContainerTouch(
+      ui::CompositorGL* compositor,
+      const gfx::Size& size);
 
-  void* image_;
+ private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouch);
 };
 
