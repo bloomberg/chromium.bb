@@ -13,8 +13,6 @@
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/input_event_impl.h"
-// TODO(dmichael): Remove this include when PP_InputEvent is gone from m14.
-#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -98,7 +96,7 @@ void AppendCharEvent(const WebInputEvent& event,
          key_event.text[utf16_char_count])
     utf16_char_count++;
 
-  // Make a separate PP_InputEvent for each Unicode character in the input.
+  // Make a separate InputEventData for each Unicode character in the input.
   base::i18n::UTF16CharIterator iter(key_event.text, utf16_char_count);
   while (!iter.end()) {
     InputEventData result = GetEventWithCommonFieldsAndType(event);
@@ -244,59 +242,7 @@ WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   return mouse_wheel_event;
 }
 
-void InputEventDataToPPInputEvent(const InputEventData& data,
-                                  PP_InputEvent* result) {
-  memset(result, 0, sizeof(PP_InputEvent));
-  result->type = data.event_type;
-  result->time_stamp = data.event_time_stamp;
-
-  switch (data.event_type) {
-    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-    case PP_INPUTEVENT_TYPE_MOUSEUP:
-    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-    case PP_INPUTEVENT_TYPE_MOUSEENTER:
-    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
-      result->u.mouse.modifier = data.event_modifiers;
-      result->u.mouse.button = data.mouse_button;
-      result->u.mouse.x = static_cast<float>(data.mouse_position.x);
-      result->u.mouse.y = static_cast<float>(data.mouse_position.y);
-      result->u.mouse.click_count = data.mouse_click_count;
-      break;
-    case PP_INPUTEVENT_TYPE_WHEEL:
-      result->u.wheel.modifier = data.event_modifiers;
-      result->u.wheel.delta_x = data.wheel_delta.x;
-      result->u.wheel.delta_y = data.wheel_delta.y;
-      result->u.wheel.wheel_ticks_x = data.wheel_ticks.x;
-      result->u.wheel.wheel_ticks_y = data.wheel_ticks.y;
-      break;
-    case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-    case PP_INPUTEVENT_TYPE_KEYDOWN:
-    case PP_INPUTEVENT_TYPE_KEYUP:
-      result->u.key.modifier = data.event_modifiers;
-      result->u.key.key_code = data.key_code;
-      break;
-    case PP_INPUTEVENT_TYPE_CHAR:
-      result->u.character.modifier = data.event_modifiers;
-      base::strlcpy(result->u.character.text, data.character_text.c_str(),
-                    arraysize(result->u.character.text));
-      break;
-    case PP_INPUTEVENT_TYPE_UNDEFINED:
-      break;
-  }
-}
-
 }  // namespace
-
-void CreatePPEvent(const WebInputEvent& event,
-                   std::vector<PP_InputEvent>* pp_events) {
-  std::vector<InputEventData> data;
-  CreateInputEventData(event, &data);
-
-  pp_events->resize(data.size());
-  for (size_t i = 0; i < data.size(); i++)
-    InputEventDataToPPInputEvent(data[i], &(*pp_events)[i]);
-}
 
 void CreateInputEventData(const WebInputEvent& event,
                           std::vector<InputEventData>* result) {
