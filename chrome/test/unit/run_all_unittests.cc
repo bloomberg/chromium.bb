@@ -13,6 +13,11 @@ class UnitTestWebKitClient : public WebKit::WebKitClient {
  public:
   UnitTestWebKitClient() {
   }
+
+  virtual void cryptographicallyRandomValues(
+      unsigned char* buffer, size_t length) {
+    memset(buffer, 0, length);
+  }
 };
 
 // A special test suite that also initializes webkit once for all unittests.
