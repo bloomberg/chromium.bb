@@ -132,13 +132,16 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());
-  AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
+  AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_TCPSocket_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
   AddPPB(PPB_Graphics2D_Proxy::GetInfo());
   AddPPB(PPB_ImageData_Proxy::GetInfo());
-  AddPPB(PPB_InputEvent_Proxy::GetInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetInputEventInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetKeyboardInputEventInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetMouseInputEventInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetWheelInputEventInfo());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
   AddPPB(PPB_Instance_Proxy::GetInfo1_0());
   AddPPB(PPB_Instance_Proxy::GetInfoFullscreen());

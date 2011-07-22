@@ -72,10 +72,46 @@ PPB_InputEvent_Proxy::~PPB_InputEvent_Proxy() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetInfo() {
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetInputEventInfo() {
   static const Info info = {
     ::ppapi::thunk::GetPPB_InputEvent_Thunk(),
     PPB_INPUT_EVENT_INTERFACE,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateInputEventProxy,
+  };
+  return &info;
+}
+
+// static
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetKeyboardInputEventInfo() {
+  static const Info info = {
+    ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk(),
+    PPB_KEYBOARD_INPUT_EVENT_INTERFACE,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateInputEventProxy,
+  };
+  return &info;
+}
+
+// static
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo() {
+  static const Info info = {
+    ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk(),
+    PPB_MOUSE_INPUT_EVENT_INTERFACE,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateInputEventProxy,
+  };
+  return &info;
+}
+
+// static
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetWheelInputEventInfo() {
+  static const Info info = {
+    ::ppapi::thunk::GetPPB_WheelInputEvent_Thunk(),
+    PPB_WHEEL_INPUT_EVENT_INTERFACE,
     INTERFACE_ID_NONE,
     false,
     &CreateInputEventProxy,

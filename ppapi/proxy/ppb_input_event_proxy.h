@@ -22,7 +22,10 @@ class PPB_InputEvent_Proxy : public InterfaceProxy {
   PPB_InputEvent_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_InputEvent_Proxy();
 
-  static const Info* GetInfo();
+  static const Info* GetInputEventInfo();
+  static const Info* GetKeyboardInputEventInfo();
+  static const Info* GetMouseInputEventInfo();
+  static const Info* GetWheelInputEventInfo();
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          const ppapi::InputEventData& data);
