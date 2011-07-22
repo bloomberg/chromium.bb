@@ -1593,6 +1593,18 @@
    fun:MakeRequest
 }
 {
+   bug_89890a
+   Heapcheck:Leak
+   ...
+   fun:safe_browsing::ClientSideDetectionHost::OnDetectedPhishingSite
+}
+{
+   bug_89890b
+   Heapcheck:Leak
+   ...
+   fun:safe_browsing::ClientSideDetectionHost::OnPhishingDetectionDone
+}
+{
    bug_89684
    Heapcheck:Leak
    ...
