@@ -252,3 +252,15 @@ TEST_F(OutOfProcessPPAPITest, FAILS_Transport) {
   RunTestViaHTTP("Transport");
 }
 #endif // ENABLE_P2P_APIS
+
+TEST_PPAPI_IN_PROCESS(UMA)
+// There is no proxy.
+TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
+  RunTest("UMA");
+}
+
+TEST_PPAPI_IN_PROCESS(VideoDecoder)
+// There is no proxy yet (vrk is adding it).
+TEST_F(OutOfProcessPPAPITest, FAILS_VideoDecoder) {
+  RunTest("VideoDecoder");
+}
