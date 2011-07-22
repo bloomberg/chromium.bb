@@ -82,7 +82,7 @@ cr.define('options', function() {
         event.target.disabled = true;
         chrome.send('disableCellular', []);
       });
-      $('change-proxy').addEventListener('click', function(event) {
+      $('change-proxy-button').addEventListener('click', function(event) {
         OptionsPage.closeOverlay();
         OptionsPage.showPageByName('proxy', false);
         chrome.send('coreOptionsUserMetricsAction',
@@ -444,8 +444,13 @@ cr.define('options', function() {
     $('ipTypeDHCPDiv').hidden = !data.showStaticIPConfig;
     $('ipTypeStaticDiv').hidden = !data.showStaticIPConfig;
 
-    // Hide change-proxy-section if proxy is not configurable.
-    $('change-proxy-section').hidden = !data.proxyConfigurable;
+    // Hide change-proxy-button if proxy is not configurable.
+    $('change-proxy-button').hidden = !data.proxyConfigurable;
+    // Hide enable-shared-proxies-hint if proxy configuration cannot be enabled.
+    $('enable-shared-proxies-hint').hidden = !data.showSharedProxiesHint;
+    // Hide change-proxy-section if both button and hint are hidden.
+    $('change-proxy-section').hidden = !data.proxyConfigurable &&
+                                       !data.showSharedProxiesHint;
 
     var ipConfigList = $('ipConfigList');
     ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;

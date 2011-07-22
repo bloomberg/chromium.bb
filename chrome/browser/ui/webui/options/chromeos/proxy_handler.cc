@@ -33,6 +33,8 @@ void ProxyHandler::GetLocalizedValues(
   // Proxy page - ChromeOS
   localized_strings->SetString("proxyPage",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PROXY_TAB_LABEL));
+  localized_strings->SetString("proxyPageTitleFormat",
+     l10n_util::GetStringUTF16(IDS_PROXY_PAGE_TITLE_FORMAT));
   localized_strings->SetString("proxy_config_title",
      l10n_util::GetStringUTF16(IDS_PROXY_CONFIG_TITLE));
   localized_strings->SetString("proxyDirectInternetConnection",

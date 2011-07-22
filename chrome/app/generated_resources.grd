@@ -10891,8 +10891,11 @@ ls' lab.">
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
         DNS server:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="For ethernet and remembered services, change proxy button text in chrome:settings/internet.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="In settings Internet options, the button to configure proxy settings.">
         Change proxy settings...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT" desc="In settings Internet options, when proxy can't be changed, the hint for user to do so by enabling the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES.">
+        To change proxy settings, enable "Use shared proxies" setting.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
         Hardware address:
@@ -11933,6 +11936,9 @@ ls' lab.">
       </message>
       <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
         version
+      </message>
+      <message name="IDS_PROXY_PAGE_TITLE_FORMAT" desc="The title of the proxy page for a specific network.">
+        Network proxy for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
       <message name="IDS_PROXY_CONFIG_TITLE" desc="The title of the basic proxy config.">
         Proxy Configuration

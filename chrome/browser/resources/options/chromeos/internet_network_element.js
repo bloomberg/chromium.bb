@@ -241,6 +241,8 @@ cr.define('options.internet', function() {
           buttonsDiv.appendChild(
               this.createButton_('options_button', 'options',
                                  function(e) {
+                options.ProxyOptions.getInstance().setNetworkName(
+                    self.data.networkName);
                 chrome.send('buttonClickCallback',
                             [String(self.data.networkType),
                              self.data.servicePath,

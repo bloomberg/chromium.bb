@@ -115,6 +115,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("changeProxyButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
+  localized_strings->SetString("enableSharedProxiesHint",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -687,10 +690,14 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
   bool remembered = (network->profile_type() != chromeos::PROFILE_NONE);
-  dictionary.SetBoolean("proxyConfigurable",
+  bool proxy_configurable =
       (remembered && (network->profile_type() == chromeos::PROFILE_USER ||
                       use_shared_proxies)) ||
-      (type == chromeos::TYPE_ETHERNET && use_shared_proxies));
+      (type == chromeos::TYPE_ETHERNET && use_shared_proxies);
+  dictionary.SetBoolean("proxyConfigurable", proxy_configurable);
+  dictionary.SetBoolean("showSharedProxiesHint",
+      !proxy_configurable && !use_shared_proxies &&
+      (remembered || type == chromeos::TYPE_ETHERNET));
 
   // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
   bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(

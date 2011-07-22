@@ -181,6 +181,16 @@ cr.define('options', function() {
       for (var x = 0; x < selectedItems.length; x++) {
         $('ignoredHostList').removeException(selectedItems[x]);
       }
+    },
+
+    /**
+     * Sets proxy page title using given network name.
+     * @param {string} network The network name to use in page title.
+     * @public
+     */
+    setNetworkName: function(network) {
+      $('proxy-page-title').textContent =
+          localStrings.getStringF('proxyPageTitleFormat', network);
     }
   };
 
