@@ -47,14 +47,12 @@ typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
  */
 typedef enum {
   /**
-   * This flag allows any non-NULL callback to be always invoked asynchronously,
+   * By default any non-NULL callback will always invoked asynchronously,
    * on success or error, even if the operation could complete synchronously
    * without blocking.
    *
    * The method taking such callback will always return PP_OK_COMPLETIONPENDING.
    * The callback will be invoked on the main thread of PPAPI execution.
-   *
-   * TODO(polina): make this the default once all the clients use flags.
    */
   PP_COMPLETIONCALLBACK_FLAG_NONE = 0 << 0,
   /**
@@ -125,8 +123,7 @@ PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
   struct PP_CompletionCallback cc;
   cc.func = func;
   cc.user_data = user_data;
-  /* TODO(polina): switch the default to PP_COMPLETIONCALLBACK_FLAG_NONE. */
-  cc.flags = PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
+  cc.flags = PP_COMPLETIONCALLBACK_FLAG_NONE;
   return cc;
 }
 
@@ -218,4 +215,3 @@ PP_INLINE void PP_RunAndClearCompletionCallback(
  */
 
 #endif  /* PPAPI_C_PP_COMPLETION_CALLBACK_H_ */
-
