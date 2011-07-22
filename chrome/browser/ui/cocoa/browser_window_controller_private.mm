@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -541,6 +542,30 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)setUpOSFullScreenButton {
   // TOOD(rsesek): Properly implement Lion fullscreen <http://crbug.com/74065>.
+}
+
+- (BOOL)recognizeTwoFingerGestures {
+  // Lion or higher will have support for two-finger swipe gestures.
+  if (!base::mac::IsOSLionOrLater())
+    return NO;
+
+  // A note about preferences:
+  // On Lion System Preferences, the swipe gesture behavior is controlled by the
+  // setting in Trackpad --> More Gestures --> Swipe between pages. This setting
+  // has three values:
+  //  A) Scroll left or right with two fingers. This should perform a cool
+  //     scrolling animation, but doesn't yet <http://crbug.com/90228>.
+  //  B) Swipe left or right with three fingers.
+  //  C) Swipe with two or three fingers.
+  //
+  // The three-finger gesture is controlled by the integer preference
+  // |com.apple.trackpad.threeFingerHorizSwipeGesture|. Its value is 0 for (A)
+  // and 1 for (B, C).
+  //
+  // The two-finger gesture is controlled by the preference below and is boolean
+  // YES for (A, C) and NO for (B).
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  return [defaults boolForKey:@"AppleEnableSwipeNavigateWithScrolls"];
 }
 
 @end  // @implementation BrowserWindowController(Private)

@@ -47,7 +47,6 @@ class TabContents;
 @class TabStripView;
 @class ToolbarController;
 
-
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
@@ -95,6 +94,12 @@ class TabContents;
   // restrict the amount of shrinking by the amounts specified above. Reset to
   // NO on growth.
   BOOL isShrinkingFromZoomed_;
+
+  // Touch event data for two-finger gestures. Only available on Lion or higher
+  // with two-finger gestures enabled in the Trackpad preferences. This will
+  // contain the NSTouch objects from |-beginGestureWithEvent:| keyed by the
+  // touch's |identity|.
+  scoped_nsobject<NSMutableDictionary> twoFingerGestureTouches_;
 
   // The raw accumulated zoom value and the actual zoom increments made for an
   // an in-progress pinch gesture.

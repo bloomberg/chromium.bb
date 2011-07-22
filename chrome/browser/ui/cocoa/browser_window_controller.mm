@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 #include <Carbon/Carbon.h>
+#include <numeric>
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
@@ -141,7 +142,6 @@
 // longer indicate that the window is shrinking from an apparent zoomed state)
 // and if it's set we continue to constrain the resize.
 
-
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
@@ -151,6 +151,33 @@
 - (NSRect)_growBoxRect;
 
 @end
+
+// Forward-declare symbols that are part of the 10.6 SDK.
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+
+enum {
+    NSTouchPhaseBegan           = 1U << 0,
+    NSTouchPhaseMoved           = 1U << 1,
+    NSTouchPhaseStationary      = 1U << 2,
+    NSTouchPhaseEnded           = 1U << 3,
+    NSTouchPhaseCancelled       = 1U << 4,
+    NSTouchPhaseTouching        = NSTouchPhaseBegan | NSTouchPhaseMoved |
+                                  NSTouchPhaseStationary,
+    NSTouchPhaseAny             = NSUIntegerMax
+};
+typedef NSUInteger NSTouchPhase;
+
+@interface NSEvent (SnowLeopardDeclarations)
+- (NSSet*)touchesMatchingPhase:(NSTouchPhase)phase inView:(NSView*)view;
+@end
+
+@interface NSTouch : NSObject
+- (NSPoint)normalizedPosition;
+- (id<NSObject, NSCopying>)identity;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_6
 
 // Provide the forward-declarations of new 10.7 SDK symbols so they can be
 // called when building with the 10.5 SDK.
@@ -1705,6 +1732,71 @@ typedef NSInteger NSWindowAnimationBehavior;
 - (void)beginGestureWithEvent:(NSEvent*)event {
   totalMagnifyGestureAmount_ = 0;
   currentZoomStepDelta_ = 0;
+
+  // On Lion, there's support controlled by a System Preference for two- and
+  // three-finger navigational gestures. If set to allow three-finger gestures,
+  // the system gesture recognizer will automatically call |-swipeWithEvent:|
+  // and that will be handled as it would be on Snow Leopard. The two-finger
+  // gesture does not do this, so it must be manually recognized. See the note
+  // inside |-recognizeTwoFingerGestures| for detailed information on the
+  // interaction of the different preferences.
+  NSSet* touches = [event touchesMatchingPhase:NSTouchPhaseAny
+                                        inView:nil];
+  if ([self recognizeTwoFingerGestures] && [touches count] >= 2) {
+    twoFingerGestureTouches_.reset([[NSMutableDictionary alloc] init]);
+    for (NSTouch* touch in touches) {
+      [twoFingerGestureTouches_ setObject:touch forKey:touch.identity];
+    }
+  }
+}
+
+- (void)endGestureWithEvent:(NSEvent*)event {
+  // This method only needs to process gesture events for two-finger navigation.
+  if (!twoFingerGestureTouches_.get())
+    return;
+
+  // When a multi-touch gesture ends, only one touch will be in the "End" phase.
+  // Other touches will be in "Moved" or "Unknown" phases. So long as one is
+  // ended, which it is by virtue of this method being called, the gesture can
+  // be committed so long as the magnitude is great enough.
+  NSSet* touches = [event touchesMatchingPhase:NSTouchPhaseAny
+                                        inView:nil];
+
+  // Store the touch data locally and reset the ivar so that new gestures can
+  // begin.
+  scoped_nsobject<NSDictionary> beginTouches(
+      twoFingerGestureTouches_.release());
+
+  // Construct a vector of magnitudes. Since gesture events do not have the
+  // |-deltaX| property set, this creates the X magnitude for each finger.
+  std::vector<CGFloat> magnitudes;
+  for (NSTouch* touch in touches) {
+    NSTouch* beginTouch = [beginTouches objectForKey:touch.identity];
+    if (!beginTouch)
+      continue;
+
+    // The |normalizedPosition| is scaled from (0,1).
+    magnitudes.push_back(touch.normalizedPosition.x -
+        beginTouch.normalizedPosition.x);
+  }
+
+  // Need at least two points to gesture.
+  if (magnitudes.size() < 2)
+    return;
+
+  CGFloat sum = std::accumulate(magnitudes.begin(), magnitudes.end(), 0.0f);
+  int command_id = 0;
+  if (sum > 0.3)
+    command_id = IDC_FORWARD;
+  else if (sum < -0.3)
+    command_id = IDC_BACK;
+  else
+    return;
+
+  if (browser_->command_updater()->IsCommandEnabled(command_id)) {
+    browser_->ExecuteCommandWithDisposition(command_id,
+        event_utils::WindowOpenDispositionFromNSEvent(event));
+  }
 }
 
 // Delegate method called when window is resized.
