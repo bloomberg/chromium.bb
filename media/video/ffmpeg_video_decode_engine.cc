@@ -104,10 +104,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   av_frame_.reset(avcodec_alloc_frame());
   VideoCodecInfo info;
   info.success = false;
-  info.provides_buffers = true;
-  info.stream_info.surface_format = GetSurfaceFormat();
-  info.stream_info.surface_width = config.surface_width();
-  info.stream_info.surface_height = config.surface_height();
+  info.surface_width = config.surface_width();
+  info.surface_height = config.surface_height();
 
   // If we do not have enough buffers, we will report error too.
   frame_queue_available_.clear();

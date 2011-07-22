@@ -218,9 +218,6 @@ class VideoDecoder : public Filter {
     consume_video_frame_callback_ = callback;
   }
 
-  // Indicate whether decoder provides its own output buffers
-  virtual bool ProvidesBuffer() = 0;
-
   // Returns the width and height of decoded video in pixels.
   //
   // Clients should NOT rely on these values to remain constant. Instead, use

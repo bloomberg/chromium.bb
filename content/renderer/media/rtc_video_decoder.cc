@@ -148,10 +148,6 @@ void RTCVideoDecoder::ProduceVideoFrame(
   frame_queue_available_.push_back(video_frame);
 }
 
-bool RTCVideoDecoder::ProvidesBuffer() {
-  return true;
-}
-
 int RTCVideoDecoder::width() {
   return width_;
 }

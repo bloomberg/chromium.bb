@@ -134,7 +134,6 @@ class FFmpegVideoDecodeEngineTest
   MOCK_METHOD0(OnFlushComplete, void());
   MOCK_METHOD0(OnSeekComplete, void());
   MOCK_METHOD0(OnError, void());
-  MOCK_METHOD1(OnFormatChange, void(VideoStreamInfo stream_info));
 
   // Used by gmock actions.
   void set_video_frame(scoped_refptr<VideoFrame> video_frame) {

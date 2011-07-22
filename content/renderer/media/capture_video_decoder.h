@@ -43,7 +43,6 @@ class CaptureVideoDecoder
                           media::StatisticsCallback* stat_callback) OVERRIDE;
   virtual void ProduceVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
-  virtual bool ProvidesBuffer() OVERRIDE;
   virtual int width() OVERRIDE;
   virtual int height() OVERRIDE;
 

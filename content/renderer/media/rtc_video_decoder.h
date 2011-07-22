@@ -23,23 +23,24 @@ class RTCVideoDecoder
   virtual ~RTCVideoDecoder();
 
   // Filter implementation.
-  virtual void Play(media::FilterCallback* callback);
-  virtual void Seek(base::TimeDelta time, const media::FilterStatusCB& cb);
-  virtual void Pause(media::FilterCallback* callback);
-  virtual void Stop(media::FilterCallback* callback);
+  virtual void Play(media::FilterCallback* callback) OVERRIDE;
+  virtual void Seek(base::TimeDelta time,
+                    const media::FilterStatusCB& cb) OVERRIDE;
+  virtual void Pause(media::FilterCallback* callback) OVERRIDE;
+  virtual void Stop(media::FilterCallback* callback) OVERRIDE;
 
   // Decoder implementation.
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* filter_callback,
-                          media::StatisticsCallback* stat_callback);
-  virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
-  virtual bool ProvidesBuffer();
-  virtual int width();
-  virtual int height();
+                          media::StatisticsCallback* stat_callback) OVERRIDE;
+  virtual void ProduceVideoFrame(
+      scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
+  virtual int width() OVERRIDE;
+  virtual int height() OVERRIDE;
 
   // cricket::VideoRenderer implementation
-  virtual bool SetSize(int width, int height, int reserved);
-  virtual bool RenderFrame(const cricket::VideoFrame* frame);
+  virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
+  virtual bool RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
 
  private:
   friend class RTCVideoDecoderTest;

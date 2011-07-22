@@ -50,10 +50,6 @@ void CaptureVideoDecoder::ProduceVideoFrame(
           &CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread, video_frame));
 }
 
-bool CaptureVideoDecoder::ProvidesBuffer() {
-  return true;
-}
-
 int CaptureVideoDecoder::width() {
   return capability_.width;
 }

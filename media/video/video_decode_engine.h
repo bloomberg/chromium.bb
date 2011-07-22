@@ -19,27 +19,15 @@ class VideoDecodeContext;
 
 struct PipelineStatistics;
 
-struct VideoStreamInfo {
-  VideoFrame::Format surface_format;
+struct VideoCodecInfo {
+  // Other parameter is only meaningful when this is true.
+  bool success;
 
   // Can be different with container's value.
   uint32 surface_width;
 
   // Can be different with container's value.
   uint32 surface_height;
-};
-
-struct VideoCodecInfo {
-  // Other parameter is only meaningful when this is true.
-  bool success;
-
-  // Whether decoder provides output buffer pool.
-  // TODO(hclam): This is not important anymore. Remove this.
-  bool provides_buffers;
-
-  // Initial Stream Info. Only part of them could be valid.
-  // If they are not valid, Engine should update with OnFormatChange.
-  VideoStreamInfo stream_info;
 };
 
 class VideoDecodeEngine {
@@ -52,7 +40,6 @@ class VideoDecodeEngine {
     virtual void OnFlushComplete() = 0;
     virtual void OnSeekComplete() = 0;
     virtual void OnError() = 0;
-    virtual void OnFormatChange(VideoStreamInfo stream_info) = 0;
 
     // TODO(hclam): The following two methods shouldn't belong to this class
     // because they are not video decode events but used to send decoded
