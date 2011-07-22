@@ -227,7 +227,7 @@ void CloudPolicyController::Initialize(
 void CloudPolicyController::FetchToken() {
   if (data_store_->token_cache_loaded() &&
       !data_store_->user_name().empty() &&
-      !data_store_->gaia_token().empty()) {
+      data_store_->has_auth_token()) {
     if (CanBeInManagedDomain(data_store_->user_name())) {
       // Generate a new random device id. (It'll only be kept if registration
       // succeeds.)

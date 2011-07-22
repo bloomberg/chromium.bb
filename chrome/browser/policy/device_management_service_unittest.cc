@@ -18,9 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using testing::IgnoreResult;
 using testing::InvokeWithoutArgs;
+using testing::_;
 
 namespace policy {
 
@@ -32,7 +32,8 @@ const char kResponseEmpty[] = "\x08\x00";
 #define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
 
 // Some helper constants.
-const char kAuthToken[] = "auth-token";
+const char kGaiaAuthToken[] = "gaia-auth-token";
+const char kOAuthToken[] = "oauth-token";
 const char kDMToken[] = "device-management-token";
 const char kDeviceId[] = "device-id";
 
@@ -108,7 +109,8 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   DeviceRegisterResponseDelegateMock mock;
   EXPECT_CALL(mock, OnError(GetParam().expected_error_));
   em::DeviceRegisterRequest request;
-  backend_->ProcessRegisterRequest(kAuthToken, kDeviceId, request, &mock);
+  backend_->ProcessRegisterRequest(kGaiaAuthToken, kOAuthToken,
+                                   kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
@@ -306,7 +308,8 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   expected_response.set_device_management_token(kDMToken);
   EXPECT_CALL(mock, HandleRegisterResponse(MessageEquals(expected_response)));
   em::DeviceRegisterRequest request;
-  backend_->ProcessRegisterRequest(kDMToken, kDeviceId, request, &mock);
+  backend_->ProcessRegisterRequest(kGaiaAuthToken, kOAuthToken,
+                                   kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
@@ -381,7 +384,8 @@ TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   DeviceRegisterResponseDelegateMock mock;
   EXPECT_CALL(mock, HandleRegisterResponse(_)).Times(0);
   em::DeviceRegisterRequest request;
-  backend_->ProcessRegisterRequest(kAuthToken, kDeviceId, request, &mock);
+  backend_->ProcessRegisterRequest(kGaiaAuthToken, kOAuthToken,
+                                   kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
@@ -428,7 +432,8 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   expected_response.set_device_management_token(kDMToken);
   EXPECT_CALL(mock, HandleRegisterResponse(MessageEquals(expected_response)));
   em::DeviceRegisterRequest request;
-  backend_->ProcessRegisterRequest(kAuthToken, kDeviceId, request, &mock);
+  backend_->ProcessRegisterRequest(kGaiaAuthToken, kOAuthToken,
+                                   kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_FALSE(fetcher);
 
@@ -478,7 +483,8 @@ TEST_F(DeviceManagementServiceTest, CancelDuringCallback) {
                                   &DeviceManagementServiceTest::ResetBackend))
       .RetiresOnSaturation();
   em::DeviceRegisterRequest request;
-  backend_->ProcessRegisterRequest(kAuthToken, kDeviceId, request, &mock);
+  backend_->ProcessRegisterRequest(kGaiaAuthToken, kOAuthToken,
+                                   kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 

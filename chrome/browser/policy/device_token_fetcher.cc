@@ -63,7 +63,7 @@ void DeviceTokenFetcher::FetchToken() {
 
 void DeviceTokenFetcher::FetchTokenInternal() {
   DCHECK(state_ != STATE_TOKEN_AVAILABLE);
-  if (data_store_->gaia_token().empty() || data_store_->device_id().empty()) {
+  if (!data_store_->has_auth_token() || data_store_->device_id().empty()) {
     // Maybe this device is unmanaged, just exit. The CloudPolicyController
     // will call FetchToken() again if something changes.
     return;
@@ -77,6 +77,7 @@ void DeviceTokenFetcher::FetchTokenInternal() {
   if (!data_store_->machine_model().empty())
     request.set_machine_model(data_store_->machine_model());
   backend_->ProcessRegisterRequest(data_store_->gaia_token(),
+                                   data_store_->oauth_token(),
                                    data_store_->device_id(),
                                    request, this);
 }

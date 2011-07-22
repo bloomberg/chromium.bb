@@ -27,20 +27,21 @@
 namespace policy {
 
 // Name constants for URL query parameters.
-const char DeviceManagementBackendImpl::kParamRequest[] = "request";
-const char DeviceManagementBackendImpl::kParamDeviceType[] = "devicetype";
+const char DeviceManagementBackendImpl::kParamAgent[] = "agent";
 const char DeviceManagementBackendImpl::kParamAppType[] = "apptype";
 const char DeviceManagementBackendImpl::kParamDeviceID[] = "deviceid";
-const char DeviceManagementBackendImpl::kParamAgent[] = "agent";
+const char DeviceManagementBackendImpl::kParamDeviceType[] = "devicetype";
+const char DeviceManagementBackendImpl::kParamOAuthToken[] = "oauth_token";
 const char DeviceManagementBackendImpl::kParamPlatform[] = "platform";
+const char DeviceManagementBackendImpl::kParamRequest[] = "request";
 
 // String constants for the device and app type we report to the server.
+const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
+const char DeviceManagementBackendImpl::kValueDeviceType[] = "2";
+const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
 const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
 const char DeviceManagementBackendImpl::kValueRequestUnregister[] =
     "unregister";
-const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
-const char DeviceManagementBackendImpl::kValueDeviceType[] = "2";
-const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
 
 namespace {
 
@@ -155,8 +156,8 @@ class DeviceManagementJobBase
     query_params_.Put(name, value);
   }
 
-  void SetAuthToken(const std::string& auth_token) {
-    auth_token_ = auth_token;
+  void SetGaiaAuthToken(const std::string& gaia_auth_token) {
+    gaia_auth_token_ = gaia_auth_token;
   }
 
   void SetDeviceManagementToken(const std::string& device_management_token) {
@@ -183,7 +184,7 @@ class DeviceManagementJobBase
   URLQueryParameters query_params_;
 
   // Auth token (if applicaple).
-  std::string auth_token_;
+  std::string gaia_auth_token_;
 
   // Device management token (if applicable).
   std::string device_management_token_;
@@ -273,8 +274,8 @@ GURL DeviceManagementJobBase::GetURL(
 void DeviceManagementJobBase::ConfigureRequest(URLFetcher* fetcher) {
   fetcher->set_upload_data(kPostContentType, payload_);
   std::string extra_headers;
-  if (!auth_token_.empty())
-    extra_headers += kServiceTokenAuthHeader + auth_token_ + "\n";
+  if (!gaia_auth_token_.empty())
+    extra_headers += kServiceTokenAuthHeader + gaia_auth_token_ + "\n";
   if (!device_management_token_.empty())
     extra_headers += kDMTokenAuthHeader + device_management_token_ + "\n";
   fetcher->set_extra_request_headers(extra_headers);
@@ -285,7 +286,8 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
  public:
   DeviceManagementRegisterJob(
       DeviceManagementBackendImpl* backend_impl,
-      const std::string& auth_token,
+      const std::string& gaia_auth_token,
+      const std::string& oauth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate)
@@ -294,7 +296,10 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
           DeviceManagementBackendImpl::kValueRequestRegister,
           device_id),
         delegate_(delegate) {
-    SetAuthToken(auth_token);
+    if (!oauth_token.empty())
+      SetQueryParam(DeviceManagementBackendImpl::kParamOAuthToken, oauth_token);
+    else if (!gaia_auth_token.empty())
+      SetGaiaAuthToken(gaia_auth_token);
     em::DeviceManagementRequest request_wrapper;
     request_wrapper.mutable_register_request()->CopyFrom(request);
     SetPayload(request_wrapper);
@@ -510,14 +515,15 @@ void DeviceManagementBackendImpl::AddJob(DeviceManagementJobBase* job) {
 }
 
 void DeviceManagementBackendImpl::ProcessRegisterRequest(
-    const std::string& auth_token,
+    const std::string& gaia_auth_token,
+    const std::string& oauth_token,
     const std::string& device_id,
     const em::DeviceRegisterRequest& request,
     DeviceRegisterResponseDelegate* delegate) {
   UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchRequested,
                             kMetricTokenSize);
-  AddJob(new DeviceManagementRegisterJob(this, auth_token, device_id, request,
-                                         delegate));
+  AddJob(new DeviceManagementRegisterJob(this, gaia_auth_token, oauth_token,
+                                         device_id, request, delegate));
 }
 
 void DeviceManagementBackendImpl::ProcessUnregisterRequest(

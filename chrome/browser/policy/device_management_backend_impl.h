@@ -28,19 +28,20 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   static std::string GetPlatformString();
 
   // Name constants for URL query parameters.
-  static const char kParamRequest[];
-  static const char kParamDeviceType[];
+  static const char kParamAgent[];
   static const char kParamAppType[];
   static const char kParamDeviceID[];
-  static const char kParamAgent[];
+  static const char kParamDeviceType[];
+  static const char kParamOAuthToken[];
   static const char kParamPlatform[];
+  static const char kParamRequest[];
 
   // String constants for the device and app type we report to the server.
+  static const char kValueAppType[];
+  static const char kValueDeviceType[];
+  static const char kValueRequestPolicy[];
   static const char kValueRequestRegister[];
   static const char kValueRequestUnregister[];
-  static const char kValueRequestPolicy[];
-  static const char kValueDeviceType[];
-  static const char kValueAppType[];
 
  private:
   friend class DeviceManagementJobBase;
@@ -56,7 +57,8 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
 
   // DeviceManagementBackend overrides.
   virtual void ProcessRegisterRequest(
-      const std::string& auth_token,
+      const std::string& gaia_auth_token,
+      const std::string& oauth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* response_delegate);

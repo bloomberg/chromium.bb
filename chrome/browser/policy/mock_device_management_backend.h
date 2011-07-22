@@ -31,8 +31,9 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
   virtual ~MockDeviceManagementBackend();
 
   // DeviceManagementBackend method overrides:
-  MOCK_METHOD4(ProcessRegisterRequest, void(
-      const std::string& auth_token,
+  MOCK_METHOD5(ProcessRegisterRequest, void(
+      const std::string& gaia_auth_token,
+      const std::string& oauth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate));
@@ -59,7 +60,7 @@ ACTION(MockDeviceManagementBackendSucceedRegister) {
   static int next_token_suffix;
   token += next_token_suffix++;
   response.set_device_management_token(token);
-  arg3->HandleRegisterResponse(response);
+  arg4->HandleRegisterResponse(response);
 }
 
 ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
@@ -86,7 +87,7 @@ ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
 }
 
 ACTION_P(MockDeviceManagementBackendFailRegister, error) {
-  arg3->OnError(error);
+  arg4->OnError(error);
 }
 
 ACTION_P(MockDeviceManagementBackendFailPolicy, error) {

@@ -95,6 +95,10 @@ class BrowserPolicyConnector : public NotificationObserver {
                             const FilePath& policy_dir,
                             TokenService* token_service);
 
+  // Registers for user policy (if not already registered), using the passed
+  // OAuth V2 token for authentication.
+  void RegisterForUserPolicy(const std::string& oauth_token);
+
   // Only used in testing.
   const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
   const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
@@ -103,10 +107,6 @@ class BrowserPolicyConnector : public NotificationObserver {
   friend class ::TestingBrowserProcess;
 
   BrowserPolicyConnector();
-
-  static BrowserPolicyConnector* CreateForTests();
-  static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
-  static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
 
   // Constructor for tests that allows tests to use fake platform and cloud
   // policy providers instead of using the actual ones.
@@ -128,6 +128,10 @@ class BrowserPolicyConnector : public NotificationObserver {
   // from InitializeDevicePolicy since it needs to wait for the message loops to
   // be running.
   void InitializeDevicePolicySubsystem();
+
+  static BrowserPolicyConnector* CreateForTests();
+  static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
+  static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
 
   scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_platform_provider_;

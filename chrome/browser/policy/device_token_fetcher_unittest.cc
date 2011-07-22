@@ -70,7 +70,7 @@ class DeviceTokenFetcherTest : public testing::Test {
 
 TEST_F(DeviceTokenFetcherTest, FetchToken) {
   testing::InSequence s;
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
@@ -83,7 +83,7 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   EXPECT_NE("", token);
 
   // Calling FetchToken() again should result in a new token being fetched.
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   FetchToken(&fetcher);
@@ -96,7 +96,7 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
 
 TEST_F(DeviceTokenFetcherTest, RetryOnError) {
   testing::InSequence s;
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorRequestFailed)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
@@ -110,7 +110,7 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
 }
 
 TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
-  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(backend_, ProcessRegisterRequest(_, _, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailRegister(
           DeviceManagementBackend::kErrorServiceManagementNotSupported));
   EXPECT_FALSE(cache_->is_unmanaged());

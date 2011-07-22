@@ -91,7 +91,8 @@ class DeviceManagementBackend : base::NonThreadSafe {
   virtual ~DeviceManagementBackend() {}
 
   virtual void ProcessRegisterRequest(
-      const std::string& auth_token,
+      const std::string& gaia_auth_token,
+      const std::string& oauth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate) = 0;

@@ -53,6 +53,9 @@ class CloudPolicyDataStore {
   // Sets the gaia token and sends out notifications.
   void SetGaiaToken(const std::string& gaia_token);
 
+  // Sets an OAuth token to be used for registration.
+  void SetOAuthToken(const std::string& oauth_token);
+
   // Clears device and user credentials.
   void Reset();
 
@@ -66,15 +69,17 @@ class CloudPolicyDataStore {
   void set_device_id(const std::string& device_id);
   void set_user_name(const std::string& user_name);
 
-  std::string device_id() const;
-  std::string device_token() const;
-  std::string gaia_token() const;
-  std::string machine_id() const;
-  std::string machine_model() const;
+  const std::string& device_id() const;
+  const std::string& device_token() const;
+  const std::string& gaia_token() const;
+  const std::string& oauth_token() const;
+  bool has_auth_token() const;
+  const std::string& machine_id() const;
+  const std::string& machine_model() const;
   em::DeviceRegisterRequest_Type policy_register_type() const;
-  std::string policy_type() const;
+  const std::string& policy_type() const;
   bool token_cache_loaded() const;
-  std::string user_name() const;
+  const std::string& user_name() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -91,6 +96,7 @@ class CloudPolicyDataStore {
 
   // Data necessary for constructing register requests.
   std::string gaia_token_;
+  std::string oauth_token_;
   std::string user_name_;
 
   // Data necessary for constructing policy requests.

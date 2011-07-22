@@ -61,46 +61,6 @@ BrowserPolicyConnector* BrowserPolicyConnector::Create() {
   return new BrowserPolicyConnector();
 }
 
-// static
-BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList*
-      policy_list = ConfigurationPolicyPrefStore::
-          GetChromePolicyDefinitionList();
-  return new BrowserPolicyConnector(
-      new policy::DummyConfigurationPolicyProvider(policy_list),
-      new policy::DummyConfigurationPolicyProvider(policy_list),
-      new policy::DummyCloudPolicyProvider(policy_list),
-      new policy::DummyCloudPolicyProvider(policy_list));
-}
-
-BrowserPolicyConnector::BrowserPolicyConnector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  managed_platform_provider_.reset(CreateManagedPlatformProvider());
-  recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
-
-  managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
-  recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
-
-#if defined(OS_CHROMEOS)
-  InitializeDevicePolicy();
-#endif
-}
-
-BrowserPolicyConnector::BrowserPolicyConnector(
-    ConfigurationPolicyProvider* managed_platform_provider,
-    ConfigurationPolicyProvider* recommended_platform_provider,
-    CloudPolicyProvider* managed_cloud_provider,
-    CloudPolicyProvider* recommended_cloud_provider)
-    : managed_platform_provider_(managed_platform_provider),
-      recommended_platform_provider_(recommended_platform_provider),
-      managed_cloud_provider_(managed_cloud_provider),
-      recommended_cloud_provider_(recommended_cloud_provider),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
-
 BrowserPolicyConnector::~BrowserPolicyConnector() {
   // Shutdown device cloud policy.
 #if defined(OS_CHROMEOS)
@@ -136,60 +96,6 @@ ConfigurationPolicyProvider*
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::GetRecommendedCloudProvider() const {
   return recommended_cloud_provider_.get();
-}
-
-const CloudPolicyDataStore*
-    BrowserPolicyConnector::GetDeviceCloudPolicyDataStore() const {
-#if defined(OS_CHROMEOS)
-  return device_data_store_.get();
-#else
-  return NULL;
-#endif
-}
-
-const CloudPolicyDataStore*
-    BrowserPolicyConnector::GetUserCloudPolicyDataStore() const {
-  return user_data_store_.get();
-}
-
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::CreateManagedPlatformProvider() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_WIN)
-  return new ConfigurationPolicyProviderWin(policy_list);
-#elif defined(OS_MACOSX)
-  return new ConfigurationPolicyProviderMac(policy_list);
-#elif defined(OS_POSIX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-  } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
-  }
-#else
-  return new DummyConfigurationPolicyProvider(policy_list);
-#endif
-}
-
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
-  } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
-  }
-#else
-  return new DummyConfigurationPolicyProvider(policy_list);
-#endif
 }
 
 void BrowserPolicyConnector::SetDeviceCredentials(
@@ -246,11 +152,22 @@ void BrowserPolicyConnector::FetchDevicePolicy() {
 #endif
 }
 
+void BrowserPolicyConnector::ScheduleServiceInitialization(
+    int64 delay_milliseconds) {
+  if (user_cloud_policy_subsystem_.get()) {
+    user_cloud_policy_subsystem_->
+        ScheduleServiceInitialization(delay_milliseconds);
+  }
+#if defined(OS_CHROMEOS)
+  if (device_cloud_policy_subsystem_.get()) {
+    device_cloud_policy_subsystem_->
+        ScheduleServiceInitialization(delay_milliseconds);
+  }
+#endif
+}
 void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
                                                   const FilePath& policy_dir,
                                                   TokenService* token_service) {
-  DCHECK(token_service);
-
   // Throw away the old backend.
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
@@ -260,9 +177,11 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
     token_service_ = token_service;
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   Source<TokenService>(token_service_));
+    if (token_service_) {
+      registrar_.Add(this,
+                     chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                     Source<TokenService>(token_service_));
+    }
 
     FilePath policy_cache_dir = policy_dir.Append(kPolicyDir);
     UserPolicyCache* user_policy_cache =
@@ -284,7 +203,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
     user_policy_token_cache_->Load();
 
     user_data_store_->set_user_name(user_name);
-    if (token_service_->HasTokenForService(
+    if (token_service_ &&
+        token_service_->HasTokenForService(
             GaiaConstants::kDeviceManagementService)) {
       user_data_store_->SetGaiaToken(token_service_->GetTokenForService(
               GaiaConstants::kDeviceManagementService));
@@ -296,18 +216,72 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
   }
 }
 
-void BrowserPolicyConnector::ScheduleServiceInitialization(
-    int64 delay_milliseconds) {
-  if (user_cloud_policy_subsystem_.get()) {
-    user_cloud_policy_subsystem_->
-        ScheduleServiceInitialization(delay_milliseconds);
-  }
+void BrowserPolicyConnector::RegisterForUserPolicy(
+    const std::string& oauth_token) {
+  if (user_data_store_.get())
+    user_data_store_->SetOAuthToken(oauth_token);
+}
+
+const CloudPolicyDataStore*
+    BrowserPolicyConnector::GetDeviceCloudPolicyDataStore() const {
 #if defined(OS_CHROMEOS)
-  if (device_cloud_policy_subsystem_.get()) {
-    device_cloud_policy_subsystem_->
-        ScheduleServiceInitialization(delay_milliseconds);
-  }
+  return device_data_store_.get();
+#else
+  return NULL;
 #endif
+}
+
+const CloudPolicyDataStore*
+    BrowserPolicyConnector::GetUserCloudPolicyDataStore() const {
+  return user_data_store_.get();
+}
+
+BrowserPolicyConnector::BrowserPolicyConnector()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  managed_platform_provider_.reset(CreateManagedPlatformProvider());
+  recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
+
+  managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+  recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+
+#if defined(OS_CHROMEOS)
+  InitializeDevicePolicy();
+#endif
+}
+
+BrowserPolicyConnector::BrowserPolicyConnector(
+    ConfigurationPolicyProvider* managed_platform_provider,
+    ConfigurationPolicyProvider* recommended_platform_provider,
+    CloudPolicyProvider* managed_cloud_provider,
+    CloudPolicyProvider* recommended_cloud_provider)
+    : managed_platform_provider_(managed_platform_provider),
+      recommended_platform_provider_(recommended_platform_provider),
+      managed_cloud_provider_(managed_cloud_provider),
+      recommended_cloud_provider_(recommended_cloud_provider),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+
+void BrowserPolicyConnector::Observe(int type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
+    const TokenService* token_source =
+        Source<const TokenService>(source).ptr();
+    DCHECK_EQ(token_service_, token_source);
+    const TokenService::TokenAvailableDetails* token_details =
+        Details<const TokenService::TokenAvailableDetails>(details).ptr();
+    if (token_details->service() == GaiaConstants::kDeviceManagementService) {
+      if (user_data_store_.get()) {
+        user_data_store_->SetGaiaToken(token_details->token());
+      }
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void BrowserPolicyConnector::InitializeDevicePolicy() {
@@ -353,24 +327,58 @@ void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
 #endif
 }
 
-void BrowserPolicyConnector::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    const TokenService* token_source =
-        Source<const TokenService>(source).ptr();
-    DCHECK_EQ(token_service_, token_source);
-    const TokenService::TokenAvailableDetails* token_details =
-        Details<const TokenService::TokenAvailableDetails>(details).ptr();
-    if (token_details->service() == GaiaConstants::kDeviceManagementService) {
-      if (user_data_store_.get()) {
-        user_data_store_->SetGaiaToken(token_details->token());
-      }
-    }
+// static
+BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList*
+      policy_list = ConfigurationPolicyPrefStore::
+          GetChromePolicyDefinitionList();
+  return new BrowserPolicyConnector(
+      new policy::DummyConfigurationPolicyProvider(policy_list),
+      new policy::DummyConfigurationPolicyProvider(policy_list),
+      new policy::DummyCloudPolicyProvider(policy_list),
+      new policy::DummyCloudPolicyProvider(policy_list));
+}
+
+// static
+ConfigurationPolicyProvider*
+    BrowserPolicyConnector::CreateManagedPlatformProvider() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+#if defined(OS_WIN)
+  return new ConfigurationPolicyProviderWin(policy_list);
+#elif defined(OS_MACOSX)
+  return new ConfigurationPolicyProviderMac(policy_list);
+#elif defined(OS_POSIX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+    return new ConfigDirPolicyProvider(
+        policy_list,
+        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
   } else {
-    NOTREACHED();
+    return new DummyConfigurationPolicyProvider(policy_list);
   }
+#else
+  return new DummyConfigurationPolicyProvider(policy_list);
+#endif
+}
+
+// static
+ConfigurationPolicyProvider*
+    BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+    return new ConfigDirPolicyProvider(
+        policy_list,
+        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+  } else {
+    return new DummyConfigurationPolicyProvider(policy_list);
+  }
+#else
+  return new DummyConfigurationPolicyProvider(policy_list);
+#endif
 }
 
 }  // namespace

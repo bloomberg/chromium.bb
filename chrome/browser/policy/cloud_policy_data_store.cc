@@ -86,6 +86,12 @@ void CloudPolicyDataStore::SetGaiaToken(const std::string& gaia_token) {
   NotifyCredentialsChanged();
 }
 
+void CloudPolicyDataStore::SetOAuthToken(const std::string& oauth_token) {
+  DCHECK(!user_name_.empty());
+  oauth_token_ = oauth_token;
+  NotifyCredentialsChanged();
+}
+
 void CloudPolicyDataStore::Reset() {
   user_name_ = "";
   gaia_token_ = "";
@@ -109,7 +115,7 @@ void CloudPolicyDataStore::set_device_id(const std::string& device_id) {
   device_id_ = device_id;
 }
 
-std::string CloudPolicyDataStore::device_id() const {
+const std::string& CloudPolicyDataStore::device_id() const {
   return device_id_;
 }
 
@@ -117,19 +123,27 @@ void CloudPolicyDataStore::set_user_name(const std::string& user_name) {
   user_name_ = user_name;
 }
 
-std::string CloudPolicyDataStore::device_token() const {
+const std::string& CloudPolicyDataStore::device_token() const {
   return device_token_;
 }
 
-std::string CloudPolicyDataStore::gaia_token() const {
+const std::string& CloudPolicyDataStore::gaia_token() const {
   return gaia_token_;
 }
 
-std::string CloudPolicyDataStore::machine_id() const {
+const std::string& CloudPolicyDataStore::oauth_token() const {
+  return oauth_token_;
+}
+
+bool CloudPolicyDataStore::has_auth_token() const {
+  return !oauth_token_.empty() || !gaia_token_.empty();
+}
+
+const std::string& CloudPolicyDataStore::machine_id() const {
   return machine_id_;
 }
 
-std::string CloudPolicyDataStore::machine_model() const {
+const std::string& CloudPolicyDataStore::machine_model() const {
   return machine_model_;
 }
 
@@ -138,7 +152,7 @@ CloudPolicyDataStore::policy_register_type() const {
   return policy_register_type_;
 }
 
-std::string CloudPolicyDataStore::policy_type() const {
+const std::string& CloudPolicyDataStore::policy_type() const {
   return policy_type_;
 }
 
@@ -146,7 +160,7 @@ bool CloudPolicyDataStore::token_cache_loaded() const {
   return token_cache_loaded_;
 }
 
-std::string CloudPolicyDataStore::user_name() const {
+const std::string& CloudPolicyDataStore::user_name() const {
   return user_name_;
 }
 

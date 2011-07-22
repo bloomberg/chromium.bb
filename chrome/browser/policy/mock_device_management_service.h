@@ -24,18 +24,18 @@ class ProxyDeviceManagementBackend : public DeviceManagementBackend {
   explicit ProxyDeviceManagementBackend(DeviceManagementBackend* backend);
   virtual ~ProxyDeviceManagementBackend();
 
+  // DeviceRegisterRequest implementation:
   virtual void ProcessRegisterRequest(
-      const std::string& auth_token,
+      const std::string& gaia_auth_token,
+      const std::string& oauth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate) OVERRIDE;
-
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate) OVERRIDE;
-
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,

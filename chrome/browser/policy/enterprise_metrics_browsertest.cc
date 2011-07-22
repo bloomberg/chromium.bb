@@ -39,13 +39,13 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Mock;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::_;
 
 namespace {
 
@@ -67,7 +67,8 @@ class DeviceManagementBackendTestHelper {
     DeviceRegisterResponseDelegateMock delegate;
     EXPECT_CALL(delegate, OnError(_)).Times(AnyNumber());
     EXPECT_CALL(delegate, HandleRegisterResponse(_)).Times(AnyNumber());
-    backend_->ProcessRegisterRequest("token", "testid", request, &delegate);
+    backend_->ProcessRegisterRequest("gaia_auth_token", "oauth_token",
+                                     "testid", request, &delegate);
   }
 
   void ProcessPolicyRequest() {
