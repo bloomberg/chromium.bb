@@ -144,7 +144,7 @@
         },
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux" and touchui == 0', {
       'targets': [
         {
           'target_name': 'nacl_helper',
