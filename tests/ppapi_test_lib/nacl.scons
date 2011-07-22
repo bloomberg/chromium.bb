@@ -22,5 +22,6 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.ComponentLibrary('ppapi_test_lib',
                      ['get_browser_interface.cc',
                       'internal_utils.cc',
+                      'testable_callback.cc',
                       'module_instance.cc',
                       'test_interface.cc']);
