@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppp.idl modified Thu Jul 21 16:38:20 2011. */
 
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
@@ -97,6 +97,16 @@ PP_EXPORT void PPP_ShutdownModule();
  *
  * Your module must implement the <code>PPP_Instance</code> interface or it
  * will be unloaded. Other interfaces are optional.
+ *
+ * This function is called from within browser code whenever an interface is
+ * needed. This means your plugin could be reentered via this function if you
+ * make a browser call and it needs an interface. Furthermore, you should not
+ * make any other browser calls from within your implementation to avoid
+ * reentering the browser.
+ *
+ * As a result, your implementation of this should merely provide a lookup
+ * from the requested name to an interface pointer, via something like a big
+ * if/else block or a map, and not do any other work.
  *
  * @param[in] interface_name A pointer to a "PPP" (plugin) interface name.
  * Interface names are null-terminated ASCII strings.
