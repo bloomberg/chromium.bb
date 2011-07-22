@@ -30,7 +30,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::ShouldExpire(
 }
 
 InfoBarDelegate::Type
-    RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
+RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
@@ -68,7 +68,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
-  registry_->OnDenyRegisterProtocolHandler(handler_);
+  registry_->OnIgnoreRegisterProtocolHandler(handler_);
   return true;
 }
 

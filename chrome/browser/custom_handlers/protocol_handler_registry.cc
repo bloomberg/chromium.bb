@@ -74,6 +74,11 @@ ProtocolHandlerRegistry::GetHandlersFor(
   return p->second;
 }
 
+ProtocolHandlerRegistry::ProtocolHandlerList
+ProtocolHandlerRegistry::GetIgnoredHandlers() {
+  return ignored_protocol_handlers_;
+}
+
 void ProtocolHandlerRegistry::RegisterProtocolHandler(
     const ProtocolHandler& handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -416,6 +421,7 @@ void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   IgnoreProtocolHandler(handler);
   Save();
+  NotifyChanged();
 }
 
 // static

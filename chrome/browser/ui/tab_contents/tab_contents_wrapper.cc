@@ -558,7 +558,8 @@ void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
       ProtocolHandler::CreateProtocolHandler(protocol, url, title);
 
   ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
-  if (!registry->enabled() || registry->IsRegistered(handler))
+  if (!registry->enabled() || registry->IsRegistered(handler) ||
+      registry->IsIgnored(handler))
     return;
 
   if (!handler.IsEmpty() &&

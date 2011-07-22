@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#handlers-column-headers {
+.handlers-column-headers {
   display: -webkit-box;
 }
 
@@ -48,7 +48,7 @@ div:not(.none):hover > .handlers-remove-column {
   min-height: 250px;
 }
 
-#handlers-list {
+#handler-options list {
   border-radius: 2px;
   border: solid 1px #D9D9D9;
   margin-bottom: 10px;

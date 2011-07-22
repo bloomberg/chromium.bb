@@ -7,8 +7,85 @@ cr.define('options', function() {
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
   const HandlerOptions = options.HandlerOptions;
+  const DeletableItem = options.DeletableItem;
+  const DeletableItemList = options.DeletableItemList;
 
   const localStrings = new LocalStrings();
+
+  /**
+   * Creates a new ignored protocol / content handler list item.
+   *
+   * Accepts values in the form
+   *   ['mailto', 'http://www.thesite.com/%s', 'The title of the protocol'],
+   * @param {Object} entry A dictionary describing the handlers for a given
+   *     protocol.
+   * @constructor
+   * @extends {cr.ui.DeletableItemList}
+   */
+  function IgnoredHandlersListItem(entry) {
+    var el = cr.doc.createElement('div');
+    el.dataItem = entry;
+    el.__proto__ = IgnoredHandlersListItem.prototype;
+    el.decorate();
+    return el;
+  }
+
+  IgnoredHandlersListItem.prototype = {
+    __proto__: DeletableItem.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      DeletableItem.prototype.decorate.call(this);
+
+      // Protocol.
+      var protocolElement = document.createElement('div');
+      protocolElement.textContent = this.dataItem[0];
+      protocolElement.className = 'handlers-type-column';
+      this.contentElement_.appendChild(protocolElement);
+
+      // Site title.
+      var titleElement = document.createElement('div');
+      titleElement.textContent = this.dataItem[2];
+      titleElement.className = 'handlers-site-column';
+      titleElement.title = this.dataItem[1];
+      this.contentElement_.appendChild(titleElement);
+    },
+  };
+
+
+  var IgnoredHandlersList = cr.ui.define('list');
+
+  IgnoredHandlersList.prototype = {
+    __proto__: DeletableItemList.prototype,
+
+    createItem: function(entry) {
+      return new IgnoredHandlersListItem(entry);
+    },
+
+    deleteItemAtIndex: function(index) {
+      chrome.send('removeIgnoredHandler', [this.dataModel.item(index)]);
+    },
+
+    /**
+     * The length of the list.
+     */
+    get length() {
+      return this.dataModel.length;
+    },
+
+    /**
+     * Set the protocol handlers displayed by this list.  See
+     * IgnoredHandlersListItem for an example of the format the list should
+     * take.
+     *
+     * @param {Object} list A list of ignored protocol handlers.
+     */
+    setHandlers: function(list) {
+      this.dataModel = new ArrayDataModel(list);
+    },
+  };
+
+
 
   /**
    * Creates a new protocol / content handler list item.
@@ -16,7 +93,7 @@ cr.define('options', function() {
    * Accepts values in the form
    * { protocol: 'mailto',
    *   handlers: [
-   *     ['http://www.thesite.com/%s', 'The title of the protocol'],
+   *     ['mailto', 'http://www.thesite.com/%s', 'The title of the protocol'],
    *     ...,
    *   ],
    * }
@@ -30,7 +107,6 @@ cr.define('options', function() {
     el.dataItem = entry;
     el.__proto__ = HandlerListItem.prototype;
     el.decorate();
-
     return el;
   }
 
@@ -57,7 +133,7 @@ cr.define('options', function() {
       for (var i = 0; i < data.handlers.length; ++i) {
         var optionElement = document.createElement('option');
         optionElement.selected = i == data.default_handler;
-        optionElement.textContent = data.handlers[i][1];
+        optionElement.textContent = data.handlers[i][2];
         optionElement.value = i;
         selectElement.appendChild(optionElement);
       }
@@ -69,7 +145,7 @@ cr.define('options', function() {
           delegate.clearDefault(data.protocol);
         } else {
           handlerElement.classList.remove('none');
-          delegate.setDefault([data.protocol].concat(data.handlers[index]));
+          delegate.setDefault(data.handlers[index]);
         }
       });
       handlerElement.appendChild(selectElement);
@@ -84,8 +160,7 @@ cr.define('options', function() {
           localStrings.getString('handlers_remove_link');
       removeElement.addEventListener('click', function (e) {
         var value = selectElement ? selectElement.value : 0;
-        delegate.removeHandler(value,
-            [data.protocol].concat(data.handlers[value]));
+        delegate.removeHandler(value, data.handlers[value]);
       });
       removeElement.className = 'handlers-remove-column handlers-remove-link';
       this.appendChild(removeElement);
@@ -146,6 +221,8 @@ cr.define('options', function() {
   };
 
   return {
+    IgnoredHandlersListItem: IgnoredHandlersListItem,
+    IgnoredHandlersList: IgnoredHandlersList,
     HandlerListItem: HandlerListItem,
     HandlersList: HandlersList,
   };

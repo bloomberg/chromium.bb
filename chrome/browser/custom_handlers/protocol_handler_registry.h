@@ -112,6 +112,9 @@ class ProtocolHandlerRegistry
   // Get the list of protocol handlers for the given scheme.
   ProtocolHandlerList GetHandlersFor(const std::string& scheme) const;
 
+  // Get the list of ignored protocol handlers.
+  ProtocolHandlerList GetIgnoredHandlers();
+
   // Yields a list of the protocols that have handlers registered in this
   // registry.
   void GetRegisteredProtocols(std::vector<std::string>* output) const;

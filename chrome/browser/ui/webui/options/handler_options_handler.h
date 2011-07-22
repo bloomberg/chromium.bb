@@ -48,7 +48,11 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
 
   // Returns a JSON object describing the set of protocol handlers for the
   // given protocol.
-  base::DictionaryValue* GetHandlersForProtocol(const std::string& protocol);
+  void GetHandlersForProtocol(const std::string& protocol,
+                              base::DictionaryValue* value);
+
+  // Returns a JSON list of the ignored protocol handlers.
+  void GetIgnoredHandlers(ListValue* handlers);
 
   // Called when the JS PasswordManager object is initialized.
   void UpdateHandlerList();
@@ -56,6 +60,10 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   // Remove a handler.
   // |args| is a list of [protocol, url, title].
   void RemoveHandler(const ListValue* args);
+
+  // Remove an ignored handler.
+  // |args| is a list of [protocol, url, title].
+  void RemoveIgnoredHandler(const ListValue* args);
 
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 

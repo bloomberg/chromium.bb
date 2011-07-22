@@ -47,6 +47,10 @@ cr.define('options', function() {
       this.handlersList_ = $('handlers-list');
       options.HandlersList.decorate(this.handlersList_);
       this.handlersList_.autoExpands = true;
+
+      this.ignoredHandlersList_ = $('ignored-handlers-list');
+      options.IgnoredHandlersList.decorate(this.ignoredHandlersList_);
+      this.ignoredHandlersList_.autoExpands = true;
     },
   };
 
@@ -56,6 +60,14 @@ cr.define('options', function() {
    */
   HandlerOptions.setHandlers = function(handlers) {
     $('handlers-list').setHandlers(handlers);
+  };
+
+  /**
+   * Sets the list of ignored handlers shown by the view.
+   * @param handlers to be shown in the view.
+   */
+  HandlerOptions.setIgnoredHandlers = function(handlers) {
+    $('ignored-handlers-list').setHandlers(handlers);
   };
 
   return {

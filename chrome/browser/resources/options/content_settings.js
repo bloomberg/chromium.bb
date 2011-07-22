@@ -107,6 +107,10 @@ cr.define('options', function() {
     $('handlers-list').setHandlers(list);
   };
 
+  ContentSettings.setIgnoredHandlers = function(list) {
+    $('ignored-handlers-list').setHandlers(list);
+  };
+
   ContentSettings.setOTRExceptions = function(type, list) {
     var exceptionsList =
         document.querySelector('div[contentType=' + type + ']' +
