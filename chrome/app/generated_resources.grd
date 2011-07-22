@@ -8430,7 +8430,7 @@ ls' lab.">
         Default
       </message>
       <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync preferences.">
-        Customize
+        Advanced
       </message>
       <message name="IDS_SYNC_USE_DEFAULT_SETTINGS" desc="The text to display on the link to go back to the default sync preferences.">
         Use default settings
