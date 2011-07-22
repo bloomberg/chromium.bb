@@ -10,11 +10,13 @@
 # IDLVisitor
 #
 # The IDLVisitor class will traverse an AST truncating portions of the tree
-# that fail due to class or version filters.  For each node, after the filter
-# passes, the visitor will call the 'Arive' member passing in the node and
-# and data passing in from the parent call.   It will then Visit the children.
-# When done processing children, the visitor will call the 'Depart' member
-# before returning
+# when 'VisitFilter' returns false.  After the filter returns true, for each
+# node, the visitor will call the 'Arrive' member passing in the node and
+# and generic data object from the parent call.  The returned value is then
+# passed to all children who's results are aggregated into a list.  The child
+# results along with the original Arrive result are passed to the Depart
+# function which returns the final result of the Visit.  By default this is
+# the exact value that was return from the original arrive.
 #
 
 class IDLVisitor(object):
@@ -45,9 +47,11 @@ class IDLVisitor(object):
     return out
 
   def Arrive(self, node, data):
+    __pychecker__ = 'unusednames=node'
     return data
 
   def Depart(self, node, data, childdata):
+    __pychecker__ = 'unusednames=node,childdata'
     return data
 
 

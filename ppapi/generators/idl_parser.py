@@ -35,6 +35,7 @@ from idl_log import ErrOut, InfoOut, WarnOut
 from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLFile, IDLNode
 from idl_option import GetOption, Option, ParseOptions
+from idl_lint import Lint
 
 from ply import lex
 from ply import yacc
@@ -44,8 +45,6 @@ Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
 Option('srcroot', 'Working directory.', default='../api')
-Option('wcomment', 'Disable warning for missing comment.')
-Option('wenum', 'Disable warning for missing enum value.')
 
 #
 # ERROR_REMAP
@@ -710,26 +709,6 @@ class IDLParser(IDLLexer):
     return tok
 
 #
-# VerifyProduction
-#
-# Once the node is built, we will check for certain types of issues
-#
-  def VerifyProduction(self, node):
-    comment = node.GetOneOf('Comment')
-    if node.cls in ['Interface', 'Struct', 'Member'] and not comment:
-      if not GetOption('wcomment') and not node.GetProperty('wcomment'):
-        self.Warn(node, 'Missing comment for %s.' % node)
-    elif node.cls in ['EnumItem'] and not node.GetProperty('VALUE'):
-      if not GetOption('wenum'):
-        self.Warn(node, 'Missing value for enumeration %s.' % node)
-    elif node.cls in ['Param']:
-      found = False;
-      for form in ['in', 'inout', 'out']:
-        if node.GetProperty(form): found = True
-      if not found: self.Warn(node, 'Missing argument type: [in|out|inout]')
-
-
-#
 # BuildProduction
 #
 # Production is the set of items sent to a grammar rule resulting in a new
@@ -747,7 +726,6 @@ class IDLParser(IDLLexer):
     out = IDLNode(cls, filename, lineno, pos, childlist)
     if self.build_debug:
       InfoOut.Log("Building %s" % out)
-    self.VerifyProduction(out)
     return out
 
   def BuildNamed(self, cls, p, index, childlist=None):
@@ -1010,6 +988,8 @@ def ParseFiles(filenames):
 
   ast = IDLAst(filenodes)
   if GetOption('dump_tree'): ast.Dump(0)
+
+  Lint(ast)
   return ast
 
 
