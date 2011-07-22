@@ -476,6 +476,8 @@ class MountLibraryImpl : public MountLibrary {
         type = MOUNT_DEVICE_SCANNED;
         break;
       }
+      default:
+        return;
     }
     FireDeviceStatusUpdate(type, std::string(device_path));
   }
