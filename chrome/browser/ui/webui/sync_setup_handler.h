@@ -35,6 +35,12 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings);
 
+  // Initializes the sync setup flow and shows the setup UI.
+  void OpenSyncSetup();
+
+  // Terminates the sync setup flow.
+  void CloseSyncSetup();
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);

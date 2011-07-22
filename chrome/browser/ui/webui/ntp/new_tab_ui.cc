@@ -213,7 +213,8 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();
-    AddMessageHandler((new NTPLoginHandler())->Attach(this));
+    if (!NewTabSyncSetupHandler::ShouldShowSyncPromo())
+      AddMessageHandler((new NTPLoginHandler())->Attach(this));
     AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new browser_sync::ForeignSessionHandler())->
         Attach(this));

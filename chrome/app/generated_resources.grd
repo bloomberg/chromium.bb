@@ -9403,6 +9403,9 @@ ls' lab.">
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
         You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
       </message>
+      <message name="IDS_SYNC_STATUS_NOT_CONNECTED" desc="Status shown in the new tab page when the user is not signed into sync">
+        not connected
+      </message>
 
       <!-- Passphrase dialog strings -->
       <if expr="not pp_ifdef('use_titlecase')">

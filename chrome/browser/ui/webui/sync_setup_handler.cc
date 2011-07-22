@@ -264,6 +264,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptedDataTypesTitle", IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE },
     { "encryptSensitiveOption", IDS_SYNC_ENCRYPT_SENSITIVE_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
+    { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
+    { "statusNotConnected", IDS_SYNC_STATUS_NOT_CONNECTED }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -338,10 +340,7 @@ void SyncSetupHandler::Focus() {
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
-  if (flow_) {
-    flow_->OnDialogClosed(std::string());
-    flow_ = NULL;
-  }
+  CloseSyncSetup();
 }
 
 void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
@@ -416,29 +415,7 @@ void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
 }
 
 void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
-  DCHECK(web_ui_);
-  DCHECK(!flow_);
-
-  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
-  if (!service) {
-    // If there's no sync service, the user tried to manually invoke a syncSetup
-    // URL, but sync features are disabled.  We need to close the overlay for
-    // this (rare) case.
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
-    return;
-  }
-
-  // If the wizard is not visible, step into the appropriate UI state.
-  if (!service->get_wizard().IsVisible())
-    ShowSetupUI();
-
-  // The SyncSetupFlow will set itself as the |flow_|.
-  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
-    // If attach fails, a wizard is already activated and attached to a flow
-    // handler.
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
-    service->get_wizard().Focus();
-  }
+  OpenSyncSetup();
 }
 
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
@@ -462,4 +439,37 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!flow_);
   ShowSetupUI();
+}
+
+void SyncSetupHandler::CloseSyncSetup() {
+  if (flow_) {
+    flow_->OnDialogClosed(std::string());
+    flow_ = NULL;
+  }
+}
+
+void SyncSetupHandler::OpenSyncSetup() {
+  DCHECK(web_ui_);
+  DCHECK(!flow_);
+
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
+  if (!service) {
+    // If there's no sync service, the user tried to manually invoke a syncSetup
+    // URL, but sync features are disabled.  We need to close the overlay for
+    // this (rare) case.
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    return;
+  }
+
+  // If the wizard is not visible, step into the appropriate UI state.
+  if (!service->get_wizard().IsVisible())
+    ShowSetupUI();
+
+  // The SyncSetupFlow will set itself as the |flow_|.
+  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
+    // If attach fails, a wizard is already activated and attached to a flow
+    // handler.
+    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+    service->get_wizard().Focus();
+  }
 }

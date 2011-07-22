@@ -488,6 +488,10 @@ function layoutSections() {
     }
   }
 
+  // Include the height of the sync promo bar.
+  var sync_promo_height = $('sync-promo').offsetHeight;
+  headerHeight += sync_promo_height;
+
   // Calculate the height of the fixed elements below the expanded section, if
   // any.
   for (; section = sections[i]; i++) {
@@ -535,7 +539,7 @@ function layoutSections() {
   maxiviewVisibleHeight = expandedSectionHeight;
 
   // Now position all the elements.
-  var y = LAYOUT_SPACING_TOP;
+  var y = LAYOUT_SPACING_TOP + sync_promo_height;
   for (i = 0, section; section = sections[i]; i++) {
     section.section.style.top = y + 'px';
     y += section.fixedHeight;
@@ -562,6 +566,9 @@ function layoutSections() {
   }
   if (cr.isChromeOS)
     $('closed-sections-bar').style.top = y + 'px';
+
+  // Position the notification container below the sync promo.
+  $('notification-container').style.top = sync_promo_height + 'px';
 
   updateMenuSections();
   updateAttributionDisplay(y);
