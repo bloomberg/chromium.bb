@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,7 +7,6 @@ import os
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
-
 
 class HTTPSTest(pyauto.PyUITest):
   """TestCase for SSL."""
@@ -28,9 +27,10 @@ class HTTPSTest(pyauto.PyUITest):
   def testSSLPageBasic(self):
     """Verify the navigation state in an https page."""
     self.NavigateToURL('https://www.google.com')
+    self.assertTrue(self.WaitUntil(
+        lambda: self.GetNavigationInfo()['ssl']['security_style'],
+                expect_retval='SECURITY_STYLE_AUTHENTICATED'))
     ssl = self.GetNavigationInfo()['ssl']
-    security_style = ssl['security_style']
-    self.assertEqual('SECURITY_STYLE_AUTHENTICATED', security_style)
     self.assertFalse(ssl['displayed_insecure_content'])
     self.assertFalse(ssl['ran_insecure_content'])
 
