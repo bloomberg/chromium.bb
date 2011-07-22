@@ -14,12 +14,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/painter.h"
-#include "views/screen.h"
 #include "views/widget/widget.h"
 
 namespace chromeos {
@@ -155,7 +155,7 @@ views::Painter* CreateBackgroundPainter() {
 }
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
+  gfx::Rect bounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(NULL));
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();

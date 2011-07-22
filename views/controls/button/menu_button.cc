@@ -12,10 +12,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/events/event.h"
-#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -259,7 +259,8 @@ int MenuButton::GetMaximumScreenXCoordinate() {
   }
 
   gfx::Rect monitor_bounds =
-      Screen::GetMonitorWorkAreaNearestWindow(GetWidget()->GetNativeView());
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(
+          GetWidget()->GetTopLevelWidget()->GetNativeView());
   return monitor_bounds.right() - 1;
 }
 

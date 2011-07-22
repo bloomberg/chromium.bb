@@ -22,7 +22,6 @@
 #include "views/focus/focus_manager.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/fill_layout.h"
-#include "views/screen.h"
 #include "views/widget/widget.h"
 
 using WebKit::WebDragOperation;

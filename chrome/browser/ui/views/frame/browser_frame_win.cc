@@ -16,7 +16,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
-#include "views/screen.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"

@@ -36,11 +36,11 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
-#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/hit_test.h"
@@ -454,7 +454,7 @@ bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
     // non-full screen size, layout/paint at that size, then the window manager
     // will snap us to full screen size. This results in an ugly
     // resize/paint. To avoid this we always request a full screen size.
-    *bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
+    *bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(
         GTK_WIDGET(GetWidget()->GetNativeWindow()));
     return true;
   }

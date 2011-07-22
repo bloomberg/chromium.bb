@@ -28,10 +28,10 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_gtk.h"
-#include "views/screen.h"
 #include "views/views_delegate.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -1005,7 +1005,7 @@ void NativeWidgetGtk::CenterWindow(const gfx::Size& size) {
     center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
   } else {
     // We have no parent window, center over the screen.
-    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+    center_rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
   }
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
                    center_rect.y() + (center_rect.height() - size.height()) / 2,
