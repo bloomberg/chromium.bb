@@ -64,6 +64,8 @@ deps = {
         Var('git_url') + '/external/google-safe-browsing/testing.git@1c915e54f77f3a8288bd6af5c507d2dbdc6b4035',
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
+    'src/third_party/sfntly/src/sfntly':
+        Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@0204399e64e8af636b1e9799283196a6f7ac84f6',
     'src/third_party/skia/gpu':
         Var('git_url') + '/external/skia/gpu.git@9184fc4807ab3819f294371b9cb48f772e94d4e1',
     'src/third_party/skia/include':
