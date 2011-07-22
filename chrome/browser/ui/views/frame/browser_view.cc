@@ -1375,7 +1375,7 @@ BookmarkBarView* BrowserView::GetBookmarkBarView() const {
 }
 
 LocationBarView* BrowserView::GetLocationBarView() const {
-  if (UseCompactNavigationBar()) {
+  if (UseCompactNavigationBar() && compact_location_bar_view_host_.get()) {
     return compact_location_bar_view_host_->GetCompactLocationBarView()->
         location_bar_view();
   } else {
