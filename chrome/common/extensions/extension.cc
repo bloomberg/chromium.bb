@@ -1697,9 +1697,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
-      source.HasKey(keys::kNaClModules)) {
+  if (source.HasKey(keys::kNaClModules)) {
     ListValue* list_value = NULL;
     if (!source.GetList(keys::kNaClModules, &list_value)) {
       *error = errors::kInvalidNaClModules;
