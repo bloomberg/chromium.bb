@@ -347,6 +347,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       GetUrlWithLang(GURL(Extension::ChromeStoreLaunchURL())));
   localized_strings.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
+  localized_strings.SetString("trashLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_NEW_TAB_TRASH_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));

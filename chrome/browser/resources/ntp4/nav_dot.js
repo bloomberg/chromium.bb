@@ -52,10 +52,7 @@ cr.define('ntp4', function() {
 
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
-      this.addEventListener('dragenter', this.onDragEnter_);
-      this.addEventListener('dragover', this.onDragOver_);
-      this.addEventListener('drop', this.onDrop_);
-      this.addEventListener('dragleave', this.onDragLeave_);
+      this.dragWrapper_ = new DragWrapper(this, this);
       this.addEventListener('webkitTransitionEnd', this.onTransitionEnd_);
 
       this.input_.addEventListener('blur', this.onInputBlur_.bind(this));
@@ -148,12 +145,9 @@ cr.define('ntp4', function() {
       ntp4.saveAppPageName(this.page_, this.title_);
     },
 
-    /**
-      * These are equivalent to dragEnters_ and isCurrentDragTarget_ from
-      * TilePage.
-      */
-    dragEnters_: 0,
-    isCurrentDragTarget_: false,
+    shouldAcceptDrag: function(e) {
+      return this.page_.shouldAcceptDrag(e);
+    },
 
     /**
      * A drag has entered the navigation dot. If the user hovers long enough,
@@ -161,18 +155,7 @@ cr.define('ntp4', function() {
      * @param {Event} e The MouseOver event for the drag.
      * @private
      */
-    onDragEnter_: function(e) {
-      if (++this.dragEnters_ == 1)
-        this.doDragEnter_(e);
-      else
-        this.doDragOver_(e);
-    },
-    doDragEnter_: function(e) {
-      if (!this.page_.shouldAcceptDrag(e.dataTransfer))
-        return;
-
-      this.isCurrentDragTarget_ = true;
-
+    doDragEnter: function(e) {
       var self = this;
       function navPageClearTimeout() {
         self.switchToPage();
@@ -180,7 +163,7 @@ cr.define('ntp4', function() {
       }
       this.dragNavTimeout = window.setTimeout(navPageClearTimeout, 500);
 
-      this.doDragOver_(e);
+      this.doDragOver(e);
     },
 
     /**
@@ -190,13 +173,10 @@ cr.define('ntp4', function() {
      * @param {Event} e The MouseOver event for the drag.
      * @private
      */
-    onDragOver_: function(e) {
-      this.doDragOver_(e);
-    },
-    doDragOver_: function(e) {
+    doDragOver: function(e) {
       e.preventDefault();
 
-      if (!this.isCurrentDragTarget_)
+      if (!this.dragWrapper_.isCurrentDragTarget)
         e.dataTransfer.dropEffect = 'none';
       else if (ntp4.getCurrentlyDraggingTile)
         e.dataTransfer.dropEffect = 'move';
@@ -210,15 +190,8 @@ cr.define('ntp4', function() {
      * @param {Event} e The MouseOver event for the drag.
      * @private
      */
-    onDrop_: function(e) {
-      this.dragEnters_ = 0;
-      if (!this.isCurrentDragTarget_)
-        return;
-      this.doDrop_(e);
-    },
-    doDrop_: function(e) {
+    doDrop: function(e) {
       e.stopPropagation();
-      this.isCurrentDragTarget_ = false;
       if (ntp4.getCurrentlyDraggingTile)
         this.page_.appendDraggingTile();
       // TODO(estade): handle non-tile drags.
@@ -231,13 +204,8 @@ cr.define('ntp4', function() {
      * @param {Event} e The MouseOver event for the drag.
      * @private
      */
-    onDragLeave_: function(e) {
-      if (--this.dragEnters_ > 0)
-        return;
-
-      if (!this.isCurrentDragTarget_)
-        return;
-      this.isCurrentDragTarget_ = false;
+    doDragLeave: function(e) {
+      this.cancelDelayedSwitch_();
     },
 
     /**

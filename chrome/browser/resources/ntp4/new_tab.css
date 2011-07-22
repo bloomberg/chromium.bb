@@ -147,40 +147,38 @@ body {
   margin: 0 9px;
 }
 
+/* Trash. *********************************************************************/
+
 #trash {
-  position: absolute;
-  width: 110px;
   height: 100%;
+  position: absolute;
+  opacity: 0;
   right: 0;
-  bottom: 0;
-  background-image: url('../shared/images/trash.png');
-  background-size: 40px 40px;
+  top: 50px;
+  -webkit-transition: top 0.2s, opacity 0;
+  -webkit-transition-delay: 0, 0.2s;
+}
+
+#footer.dragging-mode #trash {
+  opacity: 1;
+  top: 0;
+  -webkit-transition-delay: 0, 0;
+}
+
+#trash > span {
+  background-image: url('./trash.png');
+  background-position: 7px;
   background-repeat: no-repeat;
-  background-position: 40px 12px;
-  /* Work-around chromium bug 74730 by using translate instead of the
-     GPU-accelerated translate3d */
-  -webkit-transform: translate(80px, 0);
-  -webkit-transition-property: -webkit-transform;
-  -webkit-transition-duration: 500ms;
-}
-
-#trash.hover {
-  background-image: url('../shared/images/trash-open.png');
-}
-
-.app.trashing img {
-  opacity: 0.3;
-}
-
-#footer.rearrange-mode #trash {
-  -webkit-transform: translate(0, 0);
-}
-
-.disclosure-triangle {
+  border: 1px dashed #7f7f7f;
+  border-radius: 4px;
   display: inline-block;
-  width: 9px;
-  height: 9px;
-  -webkit-mask-image: url('./ntp4_disclosure_triangle_mask.png');
+  font-size: 84%;
+  padding-bottom: 9px;
+  padding-top: 10px;
+  position: relative;
+  top: 7px;
+  -webkit-padding-end: 7px;
+  -webkit-padding-start: 30px;
 }
 
 /* Page switcher buttons. *****************************************************/

@@ -42,9 +42,11 @@ document.documentElement.setAttribute('touchui', true);
 <script src="../shared/js/cr/ui/menu_button.js"></script>
 <script src="../shared/js/cr/ui/context_menu_handler.js"></script>
 
+<script src="drag_wrapper.js"></script>
 <script src="tile_page.js"></script>
 <script src="apps_page.js"></script>
 <script src="most_visited_page.js"></script>
+<script src="trash.js"></script>
 
 <script src="card_slider.js"></script>
 <script src="grabber.js"></script>
@@ -83,8 +85,9 @@ document.documentElement.setAttribute('touchui', true);
         <div class="disclosure-triangle"></div>
       </button>
 
-      <!-- TODO(estade): may want to remove this. -->
-      <div id="trash"></div>
+      <div id="trash">
+        <span i18n-content="trashLabel"></span>
+      </div>
     </div>
   </div>
 </body>

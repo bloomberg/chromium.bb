@@ -116,7 +116,7 @@ cr.define('ntp4', function() {
     dotList = getRequiredElement('dot-list');
     pageList = getRequiredElement('page-list');
     trash = getRequiredElement('trash');
-    trash.hidden = true;
+    new ntp4.Trash(trash);
 
     shownPage = templateData['shown_page_type'];
     shownPageIndex = templateData['shown_page_index'];
@@ -396,6 +396,8 @@ cr.define('ntp4', function() {
     tempPage.classList.add('temporary');
     appendTilePage(tempPage, '', true);
     updateSliderCards();
+
+    $('footer').classList.add('dragging-mode');
   }
 
   /**
@@ -413,6 +415,8 @@ cr.define('ntp4', function() {
       tempPage.classList.remove('temporary');
       saveAppPageName(tempPage, '');
     }
+
+    $('footer').classList.remove('dragging-mode');
   }
 
   /**

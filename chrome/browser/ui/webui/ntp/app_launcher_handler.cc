@@ -531,7 +531,9 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
-  std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+
   const Extension* extension = extensions_service_->GetExtensionById(
       extension_id, true);
   if (!extension)
@@ -546,7 +548,16 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension_id;
-  GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
+
+  bool dont_confirm = false;
+  if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
+    scoped_ptr<AutoReset<bool> > auto_reset;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+      auto_reset.reset(new AutoReset<bool>(&ignore_changes_, true));
+    ExtensionDialogAccepted();
+  } else {
+    GetExtensionUninstallDialog()->ConfirmUninstall(this, extension);
+  }
 }
 
 void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {

@@ -79,6 +79,11 @@
   -webkit-transition: -webkit-transform 200ms;
 }
 
+.tile.drag-representation.placing > *.deleting {
+  -webkit-transform: scale(0) rotate(360deg);
+  -webkit-transition: -webkit-transform 600ms;
+}
+
 .animating-tile-page .tile,
 .tile.drag-representation.placing {
   -webkit-transition: left 200ms, right 200ms, top 200ms;

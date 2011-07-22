@@ -275,7 +275,7 @@ cr.define('ntp4', function() {
     },
 
     /** @inheritDoc */
-    shouldAcceptDrag: function(dataTransfer) {
+    shouldAcceptDrag: function(e) {
       return false;
     },
 
