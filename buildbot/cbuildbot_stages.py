@@ -907,11 +907,13 @@ class ArchiveStage(NonHaltingBuilderStage):
       url = '%s/_index.html' % upload_location
       return url.replace('gs://', url_prefix)
     else:
-      # 'http://botname/archive/build/version'
-      return 'http://' + socket.getfqdn() + '/archive/' + self._set_version
+      # 'http://botname/archive/bot_id/version'
+      return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
+                                          self.set_version)
 
   def GetLocalArchivePath(self):
-    return os.path.join(self._local_archive_path, self._set_version)
+    return os.path.join(self._local_archive_path, self._bot_id,
+                        self._set_version)
 
   def UpdateIndex(self):
     upload_url = self.GetGSUploadLocation()
