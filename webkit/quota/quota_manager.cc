@@ -1345,35 +1345,34 @@ void QuotaManager::StartEviction() {
 void QuotaManager::ReportHistogram() {
   GetGlobalUsage(kStorageTypeTemporary,
                  callback_factory_.NewCallback(
-                     &QuotaManager::DidGetGlobalUsageForHistogram));
+                     &QuotaManager::DidGetTemporaryGlobalUsageForHistogram));
   GetGlobalUsage(kStorageTypePersistent,
                  callback_factory_.NewCallback(
-                     &QuotaManager::DidGetGlobalUsageForHistogram));
+                     &QuotaManager::DidGetPersistentGlobalUsageForHistogram));
 }
 
-void QuotaManager::DidGetGlobalUsageForHistogram(StorageType type,
-                                                 int64 usage,
-                                                 int64 unlimited_usage) {
-  const char* histogram_label_usage = NULL;
-  const char* histogram_label_num_origins = NULL;
-  switch (type) {
-    case kStorageTypeTemporary:
-      histogram_label_usage = "Quota.GlobalUsageOfTemporaryStorage";
-      histogram_label_num_origins = "Quota.NumberOfTemporaryStorageOrigins";
-      break;
-    case kStorageTypePersistent:
-      histogram_label_usage = "Quota.GlobalUsageOfPersistentStorage";
-      histogram_label_num_origins = "Quota.NumberOfPersistentStorageOrigins";
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  UMA_HISTOGRAM_MBYTES(histogram_label_usage, usage);
+void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
+    StorageType type,
+    int64 usage,
+    int64 unlimited_usage) {
+  UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
 
   std::set<GURL> origins;
   GetCachedOrigins(type, &origins);
-  UMA_HISTOGRAM_COUNTS(histogram_label_num_origins, origins.size());
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfTemporaryStorageOrigins",
+                       origins.size());
+}
+
+void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
+    StorageType type,
+    int64 usage,
+    int64 unlimited_usage) {
+  UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfPersistentStorage", usage);
+
+  std::set<GURL> origins;
+  GetCachedOrigins(type, &origins);
+  UMA_HISTOGRAM_COUNTS("Quota.NumberOfPersistentStorageOrigins",
+                       origins.size());
 }
 
 void QuotaManager::DidInitializeTemporaryGlobalQuota(int64 quota) {

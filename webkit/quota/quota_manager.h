@@ -284,9 +284,12 @@ class QuotaManager : public QuotaTaskObserver,
                                     int64 unlimited_usage);
 
   void ReportHistogram();
-  void DidGetGlobalUsageForHistogram(StorageType type,
-                                     int64 usage,
-                                     int64 unlimited_usage);
+  void DidGetTemporaryGlobalUsageForHistogram(StorageType type,
+                                              int64 usage,
+                                              int64 unlimited_usage);
+  void DidGetPersistentGlobalUsageForHistogram(StorageType type,
+                                               int64 usage,
+                                               int64 unlimited_usage);
 
   // QuotaEvictionHandler.
   virtual void GetLRUOrigin(
