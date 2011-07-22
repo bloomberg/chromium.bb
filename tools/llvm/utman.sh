@@ -216,7 +216,7 @@ fi
 # hg-update-all uses these
 readonly LLVM_REV=9ca0d1b53734
 readonly LLVM_GCC_REV=e093fe8c5603
-readonly NEWLIB_REV=9bef47f82918
+readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=14dd509248e5
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
