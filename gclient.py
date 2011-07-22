@@ -981,9 +981,6 @@ URL.
       (not options.spec and not args)):
     parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
 
-  if os.path.exists(options.config_filename):
-    raise gclient_utils.Error('%s file already exists in the current directory'
-                                  % options.config_filename)
   client = GClient('.', options)
   if options.spec:
     client.SetConfig(options.spec)
