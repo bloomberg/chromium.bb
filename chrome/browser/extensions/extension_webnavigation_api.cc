@@ -320,10 +320,21 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     PageTransition::Type transition_type) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
+
+  bool is_reference_fragment_navigation =
+      IsReferenceFragmentNavigation(frame_id, url);
+
+  // Update the URL as it might have changed.
+  navigation_state_.TrackFrame(frame_id,
+                               url,
+                               is_main_frame,
+                               false,
+                               tab_contents());
+
   // On reference fragment navigations, only a new navigation state is
   // committed. We need to catch this case and generate a full sequence
   // of events.
-  if (IsReferenceFragmentNavigation(frame_id, url)) {
+  if (is_reference_fragment_navigation) {
     NavigatedReferenceFragment(frame_id, is_main_frame, url, transition_type);
     return;
   }
@@ -424,12 +435,6 @@ void ExtensionWebNavigationTabObserver::NavigatedReferenceFragment(
     bool is_main_frame,
     const GURL& url,
     PageTransition::Type transition_type) {
-  navigation_state_.TrackFrame(frame_id,
-                               url,
-                               is_main_frame,
-                               false,
-                               tab_contents());
-
   DispatchOnBeforeNavigate(tab_contents(),
                            frame_id,
                            is_main_frame,

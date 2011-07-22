@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "net/base/mock_host_resolver.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -30,6 +31,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
 
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_clientRedirect.html"))
+          << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationServerRedirect) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  FrameNavigationState::set_allow_extension_scheme(true);
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_serverRedirect.html"))
           << message_;
 }
 
