@@ -107,6 +107,14 @@ bool ProfileKeyedServiceFactory::ServiceHasOwnInstanceInIncognito() {
   return false;
 }
 
+bool ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() {
+  return false;
+}
+
+bool ProfileKeyedServiceFactory::ServiceIsNULLWhileTesting() {
+  return false;
+}
+
 void ProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
   std::map<Profile*, ProfileKeyedService*>::iterator it =
       mapping_.find(profile);

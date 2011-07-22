@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -38,8 +37,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -129,9 +126,7 @@ TestingProfile::TestingProfile()
       incognito_(false),
       last_session_exited_cleanly_(true),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
-#ifndef NDEBUG
-    profile_dependency_manager_->ProfileNowExists(this);
-#endif
+  profile_dependency_manager_->CreateProfileServices(this, true);
 
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
@@ -158,13 +153,8 @@ TestingProfile::TestingProfile()
   }
 
   // Install profile keyed service factory hooks for dummy/test services
-  BackgroundContentsServiceFactory::GetInstance()->SetTestingFactory(
-      this, NULL);
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
       this, CreateTestDesktopNotificationService);
-  SessionServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
-  TabRestoreServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,

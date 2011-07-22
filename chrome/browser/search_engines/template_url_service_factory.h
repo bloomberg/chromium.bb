@@ -29,6 +29,7 @@ class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
   virtual bool ServiceRedirectedInIncognito();
+  virtual bool ServiceIsNULLWhileTesting();
   virtual void ProfileShutdown(Profile* profile);
   virtual void ProfileDestroyed(Profile* profile);
 };

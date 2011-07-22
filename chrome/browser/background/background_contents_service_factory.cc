@@ -38,3 +38,11 @@ ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
 bool BackgroundContentsServiceFactory::ServiceHasOwnInstanceInIncognito() {
   return true;
 }
+
+bool BackgroundContentsServiceFactory::ServiceIsCreatedWithProfile() {
+  return true;
+}
+
+bool BackgroundContentsServiceFactory::ServiceIsNULLWhileTesting() {
+  return true;
+}

@@ -32,6 +32,8 @@ class BackgroundContentsServiceFactory : public ProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
   // Use a separate background contents service for incognito.
   virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_FACTORY_H_

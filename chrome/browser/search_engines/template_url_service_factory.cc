@@ -36,6 +36,10 @@ bool TemplateURLServiceFactory::ServiceRedirectedInIncognito() {
   return true;
 }
 
+bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() {
+  return true;
+}
+
 void TemplateURLServiceFactory::ProfileShutdown(Profile* profile) {
   // We shutdown AND destroy the TemplateURLService during this pass.
   // TemplateURLService schedules a task on the WebDataService from its

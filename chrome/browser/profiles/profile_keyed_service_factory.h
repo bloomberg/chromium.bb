@@ -75,6 +75,18 @@ class ProfileKeyedServiceFactory {
   virtual bool ServiceRedirectedInIncognito();
   virtual bool ServiceHasOwnInstanceInIncognito();
 
+  // By default, we create instances of a service lazily and wait until
+  // GetForProfile() is called on our subclass. Some services need to be
+  // created as soon as the Profile has been brought up.
+  virtual bool ServiceIsCreatedWithProfile();
+
+  // By default, TestingProfiles will be treated like normal profiles. You can
+  // override this so that by default, the service associated with the
+  // TestingProfile is NULL. (This is just a shortcut around
+  // SetTestingFactory() to make sure our profiles don't directly refer to the
+  // services they use.)
+  virtual bool ServiceIsNULLWhileTesting();
+
   // A helper object actually listens for notifications about Profile
   // destruction, calculates the order in which things are destroyed and then
   // does a two pass shutdown.

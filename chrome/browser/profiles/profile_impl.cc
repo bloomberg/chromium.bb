@@ -303,10 +303,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
-#ifndef NDEBUG
-    ProfileDependencyManager::GetInstance()->ProfileNowExists(this);
-#endif
-
   create_session_service_timer_.Start(
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
@@ -378,8 +374,6 @@ void ProfileImpl::DoFinalInit() {
   if (g_browser_process->background_mode_manager())
     g_browser_process->background_mode_manager()->RegisterProfile(this);
 #endif
-
-  BackgroundContentsServiceFactory::GetForProfile(this);
 
   extension_info_map_ = new ExtensionInfoMap();
 
@@ -872,6 +866,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prefs_.get(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       GetExtensionPrefValueMap()));
+
+  ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
   DCHECK(!net_pref_observer_.get());
   net_pref_observer_.reset(

@@ -31,6 +31,13 @@ class ProfileDependencyManager {
   void AddEdge(ProfileKeyedServiceFactory* depended,
                ProfileKeyedServiceFactory* dependee);
 
+  // Called by each Profile to alert us of its creation. Several services want
+  // to be started when a profile is created. Testing configuration is also
+  // done at this time. (If you want your ProfileKeyedService to be started
+  // with the Profile, override ProfileKeyedServiceFactory::
+  // ServiceIsCreatedWithProfile() to return true.)
+  void CreateProfileServices(Profile* profile, bool is_testing_profile);
+
   // Called by each Profile to alert us that we should destroy services
   // associated with it.
   //
@@ -44,11 +51,6 @@ class ProfileDependencyManager {
   void DestroyProfileServices(Profile* profile);
 
 #ifndef NDEBUG
-  // Unmark |profile| as dead. This exists because of unit tests, which will
-  // often have similar stack structures. 0xWhatever might be created, go out
-  // of scope, and then a new Profile object might be created at 0xWhatever.
-  void ProfileNowExists(Profile* profile);
-
   // Debugging assertion called as part of GetServiceForProfile in debug
   // mode. This will NOTREACHED() whenever the user is trying to access a stale
   // Profile*.

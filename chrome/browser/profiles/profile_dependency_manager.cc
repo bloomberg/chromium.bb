@@ -8,11 +8,41 @@
 #include <deque>
 #include <iterator>
 
+#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "content/common/notification_service.h"
 
 class Profile;
+
+namespace {
+
+bool g_initialized = false;
+
+// This method gets the instance of each ServiceFactory. We do this so that
+// each ServiceFactory initializes iteslf and registers its dependencies with
+// the global PreferenceDependencyManager. We need to have a complete
+// dependency graph when we create a profile so we can dispatch the profile
+// creation message to the services that want to create their services at
+// profile creation time.
+//
+// TODO(erg): This needs to be something else. I don't think putting every
+// FooServiceFactory here will scale or is desireable long term.
+void AssertFactoriesBuilt() {
+  if (!g_initialized) {
+    BackgroundContentsServiceFactory::GetInstance();
+    SessionServiceFactory::GetInstance();
+    TabRestoreServiceFactory::GetInstance();
+    TemplateURLServiceFactory::GetInstance();
+
+    g_initialized = true;
+  }
+}
+
+}  // namespace
 
 void ProfileDependencyManager::AddComponent(
     ProfileKeyedServiceFactory* component) {
@@ -46,6 +76,33 @@ void ProfileDependencyManager::AddEdge(ProfileKeyedServiceFactory* depended,
   destruction_order_.clear();
 }
 
+void ProfileDependencyManager::CreateProfileServices(Profile* profile,
+                                                     bool is_testing_profile) {
+#ifndef NDEBUG
+  // Unmark |profile| as dead. This exists because of unit tests, which will
+  // often have similar stack structures. 0xWhatever might be created, go out
+  // of scope, and then a new Profile object might be created at 0xWhatever.
+  dead_profile_pointers_.erase(profile);
+#endif
+
+  AssertFactoriesBuilt();
+
+  if (destruction_order_.empty())
+    BuildDestructionOrder();
+
+  // Iterate in reverse destruction order for creation.
+  for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
+           destruction_order_.rbegin(); rit != destruction_order_.rend();
+       ++rit) {
+    if (is_testing_profile && (*rit)->ServiceIsNULLWhileTesting()) {
+      (*rit)->SetTestingFactory(profile, NULL);
+    } else if ((*rit)->ServiceIsCreatedWithProfile()) {
+      // Create the service.
+      (*rit)->GetServiceForProfile(profile, true);
+    }
+  }
+}
+
 void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
   if (destruction_order_.empty())
     BuildDestructionOrder();
@@ -67,10 +124,6 @@ void ProfileDependencyManager::DestroyProfileServices(Profile* profile) {
 }
 
 #ifndef NDEBUG
-void ProfileDependencyManager::ProfileNowExists(Profile* profile) {
-  dead_profile_pointers_.erase(profile);
-}
-
 void ProfileDependencyManager::AssertProfileWasntDestroyed(Profile* profile) {
   if (dead_profile_pointers_.find(profile) != dead_profile_pointers_.end()) {
     NOTREACHED() << "Attempted to access a Profile that was ShutDown(). This "

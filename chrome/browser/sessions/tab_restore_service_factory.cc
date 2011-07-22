@@ -38,3 +38,7 @@ ProfileKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
   service = new TabRestoreService(profile);
   return service;
 }
+
+bool TabRestoreServiceFactory::ServiceIsNULLWhileTesting() {
+  return true;
+}

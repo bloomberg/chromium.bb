@@ -55,6 +55,8 @@ class SessionServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
+  virtual bool ServiceIsCreatedWithProfile();
+  virtual bool ServiceIsNULLWhileTesting();
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_SERVICE_FACTORY_H_

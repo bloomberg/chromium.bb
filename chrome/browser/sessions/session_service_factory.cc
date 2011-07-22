@@ -54,3 +54,11 @@ ProfileKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
   service->ResetFromCurrentBrowsers();
   return service;
 }
+
+bool SessionServiceFactory::ServiceIsCreatedWithProfile() {
+  return true;
+}
+
+bool SessionServiceFactory::ServiceIsNULLWhileTesting() {
+  return true;
+}

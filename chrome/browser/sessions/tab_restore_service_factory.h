@@ -30,6 +30,7 @@ class TabRestoreServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
+  virtual bool ServiceIsNULLWhileTesting();
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_FACTORY_H_
