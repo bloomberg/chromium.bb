@@ -435,13 +435,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-#if defined(OS_WINDOWS) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Flakily fails: http://crbug.com/89845
-#define MAYBE_InspectSharedWorker FLAKY_InspectSharedWorker
-#else
-#define MAYBE_InspectSharedWorker InspectSharedWorker
-#endif
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, FLAKY_InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage);
 }
 
