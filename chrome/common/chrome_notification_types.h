@@ -580,6 +580,28 @@ enum {
   // with the extension id of the app.
   NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
 
+  // Component Updater -------------------------------------------------------
+
+  // Sent when the component updater starts doing update checks. If no
+  // component has been registered for update this notification is not
+  // generated. The source is the component updater itself and there are
+  // no details.
+  NOTIFICATION_COMPONENT_UPDATER_STARTED,
+
+  // Sent when the component updater is going to take a long nap. The
+  // source is the component updater itself and there are no details.
+  NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
+
+  // Sent when there is a new version of a registered component. After
+  // the notification is send the component will be downloaded. The source
+  // is the id of the component and there are no details.
+  NOTIFICATION_COMPONENT_UPDATE_FOUND,
+
+  // Send when the new component has been downloaded and an installation
+  // or upgrade is about to be attempted. The source is the id of the
+  // component and there are no details.
+  NOTIFICATION_COMPONENT_UPDATE_READY,
+
   // Desktop Notifications ---------------------------------------------------
 
   // This notification is sent when a balloon is connected to a renderer
