@@ -23,7 +23,10 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 #if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
@@ -114,73 +117,68 @@ static int IsTrustedWrite(uint8_t *dst,
   return 0;
 }
 
-#if NACL_WINDOWS == 1
-static void* valloc(size_t s) {
-  /* allocate twice as much then round up to nearest s */
-  void* m_ptr = malloc(2 * s);
-  if (m_ptr != NULL) {
-    uintptr_t m = (uintptr_t) m_ptr;
-    /* check for power of 2: */
-    if (0 == (s & (s - 1))) {
-      m = (m + s) & ~(s - 1);
-      m_ptr = (void*) m;
-    } else {
-      free((void*) m_ptr);
-      m_ptr = NULL;
-    }
-  }
-  return (void*) m_ptr;
-}
-#endif
-
 /* this is global to prevent a (very smart) compiler from optimizing it out */
 void* g_squashybuffer = NULL;
+char g_firstbyte = 0;
 
 static Bool SerializeAllProcessors() {
   /*
    * We rely on the OS mprotect() call to issue interprocessor interrupts,
    * which will cause other processors to execute an IRET, which is
    * serializing.
+   *
+   * This code is based on two main considerations:
+   * 1. Only switching the page from exec to non-exec state is guaranteed
+   * to invalidate processors' instruction caches.
+   * 2. It's bad to have a page that is both writeable and executable,
+   * even if that happens not simultaneously.
    */
-#if NACL_WINDOWS == 1
-  static const DWORD prot_a = PAGE_EXECUTE_READWRITE;
-  static const DWORD prot_b = PAGE_NOACCESS;
-  static DWORD prot = PAGE_NOACCESS;
-  static DWORD size = 0;
-  BOOL rv;
-  DWORD oldprot;
+
+  int size = NACL_MAP_PAGESIZE;
   if (NULL == g_squashybuffer) {
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    size = si.dwPageSize;
-    g_squashybuffer = valloc(size);
-  }
-  if (size == 0) return FALSE;
-  if (NULL == g_squashybuffer) return FALSE;
-  prot = (prot == prot_a ? prot_b : prot_a);
-  rv = VirtualProtect(g_squashybuffer, size, prot, &oldprot);
-  if (!rv) return FALSE;
-#else
-  static const int prot_a = PROT_READ|PROT_WRITE|PROT_EXEC;
-  static const int prot_b = PROT_NONE;
-  static int prot = PROT_NONE;
-  static int size = 0;
-  int rv;
-  if (NULL == g_squashybuffer) {
-    void *allocated;
-    size = sysconf(_SC_PAGE_SIZE);
-    allocated = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
-    if (allocated == MAP_FAILED) {
+    if ((0 != NaCl_page_alloc(&g_squashybuffer, size)) ||
+        (0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ|PROT_WRITE))) {
+      NaClLog(0,
+              ("SerializeAllProcessors: initial squashybuffer allocation"
+               " failed\n"));
       return FALSE;
     }
-    g_squashybuffer = allocated;
+
+    NaClFillMemoryRegionWithHalt(g_squashybuffer, size);
+    g_firstbyte = *(char *) g_squashybuffer;
+    NaClLog(0, "SerializeAllProcessors: g_firstbyte is %d\n", g_firstbyte);
   }
-  if (size == 0) return FALSE;
-  if (NULL == g_squashybuffer) return FALSE;
-  prot = (prot == prot_a ? prot_b : prot_a);
-  rv = mprotect(g_squashybuffer, size, prot);
-  if (rv) return FALSE;
-#endif
+
+  if ((0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ|PROT_EXEC))) {
+    NaClLog(0,
+            ("SerializeAllProcessors: interprocessor interrupt"
+             " generation failed: could not reverse shield polarity (1)\n"));
+    return FALSE;
+  }
+  /*
+   * Make a read to ensure that the potential kernel laziness
+   * would not affect this hack.
+   */
+  if (*(char *) g_squashybuffer != g_firstbyte) {
+    NaClLog(0,
+            ("SerializeAllProcessors: interprocessor interrupt"
+             " generation failed: could not reverse shield polarity (2)\n"));
+    NaClLog(0, "SerializeAllProcessors: g_firstbyte is %d\n", g_firstbyte);
+    NaClLog(0, "SerializeAllProcessors: *g_squashybuffer is %d\n",
+            *(char *) g_squashybuffer);
+    return FALSE;
+  }
+  /*
+   * We would like to set the protection to PROT_NONE, but on Windows
+   * there's an ugly hack in NaCl_mprotect where PROT_NONE can result
+   * in MEM_DECOMMIT, causing the contents of the page(s) to be lost!
+   */
+  if (0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ)) {
+    NaClLog(0,
+            ("SerializeAllProcessors: interprocessor interrupt"
+             " generation failed: could not reverse shield polarity (3)\n"));
+    return FALSE;
+  }
   return TRUE;
 }
 
