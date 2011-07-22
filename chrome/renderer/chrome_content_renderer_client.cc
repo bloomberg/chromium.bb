@@ -33,8 +33,6 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/devtools_agent.h"
-#include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -165,7 +163,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   RenderThread* thread = RenderThread::current();
-  thread->AddFilter(new DevToolsAgentFilter());
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
@@ -214,7 +211,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
-  new DevToolsAgent(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);

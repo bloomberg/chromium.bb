@@ -877,9 +877,6 @@ const char kReloadKilledTabs[]              = "reload-killed-tabs";
 // Enable remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 
-// Enable remote debug / automation shell on the specified port.
-const char kRemoteShellPort[]               = "remote-shell-port";
-
 // Indicates the last session should be restored on startup. This overrides
 // the preferences value and is primarily intended for testing. The value of
 // this switch is the number of tabs to wait until loaded before

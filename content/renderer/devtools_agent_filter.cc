@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/devtools_agent_filter.h"
+#include "content/renderer/devtools_agent_filter.h"
 
 #include "base/message_loop.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/devtools_agent.h"
 #include "content/common/devtools_messages.h"
+#include "content/renderer/devtools_agent.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"

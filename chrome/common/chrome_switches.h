@@ -240,7 +240,6 @@ extern const char kProxyServer[];
 extern const char kPurgeMemoryButton[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingPort[];
-extern const char kRemoteShellPort[];
 extern const char kRestoreLastSession[];
 extern const char kRestrictInstantToSearch[];
 extern const char kSbInfoURLPrefix[];

@@ -576,6 +576,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kPpapiOutOfProcess,
     switches::kRecordMode,
     switches::kRegisterPepperPlugins,
+    switches::kRemoteShellPort,
     switches::kRendererAssertTest,
 #if !defined(OFFICIAL_BUILD)
     switches::kRendererCheckFalseTest,

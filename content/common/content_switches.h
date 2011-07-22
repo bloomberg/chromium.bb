@@ -120,6 +120,7 @@ extern const char kProcessType[];
 extern const char kProfileImportProcess[];
 extern const char kRecordMode[];
 extern const char kRegisterPepperPlugins[];
+extern const char kRemoteShellPort[];
 extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];
 extern const char kRendererCrashTest[];

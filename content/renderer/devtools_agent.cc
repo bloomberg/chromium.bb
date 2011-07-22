@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/devtools_agent.h"
+#include "content/renderer/devtools_agent.h"
 
 #include <map>
 
@@ -10,9 +10,9 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/renderer/devtools_agent_filter.h"
-#include "chrome/renderer/devtools_client.h"
+#include "content/common/content_switches.h"
+#include "content/renderer/devtools_agent_filter.h"
+#include "content/renderer/devtools_client.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view.h"

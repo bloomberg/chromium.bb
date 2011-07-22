@@ -351,7 +351,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingAtStart,
       switches::kProfilingFile,
       switches::kProfilingFlush,
-      switches::kRemoteShellPort,
       switches::kSilentDumpOnDCHECK,
     };
 

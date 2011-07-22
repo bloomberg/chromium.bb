@@ -34,6 +34,7 @@
 #include "content/common/web_database_observer_impl.h"
 #include "content/plugin/npobject_util.h"
 #include "content/renderer/content_renderer_client.h"
+#include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -183,6 +184,9 @@ void RenderThread::Init() {
   audio_message_filter_ = new AudioMessageFilter();
   AddFilter(audio_message_filter_.get());
 
+  devtools_agent_message_filter_ = new DevToolsAgentFilter();
+  AddFilter(devtools_agent_message_filter_.get());
+
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
   TRACE_EVENT_END_ETW("RenderThread::Init", 0, "");
@@ -197,6 +201,9 @@ RenderThread::~RenderThread() {
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
+  RemoveFilter(devtools_agent_message_filter_.get());
+  devtools_agent_message_filter_ = NULL;
+
   RemoveFilter(audio_input_message_filter_.get());
   audio_input_message_filter_ = NULL;
 

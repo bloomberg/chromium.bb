@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_DEVTOOLS_AGENT_H_
-#define CHROME_RENDERER_DEVTOOLS_AGENT_H_
+#ifndef CONTENT_RENDERER_DEVTOOLS_AGENT_H_
+#define CONTENT_RENDERER_DEVTOOLS_AGENT_H_
 #pragma once
 
 #include <map>
@@ -73,4 +73,4 @@ class DevToolsAgent : public RenderViewObserver,
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };
 
-#endif  // CHROME_RENDERER_DEVTOOLS_AGENT_H_
+#endif  // CONTENT_RENDERER_DEVTOOLS_AGENT_H_

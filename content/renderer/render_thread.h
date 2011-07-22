@@ -25,6 +25,7 @@ class AppCacheDispatcher;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class DBMessageFilter;
+class DevToolsAgentFilter;
 class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
@@ -264,6 +265,7 @@ class RenderThread : public RenderThreadBase,
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
+  scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;

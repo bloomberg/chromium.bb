@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_DEVTOOLS_AGENT_FILTER_H_
-#define CHROME_RENDERER_DEVTOOLS_AGENT_FILTER_H_
+#ifndef CONTENT_RENDERER_DEVTOOLS_AGENT_FILTER_H_
+#define CONTENT_RENDERER_DEVTOOLS_AGENT_FILTER_H_
 #pragma once
 
 #include <string>
@@ -51,4 +51,4 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);
 };
 
-#endif  // CHROME_RENDERER_DEVTOOLS_AGENT_FILTER_H_
+#endif  // CONTENT_RENDERER_DEVTOOLS_AGENT_FILTER_H_

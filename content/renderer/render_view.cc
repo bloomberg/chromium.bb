@@ -40,6 +40,7 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
+#include "content/renderer/devtools_agent.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/external_popup_menu.h"
@@ -408,6 +409,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #endif
 
   new MHTMLGenerator(this);
+
+  new DevToolsAgent(this);
 
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {
     media_stream_impl_ = new MediaStreamImpl(
