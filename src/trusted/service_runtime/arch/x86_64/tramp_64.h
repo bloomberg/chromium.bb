@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,5 +20,9 @@
 extern char   NaCl_trampoline_code;
 extern char   NaCl_trampoline_code_end;
 extern char   NaCl_trampoline_call_target;
+
+extern char   NaClDispatchThunk;
+extern char   NaClDispatchThunkEnd;
+extern char   NaClDispatchThunk_jmp_target;
 
 #endif
