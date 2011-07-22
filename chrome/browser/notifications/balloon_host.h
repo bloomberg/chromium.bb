@@ -51,8 +51,6 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // RenderViewHostDelegate overrides.
   virtual WebPreferences GetWebkitPrefs();
-  virtual SiteInstance* GetSiteInstance() const;
-  virtual Profile* GetProfile() const;
   virtual const GURL& GetURL() const;
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RenderViewCreated(RenderViewHost* render_view_host);

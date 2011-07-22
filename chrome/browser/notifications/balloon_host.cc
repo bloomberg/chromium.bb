@@ -31,7 +31,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
       should_notify_on_disconnect_(false),
       enable_web_ui_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(GetProfile(), this)) {
+          extension_function_dispatcher_(balloon_->profile(), this)) {
   CHECK(balloon_);
   site_instance_ = SiteInstance::CreateSiteInstanceForURL(balloon_->profile(),
                                                           GetURL());
@@ -65,18 +65,10 @@ const string16& BalloonHost::GetSource() const {
 
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(),
+      RenderViewHostDelegateHelper::GetWebkitPrefs(balloon_->profile(),
                                                    enable_web_ui_);
   web_prefs.allow_scripts_to_close_windows = true;
   return web_prefs;
-}
-
-SiteInstance* BalloonHost::GetSiteInstance() const {
-  return site_instance_.get();
-}
-
-Profile* BalloonHost::GetProfile() const {
-  return balloon_->profile();
 }
 
 const GURL& BalloonHost::GetURL() const {
