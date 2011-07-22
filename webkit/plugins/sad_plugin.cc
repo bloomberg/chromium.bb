@@ -21,6 +21,10 @@ void PaintSadPlugin(WebKit::WebCanvas* webcanvas,
 
 #if WEBKIT_USING_SKIA
   SkCanvas* canvas = webcanvas;
+  SkAutoCanvasRestore auto_restore(canvas, true);
+  // We draw the sad-plugin bitmap at the origin of canvas.
+  // Add a translation so that it appears at the origin of plugin rect.
+  canvas->translate(plugin_rect.x(), plugin_rect.y());
 #elif WEBKIT_USING_CG
   // Make a temporary canvas for the background image.
   scoped_ptr<SkCanvas> canvas(skia::CreateBitmapCanvas(width, height, false));
