@@ -322,7 +322,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
       // Enabled by default in Google Chrome builds, except on CrOS.
       switches::kDisablePrintPreview,
 #else
