@@ -1370,7 +1370,9 @@ static bool CheckRect(
     return false;
   }
 
-  int r2_stride = flip_y ? -static_cast<int>(padded_row_size) : padded_row_size;
+  int r2_stride = flip_y ?
+      -static_cast<int>(padded_row_size) :
+      static_cast<int>(padded_row_size);
   r2 = flip_y ? (r2 + (height - 1) * padded_row_size) : r2;
 
   for (int y = 0; y < height; ++y) {
