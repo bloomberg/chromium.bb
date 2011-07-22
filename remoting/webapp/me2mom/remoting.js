@@ -173,6 +173,15 @@ remoting.init = function() {
   setGlobalMode(getAppStartupMode());
   document.getElementById('loading-mode').hidden = true;
   document.getElementById('choice-mode').hidden = false;
+  if (isHostModeSupported()) {
+    var unsupported = document.getElementById('client-footer-text-cros');
+    unsupported.parentNode.removeChild(unsupported);
+  } else {
+    var footer = document.getElementById('client-footer-text');
+    footer.parentNode.removeChild(footer);
+    document.getElementById('client-footer-text-cros').id =
+        'client-footer-text';
+  }
 }
 
 function setGlobalMode(mode) {
@@ -582,11 +591,25 @@ remoting.setAppMode = function(mode) {
  * @return {remoting.AppMode} The mode (client or host) to start in.
  */
 function getAppStartupMode() {
-  var mode = window.localStorage.getItem(KEY_APP_MODE_);
-  if (!mode) {
-    mode = remoting.AppMode.HOST;
+  if (isHostModeSupported()) {
+    var mode = window.localStorage.getItem(KEY_APP_MODE_);
+    if (!mode) {
+      mode = remoting.AppMode.HOST;
+    }
+    return mode;
+  } else {
+    return remoting.AppMode.CLIENT;
   }
-  return mode;
+}
+
+/**
+ * Returns whether Host mode is supported on this platform.
+ *
+ * @return {boolean} True if Host mode is supported.
+ */
+function isHostModeSupported() {
+  // Currently, ChromeOS is not supported.
+  return !navigator.userAgent.match(/\bCrOS\b/);
 }
 
 /**
