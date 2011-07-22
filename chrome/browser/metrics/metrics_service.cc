@@ -1269,7 +1269,7 @@ void MetricsService::PrepareFetchWithPendingLog() {
                                       URLFetcher::POST,
                                       this));
   current_fetch_->set_request_context(
-      Profile::Deprecated::GetDefaultRequestContext());
+      g_browser_process->system_request_context());
   current_fetch_->set_upload_data(kMetricsType, compressed_log_);
 }
 
