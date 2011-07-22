@@ -4984,6 +4984,14 @@
    ...
    fun:_ZN8appcache19AppCacheStorageImpl23RunOnePendingSimpleTaskEv
 }
+{
+   bug_90240
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN2pp5proxy26PPP_Instance_Private_Proxy22OnMsgGetInstanceObjectEiNS0_24SerializedVarReturnValueE
+   fun:_Z16DispatchToMethodIN2pp5proxy26PPP_Instance_Private_ProxyEMS2_FviNS1_24SerializedVarReturnValueEEiNS1_13SerializedVarEEvPT_T0_RK6Tuple1IT1_EPSA_IT2_E
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
