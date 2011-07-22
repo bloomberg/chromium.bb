@@ -51,15 +51,8 @@ wstring ExpectedTitleFromAuth(const wstring& username,
   return username + L"/" + password;
 }
 
-#if defined(OS_WIN)
-// Probably related to test server flakiness in http://crbug.com/60937
-#define MAYBE_TestBasicAuth FLAKY_TestBasicAuth
-#else
-#define MAYBE_TestBasicAuth TestBasicAuth
-#endif
-
 // Test that "Basic" HTTP authentication works.
-TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
+TEST_F(LoginPromptTest, TestBasicAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -82,15 +75,8 @@ TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
             GetActiveTabTitle());
 }
 
-#if defined(OS_WIN)
-// Probably related to test server flakiness in http://crbug.com/60937
-#define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
-#else
-#define MAYBE_TestDigestAuth TestDigestAuth
-#endif
-
 // Test that "Digest" HTTP authentication works.
-TEST_F(LoginPromptTest, MAYBE_TestDigestAuth) {
+TEST_F(LoginPromptTest, TestDigestAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -112,15 +98,8 @@ TEST_F(LoginPromptTest, MAYBE_TestDigestAuth) {
             GetActiveTabTitle());
 }
 
-#if defined(OS_WIN)
-// Probably related to test server flakiness in http://crbug.com/60937
-#define MAYBE_TestTwoAuths FLAKY_TestTwoAuths
-#else
-#define MAYBE_TestTwoAuths TestTwoAuths
-#endif
-
 // Test that logging in on 2 tabs at once works.
-TEST_F(LoginPromptTest, MAYBE_TestTwoAuths) {
+TEST_F(LoginPromptTest, TestTwoAuths) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> basic_tab(GetActiveTab());
@@ -147,17 +126,9 @@ TEST_F(LoginPromptTest, MAYBE_TestTwoAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_), title);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Probably related to test server flakiness in http://crbug.com/60937
-// Linux seems to be racy as well, see:
-//   https://bugs.webkit.org/show_bug.cgi?id=59406
-#define MAYBE_TestCancelAuth FLAKY_TestCancelAuth
-#else
-#define MAYBE_TestCancelAuth TestCancelAuth
-#endif
-
 // Test that cancelling authentication works.
-TEST_F(LoginPromptTest, MAYBE_TestCancelAuth) {
+// Flaky, http://crbug.com/90198.
+TEST_F(LoginPromptTest, FLAKY_TestCancelAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -201,16 +172,9 @@ TEST_F(LoginPromptTest, MAYBE_TestCancelAuth) {
   EXPECT_EQ(L"Denied: no auth", GetActiveTabTitle());
 }
 
-#if defined(OS_WIN)
-// Probably related to test server flakiness in http://crbug.com/60937
-#define MAYBE_SupplyRedundantAuths FLAKY_SupplyRedundantAuths
-#else
-#define MAYBE_SupplyRedundantAuths SupplyRedundantAuths
-#endif
-
 // If multiple tabs are looking for the same auth, the user should only have to
 // enter it once.
-TEST_F(LoginPromptTest, MAYBE_SupplyRedundantAuths) {
+TEST_F(LoginPromptTest, SupplyRedundantAuths) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> basic_tab1(GetActiveTab());
@@ -241,16 +205,9 @@ TEST_F(LoginPromptTest, MAYBE_SupplyRedundantAuths) {
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title2);
 }
 
-#if defined(OS_WIN)
-// Probably related to test server flakiness in http://crbug.com/60937
-#define MAYBE_CancelRedundantAuths FLAKY_CancelRedundantAuths
-#else
-#define MAYBE_CancelRedundantAuths CancelRedundantAuths
-#endif
-
 // If multiple tabs are looking for the same auth, and one is cancelled, the
 // other should be cancelled as well.
-TEST_F(LoginPromptTest, MAYBE_CancelRedundantAuths) {
+TEST_F(LoginPromptTest, CancelRedundantAuths) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> basic_tab1(GetActiveTab());
