@@ -14,6 +14,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 
+NewTabSyncSetupHandler::NewTabSyncSetupHandler() : SyncSetupHandler() {
+}
+
 NewTabSyncSetupHandler::~NewTabSyncSetupHandler() {
 }
 
