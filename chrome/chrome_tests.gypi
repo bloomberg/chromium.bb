@@ -1488,6 +1488,7 @@
         'browser/mock_plugin_exceptions_table_model.h',
         'browser/net/chrome_net_log_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
+        'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/gaia/token_service_unittest.cc',
         'browser/net/gaia/token_service_unittest.h',
         'browser/net/load_timing_observer_unittest.cc',
