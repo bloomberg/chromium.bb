@@ -44,6 +44,7 @@ class CloudPrintProxyService
   void RefreshStatusFromService();
 
   bool ShowTokenExpiredNotification();
+  std::string proxy_id() const { return proxy_id_; }
 
   // CloudPrintSetupHandler::Delegate implementation.
   virtual void OnCloudPrintSetupClosed();
@@ -56,6 +57,7 @@ class CloudPrintProxyService
   Profile* profile_;
   scoped_refptr<TokenExpiredNotificationDelegate> token_expired_delegate_;
   scoped_ptr<CloudPrintSetupHandler> cloud_print_setup_handler_;
+  std::string proxy_id_;
 
   // Methods that send an IPC to the service.
   void RefreshCloudPrintProxyStatus();

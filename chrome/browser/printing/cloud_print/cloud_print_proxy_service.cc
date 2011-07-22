@@ -199,6 +199,7 @@ void CloudPrintProxyService::DisableCloudPrintProxy() {
 
 void CloudPrintProxyService::ProxyInfoCallback(
     const cloud_print::CloudPrintProxyInfo& proxy_info) {
+  proxy_id_ = proxy_info.proxy_id;
   profile_->GetPrefs()->SetString(
       prefs::kCloudPrintEmail,
       proxy_info.enabled ? proxy_info.email : std::string());

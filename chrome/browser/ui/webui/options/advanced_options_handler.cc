@@ -482,10 +482,11 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
-  cloud_print_setup_handler_.reset(new CloudPrintSetupHandler(this));
-  CloudPrintSetupFlow::OpenDialog(
-      web_ui_->GetProfile(), cloud_print_setup_handler_->AsWeakPtr(),
-      web_ui_->tab_contents()->GetDialogRootWindow());
+  // Open the connector enable page in the current tab.
+  web_ui_->tab_contents()->OpenURL(
+      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceEnableURL(
+          web_ui_->GetProfile()->GetCloudPrintProxyService()->proxy_id()),
+      GURL(), CURRENT_TAB, PageTransition::LINK);
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(

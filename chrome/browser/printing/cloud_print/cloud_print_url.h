@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_URL_H_
 #pragma once
 
+#include <string>
+
 class GURL;
 class Profile;
 
@@ -17,6 +19,7 @@ class CloudPrintURL {
   GURL GetCloudPrintServiceURL();
   GURL GetCloudPrintServiceDialogURL();
   GURL GetCloudPrintServiceManageURL();
+  GURL GetCloudPrintServiceEnableURL(const std::string& proxy_id);
 
   // These aren't derived from the service, but it makes sense to keep all the
   // URLs together, and this gives the unit tests access for testing.
