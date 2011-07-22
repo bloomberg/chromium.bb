@@ -104,7 +104,7 @@ tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func)
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
-	tty->fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
+	tty->fd = open("/dev/tty", O_RDWR | O_NOCTTY);
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open active tty: %m\n");
 		return NULL;
