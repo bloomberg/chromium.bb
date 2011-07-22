@@ -843,6 +843,7 @@
         'skia_opts',
         'skia_libtess',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+	'../third_party/sfntly/sfntly.gyp:sfntly',
         '../third_party/zlib/zlib.gyp:zlib',
       ],
       'direct_dependent_settings': {

@@ -21,6 +21,7 @@ vars = {
   "libjingle_revision": "73",
   "libvpx_revision": "90416",
   "ffmpeg_revision": "91042",
+  "sfntly_revision": "20",
   "skia_revision": "1919",
   "v8_revision": "8695",
   "webrtc_revision": "232",
@@ -97,6 +98,12 @@ deps = {
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
+
+  "src/third_party/sfntly/src/sfntly":
+    "http://sfntly.googlecode.com/svn/trunk/cpp/src/sfntly@" +
+    #TODO(arthurhsu): replace above line with this after mirror is setup.
+    #(Var("googlecode_url") % "sfntly") + "/trunk/cpp/src/sfntly@" +
+    Var("sfntly_revision"),
 
   "src/third_party/skia/gpu":
     (Var("googlecode_url") % "skia") + "/trunk/gpu@" + Var("skia_revision"),
