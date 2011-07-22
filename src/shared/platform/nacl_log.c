@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -203,7 +204,7 @@ void NaClLogParseAndSetModuleVerbosityMap(char const *module_verbosity_map) {
   }
 
   while (*module_verbosity_map != '\0') {
-    sep = strchr(module_verbosity_map, ',');
+    sep = strpbrk(module_verbosity_map, ",:");
     if (NULL == sep) {
       sep = module_verbosity_map + strlen(module_verbosity_map);
       next = sep;

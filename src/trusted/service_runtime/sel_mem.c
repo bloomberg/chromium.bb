@@ -1,10 +1,11 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-/* NaCl Simple/secure ELF loader (NaCl SEL) memory map.
+/*
+ * NaCl Simple/secure ELF loader (NaCl SEL) memory map.
  */
 
 #include "native_client/src/include/portability.h"
@@ -302,8 +303,9 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
   NaClLog(2,
           ("NaClVmmapUpdate(0x%08"NACL_PRIxPTR", "
            "0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS", "
-           "0x%x, 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop);
+           "0x%x, 0x%08"NACL_PRIxPTR", %d)\n"),
+          (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop,
+          remove);
   NaClVmmapMakeSorted(self);
 
   CHECK(npages > 0);
@@ -351,8 +353,9 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
   }
 
   if (!remove) {
-    if (!NaClVmmapAdd(self, page_num, npages, prot, nmop))
+    if (!NaClVmmapAdd(self, page_num, npages, prot, nmop)) {
       NaClLog(LOG_FATAL, "NaClVmmapUpdate: could not add entry\n");
+    }
   }
 
   NaClVmmapRemoveMarked(self);

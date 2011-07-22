@@ -577,6 +577,7 @@ int main(int  argc,
     NaClPerfCounterIntervalLast(&time_all_main);
 
     if (LOAD_OK == errcode) {
+      NaClLog(2, "Loading nacl file %s (non-RPC)\n", nacl_file);
       errcode = NaClAppLoadFile((struct Gio *) &main_file, nap, check_abi);
       if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
@@ -704,6 +705,7 @@ int main(int  argc,
 
   if (NULL != blob_library_file) {
     if (LOAD_OK == errcode) {
+      NaClLog(2, "Loading blob file %s\n", blob_library_file);
       errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file);
       if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
@@ -719,6 +721,10 @@ int main(int  argc,
       fprintf(stderr, "Error while closing \"%s\".\n", blob_library_file);
     }
     (*((struct Gio *) &blob_file)->vtbl->Dtor)((struct Gio *) &blob_file);
+    if (verbosity) {
+      gprintf((struct Gio *) &gout, "printing post-IRT NaClApp details\n");
+      NaClAppPrintDetails(nap, (struct Gio *) &gout);
+    }
   }
 
   /*

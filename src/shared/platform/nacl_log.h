@@ -48,6 +48,9 @@
  * for the elf_util module to be 4, and the verbosity level for the
  * my_module module to be 5.
  *
+ * NB: because of craziness in the test infrastructure, we accept
+ * either ',' or ':' as separators.
+ *
  * In this case, when the desired verbosity level for my_module is 5,
  * all logging output at detail level 5 and below would be printed to
  * the log output, and logging statements with a higher detail level
