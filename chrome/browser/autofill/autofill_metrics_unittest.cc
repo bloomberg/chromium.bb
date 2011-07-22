@@ -120,37 +120,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
-class TestAutofillManager : public AutofillManager {
- public:
-  TestAutofillManager(TabContentsWrapper* tab_contents,
-                      TestPersonalDataManager* personal_manager)
-      : AutofillManager(tab_contents, personal_manager),
-        autofill_enabled_(true) {
-    set_metric_logger(new MockAutofillMetrics);
-  }
-  virtual ~TestAutofillManager() {}
-
-  virtual bool IsAutofillEnabled() const { return autofill_enabled_; }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
-
-  const MockAutofillMetrics* metric_logger() const {
-    return static_cast<const MockAutofillMetrics*>(
-        AutofillManager::metric_logger());
-  }
-
-  void AddSeenForm(FormStructure* form) {
-    form_structures()->push_back(form);
-  }
-
- private:
-  bool autofill_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
-};
-
 class TestFormStructure : public FormStructure {
  public:
   explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
@@ -181,6 +150,49 @@ class TestFormStructure : public FormStructure {
  private:
   std::string server_experiment_id_;
   DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
+};
+
+class TestAutofillManager : public AutofillManager {
+ public:
+  TestAutofillManager(TabContentsWrapper* tab_contents,
+                      TestPersonalDataManager* personal_manager)
+      : AutofillManager(tab_contents, personal_manager),
+        autofill_enabled_(true) {
+    set_metric_logger(new MockAutofillMetrics);
+  }
+  virtual ~TestAutofillManager() {}
+
+  virtual bool IsAutofillEnabled() const { return autofill_enabled_; }
+
+  void set_autofill_enabled(bool autofill_enabled) {
+    autofill_enabled_ = autofill_enabled;
+  }
+
+  const MockAutofillMetrics* metric_logger() const {
+    return static_cast<const MockAutofillMetrics*>(
+        AutofillManager::metric_logger());
+  }
+
+  void AddSeenForm(const FormData& form,
+                   const std::vector<AutofillFieldType>& heuristic_types,
+                   const std::vector<AutofillFieldType>& server_types,
+                   const std::string& experiment_id) {
+    FormData empty_form = form;
+    for (size_t i = 0; i < empty_form.fields.size(); ++i) {
+      empty_form.fields[i].value = string16();
+    }
+
+    // |form_structure| will be owned by |form_structures()|.
+    TestFormStructure* form_structure = new TestFormStructure(empty_form);
+    form_structure->SetFieldTypes(heuristic_types, server_types);
+    form_structure->set_server_experiment_id(experiment_id);
+    form_structures()->push_back(form_structure);
+  }
+
+ private:
+  bool autofill_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
 }  // namespace
@@ -289,10 +301,8 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
 
   // Simulate having seen this form on page load.
-  // |form_structure| will be owned by |autofill_manager_|.
-  TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types,
+                                 std::string());
 
   // Establish our expectations.
   ::testing::InSequence dummy;
@@ -469,9 +479,9 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
 
   // Simulate having seen this form with the desired heuristic and server types.
   // |form_structure| will be owned by |autofill_manager_|.
-  TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types,
+                                 std::string());
+
 
   // Establish our expectations.
   ::testing::FLAGS_gmock_verbose = "error";
@@ -535,9 +545,9 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
 
   // Simulate having seen this form with the desired heuristic and server types.
   // |form_structure| will be owned by |autofill_manager_|.
-  TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types,
+                                 std::string());
+
 
   // Add a field and re-arrange the remaining form fields before submitting.
   std::vector<FormField> cached_fields = form.fields;
@@ -737,10 +747,8 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
 
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
-  TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(heuristic_types, server_types);
-  form_structure->set_server_experiment_id(experiment_id);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types,
+                                 experiment_id);
 
   // Establish our expectations.
   ::testing::InSequence dummy;
@@ -862,9 +870,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
-  TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(field_types, field_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, field_types, field_types,
+                                 std::string());
 
   // Establish our expectations.
   ::testing::FLAGS_gmock_verbose = "error";
@@ -882,9 +889,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
-  form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(field_types, field_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, field_types, field_types,
+                                 std::string());
 
   // Establish our expectations.
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -895,9 +901,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Reset the autofill manager state again.
   autofill_manager_->Reset();
-  form_structure = new TestFormStructure(form);
-  form_structure->SetFieldTypes(field_types, field_types);
-  autofill_manager_->AddSeenForm(form_structure);
+  autofill_manager_->AddSeenForm(form, field_types, field_types,
+                                 std::string());
 
   // Establish our expectations.
   EXPECT_CALL(*autofill_manager_->metric_logger(),

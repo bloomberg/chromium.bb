@@ -2124,6 +2124,47 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDifferentFields) {
   EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
 }
 
+// Test that we do not save form data when submitted fields contain default
+// values.
+TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  form.fields[3].value = ASCIIToUTF16("Enter your address");
+
+  // Convert the state field to a <select> popup, to make sure that we only
+  // reject default values for text fields.
+  ASSERT_TRUE(form.fields[6].name == ASCIIToUTF16("state"));
+  form.fields[6].form_control_type = ASCIIToUTF16("select-one");
+  form.fields[6].value = ASCIIToUTF16("Tennessee");
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form.
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
+  FillAutofillFormData(kDefaultPageID, form, form.fields[3],
+                       autofill_manager_->PackGUIDs(empty, guid));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+
+  // Simulate form submission.  We should call into the PDM to try to save the
+  // filled data.
+  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(1);
+  FormSubmitted(results);
+
+  // Set the address field's value back to the default value.
+  results.fields[3].value = ASCIIToUTF16("Enter your address");
+
+  // Simulate form submission.  We should not call into the PDM to try to save
+  // the filled data, since the filled form is effectively missing an address.
+  EXPECT_CALL(*test_personal_data_, SaveImportedProfile(::testing::_)).Times(0);
+  FormSubmitted(results);
+}
+
 // Checks that resetting the auxiliary profile enabled preference does the right
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {

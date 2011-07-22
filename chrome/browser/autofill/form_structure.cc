@@ -409,6 +409,13 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
     std::map<std::string, const AutofillField*>::const_iterator
         cached_field = cached_fields.find(field->FieldSignature());
     if (cached_field != cached_fields.end()) {
+      if (field->form_control_type != ASCIIToUTF16("select-one") &&
+          field->value == cached_field->second->value) {
+        // From the perspective of learning user data, text fields containing
+        // default values are equivalent to empty fields.
+        field->value = string16();
+      }
+
       field->set_heuristic_type(cached_field->second->heuristic_type());
       field->set_server_type(cached_field->second->server_type());
     }
