@@ -532,7 +532,7 @@ or verify this branch is set up to track another (via the --track argument to
                                 '%s...' % (upstream_branch)]).strip()
 
     if not author:
-      author = RunGit(['config', 'user.email']).strip()
+      author = RunGit(['config', 'user.email']).strip() or None
     change = presubmit_support.GitChange(
         name,
         description,
@@ -1064,6 +1064,11 @@ def SendUpstream(parser, args, cmd):
     # Default to merging against our best guess of the upstream branch.
     args = [cl.GetUpstreamBranch()]
 
+  if options.contributor:
+    if not re.match('^.*\s<\S+@\S+>$', options.contributor):
+      print "Please provide contibutor as 'First Last <email@example.com>'"
+      return 1
+
   base_branch = args[0]
 
   # Make sure index is up-to-date before running diff-index.
@@ -1095,9 +1100,12 @@ def SendUpstream(parser, args, cmd):
       return 1
 
   if not options.bypass_hooks and not options.force:
+    author = None
+    if options.contributor:
+      author = re.search(r'\<(.*)\>', options.contributor).group(1)
     cl.RunHook(committing=True, upstream_branch=base_branch,
                may_prompt=True, verbose=options.verbose,
-               author=options.contributor)
+               author=author)
 
     if cmd == 'dcommit':
       # Check the tree status if the tree status URL is set.
@@ -1123,9 +1131,6 @@ def SendUpstream(parser, args, cmd):
     description += "\n\nReview URL: %s" % cl.GetIssueURL()
 
   if options.contributor:
-    if not re.match('^.*\s<\S+@\S+>$', options.contributor):
-      print "Please provide contibutor as 'First Last <email@example.com>'"
-      return 1
     description += "\nPatch from %s." % options.contributor
   print 'Description:', repr(description)
 
