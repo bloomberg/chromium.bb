@@ -81,19 +81,15 @@ PrintViewManager::~PrintViewManager() {
 }
 
 bool PrintViewManager::PrintNow() {
-  // Don't print interstitials.
-  if (tab_contents()->showing_interstitial_page())
-    return false;
+  return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
+}
 
-  return Send(new PrintMsg_PrintPages(routing_id()));
+bool PrintViewManager::PrintForSystemDialogNow() {
+  return PrintNowInternal(new PrintMsg_PrintForSystemDialog(routing_id()));
 }
 
 bool PrintViewManager::PrintPreviewNow() {
-  // Don't print preview interstitials.
-  if (tab_contents()->showing_interstitial_page())
-    return false;
-
-  return Send(new PrintMsg_InitiatePrintPreview(routing_id()));
+  return PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id()));
 }
 
 void PrintViewManager::PreviewPrintingRequestCancelled() {
@@ -509,6 +505,13 @@ bool PrintViewManager::OpportunisticallyCreatePrintJob(int cookie) {
   // print_job_->is_job_pending() to true.
   print_job_->StartPrinting();
   return true;
+}
+
+bool PrintViewManager::PrintNowInternal(IPC::Message* message) {
+  // Don't print / print preview interstitials.
+  if (tab_contents()->showing_interstitial_page())
+    return false;
+  return Send(message);
 }
 
 }  // namespace printing

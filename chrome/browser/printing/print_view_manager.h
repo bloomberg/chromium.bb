@@ -42,6 +42,10 @@ class PrintViewManager : public NotificationObserver,
   // this function. Returns false if printing is impossible at the moment.
   bool PrintNow();
 
+  // Same as PrintNow(), but for the case where a user prints with the system
+  // dialog from print preview.
+  bool PrintForSystemDialogNow();
+
   // Initiate print preview of the current document by first notifying the
   // renderer. Since this happens asynchronous, the print preview tab creation
   // will not be completed on the return of this function. Returns false if
@@ -129,6 +133,9 @@ class PrintViewManager : public NotificationObserver,
   // control flow, print_job_ is initialized whenever possible. No-op is
   // print_job_ is initialized.
   bool OpportunisticallyCreatePrintJob(int cookie);
+
+  // Helper method for Print*Now().
+  bool PrintNowInternal(IPC::Message* message);
 
   // TabContentsWrapper we're associated with.
   TabContentsWrapper* tab_;

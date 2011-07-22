@@ -633,7 +633,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
   printing::PrintViewManager* manager = wrapper->print_view_manager();
   manager->set_observer(this);
-  manager->PrintNow();
+  manager->PrintForSystemDialogNow();
 }
 
 void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {

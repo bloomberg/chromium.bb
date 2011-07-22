@@ -186,6 +186,7 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
@@ -259,6 +260,24 @@ void PrintWebViewHelper::OnPrintPages() {
   WebFrame* frame;
   if (GetPrintFrame(&frame))
     Print(frame, NULL);
+}
+
+void PrintWebViewHelper::OnPrintForSystemDialog() {
+  WebFrame* frame = print_preview_context_.frame();
+  if (!frame) {
+    NOTREACHED();
+    return;
+  }
+
+  WebNode* node = print_preview_context_.node();
+  if (!node) {
+    Print(frame, NULL);
+  } else {
+    // Make a copy of the node, because |print_preview_context_| will reset its
+    // copy when the print preview tab closes.
+    WebNode duplicate_node(*node);
+    Print(frame, &duplicate_node);
+  }
 }
 
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {

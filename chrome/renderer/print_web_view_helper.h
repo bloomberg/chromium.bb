@@ -106,6 +106,9 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Print the document.
   void OnPrintPages();
 
+  // Print the document with the print preview frame/node.
+  void OnPrintForSystemDialog();
+
   // Initiate print preview.
   void OnInitiatePrintPreview();
 

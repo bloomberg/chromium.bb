@@ -167,6 +167,9 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PreviewPrintingRequestCancelled)
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
                     DictionaryValue /* settings */)
 
+// Like PrintMsg_PrintPages, but using the print preview document's frame/node.
+IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
+
 // Tells a renderer to stop blocking script initiated printing.
 IPC_MESSAGE_ROUTED0(PrintMsg_ResetScriptedPrintCount)
 
