@@ -35,6 +35,11 @@ GLvoid StubGLBindBuffer(GLenum target, GLuint buffer) {
   glBindBuffer(target, buffer);
 }
 
+GLvoid StubBindFragDataLocationIndexedARB(GLuint program, GLuint colorNumber,
+                                          GLuint index, const GLchar * name) {
+  glBindFragDataLocationIndexedARB(program, colorNumber, index, name);
+}
+
 GLvoid StubGLBindFramebuffer(GLenum target, GLuint framebuffer) {
   glBindFramebufferEXT(target, framebuffer);
 }
@@ -574,7 +579,7 @@ void BindSkiaToInProcessGL() {
       NULL,  // glResolveMultisampleFramebuffer
       StubGLMapBuffer,
       StubGLUnmapBuffer,
-      NULL,  // glBindFragDataLocationIndexed
+      StubBindFragDataLocationIndexedARB,
       GrGLInterface::kStaticInitEndGuard,
     };
     GrGLSetGLInterface(&host_gl_interface);

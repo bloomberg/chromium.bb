@@ -28,6 +28,9 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD2(BindBuffer, void(GLenum target, GLuint buffer));
 
+  MOCK_METHOD4(BindFragDataLocationIndexedARB, void(GLuint program,
+      GLuint colorNumber, GLuint index, const char* name));
+
   MOCK_METHOD2(BindFramebufferEXT, void(GLenum target, GLuint framebuffer));
 
   MOCK_METHOD2(BindRenderbufferEXT, void(GLenum target, GLuint renderbuffer));

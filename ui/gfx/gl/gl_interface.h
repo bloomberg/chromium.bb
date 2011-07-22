@@ -34,6 +34,11 @@ class GLInterface {
 
   virtual void BindBuffer(GLenum target, GLuint buffer) = 0;
 
+  virtual void BindFragDataLocationIndexedARB(GLuint program,
+                                              GLuint colorNumber,
+                                              GLuint index,
+                                              const char* name) = 0;
+
   virtual void BindFramebufferEXT(GLenum target, GLuint framebuffer) = 0;
 
   virtual void BindRenderbufferEXT(GLenum target, GLuint renderbuffer) = 0;
