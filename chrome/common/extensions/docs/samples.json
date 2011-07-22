@@ -811,7 +811,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "fa560de6c20aa58332872918a330b4df00ab55cd",
+      "source_hash": "46b426df9ae054648e56756d19e15094f63a0776",
       "zip_path": "examples\/api\/devtools\/resources\/chrome-firephp.zip"
     },
     {
@@ -1121,7 +1121,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
+      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {

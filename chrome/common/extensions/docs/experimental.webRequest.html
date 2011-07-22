@@ -258,7 +258,44 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">A note about timestamps</a>
+              <a href="#manifest">Manifest</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#life_cycle">Life-cycle of requests</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#concepts">Concepts of the webRequest API</a>
+              <ol>
+                <li>
+                  <a href="#Request IDs">Request IDs</a>
+                </li><li>
+                  <a href="#subscription">Subscription</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#conflict_resolution">Conflict resolution</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#H2-6">A note about timestamps</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#examples">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -340,7 +377,193 @@ information on how to use experimental APIs, see the
 <a href="experimental.html">chrome.experimental.* APIs</a> page.
 </p>
 
-<a name="H2-0"></a><h2>A note about timestamps</h2>
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "experimental" permission in the <a href="manifest.html">extension manifest</a> to use the webRequest settings
+API.  For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "experimental"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="life_cycle">Life-cycle of requests</h2>
+
+<p>
+The webRequest API defines the following events:
+</p><dl>
+  <dt><code>onBeforeRequest (optionally synchronous)</code></dt>
+  <dd>Fires when a request is about to occur. This is sent before any TCP
+  connection is made and can be used to cancel or redirect requests.</dd>
+  <dt><code>onBeforeSendHeaders (optionally synchronous)</code></dt>
+  <dd>Fires when a request is about to occur and the initial headers are
+  prepared. The event is intended to allow extensions to add, modify and delete
+  request headers <a href="#life_cycle_footnote">(*)</a>. The
+  <code>onBeforeSendHeaders</code> event is passed to all subscribers, so
+  different subscribers may attempt to modify the request, see section <a href="#conflict_resolution">conflict resolution</a> for details how this is
+  handled. This event can still be used to cancel the request.</dd>
+  <dt><code>onSendHeaders</code></dt>
+  <dd>Fires after all extensions had a chance of modifying the request headers
+  and presents the final <a href="#life_cycle_footnote">(*)</a> version. The
+  event is triggered, before the headers are sent to the network. This event is
+  informational and handled asynchronously. It does not allow to modify or
+  cancel the request.</dd>
+  <dt><code>onResponseStarted</code></dt>
+  <dd>Fires when the first byte of the response body is received. For HTTP
+  requests, this means that the status line and response headers are
+  available. This event is informational and handled asynchronously. It does not
+  allow to modify or cancel the request.</dd>
+  <dt><code>onBeforeRedirect</code></dt>
+  <dd>Fires before a redirect is about to be executed. A redirection can be
+  triggered by a HTTP response code or by an extension. This event is
+  informational and handled asynchronously. It does not allow to modify or
+  cancel the request. </dd>
+  <dt><code>onCompleted</code></dt>
+  <dd>Fires when a request has been processed successfully.</dd>
+  <dt><code>onErrorOccurred</code></dt>
+  <dd>Fires when a request could not be processed successfully.</dd>
+</dl>
+The webRequest API gurantees that for each request either
+<code>onComplete</code> or <code>onErrorOccurred</code> is fired as the final
+event.
+<p></p>
+
+<p>
+The life-cycle of successful requests can be illustrated as follows:
+</p><pre>  |
+  v
+onBeforeRequest --------------------------------
+  |          ^             |                    | [data and file URLs]
+  |          |             | [redirection       |
+  |           -------      |  from extension]   |
+  v                  |     |                    |
+onBeforeSendHeaders  |     |                    |
+  |     ^            |     |                    |
+  v     | [auth]     |     |                    |
+onSendHeaders        |     |                    |
+  |     |            |     |                    |
+  |     v            |     |                    |
+  |    onBeforeRedirect &lt;--                     |
+  |                                             |
+  v                                             |
+onResponseStarted &lt;-----------------------------
+  |
+  v
+onCompleted
+
+[auth] = In case of an basic/digest authentication request from server, we send
+another HTTP request with the respective headers.
+</pre>
+<em>Note that this diagram does not capture a bug that will be fixed soon: If
+extensions redirect a URL request via the webRequest API, this redirection does
+not trigger <code>onBeforeRedirect</code>. Instead the request is cancelled
+and a new request is started at <code>onBeforeRedirect</code>. See <a href="http://crbug.com/79520">http://crbug.com/79520</a>.</em>
+<p></p>
+
+<p id="life_cycle_footnote">(*) Note that the webRequest API presents an
+abstraction of the network stack to the extension. Internally, one URL request
+can be split into several HTTP requests (for example to fetch individual byte
+ranges from a large file) or can be handled by the network stack without
+communicating with the network. For this reason, the API does not provide the
+final HTTP headers that are sent to the network. For example all headers that
+are related to caching are invisible to the extension.</p>
+
+<p>This is a list of headers that are currently not provided to the
+onBeforeSendHeaders signal. The list is not guaranteed to be complete nor
+stable:
+</p><ul>
+  <li>Authorization</li>
+  <li>Cache-Control</li>
+  <li>Connection</li>
+  <li>Content-Length</li>
+  <li>Host</li>
+  <li>If-Modified-Since</li>
+  <li>If-None-Match</li>
+  <li>If-Range</li>
+  <li>Partial-Data</li>
+  <li>Pragma</li>
+  <li>Proxy-Authorization</li>
+  <li>Proxy-Connection</li>
+  <li>Transfer-Encoding</li>
+</ul>
+<p></p>
+
+<h2 id="concepts">Concepts of the webRequest API</h2>
+
+<p>The signals of the webRequest API follow certain concepts and patterns that
+shall be described in the following.</p>
+
+<h3 id="Request IDs">Request IDs</h3>
+
+<p>Each request is identified by a request ID. This ID is unique within a
+browser session and the context of an extension. It remains constant during the
+the life-cycle of a request and can be used to match signals for the same
+request.</p>
+
+<h3 id="subscription">Subscription</h3>
+
+<p>For each signal XXX of the webRequest API, the API provides a function
+<code>chrome.experimental.webRequest.XXX.addListener()</code> with the following
+signature.</p>
+
+<pre>var callback = function(details) {...};
+var opt_filter = {...};
+var opt_extraInfoSpec = [...];
+
+chrome.experimental.webRequest.XXX.addListener(
+  callback, opt_filter, opt_extraInfoSpec);
+</pre>
+
+<p>Each <code>addListener()</code> call takes a mandatory callback function as
+the first parameter. This callback function is passed a dictionary containing
+information about the current URL request. The information in this dictionary
+depends on the specific event type as well as the content of
+<code>opt_extraInfoSpec</code>.</p>
+
+<p>If the optional <code>opt_extraInfoSpec</code> array contains the string
+<code>'blocking'</code> (only allowed for specific signals), the callback
+function is handled synchronously. That means that the request is blocked until
+the callback function returns. In this case, the callback can return a <a href="#type-BlockingResponse">BlockingResponse</a> that determines the further
+life-cycle of the request. Depending on the context, this response allows
+cancelling or redirecting a request (onBeforeRequest), or cancelling or modifying
+headers (onBeforeSendHeaders).</p>
+
+<p>Depending on the specific signal, <code>opt_extraInfoSpec</code> may contain
+further strings that indicate that specific information shall be passed to the
+extension. This is used to provide detailed information on requests data only if
+explicitly requested.</p>
+
+<p>The optional <a href="#type-RequestFilter">RequestFilter</a>
+<code>opt_filter</code> allows to limit the requests for which events are
+triggered in various dimensions:
+</p><dl>
+  <dt>URLs</dt>
+  <dd>URL patterns like <code>*://www.google.com/foo*bar</code>.</dd>
+  <dt>Types</dt>
+  <dd>Request types like <code>main_frame</code> (a document that is loaded for
+  a top-level frame), <code>sub_frame</code> (a document that is loaded for an
+  embedded frame), <code>image</code> (an image on a web site) and others. See
+  <a href="#type-RequestFilter">RequestFilter</a>.</dd>
+  <dt>Tab IDs</dt>
+  <dd>The ID that identifies a specific tab in a window.</dd>
+  <dt>Window IDs</dt>
+  <dd>The ID that identifies a specific window.</dd>
+<p></p>
+
+<h2 id="conflict_resolution">Conflict resolution</h2>
+
+<p>In the current implementation of the webRequest API, a request is considered
+as canceled if at least one extension instructs to cancel the request. If
+an extension cancels a request, all extensions are notified by an
+onErrorOccurred event. Only one extension is allowed to redirect a request or
+modify a header at a time. If more than one extension attempts to modify the
+request, the most recently installed extension wins while all others are
+ignored. An extension is currently not notified, if its instruction to modify or
+redirect has been ignored.</p>
+
+<a name="H2-6"></a><h2>A note about timestamps</h2>
 <p>
 It's important to note that some technical oddities in the OS's handling
 of distinct Chrome processes can cause the clock to be skewed between the
@@ -351,8 +574,82 @@ offset between them, but comparing them to the current time inside the
 extension (via <code>(new Date()).getTime()</code>, for instance) might give
 unexpected results.
 </p>
+
+<h2 id="examples">Examples</h2>
+
+<p>The following example illustrates how to block all requests to
+<code>www.evil.com</code>:</p>
+<pre>chrome.experimental.webRequest.onBeforeRequest.addListener(
+  function(details) {
+    return {cancel: details.url.indexOf("://www.evil.com/") != -1};
+  },
+  {},
+  ["blocking"]);
+</pre>
+
+<p>The following example achives the same goal in a more efficient way because
+requests that are not targeted to <code>www.evil.com</code> do not need to be
+passed to the extension:</p>
+<pre>chrome.experimental.webRequest.onBeforeRequest.addListener(
+  function(details) { return {cancel: true}; },
+  {"*://www.evil.com/*"},
+  ["blocking"]);
+</pre>
+
+<p>The following example illustrates how the User-Agent header can be deleted
+from all requests:</p>
+<pre>chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+  function(details) {
+    delete details.requestHeaders['User-Agent'];
+    return {requestHeaders: details.requestHeaders};
+  },
+  {},
+  ["blocking"]);
+</pre>
+
+<h3 id="tracking_frames">Tracking frames</h3>
+<p>For efficiency reason, the webRequest API does not pass the URL of the frame
+that issued a request to each request. If this information is required, for
+example to distinguish between first and third party requests, this example
+shows how to track the URLs of frames.</p>
+<pre>// dictionary "windowId" -&gt; "tabId"-"frameId" -&gt; "frameUrl"
+var frameUrl = {};
+
+function recordFrameUrl(windowId, tabId, frameId, frameUrl) {
+  if (!frameUrl[windowId]) {
+    frameUrl[windowId] = {};
+  }
+  frameUrl[windowId][tabId + "-" + frameId] = frameUrl;
+}
+
+function getFrameUrl(windowId, tabId, frameId, frameUrl) {
+  return (frameUrl[windowId] || {})[tabId + "-" + frameId];
+}
+
+chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+  function(d) {
+    if (d.type == 'main_frame' || d.type == 'sub_frame') {
+      recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);
+    }
+    var frameUrl = getFrameUrl(d.windowId, d.tabId, d.frameId);
+    // Use the frameUrl e.g. to selectively cancel requests.
+    // Attention: The frameUrl be undefined in some cases. Requests may not
+    // originate from a frame (e.g. requests from extensions or shared workers).
+  });
+
+chrome.experimental.webRequest.onBeforeRedirect.addListener(
+  function(d) {
+    if (d.type == 'main_frame' || d.type == 'sub_frame') {
+      recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);
+    }
+  });
+
+chrome.windows.onRemoved.addListener(
+  function(windowId) {delete frameUrl[windowId];}
+  );
+</pre>
 <!-- END AUTHORED CONTENT -->
-</div>
+</dl></div>
 
         <!-- API PAGE -->
         <div class="apiPage">
