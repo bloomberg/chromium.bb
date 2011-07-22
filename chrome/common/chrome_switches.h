@@ -352,6 +352,7 @@ extern const char kTouchDevices[];
 #endif
 
 #ifndef NDEBUG
+extern const char kOAuthHostUrl[];
 extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];

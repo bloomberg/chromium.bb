@@ -41,6 +41,18 @@ class Profile;
 class GaiaOAuthFetcher : public URLFetcher::Delegate,
                          public NotificationObserver {
  public:
+  // Defines steps of OAuth process performed by this class.
+  typedef enum {
+    OAUTH1_REQUEST_TOKEN        = 1 << 0,
+    OAUTH1_ALL_ACCESS_TOKEN     = 1 << 1,
+    OAUTH2_SERVICE_ACCESS_TOKEN = 1 << 2,
+    USER_INFO                   = 1 << 3,
+    ALL_OAUTH_STEPS             = OAUTH1_REQUEST_TOKEN |
+                                  OAUTH1_ALL_ACCESS_TOKEN |
+                                  OAUTH2_SERVICE_ACCESS_TOKEN |
+                                  USER_INFO,
+  } AutoFetchFlags;
+
   GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                    net::URLRequestContextGetter* getter,
                    Profile* profile,
@@ -48,11 +60,20 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
 
   virtual ~GaiaOAuthFetcher();
 
+  // Sets the mask of which OAuth fetch steps should be automatically kicked
+  // of upon successful completition of the previous steps. By default,
+  // this class will chain all steps in OAuth proccess.
+  void SetAutoFetchMask(int mask) { auto_fetch_mask_ = mask; }
+
   // Obtains an OAuth 1 request token
   //
   // Pops up a window aimed at the Gaia OAuth URL for GetOAuthToken and then
   // listens for COOKIE_CHANGED notifications
   virtual void StartGetOAuthToken();
+
+  // Non-UI version of the method above. Initiates Gaia OAuth request token
+  // retrieval.
+  void StartGetOAuthTokenRequest();
 
   // Obtains an OAuth1 access token and secret
   //
@@ -110,8 +131,13 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   virtual void CancelRequest();
 
  private:
-  // Process the results of a GetOAuthToken fetch.
+  // Process the results of a GetOAuthToken fetch via UI.
   virtual void OnGetOAuthTokenFetched(const std::string& token);
+
+  // Process the results of a GetOAuthToken fetch for non-UI driven path.
+  virtual void OnGetOAuthTokenUrlFetched(const net::ResponseCookies& cookies,
+                                         const net::URLRequestStatus& status,
+                                         int response_code);
 
   // Process the results of a OAuthGetAccessToken fetch.
   virtual void OnOAuthGetAccessTokenFetched(const std::string& data,
@@ -127,6 +153,10 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   virtual void OnUserInfoFetched(const std::string& data,
                                  const net::URLRequestStatus& status,
                                  int response_code);
+
+  // Tokenize the results of a GetOAuthToken fetch.
+  static void ParseGetOAuthTokenResponse(const std::string& data,
+                                         std::string* token);
 
   // Tokenize the results of a OAuthGetAccessToken fetch.
   static void ParseOAuthGetAccessTokenResponse(const std::string& data,
@@ -147,6 +177,10 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
       const std::string& data,
       const net::URLRequestStatus& status);
 
+  // Given parameters, create a OAuth v1 request URL.
+  static GURL MakeGetOAuthTokenUrl(const char* auth1LoginScope,
+                                   const std::string& product_name);
+
   // Given parameters, create a OAuthGetAccessToken request body.
   static std::string MakeOAuthGetAccessTokenBody(
       const std::string& oauth1_request_token);
@@ -166,7 +200,10 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
                                        const GURL& gaia_gurl_,
                                        const std::string& body,
                                        const std::string& headers,
+                                       bool send_cookies,
                                        URLFetcher::Delegate* delegate);
+
+  bool ShouldFetch(AutoFetchFlags fetch_flag);
 
   // These fields are common to GaiaOAuthFetcher, same every request
   GaiaOAuthConsumer* const consumer_;
@@ -181,6 +218,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   std::string request_body_;
   std::string request_headers_;
   bool fetch_pending_;
+  int auto_fetch_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaOAuthFetcher);
 };

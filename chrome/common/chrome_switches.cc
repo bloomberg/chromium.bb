@@ -1194,6 +1194,9 @@ const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 #ifndef NDEBUG
+// URL of the OAuth server host
+const char kOAuthHostUrl[]                  = "oauth-host-url";
+
 // Clear the token service before using it.  This allows simulating
 // the expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
