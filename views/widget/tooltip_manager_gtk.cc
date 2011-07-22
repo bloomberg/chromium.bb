@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/screen.h"
 #include "views/focus/focus_manager.h"
+#include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/native_widget_gtk.h"
 
@@ -64,7 +64,7 @@ const std::wstring& TooltipManager::GetLineSeparator() {
 // static
 int TooltipManager::GetMaxWidth(int x, int y) {
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+      Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
   // GtkLabel (gtk_label_ensure_layout) forces wrapping at this size. We mirror
   // the size here otherwise tooltips wider than the size used by gtklabel end
   // up with extraneous empty lines.

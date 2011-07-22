@@ -13,10 +13,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/screen.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/focus/focus_manager.h"
+#include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
@@ -57,7 +57,7 @@ int TooltipManager::GetMaxWidth(int x, int y) {
   // We always display the tooltip inside the root view. So the max width is
   // the width of the view.
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+      Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
   // GtkLabel (gtk_label_ensure_layout) forces wrapping at this size. We mirror
   // the size here otherwise tooltips wider than the size used by gtklabel end
   // up with extraneous empty lines.
@@ -179,7 +179,7 @@ void TooltipManagerViews::SetTooltipBounds(gfx::Point mouse_pos,
 
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(tooltip_rect.origin());
+      Screen::GetMonitorAreaNearestPoint(tooltip_rect.origin());
   tooltip_widget_->SetBounds(tooltip_rect.AdjustToFit(monitor_bounds));
 }
 

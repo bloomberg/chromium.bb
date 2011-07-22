@@ -12,11 +12,11 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/screen.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/drag_utils.h"
+#include "views/screen.h"
 #include "views/view_constants.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
@@ -1036,7 +1036,7 @@ void MenuController::UpdateInitialLocation(
 
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
-  pending_state_.monitor_bounds = gfx::Screen::GetMonitorWorkAreaNearestPoint(
+  pending_state_.monitor_bounds = Screen::GetMonitorWorkAreaNearestPoint(
       bounds.origin());
 }
 
@@ -1064,8 +1064,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
     return false;
   }
 
-  gfx::NativeWindow window_under_mouse =
-      gfx::Screen::GetWindowAtCursorScreenPoint();
+  gfx::NativeWindow window_under_mouse = Screen::GetWindowAtCursorScreenPoint();
   if (window_under_mouse != owner_)
     return false;
 

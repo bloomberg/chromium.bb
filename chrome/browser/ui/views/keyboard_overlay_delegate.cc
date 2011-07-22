@@ -13,7 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/screen.h"
+#include "views/screen.h"
 
 
 static const int kBaseWidth = 1252;
@@ -50,7 +50,7 @@ void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
   using std::min;
   DCHECK(view_);
-  gfx::Rect rect = gfx::Screen::GetMonitorAreaNearestWindow(
+  gfx::Rect rect = views::Screen::GetMonitorAreaNearestWindow(
       view_->native_view());
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
