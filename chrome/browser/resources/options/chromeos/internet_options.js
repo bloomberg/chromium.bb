@@ -294,6 +294,9 @@ cr.define('options', function() {
     var data = $('connectionState').data;
     var servicePath = data.servicePath;
     if (data.type == options.internet.Constants.TYPE_WIFI) {
+      chrome.send('setPreferNetwork',
+                   [String(servicePath),
+                    $('preferNetworkWifi').checked ? "true" : "false"]);
       chrome.send('setAutoConnect',
                   [String(servicePath),
                    $('autoConnectNetworkWifi').checked ? "true" : "false"]);
@@ -518,6 +521,8 @@ cr.define('options', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
       $('inetSsid').textContent = data.ssid;
+      $('preferNetworkWifi').checked = data.preferred;
+      $('preferNetworkWifi').disabled = !data.remembered;
       $('autoConnectNetworkWifi').checked = data.autoConnect;
       $('autoConnectNetworkWifi').disabled = !data.remembered;
       $('sharedNetwork').checked = data.shared;

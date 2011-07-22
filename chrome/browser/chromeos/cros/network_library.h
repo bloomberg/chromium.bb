@@ -219,6 +219,11 @@ static const int kCellularDataLowBytes = 100 * 1024 * 1024;
 // Cellular network is considered very low data when less than 50MB.
 static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 
+// The value of priority if it is not set.
+const int kPriorityNotSet = 0;
+// The value of priority if network is preferred.
+const int kPriorityPreferred = 1;
+
 // Contains data related to the flimflam.Device interface,
 // e.g. ethernet, wifi, cellular.
 // TODO(dpolukhin): refactor to make base class and device specific derivatives.
@@ -343,7 +348,7 @@ class Network {
   // network traffic is being routed? A network can be connected,
   // but not be carrying traffic.
   bool is_active() const { return is_active_; }
-  bool favorite() const { return favorite_; }
+  bool preferred() const { return priority_ != kPriorityNotSet; }
   bool auto_connect() const { return auto_connect_; }
   bool save_credentials() const { return save_credentials_; }
 
@@ -358,9 +363,7 @@ class Network {
 
   void set_notify_failure(bool state) { notify_failure_ = state; }
 
-  // We don't have a setter for |favorite_| because to unfavorite a network is
-  // equivalent to forget a network, so we call forget network on cros for
-  // that.  See ForgetNetwork().
+  void SetPreferred(bool preferred);
 
   void SetAutoConnect(bool auto_connect);
 
@@ -435,7 +438,7 @@ class Network {
   ConnectionError error_;
   bool connectable_;
   bool is_active_;
-  bool favorite_;
+  int priority_;  // determines order in network list.
   bool auto_connect_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
   std::string proxy_config_;
@@ -491,8 +494,6 @@ class Network {
   friend class NetworkLibraryImplCros;
   friend class NetworkLibraryImplStub;
   DISALLOW_COPY_AND_ASSIGN(Network);
-  // ChangeAutoConnectSaveTest accesses |favorite_|.
-  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
 };
 
 // Class for networks of TYPE_ETHERNET.

@@ -160,6 +160,7 @@ const char kWifiPhyMode[] = "WiFi.PhyMode";
 const char kWifiAuthMode[] = "WiFi.AuthMode";
 const char kFavoriteProperty[] = "Favorite";
 const char kConnectableProperty[] = "Connectable";
+const char kPriorityProperty[] = "Priority";
 const char kAutoConnectProperty[] = "AutoConnect";
 const char kIsActiveProperty[] = "IsActive";
 const char kModeProperty[] = "Mode";
@@ -523,6 +524,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PAYMENT_URL,
   PROPERTY_INDEX_PORTAL_URL,
   PROPERTY_INDEX_POWERED,
+  PROPERTY_INDEX_PRIORITY,
   PROPERTY_INDEX_PRL_VERSION,
   PROPERTY_INDEX_PROFILE,
   PROPERTY_INDEX_PROFILES,
@@ -622,6 +624,7 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] =  {
   { kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
   { kPortalURLProperty, PROPERTY_INDEX_PORTAL_URL },
   { kPoweredProperty, PROPERTY_INDEX_POWERED },
+  { kPriorityProperty, PROPERTY_INDEX_PRIORITY },
   { kProfileProperty, PROPERTY_INDEX_PROFILE },
   { kProfilesProperty, PROPERTY_INDEX_PROFILES },
   { kProviderProperty, PROPERTY_INDEX_PROVIDER },
@@ -1118,7 +1121,7 @@ Network::Network(const std::string& service_path, ConnectionType type)
       error_(ERROR_NO_ERROR),
       connectable_(true),
       is_active_(false),
-      favorite_(false),
+      priority_(kPriorityNotSet),
       auto_connect_(false),
       save_credentials_(false),
       priority_order_(0),
@@ -1210,7 +1213,10 @@ bool Network::ParseValue(int index, const Value* value) {
     case PROPERTY_INDEX_IS_ACTIVE:
       return value->GetAsBoolean(&is_active_);
     case PROPERTY_INDEX_FAVORITE:
-      return value->GetAsBoolean(&favorite_);
+      // Not used currently.
+      return true;
+    case PROPERTY_INDEX_PRIORITY:
+      return value->GetAsInteger(&priority_);
     case PROPERTY_INDEX_AUTO_CONNECT:
       return value->GetAsBoolean(&auto_connect_);
     case PROPERTY_INDEX_SAVE_CREDENTIALS:
@@ -1224,6 +1230,9 @@ bool Network::ParseValue(int index, const Value* value) {
 }
 
 void Network::ParseInfo(const DictionaryValue* info) {
+  // Set default values for properties that may not exist in the dictionary.
+  priority_ = kPriorityNotSet;
+
   for (DictionaryValue::key_iterator iter = info->begin_keys();
        iter != info->end_keys(); ++iter) {
     const std::string& key = *iter;
@@ -1302,6 +1311,15 @@ void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
     *dest = i;
   scoped_ptr<Value> value(Value::CreateIntegerValue(i));
   SetValueProperty(prop, value.get());
+}
+
+void Network::SetPreferred(bool preferred) {
+  if (preferred) {
+    SetIntegerProperty(kPriorityProperty, kPriorityPreferred, &priority_);
+  } else {
+    ClearProperty(kPriorityProperty);
+    priority_ = kPriorityNotSet;
+  }
 }
 
 void Network::SetAutoConnect(bool auto_connect) {

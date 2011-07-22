@@ -75,6 +75,7 @@ class InternetOptionsHandler
       const chromeos::CellularNetwork* cellular,
       base::DictionaryValue* dictionary);
 
+  void SetPreferNetworkCallback(const base::ListValue* args);
   void SetAutoConnectCallback(const base::ListValue* args);
   void SetSharedCallback(const base::ListValue* args);
   void SetIPConfigCallback(const base::ListValue* args);

@@ -10825,6 +10825,9 @@ ls' lab.">
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings Internet options, the label for the bad WEP key.">
         Password format is incorrect.
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK" desc="In settings Internet options, the label for prefer network checkbox.">
+        Prefer this network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings Internet options, the label for the auto-connect checkbox.">
         Automatically connect to this network
       </message>

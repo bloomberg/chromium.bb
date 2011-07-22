@@ -176,6 +176,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetPassProtected",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
+  localized_strings->SetString("inetPreferredNetwork",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK));
   localized_strings->SetString("inetAutoConnectNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
@@ -359,6 +362,8 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
   web_ui_->RegisterMessageCallback("refreshCellularPlan",
       NewCallback(this, &InternetOptionsHandler::RefreshCellularPlanCallback));
+  web_ui_->RegisterMessageCallback("setPreferNetwork",
+      NewCallback(this, &InternetOptionsHandler::SetPreferNetworkCallback));
   web_ui_->RegisterMessageCallback("setAutoConnect",
       NewCallback(this, &InternetOptionsHandler::SetAutoConnectCallback));
   web_ui_->RegisterMessageCallback("setShared",
@@ -581,6 +586,26 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
   return plan_dict;
 }
 
+void InternetOptionsHandler::SetPreferNetworkCallback(const ListValue* args) {
+  std::string service_path;
+  std::string prefer_network_str;
+
+  if (args->GetSize() < 2 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &prefer_network_str)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::Network* network = cros_->FindNetworkByPath(service_path);
+  if (!network)
+    return;
+
+  bool prefer_network = prefer_network_str == "true";
+  if (prefer_network != network->preferred())
+    network->SetPreferred(prefer_network);
+}
+
 void InternetOptionsHandler::SetAutoConnectCallback(const ListValue* args) {
   std::string service_path;
   std::string auto_connect_str;
@@ -705,6 +730,9 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
       (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
 
+  dictionary.SetBoolean("preferred", network->preferred());
+  dictionary.SetBoolean("autoConnect", network->auto_connect());
+
   if (type == chromeos::TYPE_WIFI) {
     dictionary.SetBoolean("deviceConnected", cros_->wifi_connected());
     const chromeos::WifiNetwork* wifi =
@@ -757,7 +785,6 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetString("ssid", wifi->name());
   bool remembered = (wifi->profile_type() != chromeos::PROFILE_NONE);
   dictionary->SetBoolean("remembered", remembered);
-  dictionary->SetBoolean("autoConnect", wifi->auto_connect());
   dictionary->SetBoolean("encrypted", wifi->encrypted());
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
@@ -806,8 +833,6 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->Set("apn", CreateDictionaryFromCellularApn(cellular->apn()));
   dictionary->Set("lastGoodApn",
                   CreateDictionaryFromCellularApn(cellular->last_good_apn()));
-
-  dictionary->SetBoolean("autoConnect", cellular->auto_connect());
 
   // Device settings.
   const chromeos::NetworkDevice* device =
