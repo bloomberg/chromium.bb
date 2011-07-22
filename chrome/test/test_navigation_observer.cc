@@ -84,6 +84,6 @@ void TestNavigationObserver::Observe(
       }
       break;
     default:
-      assert(false);
+      NOTREACHED();
   }
 }
