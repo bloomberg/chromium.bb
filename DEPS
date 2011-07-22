@@ -8,8 +8,8 @@ vars = {
   # chrome_rev should match LKGR so that we can download the binaries,
   # but sometimes chrome_rev_ppapi needs to be more recent to get the
   # latest Pepper changes when LKGR is lagging too far back.
-  "chrome_rev": "93360",
-  "chrome_ppapi_rev": "93360",
+  "chrome_rev": "93614",
+  "chrome_ppapi_rev": "93614",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "gtest_rev": "364",
   "gyp_rev": "906",
