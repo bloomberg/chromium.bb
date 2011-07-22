@@ -1543,64 +1543,73 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
+
+  // Add a third credit card where the expiration date is missing.
+  FormData form3;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Johnny McEnroe", "text", &field);
+  form3.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "5555555555554444", "text", &field);
+  form3.fields.push_back(field);
+  // Note missing expiration month and year..
+
+  FormStructure form_structure3(form3);
+  form_structure3.DetermineHeuristicTypes();
+  EXPECT_FALSE(personal_data_->ImportFormData(form_structure3,
+                                              &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  // Note: no refresh here.
+
+  // No change is expected.
+  CreditCard expected3;
+  autofill_test::SetCreditCardInfo(&expected3,
+      "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results3.size());
+  EXPECT_EQ(0, expected3.Compare(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
-  FormData form1;
-
-  // Start with a single valid credit card form.
-  webkit_glue::FormField field;
-  // Note missing name.
-  autofill_test::CreateTestFormField(
-      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Month:", "exp_month", "01", "text", &field);
-  form1.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
-  form1.fields.push_back(field);
-
-  FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes();
-  const CreditCard* imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
-                                             &imported_credit_card));
-  ASSERT_TRUE(imported_credit_card);
-  personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
+  // Start with a single valid credit card stored via the preferences.
+  // Note the empty name.
+  CreditCard saved_credit_card;
+  autofill_test::SetCreditCardInfo(&saved_credit_card,
+      "", "4111111111111111" /* Visa */, "01", "2011");
+  personal_data_->AddCreditCard(saved_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  CreditCard expected;
-  autofill_test::SetCreditCardInfo(&expected,
-      NULL, "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
-  ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(0, expected.Compare(*results[0]));
+  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results1.size());
+  EXPECT_EQ(saved_credit_card, *results1[0]);
+
 
   // Add a second different valid credit card where the year is different but
   // the credit card number matches.
-  FormData form2;
+  FormData form;
+  webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
-  form2.fields.push_back(field);
+  form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
-  form2.fields.push_back(field);
+  form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Exp Month:", "exp_month", "01", "text", &field);
-  form2.fields.push_back(field);
+  form.fields.push_back(field);
   autofill_test::CreateTestFormField(
-      "Exp Year:", "exp_year", "2011", "text", &field);
-  form2.fields.push_back(field);
+      "Exp Year:", "exp_year", "2012", "text", &field);
+  form.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
@@ -1615,7 +1624,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // added to the existing credit card.
   CreditCard expected2;
   autofill_test::SetCreditCardInfo(&expected2,
-      "Biggie Smalls", "4111111111111111", "01", "2011");
+      "Biggie Smalls", "4111111111111111", "01", "2012");
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));

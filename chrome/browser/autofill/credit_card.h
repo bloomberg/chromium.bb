@@ -76,6 +76,9 @@ class CreditCard : public FormGroup {
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;
 
+  // Returns true if all field types have valid values set.
+  bool IsComplete() const;
+
   // Returns the credit card number.
   const string16& number() const { return number_; }
 

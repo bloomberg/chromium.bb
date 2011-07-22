@@ -27,10 +27,6 @@
 
 namespace {
 
-// The minimum number of fields that must contain relevant user data before
-// Autofill will attempt to import the data into a credit card.
-const int kMinCreditCardImportSize = 2;
-
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -313,9 +309,7 @@ bool PersonalDataManager::ImportFormData(
   // Reject the credit card if we did not detect enough filled credit card
   // fields or if the credit card number does not seem to be valid.
   if (local_imported_credit_card.get() &&
-      (importable_credit_card_fields < kMinCreditCardImportSize ||
-       !CreditCard::IsValidCreditCardNumber(
-           local_imported_credit_card->GetInfo(CREDIT_CARD_NUMBER)))) {
+      !local_imported_credit_card->IsComplete()) {
     local_imported_credit_card.reset();
   }
 
