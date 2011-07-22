@@ -19,7 +19,7 @@ class WebThemeEngineImpl : public WebKit::WebThemeEngine {
       WebKit::WebThemeEngine::State,
       const WebKit::WebRect&,
       const WebKit::WebThemeEngine::ExtraParams*);
-  virtual int getPopupListBoxMinimumRowHeight() const;
+  virtual int popupListBoxMinimumRowHeight() const;
 };
 
 }  // namespace webkit_glue
