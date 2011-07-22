@@ -633,6 +633,15 @@ ProfileImpl::~ProfileImpl() {
       Source<Profile>(this),
       NotificationService::NoDetails());
 
+  if (appcache_service_ && clear_local_state_on_exit_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            appcache_service_.get(),
+            &appcache::AppCacheService::set_clear_local_state_on_exit,
+            true));
+  }
+
   StopCreateSessionServiceTimer();
 
   // Remove pref observers
@@ -1400,8 +1409,7 @@ void ProfileImpl::CreateQuotaManagerAndClients() {
           IsOffTheRecord()
               ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
           &GetResourceContext(),
-          make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
-          clear_local_state_on_exit_));
+          make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
@@ -1454,10 +1462,6 @@ void ProfileImpl::Observe(int type,
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);
         if (webkit_context_) {
           webkit_context_->set_clear_local_state_on_exit(
-              clear_local_state_on_exit_);
-        }
-        if (appcache_service_) {
-          appcache_service_->SetClearLocalStateOnExit(
               clear_local_state_on_exit_);
         }
         if (db_tracker_) {

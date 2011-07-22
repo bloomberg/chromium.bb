@@ -158,8 +158,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   std::deque<Task*> pending_simple_tasks_;
   ScopedRunnableMethodFactory<AppCacheStorageImpl> method_factory_;
 
-  FRIEND_TEST_ALL_PREFIXES(ChromeAppCacheServiceTest, KeepOnDestruction);
-  FRIEND_TEST_ALL_PREFIXES(ChromeAppCacheServiceTest, RemoveOnDestruction);
+  friend class ChromeAppCacheServiceTest;
 };
 
 }  // namespace appcache

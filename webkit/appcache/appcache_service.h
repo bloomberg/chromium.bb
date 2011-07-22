@@ -132,6 +132,10 @@ class AppCacheService {
 
   AppCacheStorage* storage() const { return storage_.get(); }
 
+  bool clear_local_state_on_exit() const { return clear_local_state_on_exit_; }
+  void set_clear_local_state_on_exit(bool clear_local_state_on_exit) {
+    clear_local_state_on_exit_ = clear_local_state_on_exit; }
+
  protected:
   friend class AppCacheStorageImplTest;
   friend class AppCacheServiceTest;
@@ -154,6 +158,7 @@ class AppCacheService {
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;
+  bool clear_local_state_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };

@@ -13,9 +13,7 @@
 #include "chrome/test/testing_profile.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/appcache/appcache.h"
-#include "webkit/appcache/appcache_group.h"
-#include "webkit/appcache/appcache_storage.h"
+#include "webkit/appcache/appcache_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -166,92 +164,6 @@ class RemoveFileSystemTester : public BrowsingDataRemoverTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveFileSystemTester);
 };
 
-// Helper class for injecting data into AppCacheStorage.
-class AppCacheInserter : public appcache::AppCacheStorage::Delegate {
- public:
-  AppCacheInserter()
-      : group_id_(0),
-        appcache_id_(0),
-        response_id_(0) {}
-  virtual ~AppCacheInserter() {}
-
-  virtual void OnGroupAndNewestCacheStored(
-      appcache::AppCacheGroup* /*group*/,
-      appcache::AppCache* /*newest_cache*/,
-      bool success,
-      bool /*would_exceed_quota*/) {
-    ASSERT_TRUE(success);
-    MessageLoop::current()->Quit();
-  }
-
-  void AddGroupAndCache(ChromeAppCacheService* appcache_service,
-                        const GURL& manifest_url) {
-    appcache::AppCacheGroup* appcache_group =
-        new appcache::AppCacheGroup(appcache_service,
-                                    manifest_url,
-                                    ++group_id_);
-    appcache::AppCache* appcache = new appcache::AppCache(appcache_service,
-                                                          ++appcache_id_);
-    appcache::AppCacheEntry entry(appcache::AppCacheEntry::MANIFEST,
-                                  ++response_id_);
-    appcache->AddEntry(manifest_url, entry);
-    appcache->set_complete(true);
-    appcache_group->AddCache(appcache);
-    appcache_service->storage()->StoreGroupAndNewestCache(appcache_group,
-                                                          appcache,
-                                                          this);
-    // OnGroupAndNewestCacheStored will quit the message loop.
-    MessageLoop::current()->Run();
-  }
-
- private:
-  int group_id_;
-  int appcache_id_;
-  int response_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppCacheInserter);
-};
-
-// Helper class for reading appcaches.
-class AppCacheReader {
- public:
-  explicit AppCacheReader(ChromeAppCacheService* appcache_service)
-    : appcache_service_(appcache_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(appcache_got_info_callback_(
-          this, &AppCacheReader::OnGotAppCacheInfo)) {
-  }
-
-  std::set<GURL>* ReadAppCaches() {
-    appcache_info_ = new appcache::AppCacheInfoCollection;
-    appcache_service_->GetAllAppCacheInfo(
-        appcache_info_, &appcache_got_info_callback_);
-
-    MessageLoop::current()->Run();
-    return &origins_;
-  }
-
- private:
-  void OnGotAppCacheInfo(int rv) {
-    typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
-
-    origins_.clear();
-    for (InfoByOrigin::const_iterator origin =
-             appcache_info_->infos_by_origin.begin();
-         origin != appcache_info_->infos_by_origin.end(); ++origin) {
-      origins_.insert(origin->first);
-    }
-    MessageLoop::current()->Quit();
-  }
-
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-  net::CompletionCallbackImpl<AppCacheReader>
-      appcache_got_info_callback_;
-  scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
-  std::set<GURL> origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppCacheReader);
-};
-
 class BrowsingDataRemoverTest : public testing::Test {
  public:
   BrowsingDataRemoverTest()
@@ -374,24 +286,23 @@ TEST_F(BrowsingDataRemoverTest, RemoveAppCacheForever) {
                         &ChromeAppCacheService::InitializeOnIOThread,
                         FilePath(),
                         resource_context,
-                        mock_policy,
-                        false));
+                        mock_policy));
   MessageLoop::current()->RunAllPending();
   TestingProfile* profile = GetProfile();
   profile->SetAppCacheService(appcache_service);
   profile->SetExtensionSpecialStoragePolicy(mock_policy);
 
   // Add data into the AppCacheStorage.
-  AppCacheInserter appcache_inserter;
-  appcache_inserter.AddGroupAndCache(appcache_service, kNormalManifest);
-  appcache_inserter.AddGroupAndCache(appcache_service, kProtectedManifest);
+  appcache::AppCacheTestHelper appcache_helper;
+  appcache_helper.AddGroupAndCache(appcache_service, kNormalManifest);
+  appcache_helper.AddGroupAndCache(appcache_service, kProtectedManifest);
 
   // Verify that adding the data succeeded.
-  AppCacheReader reader(appcache_service);
-  std::set<GURL>* origins = reader.ReadAppCaches();
-  EXPECT_EQ(2UL, origins->size());
-  EXPECT_TRUE(origins->find(kProtectedManifest.GetOrigin()) != origins->end());
-  EXPECT_TRUE(origins->find(kNormalManifest.GetOrigin()) != origins->end());
+  std::set<GURL> origins;
+  appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
+  EXPECT_EQ(2UL, origins.size());
+  EXPECT_TRUE(origins.find(kProtectedManifest.GetOrigin()) != origins.end());
+  EXPECT_TRUE(origins.find(kNormalManifest.GetOrigin()) != origins.end());
 
   // Set up the object to be tested.
   scoped_ptr<BrowsingDataRemoverTester> tester(new BrowsingDataRemoverTester());
@@ -406,9 +317,9 @@ TEST_F(BrowsingDataRemoverTest, RemoveAppCacheForever) {
 
   // Results: appcaches for the normal origin got deleted, appcaches for the
   // protected origin didn't.
-  origins = reader.ReadAppCaches();
-  EXPECT_EQ(1UL, origins->size());
-  EXPECT_TRUE(origins->find(kProtectedManifest.GetOrigin()) != origins->end());
+  appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
+  EXPECT_EQ(1UL, origins.size());
+  EXPECT_TRUE(origins.find(kProtectedManifest.GetOrigin()) != origins.end());
 }
 
 }  // namespace

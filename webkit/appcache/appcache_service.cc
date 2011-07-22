@@ -273,7 +273,7 @@ void AppCacheService::GetInfoHelper::OnAllInfo(
 AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
     : appcache_policy_(NULL), quota_client_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(NULL)  {
+      request_context_(NULL), clear_local_state_on_exit_(false)  {
   if (quota_manager_proxy_) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);
@@ -288,6 +288,10 @@ AppCacheService::~AppCacheService() {
   STLDeleteElements(&pending_helpers_);
   if (quota_client_)
     quota_client_->NotifyAppCacheDestroyed();
+
+  // Destroy storage_ first; ~AppCacheStorageImpl accesses other data members
+  // (special_storage_policy_).
+  storage_.reset();
 }
 
 void AppCacheService::Initialize(const FilePath& cache_directory,

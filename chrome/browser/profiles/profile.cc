@@ -752,8 +752,7 @@ class OffTheRecordProfileImpl : public Profile,
             IsOffTheRecord()
                 ? FilePath() : GetPath().Append(chrome::kAppCacheDirname),
             &GetResourceContext(),
-            make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
-            false));
+            make_scoped_refptr(GetExtensionSpecialStoragePolicy())));
   }
 
   NotificationRegistrar registrar_;

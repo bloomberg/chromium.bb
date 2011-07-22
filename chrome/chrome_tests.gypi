@@ -219,6 +219,10 @@
         '../content/renderer/mock_content_renderer_client.cc',
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
+        '../webkit/appcache/appcache_test_helper.cc',
+        '../webkit/appcache/appcache_test_helper.h',
+        '../webkit/quota/mock_special_storage_policy.cc',
+        '../webkit/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
         ['chromeos==0', {

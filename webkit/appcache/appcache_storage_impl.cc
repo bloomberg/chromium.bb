@@ -29,13 +29,6 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
-namespace {
-// Helper with no return value for use with NewRunnableFunction.
-void DeleteDirectory(const FilePath& path) {
-  file_util::Delete(path, true);
-}
-}
-
 namespace appcache {
 
 // Hard coded default when not using quota management.
@@ -45,6 +38,76 @@ static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
 static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 static const FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
+
+namespace {
+// Helper with no return value for use with NewRunnableFunction.
+void DeleteDirectory(const FilePath& path) {
+  file_util::Delete(path, true);
+}
+
+// Helpers for clearing data from the AppCacheDatabase.
+bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
+                                  int64 group_id,
+                                  std::vector<int64>* deletable_response_ids) {
+  AppCacheDatabase::CacheRecord cache_record;
+  bool success = false;
+  if (database->FindCacheForGroup(group_id, &cache_record)) {
+    database->FindResponseIdsForCacheAsVector(cache_record.cache_id,
+                                              deletable_response_ids);
+    success =
+        database->DeleteGroup(group_id) &&
+        database->DeleteCache(cache_record.cache_id) &&
+        database->DeleteEntriesForCache(cache_record.cache_id) &&
+        database->DeleteFallbackNameSpacesForCache(cache_record.cache_id) &&
+        database->DeleteOnlineWhiteListForCache(cache_record.cache_id) &&
+        database->InsertDeletableResponseIds(*deletable_response_ids);
+  } else {
+    NOTREACHED() << "A existing group without a cache is unexpected";
+    success = database->DeleteGroup(group_id);
+  }
+  return success;
+}
+
+void ClearOnExit(
+    AppCacheDatabase* database,
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
+  std::set<GURL> origins;
+  database->FindOriginsWithGroups(&origins);
+  if (origins.empty())
+    return;  // nothing to delete
+
+  sql::Connection* connection = database->db_connection();
+  if (!connection) {
+    NOTREACHED() << "Missing database connection.";
+    return;
+  }
+
+  std::set<GURL>::const_iterator origin;
+  for (origin = origins.begin(); origin != origins.end(); ++origin) {
+    if (special_storage_policy &&
+        special_storage_policy->IsStorageProtected(*origin))
+      continue;
+
+    std::vector<AppCacheDatabase::GroupRecord> groups;
+    database->FindGroupsForOrigin(*origin, &groups);
+    std::vector<AppCacheDatabase::GroupRecord>::const_iterator group;
+    for (group = groups.begin(); group != groups.end(); ++group) {
+      sql::Transaction transaction(connection);
+      if (!transaction.Begin()) {
+        NOTREACHED() << "Failed to start transaction";
+        return;
+      }
+      std::vector<int64> deletable_response_ids;
+      bool success = DeleteGroupAndRelatedRecords(database,
+                                                  group->group_id,
+                                                  &deletable_response_ids);
+      success = success && transaction.Commit();
+      DCHECK(success);
+    }  // for each group
+  }  // for each origin
+}
+
+}  // namespace
 
 // DatabaseTask -----------------------------------------
 
@@ -941,22 +1004,9 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
   }
 
   DCHECK_EQ(group_record.origin, origin_);
-
-  AppCacheDatabase::CacheRecord cache_record;
-  if (database_->FindCacheForGroup(group_id_, &cache_record)) {
-    database_->FindResponseIdsForCacheAsVector(cache_record.cache_id,
-                                               &newly_deletable_response_ids_);
-    success_ =
-        database_->DeleteGroup(group_id_) &&
-        database_->DeleteCache(cache_record.cache_id) &&
-        database_->DeleteEntriesForCache(cache_record.cache_id) &&
-        database_->DeleteFallbackNameSpacesForCache(cache_record.cache_id) &&
-        database_->DeleteOnlineWhiteListForCache(cache_record.cache_id) &&
-        database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
-  } else {
-    NOTREACHED() << "A existing group without a cache is unexpected";
-    success_ = database_->DeleteGroup(group_id_);
-  }
+  success_ = DeleteGroupAndRelatedRecords(database_,
+                                          group_id_,
+                                          &newly_deletable_response_ids_);
 
   new_origin_usage_ = database_->GetOriginUsage(origin_);
   success_ = success_ && transaction.Commit();
@@ -1088,8 +1138,18 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
                 scheduled_database_tasks_.end(),
                 std::mem_fun(&DatabaseTask::CancelCompletion));
 
-  if (database_)
+  if (database_) {
+    if (service()->clear_local_state_on_exit()) {
+      AppCacheThread::PostTask(
+          AppCacheThread::db(),
+          FROM_HERE,
+          NewRunnableFunction(
+              ClearOnExit,
+              database_,
+              make_scoped_refptr(service_->special_storage_policy())));
+    }
     AppCacheThread::DeleteSoon(AppCacheThread::db(), FROM_HERE, database_);
+  }
 }
 
 void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
