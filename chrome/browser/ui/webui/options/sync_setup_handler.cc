@@ -445,10 +445,12 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
   service->get_wizard().Step(SyncSetupWizard::NONFATAL_ERROR);
 
-  // The SyncSetupFlow will set itself as the |flow_|.
-  if (!service->get_wizard().AttachSyncSetupHandler(this)) {
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
+  // Show the Sync Setup page.
+  if (service->get_wizard().IsVisible()) {
     service->get_wizard().Focus();
+  } else {
+    StringValue page("syncSetup");
+    web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", page);
   }
 }
 
@@ -474,6 +476,6 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     service->get_wizard().Step(SyncSetupWizard::GAIA_LOGIN);
 
   // Show the Sync Setup page.
-  scoped_ptr<Value> page(Value::CreateStringValue("syncSetup"));
-  web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
+  StringValue page("syncSetup");
+  web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", page);
 }
