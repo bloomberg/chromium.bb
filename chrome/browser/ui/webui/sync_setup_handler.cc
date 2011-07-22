@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/sync_setup_handler.h"
+#include "chrome/browser/ui/webui/sync_setup_handler.h"
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -157,6 +157,11 @@ SyncSetupHandler::~SyncSetupHandler() {
 }
 
 void SyncSetupHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
+  GetStaticLocalizedValues(localized_strings);
+}
+
+void SyncSetupHandler::GetStaticLocalizedValues(
+    DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   localized_strings->SetString(
@@ -425,7 +430,7 @@ void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
 
   // If the wizard is not visible, step into the appropriate UI state.
   if (!service->get_wizard().IsVisible())
-    HandleShowSetupUI(NULL);
+    ShowSetupUI();
 
   // The SyncSetupFlow will set itself as the |flow_|.
   if (!service->get_wizard().AttachSyncSetupHandler(this)) {
@@ -456,31 +461,5 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!flow_);
-
-  ProfileSyncService* service =
-      web_ui_->GetProfile()->GetProfileSyncService();
-  DCHECK(service);
-
-  // If the wizard is already visible, focus it.
-  if (service->get_wizard().IsVisible()) {
-    web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
-    service->get_wizard().Focus();
-    return;
-  }
-
-  // The user is trying to manually load a syncSetup URL.  We should bring up
-  // either a login or a configure flow based on the state of sync.
-  if (service->HasSyncSetupCompleted()) {
-    if (service->IsPassphraseRequiredForDecryption()) {
-      service->get_wizard().Step(SyncSetupWizard::ENTER_PASSPHRASE);
-    } else {
-      service->get_wizard().Step(SyncSetupWizard::CONFIGURE);
-    }
-  } else {
-    service->get_wizard().Step(SyncSetupWizard::GAIA_LOGIN);
-  }
-
-  // Show the Sync Setup page.
-  StringValue page("syncSetup");
-  web_ui_->CallJavascriptFunction("OptionsPage.navigateToPage", page);
+  ShowSetupUI();
 }

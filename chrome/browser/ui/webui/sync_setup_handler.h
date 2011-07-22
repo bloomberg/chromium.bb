@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
 
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -32,6 +32,9 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual void SetFlow(SyncSetupFlow* flow);
   virtual void Focus();
 
+  static void GetStaticLocalizedValues(
+      base::DictionaryValue* localized_strings);
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
@@ -58,6 +61,10 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
   SyncSetupFlow* flow() { return flow_; }
 
+  // Subclasses must implement this to show the setup UI that's appropriate
+  // for the page this is contained in.
+  virtual void ShowSetupUI() = 0;
+
  private:
   // Weak reference.
   SyncSetupFlow* flow_;
@@ -65,4 +72,4 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_

@@ -31,11 +31,12 @@
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
-#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
+#include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -231,6 +232,10 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
   }
+
+  // Add the sync setup handler for the sync promo UI.
+  scoped_ptr<SyncSetupHandler> handler(new NewTabSyncSetupHandler());
+  AddMessageHandler(handler.release()->Attach(this));
 
   // Initializing the CSS and HTML can require some CPU, so do it after
   // we've hooked up the most visited handler.  This allows the DB query

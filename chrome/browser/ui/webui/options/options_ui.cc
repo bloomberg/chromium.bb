@@ -31,11 +31,11 @@
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 #include "chrome/browser/ui/webui/options/manage_profile_handler.h"
+#include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options/personal_options_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/stop_syncing_handler.h"
-#include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -239,7 +239,7 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StopSyncingHandler());
-  AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler());
+  AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new AboutPageHandler());
   AddOptionsPageUIHandler(localized_strings,

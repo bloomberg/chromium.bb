@@ -1429,7 +1429,6 @@ function updateLogin(login) {
   $('login-container').style.display = login ? 'block' : '';
   if (login)
     $('login-username').textContent = login;
-
 }
 
 var mostVisited = new MostVisited(

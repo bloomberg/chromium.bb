@@ -32,6 +32,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/tree.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE_JS"
                file="shared/css/tree.css.js" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_GOOGLE_TRANSPARENT"
+               file="shared/images/google-transparent.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_SELECT"
                file="shared/images/select.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_THROBBER"

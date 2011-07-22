@@ -980,6 +980,9 @@ const char kSyncNotificationHost[]          = "sync-notification-host";
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
+// Show the sync promo on the new tab page.
+const char kSyncShowPromo[]                 = "sync-show-promo";
+
 // Try to connect to XMPP using SSLTCP first (for testing).
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
