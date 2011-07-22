@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_WRAPPER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_WRAPPER_H_
 
-#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
