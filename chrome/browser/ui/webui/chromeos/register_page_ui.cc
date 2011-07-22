@@ -173,15 +173,9 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  static const base::StringPiece register_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+  scoped_refptr<RefCountedMemory> html_bytes(
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
           IDR_HOST_REGISTRATION_PAGE_HTML));
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(register_html.size());
-  std::copy(register_html.begin(),
-            register_html.end(),
-            html_bytes->data.begin());
 
   SendResponse(request_id, html_bytes);
 #else

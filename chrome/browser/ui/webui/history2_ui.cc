@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/history2_ui.h"
 
-#include <algorithm>
 #include <set>
 
 #include "base/callback.h"
@@ -101,14 +100,10 @@ void HistoryUIHTMLSource2::StartDataRequest(const std::string& path,
   static const base::StringPiece history_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HISTORY2_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       history_html, &localized_strings);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 std::string HistoryUIHTMLSource2::GetMimeType(const std::string&) const {

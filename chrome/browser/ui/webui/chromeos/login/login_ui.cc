@@ -56,10 +56,7 @@ void LoginUIHTMLSource::StartDataRequest(const std::string& path,
   std::string full_html = html_operations_->GetFullHTML(
       login_html, localized_strings_.get());
 
-  scoped_refptr<RefCountedBytes> html_bytes(
-      html_operations_->CreateHTMLBytes(full_html));
-  SendResponse(request_id,
-               (html_bytes.get()));
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 std::string LoginUIHTMLSource::GetMimeType(const std::string&) const {

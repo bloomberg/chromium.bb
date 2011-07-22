@@ -113,11 +113,7 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
         html, localized_strings_.get());
   }
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes());
-  html_bytes->data.resize(response.size());
-  std::copy(response.begin(), response.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&response));
 }
 
 // CoreOobeHandler ------------------------------------------------------------

@@ -47,8 +47,6 @@ class MockHTMLOperationsInterface
   MOCK_METHOD2(GetFullHTML,
                std::string(base::StringPiece login_html,
                            DictionaryValue* localized_strings));
-  MOCK_METHOD1(CreateHTMLBytes,
-               RefCountedBytes*(std::string full_html));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHTMLOperationsInterface);

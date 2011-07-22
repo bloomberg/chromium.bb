@@ -121,14 +121,10 @@ void CollectedCookiesSource::StartDataRequest(const std::string& path,
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_COLLECTED_COOKIES_HTML));
-  const std::string response = jstemplate_builder::GetI18nTemplateHtml(
+  std::string response = jstemplate_builder::GetI18nTemplateHtml(
       html, &localized_strings);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(response.size());
-  std::copy(response.begin(), response.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&response));
 }
 
 }  // namespace

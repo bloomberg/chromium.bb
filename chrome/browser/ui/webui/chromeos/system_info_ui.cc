@@ -140,14 +140,10 @@ void SystemInfoUIHTMLSource::SyslogsComplete(
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_SYS_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplatesHtml(
+  std::string full_html = jstemplate_builder::GetTemplatesHtml(
       systeminfo_html, &strings, "t" /* template root node id */);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id_, html_bytes);
+  SendResponse(request_id_, base::RefCountedString::TakeString(&full_html));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

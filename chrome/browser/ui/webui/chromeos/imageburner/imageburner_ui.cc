@@ -116,14 +116,10 @@ class UIHTMLSource : public ChromeURLDataManager::DataSource {
     static const base::StringPiece imageburn_html(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_IMAGEBURNER_HTML));
-    const std::string full_html = jstemplate_builder::GetTemplatesHtml(
+    std::string full_html = jstemplate_builder::GetTemplatesHtml(
         imageburn_html, &localized_strings, "more-info-link");
 
-    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-    html_bytes->data.resize(full_html.size());
-    std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-    SendResponse(request_id, html_bytes);
+    SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
   }
 
   virtual std::string GetMimeType(const std::string&) const {

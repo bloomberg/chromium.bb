@@ -30,14 +30,4 @@ std::string HTMLOperationsInterface::GetFullHTML(
       localized_strings);
 }
 
-RefCountedBytes* HTMLOperationsInterface::CreateHTMLBytes(
-    std::string full_html) {
-  RefCountedBytes* html_bytes = new RefCountedBytes();
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(),
-            full_html.end(),
-            html_bytes->data.begin());
-  return html_bytes;
-}
-
 }  // namespace chromeos

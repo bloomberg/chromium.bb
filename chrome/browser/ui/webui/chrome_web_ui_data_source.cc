@@ -54,12 +54,9 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
 
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
   std::string template_data;
-  scoped_refptr<RefCountedBytes> response(new RefCountedBytes);
   SetFontAndTextDirection(&localized_strings_);
   jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
-  response->data.resize(template_data.size());
-  std::copy(template_data.begin(), template_data.end(),response->data.begin());
-  SendResponse(request_id, response);
+  SendResponse(request_id, base::RefCountedString::TakeString(&template_data));
 }
 
 void ChromeWebUIDataSource::SendFromResourceBundle(int request_id, int idr) {

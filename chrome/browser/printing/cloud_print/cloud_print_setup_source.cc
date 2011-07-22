@@ -4,8 +4,6 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_source.h"
 
-#include <algorithm>
-
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -119,11 +117,8 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_FLOW_HTML));
     response = html.as_string();
   }
-  // Send the response.
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(response.size());
-  std::copy(response.begin(), response.end(), html_bytes->data.begin());
-  SendResponse(request_id, html_bytes);
+
+  SendResponse(request_id, base::RefCountedString::TakeString(&response));
 }
 
 std::string CloudPrintSetupSource::GetMimeType(const std::string& path) const {

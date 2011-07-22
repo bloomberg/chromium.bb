@@ -11,7 +11,7 @@
 #include "base/string_piece.h"
 
 class FilePath;
-class RefCountedBytes;
+class RefCountedMemory;
 
 namespace base {
 class DictionaryValue;
@@ -32,7 +32,6 @@ class HTMLOperationsInterface {
   virtual base::StringPiece GetLoginHTML();
   virtual std::string GetFullHTML(base::StringPiece login_html,
                                   base::DictionaryValue* localized_strings);
-  virtual RefCountedBytes* CreateHTMLBytes(std::string full_html);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HTMLOperationsInterface);

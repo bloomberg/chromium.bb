@@ -138,11 +138,7 @@ void EnterpriseEnrollmentDataSource::StartDataRequest(const std::string& path,
         jstemplate_builder::GetI18nTemplateHtml(html, localized_strings_.get());
   }
 
-  // Send the response.
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes());
-  html_bytes->data.resize(response.size());
-  std::copy(response.begin(), response.end(), html_bytes->data.begin());
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&response));
 }
 
 std::string EnterpriseEnrollmentDataSource::GetMimeType(

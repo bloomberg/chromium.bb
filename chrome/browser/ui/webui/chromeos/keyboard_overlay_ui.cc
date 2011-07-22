@@ -227,14 +227,10 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
   static const base::StringPiece keyboard_overlay_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_KEYBOARD_OVERLAY_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       keyboard_overlay_html, &localized_strings);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
