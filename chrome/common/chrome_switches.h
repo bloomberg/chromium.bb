@@ -362,7 +362,7 @@ extern const char kExposePrivateExtensionApi[];
 extern const char kTouchDevices[];
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 extern const char kDisablePrintPreview[];
 #else
 extern const char kEnablePrintPreview[];

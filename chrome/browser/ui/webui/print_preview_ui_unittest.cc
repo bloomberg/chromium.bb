@@ -23,7 +23,7 @@ typedef BrowserWithTestWindowTest PrintPreviewUITest;
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUITest, PrintPreviewData) {
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif
   ASSERT_TRUE(browser());

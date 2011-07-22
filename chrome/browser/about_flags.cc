@@ -175,10 +175,9 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
+#if !defined(GOOGLE_CHROME_BUILD)
   // Only expose this for Chromium builds where users may not have the PDF
-  // plugin. Do not give Google Chrome users the option to disable it here,
-  // except on Mac, where it is disabled.
+  // plugin. Do not give Google Chrome users the option to disable it here.
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
