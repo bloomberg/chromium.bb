@@ -16,18 +16,6 @@ static int SymmetricRound(float x) {
       : std::ceil(x - 0.5f));
 }
 
-static const float EPSILON = 1e-6f;
-
-static bool ApproximatelyEqual(float a, float b) {
-  if (a == 0) {
-    return fabs(b) < EPSILON;
-  }
-  if (b == 0) {
-    return fabs(a) < EPSILON;
-  }
-  return fabs(a - b) / std::max(fabs(a), fabs(b)) < EPSILON;
-}
-
 } // namespace
 
 namespace ui {
@@ -39,14 +27,7 @@ Transform::Transform() {
 Transform::~Transform() {}
 
 bool Transform::operator==(const Transform& rhs) const {
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      if (!ApproximatelyEqual(matrix_.get(i,j), rhs.matrix_.get(i,j))) {
-        return false;
-      }
-    }
-  }
-  return true;
+  return matrix_ == rhs.matrix_;
 }
 
 bool Transform::operator!=(const Transform& rhs) const {

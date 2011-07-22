@@ -9,26 +9,13 @@
 
 namespace {
 
-const static float EPSILON = 1e-6f;
-
-bool ApproximatelyEqual(float lhs, float rhs) {
-  if (lhs == 0)
-    return fabs(rhs) < EPSILON;
-  if (rhs == 0)
-    return fabs(lhs) < EPSILON;
-  return fabs(lhs - rhs) / std::max(fabs(rhs), fabs(lhs)) < EPSILON;
-}
-
-bool ApproximatelyEqual(const ui::Transform& lhs, const ui::Transform& rhs) {
+void CheckApproximatelyEqual(const ui::Transform& lhs,
+                             const ui::Transform& rhs) {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
-      if (!ApproximatelyEqual(lhs.matrix().get(i, j),
-                              rhs.matrix().get(i, j))) {
-        return false;
-      }
+      EXPECT_FLOAT_EQ(lhs.matrix().get(i, j), rhs.matrix().get(i, j));
     }
   }
-  return true;
 }
 
 } // namespace
@@ -42,9 +29,9 @@ TEST(InterpolatedTransformTest, InterpolatedRotation) {
     ui::Transform rotation;
     rotation.SetRotate(i);
     ui::Transform interpolated = interpolated_rotation.Interpolate(i / 100.0f);
-    EXPECT_TRUE(ApproximatelyEqual(rotation, interpolated));
+    CheckApproximatelyEqual(rotation, interpolated);
     interpolated = interpolated_rotation_diff_start_end.Interpolate(i + 100);
-    EXPECT_TRUE(ApproximatelyEqual(rotation, interpolated));
+    CheckApproximatelyEqual(rotation, interpolated);
   }
 }
 
@@ -57,9 +44,9 @@ TEST(InterpolatedTransformTest, InterpolatedScale) {
     ui::Transform scale;
     scale.SetScale(i, i);
     ui::Transform interpolated = interpolated_scale.Interpolate(i / 100.0f);
-    EXPECT_TRUE(ApproximatelyEqual(scale, interpolated));
+    CheckApproximatelyEqual(scale, interpolated);
     interpolated = interpolated_scale_diff_start_end.Interpolate(i + 100);
-    EXPECT_TRUE(ApproximatelyEqual(scale, interpolated));
+    CheckApproximatelyEqual(scale, interpolated);
   }
 }
 
@@ -74,9 +61,9 @@ TEST(InterpolatedTransformTest, InterpolatedTranslate) {
     ui::Transform xform;
     xform.SetTranslate(i, i);
     ui::Transform interpolated = interpolated_xform.Interpolate(i / 100.0f);
-    EXPECT_TRUE(ApproximatelyEqual(xform, interpolated));
+    CheckApproximatelyEqual(xform, interpolated);
     interpolated = interpolated_xform_diff_start_end.Interpolate(i + 100);
-    EXPECT_TRUE(ApproximatelyEqual(xform, interpolated));
+    CheckApproximatelyEqual(xform, interpolated);
   }
 }
 
@@ -88,7 +75,7 @@ TEST(InterpolatedTransformTest, InterpolatedRotationAboutPivot) {
       pivot,
       new ui::InterpolatedRotation(0, 90));
   ui::Transform result = interpolated_xform.Interpolate(0.0f);
-  EXPECT_TRUE(ApproximatelyEqual(ui::Transform(), result));
+  CheckApproximatelyEqual(ui::Transform(), result);
   result = interpolated_xform.Interpolate(1.0f);
   gfx::Point expected_result = pivot;
   result.TransformPoint(pivot);
@@ -105,7 +92,7 @@ TEST(InterpolatedTransformTest, InterpolatedScaleAboutPivot) {
       pivot,
       new ui::InterpolatedScale(1, 2));
   ui::Transform result = interpolated_xform.Interpolate(0.0f);
-  EXPECT_TRUE(ApproximatelyEqual(ui::Transform(), result));
+  CheckApproximatelyEqual(ui::Transform(), result);
   result = interpolated_xform.Interpolate(1.0f);
   gfx::Point expected_result = pivot;
   result.TransformPoint(pivot);
