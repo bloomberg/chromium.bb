@@ -55,7 +55,7 @@ void NaClForkDelegate::Init(const bool sandboxed,
     ready_ = base::LaunchProcess(argv, options, NULL);
     // parent and error cases are handled below
   }
-  if (!HANDLE_EINTR(close(fds[1])))
+  if (HANDLE_EINTR(close(fds[1])) != 0)
     LOG(ERROR) << "close(fds[1]) failed";
   if (ready_) {
     const ssize_t kExpectedLength = strlen(kNaClHelperStartupAck);
@@ -75,14 +75,16 @@ void NaClForkDelegate::Init(const bool sandboxed,
   // becomes the default.
   ready_ = false;
   fd_ = -1;
-  if (!HANDLE_EINTR(close(fds[0])))
+  if (HANDLE_EINTR(close(fds[0])) != 0)
     LOG(ERROR) << "close(fds[0]) failed";
 }
 
 NaClForkDelegate::~NaClForkDelegate() {
   // side effect of close: delegate process will terminate
-  if (!HANDLE_EINTR(close(fd_)))
-    LOG(ERROR) << "close(fd_) failed";
+  if (ready_) {
+    if (HANDLE_EINTR(close(fd_)) != 0)
+      LOG(ERROR) << "close(fd_) failed";
+  }
 }
 
 bool NaClForkDelegate::CanHelp(const std::string& process_type) {

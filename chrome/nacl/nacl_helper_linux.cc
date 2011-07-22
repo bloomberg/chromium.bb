@@ -35,7 +35,7 @@ bool g_suid_sandbox_active;
 void BecomeNaClLoader(const std::vector<int>& child_fds) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
-  if (!HANDLE_EINTR(close(kNaClZygoteDescriptor)))
+  if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
   // Set up browser descriptor as expected by Chrome on fd 3
   // The zygote takes care of putting the sandbox IPC channel on fd 5
@@ -86,9 +86,9 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
         validack = true;
       }
     }
-    if (!HANDLE_EINTR(close(child_fds[kNaClDummyFDIndex])))
+    if (HANDLE_EINTR(close(child_fds[kNaClDummyFDIndex])) != 0)
       LOG(ERROR) << "close(child_fds[kNaClDummyFDIndex]) failed";
-    if (!HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])))
+    if (HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])) != 0)
       LOG(ERROR) << "close(child_fds[kNaClParentFDIndex]) failed";
     if (validack) {
       BecomeNaClLoader(child_fds);
@@ -102,7 +102,7 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
   // First, close the dummy_fd so the sandbox won't find me when
   // looking for the child's pid in /proc. Also close other fds.
   for (size_t i = 0; i < child_fds.size(); i++) {
-    if (!HANDLE_EINTR(close(child_fds[i])))
+    if (HANDLE_EINTR(close(child_fds[i])) != 0)
       LOG(ERROR) << "close(child_fds[i]) failed";
   }
   VLOG(1) << "nacl_helper: childpid is " << childpid;
