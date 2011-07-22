@@ -15,10 +15,12 @@ is started for that shard and the output is identical to gtest's output.
 
 
 from collections import deque
+from cStringIO import StringIO
 import optparse
 import os
 import pty
 import Queue
+import re
 import subprocess
 import sys
 import threading
@@ -65,7 +67,7 @@ def RunShard(test, num_shards, index, gtest_args, stdout, stderr):
   env["GTEST_TOTAL_SHARDS"] = str(num_shards)
   env["GTEST_SHARD_INDEX"] = str(index)
   return subprocess.Popen(
-      args, stdout=stdout, stderr=stderr, env=env)
+      args, stdout=stdout, stderr=stderr, env=env, bufsize=0)
 
 
 class ShardRunner(threading.Thread):
@@ -76,12 +78,15 @@ class ShardRunner(threading.Thread):
     counter: Called to get the next shard index to run.
   """
 
-  def __init__(self, supervisor, counter, redirect_output):
+  def __init__(
+      self, supervisor, counter, redirect_output, test_fail, test_timeout):
     """Inits ShardRunner with a supervisor and counter."""
     threading.Thread.__init__(self)
     self.supervisor = supervisor
     self.counter = counter
     self.redirect_output = redirect_output
+    self.test_fail = test_fail
+    self.test_timeout = test_timeout
 
   def run(self):
     """Runs shards and outputs the results.
@@ -95,23 +100,31 @@ class ShardRunner(threading.Thread):
         index = self.counter.get_nowait()
       except Queue.Empty:
         break
+      prefix = "%i>" % index
+      chars = StringIO()
+      shard_running = True
       shard = RunShard(
           self.supervisor.test, self.supervisor.num_shards, index,
           self.supervisor.gtest_args, subprocess.PIPE, subprocess.STDOUT)
-      while True:
-        line = shard.stdout.readline()
-        if not line:
-          if shard.poll() is not None:
-            break
-          continue
-        line = "%i>%s" % (index, line)
-        if (line.find("FAIL", 0, 20) >= 0 and line.find(".") >= 0 and
-            line.find("ms)")) < 0:
-          self.supervisor.LogLineFailure(line)
-        if self.redirect_output:
-          self.supervisor.LogOutputLine(index, line)
-        else:
-          sys.stdout.write(line)
+      while shard_running:
+        char = shard.stdout.read(1)
+        if not char and shard.poll() is not None:
+          shard_running = False
+        chars.write(char)
+        if char == "\n" or not shard_running:
+          line = chars.getvalue()
+          results = (self.test_fail.search(line) or
+                     self.test_timeout.search(line))
+          if results:
+            log_line = prefix + "".join(results.group(0)) + "\n"
+            self.supervisor.LogLineFailure(log_line)
+          line = prefix + line
+          if self.redirect_output:
+            self.supervisor.LogOutputLine(index, line)
+          else:
+            sys.stdout.write(line)
+          chars.close()
+          chars = StringIO()
       if self.redirect_output:
         self.supervisor.ShardIndexCompleted(index)
       if shard.returncode != 0:
@@ -159,12 +172,35 @@ class ShardingSupervisor(object):
     Returns:
       The number of shards that had failing tests.
     """
+
+    # Regular expressions for parsing GTest logs. Test names look like
+    #   SomeTestCase.SomeTest
+    #   SomeName/SomeTestCase.SomeTest/1
+    # This regex also matches SomeName.SomeTest/1 and
+    # SomeName/SomeTestCase.SomeTest, which should be harmless.
+    test_name_regex = r"((\w+/)?\w+\.\w+(/\d+)?)"
+
+    # Regex for filtering out ANSI escape codes when using color.
+    ansi_code_regex = r"(\x1b\[.*?[a-zA-Z])?"
+
+    test_fail = re.compile(
+        ansi_code_regex + "(\[\s+FAILED\s+\] )" + ansi_code_regex +
+        test_name_regex)
+    test_timeout = re.compile(
+        "(Test timeout \([0-9]+ ms\) exceeded for )" + test_name_regex)
+
     workers = []
     counter = Queue.Queue()
     for i in range(self.num_shards):
       counter.put(i)
+
+    # Disable stdout buffering to read shard output one character at a time.
+    # This allows for shard crashes that do not end with a "\n".
+    sys.stdout = os.fdopen(sys.stdout.fileno(), "w", 0)
+
     for i in range(self.num_runs):
-      worker = ShardRunner(self, counter, self.reorder)
+      worker = ShardRunner(
+          self, counter, self.reorder, test_fail, test_timeout)
       worker.start()
       workers.append(worker)
     if self.reorder:
@@ -172,6 +208,10 @@ class ShardingSupervisor(object):
     else:
       for worker in workers:
         worker.join()
+
+    # Re-enable stdout buffering.
+    sys.stdout = sys.__stdout__
+
     return self.PrintSummary()
 
   def LogLineFailure(self, line):
@@ -180,7 +220,8 @@ class ShardingSupervisor(object):
     Args:
       line: The line to save in the failure_log.
     """
-    self.failure_log.append(line)
+    if line not in self.failure_log:
+      self.failure_log.append(line)
 
   def LogShardFailure(self, index):
     """Records that a test in the given shard has failed.
