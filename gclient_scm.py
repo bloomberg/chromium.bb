@@ -355,8 +355,11 @@ class GitWrapper(SCMWrapper):
       if verbose:
         print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
-        merge_output = scm.GIT.Capture(['merge', '--ff-only', upstream_branch],
-            cwd=self.checkout_path)
+        merge_args = ['merge']
+        if not options.merge:
+          merge_args.append('--ff-only')
+        merge_args.append(upstream_branch)
+        merge_output = scm.GIT.Capture(merge_args, cwd=self.checkout_path)
       except gclient_utils.CheckCallError, e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:

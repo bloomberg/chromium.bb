@@ -1090,6 +1090,9 @@ def CMDsync(parser, args):
                          'local modifications')
   parser.add_option('-R', '--reset', action='store_true',
                     help='resets any local changes before updating (git only)')
+  parser.add_option('-M', '--merge', action='store_true',
+                    help='merge upstream changes instead of trying to '
+                         'fast-forward or rebase')
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
