@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
 #define WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
 
-#include "media/base/async_filter_factory_base.h"
+#include "media/base/filter_factories.h"
 #include "webkit/glue/media/web_data_source.h"
 
 class MessageLoop;
@@ -16,7 +16,7 @@ class WebFrame;
 
 namespace webkit_glue {
 
-class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
+class WebDataSourceFactory : public media::DataSourceFactory {
  public:
   typedef WebDataSource* (*FactoryFunction)(MessageLoop* render_loop,
                                             WebKit::WebFrame* frame);
@@ -26,14 +26,9 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
                        WebDataSourceBuildObserverHack* build_observer);
   virtual ~WebDataSourceFactory();
 
-  // DataSourceFactory method.
-  virtual media::DataSourceFactory* Clone() const;
-
- protected:
-  // AsyncDataSourceFactoryBase methods.
-  virtual bool AllowRequests() const;
-  virtual AsyncDataSourceFactoryBase::BuildRequest* CreateRequest(
-      const std::string& url, BuildCallback* callback);
+  // DataSourceFactory methods.
+  virtual void Build(const std::string& url, const BuildCB& callback) OVERRIDE;
+  virtual media::DataSourceFactory* Clone() const OVERRIDE;
 
  private:
   class BuildRequest;

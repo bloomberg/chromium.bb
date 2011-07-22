@@ -14,13 +14,11 @@ FileDataSourceFactory::FileDataSourceFactory() {}
 FileDataSourceFactory::~FileDataSourceFactory() {}
 
 void FileDataSourceFactory::Build(const std::string& url,
-                                  BuildCallback* callback) {
-  DCHECK(callback);
+                                  const BuildCB& callback) {
+  DCHECK(!callback.is_null());
 
   if (url.empty()) {
-    callback->Run(media::PIPELINE_ERROR_URL_NOT_FOUND,
-                  static_cast<media::DataSource*>(NULL));
-    delete callback;
+    callback.Run(media::PIPELINE_ERROR_URL_NOT_FOUND, NULL);
     return;
   }
 
@@ -29,8 +27,7 @@ void FileDataSourceFactory::Build(const std::string& url,
   PipelineStatus status = file_data_source->Initialize(url);
   DataSource* data_source =
       (status == PIPELINE_OK) ? file_data_source.get() : NULL;
-  callback->Run(status, data_source);
-  delete callback;
+  callback.Run(status, data_source);
 }
 
 DataSourceFactory* FileDataSourceFactory::Clone() const {
