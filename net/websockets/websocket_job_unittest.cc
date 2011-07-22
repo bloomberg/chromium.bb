@@ -70,6 +70,9 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
   }
   virtual ~MockSocketStreamDelegate() {}
 
+  void SetOnStartOpenConnection(Callback0::Type* callback) {
+    on_start_open_connection_.reset(callback);
+  }
   void SetOnConnected(Callback0::Type* callback) {
     on_connected_.reset(callback);
   }
@@ -83,6 +86,12 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
     on_close_.reset(callback);
   }
 
+  virtual int OnStartOpenConnection(net::SocketStream* socket,
+                                    net::CompletionCallback* callback) {
+    if (on_start_open_connection_.get())
+      on_start_open_connection_->Run();
+    return net::OK;
+  }
   virtual void OnConnected(net::SocketStream* socket,
                            int max_pending_send_allowed) {
     if (on_connected_.get())
@@ -120,6 +129,7 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
   int amount_sent_;
   bool allow_all_cookies_;
   std::string received_data_;
+  scoped_ptr<Callback0::Type> on_start_open_connection_;
   scoped_ptr<Callback0::Type> on_connected_;
   scoped_ptr<Callback0::Type> on_sent_data_;
   scoped_ptr<Callback0::Type> on_received_data_;
@@ -328,6 +338,14 @@ class WebSocketJobTest : public PlatformTest {
     STREAM_SOCKET,
     STREAM_SPDY_WEBSOCKET,
   };
+  enum ThrottlingOption {
+    THROTTLING_OFF,
+    THROTTLING_ON,
+  };
+  enum SpdyOption {
+    SPDY_OFF,
+    SPDY_ON,
+  };
   void InitWebSocketJob(const GURL& url,
                         MockSocketStreamDelegate* delegate,
                         StreamType stream_type) {
@@ -411,8 +429,8 @@ class WebSocketJobTest : public PlatformTest {
   void TestHandshakeWithCookieButNotAllowed();
   void TestHSTSUpgrade();
   void TestInvalidSendData();
-  void TestConnectByWebSocket();
-  void TestConnectBySpdy(bool use_spdy);
+  void TestConnectByWebSocket(ThrottlingOption throttling);
+  void TestConnectBySpdy(SpdyOption spdy, ThrottlingOption throttling);
 
   StreamType stream_type_;
   scoped_refptr<MockCookieStore> cookie_store_;
@@ -733,9 +751,11 @@ void WebSocketJobTest::TestInvalidSendData() {
 // packets in comparison with the MockWrite array and emulating in-coming
 // packets with MockRead array.
 
-void WebSocketJobTest::TestConnectByWebSocket() {
+void WebSocketJobTest::TestConnectByWebSocket(ThrottlingOption throttling) {
   // This is a test for verifying cooperation between WebSocketJob and
-  // SocketStream in basic situation.
+  // SocketStream. If |throttling| was |THROTTLING_OFF|, it test basic
+  // situation. If |throttling| was |THROTTLING_ON|, throttling limits the
+  // latter connection.
   MockWrite writes[] = {
     MockWrite(true,
               kHandshakeRequestWithoutCookie,
@@ -763,6 +783,9 @@ void WebSocketJobTest::TestConnectByWebSocket() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   WebSocketJobTest* test = this;
+  if (throttling == THROTTLING_ON)
+    delegate.SetOnStartOpenConnection(
+        NewCallback(test, &WebSocketJobTest::DoSync));
   delegate.SetOnConnected(
       NewCallback(test, &WebSocketJobTest::DoSendRequest));
   delegate.SetOnReceivedData(
@@ -771,16 +794,41 @@ void WebSocketJobTest::TestConnectByWebSocket() {
       NewCallback(test, &WebSocketJobTest::DoSync));
   InitWebSocketJob(url, &delegate, STREAM_SOCKET);
 
+  scoped_refptr<WebSocketJob> block_websocket;
+  if (throttling == THROTTLING_ON) {
+    // Create former WebSocket object which obstructs the latter one.
+    block_websocket = new WebSocketJob(NULL);
+    block_websocket->addresses_ = AddressList(websocket_->address_list());
+    WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get());
+  }
+
   websocket_->Connect();
+
+  if (throttling == THROTTLING_ON) {
+    EXPECT_EQ(OK, WaitForResult());
+    EXPECT_TRUE(websocket_->IsWaiting());
+
+    // Remove the former WebSocket object from throttling queue to unblock the
+    // latter.
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket);
+    block_websocket->state_ = WebSocketJob::CLOSED;
+    block_websocket = NULL;
+    WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
+  }
+
   EXPECT_EQ(OK, WaitForResult());
   EXPECT_TRUE(data_->at_read_eof());
   EXPECT_TRUE(data_->at_write_eof());
   EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
 }
 
-void WebSocketJobTest::TestConnectBySpdy(bool use_spdy) {
+void WebSocketJobTest::TestConnectBySpdy(
+    SpdyOption spdy, ThrottlingOption throttling) {
   // This is a test for verifying cooperation between WebSocketJob and
-  // SocketStream in the situation we have SPDY session to the server.
+  // SocketStream in the situation we have SPDY session to the server. If
+  // |throttling| was |THROTTLING_ON|, throttling limits the latter connection.
+  // If you enabled spdy, you should specify |spdy| as |SPDY_ON|. Expected
+  // results depend on its configuration.
   MockWrite writes_websocket[] = {
     MockWrite(true,
               kHandshakeRequestWithoutCookie,
@@ -838,7 +886,7 @@ void WebSocketJobTest::TestConnectBySpdy(bool use_spdy) {
     MockRead(false, 0, 5)  // EOF
   };
 
-  if (use_spdy)
+  if (spdy == SPDY_ON)
     data_ = new OrderedSocketData(
         reads_spdy, arraysize(reads_spdy),
         writes_spdy, arraysize(writes_spdy));
@@ -850,6 +898,9 @@ void WebSocketJobTest::TestConnectBySpdy(bool use_spdy) {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   WebSocketJobTest* test = this;
+  if (throttling == THROTTLING_ON)
+    delegate.SetOnStartOpenConnection(
+        NewCallback(test, &WebSocketJobTest::DoSync));
   delegate.SetOnConnected(
       NewCallback(test, &WebSocketJobTest::DoSendRequest));
   delegate.SetOnReceivedData(
@@ -858,9 +909,29 @@ void WebSocketJobTest::TestConnectBySpdy(bool use_spdy) {
       NewCallback(test, &WebSocketJobTest::DoSync));
   InitWebSocketJob(url, &delegate, STREAM_SPDY_WEBSOCKET);
 
-  websocket_->Connect();
-  EXPECT_EQ(OK, WaitForResult());
+  scoped_refptr<WebSocketJob> block_websocket;
+  if (throttling == THROTTLING_ON) {
+    // Create former WebSocket object which obstructs the latter one.
+    block_websocket = new WebSocketJob(NULL);
+    block_websocket->addresses_ = AddressList(websocket_->address_list());
+    WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get());
+  }
 
+  websocket_->Connect();
+
+  if (throttling == THROTTLING_ON) {
+    EXPECT_EQ(OK, WaitForResult());
+    EXPECT_TRUE(websocket_->IsWaiting());
+
+    // Remove the former WebSocket object from throttling queue to unblock the
+    // latter.
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket);
+    block_websocket->state_ = WebSocketJob::CLOSED;
+    block_websocket = NULL;
+    WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
+  }
+
+  EXPECT_EQ(OK, WaitForResult());
   EXPECT_TRUE(data_->at_read_eof());
   EXPECT_TRUE(data_->at_write_eof());
   EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
@@ -929,22 +1000,42 @@ TEST_F(WebSocketJobTest, InvalidSendDataSpdyEnabled) {
 
 TEST_F(WebSocketJobTest, ConnectByWebSocket) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
-  TestConnectByWebSocket();
+  TestConnectByWebSocket(THROTTLING_OFF);
 }
 
 TEST_F(WebSocketJobTest, ConnectByWebSocketSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
-  TestConnectByWebSocket();
+  TestConnectByWebSocket(THROTTLING_OFF);
 }
 
 TEST_F(WebSocketJobTest, ConnectBySpdy) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
-  TestConnectBySpdy(false);
+  TestConnectBySpdy(SPDY_OFF, THROTTLING_OFF);
 }
 
 TEST_F(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
-  TestConnectBySpdy(true);
+  TestConnectBySpdy(SPDY_ON, THROTTLING_OFF);
+}
+
+TEST_F(WebSocketJobTest, ThrottlingWebSocket) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestConnectByWebSocket(THROTTLING_ON);
+}
+
+TEST_F(WebSocketJobTest, ThrottlingWebSocketSpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestConnectByWebSocket(THROTTLING_ON);
+}
+
+TEST_F(WebSocketJobTest, ThrottlingSpdy) {
+  WebSocketJob::set_websocket_over_spdy_enabled(false);
+  TestConnectBySpdy(SPDY_OFF, THROTTLING_ON);
+}
+
+TEST_F(WebSocketJobTest, ThrottlingSpdySpdyEnabled) {
+  WebSocketJob::set_websocket_over_spdy_enabled(true);
+  TestConnectBySpdy(SPDY_ON, THROTTLING_ON);
 }
 
 // TODO(toyoshim): Add tests to verify throttling, SPDY stream limitation.
