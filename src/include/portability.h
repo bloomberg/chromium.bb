@@ -233,36 +233,6 @@ struct timezone {
 # define __STDC_FORMAT_MACROS  /* C++ */
 #endif
 
-#if defined(__native_client__) && !defined(__GLIBC__)
-/*
- * This works around a bug in nacl-newlib.  Newlib's stdint.h defines
- * uint32_t as unsigned long int for NaCl, while newlib's inttypes.h
- * seems to think that uint32_t is unsigned int.  This means that
- * using newlib's PRIu32 causes a -Wformat warning from gcc.
- */
-
-# define NACL_PRId32 "ld"
-# define NACL_PRIi32 "li"
-# define NACL_PRIo32 "lo"
-# define NACL_PRIu32 "lu"
-# define NACL_PRIx32 "lx"
-# define NACL_PRIX32 "lX"
-
-# define NACL_PRId64 "lld"
-# define NACL_PRIu64 "llu"
-# define NACL_PRIx64 "llx"
-# define NACL_PRIX64 "llX"
-
-# define NACL_PRId16 "d"
-# define NACL_PRIu16 "u"
-# define NACL_PRIx16 "x"
-
-# define NACL_PRId8 "d"
-# define NACL_PRIu8 "u"
-# define NACL_PRIx8 "x"
-
-#else  /* NACL_LINUX, NACL_OSX, (__native_client && __GLIBC__) */
-
 # include <inttypes.h>
 
 #define NACL_PRIxPTR PRIxPTR
@@ -286,8 +256,6 @@ struct timezone {
 #define NACL_PRId8 PRId8
 #define NACL_PRIu8 PRIu8
 #define NACL_PRIx8 PRIx8
-
-#endif  /* NACL_LINUX, NACL_OSX, (__native_client && __GLIBC__) */
 
 # if NACL_OSX
 /*

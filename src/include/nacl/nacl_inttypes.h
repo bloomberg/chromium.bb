@@ -55,8 +55,6 @@
 #define NACL_PRIxS NACL__PRIS_PREFIX "x"
 #define NACL_PRIXS NACL__PRIS_PREFIX "X"
 
-#ifdef __GLIBC__
-
 # include <inttypes.h>
 
 # define NACL_PRId32 PRId32
@@ -78,36 +76,5 @@
 # define NACL_PRId8 PRId8
 # define NACL_PRIu8 PRIu8
 # define NACL_PRIx8 PRIx8
-
-#else
-
-/*
- * This works around a bug in nacl-newlib.  Newlib's stdint.h defines
- * uint32_t as unsigned long int for NaCl, while newlib's inttypes.h
- * seems to think that uint32_t is unsigned int.  This means that
- * using newlib's PRIu32 causes a -Wformat warning from gcc.
- */
-
-# define NACL_PRId32 "ld"
-# define NACL_PRIi32 "li"
-# define NACL_PRIo32 "lo"
-# define NACL_PRIu32 "lu"
-# define NACL_PRIx32 "lx"
-# define NACL_PRIX32 "lX"
-
-# define NACL_PRId64 "lld"
-# define NACL_PRIu64 "llu"
-# define NACL_PRIx64 "llx"
-# define NACL_PRIX64 "llX"
-
-# define NACL_PRId16 "d"
-# define NACL_PRIu16 "u"
-# define NACL_PRIx16 "x"
-
-# define NACL_PRId8 "d"
-# define NACL_PRIu8 "u"
-# define NACL_PRIx8 "x"
-
-#endif  /* __GLIBC__ */
 
 #endif
