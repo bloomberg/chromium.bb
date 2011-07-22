@@ -384,8 +384,6 @@
         'scoped_clipboard_writer_glue.h',
         'simple_webmimeregistry_impl.cc',
         'simple_webmimeregistry_impl.h',
-        'site_isolation_metrics.cc',
-        'site_isolation_metrics.h',
         'webaccessibility.cc',
         'webaccessibility.h',
         'webclipboard_impl.cc',

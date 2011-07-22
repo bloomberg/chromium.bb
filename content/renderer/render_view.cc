@@ -132,7 +132,6 @@
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/request_extra_data.h"
-#include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_constants.h"
@@ -235,7 +234,6 @@ using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::ResourceFetcher;
-using webkit_glue::SiteIsolationMetrics;
 using webkit_glue::WebAccessibility;
 
 //-----------------------------------------------------------------------------
@@ -2631,18 +2629,10 @@ void RenderView::willSendRequest(
 
   if (!renderer_preferences_.enable_referrers)
     request.clearHTTPHeaderField("Referer");
-
-  // Temporary metrics, see site_isolation_metrics.h
-  SiteIsolationMetrics::AddRequest(identifier, request.targetType());
 }
 
 void RenderView::didReceiveResponse(
     WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
-
-  // Temporary metrics, see site_isolation_metrics.h
-  SiteIsolationMetrics::LogMimeTypeForCrossOriginRequest(frame,
-                                                         identifier,
-                                                         response);
 
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
