@@ -1581,7 +1581,7 @@
 {
    bug_88640
    Heapcheck:Leak
-   fun:ProfileImpl::InitRegisteredProtocolHandlers
+   ...
    fun:ProfileImpl::DoFinalInit
    fun:ProfileImpl::OnPrefsLoaded
 }
@@ -1598,6 +1598,32 @@
    ...
    fun:safe_browsing::ClientSideDetectionHost::OnDetectedPhishingSite
 }
+{
+   bug_89684
+   Heapcheck:Leak
+   ...
+   fun:chromeos::NetworkLibraryImplStub::Init
+   fun:chromeos::NetworkLibrary::GetImpl
+   fun:chromeos::CrosLibrary::Library::GetDefaultImpl
+   fun:chromeos::CrosLibrary::GetNetworkLibrary
+   fun:~ProxyConfigServiceImpl
+   fun:base::RefCountedThreadSafe::DeleteInternal
+   fun:base::DefaultRefCountedThreadSafeTraits::Destruct
+   fun:base::RefCountedThreadSafe::Release
+   fun:scoped_refptr::operator=
+   fun:chromeos::ProxyConfigServiceImplTest::CreateConfigService
+}
+{
+   bug_90154
+   Heapcheck:Leak
+   ...
+   fun:views::NativeWidgetGtk::InitNativeWidget
+   fun:views::Widget::Init
+   fun:NativeTabContentsViewGtk::InitNativeTabContentsView
+   fun:TabContentsViewViews::CreateView
+   fun:TabContents
+}
+
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
 {
