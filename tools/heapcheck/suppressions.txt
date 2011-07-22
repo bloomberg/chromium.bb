@@ -1637,6 +1637,13 @@
    ...
    fun:appcache::AppCacheDatabase::LazyOpen
 }
+{
+   bug_81782
+   Heapcheck:Leak
+   ...
+   fun:chromeos::ServicesCustomizationDocument::LoadManifestFromString
+   fun:ServicesCustomizationDocument
+}
 
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
