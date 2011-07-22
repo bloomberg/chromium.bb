@@ -85,7 +85,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // occurs during the fetch.  If an error occurs the phishing verdict will
   // always be false.  The callback is always called after
   // SendClientReportPhishingRequest() returns and on the same thread as
-  // SendClientReportPhishingRequest() was called.
+  // SendClientReportPhishingRequest() was called.  You may set |callback| to
+  // NULL if you don't care about the server verdict.
   virtual void SendClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
       ClientReportPhishingRequestCallback* callback);

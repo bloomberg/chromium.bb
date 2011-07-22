@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -30,7 +31,8 @@ class ClientSideDetectionService;
 // class which sends a ping to a server to validate the verdict.
 // TODO(noelutz): move all client-side detection IPCs to this class.
 class ClientSideDetectionHost : public TabContentsObserver,
-                                public NotificationObserver {
+                                public NotificationObserver,
+                                public SafeBrowsingService::Observer {
  public:
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until TabContentsDestroyed is called.
@@ -47,6 +49,11 @@ class ClientSideDetectionHost : public TabContentsObserver,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
+  // Called when the SafeBrowsingService found a hit with one of the
+  // SafeBrowsing lists.  This method is called on the UI thread.
+  virtual void OnSafeBrowsingHit(
+      const SafeBrowsingService::UnsafeResource& resource);
+
  protected:
   // From TabContentsObserver.  Called when the TabContents is being destroyed.
   virtual void TabContentsDestroyed(TabContents* tab);
@@ -59,7 +66,7 @@ class ClientSideDetectionHost : public TabContentsObserver,
   explicit ClientSideDetectionHost(TabContents* tab);
 
   // Verdict is an encoded ClientPhishingRequest protocol message.
-  void OnDetectedPhishingSite(const std::string& verdict);
+  void OnPhishingDetectionDone(const std::string& verdict);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.
@@ -76,6 +83,12 @@ class ClientSideDetectionHost : public TabContentsObserver,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Returns true if the user has seen a regular SafeBrowsing
+  // interstitial for the current page.  This is only true if the user has
+  // actually clicked through the warning.  This method is called on the UI
+  // thread.
+  bool DidShowSBInterstitial();
 
   // Used for testing.  This function does not take ownership of the service
   // class.
@@ -103,6 +116,9 @@ class ClientSideDetectionHost : public TabContentsObserver,
   NotificationRegistrar registrar_;
 
   base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
+
+  // Unique page ID of the most recent unsafe site that was loaded in this tab.
+  int unsafe_unique_page_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };

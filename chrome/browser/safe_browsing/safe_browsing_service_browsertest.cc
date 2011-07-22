@@ -28,9 +28,14 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using base::Histogram;
 using base::StatisticsRecorder;
+
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::StrictMock;
 
 // A SafeBrowingDatabase class that allows us to inject the malicious URLs.
 class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
@@ -255,6 +260,19 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   TestProtocolManager* pm_;
 };
 
+class MockObserver : public SafeBrowsingService::Observer {
+ public:
+  MockObserver() {}
+  virtual ~MockObserver() {}
+  MOCK_METHOD1(OnSafeBrowsingHit,
+               void(const SafeBrowsingService::UnsafeResource&));
+};
+
+MATCHER_P(IsUnsafeResourceFor, url, "") {
+  return (arg.url.spec() == url.spec() &&
+          arg.threat_type != SafeBrowsingService::SAFE);
+}
+
 namespace {
 
 void QuitUIThread() {
@@ -379,6 +397,9 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     sb_service->download_hashcheck_timeout_ms_ = ms;
   }
 
+ protected:
+  StrictMock<MockObserver> observer_;
+
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
@@ -404,6 +425,7 @@ const char kMalwarePage[] = "files/safe_browsing/malware.html";
 // This test goes through DownloadResourceHandler.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   GURL url = test_server()->GetURL(kEmptyPage);
+  g_browser_process->safe_browsing_service()->AddObserver(&observer_);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
@@ -411,9 +433,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   int chunk_id = 0;
   GenUrlFullhashResult(url, safe_browsing_util::kMalwareList, chunk_id,
                        &malware_full_hash);
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(url))).Times(1);
   SetupResponseForUrl(url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(ShowingInterstitialPage());
+  g_browser_process->safe_browsing_service()->RemoveObserver(&observer_);
 }
 
 const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
@@ -423,6 +447,7 @@ const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   GURL url = test_server()->GetURL(kPrefetchMalwarePage);
   GURL malware_url = test_server()->GetURL(kMalwarePage);
+  g_browser_process->safe_browsing_service()->AddObserver(&observer_);
 
   class SetPrefetchForTest {
    public:
@@ -453,11 +478,16 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   SetupResponseForUrl(malware_url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(ShowingInterstitialPage());
+  Mock::VerifyAndClear(&observer_);
 
   // However, when we navigate to the malware page, we should still get
   // the interstitial.
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(malware_url)))
+      .Times(1);
   ui_test_utils::NavigateToURL(browser(), malware_url);
   EXPECT_TRUE(ShowingInterstitialPage());
+  Mock::VerifyAndClear(&observer_);
+  g_browser_process->safe_browsing_service()->RemoveObserver(&observer_);
 }
 
 }  // namespace

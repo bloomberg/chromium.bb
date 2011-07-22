@@ -64,15 +64,15 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
   bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
-        IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_DetectedPhishingSite,
-                            OnDetectedPhishingSite)
+        IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,
+                            OnPhishingDetectionDone)
       IPC_MESSAGE_UNHANDLED(
           handled = RenderViewFakeResourcesTest::OnMessageReceived(message))
     IPC_END_MESSAGE_MAP()
     return handled;
   }
 
-  void OnDetectedPhishingSite(const std::string& verdict_str) {
+  void OnPhishingDetectionDone(const std::string& verdict_str) {
     scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
     if (verdict->ParseFromString(verdict_str) &&
         verdict->IsInitialized()) {
@@ -82,7 +82,7 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
   }
 
   // Runs the ClassificationDone callback, then waits for the
-  // DetectedPhishingSite IPC to arrive.
+  // PhishingDetectionDone IPC to arrive.
   void RunClassificationDone(PhishingClassifierDelegate* delegate,
                              const ClientPhishingRequest& verdict) {
     // Clear out any previous state.
@@ -439,9 +439,9 @@ TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
   EXPECT_CALL(*classifier, CancelPendingClassification());
 }
 
-TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
-  // Tests that a DetectedPhishingSite IPC is sent to the browser
-  // if a site comes back as phishy.
+TEST_F(PhishingClassifierDelegateTest, PhishingDetectionDone) {
+  // Tests that a PhishingDetectionDone IPC is sent to the browser
+  // whenever we finish classification.
   MockPhishingClassifier* classifier =
       new StrictMock<MockPhishingClassifier>(view_);
   PhishingClassifierDelegate* delegate =
@@ -470,7 +470,7 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   ClientPhishingRequest verdict;
   verdict.set_url("http://host.com/#a");
   verdict.set_client_score(0.8f);
-  verdict.set_is_phishing(true);
+  verdict.set_is_phishing(false);  // Send IPC even if site is not phishing.
   RunClassificationDone(delegate, verdict);
   ASSERT_TRUE(verdict_.get());
   EXPECT_EQ(verdict.SerializeAsString(), verdict_->SerializeAsString());

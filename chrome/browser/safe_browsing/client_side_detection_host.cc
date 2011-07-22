@@ -269,7 +269,8 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
       csd_service_(NULL),
-      cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      unsafe_unique_page_id_(-1) {
   DCHECK(tab);
   csd_service_ = g_browser_process->safe_browsing_detection_service();
   feature_extractor_.reset(new BrowserFeatureExtractor(tab, csd_service_));
@@ -277,15 +278,22 @@ ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
   // Note: csd_service_ and sb_service_ will be NULL here in testing.
   registrar_.Add(this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
                  Source<RenderViewHostDelegate>(tab));
+  if (sb_service_) {
+    sb_service_->AddObserver(this);
+  }
 }
 
-ClientSideDetectionHost::~ClientSideDetectionHost() {}
+ClientSideDetectionHost::~ClientSideDetectionHost() {
+  if (sb_service_) {
+    sb_service_->RemoveObserver(this);
+  }
+}
 
 bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ClientSideDetectionHost, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_DetectedPhishingSite,
-                        OnDetectedPhishingSite)
+    IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,
+                        OnPhishingDetectionDone)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -329,6 +337,24 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   classification_request_->Start();
 }
 
+void ClientSideDetectionHost::OnSafeBrowsingHit(
+    const SafeBrowsingService::UnsafeResource& resource) {
+  // Check that this notification is really for us and that it corresponds to
+  // either a malware or phishing hit.  In this case we store the unique page
+  // ID for later.
+  if (tab_contents() &&
+      tab_contents()->GetRenderProcessHost()->id() ==
+          resource.render_process_host_id &&
+      tab_contents()->render_view_host()->routing_id() ==
+          resource.render_view_id &&
+      (resource.threat_type == SafeBrowsingService::URL_PHISHING ||
+       resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
+      tab_contents()->controller().GetActiveEntry()) {
+    unsafe_unique_page_id_ =
+        tab_contents()->controller().GetActiveEntry()->unique_id();
+  }
+}
+
 void ClientSideDetectionHost::TabContentsDestroyed(TabContents* tab) {
   DCHECK(tab);
   // Tell any pending classification request that it is being canceled.
@@ -339,7 +365,7 @@ void ClientSideDetectionHost::TabContentsDestroyed(TabContents* tab) {
   feature_extractor_.reset();
 }
 
-void ClientSideDetectionHost::OnDetectedPhishingSite(
+void ClientSideDetectionHost::OnPhishingDetectionDone(
     const std::string& verdict_str) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // There is something seriously wrong if there is no service class but
@@ -358,7 +384,12 @@ void ClientSideDetectionHost::OnDetectedPhishingSite(
       !cb_factory_.HasPendingCallbacks() &&
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
-      verdict->IsInitialized()) {
+      verdict->IsInitialized() &&
+      // We only send the verdict to the server if the verdict is phishing or if
+      // a SafeBrowsing interstitial was already shown for this site.  E.g., a
+      // malware or phishing interstitial was shown but the user clicked
+      // through.
+      (verdict->is_phishing() || DidShowSBInterstitial())) {
     // Start browser-side feature extraction.  Once we're done it will send
     // the client verdict request.
     feature_extractor_->ExtractFeatures(
@@ -406,11 +437,17 @@ void ClientSideDetectionHost::FeatureExtractionDone(
   }
   VLOG(2) << "Feature extraction done (success:" << success << ") for URL: "
           << request->url() << ". Start sending client phishing request.";
-  // Send ping no matter what - even if the browser feature extraction failed.
+  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb = NULL;
+  // If the client-side verdict isn't phishing we don't care about the server
+  // response because we aren't going to display a warning.
+  if (request->is_phishing()) {
+    cb = cb_factory_.NewCallback(
+        &ClientSideDetectionHost::MaybeShowPhishingWarning);
+  }
+  // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
       request,  // The service takes ownership of the request object.
-      cb_factory_.NewCallback(
-          &ClientSideDetectionHost::MaybeShowPhishingWarning));
+      cb);
 }
 
 void ClientSideDetectionHost::Observe(int type,
@@ -425,6 +462,15 @@ void ClientSideDetectionHost::Observe(int type,
   }
 }
 
+bool ClientSideDetectionHost::DidShowSBInterstitial() {
+  if (unsafe_unique_page_id_ <= 0 || !tab_contents()) {
+    return false;
+  }
+  const NavigationEntry* nav_entry =
+      tab_contents()->controller().GetActiveEntry();
+  return (nav_entry && nav_entry->unique_id() == unsafe_unique_page_id_);
+}
+
 void ClientSideDetectionHost::set_client_side_detection_service(
     ClientSideDetectionService* service) {
   csd_service_ = service;
@@ -432,7 +478,13 @@ void ClientSideDetectionHost::set_client_side_detection_service(
 
 void ClientSideDetectionHost::set_safe_browsing_service(
     SafeBrowsingService* service) {
+  if (sb_service_) {
+    sb_service_->RemoveObserver(this);
+  }
   sb_service_ = service;
+  if (sb_service_) {
+    sb_service_->AddObserver(this);
+  }
 }
 
 }  // namespace safe_browsing

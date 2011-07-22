@@ -1035,7 +1035,9 @@ void SafeBrowsingService::DoDisplayBlockingPage(
                           resource.is_subresource, resource.threat_type,
                           std::string() /* post_data */);
   }
-
+  if (resource.threat_type != SafeBrowsingService::SAFE) {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingHit(resource));
+  }
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
@@ -1063,6 +1065,16 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
           is_subresource,
           threat_type,
           post_data));
+}
+
+void SafeBrowsingService::AddObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.AddObserver(observer);
+}
+
+void SafeBrowsingService::RemoveObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observer_list_.RemoveObserver(observer);
 }
 
 void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(

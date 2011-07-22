@@ -264,7 +264,9 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   if (!request->SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
     VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
-    cb->Run(GURL(request->url()), false);
+    if (cb.get()) {
+      cb->Run(GURL(request->url()), false);
+    }
     return;
   }
 
@@ -336,17 +338,20 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     const std::string& data) {
   ClientPhishingResponse response;
   scoped_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
+  bool is_phishing = false;
   if (status.is_success() && RC_REQUEST_OK == response_code &&
       response.ParseFromString(data)) {
     // Cache response, possibly flushing an old one.
     cache_[info->phishing_url] =
         make_linked_ptr(new CacheState(response.phishy(), base::Time::Now()));
-    info->callback->Run(info->phishing_url, response.phishy());
+    is_phishing = response.phishy();
   } else {
     DLOG(ERROR) << "Unable to get the server verdict for URL: "
                 << info->phishing_url << " status: " << status.status() << " "
                 << "response_code:" << response_code;
-    info->callback->Run(info->phishing_url, false);
+  }
+  if (info->callback.get()) {
+    info->callback->Run(info->phishing_url, is_phishing);
   }
   client_phishing_reports_.erase(source);
   delete source;

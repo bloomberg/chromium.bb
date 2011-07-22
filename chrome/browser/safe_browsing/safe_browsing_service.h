@@ -18,6 +18,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -106,6 +107,22 @@ class SafeBrowsingService
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
 
+  // Observer class can be used to get notified when a SafeBrowsing hit
+  // was found.
+  class Observer {
+   public:
+    // The |resource| must not be accessed after OnSafeBrowsingHit returns.
+    // This method will be called on the UI thread.
+    virtual void OnSafeBrowsingHit(const UnsafeResource& resource) = 0;
+
+   protected:
+    Observer() {}
+    virtual ~Observer() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   class Client {
    public:
     virtual ~Client() {}
@@ -129,7 +146,6 @@ class SafeBrowsingService
     virtual void OnDownloadHashCheckResult(const std::string& hash,
                                            UrlCheckResult result) {}
   };
-
 
   // Makes the passed |factory| the factory used to instanciate
   // a SafeBrowsingService. Useful for tests.
@@ -260,6 +276,10 @@ class SafeBrowsingService
                                      bool is_subresource,
                                      UrlCheckResult threat_type,
                                      const std::string& post_data);
+
+  // Add and remove observers.  These methods must be invoked on the UI thread.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* remove);
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
@@ -488,6 +508,8 @@ class SafeBrowsingService
 
   // Similar to |download_urlcheck_timeout_ms_|, but for download hash checks.
   int64 download_hashcheck_timeout_ms_;
+
+  ObserverList<Observer> observer_list_;
 
   // Used to track purge memory notifications. Lives on the IO thread.
   NotificationRegistrar registrar_;

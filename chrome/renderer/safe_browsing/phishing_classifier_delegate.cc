@@ -199,12 +199,11 @@ void PhishingClassifierDelegate::ClassificationDone(
   classifier_page_text_.clear();
   VLOG(2) << "Phishy verdict = " << verdict.is_phishing()
           << " score = " << verdict.client_score();
-  if (!verdict.is_phishing()) {
-    return;
+  if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
+    DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
+    Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
+        routing_id(), verdict.SerializeAsString()));
   }
-  DCHECK(last_url_sent_to_classifier_.spec() == verdict.url());
-  Send(new SafeBrowsingHostMsg_DetectedPhishingSite(
-      routing_id(), verdict.SerializeAsString()));
 }
 
 GURL PhishingClassifierDelegate::GetToplevelUrl() {

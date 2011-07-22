@@ -29,6 +29,7 @@ using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::IsNull;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::NotNull;
@@ -164,16 +165,22 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
   virtual void TearDown() {
+    // Delete the host object on the UI thread.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        new DeleteTask<ClientSideDetectionHost>(csd_host_.release()));
+    message_loop_.RunAllPending();
     TabContentsWrapperTestHarness::TearDown();
     io_thread_.reset();
     ui_thread_.reset();
   }
 
-  void OnDetectedPhishingSite(const std::string& verdict_str) {
+  void OnPhishingDetectionDone(const std::string& verdict_str) {
     // Make sure we have a valid BrowseInfo object set before we call this
     // method.
     csd_host_->browse_info_.reset(new BrowseInfo);
-    csd_host_->OnDetectedPhishingSite(verdict_str);
+    csd_host_->OnPhishingDetectionDone(verdict_str);
   }
 
   void FlushIOMessageLoop() {
@@ -233,6 +240,12 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     csd_host_->feature_extractor_.reset(extractor);
   }
 
+  void SetUnsafeUniquePageIdToCurrent() {
+    csd_host_->unsafe_unique_page_id_ =
+        contents()->controller().GetActiveEntry()->unique_id();
+    ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
+  }
+
  protected:
   scoped_ptr<ClientSideDetectionHost> csd_host_;
   scoped_ptr<StrictMock<MockClientSideDetectionService> > csd_service_;
@@ -244,7 +257,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   scoped_ptr<BrowserThread> io_thread_;
 };
 
-TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -252,11 +265,11 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteInvalidVerdict) {
       csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
-  OnDetectedPhishingSite("Invalid Protocol Buffer");
+  OnPhishingDetectionDone("Invalid Protocol Buffer");
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
-TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -276,7 +289,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
-  OnDetectedPhishingSite(verdict.SerializeAsString());
+  OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -288,7 +301,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteNotPhishing) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
-TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -308,7 +321,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
-  OnDetectedPhishingSite(verdict.SerializeAsString());
+  OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -320,7 +333,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteDisabled) {
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
-TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   // Case 3: client thinks the page is phishing and so does the server.
   // We show an interstitial.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -341,7 +354,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
-  OnDetectedPhishingSite(verdict.SerializeAsString());
+  OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -377,7 +390,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteShowInterstitial) {
   FlushIOMessageLoop();
 }
 
-TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // Case 4 & 5: client thinks a page is phishing then navigates to
   // another page which is also considered phishing by the client
   // before the server responds with a verdict.  After a while the
@@ -401,7 +414,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
-  OnDetectedPhishingSite(verdict.SerializeAsString());
+  OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb);
 
@@ -427,7 +440,7 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
       .WillOnce(DoAll(DeleteArg<0>(),
                       SaveArg<1>(&cb_other),
                       QuitUIMessageLoop()));
-  OnDetectedPhishingSite(verdict.SerializeAsString());
+  OnPhishingDetectionDone(verdict.SerializeAsString());
   MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_TRUE(cb_other);
@@ -467,6 +480,49 @@ TEST_F(ClientSideDetectionHostTest, OnDetectedPhishingSiteMultiplePings) {
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
   FlushIOMessageLoop();
+}
+
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneVerdictNotPhishing) {
+  // Case 6: renderer sends a verdict string that isn't phishing.
+  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
+      contents(),
+      csd_service_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://not-phishing.com/");
+  verdict.set_client_score(0.1f);
+  verdict.set_is_phishing(false);
+
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
+  OnPhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
+}
+
+TEST_F(ClientSideDetectionHostTest,
+       OnPhishingDetectionDoneVerdictNotPhishingButSBMatch) {
+  // Case 7: renderer sends a verdict string that isn't phishing but the URL
+  // was on the regular phishing or malware lists.
+  GURL url("http://not-phishing.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url(url.spec());
+  verdict.set_client_score(0.1f);
+  verdict.set_is_phishing(false);
+
+  // First we have to navigate to the URL to set the unique page ID.
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+  SetUnsafeUniquePageIdToCurrent();
+
+  EXPECT_CALL(*csd_service_,
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), IsNull()))
+      .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
+  OnPhishingDetectionDone(verdict.SerializeAsString());
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
 }
 
 TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
