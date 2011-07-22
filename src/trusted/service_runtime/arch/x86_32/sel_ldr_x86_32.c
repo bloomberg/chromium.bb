@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/portability_string.h"
@@ -57,6 +57,8 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
     retval = 0;
     goto cleanup;
   }
+
+  NaClFillMemoryRegionWithHalt(thunk_addr, NACL_MAP_PAGESIZE);
 
   patch_rel32[0] = ((uintptr_t) &NaClPcrelThunk_end) - 4;
 

@@ -44,6 +44,8 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
     retval = 0;
     goto cleanup;
   }
+  NaClFillMemoryRegionWithHalt(thunk_addr, NACL_MAP_PAGESIZE);
+
   jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
                        - sizeof(uintptr_t));
   jmp_target.value = (uintptr_t) NaClSyscallSeg;
