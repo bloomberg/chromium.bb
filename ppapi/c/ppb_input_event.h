@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed Jul 20 12:19:12 2011. */
+/* From ppb_input_event.idl modified Thu Jul 21 16:16:00 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -152,9 +152,11 @@ typedef enum {
    */
   PP_INPUTEVENT_CLASS_MOUSE = 1 << 0,
   /**
-   * Requests keyboard events. Keyboard events must be requested in filtering
-   * mode via RequestFilteringInputEvents(). This is because many commands
-   * should be forwarded to the page.
+   * Requests keyboard events. Often you will want to request filtered mode
+   * (via RequestFilteringInputEvents) for keyboard events so you can pass on
+   * events (by returning false) that you don't handle. For example, if you
+   * don't request filtered mode and the user pressed "Page Down" when your
+   * instance has focus, the page won't scroll which will be a poor experience.
    *
    * A small number of tab and window management commands like Alt-F4 are never
    * sent to the page. You can not request these keyboard commands since it
@@ -212,9 +214,9 @@ struct PPB_InputEvent {
    * Request that input events corresponding to the given input events are
    * delivered to the instance.
    *
-   * You can not use this function to request keyboard events
-   * (PP_INPUTEVENT_CLASS_KEYBOARD). You must use RequestFilteringInputEvents()
-   * for this class of input.
+   * It's recommended that you use RequestFilteringInputEvents() for keyboard
+   * events instead of this function so that you don't interfere with normal
+   * browser accelerators.
    *
    * By default, no input events are delivered. Call this function with the
    * classes of events you are interested in to have them be delivered to
@@ -264,8 +266,7 @@ struct PPB_InputEvent {
    * register to receive events by calling RequestInputEvents(). In some cases,
    * however, you may wish to filter events such that they can be bubbled up
    * to the DOM. In this case, register for those classes of events using
-   * this function instead of RequestInputEvents(). Keyboard events must always
-   * be registered in filtering mode.
+   * this function instead of RequestInputEvents().
    *
    * Filtering input events requires significantly more overhead than just
    * delivering them to the instance. As such, you should only request
