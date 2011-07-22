@@ -225,7 +225,7 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 # version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
-readonly LLVM_MQ_REV=26d6e009bd6f       ## patches for nacl6116-svn128002
+readonly LLVM_MQ_REV=0d9c0424d854      ## patches for nacl6116-svn128002
 readonly LLVM_GCC_MQ_REV=6951bd89b2e5  ## patches for nacl6116-svn126872
 
 
