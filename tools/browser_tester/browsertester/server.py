@@ -111,6 +111,17 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.HandleRPC(name, query)
       finally:
         self.server.rpc_lock.release()
+    elif path in self.server.redirect_mapping:
+      dest = self.server.redirect_mapping[path]
+      self.send_response(301, 'Moved')
+      self.send_header('Location', dest)
+      self.end_headers()
+      self.wfile.write(self.error_message_format %
+                       {'code': 301,
+                        'message': 'Moved',
+                        'explain': 'Object moved permanently'})
+      self.server.listener.Log('REDIRECT %s (%s -> %s)' %
+                                (self.path, path, dest))
     else:
       # A normal GET request for transferring files, etc.
       f = self.send_head()
@@ -125,7 +136,7 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
           time.sleep(delay)
         self.copyfile(f, self.wfile)
         f.close()
-      self.server.listener.Log('GET %s' % (self.path,))
+      self.server.listener.Log('GET %s (%s)' % (self.path, path))
 
   # Disable the built-in logging
   def log_message(self, format, *args):
@@ -136,8 +147,10 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 # when using older versions of Python.
 class Server(BaseHTTPServer.HTTPServer):
 
-  def Configure(self, file_mapping, allow_404, bandwidth, listener):
+  def Configure(
+      self, file_mapping, redirect_mapping, allow_404, bandwidth, listener):
     self.file_mapping = file_mapping
+    self.redirect_mapping = redirect_mapping
     self.allow_404 = allow_404
     self.bandwidth = bandwidth
     self.listener = listener

@@ -37,6 +37,11 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add file SRC to be served from the HTTP server, '
                     'to be made visible under the path DEST.')
+  parser.add_option('--redirect_url', dest='map_redirects', action='append',
+                    type='string', nargs=2, default=[],
+                    metavar='DEST SRC',
+                    help='Add a redirect to the HTTP server, '
+                    'requests for SRC will result in a redirect (302) to DEST.')
   parser.add_option('--enable_experimental_js', dest='enable_experimental_js',
                     action='store_true', default=False,
                     help='Allow use of experimental JavaScript APIs')
@@ -138,7 +143,11 @@ def Run(url, options):
     return close_browser
 
   listener = browsertester.rpclistener.RPCListener(shutdown_callback)
-  server.Configure(file_mapping, options.allow_404, options.bandwidth, listener)
+  server.Configure(file_mapping,
+                   dict(options.map_redirects),
+                   options.allow_404,
+                   options.bandwidth,
+                   listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
