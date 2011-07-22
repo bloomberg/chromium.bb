@@ -24,27 +24,34 @@ ChromeLogger::~ChromeLogger() {}
 
 void ChromeLogger::Log(LogLevel level, const char* file, int line,
                        const char* format, ...) {
-  logging::LogSeverity log_severity = logging::LOG_INFO;
+  logging::LogSeverity log_severity = -2;  // VLOG(2)
+  bool emit_log = false;
   switch (level) {
     case FINE_LEVEL:
-      log_severity = logging::LOG_VERBOSE;
+      log_severity = -2;  // VLOG(2)
+      emit_log = VLOG_IS_ON(2);
       break;
     case INFO_LEVEL:
-      log_severity = logging::LOG_INFO;
+      log_severity = -1;  // VLOG(1)
+      emit_log = VLOG_IS_ON(1);
       break;
     case WARNING_LEVEL:
       log_severity = logging::LOG_WARNING;
+      emit_log = LOG_IS_ON(WARNING);
       break;
     case SEVERE_LEVEL:
       log_severity = logging::LOG_ERROR;
+      emit_log = LOG_IS_ON(ERROR);
       break;
   }
-  va_list ap;
-  va_start(ap, format);
-  std::string result;
-  base::StringAppendV(&result, format, ap);
-  logging::LogMessage(file, line, log_severity).stream() << result;
-  va_end(ap);
+  if (emit_log) {
+    va_list ap;
+    va_start(ap, format);
+    std::string result;
+    base::StringAppendV(&result, format, ap);
+    logging::LogMessage(file, line, log_severity).stream() << result;
+    va_end(ap);
+  }
 }
 
 ChromeScheduler::ChromeScheduler()
