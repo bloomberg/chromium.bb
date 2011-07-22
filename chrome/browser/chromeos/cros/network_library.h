@@ -401,10 +401,6 @@ class Network {
             state == STATE_ACTIVATION_FAILURE);
   }
 
-  // Sends the well-known TPM PIN to flimflam via D-Bus, because flimflam may
-  // need it to access client certificates in the TPM for 802.1X, VPN, etc.
-  void SendTpmPin(const std::string& tpm_pin);
-
  protected:
   Network(const std::string& service_path, ConnectionType type);
 
@@ -533,6 +529,10 @@ class VirtualNetwork : public Network {
   const std::string& client_cert_id() const { return client_cert_id_; }
   const std::string& username() const { return username_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
+
+  // Sets the well-known PKCS#11 slot and PIN for accessing certificates.
+  void SetCertificateSlotAndPin(
+      const std::string& slot, const std::string& pin);
 
   // Network overrides.
   virtual bool RequiresUserProfile() const;
@@ -767,6 +767,9 @@ class WifiNetwork : public WirelessNetwork {
   void SetEAPIdentity(const std::string& identity);
   void SetEAPAnonymousIdentity(const std::string& identity);
   void SetEAPPassphrase(const std::string& passphrase);
+
+  // Sets the well-known PKCS#11 PIN for accessing certificates.
+  void SetCertificatePin(const std::string& pin);
 
   // Network overrides.
   virtual bool RequiresUserProfile() const;

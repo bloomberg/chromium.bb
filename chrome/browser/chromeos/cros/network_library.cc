@@ -246,6 +246,8 @@ const char kSecurityNone[] = "none";
 // Flimflam L2TPIPsec property names.
 const char kL2TPIPSecCACertNSSProperty[] = "L2TPIPsec.CACertNSS";
 const char kL2TPIPSecClientCertIDProperty[] = "L2TPIPsec.ClientCertID";
+const char kL2TPIPSecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
+const char kL2TPIPSecPINProperty[] = "L2TPIPsec.PIN";
 const char kL2TPIPSecPSKProperty[] = "L2TPIPsec.PSK";
 const char kL2TPIPSecUserProperty[] = "L2TPIPsec.User";
 const char kL2TPIPSecPasswordProperty[] = "L2TPIPsec.Password";
@@ -494,7 +496,9 @@ enum PropertyIndex {
   PROPERTY_INDEX_IS_ACTIVE,
   PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS,
   PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID,
+  PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT,
   PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
+  PROPERTY_INDEX_L2TPIPSEC_PIN,
   PROPERTY_INDEX_L2TPIPSEC_PSK,
   PROPERTY_INDEX_L2TPIPSEC_USER,
   PROPERTY_INDEX_MANUFACTURER,
@@ -588,7 +592,9 @@ StringToEnum<PropertyIndex>::Pair property_index_table[] = {
   { kIsActiveProperty, PROPERTY_INDEX_IS_ACTIVE },
   { kL2TPIPSecCACertNSSProperty, PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS },
   { kL2TPIPSecClientCertIDProperty, PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID },
+  { kL2TPIPSecClientCertSlotProp, PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT },
   { kL2TPIPSecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
+  { kL2TPIPSecPINProperty, PROPERTY_INDEX_L2TPIPSEC_PIN },
   { kL2TPIPSecPSKProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
   { kL2TPIPSecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
   { kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
@@ -1380,12 +1386,6 @@ void Network::SetProxyConfig(const std::string& proxy_config) {
   SetStringProperty(kProxyConfigProperty, proxy_config, &proxy_config_);
 }
 
-void Network::SendTpmPin(const std::string& tpm_pin) {
-  // TODO(jamescook): Create a more specific D-Bus property for the TPM PIN.
-  // For now, this is the only one flimflam understands.
-  SetOrClearStringProperty(kEapPinProperty, tpm_pin, NULL);
-}
-
 void Network::InitIPAddress() {
   ip_address_.clear();
   if (!EnsureCrosLoaded())
@@ -1434,10 +1434,16 @@ bool VirtualNetwork::ParseProviderValue(int index, const Value* value) {
     }
     case PROPERTY_INDEX_L2TPIPSEC_CA_CERT_NSS:
       return value->GetAsString(&ca_cert_nss_);
+    case PROPERTY_INDEX_L2TPIPSEC_PIN:
+      // Ignore PIN property.
+      return true;
     case PROPERTY_INDEX_L2TPIPSEC_PSK:
       return value->GetAsString(&psk_passphrase_);
     case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:
       return value->GetAsString(&client_cert_id_);
+    case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_SLOT:
+      // Ignore ClientCertSlot property.
+      return true;
     case PROPERTY_INDEX_L2TPIPSEC_USER:
       return value->GetAsString(&username_);
     case PROPERTY_INDEX_L2TPIPSEC_PASSWORD:
@@ -1579,6 +1585,12 @@ void VirtualNetwork::SetUsername(const std::string& username) {
 void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
   SetStringProperty(kL2TPIPSecPasswordProperty, user_passphrase,
                     &user_passphrase_);
+}
+
+void VirtualNetwork::SetCertificateSlotAndPin(
+    const std::string& slot, const std::string& pin) {
+  SetOrClearStringProperty(kL2TPIPSecClientCertSlotProp, slot, NULL);
+  SetOrClearStringProperty(kL2TPIPSecPINProperty, pin, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2387,6 +2399,10 @@ bool WifiNetwork::RequiresUserProfile() const {
   return false;
 }
 
+void WifiNetwork::SetCertificatePin(const std::string& pin) {
+  SetOrClearStringProperty(kEapPinProperty, pin, NULL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary
 
@@ -2731,8 +2747,12 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   void NotifyPinOperationCompleted(PinOperationError error);
   void NotifyUserConnectionInitiated(const Network* network);
 
+  // TPM related functions.
+  void GetTpmInfo();
+  const std::string& GetTpmSlot();
+  const std::string& GetTpmPin();
+
   // Pin related functions.
-  std::string GetTpmPin();
   void FlipSimPinRequiredStateIfNeeded();
 
   // Network manager observer list.
@@ -2825,7 +2845,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // True if access network library is locked.
   bool is_locked_;
 
-  // TPM module user PIN, needed by flimflam to read certificates from TPM.
+  // TPM module user slot and PIN, needed by flimflam to access certificates.
+  std::string tpm_slot_;
   std::string tpm_pin_;
 
   // Type of pending SIM operation, SIM_OPERATION_NONE otherwise.
@@ -3363,7 +3384,7 @@ void NetworkLibraryImplBase::ConnectToWifiNetwork(WifiNetwork* wifi) {
   // flimflam uses the PIN if it needs to access certificates in the TPM and
   // ignores it otherwise.
   if (wifi->encryption() == SECURITY_8021X)
-    wifi->SendTpmPin(GetTpmPin());
+    wifi->SetCertificatePin(GetTpmPin());
   NetworkConnectStart(wifi);
 }
 
@@ -3377,7 +3398,7 @@ void NetworkLibraryImplBase::ConnectToCellularNetwork(
 void NetworkLibraryImplBase::ConnectToVirtualNetwork(VirtualNetwork* vpn) {
   // flimflam needs the TPM PIN for some VPN networks to access client
   // certificates, and ignores the PIN if it doesn't need them.
-  vpn->SendTpmPin(GetTpmPin());
+  vpn->SetCertificateSlotAndPin(GetTpmSlot(), GetTpmPin());
   NetworkConnectStart(vpn);
 }
 
@@ -4015,17 +4036,32 @@ void NetworkLibraryImplBase::NotifyUserConnectionInitiated(
 //////////////////////////////////////////////////////////////////////////////
 // Pin related functions.
 
-std::string NetworkLibraryImplBase::GetTpmPin() {
+void NetworkLibraryImplBase::GetTpmInfo() {
   // Avoid making multiple synchronous D-Bus calls to cryptohome by caching
   // the TPM PIN, which does not change during a session.
   if (tpm_pin_.empty()) {
     if (crypto::IsTPMTokenReady()) {
-      std::string unused;
-      crypto::GetTPMTokenInfo(&unused, &tpm_pin_);
+      std::string tpm_label;
+      crypto::GetTPMTokenInfo(&tpm_label, &tpm_pin_);
+      // VLOG(1) << "TPM Label: " << tpm_label << ", PIN: " << tpm_pin_;
+      // TODO(stevenjb): GetTPMTokenInfo returns a label, but the network
+      // code expects a slot ID. See chromium-os:17998.
+      // For now, use a hard coded, well known slot instead.
+      const char kHardcodedTpmSlot[] = "0";
+      tpm_slot_ = kHardcodedTpmSlot;
     } else {
       LOG(WARNING) << "TPM token not ready";
     }
   }
+}
+
+const std::string& NetworkLibraryImplBase::GetTpmSlot() {
+  GetTpmInfo();
+  return tpm_slot_;
+}
+
+const std::string& NetworkLibraryImplBase::GetTpmPin() {
+  GetTpmInfo();
   return tpm_pin_;
 }
 
