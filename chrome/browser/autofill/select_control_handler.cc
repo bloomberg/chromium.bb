@@ -205,7 +205,7 @@ void FillSelectControl(const FormGroup& form_group,
   DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
-  string16 field_text = form_group.GetInfo(type);
+  string16 field_text = form_group.GetCanonicalizedInfo(type);
   string16 field_text_lower = StringToLowerASCII(field_text);
   if (field_text.empty())
     return;

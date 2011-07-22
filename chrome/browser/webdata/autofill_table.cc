@@ -126,10 +126,8 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   DCHECK(guid::IsValidGUID(credit_card->guid()));
 
   credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
-  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH,
-                       s.ColumnString16(2));
-  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                       s.ColumnString16(3));
+  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
+  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
   string16 credit_card_number;
   if (encrypted_number_len) {

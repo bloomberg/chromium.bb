@@ -2190,6 +2190,300 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
 }
 
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<FieldTypeSet> expected_types;
+
+  // These fields should all match.
+  FormField field;
+  FieldTypeSet types;
+  autofill_test::CreateTestFormField("", "1", "Elvis", "text", &field);
+  types.clear();
+  types.insert(NAME_FIRST);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "2", "Aaron", "text", &field);
+  types.clear();
+  types.insert(NAME_MIDDLE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "3", "A", "text", &field);
+  types.clear();
+  types.insert(NAME_MIDDLE_INITIAL);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "4", "Presley", "text", &field);
+  types.clear();
+  types.insert(NAME_LAST);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "5", "Elvis Presley", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_NAME);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "6", "Elvis Aaron Presley", "text",
+                                     &field);
+  types.clear();
+  types.insert(NAME_FULL);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "7", "theking@gmail.com", "email",
+                                     &field);
+  types.clear();
+  types.insert(EMAIL_ADDRESS);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "8", "RCA", "text", &field);
+  types.clear();
+  types.insert(COMPANY_NAME);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "9", "3734 Elvis Presley Blvd.",
+                                     "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_LINE1);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "10", "Apt. 10", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_LINE2);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "11", "Memphis", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_CITY);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "12", "Tennessee", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_STATE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "13", "38116", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_ZIP);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "14", "USA", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_COUNTRY);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "15", "United States", "text", &field);
+  types.clear();
+  types.insert(ADDRESS_HOME_COUNTRY);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "16", "+1 (234) 567-8901", "text",
+                                     &field);
+  types.clear();
+  types.insert(PHONE_HOME_WHOLE_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "17", "2345678901", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_CITY_AND_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "18", "1", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_COUNTRY_CODE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "19", "234", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_CITY_CODE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "20", "5678901", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "21", "567", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "22", "8901", "text", &field);
+  types.clear();
+  types.insert(PHONE_HOME_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "23", "4234-5678-9012-3456", "text",
+                                     &field);
+  types.clear();
+  types.insert(CREDIT_CARD_NUMBER);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "24", "04", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_EXP_MONTH);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "25", "April", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_EXP_MONTH);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "26", "2012", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "27", "12", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "28", "04/2012", "text", &field);
+  types.clear();
+  types.insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  // Make sure that we trim whitespace properly.
+  autofill_test::CreateTestFormField("", "29", "", "text", &field);
+  types.clear();
+  types.insert(EMPTY_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "30", " ", "text", &field);
+  types.clear();
+  types.insert(EMPTY_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "31", " Elvis", "text", &field);
+  types.clear();
+  types.insert(NAME_FIRST);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "32", "Elvis ", "text", &field);
+  types.clear();
+  types.insert(NAME_FIRST);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  // These fields should not match, as they differ by case.
+  autofill_test::CreateTestFormField("", "33", "elvis", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "34", "3734 Elvis Presley BLVD",
+                                     "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  // These fields should not match, as they are unsupported variants.
+  autofill_test::CreateTestFormField("", "35", "Elvis Aaron", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "36", "Mr. Presley", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "37", "3734 Elvis Presley", "text",
+                                     &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "38", "TN", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "39", "38116-1023", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "20", "5", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "20", "56", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  autofill_test::CreateTestFormField("", "20", "901", "text", &field);
+  types.clear();
+  types.insert(UNKNOWN_TYPE);
+  form.fields.push_back(field);
+  expected_types.push_back(types);
+
+  FormStructure form_structure(form);
+  autofill_manager_->DeterminePossibleFieldTypesForUpload(&form_structure);
+
+  ASSERT_EQ(expected_types.size(), form_structure.field_count());
+  for (size_t i = 0; i < expected_types.size(); ++i) {
+    SCOPED_TRACE(
+        StringPrintf("Field %d with value %s", static_cast<int>(i),
+                     UTF16ToUTF8(form_structure.field(i)->value).c_str()));
+    const FieldTypeSet& possible_types =
+        form_structure.field(i)->possible_types();
+    EXPECT_EQ(expected_types[i].size(), possible_types.size());
+    for (FieldTypeSet::const_iterator it = expected_types[i].begin();
+         it != expected_types[i].end(); ++it) {
+      EXPECT_TRUE(possible_types.count(*it))
+          << "Expected type: " << AutofillType::FieldTypeToString(*it);
+    }
+  }
+}
+
+TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUploadStressTest) {
   test_personal_data_->ClearAutofillProfiles();
   const int kNumProfiles = 5;
   for (int i = 0; i < kNumProfiles; ++i) {

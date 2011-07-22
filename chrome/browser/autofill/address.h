@@ -24,53 +24,22 @@ class Address : public FormGroup {
   Address& operator=(const Address& address);
 
   // FormGroup:
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+                                FieldTypeSet* matching_types) const OVERRIDE;
 
   const std::string& country_code() const { return country_code_; }
   void set_country_code(const std::string& country_code) {
     country_code_ = country_code;
   }
 
-  // Sets all of the fields to the empty string.
-  void Clear();
-
  private:
-  // Vector of tokens in an address line.
-  typedef std::vector<string16> LineTokens;
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
   // Returns the localized country name corresponding to |country_code_|.
   string16 Country() const;
-
-  void set_line1(const string16& line1);
-  void set_line2(const string16& line2);
-
-  // Sets the |country_code_| based on |country|, which should be a localized
-  // country name.
-  void SetCountry(const string16& country);
-
-  // The following functions match |text| against the various values of the
-  // address, returning true on match.
-  virtual bool IsLine1(const string16& text) const;
-  virtual bool IsLine2(const string16& text) const;
-  virtual bool IsCity(const string16& text) const;
-  virtual bool IsState(const string16& text) const;
-  virtual bool IsCountry(const string16& text) const;
-  virtual bool IsZipCode(const string16& text) const;
-
-  // Returns true if all of the tokens in |text| match the tokens in
-  // |line_tokens|.
-  bool IsLineMatch(const string16& text, const LineTokens& line_tokens) const;
-
-  // Returns true if |word| is one of the tokens in |line_tokens|.
-  bool IsWordInLine(const string16& word, const LineTokens& line_tokens) const;
-
-  // List of tokens in each part of |line1_| and |line2_|.
-  LineTokens line1_tokens_;
-  LineTokens line2_tokens_;
 
   // The address.
   string16 line1_;

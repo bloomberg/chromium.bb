@@ -216,7 +216,6 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
       profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, workFax);
     }
   }
-  profile->NormalizePhones();
 }
 
 }  // namespace

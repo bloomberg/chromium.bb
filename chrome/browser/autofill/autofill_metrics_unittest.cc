@@ -263,7 +263,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   FormField field;
 
   autofill_test::CreateTestFormField(
-      "Autofilled", "autofilled", "Elvis Presley", "text", &field);
+      "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
@@ -314,13 +314,13 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
                                std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogServerTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogOverallTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
                                std::string()));
@@ -522,7 +522,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
 
   FormField field;
   autofill_test::CreateTestFormField(
-      "Both match", "match", "Elvis Presley", "text", &field);
+      "Both match", "match", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
@@ -646,13 +646,13 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
                                std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogServerTypePrediction(AutofillMetrics::TYPE_MATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogOverallTypePrediction(AutofillMetrics::TYPE_MATCH,
-                  UNKNOWN_TYPE, std::string()));
+                  NAME_FULL, std::string()));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
                                std::string()));
@@ -713,7 +713,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   FormField field;
 
   autofill_test::CreateTestFormField(
-      "Autofilled", "autofilled", "Elvis Presley", "text", &field);
+      "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
@@ -760,13 +760,13 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
                                experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogHeuristicTypePrediction(AutofillMetrics::TYPE_MATCH,
-                                         UNKNOWN_TYPE, experiment_id));
+                                         NAME_FULL, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogServerTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                      UNKNOWN_TYPE, experiment_id));
+                                      NAME_FULL, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogOverallTypePrediction(AutofillMetrics::TYPE_MISMATCH,
-                                       UNKNOWN_TYPE, experiment_id));
+                                       NAME_FULL, experiment_id));
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
                                experiment_id));

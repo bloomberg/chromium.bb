@@ -11,7 +11,7 @@
 
 class FaxNumber : public PhoneNumber {
  public:
-  FaxNumber();
+  explicit FaxNumber(AutofillProfile* profile);
   FaxNumber(const FaxNumber& fax);
   virtual ~FaxNumber();
 

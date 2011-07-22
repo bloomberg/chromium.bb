@@ -38,6 +38,14 @@ const AutofillFieldType kAutofillCreditCardTypes[] = {
 
 const int kAutofillCreditCardLength = arraysize(kAutofillCreditCardTypes);
 
+// Returns a version of |number| that has any separator characters removed.
+const string16 StripSeparators(const string16& number) {
+  const char16 kSeparators[] = {'-', ' ', '\0'};
+  string16 stripped;
+  RemoveChars(number, kSeparators, &stripped);
+  return stripped;
+}
+
 std::string GetCreditCardType(const string16& number) {
   // Don't check for a specific type if this is not a credit card number.
   if (!CreditCard::IsValidCreditCardNumber(number))
@@ -133,7 +141,6 @@ bool ConvertYear(const string16& year, int* num) {
   if (base::StringToInt(year, num))
     return true;
 
-  NOTREACHED();
   *num = 0;
   return false;
 }
@@ -179,7 +186,6 @@ bool ConvertMonth(const string16& month, int* num) {
     }
   }
 
-  NOTREACHED();
   *num = 0;
   return false;
 }
@@ -206,53 +212,14 @@ CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
 
 CreditCard::~CreditCard() {}
 
-void CreditCard::GetMatchingTypes(const string16& text,
-                                  FieldTypeSet* matching_types) const {
-  if (IsNameOnCard(text))
-    matching_types->insert(CREDIT_CARD_NAME);
-
-  if (IsNumber(text))
-    matching_types->insert(CREDIT_CARD_NUMBER);
-
-  if (IsExpirationMonth(text))
-    matching_types->insert(CREDIT_CARD_EXP_MONTH);
-
-  if (Is2DigitExpirationYear(text))
-    matching_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-
-  if (Is4DigitExpirationYear(text))
-    matching_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  if (text == GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR))
-    matching_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-
-  if (text == GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR))
-    matching_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
-}
-
-void CreditCard::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
-  DCHECK(non_empty_types);
-
-  if (!name_on_card_.empty())
-    non_empty_types->insert(CREDIT_CARD_NAME);
-
-  if (!number_.empty())
-    non_empty_types->insert(CREDIT_CARD_NUMBER);
-
-  if (!ExpirationMonthAsString().empty())
-    non_empty_types->insert(CREDIT_CARD_EXP_MONTH);
-
-  if (!Expiration2DigitYearAsString().empty())
-    non_empty_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-
-  if (!Expiration4DigitYearAsString().empty())
-    non_empty_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  if (!GetInfo(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR).empty())
-    non_empty_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-
-  if (!GetInfo(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR).empty())
-    non_empty_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+void CreditCard::GetSupportedTypes(FieldTypeSet* supported_types) const {
+  supported_types->insert(CREDIT_CARD_NAME);
+  supported_types->insert(CREDIT_CARD_NUMBER);
+  supported_types->insert(CREDIT_CARD_EXP_MONTH);
+  supported_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 }
 
 string16 CreditCard::GetInfo(AutofillFieldType type) const {
@@ -290,7 +257,7 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
       return string16();
 
     case CREDIT_CARD_NUMBER:
-      return number();
+      return number_;
 
     case CREDIT_CARD_VERIFICATION_CODE:
       NOTREACHED();
@@ -347,6 +314,36 @@ void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
       NOTREACHED() << "Attempting to set unknown info-type " << type;
       break;
   }
+}
+
+string16 CreditCard::GetCanonicalizedInfo(AutofillFieldType type) const {
+  if (type == CREDIT_CARD_NUMBER)
+    return StripSeparators(number_);
+
+  return GetInfo(type);
+}
+
+bool CreditCard::SetCanonicalizedInfo(AutofillFieldType type,
+                                      const string16& value) {
+  if (type == CREDIT_CARD_NUMBER)
+    SetInfo(type, StripSeparators(value));
+  else
+    SetInfo(type, value);
+
+  return true;
+}
+
+void CreditCard::GetMatchingTypes(const string16& text,
+                                  FieldTypeSet* matching_types) const {
+  FormGroup::GetMatchingTypes(text, matching_types);
+
+  string16 card_number = GetCanonicalizedInfo(CREDIT_CARD_NUMBER);
+  if (!card_number.empty() && StripSeparators(text) == card_number)
+    matching_types->insert(CREDIT_CARD_NUMBER);
+
+  int month;
+  if (ConvertMonth(text, &month) && month != 0 && month == expiration_month_)
+    matching_types->insert(CREDIT_CARD_EXP_MONTH);
 }
 
 const string16 CreditCard::Label() const {
@@ -452,14 +449,6 @@ bool CreditCard::operator==(const CreditCard& credit_card) const {
 
 bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
-}
-
-// static
-const string16 CreditCard::StripSeparators(const string16& number) {
-  const char16 kSeparators[] = {'-', ' ', '\0'};
-  string16 stripped;
-  RemoveChars(number, kSeparators, &stripped);
-  return stripped;
 }
 
 // static
@@ -574,38 +563,6 @@ void CreditCard::SetExpirationYear(int expiration_year) {
   }
 
   expiration_year_ = expiration_year;
-}
-
-bool CreditCard::IsNumber(const string16& text) const {
-  return StripSeparators(text) == StripSeparators(number_);
-}
-
-bool CreditCard::IsNameOnCard(const string16& text) const {
-  return StringToLowerASCII(text) == StringToLowerASCII(name_on_card_);
-}
-
-bool CreditCard::IsExpirationMonth(const string16& text) const {
-  int month;
-  if (!base::StringToInt(text, &month))
-    return false;
-
-  return expiration_month_ == month;
-}
-
-bool CreditCard::Is2DigitExpirationYear(const string16& text) const {
-  int year;
-  if (!base::StringToInt(text, &year))
-    return false;
-
-  return year < 100 && (expiration_year_ % 100) == year;
-}
-
-bool CreditCard::Is4DigitExpirationYear(const string16& text) const {
-  int year;
-  if (!base::StringToInt(text, &year))
-    return false;
-
-  return expiration_year_ == year;
 }
 
 // So we can compare CreditCards with EXPECT_EQ().

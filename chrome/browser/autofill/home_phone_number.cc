@@ -4,13 +4,16 @@
 
 #include "chrome/browser/autofill/home_phone_number.h"
 
-HomePhoneNumber::HomePhoneNumber() {}
+HomePhoneNumber::HomePhoneNumber(AutofillProfile* profile)
+    : PhoneNumber(profile) {
+}
 
 HomePhoneNumber::HomePhoneNumber(const HomePhoneNumber& phone)
   : PhoneNumber(phone) {
 }
 
-HomePhoneNumber::~HomePhoneNumber() {}
+HomePhoneNumber::~HomePhoneNumber() {
+}
 
 HomePhoneNumber& HomePhoneNumber::operator=(const HomePhoneNumber& phone) {
   PhoneNumber::operator=(phone);

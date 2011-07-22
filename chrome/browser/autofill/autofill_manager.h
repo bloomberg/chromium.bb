@@ -251,6 +251,8 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmittedWithDefaultValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUpload);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,

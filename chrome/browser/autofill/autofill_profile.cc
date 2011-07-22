@@ -119,7 +119,7 @@ void CopyValuesToItems(AutofillFieldType type,
                        const std::vector<string16>& values,
                        std::vector<T>* form_group_items,
                        const T& prototype) {
-  form_group_items->resize(values.size());
+  form_group_items->resize(values.size(), prototype);
   for (size_t i = 0; i < form_group_items->size(); ++i)
     (*form_group_items)[i].SetInfo(type, CollapseWhitespace(values[i], false));
   // Must have at least one (possibly empty) element.
@@ -130,10 +130,15 @@ void CopyValuesToItems(AutofillFieldType type,
 template <class T>
 void CopyItemsToValues(AutofillFieldType type,
                        const std::vector<T>& form_group_items,
+                       bool canonicalize,
                        std::vector<string16>* values) {
   values->resize(form_group_items.size());
-  for (size_t i = 0; i < values->size(); ++i)
-    (*values)[i] = form_group_items[i].GetInfo(type);
+  for (size_t i = 0; i < values->size(); ++i) {
+    if (canonicalize)
+      (*values)[i] = form_group_items[i].GetCanonicalizedInfo(type);
+    else
+      (*values)[i] = form_group_items[i].GetInfo(type);
+  }
 }
 
 // Collapse compound field types to their "full" type.  I.e. First name
@@ -201,16 +206,16 @@ AutofillProfile::AutofillProfile(const std::string& guid)
     : guid_(guid),
       name_(1),
       email_(1),
-      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME)),
-      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX)) {
+      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME, this)),
+      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX, this)) {
 }
 
 AutofillProfile::AutofillProfile()
     : guid_(guid::GenerateGUID()),
       name_(1),
       email_(1),
-      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME)),
-      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX)) {
+      home_number_(1, PhoneNumber(AutofillType::PHONE_HOME, this)),
+      fax_number_(1, PhoneNumber(AutofillType::PHONE_FAX, this)) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
@@ -232,10 +237,22 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   email_ = profile.email_;
   company_ = profile.company_;
   home_number_ = profile.home_number_;
+  for (size_t i = 0; i < home_number_.size(); ++i) {
+    home_number_[i].set_profile(this);
+  }
   fax_number_ = profile.fax_number_;
+  for (size_t i = 0; i < fax_number_.size(); ++i) {
+    fax_number_[i].set_profile(this);
+  }
   address_ = profile.address_;
 
   return *this;
+}
+
+void AutofillProfile::GetSupportedTypes(FieldTypeSet* supported_types) const {
+  FormGroupList info = FormGroups();
+  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
+    (*it)->GetSupportedTypes(supported_types);
 }
 
 void AutofillProfile::GetMatchingTypes(const string16& text,
@@ -245,12 +262,6 @@ void AutofillProfile::GetMatchingTypes(const string16& text,
     (*it)->GetMatchingTypes(text, matching_types);
 }
 
-void AutofillProfile::GetNonEmptyTypes(
-    FieldTypeSet* non_empty_types) const {
-  FormGroupList info = FormGroups();
-  for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
-    (*it)->GetNonEmptyTypes(non_empty_types);
-}
 
 string16 AutofillProfile::GetInfo(AutofillFieldType type) const {
   AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
@@ -267,6 +278,26 @@ void AutofillProfile::SetInfo(AutofillFieldType type, const string16& value) {
     form_group->SetInfo(type, CollapseWhitespace(value, false));
 }
 
+string16 AutofillProfile::GetCanonicalizedInfo(AutofillFieldType type) const {
+  AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
+  const FormGroup* form_group = FormGroupForType(return_type);
+  if (!form_group)
+    return string16();
+
+  return form_group->GetCanonicalizedInfo(return_type);
+}
+
+bool AutofillProfile::SetCanonicalizedInfo(AutofillFieldType type,
+                                           const string16& value) {
+  FormGroup* form_group = MutableFormGroupForType(type);
+  if (form_group) {
+    return form_group->SetCanonicalizedInfo(type,
+                                            CollapseWhitespace(value, false));
+  }
+
+  return false;
+}
+
 void AutofillProfile::SetMultiInfo(AutofillFieldType type,
                                    const std::vector<string16>& values) {
   switch (AutofillType(type).group()) {
@@ -280,13 +311,13 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
       CopyValuesToItems(type,
                         values,
                         &home_number_,
-                        PhoneNumber(AutofillType::PHONE_HOME));
+                        PhoneNumber(AutofillType::PHONE_HOME, this));
       break;
     case AutofillType::PHONE_FAX:
       CopyValuesToItems(type,
                         values,
                         &fax_number_,
-                        PhoneNumber(AutofillType::PHONE_FAX));
+                        PhoneNumber(AutofillType::PHONE_FAX, this));
       break;
     default:
       if (values.size() == 1) {
@@ -303,18 +334,29 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
 
 void AutofillProfile::GetMultiInfo(AutofillFieldType type,
                                    std::vector<string16>* values) const {
+  GetMultiInfoImpl(type, false, values);
+}
+
+void AutofillProfile::GetCanonicalizedMultiInfo(
+    AutofillFieldType type, std::vector<string16>* values) const {
+  GetMultiInfoImpl(type, true, values);
+}
+
+void AutofillProfile::GetMultiInfoImpl(AutofillFieldType type,
+                                       bool canonicalize,
+                                       std::vector<string16>* values) const {
   switch (AutofillType(type).group()) {
     case AutofillType::NAME:
-      CopyItemsToValues(type, name_, values);
+      CopyItemsToValues(type, name_, canonicalize, values);
       break;
     case AutofillType::EMAIL:
-      CopyItemsToValues(type, email_, values);
+      CopyItemsToValues(type, email_, canonicalize, values);
       break;
     case AutofillType::PHONE_HOME:
-      CopyItemsToValues(type, home_number_, values);
+      CopyItemsToValues(type, home_number_, canonicalize, values);
       break;
     case AutofillType::PHONE_FAX:
-      CopyItemsToValues(type, fax_number_, values);
+      CopyItemsToValues(type, fax_number_, canonicalize, values);
       break;
     default:
       values->resize(1);
@@ -492,22 +534,6 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 const string16 AutofillProfile::PrimaryValue() const {
   return GetInfo(ADDRESS_HOME_LINE1) +
          GetInfo(ADDRESS_HOME_CITY);
-}
-
-bool AutofillProfile::NormalizePhones() {
-  // Successful either if nothing to parse, or everything is parsed correctly.
-  bool success = true;
-  for (size_t i = 0; i < home_number_.size(); ++i) {
-    home_number_[i].set_locale(CountryCode());
-    if (!home_number_[i].NormalizePhone())
-      success = false;
-  }
-  for (size_t i = 0; i < fax_number_.size(); ++i) {
-    fax_number_[i].set_locale(CountryCode());
-    if (!fax_number_[i].NormalizePhone())
-      success = false;
-  }
-  return success;
 }
 
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {

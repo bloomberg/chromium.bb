@@ -23,14 +23,14 @@ class NameInfo : public FormGroup {
   NameInfo& operator=(const NameInfo& info);
 
   // FormGroup:
-  virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NameInfoTest, TestSetFullName);
+
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 
   // Returns the full name, which can include up to the first, middle, and last
   // name.
@@ -44,50 +44,9 @@ class NameInfo : public FormGroup {
   const string16& middle() const { return middle_; }
   const string16& last() const { return last_; }
 
-  // Returns true if |text| is the first name.
-  bool IsFirstName(const string16& text) const;
-
-  // Returns true if |text| is the middle name.
-  bool IsMiddleName(const string16& text) const;
-
-  // Returns true if |text| is the last name.
-  bool IsLastName(const string16& text) const;
-
-  // Returns true if |text| is the middle initial.
-  bool IsMiddleInitial(const string16& text) const;
-
-  // Returns true if |text| is the last name.
-  bool IsFullName(const string16& text) const;
-
-  // Returns true if all of the tokens in |text| match the tokens in
-  // |name_tokens|.
-  bool IsNameMatch(const string16& text,
-                   const std::vector<string16>& name_tokens) const;
-
-  // Returns true if |word| is one of the tokens in |name_tokens|.
-  bool IsWordInName(const string16& word,
-                    const std::vector<string16>& name_tokens) const;
-
-  // Sets |first_| to |first| and |first_tokens_| to the set of tokens in
-  // |first|, made lowercase.
-  void SetFirst(const string16& first);
-
-  // Sets |middle_| to |middle| and |middle_tokens_| to the set of tokens in
-  // |middle|, made lowercase.
-  void SetMiddle(const string16& middle);
-
-  // Sets |last_| to |last| and |last_tokens_| to the set of tokens in |last|,
-  // made lowercase.
-  void SetLast(const string16& last);
-
-  // Sets |first_|, |middle_|, |last_| and |*_tokens_| to the tokenized
-  // |full|. It is tokenized on a space only.
+  // Sets |first_|, |middle_|, and |last_| to the tokenized |full|.
+  // It is tokenized on a space only.
   void SetFullName(const string16& full);
-
-  // List of tokens in each part of the name.
-  std::vector<string16> first_tokens_;
-  std::vector<string16> middle_tokens_;
-  std::vector<string16> last_tokens_;
 
   string16 first_;
   string16 middle_;
@@ -103,13 +62,13 @@ class EmailInfo : public FormGroup {
   EmailInfo& operator=(const EmailInfo& info);
 
   // FormGroup:
-  virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
 
  private:
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+
   string16 email_;
 };
 
@@ -122,13 +81,13 @@ class CompanyInfo : public FormGroup {
   CompanyInfo& operator=(const CompanyInfo& info);
 
   // FormGroup:
-  virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
 
  private:
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+
   string16 company_name_;
 };
 

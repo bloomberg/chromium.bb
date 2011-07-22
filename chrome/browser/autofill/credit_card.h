@@ -25,11 +25,13 @@ class CreditCard : public FormGroup {
   virtual ~CreditCard();
 
   // FormGroup implementation:
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
+  virtual bool SetCanonicalizedInfo(AutofillFieldType type,
+                                    const string16& value) OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+                                FieldTypeSet* matching_types) const OVERRIDE;
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   virtual const string16 Label() const;
 
@@ -66,9 +68,6 @@ class CreditCard : public FormGroup {
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
 
-  // Return a version of |number| that has any separator characters removed.
-  static const string16 StripSeparators(const string16& number);
-
   // Returns true if |text| looks like a valid credit card number.
   // Uses the Luhn formula to validate the number.
   static bool IsValidCreditCardNumber(const string16& text);
@@ -83,6 +82,9 @@ class CreditCard : public FormGroup {
   const string16& number() const { return number_; }
 
  private:
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
   int Expiration2DigitYear() const { return expiration_year_ % 100; }
@@ -96,31 +98,13 @@ class CreditCard : public FormGroup {
   // Sets |expiration_year_| to the integer conversion of |text|.
   void SetExpirationYearFromString(const string16& text);
 
-  // Sets |number_| to the stripped version of |number|, containing only digits.
+  // Sets |number_| to |number| and computes the appropriate card |type_|.
   void SetNumber(const string16& number);
 
   // These setters verify that the month and year are within appropriate
   // ranges.
   void SetExpirationMonth(int expiration_month);
   void SetExpirationYear(int expiration_year);
-
-  // Returns true if |text| matches the name on the card.  The comparison is
-  // case-insensitive.
-  bool IsNameOnCard(const string16& text) const;
-
-  // Returns true if |text| matches the card number.
-  bool IsNumber(const string16& text) const;
-
-  // Returns true if |text| matches the expiration month of the card.
-  bool IsExpirationMonth(const string16& text) const;
-
-  // Returns true if the integer value of |text| matches the 2-digit expiration
-  // year.
-  bool Is2DigitExpirationYear(const string16& text) const;
-
-  // Returns true if the integer value of |text| matches the 4-digit expiration
-  // year.
-  bool Is4DigitExpirationYear(const string16& text) const;
 
   string16 number_;  // The credit card number.
   string16 name_on_card_;  // The cardholder's name.

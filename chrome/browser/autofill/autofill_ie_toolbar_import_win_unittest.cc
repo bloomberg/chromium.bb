@@ -161,34 +161,34 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   std::vector<AutofillProfile> profiles;
   std::vector<CreditCard> credit_cards;
   EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
-  ASSERT_EQ(profiles.size(), 2);
+  ASSERT_EQ(2U, profiles.size());
   // The profiles are read in reverse order.
-  EXPECT_EQ(profiles[1].GetInfo(NAME_FIRST), profile1[0].value);
-  EXPECT_EQ(profiles[1].GetInfo(NAME_MIDDLE), profile1[1].value);
-  EXPECT_EQ(profiles[1].GetInfo(NAME_LAST), profile1[2].value);
-  EXPECT_EQ(profiles[1].GetInfo(EMAIL_ADDRESS), profile1[3].value);
-  EXPECT_EQ(profiles[1].GetInfo(COMPANY_NAME), profile1[4].value);
-  EXPECT_EQ(profiles[1].GetInfo(PHONE_HOME_COUNTRY_CODE), profile1[7].value);
-  EXPECT_EQ(profiles[1].GetInfo(PHONE_HOME_CITY_CODE), profile1[6].value);
-  EXPECT_EQ(profiles[1].GetInfo(PHONE_HOME_NUMBER), L"5555555");
-  EXPECT_EQ(profiles[1].GetInfo(PHONE_HOME_WHOLE_NUMBER), L"+16505555555");
+  EXPECT_EQ(profile1[0].value, profiles[1].GetInfo(NAME_FIRST));
+  EXPECT_EQ(profile1[1].value, profiles[1].GetInfo(NAME_MIDDLE));
+  EXPECT_EQ(profile1[2].value, profiles[1].GetInfo(NAME_LAST));
+  EXPECT_EQ(profile1[3].value, profiles[1].GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(profile1[4].value, profiles[1].GetInfo(COMPANY_NAME));
+  EXPECT_EQ(profile1[7].value, profiles[1].GetInfo(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_EQ(profile1[6].value, profiles[1].GetInfo(PHONE_HOME_CITY_CODE));
+  EXPECT_EQ(L"5555555", profiles[1].GetInfo(PHONE_HOME_NUMBER));
+  EXPECT_EQ(L"+1 650-555-5555", profiles[1].GetInfo(PHONE_HOME_WHOLE_NUMBER));
 
-  EXPECT_EQ(profiles[0].GetInfo(NAME_FIRST), profile2[0].value);
-  EXPECT_EQ(profiles[0].GetInfo(NAME_LAST), profile2[1].value);
-  EXPECT_EQ(profiles[0].GetInfo(EMAIL_ADDRESS), profile2[2].value);
-  EXPECT_EQ(profiles[0].GetInfo(COMPANY_NAME), profile2[3].value);
-  EXPECT_EQ(profiles[0].GetInfo(PHONE_FAX_COUNTRY_CODE), profile2[6].value);
-  EXPECT_EQ(profiles[0].GetInfo(PHONE_FAX_CITY_CODE), profile2[5].value);
-  EXPECT_EQ(profiles[0].GetInfo(PHONE_FAX_NUMBER), L"5556666");
-  EXPECT_EQ(profiles[0].GetInfo(PHONE_FAX_WHOLE_NUMBER), L"+78125556666");
+  EXPECT_EQ(profile2[0].value, profiles[0].GetInfo(NAME_FIRST));
+  EXPECT_EQ(profile2[1].value, profiles[0].GetInfo(NAME_LAST));
+  EXPECT_EQ(profile2[2].value, profiles[0].GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(profile2[3].value, profiles[0].GetInfo(COMPANY_NAME));
+  EXPECT_EQ(profile2[6].value, profiles[0].GetInfo(PHONE_FAX_COUNTRY_CODE));
+  EXPECT_EQ(profile2[5].value, profiles[0].GetInfo(PHONE_FAX_CITY_CODE));
+  EXPECT_EQ(L"5556666", profiles[0].GetInfo(PHONE_FAX_NUMBER));
+  EXPECT_EQ(L"+7 812 555-66-66", profiles[0].GetInfo(PHONE_FAX_WHOLE_NUMBER));
 
-  ASSERT_EQ(credit_cards.size(), 1);
-  EXPECT_EQ(credit_cards[0].GetInfo(CREDIT_CARD_NAME), credit_card[0].value);
-  EXPECT_EQ(credit_cards[0].GetInfo(CREDIT_CARD_NUMBER), L"4111111111111111");
-  EXPECT_EQ(credit_cards[0].GetInfo(CREDIT_CARD_EXP_MONTH),
-            credit_card[2].value);
-  EXPECT_EQ(credit_cards[0].GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-            credit_card[3].value);
+  ASSERT_EQ(1U, credit_cards.size());
+  EXPECT_EQ(credit_card[0].value, credit_cards[0].GetInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(L"4111111111111111", credit_cards[0].GetInfo(CREDIT_CARD_NUMBER));
+  EXPECT_EQ(credit_card[2].value,
+            credit_cards[0].GetInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(credit_card[3].value,
+            credit_cards[0].GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Mock password encrypted cc.
   cc_key.Open(HKEY_CURRENT_USER, kCreditCardKey, KEY_ALL_ACCESS);
@@ -201,8 +201,8 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   credit_cards.clear();
   EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
   // Profiles are not protected.
-  EXPECT_EQ(profiles.size(), 2);
+  EXPECT_EQ(2U, profiles.size());
   // Credit cards are.
-  EXPECT_EQ(credit_cards.size(), 0);
+  EXPECT_EQ(0U, credit_cards.size());
 }
 

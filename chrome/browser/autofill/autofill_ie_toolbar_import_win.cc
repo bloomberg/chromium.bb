@@ -160,10 +160,14 @@ bool ImportSingleProfile(FormGroup* profile,
   }
   // Now re-construct the phones if needed.
   string16 constructed_number;
-  if (!home.empty() && home.ParseNumber(std::string("US"), &constructed_number))
-    profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
-  if (!fax.empty() && fax.ParseNumber(std::string("US"), &constructed_number))
-    profile->SetInfo(PHONE_FAX_WHOLE_NUMBER, constructed_number);
+  if (!home.IsEmpty() &&
+      home.ParseNumber(std::string("US"), &constructed_number)) {
+    profile->SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number);
+  }
+  if (!fax.IsEmpty() &&
+      fax.ParseNumber(std::string("US"), &constructed_number)) {
+    profile->SetCanonicalizedInfo(PHONE_FAX_WHOLE_NUMBER, constructed_number);
+  }
 
   return has_non_empty_fields;
 }

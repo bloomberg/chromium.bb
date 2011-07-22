@@ -4,11 +4,14 @@
 
 #include "chrome/browser/autofill/fax_number.h"
 
-FaxNumber::FaxNumber() {}
+FaxNumber::FaxNumber(AutofillProfile* profile) : PhoneNumber(profile) {
+}
 
-FaxNumber::FaxNumber(const FaxNumber& fax) : PhoneNumber(fax) {}
+FaxNumber::FaxNumber(const FaxNumber& fax) : PhoneNumber(fax) {
+}
 
-FaxNumber::~FaxNumber() {}
+FaxNumber::~FaxNumber() {
+}
 
 FaxNumber& FaxNumber::operator=(const FaxNumber& fax) {
   PhoneNumber::operator=(fax);

@@ -315,7 +315,6 @@ string16 PhoneObject::GetWholeNumber() const {
     i18n::phonenumbers::PhoneNumberUtil* phone_util =
         i18n::phonenumbers::PhoneNumberUtil::GetInstance();
     phone_util->Format(*i18n_number_, format, &formatted_number);
-    i18n::phonenumbers::PhoneNumberUtil::NormalizeDigitsOnly(&formatted_number);
     whole_number_ = UTF8ToUTF16(formatted_number);
   }
   return whole_number_;

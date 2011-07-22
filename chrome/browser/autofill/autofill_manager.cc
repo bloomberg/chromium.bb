@@ -227,30 +227,6 @@ bool FormIsHTTPS(FormStructure* form) {
   return form->source_url().SchemeIs(chrome::kHttpsScheme);
 }
 
-// Normalizes phones in multi-info. If |type| is anything but
-// PHONE_HOME_WHOLE_NUMBER or PHONE_FAX_WHOLE_NUMBER does nothing, as it is
-// either not a phone, or already normalized (parts of the phone parsed and
-// normalized from the PHONE_*_WHOLE_NUMBER). |locale| is a profile locale.
-// For whole number does normalization:
-//   (650)2345678 -> 6502345678
-//   1-800-FLOWERS -> 18003569377
-// If phone cannot be normalized, leaves it as it is.
-void NormalizePhoneMultiInfo(AutofillFieldType type,
-                             std::string const& locale,
-                             std::vector<string16>* values) {
-  DCHECK(values);
-  if (type != PHONE_HOME_WHOLE_NUMBER && type != PHONE_FAX_WHOLE_NUMBER)
-    return;
-  for (std::vector<string16>::iterator it = values->begin();
-       it != values->end();
-       ++it) {
-    string16 normalized_phone = autofill_i18n::NormalizePhoneNumber(*it,
-                                                                    locale);
-    if (!normalized_phone.empty())
-      *it = normalized_phone;
-  }
-}
-
 // Check for unidentified forms among those with the most query or upload
 // requests.  If found, present an infobar prompting the user to send Google
 // Feedback identifying these forms.  Only executes if the appropriate flag is
@@ -751,13 +727,30 @@ bool AutofillManager::IsAutofillEnabled() const {
 
 void AutofillManager::DeterminePossibleFieldTypesForUpload(
     FormStructure* submitted_form) {
+  // Combine all the profiles and credit cards stored in |personal_data_| into
+  // one vector for ease of iteration.
+  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  std::vector<FormGroup*> stored_data;
+  stored_data.insert(stored_data.end(), profiles.begin(), profiles.end());
+  stored_data.insert(stored_data.end(), credit_cards.begin(),
+                     credit_cards.end());
+
+  // For each field in the |submitted_form|, extract the value.  Then for each
+  // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
     const AutofillField* field = submitted_form->field(i);
-    FieldTypeSet field_types;
-    personal_data_->GetMatchingTypes(field->value, &field_types);
+    string16 value = CollapseWhitespace(field->value, false);
+    FieldTypeSet matching_types;
+    for (std::vector<FormGroup*>::const_iterator it = stored_data.begin();
+         it != stored_data.end(); ++it) {
+      (*it)->GetMatchingTypes(value, &matching_types);
+    }
 
-    DCHECK(!field_types.empty());
-    submitted_form->set_possible_types(i, field_types);
+    if (matching_types.empty())
+      matching_types.insert(UNKNOWN_TYPE);
+
+    submitted_form->set_possible_types(i, matching_types);
   }
 }
 
@@ -904,8 +897,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
 
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
-      profile->GetMultiInfo(type, &multi_values);
-      NormalizePhoneMultiInfo(type, profile->CountryCode(), &multi_values);
+      profile->GetCanonicalizedMultiInfo(type, &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
         if (!multi_values[i].empty() &&
@@ -938,8 +930,7 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
 
       // The value of the stored data for this field type in the |profile|.
       std::vector<string16> multi_values;
-      profile->GetMultiInfo(type, &multi_values);
-      NormalizePhoneMultiInfo(type, profile->CountryCode(), &multi_values);
+      profile->GetCanonicalizedMultiInfo(type, &multi_values);
 
       for (size_t i = 0; i < multi_values.size(); ++i) {
         if (multi_values[i].empty())
@@ -991,7 +982,8 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value = credit_card->GetInfo(type);
+    string16 creditcard_field_value =
+        credit_card->GetCanonicalizedInfo(type);
     if (!creditcard_field_value.empty() &&
         StartsWith(creditcard_field_value, field.value, false)) {
       if (type == CREDIT_CARD_NUMBER)
@@ -1000,7 +992,7 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
       string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        label = credit_card->GetInfo(CREDIT_CARD_NAME);
+        label = credit_card->GetCanonicalizedInfo(CREDIT_CARD_NAME);
       } else {
         label = kCreditCardPrefix;
         label.append(credit_card->LastFourDigits());
@@ -1026,18 +1018,16 @@ void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
     autofill::FillSelectControl(*credit_card, type, field);
   } else if (field->form_control_type == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
-    string16 year = credit_card->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    string16 month = credit_card->GetInfo(CREDIT_CARD_EXP_MONTH);
+    string16 year =
+        credit_card->GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    string16 month = credit_card->GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |credit_card| includes both year and month
       // information.
       field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    string16 value = credit_card->GetInfo(type);
-    if (type == CREDIT_CARD_NUMBER)
-      value = CreditCard::StripSeparators(value);
-    field->value = value;
+    field->value = credit_card->GetCanonicalizedInfo(type);
   }
 }
 
@@ -1056,8 +1046,7 @@ void AutofillManager::FillFormField(const AutofillProfile* profile,
       autofill::FillSelectControl(*profile, type, field);
     } else {
       std::vector<string16> values;
-      profile->GetMultiInfo(type, &values);
-      NormalizePhoneMultiInfo(type, profile->CountryCode(), &values);
+      profile->GetCanonicalizedMultiInfo(type, &values);
       DCHECK(variant < values.size());
       field->value = values[variant];
     }
@@ -1071,8 +1060,7 @@ void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
   std::vector<string16> values;
-  profile->GetMultiInfo(type, &values);
-  NormalizePhoneMultiInfo(type, profile->CountryCode(), &values);
+  profile->GetCanonicalizedMultiInfo(type, &values);
   DCHECK(variant < values.size());
   string16 number = values[variant];
   bool has_valid_suffix_and_prefix = (number.length() ==

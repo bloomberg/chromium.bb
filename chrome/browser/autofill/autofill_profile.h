@@ -38,16 +38,20 @@ class AutofillProfile : public FormGroup {
 
   // FormGroup:
   virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const;
-  virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
-  virtual string16 GetInfo(AutofillFieldType type) const;
-  virtual void SetInfo(AutofillFieldType type, const string16& value);
+                                FieldTypeSet* matching_types) const OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
+  virtual bool SetCanonicalizedInfo(AutofillFieldType type,
+                                    const string16& value) OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetMultiInfo(AutofillFieldType type,
                     const std::vector<string16>& values);
   void GetMultiInfo(AutofillFieldType type,
                     std::vector<string16>* values) const;
+  void GetCanonicalizedMultiInfo(AutofillFieldType type,
+                                 std::vector<string16>* values) const;
 
   // Returns |true| if |type| accepts multi-values.
   static bool SupportsMultiValue(AutofillFieldType type);
@@ -119,19 +123,20 @@ class AutofillProfile : public FormGroup {
   // aid with correct aggregation of new data.
   const string16 PrimaryValue() const;
 
-  // Normalizes the home phone and fax numbers.
-  // Should be called after all of the form data is imported into profile.
-  // Drops unparsable numbers, so the numbers that are incomplete or wrong
-  // are not saved. Returns true if all numbers were successfully parsed,
-  // false otherwise.
-  bool NormalizePhones();
-
   // Overwrites the single-valued field data in |profile| with this
   // Profile.  Or, for multi-valued fields append the new values.
   void OverwriteWithOrAddTo(const AutofillProfile& profile);
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
+
+  // FormGroup:
+  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
+
+  // Shared implementation for GetMultiInfo() and GetCanonicalizedMultiInfo().
+  void GetMultiInfoImpl(AutofillFieldType type,
+                        bool canonicalize,
+                        std::vector<string16>* values) const;
 
   // Checks if the |phone| is in the |existing_phones| using fuzzy matching:
   // for example, "1-800-FLOWERS", "18003569377", "(800)356-9377" and "356-9377"

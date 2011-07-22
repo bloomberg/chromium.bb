@@ -96,11 +96,6 @@ class PersonalDataManager
   // no credit card with the specified |guid|.
   CreditCard* GetCreditCardByGUID(const std::string& guid);
 
-  // Gets the possible field types for the given text, determined by matching
-  // the text with all known personal information and returning matching types.
-  void GetMatchingTypes(const string16& text,
-                        FieldTypeSet* matching_types) const;
-
   // Gets the field types availabe in the stored address and credit card data.
   void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
 

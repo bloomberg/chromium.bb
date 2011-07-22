@@ -12,7 +12,7 @@ class FormGroup;
 
 class HomePhoneNumber : public PhoneNumber {
  public:
-  HomePhoneNumber();
+  explicit HomePhoneNumber(AutofillProfile* profile);
   HomePhoneNumber(const HomePhoneNumber& phone);
   virtual ~HomePhoneNumber();
 
