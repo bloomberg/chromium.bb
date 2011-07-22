@@ -23,10 +23,6 @@ int32_t InstanceImpl::ValidateRequestInputEvents(bool is_filtering,
                              PP_INPUTEVENT_CLASS_IME))
     return PP_ERROR_NOTSUPPORTED;
 
-  // See if the keyboard is requested in non-filtering mode.
-  if (!is_filtering && (event_classes & PP_INPUTEVENT_CLASS_KEYBOARD))
-    return PP_ERROR_NOTSUPPORTED;
-
   // Everything else is valid.
   return PP_OK;
 }
