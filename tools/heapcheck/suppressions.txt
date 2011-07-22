@@ -1141,7 +1141,7 @@
 {
    bug_75224
    Heapcheck:Leak
-   fun:AutofillDownloadTestHelper::AutofillDownloadTestHelper
+   fun:*AutofillDownloadTestHelper
    fun:AutofillDownloadTest_*Test_Test::TestBody
 }
 {
@@ -1157,8 +1157,8 @@
 {
    bug_76354
    Heapcheck:Leak
-   fun:IPC::MessageWithReply::MessageWithReply
-   fun:ChildProcessHostMsg_ResolveProxy::ChildProcessHostMsg_ResolveProxy
+   fun:*MessageWithReply
+   fun:*ChildProcessHostMsg_ResolveProxy
    fun:ResolveProxyMsgHelperTest::GenerateReply
    fun:ResolveProxyMsgHelperTest_*_Test::TestBody
 }
@@ -1643,6 +1643,14 @@
    ...
    fun:chromeos::ServicesCustomizationDocument::LoadManifestFromString
    fun:ServicesCustomizationDocument
+}
+{
+   bug_90271
+   Heapcheck:Leak
+   ...
+   fun:::CreateLocaleDefaultValue
+   fun:PrefService::RegisterLocalizedStringPref
+   fun:TabContentsWrapper::RegisterUserPrefs
 }
 
 
