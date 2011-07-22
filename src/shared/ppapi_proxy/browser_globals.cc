@@ -329,6 +329,13 @@ const PPB_FileIO* PPBFileIOInterface() {
   return ppb;
 }
 
+const PPB_FileRef* PPBFileRefInterface() {
+  static const PPB_FileRef* ppb =
+      static_cast<const PPB_FileRef*>(
+        GetBrowserInterfaceSafe(PPB_FILEREF_INTERFACE));
+  return ppb;
+}
+
 const PPB_FileSystem* PPBFileSystemInterface() {
   static const PPB_FileSystem* ppb =
       static_cast<const PPB_FileSystem*>(

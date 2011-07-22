@@ -417,6 +417,46 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Open(
   return retval;
 }
 
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Query(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    int32_t bytes_to_read,
+    int32_t callback_id,
+    nacl_abi_size_t* info_bytes, char* info,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Query:iii:Ci",
+      file_io,
+      bytes_to_read,
+      callback_id,
+      info_bytes, info,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Touch(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    double last_access_time,
+    double last_modified_time,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Touch:iddi:i",
+      file_io,
+      last_access_time,
+      last_modified_time,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
 NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Read(
     NaClSrpcChannel* channel,
     PP_Resource file_io,
@@ -435,6 +475,232 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Read(
       callback_id,
       buffer_bytes, buffer,
       pp_error_or_bytes
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Write(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    int64_t offset,
+    nacl_abi_size_t buffer_bytes, char* buffer,
+    int32_t bytes_to_write,
+    int32_t callback_id,
+    int32_t* pp_error_or_bytes)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Write:ilCii:i",
+      file_io,
+      offset,
+      buffer_bytes, buffer,
+      bytes_to_write,
+      callback_id,
+      pp_error_or_bytes
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_SetLength(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    int64_t length,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_SetLength:ili:i",
+      file_io,
+      length,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Flush(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Flush:ii:i",
+      file_io,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Close(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Close:i:",
+      file_io
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Create(
+    NaClSrpcChannel* channel,
+    PP_Resource file_system,
+    nacl_abi_size_t path_bytes, char* path,
+    PP_Resource* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_Create:iC:i",
+      file_system,
+      path_bytes, path,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_IsFileRef(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_IsFileRef:i:i",
+      resource,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetFileSystemType(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    int32_t* file_system_type)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_GetFileSystemType:i:i",
+      file_ref,
+      file_system_type
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetName(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    nacl_abi_size_t* name_bytes, char* name)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_GetName:i:C",
+      file_ref,
+      name_bytes, name
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetPath(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    nacl_abi_size_t* path_bytes, char* path)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_GetPath:i:C",
+      file_ref,
+      path_bytes, path
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetParent(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    PP_Resource* parent)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_GetParent:i:i",
+      file_ref,
+      parent
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_MakeDirectory(
+    NaClSrpcChannel* channel,
+    PP_Resource directory_ref,
+    int32_t make_ancestors,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_MakeDirectory:iii:i",
+      directory_ref,
+      make_ancestors,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Touch(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    double last_access_time,
+    double last_modified_time,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_Touch:iddi:i",
+      file_ref,
+      last_access_time,
+      last_modified_time,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Delete(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_Delete:ii:i",
+      file_ref,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Rename(
+    NaClSrpcChannel* channel,
+    PP_Resource file_ref,
+    PP_Resource new_file_ref,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileRef_Rename:iii:i",
+      file_ref,
+      new_file_ref,
+      callback_id,
+      pp_error
   );
   return retval;
 }

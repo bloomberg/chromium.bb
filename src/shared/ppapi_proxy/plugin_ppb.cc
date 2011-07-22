@@ -14,6 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_cursor_control.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_ref.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_system.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_find.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
@@ -55,6 +56,7 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_CONTEXT_3D_DEV_INTERFACE, PluginContext3D::GetInterface(), true },
   { PPB_FILEIO_INTERFACE, PluginFileIO::GetInterface(), true },
+  { PPB_FILEREF_INTERFACE, PluginFileRef::GetInterface(), true },
   { PPB_FILESYSTEM_INTERFACE, PluginFileSystem::GetInterface(), true },
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },

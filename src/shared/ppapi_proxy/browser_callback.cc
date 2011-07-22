@@ -21,6 +21,14 @@ namespace ppapi_proxy {
 
 namespace {
 
+bool BytesWereRead(int32_t num_bytes) {
+  return (num_bytes > 0);
+}
+
+nacl_abi_size_t CastToNaClAbiSize(int32_t result) {
+  return static_cast<nacl_abi_size_t>(result);
+}
+
 // Data structure used on the browser side to invoke a completion callback
 // on the plugin side.
 //
@@ -29,10 +37,20 @@ namespace {
 // by the nexe that supplied the callback.
 //
 // |read_buffer| is used with callbacks that are invoked on byte reads.
+// |check_result_func| is a pointer to a function used to check the
+// result of the operation.  The semantics of the result value may be different
+// depending on how the callback operation was initiated, and
+// |check_result_func| provides an abstraction to the semantics.
+// |get_size_read_func| is a pointer to a function used to get the
+// number of bytes read.  The way the number of bytes read
+// retrieved/calculated may be different depending on how the callback was
+// initiated, and |get_size_read_func| provides the indirection.
 struct RemoteCallbackInfo {
   NaClSrpcChannel* srpc_channel;
   int32_t callback_id;
   char* read_buffer;
+  CheckResultFunc check_result_func;
+  GetReadSizeFunc get_size_read_func;
 };
 
 // Calls the remote implementation of a callback on the plugin side.
@@ -61,8 +79,10 @@ void RunRemoteCallback(void* user_data, int32_t result) {
   }
 
   nacl_abi_size_t read_buffer_size = 0;
-  if (result > 0 && remote_callback->read_buffer != NULL)
-    read_buffer_size = static_cast<nacl_abi_size_t>(result);
+  CheckResultFunc check_result_func = remote_callback->check_result_func;
+  GetReadSizeFunc get_size_read_func = remote_callback->get_size_read_func;
+  if ((*check_result_func)(result) && remote_callback->read_buffer != NULL)
+    read_buffer_size = (*get_size_read_func)(result);
 
   NaClSrpcError srpc_result =
       CompletionCallbackRpcClient::RunCompletionCallback(
@@ -85,13 +105,17 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
     NaClSrpcChannel* srpc_channel,
     int32_t callback_id,
     int32_t bytes_to_read,
-    char** buffer) {
+    char** buffer,
+    CheckResultFunc check_result_func,
+    GetReadSizeFunc get_size_read_func) {
   RemoteCallbackInfo* remote_callback = new(std::nothrow) RemoteCallbackInfo;
   if (remote_callback == NULL)  // new failed.
     return PP_BlockUntilComplete();
   remote_callback->srpc_channel = srpc_channel;
   remote_callback->callback_id = callback_id;
   remote_callback->read_buffer = NULL;
+  remote_callback->check_result_func = check_result_func;
+  remote_callback->get_size_read_func = get_size_read_func;
 
   if (bytes_to_read > 0 && buffer != NULL) {
     *buffer = new(std::nothrow) char[bytes_to_read];
@@ -102,6 +126,15 @@ struct PP_CompletionCallback MakeRemoteCompletionCallback(
 
   return PP_MakeOptionalCompletionCallback(
       RunRemoteCallback, remote_callback);
+}
+
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+    int32_t bytes_to_read,
+    char** buffer) {
+  return MakeRemoteCompletionCallback(srpc_channel, callback_id, bytes_to_read,
+                                      buffer, BytesWereRead, CastToNaClAbiSize);
 }
 
 struct PP_CompletionCallback MakeRemoteCompletionCallback(

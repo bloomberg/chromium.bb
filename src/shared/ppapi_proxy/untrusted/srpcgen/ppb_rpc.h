@@ -192,6 +192,20 @@ class PpbFileIORpcClient {
       int32_t open_flags,
       int32_t callback_id,
       int32_t* pp_error);
+  static NaClSrpcError PPB_FileIO_Query(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      int32_t bytes_to_read,
+      int32_t callback_id,
+      nacl_abi_size_t* info_bytes, char* info,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileIO_Touch(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      double last_access_time,
+      double last_modified_time,
+      int32_t callback_id,
+      int32_t* pp_error);
   static NaClSrpcError PPB_FileIO_Read(
       NaClSrpcChannel* channel,
       PP_Resource file_io,
@@ -200,12 +214,92 @@ class PpbFileIORpcClient {
       int32_t callback_id,
       nacl_abi_size_t* buffer_bytes, char* buffer,
       int32_t* pp_error_or_bytes);
+  static NaClSrpcError PPB_FileIO_Write(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      int64_t offset,
+      nacl_abi_size_t buffer_bytes, char* buffer,
+      int32_t bytes_to_write,
+      int32_t callback_id,
+      int32_t* pp_error_or_bytes);
+  static NaClSrpcError PPB_FileIO_SetLength(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      int64_t length,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileIO_Flush(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileIO_Close(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io);
 
  private:
   PpbFileIORpcClient();
   PpbFileIORpcClient(const PpbFileIORpcClient&);
   void operator=(const PpbFileIORpcClient);
 };  // class PpbFileIORpcClient
+
+class PpbFileRefRpcClient {
+ public:
+  static NaClSrpcError PPB_FileRef_Create(
+      NaClSrpcChannel* channel,
+      PP_Resource file_system,
+      nacl_abi_size_t path_bytes, char* path,
+      PP_Resource* resource);
+  static NaClSrpcError PPB_FileRef_IsFileRef(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* success);
+  static NaClSrpcError PPB_FileRef_GetFileSystemType(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      int32_t* file_system_type);
+  static NaClSrpcError PPB_FileRef_GetName(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      nacl_abi_size_t* name_bytes, char* name);
+  static NaClSrpcError PPB_FileRef_GetPath(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      nacl_abi_size_t* path_bytes, char* path);
+  static NaClSrpcError PPB_FileRef_GetParent(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      PP_Resource* parent);
+  static NaClSrpcError PPB_FileRef_MakeDirectory(
+      NaClSrpcChannel* channel,
+      PP_Resource directory_ref,
+      int32_t make_ancestors,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileRef_Touch(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      double last_access_time,
+      double last_modified_time,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileRef_Delete(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileRef_Rename(
+      NaClSrpcChannel* channel,
+      PP_Resource file_ref,
+      PP_Resource new_file_ref,
+      int32_t callback_id,
+      int32_t* pp_error);
+
+ private:
+  PpbFileRefRpcClient();
+  PpbFileRefRpcClient(const PpbFileRefRpcClient&);
+  void operator=(const PpbFileRefRpcClient);
+};  // class PpbFileRefRpcClient
 
 class PpbFileSystemRpcClient {
  public:

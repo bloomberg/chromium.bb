@@ -20,6 +20,7 @@
         'browser_ppb_core_rpc_server.cc',
         'browser_ppb_cursor_control_rpc_server.cc',
         'browser_ppb_file_io_rpc_server.cc',
+        'browser_ppb_file_ref_rpc_server.cc',
         'browser_ppb_file_system_rpc_server.cc',
         'browser_ppb_find_rpc_server.cc',
         'browser_ppb_font_rpc_server.cc',

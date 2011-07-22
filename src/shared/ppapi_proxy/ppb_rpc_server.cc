@@ -417,6 +417,40 @@ static void PPB_FileIO_OpenDispatcher(
   );
 }
 
+static void PPB_FileIO_QueryDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIORpcServer::PPB_FileIO_Query(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_FileIO_TouchDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIORpcServer::PPB_FileIO_Touch(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval,
+      inputs[2]->u.dval,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_FileIO_ReadDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -432,6 +466,218 @@ static void PPB_FileIO_ReadDispatcher(
       inputs[3]->u.ival,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
       &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_FileIO_WriteDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIORpcServer::PPB_FileIO_Write(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.lval,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.ival,
+      inputs[4]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_SetLengthDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIORpcServer::PPB_FileIO_SetLength(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.lval,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_FlushDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIORpcServer::PPB_FileIO_Flush(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_CloseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbFileIORpcServer::PPB_FileIO_Close(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
+static void PPB_FileRef_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_IsFileRefDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_IsFileRef(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_GetFileSystemTypeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_GetFileSystemType(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_GetNameDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_GetName(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_FileRef_GetPathDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_GetPath(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_FileRef_GetParentDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_GetParent(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_MakeDirectoryDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_MakeDirectory(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_TouchDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_Touch(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.dval,
+      inputs[2]->u.dval,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_DeleteDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_Delete(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileRef_RenameDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileRefRpcServer::PPB_FileRef_Rename(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
   );
 }
 
@@ -1927,7 +2173,23 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_FileIO_Create:i:i", PPB_FileIO_CreateDispatcher },
   { "PPB_FileIO_IsFileIO:i:i", PPB_FileIO_IsFileIODispatcher },
   { "PPB_FileIO_Open:iiii:i", PPB_FileIO_OpenDispatcher },
+  { "PPB_FileIO_Query:iii:Ci", PPB_FileIO_QueryDispatcher },
+  { "PPB_FileIO_Touch:iddi:i", PPB_FileIO_TouchDispatcher },
   { "PPB_FileIO_Read:ilii:Ci", PPB_FileIO_ReadDispatcher },
+  { "PPB_FileIO_Write:ilCii:i", PPB_FileIO_WriteDispatcher },
+  { "PPB_FileIO_SetLength:ili:i", PPB_FileIO_SetLengthDispatcher },
+  { "PPB_FileIO_Flush:ii:i", PPB_FileIO_FlushDispatcher },
+  { "PPB_FileIO_Close:i:", PPB_FileIO_CloseDispatcher },
+  { "PPB_FileRef_Create:iC:i", PPB_FileRef_CreateDispatcher },
+  { "PPB_FileRef_IsFileRef:i:i", PPB_FileRef_IsFileRefDispatcher },
+  { "PPB_FileRef_GetFileSystemType:i:i", PPB_FileRef_GetFileSystemTypeDispatcher },
+  { "PPB_FileRef_GetName:i:C", PPB_FileRef_GetNameDispatcher },
+  { "PPB_FileRef_GetPath:i:C", PPB_FileRef_GetPathDispatcher },
+  { "PPB_FileRef_GetParent:i:i", PPB_FileRef_GetParentDispatcher },
+  { "PPB_FileRef_MakeDirectory:iii:i", PPB_FileRef_MakeDirectoryDispatcher },
+  { "PPB_FileRef_Touch:iddi:i", PPB_FileRef_TouchDispatcher },
+  { "PPB_FileRef_Delete:ii:i", PPB_FileRef_DeleteDispatcher },
+  { "PPB_FileRef_Rename:iii:i", PPB_FileRef_RenameDispatcher },
   { "PPB_FileSystem_Create:ii:i", PPB_FileSystem_CreateDispatcher },
   { "PPB_FileSystem_IsFileSystem:i:i", PPB_FileSystem_IsFileSystemDispatcher },
   { "PPB_FileSystem_Open:ili:i", PPB_FileSystem_OpenDispatcher },
