@@ -974,6 +974,14 @@
             'CHROMIUM_SHORT_NAME': '<(branding)',
             'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
             'INFOPLIST_FILE': 'app/helper-Info.plist',
+            # Stop the helper executable from being position-independent
+            # since that turns on ASLR, which breaks NaCl.  ASLR breaks
+            # NaCl's ability to reliably allocate 1GB of address space for
+            # untrusted code to run in.
+            # See http://code.google.com/p/nativeclient/issues/detail?id=2043
+            # TODO(mseaborn): Create a separate helper executable for NaCl
+            # so that the renderer process can still use ASLR.
+	    'OTHER_LDFLAGS!': ['-Wl,-pie'],
           },
           'copies': [
             {
