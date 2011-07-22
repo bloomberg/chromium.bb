@@ -28,17 +28,21 @@ static int GetHandle(URLContext *h) {
 // FFmpeg protocol interface.
 static int OpenContext(URLContext* h, const char* filename, int flags) {
   int access = O_RDONLY;
-  if (flags & URL_RDWR) {
+
+  if ((flags & AVIO_FLAG_WRITE) && (flags & AVIO_FLAG_READ)) {
     access = O_CREAT | O_TRUNC | O_RDWR;
-  } else if (flags & URL_WRONLY) {
+  } else if (flags & AVIO_FLAG_WRITE) {
     access = O_CREAT | O_TRUNC | O_WRONLY;
   }
+
 #ifdef O_BINARY
   access |= O_BINARY;
 #endif
+
   int f = open(filename, access, 0666);
   if (f == -1)
     return AVERROR(ENOENT);
+
   h->priv_data = reinterpret_cast<void*>(static_cast<intptr_t>(f));
   h->is_streamed = false;
   return 0;
