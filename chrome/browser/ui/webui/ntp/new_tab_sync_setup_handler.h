@@ -12,6 +12,8 @@
 // tab page.
 class NewTabSyncSetupHandler : public SyncSetupHandler {
  public:
+  virtual ~NewTabSyncSetupHandler();
+
   // Checks if the sync promo should be visible.
   static bool ShouldShowSyncPromo();
 

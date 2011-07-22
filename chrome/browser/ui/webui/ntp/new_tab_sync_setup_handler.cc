@@ -14,6 +14,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 
+NewTabSyncSetupHandler::~NewTabSyncSetupHandler() {
+}
+
 bool NewTabSyncSetupHandler::ShouldShowSyncPromo() {
 #if defined(OS_CHROMEOS)
   // There's no need to show the sync promo on cros since cros users are logged
