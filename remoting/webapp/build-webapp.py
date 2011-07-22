@@ -19,16 +19,8 @@ import platform
 import re
 import shutil
 import sys
+import time
 import zipfile
-
-# Find the location of the lastchange module relative to this script, and
-# modify the system path so it can be imported.
-# This section was copied from webkit/build/webkit_version.py.
-path = os.path.dirname(os.path.realpath(__file__))
-path = os.path.dirname(os.path.dirname(path))
-path = os.path.join(path, 'build', 'util')
-sys.path.insert(0, path)
-import lastchange
 
 def findAndReplace(filepath, findString, replaceString):
   """Does a search and replace on the contents of a file."""
@@ -124,15 +116,15 @@ def buildWebApp(mimetype, destination, zip_path, plugin, name_suffix, files):
                  name_suffix)
 
   # Add unique build numbers to manifest version.
-  revision = lastchange.FetchVersionInfo(False).revision
-  # Revision number might look like "12345-dirty" ('-dirty' can be added by
-  # build/util/lastchange.py:FetchGitSVNRevision() ), so extract the
-  # numeric portion of the revision string.
-  revisionNumber = int(re.findall(r'\d+', revision)[0])
+  # For now, this is based on the system clock (seconds since 1/1/1970), since
+  # a previous attempt (based on build/utils/lastchange.py) was failing on Mac.
+  # TODO(lambroslambrou): Use the SVN revision number or an incrementing build
+  # number (http://crbug.com/90110).
+  timestamp = int(time.time())
   # Version string must be 1-4 numbers separated by dots, with each number
   # between 0 and 0xffff.
-  version1 = revisionNumber / 0x10000
-  version2 = revisionNumber % 0x10000
+  version1 = timestamp / 0x10000
+  version2 = timestamp % 0x10000
   findAndReplace(os.path.join(destination, 'manifest.json'),
                  'UNIQUE_VERSION',
                  '%d.%d' % (version1, version2))
