@@ -1,11 +1,11 @@
-commit 36840201a321147d9c33a944784ff56980aae5d8
+commit 95cc0cf361c92681803e7ee5d4afe5e40673a4b8
 Author: Adam Langley <agl@chromium.org>
 Date:   Wed Jun 22 13:36:50 2011 -0400
 
     cbcrandomiv.patch
 
 diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index 2cc1e05..eb7d63e 100644
+index f7064ef..c39b8f8 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3con.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3con.c
 @@ -2229,7 +2229,7 @@ ssl3_SendRecord(   sslSocket *        ss,
