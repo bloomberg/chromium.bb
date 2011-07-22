@@ -67,7 +67,9 @@ ACTION(QuitUIMessageLoop) {
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  return ::std::tr1::get<k>(args)->Run(p0, p1);
+  ::std::tr1::get<k>(args)->Run(p0, p1);
+  // This is an old callback, so it needs to be deleted explicitly.
+  delete ::std::tr1::get<k>(args);
 }
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
@@ -284,7 +286,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
+      .WillOnce(DoAll(DeleteArg<1>(),
+                      InvokeCallbackArgument<2>(true, &verdict)));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
@@ -316,7 +319,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
+      .WillOnce(DoAll(DeleteArg<1>(),
+                      InvokeCallbackArgument<2>(true, &verdict)));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
@@ -349,7 +353,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
+      .WillOnce(DoAll(DeleteArg<1>(),
+                      InvokeCallbackArgument<2>(true, &verdict)));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
@@ -409,7 +414,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeCallbackArgument<2>(true, &verdict));
+      .WillOnce(DoAll(DeleteArg<1>(),
+                      InvokeCallbackArgument<2>(true, &verdict)));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))

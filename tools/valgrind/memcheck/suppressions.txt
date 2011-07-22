@@ -4948,18 +4948,6 @@
    fun:_ZN11MessageLoop11RunInternalEv
 }
 {
-   bug_89890_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN13safe_browsing23ClientSideDetectionHost*ClientPhishingRequest*
-}
-{
-   bug_89890_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13safe_browsing23ClientSideDetectionHost22OnDetectedPhishingSiteERKSs
-}
-{
    bug_89938
    Memcheck:Cond
    fun:_ZN5views6Widget4ShowEv
