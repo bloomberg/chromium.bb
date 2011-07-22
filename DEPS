@@ -243,6 +243,9 @@ deps = {
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@75901",
 
+  "src/third_party/pyftpdlib/src":
+    (Var("googlecode_url") % "pyftpdlib") + "/trunk@888",
+
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
     # TODO(brettw) enable the From() line instead when checkdeps is fixed.
