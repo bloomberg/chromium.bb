@@ -118,6 +118,12 @@ void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
     DefaultWebClientState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateUI(state);
+  // The worker has finished everything it needs to do, so free the observer
+  // if we own it.
+  if (observer_ && observer_->IsOwnedByWorker()) {
+    delete observer_;
+    observer_ = NULL;
+  }
 }
 
 void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault() {

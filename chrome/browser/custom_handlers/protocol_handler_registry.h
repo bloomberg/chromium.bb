@@ -31,18 +31,6 @@ class ProtocolHandlerRegistry
     : public base::RefCountedThreadSafe<ProtocolHandlerRegistry,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  // TODO(koz): Refactor this to eliminate the unnecessary virtuals. All that
-  // should be needed is a way to ensure that the list of websafe protocols is
-  // updated.
-  class Delegate {
-   public:
-    virtual ~Delegate();
-    virtual void RegisterExternalHandler(const std::string& protocol);
-    virtual void DeregisterExternalHandler(const std::string& protocol);
-    virtual bool IsExternalHandlerRegistered(const std::string& protocol);
-    virtual void RegisterWithOSAsDefaultClient(const std::string& protocol);
-  };
-
   class DefaultClientObserver
       : public ShellIntegration::DefaultWebClientObserver {
    public:
@@ -58,14 +46,36 @@ class ProtocolHandlerRegistry
     // when we're called and also tell the worker if we get deleted.
     void SetWorker(ShellIntegration::DefaultProtocolClientWorker* worker);
 
+   protected:
+    ShellIntegration::DefaultProtocolClientWorker* worker_;
+
    private:
+    virtual bool IsOwnedByWorker() { return true; }
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
     // e.g. the browser options page
     ProtocolHandlerRegistry* registry_;
-    scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker_;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultClientObserver);
+  };
+
+  // TODO(koz): Refactor this to eliminate the unnecessary virtuals. All that
+  // should be needed is a way to ensure that the list of websafe protocols is
+  // updated.
+  class Delegate {
+   public:
+    virtual ~Delegate();
+    virtual void RegisterExternalHandler(const std::string& protocol);
+    virtual void DeregisterExternalHandler(const std::string& protocol);
+    virtual bool IsExternalHandlerRegistered(const std::string& protocol);
+    virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+        ShellIntegration::DefaultWebClientObserver* observer,
+        const std::string& protocol);
+    virtual DefaultClientObserver* CreateShellObserver(
+        ProtocolHandlerRegistry* registry);
+    virtual void RegisterWithOSAsDefaultClient(
+        const std::string& protocol,
+        ProtocolHandlerRegistry* registry);
   };
 
   typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
@@ -119,10 +129,10 @@ class ProtocolHandlerRegistry
   // Causes the given protocol handler to not be ignored anymore.
   void RemoveIgnoredHandler(const ProtocolHandler& handler);
 
-  // Returns true if the protocol has a registered protocol handler.
+  // Returns true if the protocol has a default protocol handler.
   bool IsHandledProtocol(const std::string& scheme) const;
 
-  // Returns true if the protocol has a registered protocol handler.
+  // Returns true if the protocol has a default protocol handler.
   // Should be called only from the IO thread.
   bool IsHandledProtocolIO(const std::string& scheme) const;
 

@@ -26,6 +26,7 @@
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
+  FakeDelegate() : force_os_failure_(false) {}
   virtual ~FakeDelegate() { }
   virtual void RegisterExternalHandler(const std::string& protocol) {
     ASSERT_TRUE(
@@ -37,30 +38,107 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     registered_protocols_.erase(protocol);
   }
 
-  virtual void RegisterWithOSAsDefaultClient(const std::string& protocol) {
-    ASSERT_TRUE(os_registered_protocols_.find(protocol) ==
-        os_registered_protocols_.end());
-    os_registered_protocols_.insert(protocol);
+  virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+    ShellIntegration::DefaultWebClientObserver* observer,
+    const std::string& protocol);
+
+  virtual ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
+      ProtocolHandlerRegistry* registry);
+
+  virtual void RegisterWithOSAsDefaultClient(const std::string& protocol,
+                                             ProtocolHandlerRegistry* reg) {
+    ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(protocol,
+                                                                     reg);
+    ASSERT_FALSE(IsFakeRegisteredWithOS(protocol));
   }
 
   virtual bool IsExternalHandlerRegistered(const std::string& protocol) {
     return registered_protocols_.find(protocol) != registered_protocols_.end();
   }
 
-  bool IsRegisteredWithOS(const std::string& protocol) {
+  bool IsFakeRegisteredWithOS(const std::string& protocol) {
     return os_registered_protocols_.find(protocol) !=
         os_registered_protocols_.end();
+  }
+
+  void FakeRegisterWithOS(const std::string& protocol) {
+    os_registered_protocols_.insert(protocol);
   }
 
   void Reset() {
     registered_protocols_.clear();
     os_registered_protocols_.clear();
+    force_os_failure_ = false;
   }
+
+  void set_force_os_failure(bool force) { force_os_failure_ = force; }
+
+  bool force_os_failure() { return force_os_failure_; }
 
  private:
   std::set<std::string> registered_protocols_;
   std::set<std::string> os_registered_protocols_;
+  bool force_os_failure_;
 };
+
+class FakeClientObserver
+    : public ProtocolHandlerRegistry::DefaultClientObserver {
+ public:
+  FakeClientObserver(ProtocolHandlerRegistry* registry,
+                     FakeDelegate* registry_delegate)
+      : ProtocolHandlerRegistry::DefaultClientObserver(registry),
+        delegate_(registry_delegate) {}
+
+  virtual void SetDefaultWebClientUIState(
+      ShellIntegration::DefaultWebClientUIState state) {
+    ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
+        state);
+    if (state == ShellIntegration::STATE_IS_DEFAULT) {
+      delegate_->FakeRegisterWithOS(worker_->protocol());
+    }
+    if (state != ShellIntegration::STATE_PROCESSING) {
+      MessageLoop::current()->Quit();
+    }
+  }
+
+ private:
+  FakeDelegate* delegate_;
+};
+
+class FakeProtocolClientWorker
+    : public ShellIntegration::DefaultProtocolClientWorker {
+ public:
+  FakeProtocolClientWorker(ShellIntegration::DefaultWebClientObserver* observer,
+                           const std::string& protocol,
+                           FakeDelegate* registry_delegate)
+      : ShellIntegration::DefaultProtocolClientWorker(observer, protocol),
+        delegate_(registry_delegate) {}
+
+ private:
+  virtual ShellIntegration::DefaultWebClientState CheckIsDefault() {
+    if (delegate_->force_os_failure()) {
+      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+    } else {
+      return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+    }
+  }
+
+  virtual void SetAsDefault() {}
+
+ private:
+  FakeDelegate* delegate_;
+};
+
+ProtocolHandlerRegistry::DefaultClientObserver*
+    FakeDelegate::CreateShellObserver(ProtocolHandlerRegistry* registry) {
+  return new FakeClientObserver(registry, this);
+}
+
+ShellIntegration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
+    ShellIntegration::DefaultWebClientObserver* observer,
+    const std::string& protocol) {
+  return new FakeProtocolClientWorker(observer, protocol, this);
+}
 
 class NotificationCounter : public NotificationObserver {
  public:
@@ -158,6 +236,10 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_->StartWithOptions(options);
 
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
+    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+    file_thread_->StartWithOptions(options);
+
     profile_.reset(new TestingProfile());
     profile_->SetPrefService(new TestingPrefService());
     delegate_ = new FakeDelegate();
@@ -174,6 +256,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     registry_ = NULL;
     io_thread_->Stop();
     io_thread_.reset(NULL);
+    file_thread_->Stop();
+    file_thread_.reset(NULL);
     ui_thread_.reset(NULL);
     ui_message_loop_.reset(NULL);
   }
@@ -185,6 +269,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   scoped_ptr<MessageLoopForUI> ui_message_loop_;
   scoped_ptr<BrowserThread> ui_thread_;
   scoped_ptr<BrowserThread> io_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
 
   FakeDelegate* delegate_;
   scoped_ptr<TestingProfile> profile_;
@@ -454,18 +539,45 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
   ProtocolHandler ph_do2 = CreateProtocolHandler("do", "test2");
   ProtocolHandler ph_dont = CreateProtocolHandler("dont", "test");
 
-  ASSERT_FALSE(delegate()->IsRegisteredWithOS("do"));
-  ASSERT_FALSE(delegate()->IsRegisteredWithOS("dont"));
+  ASSERT_FALSE(delegate()->IsFakeRegisteredWithOS("do"));
+  ASSERT_FALSE(delegate()->IsFakeRegisteredWithOS("dont"));
 
   registry()->OnAcceptRegisterProtocolHandler(ph_do1);
-  ASSERT_TRUE(delegate()->IsRegisteredWithOS("do"));
+  registry()->OnDenyRegisterProtocolHandler(ph_dont);
+  MessageLoop::current()->Run();
+  ASSERT_TRUE(delegate()->IsFakeRegisteredWithOS("do"));
+  ASSERT_FALSE(delegate()->IsFakeRegisteredWithOS("dont"));
 
   // This should not register with the OS, if it does the delegate
-  // will assert for us.
+  // will assert for us. We don't need to wait for the message loop
+  // as it should not go through to the shell worker.
   registry()->OnAcceptRegisterProtocolHandler(ph_do2);
+}
 
-  registry()->OnDenyRegisterProtocolHandler(ph_dont);
-  ASSERT_FALSE(delegate()->IsRegisteredWithOS("dont"));
+#if defined(OS_LINUX)
+// TODO(benwells): When Linux support is more reliable and
+// http://crbut.com/88255 is fixed this test will pass.
+#define MAYBE_TestOSRegistrationFailure FAILS_TestOSRegistrationFailure
+#else
+#define MAYBE_TestOSRegistrationFailure TestOSRegistrationFailure
+#endif
+
+TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
+  ProtocolHandler ph_do = CreateProtocolHandler("do", "test1");
+  ProtocolHandler ph_dont = CreateProtocolHandler("dont", "test");
+
+  ASSERT_FALSE(registry()->IsHandledProtocol("do"));
+  ASSERT_FALSE(registry()->IsHandledProtocol("dont"));
+
+  registry()->OnAcceptRegisterProtocolHandler(ph_do);
+  MessageLoop::current()->Run();
+  delegate()->set_force_os_failure(true);
+  registry()->OnAcceptRegisterProtocolHandler(ph_dont);
+  MessageLoop::current()->Run();
+  ASSERT_TRUE(registry()->IsHandledProtocol("do"));
+  ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("do").size());
+  ASSERT_FALSE(registry()->IsHandledProtocol("dont"));
+  ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("dont").size());
 }
 
 static void MakeRequest(const GURL& url, ProtocolHandlerRegistry* registry) {

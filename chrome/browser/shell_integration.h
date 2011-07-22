@@ -155,6 +155,9 @@ class ShellIntegration {
     virtual ~DefaultWebClientObserver() {}
     // Updates the UI state to reflect the current default browser state.
     virtual void SetDefaultWebClientUIState(DefaultWebClientUIState state) = 0;
+    // Observer classes that return true to OwnedByWorker are automatically
+    // freed by the worker when they are no longer needed.
+    virtual bool IsOwnedByWorker() { return false; }
   };
 
   //  Helper objects that handle checking if Chrome is the default browser
@@ -255,9 +258,10 @@ class ShellIntegration {
 
     const std::string& protocol() const { return protocol_; }
 
-   private:
+   protected:
     virtual ~DefaultProtocolClientWorker() {}
 
+   private:
     // Check is Chrome is the default handler for this protocol.
     virtual DefaultWebClientState CheckIsDefault();
 
