@@ -211,7 +211,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
   g_signal_connect(wrench_button, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressEventThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(wrench_button, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(wrench_button, FALSE);
 
   // Put the wrench button in a box so that we can paint the update notification
   // over it.
@@ -301,7 +301,7 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
       break;
   }
   if (widget) {
-    if (!enabled && GTK_WIDGET_STATE(widget) == GTK_STATE_PRELIGHT) {
+    if (!enabled && gtk_widget_get_state(widget) == GTK_STATE_PRELIGHT) {
       // If we're disabling a widget, GTK will helpfully restore it to its
       // previous state when we re-enable it, even if that previous state
       // is the prelight.  This looks bad.  See the bug for a simple repro.

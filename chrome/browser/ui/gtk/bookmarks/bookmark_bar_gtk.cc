@@ -514,7 +514,7 @@ void BookmarkBarGtk::SetInstructionState() {
 }
 
 void BookmarkBarGtk::SetChevronState() {
-  if (!GTK_WIDGET_VISIBLE(bookmark_hbox_))
+  if (!gtk_widget_get_visible(bookmark_hbox_))
     return;
 
   if (show_instructions_) {
@@ -523,7 +523,7 @@ void BookmarkBarGtk::SetChevronState() {
   }
 
   int extra_space = 0;
-  if (GTK_WIDGET_VISIBLE(overflow_button_))
+  if (gtk_widget_get_visible(overflow_button_))
     extra_space = overflow_button_->allocation.width;
 
   int overflow_idx = GetFirstHiddenBookmark(extra_space, NULL);
@@ -1107,7 +1107,7 @@ gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
                                          GdkEventButton* event) {
   last_pressed_coordinates_ = gfx::Point(event->x, event->y);
 
-  if (event->button == 3 && GTK_WIDGET_VISIBLE(bookmark_hbox_)) {
+  if (event->button == 3 && gtk_widget_get_visible(bookmark_hbox_)) {
     const BookmarkNode* node = GetNodeForToolButton(sender);
     DCHECK(node);
     DCHECK(page_navigator_);

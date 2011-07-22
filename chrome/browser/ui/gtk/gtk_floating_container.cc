@@ -147,7 +147,7 @@ static void gtk_floating_container_remove(GtkContainer* container,
 
       if (child->widget == widget) {
         removed_child = true;
-        gboolean was_visible = GTK_WIDGET_VISIBLE(widget);
+        gboolean was_visible = gtk_widget_get_visible(GTK_WIDGET(widget));
 
         gtk_widget_unparent(widget);
 
@@ -156,7 +156,7 @@ static void gtk_floating_container_remove(GtkContainer* container,
         g_list_free(children);
         g_free(child);
 
-        if (was_visible && GTK_WIDGET_VISIBLE(container))
+        if (was_visible && gtk_widget_get_visible(GTK_WIDGET(container)))
           gtk_widget_queue_resize(GTK_WIDGET(container));
 
         break;
@@ -236,7 +236,7 @@ static void gtk_floating_container_size_allocate(GtkWidget* widget,
         reinterpret_cast<GtkFloatingContainerChild*>(children->data);
     children = children->next;
 
-    if (GTK_WIDGET_VISIBLE(child->widget)) {
+    if (gtk_widget_get_visible(GTK_WIDGET(child->widget))) {
       gtk_widget_size_request(child->widget, &child_requisition);
       child_allocation.x = allocation->x + child->x;
       child_allocation.y = allocation->y + child->y;

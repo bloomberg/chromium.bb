@@ -131,7 +131,7 @@ const double kContentSettingBottomColor[] = { 0xff / 255.0,
 // If widget is visible, increment the int pointed to by count.
 // Suitible for use with gtk_container_foreach.
 void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
-  if (GTK_WIDGET_VISIBLE(widget))
+  if (gtk_widget_get_visible(widget))
     *static_cast<int*>(count) += 1;
 }
 
@@ -1159,10 +1159,13 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 
   // Only one of |tab_to_search_alignment_| and |tab_to_search_hint_| can be
   // visible at the same time.
-  if (!show_selected_keyword_ && GTK_WIDGET_VISIBLE(tab_to_search_alignment_))
+  if (!show_selected_keyword_ &&
+      gtk_widget_get_visible(tab_to_search_alignment_)) {
     gtk_widget_hide(tab_to_search_alignment_);
-  else if (!show_keyword_hint_ && GTK_WIDGET_VISIBLE(tab_to_search_hint_))
+  } else if (!show_keyword_hint_ &&
+             gtk_widget_get_visible(tab_to_search_hint_)) {
     gtk_widget_hide(tab_to_search_hint_);
+  }
 
   if (show_selected_keyword_) {
     GtkRequisition box, full_label, partial_label;
@@ -1172,7 +1175,7 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
     int full_partial_width_diff = full_label.width - partial_label.width;
     int full_box_width;
     int partial_box_width;
-    if (GTK_WIDGET_VISIBLE(tab_to_search_full_label_)) {
+    if (gtk_widget_get_visible(tab_to_search_full_label_)) {
       full_box_width = box.width;
       partial_box_width = full_box_width - full_partial_width_diff;
     } else {
@@ -1263,6 +1266,10 @@ LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
 
   if (content_setting_bubble_)
     content_setting_bubble_->Close();
+}
+
+bool LocationBarViewGtk::ContentSettingImageViewGtk::IsVisible() {
+  return gtk_widget_get_visible(widget());
 }
 
 void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
@@ -1461,6 +1468,10 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
   }
   if (last_icon_pixbuf_)
     g_object_unref(last_icon_pixbuf_);
+}
+
+bool LocationBarViewGtk::PageActionViewGtk::IsVisible() {
+  return gtk_widget_get_visible(widget());
 }
 
 void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(

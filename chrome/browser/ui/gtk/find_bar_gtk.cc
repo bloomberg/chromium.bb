@@ -438,7 +438,7 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
 }
 
 bool FindBarGtk::IsFindBarVisible() {
-  return GTK_WIDGET_VISIBLE(widget());
+  return gtk_widget_get_visible(widget());
 }
 
 void FindBarGtk::RestoreSavedFocus() {
@@ -687,7 +687,7 @@ void FindBarGtk::AdjustTextAlignment() {
   // Use keymap or widget direction if content does not have strong direction.
   // It matches the behavior of GtkEntry.
   if (content_dir == PANGO_DIRECTION_NEUTRAL) {
-    if (GTK_WIDGET_HAS_FOCUS(text_entry_)) {
+    if (gtk_widget_has_focus(text_entry_)) {
       content_dir = gdk_keymap_get_direction(
         gdk_keymap_get_for_display(gtk_widget_get_display(text_entry_)));
     } else {

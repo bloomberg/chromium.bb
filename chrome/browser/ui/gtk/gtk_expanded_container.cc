@@ -34,7 +34,7 @@ void GetChildPosition(GtkWidget* container, GtkWidget* child, int* x, int* y) {
 }
 
 void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
-  if (!GTK_WIDGET_VISIBLE(child))
+  if (!gtk_widget_get_visible(child))
     return;
 
   SizeAllocateData* data = reinterpret_cast<SizeAllocateData*>(userdata);

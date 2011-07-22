@@ -392,7 +392,8 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
 
   GtkWidget* gripper = gtk_button_new();
   gtk_widget_set_size_request(gripper, kResizeGripperWidth, -1);
-  GTK_WIDGET_UNSET_FLAGS(gripper, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(gripper, FALSE);
+
   gtk_widget_add_events(gripper, GDK_POINTER_MOTION_MASK);
   signals_.Connect(gripper, "motion-notify-event",
                    G_CALLBACK(OnGripperMotionNotifyThunk), this);
@@ -597,7 +598,7 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(const Extension* extension,
     return;
 
   // Animate the addition if we are showing all browser action buttons.
-  if (!GTK_WIDGET_VISIBLE(overflow_area_)) {
+  if (!gtk_widget_get_visible(overflow_area_)) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -614,7 +615,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(
 
   RemoveButtonForExtension(extension);
 
-  if (!GTK_WIDGET_VISIBLE(overflow_area_)) {
+  if (!gtk_widget_get_visible(overflow_area_)) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -732,7 +733,7 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
   }
 
   if (button_count() > showing_icon_count) {
-    if (!GTK_WIDGET_VISIBLE(overflow_area_)) {
+    if (!gtk_widget_get_visible(overflow_area_)) {
       if (drag_button_) {
         // During drags, when the overflow chevron shows for the first time,
         // take that much space away from |button_hbox_| to make the drag look

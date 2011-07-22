@@ -379,7 +379,7 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
   if (!root_widget_.get() ||
       !GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(root_widget_.get())))
     return;
-  GTK_WIDGET_SET_FLAGS(select_button_, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default(select_button_, TRUE);
   gtk_widget_grab_default(select_button_);
 }
 
