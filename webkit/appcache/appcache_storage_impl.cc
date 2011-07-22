@@ -346,6 +346,15 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     scoped_refptr<AppCache>* cache, scoped_refptr<AppCacheGroup>* group) {
   DCHECK(storage_ && cache && group);
 
+  (*cache) = storage_->working_set_.GetCache(cache_record_.cache_id);
+  if (cache->get()) {
+    (*group) = cache->get()->owning_group();
+    DCHECK(group->get());
+    DCHECK_EQ(group_record_.group_id, group->get()->group_id());
+    storage_->NotifyStorageAccessed(group_record_.origin);
+    return;
+  }
+
   (*cache) = new AppCache(storage_->service_, cache_record_.cache_id);
   cache->get()->InitializeWithDatabaseRecords(
       cache_record_, entry_records_, fallback_namespace_records_,
@@ -413,7 +422,6 @@ void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
   scoped_refptr<AppCacheGroup> group;
   if (success_ && !storage_->is_disabled()) {
     DCHECK(cache_record_.cache_id == cache_id_);
-    DCHECK(!storage_->working_set_.GetCache(cache_record_.cache_id));
     CreateCacheAndGroupFromRecords(&cache, &group);
   }
   FOR_EACH_DELEGATE(delegates_, OnCacheLoaded(cache, cache_id_));
@@ -452,12 +460,13 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
   if (!storage_->is_disabled()) {
     if (success_) {
       DCHECK(group_record_.manifest_url == manifest_url_);
-      DCHECK(!storage_->working_set_.GetGroup(manifest_url_));
-      DCHECK(!storage_->working_set_.GetCache(cache_record_.cache_id));
       CreateCacheAndGroupFromRecords(&cache, &group);
     } else {
-      group = new AppCacheGroup(
-          storage_->service_, manifest_url_, storage_->NewGroupId());
+      group = storage_->working_set_.GetGroup(manifest_url_);
+      if (!group) {
+        group = new AppCacheGroup(
+            storage_->service_, manifest_url_, storage_->NewGroupId());
+      }
     }
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group, manifest_url_));
