@@ -1027,9 +1027,14 @@ def main():
     oper.Die('Argument to --upstream must be a valid directory.')
 
   # If --to-csv given verify file can be opened for write.
-  if options.csv_file and not os.access(options.csv_file, os.W_OK):
-    parser.print_help()
-    oper.Die('Unable to open %s for writing.' % options.csv_file)
+  if options.csv_file:
+    try:
+      fh = open(options.csv_file, 'w')
+      fh.close()
+    except IOError as ex:
+      parser.print_help()
+      oper.Die('Unable to open %s for writing: %s' % (options.csv_file,
+                                                      str(ex)))
 
   upgrader = Upgrader(options, args)
   upgrader.PreRunChecks()
