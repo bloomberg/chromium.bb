@@ -46,11 +46,6 @@ void Instance_DidChangeView(PP_Instance pp_instance,
 void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
 }
 
-PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                                  const PP_InputEvent* event) {
-  return PP_FALSE;
-}
-
 PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
                                     PP_Resource pp_url_loader) {
   return PP_FALSE;
