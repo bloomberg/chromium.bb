@@ -104,6 +104,18 @@ class ShortcutsProviderTest : public TestingBrowserProcessTest,
   virtual void OnProviderUpdate(bool updated_matches);
 
  protected:
+  class SetShouldContain
+      : public std::unary_function<const std::string&, std::set<std::string> > {
+   public:
+    explicit SetShouldContain(const ACMatches& matched_urls);
+
+    void operator()(const std::string& expected);
+    std::set<std::string> Leftovers() const { return matches_; }
+
+   private:
+    std::set<std::string> matches_;
+  };
+
   void SetUp();
   void TearDown();
 
@@ -154,38 +166,31 @@ void ShortcutsProviderTest::FillData() {
     const TestShortcutInfo& cur = shortcut_test_db[i];
     const GURL current_url(cur.url);
     Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
-    ShortcutsProvider::Shortcut shortcut(
+    shortcuts_provider::Shortcut shortcut(
         ASCIIToUTF16(cur.title),
         current_url,
         ASCIIToUTF16(cur.contents),
-        provider_->SpansFromString(ASCIIToUTF16(cur.contents_class)),
+        shortcuts_provider::SpansFromString(ASCIIToUTF16(cur.contents_class)),
         ASCIIToUTF16(cur.description),
-        provider_->SpansFromString(ASCIIToUTF16(cur.description_class)));
+        shortcuts_provider::SpansFromString(
+            ASCIIToUTF16(cur.description_class)));
     shortcut.last_access_time = visit_time;
-    provider_->shortcuts_map_.insert(
-        std::pair<string16, ShortcutsProvider::Shortcut>(
-            ASCIIToUTF16(cur.title), shortcut));
+    provider_->shortcuts_map_.insert(std::make_pair(ASCIIToUTF16(cur.title),
+                                                    shortcut));
   }
 }
 
-class SetShouldContain : public std::unary_function<const std::string&,
-                                                    std::set<std::string> > {
- public:
-  explicit SetShouldContain(const ACMatches& matched_urls) {
-    for (ACMatches::const_iterator iter = matched_urls.begin();
-         iter != matched_urls.end(); ++iter)
-      matches_.insert(iter->destination_url.spec());
-  }
+ShortcutsProviderTest::SetShouldContain::SetShouldContain(
+    const ACMatches& matched_urls) {
+  for (ACMatches::const_iterator iter = matched_urls.begin();
+       iter != matched_urls.end(); ++iter)
+    matches_.insert(iter->destination_url.spec());
+}
 
-  void operator()(const std::string& expected) {
-    EXPECT_EQ(1U, matches_.erase(expected));
-  }
-
-  std::set<std::string> Leftovers() const { return matches_; }
-
- private:
-  std::set<std::string> matches_;
-};
+void ShortcutsProviderTest::SetShouldContain::operator()(
+    const std::string& expected) {
+  EXPECT_EQ(1U, matches_.erase(expected));
+}
 
 void ShortcutsProviderTest::RunTest(const string16 text,
                                    std::vector<std::string> expected_urls,
@@ -478,13 +483,12 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
       ACMatchClassification(0, ACMatchClassification::NONE));
   spans_description.push_back(
       ACMatchClassification(2, ACMatchClassification::MATCH));
-  ShortcutsProvider::Shortcut shortcut(
-      ASCIIToUTF16("test"),
-      GURL("http://www.test.com"),
-      ASCIIToUTF16("www.test.com"),
-      spans_content,
-      ASCIIToUTF16("A test"),
-      spans_description);
+  shortcuts_provider::Shortcut shortcut(ASCIIToUTF16("test"),
+                                        GURL("http://www.test.com"),
+                                        ASCIIToUTF16("www.test.com"),
+                                        spans_content,
+                                        ASCIIToUTF16("A test"),
+                                        spans_description);
 
   // Yes, these tests could fail if CalculateScore() takes a lot of time,
   // but even for the last test the time to change score by 1 is around
@@ -539,17 +543,17 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
     const TestShortcutInfo& cur = shortcuts_to_test_delete[i];
     const GURL current_url(cur.url);
     Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
-    ShortcutsProvider::Shortcut shortcut(
+    shortcuts_provider::Shortcut shortcut(
         ASCIIToUTF16(cur.title),
         current_url,
         ASCIIToUTF16(cur.contents),
-        provider_->SpansFromString(ASCIIToUTF16(cur.contents_class)),
+        shortcuts_provider::SpansFromString(ASCIIToUTF16(cur.contents_class)),
         ASCIIToUTF16(cur.description),
-        provider_->SpansFromString(ASCIIToUTF16(cur.description_class)));
+        shortcuts_provider::SpansFromString(
+            ASCIIToUTF16(cur.description_class)));
     shortcut.last_access_time = visit_time;
-    provider_->shortcuts_map_.insert(
-        std::pair<string16, ShortcutsProvider::Shortcut>(
-            ASCIIToUTF16(cur.title), shortcut));
+    provider_->shortcuts_map_.insert(std::make_pair(ASCIIToUTF16(cur.title),
+                                                    shortcut));
   }
 
   EXPECT_EQ(original_shortcuts_count + 3, provider_->shortcuts_map_.size());

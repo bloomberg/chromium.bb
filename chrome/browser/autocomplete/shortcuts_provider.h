@@ -9,13 +9,14 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
+#include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
 struct AutocompleteLog;
@@ -24,8 +25,9 @@ struct AutocompleteLog;
 // from previously selected suggestions. The more often a user selects a
 // suggestion for a given search term the higher will be that suggestion's
 // ranking for future uses of that search term.
-class ShortcutsProvider : public AutocompleteProvider,
-                          public NotificationObserver {
+class ShortcutsProvider
+    : public AutocompleteProvider,
+      public history::ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsProvider(ACProviderListener* listener, Profile* profile);
   virtual ~ShortcutsProvider();
@@ -43,47 +45,14 @@ class ShortcutsProvider : public AutocompleteProvider,
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, DeleteMatch);
 
-  // The following struct encapsulates one previously selected omnibox shortcut.
-  struct Shortcut {
-    Shortcut(const string16& text,
-             const GURL& url,
-             const string16& contents,
-             const ACMatchClassifications& contents_class,
-             const string16& description,
-             const ACMatchClassifications& description_class);
-    // Required for STL, we don't use this directly.
-    Shortcut();
-    ~Shortcut();
-
-    string16 text;  // The user's original input string.
-    GURL url;       // The corresponding destination URL.
-
-    // Contents and description from the original match, along with their
-    // corresponding markup. We need these in order to correctly mark which
-    // parts are URLs, dim, etc. However, we strip all MATCH classifications
-    // from these since we'll mark the matching portions ourselves as we match
-    // the user's current typing against these Shortcuts.
-    string16 contents;
-    ACMatchClassifications contents_class;
-    string16 description;
-    ACMatchClassifications description_class;
-
-    base::Time last_access_time;  // Last time shortcut was selected.
-    int number_of_hits;           // How many times shortcut was selected.
-  };
-
-  // Maps the original match (|text| in the Shortcut) to Shortcut for quick
-  // search.
-  typedef std::multimap<string16, Shortcut> ShortcutMap;
-
   // Clamp relevance scores to ensure none of our matches will become the
   // default. This prevents us from having to worry about inline autocompletion.
   static const int kMaxScore;
 
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // ShortcutsBackendObserver:
+  virtual void OnShortcutsLoaded();
+  virtual void OnShortcutAddedOrUpdated(shortcuts_provider::Shortcut shortcut);
+  virtual void OnShortcutsRemoved(std::vector<std::string> shortcut_ids);
 
   void DeleteMatchesWithURLs(const std::set<GURL>& urls);
   void DeleteShortcutsWithURLs(const std::set<GURL>& urls);
@@ -91,9 +60,10 @@ class ShortcutsProvider : public AutocompleteProvider,
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);
 
-  AutocompleteMatch ShortcutToACMatch(const AutocompleteInput& input,
-                                      const string16& terms,
-                                      ShortcutMap::iterator it);
+  AutocompleteMatch ShortcutToACMatch(
+      const AutocompleteInput& input,
+      const string16& terms,
+      shortcuts_provider::ShortcutMap::iterator it);
 
   // Given |text| and a corresponding base set of classifications
   // |original_class|, adds ACMatchClassification::MATCH markers for all
@@ -113,19 +83,27 @@ class ShortcutsProvider : public AutocompleteProvider,
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
-  ShortcutMap::iterator FindFirstMatch(const string16& keyword);
+  shortcuts_provider::ShortcutMap::iterator FindFirstMatch(
+      const string16& keyword);
 
-  static int CalculateScore(const string16& terms, const Shortcut& shortcut);
+  static int CalculateScore(const string16& terms,
+                            const shortcuts_provider::Shortcut& shortcut);
 
-  // Helpers dealing with database update.
-  // Converts spans vector to comma-separated string.
-  static string16 SpansToString(const ACMatchClassifications& value);
-  // Coverts comma-separated unsigned integer values into spans vector.
-  static ACMatchClassifications SpansFromString(const string16& value);
+  // Loads shortcuts from the backend.
+  void LoadShortcuts();
 
   std::string languages_;
-  NotificationRegistrar notification_registrar_;
-  ShortcutMap shortcuts_map_;
+
+  // The following two maps are duplicated from the ShortcutsBackend. If any
+  // of the copies of ShortcutProvider makes a change and calls ShortcutBackend
+  // the change will be committed to storage and to the back-end's copy on the
+  // DB thread and propagated back to all copies of provider, so eventually they
+  // all are going to be in sync.
+  shortcuts_provider::ShortcutMap shortcuts_map_;
+  // This is a helper map for quick access to a shortcut by guid.
+  shortcuts_provider::GuidToShortcutsIteratorMap guid_map_;
+
+  scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_

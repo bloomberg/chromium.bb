@@ -22,39 +22,18 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
-namespace {
-// Adds match at the end if and only if its style is different from the last
-// match.
-void AddLastMatchIfNeeded(ACMatchClassifications* matches,
-                          int position,
-                          int style) {
-  DCHECK(matches);
-  if (matches->empty() || matches->back().style != style)
-    matches->push_back(ACMatchClassification(position, style));
-}
+using shortcuts_provider::Shortcut;
+using shortcuts_provider::ShortcutMap;
 
-// Takes Match classification vector and removes all matched positions,
-// compacting repetitions if necessary.
-void StripMatchMarkersFromClassifications(ACMatchClassifications* matches) {
-  DCHECK(matches);
-  ACMatchClassifications unmatched;
-  for (ACMatchClassifications::iterator i = matches->begin();
-       i != matches->end(); ++i) {
-    AddLastMatchIfNeeded(&unmatched, i->offset,
-        i->style & ~ACMatchClassification::MATCH);
-  }
-  matches->swap(unmatched);
-}
+namespace {
 
 class RemoveMatchPredicate {
  public:
@@ -81,14 +60,18 @@ const int ShortcutsProvider::kMaxScore =
 ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
                                      Profile* profile)
     : AutocompleteProvider(listener, profile, "ShortcutsProvider"),
-      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
-  notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                              Source<Profile>(profile));
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                              Source<Profile>(profile));
+      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      shortcuts_backend_(profile->GetShortcutsBackend()) {
+  if (shortcuts_backend_.get()) {
+    shortcuts_backend_->AddObserver(this);
+    if (shortcuts_backend_->initialized())
+      LoadShortcuts();
+  }
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
+  if (shortcuts_backend_.get())
+    shortcuts_backend_->RemoveObserver(this);
 }
 
 void ShortcutsProvider::Start(const AutocompleteInput& input,
@@ -130,37 +113,30 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   history_service->DeleteURL(match.destination_url);
 }
 
-void ShortcutsProvider::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    const std::set<GURL>& urls =
-        Details<const history::URLsDeletedDetails>(details)->urls;
-    DeleteShortcutsWithURLs(urls);
-    return;
+void ShortcutsProvider::OnShortcutsLoaded() {
+  LoadShortcuts();
+}
+
+void ShortcutsProvider::OnShortcutAddedOrUpdated(Shortcut shortcut) {
+  shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
+      guid_map_.find(shortcut.id);
+  if (it != guid_map_.end()) {
+    shortcuts_map_.erase(it->second);
   }
+  guid_map_[shortcut.id] = shortcuts_map_.insert(
+      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
+}
 
-  DCHECK(type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL);
-
-  AutocompleteLog* log = Details<AutocompleteLog>(details).ptr();
-  string16 text_lowercase(base::i18n::ToLower(log->text));
-
-  int number_of_hits = 1;
-  const AutocompleteMatch& match(log->result.match_at(log->selected_index));
-  for (ShortcutMap::iterator it = FindFirstMatch(text_lowercase);
-       it != shortcuts_map_.end() &&
-           StartsWith(it->first, text_lowercase, true); ++it) {
-    if (match.destination_url == it->second.url) {
-      number_of_hits = it->second.number_of_hits + 1;
-      shortcuts_map_.erase(it);
-      break;
+void ShortcutsProvider::OnShortcutsRemoved(
+    std::vector<std::string> shortcuts_ids) {
+  for (size_t i = 0; i < shortcuts_ids.size(); ++i) {
+    shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
+        guid_map_.find(shortcuts_ids[i]);
+    if (it != guid_map_.end()) {
+      shortcuts_map_.erase(it->second);
+      guid_map_.erase(it);
     }
   }
-  Shortcut shortcut(log->text, match.destination_url, match.contents,
-      match.contents_class, match.description, match.description_class);
-  shortcut.number_of_hits = number_of_hits;
-  shortcuts_map_.insert(std::make_pair(text_lowercase, shortcut));
-  // TODO(georgey): Update db here.
 }
 
 void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
@@ -176,7 +152,11 @@ void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
     else
       ++it;
   }
-  // TODO(georgey): Update db here.
+  if (!shortcuts_backend_.get())
+    return;  // We are off the record.
+  for (std::set<GURL>::const_iterator url = urls.begin(); url != urls.end();
+       ++url)
+    shortcuts_backend_->DeleteShortcutsWithUrl(*url);
 }
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
@@ -271,9 +251,12 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
     if (!matches.empty() && matches.back().offset == match_start)
       matches.pop_back();
 
-    AddLastMatchIfNeeded(&matches, match_start, ACMatchClassification::MATCH);
-    if (match_end < text_lowercase.length())
-      AddLastMatchIfNeeded(&matches, match_end, ACMatchClassification::NONE);
+    shortcuts_provider::AddLastMatchIfNeeded(&matches, match_start,
+                                             ACMatchClassification::MATCH);
+    if (match_end < text_lowercase.length()) {
+      shortcuts_provider::AddLastMatchIfNeeded(&matches, match_end,
+                                               ACMatchClassification::NONE);
+    }
 
     last_position = match_end;
   }
@@ -285,8 +268,9 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   ACMatchClassifications output;
   for (ACMatchClassifications::const_iterator i = original_matches.begin(),
        j = matches.begin(); i != original_matches.end();) {
-    AddLastMatchIfNeeded(&output, std::max(i->offset, j->offset),
-                         i->style | j->style);
+    shortcuts_provider::AddLastMatchIfNeeded(&output,
+                                             std::max(i->offset, j->offset),
+                                             i->style | j->style);
     if ((j + 1) == matches.end() || (((i + 1) != original_matches.end()) &&
         ((j + 1)->offset > (i + 1)->offset)))
       ++i;
@@ -297,7 +281,7 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   return output;
 }
 
-ShortcutsProvider::ShortcutMap::iterator ShortcutsProvider::FindFirstMatch(
+ShortcutMap::iterator ShortcutsProvider::FindFirstMatch(
     const string16& keyword) {
   ShortcutMap::iterator it = shortcuts_map_.lower_bound(keyword);
   // Lower bound not necessarily matches the keyword, check for item pointed by
@@ -337,67 +321,11 @@ int ShortcutsProvider::CalculateScore(const string16& terms,
       0.5);
 }
 
-// static
-string16 ShortcutsProvider::SpansToString(const ACMatchClassifications& value) {
-  string16 spans;
-  string16 comma(ASCIIToUTF16(","));
-  for (size_t i = 0; i < value.size(); ++i) {
-    if (i)
-      spans.append(comma);
-    spans.append(base::IntToString16(value[i].offset));
-    spans.append(comma);
-    spans.append(base::IntToString16(value[i].style));
-  }
-  return spans;
-}
-
-// static
-ACMatchClassifications ShortcutsProvider::SpansFromString(
-    const string16& value) {
-  ACMatchClassifications spans;
-  std::vector<string16> tokens;
-  Tokenize(value, ASCIIToUTF16(","), &tokens);
-  // The number of tokens should be even.
-  if ((tokens.size() & 1) == 1) {
-    NOTREACHED();
-    return spans;
-  }
-  for (size_t i = 0; i < tokens.size(); i += 2) {
-    int span_start = 0;
-    int span_type = ACMatchClassification::NONE;
-    if (!base::StringToInt(tokens[i], &span_start) ||
-        !base::StringToInt(tokens[i + 1], &span_type)) {
-      NOTREACHED();
-      return spans;
-    }
-    spans.push_back(ACMatchClassification(span_start, span_type));
-  }
-  return spans;
-}
-
-ShortcutsProvider::Shortcut::Shortcut(
-    const string16& text,
-    const GURL& url,
-    const string16& contents,
-    const ACMatchClassifications& in_contents_class,
-    const string16& description,
-    const ACMatchClassifications& in_description_class)
-    : text(text),
-      url(url),
-      contents(contents),
-      contents_class(in_contents_class),
-      description(description),
-      description_class(in_description_class),
-      last_access_time(base::Time::Now()),
-      number_of_hits(1) {
-  StripMatchMarkersFromClassifications(&contents_class);
-  StripMatchMarkersFromClassifications(&description_class);
-}
-
-ShortcutsProvider::Shortcut::Shortcut()
-    : last_access_time(base::Time::Now()),
-      number_of_hits(0) {
-}
-
-ShortcutsProvider::Shortcut::~Shortcut() {
+void ShortcutsProvider::LoadShortcuts() {
+  DCHECK(shortcuts_backend_.get());
+  guid_map_.clear();
+  CHECK(shortcuts_backend_->GetShortcuts(&shortcuts_map_));
+  for (shortcuts_provider::ShortcutMap::iterator it = shortcuts_map_.begin();
+       it != shortcuts_map_.end(); ++it)
+    guid_map_[it->second.id] = it;
 }

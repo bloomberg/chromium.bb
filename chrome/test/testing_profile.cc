@@ -471,6 +471,10 @@ AutocompleteClassifier* TestingProfile::GetAutocompleteClassifier() {
   return autocomplete_classifier_.get();
 }
 
+history::ShortcutsBackend* TestingProfile::GetShortcutsBackend() {
+  return NULL;
+}
+
 WebDataService* TestingProfile::GetWebDataService(ServiceAccessType access) {
   return web_data_service_.get();
 }

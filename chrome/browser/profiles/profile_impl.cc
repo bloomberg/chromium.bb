@@ -40,6 +40,7 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -1095,6 +1096,16 @@ AutocompleteClassifier* ProfileImpl::GetAutocompleteClassifier() {
   if (!autocomplete_classifier_.get())
     autocomplete_classifier_.reset(new AutocompleteClassifier(this));
   return autocomplete_classifier_.get();
+}
+
+history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
+  // This is called on one thread only - UI, so no magic is needed to protect
+  // against the multiple concurrent calls.
+  if (!shortcuts_backend_.get()) {
+    shortcuts_backend_ = new history::ShortcutsBackend(GetPath(), this);
+    CHECK(shortcuts_backend_->Init());
+  }
+  return shortcuts_backend_.get();
 }
 
 WebDataService* ProfileImpl::GetWebDataService(ServiceAccessType sat) {

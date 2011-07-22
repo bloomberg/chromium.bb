@@ -1451,6 +1451,8 @@
         'browser/history/history_unittest_base.h',
         'browser/history/in_memory_url_index_unittest.cc',
         'browser/history/query_parser_unittest.cc',
+        'browser/history/shortcuts_backend_unittest.cc',
+        'browser/history/shortcuts_database_unittest.cc',
         'browser/history/snippet_unittest.cc',
         'browser/history/starred_url_database_unittest.cc',
         'browser/history/text_database_manager_unittest.cc',

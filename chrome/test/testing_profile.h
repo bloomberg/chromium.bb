@@ -166,6 +166,7 @@ class TestingProfile : public Profile {
   // for more information.
   net::CookieMonster* GetCookieMonster();
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
+  virtual history::ShortcutsBackend* GetShortcutsBackend();
   virtual WebDataService* GetWebDataService(ServiceAccessType access);
   virtual WebDataService* GetWebDataServiceWithoutCreating();
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access);

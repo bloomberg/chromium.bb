@@ -39,6 +39,7 @@ class SandboxedFileSystemContext;
 
 namespace history {
 class TopSites;
+class ShortcutsBackend;
 }
 
 namespace net {
@@ -326,6 +327,11 @@ class Profile {
   // profile. The AutocompleteClassifier is lazily created the first time that
   // this method is called.
   virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
+
+  // Returns the ShortcutsBackend for this profile. This is owned by
+  // the Profile and created on the first call. Callers that outlive the life of
+  // this profile need to be sure they refcount the returned value.
+  virtual history::ShortcutsBackend* GetShortcutsBackend() = 0;
 
   // Returns the WebDataService for this profile. This is owned by
   // the Profile. Callers that outlive the life of this profile need to be

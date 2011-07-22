@@ -403,6 +403,10 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetAutocompleteClassifier();
   }
 
+  virtual history::ShortcutsBackend* GetShortcutsBackend() {
+    return NULL;
+  }
+
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) {
     if (sat == EXPLICIT_ACCESS)
       return profile_->GetWebDataService(sat);

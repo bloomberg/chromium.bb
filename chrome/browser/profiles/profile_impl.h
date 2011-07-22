@@ -69,6 +69,7 @@ class ProfileImpl : public Profile,
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
+  virtual history::ShortcutsBackend* GetShortcutsBackend();
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
   virtual WebDataService* GetWebDataServiceWithoutCreating();
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
@@ -237,6 +238,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
+  scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<WebKitContext> webkit_context_;
