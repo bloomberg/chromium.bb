@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/cros_library_loader.h"
+#include "chrome/browser/chromeos/cros/library_loader.h"
 
 #include <dlfcn.h>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/metrics/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/cros/chromeos_cros_api.h"
@@ -17,7 +18,7 @@ namespace chromeos {
 
 namespace {
 
-void addLibcrosTimeHistogram(const char* name, const base::TimeDelta& delta) {
+void AddLibcrosTimeHistogram(const char* name, const base::TimeDelta& delta) {
   static const base::TimeDelta min_time = base::TimeDelta::FromMilliseconds(1);
   static const base::TimeDelta max_time = base::TimeDelta::FromSeconds(1);
   const size_t bucket_count(10);
@@ -34,13 +35,23 @@ void addLibcrosTimeHistogram(const char* name, const base::TimeDelta& delta) {
 
 }  // namespace
 
-bool CrosLibraryLoader::Load(std::string* load_error_string) {
+class LibraryLoaderImpl : public LibraryLoader {
+ public:
+  LibraryLoaderImpl();
+
+  // LibraryLoader:
+  virtual bool Load(std::string* load_error_string) OVERRIDE;
+};
+
+LibraryLoaderImpl::LibraryLoaderImpl() {}
+
+bool LibraryLoaderImpl::Load(std::string* load_error_string) {
   bool loaded = false;
   FilePath path;
   if (PathService::Get(chrome::FILE_CHROMEOS_API, &path)) {
     loaded = LoadLibcros(path.value().c_str(), *load_error_string);
     if (loaded)
-      SetLibcrosTimeHistogramFunction(addLibcrosTimeHistogram);
+      SetLibcrosTimeHistogramFunction(AddLibcrosTimeHistogram);
   }
 
   if (!loaded) {
@@ -48,6 +59,11 @@ bool CrosLibraryLoader::Load(std::string* load_error_string) {
                << *load_error_string;
   }
   return loaded;
+}
+
+// static
+LibraryLoader* LibraryLoader::GetImpl() {
+  return new LibraryLoaderImpl();
 }
 
 }   // namespace chromeos

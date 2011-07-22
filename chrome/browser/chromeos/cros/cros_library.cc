@@ -8,9 +8,9 @@
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/libcros_service_library.h"
+#include "chrome/browser/chromeos/cros/library_loader.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -73,7 +73,7 @@ bool CrosLibrary::EnsureLoaded() {
 
   if (!loaded_ && !load_error_) {
     if (!library_loader_) {
-      library_loader_ = new CrosLibraryLoader();
+      library_loader_ = LibraryLoader::GetImpl();
       own_library_loader_ = true;
     }
     loaded_ = library_loader_->Load(&load_error_string_);
