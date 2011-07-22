@@ -39,7 +39,6 @@ void OwnerManager::UpdateOwnerKey(const BrowserThread::ID thread_id,
 }
 
 void OwnerManager::LoadOwnerKey() {
-  BootTimesLoader::Get()->AddLoginTimeMarker("LoadOwnerKeyStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   VLOG(1) << "Loading owner key";
   int result = chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;

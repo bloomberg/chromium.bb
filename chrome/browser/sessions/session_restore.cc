@@ -557,11 +557,19 @@ class SessionRestoreImpl : public NotificationObserver {
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     }
 
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-End", false);
+#endif
     return browser;
   }
 
   void OnGotSession(SessionService::Handle handle,
                     std::vector<SessionWindow*>* windows) {
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-GotSession", false);
+#endif
     if (synchronous_) {
       // See comment above windows_ as to why we don't process immediately.
       windows_.swap(*windows);
@@ -578,6 +586,10 @@ class SessionRestoreImpl : public NotificationObserver {
       return FinishedTabCreation(false, false);
     }
 
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-CreatingTabs-Start", false);
+#endif
     StartTabCreation();
 
     Browser* current_browser =
@@ -597,10 +609,18 @@ class SessionRestoreImpl : public NotificationObserver {
         // The first set of tabs is added to the existing browser.
         browser = current_browser;
       } else {
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-CreateRestoredBrowser-Start", false);
+#endif
         browser = CreateRestoredBrowser(
             static_cast<Browser::Type>((*i)->type),
             (*i)->bounds,
             (*i)->is_maximized);
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-CreateRestoredBrowser-End", false);
+#endif
       }
       if ((*i)->type == Browser::TYPE_TABBED)
         last_browser = browser;
@@ -622,6 +642,10 @@ class SessionRestoreImpl : public NotificationObserver {
 
     if (last_browser && !urls_to_open_.empty())
       AppendURLsToBrowser(last_browser, urls_to_open_);
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore-CreatingTabs-End", false);
+#endif
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
@@ -790,7 +814,7 @@ Browser* SessionRestore::RestoreSession(Profile* profile,
                                         const std::vector<GURL>& urls_to_open) {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
-      "SessionRestoreStarted", false);
+      "SessionRestore-Start", false);
 #endif
   DCHECK(profile);
   // Always restore from the original profile (incognito profiles have no

@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_BOOT_TIMES_LOADER_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback_old.h"
 #include "base/time.h"
 #include "content/browser/cancelable_request.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -157,6 +159,7 @@ class BootTimesLoader
                          const std::string uma_name,
                          const std::string uma_prefix,
                          const std::vector<TimeMarker> login_times);
+  void LoginDone();
 
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
@@ -169,6 +172,7 @@ class BootTimesLoader
 
   std::vector<TimeMarker> login_time_markers_;
   std::vector<TimeMarker> logout_time_markers_;
+  std::set<RenderWidgetHost*> render_widget_hosts_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

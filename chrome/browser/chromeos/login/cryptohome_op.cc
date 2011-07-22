@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
@@ -24,6 +25,8 @@ CryptohomeOp::CryptohomeOp(AuthAttemptState* current_attempt,
 CryptohomeOp::~CryptohomeOp() {}
 
 void CryptohomeOp::OnComplete(bool success, int return_code) {
+  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+      "CryptohomeMount-End", false);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
@@ -50,6 +53,8 @@ class MountAttempt : public CryptohomeOp {
 
   bool Initiate() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "CryptohomeMount-Start", false);
     CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
     return lib->AsyncMount(attempt_->username,
                            attempt_->ascii_hash,

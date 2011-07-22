@@ -312,19 +312,19 @@ void LoginUtilsImpl::PrepareProfile(
   BootTimesLoader* btl = BootTimesLoader::Get();
 
   VLOG(1) << "Completing login for " << username;
-  btl->AddLoginTimeMarker("CompletingLogin", false);
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
+    btl->AddLoginTimeMarker("StartSession-Start", false);
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
-    btl->AddLoginTimeMarker("StartedSession", false);
+    btl->AddLoginTimeMarker("StartSession-End", false);
   }
 
+  btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager::Get()->UserLoggedIn(username);
-  btl->AddLoginTimeMarker("UserLoggedIn", false);
+  btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
-  btl->AddLoginTimeMarker("LoggingRedirected", false);
 
   username_ = username;
   password_ = password;
@@ -383,7 +383,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
       profile->GetExtensionService()->extensions_enabled()) {
     profile->GetExtensionService()->InitEventRouters();
   }
-  btl->AddLoginTimeMarker("ExtensionsServiceStarted", false);
 
   // Supply credentials for sync and others to use. Load tokens from disk.
   TokenService* token_service = profile->GetTokenService();
@@ -399,19 +398,18 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
       FetchTokens(profile, credentials_);
     }
   }
-  btl->AddLoginTimeMarker("TokensGotten", false);
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
   profile->GetProfileSyncService(username_)->SetPassphrase(password_,
                                                            false,
                                                            true);
-  btl->AddLoginTimeMarker("SyncStarted", false);
 
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
   if (CrosLibrary::Get()->EnsureLoaded()) {
     CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
+    btl->AddLoginTimeMarker("TPMOwn-Start", false);
     if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
       if (cryptohome->TpmIsOwned()) {
         cryptohome->TpmClearStoredPassword();
@@ -419,8 +417,8 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
         cryptohome->TpmCanAttemptOwnership();
       }
     }
+    btl->AddLoginTimeMarker("TPMOwn-End", false);
   }
-  btl->AddLoginTimeMarker("TPMOwned", false);
 
   RespectLocalePreference(profile);
 
@@ -430,7 +428,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
 
   // Enable/disable plugins based on user preferences.
   PluginUpdater::GetInstance()->SetProfile(profile);
-  btl->AddLoginTimeMarker("PluginsStateUpdated", false);
 
   // We suck. This is a hack since we do not have the enterprise feature
   // done yet to pull down policies from the domain admin. We'll take this
@@ -474,7 +471,6 @@ void LoginUtilsImpl::FetchCookies(
   // CookieFetcher will delete itself once done.
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials.data);
-  BootTimesLoader::Get()->AddLoginTimeMarker("CookieFetchStarted", false);
 }
 
 void LoginUtilsImpl::FetchTokens(
