@@ -222,14 +222,10 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 //TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
-// Fails only on Windows: http://crbug.com/90040
-#if defined(OS_WIN)
-TEST_F(OutOfProcessPPAPITest, FAILS_FileSystem) {
-  RunTest("FileSystem");
+// http://crbug.com/90040
+TEST_F(OutOfProcessPPAPITest, FLAKY_FileSystem) {
+  RunTestViaHTTP("FileSystem");
 }
-#else
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
-#endif
 
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
