@@ -198,7 +198,7 @@ const Experiment kExperiments[] = {
     "dns-server",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DNS_SERVER_NAME,
     IDS_FLAGS_DNS_SERVER_DESCRIPTION,
-    kOsLinux,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kDnsServer)
   },
   {
