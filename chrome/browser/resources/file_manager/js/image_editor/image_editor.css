@@ -1,0 +1,101 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.image-editor {
+  background: white;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  z-index: 100;
+}
+
+.toolbar {
+  width: 100%;
+  height: 32px;
+  border: 1px solid black;
+  border-bottom-width: 0;
+}
+
+.toolbar button {
+  margin: 3px;
+  height: 26px;
+}
+
+.toolbar input {
+  width: 200px;
+}
+
+.toolbar span {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.canvas-wrapper {
+  position: absolute;
+  width: 100%;
+  top: 32px;
+  bottom: 0;
+  border: 1px solid black;
+}
+
+.scale-tool {
+  position: absolute;
+  width: 275px;
+  height: 43px;
+  right: 0;
+  bottom: 0;
+  border: 1px solid black;
+  border-right-width: 0;
+  border-bottom-width: 0;
+  background: white;
+}
+
+.size-div {
+  position: absolute;
+  right: 2px;
+}
+
+.scale-div {
+  position: absolute;
+  width: 100%;
+  top: 18px;
+}
+
+.scale-div button{
+  position: absolute;
+  width: 23px;
+  height: 23px;
+  top: 1px;
+}
+
+.scale-div .scale-down{
+  left: 1px;
+}
+
+.scale-div input{
+  position: absolute;
+  left: 24px;
+  top: 0;
+  width: 150px;
+}
+
+.scale-div span{
+  position: absolute;
+  left: 180px;
+  top: 2px;
+}
+
+.scale-div .scale-up{
+  right: 29px;
+}
+
+.scale-div .scale-fit{
+  width: 26px;
+  right: 1px;
+}
+

@@ -7,6 +7,8 @@ const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
 
 var g_slideshow_data = null;
 
+const IMAGE_EDITOR_ENABLED = false;
+
 /**
  * FileManager constructor.
  *
@@ -521,6 +523,11 @@ FileManager.prototype = {
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
+
+    this.imageEditorFrame_ = this.document_.createElement('div');
+    this.imageEditorFrame_.className = 'image-editor';
+    this.imageEditorFrame_.style.display = 'none';
+    this.dialogDom_.appendChild(this.imageEditorFrame_);
 
     this.renameInput_.addEventListener(
         'keydown', this.onRenameInputKeyDown_.bind(this));
@@ -1309,6 +1316,11 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
           task.title = str('PREVIEW_IMAGE');
+        } else if (task_parts[1] == 'edit') {
+          task.iconUrl =
+              chrome.extension.getURL('images/icon_preview_16x16.png');
+          task.title = 'Edit';
+          if (!IMAGE_EDITOR_ENABLED) continue;  // Skip the button creation.
         } else if (task_parts[1] == 'play') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
@@ -1351,9 +1363,25 @@ FileManager.prototype = {
     if (id == 'preview') {
       g_slideshow_data = urls;
       chrome.tabs.create({url: "slideshow.html"});
+    } else if (id == 'edit') {
+      this.imageEditorFrame_.style.display = 'block';
+      this.imageEditor_ = new ImageEditor(
+          this.imageEditorFrame_,
+          this.onImageEditorSave.bind(this),
+          this.onImageEditorClose.bind(this));
+      this.imageEditor_.getBuffer().load(urls[0]);
     } else if (id == 'play' || id == 'enqueue') {
       chrome.fileBrowserPrivate.viewFiles(urls, id);
     }
+  };
+
+  FileManager.prototype.onImageEditorSave = function(canvas) {
+    console.warn('Saving images not implemented');
+  };
+
+  FileManager.prototype.onImageEditorClose = function() {
+    this.imageEditorFrame_.style.display = 'none';
+    this.imageEditor_ = null;
   };
 
   /**
