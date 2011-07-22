@@ -205,6 +205,7 @@ SetupNaclDynX8664Opt() {
 ######################################################################
 
 SetupPnaclX8664Common() {
+  CheckSDK
   SEL_LDR=$(GetSelLdr "x86-64")
   PREFIX="${SEL_LDR} -a -f"
 }
@@ -244,6 +245,7 @@ SetupPnaclTranslatorX8664Opt() {
 }
 
 SetupPnaclX8632Common() {
+  CheckSDK
   SEL_LDR=$(GetSelLdr "x86-32")
   PREFIX="${SEL_LDR} -a -f"
 }
@@ -293,6 +295,7 @@ SetupGccArm() {
 
 
 SetupPnaclArmCommon() {
+  CheckSDK
   SEL_LDR=$(GetSelLdr "arm")
   PREFIX="${QEMU_TOOL} run ${SEL_LDR} -a -Q -f"
   SUFFIX=pnacl.arm
@@ -457,6 +460,14 @@ CheckSelUniversal() {
   SEL_UNIV="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging/\
 sel_universal"
   CheckFileBuilt "sel_universal" "${SEL_UNIV}"
+}
+
+CheckSDK() {
+  if ! [ -d "${PNACL_TC}"/sdk ]; then
+    echo "Spec2K for PNaCl requires the SDK to be installed." 1>&2
+    echo "To install, run: tools/llvm/utman.sh sdk" 1>&2
+    exit -1
+  fi
 }
 
 #@
