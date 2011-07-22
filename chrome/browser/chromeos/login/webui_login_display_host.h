@@ -16,6 +16,7 @@ class Rect;
 
 namespace chromeos {
 
+class OobeUI;
 class WebUILoginView;
 
 // WebUI-specific implementation of the OOBE/login screen host. Uses
@@ -45,6 +46,8 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
  private:
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
+
+  OobeUI* GetOobeUI() const;
 
   // Container of the screen we are displaying.
   views::Widget* login_window_;

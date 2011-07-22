@@ -15,6 +15,7 @@ class DictionaryValue;
 
 namespace chromeos {
 class BaseScreenHandler;
+class CoreOobeHandler;
 class SigninScreenHandler;
 }
 
@@ -46,16 +47,26 @@ class OobeUI : public OobeDisplay,
   // Initializes the handlers.
   void InitializeHandlers();
 
+  // Shows or hides OOBE UI elements.
+  void ShowOobeUI(bool show);
+
+  // Shows the signin screen.
   void ShowSigninScreen();
 
  private:
   void AddScreenHandler(BaseScreenHandler* handler);
+
+  // Reference to CoreOobeHandler that handles common requests of Oobe page.
+  CoreOobeHandler* core_handler_;
 
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenActor* update_screen_actor_;
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
   EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
+
+  // Reference to SigninScreenHandler that handles sign-in screen requrests and
+  // forward calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);

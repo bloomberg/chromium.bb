@@ -34,6 +34,8 @@ cr.define('login', function() {
     decorate: function() {
       $('email').addEventListener('keydown', this.handleKeyDown_.bind(this));
       $('password').addEventListener('keydown', this.handleKeyDown_.bind(this));
+      $('signin-button-in-place').addEventListener('click',
+          this.handleSigninClick_.bind(this));
     },
 
     /**
@@ -62,7 +64,7 @@ cr.define('login', function() {
     },
 
     /**
-     * Helper function to toggle throubber and input fields.
+     * Helper function to toggle throbber and input fields.
      * @param {boolean} enable True to enable credential input UI.
      * @private
      */
@@ -71,6 +73,7 @@ cr.define('login', function() {
       $('email').hidden = !enable;
       $('password').hidden = !enable;
       $('signin-button').hidden = !enable;
+      $('signin-button-in-place').hidden = !enable;
     },
 
     /**

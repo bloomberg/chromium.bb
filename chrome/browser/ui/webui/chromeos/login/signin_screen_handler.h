@@ -53,8 +53,9 @@ class SigninScreenHandler : public BaseScreenHandler,
  public:
   SigninScreenHandler();
 
-  // Shows the sign in screen.
-  void Show();
+  // Shows the sign in screen. |oobe_ui| indicates whether the signin
+  // screen is for OOBE or usual sign-in flow.
+  void Show(bool oobe_ui);
 
  private:
   // BaseScreenHandler implementation:
@@ -90,11 +91,20 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Handles remove user request.
   void HandleRemoveUser(const base::ListValue* args);
 
+  // Handles 'showAddUser' request to show proper sign-in screen.
+  void HandleShowAddUser(const base::ListValue* args);
+
+  // Sends user list to account picker.
+  void SendUserList();
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
 
   // Whether screen should be shown right after initialization.
   bool show_on_init_;
+
+  // Keeps whether screen should be shown for OOBE.
+  bool oobe_ui_;
 
   // True if new user sign in flow is driven by the extension.
   bool extension_driven_;

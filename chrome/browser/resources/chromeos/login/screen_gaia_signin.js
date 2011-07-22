@@ -27,10 +27,10 @@ cr.define('login', function() {
   };
 
   GaiaSigninScreen.prototype = {
-     __proto__: HTMLDivElement.prototype,
+    __proto__: HTMLDivElement.prototype,
 
-     // Authentication extension's start page URL.
-     extension_url_: null,
+    // Authentication extension's start page URL.
+    extension_url_: null,
 
     /** @inheritDoc */
     decorate: function() {

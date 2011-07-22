@@ -5,12 +5,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
 #include "base/command_line.h"
-#include "base/values.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -18,6 +19,8 @@
 
 namespace {
 
+// Account picker screen id.
+const char kAccountPickerScreen[] = "account-picker";
 // Sign in screen id.
 const char kSigninScreen[] = "signin";
 // Sign in screen id for GAIA extension hosted content.
@@ -39,6 +42,7 @@ namespace chromeos {
 SigninScreenHandler::SigninScreenHandler()
     : delegate_(WebUILoginDisplay::GetInstance()),
       show_on_init_(false),
+      oobe_ui_(false),
       extension_driven_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUIGaiaLogin)) {
@@ -55,6 +59,14 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
   localized_strings->SetString("signinButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
+  localized_strings->SetString("enterGuestButton",
+      l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON));
+  localized_strings->SetString("shutDown",
+      l10n_util::GetStringUTF16(IDS_SHUTDOWN_BUTTON));
+  localized_strings->SetString("addUser",
+      l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
+  localized_strings->SetString("cancel",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
 
   if (extension_driven_)
     localized_strings->SetString("authType", "ext");
@@ -62,15 +74,20 @@ void SigninScreenHandler::GetLocalizedStrings(
     localized_strings->SetString("authType", "webui");
 }
 
-void SigninScreenHandler::Show() {
+void SigninScreenHandler::Show(bool oobe_ui) {
+  oobe_ui_ = oobe_ui;
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUIGaiaLogin)) {
-    ShowScreen(kGaiaSigninScreen, kGaiaExtStartPage);
+
+  if (oobe_ui) {
+    // Shows new user sign-in for OOBE.
+    HandleShowAddUser(NULL);
   } else {
-    ShowScreen(kSigninScreen, NULL);
+    // Populates and shows account picker for usual sign-in flow.
+    SendUserList();
+    ShowScreen(kAccountPickerScreen, NULL);
   }
 }
 
@@ -79,7 +96,7 @@ void SigninScreenHandler::Show() {
 void SigninScreenHandler::Initialize() {
   if (show_on_init_) {
     show_on_init_ = false;
-    Show();
+    Show(oobe_ui_);
   }
 }
 
@@ -92,6 +109,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleGetUsers));
   web_ui_->RegisterMessageCallback("launchIncognito",
       NewCallback(this, &SigninScreenHandler::HandleLaunchIncognito));
+  web_ui_->RegisterMessageCallback("showAddUser",
+      NewCallback(this, &SigninScreenHandler::HandleShowAddUser));
   web_ui_->RegisterMessageCallback("shutdownSystem",
       NewCallback(this, &SigninScreenHandler::HandleShutdownSystem));
   web_ui_->RegisterMessageCallback("removeUser",
@@ -99,48 +118,7 @@ void SigninScreenHandler::RegisterMessages() {
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
-  ListValue users_list;
-
-  // Grab the users from the user manager.
-  UserVector users = UserManager::Get()->GetUsers();
-  for (UserVector::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    const std::string& email = it->email();
-
-    DictionaryValue* user_dict = new DictionaryValue();
-    user_dict->SetString(kKeyName, it->GetDisplayName());
-    user_dict->SetString(kKeyEmailAddress, email);
-    user_dict->SetBoolean(kKeyCanRemove, !email.empty());
-
-    if (!email.empty()) {
-      long long timestamp = base::TimeTicks::Now().ToInternalValue();
-      std::string image_url(
-          StringPrintf("%s%s?id=%lld",
-                       chrome::kChromeUIUserImageURL,
-                       email.c_str(),
-                       timestamp));
-      user_dict->SetString(kKeyImageUrl, image_url);
-    } else {
-      std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-          std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_DEFAULT_USER");
-      user_dict->SetString(kKeyImageUrl, image_url);
-    }
-
-    users_list.Append(user_dict);
-  }
-
-  // Add the Guest to the user list.
-  DictionaryValue* guest_dict = new DictionaryValue();
-  guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
-  guest_dict->SetString(kKeyEmailAddress, "");
-  guest_dict->SetBoolean(kKeyCanRemove, false);
-  std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
-      std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
-  guest_dict->SetString(kKeyImageUrl, image_url);
-  users_list.Append(guest_dict);
-
-  // Call the Javascript callback
-  web_ui_->CallJavascriptFunction("getUsersCallback", users_list);
+  SendUserList();
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -195,6 +173,68 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   }
 
   UserManager::Get()->RemoveUserFromList(email);
+}
+
+void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
+  if (extension_driven_)
+    ShowScreen(kGaiaSigninScreen, kGaiaExtStartPage);
+  else
+    ShowScreen(kSigninScreen, NULL);
+}
+
+void SigninScreenHandler::SendUserList() {
+  ListValue users_list;
+
+  // Grab the users from the user manager.
+  UserVector users = UserManager::Get()->GetUsers();
+  bool single_user = users.size() == 1;
+  for (UserVector::const_iterator it = users.begin();
+       it != users.end(); ++it) {
+    const std::string& email = it->email();
+
+    DictionaryValue* user_dict = new DictionaryValue();
+    user_dict->SetString(kKeyName, it->GetDisplayName());
+    user_dict->SetString(kKeyEmailAddress, email);
+
+    // Single user check here is necessary because owner info might not be
+    // available when running into login screen on first boot.
+    // See http://crosbug.com/12723
+    user_dict->SetBoolean(kKeyCanRemove,
+                          !single_user &&
+                          !email.empty() &&
+                          email != UserCrosSettingsProvider::cached_owner());
+
+    if (!email.empty()) {
+      long long timestamp = base::TimeTicks::Now().ToInternalValue();
+      std::string image_url(
+          StringPrintf("%s%s?id=%lld",
+                       chrome::kChromeUIUserImageURL,
+                       email.c_str(),
+                       timestamp));
+      user_dict->SetString(kKeyImageUrl, image_url);
+    } else {
+      std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
+          std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_DEFAULT_USER");
+      user_dict->SetString(kKeyImageUrl, image_url);
+    }
+
+    users_list.Append(user_dict);
+  }
+
+  // Add the Guest to the user list.
+  DictionaryValue* guest_dict = new DictionaryValue();
+  guest_dict->SetString(kKeyName, l10n_util::GetStringUTF16(IDS_GUEST));
+  guest_dict->SetString(kKeyEmailAddress, "");
+  guest_dict->SetBoolean(kKeyCanRemove, false);
+  std::string image_url(std::string(chrome::kChromeUIScheme) + "://" +
+      std::string(chrome::kChromeUIThemePath) + "/IDR_LOGIN_GUEST");
+  guest_dict->SetString(kKeyImageUrl, image_url);
+  users_list.Append(guest_dict);
+
+  // Call the Javascript callback
+  web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
+                                  users_list);
+
 }
 
 }  // namespace chromeos

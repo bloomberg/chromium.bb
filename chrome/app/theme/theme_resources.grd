@@ -416,6 +416,7 @@
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
+        <include name="IDR_DIVIDER_VERT" file="divider_vert.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />
         <include name="IDR_DROPDOWN_BOTTOM_LEFT_P" file="textbutton_dropdown_bl_p.png" type="BINDATA" />
@@ -436,6 +437,8 @@
         <include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
         <include name="IDR_HELP_MENU" file="help_16.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
+        <include name="IDR_ICON_ADD_USER20" file="icon_add_user20.png" type="BINDATA" />
+        <include name="IDR_ICON_POWER20" file="icon_power20.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="avatar_beaker.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_1" file="avatar_bee.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_2" file="avatar_briefcase.png" type="BINDATA" />

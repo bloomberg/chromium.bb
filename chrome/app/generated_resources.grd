@@ -10567,6 +10567,9 @@ ls' lab.">
       <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
         Shut down
       </message>
+      <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+        Add user
+      </message>
       <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
         Help
       </message>

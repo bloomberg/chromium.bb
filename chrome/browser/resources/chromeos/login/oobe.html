@@ -6,20 +6,31 @@
 <link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="chrome://resources/css/throbber.css">
 <link rel="stylesheet" href="oobe.css">
+<link rel="stylesheet" href="screen_account_picker.css">
+<link rel="stylesheet" href="screen_signin.css">
+<link rel="stylesheet" href="user_pod_row.css">
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="oobe.js"></script>
-<script src="oobe_screen_network.js"></script>
 <script src="oobe_screen_eula.js"></script>
+<script src="oobe_screen_network.js"></script>
 <script src="oobe_screen_update.js"></script>
 <script src="oobe_screen_enrollment.js"></script>
-<script src="screen_signin.js"></script>
+<script src="screen_account_picker.js"></script>
 <script src="screen_gaia_signin.js"></script>
+<script src="screen_signin.js"></script>
+<script src="user_pod_row.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;">
+  <div id="login-header-bar" hidden>
+    <button id="shutdown-button" i18n-content="shutDown"></button>
+    <span class="divider-vert"></span>
+    <button id="add-user-button" i18n-content="addUser"></button>
+    <button id="cancel-add-user-button" i18n-content="cancel" hidden></button>
+  </div>
   <div id="oobe" class="connect">
     <div id="outer-container">
       <div id="header">
@@ -36,6 +47,7 @@
         <include src="oobe_screen_enrollment.html">
         <include src="screen_signin.html">
         <include src="screen_gaia_signin.html">
+        <include src="screen_account_picker.html">
       </div>
       <hr class="bottomshadow">
       <div id="footer">
@@ -62,5 +74,6 @@
       <button id="security-ok-button" i18n-content="eulaTpmOkButton"></button>
     </div>
   </div>
+  <include src="user_pod_template.html">
 </body>
 </html>

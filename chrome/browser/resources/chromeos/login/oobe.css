@@ -9,6 +9,7 @@ body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
               from(#fefefe), to(#efefef));
   font-size: 14px;
+  overflow: hidden;
   padding: 10px;
 }
 
@@ -248,32 +249,6 @@ button {
   display: none;
 }
 
-#signin > div {
-  width: 14em;
-  margin: 7em auto;
-  text-align: center;
-}
-
-#gaia-signin > iframe {
-  bottom: 0;
-  display: -webkit-box;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-}
-
-#email,
-#password {
-  display: block;
-}
-
-#email {
-  margin-bottom: 20px;
-}
-
 .button-strip {
   float: right;
 }
@@ -406,4 +381,82 @@ button {
 
 #close-button.visible {
   display: inline-block;
+}
+
+#login-header-bar {
+  padding: 8px;
+}
+
+#login-header-bar button,
+#login-header-bar button:active,
+#login-header-bar button:focus,
+#login-header-bar button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border: 0;
+  color: #666;
+  cursor: pointer;
+  height: 24px;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.divider-vert {
+  background: url('chrome://theme/IDR_DIVIDER_VERT') center center no-repeat;
+  display: inline-block;
+  height: 24px;
+  vertical-align: middle;
+  width: 15px;
+}
+
+#login-header-bar #shutdown-button {
+  -webkit-padding-start: 24px;
+  background-image: url('chrome://theme/IDR_ICON_POWER20');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+#login-header-bar #add-user-button {
+  -webkit-padding-start: 24px;
+  background-image: url('chrome://theme/IDR_ICON_ADD_USER20');
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+html[dir=rtl] #shutdown-button,
+html[dir=rtl] #add-user-button {
+  background-position: right center;
+}
+
+body.login-display {
+  margin: 0;
+  padding: 0;
+}
+
+body.login-display #oobe {
+  -webkit-margin-start: -500px;
+  -webkit-transition: all .8s ease;
+  width: 1000px;
+}
+
+body.login-display #oobe.signin,
+body.login-display #oobe.gaia-signin {
+  -webkit-margin-start: -320px;
+  width: 640px;
+}
+
+body.login-display #inner-container {
+  height: 262px;
+  padding: 20px 0;
+  width: 1000px;
+}
+
+body.login-display #header {
+  visibility: hidden;
+}
+
+body.login-display #footer {
+  visibility: hidden;
 }

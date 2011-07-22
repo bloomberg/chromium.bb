@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -79,12 +80,26 @@ class CoreOobeHandler : public BaseScreenHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
+  // Show or hide OOBE UI.
+  void ShowOobeUI(bool show);
+
+  bool show_oobe_ui() const {
+    return show_oobe_ui_;
+  }
+
  private:
   // Handlers for JS WebUI messages.
   void OnInitialized(const ListValue* args);
   void OnToggleAccessibility(const ListValue* args);
 
+  // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.
+  void UpdateOobeUIVisibility();
+
+  // Owner of this handler.
   OobeUI* oobe_ui_;
+
+  // True if we should show OOBE instead of login.
+  bool show_oobe_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };
@@ -118,8 +133,11 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
 
 // CoreOobeHandler ------------------------------------------------------------
 
+// Note that show_oobe_ui_ defaults to false because WizardController assumes
+// OOBE UI is not visible by default.
 CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
-    : oobe_ui_(oobe_ui) {
+    : oobe_ui_(oobe_ui),
+      show_oobe_ui_(false) {
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -132,6 +150,7 @@ void CoreOobeHandler::GetLocalizedStrings(
 }
 
 void CoreOobeHandler::Initialize() {
+  UpdateOobeUIVisibility();
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -149,6 +168,21 @@ void CoreOobeHandler::OnToggleAccessibility(const ListValue* args) {
   accessibility::ToggleAccessibility();
 }
 
+void CoreOobeHandler::ShowOobeUI(bool show) {
+  if (show == show_oobe_ui_)
+    return;
+
+  show_oobe_ui_ = show;
+
+  if (page_is_ready())
+    UpdateOobeUIVisibility();
+}
+
+void CoreOobeHandler::UpdateOobeUIVisibility() {
+  base::FundamentalValue showValue(show_oobe_ui_);
+  web_ui_->CallJavascriptFunction("cr.ui.Oobe.showOobeUI", showValue);
+}
+
 // OobeUI ----------------------------------------------------------------------
 
 OobeUI::OobeUI(TabContents* contents)
@@ -157,7 +191,8 @@ OobeUI::OobeUI(TabContents* contents)
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       signin_screen_handler_(NULL) {
-  AddScreenHandler(new CoreOobeHandler(this));
+  core_handler_ = new CoreOobeHandler(this);
+  AddScreenHandler(core_handler_);
 
   NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
   network_screen_actor_ = network_screen_handler;
@@ -181,8 +216,6 @@ OobeUI::OobeUI(TabContents* contents)
 
   DictionaryValue* localized_strings = new DictionaryValue;
   GetLocalizedStrings(localized_strings);
-  OobeUIHTMLSource* html_source =
-      new OobeUIHTMLSource(localized_strings);
 
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(contents->profile());
@@ -192,7 +225,14 @@ OobeUI::OobeUI(TabContents* contents)
   InitializeAboutDataSource(chrome::kChromeUITermsHost, contents->profile());
 
   // Set up the chrome://oobe/ source.
+  OobeUIHTMLSource* html_source =
+      new OobeUIHTMLSource(localized_strings);
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+
+  // Set up the chrome://userimage/ source.
+  UserImageSource* user_image_source = new UserImageSource();
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      user_image_source);
 }
 
 void OobeUI::ShowScreen(WizardScreen* screen) {
@@ -255,8 +295,12 @@ void OobeUI::InitializeHandlers() {
   }
 }
 
+void OobeUI::ShowOobeUI(bool show) {
+  core_handler_->ShowOobeUI(show);
+}
+
 void OobeUI::ShowSigninScreen() {
-  signin_screen_handler_->Show();
+  signin_screen_handler_->Show(core_handler_->show_oobe_ui());
 }
 
 }  // namespace chromeos

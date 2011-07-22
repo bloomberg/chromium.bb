@@ -54,6 +54,7 @@ void WebUILoginDisplayHost::SetOobeProgress(BackgroundView::LoginStep step) {
 }
 
 void WebUILoginDisplayHost::SetOobeProgressBarVisible(bool visible) {
+  GetOobeUI()->ShowOobeUI(visible);
 }
 
 void WebUILoginDisplayHost::SetShutdownButtonEnabled(bool enable) {
@@ -84,9 +85,7 @@ void WebUILoginDisplayHost::StartSignInScreen() {
     LoadURL(GURL(kOobeURL));
 
   BaseLoginDisplayHost::StartSignInScreen();
-
-  OobeUI* oobe_ui = static_cast<OobeUI*>(login_view_->GetWebUI());
-  oobe_ui->ShowSigninScreen();
+  GetOobeUI()->ShowSigninScreen();
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {
@@ -114,9 +113,13 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
   login_view_->LoadURL(url);
 }
 
+OobeUI* WebUILoginDisplayHost::GetOobeUI() const {
+  return static_cast<OobeUI*>(login_view_->GetWebUI());
+}
+
 WizardController* WebUILoginDisplayHost::CreateWizardController() {
   // TODO(altimofeev): ensure that WebUI is ready.
-  OobeDisplay* oobe_display = static_cast<OobeUI*>(login_view_->GetWebUI());
+  OobeDisplay* oobe_display = GetOobeUI();
   return new WizardController(this, oobe_display);
 }
 

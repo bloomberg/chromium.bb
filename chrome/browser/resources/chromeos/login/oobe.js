@@ -145,7 +145,7 @@ cr.define('cr.ui', function() {
       var header = document.createElement('span');
       header.id = 'header-' + screenId;
       header.className = 'header-section right';
-      header.textContent = el.header;
+      header.textContent = el.header ? el.header : '';
       $('header-sections').appendChild(header);
 
       var dot = document.createElement('div');
@@ -217,6 +217,7 @@ cr.define('cr.ui', function() {
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();
     oobe.EnrollmentScreen.register();
+    login.AccountPickerScreen.register();
     if (localStrings.getString('authType') == 'webui')
       login.SigninScreen.register();
     else
@@ -228,6 +229,21 @@ cr.define('cr.ui', function() {
     });
     $('security-ok-button').addEventListener('click', function(event) {
       $('popup-overlay').hidden = true;
+    });
+
+    $('shutdown-button').addEventListener('click', function(e) {
+      chrome.send('shutdownSystem');
+    });
+    $('add-user-button').addEventListener('click', function(e) {
+      // TODO(xiyuan): Add offline bubble.
+      this.hidden = true;
+      $('cancel-add-user-button').hidden = false;
+      chrome.send('showAddUser');
+    });
+    $('cancel-add-user-button').addEventListener('click', function(e) {
+      this.hidden = true;
+      $('add-user-button').hidden = false;
+      Oobe.showScreen({id: 'account-picker'});
     });
 
     document.addEventListener('keydown', function(e) {
@@ -345,6 +361,27 @@ cr.define('cr.ui', function() {
    */
   Oobe.updateHeadersAndButtons = function() {
     Oobe.getInstance().updateHeadersAndButtons_();
+  };
+
+  /**
+   * Update body class to switch between OOBE UI and Login UI.
+   */
+  Oobe.showOobeUI = function(showOobe) {
+    if (showOobe)
+      document.body.classList.remove('login-display');
+    else
+      document.body.classList.add('login-display');
+
+    // Don't show header bar and in-pace signin button for OOBE.
+    $('login-header-bar').hidden = showOobe;
+    $('signin-button-in-place').hidden = showOobe;
+  };
+
+  /**
+   * Returns true if Oobe UI is shown.
+   */
+  Oobe.isOobeUI = function() {
+    return document.body.classList.contains('login-display');
   };
 
   // Export

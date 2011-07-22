@@ -1,0 +1,28 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#signin {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
+#gaia-signin > iframe {
+  bottom: 0;
+  display: -webkit-box;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+#email,
+#password {
+  display: block;
+  margin-bottom: 20px;
+}
