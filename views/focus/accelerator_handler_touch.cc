@@ -6,11 +6,7 @@
 
 #include <bitset>
 #include <gtk/gtk.h>
-#if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
-#else
-#include <X11/Xlib.h>
-#endif
 
 #include "views/accelerator.h"
 #include "views/events/event.h"
@@ -43,7 +39,6 @@ Widget* FindWidgetForGdkWindow(GdkWindow* gdk_window) {
 
 }  // namespace
 
-#if defined(HAVE_XINPUT2)
 bool DispatchX2Event(Widget* widget, XEvent* xev) {
   XGenericEventCookie* cookie = &xev->xcookie;
   switch (cookie->evtype) {
@@ -106,13 +101,10 @@ bool DispatchX2Event(Widget* widget, XEvent* xev) {
   return false;
 }
 
-#endif  // HAVE_XINPUT2
-
 bool DispatchXEvent(XEvent* xev) {
   GdkDisplay* gdisp = gdk_display_get_default();
   XID xwindow = xev->xany.window;
 
-#if defined(HAVE_XINPUT2)
   if (xev->type == GenericEvent) {
     if (!TouchFactory::GetInstance()->ShouldProcessXI2Event(xev))
       return true;  // Consume the event.
@@ -126,7 +118,6 @@ bool DispatchXEvent(XEvent* xev) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
     xwindow = xiev->event;
   }
-#endif
 
   GdkWindow* gwind = gdk_window_lookup_for_display(gdisp, xwindow);
   Widget* widget = FindWidgetForGdkWindow(gwind);
@@ -158,37 +149,26 @@ bool DispatchXEvent(XEvent* xev) {
         return widget->OnMouseEvent(mouseev);
       }
 
-#if defined(HAVE_XINPUT2)
       case GenericEvent: {
         return DispatchX2Event(widget, xev);
       }
-#endif
     }
   }
 
   return false;
 }
 
-#if defined(HAVE_XINPUT2)
 void SetTouchDeviceList(std::vector<unsigned int>& devices) {
   TouchFactory::GetInstance()->SetTouchDeviceList(devices);
 }
-#endif
 
 AcceleratorHandler::AcceleratorHandler() {}
 
-#if defined(TOUCH_UI)
 base::MessagePumpDispatcher::DispatchStatus
     AcceleratorHandler::Dispatch(XEvent* xev) {
   return DispatchXEvent(xev) ?
       base::MessagePumpDispatcher::EVENT_PROCESSED :
       base::MessagePumpDispatcher::EVENT_IGNORED;
 }
-#else
-bool AcceleratorHandler::Dispatch(GdkEvent* event) {
-  gtk_main_do_event(event);
-  return true;
-}
-#endif
 
 }  // namespace views

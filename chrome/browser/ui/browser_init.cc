@@ -98,7 +98,7 @@
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #endif
 
-#if defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
 #include "views/focus/accelerator_handler.h"
 #endif
 
@@ -1393,7 +1393,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 #endif
 
-#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
+#if defined(TOUCH_UI)
   // Get a list of pointer-devices that should be treated as touch-devices.
   // TODO(sad): Instead of/in addition to getting the list from the
   // command-line, query X for a list of touch devices.

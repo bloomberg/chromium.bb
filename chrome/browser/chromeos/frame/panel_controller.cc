@@ -6,9 +6,7 @@
 
 #if defined(TOUCH_UI)
 #include <X11/Xlib.h>
-#if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
-#endif
 #endif
 
 #include <vector>
@@ -49,7 +47,6 @@ gfx::Point RootLocationFromXEvent(const XEvent* xev) {
     case MotionNotify:
       return gfx::Point(xev->xmotion.x_root, xev->xmotion.y_root);
 
-#if defined(HAVE_XINPUT2)
     case GenericEvent: {
       const XIDeviceEvent* xiev =
           static_cast<XIDeviceEvent*>(xev->xcookie.data);
@@ -61,7 +58,6 @@ gfx::Point RootLocationFromXEvent(const XEvent* xev) {
                             static_cast<int>(xiev->root_y));
       }
     }
-#endif  // defined(HAVE_XINPUT2)
 
     default:
       NOTREACHED();

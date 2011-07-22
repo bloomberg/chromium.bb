@@ -43,12 +43,7 @@
 
 #if defined(TOUCH_UI)
 #include "views/widget/tooltip_manager_views.h"
-#if defined(HAVE_XINPUT2)
-#include <gdk/gdkx.h>
-
-#include "ui/gfx/gtk_util.h"
 #include "views/touchui/touch_factory.h"
-#endif
 #else
 #include "views/widget/tooltip_manager_gtk.h"
 #endif
@@ -379,7 +374,7 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       painted_(false),
       has_mouse_grab_(false),
       has_keyboard_grab_(false) {
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
   // Make sure the touch factory is initialized so that it can setup XInput2 for
   // the widget.
   TouchFactory::GetInstance();
@@ -919,7 +914,7 @@ void NativeWidgetGtk::SetMouseCapture() {
   DCHECK_EQ(GDK_GRAB_SUCCESS, pointer_grab_status);
   has_mouse_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS;
 
-#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
+#if defined(TOUCH_UI)
   ::Window window = GDK_WINDOW_XID(window_contents()->window);
   Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
   bool xi2grab = TouchFactory::GetInstance()->GrabTouchDevices(display, window);
@@ -934,7 +929,7 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
     has_mouse_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
     gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
+#if defined(TOUCH_UI)
     TouchFactory::GetInstance()->UngrabTouchDevices(
         GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif
@@ -1307,7 +1302,7 @@ void NativeWidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetGtk::SetCursor(gfx::NativeCursor cursor) {
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
   if (TouchFactory::GetInstance()->keep_mouse_cursor())
     cursor = gfx::GetCursor(GDK_ARROW);
   else if (!TouchFactory::GetInstance()->is_cursor_visible())

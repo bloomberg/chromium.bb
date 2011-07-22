@@ -5,11 +5,7 @@
 #include "base/message_pump_x.h"
 
 #include <gdk/gdkx.h>
-#if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
-#else
-#include <X11/Xlib.h>
-#endif
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -31,9 +27,7 @@ bool use_gtk_message_pump = true;
 namespace base {
 
 MessagePumpX::MessagePumpX() : MessagePumpGlib(),
-#if defined(HAVE_XINPUT2)
     xiopcode_(-1),
-#endif
     gdksource_(NULL),
     dispatching_event_(false),
     capture_x_events_(0),
@@ -41,9 +35,7 @@ MessagePumpX::MessagePumpX() : MessagePumpGlib(),
   gdk_window_add_filter(NULL, &GdkEventFilter, this);
   gdk_event_handler_set(&EventDispatcherX, this, NULL);
 
-#if defined(HAVE_XINPUT2)
   InitializeXInput2();
-#endif
   if (use_gtk_message_pump)
     InitializeEventsToCapture();
 }
@@ -61,22 +53,18 @@ void MessagePumpX::DisableGtkMessagePump() {
 
 bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
   return (!use_gtk_message_pump || capture_x_events_[xev->type])
-#if defined(HAVE_XINPUT2)
       && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
-#endif
       ;
 }
 
 bool MessagePumpX::ProcessXEvent(XEvent* xev) {
   bool should_quit = false;
 
-#if defined(HAVE_XINPUT2)
   bool have_cookie = false;
   if (xev->type == GenericEvent &&
       XGetEventData(xev->xgeneric.display, &xev->xcookie)) {
     have_cookie = true;
   }
-#endif
 
   if (WillProcessXEvent(xev) == MessagePumpObserver::EVENT_CONTINUE) {
     MessagePumpDispatcher::DispatchStatus status =
@@ -90,11 +78,9 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
     }
   }
 
-#if defined(HAVE_XINPUT2)
   if (have_cookie) {
     XFreeEventData(xev->xgeneric.display, &xev->xcookie);
   }
-#endif
 
   return should_quit;
 }
@@ -202,12 +188,9 @@ void MessagePumpX::InitializeEventsToCapture(void) {
   capture_x_events_[MotionNotify] = true;
   capture_gdk_events_[GDK_MOTION_NOTIFY] = true;
 
-#if defined(HAVE_XINPUT2)
   capture_x_events_[GenericEvent] = true;
-#endif
 }
 
-#if defined(HAVE_XINPUT2)
 void MessagePumpX::InitializeXInput2(void) {
   Display* display = MessageLoopForUI::current()->GetDisplay();
   if (!display)
@@ -228,7 +211,6 @@ void MessagePumpX::InitializeXInput2(void) {
     return;
   }
 }
-#endif  // HAVE_XINPUT2
 
 MessagePumpObserver::EventStatus
     MessagePumpObserver::WillProcessXEvent(XEvent* xev) {

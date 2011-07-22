@@ -348,6 +348,7 @@ extern const char kViewsDesktop[];
 
 #if defined(TOUCH_UI)
 extern const char kKeepMouseCursor[];
+extern const char kTouchDevices[];
 #endif
 
 #ifndef NDEBUG
@@ -355,10 +356,6 @@ extern const char kClearTokenService[];
 extern const char kSetToken[];
 extern const char kWebSocketLiveExperimentHost[];
 extern const char kExposePrivateExtensionApi[];
-#endif
-
-#if defined(HAVE_XINPUT2)
-extern const char kTouchDevices[];
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)

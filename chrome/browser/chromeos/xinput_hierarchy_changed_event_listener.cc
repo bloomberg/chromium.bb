@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(yusukes): Remove the #if once the ARM bot (crbug.com/84694) is fixed.
-#if defined(HAVE_XINPUT2)
-
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 
 #include <gdk/gdkx.h>
@@ -135,10 +132,3 @@ bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
 }
 
 }  // namespace chromeos
-
-#endif
-
-// TODO(yusukes): Remove this check when crbug.com/84694 is resolved.
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(HAVE_XINPUT2)
-#error XINPUT2 should always be enabled on Chrome OS x86!
-#endif

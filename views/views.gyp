@@ -7,21 +7,6 @@
     'chromium_code': 1,
   },
 
-  'conditions': [
-    ['os_posix == 1 and OS != "mac"', {
-      'conditions': [
-        ['sysroot!=""', {
-          'variables': {
-            'pkg-config': './pkg-config-wrapper "<(sysroot)"',
-          },
-        }, {
-          'variables': {
-            'pkg-config': 'pkg-config'
-          },
-        }],]
-    }],
-  ],
-
   'target_defaults': {
     'conditions': [
       ['OS=="win"', {'sources/': [
@@ -418,15 +403,6 @@
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
             ['exclude', 'widget/tooltip_manager_gtk.cc'],
-          ],
-          'conditions': [
-            ['"<!@(<(pkg-config) --atleast-version=2.0 inputproto || echo $?)"!=""', {
-              # Exclude TouchFactory if XInput2 is not available.
-              'sources/': [
-                ['exclude', 'touchui/touch_factory.cc'],
-                ['exclude', 'touchui/touch_factory.h'],
-              ],
-            }],
           ],
         }],
         ['use_ibus==1', {

@@ -132,12 +132,9 @@ void Shutdown() {
   // Singletons are finally destroyed in AtExitManager.
   chromeos::SystemKeyEventListener::GetInstance()->Stop();
 
-  // TODO(yusukes): Remove the #if once the ARM bot (crbug.com/84694) is fixed.
-#if defined(HAVE_XINPUT2)
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   chromeos::XInputHierarchyChangedEventListener::GetInstance()->Stop();
-#endif
 #endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough

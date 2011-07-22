@@ -101,13 +101,11 @@ class MessagePumpX : public MessagePumpGlib {
   // processed so that GDK doesn't get to them.
   void InitializeEventsToCapture(void);
 
-#if defined(HAVE_XINPUT2)
   // Initialize X2 input.
   void InitializeXInput2(void);
 
   // The opcode used for checking events.
   int xiopcode_;
-#endif
 
   // The event source for GDK events.
   GSource* gdksource_;

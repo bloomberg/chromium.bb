@@ -207,7 +207,7 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
 #include "views/touchui/touch_factory.h"
 #endif
 
@@ -1889,7 +1889,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#if defined(TOUCH_UI)
   views::TouchFactory::GetInstance()->set_keep_mouse_cursor(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepMouseCursor));
 #endif
@@ -1916,11 +1916,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // volume on the login screen.
   chromeos::SystemKeyEventListener::GetInstance();
 
-  // TODO(yusukes): Remove the #if once the ARM bot (crbug.com/84694) is fixed.
-#if defined(HAVE_XINPUT2)
   // Listen for XI_HierarchyChanged events.
   chromeos::XInputHierarchyChangedEventListener::GetInstance();
-#endif
 #endif
 
   // The extension service may be available at this point. If the command line

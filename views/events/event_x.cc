@@ -6,19 +6,14 @@
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
-#if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
-#endif
 #include <X11/Xlib.h>
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "views/widget/root_view.h"
-
-#if defined(HAVE_XINPUT2)
 #include "views/touchui/touch_factory.h"
-#endif
+#include "views/widget/root_view.h"
 
 namespace views {
 
@@ -69,7 +64,6 @@ int GetEventFlagsForButton(int button) {
   return 0;
 }
 
-#if defined(HAVE_XINPUT2)
 int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   int buttonflags = 0;
 
@@ -121,8 +115,6 @@ int GetTouchIDFromXEvent(XEvent* xev) {
   return slot;
 }
 
-#endif  // HAVE_XINPUT2
-
 ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
   switch (native_event->type) {
     case KeyPress:
@@ -144,7 +136,6 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
           (Button1Mask | Button2Mask | Button3Mask))
         return ui::ET_MOUSE_DRAGGED;
       return ui::ET_MOUSE_MOVED;
-#if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
@@ -162,7 +153,6 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
               ui::ET_MOUSE_MOVED;
       }
     }
-#endif
     default:
       NOTREACHED();
       break;
@@ -171,12 +161,10 @@ ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
 }
 
 int GetMouseWheelOffset(XEvent* xev) {
-#if defined(HAVE_XINPUT2)
   if (xev->type == GenericEvent) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
     return xiev->detail == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
   }
-#endif
   return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
 }
 
@@ -189,14 +177,12 @@ gfx::Point GetEventLocation(XEvent* xev) {
     case MotionNotify:
       return gfx::Point(xev->xmotion.x, xev->xmotion.y);
 
-#if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(xev->xcookie.data);
       return gfx::Point(static_cast<int>(xievent->event_x),
                         static_cast<int>(xievent->event_y));
     }
-#endif
   }
 
   return gfx::Point();
@@ -212,7 +198,6 @@ int GetLocatedEventFlags(XEvent* xev) {
     case MotionNotify:
       return GetEventFlagsFromXState(xev->xmotion.state);
 
-#if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
       bool touch =
@@ -229,7 +214,6 @@ int GetLocatedEventFlags(XEvent* xev) {
                   GetEventFlagsFromXState(xievent->mods.effective);
       }
     }
-#endif
   }
 
   return 0;
@@ -245,18 +229,15 @@ uint16 GetCharacterFromXKeyEvent(XKeyEvent* key) {
           result.length() == 1) ? result[0] : 0;
 }
 
-#if defined(HAVE_XINPUT2)
 float GetTouchParamFromXEvent(XEvent* xev,
                               TouchFactory::TouchParam tp,
                               float default_value) {
   TouchFactory::GetInstance()->ExtractTouchParam(*xev, tp, &default_value);
   return default_value;
 }
-#endif
 
 float GetTouchForceFromXEvent(XEvent* xev) {
   float force = 0.0;
-#if defined(HAVE_XINPUT2)
   force = GetTouchParamFromXEvent(xev, TouchFactory::TP_PRESSURE, 0.0);
   unsigned int deviceid =
       static_cast<XIDeviceEvent*>(xev->xcookie.data)->sourceid;
@@ -264,7 +245,6 @@ float GetTouchForceFromXEvent(XEvent* xev) {
   if (!TouchFactory::GetInstance()->NormalizeTouchParam(
       deviceid, TouchFactory::TP_PRESSURE, &force))
     force = 0.0;
-#endif
   return force;
 }
 
@@ -401,7 +381,6 @@ MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
-#if defined(HAVE_XINPUT2)
 TouchEvent::TouchEvent(NativeEvent2 native_event_2,
                        FromNativeEvent2 from_native)
     : LocatedEvent(native_event_2, from_native),
@@ -425,6 +404,5 @@ TouchEvent::TouchEvent(NativeEvent2 native_event_2,
     }
   }
 }
-#endif
 
 }  // namespace views

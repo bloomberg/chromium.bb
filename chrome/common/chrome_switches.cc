@@ -1182,10 +1182,15 @@ const char kDebugViewsPaint[]               = "debug-views-paint";
 const char kViewsDesktop[]                  = "views-desktop";
 #endif
 
+#if defined(TOUCH_UI)
 // Debug only switch to prevent the mouse cursor from disappearing when
 // touch is enabled
-#if defined(TOUCH_UI)
 const char kKeepMouseCursor[]               = "keep-mouse-cursor";
+
+// Tells chrome to interpret events from these devices as touch events. Only
+// available with XInput 2 (i.e. X server 1.8 or above). The id's of the devices
+// can be retrieved from 'xinput list'.
+const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 #ifndef NDEBUG
@@ -1204,13 +1209,6 @@ const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 // Debug only switch to give access to all private extension APIs to
 // any non-component extension that is requesting it.
 const char kExposePrivateExtensionApi[]   = "expose-private-extension-api";
-#endif
-
-#if defined(HAVE_XINPUT2)
-// Tells chrome to interpret events from these devices as touch events. Only
-// available with XInput 2 (i.e. X server 1.8 or above). The id's of the devices
-// can be retrieved from 'xinput list'.
-const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
