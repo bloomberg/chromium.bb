@@ -1,0 +1,8 @@
+{
+  "name": "Component Test 1",
+  "version": "1.0",
+  "description": "A test component.",
+  "plugins": [
+    { "path": "component1.dll" }
+  ]
+}
