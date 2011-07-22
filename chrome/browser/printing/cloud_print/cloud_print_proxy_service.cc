@@ -52,7 +52,9 @@ class CloudPrintProxyService::TokenExpiredNotificationDelegate
 };
 
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
-    : profile_(profile), token_expired_delegate_(NULL) {
+    : profile_(profile),
+      token_expired_delegate_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(service_task_factory_(this)) {
 }
 
 CloudPrintProxyService::~CloudPrintProxyService() {
@@ -69,15 +71,15 @@ void CloudPrintProxyService::Initialize() {
 
 void CloudPrintProxyService::RefreshStatusFromService() {
   InvokeServiceTask(
-      NewRunnableMethod(
-          this, &CloudPrintProxyService::RefreshCloudPrintProxyStatus));
+      service_task_factory_.NewRunnableMethod(
+          &CloudPrintProxyService::RefreshCloudPrintProxyStatus));
 }
 
 void CloudPrintProxyService::EnableForUser(const std::string& lsid,
                                            const std::string& email) {
   InvokeServiceTask(
-      NewRunnableMethod(
-          this, &CloudPrintProxyService::EnableCloudPrintProxy, lsid, email));
+      service_task_factory_.NewRunnableMethod(
+          &CloudPrintProxyService::EnableCloudPrintProxy, lsid, email));
 }
 
 void CloudPrintProxyService::EnableForUserWithRobot(
@@ -85,8 +87,7 @@ void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_email,
     const std::string& user_email) {
   InvokeServiceTask(
-      NewRunnableMethod(
-          this,
+      service_task_factory_.NewRunnableMethod(
           &CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
           robot_auth_code,
           robot_email,
@@ -96,8 +97,8 @@ void CloudPrintProxyService::EnableForUserWithRobot(
 
 void CloudPrintProxyService::DisableForUser() {
   InvokeServiceTask(
-      NewRunnableMethod(
-          this, &CloudPrintProxyService::DisableCloudPrintProxy));
+      service_task_factory_.NewRunnableMethod(
+          &CloudPrintProxyService::DisableCloudPrintProxy));
 }
 
 bool CloudPrintProxyService::ShowTokenExpiredNotification() {

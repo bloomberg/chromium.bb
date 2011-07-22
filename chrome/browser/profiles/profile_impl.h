@@ -219,7 +219,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
-  scoped_refptr<CloudPrintProxyService> cloud_print_proxy_service_;
+  scoped_ptr<CloudPrintProxyService> cloud_print_proxy_service_;
 
   ProfileImplIOData::Handle io_data_;
 

@@ -22,8 +22,7 @@ struct CloudPrintProxyInfo;
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
 class CloudPrintProxyService
-    : public CloudPrintSetupHandlerDelegate,
-      public base::RefCountedThreadSafe<CloudPrintProxyService> {
+    : public CloudPrintSetupHandlerDelegate {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
@@ -80,6 +79,8 @@ class CloudPrintProxyService
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();
   void TokenExpiredNotificationDone(bool keep_alive);
+
+  ScopedRunnableMethodFactory<CloudPrintProxyService> service_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyService);
 };
