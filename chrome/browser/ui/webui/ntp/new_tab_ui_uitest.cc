@@ -95,6 +95,8 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
 // Bug 87200: Disable ChromeHangInNTP for Windows
 #if defined(OS_WIN)
 #define MAYBE_ChromeHangInNTP DISABLED_ChromeHangInNTP
+#elif defined(OS_CHROMEOS)
+#define MAYBE_ChromeHangInNTP FLAKY_ChromeHangInNTP
 #else
 #define MAYBE_ChromeHangInNTP ChromeHangInNTP
 #endif
