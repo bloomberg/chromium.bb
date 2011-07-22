@@ -28,6 +28,26 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
 
 } // namespace browser
 
+namespace {
+
+void SetDialogStyle() {
+  static bool style_was_set = false;
+
+  if (style_was_set)
+    return;
+  style_was_set = true;
+
+  gtk_rc_parse_string(
+      "style \"chrome-html-dialog\" {\n"
+      "  GtkDialog::action-area-border = 0\n"
+      "  GtkDialog::content-area-border = 0\n"
+      "  GtkDialog::content-area-spacing = 0\n"
+      "}\n"
+      "widget \"*chrome-html-dialog\" style \"chrome-html-dialog\"");
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk, public:
 
@@ -141,6 +161,8 @@ gfx::NativeWindow HtmlDialogGtk::InitDialog() {
       flags,
       NULL);
 
+  SetDialogStyle();
+  gtk_widget_set_name(dialog_, "chrome-html-dialog");
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
