@@ -766,3 +766,101 @@ TEST_F(NativeBackendGnomeTest, NoMigrationWithPrefSet) {
   if (mock_keyring_items.size() > 1)
     CheckMockKeyringItem(&mock_keyring_items[1], form_isc_, "chrome-42");
 }
+
+TEST_F(NativeBackendGnomeTest, DeleteMigratedPasswordIsIsolated) {
+  // Reject attempts to migrate so we can populate the store.
+  mock_keyring_reject_local_ids = true;
+
+  {
+    NativeBackendGnome backend(42, profile_->GetPrefs());
+    backend.Init();
+
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(&backend,
+                          &NativeBackendGnome::AddLogin,
+                          form_google_));
+
+    RunBothThreads();
+  }
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome");
+
+  // Now allow the migration.
+  mock_keyring_reject_local_ids = false;
+
+  {
+    NativeBackendGnome backend(42, profile_->GetPrefs());
+    backend.Init();
+
+    // Trigger the migration by looking something up.
+    std::vector<PasswordForm*> form_list;
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(&backend,
+                          &NativeBackendGnome::GetAutofillableLogins,
+                          &form_list));
+
+    RunBothThreads();
+
+    // Quick check that we got something back.
+    EXPECT_EQ(1u, form_list.size());
+    STLDeleteElements(&form_list);
+  }
+
+  EXPECT_EQ(2u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome");
+  if (mock_keyring_items.size() > 1)
+    CheckMockKeyringItem(&mock_keyring_items[1], form_google_, "chrome-42");
+
+  // Check that we have set the persistent preference.
+  EXPECT_TRUE(
+      profile_->GetPrefs()->GetBoolean(prefs::kPasswordsUseLocalProfileId));
+
+  // Normally we'd actually have a different profile. But in the test just reset
+  // the profile's persistent pref; we pass in the local profile id anyway.
+  profile_->GetPrefs()->SetBoolean(prefs::kPasswordsUseLocalProfileId, false);
+
+  {
+    NativeBackendGnome backend(24, profile_->GetPrefs());
+    backend.Init();
+
+    // Trigger the migration by looking something up.
+    std::vector<PasswordForm*> form_list;
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(&backend,
+                          &NativeBackendGnome::GetAutofillableLogins,
+                          &form_list));
+
+    RunBothThreads();
+
+    // Quick check that we got something back.
+    EXPECT_EQ(1u, form_list.size());
+    STLDeleteElements(&form_list);
+
+    // There should be three passwords now.
+    EXPECT_EQ(3u, mock_keyring_items.size());
+    if (mock_keyring_items.size() > 0)
+      CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome");
+    if (mock_keyring_items.size() > 1)
+      CheckMockKeyringItem(&mock_keyring_items[1], form_google_, "chrome-42");
+    if (mock_keyring_items.size() > 2)
+      CheckMockKeyringItem(&mock_keyring_items[2], form_google_, "chrome-24");
+
+    // Now delete the password from this second profile.
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(&backend,
+                          &NativeBackendGnome::RemoveLogin,
+                          form_google_));
+
+    RunBothThreads();
+
+    // The other two copies of the password in different profiles should remain.
+    EXPECT_EQ(2u, mock_keyring_items.size());
+    if (mock_keyring_items.size() > 0)
+      CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome");
+    if (mock_keyring_items.size() > 1)
+      CheckMockKeyringItem(&mock_keyring_items[1], form_google_, "chrome-42");
+  }
+}
