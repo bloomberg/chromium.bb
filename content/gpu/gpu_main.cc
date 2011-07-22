@@ -19,9 +19,12 @@
 #include "content/common/main_function_params.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
+#include "ui/gfx/gl/gl_surface.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/chrome_application_mac.h"
+#elif defined(OS_WIN)
+#include "sandbox/src/sandbox.h"
 #endif
 
 #if defined(USE_X11)
@@ -35,6 +38,35 @@ int GpuMain(const MainFunctionParams& parameters) {
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
     ChildProcess::WaitForDebugger("Gpu");
+  }
+
+  // Initialization of the OpenGL bindings may fail, in which case we
+  // will need to tear down this process. However, we can not do so
+  // safely until the IPC channel is set up, because the detection of
+  // early return of a child process is implemented using an IPC
+  // channel error. If the IPC channel is not fully set up between the
+  // browser and GPU process, and the GPU process crashes or exits
+  // early, the browser process will never detect it.  For this reason
+  // we defer tearing down the GPU process until receiving the
+  // GpuMsg_Initialize message from the browser.
+  bool dead_on_arrival = false;
+
+#if defined(OS_WIN)
+  sandbox::TargetServices* target_services =
+      parameters.sandbox_info_.TargetServices();
+  // For windows, if the target_services interface is not zero, the process
+  // is sandboxed and we must call LowerToken() before rendering untrusted
+  // content.
+  if (target_services)
+    target_services->LowerToken();
+#endif
+
+  // Load the GL implementation and locate the bindings before starting the GPU
+  // watchdog because this can take a lot of time and the GPU watchdog might
+  // terminate the GPU process.
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(INFO) << "GLContext::InitializeOneOff failed";
+    dead_on_arrival = true;
   }
 
 #if defined(OS_MACOSX)
@@ -59,21 +91,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  // We can not tolerate early returns from this code, because the
-  // detection of early return of a child process is implemented using
-  // an IPC channel error. If the IPC channel is not fully set up
-  // between the browser and GPU process, and the GPU process crashes
-  // or exits early, the browser process will never detect it.  For
-  // this reason we defer all work related to the GPU until receiving
-  // the GpuMsg_Initialize message from the browser.
   GpuProcess gpu_process;
 
-  GpuChildThread* child_thread =
-#if defined(OS_WIN)
-      new GpuChildThread(parameters.sandbox_info_.TargetServices());
-#else
-      new GpuChildThread;
-#endif
+  GpuChildThread* child_thread = new GpuChildThread(dead_on_arrival);
 
   child_thread->Init(start_time);
 
