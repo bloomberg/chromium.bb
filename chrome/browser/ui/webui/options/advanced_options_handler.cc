@@ -149,6 +149,12 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "disableWebServices",
       IDS_OPTIONS_DISABLE_WEB_SERVICES },
+#if defined(OS_CHROMEOS)
+    { "cloudPrintChromeosOptionLabel",
+      IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL },
+    { "cloudPrintChromeosOptionButton",
+      IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON },
+#endif
     { "cloudPrintOptionsStaticLabel",
       IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE },
     { "cloudPrintProxyEnabledManageButton",
@@ -180,6 +186,12 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("privacyLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kPrivacyLearnMoreURL)).spec());
+
+#if defined(OS_CHROMEOS)
+  localized_strings->SetString("cloudPrintLearnMoreURL",
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kCloudPrintLearnMoreURL)).spec());
+#endif
 }
 
 void AdvancedOptionsHandler::Initialize() {

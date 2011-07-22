@@ -293,6 +293,11 @@ const char kBlockedPluginLearnMoreURL[] =
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=1382847";
 
+#if defined(OS_CHROMEOS)
+const char kCloudPrintLearnMoreURL[] =
+    "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
+#endif
+
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.

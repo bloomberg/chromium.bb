@@ -260,6 +260,11 @@ extern const char kLearnMoreRegisterProtocolHandlerURL[];
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();
 
+#if defined(OS_CHROMEOS)
+// "Learn more" URL for the Cloud Print section under Options.
+extern const char kCloudPrintLearnMoreURL[];
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

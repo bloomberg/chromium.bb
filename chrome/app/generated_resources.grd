@@ -5724,6 +5724,12 @@ ls' lab.">
       </message>
 
       <!-- Cloud Print proxy strings -->
+      <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL" desc="Label for the cloud print section of the Chrome OS advanced options dialog.">
+        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+      </message>
+      <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON" desc="Text on a button to go to the cloud print home page from the Chrome OS advanced options dialog.">
+        Open <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+      </message>
       <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
         Set up <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
