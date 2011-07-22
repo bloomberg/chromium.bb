@@ -278,7 +278,7 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     capabilities = {'chrome.binary': binary_path}
     self.GetNewDriver(capabilities)
 
-  def testUserProfile(self):
+  def DISABLED_testUserProfile(self):
     """Test starting WebDriver session with custom profile."""
 
     # Open a new session and save the user profile.
