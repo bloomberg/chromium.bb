@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/async_host_resolver.h"
+#include "net/dns/async_host_resolver.h"
 
 #include "base/bind.h"
 #include "base/scoped_ptr.h"
-#include "net/base/dns_test_util.h"
 #include "net/base/host_cache.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/base/test_host_resolver_observer.h"
+#include "net/dns/dns_test_util.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

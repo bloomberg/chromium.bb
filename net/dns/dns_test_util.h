@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_TEST_UTIL_H_
-#define NET_BASE_DNS_TEST_UTIL_H_
+#ifndef NET_DNS_DNS_TEST_UTIL_H_
+#define NET_DNS_DNS_TEST_UTIL_H_
 #pragma once
 
 #include <deque>
 #include <vector>
 
 #include "base/logging.h"
-#include "net/base/dns_transaction.h"
 #include "net/base/dns_util.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ip_endpoint.h"
@@ -33,62 +32,6 @@ class TestPrng {
   std::deque<int> numbers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrng);
-};
-
-bool operator==(const HostResolver::RequestInfo& a,
-                const HostResolver::RequestInfo& b);
-
-// Observer that just makes note of how it was called. The test code can then
-// inspect to make sure it was called with the right parameters.  Used by
-// HostResolverImpl and AsyncHostResolver unit tests.
-class TestHostResolverObserver : public HostResolver::Observer {
- public:
-  TestHostResolverObserver();
-  virtual ~TestHostResolverObserver();
-
-  // HostResolver::Observer methods:
-  virtual void OnStartResolution(int id, const HostResolver::RequestInfo& info);
-  virtual void OnFinishResolutionWithStatus(
-      int id,
-      bool was_resolved,
-      const HostResolver::RequestInfo& info);
-  virtual void OnCancelResolution(
-      int id,
-      const HostResolver::RequestInfo& info);
-
-  // Tuple (id, info).
-  struct StartOrCancelEntry {
-    StartOrCancelEntry(int id, const HostResolver::RequestInfo& info)
-        : id(id), info(info) {}
-
-    bool operator==(const StartOrCancelEntry& other) const {
-      return id == other.id && info == other.info;
-    }
-
-    int id;
-    HostResolver::RequestInfo info;
-  };
-
-  // Tuple (id, was_resolved, info).
-  struct FinishEntry {
-    FinishEntry(int id, bool was_resolved,
-                const HostResolver::RequestInfo& info)
-        : id(id), was_resolved(was_resolved), info(info) {}
-
-    bool operator==(const FinishEntry& other) const {
-      return id == other.id &&
-             was_resolved == other.was_resolved &&
-             info == other.info;
-    }
-
-    int id;
-    bool was_resolved;
-    HostResolver::RequestInfo info;
-  };
-
-  std::vector<StartOrCancelEntry> start_log;
-  std::vector<FinishEntry> finish_log;
-  std::vector<StartOrCancelEntry> cancel_log;
 };
 
 // A utility function for tests that given an array of IP literals,
@@ -269,4 +212,4 @@ static const char* const kT3IpAddresses[] = {
 
 }  // namespace net
 
-#endif  // NET_BASE_DNS_TEST_UTIL_H_
+#endif  // NET_DNS_DNS_TEST_UTIL_H_

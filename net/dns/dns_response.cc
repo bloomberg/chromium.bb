@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/dns_response.h"
+#include "net/dns/dns_response.h"
 
 #include "net/base/dns_util.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_query.h"
 
 namespace net {
 

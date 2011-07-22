@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_QUERY_H_
-#define NET_BASE_DNS_QUERY_H_
+#ifndef NET_DNS_DNS_QUERY_H_
+#define NET_DNS_DNS_QUERY_H_
 #pragma once
 
 #include <string>
 
-#include "net/base/io_buffer.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/net_api.h"
-#include "net/base/net_util.h"
 #include "net/base/rand_callback.h"
 
 namespace net {
+
+class IOBufferWithSize;
 
 // Represents on-the-wire DNS query message as an object.
 class NET_TEST DnsQuery {
@@ -68,4 +69,4 @@ class NET_TEST DnsQuery {
 
 }  // namespace net
 
-#endif  // NET_BASE_DNS_QUERY_H_
+#endif  // NET_DNS_DNS_QUERY_H_

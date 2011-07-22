@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/dns_query.h"
+#include "net/dns/dns_query.h"
 
 #include <limits>
-#include <string>
 
-#include "base/rand_util.h"
 #include "net/base/dns_util.h"
+#include "net/base/io_buffer.h"
 
 namespace net {
 

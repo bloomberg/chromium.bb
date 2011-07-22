@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/dns/dns_transaction.h"
+
+#include <deque>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/rand_util.h"
-#include "net/base/dns_transaction.h"
-#include "net/base/dns_query.h"
-#include "net/base/dns_test_util.h"
+#include "net/dns/dns_test_util.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

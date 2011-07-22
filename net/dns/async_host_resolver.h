@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_ASYNC_HOST_RESOLVER_H_
-#define NET_BASE_ASYNC_HOST_RESOLVER_H_
+#ifndef NET_DNS_ASYNC_HOST_RESOLVER_H_
+#define NET_DNS_ASYNC_HOST_RESOLVER_H_
 #pragma once
 
 #include <list>
 #include <map>
-#include <vector>
 
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_family.h"
-#include "net/base/dns_transaction.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
+#include "net/dns/dns_transaction.h"
 
 namespace net {
 
@@ -162,4 +161,4 @@ class NET_API AsyncHostResolver
 
 }  // namespace net
 
-#endif  // NET_BASE_ASYNC_HOST_RESOLVER_H_
+#endif  // NET_DNS_ASYNC_HOST_RESOLVER_H_

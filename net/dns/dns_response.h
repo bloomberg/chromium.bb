@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_RESPONSE_H_
-#define NET_BASE_DNS_RESPONSE_H_
+#ifndef NET_DNS_DNS_RESPONSE_H_
+#define NET_DNS_DNS_RESPONSE_H_
 #pragma once
 
-#include "net/base/dns_query.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/net_api.h"
+#include "net/base/net_util.h"
 
 namespace net{
+
+class DnsQuery;
+class IOBufferWithSize;
 
 // Represents on-the-wire DNS response as an object; allows extracting
 // records.
@@ -44,4 +48,4 @@ class NET_TEST DnsResponse {
 
 }  // namespace net
 
-#endif  // NET_BASE_DNS_RESPONSE_H_
+#endif  // NET_DNS_DNS_RESPONSE_H_

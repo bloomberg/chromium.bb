@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DNS_TRANSACTION_H_
-#define NET_BASE_DNS_TRANSACTION_H_
+#ifndef NET_DNS_DNS_TRANSACTION_H_
+#define NET_DNS_DNS_TRANSACTION_H_
 #pragma once
 
 #include <set>
@@ -11,24 +11,22 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
 #include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
-#include "net/base/dns_query.h"
-#include "net/base/dns_response.h"
-#include "net/base/dns_transaction.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_api.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/rand_callback.h"
 
 namespace net {
 
 class ClientSocketFactory;
 class DatagramClientSocket;
+class DnsQuery;
+class DnsResponse;
 
 // Performs (with fixed retries) a single asynchronous DNS transaction,
 // which consists of sending out a DNS query, waiting for response, and
@@ -145,4 +143,4 @@ class NET_TEST DnsTransaction : NON_EXPORTED_BASE(public base::NonThreadSafe) {
 
 }  // namespace net
 
-#endif  // NET_BASE_DNS_TRANSACTION_H_
+#endif  // NET_DNS_DNS_TRANSACTION_H_
