@@ -166,12 +166,12 @@ FileManager.prototype = {
    * defined, so don't depend on it.
    */
   const iconTypes = {
-    'audio': /\.(mp3|m4a|oga|ogg|wav)$/i,
+    'audio': /\.(flac|mp3|m4a|oga|ogg|wav)$/i,
     'html': /\.(html?)$/i,
     'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
     'pdf' : /\.(pdf)$/i,
     'text': /\.(pod|rst|txt|log)$/i,
-    'video': /\.(avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
+    'video': /\.(3gp|avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
   };
 
   const previewArt = {

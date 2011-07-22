@@ -86,6 +86,7 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   // TODO(fbarchard): Improve thread logic based on size / codec.
   // TODO(fbarchard): Fix bug affecting video-cookie.html
+  // 07/21/11(ihf): Still about 20 failures when enabling.
   int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA) ?
       1 : kDecodeThreads;
 

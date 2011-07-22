@@ -38,10 +38,12 @@ const char* kBrowserSupportedExtensions[] = {
 };
 // List of file extension that can be handled with the media player.
 const char* kAVExtensions[] = {
-    ".avi", ".webm", ".mp4", ".m4v", ".mov", ".ogm", ".ogv", ".ogx",
-    ".mp3", ".m4a", ".ogg", ".oga", ".wav",
+#if defined(GOOGLE_CHROME_BUILD)
+    ".3gp", ".avi", ".mp3", ".mp4", ".m4v", ".mov", ".m4a",
+#endif
+    ".flac", ".ogm", ".ogv", ".ogx", ".ogg", ".oga", ".wav", ".webm",
 /* TODO(zelidrag): Add unsupported ones as we enable them:
-    ".3gp", ".mkv", ".avi", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
+    ".mkv", ".divx", ".xvid", ".wmv", ".asf", ".mpeg", ".mpg",
     ".wma", ".aiff",
 */
 };

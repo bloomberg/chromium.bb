@@ -40,8 +40,10 @@
       "default_title": "__MSG_PLAY_MEDIA__",
       "default_icon": "images/icon_play_16x16.png",
       "file_filters": [
+        "filesystem:*.3gp",
         "filesystem:*.avi",
         "filesystem:*.webm",
+        "filesystem:*.flac",
         "filesystem:*.mp4",
         "filesystem:*.m4v",
         "filesystem:*.mov",
