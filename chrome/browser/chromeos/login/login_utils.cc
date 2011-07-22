@@ -33,12 +33,10 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/proxy_config_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
-#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -55,10 +53,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cookie_store.h"
 #include "net/base/cookie_monster.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/proxy/proxy_service.h"
+#include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -81,34 +77,6 @@ const char kSwitchFormatString[] = " --%s=\"%s\"";
 const char kGuestUserName[] = "";
 
 }  // namespace
-
-// Resets the proxy configuration service for the default request context.
-class ResetDefaultProxyConfigServiceTask : public Task {
- public:
-  ResetDefaultProxyConfigServiceTask(
-      net::ProxyConfigService* proxy_config_service)
-      : proxy_config_service_(proxy_config_service) {}
-  virtual ~ResetDefaultProxyConfigServiceTask() {}
-
-  // Task override.
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    // TODO(willchan): Move this class back into the anonymous namespace after
-    // we stop using this deprecated API.
-    net::URLRequestContextGetter* getter =
-        Profile::Deprecated::GetDefaultRequestContext();
-    DCHECK(getter);
-    if (getter) {
-      getter->GetURLRequestContext()->proxy_service()->ResetConfigService(
-          proxy_config_service_.release());
-    }
-  }
-
- private:
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResetDefaultProxyConfigServiceTask);
-};
 
 // Transfer the inital set of Profile cookies form the default profile.
 class TransferDefaultCookiesOnIOThreadTask : public Task {
@@ -310,28 +278,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
 
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
-
-  // Change the proxy configuration service of the default request context to
-  // use the preference configuration from the logged-in profile. This ensures
-  // that requests done through the default context use the proxy configuration
-  // provided by configuration policy.
-  //
-  // Note: Many of the clients of the default request context should probably be
-  // fixed to use the request context of the profile they are associated with.
-  // This includes preconnect, autofill, metrics service to only name a few;
-  // see http://code.google.com/p/chromium/issues/detail?id=64339 for details.
-  //
-  // TODO(mnissler) Revisit when support for device-specific policy arrives, at
-  // which point the default request context can directly be managed through
-  // device policy.
-  net::ProxyConfigService* proxy_config_service =
-      new PrefProxyConfigService(
-          profile->GetProxyConfigTracker(),
-          new chromeos::ProxyConfigService(
-              g_browser_process->chromeos_proxy_config_service_impl()));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          new ResetDefaultProxyConfigServiceTask(
-                              proxy_config_service));
 
   // Since we're doing parallel authentication, only new user sign in
   // would perform online auth before calling PrepareProfile.
