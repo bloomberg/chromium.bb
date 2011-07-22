@@ -48,8 +48,12 @@ void GetArgsForEnterPassphrase(bool tried_creating_explicit_passphrase,
 
 // Returns the next step for the non-fatal error case.
 SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
-  if (service->IsPassphraseRequired() && service->IsUsingSecondaryPassphrase())
+  if (service->IsPassphraseRequired()) {
+    if (service->IsUsingSecondaryPassphrase())
       return SyncSetupWizard::ENTER_PASSPHRASE;
+    else
+      return SyncSetupWizard::GAIA_LOGIN;
+  }
 
   const GoogleServiceAuthError& error = service->GetAuthError();
   if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
