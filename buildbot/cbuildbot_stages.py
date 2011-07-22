@@ -909,7 +909,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     else:
       # 'http://botname/archive/bot_id/version'
       return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
-                                          self.set_version)
+                                          self._set_version)
 
   def GetLocalArchivePath(self):
     return os.path.join(self._local_archive_path, self._bot_id,
