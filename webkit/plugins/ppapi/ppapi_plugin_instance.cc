@@ -189,6 +189,18 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 }  // namespace
 
 // static
+PluginInstance* PluginInstance::Create0_5(PluginDelegate* delegate,
+                                          PluginModule* module,
+                                          const void* ppp_instance_if_0_5) {
+  const PPP_Instance_0_5* interface =
+      static_cast<const PPP_Instance_0_5*>(ppp_instance_if_0_5);
+  return new PluginInstance(
+      delegate,
+      module,
+      new ::ppapi::PPP_Instance_Combined(*interface));
+}
+
+// static
 PluginInstance* PluginInstance::Create1_0(PluginDelegate* delegate,
                                           PluginModule* module,
                                           const void* ppp_instance_if_1_0) {
@@ -465,6 +477,21 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
         // Release the reference we took above.
         tracker->UnrefResource(resource);
       }
+    }
+  }
+
+  // For compatibility, also send all input events through the old interface,
+  // if it exists.
+  // TODO(brettw) remove this.
+  if (instance_interface_->HandleInputEvent_0_5) {
+    std::vector<PP_InputEvent> pp_events;
+    CreatePPEvent(event, &pp_events);
+
+    // Each input event may generate more than one PP_InputEvent.
+    for (size_t i = 0; i < pp_events.size(); i++) {
+      rv |= PP_ToBool(
+          instance_interface_->HandleInputEvent_0_5(pp_instance(),
+                                                    &pp_events[i]));
     }
   }
 

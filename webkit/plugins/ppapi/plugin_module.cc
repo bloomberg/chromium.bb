@@ -74,6 +74,9 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+// TODO(dmichael): Delete this include after PPP_Instance_0_5 goes away in m14.
+//                 This is just to get the PPP_INSTANCE_0_5 definition.
+#include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -289,19 +292,19 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_ImageData_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_ImageDataTrusted_Thunk();
-  if (strcmp(name, PPB_INPUT_EVENT_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
   if (strcmp(name, PPB_INSTANCE_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_Instance_1_0_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
-  if (strcmp(name, PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_KEYBOARD_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_KeyboardInputEvent_Thunk();
   if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
     return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_MESSAGING_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_Messaging_Thunk();
-  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
@@ -329,7 +332,7 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoLayer_Thunk();
-  if (strcmp(name, PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0) == 0)
+  if (strcmp(name, PPB_WHEEL_INPUT_EVENT_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_WheelInputEvent_Thunk();
   if (strcmp(name, PPB_WIDGET_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Widget_Thunk();
@@ -506,7 +509,11 @@ PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   const void* ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_1_0);
   if (ppp_instance) {
     instance = PluginInstance::Create1_0(delegate, this, ppp_instance);
-  } if (!instance) {
+  } else if ((ppp_instance = GetPluginInterface(PPP_INSTANCE_INTERFACE_0_5))) {
+    // TODO(dmichael): Remove support for 0.5 in m14.
+    instance = PluginInstance::Create0_5(delegate, this, ppp_instance);
+  }
+  if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }

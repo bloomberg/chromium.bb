@@ -86,8 +86,14 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                        public ::ppapi::thunk::PPB_Instance_FunctionAPI,
                        public ::ppapi::InstanceImpl {
  public:
+  // TODO(dmichael): Delete this for m14.
   // Create and return a PluginInstance object which supports the
-  // PPP_Instance_1_0 interface.
+  // PPP_Instance_0_5 interface.
+  static PluginInstance* Create0_5(PluginDelegate* delegate,
+                                   PluginModule* module,
+                                   const void* ppp_instance_if_0_5);
+  // Create and return a PluginInstance object which supports the
+  // PPP_Instance_0_5 interface.
   static PluginInstance* Create1_0(PluginDelegate* delegate,
                                    PluginModule* module,
                                    const void* ppp_instance_if_1_0);
