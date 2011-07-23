@@ -83,6 +83,9 @@ const char kGuestUserName[] = "";
 // TODO(zelidrag): Figure out if we need to add more services here.
 const char kServiceScopeChromeOS[] =
     "https://www.googleapis.com/auth/chromesync";
+
+const char kServiceScopeChromeOSDeviceManagement[] =
+    "https://www.googleapis.com/auth/chromeosdevicemanagement";
 }  // namespace
 
 // Task for fetching tokens from UI thread.
@@ -173,6 +176,51 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(TransferDefaultCookiesOnIOThreadTask);
 };
 
+// Fetches an OAuth token and initializes user policy with it.
+class PolicyOAuthFetcher : public GaiaOAuthConsumer {
+ public:
+  explicit PolicyOAuthFetcher(Profile* profile,
+                              const std::string& oauth1_token,
+                              const std::string& oauth1_secret)
+      : oauth_fetcher_(this,
+                       profile->GetRequestContext(),
+                       profile,
+                       kServiceScopeChromeOSDeviceManagement),
+        oauth1_token_(oauth1_token),
+        oauth1_secret_(oauth1_secret) {
+    oauth_fetcher_.SetAutoFetchMask(
+        GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
+  }
+  virtual ~PolicyOAuthFetcher() {}
+
+  void Start() {
+    oauth_fetcher_.StartOAuthWrapBridge(oauth1_token_, oauth1_secret_, "3600",
+        std::string(kServiceScopeChromeOSDeviceManagement));
+  }
+
+  // GaiaOAuthConsumer implementation:
+  virtual void OnOAuthWrapBridgeSuccess(
+      const std::string& token,
+      const std::string& expires_in) OVERRIDE {
+    policy::BrowserPolicyConnector* browser_policy_connector =
+        g_browser_process->browser_policy_connector();
+    browser_policy_connector->RegisterForUserPolicy(token);
+  }
+
+  virtual void OnOAuthWrapBridgeFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(WARNING) << "Failed to get OAuth access token.";
+  }
+
+ private:
+  GaiaOAuthFetcher oauth_fetcher_;
+  std::string oauth1_token_;
+  std::string oauth1_secret_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyOAuthFetcher);
+};
+
+
 class LoginUtilsImpl : public LoginUtils,
                        public ProfileManagerObserver,
                        public GaiaOAuthConsumer {
@@ -244,10 +292,6 @@ class LoginUtilsImpl : public LoginUtils,
                                             const std::string& secret) OVERRIDE;
   virtual void OnOAuthGetAccessTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthWrapBridgeSuccess(const std::string& token,
-                                        const std::string& expires_in) OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -268,6 +312,7 @@ class LoginUtilsImpl : public LoginUtils,
   bool pending_requests_;
   scoped_refptr<Authenticator> authenticator_;
   scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
+  scoped_ptr<PolicyOAuthFetcher> policy_oauth_fetcher_;
 
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
@@ -344,9 +389,13 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
   // Initialize the user-policy backend.
   policy::BrowserPolicyConnector* browser_policy_connector =
       g_browser_process->browser_policy_connector();
+
+  TokenService* token_service_for_policy = NULL;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUIGaiaLogin))
+    token_service_for_policy = profile->GetTokenService();
   browser_policy_connector->InitializeUserPolicy(username_,
                                                  profile->GetPath(),
-                                                 profile->GetTokenService());
+                                                 token_service_for_policy);
 
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
@@ -453,8 +502,9 @@ void LoginUtilsImpl::FetchOAuthTokens(Profile* profile) {
                                             profile->GetRequestContext(),
                                             profile,
                                             kServiceScopeChromeOS));
-  // We don't care about everything this class can get right now, just
-  // about OAuth tokens for now.
+  // Let's first get the Oauth request token and OAuth1 token+secret.
+  // One we get that, we will kick off individial requests for OAuth2 tokens for
+  // all our services.
   oauth_fetcher_->SetAutoFetchMask(
       GaiaOAuthFetcher::OAUTH1_REQUEST_TOKEN |
       GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
@@ -717,8 +767,16 @@ void LoginUtilsImpl::OnGetOAuthTokenFailure() {
 
 void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
                                                   const std::string& secret) {
-  // TODO(zelidrag): OK, now we have OAuth1 token in place. Where do I stick it?
   VLOG(1) << "Got OAuth v1 token!";
+
+  // Trigger oauth token fetch for user policy.
+  Profile* profile = authenticator_->AuthenticationProfile();
+  policy_oauth_fetcher_.reset(new PolicyOAuthFetcher(profile, token, secret));
+  policy_oauth_fetcher_->Start();
+
+  // TODO(zelidrag): We should add initialization of other services somewhere
+  // here as well. This could be handled with TokenService class once it is
+  // ready to handle OAuth tokens.
 }
 
 void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
@@ -726,19 +784,6 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
   // TODO(zelidrag): Pop up sync setup UI here?
   LOG(WARNING) << "Failed fetching OAuth v1 token, error: " << error.state();
 }
-
-void LoginUtilsImpl::OnOAuthWrapBridgeSuccess(const std::string& token,
-    const std::string& expires_in) {
-  // TODO(zelidrag): OK, now we have OAuth2 token in place. Where do I stick it?
-  VLOG(1) << "Got OAuth v2 token!";
-}
-
-void LoginUtilsImpl::OnOAuthWrapBridgeFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(zelidrag): Pop up sync setup UI here?
-  LOG(WARNING) << "Failed fetching OAuth v2 token, error: " << error.state();
-}
-
 
 LoginUtils* LoginUtils::Get() {
   return LoginUtilsWrapper::GetInstance()->get();
