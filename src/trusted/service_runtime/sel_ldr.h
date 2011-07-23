@@ -113,10 +113,6 @@ struct NaClApp {
      && NACL_BUILD_SUBARCH == 32 && __PIC__)
   uintptr_t                 pcrel_thunk;
 #endif
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 64)
-  uintptr_t                 dispatch_thunk;
-#endif
 
   /* only used for ET_EXEC:  for CS restriction */
   uintptr_t                 static_text_end;  /* relative to mem_start */
@@ -554,13 +550,6 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap);
      && NACL_BUILD_SUBARCH == 32 && __PIC__)
 
 int NaClMakePcrelThunk(struct NaClApp *nap);
-
-#endif
-
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 64)
-
-int NaClMakeDispatchThunk(struct NaClApp *nap);
 
 #endif
 

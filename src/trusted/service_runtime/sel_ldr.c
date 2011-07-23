@@ -78,15 +78,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->aux_info = NULL;
 
   nap->mem_start = 0;
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 32 && __PIC__)
-  nap->pcrel_thunk = 0;
-#endif
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 64)
-  nap->dispatch_thunk = 0;
-#endif
-
   nap->static_text_end = 0;
   nap->dynamic_text_start = 0;
   nap->dynamic_text_end = 0;
@@ -403,11 +394,6 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
   if (!NaClMakePcrelThunk(nap)) {
     NaClLog(LOG_FATAL, "NaClMakePcrelThunk failed!\n");
-  }
-#endif
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  if (!NaClMakeDispatchThunk(nap)) {
-    NaClLog(LOG_FATAL, "NaClMakeDispatchThunk failed!\n");
   }
 #endif
   NaClFillTrampolineRegion(nap);
