@@ -16,10 +16,11 @@ class NTPTest(pyauto.PyUITest):
   # Default apps are registered in ProfileImpl::RegisterComponentExtensions().
   _EXPECTED_DEFAULT_APPS = [
     {u'name': u'Chrome Web Store'},
-    {u'name': u'Cloud Print'},
   ]
   if pyauto.PyUITest.IsChromeOS():
     _EXPECTED_DEFAULT_APPS.append({u'name': u'File Manager'})
+  else:
+    _EXPECTED_DEFAULT_APPS.append({u'name': u'Cloud Print'})
 
   # Default menu and thumbnail mode preferences are set in
   # ShownSectionsHandler::RegisterUserPrefs.
