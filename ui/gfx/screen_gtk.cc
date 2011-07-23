@@ -1,15 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/screen.h"
+#include "ui/gfx/screen.h"
 
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
 
-namespace views {
+namespace gfx {
 
 // static
 gfx::Point Screen::GetCursorScreenPoint() {
@@ -104,5 +104,4 @@ gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   return GTK_IS_WINDOW(widget) ? GTK_WINDOW(widget) : NULL;
 }
 
-}  // namespace
-
+}  // namespace gfx

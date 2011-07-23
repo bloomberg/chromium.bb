@@ -13,8 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/screen.h"
 #include "views/controls/link.h"
-#include "views/screen.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -144,7 +144,7 @@ FullscreenExitBubble::FullscreenExitBubble(
   // Start the initial delay timer and begin watching the mouse.
   initial_delay_.Start(base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
                        &FullscreenExitBubble::CheckMousePosition);
-  gfx::Point cursor_pos = views::Screen::GetCursorScreenPoint();
+  gfx::Point cursor_pos = gfx::Screen::GetCursorScreenPoint();
   last_mouse_pos_ = cursor_pos;
   views::View::ConvertPointToView(NULL, root_view_, &last_mouse_pos_);
   mouse_position_checker_.Start(
@@ -206,7 +206,7 @@ void FullscreenExitBubble::CheckMousePosition() {
   //   either the popup is hidden or the mouse is not idle, so we don't want to
   //   change anything's state.
 
-  gfx::Point cursor_pos = views::Screen::GetCursorScreenPoint();
+  gfx::Point cursor_pos = gfx::Screen::GetCursorScreenPoint();
   gfx::Point transformed_pos(cursor_pos);
   views::View::ConvertPointToView(NULL, root_view_, &transformed_pos);
 
@@ -252,7 +252,7 @@ gfx::Rect FullscreenExitBubble::GetPopupRect(
   }
   // NOTE: don't use the bounds of the root_view_. On linux changing window
   // size is async. Instead we use the size of the screen.
-  gfx::Rect screen_bounds = views::Screen::GetMonitorAreaNearestWindow(
+  gfx::Rect screen_bounds = gfx::Screen::GetMonitorAreaNearestWindow(
       root_view_->GetWidget()->GetNativeView());
   gfx::Point origin(screen_bounds.x() +
                     (screen_bounds.width() - size.width()) / 2,
