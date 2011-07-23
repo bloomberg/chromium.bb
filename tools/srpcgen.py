@@ -367,10 +367,13 @@ def PrintClientFile(output, header_name, specs, thread_check):
     rpcs = spec['rpcs']
     for rpc in rpcs:
       s += '%s  {\n' % FormatRpcPrototype('', class_name + '::', '', rpc)
-      s += '  NaClSrpcError retval;\n'
       if thread_check and rpc['name'] not in ['PPB_GetInterface',
                                               'PPB_Core_CallOnMainThread']:
-        s += '  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());\n'
+        error = '"%s: PPAPI calls are not supported off the main thread\\n"'
+        s += '  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),\n'
+        s += '         (%s,\n' % error
+        s += '          __FUNCTION__));\n'
+      s += '  NaClSrpcError retval;\n'
       s += '  retval = NaClSrpcInvokeBySignature%s;\n' % FormatCall(rpc)
       if header_name.startswith('trusted'):
         s += DeadNexeHandling(rpc, 'retval')
