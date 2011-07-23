@@ -19,9 +19,9 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@290665e5ec3f648c6d94f0a4e2d0f1c603f65b84',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@7930751e60b6a32405ef1bae99d37b0cee3ec9e2',
+        Var('git_url') + '/native_client/src/native_client.git@9708505fab45186b414a9bb9b3bcbe43e2f15655',
     'src/native_client/src/third_party/ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@81ad920f3cec2f42d9bdda13088f866e5cffb63b',
+        Var('git_url') + '/chromium/src/ppapi.git@e6f8be683e4fedbebd689bf94d46d35424e6022f',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@f1dd933c4e47a65889b4bba2a5f58b12aac53383',
     'src/seccompsandbox':
@@ -199,13 +199,13 @@ hooks = [
     'python',
     'src/build/download_nacl_irt.py',
     '--nacl_revision',
-    '6153',
+    '6184',
     '--file_hash',
     'x86_32',
-    'e0c0c126dae1b1d87f4e65883964bc68bd80678f',
+    'b4584945b84092adf7f22462bb78fc66dbabceee',
     '--file_hash',
     'x86_64',
-    '6923eb11ffd0f1578fa7745d803bca96dc9d10eb'
+    'fdd45bfbdaa3e76b04f23e67880e971e7f26f44e'
 ],
     'pattern':
          '.'
