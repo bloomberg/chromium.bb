@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 
 #include "base/logging.h"
+#include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,6 +49,7 @@ CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
   ApplySimpleSwitches();
   ApplyProxyMode();
   ValidateProxySwitches();
+  ApplySSLSwitches();
 }
 
 CommandLinePrefStore::~CommandLinePrefStore() {}
@@ -104,5 +106,20 @@ void CommandLinePrefStore::ApplyProxyMode() {
     SetValue(prefs::kProxy,
              ProxyConfigDictionary::CreateFixedServers(proxy_server,
                                                        bypass_list));
+  }
+}
+
+void CommandLinePrefStore::ApplySSLSwitches() {
+  if (command_line_->HasSwitch(switches::kCipherSuiteBlacklist)) {
+    std::string cipher_suites =
+        command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist);
+    std::vector<std::string> cipher_strings;
+    base::SplitString(cipher_suites, ',', &cipher_strings);
+    base::ListValue* list_value = new base::ListValue();
+    for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
+         it != cipher_strings.end(); ++it) {
+      list_value->Append(base::Value::CreateStringValue(*it));
+    }
+    SetValue(prefs::kCipherSuiteBlacklist, list_value);
   }
 }

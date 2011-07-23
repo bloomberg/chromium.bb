@@ -1,15 +1,64 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "base/message_loop.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "base/basictypes.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_details.h"
+#include "content/common/notification_source.h"
+#include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_config_service.h"
+
+namespace {
+
+// Converts a ListValue of StringValues into a vector of strings. Any Values
+// which cannot be converted will be skipped.
+std::vector<std::string> ListValueToStringVector(const ListValue* value) {
+  std::vector<std::string> results;
+  results.reserve(value->GetSize());
+  std::string s;
+  for (ListValue::const_iterator it = value->begin(); it != value->end();
+       ++it) {
+    if (!(*it)->GetAsString(&s))
+      continue;
+    results.push_back(s);
+  }
+  return results;
+}
+
+// Parses a vector of cipher suite strings, returning a sorted vector
+// containing the underlying SSL/TLS cipher suites. Unrecognized/invalid
+// cipher suites will be ignored.
+std::vector<uint16> ParseCipherSuites(
+    const std::vector<std::string>& cipher_strings) {
+  std::vector<uint16> cipher_suites;
+  cipher_suites.reserve(cipher_strings.size());
+
+  for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
+       it != cipher_strings.end(); ++it) {
+    uint16 cipher_suite = 0;
+    if (!net::ParseSSLCipherString(*it, &cipher_suite)) {
+      LOG(ERROR) << "Ignoring unrecognized or unparsable cipher suite: "
+                 << *it;
+      continue;
+    }
+    cipher_suites.push_back(cipher_suite);
+  }
+  std::sort(cipher_suites.begin(), cipher_suites.end());
+  return cipher_suites;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServicePref
@@ -77,10 +126,19 @@ class SSLConfigServiceManagerPref
   // only be called from UI thread.
   void GetSSLConfigFromPrefs(net::SSLConfig* config);
 
+  // Processes changes to the disabled cipher suites preference, updating the
+  // cached list of parsed SSL/TLS cipher suites that are disabled.
+  void OnDisabledCipherSuitesChange(PrefService* prefs);
+
+  PrefChangeRegistrar pref_change_registrar_;
+
   // The prefs (should only be accessed from UI thread)
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
+
+  // The cached list of disabled SSL cipher suites.
+  std::vector<uint16> disabled_cipher_suites_;
 
   scoped_refptr<SSLConfigServicePref> ssl_config_service_;
 
@@ -96,7 +154,10 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                              local_state, this);
   ssl3_enabled_.Init(prefs::kSSL3Enabled, local_state, this);
   tls1_enabled_.Init(prefs::kTLS1Enabled, local_state, this);
+  pref_change_registrar_.Init(local_state);
+  pref_change_registrar_.Add(prefs::kCipherSuiteBlacklist, this);
 
+  OnDisabledCipherSuitesChange(local_state);
   // Initialize from UI thread.  This is okay as there shouldn't be anything on
   // the IO thread trying to access it yet.
   GetSSLConfigFromPrefs(&ssl_config_service_->cached_config_);
@@ -111,6 +172,7 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
                              default_config.ssl3_enabled);
   prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
                              default_config.tls1_enabled);
+  prefs->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -122,6 +184,12 @@ void SSLConfigServiceManagerPref::Observe(int type,
                                           const NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    std::string* pref_name_in = Details<std::string>(details).ptr();
+    PrefService* prefs = Source<PrefService>(source).ptr();
+    DCHECK(pref_name_in && prefs);
+    if (*pref_name_in == prefs::kCipherSuiteBlacklist)
+      OnDisabledCipherSuitesChange(prefs);
+
     net::SSLConfig new_config;
     GetSSLConfigFromPrefs(&new_config);
 
@@ -142,7 +210,14 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->rev_checking_enabled = rev_checking_enabled_.GetValue();
   config->ssl3_enabled = ssl3_enabled_.GetValue();
   config->tls1_enabled = tls1_enabled_.GetValue();
+  config->disabled_cipher_suites = disabled_cipher_suites_;
   SSLConfigServicePref::SetSSLConfigFlags(config);
+}
+
+void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
+    PrefService* prefs) {
+  const ListValue* value = prefs->GetList(prefs::kCipherSuiteBlacklist);
+  disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

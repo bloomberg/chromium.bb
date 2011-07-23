@@ -48,6 +48,7 @@ extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kChromeVersion[];
+extern const char kCipherSuiteBlacklist[];
 extern const char kCloudPrintDeleteFile[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];

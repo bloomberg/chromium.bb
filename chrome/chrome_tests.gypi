@@ -1501,6 +1501,7 @@
         'browser/net/pref_proxy_config_service_unittest.cc',
         'browser/net/quoted_printable_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
+        'browser/net/ssl_config_service_manager_pref_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',

@@ -112,6 +112,9 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 // this version cannot be loaded, Chrome will exit.
 const char kChromeVersion[]                 = "chrome-version";
 
+// Comma-separated list of SSL cipher suites to disable.
+const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
+
 // Used with kCloudPrintFile.  Tells Chrome to delete the file when
 // finished displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";

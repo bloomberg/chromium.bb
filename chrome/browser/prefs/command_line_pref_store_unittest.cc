@@ -34,6 +34,23 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
     ASSERT_TRUE(dict.GetMode(&actual_mode));
     EXPECT_EQ(expected_mode, actual_mode);
   }
+
+  void VerifySSLCipherSuites(const char* const* ciphers,
+                             size_t cipher_count) {
+    const Value* value = NULL;
+    ASSERT_EQ(PrefStore::READ_OK,
+              GetValue(prefs::kCipherSuiteBlacklist, &value));
+    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    ASSERT_EQ(cipher_count, list_value->GetSize());
+
+    std::string cipher_string;
+    for (ListValue::const_iterator it = list_value->begin();
+         it != list_value->end(); ++it, ++ciphers) {
+      ASSERT_TRUE((*it)->GetAsString(&cipher_string));
+      EXPECT_EQ(*ciphers, cipher_string);
+    }
+  }
 };
 
 const char unknown_bool[] = "unknown_switch";
@@ -158,4 +175,42 @@ TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
   scoped_refptr<TestCommandLinePrefStore> store3 =
         new TestCommandLinePrefStore(&cl3);
   store3->VerifyProxyMode(ProxyPrefs::MODE_DIRECT);
+}
+
+TEST(CommandLinePrefStoreTest, DisableSSLCipherSuites) {
+  CommandLine cl1(CommandLine::NO_PROGRAM);
+  cl1.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
+                        "0x0004,0x0005");
+  scoped_refptr<TestCommandLinePrefStore> store1 =
+      new TestCommandLinePrefStore(&cl1);
+  const char* const expected_ciphers1[] = {
+    "0x0004",
+    "0x0005",
+  };
+  store1->VerifySSLCipherSuites(expected_ciphers1,
+                                arraysize(expected_ciphers1));
+
+  CommandLine cl2(CommandLine::NO_PROGRAM);
+  cl2.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
+                        "0x0004, WHITESPACE_IGNORED TEST , 0x0005");
+  scoped_refptr<TestCommandLinePrefStore> store2 =
+      new TestCommandLinePrefStore(&cl2);
+  const char* const expected_ciphers2[] = {
+    "0x0004",
+    "WHITESPACE_IGNORED TEST",
+    "0x0005",
+  };
+  store2->VerifySSLCipherSuites(expected_ciphers2,
+                                arraysize(expected_ciphers2));
+
+  CommandLine cl3(CommandLine::NO_PROGRAM);
+  cl3.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
+                        "0x0004;MOAR;0x0005");
+  scoped_refptr<TestCommandLinePrefStore> store3 =
+      new TestCommandLinePrefStore(&cl3);
+  const char* const expected_ciphers3[] = {
+    "0x0004;MOAR;0x0005"
+  };
+  store3->VerifySSLCipherSuites(expected_ciphers3,
+                                arraysize(expected_ciphers3));
 }
