@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/sys_string_conversions.h"
@@ -330,7 +331,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnMsgCreateFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRawCookies, OnGetRawCookies)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
@@ -422,44 +423,34 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
           resource_context_, render_process_id_, message.routing_id(),
           &options)) {
     net::URLRequestContext* context = GetRequestContextForURL(url);
-    context->cookie_store()->SetCookieWithOptions(url, cookie, options);
+    // Pass a null callback since we don't care about when the 'set' completes.
+    context->cookie_store()->SetCookieWithOptionsAsync(
+        url, cookie, options, net::CookieMonster::SetCookiesCallback());
   }
 }
 
-// We use DELAY_REPLY even though we have the result here because we want the
-// message's routing_id, and there's no (current) way to get it.
 void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        const GURL& first_party_for_cookies,
                                        IPC::Message* reply_msg) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
-  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url);
-
-  std::string cookies;
-  if (content::GetContentClient()->browser()->AllowGetCookie(
-          url, first_party_for_cookies, cookie_list, resource_context_,
-          render_process_id_, reply_msg->routing_id())) {
-    cookies = context->cookie_store()->GetCookies(url);
-  }
-
-  ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
-  Send(reply_msg);
+  cookie_monster->GetAllCookiesForURLAsync(
+      url, base::Bind(&RenderMessageFilter::CheckPolicyForCookies, this, url,
+                      first_party_for_cookies, reply_msg));
 }
 
 void RenderMessageFilter::OnGetRawCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
-    std::vector<webkit_glue::WebCookie>* cookies) {
-  cookies->clear();
-
+    IPC::Message* reply_msg) {
   // Only return raw cookies to trusted renderers or if this request is
   // not targeted to an an external host like ChromeFrame.
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
   if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(
           render_process_id_)) {
-    return;
+    SendGetRawCookiesResponse(reply_msg, net::CookieList());
   }
 
   // We check policy here to avoid sending back cookies that would not normally
@@ -468,16 +459,15 @@ void RenderMessageFilter::OnGetRawCookies(
   net::URLRequestContext* context = GetRequestContextForURL(url);
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
-  net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url);
-
-  for (size_t i = 0; i < cookie_list.size(); ++i)
-    cookies->push_back(webkit_glue::WebCookie(cookie_list[i]));
+  cookie_monster->GetAllCookiesForURLAsync(
+      url, base::Bind(&RenderMessageFilter::SendGetRawCookiesResponse,
+                      this, reply_msg));
 }
 
 void RenderMessageFilter::OnDeleteCookie(const GURL& url,
                                          const std::string& cookie_name) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->DeleteCookie(url, cookie_name);
+  context->cookie_store()->DeleteCookieAsync(url, cookie_name, base::Closure());
 }
 
 void RenderMessageFilter::OnCookiesEnabled(
@@ -866,4 +856,40 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, NewRunnableMethod(
           this, &RenderMessageFilter::Send, reply));
+}
+
+void RenderMessageFilter::CheckPolicyForCookies(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    IPC::Message* reply_msg,
+    const net::CookieList& cookie_list) {
+  net::URLRequestContext* context = GetRequestContextForURL(url);
+  // Check the policy for get cookies, and pass cookie_list to the
+  // TabSpecificContentSetting for logging purose.
+  if (content::GetContentClient()->browser()->AllowGetCookie(
+          url, first_party_for_cookies, cookie_list, resource_context_,
+          render_process_id_, reply_msg->routing_id())) {
+    // Gets the cookies from cookie store if allowed.
+    context->cookie_store()->GetCookiesAsync(
+        url, base::Bind(&RenderMessageFilter::SendGetCookiesResponse,
+                        this, reply_msg));
+  } else {
+    SendGetCookiesResponse(reply_msg, std::string());
+  }
+}
+
+void RenderMessageFilter::SendGetCookiesResponse(IPC::Message* reply_msg,
+                                                 const std::string& cookies) {
+  ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::SendGetRawCookiesResponse(
+    IPC::Message* reply_msg,
+    const net::CookieList& cookie_list) {
+  std::vector<webkit_glue::WebCookie> cookies;
+  for (size_t i = 0; i < cookie_list.size(); ++i)
+    cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
+  ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg, cookies);
+  Send(reply_msg);
 }

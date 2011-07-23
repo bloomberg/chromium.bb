@@ -50,6 +50,7 @@ class Rect;
 }
 
 namespace net {
+class CookieList;
 class URLRequestContextGetter;
 }
 
@@ -115,7 +116,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                     IPC::Message* reply_msg);
   void OnGetRawCookies(const GURL& url,
                        const GURL& first_party_for_cookies,
-                       std::vector<webkit_glue::WebCookie>* cookies);
+                       IPC::Message* reply_msg);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
   void OnCookiesEnabled(const GURL& url,
@@ -210,6 +211,19 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                  int flags,
                                  int message_id,
                                  int routing_id);
+
+  // Check the policy for getting cookies. Gets the cookies if allowed.
+  void CheckPolicyForCookies(const GURL& url,
+                             const GURL& first_party_for_cookies,
+                             IPC::Message* reply_msg,
+                             const net::CookieList& cookie_list);
+
+  // Writes the cookies to reply messages, and sends the message.
+  // Callback functions for getting cookies from cookie store.
+  void SendGetCookiesResponse(IPC::Message* reply_msg,
+                              const std::string& cookies);
+  void SendGetRawCookiesResponse(IPC::Message* reply_msg,
+                                 const net::CookieList& cookie_list);
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
