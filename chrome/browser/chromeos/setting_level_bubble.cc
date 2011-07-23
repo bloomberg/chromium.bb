@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "ui/gfx/screen.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 
 namespace {
@@ -112,7 +112,7 @@ void SettingLevelBubble::ShowBubble(int percent) {
     // "point" at (since we use BubbleBorder::FLOAT, this position actually
     // specifies the center of the bubble).
     const gfx::Rect monitor_area =
-        gfx::Screen::GetMonitorAreaNearestWindow(
+        views::Screen::GetMonitorAreaNearestWindow(
             GTK_WIDGET(parent_widget->GetNativeWindow()));
     const gfx::Size view_size = view_->GetPreferredSize();
     const gfx::Rect position_relative_to(

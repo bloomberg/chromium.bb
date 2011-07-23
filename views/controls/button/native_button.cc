@@ -12,7 +12,7 @@
 #include "ui/gfx/platform_font_win.h"
 #elif defined(OS_LINUX)
 #include <gdk/gdkkeysyms.h>
-#include "ui/gfx/screen.h"
+#include "views/screen.h"
 #endif
 
 
@@ -114,7 +114,7 @@ void NativeButton::ButtonPressed() {
   POINTS points = MAKEPOINTS(pos);
   gfx::Point cursor_point(points.x, points.y);
 #elif defined(OS_LINUX)
-  gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
 
   views::MouseEvent event(ui::ET_MOUSE_RELEASED,
@@ -192,7 +192,7 @@ bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
     POINTS points = MAKEPOINTS(pos);
     gfx::Point cursor_point(points.x, points.y);
 #elif defined(OS_LINUX)
-    gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
+    gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
     views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             cursor_point.x(), cursor_point.y(),

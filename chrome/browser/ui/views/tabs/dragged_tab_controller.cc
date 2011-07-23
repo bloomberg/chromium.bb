@@ -34,8 +34,8 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/screen.h"
 #include "views/events/event.h"
+#include "views/screen.h"
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -551,7 +551,7 @@ gfx::Point DraggedTabController::GetWindowCreatePoint() const {
   }
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
-  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestPoint(
+  gfx::Rect work_area = views::Screen::GetMonitorWorkAreaNearestPoint(
       cursor_point);
   if (!work_area.IsEmpty()) {
     if (cursor_point.x() < work_area.x())

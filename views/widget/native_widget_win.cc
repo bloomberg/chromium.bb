@@ -27,7 +27,6 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/screen.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/controls/native_control_win.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -35,6 +34,7 @@
 #include "views/focus/focus_util_win.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_win.h"
+#include "views/screen.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
@@ -191,7 +191,7 @@ void SetChildBounds(HWND child_window,
       window = insert_after_window;
 
     gfx::Rect work_area =
-        gfx::Screen::GetMonitorWorkAreaNearestPoint(bounds.origin());
+        views::Screen::GetMonitorWorkAreaNearestPoint(bounds.origin());
     if (!work_area.IsEmpty())
       parent_rect = work_area.ToRECT();
   }

@@ -17,12 +17,12 @@
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/screen.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/events/event.h"
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
+#include "views/screen.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 
@@ -1163,7 +1163,7 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
   const int horizontal_offset = GetHorizontalOffset();
 
   gfx::Rect old_bounds = parent_frame_->GetClientAreaScreenBounds();
-  gfx::Rect screen_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(
+  gfx::Rect screen_bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
       parent_frame_->GetNativeView());
   // The size.
   gfx::Rect frame_bounds = old_bounds;

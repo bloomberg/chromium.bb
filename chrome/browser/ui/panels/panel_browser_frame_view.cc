@@ -22,11 +22,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/screen.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/painter.h"
+#include "views/screen.h"
 #include "views/widget/widget_delegate.h"
 #include "views/window/window_shape.h"
 
@@ -159,7 +159,7 @@ PanelBrowserFrameView::MouseWatcher::~MouseWatcher() {
 }
 
 bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
-  gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point cursor_point = views::Screen::GetCursorScreenPoint();
   return view_->browser_view_->GetBounds().Contains(cursor_point.x(),
                                                     cursor_point.y());
 }
