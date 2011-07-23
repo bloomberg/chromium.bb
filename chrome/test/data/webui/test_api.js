@@ -74,7 +74,7 @@ var currentTestCase = null;
 
     /**
      * When set to a function, will be called in the context of the test
-     * generation inside the function, and before any generated C++.
+     * generation inside the function, and after any generated C++.
      * @type {function(string,string)}
      **/
     testGenPostamble: null,
@@ -146,7 +146,12 @@ var currentTestCase = null;
     },
 
     /**
-     * Runs this test case.
+     * Runs this test case with |this| set to the |fixture|.
+     *
+     * Note: Tests created with TEST_F may depend upon |this| being set to an
+     * instance of this.fixture. The current implementation of TEST creates a
+     * dummy constructor, but tests created with TEST should not rely on |this|
+     * being set.
      * @type {Function}
      **/
     Run: function() {
@@ -217,6 +222,101 @@ var currentTestCase = null;
       oldChrome.send.apply(oldChrome, args);
   }
 
+  /**
+   * Provides a mechanism for assert* and expect* methods to fetch the signature
+   * of their caller. Assert* methods should |registerCall| and expect* methods
+   * should set |isExpect| and |expectName| properties to indicate that the
+   * interesting caller is one more level up the stack.
+   **/
+  function CallHelper() {
+    this.__proto__ = CallHelper.prototype;
+  }
+
+  CallHelper.prototype = {
+    /**
+     * Holds the mapping of (callerCallerString, callerName) -> count of times
+     * called.
+     * @type {Object.<string, Object.<string, number>>}
+     **/
+    counts_: {},
+
+    /**
+     * This information about the caller is needed from most of the following
+     * routines.
+     * @param {Function} caller the caller of the assert* routine.
+     * @return {{callerName: string, callercallerString: string}} stackInfo
+     * @private
+     **/
+    getCallerInfo_: function(caller) {
+      var callerName = caller.name;
+      var callerCaller = caller.caller;
+      if (callerCaller['isExpect']) {
+        callerName = callerCaller.expectName;
+        callerCaller = callerCaller.caller;
+      }
+      var callerCallerString = callerCaller.toString();
+      return {
+        callerName: callerName,
+        callerCallerString: callerCallerString,
+      };
+    },
+
+    /**
+     * Register a call to an assertion class.
+     **/
+    registerCall: function() {
+      var stackInfo = this.getCallerInfo_(arguments.callee.caller);
+      if (!(stackInfo.callerCallerString in this.counts_))
+        this.counts_[stackInfo.callerCallerString] = {};
+      if (!(stackInfo.callerName in this.counts_[stackInfo.callerCallerString]))
+        this.counts_[stackInfo.callerCallerString][stackInfo.callerName] = 0;
+      ++this.counts_[stackInfo.callerCallerString][stackInfo.callerName];
+    },
+
+    /**
+     * Get the call signature of this instance of the caller's call to this
+     * function.
+     * @param {Function} caller The caller of the assert* routine.
+     * @return {String} Call signature.
+     * @private
+     **/
+    getCall_: function(caller) {
+      var stackInfo = this.getCallerInfo_(caller);
+      var count =
+          this.counts_[stackInfo.callerCallerString][stackInfo.callerName];
+
+      // Allow pattern to match multiple lines for text wrapping.
+      var callerRegExp =
+          new RegExp(stackInfo.callerName + '\\((.|\\n)*?\\);', 'g');
+
+      // Find all matches allowing wrap around such as when a helper function
+      // calls assert/expect calls and that helper function is called multiple
+      // times.
+      var matches = stackInfo.callerCallerString.match(callerRegExp);
+      var match = matches[(count - 1) % matches.length];
+
+      // Chop off the trailing ';'.
+      return match.substring(0, match.length-1);
+    },
+
+    /**
+     * Returns the text of the call signature and any |message|.
+     * @param {string=} message Addtional message text from caller.
+     **/
+    getCallMessage: function(message) {
+      var callMessage = this.getCall_(arguments.callee.caller);
+      if (message)
+        callMessage += ': ' + message;
+      return callMessage;
+    },
+  };
+
+  /**
+   * Help register calls for better error reporting.
+   * @type {CallHelper}
+   **/
+  var helper = new CallHelper();
+
   // Asserts.
   // Use the following assertions to verify a condition within a test.
   // If assertion fails, the C++ backend will be immediately notified.
@@ -230,13 +330,10 @@ var currentTestCase = null;
    * @throws {Error} upon failure.
    **/
   function assertBool(test, expected, message) {
-    if (test !== expected) {
-      if (message)
-        message = test + '\n' + message;
-      else
-        message = test;
-      throw new Error(message);
-    }
+    helper.registerCall();
+    if (test !== expected)
+      throw new Error('Test Error ' + helper.getCallMessage(message) +
+          ': ' + test);
   }
 
   /**
@@ -246,7 +343,10 @@ var currentTestCase = null;
    * @throws {Error} upon failure.
    **/
   function assertTrue(test, message) {
-    assertBool(test, true, message);
+    helper.registerCall();
+    if (test !== true)
+      throw new Error('Test Error ' + helper.getCallMessage(message) +
+          ': ' + test);
   }
 
   /**
@@ -256,7 +356,10 @@ var currentTestCase = null;
    * @throws {Error} upon failure.
    **/
   function assertFalse(test, message) {
-    assertBool(test, false, message);
+    helper.registerCall();
+    if (test !== false)
+      throw new Error('Test Error ' + helper.getCallMessage(message) +
+          ': ' + test);
   }
 
   /**
@@ -267,14 +370,16 @@ var currentTestCase = null;
    * @throws {Error} upon failure.
    **/
   function assertEquals(expected, actual, message) {
+    helper.registerCall();
     if (expected != actual) {
-      throw new Error('Test Error. Actual: ' + actual + '\nExpected: ' +
-                       expected + '\n' + message);
+      throw new Error('Test Error ' + helper.getCallMessage(message) +
+          '\nActual: ' + actual + '\nExpected: ' + expected);
     }
     if (typeof expected != typeof actual) {
-      throw new Error('Test Error' +
-                      ' (type mismatch)\nActual Type: ' + typeof actual +
-                      '\nExpected Type:' + typeof expected + '\n' + message);
+      throw new Error('Test Error (type mismatch) ' +
+          helper.getCallMessage(message) +
+          '\nActual Type: ' + typeof actual +
+          '\nExpected Type:' + typeof expected);
     }
   }
 
@@ -284,7 +389,8 @@ var currentTestCase = null;
    * @throws {Error} always.
    **/
   function assertNotReached(message) {
-    throw new Error(message);
+    helper.registerCall();
+    throw new Error(helper.getCallMessage(message));
   }
 
   /**
@@ -304,13 +410,16 @@ var currentTestCase = null;
    * @see runTest
    **/
   function createExpect(assertFunc) {
-    return function() {
+    var expectFunc = function() {
       try {
         assertFunc.apply(null, arguments);
       } catch (e) {
         errors.push(e);
       }
     };
+    expectFunc.isExpect = true;
+    expectFunc.expectName = assertFunc.name.replace(/^assert/, 'expect');
+    return expectFunc;
   }
 
   /**
@@ -325,25 +434,31 @@ var currentTestCase = null;
    * @see createExpect
    **/
   function runTest(testFunction, testArguments) {
-    errors = [];
+    errors.splice(0, errors.length);
     // Avoid eval() if at all possible, since it will not work on pages
     // that have enabled content-security-policy.
     var testBody = this[testFunction];    // global object -- not a method.
     if (typeof testBody === "undefined")
       testBody = eval(testFunction);
-    if (testBody != RUN_TEST_F)
-      console.log('Running test ' + testBody.name);
+    if (testBody != RUN_TEST_F) {
+      var testName =
+          testFunction.name ? testFunction.name : testBody.toString();
+      console.log('Running test ' + testName);
+    }
     createExpect(testBody).apply(null, testArguments);
 
+    var result = [true];
     if (errors.length) {
+      var message = '';
       for (var i = 0; i < errors.length; ++i) {
-        console.log('Failed: ' + testFunction + '(' +
-                    testArguments.toString() + ')\n' + errors[i].stack);
+        message += 'Failed: ' + testFunction + '(' +
+                   testArguments.map(JSON.stringify) +
+                   ')\n' + errors[i].stack;
       }
-      return [false, errors.join('\n')];
-    } else {
-      return [true];
+      errors.splice(0, errors.length);
+      result = [false, message];
     }
+    return result;
   }
 
   /**

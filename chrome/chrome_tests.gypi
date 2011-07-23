@@ -2615,6 +2615,8 @@
         'renderer/safe_browsing/render_view_fake_resources_test.h',
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
+        'test/data/webui/assertions-inl.h',
+        'test/data/webui/assertions.js',
         'test/data/webui/print_preview.js',
         'test/data/webui/options.js',
         'test/gpu/gpu_browsertest.cc',
