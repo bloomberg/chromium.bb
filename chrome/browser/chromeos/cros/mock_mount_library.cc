@@ -40,6 +40,8 @@ MockMountLibrary::MockMountLibrary() {
       .WillByDefault(Invoke(this, &MockMountLibrary::RemoveObserverInternal));
   ON_CALL(*this, disks())
       .WillByDefault(Invoke(this, &MockMountLibrary::disksInternal));
+  ON_CALL(*this, mount_points())
+      .WillByDefault(Invoke(this, &MockMountLibrary::mountPointsInternal));
 }
 
 MockMountLibrary::~MockMountLibrary() {
@@ -128,7 +130,7 @@ void MockMountLibrary::SetupDefaultReplies() {
       .WillRepeatedly(ReturnRef(disks_));
   EXPECT_CALL(*this, RequestMountInfoRefresh())
       .Times(AnyNumber());
-  EXPECT_CALL(*this, MountPath(_))
+  EXPECT_CALL(*this, MountPath(_, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(*this, UnmountPath(_))
       .Times(AnyNumber());

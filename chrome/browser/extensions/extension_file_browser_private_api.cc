@@ -1075,30 +1075,140 @@ bool CancelFileDialogFunction::RunImpl() {
   return true;
 }
 
-UnmountVolumeFunction::UnmountVolumeFunction() {
+AddMountFunction::AddMountFunction() {
 }
 
-UnmountVolumeFunction::~UnmountVolumeFunction() {
+AddMountFunction::~AddMountFunction() {
 }
 
-bool UnmountVolumeFunction::RunImpl() {
+bool AddMountFunction::RunImpl() {
+  if (args_->GetSize() != 2 && args_->GetSize() != 3) {
+    error_ = "Invalid argument count";
+    return false;
+  }
+
+  std::string source;
+  if (!args_->GetString(0, &source)) {
+    return false;
+  }
+
+  std::string mount_type_str;
+  if (!args_->GetString(1, &mount_type_str)) {
+    return false;
+  }
+
+#ifdef OS_CHROMEOS
+  chromeos::MountLibrary *mount_lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+
+  chromeos::MountType mount_type =
+      mount_lib->MountTypeFromString(mount_type_str);
+  if (mount_type == chromeos::MOUNT_TYPE_INVALID) {
+    error_ = "Invalid mount type";
+    return false;
+  }
+
+  chromeos::MountPathOptions options;
+
+  if (args_->GetSize() == 3) {
+    DictionaryValue *dict;
+    if (!args_->GetDictionary(2, &dict)) {
+      NOTREACHED();
+    }
+
+    for (base::DictionaryValue::key_iterator it = dict->begin_keys();
+         it != dict->end_keys();
+         ++it) {
+      std::string value;
+      if (!dict->GetString(*it, &value)) {
+        NOTREACHED();
+      }
+
+      options.push_back(chromeos::MountPathOptions::value_type((*it).c_str(),
+                                                               value.c_str()));
+    }
+  }
+
+  mount_lib->MountPath(source.c_str(), mount_type, options);
+#endif
+
+  return true;
+}
+
+RemoveMountFunction::RemoveMountFunction() {
+}
+
+RemoveMountFunction::~RemoveMountFunction() {
+}
+
+bool RemoveMountFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     return false;
   }
 
-  std::string volume_device_path;
-  if (!args_->GetString(0, &volume_device_path)) {
-    NOTREACHED();
+  std::string mount_path;
+  if (!args_->GetString(0, &mount_path)) {
+   return false;
   }
 
 #ifdef OS_CHROMEOS
   chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
-      volume_device_path.c_str());
+      mount_path.c_str());
 #endif
 
   SendResponse(true);
   return true;
 }
+
+GetMountPointsFunction::GetMountPointsFunction() {
+}
+
+GetMountPointsFunction::~GetMountPointsFunction() {
+}
+
+bool GetMountPointsFunction::RunImpl() {
+  if (args_->GetSize() != 0)
+    return false;
+
+#ifdef OS_CHROMEOS
+  chromeos::MountLibrary *mount_lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+  chromeos::MountLibrary::MountPointMap mount_points =
+      mount_lib->mount_points();
+
+  base::DictionaryValue *mounts = new base::DictionaryValue();
+
+  for (chromeos::MountLibrary::MountPointMap::const_iterator it =
+           mount_points.begin();
+       it != mount_points.end();
+       ++it) {
+    chromeos::MountLibrary::MountPointInfo mount_point_info = it->second;
+
+    mounts->Set(mount_point_info.mount_path,
+                MountPointToValue(mount_point_info, mount_lib));
+  }
+
+  result_.reset(mounts);
+#endif
+
+  return true;
+}
+
+#ifdef OS_CHROMEOS
+base::DictionaryValue* GetMountPointsFunction::MountPointToValue(
+    const chromeos::MountLibrary::MountPointInfo& mount_point_info,
+    chromeos::MountLibrary* mount_lib) {
+
+    base::DictionaryValue *mount_info = new base::DictionaryValue();
+
+    mount_info->SetString("mountPath", mount_point_info.mount_path);
+    mount_info->SetString(
+        "mountType",
+        mount_lib->MountTypeToString(mount_point_info.mount_type));
+    mount_info->SetString("sourcePath", mount_point_info.source_path);
+    return mount_info;
+}
+#endif
 
 GetVolumeMetadataFunction::GetVolumeMetadataFunction() {
 }

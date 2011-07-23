@@ -46,6 +46,10 @@ class ExtensionFileBrowserEventRouter
                            const chromeos::MountLibrary::Disk* disk) OVERRIDE;
   virtual void DeviceChanged(chromeos::MountLibraryEventType event,
                              const std::string& device_path) OVERRIDE;
+  virtual void MountCompleted(chromeos::MountLibrary::MountEvent event_type,
+      chromeos::MountError error_code,
+      const chromeos::MountLibrary::MountPointInfo& mount_info)
+      OVERRIDE;
 
  private:
   typedef std::map<std::string, linked_ptr<chromeos::SystemNotification> >
@@ -102,6 +106,10 @@ class ExtensionFileBrowserEventRouter
 
   // Sends filesystem changed extension message to all renderers.
   void DispatchMountEvent(const chromeos::MountLibrary::Disk* disk, bool added);
+
+  void DispatchMountCompletedEvent(chromeos::MountLibrary::MountEvent event,
+      chromeos::MountError error_code,
+      const chromeos::MountLibrary::MountPointInfo& mount_info);
 
   void RemoveBrowserFromVector(const std::string& path);
 
