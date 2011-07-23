@@ -1116,10 +1116,17 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
-  std::string page = StringPrintf("%s?servicePath=%s&networkType=%d",
+  std::string network_name(network->name());
+  if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
+    network_name = l10n_util::GetStringUTF8(
+        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  }
+  std::string page = StringPrintf(
+      "%s?servicePath=%s&networkType=%d&networkName=%s",
       chrome::kInternetOptionsSubPage,
       EscapeUrlEncodedData(network->service_path(), true).c_str(),
-      network->type());
+      network->type(),
+      EscapeUrlEncodedData(network_name, false).c_str());
   browser->ShowOptionsTab(page);
 }
 

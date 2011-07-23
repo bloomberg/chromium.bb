@@ -223,6 +223,9 @@ cr.define('options', function() {
       if (!servicePath || !servicePath.length ||
           !networkType || !networkType.length)
         return;
+      var networkName = params.networkName;
+      if (networkName)
+        options.ProxyOptions.getInstance().setNetworkName(networkName);
       chrome.send('buttonClickCallback',
           [networkType, servicePath, "options"]);
     },
