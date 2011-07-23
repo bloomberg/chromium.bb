@@ -194,7 +194,7 @@ void PrintWebViewHelper::PrintPageInternal(
                          content_width_in_points, content_height_in_points);
 
   SkDevice* device = metafile->StartPageForVectorCanvas(
-      page_size, content_area, 1.0f);
+      params.page_number, page_size, content_area, 1.0f);
   if (!device)
     return;
 

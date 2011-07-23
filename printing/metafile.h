@@ -53,8 +53,9 @@ class Metafile {
 
   // This method calls StartPage and then returns an appropriate
   // VectorPlatformDevice implementation bound to the context created by
-  // StartPage or NULL on error.
+  // StartPage or NULL on error. |page_number| is zero based.
   virtual SkDevice* StartPageForVectorCanvas(
+      int page_number,
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       const float& scale_factor) = 0;

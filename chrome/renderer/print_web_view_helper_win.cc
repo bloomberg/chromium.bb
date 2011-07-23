@@ -176,7 +176,8 @@ void PrintWebViewHelper::RenderPage(
                          static_cast<int>(content_width_in_points),
                          static_cast<int>(content_height_in_points));
   SkDevice* device = (*metafile)->StartPageForVectorCanvas(
-      page_size, content_area, frame->getPrintPageShrink(page_number));
+      page_number, page_size, content_area,
+      frame->getPrintPageShrink(page_number));
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it
   // can't be a stack object.

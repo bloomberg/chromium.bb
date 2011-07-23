@@ -82,7 +82,7 @@ void PrintWebViewHelper::RenderPage(
   {
 #if defined(USE_SKIA)
     SkDevice* device = metafile->StartPageForVectorCanvas(
-        page_size, content_area, scale_factor);
+        page_number, page_size, content_area, scale_factor);
     if (!device)
       return;
 

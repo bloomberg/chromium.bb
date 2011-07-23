@@ -36,8 +36,8 @@ class PdfMetafileCg : public Metafile, public base::ThreadChecker {
 
   // Not implemented on mac.
   virtual SkDevice* StartPageForVectorCanvas(
-      const gfx::Size& page_size, const gfx::Rect& content_area,
-      const float& scale_factor);
+      int page_number, const gfx::Size& page_size,
+      const gfx::Rect& content_area, const float& scale_factor);
   virtual bool StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
                          const float& scale_factor);

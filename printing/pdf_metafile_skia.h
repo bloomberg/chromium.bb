@@ -30,6 +30,7 @@ class PdfMetafileSkia : public Metafile {
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size);
 
   virtual SkDevice* StartPageForVectorCanvas(
+      int page_number,
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       const float& scale_factor);
@@ -72,13 +73,12 @@ class PdfMetafileSkia : public Metafile {
   PdfMetafileSkia* GetMetafileForCurrentPage();
 
  private:
+  static const int kNoOutstandingPage = -1;
+
   scoped_ptr<PdfMetafileSkiaData> data_;
 
-  // True when a draft version of metafile is requested.
-  mutable bool draft_;
-
-  // True when finish page is outstanding for current page.
-  bool page_outstanding_;
+  // Page number of the outstanding page, or kNoOutstandingPage.
+  int outstanding_page_number_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);
 };
