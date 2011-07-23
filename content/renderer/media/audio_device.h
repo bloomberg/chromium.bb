@@ -95,6 +95,8 @@ class AudioDevice
   double sample_rate() const { return sample_rate_; }
   size_t buffer_size() const { return buffer_size_; }
 
+  static double GetAudioHardwareSampleRate();
+
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
   virtual void OnRequestPacket(AudioBuffersState buffers_state);

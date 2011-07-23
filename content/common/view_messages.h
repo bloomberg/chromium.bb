@@ -746,6 +746,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetCSSColors,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
                             int /* routing_id */)
 
+// Asks the browser for the default audio hardware sample-rate.
+IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
+                            double /* sample_rate */)
+
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

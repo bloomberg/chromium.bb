@@ -33,6 +33,7 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/audio/audio_util.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
@@ -365,6 +366,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,
+                        OnGetHardwareSampleRate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -585,6 +588,10 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
+}
+
+void RenderMessageFilter::OnGetHardwareSampleRate(double* sample_rate) {
+  *sample_rate = media::GetAudioHardwareSampleRate();
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

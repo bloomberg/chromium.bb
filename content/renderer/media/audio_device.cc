@@ -211,3 +211,13 @@ void AudioDevice::FireRenderCallback() {
     media::InterleaveFloatToInt16(audio_data_, output_buffer16, buffer_size_);
   }
 }
+
+double AudioDevice::GetAudioHardwareSampleRate() {
+  // Uses cached value if possible.
+  static double hardware_sample_rate = 0;
+  if (!hardware_sample_rate) {
+    RenderThread::current()->Send(
+        new ViewHostMsg_GetHardwareSampleRate(&hardware_sample_rate));
+  }
+  return hardware_sample_rate;
+}
