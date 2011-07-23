@@ -8136,6 +8136,9 @@ ls' lab.">
                desc="The 'Most Visited' heading on the new tab page">
         Most visited
       </message>
+      <message name="IDS_NEW_TAB_BOOKMARKS_PAGE_TITLE" desc="The 'Bookmarks' title on the new tab page">
+        Bookmarks
+      </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
          desc="The link that restores previously removed thumbnails">
         Restore all removed thumbnails

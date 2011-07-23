@@ -26,6 +26,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/bookmarks_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
@@ -230,8 +231,10 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageHandler())->Attach(this));
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4))
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage4)) {
+      AddMessageHandler((new BookmarksHandler())->Attach(this));
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
+    }
   }
 
   // Add the sync setup handler for the sync promo UI.

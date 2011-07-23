@@ -44,6 +44,12 @@ cr.define('ntp4', function() {
   var appsPages;
 
   /**
+   * The Bookmarks page.
+   * @type {!Element|undefined}
+   */
+  var bookmarksPage;
+
+  /**
    * The 'dots-list' element.
    * @type {!Element|undefined}
    */
@@ -164,10 +170,12 @@ cr.define('ntp4', function() {
     chrome.send('getRecentlyClosedTabs');
 
     mostVisitedPage = new ntp4.MostVisitedPage();
-    appendTilePage(mostVisitedPage,
-                   localStrings.getString('mostvisited'),
-                   false);
+    appendTilePage(mostVisitedPage, localStrings.getString('mostvisited'));
     chrome.send('getMostVisited');
+
+    bookmarksPage = new ntp4.BookmarksPage();
+    appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
+    chrome.send('getBookmarks');
   }
 
   /**
@@ -257,7 +265,7 @@ cr.define('ntp4', function() {
           pageName = pageNames[appsPages.length];
 
         var origPageCount = appsPages.length;
-        appendTilePage(new ntp4.AppsPage(), pageName, true);
+        appendAppsPage(new ntp4.AppsPage(), pageName);
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -353,20 +361,40 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Appends a tile page (for apps or most visited).
+   * Appends a tile page (for bookmarks or most visited).
    *
    * @param {TilePage} page The page element.
    * @param {string} title The title of the tile page.
-   * @param {bool} titleIsEditable If true, the title can be changed.
    */
-  function appendTilePage(page, title, titleIsEditable) {
+  function appendTilePage(page, title) {
     pageList.appendChild(page);
 
     // Make a deep copy of the dot template to add a new one.
-    var animate = page.classList.contains('temporary');
-    var newDot = new ntp4.NavDot(page, title, titleIsEditable, animate);
+    var newDot = new ntp4.NavDot(page, title, false, false);
 
     dotList.appendChild(newDot);
+    page.navigationDot = newDot;
+
+    eventTracker.add(page, 'pagelayout', onPageLayout);
+  }
+
+  /**
+   * Appends an apps page into the page list.  This is like appendTilePage,
+   * but takes care to insert before the Bookmarks page.
+   * TODO(csilv): Refactor this function with appendTilePage to avoid
+   *              duplication.
+   *
+   * @param {AppsPage} page The page element.
+   * @param {string} title The title of the tile page.
+   */
+  function appendAppsPage(page, title) {
+    pageList.insertBefore(page, bookmarksPage);
+
+    // Make a deep copy of the dot template to add a new one.
+    var animate = page.classList.contains('temporary');
+    var newDot = new ntp4.NavDot(page, title, true, animate);
+
+    dotList.insertBefore(newDot, bookmarksPage.navigationDot);
     page.navigationDot = newDot;
 
     eventTracker.add(page, 'pagelayout', onPageLayout);
@@ -394,7 +422,7 @@ cr.define('ntp4', function() {
   function enterRearrangeMode(e) {
     var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendTilePage(tempPage, '', true);
+    appendAppsPage(tempPage, '');
     updateSliderCards();
 
     $('footer').classList.add('dragging-mode');

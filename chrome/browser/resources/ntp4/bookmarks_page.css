@@ -1,0 +1,15 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.bookmarks {
+  position: absolute;
+}
+
+/* TODO(csilv): Remove this placeholder. */
+.placeholder {
+  color: #999;
+  font-size: 20px;
+  padding-top: 80px;
+}

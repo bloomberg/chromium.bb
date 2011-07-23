@@ -282,6 +282,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("apps", apps);
   localized_strings.SetString("title", title);
   localized_strings.SetString("mostvisited", most_visited);
+  localized_strings.SetString("bookmarksPage",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_PAGE_TITLE));
   localized_strings.SetString("restorethumbnails",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
   localized_strings.SetString("restoreThumbnailsShort",
