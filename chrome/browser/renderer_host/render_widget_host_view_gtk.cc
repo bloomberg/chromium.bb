@@ -576,7 +576,8 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   }
 }
 
-void RenderWidgetHostViewGtk::InitAsFullscreen() {
+void RenderWidgetHostViewGtk::InitAsFullscreen(
+    RenderWidgetHostView* /*reference_host_view*/) {
   DoSharedInit();
 
   is_fullscreen_ = true;

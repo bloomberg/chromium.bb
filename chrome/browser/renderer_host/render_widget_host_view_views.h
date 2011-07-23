@@ -50,7 +50,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // RenderWidgetHostView implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
-  virtual void InitAsFullscreen() OVERRIDE;
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;

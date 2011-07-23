@@ -130,7 +130,8 @@ class RenderWidgetHostViewWin
   // Implementation of RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
-  virtual void InitAsFullscreen() OVERRIDE;
+  virtual void InitAsFullscreen(
+      RenderWidgetHostView* reference_host_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void DidBecomeSelected() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
@@ -275,6 +276,11 @@ class RenderWidgetHostViewWin
   // Whether the window should be activated.
   bool IsActivatable() const;
 
+  // Do initialization needed by both InitAsPopup() and InitAsFullscreen().
+  void DoPopupOrFullscreenInit(HWND parent_hwnd,
+                               const gfx::Rect& pos,
+                               DWORD ex_style);
+
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
 
@@ -364,6 +370,9 @@ class RenderWidgetHostViewWin
   ui::TextInputType text_input_type_;
 
   ScopedVector<ui::ViewProp> props_;
+
+  // Is the widget fullscreen?
+  bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

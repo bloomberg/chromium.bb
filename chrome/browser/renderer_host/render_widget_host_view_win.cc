@@ -50,6 +50,7 @@
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
+#include "views/screen.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
 #include "views/widget/native_widget_win.h"
 #include "webkit/glue/webaccessibility.h"
@@ -105,7 +106,7 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
 class NotifyPluginProcessHostTask : public Task {
  public:
   NotifyPluginProcessHostTask(HWND window, HWND parent)
-    : window_(window), parent_(parent), tries_(kMaxTries) { }
+      : window_(window), parent_(parent), tries_(kMaxTries) { }
 
  private:
   void Run() {
@@ -240,7 +241,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       parent_hwnd_(NULL),
       is_loading_(false),
       overlay_color_(0),
-      text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      is_fullscreen_(false) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -260,20 +262,17 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
 
 void RenderWidgetHostViewWin::InitAsPopup(
     RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
-  parent_hwnd_ = parent_host_view->GetNativeView();
   close_on_deactivate_ = true;
-  Create(parent_hwnd_, NULL, NULL, WS_POPUP, WS_EX_TOOLWINDOW);
-  MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
-  // To show tooltip on popup window.(e.g. title in <select>)
-  // Popups default to showing, which means |DidBecomeSelected()| isn't invoked.
-  // Ensure the tooltip is created otherwise tooltips are never shown.
-  EnsureTooltip();
-  // Popups are not activated.
-  ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
+  DoPopupOrFullscreenInit(parent_host_view->GetNativeView(), pos,
+                          WS_EX_TOOLWINDOW);
 }
 
-void RenderWidgetHostViewWin::InitAsFullscreen() {
-  NOTIMPLEMENTED() << "Fullscreen not implemented on Win";
+void RenderWidgetHostViewWin::InitAsFullscreen(
+    RenderWidgetHostView* reference_host_view) {
+  gfx::Rect pos = views::Screen::GetMonitorAreaNearestWindow(
+      reference_host_view->GetNativeView());
+  is_fullscreen_ = true;
+  DoPopupOrFullscreenInit(GetDesktopWindow(), pos, 0);
 }
 
 RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
@@ -510,16 +509,18 @@ bool RenderWidgetHostViewWin::HasFocus() {
 }
 
 void RenderWidgetHostViewWin::Show() {
-  DCHECK(parent_hwnd_);
-  DCHECK(parent_hwnd_ != GetDesktopWindow());
-  SetParent(parent_hwnd_);
+  if (!is_fullscreen_) {
+    DCHECK(parent_hwnd_);
+    DCHECK(parent_hwnd_ != GetDesktopWindow());
+    SetParent(parent_hwnd_);
+  }
   ShowWindow(SW_SHOW);
 
   DidBecomeSelected();
 }
 
 void RenderWidgetHostViewWin::Hide() {
-  if (GetParent() == GetDesktopWindow()) {
+  if (!is_fullscreen_ && GetParent() == GetDesktopWindow()) {
     LOG(WARNING) << "Hide() called twice in a row: " << this << ":" <<
         parent_hwnd_ << ":" << GetParent();
     return;
@@ -529,9 +530,12 @@ void RenderWidgetHostViewWin::Hide() {
     ::SetFocus(NULL);
   ShowWindow(SW_HIDE);
 
-  // Cache the old parent, then orphan the window so we stop receiving messages
-  parent_hwnd_ = GetParent();
-  SetParent(NULL);
+  if (!is_fullscreen_) {
+    // Cache the old parent, then orphan the window so we stop receiving
+    // messages.
+    parent_hwnd_ = GetParent();
+    SetParent(NULL);
+  }
 
   WasHidden();
 }
@@ -996,7 +1000,8 @@ void RenderWidgetHostViewWin::OnCancelMode() {
   if (render_widget_host_)
     render_widget_host_->LostCapture();
 
-  if (close_on_deactivate_ && shutdown_factory_.empty()) {
+  if ((is_fullscreen_ || close_on_deactivate_) &&
+      shutdown_factory_.empty()) {
     // Dismiss popups and menus.  We do this asynchronously to avoid changing
     // activation within this callstack, which may interfere with another window
     // being activated.  We can synchronously hide the window, but we need to
@@ -1217,7 +1222,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
   // is the first non-child view of the view that was specified to the create
   // call).  So the TabContents window would have to be specified to the
   // RenderViewHostHWND as there is no way to retrieve it from the HWND.
-  if (!close_on_deactivate_) {  // Don't forward if the container is a popup.
+
+  // Don't forward if the container is a popup or fullscreen widget.
+  if (!is_fullscreen_ && !close_on_deactivate_) {
     switch (message) {
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:
@@ -1255,6 +1262,13 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
 LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
                                             LPARAM lparam, BOOL& handled) {
   handled = TRUE;
+
+  // Force fullscreen windows to close on Escape.
+  if (is_fullscreen_ && (message == WM_KEYDOWN || message == WM_KEYUP) &&
+      wparam == VK_ESCAPE) {
+    SendMessage(WM_CANCELMODE);
+    return 0;
+  }
 
   // If we are a pop-up, forward tab related messages to our parent HWND, so
   // that we are dismissed appropriately and so that the focus advance in our
@@ -1366,7 +1380,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   // This is a bit of a hack, but will work for now since we don't want to
   // pollute this object with TabContents-specific functionality...
   bool handled_by_TabContents = false;
-  if (GetParent()) {
+  if (!is_fullscreen_ && GetParent()) {
     // Use a special reflected message to break recursion. If we send
     // WM_MOUSEWHEEL, the focus manager subclass of web contents will
     // route it back here.
@@ -1796,4 +1810,17 @@ RenderWidgetHostView*
   return ::IsWindow(native_view) ?
       reinterpret_cast<RenderWidgetHostView*>(
           ViewProp::GetValue(native_view, kRenderWidgetHostViewKey)) : NULL;
+}
+
+void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
+                                                      const gfx::Rect& pos,
+                                                      DWORD ex_style) {
+  parent_hwnd_ = parent_hwnd;
+  Create(parent_hwnd_, NULL, NULL, WS_POPUP, ex_style);
+  MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
+  // To show tooltip on popup window.(e.g. title in <select>)
+  // Popups default to showing, which means |DidBecomeSelected()| isn't invoked.
+  // Ensure the tooltip is created otherwise tooltips are never shown.
+  EnsureTooltip();
+  ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }

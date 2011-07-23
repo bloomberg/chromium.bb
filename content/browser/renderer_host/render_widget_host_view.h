@@ -83,7 +83,9 @@ class RenderWidgetHostView {
 
   // Perform all the initialization steps necessary for this object to represent
   // a full screen window.
-  virtual void InitAsFullscreen() = 0;
+  // |reference_host_view| is the view associated with the creating page that
+  // helps to position the full screen widget on the correct monitor.
+  virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
 
   // Returns the associated RenderWidgetHost.
   virtual RenderWidgetHost* GetRenderWidgetHost() const = 0;

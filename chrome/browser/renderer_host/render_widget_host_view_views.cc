@@ -125,7 +125,8 @@ void RenderWidgetHostViewViews::InitAsPopup(
   }
 }
 
-void RenderWidgetHostViewViews::InitAsFullscreen() {
+void RenderWidgetHostViewViews::InitAsFullscreen(
+    RenderWidgetHostView* /*reference_host_view*/) {
   NOTIMPLEMENTED();
 }
 

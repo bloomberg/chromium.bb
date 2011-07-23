@@ -1482,13 +1482,8 @@ PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
 
 PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
-  // TODO(yzshen): Re-enable it once fullscreen mode is supported on Windows.
-#if !defined(OS_WIN)
   SetFullscreen(PP_ToBool(fullscreen), true);
   return PP_TRUE;
-#else
-  return PP_FALSE;
-#endif
 }
 
 PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {

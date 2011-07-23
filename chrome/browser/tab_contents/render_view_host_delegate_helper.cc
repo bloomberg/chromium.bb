@@ -288,7 +288,7 @@ RenderWidgetHostView*
     tab_contents->delegate()->RenderWidgetShowing();
 
   RenderWidgetHostView* widget_host_view = GetCreatedWidget(route_id);
-  widget_host_view->InitAsFullscreen();
+  widget_host_view->InitAsFullscreen(tab_contents->GetRenderWidgetHostView());
   widget_host_view->GetRenderWidgetHost()->Init();
   return widget_host_view;
 }
