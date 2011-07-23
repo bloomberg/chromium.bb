@@ -608,7 +608,6 @@ const std::string AutofillCountry::CountryCodeForLocale(
   // Extract the country code.
   std::string country_code = icu::Locale(likely_locale.c_str()).getCountry();
 
-  // TODO(isherman): Return an empty string and update the clients instead.
   // Default to the United States if we have no better guess.
   if (CountryDataMap::Find(country_code) == CountryDataMap::End())
     return "US";
