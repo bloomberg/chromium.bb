@@ -21,6 +21,8 @@ class SSLConfigServiceManager {
   static SSLConfigServiceManager* CreateDefaultManager(
       PrefService* local_state);
 
+  static void RegisterPrefs(PrefService* prefs);
+
   virtual ~SSLConfigServiceManager() {}
 
   // Get an SSLConfigService instance.  It may be a new instance or the manager

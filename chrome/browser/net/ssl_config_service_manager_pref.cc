@@ -3,16 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/threading/thread.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/content_notification_types.h"
-#include "content/common/notification_details.h"
-#include "content/common/notification_source.h"
+#include "content/browser/browser_thread.h"
 #include "net/base/ssl_config_service.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,12 +61,12 @@ class SSLConfigServiceManagerPref
   explicit SSLConfigServiceManagerPref(PrefService* local_state);
   virtual ~SSLConfigServiceManagerPref() {}
 
-  virtual net::SSLConfigService* Get();
-
- private:
   // Register local_state SSL preferences.
   static void RegisterPrefs(PrefService* prefs);
 
+  virtual net::SSLConfigService* Get();
+
+ private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
   virtual void Observe(int type,
@@ -96,8 +92,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     : ssl_config_service_(new SSLConfigServicePref()) {
   DCHECK(local_state);
 
-  RegisterPrefs(local_state);
-
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
                              local_state, this);
   ssl3_enabled_.Init(prefs::kSSL3Enabled, local_state, this);
@@ -111,18 +105,12 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 // static
 void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   net::SSLConfig default_config;
-  if (!prefs->FindPreference(prefs::kCertRevocationCheckingEnabled)) {
-    prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                               default_config.rev_checking_enabled);
-  }
-  if (!prefs->FindPreference(prefs::kSSL3Enabled)) {
-    prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
-                               default_config.ssl3_enabled);
-  }
-  if (!prefs->FindPreference(prefs::kTLS1Enabled)) {
-    prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
-                               default_config.tls1_enabled);
-  }
+  prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
+                             default_config.rev_checking_enabled);
+  prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
+                             default_config.ssl3_enabled);
+  prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
+                             default_config.tls1_enabled);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -132,14 +120,15 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
 void SSLConfigServiceManagerPref::Observe(int type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (io_thread) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     net::SSLConfig new_config;
     GetSSLConfigFromPrefs(&new_config);
 
     // Post a task to |io_loop| with the new configuration, so it can
     // update |cached_config_|.
-    io_thread->message_loop()->PostTask(
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(
             ssl_config_service_.get(),
@@ -163,4 +152,9 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
     PrefService* local_state) {
   return new SSLConfigServiceManagerPref(local_state);
+}
+
+// static
+void SSLConfigServiceManager::RegisterPrefs(PrefService* prefs) {
+  SSLConfigServiceManagerPref::RegisterPrefs(prefs);
 }

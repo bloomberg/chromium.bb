@@ -30,6 +30,7 @@
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/page_info_model.h"
@@ -113,6 +114,7 @@ void RegisterLocalState(PrefService* local_state) {
   BackgroundModeManager::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state);
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);
 #endif
