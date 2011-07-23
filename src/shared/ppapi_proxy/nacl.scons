@@ -74,7 +74,8 @@ env.UntrustedSrpc(is_client=True,
                   name='PpbRpcs',
                   h_file='ppb_rpc.h',
                   cc_file='ppb_rpc_client.cc',
-                  guard='GEN_PPAPI_PROXY_PPB_RPC_H_')
+                  guard='GEN_PPAPI_PROXY_PPB_RPC_H_',
+                  thread_check=True)
 
 env.UntrustedSrpc(is_client=True,
                   srpc_files=['upcall.srpc'],

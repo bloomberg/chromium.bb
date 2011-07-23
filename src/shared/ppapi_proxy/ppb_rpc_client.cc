@@ -16,10 +16,13 @@
 #else
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/ppapi/c/pp_instance.h"
 #include "native_client/src/third_party/ppapi/c/pp_module.h"
 #include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "native_client/src/third_party/ppapi/c/ppb_core.h"
 
 NaClSrpcError NaClFileRpcClient::StreamAsFile(
     NaClSrpcChannel* channel,
@@ -27,6 +30,7 @@ NaClSrpcError NaClFileRpcClient::StreamAsFile(
     char* url,
     int32_t callback_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "StreamAsFile:isi:",
@@ -43,6 +47,7 @@ NaClSrpcError NaClFileRpcClient::GetFileDesc(
     char* url,
     NaClSrpcImcDescType* file_desc)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "GetFileDesc:is:h",
@@ -73,6 +78,7 @@ NaClSrpcError PpbAudioRpcClient::PPB_Audio_Create(
     PP_Resource config,
     PP_Resource* out_resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Audio_Create:ii:i",
@@ -88,6 +94,7 @@ NaClSrpcError PpbAudioRpcClient::PPB_Audio_IsAudio(
     PP_Resource resource,
     int32_t* out_bool)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Audio_IsAudio:i:i",
@@ -102,6 +109,7 @@ NaClSrpcError PpbAudioRpcClient::PPB_Audio_GetCurrentConfig(
     PP_Resource resource,
     PP_Resource* out_resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Audio_GetCurrentConfig:i:i",
@@ -116,6 +124,7 @@ NaClSrpcError PpbAudioRpcClient::PPB_Audio_StopPlayback(
     PP_Resource resource,
     int32_t* out_bool)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Audio_StopPlayback:i:i",
@@ -130,6 +139,7 @@ NaClSrpcError PpbAudioRpcClient::PPB_Audio_StartPlayback(
     PP_Resource resource,
     int32_t* out_bool)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Audio_StartPlayback:i:i",
@@ -146,6 +156,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_CreateStereo16Bit(
     int32_t sample_frame_count,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_CreateStereo16Bit:iii:i",
@@ -162,6 +173,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_IsAudioConfig(
     PP_Resource resource,
     int32_t* out_bool)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_IsAudioConfig:i:i",
@@ -177,6 +189,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount
     int32_t request_sample_frame_count,
     int32_t* out_sample_frame_count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_RecommendSampleFrameCount:ii:i",
@@ -192,6 +205,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleRate(
     PP_Resource resource,
     int32_t* sample_rate)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_GetSampleRate:i:i",
@@ -206,6 +220,7 @@ NaClSrpcError PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleFrameCount(
     PP_Resource resource,
     int32_t* sample_frame_count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_GetSampleFrameCount:i:i",
@@ -219,6 +234,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_AddRefResource(
     NaClSrpcChannel* channel,
     PP_Resource resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Core_AddRefResource:i:",
@@ -231,6 +247,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_ReleaseResource(
     NaClSrpcChannel* channel,
     PP_Resource resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Core_ReleaseResource:i:",
@@ -244,6 +261,7 @@ NaClSrpcError PpbCoreRpcClient::ReleaseResourceMultipleTimes(
     PP_Resource resource,
     int32_t count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "ReleaseResourceMultipleTimes:ii:",
@@ -257,6 +275,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
     NaClSrpcChannel* channel,
     double* time)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Core_GetTime::d",
@@ -269,6 +288,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTimeTicks(
     NaClSrpcChannel* channel,
     double* time_ticks)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Core_GetTimeTicks::d",
@@ -301,6 +321,7 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_SetCursor(
     nacl_abi_size_t hot_spot_bytes, char* hot_spot,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_CursorControl_SetCursor:iiiC:i",
@@ -318,6 +339,7 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_LockCursor(
     PP_Instance instance,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_CursorControl_LockCursor:i:i",
@@ -332,6 +354,7 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_UnlockCursor(
     PP_Instance instance,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_CursorControl_UnlockCursor:i:i",
@@ -346,6 +369,7 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_HasCursorLock(
     PP_Instance instance,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_CursorControl_HasCursorLock:i:i",
@@ -360,6 +384,7 @@ NaClSrpcError PpbCursorControlRpcClient::PPB_CursorControl_CanLockCursor(
     PP_Instance instance,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_CursorControl_CanLockCursor:i:i",
@@ -374,6 +399,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Create(
     PP_Instance instance,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Create:i:i",
@@ -388,6 +414,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_IsFileIO(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_IsFileIO:i:i",
@@ -405,6 +432,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Open(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Open:iiii:i",
@@ -425,6 +453,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Query(
     nacl_abi_size_t* info_bytes, char* info,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Query:iii:Ci",
@@ -445,6 +474,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Touch(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Touch:iddi:i",
@@ -466,6 +496,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Read(
     nacl_abi_size_t* buffer_bytes, char* buffer,
     int32_t* pp_error_or_bytes)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Read:ilii:Ci",
@@ -488,6 +519,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Write(
     int32_t callback_id,
     int32_t* pp_error_or_bytes)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Write:ilCii:i",
@@ -508,6 +540,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_SetLength(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_SetLength:ili:i",
@@ -525,6 +558,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Flush(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Flush:ii:i",
@@ -539,6 +573,7 @@ NaClSrpcError PpbFileIORpcClient::PPB_FileIO_Close(
     NaClSrpcChannel* channel,
     PP_Resource file_io)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileIO_Close:i:",
@@ -553,6 +588,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Create(
     nacl_abi_size_t path_bytes, char* path,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_Create:iC:i",
@@ -568,6 +604,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_IsFileRef(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_IsFileRef:i:i",
@@ -582,6 +619,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetFileSystemType(
     PP_Resource file_ref,
     int32_t* file_system_type)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_GetFileSystemType:i:i",
@@ -596,6 +634,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetName(
     PP_Resource file_ref,
     nacl_abi_size_t* name_bytes, char* name)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_GetName:i:C",
@@ -610,6 +649,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetPath(
     PP_Resource file_ref,
     nacl_abi_size_t* path_bytes, char* path)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_GetPath:i:C",
@@ -624,6 +664,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_GetParent(
     PP_Resource file_ref,
     PP_Resource* parent)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_GetParent:i:i",
@@ -640,6 +681,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_MakeDirectory(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_MakeDirectory:iii:i",
@@ -659,6 +701,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Touch(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_Touch:iddi:i",
@@ -677,6 +720,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Delete(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_Delete:ii:i",
@@ -694,6 +738,7 @@ NaClSrpcError PpbFileRefRpcClient::PPB_FileRef_Rename(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileRef_Rename:iii:i",
@@ -711,6 +756,7 @@ NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_Create(
     int32_t file_system_type,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileSystem_Create:ii:i",
@@ -726,6 +772,7 @@ NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_IsFileSystem(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileSystem_IsFileSystem:i:i",
@@ -742,6 +789,7 @@ NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_Open(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileSystem_Open:ili:i",
@@ -758,6 +806,7 @@ NaClSrpcError PpbFileSystemRpcClient::PPB_FileSystem_GetType(
     PP_Resource file_system,
     int32_t* type)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_FileSystem_GetType:i:i",
@@ -773,6 +822,7 @@ NaClSrpcError PpbFindRpcClient::PPB_Find_NumberOfFindResultsChanged(
     int32_t total,
     int32_t final_result)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Find_NumberOfFindResultsChanged:iii:",
@@ -788,6 +838,7 @@ NaClSrpcError PpbFindRpcClient::PPB_Find_SelectedFindResultChanged(
     PP_Instance instance,
     int32_t index)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Find_SelectedFindResultChanged:ii:",
@@ -802,6 +853,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_GetFontFamilies(
     PP_Instance instance,
     nacl_abi_size_t* font_families_bytes, char* font_families)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_GetFontFamilies:i:C",
@@ -818,6 +870,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_Create(
     nacl_abi_size_t face_bytes, char* face,
     PP_Resource* font)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_Create:iCC:i",
@@ -834,6 +887,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_IsFont(
     PP_Resource resource,
     int32_t* is_font)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_IsFont:i:i",
@@ -851,6 +905,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_Describe(
     nacl_abi_size_t* metrics_bytes, char* metrics,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_Describe:i:CCCi",
@@ -875,6 +930,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_DrawTextAt(
     int32_t image_data_is_opaque,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_DrawTextAt:iiCCCiCi:i",
@@ -898,6 +954,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_MeasureText(
     nacl_abi_size_t text_bytes, char* text,
     int32_t* width)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_MeasureText:iCC:i",
@@ -917,6 +974,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_CharacterOffsetForPixel(
     int32_t pixel_position,
     int32_t* offset)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_CharacterOffsetForPixel:iCCi:i",
@@ -937,6 +995,7 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_PixelOffsetForCharacter(
     int32_t char_offset,
     int32_t* offset)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Font_PixelOffsetForCharacter:iCCi:i",
@@ -956,6 +1015,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     int32_t is_always_opaque,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_Create:iCi:i",
@@ -972,6 +1032,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_IsGraphics2D(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_IsGraphics2D:i:i",
@@ -988,6 +1049,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Describe(
     int32_t* is_always_opaque,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_Describe:i:Cii",
@@ -1006,6 +1068,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
     nacl_abi_size_t top_left_bytes, char* top_left,
     nacl_abi_size_t src_rect_bytes, char* src_rect)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_PaintImageData:iiCC:",
@@ -1023,6 +1086,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
     nacl_abi_size_t clip_rect_bytes, char* clip_rect,
     nacl_abi_size_t amount_bytes, char* amount)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_Scroll:iCC:",
@@ -1038,6 +1102,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
     PP_Resource graphics_2d,
     PP_Resource image)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_ReplaceContents:ii:",
@@ -1053,6 +1118,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_Flush:ii:i",
@@ -1070,6 +1136,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3D_BindSurfaces(
     PP_Resource read_surface,
     int32_t* error_code)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3D_BindSurfaces:iii:i",
@@ -1088,6 +1155,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Surface3D_Create(
     nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
     PP_Resource* resource_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Surface3D_Create:iiI:i",
@@ -1105,6 +1173,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Surface3D_SwapBuffers(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Surface3D_SwapBuffers:ii:i",
@@ -1123,6 +1192,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_CreateRaw(
     nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
     PP_Resource* resource_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_CreateRaw:iiiI:i",
@@ -1141,6 +1211,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_Initialize(
     int32_t size,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_Initialize:ii:i",
@@ -1157,6 +1228,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_GetRingBuffer(
     NaClSrpcImcDescType* shm_desc,
     int32_t* shm_size)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_GetRingBuffer:i:hi",
@@ -1172,6 +1244,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_GetState(
     PP_Resource resource_id,
     nacl_abi_size_t* state_bytes, char* state)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_GetState:i:C",
@@ -1186,6 +1259,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_Flush(
     PP_Resource resource_id,
     int32_t put_offset)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_Flush:ii:",
@@ -1201,6 +1275,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_FlushSync(
     int32_t put_offset,
     nacl_abi_size_t* state_bytes, char* state)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_FlushSync:ii:C",
@@ -1218,6 +1293,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_CreateTransferBuffer(
     int32_t request_id,
     int32_t* id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_CreateTransferBuffer:iii:i",
@@ -1234,6 +1310,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_DestroyTransferBuffer
     PP_Resource resource_id,
     int32_t id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_DestroyTransferBuffer:ii:",
@@ -1250,6 +1327,7 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Context3DTrusted_GetTransferBuffer(
     NaClSrpcImcDescType* shm_desc,
     int32_t* shm_size)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Context3DTrusted_GetTransferBuffer:ii:hi",
@@ -1265,6 +1343,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_GetNativeImageDataFormat(
     NaClSrpcChannel* channel,
     int32_t* format)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_GetNativeImageDataFormat::i",
@@ -1278,6 +1357,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_IsImageDataFormatSupported(
     int32_t format,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_IsImageDataFormatSupported:i:i",
@@ -1295,6 +1375,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Create(
     int32_t init_to_zero,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_Create:iiCi:i",
@@ -1312,6 +1393,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_IsImageData(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_IsImageData:i:i",
@@ -1329,6 +1411,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Describe(
     int32_t* shm_size,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_Describe:i:Chii",
@@ -1348,6 +1431,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_RequestInputEvents(
     int32_t filtered,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_InputEvent_RequestInputEvents:iii:i",
@@ -1364,6 +1448,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_ClearInputEventRequest(
     PP_Instance instance,
     int32_t event_classes)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_InputEvent_ClearInputEventRequest:ii:",
@@ -1385,6 +1470,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
     int32_t click_count,
     PP_Resource* resource_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_InputEvent_CreateMouseInputEvent:iidiiiii:i",
@@ -1413,6 +1499,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateWheelInputEvent(
     int32_t scroll_by_page,
     PP_Resource* resource_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_InputEvent_CreateWheelInputEvent:ididdddi:i",
@@ -1439,6 +1526,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateKeyboardInputEvent(
     nacl_abi_size_t character_text_bytes, char* character_text,
     PP_Resource* resource_id)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_InputEvent_CreateKeyboardInputEvent:iidiiC:i",
@@ -1459,6 +1547,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_BindGraphics(
     PP_Resource graphics_device,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Instance_BindGraphics:ii:i",
@@ -1474,6 +1563,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_IsFullFrame(
     PP_Instance instance,
     int32_t* is_full_frame)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Instance_IsFullFrame:i:i",
@@ -1488,6 +1578,7 @@ NaClSrpcError PpbMessagingRpcClient::PPB_Messaging_PostMessage(
     PP_Instance instance,
     nacl_abi_size_t message_bytes, char* message)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Messaging_PostMessage:iC:",
@@ -1503,6 +1594,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     int32_t string_id,
     nacl_abi_size_t* string_bytes, char* string)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_GetLocalizedString:ii:C",
@@ -1519,6 +1611,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetResourceImage(
     int32_t image_id,
     PP_Resource* image)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_GetResourceImage:ii:i",
@@ -1537,6 +1630,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetFontFileWithFallback(
     int32_t charset,
     PP_Resource* font)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_GetFontFileWithFallback:iCCi:i",
@@ -1556,6 +1650,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetFontTableForPrivateFontFile(
     nacl_abi_size_t* output_bytes, char* output,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_GetFontTableForPrivateFontFile:ii:Ci",
@@ -1576,6 +1671,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_SearchString(
     nacl_abi_size_t* results_bytes, char* results,
     int32_t* count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_SearchString:iCCi:Ci",
@@ -1593,6 +1689,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_DidStartLoading(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_DidStartLoading:i:",
@@ -1605,6 +1702,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_DidStopLoading(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_DidStopLoading:i:",
@@ -1618,6 +1716,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_SetContentRestriction(
     PP_Instance instance,
     int32_t restrictions)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_SetContentRestriction:ii:",
@@ -1631,6 +1730,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_HistogramPDFPageCount(
     NaClSrpcChannel* channel,
     int32_t count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_HistogramPDFPageCount:i:",
@@ -1643,6 +1743,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_UserMetricsRecordAction(
     NaClSrpcChannel* channel,
     nacl_abi_size_t action_bytes, char* action)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_UserMetricsRecordAction:C:",
@@ -1655,6 +1756,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_HasUnsupportedFeature(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_HasUnsupportedFeature:i:",
@@ -1667,6 +1769,7 @@ NaClSrpcError PpbPdfRpcClient::PPB_PDF_SaveAs(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_PDF_SaveAs:i:",
@@ -1681,6 +1784,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_Create(
     int32_t vertical,
     PP_Resource* scrollbar)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_Create:ii:i",
@@ -1696,6 +1800,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_IsScrollbar(
     PP_Resource resource,
     int32_t* is_scrollbar)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_IsScrollbar:i:i",
@@ -1710,6 +1815,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetThickness(
     PP_Resource resource,
     int32_t* thickness)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_GetThickness:i:i",
@@ -1724,6 +1830,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_GetValue(
     PP_Resource scrollbar,
     int32_t* value)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_GetValue:i:i",
@@ -1738,6 +1845,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetValue(
     PP_Resource scrollbar,
     int32_t value)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_SetValue:ii:",
@@ -1752,6 +1860,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetDocumentSize(
     PP_Resource scrollbar,
     int32_t size)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_SetDocumentSize:ii:",
@@ -1767,6 +1876,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_SetTickMarks(
     nacl_abi_size_t tick_marks_bytes, char* tick_marks,
     int32_t count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_SetTickMarks:iCi:",
@@ -1783,6 +1893,7 @@ NaClSrpcError PpbScrollbarRpcClient::PPB_Scrollbar_ScrollBy(
     int32_t unit,
     int32_t multiplier)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Scrollbar_ScrollBy:iii:",
@@ -1800,6 +1911,7 @@ NaClSrpcError PpbTestingRpcClient::PPB_Testing_ReadImageData(
     nacl_abi_size_t top_left_bytes, char* top_left,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Testing_ReadImageData:iiC:i",
@@ -1815,6 +1927,7 @@ NaClSrpcError PpbTestingRpcClient::PPB_Testing_RunMessageLoop(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Testing_RunMessageLoop:i:",
@@ -1827,6 +1940,7 @@ NaClSrpcError PpbTestingRpcClient::PPB_Testing_QuitMessageLoop(
     NaClSrpcChannel* channel,
     PP_Instance instance)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Testing_QuitMessageLoop:i:",
@@ -1840,6 +1954,7 @@ NaClSrpcError PpbTestingRpcClient::PPB_Testing_GetLiveObjectsForInstance(
     PP_Instance instance,
     int32_t* live_object_count)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Testing_GetLiveObjectsForInstance:i:i",
@@ -1854,6 +1969,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Create(
     PP_Instance instance,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_Create:i:i",
@@ -1868,6 +1984,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_IsURLLoader(
     PP_Resource resource,
     int32_t* is_url_loader)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_IsURLLoader:i:i",
@@ -1884,6 +2001,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Open(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_Open:iii:i",
@@ -1901,6 +2019,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FollowRedirect(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_FollowRedirect:ii:i",
@@ -1918,6 +2037,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetUploadProgress(
     int64_t* total_bytes_to_be_sent,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_GetUploadProgress:i:lli",
@@ -1936,6 +2056,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetDownloadProgress(
     int64_t* total_bytes_to_be_received,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_GetDownloadProgress:i:lli",
@@ -1952,6 +2073,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetResponseInfo(
     PP_Resource loader,
     PP_Resource* response)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_GetResponseInfo:i:i",
@@ -1969,6 +2091,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_ReadResponseBody(
     nacl_abi_size_t* buffer_bytes, char* buffer,
     int32_t* pp_error_or_bytes)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_ReadResponseBody:iii:Ci",
@@ -1987,6 +2110,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FinishStreamingToFile(
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_FinishStreamingToFile:ii:i",
@@ -2001,6 +2125,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Close(
     NaClSrpcChannel* channel,
     PP_Resource loader)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLLoader_Close:i:",
@@ -2014,6 +2139,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
     PP_Instance instance,
     PP_Resource* resource)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_Create:i:i",
@@ -2028,6 +2154,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_IsURLRequestInfo(
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_IsURLRequestInfo:i:i",
@@ -2044,6 +2171,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_SetProperty(
     nacl_abi_size_t value_bytes, char* value,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_SetProperty:iiC:i",
@@ -2061,6 +2189,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendDataToBody(
     nacl_abi_size_t data_bytes, char* data,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_AppendDataToBody:iC:i",
@@ -2080,6 +2209,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendFileToBody(
     double expected_last_modified_time,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_AppendFileToBody:iilld:i",
@@ -2098,6 +2228,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_IsURLResponseInfo
     PP_Resource resource,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLResponseInfo_IsURLResponseInfo:i:i",
@@ -2113,6 +2244,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetProperty(
     int32_t property,
     nacl_abi_size_t* value_bytes, char* value)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLResponseInfo_GetProperty:ii:C",
@@ -2128,6 +2260,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetBodyAsFileRef(
     PP_Resource response,
     PP_Resource* file_ref)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLResponseInfo_GetBodyAsFileRef:i:i",
@@ -2142,6 +2275,7 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_IsWidget(
     PP_Resource resource,
     int32_t* is_widget)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Widget_IsWidget:i:i",
@@ -2158,6 +2292,7 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_Paint(
     PP_Resource image,
     int32_t* success)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Widget_Paint:iCi:i",
@@ -2175,6 +2310,7 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_HandleEvent(
     PP_Resource event,
     int32_t* handled)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Widget_HandleEvent:ii:i",
@@ -2191,6 +2327,7 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_GetLocation(
     nacl_abi_size_t* location_bytes, char* location,
     int32_t* visible)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Widget_GetLocation:i:Ci",
@@ -2206,6 +2343,7 @@ NaClSrpcError PpbWidgetRpcClient::PPB_Widget_SetLocation(
     PP_Resource widget,
     nacl_abi_size_t location_bytes, char* location)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Widget_SetLocation:iC:",
@@ -2220,6 +2358,7 @@ NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomChanged(
     PP_Instance instance,
     double factor)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Zoom_ZoomChanged:id:",
@@ -2235,6 +2374,7 @@ NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomLimitsChanged(
     double minimum_factor,
     double maximum_factor)  {
   NaClSrpcError retval;
+  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Zoom_ZoomLimitsChanged:idd:",

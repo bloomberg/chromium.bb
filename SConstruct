@@ -1687,7 +1687,7 @@ pre_base_env.AddMethod(AutoDepsCommand)
 
 
 def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
-              name, h_file, cc_file, guard):
+              name, h_file, cc_file, guard, thread_check=False):
   if is_client:
     direction = '-c '
   else:
@@ -1703,7 +1703,8 @@ def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
 
   # Build the base command-line
   gen_args = ['${PYTHON}', '${SOURCE_ROOT}/native_client/tools/srpcgen.py',
-              '--ppapi --include=' + include,direction, name, guard,
+              '--ppapi', ' --thread-check' if thread_check else '',
+              '--include=' + include, direction, name, guard,
               h_file, cc_file]
 
   # Add the srpc_files
@@ -1738,11 +1739,13 @@ def TrustedSrpc(env, is_client, srpc_files, name, h_file, cc_file, guard):
   env.AlwaysBuild(env.Alias('srpcdif'))
 
 
-def UntrustedSrpc(env, is_client, srpc_files, name, h_file, cc_file, guard):
+def UntrustedSrpc(env, is_client, srpc_files, name, h_file, cc_file, guard,
+                  thread_check=False):
   h_file = 'untrusted/srpcgen/' + h_file
   env.AliasSrpc(alias='srpcgen', is_client=is_client,
                 build_dir='${SOURCE.srcdir}', srpc_files=srpc_files,
-                name=name, h_file=h_file, cc_file=cc_file, guard=guard)
+                name=name, h_file=h_file, cc_file=cc_file, guard=guard,
+                thread_check=thread_check)
   env.AlwaysBuild(env.Alias('srpcgen'))
 
 pre_base_env.AddMethod(AliasSrpc)

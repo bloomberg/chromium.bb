@@ -297,7 +297,7 @@ def PrintServerFile(output, header_name, interface_name, specs):
   print >>output, s
 
 
-def PrintClientFile(output, header_name, specs):
+def PrintClientFile(output, header_name, specs, thread_check):
   """Prints the client (proxy) .cc file."""
 
   def InstanceInputArg(rpc):
@@ -355,14 +355,22 @@ def PrintClientFile(output, header_name, specs):
   # We need this to handle dead nexes.
   if header_name.startswith('trusted'):
     AddInclude('native_client/src/shared/ppapi_proxy/browser_globals.h')
+  if thread_check:
+    AddInclude('native_client/src/shared/ppapi_proxy/plugin_globals.h')
+    AddInclude('native_client/src/third_party/ppapi/c/ppb_core.h')
+    AddInclude('native_client/src/shared/platform/nacl_check.h')
   PrintSourceFileTop(output, header_name)
   s = ''
+
   for spec in specs:
     class_name = spec['name'] + 'Client'
     rpcs = spec['rpcs']
     for rpc in rpcs:
       s += '%s  {\n' % FormatRpcPrototype('', class_name + '::', '', rpc)
       s += '  NaClSrpcError retval;\n'
+      if thread_check and rpc['name'] not in ['PPB_GetInterface',
+                                              'PPB_Core_CallOnMainThread']:
+        s += '  CHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread());\n'
       s += '  retval = NaClSrpcInvokeBySignature%s;\n' % FormatCall(rpc)
       if header_name.startswith('trusted'):
         s += DeadNexeHandling(rpc, 'retval')
@@ -385,8 +393,9 @@ def main(argv):
 
   mode = None
   ppapi = False
+  thread_check = False
   try:
-    long_opts = ['include=', 'ppapi']
+    long_opts = ['include=', 'ppapi', 'thread-check']
     opts, pargs = getopt.getopt(argv[1:], 'cs', long_opts)
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
@@ -418,6 +427,8 @@ def main(argv):
       h_file_name = val
     elif opt == '--ppapi':
       ppapi = True
+    elif opt == '--thread-check':
+      thread_check = True
 
   if ppapi:
     AddInclude("native_client/src/third_party/ppapi/c/pp_instance.h")
@@ -441,7 +452,7 @@ def main(argv):
   # Print out the requested files.
   if mode == 'client':
     PrintHeaderFile(h_file, False, include_guard_name, interface_name, specs)
-    PrintClientFile(cc_file, h_file_name, specs)
+    PrintClientFile(cc_file, h_file_name, specs, thread_check)
   elif mode == 'server':
     PrintHeaderFile(h_file, True, include_guard_name, interface_name, specs)
     PrintServerFile(cc_file, h_file_name, interface_name, specs)
