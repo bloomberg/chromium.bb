@@ -36,16 +36,17 @@ class Tee(object):
     sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
     # Create a tee subprocess and redirect stdout and stderr to it.
-    self._tee = subprocess.Popen(['tee', self._file], stdin=subprocess.PIPE)
+    self._tee = subprocess.Popen(['tee', self._file], stdin=subprocess.PIPE,
+      close_fds=True)
     os.dup2(self._tee.stdin.fileno(), sys.stdout.fileno())
     os.dup2(self._tee.stdin.fileno(), sys.stderr.fileno())
+    self._tee.stdin.close()
 
   def stop(self):
     """Restores old stdout and stderr handles and waits for tee proc to exit."""
     # Close unbuffered std[out|err] file objects, as well as the tee's stdin.
     sys.stdout.close()
     sys.stderr.close()
-    self._tee.stdin.close()
 
     # Restore file objects
     sys.stdout = self._old_stdout
@@ -54,4 +55,6 @@ class Tee(object):
     # Restore old file descriptors.
     os.dup2(self._old_stdout_fd, sys.stdout.fileno())
     os.dup2(self._old_stderr_fd, sys.stderr.fileno())
+    os.close(self._old_stdout_fd)
+    os.close(self._old_stderr_fd)
     self._tee.wait()
