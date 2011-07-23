@@ -28,6 +28,7 @@
   scoped_nsobject<NSMenu> attachedMenu_;
   BOOL attachedMenuEnabled_;
   BOOL openMenuOnClick_;
+  BOOL openMenuOnRightClick_;
   scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
@@ -42,6 +43,9 @@
 // Whether or not to open the menu when the button is clicked. Otherwise, the
 // menu will only be opened when clicked and held.
 @property(assign, nonatomic) BOOL openMenuOnClick;
+
+// Whether or not to open the menu when the right button is clicked.
+@property(assign, nonatomic) BOOL openMenuOnRightClick;
 
 // Returns the rectangle that menus are anchored at. Can be overridden by
 // subclasses, returns -bounds by default.

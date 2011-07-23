@@ -79,6 +79,23 @@ class MenuButtonTest : public CocoaTest {
     return menu;
   }
 
+  NSEvent* MouseDownEvent(NSEventType eventType) {
+    NSPoint location;
+    location.x = location.y = 0;
+    NSGraphicsContext* context = [NSGraphicsContext currentContext];
+    NSEvent* event = [NSEvent mouseEventWithType:eventType
+                                        location:location
+                                   modifierFlags:0
+                                       timestamp:0
+                                    windowNumber:0
+                                         context:context
+                                     eventNumber:0
+                                      clickCount:1
+                                        pressure:0.0F];
+
+    return event;
+  }
+
   MenuButton* button_;
 };
 
@@ -109,6 +126,60 @@ TEST_F(MenuButtonTest, OpenOnClick) {
   EXPECT_FALSE([delegate didOpen]);
 
   // Should open the menu.
+  [button_ performClick:nil];
+
+  EXPECT_TRUE([delegate didOpen]);
+  EXPECT_FALSE([delegate isOpen]);
+}
+
+TEST_F(MenuButtonTest, OpenOnRightClick) {
+  scoped_nsobject<NSMenu> menu(CreateMenu());
+  ASSERT_TRUE(menu.get());
+
+  scoped_nsobject<MenuButtonTestDelegate> delegate(
+      [[MenuButtonTestDelegate alloc] initWithMenu:menu.get()]);
+  ASSERT_TRUE(delegate.get());
+
+  [menu setDelegate:delegate.get()];
+  [button_ setAttachedMenu:menu];
+  [button_ setOpenMenuOnClick:YES];
+  // Right click is enabled.
+  [button_ setOpenMenuOnRightClick:YES];
+
+  EXPECT_FALSE([delegate isOpen]);
+  EXPECT_FALSE([delegate didOpen]);
+
+  // Should open the menu.
+  NSEvent* event = MouseDownEvent(NSRightMouseDown);
+  [button_ rightMouseDown:event];
+
+  EXPECT_TRUE([delegate didOpen]);
+  EXPECT_FALSE([delegate isOpen]);
+}
+
+TEST_F(MenuButtonTest, DontOpenOnRightClickWithoutSetRightClick) {
+  scoped_nsobject<NSMenu> menu(CreateMenu());
+  ASSERT_TRUE(menu.get());
+
+  scoped_nsobject<MenuButtonTestDelegate> delegate(
+      [[MenuButtonTestDelegate alloc] initWithMenu:menu.get()]);
+  ASSERT_TRUE(delegate.get());
+
+  [menu setDelegate:delegate.get()];
+  [button_ setAttachedMenu:menu];
+  [button_ setOpenMenuOnClick:YES];
+
+  EXPECT_FALSE([delegate isOpen]);
+  EXPECT_FALSE([delegate didOpen]);
+
+  // Should not open the menu.
+  NSEvent* event = MouseDownEvent(NSRightMouseDown);
+  [button_ rightMouseDown:event];
+
+  EXPECT_FALSE([delegate didOpen]);
+  EXPECT_FALSE([delegate isOpen]);
+
+  // Should open the menu in this case.
   [button_ performClick:nil];
 
   EXPECT_TRUE([delegate didOpen]);

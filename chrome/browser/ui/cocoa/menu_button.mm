@@ -18,6 +18,7 @@
 @implementation MenuButton
 
 @synthesize openMenuOnClick = openMenuOnClick_;
+@synthesize openMenuOnRightClick = openMenuOnRightClick_;
 
 // Overrides:
 
@@ -57,6 +58,15 @@
   [self configureCell];
 }
 
+- (void)rightMouseDown:(NSEvent*)theEvent {
+  if (!openMenuOnRightClick_) {
+    [super rightMouseDown:theEvent];
+    return;
+  }
+
+  [self clickShowMenu:self];
+}
+
 // Accessors and mutators:
 
 - (NSMenu*)attachedMenu {
@@ -77,6 +87,10 @@
   } else {
     [[self cell] setClickHoldTimeout:0.25];  // Default value.
   }
+}
+
+- (void)setOpenMenuOnRightClick:(BOOL)enabled {
+  openMenuOnRightClick_ = enabled;
 }
 
 - (NSRect)menuRect {
@@ -155,7 +169,7 @@
 - (void)clickShowMenu:(id)sender {
   // This should only be called if openMenuOnClick has been set (which hooks
   // up this target-action).
-  DCHECK(openMenuOnClick_);
+  DCHECK(openMenuOnClick_ || openMenuOnRightClick_);
   [self showMenu:NO];
 }
 

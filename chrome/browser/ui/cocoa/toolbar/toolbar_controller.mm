@@ -265,6 +265,9 @@ class NotificationBridge : public NotificationObserver {
 
   [wrenchButton_ setOpenMenuOnClick:YES];
 
+  [backButton_ setOpenMenuOnRightClick:YES];
+  [forwardButton_ setOpenMenuOnRightClick:YES];
+
   [backButton_ setHandleMiddleClick:YES];
   [forwardButton_ setHandleMiddleClick:YES];
   [reloadButton_ setHandleMiddleClick:YES];

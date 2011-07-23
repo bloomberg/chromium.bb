@@ -213,9 +213,9 @@ TEST_F(ToolbarButtonTest, MouseClickInsideOnYES) {
   [button_ setHandleMiddleClick:YES];
 
   // Middle button clicking in the view.
+  [NSApp postEvent:other_up_in_view atStart:YES];
   [button_ otherMouseDown:other_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ otherMouseUp:other_up_in_view];
+
   EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(1, [button_ numOfClick]);
   EXPECT_EQ(IDC_HOME, [button_ lastCommand]);
@@ -226,9 +226,9 @@ TEST_F(ToolbarButtonTest, MouseClickOutsideOnYES) {
   [button_ setHandleMiddleClick:YES];
 
   // Middle button clicking outside of the view.
+  [NSApp postEvent:other_up_out_view atStart:YES];
   [button_ otherMouseDown:other_down_out_view];
-  EXPECT_EQ(NSOffState, [button_ state]);
-  [button_ otherMouseUp:other_up_out_view];
+
   EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(0, [button_ numOfClick]);
   EXPECT_EQ(IDC_STOP, [button_ lastCommand]);
@@ -239,45 +239,36 @@ TEST_F(ToolbarButtonTest, MouseDraggingOnYES) {
   [button_ setHandleMiddleClick:YES];
 
   // Middle button being down in the view and up outside of the view.
+  [NSApp postEvent:other_up_out_view atStart:YES];
+  [NSApp postEvent:other_dragged_out_view atStart:YES];
   [button_ otherMouseDown:other_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ otherMouseDragged:other_dragged_out_view];
-  EXPECT_EQ(NSOffState, [button_ state]);
-  [button_ otherMouseUp:other_up_out_view];
+
   EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(0, [button_ numOfClick]);
   EXPECT_EQ(IDC_STOP, [button_ lastCommand]);
 
   // Middle button being down on the button, move to outside and move on it
   // again, then up on the button.
+  [NSApp postEvent:other_up_in_view atStart:YES];
+  [NSApp postEvent:other_dragged_in_view atStart:YES];
+  [NSApp postEvent:other_dragged_out_view atStart:YES];
   [button_ otherMouseDown:other_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ otherMouseDragged:other_dragged_out_view];
-  EXPECT_EQ(NSOffState, [button_ state]);
-  [button_ otherMouseDragged:other_dragged_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ otherMouseUp:other_up_in_view];
+
   EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(1, [button_ numOfClick]);
   EXPECT_EQ(IDC_HOME, [button_ lastCommand]);
 }
 
-TEST_F(ToolbarButtonTest, DoesNotSwallowRightClickOnYES) {
+TEST_F(ToolbarButtonTest, DoesSwallowRightClickOnYES) {
   // Enable middle button handling.
   [button_ setHandleMiddleClick:YES];
 
-  // Middle button being down should swallow right button clicks, but
-  // ToolbarButton doesn't swallow it because it doesn't handle right button
-  // events.
+  // Middle button being down should swallow right button clicks.
+  [NSApp postEvent:other_up_in_view atStart:YES];
+  [NSApp postEvent:right_up_in_view atStart:YES];
+  [NSApp postEvent:right_down_in_view atStart:YES];
   [button_ otherMouseDown:other_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ rightMouseDown:right_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  [button_ rightMouseUp:right_up_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
-  EXPECT_EQ(0, [button_ numOfClick]);
-  EXPECT_EQ(IDC_STOP, [button_ lastCommand]);
-  [button_ otherMouseUp:other_up_in_view];
+
   EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(1, [button_ numOfClick]);
   EXPECT_EQ(IDC_HOME, [button_ lastCommand]);
@@ -288,13 +279,12 @@ TEST_F(ToolbarButtonTest, DoesSwallowLeftClickOnYES) {
   [button_ setHandleMiddleClick:YES];
 
   // Middle button being down swallows left button clicks.
-  [button_ otherMouseDown:other_down_in_view];
-  EXPECT_EQ(NSOnState, [button_ state]);
+  [NSApp postEvent:other_up_in_view atStart:YES];
   [NSApp postEvent:left_up_in_view atStart:YES];
-  [button_ mouseDown:left_down_in_view];
-  EXPECT_EQ(0, [button_ numOfClick]);
-  EXPECT_EQ(IDC_STOP, [button_ lastCommand]);
-  [button_ otherMouseUp:other_up_in_view];
+  [NSApp postEvent:left_down_in_view atStart:YES];
+  [button_ otherMouseDown:other_down_in_view];
+
+  EXPECT_EQ(NSOffState, [button_ state]);
   EXPECT_EQ(1, [button_ numOfClick]);
   EXPECT_EQ(IDC_HOME, [button_ lastCommand]);
 }

@@ -14,11 +14,6 @@
  @protected
   // YES when middle mouse clicks should be handled.
   BOOL handleMiddleClick_;
-
-  // YES when a middle mouse click is being handled. This is set to YES by an
-  // NSOtherMouseDown event, and NO by an NSOtherMouseUp event. While this is
-  // YES, other mouse button events should be ignored.
-  BOOL handlingMiddleClick_;
 }
 
 // Whether or not to handle the mouse middle click events.
