@@ -397,20 +397,20 @@ class AutofillTest(pyauto.PyUITest):
       The phone number contains the correct national number size and
       is a valid format.
     """
-    profile = {'NAME_FIRST': ['Bob',],
-               'NAME_LAST': ['Smith',],
-               'ADDRESS_HOME_LINE1': ['1234 H St.',],
-               'ADDRESS_HOME_CITY': ['San Jose',],
-               'ADDRESS_HOME_STATE': ['CA',],
-               'ADDRESS_HOME_ZIP': ['95110',],
-               'ADDRESS_HOME_COUNTRY': ['Germany',],
-               'PHONE_HOME_WHOLE_NUMBER': ['(08) 450 777-777',],}
+    profile = {'NAME_FIRST': 'Bob',
+               'NAME_LAST': 'Smith',
+               'ADDRESS_HOME_LINE1': '1234 H St.',
+               'ADDRESS_HOME_CITY': 'San Jose',
+               'ADDRESS_HOME_STATE': 'CA',
+               'ADDRESS_HOME_ZIP': '95110',
+               'ADDRESS_HOME_COUNTRY': 'Germany',
+               'PHONE_HOME_WHOLE_NUMBER': '(08) 450 777-777',}
 
     self._FillFormAndSubmit(
         profile, 'autofill_test_form.html', tab_index=0, windex=0)
     de_phone = self.GetAutofillProfile()[
         'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
-    self.assertEqual('49', de_phone[0][:2],
+    self.assertEqual('+49', de_phone[0][:3],
                      msg='Country code missing from phone number.')
 
   def testCCInfoNotStoredWhenAutocompleteOff(self):
