@@ -200,6 +200,11 @@ class ProxyConfigServiceImpl
   // UI calls it again when the active network has changed.
   bool UIMakeActiveNetworkCurrent();
 
+  // Called from UI thread to get name of the current active network.
+  const std::string& current_network_name() const {
+    return current_ui_network_name_;
+  }
+
   // Called from UI thread to set/get user preference use_shared_proxies.
   void UISetUseSharedProxies(bool use_shared);
   bool use_shared_proxies() const {
@@ -272,6 +277,9 @@ class ProxyConfigServiceImpl
   // shared/private or user is using shared proxies, etc.
   void DetermineConfigFromNetwork(const Network* network);
 
+  // Set |current_ui_network_name_| with name of |network|.
+  void SetCurrentNetworkName(const Network* network);
+
   // Checks that method is called on BrowserThread::IO thread.
   void CheckCurrentlyOnIOThread();
 
@@ -313,6 +321,11 @@ class ProxyConfigServiceImpl
   // edited via UI, separate from |active_network_| which may be same or
   // different.
   std::string current_ui_network_;
+
+  // Name of network with current_ui_network_, set in UIMakeActiveNetworkCurrent
+  // and UISetCurrentNetwork.
+  std::string current_ui_network_name_;
+
   // Proxy configuration of |current_ui_network|.
   ProxyConfig current_ui_config_;
 

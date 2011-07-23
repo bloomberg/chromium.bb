@@ -194,6 +194,10 @@ cr.define('options', function() {
     }
   };
 
+  ProxyOptions.setNetworkName = function(network) {
+    ProxyOptions.getInstance().setNetworkName(network);
+  };
+
   // Export
   return {
     ProxyOptions: ProxyOptions

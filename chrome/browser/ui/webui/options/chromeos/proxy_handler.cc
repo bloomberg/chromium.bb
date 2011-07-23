@@ -69,4 +69,10 @@ void ProxyHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_PROXY_BYPASS));
 }
 
+void ProxyHandler::SetNetworkName(const std::string& name) {
+  StringValue network(name);
+  web_ui_->CallJavascriptFunction("options.ProxyOptions.setNetworkName",
+                                  network);
+}
+
 }  // namespace chromeos

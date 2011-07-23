@@ -67,6 +67,10 @@ bool ProxyCrosSettingsProvider::IsUsingSharedProxies() const {
   return GetConfigService()->use_shared_proxies();
 }
 
+const std::string& ProxyCrosSettingsProvider::GetCurrentNetworkName() const {
+  return GetConfigService()->current_network_name();
+}
+
 void ProxyCrosSettingsProvider::DoSet(const std::string& path,
                                       Value* in_value) {
   if (!in_value) {

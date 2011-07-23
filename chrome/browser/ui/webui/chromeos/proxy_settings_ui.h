@@ -12,6 +12,8 @@
 
 namespace chromeos {
 
+class ProxyHandler;
+
 // A WebUI to host proxy settings splitted from settings page for better
 // performance.
 class ProxySettingsUI : public ChromeWebUI,
@@ -26,7 +28,8 @@ class ProxySettingsUI : public ChromeWebUI,
 
   chromeos::ProxyCrosSettingsProvider* proxy_settings();
 
-  chromeos::ProxyCrosSettingsProvider* proxy_settings_;
+  chromeos::ProxyCrosSettingsProvider* proxy_settings_;  // Weak ptr.
+  chromeos::ProxyHandler* proxy_handler_;  // Weak ptr.
 
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsUI);
 };

@@ -25,8 +25,12 @@ class ProxyCrosSettingsProvider : public CrosSettingsProvider {
   void SetCurrentNetwork(const std::string& network);
 
   // Make the active network the current one whose proxy settings will be
-  // displayed and  possibly edited on.
+  // displayed and possibly edited on.
   void MakeActiveNetworkCurrent();
+
+  // Returns name of current network that has been set via SetCurrentNetwork or
+  // MakeActiveNetworkCurrent.
+  const std::string& GetCurrentNetworkName() const;
 
   // Returns true if user has selected to use shared proxies.
   bool IsUsingSharedProxies() const;

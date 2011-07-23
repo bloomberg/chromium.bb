@@ -18,6 +18,9 @@ class ProxyHandler : public CrosOptionsPageUIHandler {
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
+  // Set network name for proxy page title.
+  void SetNetworkName(const std::string& name);
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(ProxyHandler);

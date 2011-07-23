@@ -16,6 +16,8 @@
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace em = enterprise_management;
 
@@ -499,10 +501,12 @@ bool ProxyConfigServiceImpl::UISetCurrentNetwork(
   }
   current_ui_network_ = current_network;
   current_ui_config_ = ProxyConfig();
+  SetCurrentNetworkName(network);
   if (!network->proxy_config().empty())
     current_ui_config_.DeserializeForNetwork(network->proxy_config());
   VLOG(1) << "current ui network: "
-          << (network->name().empty() ? current_ui_network_ : network->name())
+          << (current_ui_network_name_.empty() ?
+              current_ui_network_ : current_ui_network_name_)
           << ", proxy mode: " << current_ui_config_.mode;
   return true;
 }
@@ -512,9 +516,21 @@ bool ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
   CheckCurrentlyOnUIThread();
   if (current_ui_network_ == active_network_)
     return false;
+  Network* network = NULL;
+  if (!testing_) {
+    network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+      active_network_);
+    if (!network) {
+      LOG(ERROR) << "can't find requested network " << active_network_;
+      return false;
+    }
+  }
   current_ui_network_ = active_network_;
   current_ui_config_ = active_config_;
-  VLOG(1) << "current ui network: " << current_ui_network_
+  SetCurrentNetworkName(network);
+  VLOG(1) << "current ui network: "
+          << (current_ui_network_name_.empty() ?
+              current_ui_network_ : current_ui_network_name_)
           << ", proxy mode: " << current_ui_config_.mode;
   return true;
 }
@@ -797,6 +813,20 @@ void ProxyConfigServiceImpl::DetermineConfigFromNetwork(
     available = net::ProxyConfigService::CONFIG_VALID;
   }
   IOSetProxyConfig(active_config_, available);
+}
+
+void ProxyConfigServiceImpl::SetCurrentNetworkName(const Network* network) {
+  if (!network) {
+    if (testing_)
+      current_ui_network_name_ = "test";
+    return;
+  }
+  if (network->name().empty() && network->type() == chromeos::TYPE_ETHERNET) {
+    current_ui_network_name_ = l10n_util::GetStringUTF8(
+        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  } else {
+    current_ui_network_name_ = network->name();
+  }
 }
 
 void ProxyConfigServiceImpl::CheckCurrentlyOnIOThread() {

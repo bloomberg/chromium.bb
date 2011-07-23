@@ -65,7 +65,8 @@ namespace chromeos {
 
 ProxySettingsUI::ProxySettingsUI(TabContents* contents)
     : ChromeWebUI(contents),
-      proxy_settings_(NULL) {
+      proxy_settings_(NULL),
+      proxy_handler_(new ProxyHandler) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 
@@ -74,9 +75,8 @@ ProxySettingsUI::ProxySettingsUI(TabContents* contents)
   core_handler->GetLocalizedValues(localized_strings);
   AddMessageHandler(core_handler->Attach(this));
 
-  OptionsPageUIHandler* proxy_handler = new ProxyHandler();
-  proxy_handler->GetLocalizedValues(localized_strings);
-  AddMessageHandler(proxy_handler->Attach(this));
+  proxy_handler_->GetLocalizedValues(localized_strings);
+  AddMessageHandler(proxy_handler_->Attach(this));
 
   ProxySettingsHTMLSource* source =
       new ProxySettingsHTMLSource(localized_strings);
@@ -91,6 +91,7 @@ ProxySettingsUI::~ProxySettingsUI() {
        ++iter) {
     static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
   }
+  proxy_handler_ = NULL;  // Weak ptr that is owned by base class, nullify it.
 }
 
 void ProxySettingsUI::InitializeHandlers() {
@@ -99,8 +100,12 @@ void ProxySettingsUI::InitializeHandlers() {
   for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
     (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
   }
-  if (proxy_settings())
+  if (proxy_settings()) {
     proxy_settings()->MakeActiveNetworkCurrent();
+    std::string network = proxy_settings()->GetCurrentNetworkName();
+    if (!network.empty())
+      proxy_handler_->SetNetworkName(network);
+  }
 }
 
 chromeos::ProxyCrosSettingsProvider* ProxySettingsUI::proxy_settings() {
