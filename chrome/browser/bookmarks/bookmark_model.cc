@@ -365,6 +365,16 @@ const BookmarkNode* BookmarkModel::GetMostRecentlyAddedNodeForURL(
   return nodes.front();
 }
 
+bool BookmarkModel::HasBookmarks() {
+  base::AutoLock url_lock(url_lock_);
+  return !nodes_ordered_by_url_set_.empty();
+}
+
+bool BookmarkModel::IsBookmarked(const GURL& url) {
+  base::AutoLock url_lock(url_lock_);
+  return IsBookmarkedNoLock(url);
+}
+
 void BookmarkModel::GetBookmarks(std::vector<GURL>* urls) {
   base::AutoLock url_lock(url_lock_);
   const GURL* last_url = NULL;
@@ -378,14 +388,8 @@ void BookmarkModel::GetBookmarks(std::vector<GURL>* urls) {
   }
 }
 
-bool BookmarkModel::HasBookmarks() {
-  base::AutoLock url_lock(url_lock_);
-  return !nodes_ordered_by_url_set_.empty();
-}
-
-bool BookmarkModel::IsBookmarked(const GURL& url) {
-  base::AutoLock url_lock(url_lock_);
-  return IsBookmarkedNoLock(url);
+void BookmarkModel::BlockTillLoaded() {
+  loaded_signal_.Wait();
 }
 
 const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
@@ -688,10 +692,6 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
         Details<history::URLsStarredDetails>(&details));
   }
   return node;
-}
-
-void BookmarkModel::BlockTillLoaded() {
-  loaded_signal_.Wait();
 }
 
 const BookmarkNode* BookmarkModel::GetNodeByID(const BookmarkNode* node,

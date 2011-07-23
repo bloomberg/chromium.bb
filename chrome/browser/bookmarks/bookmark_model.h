@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
@@ -237,20 +238,23 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // not bookmarked.
   const BookmarkNode* GetMostRecentlyAddedNodeForURL(const GURL& url);
 
-  // Returns all the bookmarked urls. This method is thread safe.
-  virtual void GetBookmarks(std::vector<GURL>* urls);
-
-  // Returns true if there are bookmarks, otherwise returns false. This method
-  // is thread safe.
+  // Returns true if there are bookmarks, otherwise returns false.
+  // This method is thread safe.
   bool HasBookmarks();
 
-  // Returns true if there is a bookmark for the specified URL. This method is
-  // thread safe. See BookmarkService for more details on this.
-  virtual bool IsBookmarked(const GURL& url);
+  // Returns true if there is a bookmark for the specified URL.
+  // This method is thread safe.
+  // See BookmarkService for more details on this.
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
 
-  // Blocks until loaded; this is NOT invoked on the main thread. See
-  // BookmarkService for more details on this.
-  virtual void BlockTillLoaded();
+  // Returns all the bookmarked urls.
+  // This method is thread safe.
+  // See BookmarkService for more details on this.
+  virtual void GetBookmarks(std::vector<GURL>* urls) OVERRIDE;
+
+  // Blocks until loaded; this is NOT invoked on the main thread.
+  // See BookmarkService for more details on this.
+  virtual void BlockTillLoaded() OVERRIDE;
 
   // Returns the node with the specified id, or NULL if there is no node with
   // the specified id.
@@ -406,7 +410,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Generates and returns the next node ID.
   int64 generate_next_node_id();
