@@ -40,7 +40,6 @@
 #include "ui/gfx/gtk_util.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
-#include "views/screen.h"
 #include "views/widget/widget.h"
 
 using views::Widget;

@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/screen.h"
+#include "ui/gfx/screen.h"
 
 #include <windows.h>
 
-namespace views {
+namespace gfx {
 
 // static
 gfx::Point Screen::GetCursorScreenPoint() {
@@ -59,5 +59,4 @@ gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
   return GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
 }
 
-}  // namespace
-
+}  // namespace gfx

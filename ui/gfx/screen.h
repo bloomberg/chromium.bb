@@ -1,21 +1,21 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_SCREEN_H_
-#define VIEWS_SCREEN_H_
+#ifndef UI_GFX_SCREEN_H_
+#define UI_GFX_SCREEN_H_
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-namespace views {
+namespace gfx {
 
 // A utility class for getting various info about screen size, monitors,
 // cursor position, etc.
 // TODO(erikkay) add more of those methods here
-class Screen {
+class UI_API Screen {
  public:
   static gfx::Point GetCursorScreenPoint();
 
@@ -36,6 +36,6 @@ class Screen {
   static gfx::NativeWindow GetWindowAtCursorScreenPoint();
 };
 
-}  // namespace views
+}  // namespace gfx
 
 #endif  // VIEWS_SCREEN_H_

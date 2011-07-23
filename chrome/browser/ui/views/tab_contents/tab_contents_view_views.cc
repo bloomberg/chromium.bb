@@ -17,9 +17,9 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "ui/gfx/screen.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/view_storage.h"
-#include "views/screen.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
@@ -386,7 +386,7 @@ void TabContentsViewViews::OnNativeTabContentsViewMouseMove(bool motion) {
   // bubble state).
   if (tab_contents_->delegate()) {
     tab_contents_->delegate()->ContentsMouseEvent(
-        tab_contents_, views::Screen::GetCursorScreenPoint(), motion);
+        tab_contents_, gfx::Screen::GetCursorScreenPoint(), motion);
   }
 }
 
@@ -421,4 +421,3 @@ views::FocusManager* TabContentsViewViews::GetFocusManager() {
   // DCHECK(focus_manager_);
   return focus_manager_;
 }
-
