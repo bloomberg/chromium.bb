@@ -691,10 +691,6 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   DCHECK(frame);
   PrintMsg_PrintPages_Params settings;
 
-  // TODO(abodenha@chromium.org) It doesn't make sense to do this if our
-  // "default" is a cloud based printer.  Split InitPrintSettings up
-  // so that we can avoid the overhead of unneeded calls into the native
-  // print system.
   Send(new PrintHostMsg_GetDefaultPrintSettings(routing_id(),
                                                 &settings.params));
   // Check if the printer returned any settings, if the settings is empty, we
@@ -730,32 +726,7 @@ bool PrintWebViewHelper::UpdatePrintSettingsRequestId(
   return true;
 }
 
-bool PrintWebViewHelper::UpdatePrintSettingsCloud(
-    const DictionaryValue& job_settings) {
-  // Document cookie and pages are set by the
-  // PrintHostMsg_UpdatePrintSettings message above.
-  // TODO(abodenha@chromium.org) These numbers are for a letter sized
-  // page at 300dpi and half inch margins.
-  // Pull them from printer caps instead.
-  PrintMsg_PrintPages_Params settings;
-  settings.params.page_size = gfx::Size(2550, 3300);
-  settings.params.printable_size = gfx::Size(2250, 3000);
-  settings.params.margin_top = 150;
-  settings.params.margin_left = 150;
-  settings.params.dpi = 300.0;
-  settings.params.min_shrink = 1.25;
-  settings.params.max_shrink = 2.0;
-  settings.params.desired_dpi = 72;
-  settings.params.selection_only = false;
-  settings.params.supports_alpha_blend = false;
-  if (!UpdatePrintSettingsRequestId(job_settings, &(settings.params)))
-    return false;
-  // TODO(abodenha@chromium.org) Parse page ranges from the job_settings.
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
-  return true;
-}
-
-bool PrintWebViewHelper::UpdatePrintSettingsLocal(
+bool PrintWebViewHelper::UpdatePrintSettings(
     const DictionaryValue& job_settings) {
   PrintMsg_PrintPages_Params settings;
 
@@ -772,15 +743,6 @@ bool PrintWebViewHelper::UpdatePrintSettingsLocal(
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
   return true;
-}
-
-bool PrintWebViewHelper::UpdatePrintSettings(
-    const DictionaryValue& job_settings) {
-  if (job_settings.HasKey(printing::kSettingCloudPrintId)) {
-    return UpdatePrintSettingsCloud(job_settings);
-  } else {
-    return UpdatePrintSettingsLocal(job_settings);
-  }
 }
 
 bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,

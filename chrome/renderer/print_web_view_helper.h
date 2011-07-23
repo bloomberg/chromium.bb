@@ -167,16 +167,6 @@ class PrintWebViewHelper : public RenderViewObserver,
   // copies, page range, etc.
   bool UpdatePrintSettings(const base::DictionaryValue& job_settings);
 
-  // Update the current print settings for a cloud print printer with new
-  // |job_settings|. |job_settings|  dictionary contains print job details
-  // such as printer name, number of copies, page range, etc.
-  bool UpdatePrintSettingsCloud(const base::DictionaryValue& job_settings);
-
-  // Update the current print settings for a local printer with new
-  // |job_settings|. |job_settings|  dictionary contains print job details
-  // such as printer name, number of copies, page range, etc.
-  bool UpdatePrintSettingsLocal(const base::DictionaryValue& job_settings);
-
   // Get final print settings from the user.
   // Return false if the user cancels or on error.
   bool GetPrintSettingsFromUser(WebKit::WebFrame* frame,

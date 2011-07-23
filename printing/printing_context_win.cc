@@ -325,7 +325,9 @@ PrintingContext::Result PrintingContextWin::UpdatePrintSettings(
     return OnError();
   }
 
-  if (print_to_pdf) {
+  bool print_to_cloud = job_settings.HasKey(printing::kSettingCloudPrintId);
+
+  if (print_to_pdf || print_to_cloud) {
     // Pseudo printer: handle orientation and ranges only.
     settings_.SetOrientation(landscape);
     settings_.ranges = ranges;

@@ -124,7 +124,9 @@ PrintingContext::Result PrintingContextMac::UpdatePrintSettings(
     return OnError();
   }
 
-  if (!print_to_pdf) {
+  bool print_to_cloud = job_settings.HasKey(printing::kSettingCloudPrintId);
+
+  if (!print_to_pdf && !print_to_cloud) {
     if (!SetPrinter(device_name))
       return OnError();
 

@@ -4,6 +4,9 @@
 
 #include "printing/printing_context_cairo.h"
 
+// TODO(abodenha@chromium.org) The number of #ifdefs here has gotten too
+// large.  Refactor this code into separate files for Linux and Chrome OS.
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "printing/metafile.h"
@@ -140,7 +143,14 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 PrintingContext::Result PrintingContextCairo::UpdatePrintSettings(
     const DictionaryValue& job_settings, const PageRanges& ranges) {
 #if defined(OS_CHROMEOS)
-  NOTIMPLEMENTED();
+  bool landscape = false;
+
+  if (!job_settings.GetBoolean(kSettingLandscape, &landscape))
+    return OnError();
+
+  settings_.SetOrientation(landscape);
+  settings_.ranges = ranges;
+
   return OK;
 #else
   DCHECK(!in_print_job_);
