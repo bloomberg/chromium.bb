@@ -168,11 +168,17 @@ message SyncEntity {
   }
 
   // Supplies a numeric position for this item, relative to other items with
-  // the same parent.  This value is only meaningful in server-to-client
-  // contexts; to specify a position in a client-to-server commit context,
-  // use |insert_after_item_id|.
-  // Present only in GetUpdatesResponse.
+  // the same parent.
+  //
+  // Present in both GetUpdatesResponse and CommitMessage.
+  //
+  // In a CommitMessage context, server implementations may choose whether
+  // to compute a position based on this field or based on
+  // |insert_after_item_id|.  Clients should set both values so that they
+  // result in a consistent ordering regardless of which choice the server
+  // makes.
   optional int64 position_in_parent = 15;
+
 
   // Contains the ID of the element (under the same parent) after which this
   // element resides. An empty string indicates that the element is the first
@@ -180,7 +186,13 @@ message SyncEntity {
   // a relative position for a position change.  In the context of
   // a GetUpdatesMessage, |position_in_parent| is used instead to
   // communicate position.
+  //
   // Present only in CommitMessage.
+  //
+  // This is being deprecated: clients should now explicitly set
+  // an absolute |position_in_parent| value at commit time.  In the
+  // interim, clients should supply both values and continue to honor
+  // the |position_in_parent| value returned in the CommitResponse.
   optional string insert_after_item_id = 16;
 
   // Arbitrary key/value pairs associated with this item.

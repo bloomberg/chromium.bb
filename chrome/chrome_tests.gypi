@@ -3299,6 +3299,7 @@
         '<(protoc_out_dir)/chrome/browser/sync/protocol/test.pb.cc',
         'app/breakpad_mac_stubs.mm',
         'browser/sync/engine/apply_updates_command_unittest.cc',
+        'browser/sync/engine/build_commit_command_unittest.cc',
         'browser/sync/engine/clear_data_command_unittest.cc',
         'browser/sync/engine/cleanup_disabled_types_command_unittest.cc',
         'browser/sync/engine/download_updates_command_unittest.cc',

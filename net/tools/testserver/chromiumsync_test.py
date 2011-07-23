@@ -65,59 +65,6 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertTrue(self.model._ItemExists(proto.id_string))
     self.assertEqual(2, self.model._entries[proto.id_string].version)
 
-  def testWritePosition(self):
-    def MakeProto(id_string, parent, position):
-      proto = sync_pb2.SyncEntity()
-      proto.id_string = id_string
-      proto.position_in_parent = position
-      proto.parent_id_string = parent
-      self.AddToModel(proto)
-
-    MakeProto('a', 'X', 1000)
-    MakeProto('b', 'X', 1800)
-    MakeProto('c', 'X', 2600)
-    MakeProto('a1', 'Z', 1007)
-    MakeProto('a2', 'Z', 1807)
-    MakeProto('a3', 'Z', 2607)
-    MakeProto('s', 'Y', 10000)
-
-    def AssertPositionResult(my_id, parent_id, prev_id, expected_position):
-      entry = sync_pb2.SyncEntity()
-      entry.id_string = my_id
-      self.model._WritePosition(entry, parent_id, prev_id)
-      self.assertEqual(expected_position, entry.position_in_parent)
-      self.assertEqual(parent_id, entry.parent_id_string)
-      self.assertFalse(entry.HasField('insert_after_item_id'))
-
-    AssertPositionResult('new', 'new_parent', '', 0)
-    AssertPositionResult('new', 'Y', '', 10000 - (2 ** 20))
-    AssertPositionResult('new', 'Y', 's', 10000 + (2 ** 20))
-    AssertPositionResult('s', 'Y', '', 10000)
-    AssertPositionResult('s', 'Y', 's', 10000)
-    AssertPositionResult('a1', 'Z', '', 1007)
-
-    AssertPositionResult('new', 'X', '', 1000 - (2 ** 20))
-    AssertPositionResult('new', 'X', 'a', 1100)
-    AssertPositionResult('new', 'X', 'b', 1900)
-    AssertPositionResult('new', 'X', 'c', 2600 + (2 ** 20))
-
-    AssertPositionResult('a1', 'X', '', 1000 - (2 ** 20))
-    AssertPositionResult('a1', 'X', 'a', 1100)
-    AssertPositionResult('a1', 'X', 'b', 1900)
-    AssertPositionResult('a1', 'X', 'c', 2600 + (2 ** 20))
-
-    AssertPositionResult('a', 'X', '', 1000)
-    AssertPositionResult('a', 'X', 'b', 1900)
-    AssertPositionResult('a', 'X', 'c', 2600 + (2 ** 20))
-
-    AssertPositionResult('b', 'X', '', 1000 - (2 ** 20))
-    AssertPositionResult('b', 'X', 'a', 1800)
-    AssertPositionResult('b', 'X', 'c', 2600 + (2 ** 20))
-
-    AssertPositionResult('c', 'X', '', 1000 - (2 ** 20))
-    AssertPositionResult('c', 'X', 'a', 1100)
-    AssertPositionResult('c', 'X', 'b', 2600)
-
   def testCreatePermanentItems(self):
     self.model._CreatePermanentItems(chromiumsync.ALL_TYPES)
     self.assertEqual(len(chromiumsync.ALL_TYPES) + 2,
@@ -237,7 +184,7 @@ class SyncDataModelTest(unittest.TestCase):
           self.GetChangesFromTimestamp([sync_type], 0))
 
       def DoCommit(original=None, id_string='', name=None, parent=None,
-                   prev=None):
+                   position=0):
         proto = sync_pb2.SyncEntity()
         if original is not None:
           proto.version = original.version
@@ -252,10 +199,8 @@ class SyncDataModelTest(unittest.TestCase):
           proto.name = name
         if parent:
           proto.parent_id_string = parent.id_string
-        if prev:
-          proto.insert_after_item_id = prev.id_string
-        else:
-          proto.insert_after_item_id = ''
+        proto.insert_after_item_id = 'please discard'
+        proto.position_in_parent = position
         proto.folder = True
         proto.deleted = False
         result = self.model.CommitEntry(proto, my_cache_guid, commit_session)
@@ -264,14 +209,14 @@ class SyncDataModelTest(unittest.TestCase):
 
       # Commit a new item.
       proto1, result1 = DoCommit(name='namae', id_string='Foo',
-                                 parent=original_changes[-1])
+                                 parent=original_changes[-1], position=100)
       # Commit an item whose parent is another item (referenced via the
       # pre-commit ID).
       proto2, result2 = DoCommit(name='Secondo', id_string='Bar',
-                                 parent=proto1)
+                                 parent=proto1, position=-100)
         # Commit a sibling of the second item.
       proto3, result3 = DoCommit(name='Third!', id_string='Baz',
-                                 parent=proto1, prev=proto2)
+                                 parent=proto1, position=-50)
 
       self.assertEqual(3, len(commit_session))
       for p, r in [(proto1, result1), (proto2, result2), (proto3, result3)]:
@@ -296,7 +241,7 @@ class SyncDataModelTest(unittest.TestCase):
         self.assertTrue(c is not self.model._entries[c.id_string],
                         "GetChanges didn't make a defensive copy.")
       self.assertTrue(result2.position_in_parent < result3.position_in_parent)
-      self.assertEqual(0, result2.position_in_parent)
+      self.assertEqual(-100, result2.position_in_parent)
 
       # Now update the items so that the second item is the parent of the
       # first; with the first sandwiched between two new items (4 and 5).
@@ -308,11 +253,11 @@ class SyncDataModelTest(unittest.TestCase):
       proto2b, result2b = DoCommit(original=result2,
                                    parent=original_changes[-1])
       proto4, result4 = DoCommit(id_string='ID4', name='Four',
-                                 parent=result2, prev=None)
+                                 parent=result2, position=-200)
       proto1b, result1b = DoCommit(original=result1,
-                                   parent=result2, prev=proto4)
+                                   parent=result2, position=-150)
       proto5, result5 = DoCommit(id_string='ID5', name='Five', parent=result2,
-                                 prev=result1)
+                                 position=150)
 
       self.assertEqual(2, len(commit_session), 'Only new items in second '
                        'batch should be in the session')

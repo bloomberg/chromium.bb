@@ -500,66 +500,26 @@ class SyncDataModel(object):
     migration_version_string, separator, inner_id = remainder.partition('^')
     return (int(datatype_string), int(migration_version_string), inner_id)
 
-  def _WritePosition(self, entry, parent_id, prev_id=None):
-    """Convert from a relative position into an absolute, numeric position.
+  def _WritePosition(self, entry, parent_id):
+    """Ensure the entry has an absolute, numeric position and parent_id.
 
-    Clients specify positions using the predecessor-based references; the
-    server stores and reports item positions using sparse integer values.
-    This method converts from the former to the latter.
+    Historically, clients would specify positions using the predecessor-based
+    references in the insert_after_item_id field; starting July 2011, this
+    was changed and Chrome now sends up the absolute position.  The server
+    must store a position_in_parent value and must not maintain
+    insert_after_item_id.
 
     Args:
-      entry: The entry for which to compute a position.  Its ID field are
+      entry: The entry for which to write a position.  Its ID field are
         assumed to be server IDs.  This entry will have its parent_id_string
         and position_in_parent fields updated; its insert_after_item_id field
         will be cleared.
       parent_id: The ID of the entry intended as the new parent.
-      prev_id: The ID of the entry intended as the new predecessor.  If this
-        is None, or an ID of an object which is not a child of the new parent,
-        the entry will be positioned at the end (right) of the ordering.  If
-        the empty ID (''), this will be positioned at the front (left) of the
-        ordering.  Otherwise, the entry will be given a position_in_parent
-        value placing it just after (to the right of) the new predecessor.
     """
-    preferred_gap = 2 ** 20
-
-    def ExtendRange(current_limit_entry, sign_multiplier):
-      """Compute values at the beginning or end."""
-      if current_limit_entry.id_string == entry.id_string:
-        step = 0
-      else:
-        step = sign_multiplier * preferred_gap
-      return current_limit_entry.position_in_parent + step
-
-    siblings = [x for x in self._entries.values()
-                if x.parent_id_string == parent_id and not x.deleted]
-    siblings = sorted(siblings, key=operator.attrgetter('position_in_parent'))
-    if prev_id == entry.id_string:
-      prev_id = ''
-    if not siblings:
-      # First item in this container; start in the middle.
-      entry.position_in_parent = 0
-    elif not prev_id:
-      # A special value in the protocol.  Insert at first position.
-      entry.position_in_parent = ExtendRange(siblings[0], -1)
-    else:
-      # Handle mid-insertion; consider items along with their successors.
-      for item, successor in zip(siblings, siblings[1:]):
-        if item.id_string != prev_id:
-          continue
-        elif successor.id_string == entry.id_string:
-          # We're already in place; don't change anything.
-          entry.position_in_parent = successor.position_in_parent
-        else:
-          # Interpolate new position between the previous item and its
-          # existing successor.
-          entry.position_in_parent = (item.position_in_parent * 7 +
-                                      successor.position_in_parent) / 8
-        break
-      else:
-        # Insert at end. Includes the case where prev_id is None.
-        entry.position_in_parent = ExtendRange(siblings[-1], +1)
 
     entry.parent_id_string = parent_id
+    if not entry.HasField('position_in_parent'):
+      entry.position_in_parent = 1337  # A debuggable, distinctive default.
     entry.ClearField('insert_after_item_id')
 
   def _ItemExists(self, id_string):
@@ -847,19 +807,13 @@ class SyncDataModel(object):
       entry = MakeTombstone(entry.id_string)
     else:
       # Comments in sync.proto detail how the representation of positional
-      # ordering works: the 'insert_after_item_id' field specifies a
-      # predecessor during Commit operations, but the 'position_in_parent'
-      # field provides an absolute ordering in GetUpdates contexts.  Here
-      # we convert from the former to the latter.  Specifically, we'll
-      # generate a numeric position placing the item just after the object
-      # identified by 'insert_after_item_id', and then clear the
-      # 'insert_after_item_id' field so that it's not sent back to the client
-      # during later GetUpdates requests.
-      if entry.HasField('insert_after_item_id'):
-        self._WritePosition(entry, entry.parent_id_string,
-                            entry.insert_after_item_id)
-      else:
-        self._WritePosition(entry, entry.parent_id_string)
+      # ordering works: either the 'insert_after_item_id' field or the
+      # 'position_in_parent' field may determine the sibling order during
+      # Commit operations.  The 'position_in_parent' field provides an absolute
+      # ordering in GetUpdates contexts.  Here we assume the client will
+      # always send a valid position_in_parent (this is the newer style), and
+      # we ignore insert_after_item_id (an older style).
+      self._WritePosition(entry, entry.parent_id_string)
 
     # Preserve the originator info, which the client is not required to send
     # when updating.

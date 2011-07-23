@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/build_commit_command.h"
 
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,7 +20,11 @@
 using std::set;
 using std::string;
 using std::vector;
+using syncable::Entry;
 using syncable::IS_DEL;
+using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::IS_UNAPPLIED_UPDATE;
+using syncable::IS_UNSYNCED;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::SPECIFICS;
@@ -28,6 +33,17 @@ using syncable::UNSPECIFIED;
 namespace browser_sync {
 
 using sessions::SyncSession;
+
+// static
+const int64 BuildCommitCommand::kFirstPosition =
+    std::numeric_limits<int64>::min();
+
+// static
+const int64 BuildCommitCommand::kLastPosition =
+    std::numeric_limits<int64>::max();
+
+// static
+const int64 BuildCommitCommand::kGap = 1LL << 20;
 
 BuildCommitCommand::BuildCommitCommand() {}
 BuildCommitCommand::~BuildCommitCommand() {}
@@ -76,6 +92,14 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   AddExtensionsActivityToMessage(session, commit_message);
   SyncerProtoUtil::AddRequestBirthday(
       session->write_transaction()->directory(), &message);
+
+  // Cache previously computed position values.  Because |commit_ids|
+  // is already in sibling order, we should always hit this map after
+  // the first sibling in a consecutive run of commit items.  The
+  // entries in this map are (low, high) values describing the
+  // space of positions that are immediate successors of the item
+  // whose ID is the map's key.
+  std::map<Id, std::pair<int64, int64> > position_map;
 
   const vector<Id>& commit_ids = session->status_controller()->commit_ids();
   for (size_t i = 0; i < commit_ids.size(); i++) {
@@ -159,11 +183,65 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
         string prev_id_string =
             prev_id.IsRoot() ? string() : prev_id.GetServerId();
         sync_entry->set_insert_after_item_id(prev_id_string);
+
+        // Compute a numeric position based on what we know locally.
+        std::pair<int64, int64> position_block(kFirstPosition, kLastPosition);
+        std::map<Id, std::pair<int64, int64> >::iterator prev_pos =
+            position_map.find(prev_id);
+        if (prev_pos != position_map.end()) {
+          position_block = prev_pos->second;
+          position_map.erase(prev_pos);
+        } else {
+          position_block = std::make_pair(
+              FindAnchorPosition(syncable::PREV_ID, meta_entry),
+              FindAnchorPosition(syncable::NEXT_ID, meta_entry));
+        }
+        position_block.first = InterpolatePosition(position_block.first,
+                                                   position_block.second);
+
+        position_map[id] = position_block;
+        sync_entry->set_position_in_parent(position_block.first);
       }
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
   }
   session->status_controller()->mutable_commit_message()->CopyFrom(message);
 }
+
+int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,
+                                             const syncable::Entry& entry) {
+  Id next_id = entry.Get(direction);
+  while (!next_id.IsRoot()) {
+    Entry next_entry(entry.trans(),
+                     syncable::GET_BY_ID,
+                     next_id);
+    if (!next_entry.Get(IS_UNSYNCED) && !next_entry.Get(IS_UNAPPLIED_UPDATE)) {
+      return next_entry.Get(SERVER_POSITION_IN_PARENT);
+    }
+    next_id = next_entry.Get(direction);
+  }
+  return direction == syncable::PREV_ID ? kFirstPosition : kLastPosition;
+}
+
+int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
+                                              const int64 hi) {
+  DCHECK_LE(lo, hi);
+
+  // The first item to be added under a parent gets a position of zero.
+  if (lo == kFirstPosition && hi == kLastPosition)
+    return 0;
+
+  // For small gaps, we do linear interpolation.  For larger gaps,
+  // we use an additive offset of |kGap|.  We are careful to avoid
+  // signed integer overflow.
+  uint64 delta = static_cast<uint64>(hi) - static_cast<uint64>(lo);
+  if (delta <= static_cast<uint64>(kGap*2))
+    return lo + (static_cast<int64>(delta) + 7) / 8;  // Interpolate.
+  else if (lo == kFirstPosition)
+    return hi - kGap;  // Extend range just before successor.
+  else
+    return lo + kGap;  // Use or extend range just after predecessor.
+}
+
 
 }  // namespace browser_sync
