@@ -102,22 +102,6 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND);
-  chrome::VersionInfo version_info;
-  std::string current_version = version_info.Version();
-#if !defined(GOOGLE_CHROME_BUILD)
-  current_version += " (";
-  current_version += l10n_util::GetStringUTF8(
-      version_info.IsOfficialBuild() ?
-      IDS_ABOUT_VERSION_OFFICIAL : IDS_ABOUT_VERSION_UNOFFICIAL);
-  current_version += " ";
-  current_version += version_info.LastChange();
-  current_version += " ";
-  current_version += version_info.OSType();
-  current_version += ")";
-#endif
-  std::string channel = chrome::VersionInfo::GetVersionStringModifier();
-  if (!channel.empty())
-    current_version += " " + channel;
 
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
@@ -157,7 +141,9 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_widget_modify_fg(product_label, GTK_STATE_NORMAL, &black);
   gtk_box_pack_start(GTK_BOX(text_vbox), product_label, FALSE, FALSE, 0);
 
-  GtkWidget* version_label = gtk_label_new(current_version.c_str());
+  chrome::VersionInfo version_info;
+  GtkWidget* version_label = gtk_label_new(
+      version_info.CreateVersionString().c_str());
   gtk_misc_set_alignment(GTK_MISC(version_label), 0.0, 0.5);
   gtk_label_set_selectable(GTK_LABEL(version_label), TRUE);
   gtk_widget_modify_fg(version_label, GTK_STATE_NORMAL, &black);

@@ -7,10 +7,11 @@
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {
 
@@ -88,6 +89,28 @@ bool VersionInfo::IsOfficialBuild() const {
 }
 
 #endif
+
+std::string VersionInfo::CreateVersionString() const {
+  std::string current_version;
+#if !defined(NACL_WIN64)
+  if (is_valid()) {
+    current_version += Version();
+#if !defined(GOOGLE_CHROME_BUILD)
+    current_version += " (";
+    current_version += l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_UNOFFICIAL);
+    current_version += " ";
+    current_version += LastChange();
+    current_version += " ";
+    current_version += OSType();
+    current_version += ")";
+#endif
+    std::string modifier = GetVersionStringModifier();
+    if (!modifier.empty())
+      current_version += " " + modifier;
+  }
+#endif  // !defined(NACL_WIN64)
+  return current_version;
+}
 
 std::string VersionInfo::OSType() const {
 #if defined(OS_WIN)

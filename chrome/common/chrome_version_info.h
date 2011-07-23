@@ -72,6 +72,9 @@ class VersionInfo {
   // will be CHANNEL_UNKNOWN.
   static Channel GetChannel();
 
+  // Returns a version string to be displayed in "About Chromium" dialog.
+  std::string CreateVersionString() const;
+
  private:
 #if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<FileVersionInfo> version_info_;
