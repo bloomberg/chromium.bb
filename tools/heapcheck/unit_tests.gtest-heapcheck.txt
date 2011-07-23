@@ -15,7 +15,3 @@ MultiProcessLockTest.SimpleLock
 ServiceProcessStateTest.ForceShutdown
 ServiceProcessStateTest.ReadyState
 ServiceProcessStateTest.Singleton
-
-# Leaks SQL stacks that aren't feasibly suppressible
-# http://crbug.com/90215
-ChromeAppCacheServiceTest.*
