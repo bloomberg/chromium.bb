@@ -1,7 +1,7 @@
 SUBDIRS = include
 
-EXTRA_DIST =					\
-	configure.mk				\
-	Makefile.nmake				\
+EXTRA_DIST = \
+	configure.mk \
+	Makefile.nmake \
 	liblouis.def
 
