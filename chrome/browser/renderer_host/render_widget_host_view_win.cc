@@ -47,10 +47,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "views/accessibility/native_view_accessibility_win.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
-#include "views/screen.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
 #include "views/widget/native_widget_win.h"
 #include "webkit/glue/webaccessibility.h"
@@ -269,7 +269,7 @@ void RenderWidgetHostViewWin::InitAsPopup(
 
 void RenderWidgetHostViewWin::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  gfx::Rect pos = views::Screen::GetMonitorAreaNearestWindow(
+  gfx::Rect pos = gfx::Screen::GetMonitorAreaNearestWindow(
       reference_host_view->GetNativeView());
   is_fullscreen_ = true;
   DoPopupOrFullscreenInit(GetDesktopWindow(), pos, 0);
