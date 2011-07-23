@@ -347,7 +347,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<RemoveFileWatchBrowserFunction>();
   RegisterFunction<SelectFileFunction>();
   RegisterFunction<SelectFilesFunction>();
-  RegisterFunction<UnmountVolumeFunction>();
+  RegisterFunction<AddMountFunction>();
+  RegisterFunction<RemoveMountFunction>();
+  RegisterFunction<GetMountPointsFunction>();
   RegisterFunction<ViewFilesFunction>();
 
   // Mediaplayer

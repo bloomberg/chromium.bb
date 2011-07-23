@@ -54,6 +54,28 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
+const char* MountErrorToString(chromeos::MountError error) {
+  switch (error) {
+    case chromeos::MOUNT_ERROR_NONE:
+      return "success";
+    case chromeos::MOUNT_ERROR_UNKNOWN:
+      return "error_unknown";
+    case chromeos::MOUNT_ERROR_INTERNAL:
+      return "error_internal";
+    case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
+      return "error_unknown_filesystem";
+    case chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM:
+      return "error_unsuported_filesystem";
+    case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
+      return "error_invalid_archive";
+    case chromeos::MOUNT_ERROR_LIBRARY_NOT_LOADED:
+      return "error_libcros_missing";
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
 ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
     Profile* profile)
     : delegate_(new ExtensionFileBrowserEventRouter::FileWatcherDelegate(this)),
@@ -153,6 +175,13 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
   }
 }
 
+void ExtensionFileBrowserEventRouter::MountCompleted(
+    chromeos::MountLibrary::MountEvent event_type,
+    chromeos::MountError error_code,
+    const chromeos::MountLibrary::MountPointInfo& mount_info) {
+  DispatchMountCompletedEvent(event_type, error_code, mount_info);
+}
+
 void ExtensionFileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {
   base::AutoLock lock(lock_);
@@ -218,6 +247,37 @@ void ExtensionFileBrowserEventRouter::DispatchMountEvent(
       GURL());
 }
 
+void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
+    chromeos::MountLibrary::MountEvent event,
+    chromeos::MountError error_code,
+    const chromeos::MountLibrary::MountPointInfo& mount_info) {
+  if (!profile_ || mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
+    NOTREACHED();
+    return;
+  }
+
+  ListValue args;
+  DictionaryValue* mount_info_value = new DictionaryValue();
+  args.Append(mount_info_value);
+  mount_info_value->SetString("sourcePath", mount_info.source_path);
+  if (event == chromeos::MountLibrary::MOUNTING) {
+    mount_info_value->SetString("eventType", "mount");
+  } else {
+    mount_info_value->SetString("eventType", "unmount");
+  }
+  mount_info_value->SetString("status", MountErrorToString(error_code));
+  chromeos::MountLibrary* lib = chromeos::CrosLibrary::Get()->GetMountLibrary();
+  mount_info_value->SetString("mountType",
+                              lib->MountTypeToString(mount_info.mount_type));
+  mount_info_value->SetString("mountPath", mount_info.mount_path);
+
+  std::string args_json;
+  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
+      GURL());
+}
+
 void ExtensionFileBrowserEventRouter::OnDiskAdded(
     const chromeos::MountLibrary::Disk* disk) {
   VLOG(1) << "Disk added: " << disk->device_path();
@@ -237,7 +297,9 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
     // Initiate disk mount operation.
     chromeos::MountLibrary* lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
-    lib->MountPath(disk->device_path().c_str());
+    lib->MountPath(disk->device_path().c_str(),
+                   chromeos::MOUNT_TYPE_DEVICE,
+                   chromeos::MountPathOptions());  // Unused.
   }
 }
 
