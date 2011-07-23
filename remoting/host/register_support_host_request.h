@@ -20,21 +20,27 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace remoting {
 
 class IqRequest;
 class MutableHostConfig;
 
 // RegisterSupportHostRequest sends support host registeration request
-// to the Chromoting Bot. It listents to the status of the host using
+// to the Chromoting Bot. It listens to the status of the host using
 // HostStatusObserver interface and sends the request when signalling
 // channel is connected. When a response is received from the bot, it
 // calls the callback specified in the Init() method.
 class RegisterSupportHostRequest : public HostStatusObserver {
  public:
   // First parameter is set to true on success. Second parameter is
-  // the new SessionID received from the bot.
-  typedef base::Callback<void(bool, const std::string&)> RegisterCallback;
+  // the new SessionID received from the bot. Third parameter is the
+  // amount of time until that id expires.
+  typedef base::Callback<void(bool, const std::string&,
+                              const base::TimeDelta&)> RegisterCallback;
 
   RegisterSupportHostRequest();
   virtual ~RegisterSupportHostRequest();
@@ -65,8 +71,8 @@ class RegisterSupportHostRequest : public HostStatusObserver {
   buzz::XmlElement* CreateSignature(const std::string& jid);
 
   void ProcessResponse(const buzz::XmlElement* response);
-  bool ParseResponse(const buzz::XmlElement* response, std::string* support_id);
-  void InvokeCallback(bool result, const std::string& support_id);
+  bool ParseResponse(const buzz::XmlElement* response,
+                     std::string* support_id, base::TimeDelta* lifetime);
 
   MessageLoop* message_loop_;
   RegisterCallback callback_;

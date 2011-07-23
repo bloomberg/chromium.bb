@@ -22,6 +22,7 @@ namespace remoting {
 
 // Supported Javascript interface:
 // readonly attribute string accessCode;
+// readonly attribute int accessCodeLifetime;
 // readonly attribute int state;
 //
 // state: {
@@ -44,6 +45,7 @@ namespace remoting {
 namespace {
 
 const char* kAttrNameAccessCode = "accessCode";
+const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
 const char* kAttrNameState = "state";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnStateChanged = "onStateChanged";
@@ -141,6 +143,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
   logger_->VLog(2, "HasProperty %s", property_name.c_str());
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (property_name == kAttrNameAccessCode ||
+          property_name == kAttrNameAccessCodeLifetime ||
           property_name == kAttrNameState ||
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnStateChanged ||
@@ -172,6 +175,9 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return true;
   } else if (property_name == kAttrNameAccessCode) {
     *result = NPVariantFromString(access_code_);
+    return true;
+  } else if (property_name == kAttrNameAccessCodeLifetime) {
+    INT32_TO_NPVARIANT(access_code_lifetime_.InSeconds(), *result);
     return true;
   } else if (property_name == kAttrNameDisconnected) {
     INT32_TO_NPVARIANT(kDisconnected, *result);
@@ -430,7 +436,8 @@ void HostNPScriptObject::OnShutdownFinished() {
 void HostNPScriptObject::OnReceivedSupportID(
     SupportAccessVerifier* access_verifier,
     bool success,
-    const std::string& support_id) {
+    const std::string& support_id,
+    const base::TimeDelta& lifetime) {
   CHECK_NE(base::PlatformThread::CurrentId(), np_thread_id_);
 
   if (!success) {
@@ -445,6 +452,7 @@ void HostNPScriptObject::OnReceivedSupportID(
   // Combine the Support Id with the Host Id to make the Access Code.
   // TODO(wez): Locking, anyone?
   access_code_ = support_id + access_verifier->host_secret();
+  access_code_lifetime_ = lifetime;
 
   // Let the caller know that life is good.
   OnStateChanged(kReceivedAccessCode);

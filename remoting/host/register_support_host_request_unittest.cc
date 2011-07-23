@@ -34,10 +34,12 @@ namespace {
 const char kTestJid[] = "user@gmail.com/chromoting123";
 const int64 kTestTime = 123123123;
 const char kSupportId[] = "AB4RF3";
+const char kSupportIdLifetime[] = "300";
 
 class MockCallback {
  public:
-  MOCK_METHOD2(OnResponse, void(bool result, const std::string& support_id));
+  MOCK_METHOD3(OnResponse, void(bool result, const std::string& support_id,
+                                const base::TimeDelta& lifetime));
 };
 
 }  // namespace
@@ -107,7 +109,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_EQ(expected_signature, signature->BodyText());
 
   // Generate response and verify that callback is called.
-  EXPECT_CALL(callback_, OnResponse(true, kSupportId));
+  EXPECT_CALL(callback_, OnResponse(true, kSupportId,
+                                    base::TimeDelta::FromSeconds(300)));
 
   scoped_ptr<XmlElement> response(new XmlElement(QName("", "iq")));
   response->AddAttr(QName("", "type"), "result");
@@ -120,6 +123,11 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
       QName(kChromotingXmlNamespace, "support-id"));
   support_id->AddText(kSupportId);
   result->AddElement(support_id);
+
+  XmlElement* support_id_lifetime = new XmlElement(
+      QName(kChromotingXmlNamespace, "support-id-lifetime"));
+  support_id_lifetime->AddText(kSupportIdLifetime);
+  result->AddElement(support_id_lifetime);
 
   iq_request->callback()->Run(response.get());
   message_loop_.RunAllPending();

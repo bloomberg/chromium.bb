@@ -14,6 +14,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/plugin/host_plugin_logger.h"
@@ -95,7 +96,8 @@ class HostNPScriptObject : public HostStatusObserver {
   // Callbacks invoked during session setup.
   void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
                            bool success,
-                           const std::string& support_id);
+                           const std::string& support_id,
+                           const base::TimeDelta& lifetime);
 
   // Helper functions that run on main thread. Can be called on any
   // other thread.
@@ -127,6 +129,7 @@ class HostNPScriptObject : public HostStatusObserver {
   NPObject* parent_;
   int state_;
   std::string access_code_;
+  base::TimeDelta access_code_lifetime_;
   NPObject* log_debug_info_func_;
   NPObject* on_state_changed_func_;
   base::PlatformThreadId np_thread_id_;

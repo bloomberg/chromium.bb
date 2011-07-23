@@ -94,7 +94,8 @@ const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
 // Glue class to print out the access code for IT2Me.
 void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
-                         bool successful, const std::string& support_id) {
+                        bool successful, const std::string& support_id,
+                        const base::TimeDelta& lifetime) {
   access_verifier->OnIT2MeHostRegistered(successful, support_id);
   if (successful) {
     std::cout << "Support id: " << support_id

@@ -31,6 +31,7 @@ const char kSignatureTimeAttr[] = "time";
 // Strings used to parse responses received from the bot.
 const char kRegisterQueryResultTag[] = "register-support-host-result";
 const char kSupportIdTag[] = "support-id";
+const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 }
 
 RegisterSupportHostRequest::RegisterSupportHostRequest()
@@ -71,7 +72,7 @@ void RegisterSupportHostRequest::OnSignallingDisconnected() {
     // XMPP connection attempt fails.
     CHECK(!callback_.is_null());
     DCHECK(!request_.get());
-    callback_.Run(false, std::string());
+    callback_.Run(false, std::string(), base::TimeDelta());
     return;
   }
   DCHECK_EQ(message_loop_, MessageLoop::current());
@@ -114,7 +115,8 @@ XmlElement* RegisterSupportHostRequest::CreateSignature(
 }
 
 bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
-                                               std::string* support_id) {
+                                               std::string* support_id,
+                                               base::TimeDelta* lifetime) {
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     LOG(ERROR) << "Received error in response to heartbeat: "
@@ -128,20 +130,42 @@ bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   const XmlElement* result_element = response->FirstNamed(QName(
       kChromotingXmlNamespace, kRegisterQueryResultTag));
   if (!result_element) {
-    LOG(ERROR) << "<register-support-host-result> is missing in the "
-        "host registration response: " << response->Str();
+    LOG(ERROR) << "<" << kRegisterQueryResultTag
+               << "> is missing in the host registration response: "
+               << response->Str();
     return false;
   }
 
   const XmlElement* support_id_element =
       result_element->FirstNamed(QName(kChromotingXmlNamespace, kSupportIdTag));
   if (!support_id_element) {
-    LOG(ERROR) << "<support-id> is missing in the host registration response: "
+    LOG(ERROR) << "<" << kSupportIdTag
+               << "> is missing in the host registration response: "
+               << response->Str();
+    return false;
+  }
+
+  const XmlElement* lifetime_element =
+      result_element->FirstNamed(QName(kChromotingXmlNamespace,
+                                       kSupportIdLifetimeTag));
+  if (!lifetime_element) {
+    LOG(ERROR) << "<" << kSupportIdLifetimeTag
+               << "> is missing in the host registration response: "
+               << response->Str();
+    return false;
+  }
+
+  int lifetime_int;
+  if (!base::StringToInt(lifetime_element->BodyText().c_str(), &lifetime_int) ||
+      lifetime_int <= 0) {
+    LOG(ERROR) << "<" << kSupportIdLifetimeTag
+               << "> is malformed in the host registration response: "
                << response->Str();
     return false;
   }
 
   *support_id = support_id_element->BodyText();
+  *lifetime = base::TimeDelta::FromSeconds(lifetime_int);
   return true;
 }
 
@@ -149,8 +173,9 @@ bool RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
 void RegisterSupportHostRequest::ProcessResponse(const XmlElement* response) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   std::string support_id;
-  bool result = ParseResponse(response, &support_id);
-  callback_.Run(result, support_id);
+  base::TimeDelta lifetime;
+  bool success = ParseResponse(response, &support_id, &lifetime);
+  callback_.Run(success, support_id, lifetime);
 }
 
 }  // namespace remoting

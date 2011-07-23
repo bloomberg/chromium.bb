@@ -309,7 +309,7 @@ function updateTimeoutStyles_() {
     }
   }
   document.getElementById('access-code-countdown').hidden =
-      (remoting.accessCodeExpiresIn > ACCESS_CODE_TIMER_DISPLAY_THRESHOLD ) ||
+      (remoting.accessCodeExpiresIn > ACCESS_CODE_TIMER_DISPLAY_THRESHOLD) ||
       !remoting.timerRunning;
   return true;
 }
@@ -345,8 +345,7 @@ function onStateChanged_() {
       nextFourDigits.innerText = accessCode.substring(i, i + kDigitsPerGroup);
       accessCodeDisplay.appendChild(nextFourDigits);
     }
-    // TODO(jamiewalch): Get the validity period from the cloud.
-    remoting.accessCodeExpiresIn = 300;
+    remoting.accessCodeExpiresIn = plugin.accessCodeLifetime;
     if (remoting.accessCodeExpiresIn > 0) {  // Check it hasn't expired.
       remoting.accessCodeTimerId = setInterval(
           'remoting.decrementAccessCodeTimeout_()', 1000);
