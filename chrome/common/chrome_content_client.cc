@@ -39,7 +39,7 @@ const char* kPDFPluginDescription = "Portable Document Format";
 const char* kPDFPluginPrintPreviewMimeType
     = "application/x-google-chrome-print-preview-pdf";
 
-const char* kNaClPluginName = "Chrome NaCl";
+const char* kNaClPluginName = "Native Client";
 const char* kNaClPluginMimeType = "application/x-nacl";
 const char* kNaClPluginExtension = "nexe";
 const char* kNaClPluginDescription = "Native Client Executable";
