@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H
-#define CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H
+#ifndef CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_
+#define CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_
 #pragma once
 
 namespace switches {
@@ -28,6 +28,6 @@ extern const char kCloudPrintJobTitle[];
 // file referenced by cloud-print-file.
 // Defaults to "application/pdf" if unspecified.
 extern const char kCloudPrintFileType[];
-} //namespace switches
+}  // namespace switches
 
-#endif  // CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H
+#endif  // CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_

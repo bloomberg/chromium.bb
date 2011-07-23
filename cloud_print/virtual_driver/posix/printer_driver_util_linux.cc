@@ -13,16 +13,17 @@
 #include "cloud_print/virtual_driver/posix/printer_driver_util_posix.h"
 #include "cloud_print/virtual_driver/virtual_driver_switches.h"
 
-void LaunchPrintDialog(std::string output_path, std::string job_title,
-                       std::string current_user) {
+void LaunchPrintDialog(const std::string& output_path,
+                       const std::string& job_title,
+                       const std::string& current_user) {
   std::string set_var;
 
   // Set Environment variable to control display.
-  set_var="/home/" + current_user + "/.Xauthority";
-  if(setenv("DISPLAY",":0.0",0) == -1) {
+  set_var = "/home/" + current_user + "/.Xauthority";
+  if (setenv("DISPLAY", ":0.0", 0) == -1) {
     LOG(ERROR) << "Unable to set DISPLAY environment variable";
   }
-  if(setenv("XAUTHORITY",set_var.c_str(),0) == -1) {
+  if (setenv("XAUTHORITY", set_var.c_str(), 0) == -1) {
     LOG(ERROR) << "Unable to set XAUTHORITY environment variable";
   }
 
@@ -31,18 +32,15 @@ void LaunchPrintDialog(std::string output_path, std::string job_title,
   FilePath chrome_path("google-chrome");
   FilePath job_path(output_path);
   CommandLine command_line(chrome_path);
-  command_line.AppendSwitchPath(switches::kCloudPrintFile,job_path);
+  command_line.AppendSwitchPath(switches::kCloudPrintFile, job_path);
   command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
   command_line.AppendSwitch(switches::kCloudPrintDeleteFile);
   LOG(INFO) << "Call to chrome is " << command_line.GetCommandLineString();
 
-  if(system(command_line.GetCommandLineString().c_str())== -1 ) {
+  if (system(command_line.GetCommandLineString().c_str()) == -1) {
     LOG(ERROR) << "Unable to call Chrome";
     exit(CUPS_BACKEND_CANCEL);
   }
-
-  else {
-    LOG(INFO) << "Call to Chrome succeeded";
-  }
+  LOG(INFO) << "Call to Chrome succeeded";
 }
 

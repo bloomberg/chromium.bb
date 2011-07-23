@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CLOUD_PRINT_VIRTUAL_DRIVER_WIN_HELPERS_H_
-#define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_HELPERS_H_
+#ifndef CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_HELPERS_H_
+#define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_HELPERS_H_
 #pragma once
 
 #include <windows.h>
@@ -33,9 +33,10 @@ HRESULT GetPrinterDriverDir(FilePath* path);
 // Retrieves a string from the string table of the module that contains the
 // calling code.
 string16 LoadLocalString(DWORD string_id);
-}
 
-#endif  // CLOUD_PRINT_VIRTUAL_DRIVER_WIN_HELPERS_H_
+}  // namespace cloud_print
+
+#endif  // CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_HELPERS_H_
 
 
 

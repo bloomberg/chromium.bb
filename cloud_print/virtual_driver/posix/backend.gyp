@@ -18,7 +18,9 @@
       'sources' : [
         'virtual_driver_posix.cc',
         'printer_driver_util_linux.cc',
+        'printer_driver_util_posix.h',
         '../virtual_driver_switches.cc',
+        '../virtual_driver_switches.h',
       ]
     },
   ],

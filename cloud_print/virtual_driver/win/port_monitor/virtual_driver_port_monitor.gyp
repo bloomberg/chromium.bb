@@ -18,10 +18,11 @@
     ],
     'sources': [
       '../../virtual_driver_switches.cc',
-      '../virtual_driver_consts.h',
+      '../../virtual_driver_switches.h',
       '../virtual_driver_consts.cc',
-      '../virtual_driver_helpers.h',
+      '../virtual_driver_consts.h',
       '../virtual_driver_helpers.cc',
+      '../virtual_driver_helpers.h',
       '../virtual_driver_common_resources.rc',
       'port_monitor.cc',
       'port_monitor.h',
