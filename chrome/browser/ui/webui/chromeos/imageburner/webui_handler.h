@@ -95,10 +95,6 @@ class WebUIHandler
   virtual void DeviceChanged(chromeos::MountLibraryEventType event,
                              const std::string& device_path) OVERRIDE {
   }
-  virtual void MountCompleted(chromeos::MountLibrary::MountEvent event_type,
-      chromeos::MountError error_code,
-      const chromeos::MountLibrary::MountPointInfo& mount_info) OVERRIDE {
-  }
 
   // chromeos::BurnLibrary::Observer interface.
   virtual void BurnProgressUpdated(chromeos::BurnLibrary* object,

@@ -90,56 +90,31 @@ class MountLibraryImpl : public MountLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  virtual std::string MountTypeToString(MountType type)  const OVERRIDE {
-    switch (type) {
-      case MOUNT_TYPE_DEVICE:
-        return "device";
-      case MOUNT_TYPE_ARCHIVE:
-        return "file";
-      case MOUNT_TYPE_NETWORK_STORAGE:
-        return "network";
-      case MOUNT_TYPE_INVALID:
-        return "invalid";
-      default:
-        NOTREACHED();
-    }
-    return "";
-  }
-
-  virtual MountType MountTypeFromString(const std::string& type_str) const
-      OVERRIDE {
-    if (type_str == "device") {
-      return MOUNT_TYPE_DEVICE;
-    } else if (type_str == "network") {
-      return MOUNT_TYPE_NETWORK_STORAGE;
-    } else if (type_str == "file") {
-      return MOUNT_TYPE_ARCHIVE;
-    } else {
-      return MOUNT_TYPE_INVALID;
-    }
-  }
-
-  virtual void MountPath(const char* source_path,
-                         MountType type,
-                         const MountPathOptions& options) OVERRIDE {
+  virtual void MountPath(const char* device_path) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!CrosLibrary::Get()->EnsureLoaded()) {
-      OnMountCompleted(MOUNT_ERROR_LIBRARY_NOT_LOADED,
-                       MountPointInfo(source_path, NULL, type));
+      OnMountRemovableDevice(device_path,
+                             NULL,
+                             MOUNT_METHOD_ERROR_LOCAL,
+                             kLibraryNotLoaded);
       return;
     }
-    MountSourcePath(source_path, type, options, &MountCompletedHandler, this);
+    MountRemovableDevice(device_path,
+                         &MountLibraryImpl::MountRemovableDeviceCallback,
+                         this);
   }
 
-  virtual void UnmountPath(const char* path) OVERRIDE {
+  virtual void UnmountPath(const char* device_path) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!CrosLibrary::Get()->EnsureLoaded()) {
-      OnUnmountPath(path,
-                    MOUNT_METHOD_ERROR_LOCAL,
-                    kLibraryNotLoaded);
+      OnUnmountRemovableDevice(device_path,
+                               MOUNT_METHOD_ERROR_LOCAL,
+                               kLibraryNotLoaded);
       return;
     }
-    UnmountMountPoint(path, &MountLibraryImpl::UnmountMountPointCallback, this);
+    UnmountRemovableDevice(device_path,
+                           &MountLibraryImpl::UnmountRemovableDeviceCallback,
+                           this);
   }
 
   virtual void UnmountDeviceRecursive(const char* device_path,
@@ -176,10 +151,9 @@ class MountLibraryImpl : public MountLibrary {
           cb_data = new UnmountDeviceRecursiveCallbackData(this, user_data,
           callback, devices_to_unmount.size());
       for (std::vector<const char*>::iterator it = devices_to_unmount.begin();
-           it != devices_to_unmount.end();
-           ++it) {
-        UnmountMountPoint(
-            *it,
+          it != devices_to_unmount.end();
+          ++it) {
+        UnmountRemovableDevice(*it,
             &MountLibraryImpl::UnmountDeviceRecursiveCallback,
             cb_data);
       }
@@ -204,34 +178,39 @@ class MountLibraryImpl : public MountLibrary {
   }
 
   const DiskMap& disks() const OVERRIDE { return disks_; }
-  const MountPointMap& mount_points() const OVERRIDE { return mount_points_; }
 
  private:
-  // Callback for MountComplete signal and MountSourcePath method.
-  static void MountCompletedHandler(void* object,
-                                    MountError error_code,
-                                    const char* source_path,
-                                    MountType type,
-                                    const char* mount_path) {
+  // Callback for MountRemovableDevice method.
+  static void MountRemovableDeviceCallback(void* object,
+                                           const char* device_path,
+                                           const char* mount_path,
+                                           MountMethodErrorType error,
+                                           const char* error_message) {
     DCHECK(object);
     MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
-    self->OnMountCompleted(static_cast<MountError>(error_code),
-                           MountPointInfo(source_path, mount_path, type));
+    self->OnMountRemovableDevice(device_path,
+                                 mount_path,
+                                 error,
+                                 error_message);
   }
 
   // Callback for UnmountRemovableDevice method.
-  static void UnmountMountPointCallback(void* object,
-                                        const char* device_path,
-                                        MountMethodErrorType error,
-                                        const char* error_message) {
+  static void UnmountRemovableDeviceCallback(void* object,
+                                             const char* device_path,
+                                             const char* mount_path,
+                                             MountMethodErrorType error,
+                                             const char* error_message) {
     DCHECK(object);
     MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
-    self->OnUnmountPath(device_path, error, error_message);
+    self->OnUnmountRemovableDevice(device_path,
+                                   error,
+                                   error_message);
   }
 
   // Callback for UnmountDeviceRecursive.
   static void UnmountDeviceRecursiveCallback(void* object,
                                              const char* device_path,
+                                             const char* mount_path,
                                              MountMethodErrorType error,
                                              const char* error_message) {
     DCHECK(object);
@@ -239,9 +218,9 @@ class MountLibraryImpl : public MountLibrary {
         static_cast<UnmountDeviceRecursiveCallbackData*>(object);
 
     // Do standard processing for Unmount event.
-    cb_data->object->OnUnmountPath(device_path,
-                                   error,
-                                   error_message);
+    cb_data->object->OnUnmountRemovableDevice(device_path,
+                                              error,
+                                              error_message);
     if (error == MOUNT_METHOD_ERROR_LOCAL) {
       cb_data->success = false;
     } else if (error == MOUNT_METHOD_ERROR_NONE) {
@@ -296,26 +275,14 @@ class MountLibraryImpl : public MountLibrary {
   }
 
 
-  void OnMountCompleted(MountError error_code,
-                        const MountPointInfo& mount_info) {
-    DCHECK(!mount_info.source_path.empty());
+  void OnMountRemovableDevice(const char* device_path,
+                              const char* mount_path,
+                              MountMethodErrorType error,
+                              const char* error_message) {
+    DCHECK(device_path);
 
-    FireMountCompleted(MOUNTING,
-                       error_code,
-                       mount_info);
-
-    if (error_code == MOUNT_ERROR_NONE &&
-        mount_points_.find(mount_info.source_path) == mount_points_.end()) {
-      mount_points_.insert(MountPointMap::value_type(
-                               mount_info.source_path.c_str(),
-                               mount_info));
-    }
-
-    if (error_code == MOUNT_ERROR_NONE &&
-        mount_info.mount_type == MOUNT_TYPE_DEVICE &&
-        !mount_info.source_path.empty() &&
-        !mount_info.mount_path.empty()) {
-      std::string path(mount_info.source_path);
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path && mount_path) {
+      std::string path(device_path);
       DiskMap::iterator iter = disks_.find(path);
       if (iter == disks_.end()) {
         // disk might have been removed by now?
@@ -323,30 +290,21 @@ class MountLibraryImpl : public MountLibrary {
       }
       Disk* disk = iter->second;
       DCHECK(disk);
-      disk->set_mount_path(mount_info.mount_path.c_str());
+      disk->set_mount_path(mount_path);
       FireDiskStatusUpdate(MOUNT_DISK_MOUNTED, disk);
+    } else {
+      LOG(WARNING) << "Mount request failed for device "
+                   << device_path << ", with error: "
+                   << (error_message ? error_message : "Unknown");
     }
   }
 
-  void OnUnmountPath(const char* source_path,
-                     MountMethodErrorType error,
-                     const char* error_message) {
-    DCHECK(source_path);
-
-    if (error == MOUNT_METHOD_ERROR_NONE && source_path) {
-      MountPointMap::iterator mount_points_it = mount_points_.find(source_path);
-      if (mount_points_it == mount_points_.end())
-        return;
-      // TODO(tbarzic): Add separate, PathUnmounted event to Observer.
-      FireMountCompleted(
-          UNMOUNTING,
-          MOUNT_ERROR_NONE,
-          MountPointInfo(mount_points_it->second.source_path.c_str(),
-                         mount_points_it->second.mount_path.c_str(),
-                         mount_points_it->second.mount_type));
-      mount_points_.erase(mount_points_it);
-
-      std::string path(source_path);
+  void OnUnmountRemovableDevice(const char* device_path,
+                                MountMethodErrorType error,
+                                const char* error_message) {
+    DCHECK(device_path);
+    if (error == MOUNT_METHOD_ERROR_NONE && device_path) {
+      std::string path(device_path);
       DiskMap::iterator iter = disks_.find(path);
       if (iter == disks_.end()) {
         // disk might have been removed by now?
@@ -358,7 +316,7 @@ class MountLibraryImpl : public MountLibrary {
       FireDiskStatusUpdate(MOUNT_DISK_UNMOUNTED, disk);
     } else {
       LOG(WARNING) << "Unmount request failed for device "
-                   << source_path << ", with error: "
+                   << device_path << ", with error: "
                    << (error_message ? error_message : "Unknown");
     }
   }
@@ -518,17 +476,16 @@ class MountLibraryImpl : public MountLibrary {
         type = MOUNT_DEVICE_SCANNED;
         break;
       }
-      default: {
+      default:
         return;
-      }
     }
     FireDeviceStatusUpdate(type, std::string(device_path));
   }
 
   void Init() {
     // Getting the monitor status so that the daemon starts up.
-    mount_status_connection_ = MonitorAllMountEvents(
-        &MonitorMountEventsHandler, &MountCompletedHandler, this);
+    mount_status_connection_ = MonitorMountEvents(
+        &MonitorMountEventsHandler, this);
   }
 
   void FireDiskStatusUpdate(MountLibraryEventType evt,
@@ -547,17 +504,6 @@ class MountLibraryImpl : public MountLibrary {
         Observer, observers_, DeviceChanged(evt, device_path));
   }
 
-  void FireMountCompleted(MountEvent event_type,
-                          MountError error_code,
-                          const MountPointInfo& mount_info) {
-    // Make sure we run on UI thread.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    FOR_EACH_OBSERVER(
-        Observer, observers_, MountCompleted(event_type,
-                                             error_code,
-                                             mount_info));
-  }
-
   // Mount event change observers.
   ObserverList<Observer> observers_;
 
@@ -567,8 +513,6 @@ class MountLibraryImpl : public MountLibrary {
 
   // The list of disks found.
   MountLibrary::DiskMap disks_;
-
-  MountLibrary::MountPointMap mount_points_;
 
   DISALLOW_COPY_AND_ASSIGN(MountLibraryImpl);
 };
@@ -582,20 +526,9 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual const DiskMap& disks() const OVERRIDE { return disks_; }
-  virtual const MountPointMap& mount_points() const OVERRIDE {
-    return mount_points_;
-  }
-  virtual std::string MountTypeToString(MountType type) const OVERRIDE {
-    return "";
-  }
-  virtual MountType MountTypeFromString(const std::string& type_str) const
-      OVERRIDE {
-    return MOUNT_TYPE_INVALID;
-  }
   virtual void RequestMountInfoRefresh() OVERRIDE {}
-  virtual void MountPath(const char* source_path, MountType type,
-                         const MountPathOptions& options) OVERRIDE {}
-  virtual void UnmountPath(const char* path) OVERRIDE {}
+  virtual void MountPath(const char* device_path) OVERRIDE {}
+  virtual void UnmountPath(const char* device_path) OVERRIDE {}
   virtual void UnmountDeviceRecursive(const char* device_path,
       UnmountDeviceRecursiveCallbackType callback, void* user_data)
       OVERRIDE {}
@@ -603,7 +536,6 @@ class MountLibraryStubImpl : public MountLibrary {
  private:
   // The list of disks found.
   DiskMap disks_;
-  MountPointMap mount_points_;
 
   DISALLOW_COPY_AND_ASSIGN(MountLibraryStubImpl);
 };
