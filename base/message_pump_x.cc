@@ -12,22 +12,45 @@
 
 namespace {
 
+// A flag to disable GTK's message pump. This is intermediate step
+// to remove gtk and will be removed once migration is complete.
+bool use_gtk_message_pump = true;
+
+// The opcode used for checking events.
+int xiopcode = -1;
+
 gboolean PlaceholderDispatch(GSource* source,
                              GSourceFunc cb,
                              gpointer data) {
   return TRUE;
 }
 
-// A flag to disable GTK's message pump. This is intermediate step
-// to remove gtk and will be removed once migration is complete.
-bool use_gtk_message_pump = true;
+void InitializeXInput2(void) {
+  Display* display = base::MessagePumpX::GetDefaultXDisplay();
+  if (!display)
+    return;
+
+  int event, err;
+
+  if (!XQueryExtension(display, "XInputExtension", &xiopcode, &event, &err)) {
+    VLOG(1) << "X Input extension not available.";
+    xiopcode = -1;
+    return;
+  }
+
+  int major = 2, minor = 0;
+  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
+    VLOG(1) << "XInput2 not supported in the server.";
+    xiopcode = -1;
+    return;
+  }
+}
 
 }  // namespace
 
 namespace base {
 
 MessagePumpX::MessagePumpX() : MessagePumpGlib(),
-    xiopcode_(-1),
     gdksource_(NULL),
     dispatching_event_(false),
     capture_x_events_(0),
@@ -57,11 +80,14 @@ Display* MessagePumpX::GetDefaultXDisplay() {
   return display ? GDK_DISPLAY_XDISPLAY(display) : NULL;
 }
 
+// static
+bool MessagePumpX::HasXInput2() {
+  return xiopcode != -1;
+}
 
 bool MessagePumpX::ShouldCaptureXEvent(XEvent* xev) {
   return (!use_gtk_message_pump || capture_x_events_[xev->type])
-      && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode_)
-      ;
+      && (xev->type != GenericEvent || xev->xcookie.extension == xiopcode);
 }
 
 bool MessagePumpX::ProcessXEvent(XEvent* xev) {
@@ -196,27 +222,6 @@ void MessagePumpX::InitializeEventsToCapture(void) {
   capture_gdk_events_[GDK_MOTION_NOTIFY] = true;
 
   capture_x_events_[GenericEvent] = true;
-}
-
-void MessagePumpX::InitializeXInput2(void) {
-  Display* display = GetDefaultXDisplay();
-  if (!display)
-    return;
-
-  int event, err;
-
-  if (!XQueryExtension(display, "XInputExtension", &xiopcode_, &event, &err)) {
-    VLOG(1) << "X Input extension not available.";
-    xiopcode_ = -1;
-    return;
-  }
-
-  int major = 2, minor = 0;
-  if (XIQueryVersion(display, &major, &minor) == BadRequest) {
-    VLOG(1) << "XInput2 not supported in the server.";
-    xiopcode_ = -1;
-    return;
-  }
 }
 
 MessagePumpObserver::EventStatus

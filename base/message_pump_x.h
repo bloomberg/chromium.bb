@@ -78,6 +78,9 @@ class BASE_API MessagePumpX : public MessagePumpGlib {
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
 
+  // Returns true if the system supports XINPUT2.
+  static bool HasXInput2();
+
  private:
   // Some XEvent's can't be directly read from X event queue and will go
   // through GDK's dispatching process and may get discarded. This function
@@ -104,12 +107,6 @@ class BASE_API MessagePumpX : public MessagePumpGlib {
   // Update the lookup table and flag the events that should be captured and
   // processed so that GDK doesn't get to them.
   void InitializeEventsToCapture(void);
-
-  // Initialize X2 input.
-  void InitializeXInput2(void);
-
-  // The opcode used for checking events.
-  int xiopcode_;
 
   // The event source for GDK events.
   GSource* gdksource_;

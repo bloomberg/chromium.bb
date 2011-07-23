@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
@@ -128,6 +129,11 @@ TouchFactory::TouchFactory()
       pointer_device_lookup_(),
       touch_device_list_(),
       slots_used_() {
+#if defined(TOUCH_UI)
+  if (!base::MessagePumpForUI::HasXInput2())
+    return;
+#endif
+
   char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
   black.red = black.green = black.blue = 0;
@@ -161,6 +167,11 @@ TouchFactory::TouchFactory()
 }
 
 TouchFactory::~TouchFactory() {
+#if defined(TOUCH_UI)
+  if (!base::MessagePumpForUI::HasXInput2())
+    return;
+#endif
+
   SetCursorVisible(true, false);
   Display* display = ui::GetXDisplay();
   XFreeCursor(display, invisible_cursor_);
@@ -286,8 +297,11 @@ void TouchFactory::SetSlotUsed(int slot, bool used) {
 }
 
 bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
-  if (touch_device_list_.empty())
+#if defined(TOUCH_UI)
+  if (!base::MessagePumpForUI::HasXInput2() ||
+      touch_device_list_.empty())
     return true;
+#endif
 
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   bool success = true;
@@ -313,6 +327,11 @@ bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
 }
 
 bool TouchFactory::UngrabTouchDevices(Display* display) {
+#if defined(TOUCH_UI)
+  if (!base::MessagePumpForUI::HasXInput2())
+    return true;
+#endif
+
   bool success = true;
   for (std::vector<int>::const_iterator iter =
        touch_device_list_.begin();
@@ -324,6 +343,11 @@ bool TouchFactory::UngrabTouchDevices(Display* display) {
 }
 
 void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
+#if defined(TOUCH_UI)
+  if (!base::MessagePumpForUI::HasXInput2())
+    return;
+#endif
+
   // The cursor is going to be shown. Reset the timer for hiding it.
   if (show && start_timer) {
     cursor_timer_.Stop();
