@@ -1,9 +1,24 @@
+/* Using 100% width within body should exclude margins. */
+body {
+  position: relative;
+}
+
 .title {
   font-weight: bold;
   padding-top: 5px;
 }
 
-#usages {
+#tabbox {
+  -webkit-box-flex: 1;
+  width: 100%;
+}
+
+#tabpanels {
+  overflow: auto;
+}
+
+#usages,
+#certfieldvalue {
   -webkit-padding-start: 15px;
   padding-top: 5px;
   white-space: pre-wrap;
@@ -35,4 +50,36 @@
 
 .controls {
   text-align: end;
+}
+
+/* Used so that 100% width within tabpanel will correspond to usable space. */
+tabpanel {
+  position: relative;
+}
+
+.vbox {
+  -webkit-box-align: stretch;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: start;
+  display: -webkit-box;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+/* Scrolling should be enabled on all tree views and value field. */
+#hierarchy,
+#certfields,
+#certfieldvalue {
+  overflow: auto;
+}
+
+#hierarchy,
+#certfieldvalue {
+  -webkit-box-flex: 1;
+  min-height: 6em;
+}
+
+#certfields {
+  -webkit-box-flex: 3;
 }
