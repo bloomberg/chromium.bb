@@ -22,7 +22,10 @@ def Main(args):
   #if not is_integration_bot:
   #  return
 
-  tests_to_disable = []
+  # TODO(polina): turn these back on when this bug is fixed:
+  # http://code.google.com/p/nativeclient/issues/detail?id=2080
+  tests_to_disable = ['run_ppapi_crash_browser_test',
+                      'run_ppapi_bad_browser_test']
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
     # because of a kernel bug that we might need to work around.
