@@ -67,11 +67,13 @@ class TestRunCommand(unittest.TestCase):
       expected_result.returncode = self.proc_mock.returncode
 
     arg_dict = dict()
-    for attr in 'cwd env stdin stdout stderr shell'.split():
+    for attr in 'close_fds cwd env stdin stdout stderr shell'.split():
       if attr in sp_kv:
         arg_dict[attr] = sp_kv[attr]
       else:
-        if attr == 'shell':
+        if attr == 'close_fds':
+          arg_dict[attr] = True
+        elif attr == 'shell':
           arg_dict[attr] = False
         else:
           arg_dict[attr] = None
@@ -144,7 +146,7 @@ class TestRunCommand(unittest.TestCase):
 
     subprocess.Popen(['/bin/sh', '-c', cmd ], cwd=None, env=None,
                      stdin=None, stdout=None, stderr=None,
-                     shell=False).AndReturn(self.proc_mock)
+                     shell=False, close_fds=True).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndReturn((self.output, self.error))
 
     # If it ignored them, RunCommand will restore sigints; record that.
@@ -174,7 +176,7 @@ class TestRunCommand(unittest.TestCase):
 
     subprocess.Popen(cmd, cwd=None, env=None,
                      stdin=None, stdout=None, stderr=None,
-                     shell=False).AndReturn(self.proc_mock)
+                     shell=False, close_fds=True).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
 
     # If it ignored them, RunCommand will restore sigints; record that.
@@ -199,7 +201,7 @@ class TestRunCommand(unittest.TestCase):
 
     subprocess.Popen(real_cmd, cwd=None, env=None,
                      stdin=None, stdout=None, stderr=None,
-                     shell=False).AndReturn(self.proc_mock)
+                     shell=False, close_fds=True).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
 
     self.mox.ReplayAll()

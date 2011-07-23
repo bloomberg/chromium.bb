@@ -145,7 +145,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
   try:
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=False, env=env)
+                            stderr=stderr, shell=False, env=env,
+                            close_fds=True)
     if ignore_sigint:
       old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
     try:
@@ -612,7 +613,8 @@ def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   for retry_count in range(num_retries + 1):
     try:
       proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin,
-                              stdout=stdout, stderr=stderr)
+                              stdout=stdout, stderr=stderr,
+                              close_fds=True)
       (output, error) = proc.communicate(input)
       if exit_code and retry_count == num_retries:
         return proc.returncode
