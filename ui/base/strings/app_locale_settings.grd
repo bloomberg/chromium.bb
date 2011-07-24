@@ -58,6 +58,7 @@
     <output filename="app_locale_settings_vi.rc" type="rc_all" lang="vi" />
     <output filename="app_locale_settings_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="app_locale_settings_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="app_locale_settings_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
 
     <output filename="app_locale_settings_am.pak" type="data_package" lang="am" />
     <output filename="app_locale_settings_ar.pak" type="data_package" lang="ar" />
@@ -144,6 +145,7 @@
     <output filename="app_locale_settings_vi.pak" type="data_package" lang="vi" />
     <output filename="app_locale_settings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="app_locale_settings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="app_locale_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="app_locale_settings_am.xtb" lang="am" />

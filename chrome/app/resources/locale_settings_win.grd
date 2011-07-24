@@ -58,6 +58,7 @@
     <output filename="platform_locale_settings_vi.rc" type="rc_all" lang="vi" />
     <output filename="platform_locale_settings_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="platform_locale_settings_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="platform_locale_settings_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="platform_locale_settings/locale_settings_win_am.xtb" lang="am" />

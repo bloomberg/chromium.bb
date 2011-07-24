@@ -89,6 +89,7 @@
     <output filename="platform_locale_settings_vi.pak" type="data_package" lang="vi" />
     <output filename="platform_locale_settings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="platform_locale_settings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="platform_locale_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="platform_locale_settings/locale_settings_linux_am.xtb" lang="am" />

@@ -64,6 +64,7 @@ Chrome supports. -->
     <output filename="strings_google_chrome_vi.rc" type="rc_all" lang="vi" />
     <output filename="strings_google_chrome_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="strings_google_chrome_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="strings_google_chrome_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
 
     <output filename="google_chrome_strings_am.pak" type="data_package" lang="am" />
     <output filename="google_chrome_strings_ar.pak" type="data_package" lang="ar" />
@@ -118,6 +119,7 @@ Chrome supports. -->
     <output filename="google_chrome_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="google_chrome_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="google_chrome_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="google_chrome_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="resources/google_chrome_strings_am.xtb" lang="am" />

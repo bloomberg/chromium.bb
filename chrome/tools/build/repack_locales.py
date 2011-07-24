@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,6 +35,10 @@ class Usage(Exception):
 def calc_output(locale):
   """Determine the file that will be generated for the given locale."""
   #e.g. '<(INTERMEDIATE_DIR)/repack/da.pak',
+  # For Fake Bidi, generate it at a fixed path so that tests can safely
+  # reference it.
+  if locale == 'fake-bidi':
+    return '%s/%s.pak' % (INT_DIR, locale)
   if sys.platform in ('darwin',):
     # For Cocoa to find the locale at runtime, it needs to use '_' instead
     # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented

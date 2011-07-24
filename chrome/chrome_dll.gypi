@@ -390,6 +390,45 @@
                   ],
                 },
                 {
+                  # This is an exact copy of the above phase, except for two
+                  # changes:
+                  # 1. process_outputs_as_mac_bundle_resources is omitted.
+                  # 2. We pass 'pseudo_locales' instead of 'locales' wherever
+                  #    'locales' is used.
+                  # The result is a build phase that builds all pseudo locales
+                  # but doesn't copy them to the final dll/framework.
+                  'action_name': 'repack_pseudo_locales',
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'branding_flag': ['-b', 'google_chrome',],
+                      }, {  # else: branding!="Chrome"
+                        'branding_flag': ['-b', 'chromium',],
+                      }],
+                    ],
+                  },
+                  'inputs': [
+                    'tools/build/repack_locales.py',
+                    # NOTE: Ideally the common command args would be shared
+                    # amongst inputs/outputs/action, but the args include shell
+                    # variables which need to be passed intact, and command
+                    # expansion wants to expand the shell variables. Adding the
+                    # explicit quoting here was the only way it seemed to work.
+                    '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(pseudo_locales))',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/<(pseudo_locales).pak'
+                  ],
+                  'action': [
+                    '<@(repack_locales_cmd)',
+                    '<@(branding_flag)',
+                    '-g', '<(grit_out_dir)',
+                    '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                    '-x', '<(INTERMEDIATE_DIR)',
+                    '<@(pseudo_locales)',
+                  ],
+                },
+                {
                   'action_name': 'repack_resources',
                   'variables': {
                     'pak_inputs': [
@@ -494,6 +533,12 @@
                   'destination': '<(PRODUCT_DIR)',
                   'files': [
                       '<(INTERMEDIATE_DIR)/repack/resources.pak'
+                  ],
+                },
+                {
+                  'destination': '<(PRODUCT_DIR)/pseudo_locales',
+                  'files': [
+                      '<(INTERMEDIATE_DIR)/<(pseudo_locales).pak'
                   ],
                 },
                 {

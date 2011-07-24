@@ -67,6 +67,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_vi.rc" type="rc_all" lang="vi" />
     <output filename="generated_resources_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="generated_resources_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="generated_resources_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
 
     <output filename="generated_resources_am.pak" type="data_package" lang="am" />
     <output filename="generated_resources_ar.pak" type="data_package" lang="ar" />
@@ -153,6 +154,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_vi.pak" type="data_package" lang="vi" />
     <output filename="generated_resources_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="generated_resources_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="generated_resources_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />

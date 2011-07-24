@@ -58,6 +58,7 @@
     <output filename="locale_settings_vi.rc" type="rc_all" lang="vi" />
     <output filename="locale_settings_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="locale_settings_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="locale_settings_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
 
     <output filename="locale_settings_am.pak" type="data_package" lang="am" />
     <output filename="locale_settings_ar.pak" type="data_package" lang="ar" />
@@ -144,6 +145,7 @@
     <output filename="locale_settings_vi.pak" type="data_package" lang="vi" />
     <output filename="locale_settings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="locale_settings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="locale_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="locale_settings_am.xtb" lang="am" />
@@ -197,6 +199,7 @@
     <file path="locale_settings_vi.xtb" lang="vi" />
     <file path="locale_settings_zh-CN.xtb" lang="zh-CN" />
     <file path="locale_settings_zh-TW.xtb" lang="zh-TW" />
+    <file path="locale_settings_fake-bidi.xtb" lang="fake-bidi" />
   </translations>
   <release seq="1" allow_pseudo="false">
     <includes>

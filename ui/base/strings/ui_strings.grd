@@ -69,6 +69,7 @@ need to be translated for each locale.-->
     <output filename="ui_strings_vi.rc" type="rc_all" lang="vi" />
     <output filename="ui_strings_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="ui_strings_zh-TW.rc" type="rc_all" lang="zh-TW" />
+    <output filename="ui_strings_fake-bidi.rc" type="rc_all" lang="fake-bidi" />
 
     <output filename="ui_strings_am.pak" type="data_package" lang="am" />
     <output filename="ui_strings_ar.pak" type="data_package" lang="ar" />
@@ -155,6 +156,7 @@ need to be translated for each locale.-->
     <output filename="ui_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="ui_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="ui_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="ui_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="ui_strings_am.xtb" lang="am" />

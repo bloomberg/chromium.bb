@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@ import types
 from grit import constants
 from grit import exception
 from grit import pseudo
+from grit import pseudo_rtl
 from grit import tclib
 
 
@@ -353,6 +354,9 @@ class MessageClique(object):
     for msglang in self.clique.keys():
       if lang == msglang:
         return self.clique[msglang]
+
+    if lang == constants.FAKE_BIDI:
+      return pseudo_rtl.PseudoRTLMessage(self.GetMessage())
 
     if fallback_to_english:
       self.uber_clique._AddMissingTranslation(lang, self, is_error=False)
