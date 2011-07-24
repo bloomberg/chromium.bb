@@ -217,54 +217,19 @@ class CancelFileDialogFunction
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.cancelDialog");
 };
 
-// Mount a device or a file.
-class AddMountFunction
+// Unmounts selected device. Expects volume's device path as an argument.
+class UnmountVolumeFunction
     : public SyncExtensionFunction {
- public:
-  AddMountFunction();
+  public:
+    UnmountVolumeFunction();
 
  protected:
-  virtual ~AddMountFunction();
+  virtual ~UnmountVolumeFunction();
 
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addMount");
-};
-
-// Unmounts selected device. Expects mount point path as an argument.
-class RemoveMountFunction
-    : public SyncExtensionFunction {
- public:
-  RemoveMountFunction();
-
- protected:
-  virtual ~RemoveMountFunction();
-
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.removeMount");
-};
-
-class GetMountPointsFunction
-    : public SyncExtensionFunction {
- public:
-  GetMountPointsFunction();
-
- protected:
-  virtual ~GetMountPointsFunction();
-
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-#ifdef OS_CHROMEOS
-   base::DictionaryValue* MountPointToValue(
-       const chromeos::MountLibrary::MountPointInfo& mount_point_info,
-       chromeos::MountLibrary* mount_lib);
-#endif
-
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getMountPoints");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.unmountVolume");
 };
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.

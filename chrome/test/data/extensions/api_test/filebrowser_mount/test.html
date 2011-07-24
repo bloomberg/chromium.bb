@@ -62,9 +62,9 @@ function validateVolume(volume, expected) {
 };
 
 chrome.test.runTests([
-  function removeMount() {
-    chrome.fileBrowserPrivate.removeMount("devicePath1");
-    // We actually check this one on C++ side. If MountLibrary.RemoveMount
+ function unmountVolume() {
+    chrome.fileBrowserPrivate.unmountVolume("devicePath1");
+    // We actually check this one on C++ side. If MountLibrary.UnmountPath
     // doesn't get called, test will fail.
     chrome.test.succeed();
   },

@@ -83,7 +83,6 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 }
 
 void ClockMenuButton::UpdateText() {
-  return;
   base::Time time(base::Time::Now());
   // If the profie is present, check the use 24-hour clock preference.
   const bool use_24hour_clock =

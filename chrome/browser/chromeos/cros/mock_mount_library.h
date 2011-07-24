@@ -25,15 +25,9 @@ class MockMountLibrary : public MountLibrary {
   MOCK_METHOD1(AddObserver, void(MountLibrary::Observer*));
   MOCK_METHOD1(RemoveObserver, void(MountLibrary::Observer*));
   MOCK_CONST_METHOD0(disks, const MountLibrary::DiskMap&(void));
-  MOCK_CONST_METHOD0(mount_points, const MountLibrary::MountPointMap&(void));
-
-  MOCK_CONST_METHOD1(MountTypeToString, std::string(MountType));
-  MOCK_CONST_METHOD1(MountTypeFromString, MountType(const std::string&));
 
   MOCK_METHOD0(RequestMountInfoRefresh, void(void));
-  MOCK_METHOD3(MountPath, void(const char*,
-                               MountType,
-                               const MountPathOptions&));
+  MOCK_METHOD1(MountPath, void(const char*));
   MOCK_METHOD1(UnmountPath, void(const char*));
   MOCK_METHOD3(UnmountDeviceRecursive, void(const char*,
       MountLibrary::UnmountDeviceRecursiveCallbackType, void*));
@@ -47,9 +41,6 @@ class MockMountLibrary : public MountLibrary {
   void AddObserverInternal(MountLibrary::Observer* observer);
   void RemoveObserverInternal(MountLibrary::Observer* observer);
   const MountLibrary::DiskMap& disksInternal() const { return disks_; }
-  const MountLibrary::MountPointMap& mountPointsInternal() const {
-    return mount_points_;
-  }
 
 
   void UpdateDeviceChanged(MountLibraryEventType evt,
@@ -61,7 +52,6 @@ class MockMountLibrary : public MountLibrary {
 
   // The list of disks found.
   MountLibrary::DiskMap disks_;
-  MountLibrary::MountPointMap mount_points_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMountLibrary);
 };
