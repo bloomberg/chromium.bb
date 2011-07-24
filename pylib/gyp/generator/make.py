@@ -815,6 +815,11 @@ class XcodeSettings(object):
     if self._Test('PREBINDING', 'YES', default='NO'):
       ldflags.append('-Wl,-prebind')
 
+    self._Appendf(
+        ldflags, 'DYLIB_COMPATIBILITY_VERSION', '-compatibility_version %s')
+    self._Appendf(
+        ldflags, 'DYLIB_CURRENT_VERSION', '-current_version %s')
+
     for library_path in self.xcode_settings.get('LIBRARY_SEARCH_PATHS', []):
       ldflags.append('-L' + library_path)
 
