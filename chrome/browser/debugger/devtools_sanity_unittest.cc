@@ -435,8 +435,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-// Flakily fails: http://crbug.com/89845
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, FLAKY_InspectSharedWorker) {
+// Flakily fails with 25s timeout: http://crbug.com/89845
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage);
 }
 
