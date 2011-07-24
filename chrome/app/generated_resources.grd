@@ -8817,6 +8817,9 @@ ls' lab.">
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="/Downloads directory label.">
         File Shelf
       </message>
+      <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
+	<ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
       <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
         External Storage
       </message>
@@ -8895,7 +8898,6 @@ ls' lab.">
       <message name="IDS_FILE_BROWSER_RENAME_BUTTON_LABEL" desc="Button Label.">
         Rename
       </message>
-
 
       <message name="IDS_FILE_BROWSER_ERROR_DELETING" desc="Error Message.">
         Unable to delete "$1": $2

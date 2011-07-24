@@ -118,6 +118,7 @@ chrome.fileBrowserPrivate = {
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'File Shelf',
+      DOWNLOADS_DIRECTORY_WARNING: "&lt;strong&gt;Caution:&lt;/strong&gt; These files are temporary and may be automatically deleted to free up disk space.  &lt;a href='$1'&gt;Learn More&lt;/a&gt;",
       MEDIA_DIRECTORY_LABEL: 'External Storage',
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
