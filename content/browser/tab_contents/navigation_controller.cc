@@ -19,6 +19,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/content_constants.h"
 #include "content/common/navigation_types.h"
 #include "content/common/notification_service.h"
@@ -621,6 +622,13 @@ NavigationType::Type NavigationController::ClassifyNavigation(
     // back/forward entries (not likely since we'll usually tell it to navigate
     // to such entries). It could also mean that the renderer is smoking crack.
     NOTREACHED();
+
+    // Because the unknown entry has committed, we risk showing the wrong URL in
+    // release builds. Instead, we'll kill the renderer process to be safe.
+    LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
+    if (tab_contents_->GetSiteInstance()->HasProcess())
+      tab_contents_->GetSiteInstance()->GetProcess()->ReceivedBadMessage();
     return NavigationType::NAV_IGNORE;
   }
   NavigationEntry* existing_entry = entries_[existing_entry_index].get();
