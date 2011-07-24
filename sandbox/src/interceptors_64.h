@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,12 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThreadToken64(
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThreadTokenEx64(
     HANDLE thread, ACCESS_MASK desired_access, BOOLEAN open_as_self,
     ULONG handle_attributes, PHANDLE token);
+
+// Interception of CreateThread on the child process.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateThread64(
+    LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size,
+    LPTHREAD_START_ROUTINE start_address, PVOID parameter,
+    DWORD creation_flags, LPDWORD thread_id);
 
 // -----------------------------------------------------------------------
 // Interceptors handled by the file system dispatcher.

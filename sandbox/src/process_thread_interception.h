@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,14 @@ typedef BOOL (WINAPI *CreateProcessAFunction)(
     LPSTARTUPINFOA lpStartupInfo,
     LPPROCESS_INFORMATION lpProcessInformation);
 
+typedef HANDLE (WINAPI *CreateThreadFunction)(
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    SIZE_T dwStackSize,
+    LPTHREAD_START_ROUTINE lpStartAddress,
+    PVOID lpParameter,
+    DWORD dwCreationFlags,
+    LPDWORD lpThreadId);
+
 // Interception of NtOpenThread on the child process.
 SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThread(
     NtOpenThreadFunction orig_OpenThread, PHANDLE thread,
@@ -72,6 +80,13 @@ SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA(
     LPSECURITY_ATTRIBUTES thread_attributes, BOOL inherit_handles, DWORD flags,
     LPVOID environment, LPCSTR current_directory, LPSTARTUPINFOA startup_info,
     LPPROCESS_INFORMATION process_information);
+
+// Interception of CreateThread in kernel32.dll.
+SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateThread(
+    CreateThreadFunction orig_CreateThread,
+    LPSECURITY_ATTRIBUTES thread_attributes, SIZE_T stack_size,
+    LPTHREAD_START_ROUTINE start_address, PVOID parameter,
+    DWORD creation_flags, LPDWORD thread_id);
 
 }  // extern "C"
 

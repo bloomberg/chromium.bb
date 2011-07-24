@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #include "sandbox/src/target_services.h"
 
 namespace sandbox {
+
+SANDBOX_INTERCEPT NtExports g_nt;
 
 // Hooks NtOpenThread and proxy the call to the broker if it's trying to
 // open a thread in the same process.
@@ -394,6 +396,32 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
 
   ::SetLastError(original_error);
   return FALSE;
+}
+
+// Creates a thread without registering with CSRSS. This is required if we
+// closed the CSRSS ALPC port after lockdown.
+HANDLE WINAPI TargetCreateThread(CreateThreadFunction orig_CreateThread,
+                                 LPSECURITY_ATTRIBUTES thread_attributes,
+                                 SIZE_T stack_size,
+                                 LPTHREAD_START_ROUTINE start_address,
+                                 PVOID parameter,
+                                 DWORD creation_flags,
+                                 LPDWORD thread_id) {
+  HANDLE thread;
+  PSECURITY_DESCRIPTOR sd =
+      thread_attributes ? thread_attributes->lpSecurityDescriptor : NULL;
+  CLIENT_ID client_id;
+
+  NTSTATUS result = g_nt.RtlCreateUserThread(NtCurrentProcess, sd,
+                                             creation_flags & CREATE_SUSPENDED,
+                                             0, stack_size, 0, start_address,
+                                             parameter, &thread, &client_id);
+  if (!NT_SUCCESS(result))
+    return 0;
+
+  if (thread_id)
+    *thread_id = HandleToUlong(client_id.UniqueThread);
+  return thread;
 }
 
 }  // namespace sandbox

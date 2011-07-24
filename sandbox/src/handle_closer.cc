@@ -6,7 +6,11 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/windows_version.h"
+#include "sandbox/src/interceptors.h"
+#include "sandbox/src/internal_types.h"
 #include "sandbox/src/nt_internals.h"
+#include "sandbox/src/process_thread_interception.h"
 #include "sandbox/src/win_utils.h"
 
 namespace {
@@ -147,6 +151,19 @@ bool HandleCloser::SetupHandleList(void* buffer, size_t buffer_bytes) {
 
   DCHECK_EQ(reinterpret_cast<size_t>(output), reinterpret_cast<size_t>(end));
   return output <= end;
+}
+
+bool HandleCloser::SetupHandleInterceptions(InterceptionManager* manager) {
+  // We need to intercept CreateThread if we're closing ALPC port clients.
+  HandleMap::iterator names = handles_to_close_.find(L"ALPC Port");
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
+      names != handles_to_close_.end() &&
+      (names->second.empty() || names->second.size() == 0)) {
+    return INTERCEPT_EAT(manager, kKerneldllName, CreateThread,
+                         CREATE_THREAD_ID, 28);
+  }
+
+  return true;
 }
 
 bool GetHandleName(HANDLE handle, string16* handle_name) {

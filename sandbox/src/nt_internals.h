@@ -338,6 +338,18 @@ typedef NTSTATUS (WINAPI *NtOpenProcessTokenExFunction) (
   IN ULONG HandleAttributes,
   OUT PHANDLE TokenHandle);
 
+typedef NTSTATUS (WINAPI * RtlCreateUserThreadFunction)(
+  IN HANDLE Process,
+  IN PSECURITY_DESCRIPTOR ThreadSecurityDescriptor,
+  IN BOOLEAN CreateSuspended,
+  IN ULONG ZeroBits,
+  IN SIZE_T MaximumStackSize,
+  IN SIZE_T CommittedStackSize,
+  IN LPTHREAD_START_ROUTINE StartAddress,
+  IN PVOID Parameter,
+  OUT PHANDLE Thread,
+  OUT PCLIENT_ID ClientId);
+
 // -----------------------------------------------------------------------
 // Registry
 
@@ -454,7 +466,7 @@ typedef struct _PUBLIC_OBJECT_BASIC_INFORMATION {
   ULONG HandleCount;
   ULONG PointerCount;
   ULONG Reserved[10];    // reserved for internal use
- } PUBLIC_OBJECT_BASIC_INFORMATION, *PPUBLIC_OBJECT_BASIC_INFORMATION;
+} PUBLIC_OBJECT_BASIC_INFORMATION, *PPUBLIC_OBJECT_BASIC_INFORMATION;
 
 typedef struct __PUBLIC_OBJECT_TYPE_INFORMATION {
   UNICODE_STRING TypeName;

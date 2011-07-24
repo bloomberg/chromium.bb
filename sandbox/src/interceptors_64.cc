@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,16 @@ NTSTATUS WINAPI TargetNtOpenThreadTokenEx64(
       NtOpenThreadTokenExFunction>(g_originals[OPEN_THREAD_TOKEN_EX_ID]);
   return TargetNtOpenThreadTokenEx(orig_fn, thread, desired_access,
                                    open_as_self, handle_attributes, token);
+}
+
+HANDLE WINAPI TargetCreateThread64(LPSECURITY_ATTRIBUTES thread_attributes,
+    SIZE_T stack_size, LPTHREAD_START_ROUTINE start_address,
+    PVOID parameter, DWORD creation_flags, LPDWORD thread_id) {
+  CreateThreadFunction orig_fn = reinterpret_cast<
+      CreateThreadFunction>(g_originals[CREATE_THREAD_ID]);
+  return TargetCreateThread(orig_fn, thread_attributes, stack_size,
+                            start_address, parameter, creation_flags,
+                            thread_id);
 }
 
 // -----------------------------------------------------------------------

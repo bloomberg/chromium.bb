@@ -68,6 +68,7 @@ bool SetupNtdllImports(TargetProcess *child) {
   INIT_GLOBAL_RTL(RtlAnsiStringToUnicodeString);
   INIT_GLOBAL_RTL(RtlCompareUnicodeString);
   INIT_GLOBAL_RTL(RtlCreateHeap);
+  INIT_GLOBAL_RTL(RtlCreateUserThread);
   INIT_GLOBAL_RTL(RtlDestroyHeap);
   INIT_GLOBAL_RTL(RtlFreeHeap);
   INIT_GLOBAL_RTL(_strnicmp);

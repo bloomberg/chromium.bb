@@ -42,6 +42,10 @@ HANDLE GetMarkerFile(const wchar_t *extension) {
       NULL, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
 }
 
+// Used by the thread pool tests.
+HANDLE finish_event;
+const int kWaitCount = 20;
+
 }  // namespace
 
 namespace sandbox {
@@ -140,6 +144,51 @@ TEST(HandleCloserTest, CloseMarkerFiles) {
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str())) <<
     "Failed: " << command;
+}
+
+void WINAPI ThreadPoolTask(void* event, BOOLEAN timeout) {
+  static volatile LONG waiters_remaining = kWaitCount;
+  CHECK(!timeout);
+  CHECK(::CloseHandle(event));
+  if (::InterlockedDecrement(&waiters_remaining) == 0)
+    CHECK(::SetEvent(finish_event));
+}
+
+// Run a thread pool inside a sandbox without a CSRSS connection.
+SBOX_TESTS_COMMAND int RunThreadPool(int argc, wchar_t **argv) {
+  HANDLE wait_list[20];
+  CHECK(finish_event = ::CreateEvent(NULL, TRUE, FALSE, NULL));
+
+  // Set up a bunch of waiters.
+  HANDLE pool = NULL;
+  for (int i = 0; i < kWaitCount; ++i) {
+    HANDLE event = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+    CHECK(event);
+    CHECK(::RegisterWaitForSingleObject(&pool, event, ThreadPoolTask, event,
+                                        INFINITE, WT_EXECUTEONLYONCE));
+    wait_list[i] = event;
+  }
+
+  // Signal all the waiters.
+  for (int i = 0; i < kWaitCount; ++i)
+    CHECK(::SetEvent(wait_list[i]));
+
+  CHECK_EQ(::WaitForSingleObject(finish_event, INFINITE), WAIT_OBJECT_0);
+  CHECK(::CloseHandle(finish_event));
+
+  return SBOX_TEST_SUCCEEDED;
+}
+
+TEST(HandleCloserTest, RunThreadPool) {
+  TestRunner runner;
+  runner.SetTimeout(2000);
+  runner.SetTestState(AFTER_REVERT);
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  // Sever the CSRSS connection by closing ALPC ports inside the sandbox.
+  CHECK_EQ(policy->AddKernelObjectToClose(L"ALPC Port", NULL), SBOX_ALL_OK);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"RunThreadPool"));
 }
 
 }  // namespace sandbox
