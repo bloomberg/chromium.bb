@@ -994,15 +994,25 @@ void MoreMenuModel::InitMenuItems(
 
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   bool oobe = !should_open_button_options;  // we don't show options for OOBE.
+  bool connected = cros->Connected();  // always call for test expectations.
   if (!oobe) {
-    string16 label = l10n_util::GetStringUTF16(is_browser_mode ?
-        IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG :
+    string16 label;
+    bool add_item = true;
+    if (is_browser_mode) {
+      label = l10n_util::GetStringUTF16(
+        IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
+    } else if (connected) {
+      label = l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG);
-    link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-                                  SkBitmap(), std::string(), FLAG_OPTIONS));
+    } else {
+      add_item = false;
+    }
+    if (add_item) {
+      link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
+                                    SkBitmap(), std::string(), FLAG_OPTIONS));
+    }
   }
 
-  bool connected = cros->Connected();  // always call for test expectations.
   if (connected) {
     std::string ip_address = cros->IPAddress();
     if (!ip_address.empty()) {
