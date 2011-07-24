@@ -4955,23 +4955,6 @@
    fun:_ZN25TestingAutomationProvider21CaptureEntirePageJSONEPN4base15DictionaryValueEPN3IPC7MessageE
 }
 {
-   bug_90215_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8appcache19AppCacheStorageImpl10InitializeERK8FilePathPN4base16MessageLoopProxyE
-   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePathPN4base16MessageLoopProxyE
-   fun:_ZN21ChromeAppCacheService20InitializeOnIOThread*
-   ...
-   fun:*ChromeAppCacheServiceTest_*
-}
-{
-   bug_90215_b
-   Memcheck:Leak
-   ...
-   fun:_ZN8appcache19AppCacheStorageImpl8InitTask3RunEv
-   fun:_ZN8appcache19AppCacheStorageImpl12DatabaseTask7CallRunEv
-}
-{
    bug_90215_c
    Memcheck:Leak
    ...

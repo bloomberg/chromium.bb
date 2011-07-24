@@ -1618,26 +1618,6 @@
    fun:TabContents
 }
 {
-   bug_90215_a
-   Heapcheck:Leak
-   ...
-   fun:appcache::AppCacheStorageImpl::InitTask::Run
-   fun:appcache::AppCacheStorageImpl::DatabaseTask::CallRun
-}
-{
-   bug_90215_b
-   Heapcheck:Leak
-   ...
-   fun:appcache::AppCacheStorageImpl::Initialize
-   fun:appcache::AppCacheService::Initialize
-}
-{
-   bug_90215_c
-   Heapcheck:Leak
-   ...
-   fun:appcache::AppCacheDatabase::LazyOpen
-}
-{
    bug_81782
    Heapcheck:Leak
    ...
@@ -1652,7 +1632,6 @@
    fun:PrefService::RegisterLocalizedStringPref
    fun:TabContentsWrapper::RegisterUserPrefs
 }
-
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
 {
