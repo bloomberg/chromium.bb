@@ -3,3 +3,5 @@ URL: http://developer.apple.com/
 
 Local changes:
 * ImageAndTextCell.h: Changed 'image' property to 'retain' mode to fix a crash.
+* ImageAndTextCell.m: Moved '@synthesize' to to the top of '@implementation' as
+                      suggested by a clang warning.

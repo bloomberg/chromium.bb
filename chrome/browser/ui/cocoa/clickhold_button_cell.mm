@@ -21,6 +21,13 @@ static const CGFloat kDragDistThreshold = 2.5;
 
 @implementation ClickHoldButtonCell
 
+@synthesize enableClickHold = enableClickHold_;
+@synthesize clickHoldTimeout = clickHoldTimeout_;
+@synthesize trackOnlyInRect = trackOnlyInRect_;
+@synthesize activateOnDrag = activateOnDrag_;
+@synthesize clickHoldTarget = clickHoldTarget_;
+@synthesize clickHoldAction = clickHoldAction_;
+
 // Overrides:
 
 + (BOOL)prefersTrackingUntilMouseUp {
@@ -162,15 +169,6 @@ static const CGFloat kDragDistThreshold = 2.5;
 
   return NO;
 }
-
-// Accessors and mutators:
-
-@synthesize enableClickHold = enableClickHold_;
-@synthesize clickHoldTimeout = clickHoldTimeout_;
-@synthesize trackOnlyInRect = trackOnlyInRect_;
-@synthesize activateOnDrag = activateOnDrag_;
-@synthesize clickHoldTarget = clickHoldTarget_;
-@synthesize clickHoldAction = clickHoldAction_;
 
 @end  // @implementation ClickHoldButtonCell
 

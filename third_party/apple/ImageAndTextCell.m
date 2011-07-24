@@ -51,6 +51,8 @@
 
 @implementation ImageAndTextCell
 
+@synthesize image;
+
 - (id)init {
   if ((self = [super init])) {
     [self setLineBreakMode:NSLineBreakByTruncatingTail];
@@ -70,8 +72,6 @@
   cell->image = [image retain];
   return cell;
 }
-
-@synthesize image;
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
   NSRect result;

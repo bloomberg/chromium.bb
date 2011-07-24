@@ -269,7 +269,7 @@ NSAttributedString* OmniboxPopupViewMac::MatchText(
 @property(assign, nonatomic) BOOL bottomCornersRounded;
 
 // Create a zero-size matrix initializing |popupView_|.
-- initWithPopupView:(OmniboxPopupViewMac*)popupView;
+- (id)initWithPopupView:(OmniboxPopupViewMac*)popupView;
 
 // Set |popupView_|.
 - (void)setPopupView:(OmniboxPopupViewMac*)popupView;
@@ -568,7 +568,7 @@ bool OmniboxPopupViewMac::ShouldShowInstantOptIn() {
 
 @implementation AutocompleteButtonCell
 
-- init {
+- (id)init {
   self = [super init];
   if (self) {
     [self setImagePosition:NSImageLeft];
@@ -656,7 +656,7 @@ bool OmniboxPopupViewMac::ShouldShowInstantOptIn() {
   [super updateTrackingAreas];
 }
 
-- initWithPopupView:(OmniboxPopupViewMac*)popupView {
+- (id)initWithPopupView:(OmniboxPopupViewMac*)popupView {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     popupView_ = popupView;
