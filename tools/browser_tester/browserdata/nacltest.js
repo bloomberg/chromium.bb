@@ -133,6 +133,10 @@ function RPCWrapper() {
     rpcCall('Ping', {});
   }
 
+  this.heartbeat = function() {
+    rpcCall('JavaScriptIsAlive', {});
+  }
+
   this.client_error = function(message) {
     this.num_errors += 1;
     this.visualError();
@@ -722,7 +726,7 @@ function Tester(body_element) {
 
   this.run = function() {
     this.rpc.startup();
-
+    this.startHeartbeat();
     this.waiter.run(
       function(loaded, waiting) {
         var errored = logLoadStatus(this_.rpc, load_errors_are_test_errors,
@@ -756,6 +760,15 @@ function Tester(body_element) {
   //
   // END public interface
   //
+
+  this.startHeartbeat = function() {
+    var rpc = this.rpc;
+    var heartbeat = function() {
+      rpc.heartbeat();
+      setTimeout(heartbeat, 500);
+    }
+    heartbeat();
+  }
 
   this.launchTest = function(testIndex) {
     var testDecl = tests[testIndex];

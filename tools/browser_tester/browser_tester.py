@@ -170,8 +170,14 @@ def Run(url, options):
                              '(return code %r)' % browser.GetReturnCode())
         break
       elif not options.interactive and server.TimedOut(options.timeout):
-        listener.ServerError('Did not hear from the browser for %.1f seconds' %
-                             options.timeout)
+        js_time = server.TimeSinceJSHeartbeat()
+        err = 'Did not hear from the test for %.1f seconds.' % options.timeout
+        err += '\nHeard from Javascript %.1f seconds ago.' % js_time
+        if js_time > 2.0:
+          err += '\nThe renderer probably hung or crashed.'
+        else:
+          err += '\nThe test probably did not get a callback that it expected.'
+        listener.ServerError(err)
         break
       else:
         # If Python 2.5 support is dropped, stick server.handle_request() here.

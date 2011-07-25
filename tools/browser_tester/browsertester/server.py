@@ -94,8 +94,6 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                                                           value)
 
   def do_GET(self):
-    self.server.ResetTimeout()
-
     # Backwards compatible - treat result as tuple without named fields.
     _, _, path, _, query, _ = urlparse.urlparse(self.path)
 
@@ -111,6 +109,13 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.HandleRPC(name, query)
       finally:
         self.server.rpc_lock.release()
+
+      # Don't reset the timeout.  This is not "part of the test", rather it's
+      # used to tell us if the renderer process is still alive.
+      if name == 'JavaScriptIsAlive':
+        self.server.JavaScriptIsAlive()
+        return
+
     elif path in self.server.redirect_mapping:
       dest = self.server.redirect_mapping[path]
       self.send_response(301, 'Moved')
@@ -138,6 +143,9 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         f.close()
       self.server.listener.Log('GET %s (%s)' % (self.path, path))
 
+    self.server.ResetTimeout()
+
+
   # Disable the built-in logging
   def log_message(self, format, *args):
     pass
@@ -161,9 +169,16 @@ class Server(BaseHTTPServer.HTTPServer):
     # self.timeout does not affect Python 2.5.
     self.timeout = timeout
     self.ResetTimeout()
+    self.JavaScriptIsAlive()
 
   def ResetTimeout(self):
     self.last_activity = time.time()
+
+  def JavaScriptIsAlive(self):
+    self.last_js_activity = time.time()
+
+  def TimeSinceJSHeartbeat(self):
+    return time.time() - self.last_js_activity
 
   def TestingEnded(self):
     self.test_in_progress = False

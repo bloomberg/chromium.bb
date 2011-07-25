@@ -41,6 +41,10 @@ class RPCListener(object):
   def Ping(self):
     return 'OK'
 
+  # This happens automatically, as long as the renderer process has not crashed.
+  def JavaScriptIsAlive(self):
+    return 'OK'
+
   def Shutdown(self, message, passed):
     self.Log(message)
     # This check looks slightly backwards, but this is intentional.
