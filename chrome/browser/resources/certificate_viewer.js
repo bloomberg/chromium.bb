@@ -16,7 +16,7 @@ cr.define('cert_viewer', function() {
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 
     initializeTree($('hierarchy'), showCertificateFields);
-    initializeTree($('certfields'), showCertificateFieldValue);
+    initializeTree($('cert-fields'), showCertificateFieldValue);
 
     i18nTemplate.process(document, templateData);
     stripGtkAccessorKeys();
@@ -108,7 +108,7 @@ cr.define('cert_viewer', function() {
    * Show certificate fields for the selected certificate in the hierarchy.
    */
   function showCertificateFields() {
-    var treeItem = $('certfields');
+    var treeItem = $('cert-fields');
     for (var key in treeItem.detail.children) {
       treeItem.remove(treeItem.detail.children[key]);
       delete treeItem.detail.children[key];
@@ -125,11 +125,11 @@ cr.define('cert_viewer', function() {
    * Show certificate field value for a selected certificate field.
    */
   function showCertificateFieldValue() {
-    var item = $('certfields').selectedItem;
+    var item = $('cert-fields').selectedItem;
     if (item && item.detail.payload.val)
-      $('certfieldvalue').textContent = item.detail.payload.val;
+      $('cert-field-value').textContent = item.detail.payload.val;
     else
-      $('certfieldvalue').textContent = '';
+      $('cert-field-value').textContent = '';
   }
 
   return {

@@ -1,6 +1,10 @@
 /* Using 100% width within body should exclude margins. */
 body {
-  position: relative;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .title {
@@ -18,7 +22,7 @@ body {
 }
 
 #usages,
-#certfieldvalue {
+#cert-field-value {
   -webkit-padding-start: 15px;
   padding-top: 5px;
   white-space: pre-wrap;
@@ -57,7 +61,7 @@ tabpanel {
   position: relative;
 }
 
-.vbox {
+.vertical-box {
   -webkit-box-align: stretch;
   -webkit-box-orient: vertical;
   -webkit-box-pack: start;
@@ -69,17 +73,17 @@ tabpanel {
 
 /* Scrolling should be enabled on all tree views and value field. */
 #hierarchy,
-#certfields,
-#certfieldvalue {
+#cert-fields,
+#cert-field-value {
   overflow: auto;
 }
 
 #hierarchy,
-#certfieldvalue {
+#cert-field-value {
   -webkit-box-flex: 1;
   min-height: 6em;
 }
 
-#certfields {
+#cert-fields {
   -webkit-box-flex: 3;
 }
