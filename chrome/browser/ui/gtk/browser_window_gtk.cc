@@ -249,20 +249,45 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
 // where setting the window size to the monitor size causes the WM to set the
 // EWMH for full screen mode.
 void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
-  GdkScreen* screen = gtk_window_get_screen(window);
-  gint num_monitors = gdk_screen_get_n_monitors(screen);
-  // Make sure the window doesn't match any monitor size.  We compare against
-  // all monitors because we don't know which monitor the window is going to
-  // open on (the WM decides that).
-  for (gint i = 0; i < num_monitors; ++i) {
-    GdkRectangle monitor_size;
-    gdk_screen_get_monitor_geometry(screen, i, &monitor_size);
-    if (gfx::Size(monitor_size.width, monitor_size.height) == size) {
-      gtk_window_resize(window, size.width(), size.height() - 1);
-      return;
+  gfx::Size new_size = size;
+
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window, &current_width, &current_height);
+  GdkRectangle size_with_decorations = {0};
+  if (GTK_WIDGET(window)->window) {
+    gdk_window_get_frame_extents(GTK_WIDGET(window)->window,
+                                 &size_with_decorations);
+  }
+
+  if (current_width == size_with_decorations.width &&
+      current_height == size_with_decorations.height) {
+    // Make sure the window doesn't match any monitor size.  We compare against
+    // all monitors because we don't know which monitor the window is going to
+    // open on (the WM decides that).
+    GdkScreen* screen = gtk_window_get_screen(window);
+    gint num_monitors = gdk_screen_get_n_monitors(screen);
+    for (gint i = 0; i < num_monitors; ++i) {
+      GdkRectangle monitor_size;
+      gdk_screen_get_monitor_geometry(screen, i, &monitor_size);
+      if (gfx::Size(monitor_size.width, monitor_size.height) == size) {
+        gtk_window_resize(window, size.width(), size.height() - 1);
+        return;
+      }
+    }
+  } else {
+    // gtk_window_resize is the size of the window not including decorations,
+    // but we are given the |size| including window decorations.
+    if (size_with_decorations.width > current_width) {
+        new_size.set_width(size.width() - size_with_decorations.width +
+            current_width);
+    }
+    if (size_with_decorations.height > current_height) {
+        new_size.set_height(size.height() - size_with_decorations.height +
+            current_height);
     }
   }
-  gtk_window_resize(window, size.width(), size.height());
+  gtk_window_resize(window, new_size.width(), new_size.height());
 }
 
 GQuark GetBrowserWindowQuarkKey() {

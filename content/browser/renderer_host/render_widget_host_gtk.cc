@@ -86,10 +86,9 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
   int width = 0;
   int height = 0;
   gdk_drawable_get_size(gdk_window, &width, &height);
-  // Although we return a rect, this is actually two pairs of data: The
-  // position of the top left corner of the window and the size of the window
-  // not including the window decorations.
-  *results = gfx::Rect(frame_extents.x, frame_extents.y, width, height);
+
+  *results = gfx::Rect(frame_extents.x, frame_extents.y,
+                       frame_extents.width, frame_extents.height);
 }
 
 void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
