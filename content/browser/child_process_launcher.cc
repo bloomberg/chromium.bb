@@ -43,6 +43,8 @@ class ChildProcessLauncher::Context
   Context()
       : client_(NULL),
         client_thread_id_(BrowserThread::UI),
+        termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
+        exit_code_(content::RESULT_CODE_NORMAL_EXIT),
         starting_(true),
         terminate_child_on_shutdown_(true)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -293,6 +295,8 @@ class ChildProcessLauncher::Context
   Client* client_;
   BrowserThread::ID client_thread_id_;
   base::Process process_;
+  base::TerminationStatus termination_status_;
+  int exit_code_;
   bool starting_;
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.
@@ -342,16 +346,26 @@ base::ProcessHandle ChildProcessLauncher::GetHandle() {
 
 base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     int* exit_code) {
-  base::TerminationStatus status;
   base::ProcessHandle handle = context_->process_.handle();
+  if (handle == base::kNullProcessHandle) {
+    // Process is already gone, so return the cached termination status.
+    if (exit_code)
+      *exit_code = context_->exit_code_;
+    return context_->termination_status_;
+  }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (context_->zygote_) {
-    status = ZygoteHost::GetInstance()->GetTerminationStatus(handle, exit_code);
+    context_->termination_status_ = ZygoteHost::GetInstance()->
+        GetTerminationStatus(handle, &context_->exit_code_);
   } else
 #endif
   {
-    status = base::GetTerminationStatus(handle, exit_code);
+    context_->termination_status_ =
+        base::GetTerminationStatus(handle, &context_->exit_code_);
   }
+
+  if (exit_code)
+    *exit_code = context_->exit_code_;
 
   // POSIX: If the process crashed, then the kernel closed the socket
   // for it and so the child has already died by the time we get
@@ -359,10 +373,10 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   // it'll reap the process.  However, if GetTerminationStatus didn't
   // reap the child (because it was still running), we'll need to
   // Terminate via ProcessWatcher. So we can't close the handle here.
-  if (status != base::TERMINATION_STATUS_STILL_RUNNING)
+  if (context_->termination_status_ != base::TERMINATION_STATUS_STILL_RUNNING)
     context_->process_.Close();
 
-  return status;
+  return context_->termination_status_;
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
