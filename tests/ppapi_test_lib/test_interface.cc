@@ -31,6 +31,28 @@ void PostTestMessage(nacl::string test_name, nacl::string message) {
   PPBVar()->Release(post_var);
 }
 
+PP_Var PP_MakeString(const char* s) {
+  return PPBVar()->VarFromUtf8(pp_module(), s, strlen(s));
+}
+
+nacl::string StringifyVar(const PP_Var& var) {
+  uint32_t dummy_size;
+  switch (var.type) {
+    default:
+     return "<UNKNOWN>" +  toString(var.type);
+    case  PP_VARTYPE_NULL:
+      return "<NULL>";
+    case  PP_VARTYPE_BOOL:
+     return "<BOOL>" + toString(var.value.as_bool);
+    case  PP_VARTYPE_INT32:
+     return "<INT32>" + toString(var.value.as_int);
+    case  PP_VARTYPE_DOUBLE:
+     return "<DOUBLE>" + toString(var.value.as_double);
+    case PP_VARTYPE_STRING:
+     return "<STRING>" + nacl::string(PPBVar()->VarToUtf8(var, &dummy_size));
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Test registration
 ////////////////////////////////////////////////////////////////////////////////

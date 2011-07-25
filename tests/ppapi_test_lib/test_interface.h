@@ -43,6 +43,8 @@
 #include <stdio.h>
 #include <limits>
 
+#include <sstream>
+
 #include "native_client/src/include/nacl_string.h"
 
 #include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
@@ -91,6 +93,12 @@ PP_CompletionCallback MakeTestableCompletionCallback(
 // Uses PPB_Messaging interface to post "test_name:message".
 void PostTestMessage(nacl::string test_name, nacl::string message);
 
+// Make a STRING var.
+PP_Var PP_MakeString(const char* s);
+
+// Convert var into printable string (for debuggin)
+nacl::string StringifyVar(const PP_Var& var);
+
 // Use to verify the result of a test and report failures.
 #define EXPECT(expr) do { \
   if (!(expr)) { \
@@ -102,8 +110,39 @@ void PostTestMessage(nacl::string test_name, nacl::string message);
   } \
 } while (0)
 
+// Check expected value of INT32 var.
+#define EXPECT_VAR_INT(var, val) \
+  EXPECT(var.type == PP_VARTYPE_INT32 && var.value.as_int == val)
+
+// Check expected value of STRING var (val is 'char*')
+#define EXPECT_VAR_STRING(var, val) \
+  do { \
+    EXPECT(var.type == PP_VARTYPE_STRING); \
+    uint32_t dummy_size; \
+    const char* expected = PPBVar()->VarToUtf8(var, &dummy_size); \
+    EXPECT(0 == strcmp(expected, val)); \
+  } while (0)
+
+// Check expected value of BOOL var.
+#define EXPECT_VAR_BOOL(var, val) \
+  EXPECT(var.type == PP_VARTYPE_BOOL && var.value.as_bool == val)
+
 // Use to report success.
 #define TEST_PASSED PostTestMessage(__FUNCTION__, "PASSED");
+// Or failure.
+#define TEST_FAILED EXPECT(false)
+
+// Handy for use with LOG_TO_BROWSER() convert arbitrary objects into strings.
+template<typename T> nacl::string toString(T v) {
+  std::stringstream s;
+  s << v;
+  return s.str();
+}
+
+// Log message for debugging or progress reporting purposes.
+// If you use this with  nacltest.js::expectMessageSequence
+// it will not interfere with output used for correctness checking.
+#define LOG_TO_BROWSER(message) PostTestMessage("@", message)
 
 // Use this constant for stress testing
 // (i.e. creating and using a large number of resources).

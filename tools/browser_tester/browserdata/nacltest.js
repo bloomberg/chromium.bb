@@ -665,6 +665,11 @@ function TestStatus(tester, name, async) {
     this.assert(messages.length > 0, 'Must provide at least one message');
     var local_messages = messages.slice();
     var listener = this.wrap(function(message) {
+      // skip debug messages
+      if (message.data.indexOf('@:') == 0) {
+        this_.log('DEBUG: ' + message.data.substr(2));
+        return;
+      }
       plugin.removeEventListener('message', listener, false);
       this_.assertEqual(message.data, local_messages.shift());
       if (callback !== undefined) {
