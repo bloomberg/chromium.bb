@@ -51,6 +51,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
 
+  // Load the GL implementation and locate the bindings before starting the GPU
+  // watchdog because this can take a lot of time and the GPU watchdog might
+  // terminate the GPU process.
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(INFO) << "GLContext::InitializeOneOff failed";
+    dead_on_arrival = true;
+  }
+
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();
@@ -60,14 +68,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (target_services)
     target_services->LowerToken();
 #endif
-
-  // Load the GL implementation and locate the bindings before starting the GPU
-  // watchdog because this can take a lot of time and the GPU watchdog might
-  // terminate the GPU process.
-  if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(INFO) << "GLContext::InitializeOneOff failed";
-    dead_on_arrival = true;
-  }
 
 #if defined(OS_MACOSX)
   chrome_application_mac::RegisterCrApp();
