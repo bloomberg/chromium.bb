@@ -17,7 +17,6 @@ ViewsEnterpriseEnrollmentScreenActor::ViewsEnterpriseEnrollmentScreenActor(
 }
 
 ViewsEnterpriseEnrollmentScreenActor::~ViewsEnterpriseEnrollmentScreenActor() {
-  NotifyObservers(false);
 }
 
 // ViewsEnterpriseEnrollmentScreenActor, ViewScreen implementation -------------
@@ -55,33 +54,27 @@ void ViewsEnterpriseEnrollmentScreenActor::Hide() {
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowConfirmationScreen() {
   GetUIActor()->ShowConfirmationScreen();
-  NotifyObservers(true);
 }
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowAuthError(
     const GoogleServiceAuthError & error) {
   GetUIActor()->ShowAuthError(error);
-  NotifyObservers(false);
 }
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowAccountError() {
   GetUIActor()->ShowAccountError();
-  NotifyObservers(false);
 }
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowFatalAuthError() {
   GetUIActor()->ShowFatalAuthError();
-  NotifyObservers(false);
 }
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowFatalEnrollmentError() {
   GetUIActor()->ShowFatalEnrollmentError();
-  NotifyObservers(false);
 }
 
 void ViewsEnterpriseEnrollmentScreenActor::ShowNetworkEnrollmentError() {
   GetUIActor()->ShowNetworkEnrollmentError();
-  NotifyObservers(false);
 }
 
 // ViewsEnterpriseEnrollmentScreenActor, public --------------------------------
