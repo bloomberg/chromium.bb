@@ -42,6 +42,14 @@ cr.define('cr.ui', function() {
             chrome.send('toggleAccessibility', []);
             break;
           }
+        case 'E':
+          var currentStepId = this.screens_[this.currentStep_];
+          if (currentStepId == 'signin') {
+            if (e.altKey && e.ctrlKey) {
+              chrome.send('toggleEnrollmentScreen', []);
+              break;
+            }
+          }
       } // switch
     },
 

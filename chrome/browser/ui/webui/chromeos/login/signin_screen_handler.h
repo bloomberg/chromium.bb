@@ -42,6 +42,9 @@ class SigninScreenHandlerDelegate {
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 
+  // Shows Enterprise Enrollment screen.
+  virtual void ShowEnterpriseEnrollmentScreen() = 0;
+
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 };
@@ -93,6 +96,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Handles 'showAddUser' request to show proper sign-in screen.
   void HandleShowAddUser(const base::ListValue* args);
+
+  // Handles Enterprise Enrollment screen toggling.
+  void HandleToggleEnrollmentScreen(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList();

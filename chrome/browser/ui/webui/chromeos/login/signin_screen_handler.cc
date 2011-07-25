@@ -115,6 +115,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleShutdownSystem));
   web_ui_->RegisterMessageCallback("removeUser",
       NewCallback(this, &SigninScreenHandler::HandleRemoveUser));
+  web_ui_->RegisterMessageCallback("toggleEnrollmentScreen",
+      NewCallback(this, &SigninScreenHandler::HandleToggleEnrollmentScreen));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -182,6 +184,11 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     ShowScreen(kSigninScreen, NULL);
 }
 
+void SigninScreenHandler::HandleToggleEnrollmentScreen(
+    const base::ListValue* args) {
+  delegate_->ShowEnterpriseEnrollmentScreen();
+}
+
 void SigninScreenHandler::SendUserList() {
   ListValue users_list;
 
@@ -234,7 +241,6 @@ void SigninScreenHandler::SendUserList() {
   // Call the Javascript callback
   web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
                                   users_list);
-
 }
 
 }  // namespace chromeos

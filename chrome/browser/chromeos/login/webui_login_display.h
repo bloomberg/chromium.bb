@@ -74,6 +74,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
+  virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
   virtual void SetWebUIHandler(
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
 

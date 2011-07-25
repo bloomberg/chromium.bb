@@ -131,6 +131,10 @@ void WebUILoginDisplay::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
+void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
+  delegate_->OnStartEnterpriseEnrollment();
+}
+
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   DCHECK(delegate_);
