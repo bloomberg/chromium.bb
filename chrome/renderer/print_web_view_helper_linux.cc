@@ -169,29 +169,21 @@ void PrintWebViewHelper::PrintPageInternal(
     const gfx::Size& canvas_size,
     WebFrame* frame,
     printing::Metafile* metafile) {
-  double content_width_in_points;
-  double content_height_in_points;
-  double margin_top_in_points;
-  double margin_right_in_points;
-  double margin_bottom_in_points;
-  double margin_left_in_points;
-  GetPageSizeAndMarginsInPoints(frame,
-                                params.page_number,
-                                params.params,
-                                &content_width_in_points,
-                                &content_height_in_points,
-                                &margin_top_in_points,
-                                &margin_right_in_points,
-                                &margin_bottom_in_points,
-                                &margin_left_in_points);
+  PageSizeMargins page_layout_in_points;
+  GetPageSizeAndMarginsInPoints(frame, params.page_number, params.params,
+                                &page_layout_in_points);
 
   gfx::Size page_size(
-      content_width_in_points + margin_right_in_points +
-          margin_left_in_points,
-      content_height_in_points + margin_top_in_points +
-          margin_bottom_in_points);
-  gfx::Rect content_area(margin_left_in_points, margin_top_in_points,
-                         content_width_in_points, content_height_in_points);
+      page_layout_in_points.content_width +
+          page_layout_in_points.margin_right +
+          page_layout_in_points.margin_left,
+      page_layout_in_points.content_height +
+          page_layout_in_points.margin_top +
+          page_layout_in_points.margin_bottom);
+  gfx::Rect content_area(page_layout_in_points.margin_left,
+                         page_layout_in_points.margin_top,
+                         page_layout_in_points.content_width,
+                         page_layout_in_points.content_height);
 
   SkDevice* device = metafile->StartPageForVectorCanvas(
       params.page_number, page_size, content_area, 1.0f);

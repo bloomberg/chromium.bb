@@ -66,6 +66,16 @@ class PrepareFrameAndViewForPrint {
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
 
+// Struct that holds margin and content area information of a page.
+typedef struct PageSizeMargins {
+  double content_width;
+  double content_height;
+  double margin_top;
+  double margin_right;
+  double margin_bottom;
+  double margin_left;
+} PageSizeMargins;
+
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
@@ -222,12 +232,7 @@ class PrintWebViewHelper : public RenderViewObserver,
       WebKit::WebFrame* frame,
       int page_index,
       const PrintMsg_Print_Params& default_params,
-      double* content_width_in_points,
-      double* content_height_in_points,
-      double* margin_top_in_points,
-      double* margin_right_in_points,
-      double* margin_bottom_in_points,
-      double* margin_left_in_points);
+      PageSizeMargins* page_layout_in_points);
 
   void UpdatePrintableSizeInPrintParameters(WebKit::WebFrame* frame,
                                             WebKit::WebNode* node,

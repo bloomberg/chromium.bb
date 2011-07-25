@@ -145,15 +145,9 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
     bool is_preview, WebFrame* frame, scoped_ptr<Metafile>* metafile) {
-  double content_width_in_points;
-  double content_height_in_points;
-  double margin_top_in_points;
-  double margin_left_in_points;
+  PageSizeMargins page_layout_in_points;
   GetPageSizeAndMarginsInPoints(frame, page_number, params,
-                                &content_width_in_points,
-                                &content_height_in_points,
-                                &margin_top_in_points, NULL, NULL,
-                                &margin_left_in_points);
+                                &page_layout_in_points);
 
   int width;
   int height;
@@ -166,15 +160,18 @@ void PrintWebViewHelper::RenderPage(
     // Since WebKit extends the page width depending on the magical scale factor
     // we make sure the canvas covers the worst case scenario (x2.0 currently).
     // PrintContext will then set the correct clipping region.
-    width = static_cast<int>(content_width_in_points * params.max_shrink);
-    height = static_cast<int>(content_height_in_points * params.max_shrink);
+    width = static_cast<int>(page_layout_in_points.content_width *
+                             params.max_shrink);
+    height = static_cast<int>(page_layout_in_points.content_height *
+                              params.max_shrink);
   }
 
   gfx::Size page_size(width, height);
-  gfx::Rect content_area(static_cast<int>(margin_left_in_points),
-                         static_cast<int>(margin_top_in_points),
-                         static_cast<int>(content_width_in_points),
-                         static_cast<int>(content_height_in_points));
+  gfx::Rect content_area(
+      static_cast<int>(page_layout_in_points.margin_left),
+      static_cast<int>(page_layout_in_points.margin_top),
+      static_cast<int>(page_layout_in_points.content_width),
+      static_cast<int>(page_layout_in_points.content_height));
   SkDevice* device = (*metafile)->StartPageForVectorCanvas(
       page_number, page_size, content_area,
       frame->getPrintPageShrink(page_number));

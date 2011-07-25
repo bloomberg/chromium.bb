@@ -575,12 +575,7 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
     WebFrame* frame,
     int page_index,
     const PrintMsg_Print_Params& default_params,
-    double* content_width_in_points,
-    double* content_height_in_points,
-    double* margin_top_in_points,
-    double* margin_right_in_points,
-    double* margin_bottom_in_points,
-    double* margin_left_in_points) {
+    PageSizeMargins* page_layout_in_points) {
   int dpi = GetDPI(&default_params);
 
   WebSize page_size_in_pixels(
@@ -612,38 +607,30 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
                                       margin_left_in_pixels);
   }
 
-  *content_width_in_points = ConvertPixelsToPoint(page_size_in_pixels.width -
-                                                  margin_left_in_pixels -
-                                                  margin_right_in_pixels);
-  *content_height_in_points = ConvertPixelsToPoint(page_size_in_pixels.height -
-                                                   margin_top_in_pixels -
-                                                   margin_bottom_in_pixels);
+  page_layout_in_points->content_width =
+      ConvertPixelsToPoint(page_size_in_pixels.width -
+                           margin_left_in_pixels -
+                           margin_right_in_pixels);
+  page_layout_in_points->content_height =
+      ConvertPixelsToPoint(page_size_in_pixels.height -
+                           margin_top_in_pixels -
+                           margin_bottom_in_pixels);
 
   // Invalid page size and/or margins. We just use the default setting.
-  if (*content_width_in_points < 1.0 || *content_height_in_points < 1.0) {
-    GetPageSizeAndMarginsInPoints(NULL,
-                                  page_index,
-                                  default_params,
-                                  content_width_in_points,
-                                  content_height_in_points,
-                                  margin_top_in_points,
-                                  margin_right_in_points,
-                                  margin_bottom_in_points,
-                                  margin_left_in_points);
+  if (page_layout_in_points->content_width < 1.0 ||
+      page_layout_in_points->content_height < 1.0) {
+    GetPageSizeAndMarginsInPoints(NULL, page_index, default_params,
+                                  page_layout_in_points);
     return;
   }
 
-  if (margin_top_in_points)
-    *margin_top_in_points =
+    page_layout_in_points->margin_top =
         ConvertPixelsToPointDouble(margin_top_in_pixels);
-  if (margin_right_in_points)
-    *margin_right_in_points =
+    page_layout_in_points->margin_right =
         ConvertPixelsToPointDouble(margin_right_in_pixels);
-  if (margin_bottom_in_points)
-    *margin_bottom_in_points =
+    page_layout_in_points->margin_bottom =
         ConvertPixelsToPointDouble(margin_bottom_in_pixels);
-  if (margin_left_in_points)
-    *margin_left_in_points =
+    page_layout_in_points->margin_left =
         ConvertPixelsToPointDouble(margin_left_in_pixels);
 }
 
@@ -651,28 +638,27 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame,
     WebNode* node,
     PrintMsg_Print_Params* params) {
-  double content_width_in_points;
-  double content_height_in_points;
-  double margin_top_in_points;
-  double margin_right_in_points;
-  double margin_bottom_in_points;
-  double margin_left_in_points;
   PrepareFrameAndViewForPrint prepare(*params, frame, node);
+  PageSizeMargins page_layout_in_points;
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
-      &content_width_in_points, &content_height_in_points,
-      &margin_top_in_points, &margin_right_in_points,
-      &margin_bottom_in_points, &margin_left_in_points);
+                                                    &page_layout_in_points);
   int dpi = GetDPI(params);
   params->printable_size = gfx::Size(
-      static_cast<int>(ConvertUnitDouble(content_width_in_points,
+      static_cast<int>(ConvertUnitDouble(
+          page_layout_in_points.content_width,
           printing::kPointsPerInch, dpi)),
-      static_cast<int>(ConvertUnitDouble(content_height_in_points,
+      static_cast<int>(ConvertUnitDouble(
+          page_layout_in_points.content_height,
           printing::kPointsPerInch, dpi)));
 
-  double page_width_in_points = content_width_in_points +
-      margin_left_in_points + margin_right_in_points;
-  double page_height_in_points = content_height_in_points +
-      margin_top_in_points + margin_bottom_in_points;
+  double page_width_in_points =
+      page_layout_in_points.content_width +
+      page_layout_in_points.margin_left +
+      page_layout_in_points.margin_right;
+  double page_height_in_points =
+      page_layout_in_points.content_height +
+      page_layout_in_points.margin_top +
+      page_layout_in_points.margin_bottom;
 
   params->page_size = gfx::Size(
       static_cast<int>(ConvertUnitDouble(
@@ -681,9 +667,9 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
           page_height_in_points, printing::kPointsPerInch, dpi)));
 
   params->margin_top = static_cast<int>(ConvertUnitDouble(
-      margin_top_in_points, printing::kPointsPerInch, dpi));
+      page_layout_in_points.margin_top, printing::kPointsPerInch, dpi));
   params->margin_left = static_cast<int>(ConvertUnitDouble(
-      margin_left_in_points, printing::kPointsPerInch, dpi));
+      page_layout_in_points.margin_left, printing::kPointsPerInch, dpi));
 }
 
 bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
