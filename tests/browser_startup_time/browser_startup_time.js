@@ -4,11 +4,10 @@
 
 // Times how long the nexe took to load, then smoke tests it.
 
-function LoadingTester(plugin, smokeTestSetup) {
+function LoadingTester(plugin) {
   // Workaround how JS binds 'this'
   var this_ = this;
 
-  this.smokeTestSetup_ = smokeTestSetup;
   this.rpc_ = new RPCWrapper();
 
   this.setupLoad = function() {
@@ -24,7 +23,7 @@ function LoadingTester(plugin, smokeTestSetup) {
           // Log the total in-browser load time (for first load).
           this_.rpc_.logTimeData('Total',
                                 (loadEnd - loadBegin));
-          this_.doSmokeTests_([plugin]);
+          this_.doSmokeTests_(plugin);
         },
         function() {
           this_.rpc_.ping();
@@ -32,11 +31,16 @@ function LoadingTester(plugin, smokeTestSetup) {
       );
   }
 
-  this.doSmokeTests_ = function(servers) {
+  this.doSmokeTests_ = function(plugin) {
     var tester = new Tester();
-    for (var i = 0; i < servers.length; ++i) {
-      this_.smokeTestSetup_(tester, servers[i]);
-    }
+    tester.addAsyncTest('TestHello', function(status) {
+        plugin.addEventListener('message', function(message_event) {
+            this.removeEventListener('message', arguments.callee, false);
+            status.assertEqual(message_event.data, 'hello from NaCl');
+            status.pass();
+          }, false);
+        plugin.postMessage('hello');
+      });
     tester.run();
   }
 }
