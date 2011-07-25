@@ -14,7 +14,6 @@ is started for that shard and the output is identical to gtest's output.
 """
 
 
-from collections import deque
 from cStringIO import StringIO
 import optparse
 import os
@@ -24,7 +23,6 @@ import re
 import subprocess
 import sys
 import threading
-import time
 
 
 SS_USAGE = "Usage: python %prog [options] path/to/test [gtest_args]"
@@ -78,13 +76,11 @@ class ShardRunner(threading.Thread):
     counter: Called to get the next shard index to run.
   """
 
-  def __init__(
-      self, supervisor, counter, redirect_output, test_fail, test_timeout):
+  def __init__(self, supervisor, counter, test_fail, test_timeout):
     """Inits ShardRunner with a supervisor and counter."""
     threading.Thread.__init__(self)
     self.supervisor = supervisor
     self.counter = counter
-    self.redirect_output = redirect_output
     self.test_fail = test_fail
     self.test_timeout = test_timeout
 
@@ -119,14 +115,10 @@ class ShardRunner(threading.Thread):
             log_line = prefix + "".join(results.group(0)) + "\n"
             self.supervisor.LogLineFailure(log_line)
           line = prefix + line
-          if self.redirect_output:
-            self.supervisor.LogOutputLine(index, line)
-          else:
-            sys.stdout.write(line)
+          self.supervisor.LogOutputLine(index, line)
           chars.close()
           chars = StringIO()
-      if self.redirect_output:
-        self.supervisor.ShardIndexCompleted(index)
+      self.supervisor.ShardIndexCompleted(index)
       if shard.returncode != 0:
         self.supervisor.LogShardFailure(index)
 
@@ -144,6 +136,8 @@ class ShardingSupervisor(object):
     failed_shards: List of shards that contained failing tests.
   """
 
+  SHARD_COMPLETED = object()
+
   def __init__(
       self, test, num_shards, num_runs, color, reorder, gtest_args):
     """Inits ShardingSupervisor with given options and gtest arguments."""
@@ -155,11 +149,8 @@ class ShardingSupervisor(object):
     self.gtest_args = gtest_args
     self.failure_log = []
     self.failed_shards = []
-    if reorder:
-      self.shard_output = {}
-      self.shards_completed = {}
-      for i in range(num_shards):
-        self.shard_output[i] = deque()
+    self.shards_completed = [False] * num_shards
+    self.shard_output = [Queue.Queue() for _ in range(num_shards)]
 
   def ShardTest(self):
     """Runs the test and manages the worker threads.
@@ -199,8 +190,7 @@ class ShardingSupervisor(object):
     sys.stdout = os.fdopen(sys.stdout.fileno(), "w", 0)
 
     for i in range(self.num_runs):
-      worker = ShardRunner(
-          self, counter, self.reorder, test_fail, test_timeout)
+      worker = ShardRunner(self, counter, test_fail, test_timeout)
       worker.start()
       workers.append(worker)
     if self.reorder:
@@ -232,20 +222,21 @@ class ShardingSupervisor(object):
     self.failed_shards.append(index)
 
   def WaitForShards(self):
-    shard_index = 0
-    while shard_index < self.num_shards:
-      current_shard_output = self.shard_output.get(shard_index)
-      if self.shards_completed.get(shard_index):
-        shard_index += 1
-      while current_shard_output:
-        sys.stdout.write(current_shard_output.popleft())
-      time.sleep(1)
+    for shard_index in range(self.num_shards):
+      while True:
+        line = self.shard_output[shard_index].get()
+        if line is self.SHARD_COMPLETED:
+          break
+        sys.stdout.write(line)
 
   def LogOutputLine(self, index, line):
-    self.shard_output.get(index).append(line)
+    if self.reorder:
+      self.shard_output[index].put(line)
+    else:
+      sys.stdout.write(line)
 
   def ShardIndexCompleted(self, index):
-    self.shards_completed[index] = True
+    self.shard_output[index].put(self.SHARD_COMPLETED)
 
   def PrintSummary(self):
     """Prints a summary of the test results.
