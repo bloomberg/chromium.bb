@@ -216,6 +216,10 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     // incorrectly close the tab.
     is_waiting_for_unload_ack_ = false;
 
+    // Unset this, in case we never finished committing a previous RVH swap.
+    // Otherwise we'll filter out the messages for this navigation.
+    is_swapped_out_ = false;
+
     Send(nav_message);
   }
 

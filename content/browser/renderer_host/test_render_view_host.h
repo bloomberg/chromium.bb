@@ -211,6 +211,12 @@ class TestRenderViewHost : public RenderViewHost {
     return is_waiting_for_beforeunload_ack_;
   }
 
+  // Sets whether the RenderViewHost is currently swapped out, and thus
+  // filtering messages from the renderer.
+  void set_is_swapped_out(bool is_swapped_out) {
+    is_swapped_out_ = is_swapped_out;
+  }
+
   // If set, navigations will appear to have loaded through a proxy
   // (ViewHostMsg_FrameNavigte_Params::was_fetched_via_proxy).
   // False by default.

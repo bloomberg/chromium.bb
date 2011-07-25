@@ -805,6 +805,47 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
 }
 
+// Test that a cross-site navigation that doesn't commit after the unload
+// handler doesn't leave the tab in a stuck state.  http://crbug.com/88562.
+TEST_F(TabContentsTest, CrossSiteNavigationCanceled) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url, PageTransition::TYPED);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->render_view_host());
+
+  // Navigate to new site, simulating an onbeforeunload approval.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
+  EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
+  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(0, true));
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+
+  // Simulate swap out message when the response arrives.
+  orig_rvh->set_is_swapped_out(true);
+
+  // Suppose the navigation doesn't get a chance to commit, and the user
+  // navigates in the current RVH's SiteInstance.
+  controller().LoadURL(url, GURL(), PageTransition::TYPED);
+
+  // Verify that the pending navigation is cancelled and the renderer is no
+  // longer swapped out.
+  EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, rvh());
+  EXPECT_FALSE(orig_rvh->is_swapped_out());
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+}
+
 // Test that NavigationEntries have the correct content state after going
 // forward and back.  Prevents regression for bug 1116137.
 TEST_F(TabContentsTest, NavigationEntryContentState) {
