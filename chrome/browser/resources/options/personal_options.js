@@ -260,24 +260,6 @@ cr.define('options', function() {
     hideSyncSection_: function() {
       $('sync-section').hidden = true;
     },
-
-    /**
-     * Toggles the visibility of the data type checkboxes based on whether they
-     * are enabled on not.
-     * @param {Object} dict A mapping from data type to a boolean indicating
-     *     whether it is enabled.
-     * @private
-     */
-    setRegisteredDataTypes_: function(dict) {
-      for (var type in dict) {
-        if (type.match(/Registered$/) && !dict[type]) {
-          node = $(type.replace(/([a-z]+)Registered$/i, '$1').toLowerCase()
-                   + '-check');
-          if (node)
-            node.parentNode.style.display = 'none';
-        }
-      }
-    },
   };
 
   /**
@@ -314,7 +296,6 @@ cr.define('options', function() {
     'setGtkThemeButtonEnabled',
     'setThemesResetButtonEnabled',
     'hideSyncSection',
-    'setRegisteredDataTypes',
   ].forEach(function(name) {
     PersonalOptions[name] = function(value) {
       PersonalOptions.getInstance()[name + '_'](value);

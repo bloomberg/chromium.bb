@@ -359,12 +359,6 @@ void PersonalOptionsHandler::Initialize() {
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();
-
-    DictionaryValue args;
-    SyncSetupFlow::GetArgsForConfigure(sync_service, &args);
-
-    web_ui_->CallJavascriptFunction("PersonalOptions.setRegisteredDataTypes",
-                                    args);
   } else {
     web_ui_->CallJavascriptFunction("options.PersonalOptions.hideSyncSection");
   }
