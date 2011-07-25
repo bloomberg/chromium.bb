@@ -174,6 +174,13 @@ bool ProfileSyncServiceHarness::SetupSync(
       (syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE));
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
+  // Make sure that a partner client hasn't already set an explicit passphrase.
+  if (wait_state_ == SET_PASSPHRASE_FAILED) {
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetPassphrase is called.";
+    return false;
+  }
+
   // Wait for initial sync cycle to be completed.
   DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
   if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
@@ -181,12 +188,6 @@ bool ProfileSyncServiceHarness::SetupSync(
     LOG(ERROR) << "Initial sync cycle did not complete after "
                << kLiveSyncOperationTimeoutMs / 1000
                << " seconds.";
-    return false;
-  }
-
-  if (wait_state_ == SET_PASSPHRASE_FAILED) {
-    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetPassphrase is called.";
     return false;
   }
 
