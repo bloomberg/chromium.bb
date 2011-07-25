@@ -6457,9 +6457,9 @@ ls' lab.">
       <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
         The server at
         <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
-        can't be found, because the DNS lookup failed.  DNS is the web service
-        that translates a website's name to its Internet address.  This error is
-        most often caused by having no connection to the Internet or a
+        can't be found, because the DNS lookup failed.  DNS is the network
+        service that translates a website's name to its Internet address.  This
+        error is most often caused by having no connection to the Internet or a
         misconfigured network.  It can also be caused by an unresponsive DNS
         server or a firewall preventing
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
