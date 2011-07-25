@@ -69,9 +69,9 @@ int CreateMemoryObject(size_t size, bool executable) {
 }  // namespace
 #endif  // defined(OS_MACOSX)
 
-extern "C" int NaClMainForChromium(int handle_count,
-                                   const NaClHandle* handles,
-                                   int debug);
+extern "C" void NaClMainForChromium(int handle_count,
+                                    const NaClHandle* handles,
+                                    int debug);
 extern "C" void NaClSetIrtFileDesc(int fd);
 
 NaClListener::NaClListener() {}
@@ -132,4 +132,5 @@ void NaClListener::OnStartSelLdr(
   }
   NaClMainForChromium(static_cast<int>(handles.size()), array.get(),
                       false /* debug */);
+  NOTREACHED();
 }
