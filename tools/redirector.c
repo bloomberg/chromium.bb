@@ -200,9 +200,14 @@ void entry() {
     if (arguments[0] == L' ')
       while (arguments[1] == ' ')
         arguments++;
-    oldpath[length++] = (arguments++)[0];
-    while (arguments[0] && arguments[0] != L' ')
+    if (arguments[0] != 0) {
       oldpath[length++] = (arguments++)[0];
+      while (arguments[0] && arguments[0] != L' ')
+        oldpath[length++] = (arguments++)[0];
+    } else {
+      selector = L"";
+      done = 0;
+    }
   }
   lstrcpyW(oldpath + length, L" ");
   lstrcpyW(oldpath + length + 1, selector);
