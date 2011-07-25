@@ -597,7 +597,7 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.accounts.", true) ||
       ::StartsWithASCII(path, "cros.signed.", true) ||
-      ::StartsWithASCII(path, "cros.system.", true);
+      path == kReleaseChannel;
 }
 
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {

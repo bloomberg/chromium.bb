@@ -222,7 +222,7 @@ bool SystemSettingsProvider::Get(const std::string& path,
 }
 
 bool SystemSettingsProvider::HandlesSetting(const std::string& path) {
-  return ::StartsWithASCII(path, std::string("cros.system."), true);
+  return path == kSystemTimezone;
 }
 
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
