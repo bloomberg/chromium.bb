@@ -94,8 +94,7 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
   chromeos::MountLibrary::DiskMap volumes_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest,
-                       DISABLED_FileBrowserMount) {
+IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
   EXPECT_CALL(mount_library_mock_, UnmountPath(StrEq("devicePath1")))
