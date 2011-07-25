@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Merge) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
+                       FLAKY_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
