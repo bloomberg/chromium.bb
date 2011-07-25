@@ -14,6 +14,33 @@ import sys
 
 import chromebinaries
 
+# Copied from buildbot/buildbot_lib.py
+def TryToCleanContents(path):
+  """
+  Remove the contents of a directory without touching the directory itself.
+  Ignores all failures.
+  """
+  if os.path.exists(path):
+    for fn in os.listdir(path):
+      TryToCleanPath(os.path.join(path, fn))
+
+
+# Copied from buildbot/buildbot_lib.py
+def TryToCleanPath(path):
+  """
+  Removes a file or directory.
+  Ignores all failures.
+  """
+  print 'Trying to remove %s' % path
+  if os.path.exists(path):
+    if os.path.isdir(path):
+      shutil.rmtree(path, ignore_errors=True)
+    else:
+      try:
+        os.remove(path)
+      except Exception:
+        pass
+
 
 def FindChrome(src_dir, options):
   if options.browser_path:
@@ -42,6 +69,20 @@ def FindChrome(src_dir, options):
       return chrome_filename
   raise Exception('Cannot find a chome binary - specify one with '
                   '--browser_path?')
+
+
+# TODO(ncbray): this is somewhat unsafe.  We should fix the underlying problem.
+def CleanTempDir():
+  path = os.environ.get('TMP', os.environ.get('TEMP', '/tmp'))
+  if len(path) >= 4 and os.path.isdir(path):
+    print
+    print "Cleaning out the temp directory."
+    print
+    TryToCleanContents(path)
+  else:
+    print
+    print "Cannot find temp directory, not cleaning it."
+    print
 
 
 def BuildAndTest(options):
@@ -161,7 +202,10 @@ def BuildAndTest(options):
   # http://code.google.com/p/nativeclient/issues/detail?id=1917
   if options.integration_bot and sys.platform.startswith('linux'):
     cmd.append('pyauto_tests')
-  sys.stdout.write('Running %s\n' % ' '.join(cmd))
+
+  CleanTempDir()
+
+  sys.stdout.write('\nRunning %s\n\n' % ' '.join(cmd))
   sys.stdout.flush()
   subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
 
