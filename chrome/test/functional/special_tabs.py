@@ -60,7 +60,8 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://history2': { 'title': 'History', 'CSP': False },
     'chrome://media-internals': { 'title': 'Media Internals', 'CSP': False },
     'chrome://memory-redirect': { 'title': 'About Memory' },
-    'chrome://net-internals': { 'CSP': False },
+    'chrome://net-internals': {},
+    'chrome://net-internals/help.html': {},
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
     'chrome://plugins': { 'title': 'Plug-ins' },
     'chrome://sessions': { 'title': 'Sessions', 'CSP': False },
@@ -286,7 +287,7 @@ class SpecialTabsTest(pyauto.PyUITest):
       else:
         include_list.extend(['X-WebKit-CSP'])
         exclude_list.extend(['<script>', 'onclick=', 'onload=',
-                             'onchange=', 'onsubmit='])
+                             'onchange=', 'onsubmit=', 'javascript:'])
       if 'includes' in properties:
         include_list.extend(properties['includes'])
       if 'excludes' in properties:

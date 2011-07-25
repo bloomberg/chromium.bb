@@ -32,6 +32,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -129,21 +130,17 @@ Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
   return dict;
 }
 
-class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  NetInternalsHTMLSource();
+ChromeWebUIDataSource* CreateNetInternalsHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUINetInternalsHost);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  ~NetInternalsHTMLSource() {}
-  DISALLOW_COPY_AND_ASSIGN(NetInternalsHTMLSource);
-};
+  source->set_default_resource(IDR_NET_INTERNALS_INDEX_HTML);
+  source->add_resource_path("help.html", IDR_NET_INTERNALS_HELP_HTML);
+  source->add_resource_path("help.js", IDR_NET_INTERNALS_HELP_JS);
+  source->add_resource_path("index.js", IDR_NET_INTERNALS_INDEX_JS);
+  source->set_json_path("strings.js");
+  return source;
+}
 
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
@@ -447,54 +444,6 @@ class NetInternalsMessageHandler::IOThreadImpl::CallbackHelper
   scoped_refptr<IOThreadImpl> instance_;
   IOThreadImpl::MessageHandler method_;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// NetInternalsHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-NetInternalsHTMLSource::NetInternalsHTMLSource()
-    : DataSource(chrome::kChromeUINetInternalsHost, MessageLoop::current()) {
-}
-
-void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
-                                              bool is_incognito,
-                                              int request_id) {
-  DictionaryValue localized_strings;
-  SetFontAndTextDirection(&localized_strings);
-
-  // The provided "path" may contain a fragment, or query section. We only
-  // care about the path itself, and will disregard anything else.
-  std::string filename =
-      GURL(std::string("chrome://net/") + path).path().substr(1);
-
-  // The source for the net internals page is flattened during compilation, so
-  // the only resource that should legitimately be requested is the main file.
-  // Note that users can type anything into the address bar, though, so we must
-  // handle arbitrary input.
-  if (filename.empty() || filename == "index.html") {
-    base::StringPiece html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_NET_INTERNALS_INDEX_HTML));
-    std::string full_html(html.data(), html.size());
-    jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-    jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-    jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-    jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-    SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
-    return;
-  }
-
-  std::string data_string("<p style='color:red'>Failed to read resource" +
-      EscapeForHTML(filename) + "</p>");
-  SendResponse(request_id, base::RefCountedString::TakeString(&data_string));
-}
-
-std::string NetInternalsHTMLSource::GetMimeType(const std::string&) const {
-  return "text/html";
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -1609,8 +1558,7 @@ Value* NetInternalsUI::GetConstants() {
 NetInternalsUI::NetInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new NetInternalsMessageHandler())->Attach(this));
 
-  NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();
-
   // Set up the chrome://net-internals/ source.
-  GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  GetProfile()->GetChromeURLDataManager()->AddDataSource(
+      CreateNetInternalsHTMLSource());
 }

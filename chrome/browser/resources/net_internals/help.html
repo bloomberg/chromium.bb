@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+<!-- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<head>
+  <include src="../content_security_policy.html"/>
+</head>
+<body>
+<div id=howtoDumpForBugsHelpContent>
+<h2>How to get data for bug reports</h2>
+
+<ol>
+<li>Reproduce the network problem.</li>
+<li>Click the <i>Dump to file</i> button in the <i>Data</i> tab.</li>
+
+<li>The log file will act like a normal download.</li>
+
+<li>Email the log file to the bug investigator,
+  <b>along with an explanation of what went wrong, including any relevant
+     URLs.</b>
+  You may want to compress the file before sending, as the log files can be
+  fairly large but compress well.
+</li>
+
+</ol>
+
+
+<ul>
+<li>The network log <b>may contain personally identifying information</b> like
+  IP addresses, URLs, and cookies.</li>
+<ul>
+<li>You can edit the log to obscure information if you like, but sometimes it
+  is relevant to the bug.  If you choose do this, please make sure you can still
+  load the log file.</li>
+<li>If you choose not to have cookies removed from the log, you must toggle
+  the checkbox before clicking the button.</li>
+</ul>
+<li>Ideally you would have the tool running <b>before</b> you reproduce the
+  bug.
+  If that isn't possible (perhaps the bug happens unpredictably), then the
+  next best thing is to load chrome://net-internals/ <b>as soon as you can
+  after</b> the problem has occurred.</li>
+</ul>
+
+<h2>How it works</h2>
+
+<ul>
+  <li>While the net-internals page is open, it will capture the network events
+  that are happening in Chrome. You can view that in real-time by going to
+  the <i>Events</i> tab.</li>
+  <li>Once you close the net-internals window, the data it had captured will be
+  discarded.</li>
+<li>Chrome keeps around a small buffer of the most recent network events
+  even when the net-internals window is not open. That way if you open
+  chrome://net-internals/ <b>shortly after</b> encountering a problem,
+  you may still find the relevant data.
+  These <i>passively captured</i> events are less accurate however, and will
+  be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
+</li>
+</ul>
+
+<button id="popup-close-button">Close this popup</button>
+</div>
+<script src="chrome://resources/js/util.js"></scirpt>
+<script src="chrome://net-internals/help.js"></script>
+</body>
+</html>
