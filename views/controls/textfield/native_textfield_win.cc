@@ -367,17 +367,11 @@ TextInputClient* NativeTextfieldWin::GetTextInputClient() {
   return NULL;
 }
 
-TextStyle* NativeTextfieldWin::CreateTextStyle() {
-  NOTREACHED();
-  return NULL;
-}
-
-void NativeTextfieldWin::ApplyTextStyle(const TextStyle* style,
-                                        const ui::Range& range) {
+void NativeTextfieldWin::ApplyStyleRange(const gfx::StyleRange& style) {
   NOTREACHED();
 }
 
-void NativeTextfieldWin::ClearAllTextStyles() {
+void NativeTextfieldWin::ApplyDefaultStyle() {
   NOTREACHED();
 }
 

@@ -6,8 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/render_text.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
@@ -15,10 +15,7 @@
 namespace examples {
 
 TextfieldExample::TextfieldExample(ExamplesMain* main)
-    : ExampleBase(main),
-      underline_(NULL),
-      strike_(NULL),
-      color_(NULL) {
+    : ExampleBase(main) {
 }
 
 TextfieldExample::~TextfieldExample() {
@@ -93,19 +90,22 @@ void TextfieldExample::ButtonPressed(views::Button* sender,
   } else if (sender == set_) {
     name_->SetText(WideToUTF16(L"[set]"));
   } else if (sender == set_style_) {
-    if (!underline_) {
-      color_ = name_->CreateTextStyle();
-      color_->set_foreground(SK_ColorYELLOW);
-      underline_ = name_->CreateTextStyle();
-      underline_->set_underline(true);
-      underline_->set_foreground(SK_ColorBLUE);
-      strike_ = name_->CreateTextStyle();
-      strike_->set_strike(true);
-      strike_->set_foreground(SK_ColorRED);
-      name_->ApplyTextStyle(color_, ui::Range(0, 11));
-      name_->ApplyTextStyle(underline_, ui::Range(1, 7));
-      name_->ApplyTextStyle(strike_, ui::Range(6, 9));
-    }
+    gfx::StyleRange color;
+    color.foreground = SK_ColorYELLOW;
+    color.range = ui::Range(0, 11);
+    name_->ApplyStyleRange(color);
+
+    gfx::StyleRange underline;
+    underline.underline = true;
+    underline.foreground = SK_ColorBLUE;
+    underline.range = ui::Range(1, 7);
+    name_->ApplyStyleRange(underline);
+
+    gfx::StyleRange strike;
+    strike.strike = true;
+    strike.foreground = SK_ColorRED;
+    strike.range = ui::Range(6, 9);
+    name_->ApplyStyleRange(strike);
   }
 }
 

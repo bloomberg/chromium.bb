@@ -13,8 +13,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "views/controls/textfield/text_style.h"
+#include "ui/gfx/render_text.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/views_delegate.h"
 
@@ -256,115 +257,7 @@ class DeleteEdit : public Edit {
   }
 };
 
-struct TextStyleRange {
-  TextStyleRange(const TextStyle* s, size_t start, size_t end)
-      : style(s),
-        range(start, end) {
-  }
-  TextStyleRange(const TextStyle* s, const ui::Range& r)
-      : style(s),
-        range(r) {
-  }
-  const TextStyle *style;
-  ui::Range range;
-};
-
 }  // namespace internal
-
-namespace {
-
-using views::internal::TextStyleRange;
-
-static bool TextStyleRangeComparator(const TextStyleRange* i,
-                                     const TextStyleRange* j) {
-  return i->range.start() < j->range.start();
-}
-
-#ifndef NDEBUG
-// A test function to check TextStyleRanges' invariant condition:
-// "no overlapping range".
-bool CheckInvariant(const TextStyleRanges* style_ranges) {
-  TextStyleRanges copy = *style_ranges;
-  std::sort(copy.begin(), copy.end(), TextStyleRangeComparator);
-
-  for (TextStyleRanges::size_type i = 0; i < copy.size() - 1; i++) {
-    ui::Range& former = copy[i]->range;
-    ui::Range& latter = copy[i + 1]->range;
-    if (former.is_empty()) {
-      LOG(WARNING) << "Empty range at " << i << " :" << former;
-      return false;
-    }
-    if (!former.IsValid()) {
-      LOG(WARNING) << "Invalid range at " << i << " :" << former;
-      return false;
-    }
-    if (former.GetMax() > latter.GetMin()) {
-      LOG(WARNING) <<
-          "Sorting error. former:" << former << " latter:" << latter;
-      return false;
-    }
-    if (former.Intersects(latter)) {
-      LOG(ERROR) << "overlapping style range found: former=" << former
-                 << ", latter=" << latter;
-      return false;
-    }
-  }
-  if ((*copy.rbegin())->range.is_empty()) {
-    LOG(WARNING) << "Empty range at end";
-    return false;
-  }
-  if (!(*copy.rbegin())->range.IsValid()) {
-    LOG(WARNING) << "Invalid range at end";
-    return false;
-  }
-  return true;
-}
-#endif
-
-void InsertStyle(TextStyleRanges* style_ranges,
-                 TextStyleRange* text_style_range) {
-  const ui::Range& range = text_style_range->range;
-  if (range.is_empty() || !range.IsValid()) {
-    delete text_style_range;
-    return;
-  }
-  CHECK(!range.is_reversed());
-
-  // Invariant condition: all items in the range has no overlaps.
-  TextStyleRanges::size_type index = 0;
-  while (index < style_ranges->size()) {
-    TextStyleRange* current = (*style_ranges)[index];
-    if (range.Contains(current->range)) {
-      style_ranges->erase(style_ranges->begin() + index);
-      delete current;
-      continue;
-    } else if (current->range.Contains(range) &&
-               range.start() != current->range.start() &&
-               range.end() != current->range.end()) {
-      // Split current style into two styles.
-      style_ranges->push_back(
-          new TextStyleRange(current->style,
-                             range.GetMax(), current->range.GetMax()));
-      current->range.set_end(range.GetMin());
-    } else if (range.Intersects(current->range)) {
-      if (current->range.GetMax() <= range.GetMax()) {
-        current->range.set_end(range.GetMin());
-      } else {
-        current->range.set_start(range.GetMax());
-      }
-    } else {
-      // No change needed. Pass it through.
-    }
-    index ++;
-  }
-  // Add the new range at the end.
-  style_ranges->push_back(text_style_range);
-#ifndef NDEBUG
-  DCHECK(CheckInvariant(style_ranges));
-#endif
-}
-
-}  // namespace
 
 using internal::Edit;
 using internal::DeleteEdit;
@@ -383,70 +276,18 @@ TextfieldViewsModel::Delegate::~Delegate() {
 
 TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
     : delegate_(delegate),
-      cursor_pos_(0),
-      selection_start_(0),
-      composition_start_(0),
-      composition_end_(0),
+      render_text_(gfx::RenderText::CreateRenderText()),
       is_password_(false),
-      current_edit_(edit_history_.end()),
-      sort_style_ranges_(false) {
+      current_edit_(edit_history_.end()) {
 }
 
 TextfieldViewsModel::~TextfieldViewsModel() {
   ClearEditHistory();
   ClearComposition();
-  ClearAllTextStyles();
-  TextStyles::iterator begin = text_styles_.begin();
-  TextStyles::iterator end = text_styles_.end();
-  while (begin != end) {
-    TextStyles::iterator temp = begin;
-    ++begin;
-    delete *temp;
-  }
 }
 
-void TextfieldViewsModel::GetFragments(TextFragments* fragments) {
-  static const TextStyle* kNormalStyle = new TextStyle();
-
-  if (sort_style_ranges_) {
-    sort_style_ranges_ = false;
-    std::sort(style_ranges_.begin(), style_ranges_.end(),
-              TextStyleRangeComparator);
-  }
-
-  // If a user is compositing text, use composition's style.
-  // TODO(oshima): ask suzhe for expected behavior.
-  const TextStyleRanges& ranges = composition_style_ranges_.size() > 0 ?
-      composition_style_ranges_ : style_ranges_;
-  TextStyleRanges::const_iterator next_ = ranges.begin();
-
-  DCHECK(fragments);
-  fragments->clear();
-  size_t current = 0;
-  size_t end = text_.length();
-  while(next_ != ranges.end()) {
-    const TextStyleRange* text_style_range = *next_++;
-    const ui::Range& range = text_style_range->range;
-    const TextStyle* style = text_style_range->style;
-
-    DCHECK(!range.is_empty());
-    DCHECK(range.IsValid());
-    if (range.is_empty() || !range.IsValid())
-      continue;
-
-    size_t start = std::min(range.start(), end);
-
-    if (start == end)  // Exit loop if it reached the end.
-      break;
-    else if (current < start)  // Fill the gap to next style with normal text.
-      fragments->push_back(TextFragment(current, start, kNormalStyle));
-
-    current = std::min(range.end(), end);
-    fragments->push_back(TextFragment(start, current, style));
-  }
-  // If there is any text left add it as normal text.
-  if (current != end)
-    fragments->push_back(TextFragment(current, end, kNormalStyle));
+const string16& TextfieldViewsModel::GetText() const {
+  return render_text_->text();
 }
 
 bool TextfieldViewsModel::SetText(const string16& text) {
@@ -455,10 +296,10 @@ bool TextfieldViewsModel::SetText(const string16& text) {
     ConfirmCompositionText();
     changed = true;
   }
-  if (text_ != text) {
+  if (GetText() != text) {
     if (changed)  // No need to remember composition.
       Undo();
-    size_t old_cursor = cursor_pos_;
+    size_t old_cursor = GetCursorPosition();
     size_t new_cursor = old_cursor > text.length() ? text.length() : old_cursor;
     SelectAll();
     // If there is a composition text, don't merge with previous edit.
@@ -469,7 +310,7 @@ bool TextfieldViewsModel::SetText(const string16& text) {
         new_cursor,
         text,
         0U);
-    cursor_pos_ = new_cursor;
+    render_text_->SetCursorPosition(new_cursor);
   }
   ClearSelection();
   return changed;
@@ -478,10 +319,10 @@ bool TextfieldViewsModel::SetText(const string16& text) {
 void TextfieldViewsModel::Append(const string16& text) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  size_t save = cursor_pos_;
-  MoveCursorToEnd(false);
+  size_t save = GetCursorPosition();
+  MoveCursorRight(gfx::LINE_BREAK, false);
   InsertText(text);
-  cursor_pos_ = save;
+  render_text_->SetCursorPosition(save);
   ClearSelection();
 }
 
@@ -495,8 +336,9 @@ bool TextfieldViewsModel::Delete() {
     DeleteSelection();
     return true;
   }
-  if (text_.length() > cursor_pos_) {
-    ExecuteAndRecordDelete(cursor_pos_, cursor_pos_ + 1, true);
+  if (GetText().length() > GetCursorPosition()) {
+    size_t cursor_position = GetCursorPosition();
+    ExecuteAndRecordDelete(cursor_position, cursor_position + 1, true);
     return true;
   }
   return false;
@@ -512,194 +354,79 @@ bool TextfieldViewsModel::Backspace() {
     DeleteSelection();
     return true;
   }
-  if (cursor_pos_ > 0) {
-    ExecuteAndRecordDelete(cursor_pos_, cursor_pos_ - 1, true);
+  if (GetCursorPosition() > 0) {
+    size_t cursor_position = GetCursorPosition();
+    ExecuteAndRecordDelete(cursor_position, cursor_position - 1, true);
     return true;
   }
   return false;
 }
 
-void TextfieldViewsModel::MoveCursorLeft(bool select) {
+size_t TextfieldViewsModel::GetCursorPosition() const {
+  return render_text_->GetCursorPosition();
+}
+
+void TextfieldViewsModel::MoveCursorLeft(gfx::BreakType break_type,
+                                         bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  // TODO(oshima): support BIDI
-  if (select) {
-    if (cursor_pos_ > 0)
-      cursor_pos_--;
-  } else {
-    if (HasSelection())
-      cursor_pos_ = std::min(cursor_pos_, selection_start_);
-    else if (cursor_pos_ > 0)
-      cursor_pos_--;
-    ClearSelection();
-  }
+  render_text_->MoveCursorLeft(break_type, select);
 }
 
-void TextfieldViewsModel::MoveCursorRight(bool select) {
+void TextfieldViewsModel::MoveCursorRight(gfx::BreakType break_type,
+                                          bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  // TODO(oshima): support BIDI
-  if (select) {
-    cursor_pos_ = std::min(text_.length(),  cursor_pos_ + 1);
-  } else {
-    if  (HasSelection())
-      cursor_pos_ = std::max(cursor_pos_, selection_start_);
-    else
-      cursor_pos_ = std::min(text_.length(),  cursor_pos_ + 1);
-    ClearSelection();
-  }
-}
-
-void TextfieldViewsModel::MoveCursorToPreviousWord(bool select) {
-  if (HasCompositionText())
-    ConfirmCompositionText();
-  // Notes: We always iterate words from the begining.
-  // This is probably fast enough for our usage, but we may
-  // want to modify WordIterator so that it can start from the
-  // middle of string and advance backwards.
-  base::i18n::BreakIterator iter(text_, base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return;
-  int last = 0;
-  while (iter.Advance()) {
-    if (iter.IsWord()) {
-      size_t begin = iter.pos() - iter.GetString().length();
-      if (begin == cursor_pos_) {
-        // The cursor is at the beginning of a word.
-        // Move to previous word.
-        break;
-      } else if(iter.pos() >= cursor_pos_) {
-        // The cursor is in the middle or at the end of a word.
-        // Move to the top of current word.
-        last = begin;
-        break;
-      } else {
-        last = iter.pos() - iter.GetString().length();
-      }
-    }
-  }
-
-  cursor_pos_ = last;
-  if (!select)
-    ClearSelection();
-}
-
-void TextfieldViewsModel::MoveCursorToNextWord(bool select) {
-  if (HasCompositionText())
-    ConfirmCompositionText();
-  base::i18n::BreakIterator iter(text_, base::i18n::BreakIterator::BREAK_WORD);
-  bool success = iter.Init();
-  DCHECK(success);
-  if (!success)
-    return;
-  size_t pos = 0;
-  while (iter.Advance()) {
-    pos = iter.pos();
-    if (iter.IsWord() && pos > cursor_pos_) {
-      break;
-    }
-  }
-  cursor_pos_ = pos;
-  if (!select)
-    ClearSelection();
-}
-
-void TextfieldViewsModel::MoveCursorToHome(bool select) {
-  MoveCursorTo(0, select);
-}
-
-void TextfieldViewsModel::MoveCursorToEnd(bool select) {
-  MoveCursorTo(text_.length(), select);
+  render_text_->MoveCursorRight(break_type, select);
 }
 
 bool TextfieldViewsModel::MoveCursorTo(size_t pos, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  bool changed = cursor_pos_ != pos || select != HasSelection();
-  cursor_pos_ = pos;
-  if (!select)
-    ClearSelection();
-  return changed;
+  return render_text_->MoveCursorTo(pos, select);
 }
 
-gfx::Rect TextfieldViewsModel::GetSelectionBounds(const gfx::Font& font) const {
-  if (!HasSelection())
-    return gfx::Rect();
-  size_t start = std::min(selection_start_, cursor_pos_);
-  size_t end = std::max(selection_start_, cursor_pos_);
-  int start_x = font.GetStringWidth(text_.substr(0, start));
-  int end_x = font.GetStringWidth(text_.substr(0, end));
-  return gfx::Rect(start_x, 0, end_x - start_x, font.GetHeight());
+bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
+  if (HasCompositionText())
+    ConfirmCompositionText();
+  return render_text_->MoveCursorTo(point, select);
+}
+
+std::vector<gfx::Rect> TextfieldViewsModel::GetSelectionBounds() const {
+  return render_text_->GetSubstringBounds(render_text_->GetSelection());
 }
 
 string16 TextfieldViewsModel::GetSelectedText() const {
-  return text_.substr(
-      std::min(cursor_pos_, selection_start_),
-      std::abs(static_cast<long>(cursor_pos_ - selection_start_)));
+  ui::Range selection = render_text_->GetSelection();
+  return GetText().substr(selection.GetMin(), selection.length());
 }
 
 void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
-  *range = ui::Range(selection_start_, cursor_pos_);
+  *range = render_text_->GetSelection();
 }
 
 void TextfieldViewsModel::SelectRange(const ui::Range& range) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  selection_start_ = GetSafePosition(range.start());
-  cursor_pos_ = GetSafePosition(range.end());
+  render_text_->SetSelection(range);
 }
 
 void TextfieldViewsModel::SelectAll() {
   if (HasCompositionText())
     ConfirmCompositionText();
-  // SelectAll selects towards the end.
-  cursor_pos_ = text_.length();
-  selection_start_ = 0;
+  render_text_->SelectAll();
 }
 
 void TextfieldViewsModel::SelectWord() {
   if (HasCompositionText())
     ConfirmCompositionText();
-  // First we setup selection_start_ and cursor_pos_. There are so many cases
-  // because we try to emulate what select-word looks like in a gtk textfield.
-  // See associated testcase for different cases.
-  if (cursor_pos_ > 0 && cursor_pos_ < text_.length()) {
-    if (isalnum(text_[cursor_pos_])) {
-      selection_start_ = cursor_pos_;
-      cursor_pos_++;
-    } else
-      selection_start_ = cursor_pos_ - 1;
-  } else if (cursor_pos_ == 0) {
-    selection_start_ = cursor_pos_;
-    if (text_.length() > 0)
-      cursor_pos_++;
-  } else {
-    selection_start_ = cursor_pos_ - 1;
-  }
-
-  // Now we move selection_start_ to beginning of selection. Selection boundary
-  // is defined as the position where we have alpha-num character on one side
-  // and non-alpha-num char on the other side.
-  for (; selection_start_ > 0; selection_start_--) {
-    if (IsPositionAtWordSelectionBoundary(selection_start_))
-      break;
-  }
-
-  // Now we move cursor_pos_ to end of selection. Selection boundary
-  // is defined as the position where we have alpha-num character on one side
-  // and non-alpha-num char on the other side.
-  for (; cursor_pos_ < text_.length(); cursor_pos_++) {
-    if (IsPositionAtWordSelectionBoundary(cursor_pos_))
-      break;
-  }
+  render_text_->SelectWord();
 }
 
 void TextfieldViewsModel::ClearSelection() {
   if (HasCompositionText())
     ConfirmCompositionText();
-  selection_start_ = cursor_pos_;
+  render_text_->ClearSelection();
 }
 
 bool TextfieldViewsModel::CanUndo() {
@@ -723,8 +450,8 @@ bool TextfieldViewsModel::Undo() {
   if (HasCompositionText())  // safe guard for release build.
     CancelCompositionText();
 
-  string16 old = text_;
-  size_t old_cursor = cursor_pos_;
+  string16 old = GetText();
+  size_t old_cursor = GetCursorPosition();
   (*current_edit_)->Commit();
   (*current_edit_)->Undo(this);
 
@@ -732,7 +459,7 @@ bool TextfieldViewsModel::Undo() {
     current_edit_ = edit_history_.end();
   else
     current_edit_--;
-  return old != text_ || old_cursor != cursor_pos_;
+  return old != GetText() || old_cursor != GetCursorPosition();
 }
 
 bool TextfieldViewsModel::Redo() {
@@ -746,10 +473,14 @@ bool TextfieldViewsModel::Redo() {
     current_edit_ = edit_history_.begin();
   else
     current_edit_ ++;
-  string16 old = text_;
-  size_t old_cursor = cursor_pos_;
+  string16 old = GetText();
+  size_t old_cursor = GetCursorPosition();
   (*current_edit_)->Redo(this);
-  return old != text_ || old_cursor != cursor_pos_;
+  return old != GetText() || old_cursor != GetCursorPosition();
+}
+
+string16 TextfieldViewsModel::GetVisibleText() const {
+  return GetVisibleText(0U, GetText().length());
 }
 
 bool TextfieldViewsModel::Cut() {
@@ -761,7 +492,8 @@ bool TextfieldViewsModel::Cut() {
     // than beginning, unlike Delete/Backspace.
     // TODO(oshima): Change Delete/Backspace to use DeleteSelection,
     // update DeleteEdit and remove this trick.
-    std::swap(cursor_pos_, selection_start_);
+    ui::Range selection = render_text_->GetSelection();
+    render_text_->SetSelection(ui::Range(selection.end(), selection.start()));
     DeleteSelection();
     return true;
   }
@@ -787,13 +519,14 @@ bool TextfieldViewsModel::Paste() {
 }
 
 bool TextfieldViewsModel::HasSelection() const {
-  return selection_start_ != cursor_pos_;
+  return !render_text_->GetSelection().is_empty();
 }
 
 void TextfieldViewsModel::DeleteSelection() {
   DCHECK(!HasCompositionText());
   DCHECK(HasSelection());
-  ExecuteAndRecordDelete(selection_start_, cursor_pos_, false);
+  ui::Range selection = render_text_->GetSelection();
+  ExecuteAndRecordDelete(selection.start(), selection.end(), false);
 }
 
 void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
@@ -801,26 +534,24 @@ void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
   if (HasCompositionText())
     CancelCompositionText();
   ExecuteAndRecordReplace(DO_NOT_MERGE,
-                          cursor_pos_,
+                          GetCursorPosition(),
                           position + text.length(),
                           text,
                           position);
 }
 
 string16 TextfieldViewsModel::GetTextFromRange(const ui::Range& range) const {
-  if (range.IsValid() && range.GetMin() < text_.length())
-    return text_.substr(range.GetMin(), range.length());
+  if (range.IsValid() && range.GetMin() < GetText().length())
+    return GetText().substr(range.GetMin(), range.length());
   return string16();
 }
 
 void TextfieldViewsModel::GetTextRange(ui::Range* range) const {
-  *range = ui::Range(0, text_.length());
+  *range = ui::Range(0, GetText().length());
 }
 
 void TextfieldViewsModel::SetCompositionText(
     const ui::CompositionText& composition) {
-  static const TextStyle* composition_style = CreateUnderlineStyle();
-
   if (HasCompositionText())
     CancelCompositionText();
   else if (HasSelection())
@@ -829,95 +560,55 @@ void TextfieldViewsModel::SetCompositionText(
   if (composition.text.empty())
     return;
 
-  size_t length = composition.text.length();
-  text_.insert(cursor_pos_, composition.text);
-  composition_start_ = cursor_pos_;
-  composition_end_ = composition_start_ + length;
-  for (ui::CompositionUnderlines::const_iterator iter =
-           composition.underlines.begin();
-       iter != composition.underlines.end();
-       iter++) {
-    size_t start = composition_start_ + iter->start_offset;
-    size_t end = composition_start_ + iter->end_offset;
-    InsertStyle(&composition_style_ranges_,
-                new TextStyleRange(composition_style, start, end));
-  }
-  std::sort(composition_style_ranges_.begin(),
-            composition_style_ranges_.end(), TextStyleRangeComparator);
+  size_t cursor = GetCursorPosition();
+  string16 new_text = GetText();
+  render_text_->SetText(new_text.insert(cursor, composition.text));
+  ui::Range range(cursor, cursor + composition.text.length());
+  render_text_->SetCompositionRange(range);
+  // TODO(msw): Support multiple composition underline ranges.
 
-  if (composition.selection.IsValid()) {
-    selection_start_ =
-        std::min(composition_start_ + composition.selection.start(),
-                 composition_end_);
-    cursor_pos_ =
-        std::min(composition_start_ + composition.selection.end(),
-                 composition_end_);
-  } else {
-    cursor_pos_ = composition_end_;
-    ClearSelection();
-  }
+  if (composition.selection.IsValid())
+    render_text_->SetSelection(ui::Range(
+        std::min(range.start() + composition.selection.start(), range.end()),
+        std::min(range.start() + composition.selection.end(), range.end())));
+  else
+    render_text_->SetCursorPosition(range.end());
 }
 
 void TextfieldViewsModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
-  string16 new_text =
-      text_.substr(composition_start_, composition_end_ - composition_start_);
+  ui::Range range = render_text_->GetCompositionRange();
+  string16 text = GetText().substr(range.start(), range.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
-  AddOrMergeEditHistory(new InsertEdit(false, new_text, composition_start_));
-  cursor_pos_ = composition_end_;
+  AddOrMergeEditHistory(new InsertEdit(false, text, range.start()));
+  render_text_->SetCursorPosition(range.end());
   ClearComposition();
-  ClearSelection();
   if (delegate_)
     delegate_->OnCompositionTextConfirmedOrCleared();
 }
 
 void TextfieldViewsModel::CancelCompositionText() {
   DCHECK(HasCompositionText());
-  text_.erase(composition_start_, composition_end_ - composition_start_);
-  cursor_pos_ = composition_start_;
+  ui::Range range = render_text_->GetCompositionRange();
+  string16 new_text = GetText();
+  render_text_->SetText(new_text.erase(range.start(), range.length()));
+  render_text_->SetCursorPosition(range.start());
   ClearComposition();
-  ClearSelection();
   if (delegate_)
     delegate_->OnCompositionTextConfirmedOrCleared();
 }
 
 void TextfieldViewsModel::ClearComposition() {
-  composition_start_ = composition_end_ = string16::npos;
-  STLDeleteContainerPointers(composition_style_ranges_.begin(),
-                             composition_style_ranges_.end());
-  composition_style_ranges_.clear();
-}
-
-void TextfieldViewsModel::ApplyTextStyle(const TextStyle* style,
-                                         const ui::Range& range) {
-  TextStyleRange* new_text_style_range = range.is_reversed() ?
-      new TextStyleRange(style, ui::Range(range.end(), range.start())) :
-      new TextStyleRange(style, range);
-  InsertStyle(&style_ranges_, new_text_style_range);
-  sort_style_ranges_ = true;
+  render_text_->SetCompositionRange(ui::Range::InvalidRange());
 }
 
 void TextfieldViewsModel::GetCompositionTextRange(ui::Range* range) const {
-  if (HasCompositionText())
-    *range = ui::Range(composition_start_, composition_end_);
-  else
-    *range = ui::Range::InvalidRange();
+  *range = ui::Range(render_text_->GetCompositionRange());
 }
 
 bool TextfieldViewsModel::HasCompositionText() const {
-  return composition_start_ != composition_end_;
-}
-
-TextStyle* TextfieldViewsModel::CreateTextStyle() {
-  TextStyle* style = new TextStyle();
-  text_styles_.push_back(style);
-  return style;
-}
-
-void TextfieldViewsModel::ClearAllTextStyles() {
-  STLDeleteContainerPointers(style_ranges_.begin(), style_ranges_.end());
-  style_ranges_.clear();
+  return !render_text_->GetCompositionRange().is_empty();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -927,19 +618,7 @@ string16 TextfieldViewsModel::GetVisibleText(size_t begin, size_t end) const {
   DCHECK(end >= begin);
   if (is_password_)
     return string16(end - begin, '*');
-  return text_.substr(begin, end - begin);
-}
-
-bool TextfieldViewsModel::IsPositionAtWordSelectionBoundary(size_t pos) {
-  return (isalnum(text_[pos - 1]) && !isalnum(text_[pos])) ||
-      (!isalnum(text_[pos - 1]) && isalnum(text_[pos]));
-}
-
-size_t TextfieldViewsModel::GetSafePosition(size_t position) const {
-  if (position > text_.length()) {
-    return text_.length();
-  }
-  return position;
+  return GetText().substr(begin, end - begin);
 }
 
 void TextfieldViewsModel::InsertTextInternal(const string16& text,
@@ -957,10 +636,12 @@ void TextfieldViewsModel::InsertTextInternal(const string16& text,
 
 void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
                                               bool mergeable) {
-  if (HasCompositionText())
+  if (HasCompositionText()) {
     CancelCompositionText();
-  else if (!HasSelection())
-    SelectRange(ui::Range(cursor_pos_ + text.length(), cursor_pos_));
+  } else if (!HasSelection()) {
+    size_t cursor = GetCursorPosition();
+    render_text_->SetSelection(ui::Range(cursor + text.length(), cursor));
+  }
   // Edit history is recorded in InsertText.
   InsertTextInternal(text, mergeable);
 }
@@ -989,7 +670,7 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(size_t from,
                                                  size_t to,
                                                  bool mergeable) {
   size_t old_text_start = std::min(from, to);
-  const string16 text = text_.substr(old_text_start,
+  const string16 text = GetText().substr(old_text_start,
                                      std::abs(static_cast<long>(from - to)));
   bool backward = from > to;
   Edit* edit = new DeleteEdit(mergeable, text, old_text_start, backward);
@@ -1001,10 +682,10 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(size_t from,
 
 void TextfieldViewsModel::ExecuteAndRecordReplaceSelection(
     MergeType merge_type, const string16& new_text) {
-  size_t new_text_start = std::min(cursor_pos_, selection_start_);
+  size_t new_text_start = render_text_->GetSelection().GetMin();
   size_t new_cursor_pos = new_text_start + new_text.length();
   ExecuteAndRecordReplace(merge_type,
-                          cursor_pos_,
+                          GetCursorPosition(),
                           new_cursor_pos,
                           new_text,
                           new_text_start);
@@ -1015,8 +696,8 @@ void TextfieldViewsModel::ExecuteAndRecordReplace(MergeType merge_type,
                                                   size_t new_cursor_pos,
                                                   const string16& new_text,
                                                   size_t new_text_start) {
-  size_t old_text_start = std::min(cursor_pos_, selection_start_);
-  bool backward = selection_start_ > cursor_pos_;
+  size_t old_text_start = render_text_->GetSelection().GetMin();
+  bool backward = render_text_->GetSelection().is_reversed();
   Edit* edit = new ReplaceEdit(merge_type,
                                GetSelectedText(),
                                old_cursor_pos,
@@ -1033,7 +714,7 @@ void TextfieldViewsModel::ExecuteAndRecordReplace(MergeType merge_type,
 
 void TextfieldViewsModel::ExecuteAndRecordInsert(const string16& text,
                                                  bool mergeable) {
-  Edit* edit = new InsertEdit(mergeable, text, cursor_pos_);
+  Edit* edit = new InsertEdit(mergeable, text, GetCursorPosition());
   bool delete_edit = AddOrMergeEditHistory(edit);
   edit->Redo(this);
   if (delete_edit)
@@ -1067,21 +748,14 @@ void TextfieldViewsModel::ModifyText(size_t delete_from,
                                      size_t new_text_insert_at,
                                      size_t new_cursor_pos) {
   DCHECK_LE(delete_from, delete_to);
+  string16 text = GetText();
   if (delete_from != delete_to)
-    text_.erase(delete_from, delete_to - delete_from);
+    render_text_->SetText(text.erase(delete_from, delete_to - delete_from));
   if (!new_text.empty())
-    text_.insert(new_text_insert_at, new_text);
-  cursor_pos_ = new_cursor_pos;
-  ClearSelection();
+    render_text_->SetText(text.insert(new_text_insert_at, new_text));
+  render_text_->SetCursorPosition(new_cursor_pos);
   // TODO(oshima): mac selects the text that is just undone (but gtk doesn't).
   // This looks fine feature and we may want to do the same.
-}
-
-// static
-TextStyle* TextfieldViewsModel::CreateUnderlineStyle() {
-  TextStyle* style = new TextStyle();
-  style->set_underline(true);
-  return style;
 }
 
 }  // namespace views

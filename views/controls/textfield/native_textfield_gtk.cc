@@ -283,17 +283,11 @@ TextInputClient* NativeTextfieldGtk::GetTextInputClient() {
   return NULL;
 }
 
-TextStyle* NativeTextfieldGtk::CreateTextStyle() {
-  NOTREACHED();
-  return NULL;
-}
-
-void NativeTextfieldGtk::ApplyTextStyle(const TextStyle* style,
-                                        const ui::Range& range) {
+void NativeTextfieldGtk::ApplyStyleRange(const gfx::StyleRange& style) {
   NOTREACHED();
 }
 
-void NativeTextfieldGtk::ClearAllTextStyles() {
+void NativeTextfieldGtk::ApplyDefaultStyle() {
   NOTREACHED();
 }
 
