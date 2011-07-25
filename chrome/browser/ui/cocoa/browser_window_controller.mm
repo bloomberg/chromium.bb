@@ -1740,9 +1740,11 @@ typedef NSInteger NSWindowAnimationBehavior;
   // gesture does not do this, so it must be manually recognized. See the note
   // inside |-recognizeTwoFingerGestures| for detailed information on the
   // interaction of the different preferences.
+  if (![self recognizeTwoFingerGestures])
+    return;
   NSSet* touches = [event touchesMatchingPhase:NSTouchPhaseAny
                                         inView:nil];
-  if ([self recognizeTwoFingerGestures] && [touches count] >= 2) {
+  if ([touches count] >= 2) {
     twoFingerGestureTouches_.reset([[NSMutableDictionary alloc] init]);
     for (NSTouch* touch in touches) {
       [twoFingerGestureTouches_ setObject:touch forKey:touch.identity];
