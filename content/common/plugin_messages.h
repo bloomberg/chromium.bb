@@ -52,16 +52,10 @@ IPC_STRUCT_BEGIN(PluginMsg_UpdateGeometry_Param)
   IPC_STRUCT_MEMBER(gfx::Rect, window_rect)
   IPC_STRUCT_MEMBER(gfx::Rect, clip_rect)
   IPC_STRUCT_MEMBER(bool, transparent)
-  IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer)
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer0)
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer1)
+  IPC_STRUCT_MEMBER(int, windowless_buffer_index)
   IPC_STRUCT_MEMBER(TransportDIB::Handle, background_buffer)
-
-#if defined(OS_MACOSX)
-  // This field contains a key that the plug-in process is expected to return
-  // to the renderer in its ACK message, unless the value is -1, in which case
-  // no ACK message is required.  Other than the special -1 value, the values
-  // used in ack_key are opaque to the plug-in process.
-  IPC_STRUCT_MEMBER(int, ack_key)
-#endif
 IPC_STRUCT_END()
 
 //-----------------------------------------------------------------------------
@@ -323,8 +317,9 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_URLRequest,
 IPC_MESSAGE_ROUTED1(PluginHostMsg_CancelResource,
                     int /* id */)
 
-IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
-                    gfx::Rect /* rect */)
+IPC_MESSAGE_ROUTED2(PluginHostMsg_InvalidateRect,
+                    gfx::Rect /* rect */,
+                    bool /* allow_buffer_flipping */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetWindowScriptNPObject,
                            int /* route id */,
@@ -364,9 +359,6 @@ IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
 IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
 
 #if defined(OS_MACOSX)
-IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,
-                    int /* ack_key */)
-
 IPC_MESSAGE_ROUTED1(PluginHostMsg_FocusChanged,
                     bool /* focused */)
 

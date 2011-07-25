@@ -185,6 +185,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // and all callers will use the Paint defined above.
   void CGPaint(CGContextRef context, const gfx::Rect& rect);
 
+  bool AllowBufferFlipping();
 #endif  // OS_MACOSX
 
   gfx::PluginWindowHandle windowed_handle() const {

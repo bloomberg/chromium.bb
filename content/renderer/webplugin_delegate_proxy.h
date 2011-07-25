@@ -127,6 +127,11 @@ class WebPluginDelegateProxy
   virtual ~WebPluginDelegateProxy();
 
  private:
+  struct SharedBitmap {
+    scoped_ptr<TransportDIB> dib;
+    scoped_ptr<skia::PlatformCanvas> canvas;
+  };
+
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
   void OnSetWindow(gfx::PluginWindowHandle window);
@@ -137,7 +142,7 @@ class WebPluginDelegateProxy
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
   void OnCancelResource(int id);
-  void OnInvalidateRect(const gfx::Rect& rect);
+  void OnInvalidateRect(const gfx::Rect& rect, bool allow_buffer_flipping);
   void OnGetWindowScriptNPObject(int route_id, bool* success);
   void OnGetPluginElement(int route_id, bool* success);
   void OnSetCookie(const GURL& url,
@@ -156,7 +161,6 @@ class WebPluginDelegateProxy
   void OnFocusChanged(bool focused);
   void OnStartIme();
   void OnBindFakePluginWindowHandle(bool opaque);
-  void OnUpdateGeometry_ACK(int ack_key);
   void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                         int32 width,
                                         int32 height,
@@ -174,6 +178,9 @@ class WebPluginDelegateProxy
 
   void OnURLRedirectResponse(bool allow, int resource_id);
 
+  // Helper function that sends the UpdateGeometry message.
+  void SendUpdateGeometry(bool bitmaps_changed);
+
   // Draw a graphic indicating a crashed plugin.
   void PaintSadPlugin(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
 
@@ -182,11 +189,40 @@ class WebPluginDelegateProxy
   bool BackgroundChanged(gfx::NativeDrawingContext context,
                          const gfx::Rect& rect);
 
-  // Copies the given rectangle from the transport bitmap to the backing store.
-  void CopyFromTransportToBacking(const gfx::Rect& rect);
+  // Copies the given rectangle from the back-buffer transport_stores_ bitmap to
+  // the front-buffer transport_stores_ bitmap.
+  void CopyFromBackBufferToFrontBuffer(const gfx::Rect& rect);
+
+  // Updates the front-buffer with the given rectangle from the back-buffer,
+  // either by copying the rectangle or flipping the buffers.
+  void UpdateFrontBuffer(const gfx::Rect& rect, bool allow_buffer_flipping);
 
   // Clears the shared memory section and canvases used for windowless plugins.
   void ResetWindowlessBitmaps();
+
+  int front_buffer_index() const {
+    return front_buffer_index_;
+  }
+
+  int back_buffer_index() const {
+    return 1 - front_buffer_index_;
+  }
+
+  skia::PlatformCanvas* front_buffer_canvas() const {
+    return transport_stores_[front_buffer_index()].canvas.get();
+  }
+
+  skia::PlatformCanvas* back_buffer_canvas() const {
+    return transport_stores_[back_buffer_index()].canvas.get();
+  }
+
+  TransportDIB* front_buffer_dib() const {
+    return transport_stores_[front_buffer_index()].dib.get();
+  }
+
+  TransportDIB* back_buffer_dib() const {
+    return transport_stores_[back_buffer_index()].dib.get();
+  }
 
 #if !defined(OS_WIN)
   // Creates a process-local memory section and canvas. PlatformCanvas on
@@ -211,10 +247,6 @@ class WebPluginDelegateProxy
   // the plug-in. Returns true if it successfully sets the window handle on the
   // plug-in.
   bool BindFakePluginWindowHandle(bool opaque);
-
-  typedef base::hash_map<int, linked_ptr<TransportDIB> > OldTransportDIBMap;
-
-  OldTransportDIBMap old_transport_dibs_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
@@ -248,23 +280,23 @@ class WebPluginDelegateProxy
   bool invalidate_pending_;
 
   // Used to desynchronize windowless painting.  When WebKit paints, we bitblt
-  // from our backing store of what the plugin rectangle looks like.  The
-  // plugin paints into the transport store, and we copy that to our backing
-  // store when we get an invalidate from it.  The background bitmap is used
-  // for transparent plugins, as they need the backgroud data during painting.
+  // from our front buffer store of what the plugin rectangle looks like.  The
+  // plugin paints into the back buffer store, and we swap the buffers when we
+  // get an invalidate from it.  The background bitmap is used for transparent
+  // plugins, as they need the background data during painting.
   bool transparent_;
-#if defined(OS_WIN)
-  scoped_ptr<TransportDIB> backing_store_;
-#else
-  std::vector<uint8> backing_store_;
-#endif
-  scoped_ptr<skia::PlatformCanvas> backing_store_canvas_;
-  scoped_ptr<TransportDIB> transport_store_;
-  scoped_ptr<skia::PlatformCanvas> transport_store_canvas_;
-  scoped_ptr<TransportDIB> background_store_;
-  scoped_ptr<skia::PlatformCanvas> background_store_canvas_;
-  // This lets us know which portion of the backing store has been painted into.
-  gfx::Rect backing_store_painted_;
+  // The index in the transport_stores_ array of the current front buffer
+  // (i.e., the buffer to display).
+  int front_buffer_index_;
+  SharedBitmap transport_stores_[2];
+  SharedBitmap background_store_;
+  // This lets us know the total portion of the transport store that has been
+  // painted since the buffers were created.
+  gfx::Rect transport_store_painted_;
+  // This is a bounding box on the portion of the front-buffer that was painted
+  // on the last buffer flip and which has not yet been re-painted in the
+  // back-buffer.
+  gfx::Rect front_buffer_diff_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;

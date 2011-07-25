@@ -960,6 +960,17 @@ void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
   current_windowless_cursor_.InitFromNSCursor(cursor);
 }
 
+bool WebPluginDelegateImpl::AllowBufferFlipping() {
+#ifndef NP_NO_CARBON
+  // Using buffer flipping for Carbon plugins would require issuing an
+  // NPP_SetWindow() call for every frame, which would likely expose plugin
+  // bugs and/or suboptimal behaviour. So we don't allow it.
+  return instance()->event_model() != NPEventModelCarbon;
+#else
+  return true;
+#endif
+}
+
 #pragma mark -
 #pragma mark Internal Tracking
 

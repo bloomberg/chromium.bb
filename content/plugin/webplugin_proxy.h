@@ -110,14 +110,11 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                                 bool notify_redirects);
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
-                      const TransportDIB::Handle& windowless_buffer,
+                      const TransportDIB::Handle& windowless_buffer0,
+                      const TransportDIB::Handle& windowless_buffer1,
+                      int windowless_buffer_index,
                       const TransportDIB::Handle& background_buffer,
-                      bool transparent
-#if defined(OS_MACOSX)
-                      ,
-                      int ack_key
-#endif
-                      );
+                      bool transparent);
   virtual void CancelDocumentLoad();
   virtual void InitiateHTTPRangeRequest(
       const char* url, const char* range_info, int range_request_id);
@@ -173,10 +170,51 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   // Handler for sending over the paint event to the plugin.
   void OnPaint(const gfx::Rect& damaged_rect);
 
-  // Updates the shared memory section where windowless plugins paint.
-  void SetWindowlessBuffer(const TransportDIB::Handle& windowless_buffer,
-                           const TransportDIB::Handle& background_buffer,
-                           const gfx::Rect& window_rect);
+#if defined(OS_WIN)
+  void CreateCanvasFromHandle(const TransportDIB::Handle& dib_handle,
+                              const gfx::Rect& window_rect,
+                              scoped_ptr<skia::PlatformCanvas>* canvas_out);
+#elif defined(OS_MACOSX)
+  static void CreateDIBAndCGContextFromHandle(
+      const TransportDIB::Handle& dib_handle,
+      const gfx::Rect& window_rect,
+      scoped_ptr<TransportDIB>* dib_out,
+      base::mac::ScopedCFTypeRef<CGContextRef>* cg_context_out);
+#elif defined(USE_X11)
+  static void CreateDIBAndCanvasFromHandle(
+      const TransportDIB::Handle& dib_handle,
+      const gfx::Rect& window_rect,
+      scoped_ptr<TransportDIB>* dib_out,
+      scoped_ptr<skia::PlatformCanvas>* canvas_out);
+
+  static void CreateShmPixmapFromDIB(
+      TransportDIB* dib,
+      const gfx::Rect& window_rect,
+      XID* pixmap_out);
+#endif
+
+  // Updates the shared memory sections where windowless plugins paint.
+  void SetWindowlessBuffers(const TransportDIB::Handle& windowless_buffer0,
+                            const TransportDIB::Handle& windowless_buffer1,
+                            const TransportDIB::Handle& background_buffer,
+                            const gfx::Rect& window_rect);
+
+#if defined(OS_MACOSX)
+  CGContextRef windowless_context() const {
+    return windowless_contexts_[windowless_buffer_index_].get();
+  }
+#else
+  skia::PlatformCanvas* windowless_canvas() const {
+    return windowless_canvases_[windowless_buffer_index_].get();
+  }
+
+#if defined(USE_X11)
+  XID windowless_shm_pixmap() const {
+    return windowless_shm_pixmaps_[windowless_buffer_index_];
+  }
+#endif
+
+#endif
 
   typedef base::hash_map<int, webkit::npapi::WebPluginResourceClient*>
       ResourceClientMap;
@@ -193,26 +231,30 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 
-  // Variables used for desynchronized windowless plugin painting.  See note in
-  // webplugin_delegate_proxy.h for how this works.
+  // Variables used for desynchronized windowless plugin painting. See note in
+  // webplugin_delegate_proxy.h for how this works. The two sets of windowless_*
+  // fields are for the front-buffer and back-buffer of a buffer flipping system
+  // and windowless_buffer_index_ identifies which set we are using as the
+  // back-buffer at any given time.
   bool transparent_;
+  int windowless_buffer_index_;
 #if defined(OS_MACOSX)
-  scoped_ptr<TransportDIB> windowless_dib_;
+  scoped_ptr<TransportDIB> windowless_dibs_[2];
   scoped_ptr<TransportDIB> background_dib_;
-  base::mac::ScopedCFTypeRef<CGContextRef> windowless_context_;
+  base::mac::ScopedCFTypeRef<CGContextRef> windowless_contexts_[2];
   base::mac::ScopedCFTypeRef<CGContextRef> background_context_;
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
-  scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
+  scoped_ptr<skia::PlatformCanvas> windowless_canvases_[2];
   scoped_ptr<skia::PlatformCanvas> background_canvas_;
 
 #if defined(USE_X11)
-  scoped_ptr<TransportDIB> windowless_dib_;
+  scoped_ptr<TransportDIB> windowless_dibs_[2];
   scoped_ptr<TransportDIB> background_dib_;
   // If we can use SHM pixmaps for windowless plugin painting or not.
   bool use_shm_pixmap_;
-  // The SHM pixmap for windowless plugin painting.
-  XID windowless_shm_pixmap_;
+  // The SHM pixmaps for windowless plugin painting.
+  XID windowless_shm_pixmaps_[2];
 #endif
 
 #endif

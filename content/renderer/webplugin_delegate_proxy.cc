@@ -161,15 +161,6 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
   bool multibyte_response_expected_;
 };
 
-#if defined(OS_MACOSX)
-static void ReleaseTransportDIB(TransportDIB* dib) {
-  if (dib) {
-    IPC::Message* message = new ViewHostMsg_FreeTransportDIB(dib->id());
-    RenderThread::current()->Send(message);
-  }
-}
-#endif
-
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
     const base::WeakPtr<RenderView>& render_view)
@@ -183,24 +174,11 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
+      front_buffer_index_(0),
       page_url_(render_view_->webview()->mainFrame()->document().url()) {
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {
-#if defined(OS_MACOSX)
-  // Ask the browser to release old TransportDIB objects for which no
-  // PluginHostMsg_UpdateGeometry_ACK was ever received from the plugin
-  // process.
-  for (OldTransportDIBMap::iterator iterator = old_transport_dibs_.begin();
-       iterator != old_transport_dibs_.end();
-       ++iterator) {
-    ReleaseTransportDIB(iterator->second.get());
-  }
-
-  // Ask the browser to release the "live" TransportDIB object.
-  ReleaseTransportDIB(transport_store_.get());
-  DCHECK(!background_store_.get());
-#endif
   if (npobject_)
     WebBindings::releaseObject(npobject_);
 }
@@ -469,8 +447,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnStartIme);
     IPC_MESSAGE_HANDLER(PluginHostMsg_BindFakePluginWindowHandle,
                         OnBindFakePluginWindowHandle);
-    IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
-                        OnUpdateGeometry_ACK)
     // Used only on 10.6 and later.
     IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceSetIOSurface,
                         OnAcceleratedSurfaceSetIOSurface)
@@ -511,6 +487,69 @@ void WebPluginDelegateProxy::OnChannelError() {
 #endif
 }
 
+static void CopyTransportDIBHandleForMessage(
+    const TransportDIB::Handle& handle_in,
+    TransportDIB::Handle* handle_out) {
+#if defined(OS_MACOSX)
+  // On Mac, TransportDIB::Handle is typedef'ed to FileDescriptor, and
+  // FileDescriptor message fields needs to remain valid until the message is
+  // sent or else the sendmsg() call will fail.
+  if ((handle_out->fd = HANDLE_EINTR(dup(handle_in.fd))) < 0) {
+    PLOG(ERROR) << "dup()";
+    return;
+  }
+  handle_out->auto_close = true;
+#else
+  // Don't need to do anything special for other platforms.
+  *handle_out = handle_in;
+#endif
+}
+
+void WebPluginDelegateProxy::SendUpdateGeometry(
+    bool bitmaps_changed) {
+  PluginMsg_UpdateGeometry_Param param;
+  param.window_rect = plugin_rect_;
+  param.clip_rect = clip_rect_;
+  param.windowless_buffer0 = TransportDIB::DefaultHandleValue();
+  param.windowless_buffer1 = TransportDIB::DefaultHandleValue();
+  param.windowless_buffer_index = back_buffer_index();
+  param.background_buffer = TransportDIB::DefaultHandleValue();
+  param.transparent = transparent_;
+
+#if defined(OS_POSIX)
+  // If we're using POSIX mmap'd TransportDIBs, sending the handle across
+  // IPC establishes a new mapping rather than just sending a window ID,
+  // so only do so if we've actually changed the shared memory bitmaps.
+  if (bitmaps_changed)
+#endif
+  {
+    if (transport_stores_[0].dib.get())
+      CopyTransportDIBHandleForMessage(transport_stores_[0].dib->handle(),
+                                       &param.windowless_buffer0);
+
+    if (transport_stores_[1].dib.get())
+      CopyTransportDIBHandleForMessage(transport_stores_[1].dib->handle(),
+                                       &param.windowless_buffer1);
+
+    if (background_store_.dib.get())
+      CopyTransportDIBHandleForMessage(background_store_.dib->handle(),
+                                       &param.background_buffer);
+  }
+
+  IPC::Message* msg;
+#if defined(OS_WIN)
+  if (UseSynchronousGeometryUpdates()) {
+    msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
+  } else  // NOLINT
+#endif
+  {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, param);
+    msg->set_unblock(true);
+  }
+
+  Send(msg);
+}
+
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
                                             const gfx::Rect& clip_rect) {
   // window_rect becomes either a window in native windowing system
@@ -528,15 +567,10 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   bool bitmaps_changed = false;
 
-  PluginMsg_UpdateGeometry_Param param;
-#if defined(OS_MACOSX)
-  param.ack_key = -1;
-#endif
-
   if (uses_shared_bitmaps_) {
-    if (!backing_store_canvas_.get() ||
-        (window_rect.width() != backing_store_canvas_->getDevice()->width() ||
-         window_rect.height() != backing_store_canvas_->getDevice()->height()))
+    if (!front_buffer_canvas() ||
+        (window_rect.width() != front_buffer_canvas()->getDevice()->width() ||
+         window_rect.height() != front_buffer_canvas()->getDevice()->height()))
     {
       bitmaps_changed = true;
 
@@ -546,30 +580,19 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
       // preserves transparency information (and does the compositing itself)
       // so plugins don't need access to the page background.
       needs_background_store = false;
-      if (transport_store_.get()) {
-        // ResetWindowlessBitmaps inserts the old TransportDIBs into
-        // old_transport_dibs_ using the transport store's file descriptor as
-        // the key.  The constraints on the keys are that -1 is reserved
-        // to mean "no ACK required," and in-flight keys must be unique.
-        // File descriptors will never be -1, and because they won't be closed
-        // until receipt of the ACK, they're unique.
-        param.ack_key = transport_store_->handle().fd;
-      }
 #endif
 
       // Create a shared memory section that the plugin paints into
       // asynchronously.
       ResetWindowlessBitmaps();
       if (!window_rect.IsEmpty()) {
-        if (!CreateSharedBitmap(&transport_store_, &transport_store_canvas_) ||
-#if defined(OS_WIN)
-            !CreateSharedBitmap(&backing_store_, &backing_store_canvas_) ||
-#else
-            !CreateLocalBitmap(&backing_store_, &backing_store_canvas_) ||
-#endif
+        if (!CreateSharedBitmap(&transport_stores_[0].dib,
+                                &transport_stores_[0].canvas) ||
+            !CreateSharedBitmap(&transport_stores_[1].dib,
+                                &transport_stores_[1].canvas) ||
             (needs_background_store &&
-             !CreateSharedBitmap(&background_store_,
-                                 &background_store_canvas_))) {
+             !CreateSharedBitmap(&background_store_.dib,
+                                 &background_store_.canvas))) {
           DCHECK(false);
           ResetWindowlessBitmaps();
           return;
@@ -578,76 +601,19 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     }
   }
 
-  param.window_rect = window_rect;
-  param.clip_rect = clip_rect;
-  param.windowless_buffer = TransportDIB::DefaultHandleValue();
-  param.background_buffer = TransportDIB::DefaultHandleValue();
-  param.transparent = transparent_;
-
-#if defined(OS_POSIX)
-  // If we're using POSIX mmap'd TransportDIBs, sending the handle across
-  // IPC establishes a new mapping rather than just sending a window ID,
-  // so only do so if we've actually recreated the shared memory bitmaps.
-  if (bitmaps_changed)
-#endif
-  {
-    if (transport_store_.get())
-      param.windowless_buffer = transport_store_->handle();
-
-    if (background_store_.get())
-      param.background_buffer = background_store_->handle();
-  }
-
-  IPC::Message* msg;
-#if defined (OS_WIN)
-  if (UseSynchronousGeometryUpdates()) {
-    msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
-  } else  // NOLINT
-#endif
-  {
-    msg = new PluginMsg_UpdateGeometry(instance_id_, param);
-    msg->set_unblock(true);
-  }
-
-  Send(msg);
+  SendUpdateGeometry(bitmaps_changed);
 }
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
-#if defined(OS_MACOSX)
-  DCHECK(!background_store_.get());
-  // The Mac TransportDIB implementation uses base::SharedMemory, which
-  // cannot be disposed of if an in-flight UpdateGeometry message refers to
-  // the shared memory file descriptor.  The old_transport_dibs_ map holds
-  // old TransportDIBs waiting to die, keyed by the |ack_key| values used in
-  // UpdateGeometry messages.  When an UpdateGeometry_ACK message arrives,
-  // the associated TransportDIB can be released.
-  if (transport_store_.get()) {
-    int ack_key = transport_store_->handle().fd;
+  transport_stores_[0].dib.reset();
+  transport_stores_[1].dib.reset();
+  background_store_.dib.reset();
 
-    DCHECK_NE(ack_key, -1);
-
-    // DCHECK_EQ does not work with base::hash_map.
-    DCHECK(old_transport_dibs_.find(ack_key) == old_transport_dibs_.end());
-
-    // Stash the old TransportDIB in the map.  It'll be released when an
-    // ACK message comes in.
-    old_transport_dibs_[ack_key] =
-        linked_ptr<TransportDIB>(transport_store_.release());
-  }
-#else
-  transport_store_.reset();
-  background_store_.reset();
-#endif
-#if defined(OS_WIN)
-  backing_store_.reset();
-#else
-  backing_store_.resize(0);
-#endif
-
-  backing_store_canvas_.reset();
-  transport_store_canvas_.reset();
-  background_store_canvas_.reset();
-  backing_store_painted_ = gfx::Rect();
+  transport_stores_[0].canvas.reset();
+  transport_stores_[1].canvas.reset();
+  background_store_.canvas.reset();
+  transport_store_painted_ = gfx::Rect();
+  front_buffer_diff_ = gfx::Rect();
 }
 
 static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
@@ -681,7 +647,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
 #endif
 #if defined(OS_MACOSX)
   TransportDIB::Handle handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, true, &handle);
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, false, &handle);
   if (!RenderThread::current()->Send(msg))
     return false;
   if (handle.fd < 0)
@@ -700,7 +666,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
 // Flips |rect| vertically within an enclosing rect with height |height|.
 // Intended for converting rects between flipped and non-flipped contexts.
 static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
-  rect->set_y(height - rect->y() - rect->height());
+  rect->set_y(height - rect->bottom());
 }
 #endif
 
@@ -722,7 +688,7 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 
   // We got a paint before the plugin's coordinates, so there's no buffer to
   // copy from.
-  if (!backing_store_canvas_.get())
+  if (!front_buffer_canvas())
     return;
 
   // We're using the native OS APIs from here on out.
@@ -752,20 +718,40 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 #endif
 
   bool background_changed = false;
-  if (background_store_canvas_.get() && BackgroundChanged(context, rect)) {
+  if (background_store_.canvas.get() && BackgroundChanged(context, rect)) {
     background_changed = true;
-    gfx::Rect flipped_offset_rect = offset_rect;
-    BlitContextToCanvas(background_store_canvas_.get(), canvas_rect,
+    BlitContextToCanvas(background_store_.canvas.get(), canvas_rect,
                         context, rect.origin());
   }
 
-  if (background_changed || !backing_store_painted_.Contains(offset_rect)) {
+  // transport_store_painted_ is really a bounding box, so in principle this
+  // check could falsely indicate that we don't need to paint offset_rect, but
+  // in practice it works fine.
+  if (background_changed ||
+      !transport_store_painted_.Contains(offset_rect)) {
     Send(new PluginMsg_Paint(instance_id_, offset_rect));
-    CopyFromTransportToBacking(offset_rect);
+    // Since the plugin is not blocked on the renderer in this context, there is
+    // a chance that it will begin repainting the back-buffer before we complete
+    // capturing the data. Buffer flipping would increase that risk because
+    // geometry update is asynchronous, so we don't want to use buffer flipping
+    // here.
+    UpdateFrontBuffer(offset_rect, false);
   }
 
-  BlitCanvasToContext(context, rect, backing_store_canvas_.get(),
-                      canvas_rect.origin());
+#if defined(OS_MACOSX)
+  // The canvases are flipped relative to the context, so flip the context's
+  // coordinate space so that the blit unflips the content.
+  CGContextSaveGState(context);
+  CGContextScaleCTM(context, 1, -1);
+  rect.set_y(-rect.bottom());
+#endif
+  BlitCanvasToContext(context,
+                      rect,
+                      front_buffer_canvas(),
+                      offset_rect.origin());
+#if defined(OS_MACOSX)
+  CGContextRestoreGState(context);
+#endif
 
   if (invalidate_pending_) {
     // Only send the PaintAck message if this paint is in response to an
@@ -813,7 +799,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
     // getAddr32 doesn't use the translation units, so we have to subtract
     // the plugin origin from the coordinates.
     uint32_t* canvas_row_start =
-        background_store_canvas_->getDevice()->accessBitmap(true).getAddr32(
+        background_store_.canvas->getDevice()->accessBitmap(true).getAddr32(
             check_rect.x() - plugin_rect_.x(), y - plugin_rect_.y());
     if (memcmp(hdc_row_start, canvas_row_start, row_byte_size) != 0)
       return true;
@@ -857,7 +843,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   int page_start_y = content_rect.y() - context_offset_y;
 
   skia::ScopedPlatformPaint scoped_platform_paint(
-      background_store_canvas_.get());
+      background_store_.canvas.get());
   CGContextRef bg_context = scoped_platform_paint.GetPlatformSurface();
 
   DCHECK_EQ(CGBitmapContextGetBitsPerPixel(context),
@@ -878,7 +864,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   int page_start_y = static_cast<int>(page_y_double);
 
   skia::ScopedPlatformPaint scoped_platform_paint(
-      background_store_canvas_.get());
+      background_store_.canvas.get());
   cairo_surface_t* bg_surface =cairo_get_target(
       scoped_platform_paint.GetPlatformSurface());
   DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
@@ -1075,7 +1061,8 @@ void WebPluginDelegateProxy::OnCancelResource(int id) {
     plugin_->CancelResource(id);
 }
 
-void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
+void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect,
+                                              bool allow_buffer_flipping) {
   if (!plugin_)
     return;
 
@@ -1084,7 +1071,10 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   const gfx::Rect clipped_rect(rect.Intersect(gfx::Rect(plugin_rect_.size())));
 
   invalidate_pending_ = true;
-  CopyFromTransportToBacking(clipped_rect);
+  // The plugin is blocked on the renderer because the invalidate message it has
+  // sent us is synchronous, so we can use buffer flipping here if the caller
+  // allows it.
+  UpdateFrontBuffer(clipped_rect, allow_buffer_flipping);
   plugin_->InvalidateRect(clipped_rect);
 }
 
@@ -1149,36 +1139,69 @@ void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
     webkit::PaintSadPlugin(native_context, plugin_rect_, *sad_plugin_);
 }
 
-void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
-  if (!backing_store_canvas_.get()) {
-    return;
-  }
-
-  // Copy the damaged rect from the transport bitmap to the backing store.
+void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
+    const gfx::Rect& rect) {
 #if defined(OS_MACOSX)
   // Blitting the bits directly is much faster than going through CG, and since
-  // since the goal is just to move the raw pixels between two bitmaps with the
-  // same pixel format (no compositing, color correction, etc.), it's safe.
+  // the goal is just to move the raw pixels between two bitmaps with the same
+  // pixel format (no compositing, color correction, etc.), it's safe.
   const size_t stride =
       skia::PlatformCanvas::StrideForWidth(plugin_rect_.width());
   const size_t chunk_size = 4 * rect.width();
-  uint8* source_data = static_cast<uint8*>(transport_store_->memory()) +
+  DCHECK(back_buffer_dib() != NULL);
+  uint8* source_data = static_cast<uint8*>(back_buffer_dib()->memory()) +
                        rect.y() * stride + 4 * rect.x();
-  // The two bitmaps are flipped relative to each other.
-  int dest_starting_row = plugin_rect_.height() - rect.y() - 1;
-  DCHECK(!backing_store_.empty());
-  uint8* target_data = &(backing_store_[0]) + dest_starting_row * stride +
-                       4 * rect.x();
+  DCHECK(front_buffer_dib() != NULL);
+  uint8* target_data = static_cast<uint8*>(front_buffer_dib()->memory()) +
+                       rect.y() * stride + 4 * rect.x();
   for (int row = 0; row < rect.height(); ++row) {
     memcpy(target_data, source_data, chunk_size);
     source_data += stride;
-    target_data -= stride;
+    target_data += stride;
   }
 #else
-  BlitCanvasToCanvas(backing_store_canvas_.get(), rect,
-                     transport_store_canvas_.get(), rect.origin());
+  BlitCanvasToCanvas(front_buffer_canvas(),
+                     rect,
+                     back_buffer_canvas(),
+                     rect.origin());
 #endif
-  backing_store_painted_ = backing_store_painted_.Union(rect);
+}
+
+void WebPluginDelegateProxy::UpdateFrontBuffer(
+    const gfx::Rect& rect,
+    bool allow_buffer_flipping) {
+  if (!front_buffer_canvas()) {
+    return;
+  }
+
+#if defined(OS_WIN)
+  // If SendUpdateGeometry() would block on the plugin process then we don't
+  // want to use buffer flipping at all since it would add extra locking.
+  // (Alternatively we could probably safely use async updates for buffer
+  // flipping all the time since the size is not changing.)
+  if (UseSynchronousGeometryUpdates()) {
+    allow_buffer_flipping = false;
+  }
+#endif
+
+  // Plugin has just painted "rect" into the back-buffer, so the front-buffer
+  // no longer holds the latest content for that rectangle.
+  front_buffer_diff_ = front_buffer_diff_.Subtract(rect);
+  if (allow_buffer_flipping && front_buffer_diff_.IsEmpty()) {
+    // Back-buffer contains the latest content for all areas; simply flip
+    // the buffers.
+    front_buffer_index_ = back_buffer_index();
+    SendUpdateGeometry(false);
+    // The front-buffer now holds newer content for this region than the
+    // back-buffer.
+    front_buffer_diff_ = rect;
+  } else {
+    // Back-buffer contains the latest content for "rect" but the front-buffer
+    // contains the latest content for some other areas (or buffer flipping not
+    // allowed); fall back to copying the data.
+    CopyFromBackBufferToFrontBuffer(rect);
+  }
+  transport_store_painted_ = transport_store_painted_.Union(rect);
 }
 
 void WebPluginDelegateProxy::OnHandleURLRequest(
@@ -1297,22 +1320,6 @@ void WebPluginDelegateProxy::OnDeferResourceLoading(unsigned long resource_id,
 }
 
 #if defined(OS_MACOSX)
-void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
-  DCHECK_NE(ack_key, -1);
-
-  OldTransportDIBMap::iterator iterator = old_transport_dibs_.find(ack_key);
-
-  // DCHECK_NE does not work with base::hash_map.
-  DCHECK(iterator != old_transport_dibs_.end());
-
-  // Now that the ACK has been received, the TransportDIB that was used
-  // prior to the UpdateGeometry message now being acknowledged is known to
-  // be no longer needed.  Release it, and take the stale entry out of the map.
-  ReleaseTransportDIB(iterator->second.get());
-
-  old_transport_dibs_.erase(iterator);
-}
-
 void WebPluginDelegateProxy::OnAcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
