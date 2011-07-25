@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -27,15 +26,19 @@ const int kFrameHeight = 480;
 
 }  // namespace
 
-TakePhotoDialog::TakePhotoDialog()
+TakePhotoDialog::TakePhotoDialog(Delegate* delegate)
     : take_photo_view_(NULL),
-      camera_controller_(this) {
+      camera_controller_(this),
+      delegate_(delegate) {
   camera_controller_.set_frame_width(kFrameWidth);
   camera_controller_.set_frame_height(kFrameHeight);
   registrar_.Add(
       this,
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
+}
+
+TakePhotoDialog::~TakePhotoDialog() {
 }
 
 bool TakePhotoDialog::IsDialogButtonEnabled(
@@ -56,15 +59,8 @@ bool TakePhotoDialog::Cancel() {
 bool TakePhotoDialog::Accept() {
   camera_controller_.Stop();
 
-  UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager);
-
-  const UserManager::User& user = user_manager->logged_in_user();
-  DCHECK(!user.email().empty());
-
-  const SkBitmap& image = take_photo_view_->GetImage();
-  user_manager->SetLoggedInUserImage(image);
-  user_manager->SaveUserImage(user.email(), image);
+  if (delegate_)
+    delegate_->OnPhotoAccepted(take_photo_view_->GetImage());
   return true;
 }
 

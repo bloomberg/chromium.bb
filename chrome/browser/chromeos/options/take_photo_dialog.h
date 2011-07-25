@@ -25,7 +25,16 @@ class TakePhotoDialog : public views::DialogDelegateView,
                         public CameraController::Delegate,
                         public NotificationObserver {
  public:
-  TakePhotoDialog();
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Called when user accepts the photo.
+    virtual void OnPhotoAccepted(const SkBitmap& photo) = 0;
+  };
+
+  explicit TakePhotoDialog(Delegate* delegate);
+  virtual ~TakePhotoDialog();
 
   // views::DialogDelegate overrides.
   virtual bool IsDialogButtonEnabled(
@@ -68,6 +77,8 @@ class TakePhotoDialog : public views::DialogDelegateView,
   CameraController camera_controller_;
 
   NotificationRegistrar registrar_;
+
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TakePhotoDialog);
 };

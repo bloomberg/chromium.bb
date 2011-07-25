@@ -230,6 +230,7 @@ cr.define('cr.ui', function() {
       login.SigninScreen.register();
     else
       login.GaiaSigninScreen.register();
+    oobe.UserImageScreen.register();
 
     $('security-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened', []);

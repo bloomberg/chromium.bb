@@ -56,8 +56,14 @@ void UserImageScreen::Show() {
 
   UserManager* user_manager = UserManager::Get();
   std::string logged_in_user = user_manager->logged_in_user().email();
-  actor_->SelectImage(
-      user_manager->GetUserDefaultImageIndex(logged_in_user));
+  int selected_image_index =
+      user_manager->GetUserDefaultImageIndex(logged_in_user);
+  // The image must have been assigned by UserManager on new user login but
+  // under some circumstances (i.e. the data is not written to Local State
+  // or the file was corrupt) -1 could still be returned.
+  if (selected_image_index == -1)
+    selected_image_index = 0;
+  actor_->SelectImage(selected_image_index);
 }
 
 void UserImageScreen::Hide() {

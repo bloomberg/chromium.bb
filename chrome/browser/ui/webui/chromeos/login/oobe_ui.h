@@ -68,6 +68,7 @@ class OobeUI : public OobeDisplay,
   // Reference to SigninScreenHandler that handles sign-in screen requrests and
   // forward calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_;
+  UserImageScreenActor* user_image_screen_actor_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

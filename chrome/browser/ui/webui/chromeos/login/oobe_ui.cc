@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -190,19 +191,20 @@ OobeUI::OobeUI(TabContents* contents)
       update_screen_actor_(NULL),
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
-      signin_screen_handler_(NULL) {
+      signin_screen_handler_(NULL),
+      user_image_screen_actor_(NULL) {
   core_handler_ = new CoreOobeHandler(this);
   AddScreenHandler(core_handler_);
 
-  NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler;
+  NetworkScreenHandler* network_screen_handler = new NetworkScreenHandler();
   network_screen_actor_ = network_screen_handler;
   AddScreenHandler(network_screen_handler);
 
-  EulaScreenHandler* eula_screen_handler = new EulaScreenHandler;
+  EulaScreenHandler* eula_screen_handler = new EulaScreenHandler();
   eula_screen_actor_ = eula_screen_handler;
   AddScreenHandler(eula_screen_handler);
 
-  UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler;
+  UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler();
   update_screen_actor_ = update_screen_handler;
   AddScreenHandler(update_screen_handler);
 
@@ -211,10 +213,15 @@ OobeUI::OobeUI(TabContents* contents)
   enterprise_enrollment_screen_actor_ = enterprise_enrollment_screen_handler;
   AddScreenHandler(enterprise_enrollment_screen_handler);
 
+  UserImageScreenHandler* user_image_screen_handler =
+      new UserImageScreenHandler();
+  user_image_screen_actor_ = user_image_screen_handler;
+  AddScreenHandler(user_image_screen_handler);
+
   signin_screen_handler_ = new SigninScreenHandler;
   AddScreenHandler(signin_screen_handler_);
 
-  DictionaryValue* localized_strings = new DictionaryValue;
+  DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
 
   // Set up the chrome://theme/ source, for Chrome logo.
@@ -261,8 +268,7 @@ EnterpriseEnrollmentScreenActor* OobeUI::
 }
 
 UserImageScreenActor* OobeUI::GetUserImageScreenActor() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return user_image_screen_actor_;
 }
 
 ViewScreenDelegate* OobeUI::GetRegistrationScreenActor() {

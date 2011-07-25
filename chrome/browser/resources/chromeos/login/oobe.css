@@ -166,6 +166,32 @@ hr.bottomshadow {
   margin-top: 20px;
 }
 
+#user-image-list {
+  display: inline-block;
+  width: 360px;
+}
+
+#user-image-list img {
+  border-radius: 4px;
+  height: 50px;
+  margin: 0 10px 8px 0;
+  padding: 4px;
+  width: 50px;
+}
+
+#user-image-list .user-image-selected {
+  border: 2px solid rgb(0, 102, 204);
+  padding: 2px;
+}
+
+#user-image-preview {
+  border-radius: 4px;
+  float: right;
+  height: 250px;
+  margin: 4px;
+  width: 250px;
+}
+
 #footer button {
   display: none;
 }
@@ -173,7 +199,8 @@ hr.bottomshadow {
 #oobe.connect #continue-button,
 #oobe.eula #back-button,
 #oobe.eula #accept-button,
-#oobe.signin #signin-button {
+#oobe.signin #signin-button,
+#oobe.user-image #ok-button {
   display: inline-block;
 }
 
@@ -181,7 +208,7 @@ hr.bottomshadow {
 #oobe.eula #eula-dot,
 #oobe.signin #signin-dot,
 #oobe.enrollment #signin-dot,
-#oobe.photo #photo-dot {
+#oobe.user-image #photo-dot {
   opacity: 0.4;
 }
 
