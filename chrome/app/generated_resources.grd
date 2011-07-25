@@ -4377,13 +4377,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         to the profile's cookie jar, so that retyping the username and password in the browser is not necessary.
         Pre-login is always disabled if the profile is not connected to a Google Account.
       </message>
-      <message name="IDS_FLAGS_AUTO_LOGIN_NAME" desc="Title for the flag to auto-login the user">
-        Auto-login
-      </message>
-      <message name="IDS_FLAGS_AUTO_LOGIN_DESCRIPTION" desc="Description for the flag to auto-login the user">
-        When auto-login is enabled, an infobar will appear on Google Account login pages to help with the login process.
-        Auto-login is always disabled if the profile is not connected to a Google Account.
-      </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME" desc="Title for the flag to show Autofill field type predictions for all forms">
         Show Autofill predictions
       </message>
@@ -4408,8 +4401,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable prompts for Autofill feedback">
         Help improve Autofill.  With this enabled, Chrome will occasionally prompt you to send additional feedback to the Autofill team.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PANELS_NAME" desc="Name of the 'Enable Pane
-ls' lab.">
+      <message name="IDS_FLAGS_ENABLE_PANELS_NAME" desc="Name of the 'Enable Panels' lab.">
         Panels
       </message>
       <message name="IDS_FLAGS_ENABLE_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
@@ -7451,6 +7443,9 @@ ls' lab.">
           Manage saved passwords...
         </message>
       </if>
+      <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
+        Enable automatic sign in for Google sites
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
           Form autofill
@@ -7967,10 +7962,13 @@ ls' lab.">
 
       <!-- Auto-login infobar -->
       <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
-        Automated login is available for this page using <ph name="EMAIL_ADDRESS">%ls</ph>
+        Sign in to this site using: <ph name="EMAIL_ADDRESS">%ls</ph>
       </message>
-      <message name="IDS_AUTOLOGIN_INFOBAR_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
-        Login
+      <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
+        Sign in
+      </message>
+      <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
+        Never offer to sign me in
       </message>
 
       <!-- Cookies Window -->

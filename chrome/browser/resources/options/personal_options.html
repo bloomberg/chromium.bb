@@ -72,6 +72,13 @@
         configured by the IT administrator. -->
         <input name="password_allow_show_hidden" type="text"
             pref="profile.password_manager_allow_show_passwords" hidden>
+        <div class="checkbox" id="enable-auto-login-checkbox" hidden>
+          <label>
+            <input id="enable-auto-login" pref="autologin.enabled"
+                metric="Options_Autologin" type="checkbox">
+            <span i18n-content="autologinEnabled"></span>
+          </label>
+        </div>
       </div>
     </section>
     <section>

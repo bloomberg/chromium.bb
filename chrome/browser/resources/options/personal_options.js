@@ -146,6 +146,10 @@ cr.define('options', function() {
       this.syncEnabled = enabled;
     },
 
+    setAutoLoginVisible_ : function(visible) {
+      $('enable-auto-login-checkbox').hidden = !visible;
+    },
+
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
       $('customize-sync').hidden = !completed;
@@ -282,6 +286,7 @@ cr.define('options', function() {
   // Forward public APIs to private implementations.
   [
     'setSyncEnabled',
+    'setAutoLoginVisible',
     'setSyncSetupCompleted',
     'setAccountPicture',
     'setSyncStatus',

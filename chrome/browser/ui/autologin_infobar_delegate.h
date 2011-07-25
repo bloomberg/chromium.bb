@@ -9,6 +9,8 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class PrefService;
+
 namespace net {
 class URLRequest;
 }
@@ -26,11 +28,15 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   virtual ~AutoLoginInfoBarDelegate();
 
+  // Register preferences used by auto-login feature.
+  static void RegisterUserPrefs(PrefService* user_prefs);
+
   // Looks for the X-Auto-Login response header in the request, and if found,
   // displays an infobar in the tab contents identified by the child/route id
   // if possible.
   static void ShowIfAutoLoginRequested(net::URLRequest* request,
-                                       int child_id, int route_id);
+                                       int child_id,
+                                       int route_id);
 
  private:
   // ConfirmInfoBarDelegate overrides.
@@ -40,6 +46,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // NotificationObserver override.
   virtual void Observe(int type,
@@ -50,7 +57,8 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   // to the child/route if possible.
   static void ShowInfoBarIfNeeded(const std::string& account,
                                   const std::string& args,
-                                  int child_id, int route_id);
+                                  int child_id,
+                                  int route_id);
 
   TabContentsWrapper* tab_contents_wrapper_;
   const std::string account_;

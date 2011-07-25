@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
@@ -131,15 +133,17 @@ void AutoLoginRedirector::RedirectToTokenAuth(const std::string& token) {
       GURL(), PageTransition::AUTO_BOOKMARK);
 }
 
+// static
+void AutoLoginInfoBarDelegate::RegisterUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, false,
+                                  PrefService::SYNCABLE_PREF);
+}
 
 // static
 void AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(
     net::URLRequest* request,
     int child_id,
     int route_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutoLogin))
-    return;
-
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
@@ -184,6 +188,11 @@ void AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded(const std::string& account,
 
   TabContents* tab_contents = tab_util::GetTabContentsByID(child_id, route_id);
   if (!tab_contents)
+    return;
+
+  // If auto-login is turned off, then simply return.
+  if (!tab_contents->profile()->GetPrefs()->GetBoolean(
+      prefs::kAutologinEnabled))
     return;
 
   TabContentsWrapper* tab_contents_wrapper =
@@ -272,17 +281,25 @@ string16 AutoLoginInfoBarDelegate::GetMessageText() const {
 }
 
 int AutoLoginInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 AutoLoginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_AUTOLOGIN_INFOBAR_BUTTON);
+  return l10n_util::GetStringUTF16(BUTTON_OK == button ?
+      IDS_AUTOLOGIN_INFOBAR_OK_BUTTON : IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON);
 }
 
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector auto deletes itself.
   new AutoLoginRedirector(tab_contents_wrapper_, args_);
+  return true;
+}
+
+bool AutoLoginInfoBarDelegate::Cancel() {
+  PrefService* user_prefs = tab_contents_wrapper_->tab_contents()->profile()->
+      GetPrefs();
+  user_prefs->SetBoolean(prefs::kAutologinEnabled, false);
+  user_prefs->ScheduleSavePersistentPrefs();
   return true;
 }

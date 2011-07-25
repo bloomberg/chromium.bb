@@ -115,7 +115,6 @@ extern const char kDumpHistogramsOnExit[];
 extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutofillFeedback[];
-extern const char kEnableAutoLogin[];
 extern const char kEnableClearServerData[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];

@@ -300,13 +300,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
   },
   {
-    "enable-auto-login",
-    IDS_FLAGS_AUTO_LOGIN_NAME,
-    IDS_FLAGS_AUTO_LOGIN_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableAutoLogin)
-  },
-  {
     "disable-pre-login",
     IDS_FLAGS_PRE_LOGIN_NAME,
     IDS_FLAGS_PRE_LOGIN_DESCRIPTION,

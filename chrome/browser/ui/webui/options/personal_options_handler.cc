@@ -105,6 +105,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_NEVERSAVE));
   localized_strings->SetString("manage_passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS));
+  localized_strings->SetString("autologinEnabled",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_AUTOLOGIN));
 
   localized_strings->SetString("autofill",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
@@ -308,6 +310,10 @@ void PersonalOptionsHandler::OnStateChanged() {
 
   visible.reset(Value::CreateBooleanValue(status_has_error));
   web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
+                                  *visible);
+
+  visible.reset(Value::CreateBooleanValue(service->AreCredentialsAvailable()));
+  web_ui_->CallJavascriptFunction("PersonalOptions.setAutoLoginVisible",
                                   *visible);
 
   // Set profile creation text and button if multi-profiles switch is on.
