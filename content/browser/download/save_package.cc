@@ -22,7 +22,6 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1056,7 +1055,8 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
 
 FilePath SavePackage::GetSuggestedNameForSaveAs(
     bool can_save_as_complete,
-    const std::string& contents_mime_type) {
+    const std::string& contents_mime_type,
+    const std::string& accept_langs) {
   FilePath name_with_proper_ext =
       FilePath::FromWStringHack(UTF16ToWideHack(title_));
 
@@ -1069,10 +1069,7 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
   // back to a URL, and if it matches the original page URL, we know the page
   // had no title (or had a title equal to its URL, which is fine to treat
   // similarly).
-  GURL fixed_up_title_url =
-      URLFixerUpper::FixupURL(UTF16ToUTF8(title_), std::string());
-
-  if (page_url_ == fixed_up_title_url) {
+  if (title_ == net::FormatUrl(page_url_, accept_langs)) {
     std::string url_path;
     std::vector<std::string> url_parts;
     base::SplitString(page_url_.path(), '/', &url_parts);
@@ -1190,17 +1187,20 @@ void SavePackage::GetSaveInfo() {
   FilePath download_save_dir = prefs->GetFilePath(
       prefs::kDownloadDefaultDirectory);
   std::string mime_type = tab_contents()->contents_mime_type();
+  std::string accept_languages =
+      content::GetContentClient()->browser()->GetAcceptLangs(tab_contents());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SavePackage::CreateDirectoryOnFileThread,
-          website_save_dir, download_save_dir, mime_type));
+          website_save_dir, download_save_dir, mime_type, accept_languages));
 }
 
 void SavePackage::CreateDirectoryOnFileThread(
     const FilePath& website_save_dir,
     const FilePath& download_save_dir,
-    const std::string& mime_type) {
+    const std::string& mime_type,
+    const std::string& accept_langs) {
   FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
   if (!file_util::DirectoryExists(website_save_dir)) {
@@ -1214,8 +1214,8 @@ void SavePackage::CreateDirectoryOnFileThread(
   }
 
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
-  FilePath suggested_filename = GetSuggestedNameForSaveAs(can_save_as_complete,
-                                                          mime_type);
+  FilePath suggested_filename = GetSuggestedNameForSaveAs(
+      can_save_as_complete, mime_type, accept_langs);
   FilePath::StringType pure_file_name =
       suggested_filename.RemoveExtension().BaseName().value();
   FilePath::StringType file_name_ext = suggested_filename.Extension();

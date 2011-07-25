@@ -197,7 +197,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   void CreateDirectoryOnFileThread(const FilePath& website_save_dir,
                                    const FilePath& download_save_dir,
-                                   const std::string& mime_type);
+                                   const std::string& mime_type,
+                                   const std::string& accept_langs);
   void ContinueGetSaveInfo(const FilePath& suggested_path,
                            bool can_save_as_complete);
 
@@ -236,7 +237,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // suggested name is determined by the web document's title.
   FilePath GetSuggestedNameForSaveAs(
       bool can_save_as_complete,
-      const std::string& contents_mime_type);
+      const std::string& contents_mime_type,
+      const std::string& accept_langs);
 
   // Ensures that the file name has a proper extension for HTML by adding ".htm"
   // if necessary.

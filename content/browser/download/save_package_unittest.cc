@@ -353,14 +353,14 @@ static const struct SuggestedSaveNameTestCase {
   },
   // If the title matches the URL, use the last component of the URL.
   { "http://foo.com/bar",
-    ASCIIToUTF16("http://foo.com/bar"),
+    ASCIIToUTF16("foo.com/bar"),
     FPL("bar"),
     false
   },
   // If the title matches the URL, but there is no "filename" component,
   // use the domain.
   { "http://foo.com",
-    ASCIIToUTF16("http://foo.com"),
+    ASCIIToUTF16("foo.com"),
     FPL("foo.com"),
     false
   },
@@ -393,7 +393,7 @@ TEST_F(SavePackageTest, MAYBE_TestSuggestedSaveNames) {
 
     FilePath save_name = save_package->GetSuggestedNameForSaveAs(
         kSuggestedSaveNames[i].ensure_html_extension,
-        std::string());
+        std::string(), std::string());
     EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value()) <<
         "Test case " << i;
   }
