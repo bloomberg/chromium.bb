@@ -437,7 +437,8 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
  */
 void NaClSetIrtFileDesc(int fd);
 
-int NaClMainForChromium(int handle_count, const NaClHandle *handles, int debug);
+void NaClMainForChromium(int handle_count, const NaClHandle *handles,
+                         int debug);
 
 /*
  * Used by syscall code.

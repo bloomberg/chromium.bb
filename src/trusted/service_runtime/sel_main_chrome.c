@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
@@ -95,8 +96,8 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
 }
 
-int NaClMainForChromium(int handle_count, const NaClHandle *handles,
-                        int debug) {
+void NaClMainForChromium(int handle_count, const NaClHandle *handles,
+                         int debug) {
   char *av[1];
   int ac = 1;
   const char **envp;
@@ -288,12 +289,12 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
    * addr space is still valid.  otherwise we'd have to kill threads
    * before we clean up the address space.
    */
-  return ret_code;
+  NaClExit(ret_code);
 
  done:
   fflush(stdout);
 
   NaClAllModulesFini();
 
-  return ret_code;
+  NaClExit(ret_code);
 }
