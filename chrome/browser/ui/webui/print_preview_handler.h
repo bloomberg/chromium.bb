@@ -151,6 +151,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   static FilePath* last_saved_path_;
   static std::string* last_used_printer_cloud_print_data_;
   static std::string* last_used_printer_name_;
+  static bool last_used_color_setting_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

@@ -325,7 +325,12 @@ class PrintSystemTaskProxy
 
     DictionaryValue settings_info;
     settings_info.SetBoolean(kDisableColorOption, !supports_color);
-    settings_info.SetBoolean(kSetColorAsDefault, false);
+    if (!supports_color) {
+      settings_info.SetBoolean(kSetColorAsDefault, false);
+    } else {
+       settings_info.SetBoolean(kSetColorAsDefault,
+                                PrintPreviewHandler::last_used_color_setting_);
+    }
     settings_info.SetBoolean(kSetDuplexAsDefault, set_duplex_as_default);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -387,6 +392,7 @@ class PrintToPdfTask : public Task {
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
 std::string* PrintPreviewHandler::last_used_printer_cloud_print_data_ = NULL;
 std::string* PrintPreviewHandler::last_used_printer_name_ = NULL;
+bool PrintPreviewHandler::last_used_color_setting_ = false;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -505,6 +511,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
+
+  // Storing last used color setting.
+  settings->GetBoolean("color", &last_used_color_setting_);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
