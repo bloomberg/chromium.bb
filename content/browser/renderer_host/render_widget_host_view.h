@@ -302,8 +302,6 @@ class RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   const SkBitmap& background() const { return background_; }
 
-  virtual void UpdateAccessibilityTree(
-      const webkit_glue::WebAccessibility& tree) { }
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   }

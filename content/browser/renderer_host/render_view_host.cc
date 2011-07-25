@@ -1224,10 +1224,6 @@ void RenderViewHost::OnAccessibilityNotifications(
       if (param.notification_type ==
               ViewHostMsg_AccessibilityNotification_Type::
                   NOTIFICATION_TYPE_LOAD_COMPLETE) {
-        // TODO(ctguil): Remove when mac processes OnAccessibilityNotifications.
-        if (view())
-          view()->UpdateAccessibilityTree(param.acc_obj);
-
         if (save_accessibility_tree_for_testing_)
           accessibility_tree_ = param.acc_obj;
       }
