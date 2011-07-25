@@ -135,7 +135,7 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate,
 
   internal::NativeWidgetDelegate* delegate_;
 
-  scoped_ptr<internal::NativeWidgetView> view_;
+  internal::NativeWidgetView* view_;
 
   bool active_;
 

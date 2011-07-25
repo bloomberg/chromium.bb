@@ -29,23 +29,29 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
       minimized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       hosting_widget_(NULL),
-      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+      ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      delete_native_view_(true) {
 }
 
 NativeWidgetViews::~NativeWidgetViews() {
   delegate_->OnNativeWidgetDestroying();
+
+  // We must prevent the NativeWidgetView from attempting to delete us.
+  view_->set_delete_native_widget(false);
+  if (delete_native_view_)
+    delete view_;
+
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
-  view_.reset();
 }
 
 View* NativeWidgetViews::GetView() {
-  return view_.get();
+  return view_;
 }
 
 const View* NativeWidgetViews::GetView() const {
-  return view_.get();
+  return view_;
 }
 
 void NativeWidgetViews::OnActivate(bool active) {
@@ -92,11 +98,19 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     hosting_widget_ = parent_view->GetWidget();
   }
 
-  view_.reset(new internal::NativeWidgetView(this));
+  view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
   view_->SetPaintToLayer(true);
 
-  parent_view->AddChildView(view_.get());
+  // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the
+  // deletion of either of the NativeWidgetViews or NativeWidgetView
+  // (e.g. via View hierarchy destruction) will delete the other.
+  // With WIDGET_OWNS_NATIVE_WIDGET, NativeWidgetViews should only
+  // be deleted by its Widget.
+  if (ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET)
+    view_->set_delete_native_widget(false);
+
+  parent_view->AddChildView(view_);
 
   // TODO(beng): SetInitParams().
 }
@@ -193,8 +207,7 @@ void NativeWidgetViews::SendNativeAccessibilityEvent(
 
 void NativeWidgetViews::SetMouseCapture() {
   View* parent_root_view = GetParentNativeWidget()->GetWidget()->GetRootView();
-  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(
-      view_.get());
+  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(view_);
   GetParentNativeWidget()->SetMouseCapture();
 }
 
@@ -214,7 +227,7 @@ bool NativeWidgetViews::HasMouseCapture() const {
       static_cast<const internal::RootView*>(parent_widget->GetWidget()->
                   GetRootView());
   return parent_widget->HasMouseCapture() &&
-         view_.get() == parent_root->capture_view();
+         view_ == parent_root->capture_view();
 }
 
 void NativeWidgetViews::SetKeyboardCapture() {
@@ -318,7 +331,7 @@ void NativeWidgetViews::MoveAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetViews::MoveToTop() {
-  view_->parent()->ReorderChildView(view_.get(), -1);
+  view_->parent()->ReorderChildView(view_, -1);
 }
 
 void NativeWidgetViews::SetShape(gfx::NativeRegion region) {
@@ -336,9 +349,9 @@ void NativeWidgetViews::Close() {
 void NativeWidgetViews::CloseNow() {
   // reset input_method before destroying widget.
   input_method_.reset();
-  // TODO(beng): what about the other case??
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete this;
+
+  delete view_;
+  view_ = NULL;
 }
 
 void NativeWidgetViews::EnableClose(bool enable) {

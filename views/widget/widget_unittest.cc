@@ -394,6 +394,39 @@ TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsViewsNativeWidget) {
   //             being deleted out from under the Widget.
 }
 
+// Widget owns its NativeWidget, part 3: NativeWidget is a NativeWidgetViews,
+// destroy the parent view.
+TEST_F(WidgetOwnershipTest,
+       Ownership_WidgetOwnsViewsNativeWidget_DestroyParentView) {
+  OwnershipTestState state;
+
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  scoped_ptr<Widget> widget(new OwnershipTestWidget(&state));
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = new OwnershipTestNativeWidgetViews(widget.get(),
+                                                            &state);
+  params.parent_widget = toplevel;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+
+  // Now close the toplevel, which deletes the view hierarchy.
+  toplevel->CloseNow();
+
+  RunPendingMessages();
+
+  // This shouldn't delete the widget because it shouldn't be deleted
+  // from the native side.
+  EXPECT_FALSE(state.widget_deleted);
+  EXPECT_FALSE(state.native_widget_deleted);
+
+  // Now delete it explicitly.
+  widget.reset();
+
+  EXPECT_TRUE(state.widget_deleted);
+  EXPECT_TRUE(state.native_widget_deleted);
+}
+
 // NativeWidget owns its Widget, part 1: NativeWidget is a platform-native
 // widget.
 TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
@@ -472,6 +505,33 @@ TEST_F(WidgetOwnershipTest,
   widget->Init(params);
 
   // Destroy the widget (achieved by closing the toplevel).
+  toplevel->CloseNow();
+
+  // The NativeWidgetViews won't be deleted until after a return to the message
+  // loop so we have to run pending messages before testing the destruction
+  // status.
+  RunPendingMessages();
+
+  EXPECT_TRUE(state.widget_deleted);
+  EXPECT_TRUE(state.native_widget_deleted);
+}
+
+// NativeWidget owns its Widget, part 5: NativeWidget is a NativeWidgetViews,
+// we close it directly.
+TEST_F(WidgetOwnershipTest,
+       Ownership_ViewsNativeWidgetOwnsWidget_Close) {
+  OwnershipTestState state;
+
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  Widget* widget = new OwnershipTestWidget(&state);
+  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = new OwnershipTestNativeWidgetViews(widget, &state);
+  params.parent_widget = toplevel;
+  widget->Init(params);
+
+  // Destroy the widget.
+  widget->Close();
   toplevel->CloseNow();
 
   // The NativeWidgetViews won't be deleted until after a return to the message
