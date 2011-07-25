@@ -130,27 +130,11 @@ void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
 static BOOL recentShownUserActionFailedStatus = NO;
 
 - (void)awakeFromNib {
-  NSBundle* bundle = base::mac::MainAppBundle();
-  NSString* chromeVersion =
-      [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-
-  NSString* versionModifier = @"";
-  NSString* svnRevision = @"";
-  std::string modifier = chrome::VersionInfo::GetVersionStringModifier();
-  if (!modifier.empty())
-    versionModifier = [NSString stringWithFormat:@" %@",
-                                base::SysUTF8ToNSString(modifier)];
-
-#if !defined(GOOGLE_CHROME_BUILD)
-  svnRevision = [NSString stringWithFormat:@" (%@)",
-                          [bundle objectForInfoDictionaryKey:@"SVNRevision"]];
-#endif
   // The format string is not localized, but this is how the displayed version
   // is built on Windows too.
+  chrome::VersionInfo version_info;
   NSString* version =
-    [NSString stringWithFormat:@"%@%@%@",
-              chromeVersion, svnRevision, versionModifier];
-
+      base::SysUTF8ToNSString(version_info.CreateVersionString());
   [version_ setStringValue:version];
 
   // Put the two images into the UI.

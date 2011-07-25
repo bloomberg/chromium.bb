@@ -116,7 +116,7 @@ std::string VersionInfo::OSType() const {
 #if defined(OS_WIN)
   return "Windows";
 #elif defined(OS_MACOSX)
-  return "Mac OS";
+  return "Mac OS X";
 #elif defined(OS_CHROMEOS)
   return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
 #elif defined(OS_LINUX)

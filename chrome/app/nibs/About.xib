@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F2108</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="47"/>
+			<integer value="3"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -41,7 +41,7 @@
 			<object class="NSWindowTemplate" id="820943852">
 				<int key="NSWindowStyleMask">3</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 257}, {450, 277}}</string>
+				<string key="NSWindowRect">{{196, 260}, {583, 274}}</string>
 				<int key="NSWTFlags">1677722624</int>
 				<string key="NSWindowTitle">^IDS_ABOUT_CHROME_TITLE</string>
 				<string key="NSWindowClass">NSPanel</string>
@@ -60,7 +60,7 @@
 								<object class="NSTextField" id="171870711">
 									<reference key="NSNextResponder" ref="4268204"/>
 									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{17, 81}, {230, 14}}</string>
+									<string key="NSFrame">{{17, 81}, {372, 14}}</string>
 									<reference key="NSSuperview" ref="4268204"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="881628032">
@@ -96,7 +96,7 @@
 								<object class="NSTextField" id="308038257">
 									<reference key="NSNextResponder" ref="4268204"/>
 									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{17, 96}, {230, 29}}</string>
+									<string key="NSFrame">{{17, 96}, {372, 29}}</string>
 									<reference key="NSSuperview" ref="4268204"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="625581420">
@@ -128,7 +128,7 @@
 											<string>NeXT TIFF v4.0 pasteboard type</string>
 										</object>
 									</object>
-									<string key="NSFrame">{{260, 0}, {190, 145}}</string>
+									<string key="NSFrame">{{394, 0}, {190, 145}}</string>
 									<reference key="NSSuperview" ref="4268204"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSImageCell" key="NSCell" id="357051704">
@@ -143,7 +143,7 @@
 									<bool key="NSEditable">YES</bool>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 132}, {470, 145}}</string>
+							<string key="NSFrame">{{0, 129}, {583, 145}}</string>
 							<reference key="NSSuperview" ref="498033215"/>
 							<string key="NSClassName">BackgroundTileView</string>
 						</object>
@@ -160,7 +160,7 @@
 										<object class="NSTextView" id="674191027">
 											<reference key="NSNextResponder" ref="945146224"/>
 											<int key="NSvFlags">2322</int>
-											<string key="NSFrameSize">{413, 96}</string>
+											<string key="NSFrameSize">{565, 72}</string>
 											<reference key="NSSuperview" ref="945146224"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="93702899">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -356,7 +356,7 @@
 													<nil key="NSDelegate"/>
 												</object>
 												<reference key="NSTextView" ref="674191027"/>
-												<double key="NSWidth">413</double>
+												<double key="NSWidth">565</double>
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
@@ -415,7 +415,7 @@
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrameSize">{413, 41}</string>
+									<string key="NSFrameSize">{565, 41}</string>
 									<reference key="NSSuperview" ref="1057129711"/>
 									<reference key="NSNextKeyView" ref="674191027"/>
 									<reference key="NSDocView" ref="674191027"/>
@@ -448,7 +448,7 @@
 									<double key="NSPercent">0.94565220000000005</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{17, 83}, {413, 41}}</string>
+							<string key="NSFrame">{{18, 80}, {565, 41}}</string>
 							<reference key="NSSuperview" ref="498033215"/>
 							<reference key="NSNextKeyView" ref="945146224"/>
 							<int key="NSsFlags">64</int>
@@ -566,12 +566,12 @@
 									</object>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 13}, {450, 62}}</string>
+							<string key="NSFrame">{{0, 10}, {588, 62}}</string>
 							<reference key="NSSuperview" ref="498033215"/>
 							<string key="NSClassName">NSView</string>
 						</object>
 					</object>
-					<string key="NSFrameSize">{450, 277}</string>
+					<string key="NSFrameSize">{583, 274}</string>
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {2560, 1578}}</string>
@@ -774,9 +774,9 @@
 						<reference key="object" ref="498033215"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="979682390"/>
 							<reference ref="4268204"/>
 							<reference ref="1057129711"/>
-							<reference ref="979682390"/>
 						</object>
 						<reference key="parent" ref="820943852"/>
 					</object>
@@ -786,8 +786,8 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="308038257"/>
-							<reference ref="623665386"/>
 							<reference ref="171870711"/>
+							<reference ref="623665386"/>
 						</object>
 						<reference key="parent" ref="498033215"/>
 					</object>
@@ -965,6 +965,7 @@
 					<string>-3.IBPluginDependency</string>
 					<string>10.IBPluginDependency</string>
 					<string>11.IBPluginDependency</string>
+					<string>11.IBViewBoundsToFrameTransform</string>
 					<string>12.IBPluginDependency</string>
 					<string>13.IBPluginDependency</string>
 					<string>16.IBPluginDependency</string>
@@ -973,16 +974,19 @@
 					<string>3.IBPluginDependency</string>
 					<string>3.IBWindowTemplateEditedContentRect</string>
 					<string>3.NSWindowTemplate.visibleAtLaunch</string>
+					<string>34.IBViewBoundsToFrameTransform</string>
 					<string>4.IBPluginDependency</string>
 					<string>4.IBUserGuides</string>
 					<string>40.IBPluginDependency</string>
 					<string>47.IBUserGuides</string>
+					<string>47.IBViewBoundsToFrameTransform</string>
 					<string>5.IBPluginDependency</string>
 					<string>51.IBPluginDependency</string>
 					<string>58.IBPluginDependency</string>
 					<string>59.IBPluginDependency</string>
 					<string>6.IBPluginDependency</string>
 					<string>62.IBPluginDependency</string>
+					<string>62.IBViewBoundsToFrameTransform</string>
 					<string>63.IBPluginDependency</string>
 					<string>64.IBPluginDependency</string>
 					<string>65.CustomClassName</string>
@@ -998,26 +1002,38 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">AUPEgAAAAAAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{476, 529}, {450, 277}}</string>
+					<string>{{476, 531}, {583, 274}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{476, 529}, {450, 277}}</string>
+					<string>{{476, 531}, {583, 274}}</string>
 					<boolean value="NO"/>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">AQAAAABDAQAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableArray">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="0"/>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">AQAAAABBIAAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABBiAAAwu4AAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>AboutLegalTextView</string>
@@ -1353,6 +1369,13 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/renderer_host/accelerated_plugin_view_mac.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/objc_zombie.h</string>
 					</object>
 				</object>
@@ -1368,6 +1391,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/nsview_additions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
