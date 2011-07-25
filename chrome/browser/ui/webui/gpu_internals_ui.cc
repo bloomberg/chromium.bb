@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -49,21 +50,15 @@
 
 namespace {
 
-class GpuHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  GpuHTMLSource();
+ChromeWebUIDataSource* CreateGpuHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIGpuInternalsHost);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
-
- private:
-  ~GpuHTMLSource() {}
-  DISALLOW_COPY_AND_ASSIGN(GpuHTMLSource);
-};
+  source->set_json_path("strings.js");
+  source->add_resource_path("gpu_internals.js", IDR_GPU_INTERNALS_JS);
+  source->set_default_resource(IDR_GPU_INTERNALS_HTML);
+  return source;
+}
 
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
@@ -148,39 +143,6 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
   friend class base::RefCountedThreadSafe<TaskProxy>;
   DISALLOW_COPY_AND_ASSIGN(TaskProxy);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// GpuHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-GpuHTMLSource::GpuHTMLSource()
-    : DataSource(chrome::kChromeUIGpuInternalsHost, MessageLoop::current()) {
-}
-
-void GpuHTMLSource::StartDataRequest(const std::string& path,
-                                     bool is_incognito,
-                                     int request_id) {
-  DictionaryValue localized_strings;
-  SetFontAndTextDirection(&localized_strings);
-
-  base::StringPiece gpu_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_INTERNALS_HTML));
-  std::string full_html(gpu_html.data(), gpu_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
-}
-
-std::string GpuHTMLSource::GetMimeType(const std::string&) const {
-  return "text/html";
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -639,8 +601,7 @@ void GpuMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
 GpuInternalsUI::GpuInternalsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new GpuMessageHandler())->Attach(this));
 
-  GpuHTMLSource* html_source = new GpuHTMLSource();
-
-  // Set up the chrome://gpu/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  // Set up the chrome://gpu-internals/ source.
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateGpuHTMLSource());
 }

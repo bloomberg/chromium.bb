@@ -54,7 +54,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://extensions': { 'title': 'Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
-    'chrome://gpu-internals': { 'CSP': False },
+    'chrome://gpu-internals': {},
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://history2': { 'title': 'History', 'CSP': False },
