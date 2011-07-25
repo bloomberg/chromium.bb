@@ -4116,7 +4116,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         WARNING
       </message>
       <message name="IDS_FLAGS_WARNING_TEXT" desc="Text at the top of the about:flags page, warning users that the about:flags contents are volatile.">
-        These experimental features may change, break, or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data, or your security and privacy could be compromised in unexpected ways. Please proceed with caution.
+        These experimental features may change, break, or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data, or your security and privacy could be compromised in unexpected ways. Any experiments you enable will be enabled for all users of this browser. Please proceed with caution.
       </message>
       <message name="IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no experiments are available">
         Aww, it looks like there are currently no experiments available.
