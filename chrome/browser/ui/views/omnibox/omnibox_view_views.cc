@@ -27,8 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/render_text.h"
 #include "views/border.h"
-#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/fill_layout.h"
 
@@ -105,6 +105,19 @@ PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
   return &state;
 }
 
+// A convenience method for applying URL styles.
+void ApplyURLStyle(views::Textfield* textfield,
+                   size_t start,
+                   size_t end,
+                   SkColor color,
+                   bool strike) {
+  gfx::StyleRange style;
+  style.foreground = color;
+  style.range = ui::Range(start, end);
+  style.strike = strike;
+  textfield->ApplyStyleRange(style);
+}
+
 const int kAutocompleteVerticalMargin = 4;
 
 // TODO(oshima): I'm currently using slightly different color than
@@ -135,11 +148,7 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
-      delete_at_end_pressed_(false),
-      faded_text_style_(NULL),
-      normal_text_style_(NULL),
-      security_error_scheme_style_(NULL),
-      secure_scheme_style_(NULL) {
+      delete_at_end_pressed_(false) {
   set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
                                               kAutocompleteVerticalMargin, 0));
 }
@@ -623,7 +632,6 @@ size_t OmniboxViewViews::GetTextLength() const {
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
-  InitTextStyles();
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
   // by Parse(), ask the model, which will check the desired page transition for
@@ -635,29 +643,24 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   AutocompleteInput::ParseForEmphasizeComponents(
       text, model_->GetDesiredTLD(), &scheme, &host);
   const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
-
-  textfield_->ClearAllTextStyles();
-  if (emphasize) {
-    textfield_->ApplyTextStyle(faded_text_style_, ui::Range(0, text.length()));
-    textfield_->ApplyTextStyle(normal_text_style_,
-                               ui::Range(host.begin, host.end()));
-  } else {
-    textfield_->ApplyTextStyle(normal_text_style_, ui::Range(0, text.length()));
-  }
+  SkColor base_color = emphasize ? kFadedTextColor : kNormalTextColor;
+  ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
+  if (emphasize)
+    ApplyURLStyle(textfield_, host.begin, host.end(), kNormalTextColor, false);
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
-    ui::Range scheme_range(scheme.begin, scheme.end());
+    const size_t start = scheme.begin, end = scheme.end();
     switch (security_level_) {
       case ToolbarModel::SECURITY_ERROR:
-        textfield_->ApplyTextStyle(security_error_scheme_style_, scheme_range);
+        ApplyURLStyle(textfield_, start, end, kSecurityErrorSchemeColor, true);
         break;
       case ToolbarModel::SECURITY_WARNING:
-        textfield_->ApplyTextStyle(faded_text_style_, scheme_range);
+        ApplyURLStyle(textfield_, start, end, kFadedTextColor, false);
         break;
       case ToolbarModel::EV_SECURE:
       case ToolbarModel::SECURE:
-        textfield_->ApplyTextStyle(secure_scheme_style_, scheme_range);
+        ApplyURLStyle(textfield_, start, end, kSecureSchemeColor, false);
         break;
       default:
         NOTREACHED() << "Unknown SecurityLevel:" << security_level_;
@@ -697,19 +700,4 @@ AutocompletePopupView* OmniboxViewViews::CreatePopupView(
 #endif
   return new AutocompleteContentsView(
       gfx::Font(), this, model_.get(), profile, location_bar);
-}
-
-void OmniboxViewViews::InitTextStyles() {
-  if (faded_text_style_)
-    return;
-  faded_text_style_ = textfield_->CreateTextStyle();
-  normal_text_style_ = textfield_->CreateTextStyle();
-  security_error_scheme_style_ = textfield_->CreateTextStyle();
-  secure_scheme_style_ = textfield_->CreateTextStyle();
-
-  faded_text_style_->set_foreground(kFadedTextColor);
-  normal_text_style_->set_foreground(kNormalTextColor);
-  secure_scheme_style_->set_foreground(kSecureSchemeColor);
-  security_error_scheme_style_->set_foreground(kSecurityErrorSchemeColor);
-  security_error_scheme_style_->set_strike(true);
 }
