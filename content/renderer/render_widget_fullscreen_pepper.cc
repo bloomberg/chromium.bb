@@ -287,6 +287,9 @@ void RenderWidgetFullscreenPepper::Close() {
   // normal mode.
   if (plugin_)
     plugin_->SetFullscreen(false, false);
+
+  // Call Close on the base class to destroy the WebWidget instance.
+  RenderWidget::Close();
 }
 
 webkit::ppapi::PluginInstance*
