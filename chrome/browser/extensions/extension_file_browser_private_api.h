@@ -135,7 +135,7 @@ class FileBrowserFunction
 
   // Callback with converted local paths.
   virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
-      void* context) {}
+      void* context) { NOTREACHED(); }
 
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
@@ -237,7 +237,6 @@ class AddMountFunction
     MountParamaters(const std::string& type,
                     const chromeos::MountPathOptions& options)
         :  mount_type(type), mount_options(options) {}
-    ~MountParamaters() {};
     std::string mount_type;
     chromeos::MountPathOptions mount_options;
   };

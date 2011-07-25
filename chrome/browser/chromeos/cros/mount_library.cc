@@ -35,7 +35,8 @@ std::string MountLibrary::MountTypeToString(MountType type) {
 
 // static
 MountType MountLibrary::MountTypeFromString(
-    const std::string& type_str) {
+    const std::string& type_str)
+    OVERRIDE {
   if (type_str == "device") {
     return MOUNT_TYPE_DEVICE;
   } else if (type_str == "network") {
@@ -586,6 +587,13 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual const DiskMap& disks() const OVERRIDE { return disks_; }
   virtual const MountPointMap& mount_points() const OVERRIDE {
     return mount_points_;
+  }
+  virtual std::string MountTypeToString(MountType type) const OVERRIDE {
+    return "";
+  }
+  virtual MountType MountTypeFromString(const std::string& type_str) const
+      OVERRIDE {
+    return MOUNT_TYPE_INVALID;
   }
   virtual void RequestMountInfoRefresh() OVERRIDE {}
   virtual void MountPath(const char* source_path, MountType type,
