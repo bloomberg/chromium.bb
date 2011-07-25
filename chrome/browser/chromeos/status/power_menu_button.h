@@ -56,6 +56,11 @@ class PowerMenuButton : public StatusAreaButton,
   // Update the power icon and menu label info depending on the power status.
   void UpdateIconAndLabelInfo();
 
+  // Update Battery time. Try to make it monotonically decreasing unless
+  // there's a large delta.
+  void UpdateBatteryTime(base::TimeDelta* previous,
+                         const base::TimeDelta& current);
+
   // Update the menu entries.
   void UpdateMenu();
 

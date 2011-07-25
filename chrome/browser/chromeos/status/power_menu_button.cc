@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 
+#include <algorithm>
+
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -29,6 +31,8 @@ enum {
 }  // namespace
 
 namespace chromeos {
+
+using base::TimeDelta;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton
@@ -85,7 +89,7 @@ string16 PowerMenuButton::GetBatteryIsChargedText() const {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_BATTERY_IS_CHARGED);
 
   // If battery is in an intermediate charge state, show how much time left.
-  base::TimeDelta time = line_power_on_ ? battery_time_to_full_ :
+  TimeDelta time = line_power_on_ ? battery_time_to_full_ :
       battery_time_to_empty_;
   if (time.InSeconds() == 0) {
     // If time is 0, then that means we are still calculating how much time.
@@ -102,7 +106,7 @@ string16 PowerMenuButton::GetBatteryIsChargedText() const {
     int msg = line_power_on_ ? IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL :
         IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
     int hour = time.InHours();
-    int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+    int min = (time - TimeDelta::FromHours(hour)).InMinutes();
     string16 hour_str = base::IntToString16(hour);
     string16 min_str = base::IntToString16(min);
     // Append a "0" before the minute if it's only a single digit.
@@ -173,8 +177,13 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
     // Note: we always call cros->battery_percentage() for test predictability.
     if (battery_fully_charged_)
       battery_percentage_ = 100.0;
-    battery_time_to_full_ = cros->battery_time_to_full();
-    battery_time_to_empty_ = cros->battery_time_to_empty();
+    // Map 1-100 to 0-100, so 1% shows up as 0%, and 100% remains 100%.
+    static const double k = 100.0/99;
+    battery_percentage_ = (battery_percentage_ > 1.0 ?
+        battery_percentage_ : 1.0) * k - k;
+
+    UpdateBatteryTime(&battery_time_to_full_, cros->battery_time_to_full());
+    UpdateBatteryTime(&battery_time_to_empty_, cros->battery_time_to_empty());
   }
 
   if (!cros_loaded) {
@@ -243,6 +252,17 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   SetAccessibleName(GetBatteryPercentageText());
   UpdateMenu();
   SchedulePaint();
+}
+
+void PowerMenuButton::UpdateBatteryTime(TimeDelta* previous,
+                                        const TimeDelta& current) {
+  static const TimeDelta kMaxDiff(TimeDelta::FromMinutes(10));
+  static const TimeDelta kMinDiff(TimeDelta::FromMinutes(0));
+  const TimeDelta diff = current - *previous;
+  // If the diff is small and positive, ignore it in favor of
+  // keeping time monotonically decreasing.
+  if (diff < kMinDiff || diff > kMaxDiff)
+    *previous = current;
 }
 
 void PowerMenuButton::UpdateMenu() {
