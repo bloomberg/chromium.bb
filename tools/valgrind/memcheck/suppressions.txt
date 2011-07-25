@@ -4982,6 +4982,23 @@
    fun:_ZN24FakeProtocolClientWorker14CheckIsDefaultEv
    fun:_ZN16ShellIntegration22DefaultWebClientWorker21ExecuteCheckIsDefaultEv
 }
+{
+   bug_90376
+   Memcheck:Cond
+   fun:_ZN5views6Widget16SetInitialBoundsERKN3gfx4RectE
+   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
+   fun:_ZN12BrowserFrame16InitBrowserFrameEv
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+   fun:_ZN7Browser19CreateBrowserWindowEv
+   fun:_ZN7Browser17InitBrowserWindowEv
+   fun:_ZN25TestingAutomationProvider26OpenNewBrowserWindowOfTypeEibPN3IPC7MessageE
+   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FvibPN3IPC7MessageEEibRS2_EvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple2IibE6Tuple0E18DispatchDelayReplyI25TestingAutomationProviderMS6_FvibPNS_7MessageEEEEbPKS7_PT_T0_
+   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
