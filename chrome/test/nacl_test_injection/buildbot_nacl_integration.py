@@ -22,10 +22,14 @@ def Main(args):
   #if not is_integration_bot:
   #  return
 
-  # TODO(polina): turn these back on when this bug is fixed:
-  # http://code.google.com/p/nativeclient/issues/detail?id=2080
-  tests_to_disable = ['run_ppapi_crash_browser_test',
-                      'run_ppapi_bad_browser_test']
+  tests_to_disable = []
+
+  # In general, you should disable tests inside this conditional.  This turns
+  # them off on the main Chrome waterfall, but not on NaCl's integration bots.
+  # This makes it easier to see when things have been fixed NaCl side.
+  if not is_integration_bot:
+    pass
+
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
     # because of a kernel bug that we might need to work around.
