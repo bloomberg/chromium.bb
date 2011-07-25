@@ -4578,14 +4578,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
-        Insecure content has been blocked.
+        This page has insecure content.
       </message>
       <message name="IDS_BLOCKED_RUNNING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to run active mixed content.  The message is followed by a learn more link and an allow button.">
-        Insecure script has been blocked.
+        This page has insecure script.
       </message>
-      <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-        Load anyway (not recommended)
-      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
+          Load Anyway
+        </message>
+        <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
+          Don't Load (Recommended)
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
+          Load anyway
+        </message>
+        <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
+          Don't load (recommended)
+        </message>
+      </if>
 
       <if expr="pp_ifdef('chromeos')">
         <!-- Locale Change Notification-->

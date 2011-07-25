@@ -28,10 +28,12 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   enum HistogramEvents {
     DISPLAY_INFOBAR_SHOWN = 0,  // Infobar was displayed.
-    DISPLAY_USER_OVERRIDE,      // User clicked allowed anyway button.
+    DISPLAY_USER_OVERRIDE,      // User clicked allow anyway button.
+    DISPLAY_USER_DID_NOT_LOAD,  // User clicked the don't load button.
     DISPLAY_INFOBAR_DISMISSED,  // User clicked close button.
     RUN_INFOBAR_SHOWN,
     RUN_USER_OVERRIDE,
+    RUN_USER_DID_NOT_LOAD,
     RUN_INFOBAR_DISMISSED,
     NUM_EVENTS
   };
@@ -41,9 +43,9 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual InsecureContentInfoBarDelegate*
       AsInsecureContentInfoBarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 

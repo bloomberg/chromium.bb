@@ -17,7 +17,7 @@ InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate(
     : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
       tab_contents_(tab_contents),
       type_(type) {
-  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegate",
+  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
       (type_ == DISPLAY) ? DISPLAY_INFOBAR_SHOWN : RUN_INFOBAR_SHOWN,
       NUM_EVENTS);
 }
@@ -26,7 +26,7 @@ InsecureContentInfoBarDelegate::~InsecureContentInfoBarDelegate() {
 }
 
 void InsecureContentInfoBarDelegate::InfoBarDismissed() {
-  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegate",
+  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
       (type_ == DISPLAY) ? DISPLAY_INFOBAR_DISMISSED : RUN_INFOBAR_DISMISSED,
       NUM_EVENTS);
   ConfirmInfoBarDelegate::InfoBarDismissed();
@@ -43,18 +43,26 @@ string16 InsecureContentInfoBarDelegate::GetMessageText() const {
       IDS_BLOCKED_RUNNING_INSECURE_CONTENT);
 }
 
-int InsecureContentInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
 string16 InsecureContentInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  DCHECK_EQ(button, BUTTON_OK);
-  return l10n_util::GetStringUTF16(IDS_ALLOW_INSECURE_CONTENT_BUTTON);
+  return l10n_util::GetStringUTF16(button == BUTTON_OK ?
+      IDS_BLOCK_INSECURE_CONTENT_BUTTON : IDS_ALLOW_INSECURE_CONTENT_BUTTON);
 }
 
+// OK button is labelled "don't load".  It triggers Accept(), but really
+// means stay secure, so do nothing but count the event and dismiss.
 bool InsecureContentInfoBarDelegate::Accept() {
-  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegate",
+  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
+      (type_ == DISPLAY) ? DISPLAY_USER_DID_NOT_LOAD : RUN_USER_DID_NOT_LOAD,
+      NUM_EVENTS);
+  return true;
+}
+
+
+// Cancel button is labelled "load anyways".  It triggers Cancel(), but really
+// means become insecure, so do the work of reloading the page.
+bool InsecureContentInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
