@@ -340,9 +340,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
 // Testing for recovery from an incorrect password for the case where
 // there are multiple authenticated resources.
-// Marked as flaky.  See http://crbug.com/69266 and http://crbug.com/68860
+// Test enabled but has been historically flaky.  See http://crbug.com/69266
 // TODO(asanka): Remove logging when timeout issues are resolved.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_page = test_server()->GetURL(kSingleRealmTestPage);
 
@@ -354,8 +354,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
   LoginPromptBrowserTestObserver observer;
 
   observer.Register(Source<NavigationController>(controller));
-
-  WindowedLoadStopObserver load_stop_waiter(controller);
 
   LOG(INFO) <<
       "Begin test run "
@@ -415,8 +413,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
   EXPECT_LT(0, observer.auth_needed_count_);
   EXPECT_EQ(0, observer.auth_cancelled_count_);
   EXPECT_EQ(observer.auth_needed_count_, observer.auth_supplied_count_);
-  LOG(INFO) << "Waiting for LOAD_STOP";
-  load_stop_waiter.Wait();
   EXPECT_TRUE(test_server()->Stop());
   LOG(INFO) << "Done with test";
 }
