@@ -44,11 +44,6 @@ COMPILE_ASSERT_MATCHING_ENUM(FormatNV12, NV12);
 COMPILE_ASSERT_MATCHING_ENUM(FormatEmpty, EMPTY);
 COMPILE_ASSERT_MATCHING_ENUM(FormatASCII, ASCII);
 
-// TODO(scherkus): remove WebVideoFrame::SurfaceType from upstream WebKit.
-WebVideoFrame::SurfaceType WebVideoFrameImpl::surfaceType() const {
-  return WebVideoFrame::SurfaceTypeSystemMemory;
-}
-
 WebVideoFrame::Format WebVideoFrameImpl::format() const {
   if (video_frame_.get())
     return static_cast<WebVideoFrame::Format>(video_frame_->format());
@@ -83,12 +78,6 @@ const void* WebVideoFrameImpl::data(unsigned plane) const {
   if (video_frame_.get())
     return static_cast<const void*>(video_frame_->data(plane));
   return NULL;
-}
-
-// TODO(scherkus): remove WebVideoFrame::texture() from upstream WebKit.
-unsigned WebVideoFrameImpl::texture(unsigned plane) const {
-  NOTIMPLEMENTED();
-  return 0;
 }
 
 }  // namespace webkit_glue
