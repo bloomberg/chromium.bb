@@ -396,6 +396,7 @@ void ParallelAuthenticator::Resolve() {
       request_pending = !current_state_->online_complete();
       // Fall through.
     case UNLOCK:
+      VLOG(2) << "Unlock";
       // Fall through.
     case ONLINE_LOGIN:
       VLOG(2) << "Online login";

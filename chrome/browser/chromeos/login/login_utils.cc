@@ -310,7 +310,7 @@ class LoginUtilsImpl : public LoginUtils,
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
-  scoped_refptr<Authenticator> authenticator_;
+  scoped_ptr<Authenticator> authenticator_;
   scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
   scoped_ptr<PolicyOAuthFetcher> policy_oauth_fetcher_;
 
@@ -434,6 +434,9 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile, Status status) {
       // that will let us skip GAIA's user authentication.
       FetchOAuthTokens(authenticator_->AuthenticationProfile());
     } else {
+      // We don't need authenticator instance any more, reset it so that
+      // ScreenLocker would create a separate instance.
+      authenticator_.reset();
       FetchCookies(profile, credentials_);
     }
   }
@@ -696,9 +699,9 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   if (authenticator_ == NULL) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
-      authenticator_ = new ParallelAuthenticator(consumer);
+      authenticator_.reset(new ParallelAuthenticator(consumer));
     else
-      authenticator_ = new GoogleAuthenticator(consumer);
+      authenticator_.reset(new GoogleAuthenticator(consumer));
   }
   return authenticator_.get();
 }
@@ -783,6 +786,12 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
   // TODO(zelidrag): We should add initialization of other services somewhere
   // here as well. This could be handled with TokenService class once it is
   // ready to handle OAuth tokens.
+
+  // We don't need authenticator instance any more, reset it so that
+  // ScreenLocker would create a separate instance.
+  // TODO(nkostylev): There's a potential race if SL would be created before
+  // OAuth tokens are fetched. It would use incorrect Authenticator instance.
+  authenticator_.reset();
 }
 
 void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
