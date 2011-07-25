@@ -206,11 +206,9 @@ bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
 void FrameNavigationState::TrackFrame(int64 frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
-                                      bool is_error_page,
-                                      const TabContents* tab_contents) {
+                                      bool is_error_page) {
   if (is_main_frame)
-    RemoveTabContentsState(tab_contents);
-  tab_contents_map_.insert(std::make_pair(tab_contents, frame_id));
+    frame_state_map_.clear();
   FrameState& frame_state = frame_state_map_[frame_id];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
@@ -237,15 +235,12 @@ bool FrameNavigationState::IsMainFrame(int64 frame_id) const {
   return frame_state->second.is_main_frame;
 }
 
-int64 FrameNavigationState::GetMainFrameID(
-    const TabContents* tab_contents) const {
-  typedef TabContentsToFrameIdMap::const_iterator FrameIdIterator;
-  std::pair<FrameIdIterator, FrameIdIterator> frame_ids =
-      tab_contents_map_.equal_range(tab_contents);
-  for (FrameIdIterator frame_id = frame_ids.first; frame_id != frame_ids.second;
-       ++frame_id) {
-    if (IsMainFrame(frame_id->second))
-      return frame_id->second;
+int64 FrameNavigationState::GetMainFrameID() const {
+  typedef FrameIdToStateMap::const_iterator FrameIterator;
+  for (FrameIterator frame = frame_state_map_.begin();
+       frame != frame_state_map_.end(); ++frame) {
+    if (frame->second.is_main_frame)
+      return frame->first;
   }
   return -1;
 }
@@ -253,18 +248,6 @@ int64 FrameNavigationState::GetMainFrameID(
 void FrameNavigationState::ErrorOccurredInFrame(int64 frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].error_occurred = true;
-}
-
-void FrameNavigationState::RemoveTabContentsState(
-    const TabContents* tab_contents) {
-  typedef TabContentsToFrameIdMap::iterator FrameIdIterator;
-  std::pair<FrameIdIterator, FrameIdIterator> frame_ids =
-      tab_contents_map_.equal_range(tab_contents);
-  for (FrameIdIterator frame_id = frame_ids.first; frame_id != frame_ids.second;
-       ++frame_id) {
-    frame_state_map_.erase(frame_id->second);
-  }
-  tab_contents_map_.erase(tab_contents);
 }
 
 
@@ -405,8 +388,7 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
   navigation_state_.TrackFrame(frame_id,
                                validated_url,
                                is_main_frame,
-                               is_error_page,
-                               tab_contents());
+                               is_error_page);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   DispatchOnBeforeNavigate(
@@ -428,8 +410,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
   navigation_state_.TrackFrame(frame_id,
                                url,
                                is_main_frame,
-                               false,
-                               tab_contents());
+                               false);
 
   // On reference fragment navigations, only a new navigation state is
   // committed. We need to catch this case and generate a full sequence
@@ -488,7 +469,6 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
 
 void ExtensionWebNavigationTabObserver::TabContentsDestroyed(
     TabContents* tab) {
-  navigation_state_.RemoveTabContentsState(tab);
   g_tab_observer.Get().erase(tab);
 }
 

@@ -24,8 +24,8 @@ struct RetargetingDetails;
 }
 class TabContents;
 
-// Tracks the navigation state of all frames currently known to the
-// webNavigation API. It is mainly used to track in which frames an error
+// Tracks the navigation state of all frames in a given tab currently known to
+// the webNavigation API. It is mainly used to track in which frames an error
 // occurred so no further events for this frame are being sent.
 class FrameNavigationState {
  public:
@@ -35,13 +35,11 @@ class FrameNavigationState {
   // True if navigation events for the given frame can be sent.
   bool CanSendEvents(int64 frame_id) const;
 
-  // Starts to track a frame given by its |frame_id| showing the URL |url| in
-  // a |tab_contents|.
+  // Starts to track a frame identified by its |frame_id| showing the URL |url|.
   void TrackFrame(int64 frame_id,
                   const GURL& url,
                   bool is_main_frame,
-                  bool is_error_page,
-                  const TabContents* tab_contents);
+                  bool is_error_page);
 
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
   GURL GetUrl(int64 frame_id) const;
@@ -49,15 +47,12 @@ class FrameNavigationState {
   // True if the frame given by its |frame_id| is the main frame of its tab.
   bool IsMainFrame(int64 frame_id) const;
 
-  // Returns the frame ID of the main frame for the given |tab_contents|, or -1
-  // if the frame ID is not known.
-  int64 GetMainFrameID(const TabContents* tab_contents) const;
+  // Returns the frame ID of the main frame, or -1 if the frame ID is not
+  // known.
+  int64 GetMainFrameID() const;
 
   // Marks a frame as in an error state.
   void ErrorOccurredInFrame(int64 frame_id);
-
-  // Removes state associated with this tab contents and all of its frames.
-  void RemoveTabContentsState(const TabContents* tab_contents);
 
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
@@ -66,16 +61,12 @@ class FrameNavigationState {
 #endif
 
  private:
-  typedef std::multimap<const TabContents*, int64> TabContentsToFrameIdMap;
   struct FrameState {
     bool error_occurred;  // True if an error has occurred in this frame.
     bool is_main_frame;  // True if this is a main frame.
     GURL url;  // URL of this frame.
   };
   typedef std::map<int64, FrameState> FrameIdToStateMap;
-
-  // Tracks which frames belong to a given tab contents object.
-  TabContentsToFrameIdMap tab_contents_map_;
 
   // Tracks the state of known frames.
   FrameIdToStateMap frame_state_map_;
