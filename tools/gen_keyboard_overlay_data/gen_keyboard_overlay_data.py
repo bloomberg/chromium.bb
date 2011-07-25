@@ -212,6 +212,16 @@ def ToMessageName(behavior):
   return 'IDS_KEYBOARD_OVERLAY_' + ('_'.join(segments))
 
 
+def ToMessageDesc(description):
+  """Composes a message description for grd file."""
+  message_desc = 'The text in the keyboard overlay to explain the shortcut'
+  if description:
+    message_desc = '%s (%s).' % (message_desc, description)
+  else:
+    message_desc += '.'
+  return message_desc
+
+
 def Toi18nContent(behavior):
   """Composes a i18n-content value for HTML/JavaScript files.
 
@@ -396,7 +406,7 @@ def FetchHotkeyData(client):
   """Fetches the hotkey data from the spreadsheet."""
   hotkey_sheet = ['Cross Platform Behaviors']
   hotkey_cols = ['behavior', 'context', 'kind', 'actionctrlctrlcmdonmac',
-                 'chromeos']
+                 'chromeos', 'descriptionfortranslation']
   hotkey_data = FetchSpreadsheetFeeds(client, HOTKEY_SPREADSHEET_KEY,
                                       hotkey_sheet, hotkey_cols)
   action_to_id = {}
@@ -410,7 +420,8 @@ def FetchHotkeyData(client):
     if not action:
       continue
     behavior = line['behavior'].strip()
-    result.append((behavior, action))
+    description = line.get('descriptionfortranslation')
+    result.append((behavior, action, description))
   return result
 
 
@@ -421,8 +432,9 @@ def GenerateCopyrightHeader():
 
 def UniqueBehaviors(hotkey_data):
   """Retrieves a sorted list of unique behaviors from |hotkey_data|."""
-  return sorted(set(behavior for (behavior, _) in hotkey_data),
-                cmp=lambda x, y: cmp(ToMessageName(x), ToMessageName(y)))
+  return sorted(set((behavior, description) for (behavior, _, description)
+                    in hotkey_data),
+                cmp=lambda x, y: cmp(ToMessageName(x[0]), ToMessageName(y[0])))
 
 
 def GetPath(path_from_src):
@@ -433,7 +445,7 @@ def GetPath(path_from_src):
 def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outdir):
   """Outputs the keyboard overlay data as a JSON file."""
   action_to_id = {}
-  for (behavior, action) in hotkey_data:
+  for (behavior, action, _) in hotkey_data:
     i18nContent = Toi18nContent(behavior)
     action_to_id[action] = i18nContent
   data = {'keyboardGlyph': keyboard_glyph_data,
@@ -476,11 +488,11 @@ def RewriteFile(start, end, original_dir, original_filename, snippet,
 
 def OutputGrd(hotkey_data, outdir):
   """Outputs a part of messages in the grd file."""
-  desc = 'The text in the keyboard overlay to explain the shortcut.'
   snippet = cStringIO.StringIO()
-  for behavior in UniqueBehaviors(hotkey_data):
+  for (behavior, description) in UniqueBehaviors(hotkey_data):
     snippet.write(GRD_SNIPPET_TEMPLATE %
-                  (ToMessageName(behavior), desc, behavior))
+                  (ToMessageName(behavior), ToMessageDesc(description),
+                   behavior))
 
   RewriteFile(GRD_START, GRD_END, GRD_OUTDIR, GRD_FILENAME, snippet.getvalue(),
               outdir)
@@ -489,7 +501,7 @@ def OutputGrd(hotkey_data, outdir):
 def OutputCC(hotkey_data, outdir):
   """Outputs a part of code in the C++ file."""
   snippet = cStringIO.StringIO()
-  for behavior in UniqueBehaviors(hotkey_data):
+  for (behavior, _) in UniqueBehaviors(hotkey_data):
     message_name = ToMessageName(behavior)
     output = CC_SNIPPET_TEMPLATE % (Toi18nContent(behavior), message_name)
     # Break the line if the line is longer than 80 characters
