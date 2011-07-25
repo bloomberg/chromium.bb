@@ -442,6 +442,24 @@ hg-bot-sanity() {
   fi
 }
 
+hg-bot-sanity-nosfi() {
+  local name="$1"
+  local dir="$2"
+
+  if ! ${UTMAN_BUILDBOT} ; then
+    return 0
+  fi
+
+  if hg-has-changes "${dir}" ||
+     hg-has-untracked "${dir}" ; then
+    Banner "WARNING: hg/${name} is in an illegal state." \
+           "         Wiping and trying again."
+    rm -rf "${dir}"
+    hg-checkout-${name}
+  fi
+}
+
+
 hg-update-common() {
   local name="$1"
   local rev="$2"
@@ -468,7 +486,7 @@ hg-update-nosfi() {
   local dir="$3"
 
   # If this is a buildbot, do sanity checks here.
-  hg-bot-sanity "${name}" "${dir}"
+  hg-bot-sanity-nosfi "${name}" "${dir}"
 
   # Make sure it is safe to update
   hg-assert-safe-to-update-nosfi "${name}" "${dir}" "${rev}"
