@@ -75,8 +75,9 @@ void WebUILoginDisplayHost::ShowBackground() {
 
 void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
                                         const GURL& start_url) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAllowWebUIOobe))
+  if (!login_window_)
     LoadURL(GURL(kOobeURL));
+
   BaseLoginDisplayHost::StartWizard(first_screen_name, start_url);
 }
 
