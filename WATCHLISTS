@@ -272,7 +272,7 @@
     'media': ['acolwell+watch@chromium.org', 'ajwong+watch@chromium.org',
               'annacc+watch@chromium.org', 'ddorwin+watch@chromium.org',
               'fischman+watch@chromium.org', 'hclam+watch@chromium.org',
-              'scherkus@chromium.org', 'sjl@chromium.org', 'vrk@chromium.org'],
+              'scherkus@chromium.org', 'vrk@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
