@@ -27,6 +27,7 @@ class HostResolver;
 
 class PpapiPluginProcessHost
     : public BrowserChildProcessHost,
+      public net::NetworkChangeNotifier::IPAddressObserver,
       public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
   class Client {
@@ -74,8 +75,11 @@ class PpapiPluginProcessHost
 
   void CancelRequests();
 
+  // IPAddressObserver implementation.
+  virtual void OnIPAddressChanged() OVERRIDE;
+
   // OnlineStateObserver implementation.
-  virtual void OnOnlineStateChanged(bool online);
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);

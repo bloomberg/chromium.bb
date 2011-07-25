@@ -19,11 +19,13 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
       filter_(new PepperMessageFilter(host_resolver)) {
   AddFilter(filter_.get());
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
 PpapiPluginProcessHost::~PpapiPluginProcessHost() {
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   CancelRequests();
 }
 
@@ -156,6 +158,16 @@ void PpapiPluginProcessHost::CancelRequests() {
                                             IPC::ChannelHandle());
     sent_requests_.pop();
   }
+}
+
+void PpapiPluginProcessHost::OnIPAddressChanged() {
+  // TODO(brettw) bug 90246: This doesn't seem correct. The online/offline
+  // notification seems like it should be sufficient, but I don't see that when
+  // I unplug and replug my network cable. Sending this notification when
+  // "something" changes seems to make Flash reasonably happy, but seems wrong.
+  // We should really be able to provide the real online state in
+  // OnOnlineStateChanged().
+  Send(new PpapiMsg_SetNetworkState(true));
 }
 
 void PpapiPluginProcessHost::OnOnlineStateChanged(bool online) {
