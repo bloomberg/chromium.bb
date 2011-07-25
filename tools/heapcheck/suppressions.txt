@@ -1642,6 +1642,12 @@
    fun:FilePath::Append
    fun:ProfileManagerTest_CreateProfilesAsync_Test::TestBody
 }
+{
+   bug_90370
+   Heapcheck:Leak
+   ...
+   fun:gfx::RenderTextTest*
+}
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
 {
