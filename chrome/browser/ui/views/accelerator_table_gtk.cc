@@ -14,6 +14,7 @@ namespace browser {
 // the Windows accelerators in ../../app/chrome_dll.rc.
 const AcceleratorMapping kAcceleratorMap[] = {
   // Keycode                  Shift  Ctrl   Alt    Command ID
+  { ui::VKEY_A,              true,  true,  false, IDC_AUTOFILL_DEFAULT },
   { ui::VKEY_LEFT,           false, false, true,  IDC_BACK },
   { ui::VKEY_BACK,           false, false, false, IDC_BACK },
 #if defined(OS_CHROMEOS)

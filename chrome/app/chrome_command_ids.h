@@ -160,16 +160,17 @@
 #define IDC_ABOUT                       40018
 #define IDC_HELP_PAGE                   40019
 #define IDC_SHOW_APP_MENU               40020
-#define IDC_MANAGE_EXTENSIONS           40021
-#define IDC_DEV_TOOLS_INSPECT           40022
-#define IDC_UPGRADE_DIALOG              40023
-#define IDC_VIEW_INCOMPATIBILITIES      40024
-#define IDC_VIEW_BACKGROUND_PAGES       40025
-#define IDC_SHOW_KEYBOARD_OVERLAY       40026
-#define IDC_PROFILING_ENABLED           40027
-#define IDC_FILE_MANAGER                40028
-#define IDC_BOOKMARKS_MENU              40029
-#define IDC_SHOW_SYNC_SETUP             40030
+#define IDC_MANAGE_EXTENSIONS           40022
+#define IDC_AUTOFILL_DEFAULT            40023
+#define IDC_DEV_TOOLS_INSPECT           40025
+#define IDC_UPGRADE_DIALOG              40026
+#define IDC_VIEW_INCOMPATIBILITIES      40027
+#define IDC_VIEW_BACKGROUND_PAGES       40028
+#define IDC_SHOW_KEYBOARD_OVERLAY       40029
+#define IDC_PROFILING_ENABLED           40030
+#define IDC_FILE_MANAGER                40031
+#define IDC_BOOKMARKS_MENU              40032
+#define IDC_SHOW_SYNC_SETUP             40033
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
