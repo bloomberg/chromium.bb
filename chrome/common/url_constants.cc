@@ -12,17 +12,6 @@ namespace chrome {
 const char kCrosScheme[] = "cros";
 #endif
 
-const char* kSavableSchemes[] = {
-  kHttpScheme,
-  kHttpsScheme,
-  kFileScheme,
-  kFtpScheme,
-  kExtensionScheme,
-  kChromeDevToolsScheme,
-  kChromeUIScheme,
-  NULL
-};
-
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutVersionURL[] = "about:version";
 

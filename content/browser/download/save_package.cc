@@ -18,22 +18,15 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/save_file.h"
@@ -44,7 +37,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_constants.h"
+#include "content/common/view_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -242,7 +238,8 @@ void SavePackage::Cancel(bool user_action) {
 // Init() can be called directly, or indirectly via GetSaveInfo(). In both
 // cases, we need file_manager_ to be initialized, so we do this first.
 void SavePackage::InternalInit() {
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
   if (!rdh) {
     NOTREACHED();
     return;
@@ -700,7 +697,7 @@ void SavePackage::Finish() {
   download_->MarkAsComplete();
 
   NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+      content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
       Source<SavePackage>(this),
       Details<GURL>(&page_url_));
 }
@@ -823,25 +820,6 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            tab_contents()->profile()->GetResourceContext(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
-}
-
-
-// Open download page in windows explorer on file thread, to avoid blocking the
-// user interface.
-void SavePackage::ShowDownloadInShell() {
-  DCHECK(file_manager_);
-  DCHECK(finished_ && !canceled() && !saved_main_file_path_.empty());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(OS_MACOSX)
-  // Mac OS X requires opening downloads on the UI thread.
-  platform_util::ShowItemInFolder(saved_main_file_path_);
-#else
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &SaveFileManager::OnShowSavedFileInShell,
-                        saved_main_file_path_));
-#endif
 }
 
 // Calculate the percentage of whole save page job.

@@ -218,13 +218,6 @@ enum {
   // the LoginHandler that should be cancelled.
   NOTIFICATION_AUTH_CANCELLED,
 
-  // Saved Pages -------------------------------------------------------------
-
-  // Sent when a SavePackage finishes successfully. The source is the
-  // SavePackage, and Details are a GURL containing address of downloaded
-  // page.
-  NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-
   // History -----------------------------------------------------------------
 
   // Sent when a history service is created on the main thread. This is sent

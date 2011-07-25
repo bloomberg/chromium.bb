@@ -12,13 +12,11 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/platform_util.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -179,19 +177,20 @@ void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
 }
 
 // Static
-// Utility function for converting request IDs to a TabContents. Must be called
-// only on the UI thread.
 SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
     int render_process_id, int render_view_id) {
-  TabContents* contents = tab_util::GetTabContentsByID(render_process_id,
-                                                       render_view_id);
-  if (contents)
-    return contents->save_package();
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return NULL;
 
-  return NULL;
+  TabContents* tab = render_view_host->delegate()->GetAsTabContents();
+  if (!tab)
+    return NULL;
+
+  return tab->save_package();
 }
 
-// Utility function for deleting specified file.
 void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
                                             bool is_dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -466,15 +465,6 @@ void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
 
   file_util::Delete(full_path, is_dir);
 }
-
-// Open a saved page package, show it in a Windows Explorer window.
-// We run on this thread to avoid blocking the UI with slow Shell operations.
-#if !defined(OS_MACOSX)
-void SaveFileManager::OnShowSavedFileInShell(const FilePath full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  platform_util::ShowItemInFolder(full_path);
-}
-#endif
 
 void SaveFileManager::RenameAllFiles(
     const FinalNameList& final_names,

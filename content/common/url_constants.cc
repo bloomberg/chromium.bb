@@ -4,7 +4,20 @@
 
 #include "content/common/url_constants.h"
 
+#include <stdio.h>
+
 namespace chrome {
+
+const char* kSavableSchemes[] = {
+  kHttpScheme,
+  kHttpsScheme,
+  kFileScheme,
+  kFtpScheme,
+  kExtensionScheme,
+  kChromeDevToolsScheme,
+  kChromeUIScheme,
+  NULL
+};
 
 const char kAboutScheme[] = "about";
 const char kBlobScheme[] = "blob";

@@ -120,13 +120,6 @@ class SaveFileManager
   void RemoveSaveFile(int save_id, const GURL& save_url,
                       SavePackage* package);
 
-#if !defined(OS_MACOSX)
-  // Handler for shell operations sent from the UI to the file thread. Mac OS X
-  // requires opening downloads on the UI thread, so it does not use this
-  // method.
-  void OnShowSavedFileInShell(const FilePath full_path);
-#endif
-
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
 

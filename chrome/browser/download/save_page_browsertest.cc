@@ -11,13 +11,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   GURL WaitForSavePackageToFinish() {
     ui_test_utils::TestNotificationObserver observer;
     ui_test_utils::RegisterAndWait(&observer,
-        chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         NotificationService::AllSources());
     return *Details<GURL>(observer.details()).ptr();
   }

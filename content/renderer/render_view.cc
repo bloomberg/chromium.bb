@@ -94,6 +94,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
@@ -126,6 +127,7 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/glue_serialize.h"
@@ -194,6 +196,8 @@ using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebNode;
+using WebKit::WebPageSerializer;
+using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginDocument;
@@ -677,6 +681,11 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
                         OnPpapiBrokerChannelCreated)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
+                        OnGetAllSavableResourceLinksForCurrentPage)
+    IPC_MESSAGE_HANDLER(
+        ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
+        OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
@@ -2884,6 +2893,19 @@ void RenderView::requestStorageQuota(
       routing_id(), GURL(origin.toString()), type, requested_size, callbacks);
 }
 
+// WebKit::WebPageSerializerClient implementation ------------------------------
+
+void RenderView::didSerializeDataForFrame(
+    const WebURL& frame_url,
+    const WebCString& data,
+    WebPageSerializerClient::PageSerializationStatus status) {
+  Send(new ViewHostMsg_SendSerializedHtmlData(
+    routing_id(),
+    frame_url,
+    data.data(),
+    static_cast<int32>(status)));
+}
+
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
@@ -3582,6 +3604,54 @@ void RenderView::OnAccessibilityNotificationsAck() {
   DCHECK(accessibility_ack_pending_);
   accessibility_ack_pending_ = false;
   SendPendingAccessibilityNotifications();
+}
+
+void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
+    const GURL& page_url) {
+  // Prepare list to storage all savable resource links.
+  std::vector<GURL> resources_list;
+  std::vector<GURL> referrers_list;
+  std::vector<GURL> frames_list;
+  webkit_glue::SavableResourcesResult result(&resources_list,
+                                             &referrers_list,
+                                             &frames_list);
+
+  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
+          webview(),
+          page_url,
+          &result,
+          chrome::kSavableSchemes)) {
+    // If something is wrong when collecting all savable resource links,
+    // send empty list to embedder(browser) to tell it failed.
+    referrers_list.clear();
+    resources_list.clear();
+    frames_list.clear();
+  }
+
+  // Send result of all savable resource links to embedder.
+  Send(new ViewHostMsg_SendCurrentPageAllSavableResourceLinks(routing_id(),
+                                                              resources_list,
+                                                              referrers_list,
+                                                              frames_list));
+}
+
+void RenderView::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
+    const std::vector<GURL>& links,
+    const std::vector<FilePath>& local_paths,
+    const FilePath& local_directory_name) {
+
+  // Convert std::vector of GURLs to WebVector<WebURL>
+  WebVector<WebURL> weburl_links(links);
+
+  // Convert std::vector of std::strings to WebVector<WebString>
+  WebVector<WebString> webstring_paths(local_paths.size());
+  for (size_t i = 0; i < local_paths.size(); i++)
+    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
+
+  WebPageSerializer::serialize(webview()->mainFrame(), true, this, weburl_links,
+                               webstring_paths,
+                               webkit_glue::FilePathToWebString(
+                                   local_directory_name));
 }
 
 void RenderView::OnShouldClose() {

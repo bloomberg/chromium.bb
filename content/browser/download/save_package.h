@@ -118,9 +118,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // total size).
   int PercentComplete();
 
-  // Show or Open a saved page via the Windows shell.
-  void ShowDownloadInShell();
-
   // Called by the embedder once a path is chosen by the user.
   void OnPathPicked(const FilePath& final_name, SavePackageType type);
 

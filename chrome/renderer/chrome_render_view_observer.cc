@@ -33,7 +33,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -43,7 +42,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/webkit_glue.h"
@@ -53,8 +51,6 @@ using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebIconURL;
-using WebKit::WebPageSerializer;
-using WebKit::WebPageSerializerClient;
 using WebKit::WebRect;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
@@ -212,11 +208,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
-                        OnGetAllSavableResourceLinksForCurrentPage)
-    IPC_MESSAGE_HANDLER(
-        ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
-        OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAllowDisplayingInsecureContent,
@@ -274,55 +265,6 @@ void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
   }
 }
 
-void ChromeRenderViewObserver::OnGetAllSavableResourceLinksForCurrentPage(
-    const GURL& page_url) {
-  // Prepare list to storage all savable resource links.
-  std::vector<GURL> resources_list;
-  std::vector<GURL> referrers_list;
-  std::vector<GURL> frames_list;
-  webkit_glue::SavableResourcesResult result(&resources_list,
-                                             &referrers_list,
-                                             &frames_list);
-
-  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
-          render_view()->webview(),
-          page_url,
-          &result,
-          chrome::kSavableSchemes)) {
-    // If something is wrong when collecting all savable resource links,
-    // send empty list to embedder(browser) to tell it failed.
-    referrers_list.clear();
-    resources_list.clear();
-    frames_list.clear();
-  }
-
-  // Send result of all savable resource links to embedder.
-  Send(new ViewHostMsg_SendCurrentPageAllSavableResourceLinks(routing_id(),
-                                                              resources_list,
-                                                              referrers_list,
-                                                              frames_list));
-}
-
-void
-ChromeRenderViewObserver::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-    const std::vector<GURL>& links,
-    const std::vector<FilePath>& local_paths,
-    const FilePath& local_directory_name) {
-
-  // Convert std::vector of GURLs to WebVector<WebURL>
-  WebVector<WebURL> weburl_links(links);
-
-  // Convert std::vector of std::strings to WebVector<WebString>
-  WebVector<WebString> webstring_paths(local_paths.size());
-  for (size_t i = 0; i < local_paths.size(); i++)
-    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
-
-  WebPageSerializer::serialize(render_view()->webview()->mainFrame(),
-                               true, this, weburl_links, webstring_paths,
-                               webkit_glue::FilePathToWebString(
-                                   local_directory_name));
-}
-
 void ChromeRenderViewObserver::OnDownloadFavicon(int id,
                                                  const GURL& image_url,
                                                  int image_size) {
@@ -372,17 +314,6 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
           render_view(), NULL) :
       NULL;
 #endif
-}
-
-void ChromeRenderViewObserver::didSerializeDataForFrame(
-    const WebURL& frame_url,
-    const WebCString& data,
-    WebPageSerializerClient::PageSerializationStatus status) {
-  Send(new ViewHostMsg_SendSerializedHtmlData(
-    routing_id(),
-    frame_url,
-    data.data(),
-    static_cast<int32>(status)));
 }
 
 bool ChromeRenderViewObserver::allowDatabase(

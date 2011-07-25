@@ -13,9 +13,6 @@
 
 namespace chrome {
 
-// Null terminated list of schemes that are savable.
-extern const char* kSavableSchemes[];
-
 // TODO(msw): Resolve chrome_frame dependency on these constants.
 extern const char kAboutPluginsURL[];
 extern const char kAboutVersionURL[];

@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -168,7 +169,8 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
-                   public webkit::npapi::WebPluginPageDelegate,
+                   public WebKit::WebPageSerializerClient,
+                   public webkit::npapi::WebPluginPageDelegate,                   
                    public base::SupportsWeakPtr<RenderView> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
@@ -569,6 +571,13 @@ class RenderView : public RenderWidget,
       unsigned long long requested_size,
       WebKit::WebStorageQuotaCallbacks* callbacks);
 
+  // WebKit::WebPageSerializerClient implementation ----------------------------
+
+  virtual void didSerializeDataForFrame(
+      const WebKit::WebURL& frame_url,
+      const WebKit::WebCString& data,
+      PageSerializationStatus status) OVERRIDE;
+
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
@@ -774,6 +783,11 @@ class RenderView : public RenderWidget,
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
   void OnEnableAccessibility();
+  void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
+  void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
+      const std::vector<GURL>& links,
+      const std::vector<FilePath>& local_paths,
+      const FilePath& local_directory_name);
   void OnInstallMissingPlugin();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);

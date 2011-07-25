@@ -185,18 +185,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetDefaultContentSettings,
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
 
-// Get all savable resource links from current webpage, include main
-// frame and sub-frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
-                    GURL /* url of page which is needed to save */)
-
-// Get html data by serializing all frames of current page with lists
-// which contain all resource links that have local copy.
-IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
-                    std::vector<GURL> /* urls that have local copy */,
-                    std::vector<FilePath> /* paths of local copy */,
-                    FilePath /* local directory path */)
-
 // Asks the renderer to send back stats on the WebCore cache broken down by
 // resource types.
 IPC_MESSAGE_CONTROL0(ViewMsg_GetCacheResourceStats)
@@ -452,16 +440,6 @@ IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_GetPluginPolicies,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,
                     string16, /* name */
                     GURL      /* update_url */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
-                    std::vector<GURL> /* all savable resource links */,
-                    std::vector<GURL> /* all referrers of resource links */,
-                    std::vector<GURL> /* all frame links */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
-                    GURL /* frame's url */,
-                    std::string /* data buffer */,
-                    int32 /* complete status */)
 
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.

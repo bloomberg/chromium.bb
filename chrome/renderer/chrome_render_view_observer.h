@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
 class ContentSettingsObserver;
@@ -38,7 +37,6 @@ class ImageResourceFetcher;
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
 class ChromeRenderViewObserver : public RenderViewObserver,
-                                 public WebKit::WebPageSerializerClient,
                                  public WebKit::WebPermissionClient {
  public:
   // translate_helper can be NULL.
@@ -58,12 +56,6 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
-
-  // WebKit::WebPageSerializerClient implementation.
-  virtual void didSerializeDataForFrame(
-      const WebKit::WebURL& frame_url,
-      const WebKit::WebCString& data,
-      PageSerializationStatus status) OVERRIDE;
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowDatabase(WebKit::WebFrame* frame,
@@ -106,11 +98,6 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                                        const std::string& origin,
                                        const std::string& target);
   void OnJavaScriptStressTestControl(int cmd, int param);
-  void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
-  void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      const std::vector<GURL>& links,
-      const std::vector<FilePath>& local_paths,
-      const FilePath& local_directory_name);
   void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
   void OnEnableViewSourceMode();
   void OnNavigate(const ViewMsg_Navigate_Params& params);

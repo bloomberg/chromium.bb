@@ -436,6 +436,13 @@ enum {
   // MHTMLGenerationManager::NotificationDetails.
   NOTIFICATION_MHTML_GENERATED,
 
+  // Saved Pages -------------------------------------------------------------
+
+  // Sent when a SavePackage finishes successfully. The source is the
+  // SavePackage, and Details are a GURL containing address of downloaded
+  // page.
+  NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+
   // Purge Memory ------------------------------------------------------------
 
   // Sent on the IO thread when the system should try to reduce the amount of

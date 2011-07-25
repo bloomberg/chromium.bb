@@ -1841,7 +1841,7 @@ SavePackageNotificationObserver::SavePackageNotificationObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   Source<SavePackage> source(save_package);
-  registrar_.Add(this, chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+  registrar_.Add(this, content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
                  source);
 }
 
@@ -1851,7 +1851,7 @@ void SavePackageNotificationObserver::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
+  if (type == content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
     if (automation_) {
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);
