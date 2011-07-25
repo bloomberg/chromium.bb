@@ -167,8 +167,7 @@
   [editor mouseDown:theEvent];
 }
 
-// Overridden to pass OnFrameChanged() notifications to |observer_|.
-// Additionally, cursor and tooltip rects need to be updated.
+// Overridden so that cursor and tooltip rects can be updated.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (observer_) {
@@ -264,11 +263,20 @@
     observer_->ClosePopup();
 }
 
+- (void)windowDidResize:(NSNotification*)notification {
+  DCHECK_EQ([self window], [notification object]);
+  if (observer_)
+    observer_->OnFrameChanged();
+}
+
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
   if ([self window]) {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     [nc removeObserver:self
                   name:NSWindowDidResignKeyNotification
+                object:[self window]];
+    [nc removeObserver:self
+                  name:NSWindowDidResizeNotification
                 object:[self window]];
   }
 }
@@ -279,6 +287,10 @@
     [nc addObserver:self
            selector:@selector(windowDidResignKey:)
                name:NSWindowDidResignKeyNotification
+             object:[self window]];
+    [nc addObserver:self
+           selector:@selector(windowDidResize:)
+               name:NSWindowDidResizeNotification
              object:[self window]];
     // Only register for drops if not in a popup window. Lazily create the
     // drop handler when the type of window is known.
