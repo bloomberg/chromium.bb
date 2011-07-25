@@ -70,6 +70,7 @@ PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
 }
 
 PPB_URLLoader_Impl::~PPB_URLLoader_Impl() {
+  Close();
 }
 
 PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
