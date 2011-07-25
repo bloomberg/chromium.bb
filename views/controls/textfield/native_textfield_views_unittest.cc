@@ -15,7 +15,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/gfx/render_text.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -219,8 +218,9 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   }
 
   int GetCursorPositionX(int cursor_pos) {
-    gfx::RenderText* render_text = textfield_view_->GetRenderText();
-    return render_text->GetCursorBounds(cursor_pos, false).x();
+    const string16 text = textfield_->text().substr(0, cursor_pos);
+    return textfield_view_->GetInsets().left() + textfield_view_->text_offset_ +
+           textfield_view_->GetFont().GetStringWidth(text);
   }
 
   // We need widget to populate wrapper class.
@@ -254,12 +254,12 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTest) {
   last_contents_.clear();
   textfield_->SetText(ASCIIToUTF16("this is"));
 
-  EXPECT_STR_EQ("this is", model_->GetText());
+  EXPECT_STR_EQ("this is", model_->text());
   EXPECT_STR_EQ("this is", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
 
   textfield_->AppendText(ASCIIToUTF16(" a test"));
-  EXPECT_STR_EQ("this is a test", model_->GetText());
+  EXPECT_STR_EQ("this is a test", model_->text());
   EXPECT_STR_EQ("this is a test", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
 

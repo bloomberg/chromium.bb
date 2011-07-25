@@ -126,11 +126,6 @@
             }],
           ],
         }],
-        ['toolkit_views==1', {
-          'sources': [
-            'gfx/render_text_unittest.cc',
-          ],
-        }],
       ],
     },
   ],

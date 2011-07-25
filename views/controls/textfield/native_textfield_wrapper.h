@@ -11,7 +11,6 @@
 
 namespace gfx {
 class Insets;
-struct StyleRange;
 }  // namespace gfx
 
 namespace ui {
@@ -23,6 +22,7 @@ namespace views {
 class KeyEvent;
 class Textfield;
 class TextInputClient;
+class TextStyle;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -126,12 +126,17 @@ class NativeTextfieldWrapper {
   // support text input.
   virtual TextInputClient* GetTextInputClient() = 0;
 
-  // Applies the |style| to the text specified by its range.
-  // See |Textfield::ApplyStyleRange| for detail.
-  virtual void ApplyStyleRange(const gfx::StyleRange& style) = 0;
+  // Creates a new TextStyle for this textfield.
+  // See |Textfield::CreateTextStyle| for detail.
+  virtual TextStyle* CreateTextStyle() = 0;
 
-  // Applies the default style to the textfield.
-  virtual void ApplyDefaultStyle() = 0;
+  // Applies the |style| to the text specified by the |range|.
+  // See |Textfield::ApplyTextStyle| for detail.
+  virtual void ApplyTextStyle(const TextStyle* style,
+                              const ui::Range& range) = 0;
+
+  // Clears all text styles in this textfield.
+  virtual void ClearAllTextStyles() = 0;
 
   // Clears Edit history.
   virtual void ClearEditHistory() = 0;

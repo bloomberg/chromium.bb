@@ -16,12 +16,12 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/render_text.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/textfield/text_style.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
@@ -37,8 +37,15 @@
 
 namespace {
 
-// Text color for read only.
-const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
+// Color settings for text, backgrounds and cursor.
+// These are tentative, and should be derived from theme, system
+// settings and current settings.
+// TODO(oshima): Change this to match the standard chrome
+// before dogfooding textfield views.
+const SkColor kSelectedTextColor = SK_ColorWHITE;
+const SkColor kFocusedSelectionColor = SK_ColorCYAN;
+const SkColor kUnfocusedSelectionColor = SK_ColorLTGRAY;
+const SkColor kCursorColor = SK_ColorBLACK;
 
 // Parameters to control cursor blinking.
 const int kCursorVisibleTimeMs = 800;
@@ -55,8 +62,9 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
       ALLOW_THIS_IN_INITIALIZER_LIST(model_(new TextfieldViewsModel(this))),
       text_border_(new FocusableBorder()),
+      text_offset_(0),
+      insert_(true),
       is_cursor_visible_(false),
-      is_drop_cursor_visible_(false),
       skip_input_method_cancel_composition_(false),
       initiating_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
@@ -67,12 +75,6 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
 
   // Lowercase is not supported.
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
-
-  // Set the default text style.
-  gfx::StyleRange default_style;
-  default_style.font = textfield_->font();
-  default_style.foreground = textfield_->text_color();
-  GetRenderText()->set_default_style(default_style);
 
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -103,7 +105,7 @@ bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
     initiating_drag_ = false;
     switch(aggregated_clicks_) {
       case 0:
-        if (!GetRenderText()->IsPointInSelection(event.location()))
+        if (!IsPointInSelection(event.location()))
           MoveCursorTo(event.location(), event.IsShiftDown());
         else
           initiating_drag_ = true;
@@ -174,14 +176,14 @@ bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
 
 int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
-  bool in_selection = GetRenderText()->IsPointInSelection(event.location());
-  is_drop_cursor_visible_ = !in_selection;
+  bool is_point_in_selection = IsPointInSelection(event.location());
+  is_drop_cursor_visible_ = !is_point_in_selection;
   // TODO(msw): Pan over text when the user drags to the visible text edge.
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(FindCursorPosition(event.location()), true);
   SchedulePaint();
 
   if (initiating_drag_) {
-    if (in_selection)
+    if (is_point_in_selection)
       return ui::DragDropTypes::DRAG_NONE;
     return event.IsControlDown() ? ui::DragDropTypes::DRAG_COPY :
                                    ui::DragDropTypes::DRAG_MOVE;
@@ -191,14 +193,11 @@ int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
 
 int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
-  DCHECK(!initiating_drag_ ||
-         !GetRenderText()->IsPointInSelection(event.location()));
+  DCHECK(!initiating_drag_ || !IsPointInSelection(event.location()));
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
 
-  // TODO(msw): Remove final reference to FindCursorPosition.
-  size_t drop_destination =
-      GetRenderText()->FindCursorPosition(event.location());
+  size_t drop_destination = FindCursorPosition(event.location());
   string16 text;
   event.data().GetString(&text);
 
@@ -216,7 +215,7 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
     model_->DeleteSelectionAndInsertTextAt(text, drop_destination);
   } else {
     model_->MoveCursorTo(drop_destination, false);
-    // Drop always inserts text even if the textfield is not in insert mode.
+    // Drop always inserts a text even if insert_ == false.
     model_->InsertText(text);
   }
   skip_input_method_cancel_composition_ = false;
@@ -247,15 +246,14 @@ void NativeTextfieldViews::OnBlur() {
 }
 
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
-  bool in_selection = GetRenderText()->IsPointInSelection(event.location());
-  bool drag_event = event.type() == ui::ET_MOUSE_DRAGGED;
-  bool text_cursor = !initiating_drag_ && (drag_event || !in_selection);
+  bool text = !initiating_drag_ && (event.type() == ui::ET_MOUSE_DRAGGED ||
+                                    !IsPointInSelection(event.location()));
 #if defined(OS_WIN)
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
-  return text_cursor ? ibeam : arrow;
+  return text ? ibeam : arrow;
 #else
-  return text_cursor ? gfx::GetCursor(GDK_XTERM) : NULL;
+  return text ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif
 }
 
@@ -284,7 +282,7 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
                                                    const gfx::Point& p) {
-  if (!textfield_->IsEnabled() || !GetRenderText()->IsPointInSelection(p))
+  if (!textfield_->IsEnabled() || !IsPointInSelection(p))
     return ui::DragDropTypes::DRAG_NONE;
   if (sender == this && !textfield_->read_only())
     return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
@@ -294,19 +292,19 @@ int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
 bool NativeTextfieldViews::CanStartDragForView(View* sender,
                                                const gfx::Point& press_pt,
                                                const gfx::Point& p) {
-  return GetRenderText()->IsPointInSelection(press_pt);
+  return IsPointInSelection(press_pt);
 }
 
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, NativeTextifieldWrapper overrides:
 
 string16 NativeTextfieldViews::GetText() const {
-  return model_->GetText();
+  return model_->text();
 }
 
 void NativeTextfieldViews::UpdateText() {
   model_->SetText(textfield_->text());
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
   SchedulePaint();
 }
 
@@ -314,7 +312,7 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   if (text.empty())
     return;
   model_->Append(text);
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
   SchedulePaint();
 }
 
@@ -355,24 +353,17 @@ void NativeTextfieldViews::UpdateBackgroundColor() {
 }
 
 void NativeTextfieldViews::UpdateReadOnly() {
-  // Update the default text style.
-  gfx::StyleRange default_style(GetRenderText()->default_style());
-  default_style.foreground = textfield_->read_only() ? kReadonlyTextColor :
-                                                       textfield_->text_color();
-  GetRenderText()->set_default_style(default_style);
-  GetRenderText()->ApplyDefaultStyle();
-
   SchedulePaint();
   OnTextInputTypeChanged();
 }
 
 void NativeTextfieldViews::UpdateFont() {
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
 }
 
 void NativeTextfieldViews::UpdateIsPassword() {
   model_->set_is_password(textfield_->IsPassword());
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
   SchedulePaint();
   OnTextInputTypeChanged();
 }
@@ -394,7 +385,7 @@ void NativeTextfieldViews::UpdateHorizontalMargins() {
   gfx::Insets inset = GetInsets();
 
   text_border_->SetInsets(inset.top(), left, inset.bottom(), right);
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
 }
 
 void NativeTextfieldViews::UpdateVerticalMargins() {
@@ -402,8 +393,9 @@ void NativeTextfieldViews::UpdateVerticalMargins() {
   if (!textfield_->GetVerticalMargins(&top, &bottom))
     return;
   gfx::Insets inset = GetInsets();
+
   text_border_->SetInsets(top, inset.left(), bottom, inset.right());
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
 }
 
 bool NativeTextfieldViews::SetFocus() {
@@ -429,12 +421,12 @@ void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
 
 void NativeTextfieldViews::SelectRange(const ui::Range& range) {
   model_->SelectRange(range);
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
   SchedulePaint();
 }
 
 size_t NativeTextfieldViews::GetCursorPosition() const {
-  return model_->GetCursorPosition();
+  return model_->cursor_pos();
 }
 
 bool NativeTextfieldViews::HandleKeyPressed(const KeyEvent& e) {
@@ -450,7 +442,6 @@ bool NativeTextfieldViews::HandleKeyReleased(const KeyEvent& e) {
 }
 
 void NativeTextfieldViews::HandleFocus() {
-  GetRenderText()->set_focused(true);
   is_cursor_visible_ = true;
   SchedulePaint();
   OnCaretBoundsChanged();
@@ -462,7 +453,6 @@ void NativeTextfieldViews::HandleFocus() {
 }
 
 void NativeTextfieldViews::HandleBlur() {
-  GetRenderText()->set_focused(false);
   // Stop blinking cursor.
   cursor_timer_.RevokeAll();
   if (is_cursor_visible_) {
@@ -546,25 +536,23 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
   OnAfterUserAction();
 }
 
-void NativeTextfieldViews::ApplyStyleRange(const gfx::StyleRange& style) {
-  GetRenderText()->ApplyStyleRange(style);
+TextStyle* NativeTextfieldViews::CreateTextStyle() {
+  return model_->CreateTextStyle();
+}
+
+void NativeTextfieldViews::ApplyTextStyle(const TextStyle* style,
+                                          const ui::Range& range) {
+  model_->ApplyTextStyle(style, range);
   SchedulePaint();
 }
 
-void NativeTextfieldViews::ApplyDefaultStyle() {
-  GetRenderText()->ApplyDefaultStyle();
+void NativeTextfieldViews::ClearAllTextStyles() {
+  model_->ClearAllTextStyles();
   SchedulePaint();
 }
 
 void NativeTextfieldViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Set the RenderText display area.
-  gfx::Insets insets = GetInsets();
-  gfx::Rect display_rect(insets.left(),
-                         insets.top(),
-                         width() - insets.width(),
-                         height() - insets.height());
-  GetRenderText()->set_display_rect(display_rect);
-  OnCaretBoundsChanged();
+  UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -614,7 +602,7 @@ void NativeTextfieldViews::InsertText(const string16& text) {
 
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  if (GetRenderText()->insert_mode())
+  if (insert_)
     model_->InsertText(text);
   else
     model_->ReplaceText(text);
@@ -631,7 +619,7 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
 
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  if (GetRenderText()->insert_mode())
+  if (insert_)
     model_->InsertChar(ch);
   else
     model_->ReplaceChar(ch);
@@ -649,9 +637,7 @@ ui::TextInputType NativeTextfieldViews::GetTextInputType() {
 }
 
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {
-  gfx::RenderText* render_text = GetRenderText();
-  return render_text->GetCursorBounds(render_text->GetCursorPosition(),
-                                      render_text->insert_mode());
+  return cursor_bounds_;
 }
 
 bool NativeTextfieldViews::HasCompositionText() {
@@ -739,8 +725,12 @@ void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {
   textfield_->GetInputMethod()->CancelComposition(textfield_);
 }
 
-gfx::RenderText* NativeTextfieldViews::GetRenderText() const {
-  return model_->render_text();
+const gfx::Font& NativeTextfieldViews::GetFont() const {
+  return textfield_->font();
+}
+
+SkColor NativeTextfieldViews::GetTextColor() const {
+  return textfield_->text_color();
 }
 
 void NativeTextfieldViews::UpdateCursor() {
@@ -753,18 +743,108 @@ void NativeTextfieldViews::UpdateCursor() {
 }
 
 void NativeTextfieldViews::RepaintCursor() {
-  gfx::Rect r(GetCaretBounds());
+  gfx::Rect r = cursor_bounds_;
   r.Inset(-1, -1, -1, -1);
   SchedulePaintInRect(r);
 }
 
+gfx::Rect NativeTextfieldViews::GetCursorBounds(size_t cursor_pos,
+                                                bool insert_mode) const {
+  string16 text = model_->GetVisibleText();
+  const gfx::Font& font = GetFont();
+  int x = font.GetStringWidth(text.substr(0U, cursor_pos));
+  DCHECK_GE(x, 0);
+  int h = std::min(height() - GetInsets().height(), font.GetHeight());
+  gfx::Rect bounds(x, (height() - h) / 2, 0, h);
+  if (!insert_mode && text.length() != cursor_pos)
+    bounds.set_width(font.GetStringWidth(text.substr(0, cursor_pos + 1)) - x);
+  return bounds;
+}
+
+
+void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset(size_t cursor_pos,
+                                                           bool insert_mode) {
+  if (bounds().IsEmpty())
+    return;
+
+  // TODO(oshima): bidi
+  int width = bounds().width() - GetInsets().width();
+  int full_width = GetFont().GetStringWidth(model_->GetVisibleText());
+  cursor_bounds_ = GetCursorBounds(cursor_pos, insert_mode);
+
+  if (full_width < width) {
+    // Show all text whenever the text fits to the size.
+    text_offset_ = 0;
+  } else if ((text_offset_ + cursor_bounds_.right()) > width) {
+    // when the cursor overflows to the right
+    text_offset_ = width - cursor_bounds_.right();
+  } else if ((text_offset_ + cursor_bounds_.x()) < 0) {
+    // when the cursor overflows to the left
+    text_offset_ = -cursor_bounds_.x();
+  } else if (full_width > width && text_offset_ + full_width < width) {
+    // when the cursor moves within the textfield with the text
+    // longer than the field.
+    text_offset_ = width - full_width;
+  } else {
+    // move cursor freely.
+  }
+  // shift cursor bounds to fit insets.
+  cursor_bounds_.set_x(cursor_bounds_.x() + text_offset_ + GetInsets().left());
+
+  OnCaretBoundsChanged();
+}
+
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
+  gfx::Insets insets = GetInsets();
+
   canvas->Save();
-  GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
-      (is_cursor_visible_ && !model_->HasSelection()));
-  // Draw the text, cursor, and selection.
-  GetRenderText()->Draw(canvas);
+  canvas->ClipRectInt(insets.left(), insets.top(),
+                      width() - insets.width(), height() - insets.height());
+
+  // TODO(oshima): bidi support
+  // TODO(varunjain): re-implement this so only that dirty text is painted.
+  TextfieldViewsModel::TextFragments fragments;
+  model_->GetFragments(&fragments);
+  int x_offset = text_offset_ + insets.left();
+  int y = insets.top();
+  int text_height = height() - insets.height();
+  SkColor selection_color =
+      textfield_->HasFocus() ?
+      kFocusedSelectionColor : kUnfocusedSelectionColor;
+  gfx::Font font = GetFont();
+  gfx::Rect selection_bounds = model_->GetSelectionBounds(font);
+
+  if (!selection_bounds.IsEmpty()) {
+    canvas->FillRectInt(selection_color,
+                        x_offset + selection_bounds.x(),
+                        (height() - selection_bounds.height()) / 2,
+                        selection_bounds.width(),
+                        selection_bounds.height());
+  }
+
+  for (TextfieldViewsModel::TextFragments::const_iterator iter =
+           fragments.begin();
+       iter != fragments.end();
+       iter++) {
+    string16 text = model_->GetVisibleText(iter->range.start(),
+                                           iter->range.end());
+    // TODO(oshima): This does not give the accurate position due to
+    // kerning. Figure out how to do.
+    int width = font.GetStringWidth(text);
+    iter->style->DrawString(canvas, text, font, textfield_->read_only(),
+                            x_offset, y, width, text_height);
+    x_offset += width;
+  }
   canvas->Restore();
+
+  // Paint cursor. Replace cursor is drawn as rectangle for now.
+  if (textfield_->IsEnabled() && (is_drop_cursor_visible_ ||
+      (is_cursor_visible_ && !model_->HasSelection())))
+    canvas->DrawRectInt(kCursorColor,
+                        cursor_bounds_.x(),
+                        cursor_bounds_.y(),
+                        cursor_bounds_.width(),
+                        cursor_bounds_.height());
 }
 
 bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
@@ -809,21 +889,21 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
           cursor_changed = text_changed = Paste();
         break;
       case ui::VKEY_RIGHT:
-        model_->MoveCursorRight(
-            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK, selection);
+        control ? model_->MoveCursorToNextWord(selection)
+            : model_->MoveCursorRight(selection);
         cursor_changed = true;
         break;
       case ui::VKEY_LEFT:
-        model_->MoveCursorLeft(
-            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK, selection);
+        control ? model_->MoveCursorToPreviousWord(selection)
+            : model_->MoveCursorLeft(selection);
         cursor_changed = true;
         break;
       case ui::VKEY_END:
-        model_->MoveCursorRight(gfx::LINE_BREAK, selection);
+        model_->MoveCursorToEnd(selection);
         cursor_changed = true;
         break;
       case ui::VKEY_HOME:
-        model_->MoveCursorLeft(gfx::LINE_BREAK, selection);
+        model_->MoveCursorToHome(selection);
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
@@ -836,11 +916,11 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 #if defined(OS_WIN)
             break;
 #else
-            model_->MoveCursorLeft(gfx::LINE_BREAK, true);
+            model_->MoveCursorToHome(true);
 #endif
           } else if (control) {
             // If only control is pressed, then erase the previous word.
-            model_->MoveCursorLeft(gfx::WORD_BREAK, true);
+            model_->MoveCursorToPreviousWord(true);
           }
         }
         text_changed = model_->Backspace();
@@ -856,17 +936,17 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 #if defined(OS_WIN)
             break;
 #else
-            model_->MoveCursorRight(gfx::LINE_BREAK, true);
+            model_->MoveCursorToEnd(true);
 #endif
           } else if (control) {
             // If only control is pressed, then erase the next word.
-            model_->MoveCursorRight(gfx::WORD_BREAK, true);
+            model_->MoveCursorToNextWord(true);
           }
         }
         cursor_changed = text_changed = model_->Delete();
         break;
       case ui::VKEY_INSERT:
-        GetRenderText()->toggle_insert_mode();
+        insert_ = !insert_;
         cursor_changed = true;
         break;
       default:
@@ -883,11 +963,52 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
   return false;
 }
 
+size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
+  // TODO(oshima): BIDI/i18n support.
+  gfx::Font font = GetFont();
+  gfx::Insets insets = GetInsets();
+  string16 text = model_->GetVisibleText();
+  int left = 0;
+  int left_pos = 0;
+  int right = font.GetStringWidth(text);
+  int right_pos = text.length();
+
+  int x = point.x() - insets.left() - text_offset_;
+  if (x <= left) return left_pos;
+  if (x >= right) return right_pos;
+  // binary searching the cursor position.
+  // TODO(oshima): use the center of character instead of edge.
+  // Binary search may not work for language like arabic.
+  while (std::abs(static_cast<long>(right_pos - left_pos) > 1)) {
+    int pivot_pos = left_pos + (right_pos - left_pos) / 2;
+    int pivot = font.GetStringWidth(text.substr(0, pivot_pos));
+    if (pivot < x) {
+      left = pivot;
+      left_pos = pivot_pos;
+    } else if (pivot == x) {
+      return pivot_pos;
+    } else {
+      right = pivot;
+      right_pos = pivot_pos;
+    }
+  }
+  return left_pos;
+}
+
+bool NativeTextfieldViews::IsPointInSelection(const gfx::Point& point) const {
+  ui::Range range;
+  GetSelectedRange(&range);
+  size_t pos = FindCursorPosition(point);
+  return (pos >= range.GetMin() && pos < range.GetMax());
+}
+
 bool NativeTextfieldViews::MoveCursorTo(const gfx::Point& point, bool select) {
-  if (!model_->MoveCursorTo(point, select))
-    return false;
-  OnCaretBoundsChanged();
-  return true;
+  size_t pos = FindCursorPosition(point);
+  if (model_->MoveCursorTo(pos, select)) {
+    UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
+    return true;
+  }
+  return false;
 }
 
 void NativeTextfieldViews::PropagateTextChange() {
@@ -903,7 +1024,7 @@ void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
     RepaintCursor();
   }
   if (text_changed || cursor_changed) {
-    OnCaretBoundsChanged();
+    UpdateCursorBoundsAndTextOffset(model_->cursor_pos(), insert_);
     SchedulePaint();
   }
 }
@@ -957,7 +1078,7 @@ bool NativeTextfieldViews::Paste() {
 
   // Calls TextfieldController::ContentsChanged() explicitly if the paste action
   // did not change the content at all. See http://crbug.com/79002
-  if (success && GetText() == textfield_->text()) {
+  if (success && model_->text() == textfield_->text()) {
     TextfieldController* controller = textfield_->GetController();
     if (controller)
       controller->ContentsChanged(textfield_, textfield_->text());

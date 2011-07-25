@@ -206,6 +206,8 @@
         'controls/textfield/gtk_views_entry.h',
         'controls/textfield/gtk_views_textview.cc',
         'controls/textfield/gtk_views_textview.h',
+        'controls/textfield/text_style.cc',
+        'controls/textfield/text_style.h',
         'controls/textfield/textfield.cc',
         'controls/textfield/textfield.h',
         'controls/textfield/textfield_controller.h',

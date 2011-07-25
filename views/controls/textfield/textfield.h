@@ -30,10 +30,6 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #endif
 
-namespace gfx {
-struct StyleRange;
-}  // namespace gfx
-
 namespace ui {
 class Range;
 }  // namespace ui
@@ -43,6 +39,7 @@ namespace views {
 class KeyEvent;
 class NativeTextfieldWrapper;
 class TextfieldController;
+class TextStyle;
 
 // This class implements a View that wraps a native text (edit) field.
 class Textfield : public View {
@@ -189,14 +186,24 @@ class Textfield : public View {
   // only and has to be called after the wrapper is created.
   size_t GetCursorPosition() const;
 
-  // Applies |style| to the text specified by its range. The style will be
-  // ignored if range is empty or invalid. This is views-implementation only and
-  // has to be called after the wrapper is created.
-  void ApplyStyleRange(const gfx::StyleRange& style);
+  // Creates a new TextStyle for this textfield. The object is owned
+  // by the textfield and gets deleted when the textfield is deleted.
+  // This is views-implementation only and has to be called after the
+  // wrapper is created.
+  TextStyle* CreateTextStyle();
 
-  // Applies the default style to the textfield. This is views-implementation
-  // only and has to be called after the wrapper is created.
-  void ApplyDefaultStyle();
+  // Applies the |style| to the text specified by the |range|.  If
+  // there is already a style applied in the |range|, the style of the
+  // overlapping part will be replaced by this sytle.  The style will
+  // be ignored if range is empty or invalid.  This is
+  // views-implementation only and has to be called after the wrapper
+  // is created.
+  void ApplyTextStyle(const TextStyle* style, const ui::Range& range);
+
+  // Clears All TextStyles.
+  // This is views-implementation only and has to be called after the
+  // wrapper is created.
+  void ClearAllTextStyles();
 
   // Clears Edit history.
   void ClearEditHistory();

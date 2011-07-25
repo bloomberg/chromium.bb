@@ -114,8 +114,10 @@ class NativeTextfieldViews : public View,
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual TextInputClient* GetTextInputClient() OVERRIDE;
-  virtual void ApplyStyleRange(const gfx::StyleRange& style) OVERRIDE;
-  virtual void ApplyDefaultStyle() OVERRIDE;
+  virtual TextStyle* CreateTextStyle() OVERRIDE;
+  virtual void ApplyTextStyle(const TextStyle* style,
+                              const ui::Range& range) OVERRIDE;
+  virtual void ClearAllTextStyles() OVERRIDE;
   virtual void ClearEditHistory() OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate overrides
@@ -162,14 +164,20 @@ class NativeTextfieldViews : public View,
   // Overridden from TextfieldViewsModel::Delegate:
   virtual void OnCompositionTextConfirmedOrCleared() OVERRIDE;
 
-  // Returns the TextfieldViewsModel's text/cursor/selection rendering model.
-  gfx::RenderText* GetRenderText() const;
+  // Returns the Textfield's font.
+  const gfx::Font& GetFont() const;
+
+  // Returns the Textfield's text color.
+  SkColor GetTextColor() const;
 
   // A callback function to periodically update the cursor state.
   void UpdateCursor();
 
   // Repaint the cursor.
   void RepaintCursor();
+
+  // Returns the bounds of character at the current cursor.
+  gfx::Rect GetCursorBounds(size_t cursor_pos, bool insert_mode) const;
 
   // Update the cursor_bounds and text_offset.
   void UpdateCursorBoundsAndTextOffset(size_t cursor_pos, bool insert_mode);
@@ -178,6 +186,12 @@ class NativeTextfieldViews : public View,
 
   // Handle the keyevent.
   bool HandleKeyEvent(const KeyEvent& key_event);
+
+  // Find a cusor position for given |point| in this views coordinates.
+  size_t FindCursorPosition(const gfx::Point& point) const;
+
+  // Returns true if the local point is over the selected range of text.
+  bool IsPointInSelection(const gfx::Point& point) const;
 
   // Helper function to call MoveCursorTo on the TextfieldViewsModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
@@ -222,8 +236,16 @@ class NativeTextfieldViews : public View,
   // The reference to the border class. The object is owned by View::border_.
   FocusableBorder* text_border_;
 
-  // The textfield's text and drop cursor visibility.
+  // The x offset for the text to be drawn, without insets;
+  int text_offset_;
+
+  // True if the textfield is in insert mode.
+  bool insert_;
+
+  // The local bounds and visibility of the textfield's text cursor.
+  gfx::Rect cursor_bounds_;
   bool is_cursor_visible_;
+
   // The drop cursor is a visual cue for where dragged text will be dropped.
   bool is_drop_cursor_visible_;
 
