@@ -64,15 +64,16 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     parent_menu_item_ = parent;
     int initial_count = parent->GetSubmenu() ?
         parent->GetSubmenu()->GetMenuItemCount() : 0;
+    if ((start_child_index < node->child_count()) &&
+        (initial_count > 0)) {
+      parent->AppendSeparator();
+    }
     BuildMenu(node, start_child_index, parent, &next_menu_id_);
     if (show_options == SHOW_OTHER_FOLDER) {
       const BookmarkNode* other_folder =
           profile_->GetBookmarkModel()->other_node();
-      if (other_folder->child_count() > 0) {
-        int current_count = parent->GetSubmenu() ?
-            parent->GetSubmenu()->GetMenuItemCount() : 0;
-        if (current_count != initial_count)
-          parent->AppendSeparator();
+      if (!other_folder->empty()) {
+        parent->AppendSeparator();
         BuildOtherFolderMenu(parent, &next_menu_id_);
       }
     }

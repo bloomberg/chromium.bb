@@ -200,7 +200,7 @@ void BookmarkSubMenuModel::Build(Browser* browser) {
 #if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_TITLE);
 #endif
-#if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   AddSeparator();
 #else
   // TODO: add submenu for bookmarks themselves, restore separator.
