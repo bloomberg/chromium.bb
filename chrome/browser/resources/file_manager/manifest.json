@@ -85,6 +85,22 @@
         "filesystem:*.mp3",
         "filesystem:*.m4a"
       ]
+    },
+    {
+      "id": "mount-archive",
+      "default_title": "__MSG_MOUNT_ARCHIVE__",
+      "default_icon": "images/icon_mount_archive_16x16.png",
+      "file_filters": [
+        "filesystem:*.zip"
+      ]
+    },
+    {
+      "id": "unmount-archive",
+      "default_title": "__MSG_UNMOUNT_ARCHIVE__",
+      "default_icon": "images/icon_unmount_archive_16x16.png",
+      "file_filters": [
+        "filesystem:*.mounted_zip"
+      ]
     }
   ],
   "chrome_url_overrides": {

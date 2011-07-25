@@ -128,7 +128,7 @@ void MockMountLibrary::SetupDefaultReplies() {
       .WillRepeatedly(ReturnRef(disks_));
   EXPECT_CALL(*this, RequestMountInfoRefresh())
       .Times(AnyNumber());
-  EXPECT_CALL(*this, MountPath(_))
+  EXPECT_CALL(*this, MountPath(_, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(*this, UnmountPath(_))
       .Times(AnyNumber());

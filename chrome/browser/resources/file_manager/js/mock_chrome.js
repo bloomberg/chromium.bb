@@ -58,6 +58,9 @@ chrome.fileBrowserPrivate = {
     addListener: function(cb) { this.callbacks.push(cb) }
   },
 
+  /**
+   * Returns common tasks for a given list of files.
+   */
   getFileTasks: function(urlList, callback) {
     if (urlList.length == 0)
       return callback([]);
@@ -74,6 +77,11 @@ chrome.fileBrowserPrivate = {
       { taskId: 'upload-orcbook',
         title: 'Upload to OrcBook',
         regexp: /\.(jpe?g|png|cr2?|tiff)$/i,
+        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg==',
+      },
+      { taskId: 'mount-archive',
+        title: 'Mount',
+        regexp: /\.(zip)$/i,
         iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg==',
       },
     ];
@@ -98,8 +106,72 @@ chrome.fileBrowserPrivate = {
     callback(candidateTasks);
   },
 
+  /**
+   * Executes a task.
+   */
   executeTask: function(taskId, urlList) {
     console.log('executing task: ' + taskId + ': ' + urlList.length + ' urls');
+    var parts = taskId.split('|');
+    taskId = parts[parts.length - 1];
+    function createEntry(url) {
+      return {
+        toURL: function() { return url; }
+      };
+    }
+    var details = {entries: urlList.map(createEntry)};
+    var listeners = chrome.fileBrowserHandler.onExecute.listeners_;
+    for (var listener, index = 0; listener = listeners[index]; ++index) {
+      listener(taskId, details);
+    }
+  },
+
+  /**
+   * Event fired on mount and unmount operations.
+   */
+  onDiskChanged: {
+    listeners_: [],
+    addListener: function(listener) {
+      chrome.fileBrowserPrivate.onDiskChanged.listeners_.push(listener);
+    }
+  },
+
+  addMount: function(source, type, options) {
+    var event = {
+      eventType: 'added',
+      volumeInfo: {
+        devicePath: source,
+        type: type,
+        mountPath: '/'
+      }
+    };
+    var listeners = chrome.fileBrowserPrivate.onDiskChanged.listeners_;
+    for (var listener, index = 0; listener = listeners[index]; ++index) {
+      listener(event);
+    }
+  },
+
+  getMountPoints: function() {
+    // This will work in harness.
+    var path = 'filesystem:file:///persistent/media';
+    var result = {};
+    result[path] = {mountPath: path, type: 'file'};
+    return result;
+  },
+
+  removeMount: function(mountPoint) {
+    console.log('unmounted: ' + mountPoint);
+    var event = {
+      eventType: 'removed',
+      volumeInfo: {
+        devicePath: '',
+        type: '',
+        mountPath: mountPoint
+      }
+    };
+    var listeners = chrome.fileBrowserPrivate.onDiskChanged.listeners_;
+    for (var listener, index = 0; listener = listeners[index]; ++index) {
+      listener(event);
+    }
   },
 
   /**
@@ -142,6 +214,9 @@ chrome.fileBrowserPrivate = {
       IMAGE_DIMENSIONS: 'Image Dimensions',
       VOLUME_LABEL: 'Volume Label',
       READ_ONLY: 'Read Only',
+
+      MOUNT_ARCHIVE: 'Open archive',
+      UNMOUNT_ARCHIVE: 'Close archive',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
@@ -201,5 +276,14 @@ chrome.test = {
   sendMessage: function(msg) {
     if (chrome.test.verbose)
       console.log('chrome.test.sendMessage: ' + msg);
+  }
+};
+
+chrome.fileBrowserHandler = {
+  onExecute: {
+    listeners_: [],
+    addListener: function(listener) {
+      chrome.fileBrowserHandler.onExecute.listeners_.push(listener);
+    }
   }
 };

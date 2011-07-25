@@ -1118,6 +1118,9 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
+
+// Enables overriding the path off file manager extension.
+const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 #endif
 #endif
 

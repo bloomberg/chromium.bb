@@ -238,6 +238,40 @@ void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
                            base::Time::kMicrosecondsPerSecond)));
 }
 
+#ifdef OS_CHROMEOS
+base::DictionaryValue* MountPointToValue(Profile* profile,
+    const chromeos::MountLibrary::MountPointInfo& mount_point_info) {
+
+    base::DictionaryValue *mount_info = new base::DictionaryValue();
+
+    mount_info->SetString("mountType",
+        chromeos::MountLibrary::MountTypeToString(mount_point_info.mount_type));
+
+    if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
+      GURL source_url;
+      if (FileManagerUtil::ConvertFileToFileSystemUrl(profile,
+              FilePath(mount_point_info.source_path),
+              FileManagerUtil::GetFileBrowserExtensionUrl().GetOrigin(),
+              &source_url)) {
+        mount_info->SetString("sourceUrl", source_url.spec());
+      }
+    } else {
+      mount_info->SetString("sourceUrl", mount_point_info.source_path);
+    }
+
+    FilePath relative_mount_path;
+    // Convert mount point path to relative path with the external file system
+    // exposed within File API.
+    if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile,
+            FilePath(mount_point_info.mount_path),
+            &relative_mount_path)) {
+      mount_info->SetString("mountPath", relative_mount_path.value());
+    }
+
+    return mount_info;
+}
+#endif
+
 
 class LocalFileSystemCallbackDispatcher
     : public fileapi::FileSystemCallbackDispatcher {
@@ -869,13 +903,13 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
   SendResponse(true);
 }
 
-FileDialogFunction::FileDialogFunction() {
+FileBrowserFunction::FileBrowserFunction() {
 }
 
-FileDialogFunction::~FileDialogFunction() {
+FileBrowserFunction::~FileBrowserFunction() {
 }
 
-int32 FileDialogFunction::GetTabId() const {
+int32 FileBrowserFunction::GetTabId() const {
   int32 tab_id = 0;
   if (!dispatcher()) {
     NOTREACHED();
@@ -884,8 +918,9 @@ int32 FileDialogFunction::GetTabId() const {
 
   // TODO(jamescook):  This is going to fail when we switch to tab-modal
   // dialogs.  Figure out a way to find which SelectFileDialog::Listener
-  // to call from inside these extension FileDialogFunctions.
-  Browser* browser = const_cast<FileDialogFunction*>(this)->GetCurrentBrowser();
+  // to call from inside these extension FileBrowserFunctions.
+  Browser* browser =
+      const_cast<FileBrowserFunction*>(this)->GetCurrentBrowser();
   if (browser) {
     TabContents* contents = browser->GetSelectedTabContents();
     if (contents)
@@ -898,8 +933,8 @@ int32 FileDialogFunction::GetTabId() const {
 // so here we are. This function takes a vector of virtual paths, converts
 // them to local paths and calls GetLocalPathsResponseOnUIThread with the
 // result vector, on the UI thread.
-void FileDialogFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
-                                                   const std::string& task_id) {
+void FileBrowserFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
+                                                    void* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePathList selected_files;
 
@@ -938,13 +973,11 @@ void FileDialogFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
   }
 #endif
 
-  if (!selected_files.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-            &FileDialogFunction::GetLocalPathsResponseOnUIThread,
-            selected_files, task_id));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &FileBrowserFunction::GetLocalPathsResponseOnUIThread,
+          selected_files, context));
 }
 
 bool SelectFileFunction::RunImpl() {
@@ -960,14 +993,15 @@ bool SelectFileFunction::RunImpl() {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &SelectFileFunction::GetLocalPathsOnFileThread,
-          file_paths, std::string()));
+          file_paths, reinterpret_cast<void*>(NULL)));
 
   return true;
 }
 
 void SelectFileFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, const std::string& task_id) {
+    const FilePathList& files, void* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!context);
   if (files.size() != 1) {
     SendResponse(false);
     return;
@@ -1011,18 +1045,23 @@ bool ViewFilesFunction::RunImpl() {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &ViewFilesFunction::GetLocalPathsOnFileThread,
-          file_urls, internal_task_id));
+          file_urls,
+          reinterpret_cast<void*>(new std::string(internal_task_id))));
 
   return true;
 }
 
 void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, const std::string& internal_task_id) {
+    const FilePathList& files, void* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(context);
+  scoped_ptr<std::string> internal_task_id(
+      reinterpret_cast<std::string*>(context));
   for (FilePathList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    FileManagerUtil::ViewItem(*iter, internal_task_id == kEnqueueTaskId);
+    FileManagerUtil::ViewItem(*iter,
+                              *(internal_task_id.get()) == kEnqueueTaskId);
   }
   SendResponse(true);
 }
@@ -1055,14 +1094,15 @@ bool SelectFilesFunction::RunImpl() {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &SelectFilesFunction::GetLocalPathsOnFileThread,
-          file_urls, std::string()));
+          file_urls, reinterpret_cast<void*>(NULL)));
 
   return true;
 }
 
 void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, const std::string& internal_task_id) {
+    const FilePathList& files, void* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!context);
   int32 tab_id = GetTabId();
   FileManagerDialog::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
@@ -1075,27 +1115,146 @@ bool CancelFileDialogFunction::RunImpl() {
   return true;
 }
 
-UnmountVolumeFunction::UnmountVolumeFunction() {
+AddMountFunction::AddMountFunction() {
 }
 
-UnmountVolumeFunction::~UnmountVolumeFunction() {
+AddMountFunction::~AddMountFunction() {
 }
 
-bool UnmountVolumeFunction::RunImpl() {
+bool AddMountFunction::RunImpl() {
+  if (args_->GetSize() != 2 && args_->GetSize() != 3) {
+    error_ = "Invalid argument count";
+    return false;
+  }
+
+  std::string file_url;
+  if (!args_->GetString(0, &file_url)) {
+    return false;
+  }
+
+  std::string mount_type_str;
+  if (!args_->GetString(1, &mount_type_str)) {
+    return false;
+  }
+
+  UrlList file_paths;
+  file_paths.push_back(GURL(file_url));
+
+  chromeos::MountPathOptions options;
+  if (args_->GetSize() == 3) {
+    DictionaryValue *dict;
+    if (!args_->GetDictionary(2, &dict)) {
+      NOTREACHED();
+    }
+
+    for (base::DictionaryValue::key_iterator it = dict->begin_keys();
+         it != dict->end_keys();
+         ++it) {
+      std::string value;
+      if (!dict->GetString(*it, &value)) {
+        NOTREACHED();
+      }
+
+      options.push_back(chromeos::MountPathOptions::value_type((*it).c_str(),
+                                                               value.c_str()));
+    }
+  }
+
+  MountParamaters* params = new MountParamaters(mount_type_str, options);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &AddMountFunction::GetLocalPathsOnFileThread,
+          file_paths, reinterpret_cast<void*>(params)));
+
+  return true;
+}
+
+void AddMountFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files, void* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(context);
+  scoped_ptr<MountParamaters> params(
+      reinterpret_cast<MountParamaters*>(context));
+
+  if (!files.size()) {
+    SendResponse(false);
+    return;
+  }
+
+  const std::string& mount_type_str = params->mount_type;
+  const chromeos::MountPathOptions& options = params->mount_options;
+  FilePath::StringType source_file = files[0].value();
+
+#ifdef OS_CHROMEOS
+  chromeos::MountLibrary *mount_lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+
+  chromeos::MountType mount_type =
+      mount_lib->MountTypeFromString(mount_type_str);
+  if (mount_type == chromeos::MOUNT_TYPE_INVALID) {
+    error_ = "Invalid mount type";
+    SendResponse(false);
+    return;
+  }
+
+  mount_lib->MountPath(source_file.data(), mount_type, options);
+#endif
+
+  SendResponse(true);
+}
+
+RemoveMountFunction::RemoveMountFunction() {
+}
+
+RemoveMountFunction::~RemoveMountFunction() {
+}
+
+bool RemoveMountFunction::RunImpl() {
   if (args_->GetSize() != 1) {
     return false;
   }
 
-  std::string volume_device_path;
-  if (!args_->GetString(0, &volume_device_path)) {
-    NOTREACHED();
+  std::string mount_path;
+  if (!args_->GetString(0, &mount_path)) {
+   return false;
   }
 
 #ifdef OS_CHROMEOS
   chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
-      volume_device_path.c_str());
+      mount_path.c_str());
 #endif
 
+  SendResponse(true);
+  return true;
+}
+
+GetMountPointsFunction::GetMountPointsFunction() {
+}
+
+GetMountPointsFunction::~GetMountPointsFunction() {
+}
+
+bool GetMountPointsFunction::RunImpl() {
+  if (args_->GetSize())
+    return false;
+
+  base::ListValue *mounts = new base::ListValue();
+  result_.reset(mounts);
+
+  #ifdef OS_CHROMEOS
+  chromeos::MountLibrary *mount_lib =
+      chromeos::CrosLibrary::Get()->GetMountLibrary();
+  chromeos::MountLibrary::MountPointMap mount_points =
+      mount_lib->mount_points();
+
+  for (chromeos::MountLibrary::MountPointMap::const_iterator it =
+           mount_points.begin();
+       it != mount_points.end();
+       ++it) {
+    mounts->Append(MountPointToValue(profile_, it->second));
+  }
+#endif
   SendResponse(true);
   return true;
 }
@@ -1141,7 +1300,6 @@ bool GetVolumeMetadataFunction::RunImpl() {
     volume_info->SetBoolean("hasMedia", volume->has_media());
     volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
 
-    SendResponse(true);
     return true;
   }
 #endif
@@ -1178,8 +1336,8 @@ bool FileDialogStringsFunction::RunImpl() {
 
   SET_STRING(IDS_FILE_BROWSER, ROOT_DIRECTORY_LABEL);
   SET_STRING(IDS_FILE_BROWSER, DOWNLOADS_DIRECTORY_LABEL);
-  SET_STRING(IDS_FILE_BROWSER, DOWNLOADS_DIRECTORY_WARNING);
-  SET_STRING(IDS_FILE_BROWSER, MEDIA_DIRECTORY_LABEL);
+  SET_STRING(IDS_FILE_BROWSER, ARCHIVE_DIRECTORY_LABEL);
+  SET_STRING(IDS_FILE_BROWSER, REMOVABLE_DIRECTORY_LABEL);
   SET_STRING(IDS_FILE_BROWSER, NAME_COLUMN_LABEL);
   SET_STRING(IDS_FILE_BROWSER, SIZE_COLUMN_LABEL);
   SET_STRING(IDS_FILE_BROWSER, DATE_COLUMN_LABEL);
@@ -1200,6 +1358,10 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, IMAGE_DIMENSIONS);
   SET_STRING(IDS_FILE_BROWSER, VOLUME_LABEL);
   SET_STRING(IDS_FILE_BROWSER, READ_ONLY);
+
+  SET_STRING(IDS_FILE_BROWSER, ARCHIVE_MOUNT_FAILED);
+  SET_STRING(IDS_FILE_BROWSER, MOUNT_ARCHIVE);
+  SET_STRING(IDS_FILE_BROWSER, UNMOUNT_ARCHIVE);
 
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_OVERWRITE_FILE);
   SET_STRING(IDS_FILE_BROWSER, FILE_ALREADY_EXISTS);
