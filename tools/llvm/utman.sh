@@ -43,6 +43,18 @@ SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
 # Set to false to go back to compiling with the old pnacl-sfi branch
 readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-true}
+readonly UTMAN_RESET_MQ=${UTMAN_RESET_MQ:-true}
+
+# Ignore this variable. Its for helping jasonwkim merge
+# So a unique identifier for the branch in the MQ is composed of
+# (a) LLVM svn rev  (looks like svnXXXXXX)
+# (b) NaCl rev (looks like naclYYYY)
+# (c) Any other unique human readable mnemonic that one cares to use to \
+#     identify the branch.
+# PQ_REV_NAME_MOD is used to take care of cases (b) and (c)
+
+readonly PQ_REV_NAME_MOD=${PQ_REV_NAME_MOD:-"unused"}
+
 
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
@@ -226,13 +238,14 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 # version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
-readonly LLVM_MQ_REV=0d9c0424d854      ## patches for nacl6116-svn128002
-readonly LLVM_GCC_MQ_REV=6951bd89b2e5  ## patches for nacl6116-svn126872
-
+readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"0d9c0424d854"}
+readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"6951bd89b2e5"}
 
 # Vendor Revs of llvm and llvm-gcc to which the qeues apply
-readonly LLVM_QPARENT_REV=1dd4ed44a6f8     # svn128002
-readonly LLVM_GCC_QPARENT_REV=3cde3ed75a27  # svn126872
+# svn128002
+readonly LLVM_QPARENT_REV=${LLVM_QPARENT_REV:-"1dd4ed44a6f8"}
+# svn126872
+readonly LLVM_GCC_QPARENT_REV=${LLVM_GCC_QPARENT_REV:-"3cde3ed75a27"}
 
 
 # Repositories
@@ -3242,42 +3255,54 @@ check-hg-vers() {
 #@ setup-hg-mq - resets llvm and llvm-gcc repos to use MQ instead
 setup-hg-mq() {
   check-hg-vers
-  if [ -e "${TC_SRC_LLVM}/.hg/patches" ]; then
-    StepBanner "Popping off existing patches in LLVM"
-    (cd "${TC_SRC_LLVM}"; hg qpop -a );
-  fi;
 
-  if [ -e "${TC_SRC_LLVM_GCC}/.hg/patches" ]; then
-    StepBanner "Popping off existing patches in LLVM-gcc"
-    (cd "${TC_SRC_LLVM_GCC}"; hg qpop -a );
-  fi;
+  if ${UTMAN_RESET_MQ}; then
+    StepBanner "Updating LLVM and LLVM-gcc to appropriate vendor branch"
 
-  StepBanner "Updating LLVM and LLVM-gcc to appropriate vendor branch"
-  hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_QPARENT_REV}
-  hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_QPARENT_REV}
-  hg-checkout-llvm-mq-patches
-  hg-checkout-llvm-gcc-mq-patches
+    if [ -e "${TC_SRC_LLVM}/.hg/patches" ]; then
+      StepBanner "Popping off existing patches in LLVM"
+      spushd "${TC_SRC_LLVM}";
+      hg qpop -a ;
+      spopd;
+    fi;
 
-  hg-update-nosfi "llvm" ${LLVM_QPARENT_REV}    "${TC_SRC_LLVM}"
-  hg-update-nosfi "llvm-gcc" ${LLVM_GCC_QPARENT_REV} "${TC_SRC_LLVM_GCC}"
-  hg-update-llvm-mq-patches
-  hg-update-llvm-gcc-mq-patches
+    if [ -e "${TC_SRC_LLVM_GCC}/.hg/patches" ]; then
+      StepBanner "Popping off existing patches in LLVM-gcc"
+      spushd "${TC_SRC_LLVM_GCC}";
+      hg qpop -a ;
+      spopd;
+    fi;
 
-  StepBanner "Forcing symlink to appropriate queue "
-  # rm first otherwise the symlink can wind up in the patch queue repo
-  rm -f "${TC_SRC_LLVM}/.hg/patches"
-  rm -f "${TC_SRC_LLVM_GCC}/.hg/patches"
-  ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
-  ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
+    hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_QPARENT_REV}
+    hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_QPARENT_REV}
+    hg-checkout-llvm-mq-patches
+    hg-checkout-llvm-gcc-mq-patches
+    hg-update-nosfi "llvm" ${LLVM_QPARENT_REV}    "${TC_SRC_LLVM}"
+    hg-update-nosfi "llvm-gcc" ${LLVM_GCC_QPARENT_REV} "${TC_SRC_LLVM_GCC}"
+    hg-update-llvm-mq-patches
+    hg-update-llvm-gcc-mq-patches
+    StepBanner "Forcing symlink to appropriate queue "
+    # rm first otherwise the symlink can wind up in the patch queue repo
+    rm -f "${TC_SRC_LLVM}/.hg/patches"
+    rm -f "${TC_SRC_LLVM_GCC}/.hg/patches"
+    ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
+    ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
 
-  StepBanner "Pushing the patch queues onto the vendor branches"
-  (cd "${TC_SRC_LLVM}"; hg qpush -a)
-  (cd "${TC_SRC_LLVM_GCC}"; hg qpush -a)
+    StepBanner "Pushing the patch queues onto the vendor branches"
+    spushd "${TC_SRC_LLVM}";
+    hg qpush -a;
+    spopd;
+    spushd "${TC_SRC_LLVM_GCC}";
+    hg qpush -a;
+    spopd;
 
-  StepBanner "Patch Queues have been applied against vendor"
-  StepBanner "Cleaning all build directories"
-  clean
-  StepBanner "You may now execute utman.sh everything-post-hg"
+    StepBanner "Patch Queues have been applied against vendor"
+    StepBanner "Cleaning all build directories"
+    clean
+    StepBanner "You may now execute utman.sh everything-post-hg"
+  else
+    StepBanner "Skipping the reset of the MQ repos"
+  fi
 }
 
 track-pnacl-sfi() {
@@ -3305,6 +3330,8 @@ show-config() {
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
   echo "UTMAN_USE_MQ:      ${UTMAN_USE_MQ}"
+  echo "UTMAN_RESET_MQ:    ${UTMAN_RESET_MQ}"
+  echo "PQ_REV_NAME_MOD:   ${PQ_REV_NAME_MOD}"
   Banner "Your Environment:"
   env | grep UTMAN
 }
