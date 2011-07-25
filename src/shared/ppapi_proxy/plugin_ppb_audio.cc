@@ -25,30 +25,6 @@
 namespace ppapi_proxy {
 namespace {
 
-// syscall_read() implemented here as a NACL_SYSCALL to avoid
-// conflicts with projects that attempt to wrap the read() call
-// using linker command line option "--wrap read"
-ssize_t syscall_read(int desc, void *buf, size_t count) {
-  ssize_t retval = NACL_SYSCALL(read)(desc, buf, count);
-  if (retval < 0) {
-    errno = -retval;
-    return -1;
-  }
-  return retval;
-}
-
-// syscall_close() implemented here as a NACL_SYSCALL to avoid
-// conflicts with projects that attempt to wrap the close() call
-// using linker command line option "--wrap close"
-ssize_t syscall_close(int desc) {
-  ssize_t retval = NACL_SYSCALL(close)(desc);
-  if (retval < 0) {
-    errno = -retval;
-    return -1;
-  }
-  return retval;
-}
-
 // round size up to next 64k
 size_t ceil64k(size_t n) {
   return (n + 0xFFFF) & (~0xFFFF);
@@ -56,8 +32,9 @@ size_t ceil64k(size_t n) {
 
 }  // namespace
 
-PluginAudio::PluginAudio()
-    : socket_(-1),
+PluginAudio::PluginAudio() :
+    resource_(kInvalidResourceId),
+    socket_(-1),
     shm_(-1),
     shm_size_(0),
     shm_buffer_(NULL),
@@ -71,10 +48,9 @@ PluginAudio::PluginAudio()
 
 PluginAudio::~PluginAudio() {
   DebugPrintf("PluginAudio::~PluginAudio\n");
-  // Stop the audio thread, if one is currently running.
-  if (thread_active_) {
-    StopAudioThread();
-  }
+  // Ensure audio thread is not active.
+  if (resource_ != kInvalidResourceId)
+    GetInterface()->StopPlayback(resource_);
   // Unmap the shared memory buffer, if present.
   if (shm_buffer_) {
     munmap(shm_buffer_, ceil64k(shm_size_));
@@ -83,11 +59,11 @@ PluginAudio::~PluginAudio() {
   }
   // Close the handles.
   if (shm_ != -1) {
-    syscall_close(shm_);
+    close(shm_);
     shm_ = -1;
   }
   if (socket_ != -1) {
-    syscall_close(socket_);
+    close(socket_);
     socket_ = -1;
   }
 }
@@ -95,6 +71,7 @@ PluginAudio::~PluginAudio() {
 bool PluginAudio::InitFromBrowserResource(PP_Resource resource) {
   DebugPrintf("PluginAudio::InitFromBrowserResource: resource=%"NACL_PRIu32"\n",
               resource);
+  resource_ = resource;
   return true;
 }
 
@@ -104,8 +81,7 @@ void PluginAudio::AudioThread(void* self) {
   while (true) {
     int32_t sync_value;
     // block on socket read
-    ssize_t r = syscall_read(audio->socket_,
-                             &sync_value, sizeof(sync_value));
+    ssize_t r = read(audio->socket_, &sync_value, sizeof(sync_value));
     // StopPlayback() will send a value of -1 over the sync_socket
     if ((sizeof(sync_value) != r) || (-1 == sync_value))
       break;

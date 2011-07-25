@@ -46,6 +46,7 @@ class PluginAudio : public PluginResource {
   static const PPB_Audio* GetInterface();
   virtual bool InitFromBrowserResource(PP_Resource resource);
  private:
+  PP_Resource resource_;
   NaClSrpcImcDescType socket_;
   NaClSrpcImcDescType shm_;
   size_t shm_size_;

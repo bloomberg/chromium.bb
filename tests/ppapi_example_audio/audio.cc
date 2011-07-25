@@ -72,6 +72,8 @@ class MyInstance : public pp::Instance {
  public:
   explicit MyInstance(PP_Instance instance)
       : pp::Instance(instance),
+        config_(NULL),
+        audio_(NULL),
         audio_wave_l_(0.0),
         audio_wave_r_(0.0),
         frequency_l_(kDefaultFrequencyLeft),
@@ -95,7 +97,7 @@ class MyInstance : public pp::Instance {
   }
 
   void StartOutput() {
-    bool audio_start_playback = audio_.StartPlayback();
+    bool audio_start_playback = audio_->StartPlayback();
     CHECK(true == audio_start_playback);
     NaClLog(1, "example: frequencies are %f %f\n", frequency_l_, frequency_r_);
     NaClLog(1, "example: amplitudes are %f %f\n", amplitude_l_, amplitude_r_);
@@ -113,7 +115,7 @@ class MyInstance : public pp::Instance {
     char result[kMaxResult];
     NaClLog(1, "example: StopOutput() invoked on main thread\n");
     if (PP_OK == err) {
-      if (instance->audio_.StopPlayback()) {
+      if (instance->audio_->StopPlayback()) {
         // In headless mode, the build bots may not have an audio driver, in
         // which case the callback won't be invoked.
         // TODO(nfullagar): Other ways to determine if machine has audio
@@ -130,6 +132,11 @@ class MyInstance : public pp::Instance {
       snprintf(result, kMaxResult,
           "StopOutput: FAILED - returned err is %d", static_cast<int>(err));
     }
+    // Release audio & config instance.
+    delete instance->audio_;
+    delete instance->config_;
+    instance->audio_ = NULL;
+    instance->config_ = NULL;
     // At this point the test has finished, report result.
     pp::Var message(result);
     instance->PostMessage(message);
@@ -150,10 +157,8 @@ class MyInstance : public pp::Instance {
     const struct PPB_Audio* audio_interface =
         static_cast<const struct PPB_Audio*>(
         get_browser_interface(PPB_AUDIO_INTERFACE));
-    CHECK(NULL != audio_config_interface);
-    CHECK(NULL != audio_interface);
-    PP_Resource audio_config_resource = config_.pp_resource();
-    PP_Resource audio_resource = audio_.pp_resource();
+    PP_Resource audio_config_resource = config_->pp_resource();
+    PP_Resource audio_resource = audio_->pp_resource();
     NaClLog(1, "example: audio config resource: %"NACL_PRId32"\n",
             audio_config_resource);
     NaClLog(1, "example: audio resource: %"NACL_PRId32"\n", audio_resource);
@@ -166,10 +171,10 @@ class MyInstance : public pp::Instance {
         audio_config_resource);
     CHECK(0 == audio_interface->GetCurrentConfig(audio_config_resource));
     CHECK(audio_config_interface->GetSampleRate(audio_config_resource) ==
-        config_.sample_rate());
+        config_->sample_rate());
     CHECK(audio_config_interface->GetSampleFrameCount(audio_config_resource) ==
-        config_.sample_frame_count());
-    CHECK(audio_.config().pp_resource() == audio_config_resource);
+        config_->sample_frame_count());
+    CHECK(audio_->config().pp_resource() == audio_config_resource);
   }
 
   // To enable stress tests, use stress_tests="1" in the embed tag.
@@ -179,7 +184,7 @@ class MyInstance : public pp::Instance {
     const int kNumManyAudio = 1000;
     pp::Audio* many_audio[kNumManyAudio];
     for (int i = 0; i < kNumManyAudio; ++i)
-      many_audio[i] = new pp::Audio(this, config_, SilenceCallback, this);
+      many_audio[i] = new pp::Audio(this, *config_, SilenceCallback, this);
     for (int i = 0; i < kNumManyAudio; ++i)
       CHECK(true == many_audio[i]->StartPlayback());
     for (int i = 0; i < kNumManyAudio; ++i)
@@ -197,10 +202,11 @@ class MyInstance : public pp::Instance {
     ParseArgs(argc, argn, argv);
     obtained_sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
         kSampleFrequency, kSampleFrameCount);
-    config_ =
+    config_ = new
        pp::AudioConfig(this, kSampleFrequency, obtained_sample_frame_count_);
-    audio_ = pp::Audio(this, config_, SineWaveCallback, this);
-
+    CHECK(NULL != config_);
+    audio_ = new pp::Audio(this, *config_, SineWaveCallback, this);
+    CHECK(NULL != audio_);
     // Run through test suite before attempting real playback.
     TestSuite();
     return true;
@@ -249,11 +255,11 @@ class MyInstance : public pp::Instance {
     memset(samples, 0, num_bytes);
   }
 
-  // Audio config resource. Allocated in Init(), freed on destruction.
-  pp::AudioConfig config_;
+  // Audio config resource. Allocated in Init().
+  pp::AudioConfig* config_;
 
-  // Audio resource. Allocated in Init(), freed on destruction.
-  pp::Audio audio_;
+  // Audio resource. Allocated in Init().
+  pp::Audio* audio_;
 
   // Current audio wave position, used to prevent sine wave skips
   // on buffer boundaries.

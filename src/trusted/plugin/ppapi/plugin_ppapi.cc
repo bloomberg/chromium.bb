@@ -1008,9 +1008,7 @@ void PluginPpapi::ShutdownProxy() {
   PLUGIN_PRINTF(("PluginPpapi::ShutdownProxy (ppapi_proxy=%p)\n",
                 reinterpret_cast<void*>(ppapi_proxy_)));
   if (BrowserPpp::is_valid(ppapi_proxy_)) {
-    // TODO(polina): put this back when we figure out why pyauto_reload_test
-    // is unhappy about it.
-    // ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
+    ppapi_proxy_->ppp_instance_interface()->DidDestroy(pp_instance());
     ppapi_proxy_->ShutdownModule();
   }
   delete ppapi_proxy_;
