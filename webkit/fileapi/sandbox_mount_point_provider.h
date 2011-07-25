@@ -26,6 +26,7 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class ObfuscatedFileSystemFileUtil;
+class QuotaFileUtil;
 
 // An interface to construct or crack sandboxed filesystem paths.
 // Currently each sandboxed filesystem path looks like (soon will be changed):
@@ -169,6 +170,7 @@ class SandboxMountPointProvider
 
   const FilePath profile_path_;
 
+  QuotaFileUtil *quota_file_util_;
   scoped_refptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
 
   // Acccessed only on the file thread.

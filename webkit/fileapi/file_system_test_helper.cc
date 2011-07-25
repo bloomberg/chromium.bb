@@ -165,6 +165,10 @@ int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
   return FileSystemUsageCache::GetUsage(GetUsageCachePath());
 }
 
+bool FileSystemTestOriginHelper::RevokeUsageCache() const {
+  return file_util::Delete(GetUsageCachePath(), false);
+}
+
 int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {
   // Depending on the file_util GetOriginRootPath() may include usage
   // cache file size or may not.  Here we subtract the initial size to

@@ -155,6 +155,8 @@ class QuotaManager : public QuotaTaskObserver,
       base::Time modified_since,
       GetOriginsCallback* callback);
 
+  bool ResetUsageTracker(StorageType type);
+
   // Used to determine the total size of the temp pool.
   static const int64 kTemporaryStorageQuotaDefaultSize;
   static const int64 kTemporaryStorageQuotaMaxSize;

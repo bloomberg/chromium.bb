@@ -110,6 +110,10 @@ class FileSystemOperation {
       const GURL& origin_url,
       quota::QuotaManager::GetUsageAndQuotaCallback* callback);
 
+  void DelayedCreateFileForQuota(quota::QuotaStatusCode status,
+                                 int64 usage, int64 quota);
+  void DelayedCreateDirectoryForQuota(quota::QuotaStatusCode status,
+                                      int64 usage, int64 quota);
   void DelayedCopyForQuota(quota::QuotaStatusCode status,
                            int64 usage, int64 quota);
   void DelayedMoveForQuota(quota::QuotaStatusCode status,
@@ -117,6 +121,8 @@ class FileSystemOperation {
   void DelayedWriteForQuota(quota::QuotaStatusCode status,
                             int64 usage, int64 quota);
   void DelayedTruncateForQuota(quota::QuotaStatusCode status,
+                               int64 usage, int64 quota);
+  void DelayedOpenFileForQuota(quota::QuotaStatusCode status,
                                int64 usage, int64 quota);
 
   // A callback used for OpenFileSystem.
@@ -242,6 +248,13 @@ class FileSystemOperation {
   // Used only by OpenFile, in order to clone the file handle back to the
   // requesting process.
   base::ProcessHandle peer_handle_;
+
+  // Options for CreateFile and CreateDirectory.
+  bool exclusive_;
+  bool recursive_;
+
+  // Options for OpenFile.
+  int file_flags_;
 
   // Length to be truncated.
   int64 length_;

@@ -265,6 +265,12 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateDirectory(
   }
   if (!recursive && components.size() - index > 1)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  // TODO(dmikurube): Eliminate do_not_write_actually in future.
+  bool do_not_write_actually = context->do_not_write_actually();
+  context->set_do_not_write_actually(true);
+  underlying_file_util_->CreateDirectory(context,
+      FilePath(), exclusive, recursive);
+  context->set_do_not_write_actually(do_not_write_actually);
   for (; index < components.size(); ++index) {
     FileInfo file_info;
     file_info.name = components[index];
@@ -762,15 +768,17 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   path = path.AppendASCII(StringPrintf("%02" PRIu64, directory_number));
-  PlatformFileError error;
-  error = underlying_file_util_->CreateDirectory(
-      context, path, false /* exclusive */, false /* recursive */);
-  if (base::PLATFORM_FILE_OK != error)
-    return error;
+  if (file_util::DirectoryExists(path.DirName())) {
+    if (!file_util::DirectoryExists(path) && !file_util::CreateDirectory(path))
+      return base::PLATFORM_FILE_ERROR_FAILED;
+  } else {
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
   path = path.AppendASCII(StringPrintf("%08" PRIu64, number));
   FilePath data_path = LocalPathToDataPath(origin_url, type, path);
   if (data_path.empty())
     return base::PLATFORM_FILE_ERROR_FAILED;
+  PlatformFileError error;
   bool created = false;
   if (!source_path.empty()) {
     DCHECK(!file_flags);

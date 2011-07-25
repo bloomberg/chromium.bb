@@ -44,6 +44,7 @@ class UsageTracker : public QuotaTaskObserver {
                         int64 delta);
 
   void GetCachedOrigins(std::set<GURL>* origins) const;
+  bool IsWorking();
 
  private:
   struct TrackingInfo {

@@ -60,6 +60,7 @@ class FileSystemTestOriginHelper {
   FilePath GetUsageCachePath() const;
 
   int64 GetCachedOriginUsage() const;
+  bool RevokeUsageCache() const;
   int64 ComputeCurrentOriginUsage() const;
 
   FileSystemOperation* NewOperation(

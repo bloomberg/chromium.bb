@@ -121,6 +121,7 @@ PlatformFileError LocalFileSystemFileUtil::CopyOrMoveFile(
       context, local_src_path, local_dest_path, copy);
 }
 
+// TODO(dmikurube): Make it independent from CopyOrMoveFile.
 PlatformFileError LocalFileSystemFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
     const FilePath& src_file_path,
