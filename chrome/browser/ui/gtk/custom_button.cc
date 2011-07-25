@@ -286,6 +286,14 @@ void CustomDrawButton::Observe(int type,
   SetBrowserTheme();
 }
 
+int CustomDrawButton::SurfaceWidth() const {
+  return button_base_.Width();
+}
+
+int CustomDrawButton::SurfaceHeight() const {
+  return button_base_.Height();
+}
+
 void CustomDrawButton::SetPaintOverride(GtkStateType state) {
   button_base_.set_paint_override(state);
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget()), state);

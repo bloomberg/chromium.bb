@@ -448,6 +448,9 @@ class TabStripGtk : public TabStripModelObserver,
   // The New Tab button.
   scoped_ptr<CustomDrawButton> newtab_button_;
 
+  // The bounds of the bitmap surface used to paint the New Tab button.
+  gfx::Rect newtab_surface_bounds_;
+
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;
 

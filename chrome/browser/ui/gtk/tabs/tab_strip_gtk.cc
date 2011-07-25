@@ -764,6 +764,8 @@ void TabStripGtk::Init() {
                    G_CALLBACK(OnDragDataReceivedThunk), this);
 
   newtab_button_.reset(MakeNewTabButton());
+  newtab_surface_bounds_.SetRect(0, 0, newtab_button_->SurfaceWidth(),
+                                 newtab_button_->SurfaceHeight());
 
   gtk_widget_show_all(tabstrip_.get());
 
@@ -1409,8 +1411,15 @@ void TabStripGtk::GenerateIdealBounds() {
 
 void TabStripGtk::LayoutNewTabButton(double last_tab_right,
                                      double unselected_width) {
-  gfx::Rect bounds(0, kNewTabButtonVOffset,
-                   newtab_button_->width(), newtab_button_->height());
+  GtkWidget* toplevel = gtk_widget_get_ancestor(widget(), GTK_TYPE_WINDOW);
+  bool is_maximized = toplevel &&
+      ((gdk_window_get_state(toplevel->window) & GDK_WINDOW_STATE_MAXIMIZED)
+          != 0);
+
+  int y = is_maximized ? 0 : kNewTabButtonVOffset;
+  int height = newtab_surface_bounds_.height() + kNewTabButtonVOffset - y;
+
+  gfx::Rect bounds(0, y, newtab_surface_bounds_.width(), height);
   int delta = abs(Round(unselected_width) - TabGtk::GetStandardSize().width());
   if (delta > 1 && !needs_resize_layout_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
@@ -1424,6 +1433,8 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
 
   gtk_fixed_move(GTK_FIXED(tabstrip_.get()), newtab_button_->widget(),
                  bounds.x(), bounds.y());
+  gtk_widget_set_size_request(newtab_button_->widget(), bounds.width(),
+                              bounds.height());
 }
 
 void TabStripGtk::GetDesiredTabWidths(int tab_count,
