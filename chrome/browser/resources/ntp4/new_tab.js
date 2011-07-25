@@ -558,6 +558,9 @@ cr.define('ntp4', function() {
     } else if (page.classList.contains('most-visited-page')) {
       shownPage = templateData['most_visited_page_id'];
       shownPageIndex = 0;
+    } else if (page.classList.contains('bookmarks-page')) {
+      shownPage = templateData['bookmarks_page_id'];
+      shownPageIndex = 0;
     } else {
       console.error('unknown page selected');
     }

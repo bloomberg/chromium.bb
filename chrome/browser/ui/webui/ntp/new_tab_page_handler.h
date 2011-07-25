@@ -42,6 +42,7 @@ class NewTabPageHandler : public WebUIMessageHandler {
     INDEX_MASK = (1 << 10) - 1,
     MOST_VISITED_PAGE_ID = 1 << 10,
     APPS_PAGE_ID = 2 << 10,
+    BOOKMARKS_PAGE_ID = 3 << 10,
   };
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);
