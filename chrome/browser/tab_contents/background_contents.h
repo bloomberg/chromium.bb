@@ -59,25 +59,26 @@ class BackgroundContents : public RenderViewHostDelegate,
   RenderViewHost* render_view_host() { return render_view_host_; }
 
   // RenderViewHostDelegate implementation.
-  virtual BackgroundContents* GetAsBackgroundContents();
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
-  virtual const GURL& GetURL() const;
-  virtual ViewType::Type GetRenderViewType() const;
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params);
-  virtual WebPreferences GetWebkitPrefs();
+  virtual BackgroundContents* GetAsBackgroundContents() OVERRIDE;
+  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
-                                    bool* did_suppress_message);
-  virtual void Close(RenderViewHost* render_view_host);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+                                    bool* did_suppress_message) OVERRIDE;
+  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* rvh,
                               base::TerminationStatus status,
-                              int error_code);
+                              int error_code) OVERRIDE;
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(

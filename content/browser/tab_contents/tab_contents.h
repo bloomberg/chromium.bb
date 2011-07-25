@@ -620,39 +620,40 @@ class TabContents : public PageNavigator,
   // RenderViewHostDelegate ----------------------------------------------------
 
   // RenderViewHostDelegate implementation.
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
+  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual RenderViewHostDelegate::RendererManagement*
-      GetRendererManagementDelegate();
-  virtual TabContents* GetAsTabContents();
-  virtual ViewType::Type GetRenderViewType() const;
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual void RenderViewReady(RenderViewHost* render_view_host);
+      GetRendererManagementDelegate() OVERRIDE;
+  virtual TabContents* GetAsTabContents() OVERRIDE;
+  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
-                              int error_code);
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host);
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params);
+                              int error_code) OVERRIDE;
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateState(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::string& state);
+                           const std::string& state) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title);
+                           const std::wstring& title) OVERRIDE;
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
-                              const std::string& encoding);
-  virtual void UpdateTargetURL(int32 page_id, const GURL& url);
-  virtual void Close(RenderViewHost* render_view_host);
-  virtual void RequestMove(const gfx::Rect& new_bounds);
-  virtual void DidStartLoading();
-  virtual void DidStopLoading();
-  virtual void DidCancelLoading();
-  virtual void DidChangeLoadProgress(double progress);
+                              const std::string& encoding) OVERRIDE;
+  virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;
+  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void DidCancelLoading() OVERRIDE;
+  virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host,
-      int32 page_id);
+      int32 page_id) OVERRIDE;
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition);
+                              WindowOpenDisposition disposition) OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
@@ -662,25 +663,28 @@ class TabContents : public PageNavigator,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                       const string16& message,
-                                      IPC::Message* reply_msg);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
-  virtual WebPreferences GetWebkitPrefs();
-  virtual void OnUserGesture();
-  virtual void OnIgnoredUIEvent();
+                                      IPC::Message* reply_msg) OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual void OnUserGesture() OVERRIDE;
+  virtual void OnIgnoredUIEvent() OVERRIDE;
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
-                                    bool is_during_unload);
-  virtual void RendererResponsive(RenderViewHost* render_view_host);
-  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
-                                uint64 upload_position, uint64 upload_size);
-  virtual void WorkerCrashed();
-  virtual void Activate();
-  virtual void Deactivate();
-  virtual void LostCapture();
+                                    bool is_during_unload) OVERRIDE;
+  virtual void RendererResponsive(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void LoadStateChanged(const GURL& url,
+                                net::LoadState load_state,
+                                uint64 upload_position,
+                                uint64 upload_size) OVERRIDE;
+  virtual void WorkerCrashed() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void LostCapture() OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void HandleMouseUp();
-  virtual void HandleMouseActivate();
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void HandleMouseUp() OVERRIDE;
+  virtual void HandleMouseActivate() OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

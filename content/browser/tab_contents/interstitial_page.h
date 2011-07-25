@@ -116,17 +116,18 @@ class InterstitialPage : public NotificationObserver,
                        const NotificationDetails& details);
 
   // RenderViewHostDelegate implementation:
-  virtual View* GetViewDelegate();
-  virtual const GURL& GetURL() const;
+  virtual View* GetViewDelegate() OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
-                              int error_code);
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params);
+                              int error_code) OVERRIDE;
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+                           const std::wstring& title) OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
 
   // Invoked with the NavigationEntry that is going to be added to the
   // navigation controller.

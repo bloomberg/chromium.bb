@@ -50,19 +50,19 @@ class BalloonHost : public RenderViewHostDelegate,
   const string16& GetSource() const;
 
   // RenderViewHostDelegate overrides.
-  virtual WebPreferences GetWebkitPrefs();
-  virtual const GURL& GetURL() const;
-  virtual void Close(RenderViewHost* render_view_host);
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual void RenderViewReady(RenderViewHost* render_view_host);
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
-                              int error_code);
+                              int error_code) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id, const std::wstring& title) {}
-  virtual ViewType::Type GetRenderViewType() const;
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
-  virtual void HandleMouseDown();
+                           int32 page_id, const std::wstring& title) OVERRIDE {}
+  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual void HandleMouseDown() OVERRIDE;
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.

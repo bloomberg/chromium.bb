@@ -111,41 +111,42 @@ class ExtensionHost : public RenderViewHostDelegate,
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
   // RenderViewHostDelegate implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual const GURL& GetURL() const;
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
-  virtual ViewType::Type GetRenderViewType() const;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
-                              int error_code);
-  virtual void DidNavigate(RenderViewHost* render_view_host,
-                           const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void DidStopLoading();
-  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host);
+                              int error_code) OVERRIDE;
+  virtual void DidNavigate(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
+  virtual void DocumentAvailableInMainFrame(
+      RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host,
-      int32 page_id);
-
-  // RenderViewHostDelegate implementation.
-  virtual RenderViewHostDelegate::View* GetViewDelegate();
-  virtual WebPreferences GetWebkitPrefs();
+      int32 page_id) OVERRIDE;
+  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
                                     const int flags,
                                     IPC::Message* reply_msg,
-                                    bool* did_suppress_message);
-  virtual void Close(RenderViewHost* render_view_host);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+                                    bool* did_suppress_message) OVERRIDE;
+  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void HandleMouseMove();
-  virtual void HandleMouseDown();
-  virtual void HandleMouseLeave();
-  virtual void HandleMouseUp();
-  virtual void HandleMouseActivate();
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
+      OVERRIDE;
+  virtual void HandleMouseMove() OVERRIDE;
+  virtual void HandleMouseDown() OVERRIDE;
+  virtual void HandleMouseLeave() OVERRIDE;
+  virtual void HandleMouseUp() OVERRIDE;
+  virtual void HandleMouseActivate() OVERRIDE;
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
