@@ -906,7 +906,6 @@ void AutofillManager::GetProfileSuggestions(FormStructure* form,
           values->push_back(multi_values[i]);
           unique_ids->push_back(PackGUIDs(GUIDPair(std::string(), 0),
                                           GUIDPair(profile->guid(), i)));
-          break;
         }
       }
     }

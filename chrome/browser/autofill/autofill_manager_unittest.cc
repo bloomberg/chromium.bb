@@ -1425,35 +1425,75 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForMultiValuedProfileUnfilled) {
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   std::vector<string16> multi_values(2);
   multi_values[0] = ASCIIToUTF16("Elvis Presley");
-  multi_values[1] = ASCIIToUTF16("Cynthia Love");
+  multi_values[1] = ASCIIToUTF16("Elena Love");
   profile->SetMultiInfo(NAME_FULL, multi_values);
+  test_personal_data_->ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
-  // Get the first name field.  And start out with "Cy", hoping for "Cynthia".
-  FormField& field = form.fields[0];
-  field.value = ASCIIToUTF16("Cy");
-  field.is_autofilled = false;
-  GetAutofillSuggestions(form, field);
+  {
+    // Get the first name field.
+    // Start out with "E", hoping for either "Elvis" or "Elena.
+    FormField& field = form.fields[0];
+    field.value = ASCIIToUTF16("E");
+    field.is_autofilled = false;
+    GetAutofillSuggestions(form, field);
 
-  // Trigger the |Send|.
-  AutocompleteSuggestionsReturned(std::vector<string16>());
+    // Trigger the |Send|.
+    AutocompleteSuggestionsReturned(std::vector<string16>());
 
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
-  std::vector<int> unique_ids;
-  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
-                                            &unique_ids));
+    // Test that we sent the right message to the renderer.
+    int page_id = 0;
+    std::vector<string16> values;
+    std::vector<string16> labels;
+    std::vector<string16> icons;
+    std::vector<int> unique_ids;
+    EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
+                                              &icons, &unique_ids));
+    string16 expected_values[] = {
+      ASCIIToUTF16("Elvis"),
+      ASCIIToUTF16("Elena")
+    };
+    string16 expected_labels[] = {
+      ASCIIToUTF16("me@x.com"),
+      ASCIIToUTF16("me@x.com")
+    };
+    string16 expected_icons[] = { string16(), string16() };
+    int expected_unique_ids[] = { 101, 101 };
+    ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                      kDefaultPageID, arraysize(expected_values),
+                      expected_values, expected_labels, expected_icons,
+                      expected_unique_ids);
+  }
 
-  string16 expected_values[] = { ASCIIToUTF16("Cynthia") };
-  string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
-  string16 expected_icons[] = { string16() };
-  int expected_unique_ids[] = { 101 };
-  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
-                    kDefaultPageID, arraysize(expected_values), expected_values,
-                    expected_labels, expected_icons, expected_unique_ids);
+  {
+    // Get the first name field.
+    // This time, start out with "Ele", hoping for "Elena".
+    FormField& field = form.fields[0];
+    field.value = ASCIIToUTF16("Ele");
+    field.is_autofilled = false;
+    GetAutofillSuggestions(form, field);
+
+    // Trigger the |Send|.
+    AutocompleteSuggestionsReturned(std::vector<string16>());
+
+    // Test that we sent the right message to the renderer.
+    int page_id = 0;
+    std::vector<string16> values;
+    std::vector<string16> labels;
+    std::vector<string16> icons;
+    std::vector<int> unique_ids;
+    EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels,
+                                              &icons, &unique_ids));
+
+    string16 expected_values[] = { ASCIIToUTF16("Elena") };
+    string16 expected_labels[] = { ASCIIToUTF16("me@x.com") };
+    string16 expected_icons[] = { string16() };
+    int expected_unique_ids[] = { 101 };
+    ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                      kDefaultPageID, arraysize(expected_values),
+                      expected_values, expected_labels, expected_icons,
+                      expected_unique_ids);
+  }
 }
 
 // Test that all values are suggested for multi-valued profile, on a filled
