@@ -102,3 +102,11 @@ TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
   assertEquals(expectedTitle, actualTitle);
   assertEquals(pageInstance, topPage);
 });
+
+// Test that there are no console errors after opening all registered pages.
+TEST_F('OptionsWebUITest', 'testOpenAllOptionsPages', function() {
+  expectTrue(!!OptionsPage.registeredPages);
+  for (var name in OptionsPage.registeredPages) {
+    OptionsPage.showPageByName(name, false);
+  }
+});
