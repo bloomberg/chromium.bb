@@ -1460,8 +1460,8 @@
    Heapcheck:Leak
    fun:base::MessageLoopProxy::CreateForCurrentThread
    ...
-   fun:IPC::SyncChannel::SyncContext::SyncContext
-   fun:IPC::SyncChannel::SyncChannel
+   fun:*SyncContext
+   fun:*SyncChannel
    fun:ChildThread::Init
 }
 {
@@ -1631,6 +1631,16 @@
    fun:::CreateLocaleDefaultValue
    fun:PrefService::RegisterLocalizedStringPref
    fun:TabContentsWrapper::RegisterUserPrefs
+}
+{
+   bug_90369
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::string::append
+   fun:FilePath::Append
+   fun:ProfileManagerTest_CreateProfilesAsync_Test::TestBody
 }
 
 # These are temporary suppressions for the CrOS bot to be used until the stacks are fixed.
