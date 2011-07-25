@@ -29,13 +29,26 @@ class ProfileInfoCache;
 
 class ProfileManagerObserver {
  public:
-  // This method is called when profile is ready. If profile creation has
-  // failed, method is called with |profile| equal to NULL.
-  virtual void OnProfileCreated(Profile* profile) = 0;
+  enum Status {
+    // So epic.
+    STATUS_FAIL,
+    // Profile created but before initializing extensions and promo resources.
+    STATUS_CREATED,
+    // Profile is created, extensions and promo resources are initialized.
+    STATUS_INITIALIZED
+  };
 
-  // If true, delete the observer after the profile has been created. Default
-  // is false.
-  virtual bool DeleteAfterCreation();
+  // This method is called when profile is ready. If profile already exists,
+  // method is called with pointer to that profile and STATUS_INITIALIZED.
+  // If profile creation has failed, method is called with |profile| equal to
+  // NULL and |status| equal to STATUS_FAIL. If profile has been created
+  // successfully, method is called twice: first with STATUS_CREATED status
+  // (before extensions are initialized) and eventually with STATUS_INITIALIZED.
+  virtual void OnProfileCreated(Profile* profile, Status status) = 0;
+
+  // If true, delete the observer after no more OnProfileCreated calls are
+  // expected. Default is false.
+  virtual bool DeleteAfter();
 
   virtual ~ProfileManagerObserver() {}
 };
@@ -156,7 +169,7 @@ class ProfileManager : public base::NonThreadSafe,
 
  protected:
   // Does final initial actions.
-  virtual void DoFinalInit(Profile* profile);
+  virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
 
  private:
   friend class ExtensionEventRouterForwarderTest;
@@ -227,7 +240,7 @@ class ProfileManager : public base::NonThreadSafe,
 // profile. This one is useful in unittests.
 class ProfileManagerWithoutInit : public ProfileManager {
  protected:
-  virtual void DoFinalInit(Profile*) {}
+  virtual void DoFinalInit(Profile*, bool) {}
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_

@@ -63,7 +63,7 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
 
   class MockObserver : public ProfileManagerObserver {
    public:
-    MOCK_METHOD1(OnProfileCreated, void(Profile* profile));
+    MOCK_METHOD2(OnProfileCreated, void(Profile* profile, Status status));
   };
 
   // The path to temporary directory used to contain the test operations.
@@ -191,23 +191,29 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   message_loop_.RunAllPending();
 }
 
+MATCHER(NotFail, "Profile creation failure status is not reported.") {
+  return arg == ProfileManagerObserver::STATUS_CREATED ||
+      arg == ProfileManagerObserver::STATUS_INITIALIZED;
+}
+
 // Tests asynchronous profile creation mechanism.
 TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
   FilePath dest_path =
       temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile"));
 
   MockObserver mock_observer;
-  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull())).Times(1);
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(1));
 
   profile_manager_->CreateProfileAsync(dest_path, &mock_observer);
 
   message_loop_.RunAllPending();
 }
 
-MATCHER(SameNotNull, "The same non-NULL value for all cals.") {
+MATCHER(SameNotNull, "The same non-NULL value for all calls.") {
   if (!g_created_profile)
     g_created_profile = arg;
-  return g_created_profile == arg;
+  return arg != NULL && arg == g_created_profile;
 }
 
 TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
@@ -217,11 +223,14 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
   g_created_profile = NULL;
 
   MockObserver mock_observer1;
-  EXPECT_CALL(mock_observer1, OnProfileCreated(SameNotNull())).Times(1);
+  EXPECT_CALL(mock_observer1, OnProfileCreated(
+      SameNotNull(), NotFail())).Times(testing::AtLeast(1));
   MockObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnProfileCreated(SameNotNull())).Times(1);
+  EXPECT_CALL(mock_observer2, OnProfileCreated(
+      SameNotNull(), NotFail())).Times(testing::AtLeast(1));
   MockObserver mock_observer3;
-  EXPECT_CALL(mock_observer3, OnProfileCreated(SameNotNull())).Times(1);
+  EXPECT_CALL(mock_observer3, OnProfileCreated(
+      SameNotNull(), NotFail())).Times(testing::AtLeast(1));
 
   profile_manager_->CreateProfileAsync(dest_path, &mock_observer1);
   profile_manager_->CreateProfileAsync(dest_path, &mock_observer2);
@@ -237,7 +246,8 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
       temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile 2"));
 
   MockObserver mock_observer;
-  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull())).Times(2);
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(3));
 
   profile_manager_->CreateProfileAsync(dest_path1, &mock_observer);
   profile_manager_->CreateProfileAsync(dest_path2, &mock_observer);

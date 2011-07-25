@@ -283,7 +283,7 @@ class LoginUtilsImpl : public LoginUtils,
                                       Profile* new_profile) OVERRIDE;
 
   // ProfileManagerObserver implementation:
-  virtual void OnProfileCreated(Profile* profile) OVERRIDE;
+  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;
 
   // GaiaOAuthConsumer overrides.
   virtual void OnGetOAuthTokenSuccess(const std::string& oauth_token) OVERRIDE;
@@ -383,8 +383,21 @@ void LoginUtilsImpl::PrepareProfile(
   ProfileManager::CreateDefaultProfileAsync(this);
 }
 
-void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
+void LoginUtilsImpl::OnProfileCreated(Profile* profile, Status status) {
   CHECK(profile);
+  switch (status) {
+    case STATUS_INITIALIZED:
+      break;
+    case STATUS_CREATED:
+      if (UserManager::Get()->current_user_is_new())
+        SetFirstLoginPrefs(profile->GetPrefs());
+      RespectLocalePreference(profile);
+      return;
+    case STATUS_FAIL:
+    default:
+      NOTREACHED();
+      return;
+  }
 
   // Initialize the user-policy backend.
   policy::BrowserPolicyConnector* browser_policy_connector =
@@ -450,9 +463,8 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
-  profile->GetProfileSyncService(username_)->SetPassphrase(password_,
-                                                           false,
-                                                           true);
+  profile->GetProfileSyncService(username_)->SetPassphrase(
+      password_, false, true);
 
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
@@ -467,12 +479,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile) {
       }
     }
     btl->AddLoginTimeMarker("TPMOwn-End", false);
-  }
-
-  RespectLocalePreference(profile);
-
-  if (UserManager::Get()->current_user_is_new()) {
-    SetFirstLoginPrefs(profile->GetPrefs());
   }
 
   // Enable/disable plugins based on user preferences.
@@ -688,11 +694,11 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
-  if (!authenticator_.get()) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
-    authenticator_ = new ParallelAuthenticator(consumer);
-  else
-    authenticator_ = new GoogleAuthenticator(consumer);
+  if (authenticator_ == NULL) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
+      authenticator_ = new ParallelAuthenticator(consumer);
+    else
+      authenticator_ = new GoogleAuthenticator(consumer);
   }
   return authenticator_.get();
 }

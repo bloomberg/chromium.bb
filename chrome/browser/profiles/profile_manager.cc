@@ -54,7 +54,7 @@ void DeleteProfileDirectories(const std::vector<FilePath>& paths) {
 
 } // namespace
 
-bool ProfileManagerObserver::DeleteAfterCreation() {
+bool ProfileManagerObserver::DeleteAfter() {
   return false;
 }
 
@@ -64,14 +64,17 @@ bool ProfileManagerObserver::DeleteAfterCreation() {
 // in to their Google account.
 class NewProfileLauncher : public ProfileManagerObserver {
  public:
-  virtual void OnProfileCreated(Profile* profile) {
-    Browser* browser = Browser::Create(profile);
-    browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewProfile),
-                                   PageTransition::LINK);
-    browser->window()->Show();
+  virtual void OnProfileCreated(Profile* profile, Status status) {
+    if (status == STATUS_INITIALIZED) {
+      DCHECK(profile);
+      Browser* browser = Browser::Create(profile);
+      browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewProfile),
+                                     PageTransition::LINK);
+      browser->window()->Show();
+    }
   }
 
-  virtual bool DeleteAfterCreation() OVERRIDE { return true; }
+  virtual bool DeleteAfter() OVERRIDE { return true; }
 };
 
 // static
@@ -263,8 +266,9 @@ void ProfileManager::CreateProfileAsync(const FilePath& user_data_dir,
     ProfileInfo* info = iter->second.get();
     if (info->created) {
       // Profile has already been created. Call observer immediately.
-      observer->OnProfileCreated(info->profile.get());
-      if (observer->DeleteAfterCreation())
+      observer->OnProfileCreated(
+          info->profile.get(), ProfileManagerObserver::STATUS_INITIALIZED);
+      if (observer->DeleteAfter())
         delete observer;
     } else {
       // Profile is being created. Add observer to list.
@@ -308,7 +312,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
   }
 
   RegisterProfile(profile, true);
-  DoFinalInit(profile);
+  DoFinalInit(profile, false);
   return true;
 }
 
@@ -356,21 +360,11 @@ void ProfileManager::OnBrowserSetLastActive(const Browser* browser) {
       last_active->GetPath().BaseName().MaybeAsASCII());
 }
 
-void ProfileManager::DoFinalInit(Profile* profile) {
+void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool init_extensions = true;
-#if defined(OS_CHROMEOS)
-  if (!logged_in_ &&
-      (!command_line.HasSwitch(switches::kTestType) ||
-        command_line.HasSwitch(switches::kLoginProfile))) {
-    init_extensions = false;
-  }
-#endif
-  profile->InitExtensions(init_extensions);
-
+  profile->InitExtensions(!go_off_the_record);
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
-
   AddProfileToCache(profile);
 }
 
@@ -384,17 +378,24 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   std::vector<ProfileManagerObserver*> observers;
   info->observers.swap(observers);
 
+  bool go_off_the_record = false;
   if (success) {
-    DoFinalInit(profile);
-    info->created = true;
 #if defined(OS_CHROMEOS)
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!logged_in_ &&
         (!command_line.HasSwitch(switches::kTestType) ||
          command_line.HasSwitch(switches::kLoginProfile))) {
-      profile = profile->GetOffTheRecordProfile();
+      go_off_the_record = true;
     }
 #endif
+    if (!go_off_the_record) {
+      for (size_t i = 0; i < observers.size(); ++i) {
+        observers[i]->OnProfileCreated(
+            profile, ProfileManagerObserver::STATUS_CREATED);
+      }
+    }
+    DoFinalInit(profile, go_off_the_record);
+    info->created = true;
   } else {
     profile = NULL;
     profiles_info_.erase(iter);
@@ -403,8 +404,16 @@ void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
   std::vector<ProfileManagerObserver*> observers_to_delete;
 
   for (size_t i = 0; i < observers.size(); ++i) {
-    observers[i]->OnProfileCreated(profile);
-    if (observers[i]->DeleteAfterCreation())
+    if (profile && go_off_the_record) {
+      profile = profile->GetOffTheRecordProfile();
+      DCHECK(profile);
+      observers[i]->OnProfileCreated(
+          profile, ProfileManagerObserver::STATUS_CREATED);
+    }
+    observers[i]->OnProfileCreated(
+        profile, profile ? ProfileManagerObserver::STATUS_INITIALIZED :
+            ProfileManagerObserver::STATUS_FAIL);
+    if (observers[i]->DeleteAfter())
       observers_to_delete.push_back(observers[i]);
   }
 

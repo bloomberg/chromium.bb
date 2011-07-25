@@ -42,17 +42,20 @@ class SwitchProfileMenuModel : public ui::SimpleMenuModel,
 };
 
 class ProfileSwitchObserver : public ProfileManagerObserver {
-  virtual void OnProfileCreated(Profile* profile) OVERRIDE {
+  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
-    if (browser)
-      browser->window()->Activate();
-    else
-      Browser::NewWindowWithProfile(profile);
+    if (status == STATUS_INITIALIZED) {
+      DCHECK(profile);
+      Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+      if (browser)
+        browser->window()->Activate();
+      else
+        Browser::NewWindowWithProfile(profile);
+    }
   }
 
-  virtual bool DeleteAfterCreation() OVERRIDE { return true; }
+  virtual bool DeleteAfter() OVERRIDE { return true; }
 };
 
 SwitchProfileMenuModel::SwitchProfileMenuModel(

@@ -151,8 +151,18 @@ void LoginPerformer::OnLoginSuccess(
   }
 }
 
-void LoginPerformer::OnProfileCreated(Profile* profile) {
+void LoginPerformer::OnProfileCreated(Profile* profile, Status status) {
   CHECK(profile);
+  switch (status) {
+    case STATUS_INITIALIZED:
+      break;
+    case STATUS_CREATED:
+      return;
+    case STATUS_FAIL:
+    default:
+      NOTREACHED();
+      return;
+  }
 
   if (auth_mode_ == AUTH_MODE_INTERNAL) {
     // Fetch cookies, tokens for the loaded profile.

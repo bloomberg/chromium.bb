@@ -74,24 +74,15 @@ class LoginPerformer : public LoginStatusConsumer,
   }
 
   // LoginStatusConsumer implementation:
-  virtual void OnLoginFailure(const LoginFailure& error);
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool pending_requests);
-  virtual void OnOffTheRecordLoginSuccess();
+      bool pending_requests) OVERRIDE;
+  virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
-
-  // SignedSettingsHelper::Callback implementation:
-  virtual void OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
-                                         const std::string& email);
-
-  // NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
 
   // Completes login process that has already been authenticated with
   // provided |username| and |password|.
@@ -131,8 +122,17 @@ class LoginPerformer : public LoginStatusConsumer,
     AUTH_MODE_EXTENSION
   } AuthorizationMode;
 
-  // ProfileManager::Observer implementation:
-  virtual void OnProfileCreated(Profile* profile);
+  // NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+  // SignedSettingsHelper::Callback implementation:
+  virtual void OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
+                                         const std::string& email) OVERRIDE;
+
+  // ProfileManagerObserver implementation:
+  virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;
 
   // Requests screen lock and subscribes to screen lock notifications.
   void RequestScreenLock();
