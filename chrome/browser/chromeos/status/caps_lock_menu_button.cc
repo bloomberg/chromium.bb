@@ -7,10 +7,25 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+// Returns PrefService object associated with |host|.
+PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
+  if (host->GetProfile())
+    return host->GetProfile()->GetPrefs();
+  return NULL;
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -18,13 +33,15 @@ namespace chromeos {
 // CapsLockMenuButton
 
 CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
-    : StatusAreaButton(host, this) {
+    : StatusAreaButton(host, this),
+      prefs_(GetPrefService(host)) {
+  if (prefs_)
+    remap_search_key_to_.Init(
+        prefs::kLanguageXkbRemapSearchKeyTo, prefs_, this);
+
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUSBAR_CAPS_LOCK));
-  SetTooltipText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_CAPS_LOCK_ENABLED)));
-  SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_STATUSBAR_CAPS_LOCK_ENABLED));
+  UpdateTooltip();
   UpdateUIFromCurrentCapsLock(input_method::CapsLockIsEnabled());
   SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 }
@@ -53,6 +70,24 @@ void CapsLockMenuButton::RunMenu(views::View* unused_source,
 
 void CapsLockMenuButton::OnCapsLockChange(bool enabled) {
   UpdateUIFromCurrentCapsLock(enabled);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NotificationObserver implementation
+
+void CapsLockMenuButton::Observe(int type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PREF_CHANGED)
+    UpdateTooltip();
+}
+
+void CapsLockMenuButton::UpdateTooltip() {
+  int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED;
+  if (prefs_ && (remap_search_key_to_.GetValue() == input_method::kCapsLockKey))
+    id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
+  SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(id)));
+  SetAccessibleName(l10n_util::GetStringUTF16(id));
 }
 
 void CapsLockMenuButton::UpdateUIFromCurrentCapsLock(bool enabled) {
