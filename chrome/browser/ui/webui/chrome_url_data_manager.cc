@@ -119,6 +119,8 @@ ChromeURLDataManager::DataSource::~DataSource() {
 
 void ChromeURLDataManager::DataSource::SendResponse(int request_id,
                                                     RefCountedMemory* bytes) {
+  // Take a ref-pointer on entry so byte->Release() will always get called.
+  scoped_refptr<RefCountedMemory> bytes_ptr(bytes);
   if (IsScheduledForDeletion(this)) {
     // We're scheduled for deletion. Servicing the request would result in
     // this->AddRef being invoked, even though the ref count is 0 and 'this' is
@@ -136,7 +138,7 @@ void ChromeURLDataManager::DataSource::SendResponse(int request_id,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DataSource::SendResponseOnIOThread,
-                        request_id, make_scoped_refptr(bytes)));
+                        request_id, bytes_ptr));
 }
 
 MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(
