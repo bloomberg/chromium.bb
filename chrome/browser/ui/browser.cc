@@ -3941,9 +3941,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, !is_devtools());
   command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, !is_devtools());
 
-  // Autofill
-  command_updater_.UpdateCommandEnabled(IDC_AUTOFILL_DEFAULT, !is_devtools());
-
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
 
