@@ -98,6 +98,7 @@ static const char kSitesDotGoogleDotCom[] = "sites.google.com";
 static const char kPicasawebDotGoogleDotCom[] = "picasaweb.google.com";
 static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
 static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
+static const char kGoogleReaderPathPrefix[] = "/reader/";
 static const char kDotJS[] = ".js";
 static const char kDotCSS[] = ".css";
 static const char kDotSWF[] = ".swf";
@@ -127,6 +128,8 @@ enum {
   INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,
   INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
   INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
+  INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
   INSECURE_CONTENT_NUM_EVENTS
 };
 
@@ -443,7 +446,7 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
 }
 
 bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
-    WebKit::WebFrame*,
+    WebKit::WebFrame* frame,
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
     const WebKit::WebURL& url) {
@@ -460,6 +463,12 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+    GURL frame_url(frame->document().url());
+    if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    }
   } else if (host == kMailDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,
@@ -500,7 +509,7 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
 }
 
 bool ChromeRenderViewObserver::allowRunningInsecureContent(
-    WebKit::WebFrame*,
+    WebKit::WebFrame* frame,
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
     const WebKit::WebURL& url) {
@@ -517,6 +526,12 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+    GURL frame_url(frame->document().url());
+    if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    }
   } else if (host == kMailDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,
