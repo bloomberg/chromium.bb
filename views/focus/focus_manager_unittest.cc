@@ -961,7 +961,6 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
 }
 
-
 // On linux, we don't store/restore focused view because gtk handles
 // this (and pure views will be the same).
 #if defined(OS_WIN)

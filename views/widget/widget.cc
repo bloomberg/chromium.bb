@@ -423,6 +423,15 @@ void Widget::Close() {
     can_close = non_client_view_->CanClose();
   if (can_close) {
     SaveWindowPosition();
+
+    // During tear-down the top-level focus manager becomes unavailable to
+    // GTK tabbed panes and their children, so normal deregistration via
+    // |FormManager::ViewRemoved()| calls are fouled.  We clear focus here
+    // to avoid these redundant steps and to avoid accessing deleted views
+    // that may have been in focus.
+    if (GetTopLevelWidget() == this && focus_manager_.get())
+      focus_manager_->SetFocusedView(NULL);
+
     native_widget_->Close();
     widget_closed_ = true;
   }
