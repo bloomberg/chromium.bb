@@ -10,15 +10,15 @@
 var KEYBOARDS = {
   'us': {
     'definition': KEYS_US,
-    'rows': []
+    'aspect': 3.15,
     // No canvas.
   },
   'handwriting-vk': {
     'definition': KEYS_HANDWRITING_VK,
-    'rows': [],
+    'aspect': 2.1,
     // TODO(yusukes): Stop special-casing canvas when mazda's i18n keyboard
     // code is ready.
-    'canvas': new HandwritingCanvas
+    'canvas': null
   }
 };
 
@@ -29,16 +29,28 @@ var KEYBOARDS = {
 var currentKeyboardLayout = 'us';
 
 /**
- * The keyboard's aspect ratio.
- * @type {number}
- */
-const kKeyboardAspect = 3.15;
-
-/**
  * The ratio of the row height to the font size.
  * @type {number}
  */
 const kFontSizeRatio = 3.5;
+
+/**
+ * Return the id attribute of the keyboard element for the given layout.
+ * @param {string} layout The keyboard layout.
+ * @return {string} The id attribute of the keyboard element.
+ */
+function getKeyboardId(layout) {
+  return 'keyboard_' + layout;
+}
+
+/**
+ * Return the aspect ratio of the current keyboard.
+ * @param {string} layout The keyboard layout.
+ * @return {number} The aspect ratio of the current keyboard.
+ */
+function getKeyboardAspect() {
+  return KEYBOARDS[currentKeyboardLayout]['aspect'];
+}
 
 /**
  * Calculate the height of the keyboard based on the size of the page.
@@ -47,7 +59,8 @@ const kFontSizeRatio = 3.5;
 function getKeyboardHeight() {
   var x = window.innerWidth;
   var y = window.innerHeight - ((imeui && imeui.visible) ? IME_HEIGHT : 0);
-  return (x > kKeyboardAspect * y) ? y : Math.floor(x / kKeyboardAspect);
+  return (x > getKeyboardAspect() * y) ?
+      y : Math.floor(x / getKeyboardAspect());
 }
 
 /**
@@ -63,15 +76,89 @@ function setMode(mode) {
 }
 
 /**
+ * Create a DOM of the keyboard rows for the given keyboard layout.
+ * Do nothing if the DOM is already created.
+ * @param {string} layout The keyboard layout for which rows are created.
+ * @param {Element} The DOM Element to which rows are appended.
+ * @return {void}
+ */
+function initRows(layout, element) {
+  var keyboard = KEYBOARDS[layout];
+  if ('rows' in keyboard) {
+    return;
+  }
+  var def = keyboard['definition'];
+  var rows = [];
+  for (var i = 0; i < def.length; ++i) {
+    rows.push(new Row(i, def[i]));
+  }
+  keyboard['rows'] = rows;
+
+  // A div element which holds rows for the layout.
+  var rowsDiv = document.createElement('div');
+  rowsDiv.className = 'rows';
+  for (var i = 0; i < rows.length; ++i) {
+    rowsDiv.appendChild(rows[i].makeDOM());
+    rows[i].showMode(currentMode);
+  }
+  keyboard['rowsDiv'] = rowsDiv;
+  element.appendChild(rowsDiv);
+}
+
+/**
+ * Create a DOM of the handwriting canvas for the given keyboard layout.
+ * Do nothing if the DOM is already created or the layout doesn't have canvas.
+ * @param {string} layout The keyboard layout for which canvas is created.
+ * @param {Element} The DOM Element to which canvas is appended.
+ * @return {void}
+ */
+function initHandwritingCanvas(layout, element) {
+  var keyboard = KEYBOARDS[layout];
+  if (!('canvas' in keyboard) || keyboard['canvas']) {
+    return;
+  }
+  var canvas = new HandwritingCanvas();
+  canvas.className = 'handwritingcanvas';
+  var border = 1;
+  var marginTop = 5;
+  var canvasHeight = getKeyboardHeight() - 2 * border - marginTop;
+  canvas.resize(canvasHeight);
+  keyboard['canvas'] = canvas;
+  element.appendChild(canvas);
+}
+
+/**
+ * Create a DOM of the keyboard for the given keyboard layout.
+ * Do nothing if the DOM is already created.
+ * @param {string} layout The keyboard layout for which keyboard is created.
+ * @param {Element} The DOM Element to which keyboard is appended.
+ * @return {void}
+ */
+function initKeyboard(layout, element) {
+  var keyboard = KEYBOARDS[layout];
+  if (!keyboard || keyboard['keyboardDiv']) {
+    return;
+  }
+  var keyboardDiv = document.createElement('div');
+  keyboardDiv.id = getKeyboardId(layout);
+  keyboardDiv.className = 'nodisplay';
+  initRows(layout, keyboardDiv);
+  initHandwritingCanvas(layout, keyboardDiv);
+  keyboard['keyboardDiv'] = keyboardDiv;
+  element.appendChild(keyboardDiv);
+}
+
+/**
  * Resize the keyboard according to the new window size.
  * @return {void}
  */
 window.onresize = function() {
-  var keyboardDiv = document.getElementById('keyboard');
+  var keyboardDiv = document.getElementById(getKeyboardId(
+      currentKeyboardLayout));
   var height = getKeyboardHeight();
   keyboardDiv.style.height = height + 'px';
   var mainDiv = document.getElementById('main');
-  mainDiv.style.width = Math.floor(kKeyboardAspect * height) + 'px';
+  mainDiv.style.width = Math.floor(getKeyboardAspect() * height) + 'px';
   var rowsLength = KEYBOARDS[currentKeyboardLayout]['rows'].length;
   keyboardDiv.style.fontSize = (height / kFontSizeRatio / rowsLength) + 'px';
   updateIme();
@@ -90,53 +177,7 @@ window.onload = function() {
   body.appendChild(mainDiv);
 
   initIme(mainDiv);
-
-  // TODO(mazda,yusukes): If we support 40+ virtual keyboards, it's not a good
-  // idea to create rows (and DOM) for all keyboards inside onload(). We should
-  // do it on an on-demand basis instead.
-  for (var layout in KEYBOARDS) {
-    var keyboard = KEYBOARDS[layout];
-    var def = keyboard['definition'];
-    var rows = keyboard['rows'];
-    for (var i = 0; i < def.length; ++i) {
-      rows.push(new Row(i, def[i]));
-    }
-  }
-
-  // A div element which holds rows and canvases
-  var keyboardDiv = document.createElement('div');
-  keyboardDiv.className = 'keyboard';
-  keyboardDiv.id = 'keyboard';
-
-  // A div element which holds canvases for all keyboards layouts.
-  var canvasesDiv = document.createElement('div');
-  canvasesDiv.className = 'nodisplay';
-
-  for (var layout in KEYBOARDS) {
-    // A div element which holds rows for the layout.
-    var rowsDiv = document.createElement('div');
-    var rows = KEYBOARDS[layout]['rows'];
-    for (var i = 0; i < rows.length; ++i) {
-      rowsDiv.appendChild(rows[i].makeDOM());
-      rows[i].showMode(currentMode);
-    }
-    rowsDiv.className = 'nodisplay';
-    keyboardDiv.appendChild(rowsDiv);
-    KEYBOARDS[layout]['rowsDiv'] = rowsDiv;
-
-    var canvas = KEYBOARDS[layout]['canvas'];
-    if (canvas !== undefined) {
-      canvas.visible = false;
-      var border = 1;
-      var marginTop = 5;
-      var canvasHeight = getKeyboardHeight() - 2 * border - marginTop;
-      canvas.resize(canvasHeight);
-      canvasesDiv.appendChild(canvas);
-    }
-    KEYBOARDS[layout]['canvasesDiv'] = canvasesDiv;
-  }
-  keyboardDiv.appendChild(canvasesDiv);
-  mainDiv.appendChild(keyboardDiv);
+  initKeyboard(currentKeyboardLayout, mainDiv);
 
   window.onhashchange();
 
@@ -159,6 +200,9 @@ window.onload = function() {
 window.onhashchange = function() {
   var old_layout = currentKeyboardLayout;
   var new_layout = location.hash.replace(/^#/, "");
+  if (old_layout == new_layout) {
+    return;
+  }
 
   if (KEYBOARDS[new_layout] === undefined) {
     // Unsupported layout.
@@ -166,15 +210,15 @@ window.onhashchange = function() {
   }
   currentKeyboardLayout = new_layout;
 
+  var mainDiv = document.getElementById('main');
+  initKeyboard(currentKeyboardLayout, mainDiv);
+
   [new_layout, old_layout].forEach(function(layout) {
       var visible = (layout == new_layout);
+      var keyboardDiv = KEYBOARDS[layout]['keyboardDiv'];
+      keyboardDiv.className = visible ? 'keyboard' : 'nodisplay';
       var canvas = KEYBOARDS[layout]['canvas'];
-      var rowsDiv = KEYBOARDS[layout]['rowsDiv'];
-      var canvasesDiv = KEYBOARDS[layout]['canvasesDiv'];
-      rowsDiv.className = visible ? 'rows' : 'nodisplay';
       if (canvas !== undefined) {
-        canvasesDiv.className = visible ? 'canvas' : 'nodisplay';
-        canvas.visible = visible;
         if (!visible) {
           canvas.clear();
         }

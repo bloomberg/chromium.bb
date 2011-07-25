@@ -33,12 +33,6 @@ div.rows {
   -webkit-box-flex: 1;
 }
 
-div.canvas {
-  display: block;
-  margin: 5px 0 0 5px;
-  -webkit-box-flex: 1;
-}
-
 div.row {
   display: -webkit-box;
   margin-top: 5px;
@@ -50,11 +44,11 @@ div.row > div {
   -webkit-box-flex: 1;
 }
 
-canvas.handwriting {
+.handwritingcanvas {
   border: 1px solid gray;
   color: #dbdbdb;
-  float: left;
   font-family: sans-serif;
+  margin: 5px 0 0 5px;
   text-align: center;
   -webkit-border-radius: 4px;
 }
