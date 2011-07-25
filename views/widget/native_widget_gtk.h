@@ -293,10 +293,6 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // application.
   virtual void HandleGtkGrabBroke();
 
-  // Invoked when X input grab is broken. This typically happen
-  // when a window holding grab is closed without releasing grab.
-  virtual void HandleXGrabBroke();
-
  private:
   class DropObserver;
   friend class DropObserver;
@@ -441,11 +437,18 @@ class NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;
 
-  // Have we done a mouse and pointer grab?
-  bool has_mouse_grab_;
+  // Have we done a pointer grab?
+  bool has_pointer_grab_;
 
   // Have we done a keyboard grab?
   bool has_keyboard_grab_;
+
+  // ID of the 'grab-notify' signal. If non-zero we're listening for
+  // 'grab-notify' events.
+  glong grab_notify_signal_id_;
+
+  // If we were created for a menu.
+  bool is_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtk);
 };

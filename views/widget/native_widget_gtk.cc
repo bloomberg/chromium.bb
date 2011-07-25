@@ -372,8 +372,10 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       should_handle_menu_key_release_(false),
       dragged_view_(NULL),
       painted_(false),
-      has_mouse_grab_(false),
-      has_keyboard_grab_(false) {
+      has_pointer_grab_(false),
+      has_keyboard_grab_(false),
+      grab_notify_signal_id_(0),
+      is_menu_(false) {
 #if defined(TOUCH_UI)
   // Make sure the touch factory is initialized so that it can setup XInput2 for
   // the widget.
@@ -720,8 +722,6 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                    G_CALLBACK(&OnButtonReleaseThunk), this);
   g_signal_connect(window_contents_, "grab_broken_event",
                    G_CALLBACK(&OnGrabBrokeEventThunk), this);
-  g_signal_connect(window_contents_, "grab_notify",
-                   G_CALLBACK(&OnGrabNotifyThunk), this);
   g_signal_connect(window_contents_, "scroll_event",
                    G_CALLBACK(&OnScrollThunk), this);
   g_signal_connect(window_contents_, "visibility_notify_event",
@@ -898,37 +898,55 @@ void NativeWidgetGtk::SetMouseCapture() {
   if (current_grab_window)
     gtk_grab_remove(current_grab_window);
 
+  if (is_menu_ && gdk_pointer_is_grabbed())
+    gdk_pointer_ungrab(GDK_CURRENT_TIME);
+
   // Make sure all app mouse/keyboard events are targeted at us only.
   gtk_grab_add(window_contents_);
+  if (gtk_grab_get_current() == window_contents_ && !grab_notify_signal_id_) {
+    // "grab_notify" is sent any time the grab changes. We only care about grab
+    // changes when we have done a grab.
+    grab_notify_signal_id_ = g_signal_connect(
+        window_contents_, "grab_notify", G_CALLBACK(&OnGrabNotifyThunk), this);
+  }
 
-  // And do a grab.  NOTE: we do this to ensure we get mouse events from other
-  // apps, a grab done with gtk_grab_add doesn't get events from other apps.
-  GdkGrabStatus pointer_grab_status =
-      gdk_pointer_grab(window_contents()->window, FALSE,
-                       static_cast<GdkEventMask>(
-                           GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                           GDK_POINTER_MOTION_MASK),
-                       NULL, NULL, GDK_CURRENT_TIME);
-  // NOTE: technically grab may fail. We may want to try and continue on in that
-  // case.
-  DCHECK_EQ(GDK_GRAB_SUCCESS, pointer_grab_status);
-  has_mouse_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS;
+  if (is_menu_) {
+    // For menus we do a pointer grab too. This ensures we get mouse events from
+    // other apps. In theory we should do this for all widget types, but doing
+    // so leads to gdk_pointer_grab randomly returning GDK_GRAB_ALREADY_GRABBED.
+    GdkGrabStatus pointer_grab_status =
+        gdk_pointer_grab(window_contents()->window, FALSE,
+                         static_cast<GdkEventMask>(
+                             GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                             GDK_POINTER_MOTION_MASK),
+                         NULL, NULL, GDK_CURRENT_TIME);
+    // NOTE: technically grab may fail. We may want to try and continue on in
+    // that case.
+    DCHECK_EQ(GDK_GRAB_SUCCESS, pointer_grab_status);
+    has_pointer_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS;
 
 #if defined(TOUCH_UI)
-  ::Window window = GDK_WINDOW_XID(window_contents()->window);
-  Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
-  bool xi2grab = TouchFactory::GetInstance()->GrabTouchDevices(display, window);
-  has_mouse_grab_ = has_mouse_grab_ && xi2grab;
+    ::Window window = GDK_WINDOW_XID(window_contents()->window);
+    Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
+    bool xi2grab =
+        TouchFactory::GetInstance()->GrabTouchDevices(display, window);
+    // xi2grab should always succeed if has_pointer_grab_ succeeded.
+    DCHECK(xi2grab);
+    has_pointer_grab_ = has_pointer_grab_ && xi2grab;
 #endif
+  }
 }
 
 void NativeWidgetGtk::ReleaseMouseCapture() {
-  if (HasMouseCapture())
+  if (GTK_WIDGET_HAS_GRAB(window_contents_))
     gtk_grab_remove(window_contents_);
-  if (has_mouse_grab_) {
-    has_mouse_grab_ = false;
+  if (grab_notify_signal_id_) {
+    g_signal_handler_disconnect(window_contents_, grab_notify_signal_id_);
+    grab_notify_signal_id_ = 0;
+  }
+  if (has_pointer_grab_) {
+    has_pointer_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 #if defined(TOUCH_UI)
     TouchFactory::GetInstance()->UngrabTouchDevices(
         GDK_WINDOW_XDISPLAY(window_contents()->window));
@@ -938,7 +956,7 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
 }
 
 bool NativeWidgetGtk::HasMouseCapture() const {
-  return has_mouse_grab_;
+  return GTK_WIDGET_HAS_GRAB(window_contents_) || has_pointer_grab_;
 }
 
 void NativeWidgetGtk::SetKeyboardCapture() {
@@ -1704,15 +1722,45 @@ gboolean NativeWidgetGtk::OnVisibilityNotify(GtkWidget* widget,
 }
 
 gboolean NativeWidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  HandleXGrabBroke();
+  if (!has_pointer_grab_ && !has_keyboard_grab_) {
+    // We don't have any grabs; don't attempt to do anything.
+    return false;
+  }
+
+  // Sent when either the keyboard or pointer grab is broke. We drop both grabs
+  // in this case.
+  if (event->grab_broken.keyboard) {
+    // Keyboard grab was broke.
+    has_keyboard_grab_ = false;
+    if (has_pointer_grab_) {
+      has_pointer_grab_ = false;
+      gdk_pointer_ungrab(GDK_CURRENT_TIME);
+      delegate_->OnMouseCaptureLost();
+    }
+  } else {
+    // Mouse grab was broke.
+    has_pointer_grab_ = false;
+    if (has_keyboard_grab_) {
+      has_keyboard_grab_ = false;
+      gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    }
+    delegate_->OnMouseCaptureLost();
+  }
+  ReleaseMouseCapture();
+
+#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
+  TouchFactory::GetInstance()->UngrabTouchDevices(
+      GDK_WINDOW_XDISPLAY(window_contents()->window));
+#endif
   return false;  // To let other widgets get the event.
 }
 
 void NativeWidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
+  // Sent when gtk_grab_add changes.
   if (!window_contents_)
     return;  // Grab broke after window destroyed, don't try processing it.
-  gtk_grab_remove(window_contents_);
-  HandleGtkGrabBroke();
+  if (!was_grabbed)  // Indicates we've been shadowed (lost grab).
+    HandleGtkGrabBroke();
 }
 
 void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
@@ -1766,20 +1814,9 @@ gboolean NativeWidgetGtk::OnConfigureEvent(GtkWidget* widget,
   return FALSE;
 }
 
-void NativeWidgetGtk::HandleXGrabBroke() {
-  if (has_keyboard_grab_)
-    has_keyboard_grab_ = false;
-  if (has_mouse_grab_) {
-    has_mouse_grab_ = false;
-    delegate_->OnMouseCaptureLost();
-  }
-}
-
 void NativeWidgetGtk::HandleGtkGrabBroke() {
-  if (has_keyboard_grab_)
-    ReleaseKeyboardCapture();
-  if (has_mouse_grab_)
-    ReleaseMouseCapture();
+  ReleaseMouseCapture();
+  ReleaseKeyboardCapture();
   delegate_->OnMouseCaptureLost();
 }
 
@@ -1828,6 +1865,7 @@ void NativeWidgetGtk::SetInitParams(const Widget::InitParams& params) {
 
   ownership_ = params.ownership;
   child_ = params.child;
+  is_menu_ = params.type == Widget::InitParams::TYPE_MENU;
 
   // TODO(beng): The secondary checks here actually obviate the need for
   //             params.transient but that's only because NativeWidgetGtk
