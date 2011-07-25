@@ -362,6 +362,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePanels)
   },
+  {
+    "enable-shortcuts-provider",
+    IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER,
+    IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableShortcutsProvider)
+  },
 };
 
 const Experiment* experiments = kExperiments;
