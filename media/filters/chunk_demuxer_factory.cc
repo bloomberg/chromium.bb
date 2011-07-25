@@ -10,20 +10,19 @@
 
 namespace media {
 
-static void DoInitDone(DemuxerFactory::BuildCallback* cb,
+static void DoInitDone(const DemuxerFactory::BuildCB& cb,
                        const scoped_refptr<Demuxer>& demuxer,
                        PipelineStatus status) {
-  scoped_ptr<DemuxerFactory::BuildCallback> callback(cb);
   if (status != PIPELINE_OK) {
-    callback->Run(status, static_cast<Demuxer*>(NULL));
+    cb.Run(status, NULL);
     return;
   }
 
-  callback->Run(status, demuxer);
+  cb.Run(status, demuxer);
 }
 
 static void InitDone(MessageLoop* message_loop,
-                     DemuxerFactory::BuildCallback* cb,
+                     const DemuxerFactory::BuildCB& cb,
                      const scoped_refptr<Demuxer>& demuxer,
                      PipelineStatus status) {
   message_loop->PostTask(FROM_HERE,
@@ -41,7 +40,7 @@ ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
 
 ChunkDemuxerFactory::~ChunkDemuxerFactory() {}
 
-void ChunkDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
+void ChunkDemuxerFactory::Build(const std::string& url, const BuildCB& cb) {
   // Check to see if this is the URL we are looking for. If not delegate
   // building to the delegate factory.
   if (url != url_) {

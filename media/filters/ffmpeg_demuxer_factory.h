@@ -8,6 +8,7 @@
 #define MEDIA_FILTERS_FFMPEG_DEMUXER_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/filter_factories.h"
 
@@ -23,8 +24,8 @@ class FFmpegDemuxerFactory : public DemuxerFactory {
   virtual ~FFmpegDemuxerFactory();
 
   // DemuxerFactory methods.
-  virtual void Build(const std::string& url, BuildCallback* cb);
-  virtual DemuxerFactory* Clone() const;
+  virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
+  virtual DemuxerFactory* Clone() const OVERRIDE;
 
  private:
   scoped_ptr<DataSourceFactory> data_source_factory_;
