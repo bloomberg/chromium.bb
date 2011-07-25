@@ -480,6 +480,7 @@ void FilterDisabledTests() {
     // later by using the new INTERNET_OPTION_SUPPRESS_BEHAVIOR flags
     // See http://msdn.microsoft.com/en-us/library/aa385328(VS.85).aspx
     "URLRequestTest.DoNotSaveCookies",
+    "URLRequestTest.DelayedCookieCallback",
 
     // TODO(ananta): This test has been consistently failing. Disabling it for
     // now.
