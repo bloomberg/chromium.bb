@@ -36,7 +36,7 @@ int32_t TCPSocket::Connect(const char* host,
                            uint16_t port,
                            const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_TCPSocket>()->Connect(
       pp_resource(), host, port, callback.pp_completion_callback());
 }
@@ -44,7 +44,7 @@ int32_t TCPSocket::Connect(const char* host,
 int32_t TCPSocket::ConnectWithNetAddress(const PP_Flash_NetAddress* addr,
                                          const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_TCPSocket>()->ConnectWithNetAddress(
       pp_resource(), addr, callback.pp_completion_callback());
 }
@@ -69,7 +69,7 @@ bool TCPSocket::GetRemoteAddress(PP_Flash_NetAddress* remote_addr) {
 int32_t TCPSocket::InitiateSSL(const char* server_name,
                                const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_TCPSocket>()->InitiateSSL(
       pp_resource(), server_name, callback.pp_completion_callback());
 }
@@ -78,7 +78,7 @@ int32_t TCPSocket::Read(char* buffer,
                         int32_t bytes_to_read,
                         const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_TCPSocket>()->Read(
       pp_resource(), buffer, bytes_to_read, callback.pp_completion_callback());
 }
@@ -87,7 +87,7 @@ int32_t TCPSocket::Write(const char* buffer,
                          int32_t bytes_to_write,
                          const CompletionCallback& callback) {
   if (!has_interface<PPB_Flash_TCPSocket>())
-    return PP_ERROR_NOINTERFACE;
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
   return get_interface<PPB_Flash_TCPSocket>()->Write(
       pp_resource(), buffer, bytes_to_write, callback.pp_completion_callback());
 }

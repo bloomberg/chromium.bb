@@ -5,8 +5,9 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_flash_tcp_socket_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
@@ -33,8 +34,9 @@ int32_t Connect(PP_Resource tcp_socket,
                 PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Connect(host, port, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Connect(host, port, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
@@ -42,8 +44,9 @@ int32_t ConnectWithNetAddress(PP_Resource tcp_socket,
                               PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->ConnectWithNetAddress(addr, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->ConnectWithNetAddress(addr, callback);
+  return MayForceCallback(callback, result);
 }
 
 PP_Bool GetLocalAddress(PP_Resource tcp_socket,
@@ -67,8 +70,9 @@ int32_t InitiateSSL(PP_Resource tcp_socket,
                     PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->InitiateSSL(server_name, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->InitiateSSL(server_name, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Read(PP_Resource tcp_socket,
@@ -77,8 +81,9 @@ int32_t Read(PP_Resource tcp_socket,
              PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Read(buffer, bytes_to_read, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Read(buffer, bytes_to_read, callback);
+  return MayForceCallback(callback, result);
 }
 
 int32_t Write(PP_Resource tcp_socket,
@@ -87,8 +92,9 @@ int32_t Write(PP_Resource tcp_socket,
               PP_CompletionCallback callback) {
   EnterResource<PPB_Flash_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
-  return enter.object()->Write(buffer, bytes_to_write, callback);
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  int32_t result = enter.object()->Write(buffer, bytes_to_write, callback);
+  return MayForceCallback(callback, result);
 }
 
 void Disconnect(PP_Resource tcp_socket) {
