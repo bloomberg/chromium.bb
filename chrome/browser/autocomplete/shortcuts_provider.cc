@@ -206,7 +206,6 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
     const string16& find_text,
     const string16& text,
     const ACMatchClassifications& original_matches) {
-  DCHECK(!original_matches.empty());
   DCHECK(!find_text.empty());
 
   base::i18n::BreakIterator term_iter(find_text,

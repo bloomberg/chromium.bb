@@ -470,6 +470,14 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
             spans_i[3].style);
   EXPECT_EQ(17U, spans_i[4].offset);
   EXPECT_EQ(ACMatchClassification::URL, spans_i[4].style);
+
+  // Some web sites do not have a description, so second and third parameters in
+  // ClassifyAllMatchesInString could be empty.
+  ACMatchClassifications spans_j =
+      ShortcutsProvider::ClassifyAllMatchesInString(ASCIIToUTF16("man"),
+                                                    string16(),
+                                                    ACMatchClassifications());
+  ASSERT_EQ(0U, spans_j.size());
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {
