@@ -19,6 +19,29 @@ body {
   width: 100%;
 }
 
+.butter-bar {
+  -webkit-transition-property: opacity, top;
+  -webkit-transition-duration: 0.3s;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 1em;
+  padding-right: 1em;
+  position: absolute;
+  background-color: rgba(255, 249, 149, 0.5);
+  border-radius: 3px;
+  border: 1px gold solid;
+}
+
+.butter-bar a {
+  -webkit-margin-start: 1em;
+}
+
+.butter-error {
+  color: rgb(100, 0, 0);
+  background-color: rgba(255, 100, 100, 0.5);
+  border: 1px red solid;
+}
+
 /* The top title of the dialog. */
 .dialog-title {
   -webkit-box-sizing: border-box;
@@ -329,6 +352,17 @@ li.thumbnail-item[selected] .file-checkbox {
   max-width: 190px;
 }
 
+.preview-img.thumbnail {
+  padding: 1px;
+  border: 1px #666 solid;
+  -webkit-background-clip: content-box;
+
+  /* Checkboard background to distinguish images with alpha channels, from
+   * ../images/preview-background.png
+   */
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
+}
+
 .preview-img[src=''] {
   visibility: hidden;
 }
@@ -336,12 +370,6 @@ li.thumbnail-item[selected] .file-checkbox {
 /* Decoration when multiple images are selected. */
 .preview-img.multiple-selected {
   -webkit-box-shadow: 5px 5px 0 #aaa;
-}
-
-/* Checkboard background to distinguish images with alpha channels. */
-.preview-img.transparent-background {
-  /* ../images/preview-background.png */
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
 }
 
 .preview-metadata {
@@ -365,11 +393,12 @@ li.thumbnail-item[selected] .file-checkbox {
 /* The task buttons at the bottom of the preview pane. */
 .task-buttons {
   padding: 4px;
+  padding-left: 20px;
+  padding-right: 20px;
   overflow-y: auto;
 }
 
 .task-button {
-  display: block;
   width: 100%;
   text-align: left;
 }
@@ -377,8 +406,31 @@ li.thumbnail-item[selected] .file-checkbox {
 .task-button > img {
   position: relative;
   top: 2px;
-  padding-after: 5px;
-  padding-right: 5px;
+  -webkit-margin-end: 5px;
+}
+
+/* The copy/paste buttons and summary. */
+.clipboard-status {
+  margin-left: 18px;
+  margin-right: 18px;
+  overflow: hidden;
+  padding: 0;
+  padding-bottom: 5px;
+}
+
+.clipboard-buttons {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.clipboard-buttons > button {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
+}  
+
+.clipboard-buttons > button > img {
+  vertical-align: middle;
+  -webkit-margin-end: 5px;
 }
 
 /* The selection summary text at the bottom of the preview pane. */

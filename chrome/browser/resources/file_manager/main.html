@@ -7,6 +7,9 @@
 <html>
   <head>
     <script>
+      // Resources from shared locations are loaded dynamically, so we can
+      // get them from file:// when running as a normal web page, and from
+      // chrome://resources/ when compiled directly into chrome.
       var css =
       ['list.css',
        'table.css',
@@ -78,6 +81,7 @@
     <script src="js/image_editor/image_adjust.js"></script>
 
     <script src="js/util.js"></script>
+    <script src="js/file_copy_manager.js"></script>
     <script src="js/file_manager.js"></script>
     <script src="js/main.js"></script>
 
@@ -91,11 +95,18 @@
   <body i18n-values=".style.fontFamily:WEB_FONT_FAMILY;
                      .style.fontSize:WEB_FONT_SIZE">
     <commands>
+      <command id="cut"></command>
+      <command id="copy"></command>
+      <command id="paste"></command>
       <command id="rename"></command>
       <command id="delete"></command>
     </commands>
 
     <menu class=file-context-menu>
+      <menuitem i18n-content=CUT_BUTTON_LABEL command='#cut'></menuitem>
+      <menuitem i18n-content=COPY_BUTTON_LABEL command='#copy'></menuitem>
+      <menuitem i18n-content=PASTE_BUTTON_LABEL command='#paste'></menuitem>
+      <hr>
       <menuitem i18n-content=RENAME_BUTTON_LABEL command='#rename'></menuitem>
       <menuitem i18n-content=DELETE_BUTTON_LABEL command='#delete'></menuitem>
     </menu>
@@ -132,6 +143,22 @@
         <div class=preview-metadata></div>
         <div class=vertical-spacer></div>
         <div class=task-buttons></div>
+        <div class=clipboard-status>
+          <div class=clipboard-buttons>
+            <button class='clipboard-copy' command='#copy'
+                    onclick='fileManager.copySelectionToClipboard()'
+                    visibleif='this.dialogType_ == "full-page"'
+               ><img src='images/button-icon-copy.png'
+                ><span i18n-content=COPY_BUTTON_LABEL></span
+            ></button>
+            <button class='clipboard-paste' command='#paste'
+                    onclick='fileManager.pasteFromClipboard()'
+                    visibleif='this.dialogType_ == "full-page"'
+               ><img src='images/button-icon-paste.png'
+                ><span i18n-content=PASTE_BUTTON_LABEL></span
+            ></button>
+          </div>
+        </div>
         <div class=preview-summary></div>
       </div>
     </div>

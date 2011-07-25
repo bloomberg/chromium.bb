@@ -58,6 +58,81 @@ var util = {
   },
 
   /**
+   * Given a list of Entries, recurse any DirectoryEntries, and call back
+   * with a list of all file and directory entries encountered (including the
+   * original set).
+   */
+  recurseAndResolveEntries: function(entries, successCallback, errorCallback) {
+    var pendingSubdirectories = 0;
+    var pendingFiles = 0;
+
+    var dirEntries = [];
+    var fileEntries = [];
+    var fileBytes = 0;
+
+    function pathCompare(a, b) {
+      if (a.fullPath > b.fullPath)
+        return 1;
+
+      if (a.fullPath < b.fullPath)
+        return -1;
+
+      return 0;
+    }
+
+    // We invoke this after each async callback to see if we've received all
+    // the expected callbacks.  If so, we're done.
+    function areWeThereYet() {
+      if (pendingSubdirectories == 0 && pendingFiles == 0) {
+        var result = {
+          dirEntries: dirEntries.sort(pathCompare),
+          fileEntries: fileEntries.sort(pathCompare),
+          fileBytes: fileBytes
+        };
+
+        if (successCallback) {
+          successCallback(result);
+        }
+      }
+    }
+
+    function tallyEntry(entry) {
+      if (entry.isDirectory) {
+        dirEntries.push(entry);
+        recurseDirectory(entry);
+      } else {
+        fileEntries.push(entry);
+        pendingFiles++;
+        entry.file(function(file) {
+          fileBytes += file.size;
+          pendingFiles--;
+          areWeThereYet();
+        });
+      }
+    }
+
+    function recurseDirectory(dirEntry) {
+      pendingSubdirectories++;
+
+      util.forEachDirEntry(dirEntry, function(entry) {
+          if (entry == null) {
+            // Null entry indicates we're done scanning this directory.
+            pendingSubdirectories--;
+            areWeThereYet();
+          } else {
+            tallyEntry(entry);
+          }
+      });
+    }
+
+    for (var i = 0; i < entries.length; i++) {
+      tallyEntry(entries[i]);
+    }
+
+    areWeThereYet();
+  },
+
+  /**
    * Utility function to invoke callback once for each entry in dirEntry.
    *
    * @param {DirectoryEntry} dirEntry The directory entry to enumerate.
@@ -129,6 +204,90 @@ var util = {
     }
 
     getNextDirectory();
+  },
+
+  /**
+   * Resolve a path to either a DirectoryEntry or a FileEntry, regardless of
+   * whether the path is a directory or file.
+   *
+   * @param root {DirectoryEntry} The root of the filesystem to search.
+   * @param path {string} The path to be resolved.
+   * @param resultCallback{function(Entry)} Called back when a path is
+   *     successfully resolved.  Entry will be either a DirectoryEntry or
+   *     a FileEntry.
+   * @param errorCallback{function(FileError)} Called back if an unexpected
+   *     error occurs while resolving the path.
+   */
+  resolvePath: function(root, path, resultCallback, errorCallback) {
+    if (path == '' || path == '/') {
+      resultCallback(root);
+      return;
+    }
+
+    root.getFile(
+        path, {create: false},
+        resultCallback,
+        function (err) {
+          if (err.code == FileError.TYPE_MISMATCH_ERR) {
+            // Bah.  It's a directory, ask again.
+            root.getDirectory(
+                path, {create: false},
+                resultCallback,
+                errorCallback);
+            } else  {
+              errorCallback(err);
+            }
+        });
+  },
+
+  /**
+   * Locate the file referred to by path, creating directories or the file
+   * itself if necessary.
+   */
+  getOrCreateFile: function(path, successCallback, errorCallback) {
+    var dirname = null;
+    var basename = null;
+
+    function onDirFound(dirEntry) {
+      dirEntry.getFile(basename, { create: true },
+                       successCallback, errorCallback);
+    }
+
+    var i = path.lastIndexOf('/');
+    if (i > -1) {
+      dirname = path.substr(0, i);
+      basename = path.substr(i + 1);
+    } else {
+      basename = path;
+    }
+
+    if (!dirname)
+      return onDirFound(this.filesystem.root);
+
+    this.getOrCreateDirectory(dirname, onDirFound, errorCallback);
+  },
+
+  /**
+   * Locate the directory referred to by path, creating directories along the
+   * way.
+   */
+  getOrCreateDirectory: function(path, successCallback, errorCallback) {
+    var names = path.split('/');
+
+    function getOrCreateNextName(dir) {
+      if (!names.length)
+        return successCallback(dir);
+
+      var name;
+      do {
+        name = names.shift();
+      } while (!name || name == '.');
+
+      dir.getDirectory(name, { create: true }, getOrCreateNextName,
+                       errorCallback);
+    }
+
+    getOrCreateNextName(this.filesystem.root);
   },
 
   /**

@@ -8941,6 +8941,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cut
       </message>
 
+      <message name="IDS_FILE_BROWSER_SELECTION_COPIED" desc="File picker status message.">
+	Selection copied to clipboard.
+      </message>
+      <message name="IDS_FILE_BROWSER_SELECTION_CUT" desc="File picker status message.">
+	Selection cut to clipboard.
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_STARTED" desc="File picker status message.">
+	Pasting...
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_SOME_PROGRESS" desc="File picker status message.  'Item' is used here as a generic term for file or directory.">
+	Pasting $1 of $2 items...
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_COMPLETE" desc="File picker status message.">
+	Paste complete.
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_CANCELLED" desc="File picker status message.">
+	Paste cancelled.
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_TARGET_EXISTS_ERROR" desc="File picker status message.  'Item' is used here as a generic term for file or directory.">
+	Paste failed, item exists: $1
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File picker status message.">
+	Paste failed, file system error: $1'
+      </message>
+      <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File picker status message.">
+	Paste failed, unexpected error: $1
+      </message>
+
       <message name="IDS_FILE_BROWSER_DEVICE_TYPE_FLASH" desc="Indication of mounted device type.">
         Flash Device
       </message>

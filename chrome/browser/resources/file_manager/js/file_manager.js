@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Setting the src of an img to an empty string can crash the browser, so we
+// use an empty 1x1 gif instead.
 const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
         + 'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
 
@@ -40,6 +42,13 @@ function FileManager(dialogDom, rootEntries, params) {
   this.listType_ = null;
 
   this.metadataCache_ = {};
+
+  this.selection = null;
+
+  this.clipboard_ = null;  // Current clipboard, or null if empty.
+
+  this.butterTimer_ = null;
+  this.currentButter_ = null;
 
   // True if we should filter out files that start with a dot.
   this.filterFiles_ = true;
@@ -99,6 +108,10 @@ function FileManager(dialogDom, rootEntries, params) {
   // DirectoryEntry representing the current directory of the dialog.
   this.currentDirEntry_ = null;
 
+  this.copyManager_ = new FileCopyManager();
+  this.copyManager_.addEventListener('copy-progress',
+                                     this.onCopyProgress_.bind(this));
+
   window.addEventListener('popstate', this.onPopState_.bind(this));
   this.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
@@ -119,7 +132,7 @@ function FileManager(dialogDom, rootEntries, params) {
   chrome.fileBrowserPrivate.onDiskChanged.addListener(
       this.onDiskChanged_.bind(this));
 
-  this.document_.querySelector('[tabindex="0"]').focus();
+  this.refocus();
 
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.metadataUrlFilter_ = /.*/;
@@ -154,6 +167,12 @@ FileManager.prototype = {
    */
   const CD_WITH_HISTORY = true;
   const CD_NO_HISTORY = false;
+
+  /**
+   * Mnemonics for the recurse parameter of the copyFiles method.
+   */
+  const CP_RECURSE = true;
+  const CP_NO_RECURSE = false;
 
   /**
    * Translated strings.
@@ -369,7 +388,7 @@ FileManager.prototype = {
    * @param {function(Entry)} successCallback The function to invoke once the
    *     file size is known.
    */
-  function cacheEntrySize(entry, successCallback) {
+  function cacheEntrySize(entry, successCallback, opt_errorCallback) {
     if (entry.isDirectory) {
       // No size for a directory, -1 ensures it's sorted before 0 length files.
       entry.cachedSize_ = -1;
@@ -388,7 +407,7 @@ FileManager.prototype = {
       entry.cachedSize_ = file.size;
       if (successCallback)
         successCallback(entry);
-    });
+    }, opt_errorCallback);
   }
 
   /**
@@ -402,7 +421,7 @@ FileManager.prototype = {
    * @param {function(Entry)} successCallback The function to invoke once the
    *     mtime is known.
    */
-  function cacheEntryDate(entry, successCallback) {
+  function cacheEntryDate(entry, successCallback, opt_errorCallback) {
     if ('cachedMtime_' in entry) {
       if (successCallback) {
         // Callback via a setTimeout so the sync/async semantics don't change
@@ -423,7 +442,7 @@ FileManager.prototype = {
         entry.cachedMtime_ = metadata.modificationTime;
         if (successCallback)
           successCallback(entry);
-      });
+      }, opt_errorCallback);
     }
   }
 
@@ -446,6 +465,11 @@ FileManager.prototype = {
     getIconType(entry);
     if (successCallback)
       setTimeout(function() { successCallback(entry) }, 0);
+  }
+
+  function isSystemDirEntry(dirEntry) {
+    return dirEntry.fullPath == '/' ||
+        dirEntry.fullPath == MEDIA_DIRECTORY;
   }
 
   // Public statics.
@@ -498,11 +522,8 @@ FileManager.prototype = {
     this.fileContextMenu_ = this.dialogDom_.querySelector('.file-context-menu');
     cr.ui.Menu.decorate(this.fileContextMenu_);
 
-    this.document_.addEventListener(
-        'canExecute', this.onRenameCanExecute_.bind(this));
-    this.document_.addEventListener(
-        'canExecute', this.onDeleteCanExecute_.bind(this));
-
+    this.document_.addEventListener('canExecute',
+                                    this.onCanExecute_.bind(this));
     this.document_.addEventListener('command', this.onCommand_.bind(this));
   }
 
@@ -520,6 +541,10 @@ FileManager.prototype = {
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
+    this.copyButton_ = this.dialogDom_.querySelector('.clipboard-copy');
+    this.pasteButton_ = this.dialogDom_.querySelector('.clipboard-paste');
+
+    this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -598,6 +623,93 @@ FileManager.prototype = {
     this.textSearchState_ = {text: '', date: new Date()};
   };
 
+  FileManager.prototype.refocus = function() {
+    this.document_.querySelector('[tabindex="0"]').focus();
+  };
+
+  FileManager.prototype.showButter = function(message, opt_options) {
+    var butter = this.document_.createElement('div');
+    butter.className = 'butter-bar';
+    butter.style.top = '-30px';
+    this.dialogDom_.appendChild(butter);
+
+    var self = this;
+
+    setTimeout(function () {
+      if (self.currentButter_)
+        self.hideButter();
+
+      self.currentButter_ = butter;
+      self.currentButter_.style.top = '15px';
+
+      self.updateButter(message, opt_options);
+    });
+
+    return butter;
+  };
+
+  FileManager.prototype.showButterError = function(message, opt_options) {
+    var butter = this.showButter(message, opt_options);
+    butter.classList.add('butter-error');
+    return butter;
+  };
+
+  FileManager.prototype.updateButter = function(message, opt_options) {
+    if (!opt_options)
+      opt_options = {};
+
+    var timeout;
+    if ('timeout' in opt_options) {
+      timeout = opt_options.timeout;
+    } else {
+      timeout = 10 * 1000;
+    }
+
+    if (this.butterTimer_)
+      clearTimeout(this.butterTimer_);
+
+    if (timeout) {
+      var self = this;
+      this.butterTimer_ = setTimeout(function() {
+          self.hideButter();
+          self.butterTimer_ == null;
+      }, timeout);
+    }
+
+    var butter = this.currentButter_;
+    butter.textContent = message;
+
+    if ('actions' in opt_options) {
+      for (var label in opt_options.actions) {
+        var link = this.document_.createElement('a');
+        link.textContent = label;
+        link.setAttribute('href', 'javascript://' + label);
+        link.addEventListener('click', function () {
+            opt_options.actions[label]();
+            return false;
+        });
+        butter.appendChild(link);
+      }
+    }
+
+    butter.style.left = ((this.dialogDom_.clientWidth -
+                          butter.clientWidth) / 2) + 'px';
+  };
+
+  FileManager.prototype.hideButter = function() {
+    if (this.currentButter_) {
+      this.currentButter_.style.top = '50px';
+      this.currentButter_.style.opacity = '0';
+
+      var butter = this.currentButter_;
+      setTimeout(function() {
+          butter.parentNode.removeChild(butter);
+      }, 1000);
+
+      this.currentButter_ = null;
+    }
+  };
+
   /**
    * "Save a file" dialog is supposed to have a combo box with available
    * file types. Selecting an item filters files by extension and specifies how
@@ -625,40 +737,60 @@ FileManager.prototype = {
    * Force the canExecute events to be dispatched.
    */
   FileManager.prototype.updateCommands_ = function() {
-    this.commands_['rename'].canExecuteChange();
-    this.commands_['delete'].canExecuteChange();
+    for (var key in this.commands_) {
+      this.commands_[key].canExecuteChange();
+    }
   };
 
   /**
-   * Invoked to decide whether the "rename" command can be executed.
+   * Invoked to decide whether the "copy" command can be executed.
    */
-  FileManager.prototype.onRenameCanExecute_ = function(event) {
-    event.canExecute =
-        (// Initialized to the point where we have a current directory
-         this.currentDirEntry_ &&
-         // Rename not in progress.
-         !this.renameInput_.currentEntry &&
-         // Not in root directory.
-         this.currentDirEntry_.fullPath != '/' &&
-         // Not in media directory.
-         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY &&
-         // Only one file selected.
-         this.selection.totalCount == 1);
-  };
+  FileManager.prototype.onCanExecute_ = function(event) {
+    switch (event.command.id) {
+      case 'cut':
+        event.canExecute =
+          (this.currentDirEntry_ &&
+           !isSystemDirEntry(this.currentDirEntry_));
+        break;
 
-  /**
-   * Invoked to decide whether the "delete" command can be executed.
-   */
-  FileManager.prototype.onDeleteCanExecute_ = function(event) {
-    event.canExecute =
-        (// Initialized to the point where we have a current directory
-         this.currentDirEntry_ &&
-         // Rename not in progress.
-         !this.renameInput_.currentEntry &&
-         // Not in root directory.
-         this.currentDirEntry_.fullPath != '/' &&
-         // Not in media directory.
-         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY);
+      case 'copy':
+        event.canExecute =
+          (this.currentDirEntry_ &&
+           this.currentDirEntry_.fullPath != '/');
+        if (this.copyButton_)
+          this.copyButton_.disabled = !event.canExecute;
+        break;
+
+      case 'paste':
+        event.canExecute =
+          (this.clipboard_ &&
+           this.clipboard_.sourceDirEntry.fullPath !=
+           this.currentDirEntry_.fullPath_ &&
+           !isSystemDirEntry(this.currentDirEntry_));
+        if (this.pasteButton_)
+          this.pasteButton_.disabled = !event.canExecute;
+        break;
+
+      case 'rename':
+        event.canExecute =
+          (// Initialized to the point where we have a current directory
+           this.currentDirEntry_ &&
+           // Rename not in progress.
+           !this.renameInput_.currentEntry &&
+           // Only one file selected.
+           this.selection.totalCount == 1 &&
+           !isSystemDirEntry(this.currentDirEntry_));
+         break;
+
+      case 'delete':
+        event.canExecute =
+          (// Initialized to the point where we have a current directory
+           this.currentDirEntry_ &&
+           // Rename not in progress.
+           !this.renameInput_.currentEntry &&
+           !isSystemDirEntry(this.currentDirEntry_));
+         break;
+    }
   };
 
   FileManager.prototype.setListType = function(type) {
@@ -758,11 +890,76 @@ FileManager.prototype = {
                                  this.onTableMouseDown_.bind(this));
   };
 
+  FileManager.prototype.onCopyProgress_ = function(event) {
+    var status = this.copyManager_.getStatus();
+
+    if (event.reason == 'PROGRESS') {
+      if (status.totalItems > 1 && status.completedItems < status.totalItems) {
+        // If we're copying more than one file, and we're not done, update
+        // the user on the current status, and give an option to cancel.
+        var self = this;
+        var options = {timeout:0, actions:{}};
+        options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
+          self.copyManager_.requestCancel();
+        };
+        this.updateButter(strf('PASTE_SOME_PROGRESS', status.completedItems + 1,
+                               status.totalItems), options);
+      }
+      return;
+    }
+
+    if (event.reason == 'SUCCESS') {
+      this.showButter(str('PASTE_COMPLETE'));
+      if (this.clipboard_.isCut)
+        this.clipboard_ = null;
+      this.updateCommands_();
+
+    } else if (event.reason == 'ERROR') {
+      switch (event.error.reason) {
+        case 'TARGET_EXISTS':
+          var name = event.error.data.name;
+          if (event.error.data.isDirectory)
+            name += '/';
+          this.showButterError(strf('PASTE_TARGET_EXISTS_ERROR', name));
+          break;
+
+        case 'FILESYSTEM_ERROR':
+          this.showButterError(
+              strf('PASTE_FILESYSTEM_ERROR',
+                   util.getFileErrorMnemonic(event.error.data.code)));
+          break;
+
+        default:
+          this.showButterError(strf('PASTE_UNEXPECTED_ERROR', event.error));
+          break;
+      }
+
+    } else if (event.reason == 'CANCELLED') {
+      this.showButter(str('PASTE_CANCELLED'));
+    } else {
+      console.log('Unknown event reason: ' + event.reason);
+    }
+
+    this.rescanDirectory_();
+  };
+
   /**
    * Respond to a command being executed.
    */
   FileManager.prototype.onCommand_ = function(event) {
     switch (event.command.id) {
+      case 'cut':
+        this.cutSelectionToClipboard();
+        return;
+
+      case 'copy':
+        this.copySelectionToClipboard();
+        return;
+
+      case 'paste':
+        this.pasteFromClipboard();
+        return;
+
       case 'rename':
         var leadIndex = this.currentList_.selectionModel.leadIndex;
         var li = this.currentList_.getListItemByIndex(leadIndex);
@@ -774,11 +971,11 @@ FileManager.prototype = {
         }
 
         this.initiateRename_(label);
-        break;
+        return;
 
       case 'delete':
         this.deleteEntries(this.selection.entries);
-        break;
+        return;
     }
   };
 
@@ -813,39 +1010,10 @@ FileManager.prototype = {
     }
   };
 
-  /**
-   * Resolve a path to either a DirectoryEntry or a FileEntry, regardless of
-   * whether the path is a directory or file.
-   *
-   * @param path {string} The path to be resolved.
-   * @param resultCallback{function(Entry)} Called back when a path is
-   *     successfully resolved.  Entry will be either a DirectoryEntry or
-   *     a FileEntry.
-   * @param errorCallback{function(FileError)} Called back if an unexpected
-   *     error occurs while resolving the path.
-   */
   FileManager.prototype.resolvePath = function(
       path, resultCallback, errorCallback) {
-    if (path == '' || path == '/') {
-      resultCallback(this.filesystem_.root);
-      return;
-    }
-
-    var root = this.filesystem_.root;
-    root.getFile(
-        path, {create: false},
-        resultCallback,
-        function (err) {
-          if (err.code == FileError.TYPE_MISMATCH_ERR) {
-            // Bah.  It's a directory, ask again.
-            root.getDirectory(
-                path, {create: false},
-                resultCallback,
-                errorCallback);
-            } else  {
-              errorCallback(err);
-            }
-        });
+    return util.resolvePath(this.filesystem_.root, path, resultCallback,
+                            errorCallback);
   };
 
   FileManager.prototype.initDefaultDirectory_ = function() {
@@ -1148,7 +1316,7 @@ FileManager.prototype = {
           entry.cachedMtime_.getTime() == 0) {
         // Mount points for FAT volumes have this time associated with them.
         // We'd rather display nothing than this bogus date.
-        div.textContent = '---';
+        div.textContent = '';
       } else {
         div.textContent = self.shortDateFormatter_.format(entry.cachedMtime_);
       }
@@ -1191,6 +1359,8 @@ FileManager.prototype = {
 
     for (var i = 0; i < selection.indexes.length; i++) {
       var entry = this.dataModel_.item(selection.indexes[i]);
+      if (!entry)
+        continue;
 
       selection.entries.push(entry);
       selection.urls.push(entry.toURL());
@@ -1436,10 +1606,11 @@ FileManager.prototype = {
     // instead we use empty 1x1 gif
     this.previewImage_.src = EMPTY_IMAGE_URI;
 
-    // The transparent-background class is used to display the checkerboard
-    // background for image thumbnails.  We don't want to display it for
-    // non-thumbnail preview images.
-    this.previewImage_.classList.remove('transparent-background');
+    // The thumbnail class styles the preview for image thumbnails, which are
+    // treated a little differently than the stock icons for non-thumbnail
+    // preview images.
+    this.previewImage_.classList.remove('thumbnail');
+
     // The multiple-selected class indicates that more than one entry is
     // selcted.
     this.previewImage_.classList.remove('multiple-selected');
@@ -1486,7 +1657,7 @@ FileManager.prototype = {
       if (url) {
         self.previewImage_.src = url;
         if (iconType == 'image')
-          self.previewImage_.classList.add('transparent-background');
+          self.previewImage_.classList.add('thumbnail');
       } else {
         self.previewImage_.src = previewArt['unknown'];
       }
@@ -1692,6 +1863,61 @@ FileManager.prototype = {
   };
 
   /**
+   * Create the clipboard object from the current selection.
+   *
+   * We're not going through the system clipboard yet.
+   */
+  FileManager.prototype.copySelectionToClipboard = function(successCallback) {
+    if (!this.selection || this.selection.totalCount == 0)
+      return;
+
+    this.clipboard_ = {
+      isCut: false,
+      sourceDirEntry: this.currentDirEntry_,
+      entries: [].concat(this.selection.entries)
+    };
+
+    this.updateCommands_();
+    this.showButter(str('SELECTION_COPIED'));
+  };
+
+  /**
+   * Create the clipboard object from the current selection, marking it as a
+   * cut operation.
+   *
+   * We're not going through the system clipboard yet.
+   */
+  FileManager.prototype.cutSelectionToClipboard = function(successCallback) {
+    if (!this.selection || this.selection.totalCount == 0)
+      return;
+
+    this.clipboard_ = {
+      isCut: true,
+      sourceDirEntry: this.currentDirEntry_,
+      entries: [].concat(this.selection.entries)
+    };
+
+    this.updateCommands_();
+    this.showButter(str('SELECTION_CUT'));
+  };
+
+  /**
+   * Queue up a file copy operation based on the current clipboard.
+   */
+  FileManager.prototype.pasteFromClipboard = function(successCallback,
+                                                      errorCallback) {
+    if (!this.clipboard_)
+      return null;
+
+    this.showButter(str('PASTE_STARTED'), {timeout: 0});
+
+    this.copyManager_.queueCopy(this.clipboard_.sourceDirEntry,
+                                this.currentDirEntry_,
+                                this.clipboard_.entries,
+                                this.clipboard_.isCut);
+  };
+
+  /**
    * Update the selection summary UI when the selection summarization completes.
    */
   FileManager.prototype.onSelectionSummarized_ = function() {
@@ -1890,7 +2116,9 @@ FileManager.prototype = {
                         location.href);
     }
 
+    this.updateCommands_();
     this.updateOkButton_();
+
     // New folder should never be enabled in the root or media/ directories.
     this.newFolderButton_.disabled =
         (this.currentDirEntry_.fullPath == '/' ||
@@ -1969,6 +2197,7 @@ FileManager.prototype = {
 
     // Clear the table first.
     this.dataModel_.splice(0, this.dataModel_.length);
+    this.currentList_.selectionModel.clear();
 
     this.updateBreadcrumbs_();
 
@@ -2133,6 +2362,8 @@ FileManager.prototype = {
     if (this.renameInput_.parentNode)
       this.renameInput_.parentNode.removeChild(this.renameInput_);
 
+    this.refocus();
+
     var self = this;
     function onSuccess() {
       self.rescanDirectory_(function() { self.selectEntry(newName) });
@@ -2164,6 +2395,8 @@ FileManager.prototype = {
 
     if (this.renameInput_.parentNode)
       this.renameInput_.parentNode.removeChild(this.renameInput_);
+
+    this.refocus();
   };
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
@@ -2201,7 +2434,8 @@ FileManager.prototype = {
         return;
       }
 
-      if (this.validateFileName_(name, true)) break;
+      if (this.validateFileName_(name, true))
+        break;
     }
 
     var self = this;
@@ -2228,6 +2462,47 @@ FileManager.prototype = {
   };
 
   /**
+   * KeyDown event handler for the document.
+   */
+  FileManager.prototype.onKeyDown_ = function(event) {
+    if (event.srcElement.tagName == 'INPUT') {
+      // Ignore keydown handler in the rename input box.
+      return;
+    }
+
+    switch (event.keyCode) {
+      case 27:  // Escape => Cancel dialog.
+        if (this.copyManager_.getStatus().totalFiles != 0) {
+          // If there is a copy in progress, ESC will cancel it.
+          event.preventDefault();
+          this.copyManager_.requestCancel();
+          return;
+        }
+
+        if (this.butterTimer_) {
+          // Allow the user to manually dismiss timed butter messages.
+          event.preventDefault();
+          this.hideButter();
+          return;
+        }
+
+        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+          // If there is nothing else for ESC to do, then cancel the dialog.
+          event.preventDefault();
+          this.onCancel_();
+        }
+        break;
+
+      case 190:  // Ctrl-. => Toggle filter files.
+        if (event.ctrlKey) {
+          this.filterFiles_ = !this.filterFiles_;
+          this.rescanDirectory_();
+        }
+        break;
+    }
+  };
+
+  /**
    * KeyDown event handler for the div.list-container element.
    */
   FileManager.prototype.onListKeyDown_ = function(event) {
@@ -2235,6 +2510,8 @@ FileManager.prototype = {
       // Ignore keydown handler in the rename input box.
       return;
     }
+
+    //console.log(event.keyCode);
 
     switch (event.keyCode) {
       case 8:  // Backspace => Up one directory.
@@ -2258,13 +2535,6 @@ FileManager.prototype = {
         }
         break;
 
-      case 27:  // Escape => Cancel dialog.
-        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
-          event.preventDefault();
-          this.onCancel_();
-        }
-        break;
-
       case 32:  // Ctrl-Space => New Folder.
         if (this.newFolderButton_.style.display != 'none' && event.ctrlKey) {
           event.preventDefault();
@@ -2272,10 +2542,35 @@ FileManager.prototype = {
         }
         break;
 
-      case 190:  // Ctrl-. => Toggle filter files.
-        if (event.ctrlKey) {
-          this.filterFiles_ = !this.filterFiles_;
-          this.rescanDirectory_();
+      case 88:  // Ctrl-X => Cut.
+        this.updateCommands_();
+        if (!this.commands_['cut'].disabled) {
+          event.preventDefault();
+          this.commands_['cut'].execute();
+        }
+        break;
+
+      case 67:  // Ctrl-C => Copy.
+        this.updateCommands_();
+        if (!this.commands_['copy'].disabled) {
+          event.preventDefault();
+          this.commands_['copy'].execute();
+        }
+        break;
+
+      case 86:  // Ctrl-V => Paste.
+        this.updateCommands_();
+        if (!this.commands_['paste'].disabled) {
+          event.preventDefault();
+          this.commands_['paste'].execute();
+        }
+        break;
+
+      case 69:  // Ctrl-E => Rename.
+        this.updateCommands_();
+        if (!this.commands_['rename'].disabled) {
+          event.preventDefault();
+          this.commands_['rename'].execute();
         }
         break;
 

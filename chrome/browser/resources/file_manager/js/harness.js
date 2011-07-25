@@ -18,8 +18,8 @@ var harness = {
     function onFilesystem(filesystem) {
       console.log('Filesystem found.');
       self.filesystem = filesystem;
-      self.getOrCreatePath('/Downloads', function () {});
-      self.getOrCreatePath('/media', function () {});
+      util.getOrCreateDirectory('/Downloads', function () {});
+      util.getOrCreateDirectory('/media', function () {});
     };
 
     window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
@@ -131,61 +131,11 @@ var harness = {
       currentSrc = files.shift();
       var destPath = harness.fileManager.currentDirEntry_.fullPath + '/' +
           currentSrc.name.replace(/\^\^/g, '/');
-      self.getOrCreateFile(destPath, onFileFound,
-                              util.flog('Error finding path: ' + destPath));
+      util.getOrCreateFile(destPath, onFileFound,
+                           util.flog('Error finding path: ' + destPath));
     }
 
     console.log('Start import: ' + files.length + ' file(s)');
     processNextFile();
   },
-
-  /**
-   * Locate the file referred to by path, creating directories or the file
-   * itself if necessary.
-   */
-  getOrCreateFile: function(path, successCallback, errorCallback) {
-    var dirname = null;
-    var basename = null;
-
-    function onDirFound(dirEntry) {
-      dirEntry.getFile(basename, { create: true },
-                       successCallback, errorCallback);
-    }
-
-    var i = path.lastIndexOf('/');
-    if (i > -1) {
-      dirname = path.substr(0, i);
-      basename = path.substr(i + 1);
-    } else {
-      basename = path;
-    }
-
-    if (!dirname)
-      return onDirFound(this.filesystem.root);
-
-    this.getOrCreatePath(dirname, onDirFound, errorCallback);
-  },
-
-  /**
-   * Locate the directory referred to by path, creating directories along the
-   * way.
-   */
-  getOrCreatePath: function(path, successCallback, errorCallback) {
-    var names = path.split('/');
-
-    function getOrCreateNextName(dir) {
-      if (!names.length)
-        return successCallback(dir);
-
-      var name;
-      do {
-        name = names.shift();
-      } while (!name || name == '.');
-
-      dir.getDirectory(name, { create: true }, getOrCreateNextName,
-                       errorCallback);
-    }
-
-    getOrCreateNextName(this.filesystem.root);
-  }
 };
