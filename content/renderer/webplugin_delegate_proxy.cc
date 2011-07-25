@@ -183,6 +183,10 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
     WebBindings::releaseObject(npobject_);
 }
 
+WebPluginDelegateProxy::SharedBitmap::SharedBitmap() {}
+
+WebPluginDelegateProxy::SharedBitmap::~SharedBitmap() {}
+
 void WebPluginDelegateProxy::PluginDestroyed() {
 #if defined(OS_MACOSX)
   // Ensure that the renderer doesn't think the plugin still has focus.

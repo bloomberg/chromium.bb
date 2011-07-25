@@ -128,6 +128,9 @@ class WebPluginDelegateProxy
 
  private:
   struct SharedBitmap {
+    SharedBitmap();
+    ~SharedBitmap();
+
     scoped_ptr<TransportDIB> dib;
     scoped_ptr<skia::PlatformCanvas> canvas;
   };
