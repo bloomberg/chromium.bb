@@ -189,7 +189,6 @@ const char* kCapsLockRemapped[] = {
 %s
 };
 
-
 """)
 
 def SplitBehavior(behavior):
