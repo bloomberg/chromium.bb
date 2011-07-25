@@ -490,6 +490,9 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
+          'sources!': [
+            'browser/power_save_blocker_stub.cc',
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
@@ -508,6 +511,9 @@
           ]
         }],
         ['OS=="mac"', {
+          'sources!': [
+            'browser/power_save_blocker_stub.cc',
+          ],
           'link_settings': {
             'mac_bundle_resources': [
               'browser/gpu.sb',
