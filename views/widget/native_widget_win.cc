@@ -1280,6 +1280,9 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
     input_method_->Init(GetWidget());
     is_input_method_win_ = true;
   }
+
+  // Get access to a modifiable copy of the system menu.
+  GetSystemMenu(hwnd(), false);
   return 0;
 }
 
@@ -1431,13 +1434,6 @@ LRESULT NativeWidgetWin::OnImeMessages(UINT message,
 }
 
 void NativeWidgetWin::OnInitMenu(HMENU menu) {
-  // We only need to manually enable the system menu if we're not using a native
-  // frame.
-  if (GetWidget()->ShouldUseNativeFrame()) {
-    SetMsgHandled(FALSE);
-    return;
-  }
-
   bool is_fullscreen = IsFullscreen();
   bool is_minimized = IsMinimized();
   bool is_maximized = IsMaximized();
