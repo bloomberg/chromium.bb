@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 
 namespace chromeos {
@@ -13,6 +14,25 @@ namespace chromeos {
 // Interface class for the enterprise enrollment screen actor.
 class EnterpriseEnrollmentScreenActor {
  public:
+  // Used in PyAuto testing.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Notifies observers of a change in enrollment state.
+    virtual void OnEnrollmentComplete(
+        EnterpriseEnrollmentScreenActor* enrollment_screen,
+        bool succeeded) = 0;
+  };
+
+  void AddObserver(Observer* obs) {
+    observer_list_.AddObserver(obs);
+  }
+
+  void RemoveObserver(Observer* obs) {
+    observer_list_.RemoveObserver(obs);
+  }
+
   virtual ~EnterpriseEnrollmentScreenActor() {}
 
   // Sets the controller.
@@ -40,6 +60,16 @@ class EnterpriseEnrollmentScreenActor {
   virtual void ShowFatalAuthError() = 0;
   virtual void ShowFatalEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;
+
+ protected:
+  void NotifyObservers(bool succeeded) {
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnEnrollmentComplete(this, succeeded));
+  }
+
+ private:
+  // Observers.
+  ObserverList<Observer> observer_list_;
 };
 
 }  // namespace chromeos

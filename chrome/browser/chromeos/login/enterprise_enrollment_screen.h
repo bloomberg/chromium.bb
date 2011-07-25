@@ -65,6 +65,11 @@ class EnterpriseEnrollmentScreen
       policy::CloudPolicySubsystem::PolicySubsystemState state,
       policy::CloudPolicySubsystem::ErrorDetails error_details) OVERRIDE;
 
+  // Used for testing.
+  EnterpriseEnrollmentScreenActor* GetActor() {
+    return actor_;
+  }
+
  private:
   void HandleAuthError(const GoogleServiceAuthError& error);
 

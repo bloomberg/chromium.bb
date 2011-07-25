@@ -87,6 +87,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
     return login_display_;
   }
 
+  // Returns the LoginDisplayHost for this controller.
+  // Used for testing.
+  LoginDisplayHost* login_display_host() {
+    return host_;
+  }
+
  private:
   friend class ExistingUserControllerTest;
   friend class MockLoginPerformerDelegate;
