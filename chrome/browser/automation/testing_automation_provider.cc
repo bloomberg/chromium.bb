@@ -5818,6 +5818,12 @@ void TestingAutomationProvider::GetTabTitleJSON(
 void TestingAutomationProvider::CaptureEntirePageJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+#if defined(OS_LINUX)
+  // See crbug.com/89777.
+  AutomationJSONReply(this, reply_message).SendError(
+      "Taking a page snapshot is not supported on this platform");
+  return;
+#endif
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
