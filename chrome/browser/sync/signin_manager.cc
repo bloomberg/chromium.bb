@@ -90,6 +90,9 @@ void SigninManager::StartSignIn(const std::string& username,
                                   login_captcha,
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
 
+#if defined(ENABLE_PRE_LOGIN_AFTER_M14)
+  // Pre-login is being taken out of M14, but will be put back in right after
+  // the fork.
   // Register for token availability.  The signin manager will pre-login the
   // user when the GAIA service token is ready for use.  Only do this if we
   // are not running in ChomiumOS, since it handles pre-login itself.
@@ -100,6 +103,7 @@ void SigninManager::StartSignIn(const std::string& username,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    NotificationService::AllSources());
   }
+#endif
 #endif
 }
 
