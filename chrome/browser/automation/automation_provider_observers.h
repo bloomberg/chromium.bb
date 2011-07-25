@@ -584,9 +584,10 @@ class DomOperationObserver : public NotificationObserver {
 
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   virtual void OnDomOperationCompleted(const std::string& json) = 0;
+  virtual void OnModalDialogShown() = 0;
 
  private:
   NotificationRegistrar registrar_;
@@ -603,7 +604,8 @@ class DomOperationMessageSender : public DomOperationObserver {
                                      bool use_json_interface);
   virtual ~DomOperationMessageSender();
 
-  virtual void OnDomOperationCompleted(const std::string& json);
+  virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
+  virtual void OnModalDialogShown() OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> automation_;
@@ -1235,7 +1237,8 @@ class PageSnapshotTaker : public DomOperationObserver {
 
  private:
   // Overriden from DomOperationObserver.
-  virtual void OnDomOperationCompleted(const std::string& json);
+  virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;
+  virtual void OnModalDialogShown() OVERRIDE;
 
   // Called by the ThumbnailGenerator when the requested snapshot has been
   // generated.
@@ -1245,7 +1248,7 @@ class PageSnapshotTaker : public DomOperationObserver {
   void ExecuteScript(const std::wstring& javascript);
 
   // Helper method to send a response back to the client. Deletes this.
-  void SendMessage(bool success);
+  void SendMessage(bool success, const std::string& error_msg);
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
@@ -1483,15 +1486,21 @@ class InputEventAckNotificationObserver : public NotificationObserver {
 // pending loads. This only waits for tabs that exist at the observer's
 // creation. Will send a message on construction if no tabs are loading
 // currently.
-class AllTabsStoppedLoadingObserver : public TabEventObserver {
+class AllTabsStoppedLoadingObserver : public TabEventObserver,
+                                      public NotificationObserver {
  public:
   AllTabsStoppedLoadingObserver(AutomationProvider* automation,
                                 IPC::Message* reply_message);
   virtual ~AllTabsStoppedLoadingObserver();
 
   // TabEventObserver implementation.
-  virtual void OnFirstPendingLoad(TabContents* tab_contents);
-  virtual void OnNoMorePendingLoads(TabContents* tab_contents);
+  virtual void OnFirstPendingLoad(TabContents* tab_contents) OVERRIDE;
+  virtual void OnNoMorePendingLoads(TabContents* tab_contents) OVERRIDE;
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   typedef std::set<TabContents*> TabSet;

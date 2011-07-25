@@ -72,6 +72,11 @@ void SetCookieJSON(AutomationProvider* provider,
                    base::DictionaryValue* args,
                    IPC::Message* reply_message);
 
+// Sends a JSON error reply if an app modal dialog is active. Returns whether
+// an error reply was sent.
+bool SendErrorIfModalDialogActive(AutomationProvider* provider,
+                                  IPC::Message* message);
+
 }  // namespace automation_util
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_UTIL_H_

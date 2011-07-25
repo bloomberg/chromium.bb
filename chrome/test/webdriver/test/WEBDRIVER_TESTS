@@ -23,6 +23,7 @@
 # features. See bug 71237.
 {
   'all': [
+    'alerts_tests',
     'children_finding_tests',
     # Cookie tests try to set the domain explicitly to 'localhost', which
     # is not allowed.

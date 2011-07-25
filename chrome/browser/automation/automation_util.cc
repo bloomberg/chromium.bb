@@ -15,6 +15,7 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/browser/browser_thread.h"
@@ -371,6 +372,16 @@ void SetCookieJSON(AutomationProvider* provider,
     return;
   }
   reply.SendSuccess(NULL);
+}
+
+bool SendErrorIfModalDialogActive(AutomationProvider* provider,
+                                  IPC::Message* message) {
+  bool active = AppModalDialogQueue::GetInstance()->HasActiveDialog();
+  if (active) {
+    AutomationJSONReply(provider, message).SendError(
+        "Command cannot be performed because a modal dialog is active");
+  }
+  return active;
 }
 
 }  // namespace automation_util

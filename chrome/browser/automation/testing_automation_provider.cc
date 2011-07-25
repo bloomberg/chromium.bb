@@ -115,6 +115,8 @@
 #include "chrome/browser/download/download_shelf.h"
 #endif
 
+using automation_util::SendErrorIfModalDialogActive;
+
 namespace {
 
 void SendMouseClick(int flags) {
@@ -876,6 +878,9 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
 
 void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -922,6 +927,9 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
 
 void TestingAutomationProvider::WebkitMouseMove(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -945,6 +953,9 @@ void TestingAutomationProvider::WebkitMouseMove(
 
 void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
                                                 IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -994,6 +1005,9 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
 
 void TestingAutomationProvider::WebkitMouseButtonDown(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -1019,6 +1033,9 @@ void TestingAutomationProvider::WebkitMouseButtonDown(
 
 void TestingAutomationProvider::WebkitMouseButtonUp(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -1044,6 +1061,9 @@ void TestingAutomationProvider::WebkitMouseButtonUp(
 
 void TestingAutomationProvider::WebkitMouseDoubleClick(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -1079,6 +1099,9 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
 
 void TestingAutomationProvider::DragAndDropFilePaths(
     DictionaryValue* args, IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -5187,6 +5210,9 @@ void TestingAutomationProvider::SendWebKeyPressEventAsync(
 void TestingAutomationProvider::SendWebkitKeyEvent(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   NativeWebKeyboardEvent event;
   // In the event of an error, BuildWebKeyEventFromArgs handles telling what
   // went wrong and sending the reply message; if it fails, we just have to
@@ -5209,6 +5235,9 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
 void TestingAutomationProvider::SendOSLevelKeyEventToTab(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   int modifiers, keycode;
   if (!args->GetInteger("keyCode", &keycode)) {
     AutomationJSONReply(this, reply_message)
@@ -5562,6 +5591,11 @@ void TestingAutomationProvider::SetAppLaunchType(
 void TestingAutomationProvider::WaitForAllTabsToStopLoading(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    return;
+  }
+
   // This class will send the message immediately if no tab is loading.
   new AllTabsStoppedLoadingObserver(this, reply_message);
 }
@@ -5617,6 +5651,9 @@ void TestingAutomationProvider::GetIndicesFromTab(
 void TestingAutomationProvider::NavigateToURL(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   int navigation_count;
   std::string url, error;
   Browser* browser;
@@ -5645,6 +5682,9 @@ void TestingAutomationProvider::NavigateToURL(
 void TestingAutomationProvider::ExecuteJavascriptJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   string16 frame_xpath, javascript;
   std::string error;
   TabContents* tab_contents;
@@ -5682,6 +5722,9 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
 void TestingAutomationProvider::GoForward(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -5703,6 +5746,9 @@ void TestingAutomationProvider::GoForward(
 void TestingAutomationProvider::GoBack(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -5724,6 +5770,9 @@ void TestingAutomationProvider::GoBack(
 void TestingAutomationProvider::ReloadJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
   if (!GetTabFromJSONArgs(args, &tab_contents, &error)) {
@@ -5769,6 +5818,9 @@ void TestingAutomationProvider::GetTabTitleJSON(
 void TestingAutomationProvider::CaptureEntirePageJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   TabContents* tab_contents;
   std::string error;
 
@@ -5871,6 +5923,9 @@ void TestingAutomationProvider::CloseTabJSON(
 void TestingAutomationProvider::ActivateTabJSON(
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
   TabContents* tab_contents;

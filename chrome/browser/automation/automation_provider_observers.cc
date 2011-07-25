@@ -245,6 +245,8 @@ NavigationNotificationObserver::NavigationNotificationObserver(
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_NEEDED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED, source);
+  registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+                 NotificationService::AllSources());
 
   if (include_current_navigation && controller->tab_contents()->IsLoading())
     navigation_started_ = true;
@@ -296,6 +298,8 @@ void NavigationNotificationObserver::Observe(
     // Respond that authentication is needed.
     navigation_started_ = false;
     ConditionMet(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
+  } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
+    ConditionMet(AUTOMATION_MSG_NAVIGATION_BLOCKED_BY_MODAL_DIALOG);
   } else {
     NOTREACHED();
   }
@@ -1158,6 +1162,8 @@ const int FindInPageNotificationObserver::kFindInPageRequestId = -1;
 DomOperationObserver::DomOperationObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+                 NotificationService::AllSources());
 }
 
 DomOperationObserver::~DomOperationObserver() {}
@@ -1165,9 +1171,11 @@ DomOperationObserver::~DomOperationObserver() {}
 void DomOperationObserver::Observe(
     int type, const NotificationSource& source,
     const NotificationDetails& details) {
-  if (chrome::NOTIFICATION_DOM_OPERATION_RESPONSE == type) {
+  if (type == chrome::NOTIFICATION_DOM_OPERATION_RESPONSE) {
     Details<DomOperationNotificationDetails> dom_op_details(details);
     OnDomOperationCompleted(dom_op_details->json());
+  } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
+    OnModalDialogShown();
   }
 }
 
@@ -1196,6 +1204,15 @@ void DomOperationMessageSender::OnDomOperationCompleted(
     }
   }
   delete this;
+}
+
+void DomOperationMessageSender::OnModalDialogShown() {
+  if (automation_ && use_json_interface_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendError("Could not complete script execution because a modal "
+                       "dialog is active");
+    delete this;
+  }
 }
 
 DocumentPrintedNotificationObserver::DocumentPrintedNotificationObserver(
@@ -1881,8 +1898,7 @@ void PageSnapshotTaker::Start() {
 void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
   int dimension;
   if (!base::StringToInt(json, &dimension)) {
-    LOG(ERROR) << "Could not parse received dimensions: " << json;
-    SendMessage(false);
+    SendMessage(false, "could not parse received dimensions: " + json);
   } else if (!received_width_) {
     received_width_ = true;
     entire_page_size_.set_width(dimension);
@@ -1905,13 +1921,21 @@ void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
   }
 }
 
+void PageSnapshotTaker::OnModalDialogShown() {
+  SendMessage(false, "a modal dialog is active");
+}
+
 void PageSnapshotTaker::OnSnapshotTaken(const SkBitmap& bitmap) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);
   int bytes_written = file_util::WriteFile(image_path_,
       reinterpret_cast<char*>(&png_data[0]), png_data.size());
-  SendMessage(bytes_written == static_cast<int>(png_data.size()));
+  bool success = bytes_written == static_cast<int>(png_data.size());
+  std::string error_msg;
+  if (!success)
+    error_msg = "could not write snapshot to disk";
+  SendMessage(success, error_msg);
 }
 
 void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
@@ -1927,14 +1951,15 @@ void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
                                             WideToUTF16Hack(javascript));
 }
 
-void PageSnapshotTaker::SendMessage(bool success) {
+void PageSnapshotTaker::SendMessage(bool success,
+                                    const std::string& error_msg) {
   if (automation_) {
     if (success) {
       AutomationJSONReply(automation_, reply_message_.release())
           .SendSuccess(NULL);
     } else {
       AutomationJSONReply(automation_, reply_message_.release())
-          .SendError("Failed to take snapshot of page");
+          .SendError("Failed to take snapshot of page: " + error_msg);
     }
   }
   delete this;
@@ -2413,7 +2438,12 @@ InputEventAckNotificationObserver::InputEventAckNotificationObserver(
       count_(count) {
   DCHECK(1 <= count);
   registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
       NotificationService::AllSources());
 }
 
@@ -2423,6 +2453,13 @@ void InputEventAckNotificationObserver::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+    delete this;
+    return;
+  }
+
   Details<int> request_details(details);
   // If the event type matches for |count_| times, replies with a JSON message.
   if (event_type_ == *request_details.ptr()) {
@@ -2443,6 +2480,9 @@ AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
     IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+                 NotificationService::AllSources());
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end();
        ++iter) {
@@ -2481,6 +2521,17 @@ void AllTabsStoppedLoadingObserver::OnNoMorePendingLoads(
   }
   pending_tabs_.erase(iter);
   CheckIfNoMorePendingLoads();
+}
+
+void AllTabsStoppedLoadingObserver::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (!automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+    delete this;
+  }
 }
 
 void AllTabsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
@@ -2584,6 +2635,10 @@ DragTargetDropAckNotificationObserver::DragTargetDropAckNotificationObserver(
   registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
+      NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
       NotificationService::AllSources());
 }
 

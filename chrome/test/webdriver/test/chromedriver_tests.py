@@ -735,6 +735,48 @@ class FrameSwitchingTest(ChromeDriverTest):
       self.assertEquals(str(i), driver.current_url.split('?')[-1])
       driver.switch_to_default_content()
 
+class AlertTest(ChromeDriverTest):
+
+  def testAlertOnLoadDoesNotHang(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alert_on_load.html')
+    driver.switch_to_alert().accept()
+
+  def testAlertWhenTypingThrows(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alerts.html')
+    input_box = driver.find_element_by_name('onkeypress')
+    self.assertRaises(WebDriverException, input_box.send_keys, 'a')
+
+  def testAlertJustAfterTypingDoesNotThrow(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alerts.html')
+    driver.find_element_by_name('onkeyup').send_keys('a')
+    driver.switch_to_alert().accept()
+
+  def testAlertOnScriptDoesNotHang(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alerts.html')
+    self.assertRaises(WebDriverException, driver.execute_script, 'alert("ok")')
+
+  def testMustHandleAlertFirst(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alerts.html')
+    input_box = driver.find_element_by_name('normal')
+    driver.execute_async_script('arguments[0](); window.alert("ok")')
+
+    self.assertRaises(WebDriverException, driver.execute_script, 'a = 1')
+
+    self.assertRaises(WebDriverException, input_box.send_keys, 'abc')
+
+    self.assertRaises(WebDriverException, driver.get,
+                      GetTestDataUrl() + '/test_page.html')
+
+    self.assertRaises(WebDriverException, driver.refresh)
+    self.assertRaises(WebDriverException, driver.back)
+    self.assertRaises(WebDriverException, driver.forward)
+    self.assertRaises(WebDriverException, driver.get_screenshot_as_base64)
+
 
 """Chrome functional test section. All implementation tests of ChromeDriver
 should go above.

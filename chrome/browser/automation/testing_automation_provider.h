@@ -837,7 +837,7 @@ class TestingAutomationProvider : public AutomationProvider,
                         base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
-  // Waits for all tabs to stop loading.
+  // Waits for all tabs to stop loading or a modal dialog to become active.
   void WaitForAllTabsToStopLoading(base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
