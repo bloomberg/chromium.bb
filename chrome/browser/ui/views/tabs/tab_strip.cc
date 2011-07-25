@@ -36,15 +36,6 @@
 #include "views/widget/monitor_win.h"
 #endif
 
-#undef min
-#undef max
-
-#if defined(COMPILER_GCC)
-// Squash false positive signed overflow warning in GenerateStartAndEndWidths
-// when doing 'start_tab_count < end_tab_count'.
-#pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
-
 using views::DropTargetEvent;
 
 static const int kNewTabButtonHOffset = -5;
