@@ -111,9 +111,9 @@ ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
   }
 
   if (padding > 0)
-    chars[chars.length - 1] = '=';
+    rv[rv.length - 1] = '=';
   if (padding > 1)
-    chars[chars.length - 2] = '=';
+    rv[rv.length - 2] = '=';
 
   return rv.join('');
 };
@@ -290,7 +290,8 @@ ByteReader.prototype.readBase64 = function(size, opt_end) {
  * read would go past the end of the buffer.
  */
 ByteReader.prototype.readImage = function(size, opt_end) {
-  var rv = ByteReader.readImage(this.view_, this.pos_, size, opt_end);
+  var rv = ByteReader.readImage(
+      this.view_, this.pos_, size, this.littleEndian_, opt_end);
   this.pos_ += size;
   return rv;
 };
