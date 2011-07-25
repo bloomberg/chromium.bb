@@ -86,8 +86,6 @@
       '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-      # Browser crash?  crbug.com/86150
-      '-flash.FlashTest.testDisableFlashPlugin',
       # crbug.com/89279
       '-gpu',
       # crbug.com/87959
