@@ -807,6 +807,20 @@ std::string NativeTextButton::GetClassName() const {
   return kViewClassName;
 }
 
+void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+#if defined(OS_WIN)
+  // On windows, make sure the focus border is inset wrt the entire button so
+  // that the native text button appears more like a windows button.
+  if ((IsFocusable() || IsAccessibilityFocusableInRootView()) && HasFocus()) {
+    gfx::Rect rect(GetLocalBounds());
+    rect.Inset(3, 3);
+    canvas->DrawFocusRect(rect.x(), rect.y(), rect.width(), rect.height());
+  }
+#else
+  TextButton::OnPaintFocusBorder(canvas);
+#endif
+}
+
 void NativeTextButton::GetExtraParams(
     gfx::NativeTheme::ExtraParams* params) const {
   TextButton::GetExtraParams(params);

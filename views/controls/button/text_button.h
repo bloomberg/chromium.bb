@@ -423,6 +423,9 @@ class NativeTextButton : public TextButton {
  private:
   void Init();
 
+  // Overridden from View:
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
   // Overridden from TextButton:
   virtual void GetExtraParams(
       gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
