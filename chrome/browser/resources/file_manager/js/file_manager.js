@@ -105,18 +105,6 @@ function FileManager(dialogDom, rootEntries, params) {
   this.addEventListener('selection-summarized',
                         this.onSelectionSummarized_.bind(this));
 
-  // The list of archives requested to mount. We will show contents once
-  // archive is mounted, but only for mounts from within this filebrowser tab.
-  this.mountRequests_ = [];
-  chrome.fileBrowserPrivate.onMountCompleted.addListener(
-      this.onMountCompleted_.bind(this));
-
-  var self = this;
-  // The list of active mount points to distinct them from other directories.
-  chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.mountPoints_ = mountPoints;
-  });
-
   chrome.fileBrowserHandler.onExecute.addListener(
     this.onFileTaskExecute_.bind(this));
 
@@ -156,16 +144,10 @@ FileManager.prototype = {
   const RIGHT_TRIANGLE = '\u25b8';
 
   /**
-   * The DirectoryEntry.fullPath value of the directory containing externally
-   * mounted removable storage volumes.
+   * The DirectoryEntry.fullPath value of the directory containing external
+   * storage volumes.
    */
-  const REMOVABLE_DIRECTORY = 'removable';
-
-  /**
-   * The DirectoryEntry.fullPath value of the directory containing externally
-   * mounted archive file volumes.
-   */
-  const ARCHIVE_DIRECTORY = 'archive';
+  const MEDIA_DIRECTORY = '/media';
 
   /**
    * Mnemonics for the second parameter of the changeDirectory method.
@@ -658,10 +640,8 @@ FileManager.prototype = {
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
-         // Not in media/archive directory.
-         this.currentDirEntry_.fullPath != ARCHIVE_DIRECTORY &&
-         // Not in media/removable directory.
-         this.currentDirEntry_.fullPath != REMOVABLE_DIRECTORY &&
+         // Not in media directory.
+         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY &&
          // Only one file selected.
          this.selection.totalCount == 1);
   };
@@ -677,10 +657,8 @@ FileManager.prototype = {
          !this.renameInput_.currentEntry &&
          // Not in root directory.
          this.currentDirEntry_.fullPath != '/' &&
-         // Not in media/removable directory.
-         this.currentDirEntry_.fullPath != REMOVABLE_DIRECTORY &&
-         // Not in media/archive directory.
-         this.currentDirEntry_.fullPath != ARCHIVE_DIRECTORY);
+         // Not in media directory.
+         this.currentDirEntry_.fullPath != MEDIA_DIRECTORY);
   };
 
   FileManager.prototype.setListType = function(type) {
@@ -1100,11 +1078,8 @@ FileManager.prototype = {
     if (path == 'Downloads')
       return str('DOWNLOADS_DIRECTORY_LABEL');
 
-    if (path == 'archive')
-      return str('ARCHIVE_DIRECTORY_LABEL');
-
-    if (path == 'removable')
-      return str('REMOVABLE_DIRECTORY_LABEL');
+    if (path == 'media')
+      return str('MEDIA_DIRECTORY_LABEL');
 
     return path || str('ROOT_DIRECTORY_LABEL');
   };
@@ -1169,8 +1144,8 @@ FileManager.prototype = {
 
     var self = this;
     cacheEntryDate(entry, function(entry) {
-      if (self.currentDirEntry_.fullPath == ARCHIVE_DIRECTORY ||
-           self.currentDirEntry_.fullPath == REMOVABLE_DIRECTORY) {
+      if (self.currentDirEntry_.fullPath == MEDIA_DIRECTORY &&
+          entry.cachedMtime_.getTime() == 0) {
         // Mount points for FAT volumes have this time associated with them.
         // We'd rather display nothing than this bogus date.
         div.textContent = '---';
@@ -1273,12 +1248,8 @@ FileManager.prototype = {
     };
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      // Since unmount task cannot be defined in terms of file patterns,
-      // we manually include it here, if all selected items are mount points.
-      chrome.fileBrowserPrivate.getFileTasks(
-          selection.urls,
-          this.onTasksFound_.bind(this,
-                                  this.shouldShowUnmount_(selection.urls)));
+      chrome.fileBrowserPrivate.getFileTasks(selection.urls,
+                                             this.onTasksFound_.bind(this));
     }
 
     cacheNextFile();
@@ -1331,20 +1302,7 @@ FileManager.prototype = {
     this[methodName].apply(this, data.arguments);
   };
 
-  /**
-   * Callback called when tasks for selected files are determined.
-   * @param {boolean} unmount Whether unmount task should be included.
-   * @param {Array.<Task>} tasksList The tasks list.
-   */
-  FileManager.prototype.onTasksFound_ = function(unmount, tasksList) {
-    if (unmount) {
-      tasksList.push({
-          taskId: this.getExtensionId_() + '|unmount-archive',
-          iconUrl: '',
-          title: ''
-      });
-    }
-
+  FileManager.prototype.onTasksFound_ = function(tasksList) {
     this.taskButtons_.innerHTML = '';
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -1371,14 +1329,6 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_add_to_queue_16x16.png');
           task.title = str('ENQUEUE');
-        } else if (task_parts[1] == 'mount-archive') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_mount_archive_16x16.png');
-          task.title = str('MOUNT_ARCHIVE');
-        } else if (task_parts[1] == 'unmount-archive') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_unmount_archive_16x16.png');
-          task.title = str('UNMOUNT_ARCHIVE');
         }
       }
 
@@ -1406,41 +1356,6 @@ FileManager.prototype = {
                                           this.selection.urls);
   };
 
-  /**
-   * Event handler called when some volume was mounted or unmouted.
-   */
-  FileManager.prototype.onMountCompleted_ = function(event) {
-    var self = this;
-    chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.mountPoints_ = mountPoints;
-      if (event.eventType == 'mount') {
-        for (var index = 0; index < self.mountRequests_.length; ++index) {
-          if (self.mountRequests_[index] == event.sourceUrl) {
-            self.mountRequests_.splice(index, 1);
-            if (event.status == 'success') {
-              self.changeDirectory(event.mountPath);
-            } else {
-              // Report mount error.
-              if (event.mountType == 'file') {
-                var fileName = event.sourceUrl.substr(
-                    event.sourceUrl.lastIndexOf('/') + 1);
-                window.alert(strf('ARCHIVE_MOUNT_FAILED', fileName,
-                                  event.status));
-              }
-            }
-            return;
-          }
-        }
-      }
-      // TODO(dgozman): rescan directory, only if it contains mounted points,
-      // when mounts location will be decided.
-      this.rescanDirectory_();
-    });
-  };
-
-  /**
-   * Event handler called when some internal task should be executed.
-   */
   FileManager.prototype.onFileTaskExecute_ = function(id, details) {
     var urls = details.entries.map(function(entry) {
         return entry.toURL();
@@ -1457,31 +1372,7 @@ FileManager.prototype = {
       this.imageEditor_.getBuffer().load(urls[0]);
     } else if (id == 'play' || id == 'enqueue') {
       chrome.fileBrowserPrivate.viewFiles(urls, id);
-    } else if (id == 'mount-archive') {
-      for (var index = 0; index < urls.length; ++index) {
-        this.mountRequests_.push(urls[index]);
-        chrome.fileBrowserPrivate.addMount(urls[index], 'file', {});
-      }
-    } else if (id == 'unmount-archive') {
-      for (var index = 0; index < urls.length; ++index) {
-        chrome.fileBrowserPrivate.removeMount(urls[index]);
-      }
     }
-  };
-
-  /**
-   * Determines whether unmount task should present for selected files.
-   */
-  FileManager.prototype.shouldShowUnmount_ = function(urls) {
-    for (var index = 0; index < urls.length; ++index) {
-      // Each url should be a mount point.
-      var path = urls[index];
-      if (!this.mountPoints_.hasOwnProperty(path) ||
-          this.mountPoints_[path].type != 'file') {
-        return false;
-      }
-    }
-    return true;
   };
 
   FileManager.prototype.onImageEditorSave = function(canvas) {
@@ -1945,8 +1836,7 @@ FileManager.prototype = {
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       if (this.currentDirEntry_.fullPath == '/' ||
-          this.currentDirEntry_.fullPath == ARCHIVE_DIRECTORY ||
-          this.currentDirEntry_.fullPath == REMOVABLE_DIRECTORY) {
+          this.currentDirEntry_.fullPath == MEDIA_DIRECTORY) {
         // Nothing can be saved in to the root or media/ directories.
         selectable = false;
       } else {
@@ -2004,8 +1894,7 @@ FileManager.prototype = {
     // New folder should never be enabled in the root or media/ directories.
     this.newFolderButton_.disabled =
         (this.currentDirEntry_.fullPath == '/' ||
-         this.currentDirEntry_.fullPath == ARCHIVE_DIRECTORY ||
-         this.currentDirEntry_.fullPath == REMOVABLE_DIRECTORY);
+         this.currentDirEntry_.fullPath == MEDIA_DIRECTORY);
 
     this.document_.title = this.currentDirEntry_.fullPath;
 

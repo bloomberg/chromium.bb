@@ -24,7 +24,6 @@ function checkInstalled(callback) {
 }
 
 var cachedIcon = null;
-var img = null;
 
 // This returns the base64-encoded content of the extension's image.
 function getIconData(callback) {
@@ -35,9 +34,8 @@ function getIconData(callback) {
   canvas.style.display = "none";
   canvas.width = 128;
   canvas.height = 128;
-  img = new Image();
+  var img = new Image();
   img.onload = function() {
-    console.log('img.onload called');
     var ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
     var tmp = canvas.toDataURL();

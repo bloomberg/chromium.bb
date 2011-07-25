@@ -8817,14 +8817,11 @@ ls' lab.">
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="/Downloads directory label.">
         File Shelf
       </message>
-      <message name="IDS_FILE_BROWSER_ARCHIVE_DIRECTORY_LABEL" desc="/archive directory label.">
-        Archives
-      </message>
-      <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
-        External Storage
-      </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
 	<ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
+        External Storage
       </message>
       <message name="IDS_FILE_BROWSER_NAME_COLUMN_LABEL" desc="Name column label.">
         Name
@@ -8881,16 +8878,6 @@ ls' lab.">
       </message>
       <message name="IDS_FILE_BROWSER_READ_ONLY" desc="Indication that a volume is mounted read only.">
         Read Only
-      </message>
-
-      <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED" desc="Title of the error dialog when file mount operation failed.">
-        Unable to open open "$1": $2
-      </message>
-      <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
-        Open archive
-      </message>
-      <message name="IDS_FILE_BROWSER_UNMOUNT_ARCHIVE" desc="Title of the action for unmounting the archive file.">
-        Close archive
       </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">

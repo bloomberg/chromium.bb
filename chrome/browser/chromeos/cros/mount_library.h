@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_MOUNT_LIBRARY_H_
 #pragma once
 
-#include <map>
 #include <string>
+#include <map>
 
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -32,10 +32,6 @@ typedef enum MountLibraryEventType {
 // library class like this: chromeos::CrosLibrary::Get()->GetMountLibrary()
 class MountLibrary {
  public:
-  enum MountEvent {
-    MOUNTING,
-    UNMOUNTING
-  };
   // Used to house an instance of each found mount device.
   class Disk {
    public:
@@ -101,22 +97,6 @@ class MountLibrary {
   };
   typedef std::map<std::string, Disk*> DiskMap;
 
-  // MountPointInfo: {mount_path, mount_type}.
-  struct MountPointInfo {
-    std::string source_path;
-    std::string mount_path;
-    MountType mount_type;
-
-    MountPointInfo(const char* source, const char* mount, const MountType type)
-        : source_path(source ? source : ""),
-          mount_path(mount ? mount : ""),
-          mount_type(type) {
-    }
-  };
-
-  // MountPointMap key is source_path.
-  typedef std::map<std::string, MountPointInfo> MountPointMap;
-
   typedef void(*UnmountDeviceRecursiveCallbackType)(void*, bool);
 
   class Observer {
@@ -127,31 +107,20 @@ class MountLibrary {
                              const Disk* disk) = 0;
     virtual void DeviceChanged(MountLibraryEventType event,
                                const std::string& device_path ) = 0;
-    virtual void MountCompleted(MountEvent event_type,
-        MountError error_code,
-        const MountPointInfo& mount_info) = 0;
   };
 
   virtual ~MountLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual const DiskMap& disks() const = 0;
-  virtual const MountPointMap& mount_points() const = 0;
 
   virtual void RequestMountInfoRefresh() = 0;
-  virtual void MountPath(const char* source_path,
-                         MountType type,
-                         const MountPathOptions& options) = 0;
-  // |path| may be source od mount path.
-  virtual void UnmountPath(const char* path) = 0;
+  virtual void MountPath(const char* device_path) = 0;
+  virtual void UnmountPath(const char* device_path) = 0;
 
   // Unmounts device_poath and all of its known children.
   virtual void UnmountDeviceRecursive(const char* device_path,
       UnmountDeviceRecursiveCallbackType callback, void* user_data) = 0;
-
-  // Helper functions for parameter conversions.
-  static std::string MountTypeToString(MountType type);
-  static MountType MountTypeFromString(const std::string& type_str);
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

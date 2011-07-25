@@ -16,7 +16,6 @@ class Profile;
 class FileManagerUtil {
  public:
   // Gets base file browser url.
-  static GURL GetFileBrowserExtensionUrl();
   static GURL GetFileBrowserUrl();
   static GURL GetMediaPlayerUrl();
   static GURL GetMediaPlayerPlaylistUrl();
@@ -25,13 +24,6 @@ class FileManagerUtil {
   // if |full_file_path| is not managed by the external filesystem provider.
   static bool ConvertFileToFileSystemUrl(Profile* profile,
       const FilePath& full_file_path, const GURL& origin_url, GURL* url);
-
-  // Converts |full_file_path| into |relative_path| within the external provider
-  // in File API. Returns false if |full_file_path| is not managed by the
-  // external filesystem provider.
-  static bool ConvertFileToRelativeFileSystemPath(Profile* profile,
-      const FilePath& full_file_path, FilePath* relative_path);
-
   // Gets base file browser url for.
   static GURL GetFileBrowserUrlWithParams(
       SelectFileDialog::Type type,

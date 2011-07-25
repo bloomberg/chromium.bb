@@ -42,28 +42,6 @@ const char* DeviceTypeToString(chromeos::DeviceType type) {
   return "undefined";
 }
 
-const char* MountErrorToString(chromeos::MountError error) {
-  switch (error) {
-    case chromeos::MOUNT_ERROR_NONE:
-      return "success";
-    case chromeos::MOUNT_ERROR_UNKNOWN:
-      return "error_unknown";
-    case chromeos::MOUNT_ERROR_INTERNAL:
-      return "error_internal";
-    case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
-      return "error_unknown_filesystem";
-    case chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM:
-      return "error_unsuported_filesystem";
-    case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
-      return "error_invalid_archive";
-    case chromeos::MOUNT_ERROR_LIBRARY_NOT_LOADED:
-      return "error_libcros_missing";
-    default:
-      NOTREACHED();
-  }
-  return "";
-}
-
 DictionaryValue* DiskToDictionaryValue(
     const chromeos::MountLibrary::Disk* disk) {
   DictionaryValue* result = new DictionaryValue();
@@ -174,12 +152,6 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
     OnDeviceScanned(device_path);
   }
 }
-void ExtensionFileBrowserEventRouter::MountCompleted(
-    chromeos::MountLibrary::MountEvent event_type,
-    chromeos::MountError error_code,
-    const chromeos::MountLibrary::MountPointInfo& mount_info) {
-  DispatchMountCompletedEvent(event_type, error_code, mount_info);
-}
 
 void ExtensionFileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {
@@ -246,58 +218,6 @@ void ExtensionFileBrowserEventRouter::DispatchMountEvent(
       GURL());
 }
 
-void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
-    chromeos::MountLibrary::MountEvent event,
-    chromeos::MountError error_code,
-    const chromeos::MountLibrary::MountPointInfo& mount_info) {
-  if (!profile_ || mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
-    NOTREACHED();
-    return;
-  }
-
-  ListValue args;
-  DictionaryValue* mount_info_value = new DictionaryValue();
-  args.Append(mount_info_value);
-  if (event == chromeos::MountLibrary::MOUNTING) {
-    mount_info_value->SetString("eventType", "mount");
-  } else {
-    mount_info_value->SetString("eventType", "unmount");
-  }
-  mount_info_value->SetString("status", MountErrorToString(error_code));
-  mount_info_value->SetString("mountType",
-      chromeos::MountLibrary::MountTypeToString(mount_info.mount_type));
-
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-    GURL source_url;
-    if (FileManagerUtil::ConvertFileToFileSystemUrl(profile_,
-            FilePath(mount_info.source_path),
-            FileManagerUtil::GetFileBrowserExtensionUrl().GetOrigin(),
-            &source_url)) {
-      mount_info_value->SetString("sourceUrl", source_url.spec());
-    }
-  } else {
-    mount_info_value->SetString("sourceUrl", mount_info.source_path);
-  }
-
-  // If there were no error, add mountPath to the event.
-  if (error_code == chromeos::MOUNT_ERROR_NONE) {
-    FilePath relative_mount_path;
-    // Convert mount point path to relative path with the external file system
-    // exposed within File API.
-    if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
-            FilePath(mount_info.mount_path),
-            &relative_mount_path)) {
-      mount_info_value->SetString("mountPath", relative_mount_path.value());
-    }
-  }
-
-  std::string args_json;
-  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
-      GURL());
-}
-
 void ExtensionFileBrowserEventRouter::OnDiskAdded(
     const chromeos::MountLibrary::Disk* disk) {
   VLOG(1) << "Disk added: " << disk->device_path();
@@ -317,9 +237,7 @@ void ExtensionFileBrowserEventRouter::OnDiskAdded(
     // Initiate disk mount operation.
     chromeos::MountLibrary* lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
-    lib->MountPath(disk->device_path().c_str(),
-                   chromeos::MOUNT_TYPE_DEVICE,
-                   chromeos::MountPathOptions());  // Unused.
+    lib->MountPath(disk->device_path().c_str());
   }
 }
 

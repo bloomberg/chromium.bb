@@ -34,8 +34,7 @@ const char kChromeUIScheme[] = "chrome";
 // Top level file system elements exposed in FileAPI in ChromeOS:
 FixedExposedPaths fixed_exposed_paths[] = {
     {"/home/chronos/user/", "Downloads"},
-    {"/media",              "archive"},
-    {"/media",              "removable"},
+    {"/",                   "media"},
 };
 
 CrosMountPointProvider::CrosMountPointProvider(

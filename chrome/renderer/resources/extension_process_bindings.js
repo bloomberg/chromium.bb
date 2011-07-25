@@ -77,8 +77,6 @@ var chrome = chrome || {};
 
         throw new Error(message);
       } else if (!schemas[i].optional) {
-        console.log(chromeHidden.JSON.stringify(args));
-        console.log(chromeHidden.JSON.stringify(schemas));
         throw new Error("Parameter " + (i + 1) + " is required.");
       }
     }
