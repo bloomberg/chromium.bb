@@ -95,6 +95,16 @@ std::string SkColorToRGBAString(SkColor color) {
       base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 
+// Creates an rgb string for an SkColor, but leaves the alpha blank so that the
+// css can fill it in.
+std::string SkColorToRGBComponents(SkColor color) {
+  return base::StringPrintf(
+      "%d,%d,%d",
+      SkColorGetR(color),
+      SkColorGetG(color),
+      SkColorGetB(color));
+}
+
 // Get the CSS string for the background position on the new tab page for the
 // states when the bar is attached or detached.
 std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
@@ -559,6 +569,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBAString(
       SkColorSetA(color_section_header_rule, 0)));  // $20
   subst.push_back(SkColorToRGBAString(color_text_light));  // $21
+  subst.push_back(SkColorToRGBComponents(color_section_border));  // $22
 
   // Get our template.
   int ntp_css_resource_id =

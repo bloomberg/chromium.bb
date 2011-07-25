@@ -50,10 +50,10 @@ body {
 
 #footer-border {
   background: -webkit-linear-gradient(left,
-      rgba(255, 255, 255, 0),
-      $11 5%, /* COLOR_NTP_SECTION_BORDER */
-      $11 95%, /* COLOR_NTP_SECTION_BORDER */
-      rgba(255, 255, 255, 0));
+      rgba($22, 0.2), /* COLOR_NTP_SECTION_BORDER */
+      rgba($22, 0.3) 20%, /* COLOR_NTP_SECTION_BORDER */
+      rgba($22, 0.3) 80%, /* COLOR_NTP_SECTION_BORDER */
+      rgba($22, 0.2)); /* COLOR_NTP_SECTION_BORDER */
 }
 
 .dot input:focus {

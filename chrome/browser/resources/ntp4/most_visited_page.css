@@ -93,7 +93,7 @@ html[dir=rtl] .most-visited .close-button {
   background: no-repeat;
   /* The extra 2% hides the scrollbar in the screenshot. */
   background-size: 102%;
-  border-radius: 5px;
+  border-radius: 3px;
   -webkit-transition: opacity 0.15s;
 }
 
@@ -105,7 +105,7 @@ html[dir=rtl] .most-visited .close-button {
 }
 
 .thumbnail-shield {
-  border-radius: 5px;
+  border-radius: 3px;
   background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
                                       rgba(255, 255, 255, 0) 50%,
                                       rgba(255, 255, 255, 0.9));
@@ -136,7 +136,7 @@ html[dir=rtl] .most-visited .close-button {
 
 .thumbnail-wrapper {
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: 3px;
   display: block;
   position: relative;
   z-index: 5;
