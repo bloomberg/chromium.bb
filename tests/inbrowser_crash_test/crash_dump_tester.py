@@ -133,12 +133,8 @@ def Main():
   new_dumps = [dump_file for dump_file in dumps_diff
                if dump_file.endswith('.dmp')]
 
-  # This produces warnings rather than errors because there are no
-  # trybots for testing this, and I am not convinced that the
-  # Buildbots will behave the same as my local build.
-  # TODO(mseaborn): Turn these warnings into errors.
   failed = False
-  msg = ('crash_dump_tester: WARNING: Got %i crash dumps but expected %i\n' %
+  msg = ('crash_dump_tester: ERROR: Got %i crash dumps but expected %i\n' %
          (len(new_dumps), options.expected_crash_dumps))
   if len(new_dumps) != options.expected_crash_dumps:
     sys.stdout.write(msg)
@@ -146,7 +142,7 @@ def Main():
   for dump_file in new_dumps:
     # The crash dumps should come in pairs of a .dmp and .txt file.
     second_file = dump_file[:-4] + '.txt'
-    msg = ('crash_dump_tester: WARNING: File %r is missing a corresponding '
+    msg = ('crash_dump_tester: ERROR: File %r is missing a corresponding '
            '%r file\n' % (dump_file, second_file))
     if not os.path.exists(second_file):
       sys.stdout.write(msg)
@@ -155,20 +151,21 @@ def Main():
     # Check that the crash dump comes from the NaCl process.
     dump_info = ReadDumpTxtFile(second_file)
     if 'ptype' in dump_info:
-      msg = ('crash_dump_tester: WARNING: Unexpected ptype value: %r\n'
+      msg = ('crash_dump_tester: ERROR: Unexpected ptype value: %r\n'
              % dump_info['ptype'])
       if dump_info['ptype'] != 'nacl-loader':
         sys.stdout.write(msg)
         failed = True
     else:
-      sys.stdout.write('crash_dump_tester: WARNING: Missing ptype field\n')
+      sys.stdout.write('crash_dump_tester: ERROR: Missing ptype field\n')
       failed = True
     # TODO(mseaborn): Ideally we would also check that a backtrace
     # containing an expected function name can be extracted from the
     # crash dump.
 
   if failed:
-    sys.stdout.write('crash_dump_tester: FAILED, but continuing anyway\n')
+    sys.stdout.write('crash_dump_tester: FAILED\n')
+    result = 1
   else:
     sys.stdout.write('crash_dump_tester: PASSED\n')
     # Clean up the dump files only if we are sure we produced them.
