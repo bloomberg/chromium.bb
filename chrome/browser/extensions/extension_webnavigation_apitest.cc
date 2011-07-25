@@ -3,15 +3,40 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/mock_host_resolver.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "webkit/glue/context_menu.h"
+
+namespace {
+
+class TestRenderViewContextMenu : public RenderViewContextMenu {
+ public:
+  TestRenderViewContextMenu(TabContents* tab_contents,
+                            const ContextMenuParams& params)
+      : RenderViewContextMenu(tab_contents, params) {
+  }
+  virtual ~TestRenderViewContextMenu() {}
+
+ private:
+  virtual void PlatformInit() {}
+  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
+};
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -128,9 +153,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  url = extension->GetResourceURL("userAction/b.html");
   // This corresponds to "Open link in new tab".
-  browser()->GetSelectedTabContents()->OpenURL(
-      url, GURL(), NEW_BACKGROUND_TAB, PageTransition::LINK);
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ContextMenuParams params;
+  params.is_editable = false;
+  params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
+  params.page_url = url;
+  params.frame_id =
+      ExtensionWebNavigationTabObserver::Get(tab)->
+          frame_navigation_state().GetMainFrameID(tab);
+  params.link_url = extension->GetResourceURL("userAction/b.html");
+
+  TestRenderViewContextMenu menu(tab, params);
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
+
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

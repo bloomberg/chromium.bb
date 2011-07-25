@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   EXPECT_EQ(url1, navigation_state.GetUrl(frame_id1));
   EXPECT_FALSE(navigation_state.IsMainFrame(frame_id2));
   EXPECT_EQ(url2, navigation_state.GetUrl(frame_id2));
+  EXPECT_EQ(frame_id1, navigation_state.GetMainFrameID(contents()));
 
 
   // Removing the tab contents should also remove all state of its frames.

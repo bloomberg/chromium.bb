@@ -54,6 +54,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
@@ -1309,6 +1310,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     OpenURL(
         handlers[handlerIndex].TranslateUrl(params_.link_url),
         params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+        params_.frame_id,
         NEW_FOREGROUND_TAB,
         PageTransition::LINK);
     return;
@@ -1319,6 +1321,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          params_.frame_id,
           source_tab_contents_->delegate() &&
               source_tab_contents_->delegate()->IsApplication() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
@@ -1329,11 +1332,16 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       OpenURL(
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          params_.frame_id,
           NEW_WINDOW, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      OpenURL(params_.link_url, GURL(), OFF_THE_RECORD, PageTransition::LINK);
+      OpenURL(params_.link_url,
+              GURL(),
+              params_.frame_id,
+              OFF_THE_RECORD,
+              PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
@@ -1370,6 +1378,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       OpenURL(
           params_.src_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
+          params_.frame_id,
           NEW_BACKGROUND_TAB, PageTransition::LINK);
       break;
 
@@ -1551,7 +1560,10 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
-      OpenURL(selection_navigation_url_, GURL(), NEW_FOREGROUND_TAB,
+      OpenURL(selection_navigation_url_,
+              GURL(),
+              params_.frame_id,
+              NEW_FOREGROUND_TAB,
               PageTransition::LINK);
       break;
     }
@@ -1587,7 +1599,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
-      OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }
 
@@ -1618,7 +1630,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kHandlerSettingsSubPage;
-      OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }
 
@@ -1719,10 +1731,23 @@ string16 RenderViewContextMenu::PrintableSelectionText() {
 // Controller functions --------------------------------------------------------
 
 void RenderViewContextMenu::OpenURL(
-    const GURL& url, const GURL& referrer,
+    const GURL& url, const GURL& referrer, int64 frame_id,
     WindowOpenDisposition disposition,
     PageTransition::Type transition) {
-  source_tab_contents_->OpenURL(url, referrer, disposition, transition);
+  TabContents* new_contents =
+      source_tab_contents_->OpenURL(url, referrer, disposition, transition);
+
+  if (new_contents) {
+    content::RetargetingDetails details;
+    details.source_tab_contents = source_tab_contents_;
+    details.source_frame_id = frame_id;
+    details.target_url = url;
+    details.target_tab_contents = new_contents;
+    NotificationService::current()->Notify(
+        content::NOTIFICATION_RETARGETING,
+        Source<Profile>(source_tab_contents_->profile()),
+        Details<content::RetargetingDetails>(&details));
+  }
 }
 
 void RenderViewContextMenu::CopyImageAt(int x, int y) {

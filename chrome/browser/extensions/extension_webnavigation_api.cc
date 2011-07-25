@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -14,15 +15,21 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;
 
 namespace {
+
+typedef std::map<TabContents*, ExtensionWebNavigationTabObserver*>
+    TabObserverMap;
+static base::LazyInstance<TabObserverMap> g_tab_observer(
+    base::LINKER_INITIALIZED);
 
 // URL schemes for which we'll send events.
 const char* kValidSchemes[] = {
@@ -115,8 +122,7 @@ void DispatchOnDOMContentLoaded(TabContents* tab_contents,
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kFrameIdKey,
-      is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -135,8 +141,7 @@ void DispatchOnCompleted(TabContents* tab_contents,
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
   dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kFrameIdKey,
-      is_main_frame ? 0 : static_cast<int>(frame_id));
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -148,14 +153,19 @@ void DispatchOnCompleted(TabContents* tab_contents,
 // Constructs and dispatches an onBeforeRetarget event.
 void DispatchOnBeforeRetarget(TabContents* tab_contents,
                               Profile* profile,
-                              const GURL& opener_url,
+                              int64 source_frame_id,
+                              bool source_frame_is_main_frame,
+                              TabContents* target_tab_contents,
                               const GURL& target_url) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kSourceTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
-  dict->SetString(keys::kSourceUrlKey, opener_url.spec());
+  dict->SetInteger(keys::kSourceFrameIdKey,
+      GetFrameId(source_frame_is_main_frame, source_frame_id));
   dict->SetString(keys::kUrlKey, target_url.possibly_invalid_spec());
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(target_tab_contents));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -227,6 +237,19 @@ bool FrameNavigationState::IsMainFrame(int64 frame_id) const {
   return frame_state->second.is_main_frame;
 }
 
+int64 FrameNavigationState::GetMainFrameID(
+    const TabContents* tab_contents) const {
+  typedef TabContentsToFrameIdMap::const_iterator FrameIdIterator;
+  std::pair<FrameIdIterator, FrameIdIterator> frame_ids =
+      tab_contents_map_.equal_range(tab_contents);
+  for (FrameIdIterator frame_id = frame_ids.first; frame_id != frame_ids.second;
+       ++frame_id) {
+    if (IsMainFrame(frame_id->second))
+      return frame_id->second;
+  }
+  return -1;
+}
+
 void FrameNavigationState::ErrorOccurredInFrame(int64 frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].error_occurred = true;
@@ -247,6 +270,29 @@ void FrameNavigationState::RemoveTabContentsState(
 
 // ExtensionWebNavigtionEventRouter -------------------------------------------
 
+ExtensionWebNavigationEventRouter::PendingTabContents::PendingTabContents()
+    : source_tab_contents(NULL),
+      source_frame_id(0),
+      source_frame_is_main_frame(false),
+      target_tab_contents(NULL),
+      target_url() {
+}
+
+ExtensionWebNavigationEventRouter::PendingTabContents::PendingTabContents(
+    TabContents* source_tab_contents,
+    int64 source_frame_id,
+    bool source_frame_is_main_frame,
+    TabContents* target_tab_contents,
+    const GURL& target_url)
+    : source_tab_contents(source_tab_contents),
+      source_frame_id(source_frame_id),
+      source_frame_is_main_frame(source_frame_is_main_frame),
+      target_tab_contents(target_tab_contents),
+      target_url(target_url) {
+}
+
+ExtensionWebNavigationEventRouter::PendingTabContents::~PendingTabContents() {}
+
 ExtensionWebNavigationEventRouter::ExtensionWebNavigationEventRouter(
     Profile* profile) : profile_(profile) {}
 
@@ -255,7 +301,10 @@ ExtensionWebNavigationEventRouter::~ExtensionWebNavigationEventRouter() {}
 void ExtensionWebNavigationEventRouter::Init() {
   if (registrar_.IsEmpty()) {
     registrar_.Add(this,
-                   content::NOTIFICATION_CREATING_NEW_WINDOW,
+                   content::NOTIFICATION_RETARGETING,
+                   Source<Profile>(profile_));
+    registrar_.Add(this,
+                   content::NOTIFICATION_TAB_ADDED,
                    NotificationService::AllSources());
   }
 }
@@ -265,10 +314,12 @@ void ExtensionWebNavigationEventRouter::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_CREATING_NEW_WINDOW:
-      CreatingNewWindow(
-          Source<TabContents>(source).ptr(),
-          Details<const ViewHostMsg_CreateWindow_Params>(details).ptr());
+    case content::NOTIFICATION_RETARGETING:
+      Retargeting(Details<const content::RetargetingDetails>(details).ptr());
+      break;
+
+    case content::NOTIFICATION_TAB_ADDED:
+      TabAdded(Details<TabContents>(details).ptr());
       break;
 
     default:
@@ -276,15 +327,55 @@ void ExtensionWebNavigationEventRouter::Observe(
   }
 }
 
-void ExtensionWebNavigationEventRouter::CreatingNewWindow(
-    TabContents* tab_contents,
-    const ViewHostMsg_CreateWindow_Params* details) {
-  if (profile_->IsSameProfile(tab_contents->profile())) {
-    DispatchOnBeforeRetarget(tab_contents,
-                             tab_contents->profile(),
-                             details->opener_url,
-                             details->target_url);
+void ExtensionWebNavigationEventRouter::Retargeting(
+    const content::RetargetingDetails* details) {
+  if (details->source_frame_id == 0)
+    return;
+  ExtensionWebNavigationTabObserver* tab_observer =
+      ExtensionWebNavigationTabObserver::Get(details->source_tab_contents);
+  if (!tab_observer) {
+    NOTREACHED();
+    return;
   }
+  const FrameNavigationState& frame_navigation_state =
+      tab_observer->frame_navigation_state();
+
+  // If the TabContents was created as a response to an IPC from a renderer, it
+  // doesn't yet have a wrapper, and we need to delay the extension event until
+  // the TabContents is fully initialized.
+  if (TabContentsWrapper::GetCurrentWrapperForContents(
+      details->target_tab_contents) == NULL) {
+    pending_tab_contents_[details->target_tab_contents] =
+        PendingTabContents(
+            details->source_tab_contents,
+            details->source_frame_id,
+            frame_navigation_state.IsMainFrame(details->source_frame_id),
+            details->target_tab_contents,
+            details->target_url);
+  } else {
+    DispatchOnBeforeRetarget(
+        details->source_tab_contents,
+        details->target_tab_contents->profile(),
+        details->source_frame_id,
+        frame_navigation_state.IsMainFrame(details->source_frame_id),
+        details->target_tab_contents,
+        details->target_url);
+  }
+}
+
+void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
+  std::map<TabContents*, PendingTabContents>::iterator iter =
+      pending_tab_contents_.find(tab_contents);
+  if (iter == pending_tab_contents_.end())
+    return;
+
+  DispatchOnBeforeRetarget(iter->second.source_tab_contents,
+                           iter->second.target_tab_contents->profile(),
+                           iter->second.source_frame_id,
+                           iter->second.source_frame_is_main_frame,
+                           iter->second.target_tab_contents,
+                           iter->second.target_url);
+  pending_tab_contents_.erase(iter);
 }
 
 
@@ -292,9 +383,18 @@ void ExtensionWebNavigationEventRouter::CreatingNewWindow(
 
 ExtensionWebNavigationTabObserver::ExtensionWebNavigationTabObserver(
     TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {}
+    : TabContentsObserver(tab_contents) {
+  g_tab_observer.Get().insert(TabObserverMap::value_type(tab_contents, this));
+}
 
 ExtensionWebNavigationTabObserver::~ExtensionWebNavigationTabObserver() {}
+
+// static
+ExtensionWebNavigationTabObserver* ExtensionWebNavigationTabObserver::Get(
+    TabContents* tab_contents) {
+  TabObserverMap::iterator i = g_tab_observer.Get().find(tab_contents);
+  return i == g_tab_observer.Get().end() ? NULL : i->second;
+}
 
 void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     int64 frame_id,
@@ -389,31 +489,7 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
 void ExtensionWebNavigationTabObserver::TabContentsDestroyed(
     TabContents* tab) {
   navigation_state_.RemoveTabContentsState(tab);
-}
-
-void ExtensionWebNavigationTabObserver::DidOpenURL(
-    const GURL& url,
-    const GURL& referrer,
-    WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
-  if (disposition != NEW_FOREGROUND_TAB &&
-      disposition != NEW_BACKGROUND_TAB &&
-      disposition != NEW_WINDOW &&
-      disposition != OFF_THE_RECORD) {
-    return;
-  }
-  Profile* profile = tab_contents()->profile();
-  if (disposition == OFF_THE_RECORD) {
-    if (!profile->HasOffTheRecordProfile()) {
-      NOTREACHED();
-      return;
-    }
-    profile = profile->GetOffTheRecordProfile();
-  }
-  DispatchOnBeforeRetarget(tab_contents(),
-                           profile,
-                           tab_contents()->GetURL(),
-                           url);
+  g_tab_observer.Get().erase(tab);
 }
 
 // See also NavigationController::IsURLInPageNavigation.

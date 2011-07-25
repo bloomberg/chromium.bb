@@ -3939,8 +3939,9 @@
             "name": "details",
             "properties": {
               "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
-              "sourceUrl": {"type": "string", "description": "The URL of the document that is opening the new window."},
+              "sourceFrameId": {"type": "integer", "description": "The ID of the frame with sourceTabId in which the navigation is triggered. 0 indicates the main frame."},
               "url": {"type": "string", "description": "The URL to be opened in the new window."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the url is opened"},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to create a new view, in milliseconds since the epoch."}
             }
           }

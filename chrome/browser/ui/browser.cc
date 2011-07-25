@@ -3125,12 +3125,10 @@ void Browser::AddNewContents(TabContents* source,
   params.user_gesture = user_gesture;
   browser::Navigate(&params);
 
-  if (source) {
-    NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_ADDED,
-      Source<TabContentsDelegate>(source->delegate()),
-      Details<TabContents>(source));
-  }
+  NotificationService::current()->Notify(
+    content::NOTIFICATION_TAB_ADDED,
+    Source<TabContentsDelegate>(this),
+    Details<TabContents>(new_contents));
 }
 
 void Browser::ActivateContents(TabContents* contents) {

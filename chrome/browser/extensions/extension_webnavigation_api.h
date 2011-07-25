@@ -19,8 +19,10 @@
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+struct RetargetingDetails;
+}
 class TabContents;
-struct ViewHostMsg_CreateWindow_Params;
 
 // Tracks the navigation state of all frames currently known to the
 // webNavigation API. It is mainly used to track in which frames an error
@@ -46,6 +48,10 @@ class FrameNavigationState {
 
   // True if the frame given by its |frame_id| is the main frame of its tab.
   bool IsMainFrame(int64 frame_id) const;
+
+  // Returns the frame ID of the main frame for the given |tab_contents|, or -1
+  // if the frame ID is not known.
+  int64 GetMainFrameID(const TabContents* tab_contents) const;
 
   // Marks a frame as in an error state.
   void ErrorOccurredInFrame(int64 frame_id);
@@ -86,6 +92,13 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
   explicit ExtensionWebNavigationTabObserver(TabContents* tab_contents);
   virtual ~ExtensionWebNavigationTabObserver();
 
+  // Returns the object for the given |tab_contents|.
+  static ExtensionWebNavigationTabObserver* Get(TabContents* tab_contents);
+
+  const FrameNavigationState& frame_navigation_state() const {
+    return navigation_state_;
+  }
+
   // TabContentsObserver implementation.
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
@@ -105,11 +118,6 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
   virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
-  virtual void DidOpenURL(const GURL& url,
-                          const GURL& referrer,
-                          WindowOpenDisposition disposition,
-                          PageTransition::Type transition);
-
 
  private:
   // True if the transition and target url correspond to a reference fragment
@@ -140,16 +148,40 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   void Init();
 
  private:
+  // Used to cache the information about newly created TabContents objects.
+  struct PendingTabContents {
+    PendingTabContents();
+    PendingTabContents(TabContents* source_tab_contents,
+                       int64 source_frame_id,
+                       bool source_frame_is_main_frame,
+                       TabContents* target_tab_contents,
+                       const GURL& target_url);
+    ~PendingTabContents();
+
+    TabContents* source_tab_contents;
+    int64 source_frame_id;
+    bool source_frame_is_main_frame;
+    TabContents* target_tab_contents;
+    GURL target_url;
+  };
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Handler for the CREATING_NEW_WINDOW event. The method takes the details of
-  // such an event and constructs a suitable JSON formatted extension event from
-  // it.
-  void CreatingNewWindow(TabContents* tab_content,
-                         const ViewHostMsg_CreateWindow_Params* details);
+  // Handler for the NOTIFICATION_RETARGETING event. The method takes the
+  // details of such an event and stores them for the later
+  // NOTIFICATION_TAB_ADDED event.
+  void Retargeting(const content::RetargetingDetails* details);
+
+  // Handler for the NOTIFICATION_TAB_ADDED event. The method takes the details
+  // of such an event and creates a JSON formated extension event from it.
+  void TabAdded(TabContents* tab_contents);
+
+  // Mapping pointers to TabContents objects to information about how they got
+  // created.
+  std::map<TabContents*, PendingTabContents> pending_tab_contents_;
 
   // Used for tracking registrations to navigation notifications.
   NotificationRegistrar registrar_;

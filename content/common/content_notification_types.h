@@ -120,11 +120,11 @@ enum {
   // are provided.
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
-  // A new window is created in response to a request from a renderer. The
-  // source will be a Source<TabContents> corresponding to the tab the
-  // request originates from.  Details in the form of a
-  // ViewHostMsg_CreateWindow_Params object are provided.
-  NOTIFICATION_CREATING_NEW_WINDOW,
+  // A new tab is created from an existing tab to serve as a target of a
+  // navigation that is about to happen. The source will be a Source<Profile>
+  // corresponding to the profile in which the new tab will live.  Details in
+  // the form of a RetargetingDetails object are provided.
+  NOTIFICATION_RETARGETING,
 
   // A new window was requested but was not created. The source will be a
   // Source<TabContents> corresponding to the tab the request originated from.
@@ -221,7 +221,7 @@ enum {
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a TabContentsDelegate. The source is the
-  // TabContentsDelegate and the details is the TabContents.
+  // TabContentsDelegate and the details is the added TabContents.
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.

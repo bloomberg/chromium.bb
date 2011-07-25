@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -238,10 +239,15 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
       params.frame_name);
 
   if (new_contents) {
+    content::RetargetingDetails details;
+    details.source_tab_contents = tab_contents;
+    details.source_frame_id = params.opener_frame_id;
+    details.target_url = params.target_url;
+    details.target_tab_contents = new_contents;
     NotificationService::current()->Notify(
-        content::NOTIFICATION_CREATING_NEW_WINDOW,
-        Source<TabContents>(tab_contents),
-        Details<const ViewHostMsg_CreateWindow_Params>(&params));
+        content::NOTIFICATION_RETARGETING,
+        Source<Profile>(tab_contents->profile()),
+        Details<content::RetargetingDetails>(&details));
 
     if (tab_contents->delegate())
       tab_contents->delegate()->TabContentsCreated(new_contents);

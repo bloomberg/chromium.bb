@@ -11,6 +11,7 @@
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;
+class TabContents;
 
 namespace content {
 
@@ -83,6 +84,21 @@ struct PrunedDetails {
 
   // Number of items removed.
   int count;
+};
+
+// Details sent for NOTIFY_NAV_RETARGETING.
+struct RetargetingDetails {
+  // The source tab contents.
+  TabContents* source_tab_contents;
+
+  // The frame ID of the source tab from which the retargeting was triggered.
+  int64 source_frame_id;
+
+  // The target URL.
+  GURL target_url;
+
+  // The target tab contents.
+  TabContents* target_tab_contents;
 };
 
 }  // namespace content

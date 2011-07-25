@@ -73,6 +73,9 @@ struct ContextMenuParams {
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
 
+  // This is the ID of the subframe that the context menu was invoked on.
+  int64 frame_id;
+
   // This is the history item state of the subframe that the context menu was
   // invoked on.
   std::string frame_content_state;

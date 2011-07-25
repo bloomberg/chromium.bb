@@ -40,6 +40,12 @@ function captureEvent(name, details) {
     }
     details.frameId = frameIds[details.frameId];
   }
+  if (('sourceFrameId' in details) && (details.sourceFrameId != 0)) {
+    if (frameIds[details.sourceFrameId] === undefined) {
+      frameIds[details.sourceFrameId] = nextFrameId++;
+    }
+    details.sourceFrameId = frameIds[details.sourceFrameId];
+  }
   if ('tabId' in details) {
     if (tabIds[details.tabId] === undefined) {
       tabIds[details.tabId] = nextTabId++;

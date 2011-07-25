@@ -343,7 +343,7 @@ void WaitForNavigations(NavigationController* controller,
 void WaitForNewTab(Browser* browser) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_TAB_ADDED,
-                  Source<Browser>(browser));
+                  Source<TabContentsDelegate>(browser));
 }
 
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
