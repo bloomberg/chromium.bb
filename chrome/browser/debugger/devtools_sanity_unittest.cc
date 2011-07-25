@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -254,33 +255,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
 };
 
 
-
-// Used to block until a navigation completes.
-class LoadStopObserver : public NotificationObserver {
- public:
-  explicit LoadStopObserver(const NotificationSource& source) : done_(false) {
-    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
-    ui_test_utils::RunMessageLoop();
-  }
-
- private:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type == content::NOTIFICATION_LOAD_STOP) {
-      if (done_)
-        return;
-      done_ = true;
-      MessageLoopForUI::current()->Quit();
-    }
-  }
-
-  NotificationRegistrar registrar_;
-  bool done_;
-  DISALLOW_COPY_AND_ASSIGN(LoadStopObserver);
-};
-
-
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
   WorkerDevToolsSanityTest() : window_(NULL) {
@@ -318,12 +292,13 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     if (found) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           new MessageLoop::QuitTask);
-    } else if (attempt < 30) {
+    } else if (attempt < TestTimeouts::action_timeout_ms() /
+                   TestTimeouts::tiny_timeout_ms()) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           NewRunnableFunction(
               &OpenDevToolsWindowForFirstSharedWorkerOnIOThread, attempt + 1),
-          100);
+          TestTimeouts::tiny_timeout_ms());
     } else {
       FAIL() << "Shared worker not found.";
     }
@@ -341,8 +316,10 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
     if (client_contents->IsLoading()) {
-      LoadStopObserver(
+      ui_test_utils::WindowedNotificationObserver observer(
+          content::NOTIFICATION_LOAD_STOP,
           Source<NavigationController>(&client_contents->controller()));
+      observer.Wait();
     }
   }
 
