@@ -165,6 +165,10 @@ void BookmarkModel::Load() {
   store_->LoadBookmarks(CreateLoadDetails());
 }
 
+bool BookmarkModel::IsLoaded() const {
+  return loaded_;
+}
+
 const BookmarkNode* BookmarkModel::GetParentForNewNodes() {
   std::vector<const BookmarkNode*> nodes =
       bookmark_utils::GetMostRecentlyModifiedFolders(this, 1);
@@ -337,10 +341,6 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeChanged(this, node));
-}
-
-bool BookmarkModel::IsLoaded() {
-  return loaded_;
 }
 
 void BookmarkModel::GetNodesByURL(const GURL& url,

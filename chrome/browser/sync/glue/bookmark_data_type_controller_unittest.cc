@@ -41,7 +41,7 @@ class StartCallback {
 class BookmarkModelMock : public BookmarkModel {
  public:
   BookmarkModelMock() : BookmarkModel(NULL) {}
-  MOCK_METHOD0(IsLoaded, bool());
+  MOCK_CONST_METHOD0(IsLoaded, bool(void));
 };
 
 class BookmarkDataTypeControllerTest : public testing::Test {

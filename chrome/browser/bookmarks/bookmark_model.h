@@ -179,6 +179,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkModel. You need not invoke this directly.
   void Load();
 
+  // Returns true if the model finished loading.
+  // This is virtual so it can be mocked.
+  virtual bool IsLoaded() const;
+
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
   const BookmarkNode* root_node() { return &root_; }
@@ -227,9 +231,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Sets the URL of the specified bookmark node.
   void SetURL(const BookmarkNode* node, const GURL& url);
-
-  // Returns true if the model finished loading.
-  virtual bool IsLoaded();
 
   // Returns the set of nodes with the specified URL.
   void GetNodesByURL(const GURL& url, std::vector<const BookmarkNode*>* nodes);
