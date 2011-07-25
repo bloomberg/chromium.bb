@@ -209,7 +209,7 @@ function load() {
     document.documentElement.setAttribute('hasFlashPlugin', '');
 
   // Clicking on the Settings title brings up the 'Basics' page.
-  $('settings-title').onclick = function() {
+  $('navbar-content-title').onclick = function() {
     OptionsPage.navigateToPage(BrowserOptions.getInstance().name);
   };
 }

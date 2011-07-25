@@ -487,7 +487,7 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.setPageFrozenAtLevel_ = function(freeze, level) {
-    var container = level == 0 ? $('toplevel-page-container')
+    var container = level == 0 ? $('page-container')
                                : $('subpage-sheet-container-' + level);
 
     if (container.classList.contains('frozen') == freeze)
@@ -570,7 +570,7 @@ cr.define('options', function() {
     // frozen later.
     var sidebarWidth =
         parseInt(window.getComputedStyle($('mainview')).webkitPaddingStart, 10);
-    $('toplevel-page-container').horizontalOffset = sidebarWidth +
+    $('page-container').horizontalOffset = sidebarWidth +
         parseInt(window.getComputedStyle(
             $('mainview-content')).webkitPaddingStart, 10);
     for (var level = 1; level <= SUBPAGE_SHEET_COUNT; level++) {

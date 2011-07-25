@@ -10,6 +10,7 @@
 <link rel="icon" href="../../../app/theme/settings_favicon.png">
 <link rel="stylesheet" href="chrome://resources/css/button.css">
 <link rel="stylesheet" href="chrome://resources/css/list.css">
+<link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
 <link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="chrome://resources/css/throbber.css">
 <link rel="stylesheet" href="chrome://resources/css/tree.css">
@@ -96,7 +97,7 @@
 </div>
 <div id="main-content">
   <div id="navbar-container">
-     <h1 id="settings-title" i18n-content="title"></h1>
+     <h1 id="navbar-content-title" i18n-content="title"></h1>
      <ul id="navbar" role="tablist">
      </ul>
   </div>
@@ -107,7 +108,7 @@
      </div>
      <div id="subpage-backdrop" hidden></div>
      <div id="mainview-content">
-       <div id="toplevel-page-container">
+       <div id="page-container">
          <!-- Please keep the main pages in desired order of display.  This will
               allow search results to display in the desired order. -->
          <include src="search_page.html">
