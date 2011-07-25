@@ -198,7 +198,10 @@ const cr = (function() {
         return function(value) {
           var oldValue = this[name];
           if (value !== oldValue) {
-            this.setAttribute(name, value);
+            if (value == undefined)
+              this.removeAttribute(name);
+            else
+              this.setAttribute(name, value);
             if (opt_setHook)
               opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);

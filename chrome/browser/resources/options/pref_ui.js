@@ -7,7 +7,40 @@ cr.define('options', function() {
   var Preferences = options.Preferences;
 
   /**
-   * Helper function update element's state from pref change event.
+   * Allows an element to be disabled for several reasons.
+   * The element is disabled if at least one reason is true, and the reasons
+   * can be set separately.
+   * @private
+   * @param {!HTMLElement} el The element to update.
+   * @param {string} reason The reason for disabling the element.
+   * @param {boolean} disabled Whether the element should be disabled or enabled
+   * for the given |reason|.
+   */
+  function updateDisabledState_(el, reason, disabled) {
+    if (!el.disabledReasons)
+      el.disabledReasons = {};
+    if (el.disabled && (Object.keys(el.disabledReasons).length == 0)) {
+      // The element has been previously disabled without a reason, so we add
+      // one to keep it disabled.
+      el.disabledReasons['other'] = true;
+    }
+    if (!el.disabled) {
+      // If the element is not disabled, there should be no reason, except for
+      // 'other'.
+      delete el.disabledReasons['other'];
+      if (Object.keys(el.disabledReasons).length > 0)
+        console.error("Element is not disabled but should be");
+    }
+    if (disabled) {
+      el.disabledReasons[reason] = true;
+    } else {
+      delete el.disabledReasons[reason];
+    }
+    el.disabled = Object.keys(el.disabledReasons).length > 0;
+  }
+
+  /**
+   * Helper function to update element's state from pref change event.
    * @private
    * @param {!HTMLElement} el The element to update.
    * @param {!Event} event The pref change event.
@@ -18,18 +51,9 @@ cr.define('options', function() {
     if (!event.value)
       return;
 
+    updateDisabledState_(el, 'notUserModifiable', event.value.disabled);
+
     el.controlledBy = event.value['controlledBy'];
-
-    // Disable UI elements if the backend says so.
-    // |reenable| is a flag that tells us if the element is disabled because the
-    // preference is not modifiable by the user. If the element is disabled but
-    // the flag is not set, it means that the element has been disabled
-    // somewhere else, so we don't do anything.
-    if (el.disabled && !el.notUserModifiable)
-      return;
-
-    el.disabled = event.value['disabled'];
-    el.notUserModifiable = event.value['disabled'];
 
     OptionsPage.updateManagedBannerVisibility();
   }
@@ -94,6 +118,13 @@ cr.define('options', function() {
      */
     initializeValueType: function(valueType) {
       this.valueType = valueType || 'boolean';
+    },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
     },
   };
 
@@ -161,6 +192,13 @@ cr.define('options', function() {
             }
           });
     },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /**
@@ -213,7 +251,14 @@ cr.define('options', function() {
               Preferences.setIntegerPref(self.pref, self.value, self.metric);
             }
           });
-    }
+    },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /**
@@ -259,7 +304,14 @@ cr.define('options', function() {
               Preferences.setIntegerPref(self.pref, self.value, self.metric);
             }
           });
-    }
+    },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -367,6 +419,13 @@ cr.define('options', function() {
      */
     notifyChange: function(el, value) {
     },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /**
@@ -464,6 +523,13 @@ cr.define('options', function() {
             }
           });
     },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /**
@@ -537,7 +603,14 @@ cr.define('options', function() {
             if (document.activeElement == self)
               self.blur();
           });
-    }
+    },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
+    },
   };
 
   /**
@@ -596,6 +669,13 @@ cr.define('options', function() {
             };
             updateElementState_(self, e);
           });
+    },
+
+    /**
+     * See |updateDisabledState_| above.
+     */
+    setDisabled: function(reason, disabled) {
+      updateDisabledState_(this, reason, disabled);
     },
   };
 

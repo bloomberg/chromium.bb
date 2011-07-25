@@ -118,6 +118,10 @@ function testDefinePropertyAttr() {
   obj.test = 'a';
   assertEquals('a', obj.test);
   assertEquals('a', obj.getAttribute('test'));
+
+  obj.test = undefined;
+  assertEquals(undefined, obj.test);
+  assertFalse(obj.hasAttribute('test'));
 }
 
 function testDefinePropertyAttrOnClass() {
@@ -129,6 +133,10 @@ function testDefinePropertyAttrOnClass() {
   obj.test = 'a';
   assertEquals('a', obj.test);
   assertEquals('a', obj.getAttribute('test'));
+
+  obj.test = undefined;
+  assertEquals(undefined, obj.test);
+  assertFalse(obj.hasAttribute('test'));
 }
 
 function testDefinePropertyAttrWithSetter() {

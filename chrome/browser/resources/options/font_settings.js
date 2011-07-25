@@ -44,11 +44,13 @@ cr.define('options', function() {
           this.minimumFontSizeChanged_.bind(this);
 
       var placeholder = localStrings.getString('fontSettingsPlaceholder');
-      $('standard-font-family').appendChild(new Option(placeholder));
-      $('serif-font-family').appendChild(new Option(placeholder));
-      $('sans-serif-font-family').appendChild(new Option(placeholder));
-      $('fixed-font-family').appendChild(new Option(placeholder));
-      $('font-encoding').appendChild(new Option(placeholder));
+      var elements = [$('standard-font-family'), $('serif-font-family'),
+                      $('sans-serif-font-family'), $('fixed-font-family'),
+                      $('font-encoding')];
+      elements.forEach(function(el) {
+        el.appendChild(new Option(placeholder));
+        el.setDisabled('noFontsAvailable', true);
+      });
     },
 
     /**
@@ -152,9 +154,7 @@ cr.define('options', function() {
         }
       }
 
-      // Enable if not a managed pref.
-      if (!element.controlledBy)
-        element.disabled = false;
+      element.setDisabled('noFontsAvailable', false);
     }
   };
 
