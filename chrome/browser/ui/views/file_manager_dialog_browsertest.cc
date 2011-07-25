@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndCancel) {
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndOpen) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndSave) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
