@@ -71,12 +71,12 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                                   const net::URLRequestStatus& status,
                                   int response_code,
                                   const net::ResponseCookies& cookies,
-                                  const std::string& data);
+                                  const std::string& data) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
   // The URL scheme of the |url()| in the request should be HTTP.  This method

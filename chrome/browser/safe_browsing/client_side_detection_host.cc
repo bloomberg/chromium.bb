@@ -242,7 +242,7 @@ class CsdClient : public SafeBrowsingService::Client {
   // Method from SafeBrowsingService::Client.  This method is called on the
   // IO thread once the interstitial is going away.  This method simply deletes
   // the CsdClient object.
-  virtual void OnBlockingPageComplete(bool proceed) {
+  virtual void OnBlockingPageComplete(bool proceed) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // Delete this on the UI thread since it was created there.
     BrowserThread::PostTask(BrowserThread::UI,

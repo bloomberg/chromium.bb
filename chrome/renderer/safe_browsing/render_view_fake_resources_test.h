@@ -73,10 +73,10 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public RenderViewVisitor {
  public:
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // RenderViewVisitor implementation.
-  virtual bool Visit(RenderView* render_view);
+  virtual bool Visit(RenderView* render_view) OVERRIDE;
 
  protected:
   RenderViewFakeResourcesTest();
@@ -84,8 +84,8 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
 
   // Call the base class SetUp and TearDown methods as part of your
   // test fixture's SetUp / TearDown.
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Loads |url| into the RenderView, waiting for the load to finish.
   // Before loading the url, add any content that you want to return

@@ -68,16 +68,17 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
   }
 
   // ChromeInterstitialPage method:
-  virtual std::string GetHTMLContents();
-  virtual void SetReportingPreference(bool report);
-  virtual void Proceed();
-  virtual void DontProceed();
+  virtual std::string GetHTMLContents() OVERRIDE;
+  virtual void Proceed() OVERRIDE;
+  virtual void DontProceed() OVERRIDE;
 
  protected:
   friend class SafeBrowsingBlockingPageTest;
 
   // ChromeInterstitialPage method:
-  virtual void CommandReceived(const std::string& command);
+  virtual void CommandReceived(const std::string& command) OVERRIDE;
+
+  void SetReportingPreference(bool report);
 
   // Don't instanciate this class directly, use ShowBlockingPage instead.
   SafeBrowsingBlockingPage(SafeBrowsingService* service,
@@ -91,6 +92,8 @@ class SafeBrowsingBlockingPage : public ChromeInterstitialPage {
   int64 malware_details_proceed_delay_ms_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, MalwareReports);
+
   enum BlockingPageEvent {
     SHOW,
     PROCEED,

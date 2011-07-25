@@ -40,23 +40,23 @@ class ClientSideDetectionHost : public TabContentsObserver,
   virtual ~ClientSideDetectionHost();
 
   // From TabContentsObserver.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // From TabContentsObserver.  If we navigate away we cancel all pending
   // callbacks that could show an interstitial, and check to see whether
   // we should classify the new URL.
   virtual void DidNavigateMainFramePostCommit(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
   virtual void OnSafeBrowsingHit(
-      const SafeBrowsingService::UnsafeResource& resource);
+      const SafeBrowsingService::UnsafeResource& resource) OVERRIDE;
 
  protected:
   // From TabContentsObserver.  Called when the TabContents is being destroyed.
-  virtual void TabContentsDestroyed(TabContents* tab);
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:
   friend class ClientSideDetectionHostTest;
@@ -82,7 +82,7 @@ class ClientSideDetectionHost : public TabContentsObserver,
   // method is called in the UI thread.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Returns true if the user has seen a regular SafeBrowsing
   // interstitial for the current page.  This is only true if the user has

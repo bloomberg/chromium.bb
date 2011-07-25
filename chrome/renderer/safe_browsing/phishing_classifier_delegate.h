@@ -25,7 +25,7 @@ class PhishingClassifierFilter : public RenderProcessObserver {
   static PhishingClassifierFilter* Create();
   virtual ~PhishingClassifierFilter();
 
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   PhishingClassifierFilter();
@@ -61,7 +61,7 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   // cancelled.  However, if the navigation is within the same page, we
   // continue running the current classification.
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
-                                        bool is_new_navigation);
+                                        bool is_new_navigation) OVERRIDE;
 
  private:
   friend class PhishingClassifierDelegateTest;
@@ -82,7 +82,7 @@ class PhishingClassifierDelegate : public RenderViewObserver {
   void CancelPendingClassification(CancelClassificationReason reason);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Called by the RenderView when it receives a StartPhishingDetection IPC
   // from the browser.  This signals that it is ok to begin classification

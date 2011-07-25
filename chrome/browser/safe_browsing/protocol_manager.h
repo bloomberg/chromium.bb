@@ -108,7 +108,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
                                   const net::URLRequestStatus& status,
                                   int response_code,
                                   const net::ResponseCookies& cookies,
-                                  const std::string& data);
+                                  const std::string& data) OVERRIDE;
 
   // API used by the SafeBrowsingService for issuing queries. When the results
   // are available, SafeBrowsingService::HandleGetHashResults is called.

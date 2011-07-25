@@ -54,9 +54,10 @@ class DownloadSBClient
   // Callback interfaces for SafeBrowsingService::Client.
   virtual void OnDownloadUrlCheckResult(
       const std::vector<GURL>& url_chain,
-      SafeBrowsingService::UrlCheckResult result);
+      SafeBrowsingService::UrlCheckResult result) OVERRIDE;
   virtual void OnDownloadHashCheckResult(
-      const std::string& hash, SafeBrowsingService::UrlCheckResult result);
+      const std::string& hash,
+      SafeBrowsingService::UrlCheckResult result) OVERRIDE;
 
   // Enumerate for histogramming purposes.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES (different histogram data will
