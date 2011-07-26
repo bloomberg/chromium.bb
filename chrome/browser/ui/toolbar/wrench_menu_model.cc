@@ -17,6 +17,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -460,11 +461,13 @@ void WrenchMenuModel::Build() {
   AddSeparator();
 
 #if !defined(OS_CHROMEOS)
-  const string16 short_product_name =
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
-      IDS_SHOW_SYNC_SETUP, short_product_name));
-  AddSeparator();
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
+    const string16 short_product_name =
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+    AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
+        IDS_SHOW_SYNC_SETUP, short_product_name));
+    AddSeparator();
+  }
 #endif
 
 #if defined(OS_CHROMEOS)
