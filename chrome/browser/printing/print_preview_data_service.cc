@@ -4,7 +4,67 @@
 
 #include "chrome/browser/printing/print_preview_data_service.h"
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
+#include "printing/print_job_constants.h"
+
+// PrintPreviewDataStore stores data for preview workflow and preview printing
+// workflow.
+//
+// NOTE:
+//   This class stores a list of PDFs. The list |index| is zero-based and can
+// be |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete preview
+// document. The PDF stored at |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| is
+// optimized with font subsetting, compression, etc. PDF's stored at all other
+// indices are unoptimized.
+//
+// PrintPreviewDataStore owns the data and is responsible for freeing it when
+// either:
+//    a) There is a new data.
+//    b) When PrintPreviewDataStore is destroyed.
+//
+class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
+ public:
+  PrintPreviewDataStore() {}
+
+  // Get the preview page for the specified |index|.
+  void GetPreviewDataForIndex(int index, scoped_refptr<RefCountedBytes>* data) {
+    if (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
+        index < printing::FIRST_PAGE_INDEX) {
+      return;
+    }
+
+    PreviewPageDataMap::iterator it = page_data_map_.find(index);
+    if (it != page_data_map_.end())
+      *data = it->second.get();
+  }
+
+  // Set/Update the preview data entry for the specified |index|.
+  void SetPreviewDataForIndex(int index, const RefCountedBytes* data) {
+    if (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
+        index < printing::FIRST_PAGE_INDEX) {
+      return;
+    }
+
+    page_data_map_[index] = const_cast<RefCountedBytes*>(data);
+  }
+
+ private:
+  friend class base::RefCounted<PrintPreviewDataStore>;
+
+  // 1:1 relationship between page index and its associated preview data.
+  // Key: Page index is zero-based and can be
+  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete preview
+  // document.
+  // Value: Preview data.
+  typedef std::map<int, scoped_refptr<RefCountedBytes> > PreviewPageDataMap;
+
+  ~PrintPreviewDataStore() {}
+
+  PreviewPageDataMap page_data_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDataStore);
+};
 
 // static
 PrintPreviewDataService* PrintPreviewDataService::GetInstance() {
@@ -19,21 +79,29 @@ PrintPreviewDataService::~PrintPreviewDataService() {
 
 void PrintPreviewDataService::GetDataEntry(
     const std::string& preview_ui_addr_str,
+    int index,
     scoped_refptr<RefCountedBytes>* data_bytes) {
-  PreviewDataSourceMap::iterator it = data_src_map_.find(preview_ui_addr_str);
-  if (it != data_src_map_.end())
-    *data_bytes = it->second.get();
+  *data_bytes = NULL;
+  PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
+  if (it != data_store_map_.end())
+    it->second->GetPreviewDataForIndex(index, data_bytes);
 }
 
 void PrintPreviewDataService::SetDataEntry(
-    const std::string& preview_ui_addr_str, const RefCountedBytes* data_bytes) {
-  RemoveEntry(preview_ui_addr_str);
-  data_src_map_[preview_ui_addr_str] = const_cast<RefCountedBytes*>(data_bytes);
+    const std::string& preview_ui_addr_str,
+    int index,
+    const RefCountedBytes* data_bytes) {
+  PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
+  if (it == data_store_map_.end())
+    data_store_map_[preview_ui_addr_str] = new PrintPreviewDataStore();
+
+  data_store_map_[preview_ui_addr_str]->SetPreviewDataForIndex(index,
+                                                               data_bytes);
 }
 
 void PrintPreviewDataService::RemoveEntry(
     const std::string& preview_ui_addr_str) {
-  PreviewDataSourceMap::iterator it = data_src_map_.find(preview_ui_addr_str);
-  if (it != data_src_map_.end())
-    data_src_map_.erase(it);
+  PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
+  if (it != data_store_map_.end())
+    data_store_map_.erase(it);
 }

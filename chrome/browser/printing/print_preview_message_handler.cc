@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/shared_memory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -21,6 +23,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_restriction.h"
+#include "printing/print_job_constants.h"
 
 namespace {
 
@@ -35,6 +38,20 @@ void StopWorker(int document_cookie) {
         NewRunnableMethod(printer_query.get(),
                           &printing::PrinterQuery::StopWorker));
   }
+}
+
+RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
+                                   uint32 data_size) {
+  scoped_ptr<base::SharedMemory> shared_buf(
+      new base::SharedMemory(handle, true));
+  if (!shared_buf->Map(data_size)) {
+    NOTREACHED();
+    return NULL;
+  }
+  char* preview_data = static_cast<char*>(shared_buf->memory());
+  std::vector<unsigned char> data(data_size);
+  memcpy(&data[0], preview_data, data_size);
+  return RefCountedBytes::TakeVector(&data);
 }
 
 }  // namespace
@@ -64,7 +81,8 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview() {
 }
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
-                                                          int page_count) {
+                                                          int page_count,
+                                                          bool is_modifiable) {
   if (page_count <= 0)
     return;
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -73,10 +91,12 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(int document_cookie,
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->OnDidGetPreviewPageCount(document_cookie, page_count);
+  print_preview_ui->OnDidGetPreviewPageCount(
+      document_cookie, page_count, is_modifiable);
 }
 
-void PrintPreviewMessageHandler::OnDidPreviewPage(int page_number) {
+void PrintPreviewMessageHandler::OnDidPreviewPage(
+    const PrintHostMsg_DidPreviewPage_Params& params) {
   RenderViewHost* rvh = tab_contents()->render_view_host();
   TabContents* print_preview_tab = GetPrintPreviewTab();
   if (!(print_preview_tab && print_preview_tab->web_ui())) {
@@ -96,10 +116,25 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(int page_number) {
     return;
   }
 
-  // Continue
-  if (page_number >= 0)
+  int requested_preview_page_index = INVALID_PAGE_INDEX;
+  int page_number = params.page_number;
+
+  if (page_number == FIRST_PAGE_INDEX)
+    print_preview_ui->ClearAllPreviewData();
+
+  if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
+    RefCountedBytes* data_bytes =
+        GetDataFromHandle(params.metafile_data_handle, params.data_size);
+    DCHECK(data_bytes);
+
+    print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
     print_preview_ui->OnDidPreviewPage(page_number);
-  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id()));
+    // TODO(kmadhusu): Query |PrintPreviewUI| and update
+    // |requested_preview_page_index| accordingly.
+  }
+
+  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id(),
+                                         requested_preview_page_index));
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
@@ -121,41 +156,28 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
     print_preview_ui->OnDidGetPreviewPageCount(params.document_cookie,
-                                               params.expected_pages_count);
+                                               params.expected_pages_count,
+                                               params.modifiable);
 
-    print_preview_ui->OnPreviewDataIsAvailable(
-        params.expected_pages_count,
-        wrapper->print_view_manager()->RenderSourceName(),
-        params.modifiable,
-        params.preview_request_id);
-    return;
-  }
-
-  base::SharedMemory* shared_buf =
-      new base::SharedMemory(params.metafile_data_handle, true);
-  if (!shared_buf->Map(params.data_size)) {
-    NOTREACHED();
-    delete shared_buf;
+    print_preview_ui->OnReusePreviewData(params.preview_request_id);
     return;
   }
 
   wrapper->print_view_manager()->OverrideTitle(tab_contents());
 
-  const unsigned char* preview_data =
-      static_cast<unsigned char*>(shared_buf->memory());
-  uint32 preview_data_size = params.data_size;
-
   // TODO(joth): This seems like a good match for using RefCountedStaticMemory
   // to avoid the memory copy, but the SetPrintPreviewData call chain below
   // needs updating to accept the RefCountedMemory* base class.
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data().assign(preview_data, preview_data + preview_data_size);
+  RefCountedBytes* data_bytes =
+      GetDataFromHandle(params.metafile_data_handle, params.data_size);
+  if (!data_bytes)
+    return;
 
-  print_preview_ui->SetPrintPreviewData(html_bytes.get());
+  print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
+                                                data_bytes);
   print_preview_ui->OnPreviewDataIsAvailable(
       params.expected_pages_count,
       wrapper->print_view_manager()->RenderSourceName(),
-      params.modifiable,
       params.preview_request_id);
 }
 

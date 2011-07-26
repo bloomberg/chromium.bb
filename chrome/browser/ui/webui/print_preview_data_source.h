@@ -14,13 +14,16 @@
 // PrintPreviewDataSource serves data for chrome://print requests.
 //
 // The format for requesting data is as follows:
-// chrome://print/<PrintPreviewUIAddrStr>/print.pdf
+// chrome://print/<PrintPreviewUIAddrStr>/<PageIndex>/print.pdf
 //
 // Parameters (< > required):
 //    <PrintPreviewUIAddrStr> = Print preview UI identifier.
+//    <PageIndex> = Page index is zero-based or
+//                  |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
+//                  a print ready PDF.
 //
 // Example:
-//    chrome://print/0xab0123ef/print.pdf
+//    chrome://print/0xab0123ef/10/print.pdf
 
 class PrintPreviewDataSource : public ChromeURLDataManager::DataSource {
  public:

@@ -20,7 +20,8 @@ cr.define('print_preview', function() {
     // whenever needed.
     this.timerId_;
 
-    // Contains the previously selected pages. It is used in
+    // Contains the previously selected pages (pages requested by last
+    // preview request). It is used in
     // |this.onSelectedPagesMayHaveChanged_()| to make sure that a new preview
     // is not requested more often than necessary.
     this.previouslySelectedPages_ = [];
@@ -105,6 +106,16 @@ cr.define('print_preview', function() {
       var pageList = pageRangeTextToPageList(selectedPagesText,
                                              this.totalPageCount_);
       return pageListToPageSet(pageList);
+    },
+
+    /**
+     * Returns the previously selected pages in ascending order without any
+     * duplicates.
+     *
+     * @return {Array}
+     */
+    get previouslySelectedPages() {
+      return this.previouslySelectedPages_;
     },
 
     /**

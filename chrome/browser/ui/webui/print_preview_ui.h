@@ -22,13 +22,19 @@ class PrintPreviewUI : public ChromeWebUI {
   explicit PrintPreviewUI(TabContents* contents);
   virtual ~PrintPreviewUI();
 
-  // Gets the print preview |data|. The data is valid as long as the
-  // PrintPreviewDataService is valid and SetPrintPreviewData() does not get
-  // called.
-  void GetPrintPreviewData(scoped_refptr<RefCountedBytes>* data);
+  // Gets the print preview |data|. |index| is zero-based, and can be
+  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
+  // document.
+  void GetPrintPreviewDataForIndex(int index,
+                                   scoped_refptr<RefCountedBytes>* data);
 
-  // Sets the print preview |data|.
-  void SetPrintPreviewData(const RefCountedBytes* data);
+  // Sets the print preview |data|. |index| is zero-based, and can be
+  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
+  // document.
+  void SetPrintPreviewDataForIndex(int index, const RefCountedBytes* data);
+
+  // Clear the existing print preview data.
+  void ClearAllPreviewData();
 
   // Notify the Web UI that there is a print preview request.
   // There should be a matching call to OnPreviewDataIsAvailable() or
@@ -36,7 +42,11 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnPrintPreviewRequest();
 
   // Notify the Web UI that the print preview will have |page_count| pages.
-  void OnDidGetPreviewPageCount(int document_cookie_, int page_count);
+  // |is_modifiable| indicates if the preview can be rerendered with different
+  // print settings.
+  void OnDidGetPreviewPageCount(int document_cookie_,
+                                int page_count,
+                                bool is_modifiable);
 
   // Notify the Web UI that the 0-based page |page_number| has been rendered.
   void OnDidPreviewPage(int page_number);
@@ -44,13 +54,12 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notify the Web UI renderer that preview data is available.
   // |expected_pages_count| specifies the total number of pages.
   // |job_title| is the title of the page being previewed.
-  // |modifiable| indicates if the preview can be rerendered with different
-  // print settings.
   // |preview_request_id| indicates wich request resulted in this response.
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 const string16& job_title,
-                                bool modifiable,
                                 int preview_request_id);
+
+  void OnReusePreviewData(int preview_request_id);
 
   // Notify the Web UI that a navigation has occurred in this tab. This is the
   // last chance to communicate with the source tab before the assocation is

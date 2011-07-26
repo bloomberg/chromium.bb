@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -134,8 +135,10 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Initialize the print preview document.
   bool CreatePreviewDocument();
 
-  // Continue generating the print preview.
-  void OnContinuePreview();
+  // Continue generating the print preview. |requested_preview_page_index|
+  // specifies the browser requested preview page index. It is 1-based or
+  // |printing::INVALID_PAGE_INDEX| to continue with next page.
+  void OnContinuePreview(int requested_preview_page_index);
   // Renders a print preview page. |page_number| is 0-based.
   void RenderPreviewPage(int page_number);
   // Finalize the print preview document.
@@ -225,11 +228,12 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
   void RenderPage(const PrintMsg_Print_Params& params, float* scale_factor,
-                  int page_number, bool is_preview, WebKit::WebFrame* frame,
+                  int page_number, int page_slot, bool is_preview,
+                  WebKit::WebFrame* frame,
                   scoped_ptr<printing::Metafile>* metafile);
 #elif defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Rect& content_area,
-                  const float& scale_factor, int page_number,
+                  const float& scale_factor, int page_number, int page_slot,
                   WebKit::WebFrame* frame, printing::Metafile* metafile);
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
@@ -281,8 +285,9 @@ class PrintWebViewHelper : public RenderViewObserver,
   void RequestPrintPreview();
 
   // Notify the browser a print preview page has been rendered.
-  // |page_number| is 0-based.
-  void PreviewPageRendered(int page_number);
+  // |page_number| is 0-based or |printing::INVALID_PAGE_INDEX| to check
+  // for pending preview requests.
+  void PreviewPageRendered(int page_number, printing::Metafile* metafile);
 
   WebKit::WebView* print_web_view_;
 
@@ -336,6 +341,11 @@ class PrintWebViewHelper : public RenderViewObserver,
     bool IsBusy() const;
     bool IsModifiable() const;
 
+    // Return the page slot in the final document for |page_number|. i.e. if
+    // the user selected just page 3, the page slot would be 0, since it is
+    // the first page in the resulting document.
+    int GetPageSlotForPage(int page_number) const;
+
     // Getters
     WebKit::WebFrame* frame() const;
     WebKit::WebNode* node() const;
@@ -372,8 +382,10 @@ class PrintWebViewHelper : public RenderViewObserver,
     // The current page to render.
     int current_page_number_;
 
-    // Array to keep track of which pages have been printed.
-    std::vector<bool> rendered_pages_;
+    // |rendered_pages_| tracks which pages need to be printed as well as
+    // the page slot it should be printed in. See GetPageSlotForPage.
+    typedef std::pair<bool, int> PreviewPageInfo;
+    std::vector<PreviewPageInfo> rendered_pages_;
 
     base::TimeDelta document_render_time_;
     base::TimeTicks begin_time_;

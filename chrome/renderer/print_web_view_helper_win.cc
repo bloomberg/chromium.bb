@@ -84,13 +84,14 @@ void PrintWebViewHelper::PrintPageInternal(
   skia::InitializeDC(metafile->context());
 
   int page_number = params.page_number;
+  int page_slot = params.page_slot;
 
   // Calculate the dpi adjustment.
   float scale_factor = static_cast<float>(params.params.desired_dpi /
                                           params.params.dpi);
 
   // Render page for printing.
-  RenderPage(params.params, &scale_factor, page_number, false, frame,
+  RenderPage(params.params, &scale_factor, page_number, page_slot, false, frame,
              &metafile);
 
   // Close the device context to retrieve the compiled metafile.
@@ -128,23 +129,28 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   // Calculate the dpi adjustment.
   float scale_factor = static_cast<float>(print_params.desired_dpi /
                                           print_params.dpi);
-  // Needed for RenderPage() below.
-  // Not taking ownership with intent to reset().
+
+  // |metafile| is needed for RenderPage() below. |metafile| will not take the
+  // ownership of |print_preview_context_| metafile.
   scoped_ptr<Metafile> metafile(print_preview_context_.metafile());
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  RenderPage(print_params, &scale_factor, page_number, true,
+  RenderPage(print_params, &scale_factor, page_number,
+             print_preview_context_.GetPageSlotForPage(page_number), true,
              print_preview_context_.frame(), &metafile);
-  // Release since |print_preview_context_| is the real owner.
-  metafile.release();
+
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
-  PreviewPageRendered(page_number);
+
+  // Release since |print_preview_context_| is the real owner.
+  metafile.release();
+  PreviewPageRendered(page_number, NULL);
 }
 
 void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
-    bool is_preview, WebFrame* frame, scoped_ptr<Metafile>* metafile) {
+    int page_slot, bool is_preview, WebFrame* frame,
+    scoped_ptr<Metafile>* metafile) {
   PageSizeMargins page_layout_in_points;
   GetPageSizeAndMarginsInPoints(frame, page_number, params,
                                 &page_layout_in_points);
@@ -173,7 +179,7 @@ void PrintWebViewHelper::RenderPage(
       static_cast<int>(page_layout_in_points.content_width),
       static_cast<int>(page_layout_in_points.content_height));
   SkDevice* device = (*metafile)->StartPageForVectorCanvas(
-      page_number, page_size, content_area,
+      page_slot, page_size, content_area,
       frame->getPrintPageShrink(page_number));
   DCHECK(device);
   // The printPage method may take a reference to the canvas we pass down, so it

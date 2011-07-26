@@ -337,6 +337,8 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
     Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
     return;
   }
+  // Always clear |old_print_pages_params_| before rendering the pages.
+  old_print_pages_params_.reset();
 
   // PDF printer device supports alpha blending.
   print_pages_params_->params.supports_alpha_blend = true;
@@ -350,20 +352,29 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   if (!print_preview_context_.CreatePreviewDocument(&print_params, pages))
     return false;
   int page_count = print_preview_context_.total_page_count();
+  bool is_modifiable = print_preview_context_.IsModifiable();
   int document_cookie = print_pages_params_->params.document_cookie;
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), document_cookie,
-                                               page_count));
-  PreviewPageRendered(-1);
+                                               page_count, is_modifiable));
+  PreviewPageRendered(printing::INVALID_PAGE_INDEX, NULL);
   return true;
 }
 
-void PrintWebViewHelper::OnContinuePreview() {
+void PrintWebViewHelper::OnContinuePreview(int requested_preview_page_index) {
   // Spurious message. We already finished/cancelled/aborted the print preview.
   if (!print_preview_context_.IsBusy())
     return;
+  int page_number;
+#if defined(USE_SKIA)
+  if (requested_preview_page_index >= printing::FIRST_PAGE_INDEX) {
+    page_number = requested_preview_page_index;
+  } else
+#endif
+  {
+    page_number = print_preview_context_.GetNextPageNumber();
+  }
 
-  int page_number = print_preview_context_.GetNextPageNumber();
-  if (page_number >= 0) {
+  if (page_number >= printing::FIRST_PAGE_INDEX) {
     // Continue generating the print preview.
     RenderPreviewPage(page_number);
     return;
@@ -576,6 +587,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       page_params.page_number = i;
+      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame);
     }
   } else {
@@ -583,6 +595,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
       if (params.pages[i] >= page_count)
         break;
       page_params.page_number = params.pages[i];
+      page_params.page_slot = i;
       PrintPageInternal(page_params, canvas_size, frame);
     }
   }
@@ -901,8 +914,33 @@ void PrintWebViewHelper::RequestPrintPreview() {
   Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
 
-void PrintWebViewHelper::PreviewPageRendered(int page_number) {
-  Send(new PrintHostMsg_DidPreviewPage(routing_id(), page_number));
+void PrintWebViewHelper::PreviewPageRendered(int page_number,
+                                             printing::Metafile* metafile) {
+#if !defined(OS_WIN)
+  if ((page_number == printing::INVALID_PAGE_INDEX && metafile) ||
+       (page_number >= printing::FIRST_PAGE_INDEX && !metafile &&
+        print_preview_context_.IsModifiable())) {
+    NOTREACHED();
+    DidFinishPrinting(FAIL_PREVIEW);
+    return;
+  }
+#endif
+
+  uint32 buf_size = 0;
+  PrintHostMsg_DidPreviewPage_Params preview_page_params;
+  // Get the size of the resulting metafile.
+  if (metafile) {
+    buf_size = metafile->GetDataSize();
+    DCHECK_GT(buf_size, 0u);
+    if (!CopyMetafileDataToSharedMem(
+            metafile, &(preview_page_params.metafile_data_handle))) {
+      DidFinishPrinting(FAIL_PREVIEW);
+      return;
+    }
+  }
+  preview_page_params.data_size = buf_size;
+  preview_page_params.page_number = page_number;
+  Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params));
 }
 
 PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
@@ -966,15 +1004,20 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   current_page_number_ = 0;
   if (pages.empty()) {
     actual_page_count_ = total_page_count_;
-    rendered_pages_ = std::vector<bool>(total_page_count_, false);
+    rendered_pages_ = std::vector<PreviewPageInfo>(total_page_count_,
+                                                   std::make_pair(false, -1));
   } else {
     actual_page_count_ = pages.size();
-    rendered_pages_ = std::vector<bool>(total_page_count_, true);
+    rendered_pages_ = std::vector<PreviewPageInfo>(total_page_count_,
+                                                   std::make_pair(true, -1));
     for (int i = 0; i < actual_page_count_; ++i) {
       int page_number = pages[i];
-      if (page_number < 0 || page_number >= total_page_count_)
+      if (page_number < printing::FIRST_PAGE_INDEX ||
+          page_number >= total_page_count_) {
         return false;
-      rendered_pages_[page_number] = false;
+      }
+      rendered_pages_[page_number].first = false;
+      rendered_pages_[page_number].second = i;
     }
   }
 
@@ -1029,14 +1072,15 @@ void PrintWebViewHelper::PrintPreviewContext::Abort() {
 
 int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
   DCHECK_EQ(RENDERING, state_);
-  while (current_page_number_ < total_page_count_ &&
-         rendered_pages_[current_page_number_]) {
-    ++current_page_number_;
+  for (int i = 0; i < total_page_count_; i++) {
+    if (!rendered_pages_[current_page_number_].first)
+      break;
+    current_page_number_ = (current_page_number_ + 1) % total_page_count_;
   }
-  if (current_page_number_ == total_page_count_)
-    return -1;
-  rendered_pages_[current_page_number_] = true;
-  return current_page_number_++;
+  if (rendered_pages_[current_page_number_].first)
+    return printing::INVALID_PAGE_INDEX;
+  rendered_pages_[current_page_number_].first = true;
+  return current_page_number_;
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsReadyToRender() const {
@@ -1048,10 +1092,19 @@ bool PrintWebViewHelper::PrintPreviewContext::IsBusy() const {
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
+  // TODO(vandebo) I think this should only return false if the content is a
+  // PDF, just because we are printing a particular node does not mean it's
+  // a PDF (right?), we should check the mime type of the node.
   if (node())
     return false;
   std::string mime(frame()->dataSource()->response().mimeType().utf8());
   return mime != "application/pdf";
+}
+
+int PrintWebViewHelper::PrintPreviewContext::GetPageSlotForPage(
+    int page_number) const {
+  int page_slot = rendered_pages_[page_number].second;
+  return page_slot == -1 ? page_number : page_slot;
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {

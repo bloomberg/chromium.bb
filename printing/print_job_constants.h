@@ -21,6 +21,10 @@ extern const char kSettingPageRangeTo[];
 extern const char kSettingPrinterName[];
 extern const char kSettingPrintToPDF[];
 
+extern const int FIRST_PAGE_INDEX;
+extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;
+extern const int INVALID_PAGE_INDEX;
+
 // Print job duplex mode values.
 enum DuplexMode {
   SIMPLEX,

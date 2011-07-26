@@ -20,6 +20,7 @@ class MessageReplyDeserializer;
 
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
+struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_ScriptedPrint_Params;
 
 // This class is very simple mock of RenderThread. It simulates an IPC channel
@@ -124,8 +125,9 @@ class MockRenderThread : public RenderThreadBase {
 
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
-  void OnDidGetPreviewPageCount(int document_cookie, int number_pages);
-  void OnDidPreviewPage(int page_number);
+  void OnDidGetPreviewPageCount(int document_cookie, int number_pages,
+                                bool is_modifiable);
+  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
 
   // For print preview, PrintWebViewHelper will update settings.
   void OnUpdatePrintSettings(int document_cookie,

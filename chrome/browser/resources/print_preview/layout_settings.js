@@ -66,7 +66,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrinterCapabilitiesUpdated_: function(e) {
-      this.fadeInOut(e.printerCapabilities.disableLandscapeOption);
+      if (e.printerCapabilities.disableLandscapeOption)
+        this.fadeInOut_(e.printerCapabilities.disableLandscapeOption);
     },
 
     /**
@@ -93,8 +94,9 @@ cr.define('print_preview', function() {
     /**
      * @param {boolean} fadeOut True if |this.layoutOption_| should be faded
      *     out, false if it should be faded in.
+     * @private
      */
-    fadeInOut: function(fadeOut) {
+    fadeInOut_: function(fadeOut) {
       fadeOut ? fadeOutElement(this.layoutOption_) :
           fadeInElement(this.layoutOption_);
     }

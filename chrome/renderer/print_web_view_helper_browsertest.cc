@@ -354,8 +354,10 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
 
   // Need to finish simulating print preview.
   // Generate the page and finalize it.
-  PrintWebViewHelper::Get(view_)->OnContinuePreview();
-  PrintWebViewHelper::Get(view_)->OnContinuePreview();
+  PrintWebViewHelper::Get(view_)->OnContinuePreview(
+      printing::INVALID_PAGE_INDEX);
+  PrintWebViewHelper::Get(view_)->OnContinuePreview(
+      printing::INVALID_PAGE_INDEX);
 
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewFailed(false);

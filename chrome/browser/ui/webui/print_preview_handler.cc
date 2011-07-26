@@ -713,8 +713,9 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
                                             std::string print_ticket) {
   scoped_refptr<RefCountedBytes> data;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->GetPrintPreviewData(&data);
-  CHECK(data->front());
+  print_preview_ui->GetPrintPreviewDataForIndex(
+      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
+  CHECK(data.get());
   DCHECK_GT(data->size(), 0U);
 
   TabContentsWrapper* wrapper =
@@ -846,9 +847,10 @@ void PrintPreviewHandler::OnNavigation() {
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  scoped_refptr<RefCountedBytes> data(new RefCountedBytes());
-  print_preview_ui->GetPrintPreviewData(&data);
-  if (!data->front()) {
+  scoped_refptr<RefCountedBytes> data;
+  print_preview_ui->GetPrintPreviewDataForIndex(
+      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
+  if (!data.get()) {
     NOTREACHED();
     return;
   }

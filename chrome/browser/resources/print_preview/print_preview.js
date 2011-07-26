@@ -71,6 +71,7 @@ var addedCloudPrinters = {};
 // The maximum number of cloud printers to allow in the dropdown.
 const maxCloudPrinters = 10;
 
+var isPipeliningSupported = false;
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -78,6 +79,8 @@ const maxCloudPrinters = 10;
  */
 function onLoad() {
   cr.enablePlatformSpecificCSSRules();
+
+  isPipeliningSupported = !cr.isWindows;
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
@@ -362,6 +365,16 @@ function generatePreviewRequestID() {
  */
 function hasRequestedPreview() {
   return lastPreviewRequestID > -1;
+}
+
+/**
+ * Checks if |previewResponseId| matches |lastPreviewRequestId|. Used to ignore
+ * obsolete preview data responses.
+ * @param {number} previewResponseId The id to check.
+ * @return {boolean} True if previewResponseId reffers to the expected response.
+ */
+function isExpectedPreviewResponse(previewResponseId) {
+  return lastPreviewRequestID == previewResponseId;
 }
 
 /**
@@ -790,6 +803,10 @@ function printPreviewFailed() {
  * Called when the PDF plugin loads its document.
  */
 function onPDFLoad() {
+  if (previewModifiable && isPipeliningSupported) {
+    setPluginPreviewPageCount();
+    cr.dispatchSimpleEvent(document, 'updateSummary');
+  }
   $('pdf-viewer').fitToHeight();
   setColor($('color').checked);
   hideLoadingAnimation();
@@ -797,13 +814,41 @@ function onPDFLoad() {
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
 }
 
+function setPluginPreviewPageCount() {
+  $('pdf-viewer').printPreviewPageCount(
+      pageSettings.previouslySelectedPages.length);
+}
+
 /**
  * Update the page count and check the page range.
  * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
  * @param {number} pageCount The number of pages.
+ * @param {boolean} isModifiable Indicates whether the previewed document can be
+ *     modified.
  */
-function onDidGetPreviewPageCount(pageCount) {
+function onDidGetPreviewPageCount(pageCount, isModifiable) {
   pageSettings.updateState(pageCount);
+  previewModifiable = isModifiable;
+}
+
+/**
+ * Called when no pipelining previewed pages.
+ */
+function reloadPreviewPages(previewUid, previewResponseId) {
+  if (!isExpectedPreviewResponse(previewResponseId))
+    return;
+  hasPendingPreviewRequest = false;
+
+  if (checkIfSettingsChangedAndRegeneratePreview())
+    return;
+  cr.dispatchSimpleEvent(document, 'updateSummary');
+  cr.dispatchSimpleEvent(document, 'updatePrintButton');
+  addEventListeners();
+  hideLoadingAnimation();
+  var pageSet = pageSettings.previouslySelectedPages;
+  for (var i = 0; i < pageSet.length; i++)
+    $('pdf-viewer').loadPreviewPage(getPageSrcURL(previewUid, pageSet[i]-1), i);
+  // TODO(dpapad): handle pending print file requests.
 }
 
 /**
@@ -812,10 +857,20 @@ function onDidGetPreviewPageCount(pageCount) {
  * Called from PrintPreviewUI::OnDidPreviewPage().
  * @param {number} pageNumber The page number, 0-based.
  */
-function onDidPreviewPage(pageNumber) {
+function onDidPreviewPage(pageNumber, previewUid) {
+  // Refactor
+  if (!previewModifiable || !isPipeliningSupported)
+    return;
+
+  var pageIndex = pageSettings.previouslySelectedPages.indexOf(pageNumber + 1);
+
   if (checkIfSettingsChangedAndRegeneratePreview())
     return;
-  // TODO(thestig) Make use of |pageNumber| for pipelined preview generation.
+  if (pageIndex == 0)
+    createPDFPlugin(previewUid);
+
+  $('pdf-viewer').loadPreviewPage(
+      getPageSrcURL(previewUid, pageNumber), pageIndex);
 }
 
 /**
@@ -825,24 +880,26 @@ function onDidPreviewPage(pageNumber) {
  * @param {string} jobTitle The print job title.
  * @param {boolean} modifiable If the preview is modifiable.
  * @param {string} previewUid Preview unique identifier.
- * @param {number} previewRequestId The preview request id that resulted in this
- *     response.
+ * @param {number} previewResponseId The preview request id that resulted in
+ *     this response.
  */
 function updatePrintPreview(jobTitle,
-                            modifiable,
                             previewUid,
-                            previewRequestId) {
-  if (lastPreviewRequestID != previewRequestId)
+                            previewResponseId) {
+  if (!isExpectedPreviewResponse(previewResponseId))
     return;
   hasPendingPreviewRequest = false;
 
   if (checkIfSettingsChangedAndRegeneratePreview())
     return;
 
-  previewModifiable = modifiable;
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
-  createPDFPlugin(previewUid);
+  if (!previewModifiable || !isPipeliningSupported) {
+    // If the preview is not modifiable the plugin has not been created yet.
+    createPDFPlugin(previewUid);
+  }
+
   cr.dispatchSimpleEvent(document, 'updateSummary');
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
   addEventListeners();
@@ -883,17 +940,19 @@ function createPDFPlugin(previewUid) {
     // Need to call this before the reload(), where the plugin resets its
     // internal page count.
     pdfViewer.goToPage('0');
-
     pdfViewer.reload();
     pdfViewer.grayscale(!isColor());
     return;
   }
 
+  // Get the complete preview document.
+  var dataIndex = previewModifiable && isPipeliningSupported  ? '0' : '-1';
+
   pdfViewer = document.createElement('embed');
   pdfViewer.setAttribute('id', 'pdf-viewer');
   pdfViewer.setAttribute('type',
                          'application/x-google-chrome-print-preview-pdf');
-  pdfViewer.setAttribute('src', 'chrome://print/' + previewUid + '/print.pdf');
+  pdfViewer.setAttribute('src', getPageSrcURL(previewUid, dataIndex));
   pdfViewer.setAttribute('aria-live', 'polite');
   pdfViewer.setAttribute('aria-atomic', 'true');
   $('mainview').appendChild(pdfViewer);
@@ -907,9 +966,11 @@ function createPDFPlugin(previewUid) {
  */
 function checkCompatiblePluginExists() {
   var dummyPlugin = $('dummy-viewer')
-  return (dummyPlugin.onload &&
-          dummyPlugin.goToPage &&
-          dummyPlugin.removePrintButton);
+  return !!(dummyPlugin.onload &&
+            dummyPlugin.goToPage &&
+            dummyPlugin.removePrintButton &&
+            dummyPlugin.loadPreviewPage &&
+            dummyPlugin.printPreviewPageCount);
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);

@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -140,13 +142,18 @@ PrintPreviewDataSource::~PrintPreviewDataSource() {
 void PrintPreviewDataSource::StartDataRequest(const std::string& path,
                                               bool is_incognito,
                                               int request_id) {
-  scoped_refptr<RefCountedBytes> data(new RefCountedBytes);
+  scoped_refptr<RefCountedBytes> data;
 
   bool preview_data_requested = EndsWith(path, "/print.pdf", true);
   if (preview_data_requested) {
-    size_t index = path.rfind("/print.pdf");
-    PrintPreviewDataService::GetInstance()->GetDataEntry(path.substr(0, index),
-                                                         &data);
+    std::vector<std::string> url_substr;
+    base::SplitString(path, '/', &url_substr);
+    int page_index = 0;
+    if (url_substr.size() == 3 && base::StringToInt(url_substr[1],
+                                                    &page_index)) {
+      PrintPreviewDataService::GetInstance()->GetDataEntry(url_substr[0],
+                                                           page_index, &data);
+    }
   }
 
   if (path.empty()) {
@@ -163,11 +170,11 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
 
     SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
     return;
-  } else if (preview_data_requested && data->front()) {
+  } else if (preview_data_requested && data.get()) {
     // Print Preview data.
     SendResponse(request_id, data);
     return;
- } else {
+  } else {
     // Invalid request.
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
     SendResponse(request_id, empty_bytes);
@@ -176,7 +183,5 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
 }
 
 std::string PrintPreviewDataSource::GetMimeType(const std::string& path) const {
-  if (path.empty())
-    return "text/html";  // Print Preview Index Page.
-  return "application/pdf";  // Print Preview data
+  return path.empty() ? "text/html" : "application/pdf";
 }

@@ -179,3 +179,13 @@ function pageSetToPageRanges(pageSet) {
   }
   return pageRanges;
 }
+
+/**
+ * Constructs a url for getting a specific page.
+ * @param {string} id The id of the preview data.
+ * @param {number} pageNumber The number of the desired page.
+ * @return {string} The constructed URL.
+ */
+function getPageSrcURL(id, pageNumber) {
+  return 'chrome://print/' + id + '/' + pageNumber + '/print.pdf';
+}

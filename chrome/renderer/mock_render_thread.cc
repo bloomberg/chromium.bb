@@ -212,12 +212,14 @@ void MockRenderThread::OnDidPrintPage(
 }
 
 void MockRenderThread::OnDidGetPreviewPageCount(int document_cookie,
-                                                int number_pages) {
+                                                int number_pages,
+                                                bool is_modifiable) {
   print_preview_pages_remaining_ = number_pages;
 }
 
-void MockRenderThread::OnDidPreviewPage(int page_number) {
-  if (page_number < 0)
+void MockRenderThread::OnDidPreviewPage(
+    const PrintHostMsg_DidPreviewPage_Params& params) {
+  if (params.page_number < printing::FIRST_PAGE_INDEX)
     return;
   print_preview_pages_remaining_--;
 }

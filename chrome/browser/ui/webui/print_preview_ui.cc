@@ -37,12 +37,19 @@ PrintPreviewUI::~PrintPreviewUI() {
   print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
-void PrintPreviewUI::GetPrintPreviewData(scoped_refptr<RefCountedBytes>* data) {
-  print_preview_data_service()->GetDataEntry(preview_ui_addr_str_, data);
+void PrintPreviewUI::GetPrintPreviewDataForIndex(
+    int index,
+    scoped_refptr<RefCountedBytes>* data) {
+  print_preview_data_service()->GetDataEntry(preview_ui_addr_str_, index, data);
 }
 
-void PrintPreviewUI::SetPrintPreviewData(const RefCountedBytes* data) {
-    print_preview_data_service()->SetDataEntry(preview_ui_addr_str_, data);
+void PrintPreviewUI::SetPrintPreviewDataForIndex(int index,
+                                                 const RefCountedBytes* data) {
+  print_preview_data_service()->SetDataEntry(preview_ui_addr_str_, index, data);
+}
+
+void PrintPreviewUI::ClearAllPreviewData() {
+  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
 void PrintPreviewUI::OnInitiatorTabClosed(
@@ -56,22 +63,33 @@ void PrintPreviewUI::OnPrintPreviewRequest() {
 }
 
 void PrintPreviewUI::OnDidGetPreviewPageCount(int document_cookie,
-                                              int page_count) {
+                                              int page_count,
+                                              bool is_modifiable) {
   DCHECK_GT(page_count, 0);
   document_cookie_ = document_cookie;
   FundamentalValue count(page_count);
-  CallJavascriptFunction("onDidGetPreviewPageCount", count);
+  FundamentalValue modifiable(is_modifiable);
+  CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number) {
   DCHECK_GE(page_number, 0);
   FundamentalValue number(page_number);
-  CallJavascriptFunction("onDidPreviewPage", number);
+  StringValue ui_identifier(preview_ui_addr_str_);
+  CallJavascriptFunction("onDidPreviewPage", number, ui_identifier);
+}
+
+void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
+  DecrementRequestCount();
+
+  StringValue ui_identifier(preview_ui_addr_str_);
+  FundamentalValue ui_preview_request_id(preview_request_id);
+  CallJavascriptFunction("reloadPreviewPages", ui_identifier,
+                         ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                                               const string16& job_title,
-                                              bool modifiable,
                                               int preview_request_id) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
@@ -84,13 +102,11 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          expected_pages_count);
     initial_preview_start_time_ = base::TimeTicks();
   }
-  FundamentalValue pages_count(expected_pages_count);
   StringValue title(job_title);
-  FundamentalValue is_preview_modifiable(modifiable);
   StringValue ui_identifier(preview_ui_addr_str_);
   FundamentalValue ui_preview_request_id(preview_request_id);
-  CallJavascriptFunction("updatePrintPreview", title, is_preview_modifiable,
-                         ui_identifier, ui_preview_request_id);
+  CallJavascriptFunction("updatePrintPreview", title, ui_identifier,
+                         ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnNavigation() {

@@ -60,6 +60,11 @@ IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
   // The page number is the indicator of the square that should be rendered
   // according to the layout specified in PrintMsg_Print_Params.
   IPC_STRUCT_MEMBER(int, page_number)
+
+  // The page number in the resulting document.  If the user is only printing
+  // page 2, |page_number| above will 1, but |page_slot| will be 0, as it's the
+  // first page in the final document.
+  IPC_STRUCT_MEMBER(int, page_slot)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPages_Params)
@@ -94,6 +99,19 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
 
   // The id of the preview request.
   IPC_STRUCT_MEMBER(int, preview_request_id)
+IPC_STRUCT_END()
+
+// Parameters to describe a rendered preview page.
+IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
+  // A shared memory handle to metafile data for a draft document of the page.
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
+
+  // Size of metafile data.
+  IPC_STRUCT_MEMBER(uint32, data_size)
+
+  // |page_number| is zero-based and can be |printing::INVALID_PAGE_INDEX| if it
+  // is just a check.
+  IPC_STRUCT_MEMBER(int, page_number)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered page.
@@ -174,7 +192,11 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
 IPC_MESSAGE_ROUTED0(PrintMsg_ResetScriptedPrintCount)
 
 // Tells a renderer to continue generating the print preview.
-IPC_MESSAGE_ROUTED0(PrintMsg_ContinuePreview)
+// Use |requested_preview_page_index| to request a specific preview page data.
+// |requested_preview_page_index| is 1-based or |printing::INVALID_PAGE_INDEX|
+// to render the next page.
+IPC_MESSAGE_ROUTED1(PrintMsg_ContinuePreview,
+                    int /* requested_preview_page_index */)
 
 // Tells a renderer to abort the print preview and reset all state.
 IPC_MESSAGE_ROUTED0(PrintMsg_AbortPreview)
@@ -242,15 +264,14 @@ IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
 IPC_MESSAGE_ROUTED0(PrintHostMsg_RequestPrintPreview)
 
 // Notify the browser the number of pages in the print preview document.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPreviewPageCount,
+IPC_MESSAGE_ROUTED3(PrintHostMsg_DidGetPreviewPageCount,
                     int  /* document cookie */,
-                    int  /* page count */)
+                    int  /* page count */,
+                    bool /* is modifiable */)
 
-// Notify the browser a print preview page has been rendered. Give the browser
-// a chance to cancel the print preview as needed. Page number is zero-based,
-// and can be -1 if it is just a check.
+// Notify the browser a print preview page has been rendered.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,
-                    int  /* page number */)
+                    PrintHostMsg_DidPreviewPage_Params /* params */)
 
 // Sends back to the browser the complete rendered document for print preview
 // that was requested by a PrintMsg_PrintPreview message. The memory handle in
