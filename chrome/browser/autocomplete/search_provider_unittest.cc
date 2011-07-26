@@ -643,3 +643,29 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   EXPECT_NE(result.match_at(0).description,
             result.match_at(1).description);
 }
+
+// Verifies Navsuggest results don't set a TemplateURL (which instant relies
+// on).
+TEST_F(SearchProviderTest, NoTemplateURLForNavsuggest) {
+  QueryForInput(ASCIIToUTF16("a.c"), false);
+
+  // Make sure the default providers suggest service was queried.
+  TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // Tell the SearchProvider the suggest query is done.
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, GURL(), net::URLRequestStatus(), 200, net::ResponseCookies(),
+      "[\"a.c\",[\"a.com\"],[\"\"],[],"
+      "{\"google:suggesttype\":[\"NAVIGATION\"]}]");
+  fetcher = NULL;
+
+  // Run till the history results complete.
+  RunTillProviderDone();
+
+  // Make sure there is a match for 'a.com' and it doesn't have a template_url.
+  AutocompleteMatch nav_match;
+  EXPECT_TRUE(FindMatchWithDestination(GURL("http://a.com"), &nav_match));
+  EXPECT_FALSE(nav_match.template_url);
+}
