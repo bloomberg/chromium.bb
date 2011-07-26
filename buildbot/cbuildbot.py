@@ -11,6 +11,7 @@ full and pre-flight-queue builds.
 """
 
 import constants
+import fcntl
 import multiprocessing
 import Queue
 import optparse
@@ -605,7 +606,22 @@ def _PostParseCheck(options):
     cros_lib.Die('Patching is not supported with --lkgm option.')
 
 
+def _SetBlockingMode(fd):
+  """Set blocking mode on provided fd."""
+  flags = fcntl.fcntl(fd, fcntl.F_GETFL, 0)
+  if flags & os.O_NONBLOCK:
+    cros_lib.Info('Disabling O_NONBLOCK on fd %d' % fd)
+    fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
+  else:
+    cros_lib.Info('O_NONBLOCK already disabled on fd %d' % fd)
+
+
 def main(argv=None):
+  # Ensure that stdout are stderr are blocking file descriptors. This ensures
+  # we won't get EAGAIN errors when writing to stdout or stderr.
+  _SetBlockingMode(sys.stdout.fileno())
+  _SetBlockingMode(sys.stderr.fileno())
+
   if not argv:
     argv = sys.argv[1:]
 
