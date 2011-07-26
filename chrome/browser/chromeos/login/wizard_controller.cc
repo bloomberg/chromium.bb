@@ -34,9 +34,9 @@
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
+#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
@@ -378,20 +378,8 @@ void WizardController::OnUpdateCompleted() {
 
 void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
-  // TODO(pastarmovj): Make this code cache the value for the pref in a better
-  // way until we can store it in the policy blob. See explanation below:
-  // At this point we can not write this in the signed settings pref blob.
-  // But we can at least create the consent file and Chrome would port that
-  // if the device is owned by a local user. In case of enterprise enrolled
-  // device the setting will be respected only until the policy is not set.
-  bool enabled =
-      OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
-  if (enabled) {
-#if defined(USE_LINUX_BREAKPAD)
-    InitCrashReporter();
-#endif
-  }
-
+  chromeos::MetricsCrosSettingsProvider::SetMetricsStatus(
+      usage_statistics_reporting_);
   InitiateOOBEUpdate();
 }
 

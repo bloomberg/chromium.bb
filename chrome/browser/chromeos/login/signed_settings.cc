@@ -634,10 +634,6 @@ void StorePropertyOp::SetInPolicy(const std::string& prop,
     em::ReleaseChannelProto* release_channel = pol.mutable_release_channel();
     release_channel->set_release_channel(value);
 
-  } else if (prop == kStatsReportingPref) {
-    em::MetricsEnabledProto* metrics = pol.mutable_metrics_enabled();
-    metrics->set_metrics_enabled(value == "true");
-
   } else {
     NOTREACHED();
   }
@@ -736,47 +732,35 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
 
   } else if (prop == kAccountsPrefAllowGuest) {
     if (!pol.has_guest_mode_enabled() ||
-        !pol.guest_mode_enabled().has_guest_mode_enabled()) {
+        !pol.guest_mode_enabled().has_guest_mode_enabled())
       return kVeritas[1];  // Default to allowing guests;
-    }
     return kVeritas[pol.guest_mode_enabled().guest_mode_enabled()];
 
   } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
     if (!pol.has_show_user_names() ||
-        !pol.show_user_names().has_show_user_names()) {
+        !pol.show_user_names().has_show_user_names())
       return kVeritas[1];  // Default to showing pods on the login screen;
-    }
     return kVeritas[pol.show_user_names().show_user_names()];
 
   } else if (prop == kSignedDataRoamingEnabled) {
     if (!pol.has_data_roaming_enabled() ||
-        !pol.data_roaming_enabled().has_data_roaming_enabled()) {
+        !pol.data_roaming_enabled().has_data_roaming_enabled())
       return kVeritas[0];  // Default to disabling cellular data roaming;
-    }
     return kVeritas[pol.data_roaming_enabled().data_roaming_enabled()];
 
   } else if (prop == kSettingProxyEverywhere) {
     // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
     std::string serialized;
     if (!pol.has_device_proxy_settings() ||
-        !pol.device_proxy_settings().SerializeToString(&serialized)) {
+        !pol.device_proxy_settings().SerializeToString(&serialized))
       return "";           // Default to invalid proxy config (will be ignored).
-    }
     return serialized;
 
   } else if (prop == kReleaseChannel) {
     if (!pol.has_release_channel() ||
-        !pol.release_channel().has_release_channel()) {
+        !pol.release_channel().has_release_channel())
       return "";           // Default to an invalid channel (will be ignored).
-    }
     return pol.release_channel().release_channel();
-
-  } else if (prop == kStatsReportingPref) {
-    if (!pol.has_metrics_enabled() ||
-        !pol.metrics_enabled().metrics_enabled()) {
-      return kVeritas[0];  // Default to not collecting metrics.
-    }
-    return kVeritas[pol.metrics_enabled().metrics_enabled()];
 
   }
   return std::string();

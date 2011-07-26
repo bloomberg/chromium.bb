@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,6 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   bool RequestTrustedDataRoamingEnabled(Task* callback);
   bool RequestTrustedShowUsersOnSignin(Task* callback);
   bool RequestTrustedOwner(Task* callback);
-  bool RequestTrustedReportingEnabled(Task* callback);
 
   // Reloads values from device settings.
   void Reload();
@@ -52,7 +51,6 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   static bool cached_allow_new_user();
   static bool cached_data_roaming_enabled();
   static bool cached_show_users_on_signin();
-  static bool cached_reporting_enabled();
   static const base::ListValue* cached_whitelist();
   static std::string cached_owner();
 

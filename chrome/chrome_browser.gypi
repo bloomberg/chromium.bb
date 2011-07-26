@@ -641,6 +641,8 @@
         'browser/chromeos/low_battery_observer.h',
         'browser/chromeos/media/media_player.cc',
         'browser/chromeos/media/media_player.h',
+        'browser/chromeos/metrics_cros_settings_provider.cc',
+        'browser/chromeos/metrics_cros_settings_provider.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/net/cros_network_change_notifier_factory.cc',
