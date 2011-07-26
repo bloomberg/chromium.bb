@@ -89,11 +89,11 @@ cr.define('options', function() {
       this.othersList_.dataModel = othersModel;
 
       if (keywords.length > 0) {
-        $('extension-keyword-list-title').hidden = false;
-        $('extension-keyword-list').hidden = false;
-        $('manage-extension-link').hidden = false;
+        $('extension-keyword-div').hidden = false;
         var extensionsModel = new ArrayDataModel(keywords);
         this.extensionList_.dataModel = extensionsModel;
+      } else {
+        $('extension-keyword-div').hidden = true;
       }
     },
   };
