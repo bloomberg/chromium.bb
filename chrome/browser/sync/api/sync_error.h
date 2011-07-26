@@ -36,6 +36,8 @@ class SyncError {
   SyncError(const SyncError& other);
   SyncError& operator=(const SyncError& other);
 
+  ~SyncError();
+
   // Reset the current error to a new error. May be called irrespective of
   // whether IsSet() is true. After this is called, IsSet() will return true.
   // Will print the new error to LOG(ERROR).
