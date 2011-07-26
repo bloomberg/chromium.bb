@@ -40,6 +40,8 @@ OptionsWebUITest.prototype = {
       setObjectPref: function() {},
       clearPref: function() {},
       coreOptionsUserMetricsAction: function() {},
+      // TODO(scr): Handle this new message:
+      // getInstantFieldTrialStatus: function() {},
     };
 
     // Create the actual mock and register stubs for methods expected to be

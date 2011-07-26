@@ -153,7 +153,8 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   providers_.push_back(providerB);
 
   // Reset the controller to contain our new providers.
-  AutocompleteController* controller = new AutocompleteController(providers_);
+  AutocompleteController* controller =
+      new AutocompleteController(providers_, &profile_);
   controller_.reset(controller);
   providerA->set_listener(controller);
   providerB->set_listener(controller);
@@ -201,7 +202,8 @@ void AutocompleteProviderTest::
   search_provider->AddRef();
   providers_.push_back(search_provider);
 
-  AutocompleteController* controller = new AutocompleteController(providers_);
+  AutocompleteController* controller =
+      new AutocompleteController(providers_, &profile_);
   controller_.reset(controller);
 }
 

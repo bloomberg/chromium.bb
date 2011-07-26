@@ -83,8 +83,17 @@ cr.define('options', function() {
         return true;
       };
 
+      $('instantFieldTrialCheckbox').addEventListener('change',
+          function(event) {
+            this.checked = true;
+            chrome.send('disableInstant');
+          });
+
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
+
+      Preferences.getInstance().addEventListener('instant.enabled',
+          this.onInstantEnabledChanged_.bind(this));
 
       var homepageField = $('homepageURL');
       $('homepageUseNTPButton').onchange =
@@ -166,6 +175,26 @@ cr.define('options', function() {
      */
     onInstantConfirmDialogShownChanged_: function(event) {
       this.instantConfirmDialogShown_ = event.value['value'];
+    },
+
+    /**
+     * Called when the value of the instant.enabled preference changes. Request
+     * the state of the Instant field trial experiment.
+     * @param {Event} event Change event.
+     * @private
+     */
+    onInstantEnabledChanged_: function(event) {
+      chrome.send('getInstantFieldTrialStatus');
+    },
+
+    /**
+     * Called to set the Instant field trial status.
+     * @param {boolean} enabled If true, the experiment is enabled.
+     * @private
+     */
+    setInstantFieldTrialStatus_: function(enabled) {
+      $('instantEnabledCheckbox').hidden = enabled;
+      $('instantFieldTrialCheckbox').hidden = !enabled;
     },
 
     /**
@@ -487,6 +516,10 @@ cr.define('options', function() {
 
   BrowserOptions.updateAutocompleteSuggestions = function(suggestions) {
     BrowserOptions.getInstance().updateAutocompleteSuggestions_(suggestions);
+  };
+
+  BrowserOptions.setInstantFieldTrialStatus = function(enabled) {
+    BrowserOptions.getInstance().setInstantFieldTrialStatus_(enabled);
   };
 
   // Export

@@ -16,6 +16,7 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -129,6 +130,9 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "disableInstant",
       NewCallback(this, &BrowserOptionsHandler::DisableInstant));
+  web_ui_->RegisterMessageCallback(
+      "getInstantFieldTrialStatus",
+      NewCallback(this, &BrowserOptionsHandler::GetInstantFieldTrialStatus));
 }
 
 void BrowserOptionsHandler::Initialize() {
@@ -482,6 +486,13 @@ void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
 
 void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
   InstantController::Disable(web_ui_->GetProfile());
+}
+
+void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
+  FundamentalValue enabled(
+      InstantFieldTrial::IsExperimentGroup(web_ui_->GetProfile()));
+  web_ui_->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
+                                  enabled);
 }
 
 void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {

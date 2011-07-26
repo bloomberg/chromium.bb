@@ -275,6 +275,10 @@ const char kInstantEnabledOnce[] = "instant.enabled_once";
 // Time when instant was last enabled.
 const char kInstantEnabledTime[] = "instant.enabled_time";
 
+// Random number drawn and used by the Instant field trial. Stored in prefs to
+// provide a consistent field trial experience across browser restarts.
+const char kInstantFieldTrialRandomDraw[] = "instant.field_trial_random_draw";
+
 // Used to maintain instant promo keys. See PromoCounter for details of subkeys
 // that are used.
 const char kInstantPromo[] = "instant.promo";

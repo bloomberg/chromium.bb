@@ -94,6 +94,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   void EnableInstant(const ListValue* args);
   void DisableInstant(const ListValue* args);
 
+  // Called to request information about the Instant field trial.
+  void GetInstantFieldTrialStatus(const ListValue* args);
+
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 

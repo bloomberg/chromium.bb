@@ -1337,6 +1337,8 @@
         'browser/instant/instant_controller.cc',
         'browser/instant/instant_controller.h',
         'browser/instant/instant_delegate.h',
+        'browser/instant/instant_field_trial.cc',
+        'browser/instant/instant_field_trial.h',
         'browser/instant/instant_loader.cc',
         'browser/instant/instant_loader.h',
         'browser/instant/instant_loader_delegate.h',

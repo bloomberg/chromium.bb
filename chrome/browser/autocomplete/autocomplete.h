@@ -599,13 +599,14 @@ class AutocompleteController : public ACProviderListener {
   AutocompleteController(Profile* profile,
                          AutocompleteControllerDelegate* delegate);
 #ifdef UNIT_TEST
-  explicit AutocompleteController(const ACProviders& providers)
+  AutocompleteController(const ACProviders& providers, Profile* profile)
       : delegate_(NULL),
         providers_(providers),
         keyword_provider_(NULL),
         search_provider_(NULL),
         done_(true),
-        in_start_(false) {
+        in_start_(false),
+        profile_(profile) {
   }
 #endif
   ~AutocompleteController();
@@ -727,6 +728,8 @@ class AutocompleteController : public ACProviderListener {
   // Are we in Start()? This is used to avoid updating |result_| and sending
   // notifications until Start() has been invoked on all providers.
   bool in_start_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
