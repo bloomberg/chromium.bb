@@ -333,6 +333,7 @@ void BookmarkEditorView::Init() {
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
+    tree_view_->set_lines_at_root(true);
     new_folder_button_.reset(new views::NativeTextButton(
         this,
         UTF16ToWide(l10n_util::GetStringUTF16(
