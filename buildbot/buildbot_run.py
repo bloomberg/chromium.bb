@@ -8,6 +8,7 @@
 
 
 import os
+import shutil
 import subprocess
 import sys
 
@@ -46,6 +47,12 @@ def GypTestFormat(title, format, msvs_version=None):
 
 
 def GypBuild():
+  # Dump out/ directory.
+  print '@@@BUILD_STEP cleanup@@@'
+  print 'Removing out/ ...'
+  shutil.rmtree('out', ignore_errors=True)
+  print 'Done.'
+
   retcode = 0
   if sys.platform.startswith('linux'):
     retcode += GypTestFormat('scons', format='scons')

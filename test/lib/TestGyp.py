@@ -13,6 +13,7 @@ import re
 import shutil
 import stat
 import sys
+import tempfile
 
 import TestCommon
 from TestCommon import __all__
@@ -79,10 +80,15 @@ class TestGypBase(TestCommon.TestCommon):
     if not kw.has_key('match'):
       kw['match'] = TestCommon.match_exact
 
-    if not kw.has_key('workdir'):
-      # Default behavior:  the null string causes TestCmd to create
-      # a temporary directory for us.
-      kw['workdir'] = ''
+    # Put test output in out/testworkarea by default.
+    # Use temporary names so there are no collisions.
+    workdir = os.path.join('out', kw.get('workdir', 'testworkarea'))
+    # Create work area if it doesn't already exist.
+    try:
+      os.makedirs(workdir)
+    except OSError:
+      pass
+    kw['workdir'] = tempfile.mktemp(prefix='testgyp.', dir=workdir)
 
     formats = kw.get('formats', [])
     if kw.has_key('formats'):
