@@ -20,6 +20,7 @@
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/test_launcher_utils.h"
@@ -352,17 +353,21 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   // file:// access for ChromeOS.
   new_cmd_line.AppendSwitch(switches::kAllowFileAccess);
 
-  base::ProcessHandle process_handle;
-  base::LaunchOptions options;
-
-#if defined(OS_POSIX)
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
+#if defined(OS_WIN)
+    new_cmd_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+#elif defined(OS_POSIX)
     new_cmd_line.PrependWrapper(browser_wrapper);
+#endif
     VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
             << browser_wrapper;
   }
 
+  base::ProcessHandle process_handle;
+  base::LaunchOptions options;
+
+#if defined(OS_POSIX)
   // On POSIX, we launch the test in a new process group with pgid equal to
   // its pid. Any child processes that the test may create will inherit the
   // same pgid. This way, if the test is abruptly terminated, we can clean up

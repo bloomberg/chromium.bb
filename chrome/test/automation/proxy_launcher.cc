@@ -437,6 +437,21 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
 
+  // Sometimes one needs to run the browser under a special environment
+  // (e.g. valgrind) without also running the test harness (e.g. python)
+  // under the special environment.  Provide a way to wrap the browser
+  // commandline with a special prefix to invoke the special environment.
+  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
+  if (browser_wrapper) {
+#if defined(OS_WIN)
+    command_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+#elif defined(OS_POSIX)
+    command_line.PrependWrapper(browser_wrapper);
+#endif
+    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
+            << browser_wrapper;
+  }
+
   // TODO(phajdan.jr): Only run it for "main" browser launch.
   browser_launch_time_ = base::TimeTicks::Now();
 
@@ -446,17 +461,6 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state, bool wait,
 #if defined(OS_WIN)
   options.start_hidden = !state.show_window;
 #elif defined(OS_POSIX)
-  // Sometimes one needs to run the browser under a special environment
-  // (e.g. valgrind) without also running the test harness (e.g. python)
-  // under the special environment.  Provide a way to wrap the browser
-  // commandline with a special prefix to invoke the special environment.
-  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  if (browser_wrapper) {
-    command_line.PrependWrapper(browser_wrapper);
-    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
-            << browser_wrapper;
-  }
-
   base::file_handle_mapping_vector fds;
   if (automation_proxy_.get())
     fds = automation_proxy_->fds_to_map();
