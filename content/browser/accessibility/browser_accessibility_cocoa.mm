@@ -113,8 +113,9 @@ static const MapEntry roles[] = {
   { WebAccessibility::ROLE_ROW_HEADER, @"AXCell" },
   { WebAccessibility::ROLE_RULER, NSAccessibilityRulerRole },
   { WebAccessibility::ROLE_RULER_MARKER, NSAccessibilityRulerMarkerRole },
-  { WebAccessibility::ROLE_SCROLLAREA, NSAccessibilityScrollAreaRole },
-  { WebAccessibility::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
+  // TODO(dtseng): we don't correctly support the attributes for these roles.
+  // { WebAccessibility::ROLE_SCROLLAREA, NSAccessibilityScrollAreaRole },
+  // { WebAccessibility::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
   { WebAccessibility::ROLE_SHEET, NSAccessibilitySheetRole },
   { WebAccessibility::ROLE_SLIDER, NSAccessibilitySliderRole },
   { WebAccessibility::ROLE_SLIDER_THUMB, NSAccessibilityGroupRole },
@@ -192,6 +193,7 @@ static const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
   { NSAccessibilityValueAttribute, @"value" },
   { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
   { NSAccessibilityWindowAttribute, @"window" },
+  { @"AXLoaded", @"loaded" },
   { @"AXVisited", @"visited" },
 };
 
