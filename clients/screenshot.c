@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <glib.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "wayland-client.h"
 #include "wayland-glib.h"
@@ -151,11 +152,27 @@ create_shm_buffer(int width, int height, void **data_out)
 	return buffer;
 }
 
+static void
+write_png(int width, int height, void **data_out) {
+	GdkPixbuf *pixbuf, *normal;
+	GError *error = NULL;
+
+	g_type_init();
+	pixbuf = gdk_pixbuf_new_from_data(*data_out, GDK_COLORSPACE_RGB, TRUE,
+		                          8, width, height, width * 4, NULL,
+	                                  NULL);
+
+	normal = gdk_pixbuf_flip(pixbuf, FALSE);
+	gdk_pixbuf_save(normal, "wayland-screenshot.png", "png", &error, NULL);
+	g_object_unref(normal);
+	g_object_unref(pixbuf);
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wl_buffer *buffer;
-	void *data;
+	void *data = NULL;
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
@@ -175,7 +192,7 @@ int main(int argc, char *argv[])
 	screenshooter_shoot(screenshooter, output, buffer);
 	roundtrip(display);
 
-	/* FIXME: write png */
+	write_png(output_width, output_height, &data);
 
 	return 0;
 }
