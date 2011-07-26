@@ -553,7 +553,7 @@ TEST_F(AsyncHostResolverTest, Observers) {
   // Unregister observer.
   resolver_->RemoveObserver(&observer);
 
-  // We will do lookup 2 again but will not be cancel it this time.
+  // We will do lookup 2 again but will not cancel it this time.
   rv2 = resolver_->Resolve(info2_, &addrlist2_, &callback2_, NULL,
                            BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv2);
@@ -582,7 +582,7 @@ TEST_F(AsyncHostResolverTest, Observers) {
 
   EXPECT_EQ(4u, observer.start_log.size()); // Was incremented by 1.
   EXPECT_EQ(2u, observer.finish_log.size());
-  EXPECT_EQ(1u, observer.cancel_log.size());
+  EXPECT_EQ(2u, observer.cancel_log.size());
 
   EXPECT_TRUE(observer.start_log[3] ==
               TestHostResolverObserver::StartOrCancelEntry(4, info3_));

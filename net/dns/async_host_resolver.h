@@ -76,7 +76,6 @@ class NET_API AsyncHostResolver
 
   // Create a new request for the incoming Resolve() call.
   Request* CreateNewRequest(const RequestInfo& info,
-                            const std::string& dns_name,
                             CompletionCallback* callback,
                             AddressList* addresses,
                             const BoundNetLog& source_net_log);
@@ -89,9 +88,6 @@ class NET_API AsyncHostResolver
 
   // Called when a request has been cancelled.
   void OnCancel(Request* request);
-
-  // Tries to serve request from cache.
-  bool ServeFromCache(Request* request) const;
 
   // If there is an in-progress transaction for Request->key(), this will
   // attach |request| to the respective list.

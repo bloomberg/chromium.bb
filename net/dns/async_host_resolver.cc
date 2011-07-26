@@ -25,19 +25,6 @@ uint16 QueryTypeFromAddressFamily(AddressFamily address_family) {
   return kDNS_A;
 }
 
-int ResolveAsIp(const HostResolver::RequestInfo& info,
-                const IPAddressNumber& ip_number,
-                AddressList* addresses) {
-  if (ip_number.size() != kIPv4AddressSize)
-    return ERR_NAME_NOT_RESOLVED;
-
-  *addresses = AddressList::CreateFromIPAddressWithCname(
-      ip_number,
-      info.port(),
-      info.host_resolver_flags() & HOST_RESOLVER_CANONNAME);
-  return OK;
-}
-
 class RequestParameters : public NetLog::EventParameters {
  public:
   RequestParameters(const HostResolver::RequestInfo& info,
@@ -87,49 +74,139 @@ HostResolver* CreateAsyncHostResolver(size_t max_concurrent_resolves,
 }
 
 //-----------------------------------------------------------------------------
+// Every call to Resolve() results in Request object being created.  Such a
+// call may complete either synchronously or asynchronously or it may get
+// cancelled, which can be either through specific CancelRequest call or by
+// the destruction of AsyncHostResolver, which would destruct pending or
+// in-progress requests, causing them to be cancelled.  Synchronous
+// resolution sets |callback_| to NULL, thus, if in the destructor we still
+// have a non-NULL |callback_|, we are being cancelled.
 class AsyncHostResolver::Request {
  public:
-  Request(const BoundNetLog& source_net_log,
+  Request(AsyncHostResolver* resolver,
+          const BoundNetLog& source_net_log,
           const BoundNetLog& request_net_log,
           int id,
           const HostResolver::RequestInfo& info,
-          const Key& key,
           CompletionCallback* callback,
           AddressList* addresses)
-      : source_net_log_(source_net_log),
+      : resolver_(resolver),
+        source_net_log_(source_net_log),
         request_net_log_(request_net_log),
         id_(id),
         info_(info),
-        key_(key),
         callback_(callback),
-        addresses_(addresses) {
+        addresses_(addresses),
+        result_(ERR_UNEXPECTED) {
     DCHECK(addresses_);
+    DCHECK(resolver_);
+    resolver_->OnStart(this);
+    std::string dns_name;
+    if (DNSDomainFromDot(info.hostname(), &dns_name))
+      key_ = Key(dns_name, QueryTypeFromAddressFamily(info.address_family()));
+  }
+
+  ~Request() {
+    if (callback_)
+      resolver_->OnCancel(this);
   }
 
   int id() const { return id_; }
+  int result() const { return result_; }
+  const Key& key() const {
+    DCHECK(IsValidKey());
+    return key_;
+  }
   const HostResolver::RequestInfo& info() const { return info_; }
-  const Key& key() const { return key_; }
   RequestPriority priority() const { return info_.priority(); }
   const BoundNetLog& source_net_log() const { return source_net_log_; }
   const BoundNetLog& request_net_log() const { return request_net_log_; }
-  void set_addresses(const AddressList& addresses) { *addresses_ = addresses; }
 
-  void OnComplete(int result, const IPAddressList& ip_addresses) {
-    DCHECK(callback_);
+  bool ResolveSynchronously() {
+    bool resolve_succeeded = true;
+    IPAddressNumber ip_number;
+    if (info_.hostname().empty())
+      result_ = ERR_NAME_NOT_RESOLVED;
+    else if (ParseIPLiteralToNumber(info_.hostname(), &ip_number))
+      result_ = ServeAsIp(ip_number);
+    else if (!IsValidKey())
+      result_ = ERR_NAME_NOT_RESOLVED;
+    else if (ServeFromCache())
+      result_ = OK;
+    else if (info_.only_use_cached_response())
+      result_ = ERR_NAME_NOT_RESOLVED;
+    else
+      resolve_succeeded = false;
+    return resolve_succeeded;
+  }
+
+  // Called when a request completes synchronously; we do not have an
+  // AddressList argument, since in case of a successful synchronous
+  // completion, ResolveSynchronously would set the |addresses_| and in
+  // case of an unsuccessful synchronous completion, we do not touch
+  // |addresses_|.
+  void OnSyncComplete(int result) {
+    callback_ = NULL;
+    resolver_->OnFinish(this, result);
+  }
+
+  // Called when a request completes asynchronously.
+  void OnAsyncComplete(int result, const AddressList& addresses) {
     if (result == OK)
-      *addresses_ =
-          AddressList::CreateFromIPAddressList(ip_addresses, info_.port());
-    callback_->Run(result);
+      *addresses_ = CreateAddressListUsingPort(addresses, info_.port());
+    DCHECK(callback_);
+    CompletionCallback* callback = callback_;
+    callback_ = NULL;
+    resolver_->OnFinish(this, result);
+    callback->Run(result);
   }
 
  private:
+  bool IsValidKey() const { return !key_.first.empty(); }
+
+  int ServeAsIp(const IPAddressNumber& ip_number) {
+    if (ip_number.size() != kIPv4AddressSize)
+      return ERR_NAME_NOT_RESOLVED;
+    *addresses_ = AddressList::CreateFromIPAddressWithCname(
+        ip_number,
+        info_.port(),
+        info_.host_resolver_flags() & HOST_RESOLVER_CANONNAME);
+    return OK;
+  }
+
+  bool ServeFromCache() {
+    // Sanity check -- it shouldn't be the case that allow_cached_response is
+    // false while only_use_cached_response is true.
+    DCHECK(info_.allow_cached_response() || !info_.only_use_cached_response());
+
+    HostCache* cache = resolver_->cache_.get();
+    if (!cache || !info_.allow_cached_response())
+      return false;
+
+    HostCache::Key key(info_.hostname(), info_.address_family(),
+                       info_.host_resolver_flags());
+    const HostCache::Entry* cache_entry = cache->Lookup(
+        key, base::TimeTicks::Now());
+    if (cache_entry) {
+      request_net_log_.AddEvent(
+          NetLog::TYPE_ASYNC_HOST_RESOLVER_CACHE_HIT, NULL);
+      DCHECK_EQ(OK, cache_entry->error);
+      *addresses_ =
+        CreateAddressListUsingPort(cache_entry->addrlist, info_.port());
+      return true;
+    }
+    return false;
+  }
+
+  AsyncHostResolver* resolver_;
   BoundNetLog source_net_log_;
   BoundNetLog request_net_log_;
   const int id_;
   const HostResolver::RequestInfo info_;
-  const Key key_;
+  Key key_;
   CompletionCallback* callback_;
   AddressList* addresses_;
+  int result_;
 };
 
 //-----------------------------------------------------------------------------
@@ -169,41 +246,27 @@ int AsyncHostResolver::Resolve(const RequestInfo& info,
                                CompletionCallback* callback,
                                RequestHandle* out_req,
                                const BoundNetLog& source_net_log) {
-  DCHECK(addresses);
-  IPAddressNumber ip_number;
-  std::string dns_name;
+  scoped_ptr<Request> request(
+      CreateNewRequest(info, callback, addresses, source_net_log));
+
   int rv = ERR_UNEXPECTED;
-  if (info.hostname().empty())
-    rv = ERR_NAME_NOT_RESOLVED;
-  else if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
-    rv = ResolveAsIp(info, ip_number, addresses);
-  else if (!DNSDomainFromDot(info.hostname(), &dns_name))
-    rv = ERR_NAME_NOT_RESOLVED;
+  if (request->ResolveSynchronously())
+    rv = request->result();
+  else if (AttachToRequestList(request.get()))
+    rv = ERR_IO_PENDING;
+  else if (transactions_.size() < max_transactions_)
+    rv = StartNewTransactionFor(request.get());
+  else
+    rv = Enqueue(request.get());
 
-  Request* request = CreateNewRequest(
-      info, dns_name, callback, addresses, source_net_log);
-
-  OnStart(request);
-  if (rv == ERR_UNEXPECTED) {
-    if (ServeFromCache(request))
-      rv = OK;
-    else if (info.only_use_cached_response())
-      rv = ERR_NAME_NOT_RESOLVED;
+  if (rv != ERR_IO_PENDING) {
+    request->OnSyncComplete(rv);
+  } else {
+    Request* req = request.release();
+    if (out_req)
+      *out_req = reinterpret_cast<RequestHandle>(req);
   }
-
-  if (rv != ERR_UNEXPECTED) {
-    OnFinish(request, rv);
-    delete request;
-    return rv;  // Synchronous resolution ends here.
-  }
-
-  if (out_req)
-    *out_req = reinterpret_cast<RequestHandle>(request);
-  if (AttachToRequestList(request))
-    return ERR_IO_PENDING;
-  if (transactions_.size() < max_transactions_)
-    return StartNewTransactionFor(request);
-  return Enqueue(request);
+  return rv;
 }
 
 void AsyncHostResolver::OnStart(Request* request) {
@@ -213,7 +276,6 @@ void AsyncHostResolver::OnStart(Request* request) {
       NetLog::TYPE_ASYNC_HOST_RESOLVER,
       make_scoped_refptr(new NetLogSourceParameter(
           "source_dependency", request->request_net_log().source())));
-
   request->request_net_log().BeginEvent(
       NetLog::TYPE_ASYNC_HOST_RESOLVER_REQUEST,
       make_scoped_refptr(new RequestParameters(
@@ -263,8 +325,6 @@ void AsyncHostResolver::CancelRequest(RequestHandle req_handle) {
     it->second.remove(request.get());
   else
     pending_requests_[request->priority()].remove(request.get());
-
-  OnCancel(request.get());
 }
 
 void AsyncHostResolver::AddObserver(HostResolver::Observer* observer) {
@@ -296,15 +356,21 @@ void AsyncHostResolver::OnTransactionComplete(
          != transactions_.end());
   DCHECK(requestlist_map_.find(transaction->key()) != requestlist_map_.end());
 
+  // If by the time requests that caused |transaction| are cancelled, we do
+  // not have a port number to associate with the result, therefore, we
+  // assume the most common port, otherwise we use the port number of the
+  // first request.
+  RequestList& requests = requestlist_map_[transaction->key()];
+  int port = requests.empty() ? 80 : requests.front()->info().port();
+
   // Run callback of every request that was depending on this transaction,
   // also notify observers.
-  RequestList& requests = requestlist_map_[transaction->key()];
+  AddressList addrlist;
+  if (result == OK)
+    addrlist = AddressList::CreateFromIPAddressList(ip_addresses, port);
   for (RequestList::iterator it = requests.begin(); it != requests.end();
-       ++it) {
-    Request* request = *it;
-    OnFinish(request, result);
-    request->OnComplete(result, ip_addresses);
-  }
+       ++it)
+    (*it)->OnAsyncComplete(result, addrlist);
 
   // It is possible that the requests that caused |transaction| to be
   // created are cancelled by the time |transaction| completes.  In that
@@ -322,8 +388,6 @@ void AsyncHostResolver::OnTransactionComplete(
     HostResolver::RequestInfo info = request->info();
     HostCache::Key key(
         info.hostname(), info.address_family(), info.host_resolver_flags());
-    AddressList addrlist =
-      AddressList::CreateFromIPAddressList(ip_addresses, info.port());
     cache_->Set(key, result, addrlist, base::TimeTicks::Now());
   }
 
@@ -337,47 +401,16 @@ void AsyncHostResolver::OnTransactionComplete(
   ProcessPending();
 }
 
-bool AsyncHostResolver::ServeFromCache(Request* request) const {
-  // Sanity check -- it shouldn't be the case that allow_cached_response is
-  // false while only_use_cached_response is true.
-  DCHECK(request->info().allow_cached_response() ||
-         !request->info().only_use_cached_response());
-
-  if (!cache_.get() || !request->info().allow_cached_response())
-    return false;
-
-  HostResolver::RequestInfo info = request->info();
-  HostCache::Key key(info.hostname(), info.address_family(),
-                     info.host_resolver_flags());
-  const HostCache::Entry* cache_entry = cache_->Lookup(
-      key, base::TimeTicks::Now());
-  if (cache_entry) {
-    request->request_net_log().AddEvent(
-        NetLog::TYPE_ASYNC_HOST_RESOLVER_CACHE_HIT, NULL);
-    DCHECK_EQ(OK, cache_entry->error);
-    request->set_addresses(
-        CreateAddressListUsingPort(cache_entry->addrlist, info.port()));
-    return true;
-  }
-  return false;
-}
-
 AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
     const RequestInfo& info,
-    const std::string& dns_name,
     CompletionCallback* callback,
     AddressList* addresses,
     const BoundNetLog& source_net_log) {
-
-  uint16 query_type = QueryTypeFromAddressFamily(info.address_family());
-  Key key(dns_name, query_type);
-
   BoundNetLog request_net_log = BoundNetLog::Make(net_log_,
       NetLog::SOURCE_ASYNC_HOST_RESOLVER_REQUEST);
-
   int id = next_request_id_++;
   return new Request(
-      source_net_log, request_net_log, id, info, key, callback, addresses);
+      this, source_net_log, request_net_log, id, info, callback, addresses);
 }
 
 bool AsyncHostResolver::AttachToRequestList(Request* request) {
@@ -410,12 +443,13 @@ int AsyncHostResolver::StartNewTransactionFor(Request* request) {
 }
 
 int AsyncHostResolver::Enqueue(Request* request) {
-  scoped_ptr<Request> evicted_request(Insert(request));
+  Request* evicted_request = Insert(request);
+  int rv = ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
+  if (evicted_request == request)
+    return rv;
   if (evicted_request != NULL) {
-    int rv = ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
-    if (evicted_request.get() == request)
-      return rv;
-    evicted_request->OnComplete(rv, IPAddressList());
+    evicted_request->OnAsyncComplete(rv, AddressList());
+    delete evicted_request;
   }
   return ERR_IO_PENDING;
 }
