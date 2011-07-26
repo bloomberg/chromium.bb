@@ -123,6 +123,9 @@ var chrome = chrome || {};
   };
 
   chrome.test.checkDeepEq = function (expected, actual) {
+    if ((expected === null) != (actual === null))
+      return false;
+
     if (expected === actual)
       return true;
 
