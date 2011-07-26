@@ -32,8 +32,8 @@ class AppModelAssociator : public AssociatorInterface {
   static syncable::ModelType model_type() { return syncable::APPS; }
 
   // AssociatorInterface implementation.
-  virtual bool AssociateModels();
-  virtual bool DisassociateModels();
+  virtual bool AssociateModels(SyncError* error);
+  virtual bool DisassociateModels(SyncError* error);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual void AbortAssociation();
   virtual bool CryptoReadyIfNecessary();

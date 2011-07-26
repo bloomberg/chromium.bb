@@ -543,4 +543,8 @@ bool intToRealModelType(const std::string& notification_type,
   return false;
 }
 
+bool IsRealDataType(ModelType model_type) {
+  return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
+}
+
 }  // namespace syncable

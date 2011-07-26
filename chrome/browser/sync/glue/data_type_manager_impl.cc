@@ -130,7 +130,8 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
     // If we're already configured and the types haven't changed, we can exit
     // out early.
     NotifyStart();
-    NotifyDone(OK, FROM_HERE);
+    ConfigureResult result(OK, last_requested_types_);
+    NotifyDone(result);
     return;
   }
 
@@ -221,7 +222,7 @@ void DataTypeManagerImpl::DownloadReady(bool success) {
   DCHECK(state_ == DOWNLOAD_PENDING);
 
   if (!success) {
-    NotifyDone(UNRECOVERABLE_ERROR, FROM_HERE);
+    Abort(UNRECOVERABLE_ERROR, FROM_HERE, needs_start_[0]->type());
     return;
   }
 
@@ -276,7 +277,8 @@ void DataTypeManagerImpl::StartNextType() {
 
   // If no more data types need starting, we're done.
   state_ = CONFIGURED;
-  NotifyDone(OK, FROM_HERE);
+  ConfigureResult result(OK, last_requested_types_);
+  NotifyDone(result);
 }
 
 void DataTypeManagerImpl::TypeStartCallback(
@@ -291,7 +293,7 @@ void DataTypeManagerImpl::TypeStartCallback(
     // DataTypeManager::Stop() was called while the current data type
     // was starting.  Now that it has finished starting, we can finish
     // stopping the DataTypeManager.  This is considered an ABORT.
-    FinishStopAndNotify(ABORTED, FROM_HERE);
+    Abort(ABORTED, location, needs_start_[0]->type());
     return;
   } else if (state_ == STOPPED) {
     // If our state_ is STOPPED, we have already stopped all of the data
@@ -306,8 +308,6 @@ void DataTypeManagerImpl::TypeStartCallback(
   DCHECK_EQ(needs_start_[0], started_dtc);
   needs_start_.erase(needs_start_.begin());
 
-  if (result == DataTypeController::NEEDS_CRYPTO) {
-  }
   // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.
   // Once the cryptographer is ready, we'll attempt to restart this type.
@@ -322,22 +322,29 @@ void DataTypeManagerImpl::TypeStartCallback(
   // managed to start up to this point and pass the result to the
   // callback.
   VLOG(0) << "Failed " << started_dtc->name();
-  ConfigureResult configure_result = DataTypeManager::ABORTED;
+  ConfigureStatus configure_status = DataTypeManager::ABORTED;
   switch (result) {
     case DataTypeController::ABORTED:
-      configure_result = DataTypeManager::ABORTED;
+      configure_status = DataTypeManager::ABORTED;
       break;
     case DataTypeController::ASSOCIATION_FAILED:
-      configure_result = DataTypeManager::ASSOCIATION_FAILED;
+      configure_status = DataTypeManager::ASSOCIATION_FAILED;
       break;
     case DataTypeController::UNRECOVERABLE_ERROR:
-      configure_result = DataTypeManager::UNRECOVERABLE_ERROR;
+      configure_status = DataTypeManager::UNRECOVERABLE_ERROR;
       break;
     default:
       NOTREACHED();
       break;
   }
-  FinishStopAndNotify(configure_result, location);
+
+  // TODO(sync): We currently only specify the last attempted type as the failed
+  // type. At some point we should allow a datatype to fail without preventing
+  // other datatypes from continuing. In that case we'll have to support
+  // multiple types failing.
+  Abort(configure_status,
+        location,
+        started_dtc->type());
 }
 
 void DataTypeManagerImpl::Stop() {
@@ -368,7 +375,10 @@ void DataTypeManagerImpl::Stop() {
     // If Stop() is called while waiting for download, cancel all
     // outstanding tasks.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    FinishStopAndNotify(ABORTED, FROM_HERE);
+    syncable::ModelType type = syncable::UNSPECIFIED;
+    if (needs_start_.size() > 0)
+      type = needs_start_[0]->type();
+    Abort(ABORTED, FROM_HERE, type);
     return;
   }
 
@@ -390,10 +400,20 @@ void DataTypeManagerImpl::FinishStop() {
   state_ = STOPPED;
 }
 
-void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result,
-    const tracked_objects::Location& location) {
+void DataTypeManagerImpl::Abort(
+    ConfigureStatus status,
+    const tracked_objects::Location& location,
+    syncable::ModelType last_attempted_type) {
+  DCHECK_NE(OK, status);
   FinishStop();
-  NotifyDone(result, location);
+  TypeSet attempted_types;
+  if (syncable::IsRealDataType(last_attempted_type))
+    attempted_types.insert(last_attempted_type);
+  ConfigureResult result(status,
+                         last_requested_types_,
+                         attempted_types,
+                         location);
+  NotifyDone(result);
 }
 
 void DataTypeManagerImpl::NotifyStart() {
@@ -403,14 +423,12 @@ void DataTypeManagerImpl::NotifyStart() {
       NotificationService::NoDetails());
 }
 
-void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
-    const tracked_objects::Location& location) {
-  ConfigureResultWithErrorLocation result_with_location(result, location,
-                                                        last_requested_types_);
+void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
   AddToConfigureTime();
+
   VLOG(1) << "Total time spent configuring: "
           << configure_time_delta_.InSecondsF() << "s";
-  switch (result) {
+  switch (result.status) {
     case DataTypeManager::OK:
       VLOG(1) << "NotifyDone called with result: OK";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.OK",
@@ -438,7 +456,7 @@ void DataTypeManagerImpl::NotifyDone(ConfigureResult result,
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),
-      Details<ConfigureResultWithErrorLocation>(&result_with_location));
+      Details<const ConfigureResult>(&result));
 }
 
 const DataTypeController::TypeMap& DataTypeManagerImpl::controllers() {

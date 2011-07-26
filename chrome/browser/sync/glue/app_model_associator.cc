@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
@@ -31,22 +32,24 @@ AppModelAssociator::~AppModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool AppModelAssociator::AssociateModels() {
+bool AppModelAssociator::AssociateModels(SyncError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ExtensionDataMap extension_data_map;
   if (!SlurpExtensionData(
           traits_, *extension_service_, user_share_, &extension_data_map)) {
+    error->Reset(FROM_HERE, "Failed to get app data.", model_type());
     return false;
   }
   if (!FlushExtensionData(
           traits_, extension_data_map, extension_service_, user_share_)) {
+    error->Reset(FROM_HERE, "Failed to flush app data.", model_type());
     return false;
   }
 
   return true;
 }
 
-bool AppModelAssociator::DisassociateModels() {
+bool AppModelAssociator::DisassociateModels(SyncError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Nothing to do.
   return true;

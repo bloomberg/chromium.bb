@@ -162,6 +162,9 @@ bool RealModelTypeToint(ModelType model_type,
 bool intToRealModelType(const std::string& notification_type,
                                      ModelType* model_type);
 
+// Returns true if |model_type| is a real datatype
+bool IsRealDataType(ModelType model_type);
+
 }  // namespace syncable
 
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_

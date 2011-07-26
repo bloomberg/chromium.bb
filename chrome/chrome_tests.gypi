@@ -3304,6 +3304,8 @@
       'sources': [
         '<(protoc_out_dir)/chrome/browser/sync/protocol/test.pb.cc',
         'app/breakpad_mac_stubs.mm',
+        'browser/sync/api/sync_change_unittest.cc',
+        'browser/sync/api/sync_error_unittest.cc',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/build_commit_command_unittest.cc',
         'browser/sync/engine/clear_data_command_unittest.cc',
@@ -3346,7 +3348,6 @@
         'browser/sync/syncable/syncable_enum_conversions_unittest.cc',
         'browser/sync/syncable/syncable_id_unittest.cc',
         'browser/sync/syncable/syncable_unittest.cc',
-        'browser/sync/api/sync_change_unittest.cc',
         'browser/sync/util/data_encryption_unittest.cc',
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
         'browser/sync/util/protobuf_unittest.cc',

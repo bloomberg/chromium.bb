@@ -78,5 +78,14 @@ TEST_F(ModelTypeTest, ModelTypeBitSetFromString) {
   EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
 }
 
+TEST_F(ModelTypeTest, IsRealDataType) {
+  EXPECT_FALSE(IsRealDataType(UNSPECIFIED));
+  EXPECT_FALSE(IsRealDataType(MODEL_TYPE_COUNT));
+  EXPECT_FALSE(IsRealDataType(TOP_LEVEL_FOLDER));
+  EXPECT_TRUE(IsRealDataType(FIRST_REAL_MODEL_TYPE));
+  EXPECT_TRUE(IsRealDataType(BOOKMARKS));
+  EXPECT_TRUE(IsRealDataType(APPS));
+}
+
 }  // namespace
 }  // namespace syncable

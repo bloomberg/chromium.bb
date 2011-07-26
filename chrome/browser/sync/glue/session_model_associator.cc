@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -407,7 +408,7 @@ void SessionModelAssociator::Disassociate(int64 sync_id) {
   // TODO(zea): we will need this once we support deleting foreign sessions.
 }
 
-bool SessionModelAssociator::AssociateModels() {
+bool SessionModelAssociator::AssociateModels(SyncError* error) {
   DCHECK(CalledOnValidThread());
 
   // Ensure that we disassociated properly, otherwise memory might leak.
@@ -423,7 +424,7 @@ bool SessionModelAssociator::AssociateModels() {
 
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(kSessionsTag)) {
-      LOG(ERROR) << kNoSessionsFolderError;
+      error->Reset(FROM_HERE, kNoSessionsFolderError, model_type());
       return false;
     }
 
@@ -438,7 +439,9 @@ bool SessionModelAssociator::AssociateModels() {
       sync_api::WriteNode write_node(&trans);
       if (!write_node.InitUniqueByCreation(syncable::SESSIONS, root,
           current_machine_tag_)) {
-        LOG(ERROR) << "Failed to create sessions header sync node.";
+        error->Reset(FROM_HERE,
+                     "Failed to create sessions header sync node.",
+                     model_type());
         return false;
       }
       write_node.SetTitle(UTF8ToWide(current_machine_tag_));
@@ -454,7 +457,7 @@ bool SessionModelAssociator::AssociateModels() {
   return true;
 }
 
-bool SessionModelAssociator::DisassociateModels() {
+bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   DCHECK(CalledOnValidThread());
   synced_session_tracker_.clear();
   tab_map_.clear();

@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_data.h"
+#include "chrome/browser/sync/api/sync_error.h"
 
 class SyncData;
 
@@ -25,7 +26,10 @@ class SyncableService : public SyncChangeProcessor {
   // two. After this, the SyncableService's local data should match the server
   // data, and the service should be ready to receive and process any further
   // SyncChange's as they occur.
-  virtual bool MergeDataAndStartSyncing(
+  // Returns: A default SyncError (IsSet() == false) if no errors were
+  //          encountered, and a filled SyncError (IsSet() == true)
+  //          otherwise.
+  virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
       SyncChangeProcessor* sync_processor) = 0;
@@ -40,7 +44,10 @@ class SyncableService : public SyncChangeProcessor {
 
   // SyncChangeProcessor interface.
   // Process a list of new SyncChanges and update the local data as necessary.
-  virtual void ProcessSyncChanges(
+  // Returns: A default SyncError (IsSet() == false) if no errors were
+  //          encountered, and a filled SyncError (IsSet() == true)
+  //          otherwise.
+  virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE = 0;
 

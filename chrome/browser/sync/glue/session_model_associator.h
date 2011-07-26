@@ -116,7 +116,7 @@ class SessionModelAssociator
   // with local client data. Processes/reuses any sync nodes owned by this
   // client and creates any further sync nodes needed to store local header and
   // tab info.
-  virtual bool AssociateModels();
+  virtual bool AssociateModels(SyncError* error);
 
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
@@ -126,7 +126,7 @@ class SessionModelAssociator
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.
-  virtual bool DisassociateModels();
+  virtual bool DisassociateModels(SyncError* error);
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.

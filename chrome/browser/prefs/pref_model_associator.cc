@@ -116,7 +116,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
   return;
 }
 
-bool PrefModelAssociator::MergeDataAndStartSyncing(
+SyncError PrefModelAssociator::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
@@ -158,9 +158,14 @@ bool PrefModelAssociator::MergeDataAndStartSyncing(
   }
 
   // Push updates to sync.
-  sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
+  SyncError error =
+      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
+  if (error.IsSet()) {
+    return error;
+  }
+
   models_associated_ = true;
-  return true;
+  return SyncError();
 }
 
 void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
@@ -306,11 +311,15 @@ SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
   return current_data;
 }
 
-void PrefModelAssociator::ProcessSyncChanges(
+SyncError PrefModelAssociator::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
-  if (!models_associated_)
-    return;
+  if (!models_associated_) {
+    SyncError error(FROM_HERE,
+                    "Models not yet associated.",
+                    PREFERENCES);
+    return error;
+  }
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
   SyncChangeList::const_iterator iter;
   for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
@@ -359,6 +368,7 @@ void PrefModelAssociator::ProcessSyncChanges(
 
     SendUpdateNotificationsIfNecessary(name);
   }
+  return SyncError();
 }
 
 Value* PrefModelAssociator::ReadPreferenceSpecifics(
@@ -432,5 +442,9 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     }
     changes.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
-  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+
+  SyncError error =
+      sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+  if (error.IsSet())
+    StopSyncing(PREFERENCES);
 }

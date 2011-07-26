@@ -32,22 +32,24 @@ ExtensionModelAssociator::~ExtensionModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool ExtensionModelAssociator::AssociateModels() {
+bool ExtensionModelAssociator::AssociateModels(SyncError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ExtensionDataMap extension_data_map;
   if (!SlurpExtensionData(
           traits_, *extension_service_, user_share_, &extension_data_map)) {
+    error->Reset(FROM_HERE, "Failed to get extension data.", model_type());
     return false;
   }
   if (!FlushExtensionData(
           traits_, extension_data_map, extension_service_, user_share_)) {
+    error->Reset(FROM_HERE, "Failed to flush extension data.", model_type());
     return false;
   }
 
   return true;
 }
 
-bool ExtensionModelAssociator::DisassociateModels() {
+bool ExtensionModelAssociator::DisassociateModels(SyncError* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Nothing to do.
   return true;

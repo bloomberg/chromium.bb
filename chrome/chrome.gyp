@@ -581,6 +581,8 @@
         'browser/sync/api/sync_change.cc',
         'browser/sync/api/sync_change_processor.h',
         'browser/sync/api/sync_change_processor.cc',
+        'browser/sync/api/sync_error.h',
+        'browser/sync/api/sync_error.cc',
       ],
       'include_dirs': [
         '..',

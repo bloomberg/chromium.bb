@@ -50,8 +50,9 @@ class DataTypeManagerImpl : public DataTypeManager {
 
   // Stops all data types.
   void FinishStop();
-  void FinishStopAndNotify(ConfigureResult result,
-       const tracked_objects::Location& location);
+  void Abort(ConfigureStatus status,
+             const tracked_objects::Location& location,
+             syncable::ModelType last_attempted_type);
 
   // Returns true if any last_requested_types_ currently needs to start model
   // association.  If non-null, fills |needs_start| with all such controllers.
@@ -61,8 +62,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
   void DownloadReady(bool success);
   void NotifyStart();
-  void NotifyDone(ConfigureResult result,
-      const tracked_objects::Location& location);
+  void NotifyDone(const ConfigureResult& result);
   void SetBlockedAndNotify();
 
   // Add to |configure_time_delta_| the time since we last called

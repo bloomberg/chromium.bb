@@ -52,9 +52,9 @@ class BookmarkModelAssociator
   // node.  After successful completion, the models should be identical and
   // corresponding. Returns true on success.  On failure of this step, we
   // should abort the sync operation and report an error to the user.
-  virtual bool AssociateModels();
+  virtual bool AssociateModels(SyncError* error);
 
-  virtual bool DisassociateModels();
+  virtual bool DisassociateModels(SyncError* error);
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
@@ -111,7 +111,7 @@ class BookmarkModelAssociator
 
   // Matches up the bookmark model and the sync model to build model
   // associations.
-  bool BuildAssociations();
+  bool BuildAssociations(SyncError* error);
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is

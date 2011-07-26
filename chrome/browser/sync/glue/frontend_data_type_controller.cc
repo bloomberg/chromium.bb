@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
@@ -92,10 +93,11 @@ bool FrontendDataTypeController::Associate() {
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  bool merge_success = model_associator()->AssociateModels();
+  SyncError error;
+  bool merge_success = model_associator()->AssociateModels(&error);
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (!merge_success) {
-    StartFailed(ASSOCIATION_FAILED, FROM_HERE);
+    StartFailed(ASSOCIATION_FAILED, error.location());
     return false;
   }
 
@@ -105,7 +107,8 @@ bool FrontendDataTypeController::Associate() {
   return true;
 }
 
-void FrontendDataTypeController::StartFailed(StartResult result,
+void FrontendDataTypeController::StartFailed(
+    StartResult result,
     const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUpState();
@@ -118,10 +121,12 @@ void FrontendDataTypeController::StartFailed(StartResult result,
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
   scoped_ptr<StartCallback> callback(start_callback_.release());
+  // TODO(zea): Send the full SyncError on failure and handle it higher up.
   callback->Run(result, location);
 }
 
-void FrontendDataTypeController::FinishStart(StartResult result,
+void FrontendDataTypeController::FinishStart(
+    StartResult result,
     const tracked_objects::Location& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -149,8 +154,10 @@ void FrontendDataTypeController::Stop() {
   if (change_processor_.get())
     sync_service_->DeactivateDataType(this, change_processor_.get());
 
-  if (model_associator())
-    model_associator()->DisassociateModels();
+  if (model_associator()) {
+    SyncError error;
+    model_associator()->DisassociateModels(&error);
+  }
 
   set_model_associator(NULL);
   change_processor_.reset();

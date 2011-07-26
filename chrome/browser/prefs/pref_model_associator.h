@@ -37,9 +37,10 @@ class PrefModelAssociator
 
   // SyncableService implementation.
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
-  virtual void ProcessSyncChanges(const tracked_objects::Location& from_here,
-                                  const SyncChangeList& change_list) OVERRIDE;
-  virtual bool MergeDataAndStartSyncing(
+  virtual SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const SyncChangeList& change_list) OVERRIDE;
+  virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
       SyncChangeProcessor* sync_processor) OVERRIDE;
