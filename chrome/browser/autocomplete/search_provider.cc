@@ -922,8 +922,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.destination_url = navigation.url;
   match.contents =
       StringForURLDisplay(navigation.url, true, !HasHTTPScheme(input_text));
-  match.template_url = is_keyword ? &providers_.keyword_provider() :
-                                    &providers_.default_provider();
   AutocompleteMatch::ClassifyMatchInString(input_text, match.contents,
                                            ACMatchClassification::URL,
                                            &match.contents_class);
