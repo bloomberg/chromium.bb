@@ -276,7 +276,7 @@ void ProtocolTestClient::OnStateChange(
 
     session_manager_->Init(
         local_jid_, signal_strategy_.get(),
-        NewCallback(this, &ProtocolTestClient::OnNewSession), NULL, NULL);
+        NewCallback(this, &ProtocolTestClient::OnNewSession), NULL, "", true);
     session_manager_->set_allow_local_ips(true);
 
     if (host_jid_ != "") {

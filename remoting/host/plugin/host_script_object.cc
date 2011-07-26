@@ -11,6 +11,7 @@
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
@@ -374,9 +375,12 @@ void HostNPScriptObject::ConnectInternal(
   }
 
   // Create the Host.
+  DesktopEnvironment* desktop_environment =
+      DesktopEnvironment::Create(&host_context_);
+  // TODO(sergeyu): Use firewall traversal policy settings here.
   scoped_refptr<ChromotingHost> host =
-      ChromotingHost::Create(&host_context_, host_config,
-                             access_verifier.release(), logger_.get());
+      ChromotingHost::Create(&host_context_, host_config, desktop_environment,
+                             access_verifier.release(), logger_.get(), false);
   host->AddStatusObserver(this);
   host->AddStatusObserver(register_request.get());
   host->set_it2me(true);

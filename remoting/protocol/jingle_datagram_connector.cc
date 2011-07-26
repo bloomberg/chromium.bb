@@ -6,7 +6,6 @@
 
 #include "jingle/glue/channel_socket_adapter.h"
 #include "remoting/protocol/jingle_session.h"
-#include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 
 namespace remoting {
 namespace protocol {
@@ -30,11 +29,6 @@ void JingleDatagramConnector::Connect(
     crypto::RSAPrivateKey* local_private_key,
     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
-
-  if (!initiator) {
-    // Don't make outgoing connections from the host to client.
-    raw_channel->GetP2PChannel()->set_incoming_only(true);
-  }
 
   net::Socket* socket =
       new jingle_glue::TransportChannelSocketAdapter(raw_channel);

@@ -49,7 +49,8 @@ class JingleSessionManager
                     SignalStrategy* signal_strategy,
                     IncomingSessionCallback* incoming_session_callback,
                     crypto::RSAPrivateKey* private_key,
-                    const std::string& certificate) OVERRIDE;
+                    const std::string& certificate,
+                    bool allow_nat_traversal) OVERRIDE;
   virtual Session* Connect(
       const std::string& host_jid,
       const std::string& host_public_key,
@@ -118,12 +119,8 @@ class JingleSessionManager
   scoped_ptr<IncomingSessionCallback> incoming_session_callback_;
   std::string certificate_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
+  bool allow_nat_traversal_;
 
-  // This must be set to true to enable NAT traversal. STUN/Relay
-  // servers are not used when NAT traversal is disabled, so P2P
-  // connection will works only when both peers are on the same
-  // network.
-  bool enable_nat_traversing_;
   bool allow_local_ips_;
 
   scoped_ptr<cricket::PortAllocator> port_allocator_;

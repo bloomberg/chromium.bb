@@ -68,19 +68,16 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
                        public SignalStrategy::StatusObserver {
  public:
-  // Factory methods that must be used to create ChromotingHost instances.
-  // Default capturer and input stub are used if it is not specified.
-  // Returned instance takes ownership of |access_verifier| and |environment|,
-  // and adds a reference to |config|. It does NOT take ownership of |context|.
-  static ChromotingHost* Create(ChromotingHostContext* context,
-                                MutableHostConfig* config,
-                                AccessVerifier* access_verifier,
-                                Logger* logger);
+  // Factory methods that must be used to create ChromotingHost
+  // instances.  Returned instance takes ownership of
+  // |access_verifier| and |environment|. It does NOT take ownership
+  // of |context| and |logger|.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 DesktopEnvironment* environment,
                                 AccessVerifier* access_verifier,
-                                Logger* logger);
+                                Logger* logger,
+                                bool allow_nat_traversal);
 
   // Asynchronously start the host process.
   //
@@ -152,21 +149,22 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   typedef std::vector<HostStatusObserver*> StatusObserverList;
   typedef std::vector<scoped_refptr<ClientSession> > ClientList;
 
-  // Takes ownership of |access_verifier| and |environment|, and adds a
-  // reference to |config|. Does NOT take ownership of |context|.
-  ChromotingHost(ChromotingHostContext* context,
-                 MutableHostConfig* config,
-                 DesktopEnvironment* environment,
-                 AccessVerifier* access_verifier,
-                 Logger* logger);
-  virtual ~ChromotingHost();
-
   enum State {
     kInitial,
     kStarted,
     kStopping,
     kStopped,
   };
+
+  // Takes ownership of |access_verifier| and |environment|, and adds a
+  // reference to |config|. Does NOT take ownership of |context|.
+  ChromotingHost(ChromotingHostContext* context,
+                 MutableHostConfig* config,
+                 DesktopEnvironment* environment,
+                 AccessVerifier* access_verifier,
+                 Logger* logger,
+                 bool allow_nat_traversal);
+  virtual ~ChromotingHost();
 
   // This method is called if a client is disconnected from the host.
   void OnClientDisconnected(protocol::ConnectionToClient* client);
@@ -188,25 +186,20 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void ShutdownRecorder();
   void ShutdownFinish();
 
-  // The context that the chromoting host runs on.
+  // Parameters specified when the host was created.
   ChromotingHostContext* context_;
-
   scoped_refptr<MutableHostConfig> config_;
-
   scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<AccessVerifier> access_verifier_;
+  Logger* logger_;
+  bool allow_nat_traversal_;
 
+  // Connection objects.
   scoped_ptr<SignalStrategy> signal_strategy_;
-
   std::string local_jid_;
-
   scoped_ptr<protocol::SessionManager> session_manager_;
 
   StatusObserverList status_observers_;
-
-  scoped_ptr<AccessVerifier> access_verifier_;
-
-  // Logger (owned by the HostNPScriptObject).
-  Logger* logger_;
 
   // The connections to remote clients.
   ClientList clients_;

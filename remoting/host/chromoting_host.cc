@@ -38,32 +38,26 @@ namespace remoting {
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
-                                       AccessVerifier* access_verifier,
-                                       Logger* logger) {
-  DesktopEnvironment* desktop_env = DesktopEnvironment::Create(context);
-  return Create(context, config, desktop_env, access_verifier, logger);
-}
-
-// static
-ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
-                                       MutableHostConfig* config,
                                        DesktopEnvironment* environment,
                                        AccessVerifier* access_verifier,
-                                       Logger* logger) {
+                                       Logger* logger,
+                                       bool allow_nat_traversal) {
   return new ChromotingHost(context, config, environment, access_verifier,
-                            logger);
+                            logger, allow_nat_traversal);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
                                DesktopEnvironment* environment,
                                AccessVerifier* access_verifier,
-                               Logger* logger)
+                               Logger* logger,
+                               bool allow_nat_traversal)
     : context_(context),
       config_(config),
       desktop_environment_(environment),
       access_verifier_(access_verifier),
       logger_(logger),
+      allow_nat_traversal_(allow_nat_traversal),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
@@ -228,7 +222,8 @@ void ChromotingHost::OnStateChange(
 
     server->Init(local_jid_, signal_strategy_.get(),
                  NewCallback(this, &ChromotingHost::OnNewClientSession),
-                 key_pair.CopyPrivateKey(), key_pair.GenerateCertificate());
+                 key_pair.CopyPrivateKey(), key_pair.GenerateCertificate(),
+                 allow_nat_traversal_);
 
     session_manager_.reset(server);
 

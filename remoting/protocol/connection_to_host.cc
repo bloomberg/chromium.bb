@@ -28,12 +28,14 @@ ConnectionToHost::ConnectionToHost(
     MessageLoop* message_loop,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
-    PortAllocatorSessionFactory* session_factory)
-    : state_(STATE_EMPTY),
-      message_loop_(message_loop),
+    PortAllocatorSessionFactory* session_factory,
+    bool allow_nat_traversal)
+    : message_loop_(message_loop),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
       port_allocator_session_factory_(session_factory),
+      allow_nat_traversal_(allow_nat_traversal),
+      state_(STATE_EMPTY),
       event_callback_(NULL),
       dispatcher_(new ClientMessageDispatcher()),
       client_stub_(NULL),
@@ -111,7 +113,8 @@ void ConnectionToHost::InitSession() {
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
       local_jid_, signal_strategy_.get(),
-      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, "");
+      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, "",
+      allow_nat_traversal_);
   session_manager_.reset(session_manager);
 
   CandidateSessionConfig* candidate_config =

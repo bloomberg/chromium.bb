@@ -17,6 +17,7 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/jingle_stream_connector.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
+#include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
 
@@ -468,6 +469,13 @@ void JingleSession::AddChannelConnector(
   const std::string& content_name = GetContentInfo()->name;
   cricket::TransportChannel* raw_channel =
       cricket_session_->CreateChannel(content_name, name);
+
+  if (!jingle_session_manager_->allow_nat_traversal_ &&
+      !cricket_session_->initiator()) {
+    // Don't make outgoing connections from the host to client when
+    // NAT traversal is disabled.
+    raw_channel->GetP2PChannel()->set_incoming_only(true);
+  }
 
   channel_connectors_[name] = connector;
   connector->Connect(cricket_session_->initiator(), local_cert_,

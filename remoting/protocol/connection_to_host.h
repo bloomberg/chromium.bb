@@ -75,7 +75,8 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   ConnectionToHost(MessageLoop* network_message_loop,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
-                   PortAllocatorSessionFactory* session_factory);
+                   PortAllocatorSessionFactory* session_factory,
+                   bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
   virtual void Connect(scoped_refptr<XmppProxy> xmpp_proxy,
@@ -125,14 +126,14 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   // Stops writing in the channels.
   void CloseChannels();
 
-  // Internal state of the connection.
-  State state_;
-
   MessageLoop* message_loop_;
-
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
   scoped_ptr<PortAllocatorSessionFactory> port_allocator_session_factory_;
+  bool allow_nat_traversal_;
+
+  // Internal state of the connection.
+  State state_;
 
   scoped_ptr<SignalStrategy> signal_strategy_;
   std::string local_jid_;

@@ -48,7 +48,7 @@ JingleSessionManager::JingleSessionManager(
       socket_factory_(socket_factory),
       port_allocator_session_factory_(port_allocator_session_factory),
       signal_strategy_(NULL),
-      enable_nat_traversing_(false),
+      allow_nat_traversal_(false),
       allow_local_ips_(false),
       http_port_allocator_(NULL),
       closed_(false),
@@ -64,17 +64,19 @@ void JingleSessionManager::Init(
     SignalStrategy* signal_strategy,
     IncomingSessionCallback* incoming_session_callback,
     crypto::RSAPrivateKey* private_key,
-    const std::string& certificate) {
+    const std::string& certificate,
+    bool allow_nat_traversal) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(signal_strategy);
   DCHECK(incoming_session_callback);
 
   local_jid_ = local_jid;
-  certificate_ = certificate;
-  private_key_.reset(private_key);
-  incoming_session_callback_.reset(incoming_session_callback);
   signal_strategy_ = signal_strategy;
+  incoming_session_callback_.reset(incoming_session_callback);
+  private_key_.reset(private_key);
+  certificate_ = certificate;
+  allow_nat_traversal_ = allow_nat_traversal;
 
   if (!network_manager_.get()) {
     VLOG(1) << "Creating talk_base::NetworkManager.";
@@ -91,7 +93,7 @@ void JingleSessionManager::Init(
   // so we explicitly disables TCP connections.
   int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
 
-  if (enable_nat_traversing_) {
+  if (allow_nat_traversal) {
     http_port_allocator_ = new remoting::HttpPortAllocator(
         network_manager_.get(), socket_factory_.get(),
         port_allocator_session_factory_.get(), "transp2");

@@ -91,16 +91,20 @@ class SessionManager : public base::NonThreadSafe {
       IncomingSessionCallback;
 
   // Initializes the session client. Caller retains ownership of the
-  // |signal_strategy|. If this object is used in server mode, then
-  // |private_key| and |certificate| are used to establish a secured
-  // communication with the client. It will also take ownership of
-  // these objects. In case this is used in client mode, pass in NULL
-  // for both private key and certificate.
+  // |signal_strategy|. |allow_nat_traversal| must be set to true to
+  // enable NAT traversal. STUN/Relay servers are not used when NAT
+  // traversal is disabled, so P2P connection will works only when
+  // both peers are on the same network. If this object is used in
+  // server mode, then |private_key| and |certificate| are used to
+  // establish a secured communication with the client. It will also
+  // take ownership of these objects. On the client side pass in NULL
+  // for |private_key| and empty string for |certificate|.
   virtual void Init(const std::string& local_jid,
                     SignalStrategy* signal_strategy,
                     IncomingSessionCallback* incoming_session_callback,
                     crypto::RSAPrivateKey* private_key,
-                    const std::string& certificate) = 0;
+                    const std::string& certificate,
+                    bool allow_nat_traversal) = 0;
 
   // Tries to create a session to the host |jid|.
   //

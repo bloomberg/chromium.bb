@@ -177,7 +177,7 @@ class JingleSessionTest : public testing::Test {
         NewCallback(&host_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
         private_key.release(),
-        cert_der);
+        cert_der, false);
 
     client_server_.reset(JingleSessionManager::CreateNotSandboxed());
     client_server_->set_allow_local_ips(true);
@@ -185,7 +185,7 @@ class JingleSessionTest : public testing::Test {
         kClientJid, client_signal_strategy_.get(),
         NewCallback(&client_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession),
-        NULL, "");
+        NULL, "", false);
   }
 
   void CloseSessionManager() {

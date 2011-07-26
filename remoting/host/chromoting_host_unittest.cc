@@ -106,8 +106,8 @@ class ChromotingHostTest : public testing::Test {
                                local_input_monitor_);
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
-    host_ = ChromotingHost::Create(&context_, config_,
-                                   desktop, access_verifier, logger_.get());
+    host_ = ChromotingHost::Create(&context_, config_, desktop,
+                                   access_verifier, logger_.get(), false);
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
     credentials_.set_credential("password");

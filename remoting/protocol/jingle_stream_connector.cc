@@ -15,7 +15,6 @@
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/protocol/jingle_session.h"
-#include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 
 namespace remoting {
 namespace protocol {
@@ -82,11 +81,6 @@ void JingleStreamConnector::Connect(bool initiator,
   remote_cert_ = remote_cert;
   local_private_key_ = local_private_key;
   raw_channel_ = raw_channel;
-
-  if (!initiator_) {
-    // Don't make outgoing connections from the host to client.
-    raw_channel_->GetP2PChannel()->set_incoming_only(true);
-  }
 
   net::Socket* socket =
       new jingle_glue::TransportChannelSocketAdapter(raw_channel_);

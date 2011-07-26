@@ -107,9 +107,10 @@ bool ChromotingInstance::Init(uint32_t argc,
   }
 
   // Create the chromoting objects.
+  // TODO(sergeyu): Use firewall traversal policy settings here.
   host_connection_.reset(new protocol::ConnectionToHost(
       context_.network_message_loop(), network_manager, socket_factory,
-      session_factory));
+      session_factory, false));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());
   rectangle_decoder_ = new RectangleUpdateDecoder(
