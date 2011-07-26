@@ -3839,7 +3839,42 @@
   {
     "namespace": "experimental.webNavigation",
     "types": [],
-    "functions": [],
+    "functions": [
+      {
+        "name": "getFrame",
+        "type": "function",
+        "description": "Retrieves information about the given frame.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "description": "Information about the frame to retrieve information about.",
+            "properties": {
+              "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab in which the frame is." },
+              "frameId": { "type": "integer", "minimum": 0, "description": "The ID of the frame in the given tab." }
+            }
+          },
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "object",
+                "name": "details",
+                "properties": {
+                  "errorOccurred": {
+                    "type": "boolean",
+                    "description": "True if the last navigation in this frame was interrupted by an error, i.e. the onErrorOccurred event fired."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "events": [
       {
         "name": "onBeforeNavigate",

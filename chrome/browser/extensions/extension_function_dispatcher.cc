@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/extension_tts_engine_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -321,6 +322,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BeginInstallFunction>();
   RegisterFunction<BeginInstallWithManifestFunction>();
   RegisterFunction<CompleteInstallFunction>();
+
+  // WebNavigation.
+  RegisterFunction<GetFrameFunction>();
 
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();

@@ -63,6 +63,7 @@
     "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon",
     "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle",
     "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show",
+    "chrome.experimental.webNavigation.getFrame": "experimental.webNavigation.html#method-getFrame",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",
     "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget",
     "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted",

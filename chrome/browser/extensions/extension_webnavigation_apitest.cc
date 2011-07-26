@@ -48,6 +48,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
       RunExtensionSubtest("webnavigation", "test_api.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  FrameNavigationState::set_allow_extension_scheme(true);
+
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_getFrame.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);

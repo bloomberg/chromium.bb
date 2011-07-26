@@ -41,6 +41,9 @@ class FrameNavigationState {
                   bool is_main_frame,
                   bool is_error_page);
 
+  // Returns true if |frame_id| is a known frame.
+  bool IsValidFrame(int64 frame_id) const;
+
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
   GURL GetUrl(int64 frame_id) const;
 
@@ -51,8 +54,12 @@ class FrameNavigationState {
   // known.
   int64 GetMainFrameID() const;
 
-  // Marks a frame as in an error state.
-  void ErrorOccurredInFrame(int64 frame_id);
+  // Marks a frame as in an error state, i.e. the onErrorOccurred event was
+  // fired for this frame, and no further events should be sent for it.
+  void SetErrorOccurredInFrame(int64 frame_id);
+
+  // True if the frame is marked as being in an error state.
+  bool GetErrorOccurredInFrame(int64 frame_id) const;
 
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
@@ -181,6 +188,13 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebNavigationEventRouter);
+};
+
+// API function that returns the state of a given frame.
+class GetFrameFunction : public SyncExtensionFunction {
+  virtual ~GetFrameFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getFrame")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_

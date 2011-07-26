@@ -215,6 +215,12 @@ void FrameNavigationState::TrackFrame(int64 frame_id,
   frame_state.is_main_frame = is_main_frame;
 }
 
+bool FrameNavigationState::IsValidFrame(int64 frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  return (frame_state != frame_state_map_.end());
+}
+
 GURL FrameNavigationState::GetUrl(int64 frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
@@ -245,9 +251,16 @@ int64 FrameNavigationState::GetMainFrameID() const {
   return -1;
 }
 
-void FrameNavigationState::ErrorOccurredInFrame(int64 frame_id) {
+void FrameNavigationState::SetErrorOccurredInFrame(int64 frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].error_occurred = true;
+}
+
+bool FrameNavigationState::GetErrorOccurredInFrame(int64 frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  return (frame_state == frame_state_map_.end() ||
+          frame_state->second.error_occurred);
 }
 
 
@@ -443,7 +456,7 @@ void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  navigation_state_.ErrorOccurredInFrame(frame_id);
+  navigation_state_.SetErrorOccurredInFrame(frame_id);
   DispatchEvent(tab_contents()->profile(), keys::kOnErrorOccurred, json_args);
 }
 
@@ -508,4 +521,48 @@ void ExtensionWebNavigationTabObserver::NavigatedReferenceFragment(
                       url,
                       is_main_frame,
                       frame_id);
+}
+
+bool GetFrameFunction::RunImpl() {
+  DictionaryValue* details;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  DCHECK(details);
+
+  int tab_id;
+  int frame_id;
+  EXTENSION_FUNCTION_VALIDATE(details->GetInteger(keys::kTabIdKey, &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(
+      details->GetInteger(keys::kFrameIdKey, &frame_id));
+
+  result_.reset(Value::CreateNullValue());
+
+  TabContentsWrapper* wrapper;
+  if (!ExtensionTabUtil::GetTabById(
+        tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL) ||
+      !wrapper) {
+    return true;
+  }
+
+  TabContents* tab_contents = wrapper->tab_contents();
+  ExtensionWebNavigationTabObserver* observer =
+      ExtensionWebNavigationTabObserver::Get(tab_contents);
+  DCHECK(observer);
+
+  const FrameNavigationState& frame_navigation_state =
+      observer->frame_navigation_state();
+
+  if (frame_id == 0)
+    frame_id = frame_navigation_state.GetMainFrameID();
+  if (!frame_navigation_state.IsValidFrame(frame_id))
+    return true;
+
+  DictionaryValue* resultDict = new DictionaryValue();
+  resultDict->SetString(
+      keys::kUrlKey,
+      frame_navigation_state.GetUrl(frame_id).spec());
+  resultDict->SetBoolean(
+      keys::kErrorOccurredKey,
+      frame_navigation_state.GetErrorOccurredInFrame(frame_id));
+  result_.reset(resultDict);
+  return true;
 }

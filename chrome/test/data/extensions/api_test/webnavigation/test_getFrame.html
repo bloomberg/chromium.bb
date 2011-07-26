@@ -1,0 +1,19 @@
+<script>
+var URL = chrome.extension.getURL("getFrame/a.html");
+
+chrome.tabs.create({"url": "about:blank"}, function(tab) {
+  var tabId = tab.id;
+  chrome.experimental.webNavigation.onBeforeNavigate.addListener(function (details) {
+    if (details.tabId != tabId)
+      return;
+    chrome.experimental.webNavigation.getFrame(
+        {tabId: tabId, frameId: 0},
+        function(details) {
+      chrome.test.assertEq({errorOccurred: false, url: URL},
+                           details);
+      chrome.test.succeed();
+    });
+  });
+  chrome.tabs.update(tabId, {url: URL});
+});
+</script>
