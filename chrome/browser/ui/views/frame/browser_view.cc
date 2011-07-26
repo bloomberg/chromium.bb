@@ -1686,6 +1686,12 @@ void BrowserView::OnWindowBeginUserBoundsChange() {
 }
 
 void BrowserView::OnWidgetMove() {
+  if (!initialized_) {
+    // Creating the widget can trigger a move. Ignore it until we've initialized
+    // things.
+    return;
+  }
+
   // Cancel any tabstrip animations, some of them may be invalidated by the
   // window being repositioned.
   // Comment out for one cycle to see if this fixes dist tests.

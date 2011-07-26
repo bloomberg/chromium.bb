@@ -771,6 +771,18 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 }
 #endif  // !defined(OS_MACOSX)
 
+// Makes sure the browser doesn't crash when
+// set_maximized_state(MAXIMIZED_STATE_MAXIMIZED) has been invoked.
+IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
+  for (int i = 0; i < static_cast<int>(Browser::NUM_TYPES); ++i) {
+    Browser* max_browser =
+        new Browser(static_cast<Browser::Type>(i), browser()->profile());
+    max_browser->set_maximized_state(Browser::MAXIMIZED_STATE_MAXIMIZED);
+    max_browser->InitBrowserWindow();
+    AddBlankTabAndShow(max_browser);
+  }
+}
+
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make
 // room for real browser unit tests.

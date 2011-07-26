@@ -82,9 +82,11 @@ class Browser : public TabHandlerDelegate,
   // enum, look at SessionService::WindowType to see if it needs to be
   // updated.
   enum Type {
-    TYPE_TABBED = 1,
-    TYPE_POPUP = 2,
-    TYPE_PANEL = 3,
+    TYPE_TABBED = 0,
+    TYPE_POPUP,
+    TYPE_PANEL,
+
+    NUM_TYPES,
   };
 
   // Possible elements of the Browser window.

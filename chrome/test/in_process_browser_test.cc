@@ -54,21 +54,6 @@
 #include "chrome/browser/chromeos/audio_handler.h"
 #endif
 
-namespace {
-
-void InitializeBrowser(Browser* browser) {
-  browser->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                 PageTransition::START_PAGE);
-
-  // Wait for the page to finish loading.
-  ui_test_utils::WaitForNavigation(
-      &browser->GetSelectedTabContents()->controller());
-
-  browser->window()->Show();
-}
-
-}  // namespace
-
 extern int BrowserMain(const MainFunctionParams&);
 
 const char kUnitTestShowWindows[] = "show-windows";
@@ -274,7 +259,7 @@ bool InProcessBrowserTest::SetUpUserDataDirectory() {
 // finish loading and shows the browser.
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  InitializeBrowser(browser);
+  AddBlankTabAndShow(browser);
   return browser;
 }
 
@@ -282,14 +267,25 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
   // Create a new browser with using the incognito profile.
   Browser* incognito =
       Browser::Create(browser()->profile()->GetOffTheRecordProfile());
-  InitializeBrowser(incognito);
+  AddBlankTabAndShow(incognito);
   return incognito;
 }
 
 Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   Browser* browser = Browser::CreateForType(Browser::TYPE_POPUP, profile);
-  InitializeBrowser(browser);
+  AddBlankTabAndShow(browser);
   return browser;
+}
+
+void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
+  browser->AddSelectedTabWithURL(
+      GURL(chrome::kAboutBlankURL), PageTransition::START_PAGE);
+
+  // Wait for the page to finish loading.
+  ui_test_utils::WaitForNavigation(
+      &browser->GetSelectedTabContents()->controller());
+
+  browser->window()->Show();
 }
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
