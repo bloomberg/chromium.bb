@@ -109,6 +109,7 @@
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
+#include "chrome/browser/mock_keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
@@ -134,6 +135,11 @@ namespace {
 
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;
+
+#if defined(OS_MACOSX)
+// Capacity for mock keychain used for testing.
+static const int kMockKeychainSize = 1000;
+#endif
 
 enum ContextType {
   kNormalContext,
@@ -1185,7 +1191,11 @@ void ProfileImpl::CreatePasswordStore() {
   ps = new PasswordStoreWin(login_db, this,
                             GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
-  ps = new PasswordStoreMac(new MacKeychain(), login_db);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
+    ps = new PasswordStoreMac(new MockKeychain(kMockKeychainSize), login_db);
+  } else {
+    ps = new PasswordStoreMac(new MacKeychain(), login_db);
+  }
 #elif defined(OS_CHROMEOS)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.

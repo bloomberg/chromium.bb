@@ -331,6 +331,7 @@ extern const char kPasswordStore[];
 #if defined(OS_MACOSX)
 extern const char kEnableExposeForTabs[];
 extern const char kRelauncherProcess[];
+extern const char kUseMockKeychain[];
 #endif
 
 #if !defined(OS_MACOSX)

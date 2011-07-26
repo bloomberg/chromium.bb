@@ -54,6 +54,13 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   if (!command_line->HasSwitch(switches::kPasswordStore))
     command_line->AppendSwitchASCII(switches::kPasswordStore, "basic");
 #endif
+
+#if defined(OS_MACOSX)
+  // Use mock keychain on mac to prevent blocking permissions dialogs.
+  // TODO(sync): Re-enable when mock keyring works with sync integration tests.
+  // See crbug.com/89808.
+  // command_line->AppendSwitch(switches::kUseMockKeychain);
+#endif
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {

@@ -1409,6 +1409,8 @@
         'browser/metrics/metrics_service.h',
         'browser/metrics/thread_watcher.cc',
         'browser/metrics/thread_watcher.h',
+        'browser/mock_keychain_mac.cc',
+        'browser/mock_keychain_mac.h',
         'browser/nacl_host/nacl_broker_host_win.cc',
         'browser/nacl_host/nacl_broker_host_win.h',
         'browser/nacl_host/nacl_broker_service_win.cc',

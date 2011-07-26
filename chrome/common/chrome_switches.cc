@@ -1155,6 +1155,10 @@ const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
+
+// Use mock keychain for testing purposes, which prevents blocking dialogs from
+// causing timeouts.
+const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if !defined(OS_MACOSX)
