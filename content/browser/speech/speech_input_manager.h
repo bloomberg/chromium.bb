@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class SpeechInputManager {
    protected:
     virtual ~Delegate() {}
   };
+
+  SpeechInputManager() : censor_results_(true) {}
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
@@ -64,6 +66,12 @@ class SpeechInputManager {
   virtual void StopRecording(int caller_id) = 0;
 
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate) = 0;
+
+  void set_censor_results(bool censor) { censor_results_ = censor; }
+
+  bool censor_results() { return censor_results_; }
+ private:
+  bool censor_results_;
 };
 
 // This typedef is to workaround the issue with certain versions of

@@ -530,6 +530,10 @@ const char kEnabledLabsExperiments[] = "browser.enabled_labs_experiments";
 // Boolean pref to define the default values for using auto spell correct.
 const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 
+// Boolean pref to define the default setting for "block offensive words".
+const char kSpeechInputCensorResults[] =
+    "browser.speechinput_censor_results";
+
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 

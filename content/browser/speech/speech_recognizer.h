@@ -82,6 +82,7 @@ class SpeechRecognizer
                    int caller_id,
                    const std::string& language,
                    const std::string& grammar,
+                   bool censor_results,
                    const std::string& hardware_info,
                    const std::string& origin_url);
   virtual ~SpeechRecognizer();
@@ -131,6 +132,7 @@ class SpeechRecognizer
   int caller_id_;
   std::string language_;
   std::string grammar_;
+  bool censor_results_;
   std::string hardware_info_;
   std::string origin_url_;
 

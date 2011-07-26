@@ -111,6 +111,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   void AppendSearchProvider();
   void AppendAllExtensionItems();
   void AppendSpellcheckOptionsSubMenu();
+  void AppendSpeechInputOptionsSubMenu();
   // Add writing direction sub menu (only used on Mac).
   void AppendBidiSubMenu();
   void AppendProtocolHandlerSubMenu();
@@ -163,6 +164,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   GURL selection_navigation_url_;
 
   ui::SimpleMenuModel spellcheck_submenu_model_;
+  ui::SimpleMenuModel speech_input_submenu_model_;
   ui::SimpleMenuModel bidi_submenu_model_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ScopedVector<ui::SimpleMenuModel> extension_menu_models_;

@@ -51,6 +51,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   // previous request has completed.
   void Start(const std::string& language,
              const std::string& grammar,
+             bool censor_results,
              const std::string& hardware_info,
              const std::string& origin_url,
              const std::string& content_type);

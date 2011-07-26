@@ -227,7 +227,8 @@ void SpeechInputManagerImpl::StartRecognition(
   SpeechInputRequest* request = &requests_[caller_id];
   request->delegate = delegate;
   request->recognizer = new SpeechRecognizer(
-      this, caller_id, language, grammar, optional_request_info_->value(),
+      this, caller_id, language, grammar, censor_results(),
+      optional_request_info_->value(),
       optional_request_info_->can_report_metrics() ? origin_url : "");
   request->is_active = false;
 

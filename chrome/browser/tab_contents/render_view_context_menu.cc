@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/platform_util.h"
@@ -193,6 +194,7 @@ RenderViewContextMenu::RenderViewContextMenu(
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
       external_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(spellcheck_submenu_model_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
       protocol_handler_registry_(
@@ -790,6 +792,7 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 
   AppendSpellcheckOptionsSubMenu();
+  AppendSpeechInputOptionsSubMenu();
 
 #if defined(OS_MACOSX)
   // OS X provides a contextual menu to set writing direction for BiDi
@@ -848,6 +851,24 @@ void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
       IDC_SPELLCHECK_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
       &spellcheck_submenu_model_);
+}
+
+void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
+  if (params_.speech_input_enabled) {
+    speech_input_submenu_model_.AddCheckItem(
+        IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS,
+        l10n_util::GetStringUTF16(
+            IDS_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS));
+
+    speech_input_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT,
+        IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT);
+
+    menu_model_.AddSubMenu(
+        IDC_SPEECH_INPUT_MENU,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU),
+        &speech_input_submenu_model_);
+  }
 }
 
 #if defined(OS_MACOSX)
@@ -1187,6 +1208,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
       return true;
 
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS:
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT:
+    case IDC_SPEECH_INPUT_MENU:
+      return true;
+
     case IDC_CONTENT_CONTEXT_OPENLINKWITH:
       return true;
 
@@ -1245,6 +1271,11 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   if (id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
     return (params_.spellcheck_enabled &&
             profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  }
+
+  // Check box for menu item 'Block offensive words'.
+  if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS) {
+    return profile_->GetPrefs()->GetBoolean(prefs::kSpeechInputCensorResults);
   }
 
   // Don't bother getting the display language vector if this isn't a spellcheck
@@ -1661,6 +1692,22 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
         tab_contents_wrapper->search_engine_tab_helper()->delegate()->
             ConfirmAddSearchProvider(template_url.release(), profile_);
       }
+      break;
+    }
+
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS: {
+      PrefService* prefs = profile_->GetPrefs();
+      const bool censor = !prefs->GetBoolean(prefs::kSpeechInputCensorResults);
+      prefs->SetBoolean(prefs::kSpeechInputCensorResults, censor);
+      break;
+    }
+
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT: {
+      GURL url(chrome::kSpeechInputAboutURL);
+      GURL localized_url = google_util::AppendGoogleLocaleParam(url);
+      // Open URL with no referrer field (because user clicked on menu item).
+      OpenURL(localized_url, GURL(), 0, NEW_FOREGROUND_TAB,
+              PageTransition::LINK);
       break;
     }
 

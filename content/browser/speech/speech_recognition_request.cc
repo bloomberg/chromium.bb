@@ -19,8 +19,7 @@
 namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
-    "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&"
-    "pfilter=2&";
+    "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
@@ -123,6 +122,7 @@ SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
 void SpeechRecognitionRequest::Start(const std::string& language,
                                      const std::string& grammar,
+                                     bool censor_results,
                                      const std::string& hardware_info,
                                      const std::string& origin_url,
                                      const std::string& content_type) {
@@ -151,6 +151,7 @@ void SpeechRecognitionRequest::Start(const std::string& language,
   if (!hardware_info.empty())
     parts.push_back("xhw=" + EscapeQueryParamValue(hardware_info, true));
   parts.push_back("maxresults=" + base::IntToString(kMaxResults));
+  parts.push_back(censor_results ? "pfilter=2" : "pfilter=0");
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 

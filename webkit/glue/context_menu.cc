@@ -44,6 +44,7 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       media_flags(data.mediaFlags),
       selection_text(data.selectedText),
       misspelled_word(data.misspelledWord),
+      speech_input_enabled(data.isSpeechInputEnabled),
       spellcheck_enabled(data.isSpellCheckingEnabled),
       is_editable(data.isEditable),
 #if defined(OS_MACOSX)

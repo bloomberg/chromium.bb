@@ -93,6 +93,7 @@
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
@@ -339,6 +340,7 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
+  pref_change_registrar_.Add(prefs::kSpeechInputCensorResults, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
   pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
@@ -408,6 +410,9 @@ void ProfileImpl::DoFinalInit() {
     spellcheck_host_metrics_->RecordEnabledStats(
         GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
   }
+
+  speech_input::SpeechInputManager::Get()->set_censor_results(
+      prefs->GetBoolean(prefs::kSpeechInputCensorResults));
 
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
@@ -1492,6 +1497,9 @@ void ProfileImpl::Observe(int type,
           RenderProcessHost* process = i.GetCurrentValue();
           process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
         }
+      } else if (*pref_name_in == prefs::kSpeechInputCensorResults) {
+        speech_input::SpeechInputManager::Get()->set_censor_results(
+            prefs->GetBoolean(prefs::kSpeechInputCensorResults));
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);
