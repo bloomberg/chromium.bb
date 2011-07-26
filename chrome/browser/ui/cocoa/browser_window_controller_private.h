@@ -119,11 +119,6 @@
 // hacky code is necessary.
 - (void)setUpOSFullScreenButton;
 
-// On Lion, Apple introduced a new gesture for navigating pages using two-finger
-// gestures. Returns YES if two-finger gestures should be recognized.
-- (BOOL)recognizeTwoFingerGestures;
-
 @end  // @interface BrowserWindowController(Private)
-
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_

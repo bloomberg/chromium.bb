@@ -40,6 +40,7 @@
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
+#import "chrome/browser/ui/cocoa/gesture_utils.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
@@ -1673,13 +1674,23 @@ typedef NSInteger NSWindowAnimationBehavior;
 // Documented in 10.6+, but present starting in 10.5. Called when we get a
 // three-finger swipe.
 - (void)swipeWithEvent:(NSEvent*)event {
+  CGFloat deltaX = [event deltaX];
+  CGFloat deltaY = [event deltaY];
+
+  // On Lion, the user can choose to use a "natural" scroll direction with
+  // inverted axes.
+  if (gesture_utils::IsScrollDirectionInverted()) {
+    deltaX *= -1;
+    deltaY *= -1;
+  }
+
   // Map forwards and backwards to history; left is positive, right is negative.
   unsigned int command = 0;
-  if ([event deltaX] > 0.5) {
+  if (deltaX > 0.5) {
     command = IDC_BACK;
-  } else if ([event deltaX] < -0.5) {
+  } else if (deltaX < -0.5) {
     command = IDC_FORWARD;
-  } else if ([event deltaY] > 0.5) {
+  } else if (deltaY > 0.5) {
     // TODO(pinkerton): figure out page-up, http://crbug.com/16305
   } else if ([event deltaY] < -0.5) {
     // TODO(pinkerton): figure out page-down, http://crbug.com/16305
@@ -1738,9 +1749,9 @@ typedef NSInteger NSWindowAnimationBehavior;
   // the system gesture recognizer will automatically call |-swipeWithEvent:|
   // and that will be handled as it would be on Snow Leopard. The two-finger
   // gesture does not do this, so it must be manually recognized. See the note
-  // inside |-recognizeTwoFingerGestures| for detailed information on the
+  // inside RecognizeTwoFingerGestures() for detailed information on the
   // interaction of the different preferences.
-  if (![self recognizeTwoFingerGestures])
+  if (!gesture_utils::RecognizeTwoFingerGestures())
     return;
   NSSet* touches = [event touchesMatchingPhase:NSTouchPhaseAny
                                         inView:nil];
@@ -1787,6 +1798,11 @@ typedef NSInteger NSWindowAnimationBehavior;
     return;
 
   CGFloat sum = std::accumulate(magnitudes.begin(), magnitudes.end(), 0.0f);
+  // On Lion, the user can choose to use a "natural" scroll direction with
+  // inverted axes.
+  if (gesture_utils::IsScrollDirectionInverted())
+    sum *= -1;
+
   int command_id = 0;
   if (sum > 0.3)
     command_id = IDC_FORWARD;

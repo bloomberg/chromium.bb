@@ -2447,6 +2447,8 @@
         'browser/ui/cocoa/fullscreen_controller.mm',
         'browser/ui/cocoa/fullscreen_window.h',
         'browser/ui/cocoa/fullscreen_window.mm',
+        'browser/ui/cocoa/gesture_utils.h',
+        'browser/ui/cocoa/gesture_utils.mm',
         'browser/ui/cocoa/gradient_button_cell.h',
         'browser/ui/cocoa/gradient_button_cell.mm',
         'browser/ui/cocoa/history_menu_bridge.h',
