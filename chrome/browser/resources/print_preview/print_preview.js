@@ -274,6 +274,7 @@ function updateWithPrinterCapabilities(settingInfo) {
   if (color.checked != setColorAsDefault) {
     color.checked = setColorAsDefault;
     bw.checked = !setColorAsDefault;
+    setColor(color.checked);
   }
 }
 

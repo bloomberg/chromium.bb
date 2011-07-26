@@ -241,6 +241,38 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestSectionsDisabled', function() {
   checkSectionVisible('copies-option', false);
 });
 
+// Test that the color settings are set according to the printer capabilities.
+// crbug.com/90476
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestColorSettings', function() {
+  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
+      will(callFunction(function() {
+        updateWithPrinterCapabilities({
+          disableColorOption: false,
+          setColorAsDefault: true,
+          disableCopiesOption: false,
+          disableLandscapeOption: false,
+        });
+      }));
+
+  updateControlsWithSelectedPrinterCapabilities();
+  expectTrue($('color').checked);
+  expectFalse($('bw').checked);
+
+  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
+      will(callFunction(function() {
+        updateWithPrinterCapabilities({
+          disableColorOption: false,
+          setColorAsDefault: false,
+          disableCopiesOption: false,
+          disableLandscapeOption: false,
+        });
+      }));
+
+  updateControlsWithSelectedPrinterCapabilities();
+  expectFalse($('color').checked);
+  expectTrue($('bw').checked);
+});
+
 // Test that changing the selected printer updates the preview.
 // crbug.com/90476
 TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterChangeUpdatesPreview',
