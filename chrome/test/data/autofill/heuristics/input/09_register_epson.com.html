@@ -23,7 +23,7 @@
 <esi:when test="(($(HTTP_COOKIE{BV_IDS}|'false')!='false') & ($(HTTP_COOKIE{BV_IDS}|'false')!='')) & ($(QUERY_STRING{cookies})!='no')">
 	<esi:try>
 		<esi:attempt>
-			<esi:include src="/cgi-bin/Store/ping.jsp?BV_SessionID=$(HTTP_COOKIE{BV_SessionID})&BV_EngineID=$(HTTP_COOKIE{BV_EngineID})" alt="/cgi-bin/Store/alive.jsp" />
+			<esi:include src="#" alt="/cgi-bin/Store/alive.jsp" />
 		</esi:attempt>
 	<esi:except>
 	</esi:except>
@@ -40,7 +40,7 @@
 						<label for="global-search">
 							United States
 							<input type="text" name="query" id="global-search-txt" placeholder="Enter Search" maxlength="50" title="Enter Search" class="placeholder empty"></label>
-						<input type="HIDDEN" name="pre_search" value="pre_search"><input type="HIDDEN" name="Category" value="Products"><input type="image" id="global-search-btn" src="/_assets/img/header/header-search-button.png" width="56" height="19" alt="SEARCH"><input type="HIDDEN" name="BV_UseBVCookie" value="yes">
+						<input type="HIDDEN" name="pre_search" value="pre_search"><input type="HIDDEN" name="Category" value="Products"><input type="image" id="global-search-btn" src="#" width="56" height="19" alt="SEARCH"><input type="HIDDEN" name="BV_UseBVCookie" value="yes">
 </form>
 
 
@@ -68,7 +68,7 @@
 					
 
 
-                            <input type="image" src="/images/buttons/button_submit.gif" border="0">
+                            <input type="image" src="#" border="0">
 </form>
 
 
