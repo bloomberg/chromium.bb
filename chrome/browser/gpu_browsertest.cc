@@ -21,6 +21,7 @@
 class GPUBrowserTest : public InProcessBrowserTest {
  protected:
   GPUBrowserTest() {
+    EnableDOMAutomation();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -35,6 +36,8 @@ class GPUBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
         command_line,
         gfx::kGLImplementationOSMesaName));
+
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
 
 #if defined(OS_MACOSX)
     // Accelerated compositing does not work with OSMesa. AcceleratedSurface
@@ -62,4 +65,28 @@ IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestCanLaunchWithOSMesa) {
 
   EXPECT_EQ(ASCIIToUTF16("SUCCESS: Mesa OffScreen"),
             browser()->GetSelectedTabContents()->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest, CanOpenPopupAndRenderWithWebGLCanvas) {
+  ui_test_utils::DOMMessageQueue message_queue;
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl_popup.html")));
+
+  std::string result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ("\"SUCCESS\"", result);
+}
+
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest, CanOpenPopupAndRenderWith2DCanvas) {
+  ui_test_utils::DOMMessageQueue message_queue;
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::FilePathToFileURL(gpu_test_dir_.AppendASCII("canvas_popup.html")));
+
+  std::string result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ("\"SUCCESS\"", result);
 }
