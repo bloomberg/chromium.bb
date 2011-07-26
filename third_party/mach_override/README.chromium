@@ -2,8 +2,8 @@ Name: mach_override
 Short Name: Part of the mach_star project
 Version: Unknown
 URL: https://github.com/rentzsch/mach_star
-Date: 04/18/2011
-Revision: 32c4560eb09848073f69
+Date: 07/22/2011
+Revision: 51ae3d199463fa84548f466d649f0821d579fdaf
 License: MIT
 Security Critical: Yes
 
@@ -11,7 +11,7 @@ Security Critical: Yes
 Description:
 This is the mach_override part of mach_star, namely:
 
-  https://github.com/rentzsch/mach_star/tree/aeb1720815c7255070da0f548267ccfdf7bd50b7
+  https://github.com/rentzsch/mach_star/tree/51ae3d199463fa84548f466d649f0821d579fdaf
 
 This package is used to replace framework functions with different
 implementations at run time.
@@ -19,21 +19,4 @@ implementations at run time.
 
 Local Modifications:
 
-Enabled makeIslandExecutable for 32-bit i386. Main executables linked and run
-on Mac OS X 10.7 ("Lion") have non-executable heap pages by default. See
-http://crbug.com/79642.
-
-Changed the logic surrounding calls to makeIslandExecutable so that
-mach_override_ptr can return successfully when originalFunctionReentryIsland,
-an optional argument, is NULL. Failure in makeIslandExecutable will now
-trigger cleanup of allocated memory.
-
-Changed allocateBranchIsland to use a more appropriate address range per
-http://developer.apple.com/library/mac/#documentation/Performance/Conceptual/LaunchTime/Articles/Prebinding.html.
-The range for x86 (32-bit) with kAllocateHigh set is now [0xffc00000,
-0xffe00000). In this configuration, the loop is now guaranteed to terminate
-instead of exceeding its permitted range. Previously, this function would
-begin looking for a page at 0xfefff000 and would not stop, even after wrapping
-around to low memory. The URL above states 0xfefff000 is within a range marked
-"Reserved for use by the pasteboard and other system services. Do not use this
-address range."
+None. All local changes have been upstreamed.
