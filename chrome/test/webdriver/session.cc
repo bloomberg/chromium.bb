@@ -812,17 +812,19 @@ Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
             JsonStringify(result.get()));
   }
   DictionaryValue* dict = static_cast<DictionaryValue*>(result.get());
-  int left, top, width, height;
-  if (!dict->GetInteger("left", &left) ||
-      !dict->GetInteger("top", &top) ||
-      !dict->GetInteger("width", &width) ||
-      !dict->GetInteger("height", &height)) {
+  // TODO(kkania): Convert the atom to return integers.
+  double left, top, width, height;
+  if (!dict->GetDouble("left", &left) ||
+      !dict->GetDouble("top", &top) ||
+      !dict->GetDouble("width", &width) ||
+      !dict->GetDouble("height", &height)) {
     return new Error(
         kUnknownError,
         "GetFirstClientRect atom returned invalid dict: " +
             JsonStringify(dict));
   }
-  *rect = gfx::Rect(left, top, width, height);
+  *rect = gfx::Rect(static_cast<int>(left), static_cast<int>(top),
+                    static_cast<int>(width), static_cast<int>(height));
   return NULL;
 }
 

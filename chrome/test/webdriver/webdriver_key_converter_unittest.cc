@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "chrome/test/webdriver/webdriver_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webdriver {
@@ -127,16 +128,19 @@ TEST(WebDriverKeyConverter, FrenchKeyOnEnglishLayout) {
 }
 
 #if defined(OS_WIN)
-TEST(WebDriverKeyConverter, FrenchKeyOnFrenchLayout) {
+TEST(WebDriverKeyConverter, NeedsCtrlAndAlt) {
+  RestoreKeyboardLayoutOnDestruct restore;
+  int ctrl_and_alt = automation::kControlKeyMask | automation::kAltKeyMask;
   WebKeyEvent event_array[] = {
-      CreateKeyDownEvent(ui::VKEY_2, 0),
-      CreateCharEvent(WideToUTF8(L"\u00E9"), WideToUTF8(L"\u00E9"), 0),
-      CreateKeyUpEvent(ui::VKEY_2, 0)};
-  HKL french_layout = ::LoadKeyboardLayout(L"0000040C", 0);
-  ASSERT_TRUE(french_layout);
-  HKL prev_layout = ::ActivateKeyboardLayout(french_layout, 0);
-  CheckEvents(WideToUTF16(L"\u00E9"), event_array, arraysize(event_array));
-  ::ActivateKeyboardLayout(prev_layout, 0);
+      CreateKeyDownEvent(ui::VKEY_CONTROL, 0),
+      CreateKeyDownEvent(ui::VKEY_MENU, 0),
+      CreateKeyDownEvent(ui::VKEY_Q, ctrl_and_alt),
+      CreateCharEvent("q", "@", ctrl_and_alt),
+      CreateKeyUpEvent(ui::VKEY_Q, ctrl_and_alt),
+      CreateKeyUpEvent(ui::VKEY_MENU, 0),
+      CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
+  ASSERT_TRUE(SwitchKeyboardLayout("00000407"));
+  CheckEvents("@", event_array, arraysize(event_array));
 }
 #endif
 

@@ -13,6 +13,17 @@
 
 namespace {
 
+struct ModifierMaskAndKeyCode {
+  int mask;
+  ui::KeyboardCode key_code;
+};
+
+const ModifierMaskAndKeyCode kModifiers[] = {
+  { automation::kShiftKeyMask, ui::VKEY_SHIFT },
+  { automation::kControlKeyMask, ui::VKEY_CONTROL },
+  { automation::kAltKeyMask, ui::VKEY_MENU }
+};
+
 // TODO(kkania): Use this in KeyMap.
 // Ordered list of all the key codes corresponding to special WebDriver keys.
 // These WebDriver keys are defined in the Unicode Private Use Area.
@@ -267,12 +278,15 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
     }
 
     // Create the key events.
-    bool need_shift_key =
-        all_modifiers & automation::kShiftKeyMask &&
-        !(sticky_modifiers & automation::kShiftKeyMask);
-    if (need_shift_key) {
-      key_events.push_back(
-          CreateKeyDownEvent(ui::VKEY_SHIFT, sticky_modifiers));
+    bool necessary_modifiers[3];
+    for (int i = 0; i < 3; ++i) {
+      necessary_modifiers[i] =
+          all_modifiers & kModifiers[i].mask &&
+          !(sticky_modifiers & kModifiers[i].mask);
+      if (necessary_modifiers[i]) {
+        key_events.push_back(
+            CreateKeyDownEvent(kModifiers[i].key_code, sticky_modifiers));
+      }
     }
 
     key_events.push_back(CreateKeyDownEvent(key_code, all_modifiers));
@@ -282,9 +296,11 @@ bool ConvertKeysToWebKeyEvents(const string16& client_keys,
     }
     key_events.push_back(CreateKeyUpEvent(key_code, all_modifiers));
 
-    if (need_shift_key) {
-      key_events.push_back(
-          CreateKeyUpEvent(ui::VKEY_SHIFT, sticky_modifiers));
+    for (int i = 2; i > -1; --i) {
+      if (necessary_modifiers[i]) {
+        key_events.push_back(
+            CreateKeyUpEvent(kModifiers[i].key_code, sticky_modifiers));
+      }
     }
   }
   client_key_events->swap(key_events);

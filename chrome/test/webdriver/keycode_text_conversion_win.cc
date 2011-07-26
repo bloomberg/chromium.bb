@@ -16,9 +16,13 @@ namespace webdriver {
 std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   UINT scan_code = ::MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
   BYTE keyboard_state[256];
-  ::GetKeyboardState(keyboard_state);
+  memset(keyboard_state, 0, 256);
   if (modifiers & automation::kShiftKeyMask)
     keyboard_state[VK_SHIFT] |= 0x80;
+  if (modifiers & automation::kControlKeyMask)
+    keyboard_state[VK_CONTROL] |= 0x80;
+  if (modifiers & automation::kAltKeyMask)
+    keyboard_state[VK_MENU] |= 0x80;
   wchar_t chars[5];
   int code = ::ToUnicode(key_code, scan_code, keyboard_state, chars, 4, 0);
   // |ToUnicode| converts some non-text key codes like F1 to various ASCII

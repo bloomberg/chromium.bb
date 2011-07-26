@@ -1002,6 +1002,8 @@
         'test/webdriver/keycode_text_conversion_unittest.cc',
         'test/webdriver/utility_functions_unittest.cc',
         'test/webdriver/webdriver_key_converter_unittest.cc',
+        'test/webdriver/webdriver_test_util.cc',
+        'test/webdriver/webdriver_test_util.h',
       ],
       'conditions': [
         ['OS=="win"', {

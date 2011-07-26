@@ -25,6 +25,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/webdriver/commands/alert_commands.h"
@@ -229,11 +230,8 @@ int main(int argc, char *argv[]) {
   // The tests depend on parsing the first line ChromeDriver outputs,
   // so all other logging should happen after this.
   std::cout << "Started ChromeDriver" << std::endl
-            << "port=" << port << std::endl;
-
-  if (root.length()) {
-    VLOG(1) << "Serving files from the current working directory";
-  }
+            << "port=" << port << std::endl
+            << "version=" << chrome::kChromeVersion << std::endl;
 
   // Run until we receive command to shutdown.
   shutdown_event.Wait();

@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/keycode_text_conversion.h"
+#include "chrome/test/webdriver/webdriver_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -15,7 +16,7 @@ using automation::kShiftKeyMask;
 using webdriver::ConvertKeyCodeToText;
 using webdriver::ConvertCharToKeyCode;
 
-namespace {
+namespace webdriver {
 
 void CheckCharToKeyCode(char character, ui::KeyboardCode key_code,
                         int modifiers) {
@@ -77,4 +78,42 @@ TEST(KeycodeTextConversionTest, CharToKeyCode) {
   CheckCantConvertChar(L'\u2159');
 }
 
-}  // namespace
+#if defined(OS_LINUX)
+#define MAYBE_NonShiftModifiers DISABLED_NonShiftModifiers
+#else
+#define MAYBE_NonShiftModifiers NonShiftModifiers
+#endif
+
+TEST(KeycodeTextConversionTest, MAYBE_NonShiftModifiers) {
+  RestoreKeyboardLayoutOnDestruct restore;
+#if defined(OS_WIN)
+  ASSERT_TRUE(SwitchKeyboardLayout("00000407"));  // german
+  int ctrl_and_alt = automation::kControlKeyMask | automation::kAltKeyMask;
+  CheckCharToKeyCode('@', ui::VKEY_Q, ctrl_and_alt);
+  EXPECT_EQ("@", ConvertKeyCodeToText(ui::VKEY_Q, ctrl_and_alt));
+#elif defined(OS_MACOSX)
+  ASSERT_TRUE(SwitchKeyboardLayout("com.apple.keylayout.German"));
+  EXPECT_EQ("@", ConvertKeyCodeToText(ui::VKEY_L, automation::kAltKeyMask));
+#endif
+}
+
+#if defined(OS_LINUX)
+#define MAYBE_NonEnglish DISABLED_NonEnglish
+#else
+#define MAYBE_NonEnglish NonEnglish
+#endif
+
+TEST(KeycodeTextConversionTest, MAYBE_NonEnglish) {
+  RestoreKeyboardLayoutOnDestruct restore;
+#if defined(OS_WIN)
+  ASSERT_TRUE(SwitchKeyboardLayout("00000408"));  // greek
+  CheckCharToKeyCode(';', ui::VKEY_Q, 0);
+  EXPECT_EQ(";", ConvertKeyCodeToText(ui::VKEY_Q, 0));
+#elif defined(OS_MACOSX)
+  ASSERT_TRUE(SwitchKeyboardLayout("com.apple.keylayout.German"));
+  CheckCharToKeyCode('z', ui::VKEY_Y, 0);
+  EXPECT_EQ("z", ConvertKeyCodeToText(ui::VKEY_Y, 0));
+#endif
+}
+
+}  // namespace webdriver

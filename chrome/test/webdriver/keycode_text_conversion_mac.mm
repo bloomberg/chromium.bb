@@ -30,7 +30,16 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
 
   int mac_modifiers = 0;
   if (modifiers & automation::kShiftKeyMask)
-    mac_modifiers = shiftKey >> 8;
+    mac_modifiers |= shiftKey;
+  if (modifiers & automation::kControlKeyMask)
+    mac_modifiers |= controlKey;
+  if (modifiers & automation::kAltKeyMask)
+    mac_modifiers |= optionKey;
+  if (modifiers & automation::kMetaKeyMask)
+    mac_modifiers |= cmdKey;
+  // Convert EventRecord modifiers to format UCKeyTranslate accepts. See docs
+  // on UCKeyTranslate for more info.
+  UInt32 modifier_key_state = (mac_modifiers >> 8) & 0xFF;
 
   base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
       TISCopyCurrentKeyboardLayoutInputSource());
@@ -44,7 +53,7 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
       reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layout_data)),
       static_cast<UInt16>(mac_key_code),
       kUCKeyActionDown,
-      mac_modifiers,
+      modifier_key_state,
       LMGetKbdLast(),
       kUCKeyTranslateNoDeadKeysBit,
       &dead_key_state,
