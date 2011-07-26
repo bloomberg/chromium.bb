@@ -226,6 +226,9 @@ def BuildScript(status, context):
     with Step('plugin_compile_32', status):
       SCons(context, platform='x86-32', parallel=True, args=['plugin'])
 
+  with Step('compile IRT tests', status):
+    SCons(context, parallel=True, mode=['nacl_irt_test'])
+
   ### BEGIN tests ###
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])
@@ -274,6 +277,17 @@ def BuildScript(status, context):
     with Step('dynamic_library_browser_tests', status, halt_on_fail=False):
       SCons(context, browser_test=True,
             args=['SILENT=1', 'dynamic_library_browser_tests'])
+
+  # IRT is incompatible with glibc startup hacks.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=2092
+  if not context['use_glibc']:
+    with Step('small_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['small_tests_irt'])
+
+    with Step('medium_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['medium_tests_irt'])
 
   if context.Mac():
     # x86-64 is not fully supported on Mac.  Not everything works, but we
