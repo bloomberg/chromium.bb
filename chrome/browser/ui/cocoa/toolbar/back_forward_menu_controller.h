@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
@@ -23,7 +24,7 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
 // A class that manages the back/forward menu (and delayed-menu button, and
 // model).
 
-@interface BackForwardMenuController : NSObject {
+@interface BackForwardMenuController : NSObject<NSMenuDelegate> {
  @private
   BackForwardMenuType type_;
   MenuButton* button_;  // Weak; comes from nib.

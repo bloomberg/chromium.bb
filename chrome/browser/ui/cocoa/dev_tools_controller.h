@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
@@ -20,7 +21,7 @@ class TabContents;
 // A class that handles updates of the devTools view within a browser window.
 // It swaps in the relevant devTools contents for a given TabContents or removes
 // the view, if there's no devTools contents to show.
-@interface DevToolsController : NSObject {
+@interface DevToolsController : NSObject<NSSplitViewDelegate> {
  @private
   // A view hosting docked devTools contents.
   scoped_nsobject<NSSplitView> splitView_;

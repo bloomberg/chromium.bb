@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
@@ -18,7 +19,7 @@ class TabContents;
 
 // This controller manages a dialog box with properties and HTML content taken
 // from a HTMLDialogUIDelegate object.
-@interface HtmlDialogWindowController : NSWindowController {
+@interface HtmlDialogWindowController : NSWindowController<NSWindowDelegate> {
  @private
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
@@ -19,7 +20,7 @@ class TabContents;
 // A class that handles updates of the sidebar view within a browser window.
 // It swaps in the relevant sidebar contents for a given TabContents or removes
 // the vew, if there's no sidebar contents to show.
-@interface SidebarController : NSObject {
+@interface SidebarController : NSObject<NSSplitViewDelegate> {
  @private
   // A view hosting sidebar contents.
   scoped_nsobject<NSSplitView> splitView_;
