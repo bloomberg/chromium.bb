@@ -759,7 +759,8 @@ HRESULT NativeThemeWin::PaintMenuCheck(
   if (handle && draw_theme_)
     return draw_theme_(handle, hdc, MENU_POPUPCHECK, state_id, &rect_win, NULL);
 
-  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK,
+  return PaintFrameControl(hdc, rect, DFC_MENU,
+                           extra.is_radio ? DFCS_MENUBULLET : DFCS_MENUCHECK,
                            extra.is_selected, state);
 }
 
