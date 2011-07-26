@@ -2416,7 +2416,7 @@
 }
 {
    bug_50968_e
-   Memcheck:Value4   
+   Memcheck:Value4
    ...
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
@@ -4315,6 +4315,18 @@
    fun:*BrowserInit*
 }
 {
+   bug_80663
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN3net17URLRequestHttpJobEFvPSsPSt6vectorINS1_11CookieStore10CookieInfoESaIS6_EEEPS2_EENS_8internal20InvokerStorageHolderINSD_15InvokerStorage1IT_T0_EEEESG_RKSH_
+   fun:_ZN3net17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN3net17URLRequestHttpJob5StartEv
+   fun:_ZN3net10URLRequest8StartJobEPNS_13URLRequestJobE
+   fun:_ZN3net10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+   fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
+}
+{
    bug_81782
    Memcheck:Leak
    fun:_Znw*
@@ -4993,6 +5005,27 @@
    fun:_ZN6chrome26ChromeContentBrowserClient14GetWebkitPrefsEP7Profileb
    fun:_ZN11TabContents14GetWebkitPrefsEv
 }
+{
+   bug_90484
+   Memcheck:Addr1
+   fun:_ZN5views8internal16NativeWidgetView24set_delete_native_widgetEb
+   fun:_ZN5views17NativeWidgetViewsD2Ev
+}
+{
+   bug_90487
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIPN5quota11QuotaClientEEE8allocateEjPKv
+   fun:_ZNSt10_List_baseIPN5quota11QuotaClientESaIS2_EE11_M_get_nodeEv
+   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE14_M_create_nodeERKS2_
+   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE9_M_insertESt14_List_iteratorIS2_ERKS2_
+   fun:_ZNSt4listIPN5quota11QuotaClientESaIS2_EE9push_backERKS2_
+   fun:_ZN5quota12QuotaManager14RegisterClientEPNS_11QuotaClientE
+   fun:_ZN5quota17QuotaManagerProxy14RegisterClientEPNS_11QuotaClientE
+   fun:_Z16DispatchToMethodIN5quota17QuotaManagerProxyEMS1_FvPNS0_11QuotaClientEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN5quota17QuotaManagerProxyEMS1_FvPNS0_11QuotaClientEE6Tuple1IS3_EE3RunEv
+}
+
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
