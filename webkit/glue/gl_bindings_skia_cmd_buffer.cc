@@ -68,6 +68,7 @@ void BindSkiaToCommandBufferGL() {
     glGetShaderInfoLog,
     glGetShaderiv,
     glGetString,
+    NULL,  // glGetTexLevelParameteriv
     glGetUniformLocation,
     glLineWidth,
     glLinkProgram,
@@ -123,6 +124,8 @@ void BindSkiaToCommandBufferGL() {
     glFramebufferTexture2D,
     glGenFramebuffers,
     glGenRenderbuffers,
+    glGetFramebufferAttachmentParameteriv,
+    glGetRenderbufferParameteriv,
     glRenderbufferStorage,
     glRenderbufferStorageMultisampleEXT,
     glBlitFramebufferEXT,

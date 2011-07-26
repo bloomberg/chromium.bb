@@ -214,6 +214,12 @@ GLvoid StubGLGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   glGetBufferParameteriv(target, pname, params);
 }
 
+GLvoid StubGLGetFramebufferAttachmentParameteriv(GLenum target,
+                                                 GLenum attachment,
+                                                 GLenum pname, GLint* params) {
+  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
+}
+
 GLenum StubGLGetError() {
   return glGetError();
 }
@@ -231,6 +237,11 @@ GLvoid StubGLGetProgramiv(GLuint program, GLenum pname, GLint* params) {
   glGetProgramiv(program, pname, params);
 }
 
+GLvoid StubGLGetRenderbufferParameteriv(GLenum target,
+                                        GLenum pname, GLint* params) {
+  glGetRenderbufferParameterivEXT(target, pname, params);
+}
+
 GLvoid StubGLGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length,
                               char* infolog) {
   glGetShaderInfoLog(shader, bufsize, length, infolog);
@@ -242,6 +253,11 @@ GLvoid StubGLGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
 
 const GLubyte* StubGLGetString(GLenum name) {
   return glGetString(name);
+}
+
+GLvoid StubGLGetTexLevelParameteriv(GLenum target, GLint level,
+                                    GLenum pname, GLint* params) {
+  glGetTexLevelParameteriv(target, level, pname, params);
 }
 
 GLint StubGLGetUniformLocation(GLuint program, const char* name) {
@@ -518,6 +534,7 @@ void BindSkiaToInProcessGL() {
       StubGLGetShaderInfoLog,
       StubGLGetShaderiv,
       StubGLGetString,
+      StubGLGetTexLevelParameteriv,
       StubGLGetUniformLocation,
       StubGLLineWidth,
       StubGLLinkProgram,
@@ -573,6 +590,8 @@ void BindSkiaToInProcessGL() {
       StubGLFramebufferTexture2D,
       StubGLGenFramebuffers,
       StubGLGenRenderbuffers,
+      StubGLGetFramebufferAttachmentParameteriv,
+      StubGLGetRenderbufferParameteriv,
       StubGLRenderBufferStorage,
       StubGLRenderbufferStorageMultisample,
       StubGLBlitFramebuffer,
