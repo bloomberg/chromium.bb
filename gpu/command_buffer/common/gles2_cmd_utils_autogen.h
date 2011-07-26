@@ -26,6 +26,7 @@ static std::string GetStringFrameBufferParameter(uint32 value);
 static std::string GetStringFrameBufferTarget(uint32 value);
 static std::string GetStringGLState(uint32 value);
 static std::string GetStringGetMaxIndexType(uint32 value);
+static std::string GetStringGetTexParamTarget(uint32 value);
 static std::string GetStringHintMode(uint32 value);
 static std::string GetStringHintTarget(uint32 value);
 static std::string GetStringIndexType(uint32 value);

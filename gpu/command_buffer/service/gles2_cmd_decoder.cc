@@ -517,6 +517,18 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     // texture currently bound to this unit's GL_TEXTURE_CUBE_MAP with
     // glBindTexture
     TextureManager::TextureInfo::Ref bound_texture_cube_map;
+
+    // texture currently bound to this unit's GL_TEXTURE_EXTERNAL_OES with
+    // glBindTexture
+    TextureManager::TextureInfo::Ref bound_texture_external_oes;
+
+    TextureManager::TextureInfo::Ref GetInfoForSamplerType(GLenum type) {
+      DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
+             type == GL_SAMPLER_EXTERNAL_OES);
+      return type == GL_SAMPLER_2D ? bound_texture_2d :
+          (type == GL_SAMPLER_EXTERNAL_OES ? bound_texture_external_oes :
+              bound_texture_cube_map);
+    }
   };
 
   // Initialize or re-initialize the shader translator.
@@ -1094,6 +1106,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
         info = unit.bound_texture_cube_map;
         break;
+      case GL_TEXTURE_EXTERNAL_OES:
+        info = unit.bound_texture_external_oes;
+        break;
       // Note: If we ever support TEXTURE_RECTANGLE as a target, be sure to
       // track |texture_| with the currently bound TEXTURE_RECTANGLE texture,
       // because |texture_| is used by the FBO rendering mechanism for readback
@@ -1103,6 +1118,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
         return NULL;
     }
     return (info && !info->IsDeleted()) ? info : NULL;
+  }
+
+  GLenum GetBindTargetForSamplerType(GLenum type) {
+    DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
+           type == GL_SAMPLER_EXTERNAL_OES);
+    return type == GL_SAMPLER_2D ? GL_TEXTURE_2D :
+        (type == GL_SAMPLER_EXTERNAL_OES ? GL_TEXTURE_EXTERNAL_OES :
+            GL_TEXTURE_CUBE_MAP);
   }
 
   // Gets the framebuffer info for a particular target.
@@ -1726,9 +1749,14 @@ bool GLES2DecoderImpl::Initialize(
       new TextureUnit[group_->max_texture_units()]);
   for (uint32 tt = 0; tt < group_->max_texture_units(); ++tt) {
     glActiveTexture(GL_TEXTURE0 + tt);
-    // Do cube map first because we want the last bind to be 2D.
-    TextureManager::TextureInfo* info =
-        texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
+    // We want the last bind to be 2D.
+    TextureManager::TextureInfo* info;
+    if (feature_info_->feature_flags().oes_egl_image_external) {
+      info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_EXTERNAL_OES);
+      texture_units_[tt].bound_texture_external_oes = info;
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, info->service_id());
+    }
+    info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
     texture_units_[tt].bound_texture_cube_map = info;
     glBindTexture(GL_TEXTURE_CUBE_MAP, info->service_id());
     info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
@@ -2821,6 +2849,9 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
     case GL_TEXTURE_CUBE_MAP:
       unit.bound_texture_cube_map = info;
       break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      unit.bound_texture_external_oes = info;
+      break;
     default:
       NOTREACHED();  // Validation should prevent us getting here.
       break;
@@ -3109,6 +3140,20 @@ bool GLES2DecoderImpl::GetHelper(
           GLuint client_id = 0;
           texture_manager()->GetClientId(
               unit.bound_texture_cube_map->service_id(), &client_id);
+          *params = client_id;
+        } else {
+          *params = 0;
+        }
+      }
+      return true;
+    case GL_TEXTURE_BINDING_EXTERNAL_OES:
+      *num_written = 1;
+      if (params) {
+        TextureUnit& unit = texture_units_[active_texture_unit_];
+        if (unit.bound_texture_external_oes) {
+          GLuint client_id = 0;
+          texture_manager()->GetClientId(
+              unit.bound_texture_external_oes->service_id(), &client_id);
           *params = client_id;
         } else {
           *params = 0;
@@ -3884,7 +3929,8 @@ void GLES2DecoderImpl::DoUniform1iv(
   if (!PrepForSetUniformByLocation(location, "glUniform1iv", &type, &count)) {
     return;
   }
-  if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE) {
+  if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
+      type == GL_SAMPLER_EXTERNAL_OES) {
     current_program_->SetSamplers(location, count, value);
   }
   glUniform1iv(location, count, value);
@@ -4110,15 +4156,12 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
       if (texture_unit_index < group_->max_texture_units()) {
         TextureUnit& texture_unit = texture_units_[texture_unit_index];
         TextureManager::TextureInfo* texture_info =
-            uniform_info->type == GL_SAMPLER_2D ?
-                texture_unit.bound_texture_2d :
-                texture_unit.bound_texture_cube_map;
+            texture_unit.GetInfoForSamplerType(uniform_info->type);
         if (!texture_info || !texture_info->CanRender(feature_info_)) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
-              uniform_info->type == GL_SAMPLER_2D ? GL_TEXTURE_2D :
-                                                    GL_TEXTURE_CUBE_MAP,
+              GetBindTargetForSamplerType(uniform_info->type),
               texture_manager()->black_texture_id(uniform_info->type));
         }
       }

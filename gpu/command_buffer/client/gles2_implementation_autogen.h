@@ -671,7 +671,7 @@ void GetShaderSource(
 const GLubyte* GetString(GLenum name);
 
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
-  GPU_CLIENT_LOG("[" << this << "] glGetTexParameterfv(" << GLES2Util::GetStringTextureTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << this << "] glGetTexParameterfv(" << GLES2Util::GetStringGetTexParamTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
   if (GetTexParameterfvHelper(target, pname, params)) {
     return;
   }
@@ -690,7 +690,7 @@ void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
 }
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
   GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
-  GPU_CLIENT_LOG("[" << this << "] glGetTexParameteriv(" << GLES2Util::GetStringTextureTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << this << "] glGetTexParameteriv(" << GLES2Util::GetStringGetTexParamTarget(target) << ", " << GLES2Util::GetStringTextureParameter(pname) << ", " << static_cast<const void*>(params) << ")");  // NOLINT
   if (GetTexParameterivHelper(target, pname, params)) {
     return;
   }

@@ -19,6 +19,8 @@ class TestHelper {
   static const GLuint kServiceBlackTextureCubemapId = 702;
   static const GLuint kServiceDefaultTexture2dId = 703;
   static const GLuint kServiceDefaultTextureCubemapId = 704;
+  static const GLuint kServiceDefaultExternalTextureId = 705;
+  static const GLuint kServiceBlackExternalTextureId = 706;
 
   static const GLint kMaxRenderbufferSize = 1024;
   static const GLint kMaxTextureSize = 2048;
@@ -41,7 +43,8 @@ class TestHelper {
       const char* extensions);
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
-  static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl);
+  static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
+                                                  const char* extensions);
 };
 
 }  // namespace gles2

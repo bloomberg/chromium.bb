@@ -32,6 +32,12 @@
 #define GL_RGB8_OES                            0x8051
 #define GL_RGBA8_OES                           0x8058
 
+// GL_OES_EGL_image_external
+#define GL_TEXTURE_EXTERNAL_OES                0x8D65
+#define GL_SAMPLER_EXTERNAL_OES                0x8D66
+#define GL_TEXTURE_BINDING_EXTERNAL_OES        0x8D67
+#define GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES    0x8D68
+
 #define GL_GLEXT_PROTOTYPES 1
 
 // Define this for extra GL error debugging (slower).

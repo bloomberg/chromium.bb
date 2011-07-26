@@ -60,6 +60,7 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_.feature_flags().enable_texture_float_linear);
   EXPECT_FALSE(info_.feature_flags().enable_texture_half_float_linear);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
+  EXPECT_FALSE(info_.feature_flags().oes_egl_image_external);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -411,6 +412,22 @@ TEST_F(FeatureInfoTest, InitializeOES_rgb8_rgba8) {
       GL_RGB8_OES));
   EXPECT_TRUE(info_.validators()->render_buffer_format.IsValid(
       GL_RGBA8_OES));
+}
+
+TEST_F(FeatureInfoTest, InitializeOES_EGL_image_external) {
+  SetupInitExpectations("GL_OES_EGL_image_external");
+  info_.Initialize(NULL);
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_OES_EGL_image_external"));
+  EXPECT_TRUE(info_.feature_flags().oes_egl_image_external);
+  EXPECT_TRUE(info_.validators()->texture_bind_target.IsValid(
+      GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_TRUE(info_.validators()->get_tex_param_target.IsValid(
+      GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_TRUE(info_.validators()->texture_parameter.IsValid(
+      GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES));
+  EXPECT_TRUE(info_.validators()->g_l_state.IsValid(
+      GL_TEXTURE_BINDING_EXTERNAL_OES));
 }
 
 }  // namespace gles2

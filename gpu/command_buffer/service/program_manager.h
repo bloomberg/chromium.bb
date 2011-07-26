@@ -39,7 +39,8 @@ class ProgramManager {
       ~UniformInfo();
 
       bool IsSampler() const {
-        return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE;
+        return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
+               type == GL_SAMPLER_EXTERNAL_OES;
       }
 
       GLsizei size;

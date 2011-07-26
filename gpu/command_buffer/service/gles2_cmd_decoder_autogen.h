@@ -1190,7 +1190,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLfloat* params = result ? result->GetData() : NULL;
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->get_tex_param_target.IsValid(target)) {
     SetGLError(GL_INVALID_ENUM, "glGetTexParameterfv: target GL_INVALID_ENUM");
     return error::kNoError;
   }
@@ -1226,7 +1226,7 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
-  if (!validators_->texture_target.IsValid(target)) {
+  if (!validators_->get_tex_param_target.IsValid(target)) {
     SetGLError(GL_INVALID_ENUM, "glGetTexParameteriv: target GL_INVALID_ENUM");
     return error::kNoError;
   }

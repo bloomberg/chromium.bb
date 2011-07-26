@@ -211,6 +211,16 @@ static GLenum valid_get_max_index_type_table[] = {
   GL_UNSIGNED_INT,
 };
 
+static GLenum valid_get_tex_param_target_table[] = {
+  GL_TEXTURE_2D,
+  GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+  GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+  GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+};
+
 static GLenum valid_hint_mode_table[] = {
   GL_FASTEST,
   GL_NICEST,
@@ -482,6 +492,9 @@ Validators::Validators()
       get_max_index_type(
           valid_get_max_index_type_table, arraysize(
               valid_get_max_index_type_table)),
+      get_tex_param_target(
+          valid_get_tex_param_target_table, arraysize(
+              valid_get_tex_param_target_table)),
       hint_mode(
           valid_hint_mode_table, arraysize(valid_hint_mode_table)),
       hint_target(

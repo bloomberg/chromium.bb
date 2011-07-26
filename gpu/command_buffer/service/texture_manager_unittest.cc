@@ -21,8 +21,10 @@ class TextureManagerTest : public testing::Test {
  public:
   static const GLint kMaxTextureSize = 16;
   static const GLint kMaxCubeMapTextureSize = 8;
+  static const GLint kMaxExternalTextureSize = 16;
   static const GLint kMax2dLevels = 5;
   static const GLint kMaxCubeMapLevels = 4;
+  static const GLint kMaxExternalLevels = 1;
 
   static const GLuint kServiceBlackTexture2dId = 701;
   static const GLuint kServiceBlackTextureCubemapId = 702;
@@ -43,8 +45,8 @@ class TextureManagerTest : public testing::Test {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
 
-    TestHelper::SetupTextureManagerInitExpectations(gl_.get());
-    manager_.Initialize();
+    TestHelper::SetupTextureManagerInitExpectations(gl_.get(), "");
+    manager_.Initialize(&feature_info_);
   }
 
   virtual void TearDown() {
@@ -62,8 +64,10 @@ class TextureManagerTest : public testing::Test {
 #ifndef COMPILER_MSVC
 const GLint TextureManagerTest::kMaxTextureSize;
 const GLint TextureManagerTest::kMaxCubeMapTextureSize;
+const GLint TextureManagerTest::kMaxExternalTextureSize;
 const GLint TextureManagerTest::kMax2dLevels;
 const GLint TextureManagerTest::kMaxCubeMapLevels;
+const GLint TextureManagerTest::kMaxExternalLevels;
 const GLuint TextureManagerTest::kServiceBlackTexture2dId;
 const GLuint TextureManagerTest::kServiceBlackTextureCubemapId;
 const GLuint TextureManagerTest::kServiceDefaultTexture2dId;
@@ -176,9 +180,37 @@ TEST_F(TextureManagerTest, MaxValues) {
   EXPECT_EQ(kMax2dLevels, manager_.MaxLevelsForTarget(GL_TEXTURE_2D));
   EXPECT_EQ(kMaxCubeMapLevels,
             manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_X));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_X));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_Y));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_Z));
+  EXPECT_EQ(kMaxCubeMapLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
+  EXPECT_EQ(kMaxExternalLevels,
+            manager_.MaxLevelsForTarget(GL_TEXTURE_EXTERNAL_OES));
   EXPECT_EQ(kMaxTextureSize, manager_.MaxSizeForTarget(GL_TEXTURE_2D));
   EXPECT_EQ(kMaxCubeMapTextureSize,
             manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_X));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_X));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_Y));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_POSITIVE_Z));
+  EXPECT_EQ(kMaxCubeMapTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
+  EXPECT_EQ(kMaxExternalTextureSize,
+            manager_.MaxSizeForTarget(GL_TEXTURE_EXTERNAL_OES));
 }
 
 TEST_F(TextureManagerTest, ValidForTarget) {
@@ -647,6 +679,21 @@ TEST_F(TextureInfoTest, HalfFloatLinear) {
   manager.SetLevelInfo(&feature_info, info,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES);
   EXPECT_TRUE(info->texture_complete());
+  manager.Destroy(false);
+}
+
+TEST_F(TextureInfoTest, EGLImageExternal) {
+  TextureManager manager(kMaxTextureSize, kMaxCubeMapTextureSize);
+  TestHelper::SetupFeatureInfoInitExpectations(
+      gl_.get(), "GL_OES_EGL_image_external");
+  FeatureInfo feature_info;
+  feature_info.Initialize(NULL);
+  manager.CreateTextureInfo(&feature_info, kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_EXTERNAL_OES);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), info->target());
+  EXPECT_FALSE(info->CanGenerateMipmaps(&feature_info));
   manager.Destroy(false);
 }
 

@@ -27,6 +27,7 @@ ValueValidator<GLenum> frame_buffer_parameter;
 ValueValidator<GLenum> frame_buffer_target;
 ValueValidator<GLenum> g_l_state;
 ValueValidator<GLenum> get_max_index_type;
+ValueValidator<GLenum> get_tex_param_target;
 ValueValidator<GLenum> hint_mode;
 ValueValidator<GLenum> hint_target;
 ValueValidator<GLenum> index_type;

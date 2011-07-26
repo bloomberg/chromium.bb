@@ -103,7 +103,7 @@ bool ContextGroup::Initialize(const DisallowedExtensions& disallowed_extensions,
     max_vertex_uniform_vectors_ /= 4;
   }
 
-  if (!texture_manager_->Initialize()) {
+  if (!texture_manager_->Initialize(feature_info())) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "
                << "failed to initialize.";
     return false;

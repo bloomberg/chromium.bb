@@ -110,6 +110,13 @@ void GLES2DecoderTestBase::InitDecoder(
     EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0 + tt))
         .Times(1)
         .RetiresOnSaturation();
+    if (group_->feature_info()->feature_flags().oes_egl_image_external) {
+      EXPECT_CALL(*gl_, BindTexture(
+              GL_TEXTURE_EXTERNAL_OES,
+              TestHelper::kServiceDefaultExternalTextureId))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
     EXPECT_CALL(*gl_, BindTexture(
         GL_TEXTURE_CUBE_MAP, TestHelper::kServiceDefaultTextureCubemapId))
         .Times(1)

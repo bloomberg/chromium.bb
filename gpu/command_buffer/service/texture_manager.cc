@@ -20,6 +20,7 @@ static GLsizei ComputeMipMapCount(
 static size_t GLTargetToFaceIndex(GLenum target) {
   switch (target) {
     case GL_TEXTURE_2D:
+    case GL_TEXTURE_EXTERNAL_OES:
       return 0;
     case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
       return 0;
@@ -139,10 +140,26 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated(
   return true;
 }
 
+void TextureManager::TextureInfo::SetTarget(GLenum target, GLint max_levels) {
+  DCHECK_EQ(0u, target_);  // you can only set this once.
+  target_ = target;
+  size_t num_faces = (target == GL_TEXTURE_CUBE_MAP) ? 6 : 1;
+  level_infos_.resize(num_faces);
+  for (size_t ii = 0; ii < num_faces; ++ii) {
+    level_infos_[ii].resize(max_levels);
+  }
+
+  if (target == GL_TEXTURE_EXTERNAL_OES) {
+    min_filter_ = GL_LINEAR;
+    wrap_s_ = wrap_t_ = GL_CLAMP_TO_EDGE;
+  }
+}
+
 bool TextureManager::TextureInfo::CanGenerateMipmaps(
     const FeatureInfo* feature_info) const {
   if ((npot() && !feature_info->feature_flags().npot_ok) ||
-      level_infos_.empty() || IsDeleted()) {
+      level_infos_.empty() || IsDeleted() ||
+      target_ == GL_TEXTURE_EXTERNAL_OES) {
     return false;
   }
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
@@ -259,6 +276,16 @@ bool TextureManager::TextureInfo::GetLevelType(
 bool TextureManager::TextureInfo::SetParameter(
     const FeatureInfo* feature_info, GLenum pname, GLint param) {
   DCHECK(feature_info);
+
+  if (target_ == GL_TEXTURE_EXTERNAL_OES) {
+    if (pname == GL_TEXTURE_MIN_FILTER &&
+        (param != GL_NEAREST && param != GL_LINEAR))
+      return false;
+    if ((pname == GL_TEXTURE_WRAP_S || pname == GL_TEXTURE_WRAP_T) &&
+        param != GL_CLAMP_TO_EDGE)
+      return false;
+  }
+
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
@@ -391,7 +418,7 @@ TextureManager::TextureManager(
       black_cube_texture_id_(0) {
 }
 
-bool TextureManager::Initialize() {
+bool TextureManager::Initialize(const FeatureInfo* feature_info) {
   // TODO(gman): The default textures have to be real textures, not the 0
   // texture because we simulate non shared resources on top of shared
   // resources and all contexts that share resource share the same default
@@ -429,6 +456,22 @@ bool TextureManager::Initialize() {
 
   black_2d_texture_id_ = ids[0];
   black_cube_texture_id_ = ids[2];
+
+  if (feature_info->feature_flags().oes_egl_image_external) {
+    GLuint external_ids[2];
+    glGenTextures(arraysize(external_ids), external_ids);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+    default_texture_external_oes_ = TextureInfo::Ref(
+        new TextureInfo(external_ids[0]));
+    SetInfoTarget(default_texture_external_oes_, GL_TEXTURE_EXTERNAL_OES);
+    default_texture_external_oes_->SetLevelInfo(
+        &temp_feature_info, GL_TEXTURE_EXTERNAL_OES, 0,
+        GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+
+    // Sampling a texture not associated with any EGLImage sibling will return
+    // black values according to the spec.
+    black_oes_external_texture_id_ = external_ids[1];
+  }
 
   return true;
 }

@@ -194,6 +194,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_TEXTURE_BINDING_CUBE_MAP:
       return 1;
+    case GL_TEXTURE_BINDING_EXTERNAL_OES:
+      return 1;
     case GL_UNPACK_ALIGNMENT:
       return 1;
     case GL_VIEWPORT:
@@ -432,6 +434,8 @@ uint32 GLES2Util::GetGLDataTypeSizeForUniforms(int type) {
     case GL_SAMPLER_2D:
       return sizeof(GLint);                // NOLINT
     case GL_SAMPLER_CUBE:
+      return sizeof(GLint);                // NOLINT
+    case GL_SAMPLER_EXTERNAL_OES:
       return sizeof(GLint);                // NOLINT
     default:
       return 0;

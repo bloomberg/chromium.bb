@@ -332,6 +332,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.g_l_state.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
   }
 
+  if (ext.HaveAndDesire("GL_OES_EGL_image_external")) {
+    AddExtensionString("GL_OES_EGL_image_external");
+    feature_flags_.oes_egl_image_external = true;
+    validators_.texture_bind_target.AddValue(GL_TEXTURE_EXTERNAL_OES);
+    validators_.get_tex_param_target.AddValue(GL_TEXTURE_EXTERNAL_OES);
+    validators_.texture_parameter.AddValue(GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES);
+    validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
+  }
+
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32
   //     GL_OES_element_index_uint

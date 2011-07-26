@@ -206,17 +206,10 @@ class TextureManager {
 
     // Sets the TextureInfo's target
     // Parameters:
-    //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
+    //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
+    //           GL_TEXTURE_EXTERNAL_OES
     //   max_levels: The maximum levels this type of target can have.
-    void SetTarget(GLenum target, GLint max_levels) {
-      DCHECK_EQ(0u, target_);  // you can only set this once.
-      target_ = target;
-      size_t num_faces = (target == GL_TEXTURE_2D) ? 1 : 6;
-      level_infos_.resize(num_faces);
-      for (size_t ii = 0; ii < num_faces; ++ii) {
-        level_infos_[ii].resize(max_levels);
-      }
-    }
+    void SetTarget(GLenum target, GLint max_levels);
 
     // Update info about this texture.
     void Update(const FeatureInfo* feature_info);
@@ -269,20 +262,32 @@ class TextureManager {
   ~TextureManager();
 
   // Init the texture manager.
-  bool Initialize();
+  bool Initialize(const FeatureInfo* feature_info);
 
   // Must call before destruction.
   void Destroy(bool have_context);
 
   // Returns the maximum number of levels.
   GLint MaxLevelsForTarget(GLenum target) const {
-    return (target == GL_TEXTURE_2D) ? max_levels_ : max_cube_map_levels_;
+    switch (target) {
+      case GL_TEXTURE_2D:
+        return  max_levels_;
+      case GL_TEXTURE_EXTERNAL_OES:
+        return 1;
+      default:
+        return max_cube_map_levels_;
+    }
   }
 
   // Returns the maximum size.
   GLsizei MaxSizeForTarget(GLenum target) const {
-    return (target == GL_TEXTURE_2D) ? max_texture_size_ :
-                                       max_cube_map_texture_size_;
+    switch (target) {
+      case GL_TEXTURE_2D:
+      case GL_TEXTURE_EXTERNAL_OES:
+        return max_texture_size_;
+      default:
+        return max_cube_map_texture_size_;
+    }
   }
 
   // Checks if a dimensions are valid for a given target.
@@ -340,8 +345,17 @@ class TextureManager {
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
   TextureInfo* GetDefaultTextureInfo(GLenum target) {
-    return target == GL_TEXTURE_2D ? default_texture_2d_ :
-                                     default_texture_cube_map_;
+    switch (target) {
+      case GL_TEXTURE_2D:
+        return default_texture_2d_;
+      case GL_TEXTURE_CUBE_MAP:
+        return default_texture_cube_map_;
+      case GL_TEXTURE_EXTERNAL_OES:
+        return default_texture_external_oes_;
+      default:
+        NOTREACHED();
+        return NULL;
+    }
   }
 
   bool HaveUnrenderableTextures() const {
@@ -349,8 +363,17 @@ class TextureManager {
   }
 
   GLuint black_texture_id(GLenum target) const {
-    return target == GL_SAMPLER_2D ? black_2d_texture_id_ :
-                                     black_cube_texture_id_;
+    switch (target) {
+      case GL_SAMPLER_2D:
+        return black_2d_texture_id_;
+      case GL_SAMPLER_CUBE:
+        return black_cube_texture_id_;
+      case GL_SAMPLER_EXTERNAL_OES:
+        return black_oes_external_texture_id_;
+      default:
+        NOTREACHED();
+        return 0;
+    }
   }
 
  private:
@@ -370,10 +393,12 @@ class TextureManager {
   // TextureInfos are only for textures the client side can access.
   GLuint black_2d_texture_id_;
   GLuint black_cube_texture_id_;
+  GLuint black_oes_external_texture_id_;
 
   // The default textures for each target (texture name = 0)
   TextureInfo::Ref default_texture_2d_;
   TextureInfo::Ref default_texture_cube_map_;
+  TextureInfo::Ref default_texture_external_oes_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };
