@@ -328,6 +328,21 @@ void TabContentsViewMac::ShowCreatedFullscreenWidget(int route_id) {
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
+  // The renderer may send the "show context menu" message multiple times, one
+  // for each right click mouse event it receives. Normally, this doesn't happen
+  // because mouse events are not forwarded once the context menu is showing.
+  // However, there's a race - the context menu may not yet be showing when
+  // the second mouse event arrives. In this case, |ShowContextMenu()| will
+  // get called multiple times - if so, don't create another context menu.
+  // TODO(asvitkine): Fix the renderer so that it doesn't do this.
+  RenderWidgetHostView* widget_view = tab_contents_->GetRenderWidgetHostView();
+  if (widget_view) {
+    RenderWidgetHostViewMac* widget_view_mac =
+        static_cast<RenderWidgetHostViewMac*>(widget_view);
+    if (widget_view_mac->is_showing_context_menu())
+      return;
+  }
+
   context_menu_.reset(new RenderViewContextMenuMac(tab_contents(),
                                                    params,
                                                    GetContentNativeView()));

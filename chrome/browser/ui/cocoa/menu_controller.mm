@@ -190,11 +190,19 @@
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {
+  // Retain the controller, which is the menu's delegate, since it needs to be
+  // alive for the duration of the menu being open, even if all other owners
+  // release it.
+  [self retain];
+
   model_->MenuWillShow();
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
   model_->MenuClosed();
+
+  // Release the controller which was retained by -menuWillOpen:.
+  [self release];
 }
 
 @end

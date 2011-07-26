@@ -264,6 +264,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
+  // Returns |true| if a context menu is currently being shown.
+  bool is_showing_context_menu() const { return is_showing_context_menu_; }
+
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
       gfx::PluginWindowHandle plugin_handle,
