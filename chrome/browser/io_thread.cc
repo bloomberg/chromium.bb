@@ -401,30 +401,6 @@ void IOThread::InitNetworkPredictor(
           startup_urls, referral_list, preconnect_enabled));
 }
 
-void IOThread::RegisterURLRequestContextGetter(
-    ChromeURLRequestContextGetter* url_request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::list<ChromeURLRequestContextGetter*>::const_iterator it =
-      std::find(url_request_context_getters_.begin(),
-                url_request_context_getters_.end(),
-                url_request_context_getter);
-  DCHECK(it == url_request_context_getters_.end());
-  url_request_context_getters_.push_back(url_request_context_getter);
-}
-
-void IOThread::UnregisterURLRequestContextGetter(
-    ChromeURLRequestContextGetter* url_request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::list<ChromeURLRequestContextGetter*>::iterator it =
-      std::find(url_request_context_getters_.begin(),
-                url_request_context_getters_.end(),
-                url_request_context_getter);
-  DCHECK(it != url_request_context_getters_.end());
-  // This does not scale, but we shouldn't have many URLRequestContextGetters in
-  // the first place, so this should be fine.
-  url_request_context_getters_.erase(it);
-}
-
 void IOThread::ChangedToOnTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   message_loop()->PostTask(
@@ -531,20 +507,6 @@ void IOThread::CleanUp() {
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHost::TerminateAll();
-
-  std::list<ChromeURLRequestContextGetter*> url_request_context_getters;
-  url_request_context_getters.swap(url_request_context_getters_);
-  for (std::list<ChromeURLRequestContextGetter*>::iterator it =
-       url_request_context_getters.begin();
-       it != url_request_context_getters.end(); ++it) {
-    ChromeURLRequestContextGetter* getter = *it;
-    // Stop all pending certificate provenance check uploads
-    net::DnsCertProvenanceChecker* checker =
-        getter->GetURLRequestContext()->dns_cert_checker();
-    if (checker)
-      checker->Shutdown();
-    getter->ReleaseURLRequestContext();
-  }
 
   system_url_request_context_getter_ = NULL;
 

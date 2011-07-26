@@ -40,10 +40,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
 
-  base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   bool is_incognito() const {
     return is_incognito_;
   }
@@ -71,8 +67,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   virtual ~ChromeURLRequestContext();
 
  private:
-  base::WeakPtrFactory<ChromeURLRequestContext> weak_ptr_factory_;
-
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.
@@ -114,10 +108,6 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   virtual net::URLRequestContext* GetURLRequestContext();
   virtual net::CookieStore* DONTUSEME_GetCookieStore();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
-
-  // Releases |url_request_context_|.  It's invalid to call
-  // GetURLRequestContext() after this point.
-  void ReleaseURLRequestContext();
 
   // Convenience overload of GetURLRequestContext() that returns a
   // ChromeURLRequestContext* rather than a net::URLRequestContext*.
@@ -203,9 +193,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   scoped_ptr<ChromeURLRequestContextFactory> factory_;
 
   // NULL if not yet initialized. Otherwise, it is the net::URLRequestContext
-  // instance that was lazilly created by GetURLRequestContext.
+  // instance that was lazily created by GetURLRequestContext().
   // Access only from the IO thread.
-  scoped_refptr<net::URLRequestContext> url_request_context_;
+  base::WeakPtr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextGetter);
 };
