@@ -198,8 +198,7 @@ chrome.fileBrowserPrivate = {
       PREVIEW_COLUMN_LABEL: 'Preview',
 
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
-      ERROR_INVALID_FOLDER_CHARACTER: 'Invalid character in folder name: $1',
-      ERROR_INVALID_FILE_CHARACTER: 'Invalid character in file name: $1',
+      ERROR_INVALID_CHARACTER: 'Invalid character: $1',
       ERROR_RESERVED_NAME: 'This name may not be used as a file of folder name',
       ERROR_WHITESPACE_NAME: 'Invalid name',
       NEW_FOLDER_PROMPT: 'Enter a name for the new folder',
@@ -255,6 +254,7 @@ chrome.fileBrowserPrivate = {
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
+      OK_LABEL: 'Ok',
 
       SELECT_FOLDER_TITLE: 'Select a folder to open',
       SELECT_OPEN_FILE_TITLE: 'Select a file to open',
@@ -269,7 +269,8 @@ chrome.fileBrowserPrivate = {
       MANY_DIRECTORIES_SELECTED: '$1 directories selected',
       MANY_ENTRIES_SELECTED: '$1 items selected, $2',
 
-      CONFIRM_DELETE: 'Are you sure?',
+      CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
+      CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
     });
   }
 };

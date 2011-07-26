@@ -60,6 +60,10 @@ function FileManager(dialogDom, rootEntries, params) {
 
   this.defaultPath_ = this.params_.defaultPath || '/';
 
+  this.alert = new cr.ui.dialogs.AlertDialog(this.dialogDom_);
+  this.confirm = new cr.ui.dialogs.ConfirmDialog(this.dialogDom_);
+  this.prompt = new cr.ui.dialogs.PromptDialog(this.dialogDom_);
+
   // TODO(dgozman): This will be changed to LocaleInfo.
   this.locale_ = new v8Locale(navigator.language);
 
@@ -1591,8 +1595,8 @@ FileManager.prototype = {
               if (event.mountType == 'file') {
                 var fileName = event.sourceUrl.substr(
                     event.sourceUrl.lastIndexOf('/') + 1);
-                window.alert(strf('ARCHIVE_MOUNT_FAILED', fileName,
-                                  event.status));
+                self.alert.show(strf('ARCHIVE_MOUNT_FAILED', fileName,
+                                     event.status));
               }
             }
             return;
@@ -1942,9 +1946,20 @@ FileManager.prototype = {
         });
   };
 
-  FileManager.prototype.deleteEntries = function(entries) {
-    if (!window.confirm(str('CONFIRM_DELETE')))
+  FileManager.prototype.deleteEntries = function(entries, force) {
+    if (!force) {
+      var self = this;
+      var msg;
+      if (entries.length == 1) {
+        msg = strf('CONFIRM_DELETE_ONE', entries[0].name);
+      } else {
+        msg = strf('CONFIRM_DELETE_SOME', entries.length);
+      }
+
+      this.confirm.show(msg,
+                        function() { self.deleteEntries(entries, true); });
       return;
+    }
 
     var count = entries.length;
 
@@ -2456,7 +2471,7 @@ FileManager.prototype = {
   FileManager.prototype.commitRename_ = function() {
     var entry = this.renameInput_.currentEntry;
     var newName = this.renameInput_.value;
-    if (!this.validateFileName_(newName, entry.isDirectory))
+    if (!this.validateFileName_(newName))
       return;
 
     this.renameInput_.currentEntry = null;
@@ -2473,8 +2488,8 @@ FileManager.prototype = {
     }
 
     function onError(err) {
-      window.alert(strf('ERROR_RENAMING', entry.name,
-                        util.getFileErrorMnemonic(err.code)));
+      self.alert.show(strf('ERROR_RENAMING', entry.name,
+                           util.getFileErrorMnemonic(err.code)));
     }
 
     function resolveCallback(victim) {
@@ -2484,7 +2499,7 @@ FileManager.prototype = {
         var message = victim.isFile ?
             'FILE_ALREADY_EXISTS':
             'DIRECTORY_ALREADY_EXISTS';
-        window.alert(strf(message, newName));
+        self.alert.show(strf(message, newName));
       }
     }
 
@@ -2526,21 +2541,26 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onNewFolderButtonClick_ = function(event) {
-    var name = '';
+    var self = this;
 
-    while (1) {
-      name = window.prompt(str('NEW_FOLDER_PROMPT'), name);
-      if (name == '') {
-        window.alert(str('ERROR_NEW_FOLDER_EMPTY_NAME'));
-        continue;
-      } else if (!name) {
+    function onNameSelected(name) {
+      if (!self.validateFileName_(name, promptForName)) {
+        // Validation failed.  User will be prompted for a new name after they
+        // dismiss the validation error dialog.
         return;
       }
 
-      if (this.validateFileName_(name, true))
-        break;
+      self.createNewFolder(name);
     }
 
+    function promptForName() {
+      self.prompt.show(str('NEW_FOLDER_PROMPT'), name, onNameSelected);
+    }
+
+    promptForName();
+  };
+
+  FileManager.prototype.createNewFolder = function(name) {
     var self = this;
 
     function onSuccess(dirEntry) {
@@ -2548,8 +2568,8 @@ FileManager.prototype = {
     }
 
     function onError(err) {
-      window.alert(strf('ERROR_CREATING_FOLDER', name,
-                        util.getFileErrorMnemonic(err.code)));
+      self.alert.show(strf('ERROR_CREATING_FOLDER', name,
+                           util.getFileErrorMnemonic(err.code)));
     }
 
     this.currentDirEntry_.getDirectory(name, {create: true, exclusive: true},
@@ -2758,25 +2778,32 @@ FileManager.prototype = {
       var filename = this.filenameInput_.value;
       if (!filename)
         throw new Error('Missing filename!');
-      if (!this.validateFileName_(filename, false))
+      if (!this.validateFileName_(filename))
         return;
 
       var self = this;
       function resolveCallback(victim) {
-        if (!(victim instanceof FileError)) {
-          if (victim.isDirectory) {
-            // Do not allow to overwrite directory.
-            window.alert(strf('DIRECTORY_ALREADY_EXISTS', filename));
-            return;
-          }
-          if (!window.confirm(strf('CONFIRM_OVERWRITE_FILE', filename)))
-            return;
+        if (victim instanceof FileError) {
+          // File does not exist.  (NB: selectFile Closes the window and does
+          // not return.)
+          chrome.fileBrowserPrivate.selectFile(
+              currentDirUrl + encodeURIComponent(filename),
+              self.getSelectedFilterIndex_(filename));
         }
 
-        // Closes the window and does not return.
-        chrome.fileBrowserPrivate.selectFile(
-            currentDirUrl + encodeURIComponent(filename),
-            self.getSelectedFilterIndex_(filename));
+        if (victim.isDirectory) {
+          // Do not allow to overwrite directory.
+          self.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
+        } else {
+          self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
+                            function() {
+                              // User selected Ok from the confirm dialog.
+                              chrome.fileBrowserPrivate.selectFile(
+                                  currentDirUrl + encodeURIComponent(filename),
+                                  self.getSelectedFilterIndex_(filename));
+                            });
+        }
+        return;
       }
 
       this.resolvePath(this.currentDirEntry_.fullPath + '/' + filename,
@@ -2843,33 +2870,29 @@ FileManager.prototype = {
    * be fixed. Shows message box if the name is invalid.
    *
    * @param {name} name New file or folder name.
-   * @param {boolean} isFolder If true error message will be adjusted for
-   *                           folders.
+   * @param {function} onAccept Function to invoke when user accepts the
+   *    message box.
    * @return {boolean} True if name is vaild.
    */
-  FileManager.prototype.validateFileName_ = function(name, isFolder) {
-    if (name.length == 0) {
-      return false;
-    }
+  FileManager.prototype.validateFileName_ = function(name, onAccept) {
+    var msg;
     var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
     if (testResult) {
-      var msgId = isFolder ? 'ERROR_INVALID_FOLDER_CHARACTER' :
-                             'ERROR_INVALID_FILE_CHARACTER';
-      window.alert(strf(msgId, testResult[0]));
+      msg = strf('ERROR_INVALID_CHARACTER', testResult[0]);
+    } else if (/^\s*$/i.test(name)) {
+      msg = str('ERROR_WHITESPACE_NAME');
+    } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
+      msg = str('ERROR_RESERVED_NAME');
+    } else if (this.filterFiles_ && name[0] == '.') {
+      msg = str('ERROR_HIDDEN_NAME');
+    }
+
+    if (msg) {
+      console.log('no no no');
+      this.alert.show(msg, onAccept);
       return false;
     }
-    if (/^\s*$/i.test(name)) {
-      window.alert(str('ERROR_WHITESPACE_NAME'));
-      return false;
-    }
-    if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
-      window.alert(str('ERROR_RESERVED_NAME'));
-      return false;
-    }
-    if (this.filterFiles_ && name[0] == '.') {
-      window.alert(str('ERROR_HIDDEN_NAME'));
-      return false;
-    }
+
     return true;
   };
 })();

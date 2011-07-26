@@ -8862,11 +8862,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_ERROR_CREATING_FOLDER" desc="Message displayed when we can't create a folder.">
         Unable to create folder "$1": $2
       </message>
-      <message name="IDS_FILE_BROWSER_ERROR_INVALID_FOLDER_CHARACTER" desc="Error message displayed when the user enters an invalid character in a folder name.">
-        Invalid character in folder name: $1
-      </message>
-      <message name="IDS_FILE_BROWSER_ERROR_INVALID_FILE_CHARACTER" desc="Error message displayed when the user enters an invalid character in a file name.">
-        Invalid character in file name: $1
+      <message name="IDS_FILE_BROWSER_ERROR_INVALID_CHARACTER" desc="Error message displayed when the user enters an invalid character in a file or directory name.">
+        Invalid character: $1
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_RESERVED_NAME" desc="Error message displayed when the user enters a file name which is reserved.">
         This name may not be used as a file of folder name
@@ -8888,6 +8885,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
+      </message>
+
+      <message name="IDS_FILE_BROWSER_DIMENSIONS_LABEL" desc="Image dimensions label.">
+        Dimensions
+      </message>
+      <message name="IDS_FILE_BROWSER_DIMENSIONS_FORMAT" desc="Image dimensions format (width x height).">
+        $1 x $2
       </message>
 
       <message name="IDS_FILE_BROWSER_EJECT_BUTTON" desc="Button label.">
@@ -9010,6 +9014,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_SAVE_LABEL" desc="Save label.">
         Save
       </message>
+      <message name="IDS_FILE_BROWSER_OK_LABEL" desc="Ok label.">
+        Ok
+      </message>
+
+     <message name="IDS_FILE_BROWSER_CONFIRM_DELETE_ONE" desc="Asks the user if they are sure they want to delete a single file.">
+       Are you sure you want to delete "$1"?
+     </message>
+     <message name="IDS_FILE_BROWSER_CONFIRM_DELETE_SOME" desc="Asks the user if they are sure they want to delete multiple files/directories.">
+       Are you sure you want to delete $1 items?
+     </message>
 
       <message name="IDS_FILE_BROWSER_SELECT_FOLDER_TITLE" desc="Select folder title.">
         Select a folder to open

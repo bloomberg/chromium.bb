@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.cr-dialog-container {
+  position: absolute;
+  -webkit-user-select: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
+  background-color: rgba(0,0,0,0.05);
+  -webkit-box-shadow: inset 0px 0px 100px #000;
+  opacity: 0;
+  -webkit-transition: opacity 0.25s linear;
+
+  overflow: hidden;
+}
+
+.cr-dialog-frame {
+  position: absolute;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
+
+  -webkit-transition-duration:  0.25s;
+  -webkit-transition-property: none;
+
+  min-width: 25%;
+  max-width: 75%;
+  border: 1px #aaa solid;
+  border-radius: 2px;
+  background-color: white;
+  padding: 15px;
+}
+
+.cr-dialog-text {
+  padding-bottom: 10px;
+}
+
+.cr-dialog-frame input {
+  -webkit-box-sizing: border-box;
+  width: 100%;
+}
+
+.cr-dialog-buttons {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  padding-top: 10px;
+  -webkit-box-pack: end;
+}
