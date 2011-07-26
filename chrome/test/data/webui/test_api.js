@@ -52,7 +52,7 @@ var currentTestCase = null;
      * When set to a string value representing a url, generate BrowsePreload
      * call, which will browse to the url and call fixture.PreLoad of the
      * currentTestCase.
-     * @type {String}
+     * @type {string}
      **/
     browsePreload: null,
 
@@ -61,7 +61,7 @@ var currentTestCase = null;
      * directory, generate BrowsePrintPreload call, which will browse to a url
      * representing the file, cause print, and call fixture.PreLoad of the
      * currentTestCase.
-     * @type {String}
+     * @type {string}
      **/
     browsePrintPreload: null,
 
@@ -80,9 +80,9 @@ var currentTestCase = null;
     testGenPostamble: null,
 
     /**
-     * When set to a non-null String, auto-generate typedef before generating
+     * When set to a non-null string, auto-generate typedef before generating
      * TEST*: {@code typedef typedefCppFixture testFixture}.
-     * @type {String}
+     * @type {string}
      **/
     typedefCppFixture: 'WebUIBrowserTest',
 
@@ -120,7 +120,7 @@ var currentTestCase = null;
   /**
    * This class is not exported and is available to hold the state of the
    * |currentTestCase| throughout preload and test run.
-   * @param {String} name The name of the test case.
+   * @param {string} name The name of the test case.
    * @param {Test} fixture The fixture object for this test case.
    * @param {Function} body The code to run for the test.
    * @constructor
@@ -172,7 +172,7 @@ var currentTestCase = null;
 
   /**
    * Registers the message, object and callback for {@code chrome.send}
-   * @param {String} name The name of the message to route to this |callback|.
+   * @param {string} name The name of the message to route to this |callback|.
    * @param {Object} messageHAndler Pass as |this| when calling the |callback|.
    * @param {function(...)} callback Called by {@code chrome.send}.
    * @see sendCallbacks
@@ -210,7 +210,7 @@ var currentTestCase = null;
   /**
    * Overrides {@code chrome.send} for routing messages to javascript
    * functions. Also fallsback to sending with the |oldChrome| object.
-   * @param {String} messageName The message to route.
+   * @param {string} messageName The message to route.
    * @see oldChrome
    **/
   function send(messageName) {
@@ -323,69 +323,128 @@ var currentTestCase = null;
   // If assertion passes, no notification will be sent to the C++ backend.
 
   /**
-   * When |test| !== |expected|, aborts the current test.
-   * @param {Boolean} test The predicate to check against |expected|.
-   * @param {Boolean} expected The expected value of |test|.
-   * @param {String=} message The message to include in the Error thrown.
-   * @throws {Error} upon failure.
-   **/
-  function assertBool(test, expected, message) {
-    helper.registerCall();
-    if (test !== expected)
-      throw new Error('Test Error ' + helper.getCallMessage(message) +
-          ': ' + test);
-  }
-
-  /**
    * When |test| !== true, aborts the current test.
-   * @param {Boolean} test The predicate to check against |expected|.
-   * @param {String=} message The message to include in the Error thrown.
+   * @param {boolean} test The predicate to check against |expected|.
+   * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
    **/
   function assertTrue(test, message) {
     helper.registerCall();
     if (test !== true)
-      throw new Error('Test Error ' + helper.getCallMessage(message) +
-          ': ' + test);
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + ': ' + test);
   }
 
   /**
    * When |test| !== false, aborts the current test.
-   * @param {Boolean} test The predicate to check against |expected|.
-   * @param {String=} message The message to include in the Error thrown.
+   * @param {boolean} test The predicate to check against |expected|.
+   * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
    **/
   function assertFalse(test, message) {
     helper.registerCall();
     if (test !== false)
-      throw new Error('Test Error ' + helper.getCallMessage(message) +
-          ': ' + test);
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + ': ' + test);
+  }
+
+  /**
+   * When |val1| < |val2|, aborts the current test.
+   * @param {number} val1 The number expected to be >= |val2|.
+   * @param {number} val2 The number expected to be < |val1|.
+   * @param {string=} message The message to include in the Error thrown.
+   **/
+  function assertGE(val1, val2, message) {
+    helper.registerCall();
+    if (val1 < val2) {
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + val1 + '<' + val2);
+    }
+  }
+
+  /**
+   * When |val1| <= |val2|, aborts the current test.
+   * @param {number} val1 The number expected to be > |val2|.
+   * @param {number} val2 The number expected to be <= |val1|.
+   * @param {string=} message The message to include in the Error thrown.
+   **/
+  function assertGT(val1, val2, message) {
+    helper.registerCall();
+    if (val1 <= val2) {
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + val1 + '<=' + val2);
+    }
   }
 
   /**
    * When |expected| !== |actual|, aborts the current test.
-   * @param {*} expected The predicate to check against |expected|.
-   * @param {*} actual The expected value of |test|.
-   * @param {String=} message The message to include in the Error thrown.
+   * @param {*} expected The expected value of |actual|.
+   * @param {*} actual The predicate to check against |expected|.
+   * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
    **/
   function assertEquals(expected, actual, message) {
     helper.registerCall();
     if (expected != actual) {
-      throw new Error('Test Error ' + helper.getCallMessage(message) +
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) +
           '\nActual: ' + actual + '\nExpected: ' + expected);
     }
     if (typeof expected != typeof actual) {
-      throw new Error('Test Error (type mismatch) ' +
-          helper.getCallMessage(message) +
+      throw new Error(
+          'Test Error (type mismatch) ' + helper.getCallMessage(message) +
           '\nActual Type: ' + typeof actual +
           '\nExpected Type:' + typeof expected);
     }
   }
 
   /**
+   * When |val1| > |val2|, aborts the current test.
+   * @param {number} val1 The number expected to be <= |val2|.
+   * @param {number} val2 The number expected to be > |val1|.
+   * @param {string=} message The message to include in the Error thrown.
+   **/
+  function assertLE(val1, val2, message) {
+    helper.registerCall();
+    if (val1 > val2) {
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + val1 + '>' + val2);
+    }
+  }
+
+  /**
+   * When |val1| >= |val2|, aborts the current test.
+   * @param {number} val1 The number expected to be < |val2|.
+   * @param {number} val2 The number expected to be >= |val1|.
+   * @param {string=} message The message to include in the Error thrown.
+   **/
+  function assertLT(val1, val2, message) {
+    helper.registerCall();
+    if (val1 >= val2) {
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) + val1 + '>=' + val2);
+    }
+  }
+
+  /**
+   * When |notExpected| === |actual|, aborts the current test.
+   * @param {*} notExpected The expected value of |actual|.
+   * @param {*} actual The predicate to check against |notExpected|.
+   * @param {string=} message The message to include in the Error thrown.
+   * @throws {Error} upon failure.
+   **/
+  function assertNotEquals(notExpected, actual, message) {
+    helper.registerCall();
+    if (notExpected === actual) {
+      throw new Error(
+          'Test Error ' + helper.getCallMessage(message) +
+          '\nActual: ' + actual + '\nnotExpected: ' + notExpected);
+    }
+  }
+
+  /**
    * Always aborts the current test.
-   * @param {String=} message The message to include in the Error thrown.
+   * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} always.
    **/
   function assertNotReached(message) {
@@ -427,9 +486,9 @@ var currentTestCase = null;
    * |errors|, runs the test surrounded by an expect to catch Errors. If
    * |errors| is non-empty, it reports a failure and a message by joining
    * |errors|.
-   * @param {String} testFunction The function name to call.
+   * @param {string} testFunction The function name to call.
    * @param {Array} testArguments The arguments to call |testFunction| with.
-   * @return {Array.<Boolean, String>} [test-succeeded, message-if-failed]
+   * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
    * @see errors
    * @see createExpect
    **/
@@ -464,8 +523,8 @@ var currentTestCase = null;
   /**
    * Creates a new test case for the given |testFixture| and |testName|. Assumes
    * |testFixture| describes a globally available subclass of type Test.
-   * @param {String} testFixture The fixture for this test case.
-   * @param {String} testName The name for this test case.
+   * @param {string} testFixture The fixture for this test case.
+   * @param {string} testName The name for this test case.
    * @return {TestCase} A newly created TestCase.
    **/
   function createTestCase(testFixture, testName) {
@@ -482,8 +541,8 @@ var currentTestCase = null;
    * creates a test case and calls its PreLoad for any early initialization such
    * as registering handlers before the page's javascript runs it's OnLoad
    * method.
-   * @param {String} testFixture The test fixture name.
-   * @param {String} testName The test name.
+   * @param {string} testFixture The test fixture name.
+   * @param {string} testName The test name.
    **/
   function preloadJavascriptLibraries(testFixture, testName) {
     chrome = {
@@ -503,8 +562,8 @@ var currentTestCase = null;
    * At runtime, register the testName with a test fixture. Since this method
    * doesn't have a test fixture, we create a dummy fixture to hold its |name|
    * and |testCaseBodies|.
-   * @param {String} testCaseName The name of the test case.
-   * @param {String} testName The name of the test function.
+   * @param {string} testCaseName The name of the test case.
+   * @param {string} testName The name of the test function.
    * @param {Function} testBody The body to execute when running this test.
    **/
   function TEST(testCaseName, testName, testBody) {
@@ -525,8 +584,8 @@ var currentTestCase = null;
    * At runtime, register the testName with its fixture. Stuff the |name| into
    * the |testFixture|'s prototype, if needed, and the |testCaseBodies| into its
    * constructor.
-   * @param {String} testFixture The name of the test fixture class.
-   * @param {String} testName The name of the test function.
+   * @param {string} testFixture The name of the test fixture class.
+   * @param {string} testName The name of the test function.
    * @param {Function} testBody The body to execute when running this test.
    **/
   function TEST_F(testFixture, testName, testBody) {
@@ -543,8 +602,8 @@ var currentTestCase = null;
    * runTest. If |currentTestCase| is non-null at this point, verify that
    * |testFixture| and |testName| agree with the preloaded values. Create
    * |currentTestCase|, if needed, run it, and clear the |currentTestCase|.
-   * @param {String} testFixture The name of the test fixture class.
-   * @param {String} testName The name of the test function.
+   * @param {string} testFixture The name of the test fixture class.
+   * @param {string} testName The name of the test function.
    * @see preloadJavascriptLibraries
    * @see runTest
    **/
@@ -591,21 +650,76 @@ var currentTestCase = null;
                                   Array.prototype.slice.call(arguments, 1));
   }
 
+  /**
+   * Allow mock stubs() and expects() to know what arguments were passed to the
+   * |realMatcher|.
+   * @param {!Object} realMatcher The real matcher to perform matching with.
+   * @constructor
+   **/
+  function SaveArgumentsMatcher(realMatcher) {
+    this.realMatcher_ = realMatcher;
+  }
+
+  SaveArgumentsMatcher.prototype = {
+    /**
+     * Remember the argument passed to this stub invocation.
+     * @type {*}
+     **/
+    argument: undefined,
+
+    /**
+     * @type {Object} the object performing the real match.
+     * @private
+     */
+    realMatcher_: null,
+
+    /**
+     * Saves |actualArgument| for later use by the mock stub or expect.
+     * @param {*} actualArgument The argument to match and save.
+     * @return {boolean} value of calling the |realMatcher_|.
+     **/
+    argumentMatches: function(actualArgument) {
+      this.argument = actualArgument;
+      return this.realMatcher_.argumentMatches.call(this.realMatcher_,
+                                                    actualArgument);
+    },
+
+    /**
+     * Generic description for this Matcher object.
+     * @return {string} description of the matcher for this argument.
+     **/
+    describe: function() {
+      return 'SaveArguments(' +
+          this.realMatcher_.describe.call(this.realMatcher_) + ')';
+    },
+  };
+
   // Exports.
   testing.Test = Test;
   window.assertTrue = assertTrue;
   window.assertFalse = assertFalse;
+  window.assertGE = assertGE;
+  window.assertGT = assertGT;
   window.assertEquals = assertEquals;
+  window.assertLE = assertLE;
+  window.assertLT = assertLT;
+  window.assertNotEquals = assertNotEquals;
   window.assertNotReached = assertNotReached;
   window.callFunction = callFunction;
   window.expectTrue = createExpect(assertTrue);
   window.expectFalse = createExpect(assertFalse);
+  window.expectGE = createExpect(assertGE);
+  window.expectGT = createExpect(assertGT);
   window.expectEquals = createExpect(assertEquals);
+  window.expectLE = createExpect(assertLE);
+  window.expectLT = createExpect(assertLT);
+  window.expectNotEquals = createExpect(assertNotEquals);
   window.expectNotReached = createExpect(assertNotReached);
+  window.preloadJavascriptLibraries = preloadJavascriptLibraries;
   window.registerMessageCallback = registerMessageCallback;
   window.registerMockMessageCallbacks = registerMockMessageCallbacks;
   window.runTest = runTest;
-  window.preloadJavascriptLibraries = preloadJavascriptLibraries;
+  window.SaveArgumentsMatcher = SaveArgumentsMatcher;
   window.TEST = TEST;
   window.TEST_F = TEST_F;
   window.GEN = GEN;

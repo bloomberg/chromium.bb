@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * TestFixture for print preview WebUI testing.
+ * Test fixture for print preview WebUI testing.
  * @extends {testing.Test}
  * @constructor
  **/
@@ -13,13 +13,17 @@ PrintPreviewWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
-   * Browse to the sample page, cause print preview & call our PreLoad().
+   * Browse to the sample page, cause print preview & call PreLoad().
+   * @type {string}
+   * @override
    **/
   browsePrintPreload: 'print_preview_hello_world_test.html',
 
   /**
    * Register a mock handler to ensure expectations are met and print preview
    * behaves correctly.
+   * @type {Function}
+   * @override
    **/
   PreLoad: function() {
 
@@ -42,7 +46,7 @@ PrintPreviewWebUITest.prototype = {
     };
 
     // Create the actual mock and register stubs for methods expected to be
-    // called before our tests run.  Specific expectations can be made in the
+    // called before tests run.  Specific expectations can be made in the
     // tests themselves.
     var mockHandler = this.mockHandler = mock(MockPrintPreviewHandler);
     mockHandler.stubs().getDefaultPrinter().
@@ -59,7 +63,7 @@ PrintPreviewWebUITest.prototype = {
         }));
     mockHandler.stubs().getPreview(NOT_NULL).
         will(callFunction(function() {
-          updatePrintPreview(1, 'title', true);
+          updatePrintPreview('title', true, 1, 1);
         }));
 
     mockHandler.stubs().getPrinters().
@@ -74,26 +78,74 @@ PrintPreviewWebUITest.prototype = {
           ]);
         }));
 
-    // Register our mock as a handler of the chrome.send messages.
+    // Register mock as a handler of the chrome.send messages.
     registerMockMessageCallbacks(mockHandler, MockPrintPreviewHandler);
+
+    // Override checkCompatiblePluginExists to return a value consistent with
+    // the state being tested and stub out the pdf viewer if it doesn't exist,
+    // such as on non-official builds. When the plugin exists, use the real
+    // thing.
+    var self = this;
+    window.addEventListener('DOMContentLoaded', function() {
+      if (!this.checkCompatiblePluginExists())
+        this.createPDFPlugin = self.createPDFPlugin;
+
+      this.checkCompatiblePluginExists =
+          self.checkCompatiblePluginExists;
+    });
   },
-  testGenPreamble: function(testFixture, testName) {
-    GEN('  if (!HasPDFLib()) {');
-    GEN('    LOG(WARNING)');
-    GEN('        << "Skipping test ' + testFixture + '.' + testName + '"');
-    GEN('        << ": No PDF Lib.";');
-    GEN('    SUCCEED();');
-    GEN('    return;');
-    GEN('  }');
-  },
+
+  /**
+   * Generate a real C++ class; don't typedef.
+   * @type {?string}
+   * @override
+   **/
   typedefCppFixture: null,
+
+  /**
+   * Create the PDF plugin or reload the existing one. This function replaces
+   * createPDFPlugin defined in
+   * chrome/browser/resources/print_preview/print_preview.js when there is no
+   * official pdf plugin so that the WebUI logic can be tested. It creates and
+   * attaches an HTMLDivElement to the |mainview| element with attributes and
+   * empty methods, which are used by testing and that would be provided by the
+   * HTMLEmbedElement when the PDF plugin exists.
+   * @param {string} previewUid Preview unique identifier.
+   */
+  createPDFPlugin: function(previewUid) {
+    var pdfViewer = $('pdf-viewer');
+    if (pdfViewer)
+      return;
+
+    pdfViewer = document.createElement('div');
+    pdfViewer.setAttribute('id', 'pdf-viewer');
+    pdfViewer.setAttribute('type',
+                           'application/x-google-chrome-print-preview-pdf');
+    pdfViewer.setAttribute(
+        'src', 'chrome://print/' + previewUid + '/print.pdf');
+    pdfViewer.setAttribute('aria-live', 'polite');
+    pdfViewer.setAttribute('aria-atomic', 'true');
+    function fakeFunction() {}
+    pdfViewer.onload = fakeFunction;
+    pdfViewer.goToPage = fakeFunction;
+    pdfViewer.removePrintButton = fakeFunction;
+    pdfViewer.fitToHeight = fakeFunction;
+    pdfViewer.grayscale = fakeFunction;
+    $('mainview').appendChild(pdfViewer);
+    onPDFLoad();
+  },
+
+  /**
+   * Always return true so tests run on systems without plugin available.
+   * @return {boolean} Always true.
+   **/
+  checkCompatiblePluginExists: function() {
+    return true;
+  },
 };
 
 GEN('#include "base/command_line.h"');
-GEN('#include "base/path_service.h"');
-GEN('#include "base/stringprintf.h"');
 GEN('#include "chrome/browser/ui/webui/web_ui_browsertest.h"');
-GEN('#include "chrome/common/chrome_paths.h"');
 GEN('#include "chrome/common/chrome_switches.h"');
 GEN('');
 GEN('class PrintPreviewWebUITest');
@@ -111,22 +163,131 @@ GEN('    ASSERT_TRUE(switches::IsPrintPreviewEnabled());');
 GEN('#endif');
 GEN('  }');
 GEN('');
-GEN('  bool HasPDFLib() const {');
-GEN('    FilePath pdf;');
-GEN('    return PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&');
-GEN('        file_util::PathExists(pdf);');
-GEN('  }');
 GEN('};');
 GEN('');
 
+/**
+ * The expected length of the |printer-list| element.
+ * @type {number}
+ * @const
+ **/
+var printerListMinLength = 2;
+
+/**
+ * The expected index of the "foo" printer returned by the stubbed handler.
+ * @type {number}
+ * @const
+ **/
+var fooIndex = 0;
+
+/**
+ * The expected index of the "bar" printer returned by the stubbed handler.
+ * @type {number}
+ * @const
+ **/
+var barIndex = 1;
+
+// Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterList', function() {
   var printerList = $('printer-list');
-  assertTrue(!!printerList, 'printerList');
-  assertTrue(printerList.options.length >= 2, 'printer-list has at least 2');
-  expectEquals('FooName', printerList.options[0].text, '0 text is FooName');
-  expectEquals('FooDevice', printerList.options[0].value,
-               '0 value is FooDevice');
-  expectEquals('BarName', printerList.options[1].text, '1 text is BarName');
-  expectEquals('BarDevice', printerList.options[1].value,
-               '1 value is BarDevice');
+  assertNotEquals(null, printerList);
+  assertGE(printerList.options.length, printerListMinLength);
+  expectEquals(fooIndex, printerList.selectedIndex);
+  expectEquals('FooName', printerList.options[fooIndex].text,
+               'fooIndex=' + fooIndex);
+  expectEquals('FooDevice', printerList.options[fooIndex].value,
+               'fooIndex=' + fooIndex);
+  expectEquals('BarName', printerList.options[barIndex].text,
+               'barIndex=' + barIndex);
+  expectEquals('BarDevice', printerList.options[barIndex].value,
+               'barIndex=' + barIndex);
+});
+
+/**
+ * Verify that the section |sectionId| visibility matches |visible|.
+ * @param {string} sectionId The id of the section to check.
+ * @param {boolean} visible The expected state of visibility.
+ **/
+function checkSectionVisible(sectionId, visible) {
+  var section = $(sectionId);
+  assertNotEquals(null, section);
+  expectEquals(section.classList.contains('visible'), visible,
+               'sectionId=' + sectionId);
+}
+
+// Test that disabled settings hide the disabled sections.
+TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
+  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
+      will(callFunction(function() {
+        updateWithPrinterCapabilities({
+          disableColorOption: true,
+          setColorAsDefault: true,
+          disableCopiesOption: true,
+          disableLandscapeOption: true,
+        });
+      }));
+
+  updateControlsWithSelectedPrinterCapabilities();
+
+  checkSectionVisible('layout-option', false);
+  checkSectionVisible('color-options', false);
+  checkSectionVisible('copies-option', false);
+});
+
+// Test that changing the selected printer updates the preview.
+TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
+  var matchAnythingSave = new SaveArgumentsMatcher(ANYTHING);
+
+  this.mockHandler.expects(once()).getPreview(matchAnythingSave).
+      will(callFunction(function() {
+        updatePrintPreview('title', true, 2,
+                           matchAnythingSave.argument.requestID);
+      }));
+
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList, 'printerList');
+  assertGE(printerList.options.length, printerListMinLength);
+  expectEquals(fooIndex, printerList.selectedIndex,
+               'fooIndex=' + fooIndex);
+  var oldLastPreviewRequestID = lastPreviewRequestID;
+  ++printerList.selectedIndex;
+  updateControlsWithSelectedPrinterCapabilities();
+  expectNotEquals(oldLastPreviewRequestID, lastPreviewRequestID);
+});
+
+/**
+ * Test fixture to test case when no PDF plugin exists.
+ * @extends {PrintPreviewWebUITest}
+ * @constructor
+ **/
+function PrintPreviewNoPDFWebUITest() {}
+
+PrintPreviewNoPDFWebUITest.prototype = {
+  __proto__: PrintPreviewWebUITest.prototype,
+
+  /**
+   * Provide a typedef for C++ to correspond to JS subclass.
+   * @type {?string}
+   * @override
+   */
+  typedefCppFixture: 'PrintPreviewWebUITest',
+
+  /**
+   * Always return false to simulate failure and check expected error condition.
+   * @return {boolean} Always false.
+   * @override
+   */
+  checkCompatiblePluginExists: function() {
+    return false;
+  },
+};
+
+// Test that error message is displayed when plugin doesn't exist.
+TEST_F('PrintPreviewNoPDFWebUITest', 'TestErrorMessage', function() {
+  var errorButton = $('error-button');
+  assertNotEquals(null, errorButton);
+  expectFalse(errorButton.disabled);
+  var errorText = $('error-text');
+  assertNotEquals(null, errorText);
+  expectFalse(errorText.classList.contains('hidden'));
 });

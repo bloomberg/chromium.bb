@@ -44,6 +44,7 @@ TestNavigationObserver::TestNavigationObserver(
         js_injection_ready_observer,
     int number_of_navigations)
     : navigation_started_(false),
+      navigation_entry_committed_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
       js_injection_ready_observer_(js_injection_ready_observer),
