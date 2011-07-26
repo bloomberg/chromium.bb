@@ -1050,12 +1050,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_FALSE(UrlIsPendingInPrerenderManager(kHtmlFileC));
 }
 
-// TODO(yoshiki): This test is currently failing on WebUI TaskManager.
-// Disabling it for now. http://crosbug.com/18194
-#if defined(TOUCH_UI) || defined(OS_CHROMEOS)
-#define PrerenderTaskManager DISABLED_PrerenderTaskManager
-#endif
-
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // Show the task manager. This populates the model.
   browser()->window()->ShowTaskManager();
