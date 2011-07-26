@@ -979,6 +979,7 @@
 0x5f58a2db6428c1a0	PDF.FitToWidthButton
 0xc3c876c4e5846f66	PDF.LoadFailure
 0x9c67afdea49aa8c1	PDF.LoadSuccess
+0xa0853d13a6382cb2	PDF.PreviewDocumentLoadFailure
 0x715bc13f0a521ab7	PDF.PrintButton
 0x95be082d470e41c9	PDF.PrintPage
 0x5b2d6203fcccbfa9	PDF.SaveButton
