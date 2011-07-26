@@ -1488,3 +1488,75 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
 };
 
 VIEW_TEST(BookmarkBarViewTest18, SiblingMenu)
+
+// Verifies mousing over an already open sibling menu doesn't prematurely cancel
+// the menu.
+class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
+ protected:
+  virtual void DoTestOnMessageLoop() {
+    // Move the mouse to the other folder on the bookmark bar and press the
+    // left mouse button.
+    views::TextButton* button = bb_view_->other_bookmarked_button();
+    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest19::Step2));
+  }
+
+ private:
+  void Step2() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Click on the first folder.
+    views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
+    ASSERT_TRUE(child_menu != NULL);
+    ui_controls::MoveMouseToCenterAndPress(
+        child_menu, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest19::Step3));
+  }
+
+  void Step3() {
+    // Make sure the menu is showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Move the mouse back to the other bookmark button.
+    views::TextButton* button = bb_view_->other_bookmarked_button();
+    gfx::Point button_center(button->width() / 2, button->height() / 2);
+    views::View::ConvertPointToScreen(button, &button_center);
+    ui_controls::SendMouseMoveNotifyWhenDone(
+        button_center.x() + 1, button_center.y() + 1,
+        CreateEventTask(this, &BookmarkBarViewTest19::Step4));
+  }
+
+  void Step4() {
+    // Menu should be showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    // Click on the first folder.
+    views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
+    ASSERT_TRUE(child_menu != NULL);
+    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest19::Step5));
+  }
+
+  void Step5() {
+    // Make sure the menu is showing.
+    views::MenuItemView* menu = bb_view_->GetMenu();
+    ASSERT_TRUE(menu != NULL);
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
+
+    menu->GetMenuController()->CancelAll();
+
+    Done();
+  }
+};
+
+VIEW_TEST(BookmarkBarViewTest19, SiblingMenu)

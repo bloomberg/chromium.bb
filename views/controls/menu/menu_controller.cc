@@ -1080,7 +1080,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->
       GetSiblingMenu(source->GetMenuItem()->GetRootMenuItem(),
                      screen_point, &anchor, &has_mnemonics, &button);
-  if (!alt_menu || alt_menu == state_.item)
+  if (!alt_menu || (state_.item && state_.item->GetRootMenuItem() == alt_menu))
     return false;
 
   if (!button) {
