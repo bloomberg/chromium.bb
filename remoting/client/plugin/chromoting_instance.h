@@ -91,6 +91,8 @@ class ChromotingInstance : public pp::InstancePrivate {
 
   void ReleaseAllKeys();
 
+  bool DoScaling() const { return scale_to_fit_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 
@@ -99,6 +101,9 @@ class ChromotingInstance : public pp::InstancePrivate {
   ClientContext context_;
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;
+
+  // True if scale to fit is enabled.
+  bool scale_to_fit_;
 
   // PepperViewProxy is refcounted and used to interface between chromoting
   // objects and PepperView and perform thread switching. It wraps around

@@ -54,6 +54,7 @@ const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
+      scale_to_fit_(false),
       logger_(this) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -164,11 +165,25 @@ void ChromotingInstance::Disconnect() {
 
 void ChromotingInstance::DidChangeView(const pp::Rect& position,
                                        const pp::Rect& clip) {
-  // This lets |view_| implement scale-to-fit. But it only specifies a
-  // sub-rectangle of the plugin window as the rectangle on which the host
-  // screen can be displayed, so |view_| has to make sure the plugin window
-  // is large.
-  view_->SetScreenSize(clip.width(), clip.height());
+  DCHECK(CurrentlyOnPluginThread());
+
+  bool size_changed =
+      view_->SetPluginSize(gfx::Size(position.width(), position.height()));
+
+  // If scale to fit there is no clipping so just update the scale ratio.
+  if (scale_to_fit_) {
+    rectangle_decoder_->SetScaleRatios(view_->GetHorizontalScaleRatio(),
+                                       view_->GetVerticalScaleRatio());
+  }
+
+  if (size_changed) {
+    // If plugin size has changed there may be regions uncovered so simply
+    // request a full refresh.
+    rectangle_decoder_->RefreshFullFrame();
+  } else if (!scale_to_fit_) {
+    rectangle_decoder_->UpdateClipRect(
+        gfx::Rect(clip.x(), clip.y(), clip.width(), clip.height()));
+  }
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -262,7 +277,19 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
 }
 
 void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
-  view_proxy_->SetScaleToFit(scale_to_fit);
+  DCHECK(CurrentlyOnPluginThread());
+
+  if (scale_to_fit == scale_to_fit_)
+    return;
+
+  scale_to_fit_ = scale_to_fit;
+  if (scale_to_fit) {
+    rectangle_decoder_->SetScaleRatios(view_->GetHorizontalScaleRatio(),
+                                       view_->GetVerticalScaleRatio());
+  } else {
+    rectangle_decoder_->SetScaleRatios(1.0, 1.0);
+  }
+  rectangle_decoder_->RefreshFullFrame();
 }
 
 void ChromotingInstance::Log(int severity, const char* format, ...) {

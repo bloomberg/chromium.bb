@@ -6,6 +6,7 @@
 #define REMOTING_BASE_UTIL_H_
 
 #include "media/base/video_frame.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 
@@ -17,13 +18,20 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                const uint8* u_plane,
                                const uint8* v_plane,
                                uint8* rgb_plane,
-                               int x,
-                               int y,
-                               int width,
-                               int height,
+                               const gfx::Rect& rect,
                                int y_stride,
                                int uv_stride,
                                int rgb_stride);
+
+void ScaleYUVToRGB32WithRect(const uint8* y_plane,
+                             const uint8* u_plane,
+                             const uint8* v_plane,
+                             uint8* rgb_plane,
+                             const gfx::Rect& source_rect,
+                             const gfx::Rect& dest_rect,
+                             int y_stride,
+                             int uv_stride,
+                             int rgb_stride);
 
 void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
                                uint8* y_plane,
@@ -36,6 +44,17 @@ void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
                                int rgb_stride,
                                int y_stride,
                                int uv_stride);
+
+int RoundToTwosMultiple(int x);
+
+// Align the sides of the rectangle to multiples of 2 (expanding outwards).
+gfx::Rect AlignRect(const gfx::Rect& rect);
+
+// Return a scaled rectangle using the horizontal and vertical scale
+// factors.
+gfx::Rect ScaleRect(const gfx::Rect& rect,
+                    double horizontal_ratio,
+                    double vertical_ratio);
 
 }  // namespace remoting
 

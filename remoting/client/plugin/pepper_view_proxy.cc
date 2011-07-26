@@ -92,25 +92,24 @@ void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
     view_->UpdateLoginStatus(success, info);
 }
 
-void PepperViewProxy::SetViewport(int x, int y, int width, int height) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::SetViewport,
-                                          x, y, width, height));
-    return;
-  }
-
-  if (view_)
-    view_->SetViewport(x, y, width, height);
-}
-
-pp::Point PepperViewProxy::ConvertScreenToHost(const pp::Point& p) const {
+double PepperViewProxy::GetHorizontalScaleRatio() const {
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.
   DCHECK(CurrentlyOnPluginThread());
 
   if (view_)
-    return view_->ConvertScreenToHost(p);
-  return pp::Point();
+    return view_->GetHorizontalScaleRatio();
+  return 1.0;
+}
+
+double PepperViewProxy::GetVerticalScaleRatio() const {
+  // This method returns a value, so must run synchronously, so must be
+  // called only on the pepper thread.
+  DCHECK(CurrentlyOnPluginThread());
+
+  if (view_)
+    return view_->GetVerticalScaleRatio();
+  return 1.0;
 }
 
 void PepperViewProxy::AllocateFrame(
@@ -158,17 +157,6 @@ void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
 
   if (view_)
     view_->OnPartialFrameOutput(frame, rects, done);
-}
-
-void PepperViewProxy::SetScaleToFit(bool scale_to_fit) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::SetScaleToFit, scale_to_fit));
-    return;
-  }
-
-  if (view_)
-    view_->SetScaleToFit(scale_to_fit);
 }
 
 void PepperViewProxy::Detach() {

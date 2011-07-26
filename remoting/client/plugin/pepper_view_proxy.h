@@ -40,7 +40,11 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual void SetConnectionState(ConnectionState state) OVERRIDE;
   virtual void UpdateLoginStatus(bool success, const std::string& info)
       OVERRIDE;
-  virtual void SetViewport(int x, int y, int width, int height) OVERRIDE;
+
+  // This method returns a value, so must run synchronously, so must be
+  // called only on the pepper thread.
+  virtual double GetHorizontalScaleRatio() const OVERRIDE;
+  virtual double GetVerticalScaleRatio() const OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void AllocateFrame(media::VideoFrame::Format format,
@@ -54,12 +58,6 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
                                     UpdatedRects* rects,
                                     Task* done);
-
-  void SetScaleToFit(bool scale_to_fit);
-
-  // This method returns a value, so must run synchronously, so must be
-  // called only on the pepper thread.
-  pp::Point ConvertScreenToHost(const pp::Point& p) const;
 
   // Remove the reference to |instance_| and |view_| by setting the value to
   // NULL.

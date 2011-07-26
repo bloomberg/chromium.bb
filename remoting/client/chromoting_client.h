@@ -60,14 +60,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // Signals that the associated view may need updating.
   virtual void Repaint();
 
-  // Sets the viewport to do display.  The viewport may be larger and/or
-  // smaller than the actual image background being displayed.
-  //
-  // TODO(ajwong): This doesn't make sense to have here.  We're going to have
-  // threading isseus since pepper view needs to be called from the main pepper
-  // thread synchronously really.
-  virtual void SetViewport(int x, int y, int width, int height);
-
   // ConnectionToHost::HostEventCallback implementation.
   virtual void OnConnectionOpened(protocol::ConnectionToHost* conn) OVERRIDE;
   virtual void OnConnectionClosed(protocol::ConnectionToHost* conn) OVERRIDE;

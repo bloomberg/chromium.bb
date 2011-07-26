@@ -19,31 +19,34 @@ using remoting::protocol::SessionConfig;
 
 namespace remoting {
 
-namespace {
-
 class PartialFrameCleanup : public Task {
  public:
-  PartialFrameCleanup(media::VideoFrame* frame, UpdatedRects* rects)
-      : frame_(frame), rects_(rects) {
+  PartialFrameCleanup(media::VideoFrame* frame, UpdatedRects* rects,
+                      RectangleUpdateDecoder* decoder)
+      : frame_(frame), rects_(rects), decoder_(decoder) {
   }
 
   virtual void Run() {
     delete rects_;
     frame_ = NULL;
+
+    // There maybe pending request to refresh rectangles.
+    decoder_->OnFrameConsumed();
+    decoder_ = NULL;
   }
 
  private:
   scoped_refptr<media::VideoFrame> frame_;
   UpdatedRects* rects_;
+  scoped_refptr<RectangleUpdateDecoder> decoder_;
 };
-
-}  // namespace
 
 RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
                                                FrameConsumer* consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
-      frame_is_new_(false) {
+      frame_is_new_(false),
+      frame_is_consuming_(false) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
@@ -164,12 +167,134 @@ void RectangleUpdateDecoder::ProcessPacketData(
 
   TraceContext::tracer()->PrintString("Executing Decode.");
 
-  if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE) {
-    UpdatedRects* rects = new UpdatedRects();
-    decoder_->GetUpdatedRects(rects);
-    consumer_->OnPartialFrameOutput(frame_, rects,
-                                    new PartialFrameCleanup(frame_, rects));
+  if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE)
+    SubmitToConsumer();
+}
+
+void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
+                                            double vertical_ratio) {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this,
+                        &RectangleUpdateDecoder::SetScaleRatios,
+                        horizontal_ratio,
+                        vertical_ratio));
+    return;
   }
+
+  // TODO(hclam): If the scale ratio has changed we should reallocate a
+  // VideoFrame of different size. However if the scale ratio is always
+  // smaller than 1.0 we can use the same video frame.
+  decoder_->SetScaleRatios(horizontal_ratio, vertical_ratio);
+}
+
+void RectangleUpdateDecoder::UpdateClipRect(const gfx::Rect& new_clip_rect) {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(
+            this,
+            &RectangleUpdateDecoder::UpdateClipRect, new_clip_rect));
+    return;
+  }
+
+  if (new_clip_rect == clip_rect_ || !decoder_.get())
+    return;
+
+  // Find out the rectangles to show because of clip rect is updated.
+  if (new_clip_rect.y() < clip_rect_.y()) {
+    refresh_rects_.push_back(
+        gfx::Rect(new_clip_rect.x(),
+                  new_clip_rect.y(),
+                  new_clip_rect.width(),
+                  clip_rect_.y() - new_clip_rect.y()));
+  }
+
+  if (new_clip_rect.x() < clip_rect_.x()) {
+    refresh_rects_.push_back(
+        gfx::Rect(new_clip_rect.x(),
+                  clip_rect_.y(),
+                  clip_rect_.x() - new_clip_rect.x(),
+                  clip_rect_.height()));
+  }
+
+  if (new_clip_rect.right() > clip_rect_.right()) {
+    refresh_rects_.push_back(
+        gfx::Rect(clip_rect_.right(),
+                  clip_rect_.y(),
+                  new_clip_rect.right() - clip_rect_.right(),
+                  new_clip_rect.height()));
+  }
+
+  if (new_clip_rect.bottom() > clip_rect_.bottom()) {
+    refresh_rects_.push_back(
+        gfx::Rect(new_clip_rect.x(),
+                  clip_rect_.bottom(),
+                  new_clip_rect.width(),
+                  new_clip_rect.bottom() - clip_rect_.bottom()));
+  }
+
+  clip_rect_ = new_clip_rect;
+  decoder_->SetClipRect(new_clip_rect);
+  DoRefresh();
+}
+
+void RectangleUpdateDecoder::RefreshFullFrame() {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &RectangleUpdateDecoder::RefreshFullFrame));
+    return;
+  }
+
+  // If a video frame or the decoder is not allocated yet then don't
+  // save the refresh rectangle to avoid wasted computation.
+  if (!frame_ || !decoder_.get())
+    return;
+
+  refresh_rects_.push_back(
+      gfx::Rect(0, 0, static_cast<int>(frame_->width()),
+                static_cast<int>(frame_->height())));
+  DoRefresh();
+}
+
+void RectangleUpdateDecoder::SubmitToConsumer() {
+  // A frame is not allocated yet, we can reach here because of a refresh
+  // request.
+  if (!frame_)
+    return;
+
+  UpdatedRects* dirty_rects = new UpdatedRects();
+  decoder_->GetUpdatedRects(dirty_rects);
+
+  frame_is_consuming_ = true;
+  consumer_->OnPartialFrameOutput(
+      frame_, dirty_rects,
+      new PartialFrameCleanup(frame_, dirty_rects, this));
+}
+
+void RectangleUpdateDecoder::DoRefresh() {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  if (refresh_rects_.empty())
+    return;
+
+  decoder_->RefreshRects(refresh_rects_);
+  refresh_rects_.clear();
+  SubmitToConsumer();
+}
+
+void RectangleUpdateDecoder::OnFrameConsumed() {
+  if (message_loop_ != MessageLoop::current()) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &RectangleUpdateDecoder::OnFrameConsumed));
+    return;
+  }
+
+  frame_is_consuming_ = false;
+  DoRefresh();
 }
 
 }  // namespace remoting

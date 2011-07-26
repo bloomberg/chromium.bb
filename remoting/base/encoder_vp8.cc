@@ -133,19 +133,6 @@ bool EncoderVp8::Init(const gfx::Size& size) {
   return true;
 }
 
-static int RoundToTwosMultiple(int x) {
-  return x & (~1);
-}
-
-// Align the sides of the rectangle to multiples of 2 (expanding outwards).
-static gfx::Rect AlignRect(const gfx::Rect& rect) {
-  int x = RoundToTwosMultiple(rect.x());
-  int y = RoundToTwosMultiple(rect.y());
-  int right = RoundToTwosMultiple(rect.right() + 1);
-  int bottom = RoundToTwosMultiple(rect.bottom() + 1);
-  return gfx::Rect(x, y, right - x, bottom - y);
-}
-
 // static
 gfx::Rect EncoderVp8::AlignAndClipRect(const gfx::Rect& rect,
                                        int width, int height) {

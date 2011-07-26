@@ -50,7 +50,6 @@ class ChromotingView {
   virtual void TearDown() = 0;
 
   // Tells the ChromotingView to paint the current image on the screen.
-  // TODO(hclam): Add rects as parameter if needed.
   virtual void Paint() = 0;
 
   // Fill the screen with one single static color, and ignore updates.
@@ -69,9 +68,11 @@ class ChromotingView {
   // |info| contains the error information if available.
   virtual void UpdateLoginStatus(bool success, const std::string& info) = 0;
 
-  // Reposition and resize the viewport into the backing store. If the viewport
-  // extends past the end of the backing store, it is filled with black.
-  virtual void SetViewport(int x, int y, int width, int height) = 0;
+  // Return the horizontal scale factor of this view.
+  virtual double GetHorizontalScaleRatio() const = 0;
+
+  // Return the vertical scale factor of this view.
+  virtual double GetVerticalScaleRatio() const = 0;
 
  protected:
   // Framebuffer for the decoder.

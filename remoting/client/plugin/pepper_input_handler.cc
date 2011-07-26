@@ -40,10 +40,18 @@ void PepperInputHandler::HandleCharacterEvent(
 
 void PepperInputHandler::HandleMouseMoveEvent(
     const pp::MouseInputEvent& event) {
+  gfx::Point p(event.GetPosition().x(), event.GetPosition().y());
   // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
   // which may be different from the host desktop's co-ordinate system.
-  pp::Point p = pepper_view_->ConvertScreenToHost(event.GetPosition());
-  SendMouseMoveEvent(p.x(), p.y());
+  double horizontal_ratio = view_->GetHorizontalScaleRatio();
+  double vertical_ratio = view_->GetVerticalScaleRatio();
+
+  if (horizontal_ratio == 0.0)
+    horizontal_ratio = 1.0;
+  if (vertical_ratio == 0.0)
+    vertical_ratio = 1.0;
+
+  SendMouseMoveEvent(p.x() / horizontal_ratio, p.y() / vertical_ratio);
 }
 
 void PepperInputHandler::HandleMouseButtonEvent(

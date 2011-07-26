@@ -97,18 +97,6 @@ void ChromotingClient::Repaint() {
   view_->Paint();
 }
 
-void ChromotingClient::SetViewport(int x, int y, int width, int height) {
-  if (message_loop() != MessageLoop::current()) {
-    message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::SetViewport,
-                          x, y, width, height));
-    return;
-  }
-
-  view_->SetViewport(x, y, width, height);
-}
-
 void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
                                           Task* done) {
   if (message_loop() != MessageLoop::current()) {
@@ -246,16 +234,6 @@ void ChromotingClient::Initialize() {
   TraceContext::tracer()->PrintString("Initializing client.");
 
   const protocol::SessionConfig* config = connection_->config();
-
-  // Resize the window.
-  int width = config->initial_resolution().width;
-  int height = config->initial_resolution().height;
-  logger_->VLog(1, "Initial screen geometry: %dx%d", width, height);
-
-  // TODO(ajwong): What to do here?  Does the decoder actually need to request
-  // the right frame size?  This is mainly an optimization right?
-  // rectangle_decoder_->SetOutputFrameSize(width, height);
-  view_->SetViewport(0, 0, width, height);
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(config);

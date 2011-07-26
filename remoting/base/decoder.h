@@ -37,9 +37,7 @@ class Decoder {
   Decoder() {}
   virtual ~Decoder() {}
 
-  // Initializes the decoder to draw into the given |frame|.  The |clip|
-  // specifies the region to draw into.  The clip region must fit inside
-  // the dimensions of frame. Failure to do so will CHECK fail.
+  // Initializes the decoder to draw into the given |frame|.
   virtual void Initialize(scoped_refptr<media::VideoFrame> frame) = 0;
 
   // Feeds more data into the decoder.
@@ -59,6 +57,25 @@ class Decoder {
   virtual bool IsReadyForData() = 0;
 
   virtual VideoPacketFormat::Encoding Encoding() = 0;
+
+  // Set the scale factors of the decoded output. If the decoder doesn't support
+  // scaling then this all is ignored.
+  // If both |horizontal_ratio| and |vertical_ratio| equal 1.0 then scaling is
+  // turned off.
+  virtual void SetScaleRatios(double horizontal_ratio, double vertical_ratio) {}
+
+  // Set the clipping rectangle to the decoder. Decoder should respect this and
+  // only output changes in this rectangle. The new clipping rectangle will be
+  // effective on the next decoded video frame.
+  //
+  // When scaling is enabled clipping rectangles are ignored.
+  virtual void SetClipRect(const gfx::Rect& clip_rect) {}
+
+  // Force decoder to output a video frame with content in |rects| using the
+  // last decoded video frame.
+  //
+  // Coordinates of rectangles supplied here are before scaling.
+  virtual void RefreshRects(const std::vector<gfx::Rect>& rects) {}
 };
 
 }  // namespace remoting

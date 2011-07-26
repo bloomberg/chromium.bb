@@ -17,7 +17,10 @@ namespace remoting {
 
 DecoderVp8::DecoderVp8()
     : state_(kUninitialized),
-      codec_(NULL) {
+      codec_(NULL),
+      last_image_(NULL),
+      horizontal_scale_ratio_(1.0),
+      vertical_scale_ratio_(1.0) {
 }
 
 DecoderVp8::~DecoderVp8() {
@@ -84,33 +87,21 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
     LOG(INFO) << "No video frame decoded";
     return DECODE_ERROR;
   }
+  last_image_ = image;
 
-  // Perform YUV conversion.
-  uint8* data_start = frame_->data(media::VideoFrame::kRGBPlane);
-  int stride = frame_->stride(media::VideoFrame::kRGBPlane);
-
-  // Propogate updated rects.
-  updated_rects_.clear();
+  std::vector<gfx::Rect> rects;
   for (int i = 0; i < packet->dirty_rects_size(); ++i) {
     gfx::Rect r = gfx::Rect(packet->dirty_rects(i).x(),
                             packet->dirty_rects(i).y(),
                             packet->dirty_rects(i).width(),
                             packet->dirty_rects(i).height());
-
-    // Perform color space conversion only on the updated rectangle.
-    ConvertYUVToRGB32WithRect(image->planes[0],
-                              image->planes[1],
-                              image->planes[2],
-                              data_start,
-                              r.x(),
-                              r.y(),
-                              r.width(),
-                              r.height(),
-                              image->stride[0],
-                              image->stride[1],
-                              stride);
-    updated_rects_.push_back(r);
+    rects.push_back(r);
   }
+
+  if (!DoScaling())
+    ConvertRects(rects, &updated_rects_);
+  else
+    ScaleAndConvertRects(rects, &updated_rects_);
   return DECODE_DONE;
 }
 
@@ -129,6 +120,115 @@ bool DecoderVp8::IsReadyForData() {
 
 VideoPacketFormat::Encoding DecoderVp8::Encoding() {
   return VideoPacketFormat::ENCODING_VP8;
+}
+
+void DecoderVp8::SetScaleRatios(double horizontal_ratio,
+                                double vertical_ratio) {
+  // TODO(hclam): Ratio greater than 1.0 is not supported. This is
+  // because we need to reallocate the backing video frame and this
+  // is not implemented yet.
+  if (horizontal_ratio > 1.0 || horizontal_ratio <= 0.0 ||
+      vertical_ratio > 1.0 || vertical_ratio <= 0.0) {
+    return;
+  }
+
+  horizontal_scale_ratio_ = horizontal_ratio;
+  vertical_scale_ratio_ = vertical_ratio;
+}
+
+void DecoderVp8::SetClipRect(const gfx::Rect& clip_rect) {
+  clip_rect_ = clip_rect;
+}
+
+void DecoderVp8::RefreshRects(const std::vector<gfx::Rect>& rects) {
+  if (!DoScaling())
+    ConvertRects(rects, &updated_rects_);
+  else
+    ScaleAndConvertRects(rects, &updated_rects_);
+}
+
+bool DecoderVp8::DoScaling() const {
+  return horizontal_scale_ratio_ != 1.0 || vertical_scale_ratio_ != 1.0;
+}
+
+void DecoderVp8::ConvertRects(const UpdatedRects& rects,
+                              UpdatedRects* output_rects) {
+  if (!last_image_)
+    return;
+
+  uint8* data_start = frame_->data(media::VideoFrame::kRGBPlane);
+  const int stride = frame_->stride(media::VideoFrame::kRGBPlane);
+
+  output_rects->clear();
+  for (size_t i = 0; i < rects.size(); ++i) {
+    // Round down the image width and height.
+    int image_width = RoundToTwosMultiple(last_image_->d_w);
+    int image_height = RoundToTwosMultiple(last_image_->d_h);
+
+    // Clip by the clipping rectangle first.
+    gfx::Rect dest_rect = rects[i].Intersect(clip_rect_);
+
+    // Then clip by the rounded down dimension of the image for safety.
+    dest_rect = dest_rect.Intersect(
+        gfx::Rect(0, 0, image_width, image_height));
+
+    // Align the rectangle to avoid artifacts in color space conversion.
+    dest_rect = AlignRect(dest_rect);
+
+    if (dest_rect.IsEmpty())
+      continue;
+
+    ConvertYUVToRGB32WithRect(last_image_->planes[0],
+                              last_image_->planes[1],
+                              last_image_->planes[2],
+                              data_start,
+                              dest_rect,
+                              last_image_->stride[0],
+                              last_image_->stride[1],
+                              stride);
+    output_rects->push_back(dest_rect);
+  }
+}
+
+void DecoderVp8::ScaleAndConvertRects(const UpdatedRects& rects,
+                                      UpdatedRects* output_rects) {
+  if (!last_image_)
+    return;
+
+  uint8* data_start = frame_->data(media::VideoFrame::kRGBPlane);
+  const int stride = frame_->stride(media::VideoFrame::kRGBPlane);
+
+  output_rects->clear();
+  for (size_t i = 0; i < rects.size(); ++i) {
+    // Round down the image width and height.
+    int image_width = RoundToTwosMultiple(last_image_->d_w);
+    int image_height = RoundToTwosMultiple(last_image_->d_h);
+
+    // Clip by the rounded down dimension of the image for safety.
+    gfx::Rect dest_rect =
+        rects[i].Intersect(gfx::Rect(0, 0, image_width, image_height));
+
+    // Align the rectangle to avoid artifacts in color space conversion.
+    dest_rect = AlignRect(dest_rect);
+
+    if (dest_rect.IsEmpty())
+      continue;
+
+    gfx::Rect scaled_rect = ScaleRect(dest_rect,
+                                      horizontal_scale_ratio_,
+                                      vertical_scale_ratio_);
+
+    ScaleYUVToRGB32WithRect(last_image_->planes[0],
+                            last_image_->planes[1],
+                            last_image_->planes[2],
+                            data_start,
+                            dest_rect,
+                            scaled_rect,
+                            last_image_->stride[0],
+                            last_image_->stride[1],
+                            stride);
+    output_rects->push_back(scaled_rect);
+  }
 }
 
 }  // namespace remoting
