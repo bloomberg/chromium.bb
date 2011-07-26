@@ -135,8 +135,12 @@ void AutoLoginRedirector::RedirectToTokenAuth(const std::string& token) {
 
 // static
 void AutoLoginInfoBarDelegate::RegisterUserPrefs(PrefService* user_prefs) {
+#if defined(ENABLE_AUTO_LOGIN_AFTER_M14)
+  // Pre-login is being taken out of M14, but will be put back in right after
+  // the fork.
   user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, false,
                                   PrefService::SYNCABLE_PREF);
+#endif
 }
 
 // static
@@ -144,6 +148,9 @@ void AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(
     net::URLRequest* request,
     int child_id,
     int route_id) {
+#if defined(ENABLE_AUTO_LOGIN_AFTER_M14)
+  // Pre-login is being taken out of M14, but will be put back in right after
+  // the fork.
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
@@ -178,6 +185,7 @@ void AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&AutoLoginInfoBarDelegate::ShowInfoBarIfNeeded,
                           account, args, child_id, route_id));
+#endif
 }
 
 // static
