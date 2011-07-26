@@ -191,6 +191,13 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
+  // Make sure that initial sync wasn't blocked by a missing passphrase.
+  if (wait_state_ == SET_PASSPHRASE_FAILED) {
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetPassphrase is called.";
+    return false;
+  }
+
   // Indicate to the browser that sync setup is complete.
   service()->SetSyncSetupCompleted();
 
