@@ -45,6 +45,7 @@
 #include "content/common/page_zoom.h"
 #include "ui/gfx/rect.h"
 
+class BrowserSyncedWindowDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
@@ -213,6 +214,9 @@ class Browser : public TabHandlerDelegate,
   BrowserTabRestoreServiceDelegate* tab_restore_service_delegate() {
     return tab_restore_service_delegate_.get();
   }
+  BrowserSyncedWindowDelegate* synced_window_delegate() {
+    return synced_window_delegate_.get();
+  }
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -362,6 +366,7 @@ class Browser : public TabHandlerDelegate,
   int tab_count() const;
   int active_index() const;
   int GetIndexOfController(const NavigationController* controller) const;
+
   // TODO(dpapad): Rename to GetActiveTabContentsWrapper().
   TabContentsWrapper* GetSelectedTabContentsWrapper() const;
   TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
@@ -1260,6 +1265,9 @@ class Browser : public TabHandlerDelegate,
 
   // Helper which implements the TabRestoreServiceDelegate interface.
   scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;
+
+  // Helper which implements the SyncedWindowDelegate interface.
+  scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
 
   scoped_ptr<InstantController> instant_;
   scoped_ptr<InstantUnloadHandler> instant_unload_handler_;

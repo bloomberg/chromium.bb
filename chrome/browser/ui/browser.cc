@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_synced_window_delegate.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -251,6 +252,9 @@ Browser::Browser(Type type, Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_restore_service_delegate_(
               new BrowserTabRestoreServiceDelegate(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          synced_window_delegate_(
+              new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN) {
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());

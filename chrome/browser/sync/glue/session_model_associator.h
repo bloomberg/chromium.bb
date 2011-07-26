@@ -23,10 +23,10 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 class Profile;
@@ -309,7 +309,7 @@ class SessionModelAssociator
   void DeleteForeignSessions();
 
   // Determine if a window is of a type we're interested in syncing.
-  static bool ShouldSyncWindow(const Browser* browser);
+  static bool ShouldSyncWindow(const SyncedWindowDelegate* window);
 
   // Build a sync tag from tab_node_id.
   static inline std::string TabIdToTag(
@@ -333,7 +333,7 @@ class SessionModelAssociator
 
   // Fills a tab sync node with data from a TabContents object.
   // (from a local navigation event)
-  bool WriteTabContentsToSyncModel(const Browser& browser,
+  bool WriteTabContentsToSyncModel(const SyncedWindowDelegate& window,
                                    const TabContentsWrapper& tab,
                                    const int64 sync_id,
                                    sync_api::WriteTransaction* trans);

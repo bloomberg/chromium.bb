@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/logging.h"
@@ -13,11 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -123,26 +122,28 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
   SyncedSession* current_session =
       synced_session_tracker_.GetSession(local_tag);
-  current_session->windows.reserve(BrowserList::size());
 
   size_t window_num = 0;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    // Make sure the browser has tabs and a window. Browsers destructor
-    // removes itself from the BrowserList. When a browser is closed the
+  std::set<SyncedWindowDelegate*> windows =
+      SyncedWindowDelegate::GetSyncedWindowDelegates();
+  current_session->windows.reserve(windows.size());
+  for (std::set<SyncedWindowDelegate*>::const_iterator i =
+       windows.begin(); i != windows.end(); ++i) {
+    // Make sure the window has tabs and a viewable window. The viewable window
+    // check is necessary because, for example, when a browser is closed the
     // destructor is not necessarily run immediately. This means its possible
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    if (ShouldSyncWindow(*i) && (*i)->tab_count() &&
-        (*i)->window()) {
+    if (ShouldSyncWindow(*i) && (*i)->GetTabCount() &&
+        (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
-      SessionID::id_type window_id = (*i)->session_id().id();
+      SessionID::id_type window_id = (*i)->GetSessionId().id();
       VLOG(1) << "Reassociating window " << window_id << " with " <<
-          (*i)->tab_count() << " tabs.";
+          (*i)->GetTabCount() << " tabs.";
       window_s.set_window_id(window_id);
-      window_s.set_selected_tab_index((*i)->active_index());
-      if ((*i)->is_type_tabbed()) {
+      window_s.set_selected_tab_index((*i)->GetActiveIndex());
+      if ((*i)->IsTypeTabbed()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
       } else {
@@ -152,7 +153,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
 
       // Store the order of tabs.
       bool found_tabs = false;
-      for (int j = 0; j < (*i)->tab_count(); ++j) {
+      for (int j = 0; j < (*i)->GetTabCount(); ++j) {
         TabContentsWrapper* tab = (*i)->GetTabContentsWrapperAt(j);
         DCHECK(tab);
         if (IsValidTab(*tab)) {
@@ -194,10 +195,11 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
 }
 
 // Static.
-bool SessionModelAssociator::ShouldSyncWindow(const Browser* browser) {
-  if (browser->is_app())
+bool SessionModelAssociator::ShouldSyncWindow(
+    const SyncedWindowDelegate* window) {
+  if (window->IsApp())
     return false;
-  return browser->is_type_tabbed() || browser->is_type_popup();
+  return window->IsTypeTabbed() || window->IsTypePopup();
 }
 
 void SessionModelAssociator::ReassociateTabs(
@@ -245,9 +247,10 @@ void SessionModelAssociator::Associate(const TabContentsWrapper* tab,
                                        int64 sync_id) {
   DCHECK(CalledOnValidThread());
   SessionID::id_type session_id = tab->restore_tab_helper()->session_id().id();
-  Browser* browser = BrowserList::FindBrowserWithID(
-      tab->restore_tab_helper()->window_id().id());
-  if (!browser) {  // Can happen for weird things like developer console.
+  const SyncedWindowDelegate* window =
+      SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
+          tab->restore_tab_helper()->window_id().id());
+  if (!window) {  // Can happen for weird things like developer console.
     tab_pool_.FreeTabNode(sync_id);
     return;
   }
@@ -256,11 +259,11 @@ void SessionModelAssociator::Associate(const TabContentsWrapper* tab,
   tab_map_[session_id] = t;
 
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  WriteTabContentsToSyncModel(*browser, *tab, sync_id, &trans);
+  WriteTabContentsToSyncModel(*window, *tab, sync_id, &trans);
 }
 
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
-    const Browser& browser,
+    const SyncedWindowDelegate& window,
     const TabContentsWrapper& tab,
     int64 sync_id,
     sync_api::WriteTransaction* trans) {
@@ -284,10 +287,9 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   const int max_index = std::min(current_index + max_sync_navigation_count,
                                  tab.controller().entry_count());
   const int pending_index = tab.controller().pending_entry_index();
-  int index_in_window = browser.tabstrip_model()->GetIndexOfTabContents(&tab);
-  DCHECK(index_in_window != TabStripModel::kNoTab);
-  tab_s->set_pinned(browser.tabstrip_model()->IsTabPinned(index_in_window));
-  if (tab.extension_tab_helper()->extension_app()) {
+  tab_s->set_pinned(window.IsTabContentsWrapperPinned(&tab));
+  if (tab.extension_tab_helper() &&
+      tab.extension_tab_helper()->extension_app()) {
     tab_s->set_extension_app_id(
         tab.extension_tab_helper()->extension_app()->id());
   }
