@@ -21,7 +21,7 @@ const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
 const CGFloat kXShadowAlpha = 0.75;
 const CGFloat kXShadowCircleAlpha = 0.1;
-const CGFloat kDefaultAnimationDuration = 0.25;
+const CGFloat kCloseAnimationDuration = 0.1;
 
 // Images that are used for all close buttons. Set up in +initialize.
 NSImage* gHoverNoneImage = nil;
@@ -192,7 +192,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       fadeOutAnimation_ =
           [[GTMKeyValueAnimation alloc] initWithTarget:self
                                                keyPath:kFadeOutValueKeyPath];
-      [fadeOutAnimation_ setDuration:kDefaultAnimationDuration];
+      [fadeOutAnimation_ setDuration:kCloseAnimationDuration];
       [fadeOutAnimation_ setFrameRate:kFramesPerSecond];
       [fadeOutAnimation_ setDelegate:self];
       [fadeOutAnimation_ startAnimation];
