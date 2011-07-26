@@ -35,7 +35,8 @@ const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
 
 // List of file extension we can open in tab.
 const char* kBrowserSupportedExtensions[] = {
-    ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html", ".htm"
+    ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".html",
+    ".htm"
 };
 // List of file extension that can be handled with the media player.
 const char* kAVExtensions[] = {
