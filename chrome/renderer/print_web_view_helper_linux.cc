@@ -42,13 +42,20 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
-                                    WebNode* node) {
+                                    WebNode* node,
+                                    PrepareFrameAndViewForPrint* prepare) {
   printing::NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
+  scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view;
+  if (!prepare) {
+    prep_frame_view.reset(new PrepareFrameAndViewForPrint(params.params, frame,
+                                                          node));
+    prepare = prep_frame_view.get();
+  }
   int page_count = 0;
-  if (!RenderPages(params, frame, node, &page_count, &metafile))
+  if (!RenderPages(params, frame, node, &page_count, prepare, &metafile))
     return false;
 
   // Get the size of the resulting metafile.
@@ -123,19 +130,18 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
                                      WebKit::WebNode* node,
                                      int* page_count,
+                                     PrepareFrameAndViewForPrint* prepare,
                                      printing::Metafile* metafile) {
-  PrintMsg_Print_Params printParams = params.params;
+  PrintMsg_Print_Params print_params = params.params;
+  UpdatePrintableSizeInPrintParameters(frame, node, prepare, &print_params);
 
-  UpdatePrintableSizeInPrintParameters(frame, node, &printParams);
-
-  PrepareFrameAndViewForPrint prep_frame_view(printParams, frame, node);
-  *page_count = prep_frame_view.GetExpectedPageCount();
+  *page_count = prepare->GetExpectedPageCount();
   if (!*page_count)
     return false;
 
 #if !defined(OS_CHROMEOS)
     Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                  printParams.document_cookie,
+                                                  print_params.document_cookie,
                                                   *page_count));
 #endif
 
@@ -143,8 +149,8 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
   base::TimeTicks page_begin_time = begin_time;
 
   PrintMsg_PrintPage_Params page_params;
-  page_params.params = printParams;
-  const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
+  page_params.params = print_params;
+  const gfx::Size& canvas_size = prepare->GetPrintCanvasSize();
   if (params.pages.empty()) {
     for (int i = 0; i < *page_count; ++i) {
       page_params.page_number = i;
@@ -159,7 +165,7 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
 
   base::TimeDelta render_time = base::TimeTicks::Now() - begin_time;
 
-  prep_frame_view.FinishPrinting();
+  prepare->FinishPrinting();
   metafile->FinishDocument();
   return true;
 }
