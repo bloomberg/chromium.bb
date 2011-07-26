@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 93
+#   For your editing convenience: highest ID currently used: 95
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -307,6 +307,44 @@
       If this setting is enabled, browsing history is not saved.
 
       If this setting is disabled or not configured, browsing history is saved.''',
+    },
+    {
+      'name': 'RemoteAccess',
+      'type': 'group',
+      'caption': '''Configure remote access options''',
+      'desc': '''Configure remote access options in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      These features are ignored unless the Remote Access web application is installed.''',
+      'policies': [
+        {
+          'name': 'RemoteAccessClientFirewallTraversal',
+          'type': 'main',
+          'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': False,
+          'id': 94,
+          'caption': '''Enable firewall traversal from remote access client''',
+          'desc': '''Enables usage of STUN and relay servers when connecting to a remote client.
+
+          If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
+
+          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.''',
+        },
+        {
+          'name': 'RemoteAccessHostFirewallTraversal',
+          'type': 'main',
+          'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': False,
+          'id': 95,
+          'caption': '''Enable firewall traversal from remote access host''',
+          'desc': '''Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine.
+
+          If this setting is enabled, then remote clients can discover and connect to this machines even if they are separated by a firewall.
+
+          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.''',
+        },
+      ],
     },
     {
       'name': 'PrintingEnabled',

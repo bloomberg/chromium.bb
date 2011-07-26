@@ -1277,6 +1277,13 @@ const char kGeolocationAccessToken[] = "geolocation.access_token";
 // LoginDatabase.
 const char kLoginDatabaseMigrated[] = "login_database.migrated";
 
+// Boolean that indicates whether to allow firewall traversal while trying to
+// establish the initial connection from the client or host.
+const char kRemoteAccessClientFirewallTraversal[] =
+    "remote_access.client_firewall_traversal";
+const char kRemoteAccessHostFirewallTraversal[] =
+    "remote_access.host_firewall_traversal";
+
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 
