@@ -161,6 +161,11 @@ void CommandBufferNacl::SetParseError(
   GPU_NOTREACHED();
 }
 
+void CommandBufferNacl::SetContextLostReason(gpu::error::ContextLostReason) {
+  // Not implemented by proxy.
+  GPU_NOTREACHED();
+}
+
 // static
 gpu::Buffer CommandBufferNacl::BufferFromShm(int shm_handle,
                                              uint32_t shm_size) {
