@@ -108,7 +108,8 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
 //  1. The fields in the section must all be profile or credit card fields,
 //     depending on whether |is_filling_credit_card| is true.
 //  2. A logical section should not include multiple fields of the same autofill
-//     type (except for phone/fax numbers, as described below).
+//     type (except for adjacent repeated fields and phone/fax numbers, as
+//     described below).
 void FindSectionBounds(const FormStructure& form,
                        const AutofillField& field,
                        bool is_filling_credit_card,
@@ -123,27 +124,38 @@ void FindSectionBounds(const FormStructure& form,
 
   std::set<AutofillFieldType> seen_types;
   bool initiating_field_is_in_current_section = false;
+  AutofillFieldType previous_type = UNKNOWN_TYPE;
   for (size_t i = 0; i < form.field_count(); ++i) {
     const AutofillField* current_field = form.field(i);
     const AutofillFieldType current_type =
         AutofillType::GetEquivalentFieldType(current_field->type());
 
-    // Fields of unknown type don't help us to distinguish sections.
-    if (current_type == UNKNOWN_TYPE)
-      continue;
-
     bool already_saw_current_type = seen_types.count(current_type) > 0;
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
     // evening phone number.  Our phone and fax number detection is also
     // generally a little off.  Hence, ignore both field types as a signal here.
-    // Likewise, forms often ask for multiple email addresses, so ignore this
-    // field type as well.
     AutofillType::FieldTypeGroup current_type_group =
         AutofillType(current_type).group();
     if (current_type_group == AutofillType::PHONE_HOME ||
-        current_type_group == AutofillType::PHONE_FAX ||
-        current_type_group == AutofillType::EMAIL)
+        current_type_group == AutofillType::PHONE_FAX)
       already_saw_current_type = false;
+
+    // Some forms have adjacent fields of the same type.  Two common examples:
+    //  * Forms with two email fields, where the second is meant to "confirm"
+    //    the first.
+    //  * Forms with a <select> menu for states in some countries, and a
+    //    freeform <input> field for states in other countries.  (Usually, only
+    //    one of these two will be visible for any given choice of country.)
+    // Generally, adjacent fields of the same type belong in the same logical
+    // section.
+    if (current_type == previous_type)
+      already_saw_current_type = false;
+
+    previous_type = current_type;
+
+    // Fields of unknown type don't help us to distinguish sections.
+    if (current_type == UNKNOWN_TYPE)
+      continue;
 
     // If we are filling credit card data, the relevant section should include
     // only credit card fields; and similarly for profile data.
