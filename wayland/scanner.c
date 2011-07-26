@@ -24,29 +24,6 @@
 
 #include "wayland-util.h"
 
-static const char copyright[] =
-	"/*\n"
-	" * Copyright © 2010 Kristian Høgsberg\n"
-	" *\n"
-	" * Permission to use, copy, modify, distribute, and sell this software and its\n"
-	" * documentation for any purpose is hereby granted without fee, provided that\n"
-	" * the above copyright notice appear in all copies and that both that copyright\n"
-	" * notice and this permission notice appear in supporting documentation, and\n"
-	" * that the name of the copyright holders not be used in advertising or\n"
-	" * publicity pertaining to distribution of the software without specific,\n"
-	" * written prior permission.  The copyright holders make no representations\n"
-	" * about the suitability of this software for any purpose.  It is provided \"as\n"
-	" * is\" without express or implied warranty.\n"
-	" *\n"
-	" * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,\n"
-	" * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO\n"
-	" * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR\n"
-	" * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,\n"
-	" * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER\n"
-	" * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE\n"
-	" * OF THIS SOFTWARE.\n"
-	" */\n";
-
 static int
 usage(int ret)
 {
@@ -62,6 +39,7 @@ struct protocol {
 	struct wl_list interface_list;
 	int type_index;
 	int null_run_length;
+	char *copyright;
 };
 
 struct interface {
@@ -123,6 +101,8 @@ struct parse_context {
 	struct interface *interface;
 	struct message *message;
 	struct enumeration *enumeration;
+	char character_data[8192];
+	int character_data_length;
 };
 
 static char *
@@ -177,12 +157,15 @@ start_element(void *data, const char *element_name, const char **atts)
 			interface_name = atts[i + 1];
 	}
 
+	ctx->character_data_length = 0;
 	if (strcmp(element_name, "protocol") == 0) {
 		if (name == NULL)
 			fail(ctx, "no protocol name given");
 
 		ctx->protocol->name = strdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
+	} else if (strcmp(element_name, "copyright") == 0) {
+		
 	} else if (strcmp(element_name, "interface") == 0) {
 		if (name == NULL)
 			fail(ctx, "no interface name given");
@@ -278,6 +261,32 @@ start_element(void *data, const char *element_name, const char **atts)
 		wl_list_insert(ctx->enumeration->entry_list.prev,
 			       &entry->link);
 	}
+}
+
+static void
+end_element(void *data, const XML_Char *name)
+{
+	struct parse_context *ctx = data;
+
+	if (strcmp(name, "copyright") == 0) {
+		ctx->protocol->copyright =
+			strndup(ctx->character_data,
+				ctx->character_data_length);
+	}
+}
+
+static void
+character_data(void *data, const XML_Char *s, int len)
+{
+	struct parse_context *ctx = data;
+
+	if (ctx->character_data_length + len > sizeof (ctx->character_data)) {
+		fprintf(stderr, "too much character data");
+		exit(EXIT_FAILURE);
+	    }
+
+	memcpy(ctx->character_data + ctx->character_data_length, s, len);
+	ctx->character_data_length += len;
 }
 
 static void
@@ -550,6 +559,28 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	}
 }
 
+static void
+format_copyright(const char *copyright)
+{
+	int bol = 1, start, i;
+
+	for (i = 0; copyright[i]; i++) {
+		if (bol && (copyright[i] == ' ' || copyright[i] == '\t')) {
+			continue;
+		} else if (bol) {
+			bol = 0;
+			start = i;
+		}
+
+		if (copyright[i] == '\n' || copyright[i] == '\0') {
+			printf("%s %.*s\n",
+			       i == 0 ? "/*" : " *",
+			       i - start, copyright + start);
+			bol = 1;
+		}
+	}
+	printf(" */\n\n");
+}
 
 static void
 emit_header(struct protocol *protocol, int server)
@@ -557,8 +588,10 @@ emit_header(struct protocol *protocol, int server)
 	struct interface *i;
 	const char *s = server ? "SERVER" : "CLIENT";
 
-	printf("%s\n\n"
-	       "#ifndef %s_%s_PROTOCOL_H\n"
+	if (protocol->copyright)
+		format_copyright(protocol->copyright);
+
+	printf("#ifndef %s_%s_PROTOCOL_H\n"
 	       "#define %s_%s_PROTOCOL_H\n"
 	       "\n"
 	       "#ifdef  __cplusplus\n"
@@ -569,7 +602,6 @@ emit_header(struct protocol *protocol, int server)
 	       "#include <stddef.h>\n"
 	       "#include \"wayland-util.h\"\n\n"
 	       "struct wl_client;\n\n",
-	       copyright,
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s);
 
@@ -732,11 +764,12 @@ emit_code(struct protocol *protocol)
 {
 	struct interface *i;
 
-	printf("%s\n\n"
-	       "#include <stdlib.h>\n"
+	if (protocol->copyright)
+		format_copyright(protocol->copyright);
+
+	printf("#include <stdlib.h>\n"
 	       "#include <stdint.h>\n"
-	       "#include \"wayland-util.h\"\n\n",
-	       copyright);
+	       "#include \"wayland-util.h\"\n\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		emit_types_forward_declarations(protocol, &i->request_list);
@@ -801,7 +834,9 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	XML_SetElementHandler(ctx.parser, start_element, NULL);
+	XML_SetElementHandler(ctx.parser, start_element, end_element);
+	XML_SetCharacterDataHandler(ctx.parser, character_data);
+
 	do {
 		buf = XML_GetBuffer(ctx.parser, XML_BUFFER_SIZE);
 		len = fread(buf, 1, XML_BUFFER_SIZE, stdin);
