@@ -8,6 +8,7 @@
 
 #include <set>
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -170,16 +171,17 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     DesktopNotificationService* notification_service;
-    base::WeakPtr<prerender::PrerenderManager> prerender_manager;
+    base::Callback<prerender::PrerenderManager*(void)> prerender_manager_getter;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
     // The profile this struct was populated from. It's passed as a void* to
-    // ensure it's not accidently used on the IO thread. Before using it  on the
+    // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
     void* profile;
+
   };
 
   explicit ProfileIOData(bool is_incognito);
@@ -295,7 +297,8 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   mutable DesktopNotificationService* notification_service_;
-  mutable base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
+  mutable base::Callback<prerender::PrerenderManager*(void)>
+      prerender_manager_getter_;
 
   mutable ResourceContext resource_context_;
 

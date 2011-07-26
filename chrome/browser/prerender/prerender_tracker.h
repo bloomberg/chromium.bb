@@ -10,8 +10,8 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -81,7 +81,7 @@ class PrerenderTracker {
   // get.
   bool PotentiallyDelayRequestOnIOThread(
       const GURL& gurl,
-      const base::WeakPtr<PrerenderManager>& prerender_manager,
+      const base::Callback<PrerenderManager*(void)>& prerender_manager_getter,
       int child_id,
       int route_id,
       int request_id);

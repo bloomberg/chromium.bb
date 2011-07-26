@@ -31,6 +31,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -68,9 +69,10 @@ namespace {
 // ----------------------------------------------------------------------------
 class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
  public:
-  explicit ChromeCookieMonsterDelegate(Profile* profile) {
+  explicit ChromeCookieMonsterDelegate(
+      const base::Callback<Profile*(void)>& profile_getter)
+      : profile_getter_(profile_getter) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    profile_getter_ = new ProfileGetter(profile);
   }
 
   // net::CookieMonster::Delegate implementation.
@@ -83,72 +85,28 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
         NewRunnableMethod(this,
             &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
             cookie,
-           removed,
+            removed,
             cause));
   }
 
  private:
-  // This class allows us to safely access the Profile pointer. The Delegate
-  // itself cannot observe the PROFILE_DESTROYED notification, since it cannot
-  // guarantee to be deleted on the UI thread and therefore unregister from
-  // the notifications. All methods of ProfileGetter must be invoked on the UI
-  // thread.
-  class ProfileGetter
-      : public base::RefCountedThreadSafe<ProfileGetter,
-                                          BrowserThread::DeleteOnUIThread>,
-        public NotificationObserver {
-   public:
-    explicit ProfileGetter(Profile* profile) : profile_(profile) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      registrar_.Add(this,
-                     chrome::NOTIFICATION_PROFILE_DESTROYED,
-                     Source<Profile>(profile_));
-    }
-
-    // NotificationObserver implementation.
-    void Observe(int type,
-                 const NotificationSource& source,
-                 const NotificationDetails& details) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
-        Profile* profile = Source<Profile>(source).ptr();
-        if (profile_ == profile)
-          profile_ = NULL;
-      }
-    }
-
-    Profile* get() {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      return profile_;
-    }
-
-   private:
-    friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-    friend class DeleteTask<ProfileGetter>;
-
-    virtual ~ProfileGetter() {}
-
-    NotificationRegistrar registrar_;
-
-    Profile* profile_;
-  };
-
   virtual ~ChromeCookieMonsterDelegate() {}
 
   void OnCookieChangedAsyncHelper(
       const net::CookieMonster::CanonicalCookie& cookie,
       bool removed,
       net::CookieMonster::Delegate::ChangeCause cause) {
-    if (profile_getter_->get()) {
+    Profile* profile = profile_getter_.Run();
+    if (profile) {
       ChromeCookieDetails cookie_details(&cookie, removed, cause);
       NotificationService::current()->Notify(
           chrome::NOTIFICATION_COOKIE_CHANGED,
-          Source<Profile>(profile_getter_->get()),
+          Source<Profile>(profile),
           Details<ChromeCookieDetails>(&cookie_details));
     }
   }
 
-  scoped_refptr<ProfileGetter> profile_getter_;
+  const base::Callback<Profile*(void)> profile_getter_;
 };
 
 class ProtocolHandlerRegistryInterceptor
@@ -210,6 +168,23 @@ class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
   DISALLOW_COPY_AND_ASSIGN(ChromeBlobProtocolHandler);
 };
 
+Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
+  if (profile_manager->IsValidProfile(profile))
+    return profile;
+  return NULL;
+}
+
+prerender::PrerenderManager* GetPrerenderManagerOnUI(
+    const base::Callback<Profile*(void)>& profile_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Profile* profile = profile_getter.Run();
+  if (profile)
+    return profile->GetPrerenderManager();
+  return NULL;
+}
+
 }  // namespace
 
 void ProfileIOData::InitializeProfileParams(Profile* profile) {
@@ -250,7 +225,11 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->host_zoom_map = profile->GetHostZoomMap();
   params->transport_security_state = profile->GetTransportSecurityState();
   params->ssl_config_service = profile->GetSSLConfigService();
-  params->cookie_monster_delegate = new ChromeCookieMonsterDelegate(profile);
+  base::Callback<Profile*(void)> profile_getter =
+      base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
+                 profile);
+  params->cookie_monster_delegate =
+      new ChromeCookieMonsterDelegate(profile_getter);
   params->database_tracker = profile->GetDatabaseTracker();
   params->appcache_service = profile->GetAppCacheService();
   params->blob_storage_context = profile->GetBlobStorageContext();
@@ -259,10 +238,8 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
-  prerender::PrerenderManager* prerender_manager =
-      profile->GetPrerenderManager();
-  if (prerender_manager)
-    params->prerender_manager = prerender_manager->AsWeakPtr();
+  params->prerender_manager_getter =
+      base::Bind(&GetPrerenderManagerOnUI, profile_getter);
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   params->proxy_config_service.reset(
@@ -512,7 +489,7 @@ void ProfileIOData::LazyInitialize() const {
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
-  prerender_manager_ = profile_params_->prerender_manager;
+  prerender_manager_getter_ = profile_params_->prerender_manager_getter;
 
   resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
   resource_context_.set_request_context(main_request_context_);
@@ -522,7 +499,7 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_file_system_context(file_system_context_);
   resource_context_.set_quota_manager(quota_manager_);
   resource_context_.set_host_zoom_map(host_zoom_map_);
-  resource_context_.set_prerender_manager(prerender_manager_);
+  resource_context_.set_prerender_manager_getter(prerender_manager_getter_);
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());

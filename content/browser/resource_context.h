@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
@@ -79,9 +79,11 @@ class ResourceContext {
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
   // TODO(cbentzel): Kill this one.
-  const base::WeakPtr<prerender::PrerenderManager>& prerender_manager() const;
-  void set_prerender_manager(
-      const base::WeakPtr<prerender::PrerenderManager>& prerender_manager);
+  const base::Callback<prerender::PrerenderManager*(void)>&
+      prerender_manager_getter() const;
+  void set_prerender_manager_getter(
+      const base::Callback<prerender::PrerenderManager*(void)>&
+          prerender_manager_getter);
 
  protected:
   ResourceContext();
@@ -107,7 +109,7 @@ class ResourceContext {
   // =======================================================================
   // TODO(willchan): These don't belong in content/. Remove them eventually.
 
-  base::WeakPtr<prerender::PrerenderManager> prerender_manager_;
+  base::Callback<prerender::PrerenderManager*(void)> prerender_manager_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };

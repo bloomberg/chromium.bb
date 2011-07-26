@@ -145,17 +145,18 @@ void ResourceContext::set_media_observer(MediaObserver* media_observer) {
   media_observer_ = media_observer;
 }
 
-const base::WeakPtr<prerender::PrerenderManager>&
-ResourceContext::prerender_manager() const {
+const base::Callback<prerender::PrerenderManager*(void)>&
+ResourceContext::prerender_manager_getter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
-  return prerender_manager_;
+  return prerender_manager_getter_;
 }
 
-void ResourceContext::set_prerender_manager(
-    const base::WeakPtr<prerender::PrerenderManager>& prerender_manager) {
+void ResourceContext::set_prerender_manager_getter(
+      const base::Callback<prerender::PrerenderManager*(void)>&
+          prerender_manager_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  prerender_manager_ = prerender_manager;
+  prerender_manager_getter_ = prerender_manager_getter;
 }
 
 }  // namespace content

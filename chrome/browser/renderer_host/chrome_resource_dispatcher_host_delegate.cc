@@ -34,13 +34,13 @@
 namespace {
 
 void AddPrerenderOnUI(
-    const base::WeakPtr<prerender::PrerenderManager>&
-        prerender_manager_weak_ptr,
+    const base::Callback<prerender::PrerenderManager*(void)>&
+        prerender_manager_getter,
     int render_process_id, int render_view_id,
     const GURL& url, const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender::PrerenderManager* prerender_manager =
-      prerender_manager_weak_ptr.get();
+      prerender_manager_getter.Run();
   if (!prerender_manager || !prerender_manager->is_enabled())
     return;
 
@@ -88,7 +88,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableFunction(AddPrerenderOnUI,
-                              resource_context.prerender_manager(),
+                              resource_context.prerender_manager_getter(),
                               child_id,
                               route_id,
                               request_data.url,
@@ -164,7 +164,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
   ResourceDispatcherHostRequestInfo* info =
       resource_dispatcher_host_->InfoForRequest(request);
   return prerender_tracker_->PotentiallyDelayRequestOnIOThread(
-      request->url(), resource_context.prerender_manager(),
+      request->url(), resource_context.prerender_manager_getter(),
       info->child_id(), info->route_id(), info->request_id());
 }
 
