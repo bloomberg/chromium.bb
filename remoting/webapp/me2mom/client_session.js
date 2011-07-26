@@ -23,7 +23,9 @@ var remoting = remoting || {};
  * @param {string} accessCode The access code for the IT2Me connection.
  * @param {string} email The username for the talk network.
  * @param {function(remoting.ClientSession.State):void} onStateChange
- *     The callback to invoke when the session changes state.
+ *     The callback to invoke when the session changes state. This callback
+ *     occurs after the state changes and is passed the previous state; the
+ *     new state is accessible via ClientSession's |state| property.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
@@ -111,6 +113,8 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   this.plugin.id = this.PLUGIN_ID;
   this.plugin.src = 'about://none';
   this.plugin.type = 'pepper-application/x-chromoting';
+  this.plugin.width = 0;
+  this.plugin.height = 0;
   container.appendChild(this.plugin);
 
   if (!this.isPluginVersionSupported_(this.plugin)) {
@@ -320,9 +324,10 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.setState_ = function(state) {
+  var oldState = state;
   this.state = state;
   if (this.onStateChange) {
-    this.onStateChange(this.state);
+    this.onStateChange(oldState);
   }
 };
 

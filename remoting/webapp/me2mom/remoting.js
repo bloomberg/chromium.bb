@@ -438,7 +438,8 @@ function updateStatistics() {
   window.setTimeout(updateStatistics, 1000);
 }
 
-function onClientStateChange_(state) {
+function onClientStateChange_(oldState) {
+  var state = remoting.session.state;
   if (state == remoting.ClientSession.State.UNKNOWN) {
     setClientStateMessage('Unknown');
   } else if (state == remoting.ClientSession.State.CREATED) {
@@ -458,9 +459,16 @@ function onClientStateChange_(state) {
       host = split[0];
     }
     setClientStateMessage('Connected to', host);
+    setGlobalMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
   } else if (state == remoting.ClientSession.State.CLOSED) {
     setClientStateMessage('Closed');
+    if (oldState != remoting.ClientSession.State.CONNECTED) {
+      // TODO(jamiewalch): This is not quite correct, as it will report
+      // "Invalid access code", regardless of what actually went wrong.
+      // Fix this up by having the host send a suitable error code.
+      showConnectError_(404);
+    }
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
     setClientStateMessage('Failed');
   } else {
@@ -471,7 +479,6 @@ function onClientStateChange_(state) {
 function startSession_() {
   remoting.debug.log('Starting session...');
   remoting.username = getEmail();
-  setGlobalMode(remoting.AppMode.IN_SESSION);
   remoting.session =
       new remoting.ClientSession(remoting.hostJid, remoting.hostPublicKey,
                                  remoting.accessCode, getEmail(),
