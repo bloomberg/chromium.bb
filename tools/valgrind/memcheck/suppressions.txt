@@ -2322,6 +2322,29 @@
    fun:_ZN9OptionsUIC1EP11TabContents
 }
 {
+   bug_48130_d
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_Z11TrimStringTISsE13TrimPositionsRKT_PKNS1_10value_typeES0_PS1_
+   fun:_Z19TrimWhitespaceASCIIRKSs13TrimPositionsPSs
+   fun:_Z14TrimWhitespaceRKSs13TrimPositionsPSs
+   fun:_ZN4baseL12SplitStringTISsEEvRKT_NS1_10value_typeEbPSt6vectorIS1_SaIS1_EE
+   fun:_ZN4base11SplitStringERKSscPSt6vectorISsSaISsEE
+   fun:_ZN8chromeos12input_method21InputMethodDescriptorC1ERKSsS3_S3_S3_
+   fun:_ZN8chromeos12input_method21InputMethodDescriptor27CreateInputMethodDescriptorERKSsS3_S3_
+   fun:_ZN8chromeos12input_method24GetSupportedInputMethodsEv
+   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMaps10ReloadMapsEv
+   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMapsC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN8chromeos12input_method12_GLOBAL__N_16IdMapsEE3NewEv
+   fun:_ZN9SingletonIN8chromeos12input_method12_GLOBAL__N_16IdMapsE22DefaultSingletonTraitsIS3_ES3_E3getEv
+   fun:_ZN8chromeos12input_method12_GLOBAL__N_16IdMaps11GetInstanceEv
+   fun:_ZN8chromeos12input_method30GetInputMethodDescriptorFromIdERKSs
+   fun:_ZN8chromeos12input_method22InputMethodManagerImpl30ChangeCurrentInputMethodFromIdERKSs
+   fun:_ZN8chromeos12input_method22InputMethodManagerImpl32MaybeChangeCurrentKeyboardLayoutERKSsS3_RKNS0_14ImeConfigValueE
+   fun:_ZN8chromeos12input_method22InputMethodManagerImpl12SetImeConfigERKSsS3_RKNS0_14ImeConfigValueE
+}
+{
    bug_49279_a
    Memcheck:Leak
    fun:_Znw*
@@ -3527,6 +3550,31 @@
    fun:_ZN13PluginService11GetInstanceEv
 }
 {
+   bug_70327
+   Memcheck:Leak
+   ...
+   fun:FcCharSetFindLeafCreate
+   fun:FcCharSetAddLeaf
+   fun:FcCharSetMerge
+   fun:FcFontSetSort
+   fun:FcFontSort
+   fun:pango_fc_fontset_get_font_at
+   fun:pango_fc_fontset_foreach
+   fun:pango_fontset_foreach
+   fun:get_shaper_and_font
+   fun:itemize_state_process_run
+   fun:pango_itemize_with_base_dir
+   fun:pango_layout_check_lines
+   fun:pango_layout_get_extents_internal
+   fun:pango_layout_get_pixel_extents
+   fun:pango_layout_get_pixel_size
+   fun:_ZN3gfx10CanvasSkia13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
+   fun:_ZN5views14TextButtonBase17CalculateTextSizeEPN3gfx4SizeEi
+   fun:_ZN5views14TextButtonBase14UpdateTextSizeEv
+   fun:_ZN5views14TextButtonBase7SetTextERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN5views14TextButtonBaseC2EPNS_14ButtonListenerERKSbIwSt11char_traitsIwESaIwEE
+}
+{
    bug_70599
    Memcheck:Cond
    fun:bcmp
@@ -4401,6 +4449,7 @@
    bug_82717
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
    fun:_ZN24BrowserRenderProcessHost4InitEb
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
@@ -5064,6 +5113,22 @@
    fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
    fun:_ZN27ChromeURLDataManagerBackend13DataAvailableEiP16RefCountedMemory
    fun:_ZN20ChromeURLDataManager10DataSource22SendResponseOnIOThreadEi13scoped_refptrI16RefCountedMemoryE
+}
+{
+   bug_90521
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSs13scoped_refptrIN20ChromeURLDataManager10DataSourceEEEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSs13scoped_refptrIN20ChromeURLDataManager10DataSourceEEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSs13scoped_refptrIN20ChromeURLDataManager10DataSourceEEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSs13scoped_refptrIN20ChromeURLDataManager10DataSourceEEESt10_Select1stIS6_ESt4lessISsESaIS6_EE10_M_insert_EPKSt18_Rb_tree_node_baseSF_RKS6_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSs13scoped_refptrIN20ChromeURLDataManager10DataSourceEEESt10_Select1stIS6_ESt4lessISsESaIS6_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS6_ERKS6_
+   fun:_ZNSt3mapISs13scoped_refptrIN20ChromeURLDataManager10DataSourceEESt4lessISsESaISt4pairIKSsS3_EEE6insertESt17_Rb_tree_iteratorIS8_ERKS8_
+   fun:_ZNSt3mapISs13scoped_refptrIN20ChromeURLDataManager10DataSourceEESt4lessISsESaISt4pairIKSsS3_EEEixERS7_
+   fun:_ZN27ChromeURLDataManagerBackend13AddDataSourceEPN20ChromeURLDataManager10DataSourceE
+   fun:_ZL23AddDataSourceOnIOThreadRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEE
+   fun:_Z18DispatchToFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEES5_SB_EvT_RK6Tuple2IT0_T1_E
+   fun:_ZN16RunnableFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEE6Tuple2IS5_SB_EE3RunEv
 }
 
 
