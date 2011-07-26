@@ -617,10 +617,6 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
       case Browser::TYPE_PANEL: {
         break;
       }
-      case Browser::NUM_TYPES:{
-        NOTREACHED();
-        break;
-      }
     }
   }
 }
