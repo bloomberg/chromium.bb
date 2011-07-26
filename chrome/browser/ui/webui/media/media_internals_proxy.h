@@ -26,7 +26,7 @@ class Value;
 class MediaInternalsProxy
     : public MediaInternalsObserver,
       public base::RefCountedThreadSafe<MediaInternalsProxy>,
-      public ChromeNetLog::ThreadSafeObserverImpl {
+      public ChromeNetLog::ThreadSafeObserver {
  public:
   MediaInternalsProxy();
 
@@ -47,7 +47,7 @@ class MediaInternalsProxy
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params) OVERRIDE;
+                          net::NetLog::EventParameters* params);
 
  private:
   friend class base::RefCountedThreadSafe<MediaInternalsProxy>;

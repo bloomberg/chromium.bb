@@ -36,7 +36,7 @@
 // The PassiveLogCollector is owned by the ChromeNetLog itself, and is not
 // thread safe.  The ChromeNetLog is responsible for calling it in a thread safe
 // manner.
-class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserverImpl {
+class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
  public:
   typedef std::vector<net::NetLog::Source> SourceDependencyList;
 

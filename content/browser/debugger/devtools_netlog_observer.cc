@@ -7,8 +7,7 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
+#include "chrome/browser/io_thread.h"
 #include "content/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_net_log_params.h"
@@ -22,14 +21,14 @@ const size_t kMaxNumEntries = 1000;
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
 
-DevToolsNetLogObserver::DevToolsNetLogObserver(net::NetLog* net_log)
-    : net::NetLog::ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
-      net_log_(net_log) {
-  net_log_->AddThreadSafeObserver(this);
+DevToolsNetLogObserver::DevToolsNetLogObserver(ChromeNetLog* chrome_net_log)
+    : ChromeNetLog::ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
+      chrome_net_log_(chrome_net_log) {
+  chrome_net_log_->AddObserver(this);
 }
 
 DevToolsNetLogObserver::~DevToolsNetLogObserver() {
-  net_log_->RemoveThreadSafeObserver(this);
+  chrome_net_log_->RemoveObserver(this);
 }
 
 DevToolsNetLogObserver::ResourceInfo*
@@ -236,11 +235,11 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
   }
 }
 
-void DevToolsNetLogObserver::Attach() {
+void DevToolsNetLogObserver::Attach(IOThread* io_thread) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!instance_);
 
-  instance_ = new DevToolsNetLogObserver(
-      content::GetContentClient()->browser()->GetNetLog());
+  instance_ = new DevToolsNetLogObserver(io_thread->net_log());
 }
 
 void DevToolsNetLogObserver::Detach() {

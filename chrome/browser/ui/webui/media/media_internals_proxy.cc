@@ -23,7 +23,7 @@ static const char kSendConstantsFunction[] = "media.onReceiveConstants";
 static const char kSendNetworkEventsFunction[] = "media.onNetUpdate";
 
 MediaInternalsProxy::MediaInternalsProxy()
-    : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES) {
+    : ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES) {
   io_thread_ = g_browser_process->io_thread();
 }
 
@@ -118,13 +118,13 @@ void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_thread_->globals()->media.media_internals->AddObserver(this);
   // TODO(scottfr): Get the passive log data as well.
-  AddAsObserver(io_thread_->net_log());
+  io_thread_->net_log()->AddObserver(this);
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_thread_->globals()->media.media_internals->RemoveObserver(this);
-  RemoveAsObserver();
+  io_thread_->net_log()->RemoveObserver(this);
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {

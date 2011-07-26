@@ -94,7 +94,6 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
   virtual DevToolsManager* GetDevToolsManager() OVERRIDE;
-  virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual WebPreferences GetWebkitPrefs(Profile* profile,
                                         bool is_web_ui) OVERRIDE;

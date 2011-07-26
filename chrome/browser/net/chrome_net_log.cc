@@ -16,70 +16,30 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
 
-ChromeNetLog::ThreadSafeObserverImpl::ThreadSafeObserverImpl(LogLevel log_level)
+ChromeNetLog::ThreadSafeObserver::ThreadSafeObserver(LogLevel log_level)
     : net_log_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(internal_observer_(this, log_level)) {
+      log_level_(log_level) {
 }
 
-ChromeNetLog::ThreadSafeObserverImpl::~ThreadSafeObserverImpl() {
+ChromeNetLog::ThreadSafeObserver::~ThreadSafeObserver() {
   DCHECK(!net_log_);
 }
 
-void ChromeNetLog::ThreadSafeObserverImpl::AddAsObserver(
-    ChromeNetLog* net_log) {
-  DCHECK(!net_log_);
-  net_log_ = net_log;
-  net_log_->AddThreadSafeObserver(&internal_observer_);
+net::NetLog::LogLevel ChromeNetLog::ThreadSafeObserver::log_level() const {
+  return log_level_;
 }
 
-void ChromeNetLog::ThreadSafeObserverImpl::RemoveAsObserver() {
-  DCHECK(net_log_);
-  net_log_->RemoveThreadSafeObserver(&internal_observer_);
-  net_log_ = NULL;
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::SetLogLevel(
-    net::NetLog::LogLevel log_level) {
-  DCHECK(net_log_);
-  base::AutoLock lock(net_log_->lock_);
-  internal_observer_.SetLogLevel(log_level);
-  net_log_->UpdateLogLevel();
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::
-AddAsObserverAndGetAllPassivelyCapturedEvents(
-    ChromeNetLog* net_log,
-    EntryList* entries) {
-  DCHECK(!net_log_);
-  net_log_ = net_log;
-  net_log_->AddObserverAndGetAllPassivelyCapturedEvents(&internal_observer_,
-                                                        entries);
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::AssertNetLogLockAcquired() const {
+void ChromeNetLog::ThreadSafeObserver::AssertNetLogLockAcquired() const {
   if (net_log_)
     net_log_->lock_.AssertAcquired();
 }
 
-ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::PassThroughObserver(
-    ChromeNetLog::ThreadSafeObserverImpl* owner,
-    net::NetLog::LogLevel log_level)
-    : net::NetLog::ThreadSafeObserver(log_level),
-      ALLOW_THIS_IN_INITIALIZER_LIST(owner_(owner)) {
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::OnAddEntry(
-    net::NetLog::EventType type,
-    const base::TimeTicks& time,
-    const net::NetLog::Source& source,
-    net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* params) {
-  owner_->OnAddEntry(type, time, source, phase, params);
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::SetLogLevel(
+void ChromeNetLog::ThreadSafeObserver::SetLogLevel(
     net::NetLog::LogLevel log_level) {
+  DCHECK(net_log_);
+  base::AutoLock lock(net_log_->lock_);
   log_level_ = log_level;
+  net_log_->UpdateLogLevel();
 }
 
 ChromeNetLog::Entry::Entry(uint32 order,
@@ -119,21 +79,21 @@ ChromeNetLog::ChromeNetLog()
     }
   }
 
-  passive_collector_->AddAsObserver(this);
-  load_timing_observer_->AddAsObserver(this);
+  AddObserver(passive_collector_.get());
+  AddObserver(load_timing_observer_.get());
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
     net_log_logger_.reset(new NetLogLogger(
-        command_line->GetSwitchValuePath(switches::kLogNetLog)));
-    net_log_logger_->AddAsObserver(this);
+            command_line->GetSwitchValuePath(switches::kLogNetLog)));
+    AddObserver(net_log_logger_.get());
   }
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  passive_collector_->RemoveAsObserver();
-  load_timing_observer_->RemoveAsObserver();
+  RemoveObserver(passive_collector_.get());
+  RemoveObserver(load_timing_observer_.get());
   if (net_log_logger_.get()) {
-    net_log_logger_->RemoveAsObserver();
+    RemoveObserver(net_log_logger_.get());
   }
 }
 
@@ -159,21 +119,21 @@ net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
   return static_cast<net::NetLog::LogLevel>(log_level);
 }
 
-void ChromeNetLog::AddThreadSafeObserver(
-    net::NetLog::ThreadSafeObserver* observer) {
+void ChromeNetLog::AddObserver(ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
   AddObserverWhileLockHeld(observer);
 }
 
-void ChromeNetLog::RemoveThreadSafeObserver(
-    net::NetLog::ThreadSafeObserver* observer) {
+void ChromeNetLog::RemoveObserver(ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
+  DCHECK_EQ(observer->net_log_, this);
+  observer->net_log_ = NULL;
   observers_.RemoveObserver(observer);
   UpdateLogLevel();
 }
 
 void ChromeNetLog::AddObserverAndGetAllPassivelyCapturedEvents(
-    net::NetLog::ThreadSafeObserver* observer, EntryList* passive_entries) {
+    ThreadSafeObserver* observer, EntryList* passive_entries) {
   base::AutoLock lock(lock_);
   AddObserverWhileLockHeld(observer);
   passive_collector_->GetAllCapturedEvents(passive_entries);
@@ -205,8 +165,9 @@ void ChromeNetLog::UpdateLogLevel() {
                                 new_effective_log_level);
 }
 
-void ChromeNetLog::AddObserverWhileLockHeld(
-    net::NetLog::ThreadSafeObserver* observer) {
+void ChromeNetLog::AddObserverWhileLockHeld(ThreadSafeObserver* observer) {
+  DCHECK(!observer->net_log_);
+  observer->net_log_ = this;
   observers_.AddObserver(observer);
   UpdateLogLevel();
 }

@@ -9,11 +9,15 @@ include_rules = [
 
   # devtools_manager.cc, http://codereview.chromium.org/7310029/
   "+chrome/browser/browser_process.h",
+  "+chrome/browser/net/chrome_net_log.h",
+  
+  # devtools_net_log_observer.cc
+  "+chrome/browser/io_thread.h",
 
   # worker_devtools_manager_io.cc
   "+chrome/browser/debugger/devtools_window.h",
   "+chrome/browser/profiles/profile_manager.h",
-
+  
   # devtools_http_protocol_handler.cc
   "+ui/base/resource/resource_bundle.h",
   "+chrome/browser/ui/webui/devtools_ui.h",
