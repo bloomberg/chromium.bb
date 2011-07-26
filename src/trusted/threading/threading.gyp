@@ -51,11 +51,7 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'thread_interface',
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
+            'win_target': 'x64',
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',

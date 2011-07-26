@@ -181,15 +181,11 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'platform_lib',
+            'win_target': 'x64',
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
         # ---------------------------------------------------------------------
         {
@@ -197,6 +193,7 @@
           'type': 'executable',
           'variables': {
             'target_base': 'platform_tests',
+            'win_target': 'x64',
           },
           'sources': [
             'win/test_tls.S',
@@ -205,11 +202,6 @@
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
       ],
     }],

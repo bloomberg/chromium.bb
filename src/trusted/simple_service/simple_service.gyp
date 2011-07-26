@@ -56,11 +56,7 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'simple_service',
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
+            'win_target': 'x64',
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',

@@ -80,16 +80,12 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'sel_ldr_launcher',
+            'win_target': 'x64',
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:env_cleanser64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:nacl_error_code64',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
         # --------------------------------------------------------------------
         {
@@ -97,15 +93,11 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'nonnacl_util',
+            'win_target': 'x64',
           },
           'dependencies': [
             'sel_ldr_launcher64',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
       ],
     }],
@@ -134,6 +126,9 @@
         {
           'target_name': 'nonnacl_util_chrome64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'dependencies': [
             'sel_ldr_launcher64',
           ],
@@ -144,11 +139,6 @@
               ],
             }],
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
       ],
     }],

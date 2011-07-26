@@ -54,11 +54,7 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'nacl_base',
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
+            'win_target': 'x64',
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',

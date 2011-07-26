@@ -57,10 +57,8 @@
             'sources': [
               '<@(common_sources)',
             ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
+          'variables': {
+            'win_target': 'x64',
           },
         }
       ],

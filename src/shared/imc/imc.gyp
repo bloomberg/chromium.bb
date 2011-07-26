@@ -133,27 +133,23 @@
         {
           'target_name': 'imc64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             '<@(common_sources)',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
         # ---------------------------------------------------------------------
         {
           'target_name': 'sigpipe_test64',
           'type': 'executable',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             'sigpipe_test.cc',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',

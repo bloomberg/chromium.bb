@@ -54,11 +54,7 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'srpc',
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
+            'win_target': 'x64',
           },
         }
       ],

@@ -32,14 +32,12 @@
         {
           'target_name': 'nacl_perf_counter64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             'nacl_perf_counter.c',
           ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
         },
       ],
     }],
