@@ -6,6 +6,8 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_VIEWS_H_
 #pragma once
 
+#include <map>
+
 #include "base/message_loop.h"
 #include "ui/gfx/transform.h"
 #include "views/ime/input_method_delegate.h"
@@ -156,6 +158,8 @@ class NativeWidgetViews : public internal::NativeWidgetPrivate,
   bool delete_native_view_;
 
   scoped_ptr<InputMethod> input_method_;
+
+  std::map<const char*, void*> window_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

@@ -37,9 +37,11 @@ NativeWidgetViews::~NativeWidgetViews() {
   delegate_->OnNativeWidgetDestroying();
 
   // We must prevent the NativeWidgetView from attempting to delete us.
-  view_->set_delete_native_widget(false);
-  if (delete_native_view_)
-    delete view_;
+  if (view_) {
+    view_->set_delete_native_widget(false);
+    if (delete_native_view_)
+      delete view_;
+  }
 
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
@@ -147,6 +149,10 @@ gfx::NativeWindow NativeWidgetViews::GetNativeWindow() const {
 }
 
 Widget* NativeWidgetViews::GetTopLevelWidget() {
+  // This can get called when this is in the process of being destroyed, and
+  // view_ has already been unset.
+  if (!view_)
+    return GetWidget();
   if (view_->parent() == ViewsDelegate::views_delegate->GetDefaultParentView())
     return GetWidget();
   // During Widget destruction, this function may be called after |view_| is
@@ -181,12 +187,16 @@ void NativeWidgetViews::ViewRemoved(View* view) {
 }
 
 void NativeWidgetViews::SetNativeWindowProperty(const char* name, void* value) {
-  NOTIMPLEMENTED();
+  if (value)
+    window_properties_[name] = value;
+  else
+    window_properties_.erase(name);
 }
 
 void* NativeWidgetViews::GetNativeWindowProperty(const char* name) const {
-  NOTIMPLEMENTED();
-  return NULL;
+  std::map<const char*, void*>::const_iterator iter =
+      window_properties_.find(name);
+  return iter != window_properties_.end() ? iter->second : NULL;
 }
 
 TooltipManager* NativeWidgetViews::GetTooltipManager() const {
@@ -494,7 +504,7 @@ void NativeWidgetViews::FocusNativeView(gfx::NativeView native_view) {
 // NativeWidgetViews, private:
 
 internal::NativeWidgetPrivate* NativeWidgetViews::GetParentNativeWidget() {
-  Widget* containing_widget = view_->GetWidget();
+  Widget* containing_widget = view_ ? view_->GetWidget() : NULL;
   return containing_widget ? static_cast<internal::NativeWidgetPrivate*>(
       containing_widget->native_widget()) :
       NULL;
@@ -502,7 +512,7 @@ internal::NativeWidgetPrivate* NativeWidgetViews::GetParentNativeWidget() {
 
 const internal::NativeWidgetPrivate*
     NativeWidgetViews::GetParentNativeWidget() const {
-  const Widget* containing_widget = view_->GetWidget();
+  const Widget* containing_widget = view_ ? view_->GetWidget() : NULL;
   return containing_widget ? static_cast<const internal::NativeWidgetPrivate*>(
       containing_widget->native_widget()) :
       NULL;
