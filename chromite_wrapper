@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Wrapper for chromite tools.
+
+The script is intend to be symlinked to any number of chromite tools, attempts
+to find the path for chromite, and runs the right tool based on argv[0].
+
+It is intended to run in several ways:
+- Outside the chroot, it should be _copied_ to someplace that is in the
+  path (like depot_tools).  It will search for the right chromite by looking
+  for a file 'chromite/shell/main.py' upward based on the CWD.
+- Inside the chroot, it might be _either_ copied to someplace in the path (since
+  depot_tools is in the path in the chroot) or it might run from chromite/bin
+  directly, which should be in the PATH.  In any case, we'll look for the
+  real 'chromite/shell/main.py' based on the environment variable
+  CROS_WORKON_SRCROOT, so it doesn't matter what the CWD is.
+
+If you're looking at a copy and want to know where the original looks at, look
+here:
+  http://git.chromium.org/gitweb/?p=chromite.git;a=blob;f=bin/chromite
+
+Since this script is _copied_, it should remain small and not use internal libs.
+
+"""
+
+import os
+import sys
+
+
+def Search(path):
+  """Return an iterator of lists of places to look for chromite."""
+
+  if os.path.exists('/etc/debian_chroot'):
+    # We're in the chroot.  Chromite should be in the python path inside the
+    # chroot, so we don't do any searching.  NOTE that we purposely don't want
+    # CROS_WORKON_SRCROOT in the python path.
+    yield []
+  else:
+    # Look in $CROS_WORKON_SRCROOT first.  The idea is that a user would set
+    # this manually if they wanted to specify a particular version of chromite.
+    if 'CROS_WORKON_SRCROOT' in os.environ:
+      yield [os.environ['CROS_WORKON_SRCROOT']]
+
+    # Search upward until we either end up with a blank dir or the "parent" dir
+    # doesn't change.
+    prev_path = None
+    while path and path != prev_path:
+      yield [path]
+      path, prev_path = os.path.dirname(path), path
+
+
+def main():
+  # Decide what the name of the called binary will be.
+  our_name = os.path.basename(sys.argv[0])
+  # Some tools map to an arbitrary path, rather than to a .py file of the same
+  # exact name. By default, we pick the tool from chromite/bin/
+  TOOLS_MAP = {
+    'chromite' : 'shell.main',
+    'cbuildbot' : 'buildbot.cbuildbot',
+  }
+  our_name = TOOLS_MAP.get(our_name, 'bin.' + our_name)
+
+  for path in Search(os.getcwd()):
+    sys.path = path + sys.path
+    try:
+      exec 'import chromite.' + our_name + ' as our_tool'
+      break
+    except ImportError, e:
+      # Just in case there is actually something wrong with Chromite, print
+      # a sensible error. We match only the end of the string so that we can
+      # handle an error within the chromite directory.
+      # The full error is 'No module named (chromite.)shell.main'
+      # Note: If you hit the directory containing chromite on the way up, then
+      # the error will be 'No module named shell.main' so we must check only the
+      # shell.main part.
+      if not str(e).endswith(our_name):
+        raise
+
+      # We've got different modules named chromite in the tree, pulling in the
+      # wrong one will break the right one.  So unload it.
+      if 'chromite' in sys.modules:
+        del sys.modules['chromite']
+      sys.path = sys.path[len(path):]
+  else:
+    # TODO(dianders): Should we actually print out the 'repo init' call that
+    # the user should use?
+    sys.stderr.write(
+        "ERROR: Couldn't find the chromite tool.\n"
+        "\n"
+        "Please change to a directory inside your Chromium OS source tree\n"
+        "and retry.  If you need to setup a Chromium OS source tree, see:\n"
+        "  http://www.chromium.org/chromium-os/developer-guide\n")
+    return 1
+  return our_tool.main()
+
+
+if __name__ == '__main__':
+  sys.exit(main())
