@@ -19,8 +19,8 @@ class ExtensionPrefStore : public ValueMapPrefStore,
                            public ExtensionPrefValueMap::Observer {
  public:
   // Constructs an ExtensionPrefStore for a regular or an incognito profile.
-  explicit ExtensionPrefStore(ExtensionPrefValueMap* extension_pref_value_map,
-                              bool incognito_pref_store);
+  ExtensionPrefStore(ExtensionPrefValueMap* extension_pref_value_map,
+                     bool incognito_pref_store);
   virtual ~ExtensionPrefStore();
 
  private:

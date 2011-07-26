@@ -24,16 +24,15 @@ struct ImageBurnStatus {
   }
 
   explicit ImageBurnStatus(const chromeos::BurnStatus& status)
-      : amount_burnt(status.amount_burnt),
-        total_size(status.total_size) {
+      : amount_burnt(status.amount_burnt), total_size(status.total_size) {
     if (status.target_path)
       target_path = status.target_path;
     if (status.error)
       error = status.error;
   }
 
-  explicit ImageBurnStatus(const char* path, int64 burnt, int64 total,
-      const char* err) : total_size(total) {
+  ImageBurnStatus(const char* path, int64 burnt, int64 total, const char* err)
+      : total_size(total) {
     if (path)
       target_path = path;
     if (err)

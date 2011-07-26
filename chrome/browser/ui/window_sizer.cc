@@ -17,9 +17,8 @@
 // and persistent state from the browser window and the user's profile.
 class DefaultStateProvider : public WindowSizer::StateProvider {
  public:
-  explicit DefaultStateProvider(const std::string& app_name,
-      const Browser* browser) : app_name_(app_name),
-                                browser_(browser) {
+  DefaultStateProvider(const std::string& app_name, const Browser* browser)
+      : app_name_(app_name), browser_(browser) {
   }
 
   // Overridden from WindowSizer::StateProvider:

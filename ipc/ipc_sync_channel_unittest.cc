@@ -340,7 +340,7 @@ namespace {
 
 class NoHangServer : public Worker {
  public:
-  explicit NoHangServer(WaitableEvent* got_first_reply, bool pump_during_send)
+  NoHangServer(WaitableEvent* got_first_reply, bool pump_during_send)
       : Worker(Channel::MODE_SERVER, "no_hang_server"),
         got_first_reply_(got_first_reply),
         pump_during_send_(pump_during_send) { }
@@ -475,11 +475,10 @@ namespace {
 
 class RecursiveServer : public Worker {
  public:
-  explicit RecursiveServer(
-    bool expected_send_result, bool pump_first, bool pump_second)
-    : Worker(Channel::MODE_SERVER, "recursive_server"),
-      expected_send_result_(expected_send_result),
-      pump_first_(pump_first), pump_second_(pump_second)  { }
+  RecursiveServer(bool expected_send_result, bool pump_first, bool pump_second)
+      : Worker(Channel::MODE_SERVER, "recursive_server"),
+        expected_send_result_(expected_send_result),
+        pump_first_(pump_first), pump_second_(pump_second) {}
   void Run() {
     SendDouble(pump_first_, expected_send_result_);
     Done();
@@ -495,9 +494,9 @@ class RecursiveServer : public Worker {
 
 class RecursiveClient : public Worker {
  public:
-  explicit RecursiveClient(bool pump_during_send, bool close_channel)
-    : Worker(Channel::MODE_CLIENT, "recursive_client"),
-      pump_during_send_(pump_during_send), close_channel_(close_channel) { }
+  RecursiveClient(bool pump_during_send, bool close_channel)
+      : Worker(Channel::MODE_CLIENT, "recursive_client"),
+        pump_during_send_(pump_during_send), close_channel_(close_channel) {}
 
   void OnDoubleDelay(int in, Message* reply_msg) {
     SendDouble(pump_during_send_, !close_channel_);
@@ -959,7 +958,7 @@ namespace {
 
 class NestedTask : public Task {
  public:
-  explicit NestedTask(Worker* server) : server_(server) { }
+  explicit NestedTask(Worker* server) : server_(server) {}
   void Run() {
     // Sleep a bit so that we wake up after the reply has been received.
     base::PlatformThread::Sleep(250);

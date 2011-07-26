@@ -68,8 +68,8 @@ void URLToRequest(const GURL& url, std::string* source_name,
 // calls back once the data is available.
 class URLRequestChromeJob : public net::URLRequestJob {
  public:
-  explicit URLRequestChromeJob(net::URLRequest* request,
-                               ChromeURLDataManagerBackend* backend);
+  URLRequestChromeJob(net::URLRequest* request,
+                      ChromeURLDataManagerBackend* backend);
 
   // net::URLRequestJob implementation.
   virtual void Start() OVERRIDE;

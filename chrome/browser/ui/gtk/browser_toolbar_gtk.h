@@ -43,7 +43,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public MenuGtk::Delegate,
                           public NotificationObserver {
  public:
-  explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
+  BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
 
   // Create the contents of the toolbar. |top_level_window| is the GtkWindow

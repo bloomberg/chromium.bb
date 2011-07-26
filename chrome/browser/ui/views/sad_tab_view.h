@@ -30,7 +30,7 @@ class SadTabView : public views::View,
     KILLED    // The tab was killed.  Display the killed tab page.
   };
 
-  explicit SadTabView(TabContents* tab_contents, Kind kind);
+  SadTabView(TabContents* tab_contents, Kind kind);
   virtual ~SadTabView();
 
   // Overridden from views::View:

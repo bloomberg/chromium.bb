@@ -99,9 +99,8 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 // runs it.
 class Zygote {
  public:
-  explicit Zygote(int sandbox_flags, ZygoteForkDelegate* helper)
-    : sandbox_flags_(sandbox_flags),
-      helper_(helper) {
+  Zygote(int sandbox_flags, ZygoteForkDelegate* helper)
+      : sandbox_flags_(sandbox_flags), helper_(helper) {
   }
 
   bool ProcessRequests() {

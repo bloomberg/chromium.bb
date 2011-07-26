@@ -42,7 +42,7 @@ namespace {
 
 class MenuScrollButton : public View {
  public:
-  explicit MenuScrollButton(SubmenuView* host, bool is_up)
+  MenuScrollButton(SubmenuView* host, bool is_up)
       : host_(host),
         is_up_(is_up),
         // Make our height the same as that of other MenuItemViews.

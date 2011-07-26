@@ -25,7 +25,7 @@ class InfoBarDelegate;
 class InfoBarGtk : public InfoBar,
                    public NotificationObserver {
  public:
-  explicit InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate);
+  InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarGtk();
 
   // Get the top level native GTK widget for this infobar.

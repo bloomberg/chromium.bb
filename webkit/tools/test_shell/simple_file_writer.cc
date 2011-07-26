@@ -31,8 +31,8 @@ net::URLRequestContext* SimpleFileWriter::request_context_ = NULL;
 class SimpleFileWriter::IOThreadProxy
     : public base::RefCountedThreadSafe<SimpleFileWriter::IOThreadProxy> {
  public:
-  explicit IOThreadProxy(const base::WeakPtr<SimpleFileWriter>& simple_writer,
-                         FileSystemContext* file_system_context)
+  IOThreadProxy(const base::WeakPtr<SimpleFileWriter>& simple_writer,
+                FileSystemContext* file_system_context)
       : simple_writer_(simple_writer),
         operation_(NULL),
         file_system_context_(file_system_context) {

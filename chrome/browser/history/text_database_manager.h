@@ -74,9 +74,9 @@ class TextDatabaseManager {
   // The visit database is a pointer owned by the caller for the main database
   // (of recent visits). The visit database will be updated to refer to the
   // added text database entries.
-  explicit TextDatabaseManager(const FilePath& dir,
-                               URLDatabase* url_database,
-                               VisitDatabase* visit_database);
+  TextDatabaseManager(const FilePath& dir,
+                      URLDatabase* url_database,
+                      VisitDatabase* visit_database);
   ~TextDatabaseManager();
 
   // Must call before using other functions. If it returns false, no other

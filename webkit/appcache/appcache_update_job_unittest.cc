@@ -411,9 +411,9 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
         "http://retry\r");  // must be same as kRetryUrl
   }
 
-  explicit RetryRequestTestJob(net::URLRequest* request,
-                               const std::string& headers,
-                               int response_code)
+  RetryRequestTestJob(net::URLRequest* request,
+                      const std::string& headers,
+                      int response_code)
       : net::URLRequestTestJob(request, headers, data(), true),
         response_code_(response_code) {
   }

@@ -181,9 +181,9 @@ static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
 // and paint the bookmark bar.
 class BookmarkExtensionBackground : public views::Background {
  public:
-  explicit BookmarkExtensionBackground(BrowserView* browser_view,
-                                       DetachableToolbarView* host_view,
-                                       Browser* browser);
+  BookmarkExtensionBackground(BrowserView* browser_view,
+                              DetachableToolbarView* host_view,
+                              Browser* browser);
 
   // View methods overridden from views:Background.
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;

@@ -44,9 +44,9 @@ class SettingLevelBubble : public BubbleDelegate,
   void UpdateWithoutShowingBubble(int percent);
 
  protected:
-  explicit SettingLevelBubble(SkBitmap* increase_icon,
-                              SkBitmap* decrease_icon,
-                              SkBitmap* zero_icon);
+  SettingLevelBubble(SkBitmap* increase_icon,
+                     SkBitmap* decrease_icon,
+                     SkBitmap* zero_icon);
   virtual ~SettingLevelBubble();
 
  private:

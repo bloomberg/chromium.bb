@@ -67,7 +67,7 @@ namespace {
 
 class NewTabButton : public views::ImageButton {
  public:
-  explicit NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
+  NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
       : views::ImageButton(listener),
         tab_strip_(tab_strip) {
   }

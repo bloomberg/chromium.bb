@@ -176,7 +176,7 @@ class DailyPingTask : public Task {
 // This task needs to run on the UI thread.
 class DelayedInitTask : public Task {
  public:
-  explicit DelayedInitTask(bool first_run, bool google_default_search)
+  DelayedInitTask(bool first_run, bool google_default_search)
       : first_run_(first_run),
         google_default_search_(google_default_search) {
   }

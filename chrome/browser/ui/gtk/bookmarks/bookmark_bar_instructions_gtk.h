@@ -27,7 +27,7 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
     virtual ~Delegate() {}
   };
 
-  explicit BookmarkBarInstructionsGtk(Delegate* delegate, Profile* profile);
+  BookmarkBarInstructionsGtk(Delegate* delegate, Profile* profile);
 
   // Get the native widget.
   GtkWidget* widget() const { return instructions_hbox_; }

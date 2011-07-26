@@ -36,8 +36,7 @@ struct ExtensionEventRouter::EventListener {
   RenderProcessHost* process;
   std::string extension_id;
 
-  explicit EventListener(RenderProcessHost* process,
-                         const std::string& extension_id)
+  EventListener(RenderProcessHost* process, const std::string& extension_id)
       : process(process), extension_id(extension_id) {}
 
   bool operator<(const EventListener& that) const {

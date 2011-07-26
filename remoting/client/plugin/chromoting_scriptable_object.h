@@ -182,11 +182,11 @@ class ChromotingScriptableObject
   typedef pp::Var (ChromotingScriptableObject::*MethodHandler)(
       const std::vector<pp::Var>& args, pp::Var* exception);
   struct PropertyDescriptor {
-    explicit PropertyDescriptor(const std::string& n, pp::Var a)
+    PropertyDescriptor(const std::string& n, pp::Var a)
         : type(NONE), name(n), attribute(a), method(NULL) {
     }
 
-    explicit PropertyDescriptor(const std::string& n, MethodHandler m)
+    PropertyDescriptor(const std::string& n, MethodHandler m)
         : type(NONE), name(n), method(m) {
     }
 

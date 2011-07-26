@@ -39,8 +39,7 @@ class RootView;
 // which results in deleting the DropTargetGtk.
 class DropTargetGtk {
  public:
-  explicit DropTargetGtk(internal::RootView* root_view,
-                         GdkDragContext* context);
+  DropTargetGtk(internal::RootView* root_view, GdkDragContext* context);
   ~DropTargetGtk();
 
   // If a drag and drop is underway and |view| is the current drop target, the

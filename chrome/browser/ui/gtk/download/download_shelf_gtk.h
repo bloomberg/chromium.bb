@@ -36,7 +36,7 @@ class DownloadShelfGtk : public DownloadShelf,
                          public SlideAnimatorGtk::Delegate,
                          public MessageLoopForUI::Observer {
  public:
-  explicit DownloadShelfGtk(Browser* browser, gfx::NativeView view);
+  DownloadShelfGtk(Browser* browser, gfx::NativeView view);
 
   virtual ~DownloadShelfGtk();
 

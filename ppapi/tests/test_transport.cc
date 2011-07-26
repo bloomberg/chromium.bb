@@ -34,9 +34,9 @@ const int kReadBufferSize = 65536;
 
 class StreamReader {
  public:
-  explicit StreamReader(pp::Transport_Dev* transport,
-                        int expected_size,
-                        pp::CompletionCallback done_callback)
+  StreamReader(pp::Transport_Dev* transport,
+               int expected_size,
+               pp::CompletionCallback done_callback)
       : expected_size_(expected_size),
         done_callback_(done_callback),
         ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),

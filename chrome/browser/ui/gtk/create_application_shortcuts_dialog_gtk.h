@@ -100,8 +100,8 @@ class CreateChromeApplicationShortcutsDialogGtk
   // Displays the dialog box to create application shortcuts for |app|.
   static void Show(GtkWindow* parent, const Extension* app);
 
-  explicit CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
-                                                     const Extension* app);
+  CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
+                                            const Extension* app);
   virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
 
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to

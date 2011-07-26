@@ -81,9 +81,9 @@ class MockCloudPrintFlowHandler
     : public CloudPrintFlowHandler,
       public base::SupportsWeakPtr<MockCloudPrintFlowHandler> {
  public:
-  explicit MockCloudPrintFlowHandler(const FilePath& path,
-                                     const string16& title,
-                                     const std::string& file_type)
+  MockCloudPrintFlowHandler(const FilePath& path,
+                            const string16& title,
+                            const std::string& file_type)
       : CloudPrintFlowHandler(path, title, file_type) {}
   MOCK_METHOD0(DestructorCalled, void());
   MOCK_METHOD0(RegisterMessages, void());

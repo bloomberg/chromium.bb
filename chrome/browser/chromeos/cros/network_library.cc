@@ -430,7 +430,7 @@ class StringToEnum {
     const Type value;
   };
 
-  explicit StringToEnum(const Pair* list, size_t num_entries, Type unknown)
+  StringToEnum(const Pair* list, size_t num_entries, Type unknown)
       : unknown_value_(unknown) {
     for (size_t i = 0; i < num_entries; ++i, ++list)
       enum_map_[list->key] = list->value;
@@ -2695,7 +2695,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   typedef std::map<std::string, CellularDataPlanVector*> CellularDataPlanMap;
 
   struct NetworkProfile {
-    explicit NetworkProfile(const std::string& p, NetworkProfileType t)
+    NetworkProfile(const std::string& p, NetworkProfileType t)
         : path(p), type(t) {}
     std::string path;
     NetworkProfileType type;

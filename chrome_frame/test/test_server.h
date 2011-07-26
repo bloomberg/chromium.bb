@@ -374,8 +374,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
 // instance to send the response.
 class HTTPTestServer : public net::ListenSocket::ListenSocketDelegate {
  public:
-  explicit HTTPTestServer(int port, const std::wstring& address,
-                          FilePath root_dir);
+  HTTPTestServer(int port, const std::wstring& address, FilePath root_dir);
   virtual ~HTTPTestServer();
 
   // HTTP GET request is received. Override in derived classes.

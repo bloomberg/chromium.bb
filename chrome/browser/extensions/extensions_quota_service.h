@@ -142,7 +142,7 @@ class QuotaLimitHeuristic {
   };
 
   // Ownership of |mapper| is given to the new QuotaLimitHeuristic.
-  explicit QuotaLimitHeuristic(const Config& config, BucketMapper* map);
+  QuotaLimitHeuristic(const Config& config, BucketMapper* map);
   virtual ~QuotaLimitHeuristic();
 
   // Determines if sufficient quota exists (according to the Apply
@@ -173,7 +173,7 @@ class QuotaLimitHeuristic {
 // a given period of time; e.g "no more than 100 events in an hour".
 class ExtensionsQuotaService::TimedLimit : public QuotaLimitHeuristic {
  public:
-  explicit TimedLimit(const Config& config, BucketMapper* map)
+  TimedLimit(const Config& config, BucketMapper* map)
       : QuotaLimitHeuristic(config, map) {}
   virtual bool Apply(Bucket* bucket, const base::TimeTicks& event_time);
 };

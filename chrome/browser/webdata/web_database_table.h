@@ -14,7 +14,7 @@
 // Each table should subclass this, adding type-specific methods as needed.
 class WebDatabaseTable {
  protected:
-  explicit WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table)
+  WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table)
       : db_(db), meta_table_(meta_table) {}
   virtual ~WebDatabaseTable();
 

@@ -263,7 +263,7 @@ class TabStripGtk::TabAnimation : public ui::AnimationDelegate {
 // Handles insertion of a Tab at |index|.
 class InsertTabAnimation : public TabStripGtk::TabAnimation {
  public:
-  explicit InsertTabAnimation(TabStripGtk* tabstrip, int index)
+  InsertTabAnimation(TabStripGtk* tabstrip, int index)
       : TabAnimation(tabstrip, INSERT),
         index_(index) {
     int tab_count = tabstrip->GetTabCount();
@@ -526,7 +526,7 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
 // in the model.
 class MiniTabAnimation : public TabStripGtk::TabAnimation {
  public:
-  explicit MiniTabAnimation(TabStripGtk* tabstrip, int index)
+  MiniTabAnimation(TabStripGtk* tabstrip, int index)
       : TabAnimation(tabstrip, MINI),
         index_(index) {
     int tab_count = tabstrip->GetTabCount();
@@ -586,10 +586,10 @@ class MiniTabAnimation : public TabStripGtk::TabAnimation {
 // result.
 class MiniMoveAnimation : public TabStripGtk::TabAnimation {
  public:
-  explicit MiniMoveAnimation(TabStripGtk* tabstrip,
-                             int from_index,
-                             int to_index,
-                             const gfx::Rect& start_bounds)
+  MiniMoveAnimation(TabStripGtk* tabstrip,
+                    int from_index,
+                    int to_index,
+                    const gfx::Rect& start_bounds)
       : TabAnimation(tabstrip, MINI_MOVE),
         tab_(tabstrip->GetTabAt(to_index)),
         start_bounds_(start_bounds),

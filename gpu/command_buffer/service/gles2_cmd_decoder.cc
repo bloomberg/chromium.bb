@@ -222,8 +222,8 @@ class ScopedFrameBufferBinder {
 // if it is bound or enforce_internal_framebuffer is true.
 class ScopedResolvedFrameBufferBinder {
  public:
-  explicit ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
-                                           bool enforce_internal_framebuffer);
+  ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
+                                  bool enforce_internal_framebuffer);
   ~ScopedResolvedFrameBufferBinder();
 
  private:
@@ -447,8 +447,7 @@ GLES2Decoder::~GLES2Decoder() {
 class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          public GLES2Decoder {
  public:
-  explicit GLES2DecoderImpl(SurfaceManager* surface_manager,
-                            ContextGroup* group);
+  GLES2DecoderImpl(SurfaceManager* surface_manager, ContextGroup* group);
 
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,

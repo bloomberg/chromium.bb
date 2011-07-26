@@ -594,8 +594,8 @@ class ReadTransaction : public BaseTransaction {
 class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
-  explicit WriteTransaction(const tracked_objects::Location& from_here,
-                            UserShare* share);
+  WriteTransaction(const tracked_objects::Location& from_here,
+                   UserShare* share);
   virtual ~WriteTransaction();
 
   // Provide access to the syncable.h transaction from the API WriteNode.

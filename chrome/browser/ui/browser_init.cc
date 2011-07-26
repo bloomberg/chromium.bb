@@ -1086,9 +1086,9 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 
 class LearnMoreInfoBar : public LinkInfoBarDelegate {
  public:
-  explicit LearnMoreInfoBar(TabContents* tab_contents,
-                            const string16& message,
-                            const GURL& url);
+  LearnMoreInfoBar(TabContents* tab_contents,
+                   const string16& message,
+                   const GURL& url);
   virtual ~LearnMoreInfoBar();
 
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;

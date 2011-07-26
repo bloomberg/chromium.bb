@@ -23,9 +23,9 @@ class GenericChangeProcessor;
 // provided SyncableService as necessary.
 class SyncableServiceAdapter : public AssociatorInterface {
  public:
-  explicit SyncableServiceAdapter(syncable::ModelType type,
-                                  SyncableService* service,
-                                  GenericChangeProcessor* sync_processor);
+  SyncableServiceAdapter(syncable::ModelType type,
+                         SyncableService* service,
+                         GenericChangeProcessor* sync_processor);
   virtual ~SyncableServiceAdapter();
 
   // AssociatorInterface implementation.

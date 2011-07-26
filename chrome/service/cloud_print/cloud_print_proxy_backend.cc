@@ -44,11 +44,11 @@ class CloudPrintProxyBackend::Core
  public:
   // It is OK for print_server_url to be empty. In this case system should
   // use system default (local) print server.
-  explicit Core(CloudPrintProxyBackend* backend,
-                const GURL& cloud_print_server_url,
-                const DictionaryValue* print_system_settings,
-                const gaia::OAuthClientInfo& oauth_client_info,
-                bool enable_job_poll);
+  Core(CloudPrintProxyBackend* backend,
+       const GURL& cloud_print_server_url,
+       const DictionaryValue* print_system_settings,
+       const gaia::OAuthClientInfo& oauth_client_info,
+       bool enable_job_poll);
 
   // Note:
   //

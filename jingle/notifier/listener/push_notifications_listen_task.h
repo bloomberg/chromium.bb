@@ -32,7 +32,7 @@ class PushNotificationsListenTask : public buzz::XmppTask {
         const Notification& notification) = 0;
   };
 
-  explicit PushNotificationsListenTask(Task* parent, Delegate* delegate);
+  PushNotificationsListenTask(Task* parent, Delegate* delegate);
   virtual ~PushNotificationsListenTask();
 
   // Overriden from buzz::XmppTask.

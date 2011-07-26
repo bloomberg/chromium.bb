@@ -17,7 +17,7 @@
 class PluginDataRemoverHelper::Internal
     : public base::RefCountedThreadSafe<PluginDataRemoverHelper::Internal> {
  public:
-  explicit Internal(const char* pref_name, PrefService* prefs)
+  Internal(const char* pref_name, PrefService* prefs)
       : pref_name_(pref_name), prefs_(prefs) {}
 
   void StartUpdate() {

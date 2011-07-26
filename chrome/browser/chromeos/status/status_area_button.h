@@ -16,8 +16,8 @@ namespace chromeos {
 // Shows current button state by drawing a border around the current icon.
 class StatusAreaButton : public views::MenuButton {
  public:
-  explicit StatusAreaButton(StatusAreaHost* host,
-                            views::ViewMenuDelegate* menu_delegate);
+  StatusAreaButton(StatusAreaHost* host,
+                   views::ViewMenuDelegate* menu_delegate);
   virtual ~StatusAreaButton() {}
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 

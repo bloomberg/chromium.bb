@@ -144,7 +144,7 @@ class CrossCallParams {
 
  protected:
   // constructs the IPC call params. Called only from the derived classes
-  explicit CrossCallParams(uint32 tag, size_t params_count)
+  CrossCallParams(uint32 tag, size_t params_count)
       : tag_(tag),
         params_count_(params_count),
         is_in_out_(0) {

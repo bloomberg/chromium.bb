@@ -175,22 +175,17 @@ class Operand {
   }
 
   // [base + disp/r]
-  explicit Operand(Register base, int disp) {
+  Operand(Register base, int disp) {
     Init(base, disp);
   }
 
   // [base + index*scale + disp/r]
-  explicit Operand(Register base,
-                   Register index,
-                   ScaleFactor scale,
-                   int disp) {
+  Operand(Register base, Register index, ScaleFactor scale, int disp) {
     Init(base, index, scale, disp);
   }
 
   // [index*scale + disp/r]
-  explicit Operand(Register index,
-                   ScaleFactor scale,
-                   int disp) {
+  Operand(Register index, ScaleFactor scale, int disp) {
     Init(index, scale, disp);
   }
 

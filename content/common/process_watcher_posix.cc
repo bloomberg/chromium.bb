@@ -32,7 +32,7 @@ static bool IsChildDead(pid_t child) {
 // If the child doesn't exit within a couple of seconds, kill it.
 class BackgroundReaper : public base::PlatformThread::Delegate {
  public:
-  explicit BackgroundReaper(pid_t child, unsigned timeout)
+  BackgroundReaper(pid_t child, unsigned timeout)
       : child_(child),
         timeout_(timeout) {
   }

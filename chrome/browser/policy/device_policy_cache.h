@@ -25,8 +25,8 @@ namespace em = enterprise_management;
 class DevicePolicyCache : public CloudPolicyCacheBase,
                           public chromeos::SignedSettingsHelper::Callback {
  public:
-  explicit DevicePolicyCache(CloudPolicyDataStore* data_store,
-                             EnterpriseInstallAttributes* install_attributes);
+  DevicePolicyCache(CloudPolicyDataStore* data_store,
+                    EnterpriseInstallAttributes* install_attributes);
   virtual ~DevicePolicyCache();
 
   // CloudPolicyCacheBase implementation:

@@ -102,7 +102,7 @@ class NetworkConfigView : public views::DialogDelegateView,
 // methods, which are called by NetworkConfigView.
 class ChildNetworkConfigView : public views::View {
  public:
-  explicit ChildNetworkConfigView(NetworkConfigView* parent, Network* network)
+  ChildNetworkConfigView(NetworkConfigView* parent, Network* network)
       : service_path_(network->service_path()),
         parent_(parent) {}
   explicit ChildNetworkConfigView(NetworkConfigView* parent)

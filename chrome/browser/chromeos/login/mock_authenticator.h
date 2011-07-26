@@ -76,8 +76,8 @@ class MockAuthenticator : public Authenticator {
 
 class MockLoginUtils : public LoginUtils {
  public:
-  explicit MockLoginUtils(const std::string& expected_username,
-                          const std::string& expected_password);
+  MockLoginUtils(const std::string& expected_username,
+                 const std::string& expected_password);
   virtual ~MockLoginUtils();
 
   virtual bool ShouldWaitForWifi();

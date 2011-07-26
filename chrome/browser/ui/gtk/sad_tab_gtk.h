@@ -20,7 +20,7 @@ class SadTabGtk {
     KILLED    // The tab was killed.  Display the killed tab page.
   };
 
-  explicit SadTabGtk(TabContents* tab_contents, Kind kind);
+  SadTabGtk(TabContents* tab_contents, Kind kind);
   virtual ~SadTabGtk();
 
   GtkWidget* widget() const { return event_box_.get(); }

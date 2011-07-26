@@ -34,8 +34,7 @@ static SkBitmap* default_icon = NULL;
 
 class ModelEntry {
  public:
-  explicit ModelEntry(TemplateURLTableModel* model,
-                      const TemplateURL& template_url)
+  ModelEntry(TemplateURLTableModel* model, const TemplateURL& template_url)
       : template_url_(template_url),
         load_state_(NOT_LOADED),
         model_(model) {

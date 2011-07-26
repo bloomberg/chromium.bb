@@ -37,7 +37,7 @@ struct ExtensionMessageService::MessagePort {
   IPC::Message::Sender* sender;
   int routing_id;
   explicit MessagePort(IPC::Message::Sender* sender = NULL,
-              int routing_id = MSG_ROUTING_CONTROL)
+                       int routing_id = MSG_ROUTING_CONTROL)
      : sender(sender), routing_id(routing_id) {}
 };
 

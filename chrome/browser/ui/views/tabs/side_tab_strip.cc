@@ -78,7 +78,7 @@ class ScrollButton : public views::TextButton {
     DOWN
   };
 
-  explicit ScrollButton(views::ButtonListener* listener, Type type);
+  ScrollButton(views::ButtonListener* listener, Type type);
 
  protected:
   // views::View overrides.

@@ -18,8 +18,8 @@ class TabContents;
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                                       public NotificationObserver {
  public:
-  explicit TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
-                                         TabContents* tab_contents);
+  TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
+                                TabContents* tab_contents);
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.

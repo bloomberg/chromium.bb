@@ -73,8 +73,7 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
   virtual PlatformSurface BeginPlatformPaint();
 
  protected:
-  explicit VectorPlatformDeviceCairo(PlatformSurface context,
-                                     const SkBitmap& bitmap);
+  VectorPlatformDeviceCairo(PlatformSurface context, const SkBitmap& bitmap);
 
   virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
                                              int height, bool isOpaque,

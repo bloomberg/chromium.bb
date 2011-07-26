@@ -104,7 +104,7 @@ class Font_Dev : public Resource {
   Font_Dev();
 
   explicit Font_Dev(PP_Resource resource);
-  explicit Font_Dev(Instance* instance, const FontDescription_Dev& description);
+  Font_Dev(Instance* instance, const FontDescription_Dev& description);
   Font_Dev(const Font_Dev& other);
 
   Font_Dev& operator=(const Font_Dev& other);

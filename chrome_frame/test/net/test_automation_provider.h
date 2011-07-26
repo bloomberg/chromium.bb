@@ -30,8 +30,8 @@ class TestAutomationProviderDelegate {
 class TestAutomationProvider
     : public AutomationProvider {
  public:
-  explicit TestAutomationProvider(Profile* profile,
-      TestAutomationProviderDelegate* delegate);
+  TestAutomationProvider(Profile* profile,
+                         TestAutomationProviderDelegate* delegate);
 
   virtual ~TestAutomationProvider();
 

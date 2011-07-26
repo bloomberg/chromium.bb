@@ -17,8 +17,8 @@ class TranslateInfoBarDelegate;
 // use.
 class TranslateInfoBarBase : public InfoBarGtk {
  public:
-  explicit TranslateInfoBarBase(TabContentsWrapper* owner,
-                                TranslateInfoBarDelegate* delegate);
+  TranslateInfoBarBase(TabContentsWrapper* owner,
+                       TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
   // Initializes the infobar widgets. Should be called after the object has been

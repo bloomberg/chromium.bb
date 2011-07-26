@@ -114,8 +114,7 @@ class CreateChromeApplicationShortcutView
    : public CreateApplicationShortcutView,
      public ImageLoadingTracker::Observer {
  public:
-  explicit CreateChromeApplicationShortcutView(Profile* profile,
-                                               const Extension* app);
+  CreateChromeApplicationShortcutView(Profile* profile, const Extension* app);
   virtual ~CreateChromeApplicationShortcutView();
 
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to

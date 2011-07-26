@@ -23,7 +23,7 @@ class Image;
 // Base class for programatically generated drags.
 class CustomDrag {
  protected:
-  explicit CustomDrag(gfx::Image* icon, int code_mask, GdkDragAction action);
+  CustomDrag(gfx::Image* icon, int code_mask, GdkDragAction action);
   virtual ~CustomDrag();
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,

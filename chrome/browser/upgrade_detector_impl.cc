@@ -63,8 +63,7 @@ int GetCheckForUpgradeEveryMs() {
 // callback task. Otherwise it just deletes the task.
 class DetectUpgradeTask : public Task {
  public:
-  explicit DetectUpgradeTask(Task* upgrade_detected_task,
-                             bool* is_unstable_channel)
+  DetectUpgradeTask(Task* upgrade_detected_task, bool* is_unstable_channel)
       : upgrade_detected_task_(upgrade_detected_task),
         is_unstable_channel_(is_unstable_channel) {
   }

@@ -26,10 +26,10 @@ namespace protocol {
 // interface does not need to depend on libjingle.
 class ContentDescription : public cricket::ContentDescription {
  public:
-  explicit ContentDescription(const CandidateSessionConfig* config,
-                              const std::string& auth_token,
-                              const std::string& master_key,
-                              const std::string& certificate);
+  ContentDescription(const CandidateSessionConfig* config,
+                     const std::string& auth_token,
+                     const std::string& master_key,
+                     const std::string& certificate);
   virtual ~ContentDescription();
 
   const CandidateSessionConfig* config() const {

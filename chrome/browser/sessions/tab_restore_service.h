@@ -117,8 +117,7 @@ class TabRestoreService : public BaseSessionService {
   // Creates a new TabRestoreService and provides an object that provides the
   // current time. The TabRestoreService does not take ownership of the
   // |time_factory_|.
-  explicit TabRestoreService(Profile* profile,
-                             TimeFactory* time_factory_ = NULL);
+  TabRestoreService(Profile* profile, TimeFactory* time_factory_ = NULL);
 
   virtual ~TabRestoreService();
 

@@ -97,9 +97,9 @@ class CloudPrintHtmlDialogDelegate;
 class CloudPrintFlowHandler : public WebUIMessageHandler,
                               public NotificationObserver {
  public:
-  explicit CloudPrintFlowHandler(const FilePath& path_to_file,
-                                 const string16& print_job_title,
-                                 const std::string& file_type);
+  CloudPrintFlowHandler(const FilePath& path_to_file,
+                        const string16& print_job_title,
+                        const std::string& file_type);
   virtual ~CloudPrintFlowHandler();
 
   // WebUIMessageHandler implementation.

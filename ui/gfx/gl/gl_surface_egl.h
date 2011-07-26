@@ -49,8 +49,7 @@ protected:
 // Encapsulates an EGL surface bound to a view.
 class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit NativeViewGLSurfaceEGL(bool software,
-                                  gfx::PluginWindowHandle window);
+  NativeViewGLSurfaceEGL(bool software, gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
@@ -71,7 +70,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 // Encapsulates a pbuffer EGL surface.
 class PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  explicit PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
+  PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
   virtual ~PbufferGLSurfaceEGL();
 
   // Implement GLSurface.

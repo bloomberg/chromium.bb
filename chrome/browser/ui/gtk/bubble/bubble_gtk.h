@@ -97,7 +97,7 @@ class BubbleGtk : public NotificationObserver {
     FRAME_STROKE,
   };
 
-  explicit BubbleGtk(GtkThemeService* provider, bool match_system_theme);
+  BubbleGtk(GtkThemeService* provider, bool match_system_theme);
   virtual ~BubbleGtk();
 
   // Creates the Bubble.

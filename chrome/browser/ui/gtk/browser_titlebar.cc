@@ -150,8 +150,7 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
 // user clicks on the favicon) and all of its submenus.
 class PopupPageMenuModel : public ui::SimpleMenuModel {
  public:
-  explicit PopupPageMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                              Browser* browser);
+  PopupPageMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser);
   virtual ~PopupPageMenuModel() { }
 
  private:

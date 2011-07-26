@@ -65,7 +65,7 @@ class UnloadContext
     : public SyncMessageReplyDispatcher::SyncMessageCallContext {
  public:
   typedef Tuple1<bool> output_type;
-  explicit UnloadContext(base::WaitableEvent* unload_done, bool* should_unload)
+  UnloadContext(base::WaitableEvent* unload_done, bool* should_unload)
       : should_unload_(should_unload),
         unload_done_(unload_done) {
   }

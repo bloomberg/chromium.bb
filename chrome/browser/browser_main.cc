@@ -1093,7 +1093,7 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
 class StubLogin : public chromeos::LoginStatusConsumer,
                   public chromeos::LoginUtils::Delegate {
  public:
-  explicit StubLogin(std::string username, std::string password) {
+  StubLogin(std::string username, std::string password) {
     authenticator_ = chromeos::LoginUtils::Get()->CreateAuthenticator(this);
     authenticator_.get()->AuthenticateToLogin(
         g_browser_process->profile_manager()->GetDefaultProfile(),

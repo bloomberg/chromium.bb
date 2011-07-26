@@ -334,7 +334,7 @@ class DownloadsFlushObserver
  public:
   explicit DownloadsFlushObserver(DownloadManager* download_manager)
       : download_manager_(download_manager),
-        waiting_for_zero_inprogress_(true) { }
+        waiting_for_zero_inprogress_(true) {}
 
   void WaitForFlush() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -826,8 +826,8 @@ class DownloadTest : public InProcessBrowserTest {
 // Get History Information.
 class DownloadsHistoryDataCollector {
  public:
-  explicit DownloadsHistoryDataCollector(int64 download_db_handle,
-                                         DownloadManager* manager)
+  DownloadsHistoryDataCollector(int64 download_db_handle,
+                                DownloadManager* manager)
       : result_valid_(false),
         download_db_handle_(download_db_handle) {
     HistoryService* hs =
@@ -893,8 +893,8 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
 // installation.
 class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
  public:
-  explicit MockAutoConfirmExtensionInstallUI(Profile* profile) :
-      ExtensionInstallUI(profile) {}
+  explicit MockAutoConfirmExtensionInstallUI(Profile* profile)
+      : ExtensionInstallUI(profile) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {

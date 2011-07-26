@@ -68,9 +68,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   };
 
   // Does not assume ownership of |prefs| and |incognito_prefs|.
-  explicit ExtensionPrefs(PrefService* prefs,
-                          const FilePath& root_dir,
-                          ExtensionPrefValueMap* extension_pref_value_map);
+  ExtensionPrefs(PrefService* prefs,
+                 const FilePath& root_dir,
+                 ExtensionPrefValueMap* extension_pref_value_map);
   virtual ~ExtensionPrefs();
 
   // Returns a copy of the Extensions prefs.

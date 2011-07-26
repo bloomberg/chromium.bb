@@ -52,10 +52,9 @@ class EstablishChannelCallback
                                    base::ProcessHandle,
                                    const GPUInfo&> > {
  public:
-  explicit EstablishChannelCallback(GpuMessageFilter* filter,
-                                    IPC::Message* reply) :
-      filter_(filter->AsWeakPtr()),
-      reply_(reply) {
+  EstablishChannelCallback(GpuMessageFilter* filter, IPC::Message* reply)
+      : filter_(filter->AsWeakPtr()),
+        reply_(reply) {
   }
 
   virtual void RunWithParams(const TupleType& params) {

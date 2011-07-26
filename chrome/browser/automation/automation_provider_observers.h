@@ -599,9 +599,9 @@ class DomOperationObserver : public NotificationObserver {
 // operation.
 class DomOperationMessageSender : public DomOperationObserver {
  public:
-  explicit DomOperationMessageSender(AutomationProvider* automation,
-                                     IPC::Message* relpy_message,
-                                     bool use_json_interface);
+  DomOperationMessageSender(AutomationProvider* automation,
+                            IPC::Message* relpy_message,
+                            bool use_json_interface);
   virtual ~DomOperationMessageSender();
 
   virtual void OnDomOperationCompleted(const std::string& json) OVERRIDE;

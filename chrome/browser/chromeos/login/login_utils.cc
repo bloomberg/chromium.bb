@@ -180,9 +180,9 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
 // Fetches an OAuth token and initializes user policy with it.
 class PolicyOAuthFetcher : public GaiaOAuthConsumer {
  public:
-  explicit PolicyOAuthFetcher(Profile* profile,
-                              const std::string& oauth1_token,
-                              const std::string& oauth1_secret)
+  PolicyOAuthFetcher(Profile* profile,
+                     const std::string& oauth1_token,
+                     const std::string& oauth1_secret)
       : oauth_fetcher_(this,
                        profile->GetRequestContext(),
                        profile,
