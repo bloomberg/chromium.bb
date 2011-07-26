@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
 class Task;
@@ -26,13 +26,10 @@ namespace remoting {
 
 class IqRequest;
 
-// JingleInfoRequest handles making an IQ request to the Google talk network for
-// discovering stun/relay information for use in establishing a Jingle
-// connection.
-//
-// Clients should instantiate this class, and set a callback to receive the
-// configuration information.  The query will be made when Run() is called.  The
-// query is finisehd when the |done| task given to Run() is invokved.
+// JingleInfoRequest handles requesting STUN/Relay infromation from
+// the Google Talk network. The query is made when Send() is
+// called. The callback given to Send() is called when response to the
+// request is received.
 //
 // This class is not threadsafe and should be used on the same thread it is
 // created on.
@@ -44,23 +41,20 @@ class JingleInfoRequest {
   // passed by pointer so the receive may call swap on them.  The receiver does
   // NOT own the arguments, which are guaranteed only to be alive for the
   // duration of the callback.
-  typedef Callback3<const std::string&, const std::vector<std::string>&,
-                    const std::vector<talk_base::SocketAddress>&>::Type
-      OnJingleInfoCallback;
+  typedef base::Callback<void (
+      const std::string&, const std::vector<std::string>&,
+      const std::vector<talk_base::SocketAddress>&)> OnJingleInfoCallback;
 
   explicit JingleInfoRequest(IqRequest* request);
   ~JingleInfoRequest();
 
-  void Run(Task* done);
-  void SetCallback(OnJingleInfoCallback* callback);
-  void DetachCallback();
+  void Send(const OnJingleInfoCallback& callback);
 
  private:
   void OnResponse(const buzz::XmlElement* stanza);
 
   scoped_ptr<IqRequest> request_;
-  scoped_ptr<OnJingleInfoCallback> on_jingle_info_cb_;
-  scoped_ptr<Task> done_cb_;
+  OnJingleInfoCallback on_jingle_info_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleInfoRequest);
 };

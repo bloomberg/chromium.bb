@@ -188,7 +188,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   var jingleNode = iqNode.firstChild;
   var serializer = new XMLSerializer();
   var parameters = {
-    'to': iqNode.getAttribute('to'),
+    'to': iqNode.getAttribute('to') || "",
     'payload_xml': serializer.serializeToString(jingleNode),
     'id': iqNode.getAttribute('id') || '1',
     'type': iqNode.getAttribute('type'),

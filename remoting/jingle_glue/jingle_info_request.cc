@@ -21,18 +21,10 @@ JingleInfoRequest::JingleInfoRequest(IqRequest* request)
 JingleInfoRequest::~JingleInfoRequest() {
 }
 
-void JingleInfoRequest::Run(Task* done) {
-  done_cb_.reset(done);
+void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
+  on_jingle_info_cb_ = callback;
   request_->SendIq(buzz::STR_GET, buzz::STR_EMPTY,
                    new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
-}
-
-void JingleInfoRequest::SetCallback(OnJingleInfoCallback* callback) {
-  on_jingle_info_cb_.reset(callback);
-}
-
-void JingleInfoRequest::DetachCallback() {
-  on_jingle_info_cb_.reset();
 }
 
 void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
@@ -81,14 +73,7 @@ void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
     }
   }
 
-  if (on_jingle_info_cb_.get()) {
-    on_jingle_info_cb_->Run(relay_token, relay_hosts, stun_hosts);
-  } else {
-    LOG(INFO) << "Iq reply parsed with no callback. Dropping" << stanza->Str();
-  }
-
-  DetachCallback();
-  done_cb_->Run();
+  on_jingle_info_cb_.Run(relay_token, relay_hosts, stun_hosts);
 }
 
 }  // namespace remoting

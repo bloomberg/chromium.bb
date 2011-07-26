@@ -97,9 +97,6 @@ class JingleSessionManager
       const std::vector<std::string>& relay_hosts,
       const std::vector<talk_base::SocketAddress>& stun_hosts);
 
-  // Creates cricket::SessionManager.
-  void DoStartSessionManager();
-
   // Creates session description for outgoing session.
   static cricket::SessionDescription* CreateClientSessionDescription(
       const CandidateSessionConfig* candidate_config,
