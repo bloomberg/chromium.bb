@@ -22,11 +22,11 @@ class Profile;
 // info dialog/bubble.
 class PageInfoModel {
  public:
-  class PageInfoModelObserver {
+  class Observer {
    public:
-    virtual ~PageInfoModelObserver() {}
+    virtual ~Observer() {}
 
-    virtual void ModelChanged() = 0;
+    virtual void OnPageInfoModelChanged() = 0;
   };
 
   enum SectionInfoType {
@@ -84,7 +84,7 @@ class PageInfoModel {
                 const GURL& url,
                 const NavigationEntry::SSLStatus& ssl,
                 bool show_history,
-                PageInfoModelObserver* observer);
+                Observer* observer);
   ~PageInfoModel();
 
   int GetSectionCount();
@@ -106,7 +106,7 @@ class PageInfoModel {
   // Shared initialization for default and testing constructor.
   void Init();
 
-  PageInfoModelObserver* observer_;
+  Observer* observer_;
 
   std::vector<SectionInfo> sections_;
 

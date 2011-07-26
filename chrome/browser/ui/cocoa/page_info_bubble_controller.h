@@ -17,7 +17,7 @@
   scoped_ptr<PageInfoModel> model_;
 
   // Thin bridge that pushes model-changed notifications from C++ to Cocoa.
-  scoped_ptr<PageInfoModel::PageInfoModelObserver> bridge_;
+  scoped_ptr<PageInfoModel::Observer> bridge_;
 
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int certID_;
@@ -30,7 +30,7 @@
 // controller will release itself when the bubble is closed. |parentWindow|
 // cannot be nil.
 - (id)initWithPageInfoModel:(PageInfoModel*)model
-              modelObserver:(PageInfoModel::PageInfoModelObserver*)bridge
+              modelObserver:(PageInfoModel::Observer*)bridge
                parentWindow:(NSWindow*)parentWindow;
 
 // Shows the certificate display window. Note that this will implicitly close

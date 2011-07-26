@@ -30,7 +30,7 @@ class Profile;
 
 namespace {
 
-class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
+class PageInfoBubbleGtk : public PageInfoModel::Observer,
                           public BubbleDelegateGtk {
  public:
   PageInfoBubbleGtk(gfx::NativeWindow parent,
@@ -40,8 +40,8 @@ class PageInfoBubbleGtk : public PageInfoModel::PageInfoModelObserver,
                     bool show_history);
   virtual ~PageInfoBubbleGtk();
 
-  // PageInfoModel::PageInfoModelObserver implementation.
-  virtual void ModelChanged() OVERRIDE;
+  // PageInfoModel::Observer implementation.
+  virtual void OnPageInfoModelChanged() OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -123,7 +123,7 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
 PageInfoBubbleGtk::~PageInfoBubbleGtk() {
 }
 
-void PageInfoBubbleGtk::ModelChanged() {
+void PageInfoBubbleGtk::OnPageInfoModelChanged() {
   InitContents();
 }
 

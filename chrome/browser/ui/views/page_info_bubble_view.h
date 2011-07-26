@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_BUBBLE_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -18,7 +19,7 @@ class Label;
 }
 
 class PageInfoBubbleView : public views::View,
-                           public PageInfoModel::PageInfoModelObserver,
+                           public PageInfoModel::Observer,
                            public BubbleDelegate,
                            public views::LinkListener,
                            public ui::AnimationDelegate {
@@ -38,8 +39,8 @@ class PageInfoBubbleView : public views::View,
   // View methods:
   virtual gfx::Size GetPreferredSize();
 
-  // PageInfoModel::PageInfoModelObserver methods:
-  virtual void ModelChanged();
+  // PageInfoModel::Observer methods:
+  virtual void OnPageInfoModelChanged() OVERRIDE;
 
   // BubbleDelegate methods:
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);

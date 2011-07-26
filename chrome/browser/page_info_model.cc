@@ -19,8 +19,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
-#include "net/base/ssl_connection_status_flags.h"
 #include "net/base/ssl_cipher_suite_names.h"
+#include "net/base/ssl_connection_status_flags.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,7 +29,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
                              const NavigationEntry::SSLStatus& ssl,
                              bool show_history,
-                             PageInfoModelObserver* observer)
+                             Observer* observer)
     : observer_(observer) {
   Init();
 
@@ -339,7 +339,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
             base::TimeFormatShortDate(first_visit)),
         SECTION_INFO_FIRST_VISIT));
   }
-  observer_->ModelChanged();
+  observer_->OnPageInfoModelChanged();
 }
 
 PageInfoModel::PageInfoModel() : observer_(NULL) {

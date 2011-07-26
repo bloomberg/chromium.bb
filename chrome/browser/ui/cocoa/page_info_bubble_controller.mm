@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
@@ -93,15 +94,15 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     kFramePadding * 2);
 
 // Bridge that listens for change notifications from the model.
-class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
+class PageInfoModelBubbleBridge : public PageInfoModel::Observer {
  public:
   PageInfoModelBubbleBridge()
       : controller_(nil),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   }
 
-  // PageInfoModelObserver implementation.
-  virtual void ModelChanged() {
+  // PageInfoModel::Observer implementation.
+  virtual void OnPageInfoModelChanged() OVERRIDE {
     // Check to see if a layout has already been scheduled.
     if (!task_factory_.empty())
       return;
@@ -167,7 +168,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 @synthesize certID = certID_;
 
 - (id)initWithPageInfoModel:(PageInfoModel*)model
-              modelObserver:(PageInfoModel::PageInfoModelObserver*)bridge
+              modelObserver:(PageInfoModel::Observer*)bridge
                parentWindow:(NSWindow*)parentWindow {
   DCHECK(parentWindow);
 

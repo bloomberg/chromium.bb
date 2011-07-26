@@ -262,7 +262,7 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   return size;
 }
 
-void PageInfoBubbleView::ModelChanged() {
+void PageInfoBubbleView::OnPageInfoModelChanged() {
   // The start height must take into account that when we start animating,
   // a separator plus padding is immediately added before the view is animated
   // into existence.

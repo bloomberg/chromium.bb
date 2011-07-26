@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/page_info_model.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
-#import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
+#import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -30,9 +31,9 @@ class FakeModel : public PageInfoModel {
   }
 };
 
-class FakeBridge : public PageInfoModel::PageInfoModelObserver {
+class FakeBridge : public PageInfoModel::Observer {
  public:
-  void ModelChanged() {}
+  virtual void OnPageInfoModelChanged() OVERRIDE {}
 };
 
 class PageInfoBubbleControllerTest : public CocoaTest {
