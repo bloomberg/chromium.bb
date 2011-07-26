@@ -200,3 +200,6 @@ PREFIX: webkit_glue::datasourceinitdone___base::internal::invoker3<0,base::inter
 
 # 90553
 PREFIX: v8::internal::safepointentry::hasregisters___v8::internal::optimizedframe::iterate___v8::internal::isolate::iterate___v8::internal::isolate::iterate
+
+# 90577
+PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::pipelineimpl::ondemuxerbuilt
