@@ -113,6 +113,10 @@ string16 FindChildTextInner(const WebNode& node, int depth) {
   if (depth <= 0 || node.isNull())
     return string16();
 
+  // Skip over comments.
+  if (node.nodeType() == WebNode::CommentNode)
+    return FindChildTextInner(node.nextSibling(), depth - 1);
+
   if (node.nodeType() != WebNode::ElementNode &&
       node.nodeType() != WebNode::TextNode)
     return string16();
