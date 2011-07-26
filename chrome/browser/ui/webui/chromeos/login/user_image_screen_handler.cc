@@ -9,9 +9,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "grit/generated_resources.h"
@@ -131,8 +130,9 @@ void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
 void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
   DCHECK(args && args->empty());
   TakePhotoDialog* take_photo_dialog = new TakePhotoDialog(this);
+  views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
   views::Widget* window = browser::CreateViewsWindow(
-      GetBrowserWindow(),
+      login_window->GetNativeWindow(),
       gfx::Rect(),
       take_photo_dialog);
   window->SetAlwaysOnTop(true);
@@ -161,13 +161,6 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
     screen_->OnPhotoTaken(user_photo_);
   else
     screen_->OnDefaultImageSelected(selected_image_);
-}
-
-gfx::NativeWindow UserImageScreenHandler::GetBrowserWindow() const {
-  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
-  if (!browser)
-    return NULL;
-  return browser->window()->GetNativeHandle();
 }
 
 }  // namespace chromeos

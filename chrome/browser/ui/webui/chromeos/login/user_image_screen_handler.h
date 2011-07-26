@@ -60,9 +60,6 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Called when user accept the image closing the screen.
   void HandleImageAccepted(const base::ListValue* args);
 
-  // Returns handle to browser window or NULL if it can't be found.
-  gfx::NativeWindow GetBrowserWindow() const;
-
   UserImageScreenActor::Delegate* screen_;
 
   // Keeps whether screen should be shown right after initialization.
