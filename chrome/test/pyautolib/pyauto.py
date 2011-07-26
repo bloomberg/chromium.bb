@@ -458,6 +458,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return 'win32' == sys.platform
 
   @staticmethod
+  def IsWin7():
+    """Are we on Windows 7?"""
+    if not PyUITest.IsWin():
+      return False
+    ver = sys.getwindowsversion()
+    return (ver[3], ver[0], ver[1]) == (2, 6, 1)
+
+  @staticmethod
+  def IsWinVista():
+    """Are we on Windows Vista?"""
+    if not PyUITest.IsWin():
+      return False
+    ver = sys.getwindowsversion()
+    return (ver[3], ver[0], ver[1]) == (2, 6, 0)
+
+  @staticmethod
+  def IsWinXP():
+    """Are we on Windows XP?"""
+    if not PyUITest.IsWin():
+      return False
+    ver = sys.getwindowsversion()
+    return (ver[3], ver[0], ver[1]) == (2, 5, 1)
+
+  @staticmethod
   def IsChromeOS():
     """Are we on ChromeOS (or Chromium OS)?
 
