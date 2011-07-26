@@ -216,29 +216,34 @@ function __update_fps() {
   __t_last = t_now;
 }
 
+// Returns true if a recorded gesture movement occured.
 function __advance_gesture_recording() {
   var y = document.body.scrollTop;
   // Only add a gesture if the scroll position changes.
   if (__recording.length == 0 || y != __recording[__recording.length - 1].y) {
     var time_ms = new Date().getTime() - __t_start;
     __recording.push({ time_ms: time_ms, y: y });
+    return true;
   }
+  return false;
 }
 
+// Returns true if a gesture movement occured.
 function __create_gesture_function(gestures) {
   var i = 0;
   return function() {
     if (i >= gestures.length) {
       __stop();
-      return;
+      return false;
     }
     var time_ms = new Date().getTime() - __t_start;
     if (time_ms < gestures[i].time_ms)
-      return;
+      return false;
 
     // Skip all gestures that occured within the same time interval.
     for (i; i < gestures.length && time_ms >= gestures[i].time_ms; ++i);
     window.scrollBy(0, gestures[i - 1].y - document.body.scrollTop);
+    return true;
   }
 }
 
@@ -269,8 +274,12 @@ function __sched_update() {
   __raf(function() {
     __raf_is_live = true;
     if (__running) {
-      __update_fps();
-      __advance_gesture();
+      // Only update the FPS if a gesture movement occurs. Otherwise, the frame
+      // rate average becomes inaccurate after any pause.
+      if (__advance_gesture())
+        __update_fps();
+      else
+        __t_last = new Date().getTime();
     }
     __sched_update();
   });
@@ -329,7 +338,7 @@ function __stop() {
     __results.means.push(results.mean);
     __results.sigmas.push(results.sigma);
 
-    if(__queued_gesture_functions.length > 0) {
+    if (__queued_gesture_functions.length > 0) {
       document.body.scrollTop = 0;
       __init_stats();
       __start(__queued_gesture_functions.shift());
