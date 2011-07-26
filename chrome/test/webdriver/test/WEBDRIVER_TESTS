@@ -70,7 +70,8 @@
   ],
 
   'mac': [
-
+    # See crbug.com/90519.
+    '-alerts_tests.AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
   ],
 
   'linux': [
