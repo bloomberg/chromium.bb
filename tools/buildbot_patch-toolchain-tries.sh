@@ -6,10 +6,10 @@
 cd "$(dirname "$0")"
 for i in binutils gcc gdb glibc linux-headers-for-nacl newlib; do
   (
-    if [ -s "git-try.$i.patch" ]; then
+    if [ -s "toolchain-try.$i.patch" ]; then
       make "pinned-src-$i"
       cd "SRC/$i"
-      patch -p1 < ../../"git-try.$i.patch"
+      patch -p1 < ../../"toolchain-try.$i.patch"
     fi
   )
 done
