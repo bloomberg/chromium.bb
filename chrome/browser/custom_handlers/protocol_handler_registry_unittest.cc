@@ -110,13 +110,13 @@ class FakeProtocolClientWorker
  public:
   FakeProtocolClientWorker(ShellIntegration::DefaultWebClientObserver* observer,
                            const std::string& protocol,
-                           FakeDelegate* registry_delegate)
+                           bool force_failure)
       : ShellIntegration::DefaultProtocolClientWorker(observer, protocol),
-        delegate_(registry_delegate) {}
+        force_failure_(force_failure) {}
 
  private:
   virtual ShellIntegration::DefaultWebClientState CheckIsDefault() {
-    if (delegate_->force_os_failure()) {
+    if (force_failure_) {
       return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
     } else {
       return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
@@ -126,7 +126,7 @@ class FakeProtocolClientWorker
   virtual void SetAsDefault() {}
 
  private:
-  FakeDelegate* delegate_;
+  bool force_failure_;
 };
 
 ProtocolHandlerRegistry::DefaultClientObserver*
@@ -137,7 +137,7 @@ ProtocolHandlerRegistry::DefaultClientObserver*
 ShellIntegration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
     ShellIntegration::DefaultWebClientObserver* observer,
     const std::string& protocol) {
-  return new FakeProtocolClientWorker(observer, protocol, this);
+  return new FakeProtocolClientWorker(observer, protocol, force_os_failure_);
 }
 
 class NotificationCounter : public NotificationObserver {

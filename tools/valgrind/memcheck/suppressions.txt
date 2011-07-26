@@ -4962,13 +4962,6 @@
    fun:_Z16DispatchToMethodIN2pp5proxy26PPP_Instance_Private_ProxyEMS2_FviNS1_24SerializedVarReturnValueEEiNS1_13SerializedVarEEvPT_T0_RK6Tuple1IT1_EPSA_IT2_E
 }
 {
-   bug_90248
-   Memcheck:Addr1
-   fun:_ZN12FakeDelegate16force_os_failureEv
-   fun:_ZN24FakeProtocolClientWorker14CheckIsDefaultEv
-   fun:_ZN16ShellIntegration22DefaultWebClientWorker21ExecuteCheckIsDefaultEv
-}
-{
    bug_90376
    Memcheck:Cond
    fun:_ZN5views6Widget16SetInitialBoundsERKN3gfx4RectE
