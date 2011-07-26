@@ -364,7 +364,8 @@ SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
   if (command_line.HasSwitch(switches::kRestoreLastSession))
     pref.type = SessionStartupPref::LAST;
-  if (command_line.HasSwitch(switches::kIncognito) &&
+  if ((command_line.HasSwitch(switches::kIncognito) ||
+       profile->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
       pref.type == SessionStartupPref::LAST &&
       profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     // We don't store session information when incognito. If the user has
@@ -536,7 +537,8 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 #endif
 
   // Continue with the incognito profile from here on if --incognito
-  if (command_line.HasSwitch(switches::kIncognito) &&
+  if ((command_line.HasSwitch(switches::kIncognito) ||
+       profile->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
       profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     profile = profile->GetOffTheRecordProfile();
   }

@@ -1467,7 +1467,8 @@ void Browser::Stop() {
 
 void Browser::NewWindow() {
   if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) &&
+      (CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) ||
+       profile_->GetPrefs()->GetBoolean(prefs::kIncognitoForced)) &&
       profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     NewIncognitoWindow();
     return;
@@ -2243,6 +2244,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kIncognitoEnabled,
                              true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kIncognitoForced,
+                             false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation,
                              -1,

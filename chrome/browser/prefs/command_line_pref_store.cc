@@ -42,6 +42,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         prefs::kWebKitAllowDisplayingInsecureContent, false },
       { switches::kAllowCrossOriginAuthPrompt,
         prefs::kAllowCrossOriginAuthPrompt, true },
+      { switches::kIncognito, prefs::kIncognitoForced, true },
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)

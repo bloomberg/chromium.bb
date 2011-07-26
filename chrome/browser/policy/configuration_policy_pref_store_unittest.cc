@@ -202,6 +202,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kWebKitJavascriptEnabled),
         TypeAndName(kPolicyIncognitoEnabled,
                     prefs::kIncognitoEnabled),
+        TypeAndName(kPolicyIncognitoForced,
+                    prefs::kIncognitoForced),
         TypeAndName(kPolicyCloudPrintProxyEnabled,
                     prefs::kCloudPrintProxyEnabled),
         TypeAndName(kPolicySavingBrowserHistoryDisabled,

@@ -163,6 +163,9 @@ const char kSafeBrowsingReportingEnabled[] =
 // Boolean that is true when Incognito support is enabled.
 const char kIncognitoEnabled[] = "incognito.enabled";
 
+// Boolean that specifies if all user sessions should be forced into Incognito.
+const char kIncognitoForced[] = "incognito.forced";
+
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
