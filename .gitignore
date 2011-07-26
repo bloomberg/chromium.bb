@@ -37,6 +37,7 @@ toolchain/hg-log/
 /toolchain/
 /tools/BUILD/
 /tools/out/
+/tools/perf_expectations/
 /tools/SRC/
 
 # These directories only show up if you have supplement.DEPS in your .gclient
