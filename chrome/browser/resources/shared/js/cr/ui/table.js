@@ -89,6 +89,18 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The accessor to "autoExpands" property of the list.
+     *
+     * @type {boolean}
+     */
+    get autoExpands() {
+      return this.list_.autoExpands;
+    },
+    set autoExpands(autoExpands) {
+      this.list_.autoExpands = autoExpands;
+    },
+
+    /**
      * The header of the table.
      *
      * @type {cr.ui.table.TableColumnModel}

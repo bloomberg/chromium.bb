@@ -221,6 +221,9 @@ TaskManager.prototype = {
     this.table_.dataModel = this.dataModel_;
     this.table_.selectionModel = this.selectionModel_;
     this.table_.columnModel = this.columnModel_;
+
+    // Expands height of row when a process has some tasks.
+    this.table_.autoExpands = true;
   },
 
   renderText_: function(entry, columnId, table) {
