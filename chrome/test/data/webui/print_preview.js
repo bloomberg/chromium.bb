@@ -26,6 +26,8 @@ PrintPreviewWebUITest.prototype = {
    * @override
    **/
   PreLoad: function() {
+    // TODO(scr) remove this after tests pass consistently.
+    console.info('PreLoad');
 
     /**
      * Create a handler class with empty methods to allow mocking to register
@@ -87,8 +89,11 @@ PrintPreviewWebUITest.prototype = {
     // thing.
     var self = this;
     window.addEventListener('DOMContentLoaded', function() {
-      if (!this.checkCompatiblePluginExists())
+      if (!this.checkCompatiblePluginExists()) {
+        // TODO(scr) remove this after tests pass consistently.
+        console.info('no PDF Plugin; providing fake methods.');
         this.createPDFPlugin = self.createPDFPlugin;
+      }
 
       this.checkCompatiblePluginExists =
           self.checkCompatiblePluginExists;
@@ -216,7 +221,8 @@ function checkSectionVisible(sectionId, visible) {
 }
 
 // Test that disabled settings hide the disabled sections.
-TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
+// crbug.com/90476
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestSectionsDisabled', function() {
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
       will(callFunction(function() {
         updateWithPrinterCapabilities({
@@ -235,7 +241,9 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
 });
 
 // Test that changing the selected printer updates the preview.
-TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
+// crbug.com/90476
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterChangeUpdatesPreview',
+       function() {
   var matchAnythingSave = new SaveArgumentsMatcher(ANYTHING);
 
   this.mockHandler.expects(once()).getPreview(matchAnythingSave).
