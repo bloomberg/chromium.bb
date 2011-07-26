@@ -10,9 +10,13 @@
 #include <queue>
 
 #include "native_client/src/third_party/ppapi/c/pp_input_event.h"
+#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
 #include "native_client/src/third_party/ppapi/cpp/instance.h"
 #include "native_client/src/third_party/ppapi/cpp/module.h"
+#include "native_client/src/third_party/ppapi/cpp/point.h"
 #include "native_client/src/third_party/ppapi/cpp/var.h"
+#include "native_client/src/third_party/ppapi/cpp/input_event.h"
+
 
 using std::string;
 using std::queue;
@@ -60,6 +64,7 @@ string ModifierToString(uint32_t modifier) {
   return s;
 }
 
+
 string MouseButtonToString(PP_InputEvent_MouseButton button) {
   switch (button) {
     case PP_INPUTEVENT_MOUSEBUTTON_NONE:
@@ -77,87 +82,81 @@ string MouseButtonToString(PP_InputEvent_MouseButton button) {
   }
 }
 
-string KeyEvent(PP_InputEvent_Key key,
-                PP_TimeTicks time,
+
+string KeyEvent(const pp::KeyboardInputEvent& key_event,
                 const string& kind) {
   ostringstream stream;
   stream << "Key event:" << kind
-         << " modifier:" << ModifierToString(key.modifier)
-         << " key_code:" << key.key_code
-         << " time:" << time
+         << " modifier:" << ModifierToString(key_event.GetModifiers())
+         << " key_code:" << key_event.GetKeyCode()
+         << " time:" << key_event.GetTimeStamp()
+         << " text:" << key_event.GetCharacterText().DebugString()
          << "\n";
   return stream.str();
 }
 
-string MouseEvent(PP_InputEvent_Mouse mouse_event,
-                PP_TimeTicks time,
-                const string& kind) {
+
+string MouseEvent(const pp::MouseInputEvent& mouse_event,
+                  const string& kind) {
   ostringstream stream;
   stream << "Mouse event:" << kind
-         << " modifier:" << ModifierToString(mouse_event.modifier)
-         << " button:" << MouseButtonToString(mouse_event.button)
-         << " x:" << mouse_event.x
-         << " y:" << mouse_event.y
-         << " click_count:" << mouse_event.click_count
-         << " time:" << time
-         << "\n";
-  return stream.str();
-}
-
-string CharEvent(PP_InputEvent_Character char_event, PP_TimeTicks time) {
-  ostringstream stream;
-  stream << "Character event."
-         << " modifier:" << ModifierToString(char_event.modifier)
-         << " text:" << char_event.text
-         << " time:" << time
+         << " modifier:" << ModifierToString(mouse_event.GetModifiers())
+         << " button:" << MouseButtonToString(mouse_event.GetButton())
+         << " x:" << mouse_event.GetPosition().x()
+         << " y:" << mouse_event.GetPosition().y()
+         << " click_count:" << mouse_event.GetClickCount()
+         << " time:" << mouse_event.GetTimeStamp()
          << "\n";
   return stream.str();
 }
 
 
-string WheelEvent(PP_InputEvent_Wheel wheel_event, PP_TimeTicks time) {
+string WheelEvent(const pp::WheelInputEvent& wheel_event) {
   ostringstream stream;
   stream << "Wheel event."
-         << " modifier:" << ModifierToString(wheel_event.modifier)
-         << " deltax:" << wheel_event.delta_x
-         << " deltay:" << wheel_event.delta_y
-         << " wheel_ticks_x:" << wheel_event.wheel_ticks_x
-         << " wheel_ticks_y:" << wheel_event.wheel_ticks_y
+         << " modifier:" << ModifierToString(wheel_event.GetModifiers())
+         << " deltax:" << wheel_event.GetDelta().x()
+         << " deltay:" << wheel_event.GetDelta().y()
+         << " wheel_ticks_x:" << wheel_event.GetTicks().x()
+         << " wheel_ticks_y:" << wheel_event.GetTicks().y()
          << " scroll_by_page:"
-         << (wheel_event.scroll_by_page ? "true" : "false")
+         << (wheel_event.GetScrollByPage() ? "true" : "false")
          << "\n";
   return stream.str();
 }
 
-string EventToString(const PP_InputEvent& event) {
+
+string EventToString(const pp::InputEvent& event) {
   ostringstream stream;
-  switch (event.type) {
+  switch (event.GetType()) {
     default:
     case PP_INPUTEVENT_TYPE_UNDEFINED:
-      stream << "Unrecognized Event (" << static_cast<int32_t>(event.type)
+     stream << "Unrecognized Event (" << static_cast<int32_t>(event.GetType())
              << ")";
       return stream.str();
 
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-      return MouseEvent(event.u.mouse, event.time_stamp, "Down");
+      return MouseEvent(pp::MouseInputEvent(event), "Down");
     case PP_INPUTEVENT_TYPE_MOUSEUP:
-      return MouseEvent(event.u.mouse, event.time_stamp, "Up");
+      return MouseEvent(pp::MouseInputEvent(event), "Up");
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      return MouseEvent(event.u.mouse, event.time_stamp, "Move");
+      return MouseEvent(pp::MouseInputEvent(event), "Move");
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      return MouseEvent(event.u.mouse, event.time_stamp, "Enter");
+      return MouseEvent(pp::MouseInputEvent(event), "Enter");
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-      return MouseEvent(event.u.mouse, event.time_stamp, "Leave");
-    case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
-      return WheelEvent(event.u.wheel, event.time_stamp);
+      return MouseEvent(pp::MouseInputEvent(event), "Leave");
+
+    case PP_INPUTEVENT_TYPE_WHEEL:
+      return WheelEvent(pp::WheelInputEvent(event));
+
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-      return KeyEvent(event.u.key, event.time_stamp, "RawKeyDown");
+      return KeyEvent(pp::KeyboardInputEvent(event), "RawKeyDown");
     case PP_INPUTEVENT_TYPE_KEYDOWN:
-      return KeyEvent(event.u.key, event.time_stamp, "Down");
+      return KeyEvent(pp::KeyboardInputEvent(event), "Down");
     case PP_INPUTEVENT_TYPE_KEYUP:
-      return KeyEvent(event.u.key, event.time_stamp, "Up");
+      return KeyEvent(pp::KeyboardInputEvent(event), "Up");
     case PP_INPUTEVENT_TYPE_CHAR:
-      return CharEvent(event.u.character, event.time_stamp);
+      return KeyEvent(pp::KeyboardInputEvent(event), "Char");
   }
 }
 
@@ -185,7 +184,7 @@ void StringReplace(string* input,
 class MyInstance : public pp::Instance {
  private:
   size_t max_buffer_size_;
-  queue<PP_InputEvent> event_buffer_;
+  queue<string> event_buffer_;
 
   void ParseArgs(uint32_t argc, const char* argn[], const char* argv[]) {
      for (uint32_t i = 0; i < argc; ++i) {
@@ -198,11 +197,9 @@ class MyInstance : public pp::Instance {
   // Dump all the event via PostMessage for testing
   void FlushEventBuffer() {
       while (event_buffer_.size() > 0) {
-        ostringstream stream;
-        stream << pp_instance() << ": " << EventToString(event_buffer_.front());
+        string s = event_buffer_.front();
         event_buffer_.pop();
         // Replace space with underscore to simplify testing
-        string s = stream.str();
         StringReplace(&s, " ", "_");
         pp::Var message(s);
         PostMessage(message);
@@ -211,7 +208,10 @@ class MyInstance : public pp::Instance {
 
  public:
   explicit MyInstance(PP_Instance instance)
-    : pp::Instance(instance), max_buffer_size_(kDefaultEventBufferSize) {}
+    : pp::Instance(instance), max_buffer_size_(kDefaultEventBufferSize) {
+    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
+    RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
+  }
 
   virtual ~MyInstance() {}
 
@@ -220,8 +220,10 @@ class MyInstance : public pp::Instance {
     return true;
   }
 
-  virtual bool HandleInputEvent(const PP_InputEvent& event) {
-    event_buffer_.push(event);
+  virtual bool HandleInputEvent(const pp::InputEvent& event) {
+     ostringstream stream;
+     stream << pp_instance() << ": " << EventToString(event);
+     event_buffer_.push(stream.str());
     if (event_buffer_.size() >= max_buffer_size_) {
       FlushEventBuffer();
     }
