@@ -66,8 +66,7 @@ def CheckChangeHasDescription(input_api, output_api):
 
 def CheckChangeWasUploaded(input_api, output_api):
   """Checks that the issue was uploaded before committing."""
-  if (input_api.is_committing and
-      (not input_api.change.issue or not input_api.change.patchset)):
+  if input_api.is_committing and not input_api.change.issue:
     return [output_api.PresubmitError(
       'Issue wasn\'t uploaded. Please upload first.')]
   return []
