@@ -95,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
 
-IN_PROC_BROWSER_TEST_F(ViewIDTest, Fullscreen) {
+// Flaky on Mac: http://crbug.com/90557.
+IN_PROC_BROWSER_TEST_F(ViewIDTest, FLAKY_Fullscreen) {
   browser()->window()->SetFullscreen(true);
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
