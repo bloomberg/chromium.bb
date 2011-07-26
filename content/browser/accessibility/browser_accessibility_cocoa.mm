@@ -371,11 +371,6 @@ NSDictionary* attributeToMethodNameMap = nil;
       static_cast<WebAccessibility::Role>( browserAccessibility_->role());
 
   // Roles that we only determine at runtime.
-  if (browserAccessibilityRole == WebAccessibility::ROLE_TEXT_FIELD &&
-      GetState(browserAccessibility_, WebAccessibility::STATE_PROTECTED)) {
-    return @"AXSecureTextField";
-  }
-
   std::map<WebAccessibility::Role, NSString*>::iterator it =
       webAccessibilityToNativeRole.find(browserAccessibilityRole);
 
@@ -449,13 +444,18 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
-  // TODO: support password field -> NSAccessibilitySecureTextFieldSubrole
   // TODO: support attachments
   // TODO: support lists -> NSAccessibilityContentListSubrole ||
   //                        NSAccessibilityDefinitionListSubrole
 
   WebAccessibility::Role browserAccessibilityRole =
       static_cast<WebAccessibility::Role>( browserAccessibility_->role());
+
+  if (browserAccessibilityRole == WebAccessibility::ROLE_TEXT_FIELD &&
+      GetState(browserAccessibility_, WebAccessibility::STATE_PROTECTED)) {
+    return @"AXSecureTextField";
+  }
+
 
   std::map<WebAccessibility::Role, NSString*>::iterator it =
       webAccessibilityToNativeSubrole.find(browserAccessibilityRole);
