@@ -564,6 +564,44 @@ class BASE_API ScopedTaskRunner {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedTaskRunner);
 };
 
+namespace subtle {
+
+// This class is meant for use in the implementation of MessageLoop classes
+// such as MessageLoop, MessageLoopProxy, BrowserThread, and WorkerPool to
+// implement the compatibility APIs while we are transitioning from Task to
+// Callback.
+//
+// It should NOT be used anywhere else!
+//
+// In particular, notice that this is RefCounted instead of
+// RefCountedThreadSafe.  We rely on the fact that users of this class are
+// careful to ensure that a lock is taken during transfer of ownership for
+// objects from this class to ensure the refcount is not corrupted.
+class TaskClosureAdapter : public RefCounted<TaskClosureAdapter> {
+ public:
+  explicit TaskClosureAdapter(Task* task);
+
+  // |should_leak_task| points to a flag variable that can be used to determine
+  // if this class should leak the Task on destruction.  This is important
+  // at MessageLoop shutdown since not all tasks can be safely deleted without
+  // running.  See MessageLoop::DeletePendingTasks() for the exact behavior
+  // of when a Task should be deleted. It is subtle.
+  TaskClosureAdapter(Task* task, bool* should_leak_task);
+
+  void Run();
+
+ private:
+  friend class base::RefCounted<TaskClosureAdapter>;
+
+  ~TaskClosureAdapter();
+
+  Task* task_;
+  bool* should_leak_task_;
+  static bool kTaskLeakingDefault;
+};
+
+}  // namespace subtle
+
 }  // namespace base
 
 #endif  // BASE_TASK_H_

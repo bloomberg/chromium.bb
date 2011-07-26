@@ -53,6 +53,30 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
     return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                     delay_ms);
   }
+
+  virtual bool PostTask(const tracked_objects::Location& from_here,
+                        const base::Closure& task) {
+    return BrowserThread::PostTask(id_, from_here, task);
+  }
+
+  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
+                               const base::Closure& task, int64 delay_ms) {
+    return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
+  }
+
+  virtual bool PostNonNestableTask(const tracked_objects::Location& from_here,
+                                   const base::Closure& task) {
+    return BrowserThread::PostNonNestableTask(id_, from_here, task);
+  }
+
+  virtual bool PostNonNestableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      int64 delay_ms) {
+    return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
+                                                     delay_ms);
+  }
+
   virtual bool BelongsToCurrentThread() {
     return BrowserThread::CurrentlyOn(id_);
   }
