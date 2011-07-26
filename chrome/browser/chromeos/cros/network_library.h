@@ -1207,29 +1207,40 @@ class NetworkLibrary {
   // Connect to the specified wireless network.
   virtual void ConnectToWifiNetwork(WifiNetwork* network) = 0;
 
-  // Connect to a hidden network with given SSID, security, and passphrase.
-  virtual void ConnectToWifiNetwork(const std::string& ssid,
-                                    ConnectionSecurity security,
-                                    const std::string& passphrase) = 0;
-
-  // Connect to a hidden 802.1X network.
-  virtual void ConnectToWifiNetwork8021x(
-      const std::string& ssid,
-      EAPMethod method,
-      EAPPhase2Auth auth,
-      const std::string& server_ca_cert_nss_nickname,
-      bool use_system_cas,
-      const std::string& client_cert_pkcs11_id,
-      const std::string& identity,
-      const std::string& anonymous_identity,
-      const std::string& passphrase,
-      bool save_credentials) = 0;
+  // Connect to the specified wireless network and set its profile
+  // to SHARED if |shared| is true, otherwise to USER.
+  virtual void ConnectToWifiNetwork(WifiNetwork* network, bool shared) = 0;
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork* network) = 0;
 
   // Connect to the specified virtual network.
   virtual void ConnectToVirtualNetwork(VirtualNetwork* network) = 0;
+
+  // Connect to an unconfigured network with given SSID, security, passphrase,
+  // and optional EAP configuration. If |security| is SECURITY_8021X,
+  // |eap_config| must be provided.
+  struct EAPConfigData {
+    EAPConfigData()
+        : method(EAP_METHOD_UNKNOWN),
+          auth(EAP_PHASE_2_AUTH_AUTO),
+          use_system_cas(true) {}
+    ~EAPConfigData() {}
+    EAPMethod method;
+    EAPPhase2Auth auth;
+    std::string server_ca_cert_nss_nickname;
+    bool use_system_cas;
+    std::string client_cert_pkcs11_id;
+    std::string identity;
+    std::string anonymous_identity;
+  };
+  virtual void ConnectToUnconfiguredWifiNetwork(
+      const std::string& ssid,
+      ConnectionSecurity security,
+      const std::string& passphrase,
+      const EAPConfigData* eap_config,
+      bool save_credentials,
+      bool shared) = 0;
 
   // Connect to the specified virtual network with service name,
   // server hostname, provider_type, PSK passphrase, username and passphrase.

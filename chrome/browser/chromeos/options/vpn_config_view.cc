@@ -385,9 +385,6 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
                         views::GridLayout::USE_PREF, 0,
                         ChildNetworkConfigView::kPassphraseWidth);
   column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
-  // Passphrase visible button.
-  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
 
   // Initialize members.
   service_text_modified_ = false;

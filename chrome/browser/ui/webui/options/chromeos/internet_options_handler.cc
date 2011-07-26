@@ -176,15 +176,15 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetPassProtected",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
+  localized_strings->SetString("inetNetworkShared",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED));
   localized_strings->SetString("inetPreferredNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK));
   localized_strings->SetString("inetAutoConnectNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-  localized_strings->SetString("inetSharedNetwork",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
   localized_strings->SetString("inetLogin",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN));
@@ -366,8 +366,6 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::SetPreferNetworkCallback));
   web_ui_->RegisterMessageCallback("setAutoConnect",
       NewCallback(this, &InternetOptionsHandler::SetAutoConnectCallback));
-  web_ui_->RegisterMessageCallback("setShared",
-      NewCallback(this, &InternetOptionsHandler::SetSharedCallback));
   web_ui_->RegisterMessageCallback("setIPConfig",
       NewCallback(this, &InternetOptionsHandler::SetIPConfigCallback));
   web_ui_->RegisterMessageCallback("enableWifi",
@@ -626,30 +624,6 @@ void InternetOptionsHandler::SetAutoConnectCallback(const ListValue* args) {
     network->SetAutoConnect(auto_connect);
 }
 
-void InternetOptionsHandler::SetSharedCallback(const ListValue* args) {
-  std::string service_path;
-  std::string shared_str;
-
-  if (args->GetSize() < 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetString(1, &shared_str)) {
-    NOTREACHED();
-    return;
-  }
-
-  chromeos::Network* network = cros_->FindNetworkByPath(service_path);
-  if (!network)
-    return;
-
-  if (cros_->HasProfileType(chromeos::PROFILE_USER)) {
-    bool shared = shared_str == "true";
-    if (network->profile_type() == chromeos::PROFILE_SHARED && !shared)
-      cros_->SetNetworkProfile(service_path, chromeos::PROFILE_USER);
-    else if (network->profile_type() == chromeos::PROFILE_USER && shared)
-      cros_->SetNetworkProfile(service_path, chromeos::PROFILE_SHARED);
-  }
-}
-
 void InternetOptionsHandler::SetIPConfigCallback(const ListValue* args) {
   std::string service_path;
   std::string dhcp_str;
@@ -788,10 +762,6 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetBoolean("encrypted", wifi->encrypted());
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
-  bool shareable =
-      cros_->HasProfileType(chromeos::PROFILE_USER) &&
-      !wifi->RequiresUserProfile();
-  dictionary->SetBoolean("shareable", shareable);
 }
 
 DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(

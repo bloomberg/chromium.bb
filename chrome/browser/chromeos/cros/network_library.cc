@@ -104,6 +104,9 @@ const int kDefaultSimUnlockRetriesCount = 999;
 // Format of the Carrier ID: <carrier name> (<carrier country>).
 const char kCarrierIdFormat[] = "%s (%s)";
 
+// Path of the default (shared) flimflam profile.
+const char kSharedProfilePath[] = "/profile/default";
+
 // Type of a pending SIM operation.
 enum SimOperationType {
   SIM_OPERATION_NONE               = 0,
@@ -2639,25 +2642,18 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
 
   // Connect to an existing network.
   virtual void ConnectToWifiNetwork(WifiNetwork* wifi) OVERRIDE;
+  virtual void ConnectToWifiNetwork(WifiNetwork* wifi, bool shared) OVERRIDE;
   virtual void ConnectToCellularNetwork(CellularNetwork* cellular) OVERRIDE;
   virtual void ConnectToVirtualNetwork(VirtualNetwork* vpn) OVERRIDE;
 
   // Request a network and connect to it.
-  virtual void ConnectToWifiNetwork(
+  virtual void ConnectToUnconfiguredWifiNetwork(
       const std::string& ssid,
       ConnectionSecurity security,
-      const std::string& passphrase) OVERRIDE;
-  virtual void ConnectToWifiNetwork8021x(
-      const std::string& ssid,
-      EAPMethod eap_method,
-      EAPPhase2Auth eap_auth,
-      const std::string& eap_server_ca_cert_nss_nickname,
-      bool eap_use_system_cas,
-      const std::string& eap_client_cert_pkcs11_id,
-      const std::string& eap_identity,
-      const std::string& eap_anonymous_identity,
       const std::string& passphrase,
-      bool save_credentials) OVERRIDE;
+      const EAPConfigData* eap_config,
+      bool save_credentials,
+      bool shared) OVERRIDE;
   virtual void ConnectToVirtualNetworkPSK(
       const std::string& service_name,
       const std::string& server_hostname,
@@ -2705,6 +2701,13 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   typedef std::list<NetworkProfile> NetworkProfileList;
 
   struct ConnectData {
+    ConnectData() :
+        security(SECURITY_NONE),
+        eap_method(EAP_METHOD_UNKNOWN),
+        eap_auth(EAP_PHASE_2_AUTH_AUTO),
+        eap_use_system_cas(false),
+        save_credentials(false),
+        profile_type(PROFILE_NONE) {}
     ConnectionSecurity security;
     std::string service_name;  // For example, SSID.
     std::string passphrase;
@@ -2719,6 +2722,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
     std::string psk_key;
     std::string psk_username;
     bool save_credentials;
+    NetworkProfileType profile_type;
   };
 
   enum NetworkConnectStatus {
@@ -2728,7 +2732,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   };
 
   // Called from ConnectTo*Network.
-  void NetworkConnectStart(Network* network);
+  void NetworkConnectStartWifi(
+      WifiNetwork* network, NetworkProfileType profile_type);
+  void NetworkConnectStartVPN(VirtualNetwork* network);
+  void NetworkConnectStart(Network* network, NetworkProfileType profile_type);
   // Called from CallConnectToNetwork.
   void NetworkConnectCompleted(Network* network,
                                NetworkConnectStatus status);
@@ -2805,6 +2812,9 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
 
   // List of profiles.
   NetworkProfileList profile_list_;
+
+  // List of networks to move to the user profile once logged in.
+  std::list<std::string> user_networks_;
 
   // A service path based map of all Networks.
   NetworkMap network_map_;
@@ -3416,7 +3426,31 @@ bool NetworkLibraryImplBase::CanConnectToNetwork(const Network* network) const {
 }
 
 // 1. Request a connection to an existing wifi network.
+// Use |shared| to pass along the desired profile type.
+void NetworkLibraryImplBase::ConnectToWifiNetwork(
+    WifiNetwork* wifi, bool shared) {
+  NetworkConnectStartWifi(wifi, shared ? PROFILE_SHARED : PROFILE_USER);
+}
+
+// 1. Request a connection to an existing wifi network.
 void NetworkLibraryImplBase::ConnectToWifiNetwork(WifiNetwork* wifi) {
+  NetworkConnectStartWifi(wifi, PROFILE_NONE);
+}
+
+// 1. Connect to a cellular network.
+void NetworkLibraryImplBase::ConnectToCellularNetwork(
+    CellularNetwork* cellular) {
+  NetworkConnectStart(cellular, PROFILE_NONE);
+}
+
+// 1. Connect to an existing virtual network.
+void NetworkLibraryImplBase::ConnectToVirtualNetwork(VirtualNetwork* vpn) {
+  NetworkConnectStartVPN(vpn);
+}
+
+// 2. Start the connection.
+void NetworkLibraryImplBase::NetworkConnectStartWifi(
+    WifiNetwork* wifi, NetworkProfileType profile_type) {
   // This will happen if a network resets, gets out of range or is forgotten.
   if (wifi->user_passphrase_ != wifi->passphrase_ ||
       wifi->passphrase_required())
@@ -3426,39 +3460,46 @@ void NetworkLibraryImplBase::ConnectToWifiNetwork(WifiNetwork* wifi) {
   // ignores it otherwise.
   if (wifi->encryption() == SECURITY_8021X)
     wifi->SetCertificatePin(GetTpmPin());
-  NetworkConnectStart(wifi);
+
+  NetworkConnectStart(wifi, profile_type);
 }
 
-// 1. Connect to a cellular network.
-void NetworkLibraryImplBase::ConnectToCellularNetwork(
-    CellularNetwork* cellular) {
-  NetworkConnectStart(cellular);
-}
-
-// 1. Connect to an existing virtual network.
-void NetworkLibraryImplBase::ConnectToVirtualNetwork(VirtualNetwork* vpn) {
+void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
   // flimflam needs the TPM PIN for some VPN networks to access client
   // certificates, and ignores the PIN if it doesn't need them.
   vpn->SetCertificateSlotAndPin(GetTpmSlot(), GetTpmPin());
-  NetworkConnectStart(vpn);
+  NetworkConnectStart(vpn, PROFILE_NONE);
 }
 
-// 2. Start the connection.
-void NetworkLibraryImplBase::NetworkConnectStart(Network* network) {
+void NetworkLibraryImplBase::NetworkConnectStart(
+    Network* network, NetworkProfileType profile_type) {
   DCHECK(network);
   // In order to be certain to trigger any notifications, set the connecting
   // state locally and notify observers. Otherwise there might be a state
   // change without a forced notify.
   network->set_connecting(true);
   NotifyNetworkManagerChanged(true);  // Forced update.
-  VLOG(1) << "Requesting connect to network: " << network->service_path();
-  if (network->profile_path().empty()) {
-    // Specify the correct profile for the network if it does not already
-    // have one specified (i.e. is not remembered).
-    std::string profile_path = GetProfilePath(
-        network->RequiresUserProfile() ? PROFILE_USER : PROFILE_SHARED);
-    if (!profile_path.empty())
-      network->SetProfilePath(profile_path);
+  VLOG(1) << "Requesting connect to network: " << network->service_path()
+          << " profile type: " << profile_type;
+  // Specify the correct profile for wifi networks (if specified or unset).
+  if (network->type() == TYPE_WIFI &&
+      (profile_type != PROFILE_NONE ||
+       network->profile_type() == PROFILE_NONE)) {
+    if (network->RequiresUserProfile())
+      profile_type = PROFILE_USER;  // Networks with certs can not be shared.
+    else if (profile_type == PROFILE_NONE)
+      profile_type = PROFILE_SHARED;  // Other networks are shared by default.
+    std::string profile_path = GetProfilePath(profile_type);
+    if (!profile_path.empty()) {
+      if (profile_path != network->profile_path())
+        network->SetProfilePath(profile_path);
+    } else if (profile_type == PROFILE_USER) {
+      // The user profile was specified but is not available (i.e. pre-login).
+      // Add this network to the list of networks to move to the user profile
+      // when it becomes available.
+      VLOG(1) << "Queuing: " << network->name() << " to user_networks list.";
+      user_networks_.push_back(network->service_path());
+    }
   }
   CallConnectToNetwork(network);
 }
@@ -3510,46 +3551,37 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
 /////////////////////////////////////////////////////////////////////////////
 // Request a network and connect to it.
 
-// 1. Connect to an unlisted wifi network.
+// 1. Connect to an unconfigured or unlisted wifi network.
 // This needs to request information about the named service.
 // The connection attempt will occur in the callback.
-void NetworkLibraryImplBase::ConnectToWifiNetwork(
+void NetworkLibraryImplBase::ConnectToUnconfiguredWifiNetwork(
     const std::string& ssid,
     ConnectionSecurity security,
-    const std::string& passphrase) {
-  DCHECK_NE(security, SECURITY_8021X);
+    const std::string& passphrase,
+    const EAPConfigData* eap_config,
+    bool save_credentials,
+    bool shared) {
   // Store the connection data to be used by the callback.
   connect_data_.security = security;
   connect_data_.service_name = ssid;
   connect_data_.passphrase = passphrase;
-  CallRequestWifiNetworkAndConnect(ssid, security);
-}
-
-// 1. Connect to an unlisted 802.1X EAP network.
-void NetworkLibraryImplBase::ConnectToWifiNetwork8021x(
-    const std::string& ssid,
-    EAPMethod eap_method,
-    EAPPhase2Auth eap_auth,
-    const std::string& eap_server_ca_cert_nss_nickname,
-    bool eap_use_system_cas,
-    const std::string& eap_client_cert_pkcs11_id,
-    const std::string& eap_identity,
-    const std::string& eap_anonymous_identity,
-    const std::string& passphrase,
-    bool save_credentials) {
-  connect_data_.security = SECURITY_8021X;
-  connect_data_.service_name = ssid;
-  connect_data_.eap_method = eap_method;
-  connect_data_.eap_auth = eap_auth;
-  connect_data_.server_ca_cert_nss_nickname =
-      eap_server_ca_cert_nss_nickname;
-  connect_data_.eap_use_system_cas = eap_use_system_cas;
-  connect_data_.client_cert_pkcs11_id = eap_client_cert_pkcs11_id;
-  connect_data_.eap_identity = eap_identity;
-  connect_data_.eap_anonymous_identity = eap_anonymous_identity;
-  connect_data_.passphrase = passphrase;
   connect_data_.save_credentials = save_credentials;
-  CallRequestWifiNetworkAndConnect(ssid, SECURITY_8021X);
+  connect_data_.profile_type = shared ? PROFILE_SHARED : PROFILE_USER;
+  if (security == SECURITY_8021X) {
+    DCHECK(eap_config);
+    connect_data_.service_name = ssid;
+    connect_data_.eap_method = eap_config->method;
+    connect_data_.eap_auth = eap_config->auth;
+    connect_data_.server_ca_cert_nss_nickname =
+        eap_config->server_ca_cert_nss_nickname;
+    connect_data_.eap_use_system_cas = eap_config->use_system_cas;
+    connect_data_.client_cert_pkcs11_id =
+        eap_config->client_cert_pkcs11_id;
+    connect_data_.eap_identity = eap_config->identity;
+    connect_data_.eap_anonymous_identity = eap_config->anonymous_identity;
+  }
+
+  CallRequestWifiNetworkAndConnect(ssid, security);
 }
 
 // 1. Connect to a virtual network with a PSK.
@@ -3603,7 +3635,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkCert(
 //     VirtualNetwork::ProviderType provider_type) = 0;
 
 // 3. Sets network properties stored in ConnectData and calls
-// ConnectToWifiNetwork.
+// NetworkConnectStart.
 void NetworkLibraryImplBase::ConnectToWifiNetworkUsingConnectData(
     WifiNetwork* wifi) {
   ConnectData& data = connect_data_;
@@ -3629,7 +3661,7 @@ void NetworkLibraryImplBase::ConnectToWifiNetworkUsingConnectData(
     wifi->SetPassphrase(data.passphrase);
   }
 
-  ConnectToWifiNetwork(wifi);
+  NetworkConnectStartWifi(wifi, data.profile_type);
 }
 
 // 3. Sets network properties stored in ConnectData and calls
@@ -3652,7 +3684,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
   vpn->SetUsername(data.psk_username);
   vpn->SetUserPassphrase(data.passphrase);
 
-  ConnectToVirtualNetwork(vpn);
+  NetworkConnectStartVPN(vpn);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3797,7 +3829,7 @@ void NetworkLibraryImplBase::AddRememberedNetwork(Network* network) {
       network->set_profile_path(profile.path);
       network->set_profile_type(profile.type);
       VLOG(1) << "AddRememberedNetwork: " << network->service_path()
-              << " Profile: " << profile.path;
+              << " profile: " << profile.path;
       break;
     }
   }
@@ -4122,7 +4154,6 @@ void NetworkLibraryImplBase::FlipSimPinRequiredStateIfNeeded() {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-
 
 class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
  public:
@@ -5194,8 +5225,8 @@ Network* NetworkLibraryImplCros::ParseNetwork(
   }
 
   VLOG(1) << "ParseNetwork: " << network->name()
-          << " Path: " << network->service_path()
-          << " Profile: " << network->profile_path_;
+          << " path: " << network->service_path()
+          << " profile: " << network->profile_path_;
   NotifyNetworkManagerChanged(false);  // Not forced.
   return network;
 }
@@ -5216,11 +5247,24 @@ void NetworkLibraryImplCros::UpdateRememberedNetworks(
       continue;
     }
     NetworkProfileType profile_type;
-    if (profile_path == active_profile_path_)
-      profile_type = PROFILE_USER;
-    else
+    if (profile_path == kSharedProfilePath)
       profile_type = PROFILE_SHARED;
+    else
+      profile_type = PROFILE_USER;
     profile_list_.push_back(NetworkProfile(profile_path, profile_type));
+    // Check to see if we connected to any networks before a user profile was
+    // available (i.e. before login), but unchecked the "Share" option (i.e.
+    // the desired pofile is the user profile). Move these networks to the
+    // user profile when it becomes available.
+    if (profile_type == PROFILE_USER && !user_networks_.empty()) {
+      for (std::list<std::string>::iterator iter2 = user_networks_.begin();
+           iter2 != user_networks_.end(); ++iter2) {
+        Network* network = FindNetworkByPath(*iter2);
+        if (network && network->profile_path() != profile_path)
+          network->SetProfilePath(profile_path);
+      }
+      user_networks_.clear();
+    }
   }
 }
 
@@ -5340,8 +5384,8 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
   SetProfileTypeFromPath(remembered);
 
   VLOG(1) << "ParseRememberedNetwork: " << remembered->name()
-          << " Path: " << remembered->service_path()
-          << " Profile: " << remembered->profile_path_;
+          << " path: " << remembered->service_path()
+          << " profile: " << remembered->profile_path_;
   NotifyNetworkManagerChanged(false);  // Not forced.
 
   if (remembered->type() == TYPE_VPN) {

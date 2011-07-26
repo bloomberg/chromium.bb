@@ -308,8 +308,6 @@ cr.define('options', function() {
                   [String(servicePath),
                    $('autoConnectNetworkCellular').checked ? "true" : "false"]);
     }
-    chrome.send('setShared',[String(servicePath),
-         $('sharedNetwork').checked ? "true" : "false"]);
 
     var ipConfigList = $('ipConfigList');
     chrome.send('setIPConfig',[String(servicePath),
@@ -523,13 +521,12 @@ cr.define('options', function() {
       detailsPage.ethernet = false;
       detailsPage.cellular = false;
       detailsPage.gsm = false;
+      detailsPage.shared = data.shared;
       $('inetSsid').textContent = data.ssid;
       $('preferNetworkWifi').checked = data.preferred;
       $('preferNetworkWifi').disabled = !data.remembered;
       $('autoConnectNetworkWifi').checked = data.autoConnect;
       $('autoConnectNetworkWifi').disabled = !data.remembered;
-      $('sharedNetwork').checked = data.shared;
-      $('sharedNetwork').disabled = !data.remembered || !data.shareable;
       detailsPage.password = data.encrypted;
     } else if(data.type == options.internet.Constants.TYPE_CELLULAR) {
       if (!data.gsm)

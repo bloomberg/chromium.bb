@@ -70,11 +70,11 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Initializes UI.  If |show_8021x| includes 802.1x config options.
   void Init(WifiNetwork* wifi, bool show_8021x);
 
-  // Get the typed in SSID.
+  // Get input values.
   std::string GetSsid() const;
-
-  // Get the typed in passphrase.
   std::string GetPassphrase() const;
+  bool GetSaveCredentials() const;
+  bool GetShareNetwork() const;
 
   // Get various 802.1X EAP values from the widgets.
   EAPMethod GetEapMethod() const;
@@ -84,7 +84,6 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetEapClientCertPkcs11Id() const;
   std::string GetEapIdentity() const;
   std::string GetEapAnonymousIdentity() const;
-  bool GetSaveCredentials() const;
 
   // Returns true if the EAP method requires a user certificate.
   bool UserCertRequired();
@@ -94,6 +93,9 @@ class WifiConfigView : public ChildNetworkConfigView,
 
   // Enable/Disable EAP fields as appropriate based on selected EAP method.
   void RefreshEapFields();
+
+  // Enable/Disable "share this network" checkbox.
+  void RefreshShareCheckbox();
 
   // Updates the error text label.
   void UpdateErrorLabel();
@@ -113,6 +115,8 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Label* identity_anonymous_label_;
   views::Textfield* identity_anonymous_textfield_;
   views::Checkbox* save_credentials_checkbox_;
+  views::Checkbox* share_network_checkbox_;
+  views::Label* shared_network_label_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
   views::Textfield* passphrase_textfield_;

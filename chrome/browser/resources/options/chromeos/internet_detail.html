@@ -45,11 +45,15 @@
   </div>
   <div id="wifiNetworkTab" class="subpages-tab-contents wifi-details">
     <section>
-      <table class="option-control-table">
+      <table class="ssid-table">
         <tr>
           <td class="option-name" i18n-content="inetSsid"></td>
           <td id="inetSsid" class="option-value"></td>
         </tr>
+      </table>
+    </section>
+    <section>
+      <table class="option-control-table">
         <tr>
           <td colspan="2">
             <div class="checkbox">
@@ -77,15 +81,12 @@
         <tr>
           <td class="option-name" i18n-content="inetPassProtected"></td>
         </tr>
+      </table>
+    </section>
+    <section id="sharedNetwork" class="shared-network">
+      <table class="option-control-table">
         <tr>
-          <td colspan="2">
-            <div class="checkbox">
-              <label>
-                <input id="sharedNetwork" type="checkbox">
-                <span i18n-content="inetSharedNetwork"></span>
-              </label>
-            </div>
-          </td>
+          <td class="option-name" i18n-content="inetNetworkShared"></td>
         </tr>
       </table>
     </section>

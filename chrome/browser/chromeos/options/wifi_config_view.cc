@@ -255,6 +255,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi)
       identity_anonymous_label_(NULL),
       identity_anonymous_textfield_(NULL),
       save_credentials_checkbox_(NULL),
+      share_network_checkbox_(NULL),
+      shared_network_label_(NULL),
       security_combobox_(NULL),
       passphrase_label_(NULL),
       passphrase_textfield_(NULL),
@@ -279,6 +281,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, bool show_8021x)
       identity_anonymous_label_(NULL),
       identity_anonymous_textfield_(NULL),
       save_credentials_checkbox_(NULL),
+      share_network_checkbox_(NULL),
+      shared_network_label_(NULL),
       security_combobox_(NULL),
       passphrase_label_(NULL),
       passphrase_textfield_(NULL),
@@ -381,6 +385,32 @@ void WifiConfigView::RefreshEapFields() {
       identity_anonymous_textfield_->IsEnabled());
   if (!identity_anonymous_textfield_->IsEnabled())
     identity_anonymous_textfield_->SetText(string16());
+
+  RefreshShareCheckbox();
+}
+
+void WifiConfigView::RefreshShareCheckbox() {
+  if (!share_network_checkbox_)
+    return;
+
+  if (security_combobox_ &&
+      security_combobox_->selected_item() == SECURITY_INDEX_NONE) {
+    share_network_checkbox_->SetEnabled(false);
+    share_network_checkbox_->SetChecked(true);
+  } else if (eap_method_combobox_ &&
+             (eap_method_combobox_->selected_item() == EAP_METHOD_INDEX_TLS ||
+              user_cert_combobox_->selected_item() != 0)) {
+    // Can not share TLS network (requires certificate), or any network where
+    // user certificates are enabled.
+    share_network_checkbox_->SetEnabled(false);
+    share_network_checkbox_->SetChecked(false);
+  } else {
+    share_network_checkbox_->SetEnabled(true);
+    if (UserManager::Get()->user_is_logged_in())
+      share_network_checkbox_->SetChecked(false);  // Default to unshared.
+    else
+      share_network_checkbox_->SetChecked(true);  // Default to shared.
+  }
 }
 
 void WifiConfigView::UpdateErrorLabel() {
@@ -467,6 +497,7 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
       passphrase_label_->SetEnabled(true);
       passphrase_textfield_->SetEnabled(true);
     }
+    RefreshShareCheckbox();
   } else if (combo_box == eap_method_combobox_) {
     RefreshEapFields();
     UpdateErrorLabel();
@@ -484,27 +515,42 @@ bool WifiConfigView::Login() {
   if (service_path_.empty()) {
     if (!eap_method_combobox_) {
       // Hidden ordinary Wi-Fi connection.
-      ConnectionSecurity sec = SECURITY_UNKNOWN;
+      ConnectionSecurity security = SECURITY_UNKNOWN;
       switch (security_combobox_->selected_item()) {
         case SECURITY_INDEX_NONE:
-          sec = SECURITY_NONE;
+          security = SECURITY_NONE;
           break;
         case SECURITY_INDEX_WEP:
-          sec = SECURITY_WEP;
+          security = SECURITY_WEP;
           break;
         case SECURITY_INDEX_PSK:
-          sec = SECURITY_PSK;
+          security = SECURITY_PSK;
           break;
       }
-      cros->ConnectToWifiNetwork(GetSsid(), sec, GetPassphrase());
+      cros->ConnectToUnconfiguredWifiNetwork(
+          GetSsid(),
+          security,
+          GetPassphrase(),
+          NULL,
+          GetSaveCredentials(),
+          GetShareNetwork());
     } else {
       // Hidden 802.1X EAP Wi-Fi connection.
-      cros->ConnectToWifiNetwork8021x(
-          GetSsid(), GetEapMethod(), GetEapPhase2Auth(),
-          GetEapServerCaCertNssNickname(), GetEapUseSystemCas(),
-          GetEapClientCertPkcs11Id(), GetEapIdentity(),
-          GetEapAnonymousIdentity(), GetPassphrase(),
-          GetSaveCredentials());
+      chromeos::NetworkLibrary::EAPConfigData config_data;
+      config_data.method = GetEapMethod();
+      config_data.auth = GetEapPhase2Auth();
+      config_data.server_ca_cert_nss_nickname = GetEapServerCaCertNssNickname();
+      config_data.use_system_cas = GetEapUseSystemCas();
+      config_data.client_cert_pkcs11_id = GetEapClientCertPkcs11Id();
+      config_data.identity = GetEapIdentity();
+      config_data.anonymous_identity = GetEapAnonymousIdentity();
+      cros->ConnectToUnconfiguredWifiNetwork(
+          GetSsid(),
+          SECURITY_8021X,
+          GetPassphrase(),
+          &config_data,
+          GetSaveCredentials(),
+          GetShareNetwork());
     }
   } else {
     WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
@@ -534,11 +580,39 @@ bool WifiConfigView::Login() {
         wifi->SetPassphrase(passphrase);
     }
 
-    cros->ConnectToWifiNetwork(wifi);
+    cros->ConnectToWifiNetwork(wifi, GetShareNetwork());
     // Connection failures are responsible for updating the UI, including
     // reopening dialogs.
   }
   return true;  // dialog will be closed
+}
+
+std::string WifiConfigView::GetSsid() const {
+  std::string result;
+  if (ssid_textfield_ != NULL) {
+    std::string untrimmed = UTF16ToUTF8(ssid_textfield_->text());
+    TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
+  }
+  return result;
+}
+
+std::string WifiConfigView::GetPassphrase() const {
+  std::string result;
+  if (passphrase_textfield_ != NULL)
+    result = UTF16ToUTF8(passphrase_textfield_->text());
+  return result;
+}
+
+bool WifiConfigView::GetSaveCredentials() const {
+  if (!save_credentials_checkbox_)
+    return true;  // share networks by default (e.g. non 8021x).
+  return save_credentials_checkbox_->checked();
+}
+
+bool WifiConfigView::GetShareNetwork() const {
+  if (!share_network_checkbox_)
+    return true;  // share networks by default (e.g. non secure network).
+  return share_network_checkbox_->checked();
 }
 
 EAPMethod WifiConfigView::GetEapMethod() const {
@@ -625,28 +699,7 @@ std::string WifiConfigView::GetEapAnonymousIdentity() const {
   return UTF16ToUTF8(identity_anonymous_textfield_->text());
 }
 
-bool WifiConfigView::GetSaveCredentials() const {
-  DCHECK(save_credentials_checkbox_);
-  return save_credentials_checkbox_->checked();
-}
-
 void WifiConfigView::Cancel() {
-}
-
-std::string WifiConfigView::GetSsid() const {
-  std::string result;
-  if (ssid_textfield_ != NULL) {
-    std::string untrimmed = UTF16ToUTF8(ssid_textfield_->text());
-    TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
-  }
-  return result;
-}
-
-std::string WifiConfigView::GetPassphrase() const {
-  std::string result;
-  if (passphrase_textfield_ != NULL)
-    result = UTF16ToUTF8(passphrase_textfield_->text());
-  return result;
 }
 
 // This will initialize the view depending on if we have a wifi network or not.
@@ -661,16 +714,19 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
   int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
+  const int kPasswordVisibleWidth = 20;
   // Label
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
-  // Textfield
+  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+  // Textfield, combobox.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0,
                         ChildNetworkConfigView::kPassphraseWidth);
+  column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
   // Password visible button
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::USE_PREF, 0, kPasswordVisibleWidth);
 
   // SSID input
   layout->StartRow(0, column_view_set_id);
@@ -817,16 +873,35 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     identity_anonymous_textfield_->SetController(this);
     layout->AddView(identity_anonymous_textfield_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  }
 
-    // Save credentials
+  // Checkboxes.
+
+  // Save credentials
+  if (show_8021x) {
     layout->StartRow(0, column_view_set_id);
     save_credentials_checkbox_ = new views::Checkbox(
         UTF16ToWide(l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS)));
     layout->SkipColumns(1);
     layout->AddView(save_credentials_checkbox_);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
+
+  // Share network
+  if (!wifi ||
+      (wifi->profile_type() == PROFILE_NONE &&
+       wifi->IsPassphraseRequired() &&
+       !wifi->RequiresUserProfile())) {
+    layout->StartRow(0, column_view_set_id);
+    share_network_checkbox_ = new views::Checkbox(
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK)));
+    layout->SkipColumns(1);
+    layout->AddView(share_network_checkbox_);
+  }
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  RefreshShareCheckbox();
 
   // After creating the fields, we set the values. Fields need to be created
   // first because RefreshEapFields() will enable/disable them as appropriate.

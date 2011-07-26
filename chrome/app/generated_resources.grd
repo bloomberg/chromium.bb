@@ -10914,6 +10914,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK" desc="In settings Internet options, the label for the share checkbox.">
         Share this network with other users
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED" desc="In settings Internet options, text for when a network is shared.">
+        This network is shared with other users.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
         Buy data plan...
       </message>
