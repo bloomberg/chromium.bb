@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -21,6 +21,8 @@ void NaClGlobalSecureRngSwitchRngForTesting(struct NaClSecureRng *);
 void NaClGlobalSecureRngFini(void);
 
 int32_t NaClGlobalSecureRngUniform(int32_t range_max);
+
+uint32_t NaClGlobalSecureRngUint32(void);
 
 /*
  * Generate a random alpha-numeric name for a socket, a semaphore or some

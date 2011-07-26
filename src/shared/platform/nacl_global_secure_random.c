@@ -47,6 +47,14 @@ int32_t NaClGlobalSecureRngUniform(int32_t range_max) {
   return rv;
 }
 
+uint32_t NaClGlobalSecureRngUint32(void) {
+  uint32_t rv;
+  NaClXMutexLock(&nacl_global_rng_mu);
+  rv = (*nacl_grngp->base.vtbl->GenUint32)(&nacl_grngp->base);
+  NaClXMutexUnlock(&nacl_global_rng_mu);
+  return rv;
+}
+
 void NaClGenerateRandomPath(char *path, int length) {
   /*
    * This function is used for generating random paths and names,

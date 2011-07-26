@@ -22,6 +22,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -37,6 +38,31 @@ void NaCl_page_free(void     *p,
   }
 }
 
+/*
+ * NaCl_page_alloc_intern_flags
+ */
+static
+int NaCl_page_alloc_intern_flags(void   **p,
+                                 size_t size,
+                                 int    map_flags) {
+  void *addr;
+
+  map_flags |= MAP_PRIVATE | MAP_ANONYMOUS;
+
+  NaClLog(4,
+          "sel_memory: NaCl_page_alloc_intern:"
+          " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
+          *p, size, PROT_NONE, map_flags, -1,
+          (nacl_abi_off64_t) 0);
+  addr = mmap(*p, size, PROT_NONE, map_flags, -1, (off_t) 0);
+  if (MAP_FAILED == addr) {
+    addr = NULL;
+  }
+  if (NULL != addr) {
+    *p = addr;
+  }
+  return (NULL == addr) ? -ENOMEM : 0;
+}
 
 /*
  * Note that NaCl_page_alloc does not allocate pages that satisify
@@ -45,13 +71,15 @@ void NaCl_page_free(void     *p,
  * on NaCl app code to ensure that the app code is portable across all
  * host OSes.
  */
-
+static
 int NaCl_page_alloc_intern(void   **p,
                            size_t size) {
-  void *addr;
-  int map_flags = MAP_PRIVATE | MAP_ANONYMOUS;
+  int map_flags = 0;
 
-#if NACL_LINUX
+  if (NULL != *p) {
+    map_flags |= MAP_FIXED;
+  }
+ #if NACL_LINUX
   /*
    * Indicate to the kernel that we just want these pages allocated, not
    * committed.  This is important for systems with relatively little RAM+swap.
@@ -69,23 +97,60 @@ int NaCl_page_alloc_intern(void   **p,
 #else
 # error This file should be included only by Linux and (surprisingly) OS X.
 #endif
+  return NaCl_page_alloc_intern_flags(p, size, map_flags);
+}
 
-  if (NULL != *p) {
-    map_flags |= MAP_FIXED;
+/*
+ * Pick a "hint" address that is random.
+ */
+int NaCl_page_alloc_randomized(void   **p,
+                               size_t size) {
+  uintptr_t       addr;
+  int             neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
+  int             tries;
+  const int       kNumTries = 0;
+  /*
+   * linux permits 128 TB of user address space.
+   */
+
+  for (tries = 0; tries < kNumTries; ++tries) {
+#if NACL_HOST_WORDSIZE == 32
+    addr = NaClGlobalSecureRngUint32();
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
+            addr);
+    /* linux permits 3-4 GB of user address space */
+    *p = (void *) (addr & ~((uintptr_t) NACL_MAP_PAGESIZE - 1)
+                   & ((~(uintptr_t) 0) >> 1));
+#elif NACL_HOST_WORDSIZE == 64
+    addr = NaClGlobalSecureRngUint32();
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
+            addr);
+    /*
+     * linux permits 128 TB of user address space, and we keep the low
+     * 16 bits free (64K alignment to match Windows), so we have
+     * 47-16=31 bits of entropy.
+     */
+    *p = (void *) ((addr << NACL_MAP_PAGESHIFT)  /* bits [47:16] are random */
+                   & ((((uintptr_t) 1) << 47) - 1));  /* now bits [46:16] */
+#else
+# error "where am i?"
+#endif
+
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) *p);
+    neg_errno = NaCl_page_alloc_intern_flags(p, size, 0);
+    if (0 == neg_errno) {
+      break;
+    }
   }
-  NaClLog(4,
-          "sel_memory: NaCl_page_alloc_intern:"
-          " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
-          *p, size, PROT_NONE, map_flags, -1,
-          (nacl_abi_off64_t) 0);
-  addr = mmap(*p, size, PROT_NONE, map_flags, -1, (off_t) 0);
-  if (MAP_FAILED == addr) {
-    addr = NULL;
+  if (0 != neg_errno) {
+    NaClLog(LOG_INFO,
+            "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
+            -neg_errno);
+    *p = 0;
+    neg_errno = NaCl_page_alloc_intern_flags(p, size, 0);
   }
-  if (NULL != addr) {
-    *p = addr;
-  }
-  return (NULL == addr) ? -ENOMEM : 0;
+  return neg_errno;
 }
 
 int NaCl_page_alloc(void   **p,

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -14,6 +14,7 @@
 #include <windows.h>
 #include <string.h>
 
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
@@ -47,12 +48,14 @@ void  NaCl_page_free(void     *p,
 }
 
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes) {
+static
+int   NaCl_page_alloc_hint(void    **p,
+                           size_t  num_bytes) {
   SYSTEM_INFO sys_info;
 
   int         attempt_count;
 
+  void        *hint = *p;
   void        *addr;
   void        *end_addr;
   void        *chunk;
@@ -102,7 +105,7 @@ int   NaCl_page_alloc(void    **p,
        attempt_count < NACL_MEMORY_ALLOC_RETRY_MAX;
        ++attempt_count) {
 
-    addr = VirtualAlloc(NULL, num_bytes, MEM_RESERVE, PAGE_NOACCESS);
+    addr = VirtualAlloc(hint, num_bytes, MEM_RESERVE, PAGE_NOACCESS);
     if (addr == NULL) {
       NaClLog(0,
               "NaCl_page_alloc: VirtualAlloc(*,0x%"NACL_PRIxS") failed\n",
@@ -148,12 +151,72 @@ int   NaCl_page_alloc(void    **p,
     *p = addr;
     return 0;
  retry:
-    ;
+    NaClLog(2, "NaCl_page_alloc_hint: retrying w/o hint\n");
+    hint = NULL;
   }
 
   return -ENOMEM;
 }
 
+int   NaCl_page_alloc(void    **p,
+                      size_t  num_bytes) {
+  *p = NULL;
+  return NaCl_page_alloc_hint(p, num_bytes);
+}
+
+/*
+ * Pick a "hint" address that is random.
+ */
+int NaCl_page_alloc_randomized(void   **p,
+                               size_t size) {
+  uintptr_t addr;
+  int       neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
+  int       tries;
+  const int kNumTries = 4;
+
+  for (tries = 0; tries < kNumTries; ++tries) {
+#if NACL_HOST_WORDSIZE == 32
+    addr = NaClGlobalSecureRngUint32();
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
+            addr);
+    /*
+     * Windows permits 2-3 GB of user address space, depending on
+     * 4-gigabyte tuning (4GT) parameter.  We ask for somewhere in the
+     * lower 2G.
+     */
+    *p = (void *) (addr & ~((uintptr_t) NACL_MAP_PAGESIZE - 1)
+                   & ((~(uintptr_t) 0) >> 1));
+#elif NACL_HOST_WORDSIZE == 64
+    addr = NaClGlobalSecureRngUint32();
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n",
+            addr);
+    /*
+     * 64-bit windows permits 8 TB of user address space, and we keep
+     * the low 16 bits free (64K alignment), so we just have 43-16=27
+     * bits of entropy.
+     */
+    *p = (void *) ((addr << NACL_MAP_PAGESHIFT)  /* bits [47:16] are random */
+                   & ((((uintptr_t) 1) << 43) - 1));  /* now bits [42:16] */
+#else
+# error "where am i?"
+#endif
+
+    NaClLog(LOG_INFO, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
+            (uintptr_t) *p);
+    neg_errno = NaCl_page_alloc_hint(p, size);
+    if (0 == neg_errno) {
+      break;
+    }
+  }
+  if (0 != neg_errno) {
+    NaClLog(LOG_INFO,
+            "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
+            -neg_errno);
+    *p = 0;
+    neg_errno = NaCl_page_alloc_hint(p, size);
+  }
+  return neg_errno;
+}
 
 uintptr_t NaClProtectChunkSize(uintptr_t start,
                                uintptr_t end) {

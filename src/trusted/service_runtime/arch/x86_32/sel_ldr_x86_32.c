@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/include/portability_string.h"
@@ -40,13 +40,16 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   nacl_pcrel_globals.user = nacl_user;
   nacl_pcrel_globals.sys = nacl_sys;
 
-  if (0 != (error = NaCl_page_alloc(&thunk_addr, NACL_MAP_PAGESIZE))) {
+  if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
+                                               NACL_MAP_PAGESIZE))) {
     NaClLog(LOG_INFO,
             "NaClMakePcrelThunk::NaCl_page_alloc failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
   }
+  NaClLog(LOG_INFO, "NaClMakePcrelThunk: got addr 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) thunk_addr);
 
   if (0 != (error = NaCl_mprotect(thunk_addr,
                                   NACL_MAP_PAGESIZE,

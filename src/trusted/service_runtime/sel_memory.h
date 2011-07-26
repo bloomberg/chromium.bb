@@ -1,15 +1,15 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
  */
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MEMORY_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MEMORY_H_ 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +30,9 @@ extern "C" {
 int   NaCl_page_alloc(void    **p,
                       size_t  num_bytes) NACL_WUR;
 
+int   NaCl_page_alloc_randomized(void   **p,
+                                 size_t num_bytes) NACL_WUR;
+
 int   NaCl_page_alloc_at_addr(void **p,
                               size_t  size) NACL_WUR;
 
@@ -49,4 +52,4 @@ int   NaCl_madvise(void           *start,
 }
 #endif /* __cplusplus */
 
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */
+#endif /*  NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MEMORY_H_ */
