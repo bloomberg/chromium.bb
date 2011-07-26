@@ -21,7 +21,6 @@ class InstantSettingsTest(pyauto.PyUITest):
                      msg='Instant is enabled by default.')
     # Enable instant.
     self.SetPrefs(pyauto.kInstantEnabled, True)
-    self.SetPrefs(pyauto.kInstantEnabledOnce, True)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
                     msg='Instant is not enabled.')
     self.SetOmniboxText('google.com')

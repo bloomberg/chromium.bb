@@ -153,10 +153,6 @@ void SearchProviderTest::SetUp() {
   provider_ = new SearchProvider(this, &profile_);
 
   URLFetcher::set_factory(&test_factory_);
-
-  // Prevent the Instant field trial from kicking in.
-  PrefService* service = profile_.GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabledOnce, true);
 }
 
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
@@ -627,7 +623,7 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   ACProviders providers;
   SearchProvider* provider = provider_.release();
   providers.push_back(provider);
-  AutocompleteController controller(providers, &profile_);
+  AutocompleteController controller(providers);
   controller.set_search_provider(provider);
   provider->set_listener(&controller);
   controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
