@@ -101,7 +101,12 @@ void AppCacheQuotaClient::GetOriginsForHost(
     quota::StorageType type,
     const std::string& host,
     GetOriginsCallback* callback_ptr) {
-  DCHECK(!host.empty());
+  DCHECK(callback_ptr);
+  if (host.empty()) {
+    callback_ptr->Run(std::set<GURL>());
+    delete callback_ptr;
+    return;
+  }
   GetOriginsHelper(type, host, callback_ptr);
 }
 
