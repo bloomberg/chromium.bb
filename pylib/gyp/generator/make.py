@@ -658,42 +658,56 @@ target_link_deps = {}
 class XcodeSettings(object):
   """A class that understands the gyp 'xcode_settings' object."""
 
-  def __init__(self, config):
-    self.config = config
+  def __init__(self, spec):
+    self.spec = spec
 
-    # 'xcode_settings' is pushed down into configs.
-    self.xcode_settings = self.config.get('xcode_settings', {})
+    # Per-target 'xcode_settings' are pushed down into configs earlier by gyp.
+    # This means self.xcode_settings[config] always contains all settings
+    # for that config -- the per-target settings as well. Settings that are
+    # the same for all configs are implicitly per-target settings.
+    self.xcode_settings = {}
+    configs = spec['configurations']
+    for configname, config in configs.iteritems():
+      self.xcode_settings[configname] = config.get('xcode_settings', {})
+
+    # This is only non-None temporarily during the execution of some methods.
+    self.configname = None
+
+  def _Settings(self):
+    assert self.configname
+    return self.xcode_settings[self.configname]
 
   def _Test(self, test_key, cond_key, default):
-    return self.xcode_settings.get(test_key, default) == cond_key
+    return self._Settings().get(test_key, default) == cond_key
 
   def _Appendf(self, lst, test_key, format_str):
-    if test_key in self.xcode_settings:
-      lst.append(format_str % str(self.xcode_settings[test_key]))
+    if test_key in self._Settings():
+      lst.append(format_str % str(self._Settings()[test_key]))
 
   def _WarnUnimplemented(self, test_key):
-    if test_key in self.xcode_settings:
+    if test_key in self._Settings():
       print 'Warning: Ignoring not yet implemented key "%s".' % test_key
 
-  def GetCflags(self):
+  def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
     compilations."""
     # This functions (and the similar ones below) do not offer complete
     # emulation of all xcode_settings keys. They're implemented on demand.
 
+    self.configname = configname
     cflags = []
 
     sdk_root = 'Mac10.5'
-    if 'SDKROOT' in self.xcode_settings:
-      sdk_root = self.xcode_settings['SDKROOT']
+    if 'SDKROOT' in self._Settings():
+      sdk_root = self._Settings()['SDKROOT']
       cflags.append('-isysroot /Developer/SDKs/%s.sdk' % sdk_root)
     sdk_root_dir = '/Developer/SDKs/%s.sdk' % sdk_root
 
     if self._Test('GCC_CW_ASM_SYNTAX', 'YES', default='YES'):
       cflags.append('-fasm-blocks')
 
-    if 'GCC_DYNAMIC_NO_PIC' in self.xcode_settings:
-      if self.xcode_settings['GCC_DYNAMIC_NO_PIC'] == 'YES':
+    if 'GCC_DYNAMIC_NO_PIC' in self._Settings():
+      if self._Settings()['GCC_DYNAMIC_NO_PIC'] == 'YES':
         cflags.append('-mdynamic-no-pic')
     else:
       pass
@@ -706,7 +720,7 @@ class XcodeSettings(object):
 
     self._Appendf(cflags, 'GCC_OPTIMIZATION_LEVEL', '-O%s')
 
-    dbg_format = self.xcode_settings.get('DEBUG_INFORMATION_FORMAT', 'dwarf')
+    dbg_format = self._Settings().get('DEBUG_INFORMATION_FORMAT', 'dwarf')
     if dbg_format == 'none':
       pass
     elif dbg_format == 'dwarf':
@@ -738,9 +752,6 @@ class XcodeSettings(object):
     self._WarnUnimplemented('ARCHS')
     self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('DEPLOYMENT_POSTPROCESSING')
-    self._WarnUnimplemented('DYLIB_COMPATIBILITY_VERSION')
-    self._WarnUnimplemented('DYLIB_CURRENT_VERSION')
-    self._WarnUnimplemented('DYLIB_INSTALL_NAME_BASE')
     self._WarnUnimplemented('DYLIB_INSTALL_NAME_BASE')
     self._WarnUnimplemented('INFOPLIST_PREPROCESS')
     self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
@@ -751,23 +762,28 @@ class XcodeSettings(object):
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     cflags.append('-arch i386')
 
-    cflags += self.xcode_settings.get('OTHER_CFLAGS', [])
-    cflags += self.xcode_settings.get('WARNING_CFLAGS', [])
+    cflags += self._Settings().get('OTHER_CFLAGS', [])
+    cflags += self._Settings().get('WARNING_CFLAGS', [])
 
-    framework_dirs = self.config.get('mac_framework_dirs', [])
+    config = self.spec['configurations'][self.configname]
+    framework_dirs = config.get('mac_framework_dirs', [])
     for directory in framework_dirs:
       cflags.append('-F ' + os.path.join(sdk_root_dir, directory))
 
+    self.configname = None
     return cflags
 
-  def GetCflagsC(self):
+  def GetCflagsC(self, configname):
     """Returns flags that need to be added to .c, and .m compilations."""
+    self.configname = configname
     cflags_c = []
     self._Appendf(cflags_c, 'GCC_C_LANGUAGE_STANDARD', '-std=%s')
+    self.configname = None
     return cflags_c
 
-  def GetCflagsCC(self):
+  def GetCflagsCC(self, configname):
     """Returns flags that need to be added to .cc, and .mm compilations."""
+    self.configname = configname
     cflags_cc = []
     if self._Test('GCC_ENABLE_CPP_RTTI', 'NO', default='YES'):
       cflags_cc.append('-fno-rtti')
@@ -777,21 +793,27 @@ class XcodeSettings(object):
       cflags_cc.append('-fvisibility-inlines-hidden')
     if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
       cflags_cc.append('-fno-threadsafe-statics')
+    self.configname = None
     return cflags_cc
 
-  def GetCflagsObjC(self):
+  def GetCflagsObjC(self, configname):
     """Returns flags that need to be added to .m compilations."""
+    self.configname = configname
+    self.configname = None
     return []
 
-  def GetCflagsObjCC(self):
+  def GetCflagsObjCC(self, configname):
     """Returns flags that need to be added to .mm compilations."""
+    self.configname = configname
     cflags_objcc = []
     if self._Test('GCC_OBJC_CALL_CXX_CDTORS', 'YES', default='NO'):
       cflags_objcc.append('-fobjc-call-cxx-cdtors')
+    self.configname = None
     return cflags_objcc
 
-  def GetLdflags(self, target):
+  def GetLdflags(self, target, configname):
     """Returns flags that need to be passed to the linker."""
+    self.configname = configname
     ldflags = []
 
     # The xcode build is relative to a gyp file's directory, and OTHER_LDFLAGS
@@ -801,7 +823,7 @@ class XcodeSettings(object):
       if flag.startswith(prefix):
         flag = prefix + target.Absolutify(flag[len(prefix):])
       return flag
-    for ldflag in self.xcode_settings.get('OTHER_LDFLAGS', []):
+    for ldflag in self._Settings().get('OTHER_LDFLAGS', []):
       # Required for ffmpeg (no idea why they don't use LIBRARY_SEARCH_PATHS,
       # TODO(thakis): Update ffmpeg.gyp):
       ldflag = AbsolutifyPrefix(ldflag, '-L')
@@ -820,13 +842,12 @@ class XcodeSettings(object):
     self._Appendf(
         ldflags, 'DYLIB_CURRENT_VERSION', '-current_version %s')
 
-    for library_path in self.xcode_settings.get('LIBRARY_SEARCH_PATHS', []):
+    for library_path in self._Settings().get('LIBRARY_SEARCH_PATHS', []):
       ldflags.append('-L' + library_path)
 
-    if 'ORDER_FILE' in self.xcode_settings:
-      ldflags.append(
-          '-Wl,-order_file ' +
-          '-Wl,' + target.Absolutify(self.xcode_settings['ORDER_FILE']))
+    if 'ORDER_FILE' in self._Settings():
+      ldflags.append('-Wl,-order_file ' +
+                     '-Wl,' + target.Absolutify(self._Settings()['ORDER_FILE']))
 
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     ldflags.append('-arch i386')
@@ -836,22 +857,20 @@ class XcodeSettings(object):
     ldflags.append('-L' + generator_default_variables['LIB_DIR'])
     ldflags.append('-L' + generator_default_variables['PRODUCT_DIR'])
 
+    self.configname = None
     return ldflags
 
-  @staticmethod
-  def GetPerTargetSetting(spec, setting, default=None):
+  def GetPerTargetSetting(self, setting, default=None):
     """Tries to get xcode_settings.setting from spec. Assumes that the setting
        has the same value in all configurations and throws otherwise."""
     first_pass = True
     result = None
-    configs = spec['configurations']
-    for configname in sorted(configs.keys()):
-      config = configs[configname]
+    for configname in sorted(self.xcode_settings.keys()):
       if first_pass:
-        result = config.get('xcode_settings', {}).get(setting, None)
+        result = self.xcode_settings[configname].get(setting, None)
         first_pass = False
       else:
-        assert result == config.get('xcode_settings', {}).get(setting, None), (
+        assert result == self.xcode_settings[configname].get(setting, None), (
             "Expected per-target setting for '%s', got per-config setting "
             "(target %s" % (setting, spec['target_name']))
     if result is None:
@@ -864,12 +883,13 @@ class MacPrefixHeader(object):
   GCC_PREFIX_HEADER isn't present (in most gyp targets on mac, and always on
   non-mac systems), all methods of this class are no-ops."""
 
-  def __init__(self, spec, path_provider):
+  def __init__(self, path_provider):
     # This doesn't support per-configuration prefix headers. Good enough
     # for now.
     self.header = None
     if path_provider.flavor == 'mac':
-      self.header = XcodeSettings.GetPerTargetSetting(spec, 'GCC_PREFIX_HEADER')
+      self.header = path_provider.xcode_settings.GetPerTargetSetting(
+          'GCC_PREFIX_HEADER')
     self.compiled_headers = {}
     if self.header:
       self.header = path_provider.Absolutify(self.header)
@@ -1001,6 +1021,9 @@ class MakefileWriter:
           'mac_bundle targets cannot have type none (target "%s")' %
           self.target)
 
+    if self.flavor == 'mac':
+      self.xcode_settings = XcodeSettings(spec)
+
     deps, link_deps = self.ComputeDeps(spec)
 
     # Some of the generation below can add extra output, sources, or
@@ -1047,21 +1070,22 @@ class MakefileWriter:
       self.WriteCopies(spec['copies'], extra_outputs, part_of_all, spec)
 
     # Bundle resources.
-    all_mac_bundle_resources = (
-        spec.get('mac_bundle_resources', []) + extra_mac_bundle_resources)
-    if self.is_mac_bundle and all_mac_bundle_resources:
-      self.WriteMacBundleResources(
-          all_mac_bundle_resources, mac_bundle_deps, spec)
-    info_plist = XcodeSettings.GetPerTargetSetting(spec, 'INFOPLIST_FILE')
-    if self.is_mac_bundle and info_plist:
-      self.WriteMacInfoPlist(info_plist, mac_bundle_deps, spec)
+    if self.is_mac_bundle:
+      all_mac_bundle_resources = (
+          spec.get('mac_bundle_resources', []) + extra_mac_bundle_resources)
+      if all_mac_bundle_resources:
+        self.WriteMacBundleResources(
+            all_mac_bundle_resources, mac_bundle_deps, spec)
+      info_plist = self.xcode_settings.GetPerTargetSetting('INFOPLIST_FILE')
+      if info_plist:
+        self.WriteMacInfoPlist(info_plist, mac_bundle_deps, spec)
 
     # Sources.
     all_sources = spec.get('sources', []) + extra_sources
     if all_sources:
       self.WriteSources(
           configs, deps, all_sources, extra_outputs,
-          extra_link_deps, part_of_all, MacPrefixHeader(spec, self))
+          extra_link_deps, part_of_all, MacPrefixHeader(self))
       sources = filter(Compilable, all_sources)
       if sources:
         self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
@@ -1361,7 +1385,7 @@ class MakefileWriter:
     variable = self.target + '_mac_bundle_resources'
     if self.type == 'shared_library':
       dest = os.path.join(
-          self.output, 'Versions', self.GetFrameworkVersion(spec), 'Resources')
+          self.output, 'Versions', self.GetFrameworkVersion(), 'Resources')
     else:
       # Suprisingly, loadable_modules have a 'Contents' folder like executables.
       dest = os.path.join(self.output, 'Contents', 'Resources')
@@ -1402,7 +1426,7 @@ class MakefileWriter:
     if self.type == 'executable':
       folder = 'Contents'
     else:
-      folder = 'Versions/%s/Resources' % self.GetFrameworkVersion(spec)
+      folder = 'Versions/%s/Resources' % self.GetFrameworkVersion()
     dest_plist = os.path.join(self.output, folder, 'Info.plist')
     self.WriteXcodeEnv(dest_plist, spec)  # plists can contain envvars.
     self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,copy-info-plist',
@@ -1431,12 +1455,11 @@ class MakefileWriter:
           quoter=EscapeCppDefine)
 
       if self.flavor == 'mac':
-        settings = XcodeSettings(config)
-        cflags = settings.GetCflags()
-        cflags_c = settings.GetCflagsC()
-        cflags_cc = settings.GetCflagsCC()
-        cflags_objc = settings.GetCflagsObjC()
-        cflags_objcc = settings.GetCflagsObjCC()
+        cflags = self.xcode_settings.GetCflags(configname)
+        cflags_c = self.xcode_settings.GetCflagsC(configname)
+        cflags_cc = self.xcode_settings.GetCflagsCC(configname)
+        cflags_objc = self.xcode_settings.GetCflagsObjC(configname)
+        cflags_objcc = self.xcode_settings.GetCflagsObjCC(configname)
       else:
         cflags = config.get('cflags')
         cflags_c = config.get('cflags_c')
@@ -1586,8 +1609,8 @@ class MakefileWriter:
     assert self.is_mac_bundle
     path = generator_default_variables['PRODUCT_DIR']
     if self.type in ('loadable_module', 'shared_library'):
-      wrapper_extension = XcodeSettings.GetPerTargetSetting(
-          spec, 'WRAPPER_EXTENSION', default='framework')
+      wrapper_extension = self.xcode_settings.GetPerTargetSetting(
+          'WRAPPER_EXTENSION', default='framework')
       extension = spec.get('product_extension', wrapper_extension)
       path = os.path.join(path,
           spec.get('product_name', self.target) + '.' + extension)
@@ -1603,7 +1626,7 @@ class MakefileWriter:
     assert self.is_mac_bundle
     assert self.output, "Must be called after ComputeMacBundleOutput"
     if self.type in ('loadable_module', 'shared_library'):
-      version = self.GetFrameworkVersion(spec)
+      version = self.GetFrameworkVersion()
       path = os.path.join(self.output, 'Versions', version)
     elif self.type == 'executable':
       path = os.path.join(self.output, 'Contents', 'MacOS')
@@ -1662,8 +1685,7 @@ class MakefileWriter:
       for configname in sorted(configs.keys()):
         config = configs[configname]
         if self.flavor == 'mac':
-          settings = XcodeSettings(config)
-          ldflags = settings.GetLdflags(self)
+          ldflags = self.xcode_settings.GetLdflags(self, configname)
         else:
           ldflags = config.get('ldflags')
         self.WriteList(ldflags, 'LDFLAGS_%s' % configname)
@@ -1701,7 +1723,7 @@ class MakefileWriter:
       # postbuilds, since postbuilds depend on this.
       if self.type in ('shared_library', 'loadable_module'):
         self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,%s)' %
-            self.GetFrameworkVersion(spec))
+            self.GetFrameworkVersion())
 
       # Postbuild actions. Like actions, but implicitly depend on the output
       # framework.
@@ -2021,7 +2043,7 @@ class MakefileWriter:
       contents_folder = StripProductDir(self.output)
       if self.type == 'shared_library':
         contents_folder = os.path.join(
-            contents_folder, 'Versions', self.GetFrameworkVersion(spec))
+            contents_folder, 'Versions', self.GetFrameworkVersion())
       else:
         # loadable_modules have a 'Contents' folder like executables.
         contents_folder = os.path.join(contents_folder, 'Contents')
@@ -2050,13 +2072,12 @@ class MakefileWriter:
       self.WriteLn('%s: export %s := %s' % (target, k, v))
 
 
-  def GetFrameworkVersion(self, spec):
+  def GetFrameworkVersion(self):
     """Returns the framework version of the current target. Only valid for
     bundles."""
     assert self.is_mac_bundle
-    version = XcodeSettings.GetPerTargetSetting(
-        spec, 'FRAMEWORK_VERSION', default='A')
-    return version
+    return self.xcode_settings.GetPerTargetSetting(
+        'FRAMEWORK_VERSION', default='A')
 
 
   def Objectify(self, path):
