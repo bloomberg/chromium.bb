@@ -157,11 +157,8 @@ void ChromeStorage::WriteKey(const std::string& key, const std::string& value,
 
 void ChromeStorage::ReadKey(const std::string& key,
                             invalidation::ReadKeyCallback* done) {
-  scheduler_->Schedule(
-      invalidation::Scheduler::NoDelay(),
-      invalidation::NewPermanentCallback(
-          this, &ChromeStorage::RunAndDeleteReadKeyCallback,
-          done, cached_state_));
+  DCHECK(scheduler_->IsRunningOnThread()) << "not running on scheduler thread";
+  RunAndDeleteReadKeyCallback(done, cached_state_);
 }
 
 void ChromeStorage::DeleteKey(const std::string& key,
