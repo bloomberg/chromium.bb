@@ -108,8 +108,8 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
   FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
   if (subgroup != AutofillType::PHONE_CITY_AND_NUMBER &&
       subgroup != AutofillType::PHONE_WHOLE_NUMBER) {
-    // Only full phone numbers should be set directly.
-    NOTREACHED();
+    // Only full phone numbers should be set directly.  The remaining field
+    // field types are read-only.
     return;
   }
 
