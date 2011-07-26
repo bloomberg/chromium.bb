@@ -390,8 +390,11 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
   } else {
     // If we can't fill the requested page, ask for more data unless a request
     // is still in-flight.
-    if (!this.canFillPage_(this.requestedPage_) && !this.inFlight_) {
-      this.getSearchResults_(this.searchDepth_ + 1);
+    if (!this.inFlight_) {
+      if (!this.canFillPage_(this.requestedPage_))
+        this.getSearchResults_(this.searchDepth_ + 1);
+      else
+        chrome.send('setIsLoading', ['false']);
     }
 
     // If we have any data for the requested page, show it.
