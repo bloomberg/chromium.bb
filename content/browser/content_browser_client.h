@@ -42,6 +42,7 @@ class CryptoModuleBlockingPasswordDelegate;
 namespace net {
 class CookieList;
 class CookieOptions;
+class NetLog;
 class URLRequest;
 class URLRequestContext;
 class X509Certificate;
@@ -235,6 +236,7 @@ class ContentBrowserClient {
   virtual ui::Clipboard* GetClipboard() = 0;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
   virtual DevToolsManager* GetDevToolsManager() = 0;
+  virtual net::NetLog* GetNetLog() = 0;
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;
