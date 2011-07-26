@@ -82,11 +82,8 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
   GdkWindow* gdk_window = toplevel->window;
   if (!gdk_window)
     return;
-  gdk_window_get_frame_extents(gdk_window, &frame_extents);
-  int width = 0;
-  int height = 0;
-  gdk_drawable_get_size(gdk_window, &width, &height);
 
+  gdk_window_get_frame_extents(gdk_window, &frame_extents);
   *results = gfx::Rect(frame_extents.x, frame_extents.y,
                        frame_extents.width, frame_extents.height);
 }
