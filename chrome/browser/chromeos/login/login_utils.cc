@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
@@ -310,7 +311,8 @@ class LoginUtilsImpl : public LoginUtils,
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   bool pending_requests_;
-  scoped_ptr<Authenticator> authenticator_;
+  // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
+  scoped_refptr<Authenticator> authenticator_;
   scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
   scoped_ptr<PolicyOAuthFetcher> policy_oauth_fetcher_;
 
@@ -436,11 +438,15 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile, Status status) {
       // TODO(rickcam) We should use an isolated App here.
       FetchOAuthTokens(authenticator_->AuthenticationProfile());
     } else {
-      // We don't need authenticator instance any more, reset it so that
-      // ScreenLocker would create a separate instance.
-      authenticator_.reset();
       FetchCookies(profile, credentials_);
     }
+  }
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUIGaiaLogin)) {
+    // We don't need authenticator instance anymore in LoginUtils.
+    // Release it so that ScreenLocker would create a separate instance.
+    // Note that for GAIA WebUI login authenticator instance is reset in
+    // OnOAuthGetAccessTokenSuccess(...).
+    authenticator_ = NULL;
   }
 
   // Init extension event routers; this normally happens in browser_main
@@ -699,9 +705,9 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   if (authenticator_ == NULL) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
-      authenticator_.reset(new ParallelAuthenticator(consumer));
+      authenticator_ = new ParallelAuthenticator(consumer);
     else
-      authenticator_.reset(new GoogleAuthenticator(consumer));
+      authenticator_ = new GoogleAuthenticator(consumer);
   }
   return authenticator_.get();
 }
@@ -791,7 +797,7 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
   // ScreenLocker would create a separate instance.
   // TODO(nkostylev): There's a potential race if SL would be created before
   // OAuth tokens are fetched. It would use incorrect Authenticator instance.
-  authenticator_.reset();
+  authenticator_ = NULL;
 }
 
 void LoginUtilsImpl::OnOAuthGetAccessTokenFailure(
