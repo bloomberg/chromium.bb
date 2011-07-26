@@ -4464,7 +4464,7 @@
    fun:_ZN6webkit5npapi21WebPluginDelegateImpl17WindowedSetWindowEv
    fun:_ZN6webkit5npapi21WebPluginDelegateImpl22WindowedUpdateGeometryERKN3gfx4RectES5_
    fun:_ZN6webkit5npapi21WebPluginDelegateImpl14UpdateGeometryERKN3gfx4RectES5_
-   fun:_ZN14WebPluginProxy14UpdateGeometryERKN3gfx4RectES3_RKiS5_b
+   fun:_ZN14WebPluginProxy14UpdateGeometry*
    fun:_ZN21WebPluginDelegateStub16OnUpdateGeometryERK30PluginMsg_UpdateGeometry_Param
 }
 {
@@ -5024,6 +5024,46 @@
    fun:_ZN5quota17QuotaManagerProxy14RegisterClientEPNS_11QuotaClientE
    fun:_Z16DispatchToMethodIN5quota17QuotaManagerProxyEMS1_FvPNS0_11QuotaClientEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN5quota17QuotaManagerProxyEMS1_FvPNS0_11QuotaClientEE6Tuple1IS3_EE3RunEv
+}
+{
+   bug_90496a
+   Memcheck:Leak
+   ...
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2Ii23ResourceHostMsg_RequestEE8DispatchI22ResourceDispatcherHostS6_iRKS2_EEbPKNS_7MessageEPT_PT0_MSC_FvRSA_T1_T2_E
+   fun:_ZN22ResourceDispatcherHost17OnMessageReceivedERKN3IPC7MessageEP21ResourceMessageFilterPb
+   fun:_ZN21ResourceMessageFilter17OnMessageReceivedERKN3IPC7MessageEPb
+   fun:_ZN20BrowserMessageFilter15DispatchMessageERKN3IPC7MessageE
+   fun:_ZN20BrowserMessageFilter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnMessageReceivedERKNS_7MessageE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+}
+{
+   bug_90496b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22ResourceDispatcherHost23CompleteResponseStartedEPN3net10URLRequestE
+   fun:_ZN22ResourceDispatcherHost17OnResponseStartedEPN3net10URLRequestE
+   fun:_ZN3net10URLRequest21NotifyResponseStartedEv
+   fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN3net17URLRequestFileJob10DidResolveEbRKN4base16PlatformFileInfoE
+}
+{
+   bug_90496c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20AsyncResourceHandler15OnReadCompletedEiPi
+   fun:_ZN23BufferedResourceHandler15OnReadCompletedEiPi
+   fun:_ZN27SafeBrowsingResourceHandler15OnReadCompletedEiPi
+   fun:_ZN22OfflineResourceHandler15OnReadCompletedEiPi
+   fun:_ZN22ResourceDispatcherHost12CompleteReadEPN3net10URLRequestEPi
+   fun:_ZN22ResourceDispatcherHost15OnReadCompletedEPN3net10URLRequestEi
+   fun:_ZN3net10URLRequest19NotifyReadCompletedEi
+   fun:_ZN3net13URLRequestJob18NotifyReadCompleteEi
+   fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
+   fun:_ZN27ChromeURLDataManagerBackend13DataAvailableEiP16RefCountedMemory
+   fun:_ZN20ChromeURLDataManager10DataSource22SendResponseOnIOThreadEi13scoped_refptrI16RefCountedMemoryE
 }
 
 
