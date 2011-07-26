@@ -276,6 +276,8 @@ class ImportsTest(pyauto.PyUITest):
 
   def testImportFirefoxPasswordsFromPrefs(self):
     """Verify importing Firefox passwords through preferences."""
+    if self.IsWinVista():  # Broken on vista. crbug.com/89768
+      return
     self._ImportFromFirefox(bookmarks=False, history=False, passwords=True,
                             home_page=False, search_engines=False)
 
