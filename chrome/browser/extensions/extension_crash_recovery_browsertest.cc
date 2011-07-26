@@ -351,12 +351,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 }
 
-// Flaky on linux due to http://crbug.com/89078.
-#if defined(OS_LINUX)
+// Flaky on mac&&linux due to http://crbug.com/89078.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_TwoExtensionsIgnoreFirst FLAKY_TwoExtensionsIgnoreFirst
 #else
 #define MAYBE_TwoExtensionsIgnoreFirst TwoExtensionsIgnoreFirst
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        MAYBE_TwoExtensionsIgnoreFirst) {
   const size_t size_before = GetExtensionService()->extensions()->size();
