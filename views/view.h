@@ -144,12 +144,15 @@ class View : public AcceleratorTarget {
   Views::const_reverse_iterator children_rend() { return children_.rend(); }
   int child_count() const { return static_cast<int>(children_.size()); }
   bool has_children() const { return !children_.empty(); }
-  View* child_at(int index) {
+
+  // Returns the child view at |index|.
+  const View* child_at(int index) const {
+    DCHECK_GE(index, 0);
     DCHECK_LT(index, child_count());
     return children_[index];
   }
-  const View* child_at(int index) const {
-    return const_cast<View*>(const_cast<const View*>(this))->child_at(index);
+  View* child_at(int index) {
+    return const_cast<View*>(const_cast<const View*>(this)->child_at(index));
   }
 
   // Returns the parent view.
