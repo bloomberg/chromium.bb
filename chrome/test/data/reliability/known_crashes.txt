@@ -203,3 +203,6 @@ PREFIX: v8::internal::safepointentry::hasregisters___v8::internal::optimizedfram
 
 # 90577
 PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::pipelineimpl::ondemuxerbuilt
+
+# 90579
+PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::ffmpegdemuxer::initialize
