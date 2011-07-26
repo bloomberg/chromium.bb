@@ -62,6 +62,11 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
       l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_DENY);
 }
 
+bool RegisterProtocolHandlerInfoBarDelegate::NeedElevation(
+    InfoBarButton button) const {
+  return button == BUTTON_OK;
+}
+
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
   registry_->OnAcceptRegisterProtocolHandler(handler_);
   return true;
