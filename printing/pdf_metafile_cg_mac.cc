@@ -127,12 +127,12 @@ bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
   page_is_open_ = true;
   CGContextSaveGState(context_);
 
+  // Move to the context origin.
+  CGContextTranslateCTM(context_, content_area.x(), -content_area.y());
+
   // Flip the context.
   CGContextTranslateCTM(context_, 0, height);
   CGContextScaleCTM(context_, scale_factor, -scale_factor);
-
-  // Move to the context origin.
-  CGContextTranslateCTM(context_, content_area.x(), content_area.y());
 
   return context_.get() != NULL;
 }
