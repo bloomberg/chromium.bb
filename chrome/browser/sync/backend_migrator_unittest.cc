@@ -59,25 +59,15 @@ class BackendMigratorTest : public testing::Test {
         .WillOnce(Return(snap_.get()));
   }
 
-  void SendConfigureDone(DataTypeManager::ConfigureStatus status,
+  void SendConfigureDone(DataTypeManager::ConfigureResult result,
                          const syncable::ModelTypeSet& types) {
-    if (status == DataTypeManager::OK) {
-      DataTypeManager::ConfigureResult result(status, types);
-      NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-          Source<DataTypeManager>(&manager_),
-          Details<const DataTypeManager::ConfigureResult>(&result));
-    } else {
-        DataTypeManager::ConfigureResult result(
-            status,
-            types,
-            syncable::ModelTypeSet(),
-            FROM_HERE);
-        NotificationService::current()->Notify(
-            chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-            Source<DataTypeManager>(&manager_),
-            Details<const DataTypeManager::ConfigureResult>(&result));
-    }
+    DataTypeManager::ConfigureResultWithErrorLocation result_with_location(
+        result, FROM_HERE, types);
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+        Source<DataTypeManager>(&manager_),
+        Details<DataTypeManager::ConfigureResultWithErrorLocation>(
+            &result_with_location));
   }
 
   ProfileSyncService* service() { return &service_; }

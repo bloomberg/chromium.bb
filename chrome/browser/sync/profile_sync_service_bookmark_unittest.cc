@@ -21,7 +21,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -326,8 +325,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         profile_.GetBookmarkModel(),
         test_user_share_.user_share(),
         &mock_unrecoverable_error_handler_));
-    SyncError error;
-    EXPECT_TRUE(model_associator_->AssociateModels(&error));
+    EXPECT_TRUE(model_associator_->AssociateModels());
     MessageLoop::current()->RunAllPending();
 
     // Set up change processor.
@@ -340,8 +338,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void StopSync() {
     change_processor_->Stop();
     change_processor_.reset();
-    SyncError error;
-    EXPECT_TRUE(model_associator_->DisassociateModels(&error));
+
+    EXPECT_TRUE(model_associator_->DisassociateModels());
     model_associator_.reset();
 
     message_loop_.RunAllPending();

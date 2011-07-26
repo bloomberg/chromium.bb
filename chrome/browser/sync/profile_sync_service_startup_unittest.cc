@@ -275,13 +275,10 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  DataTypeManager::ConfigureStatus status =
+  DataTypeManager::ConfigureResult configure_result =
       DataTypeManager::ASSOCIATION_FAILED;
-  browser_sync::DataTypeManager::ConfigureResult result(
-      status,
-      syncable::ModelTypeSet(),
-      syncable::ModelTypeSet(),
-      FROM_HERE);
+  browser_sync::DataTypeManager::ConfigureResultWithErrorLocation result(
+      configure_result, FROM_HERE, syncable::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(
           DoAll(

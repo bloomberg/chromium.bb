@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/theme_util.h"
@@ -36,11 +35,11 @@ ThemeModelAssociator::ThemeModelAssociator(
 
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
-bool ThemeModelAssociator::AssociateModels(SyncError* error) {
+bool ThemeModelAssociator::AssociateModels() {
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
-    error->Reset(FROM_HERE, kNoThemesFolderError, model_type());
+    LOG(ERROR) << kNoThemesFolderError;
     return false;
   }
 
@@ -63,9 +62,7 @@ bool ThemeModelAssociator::AssociateModels(SyncError* error) {
     sync_api::WriteNode node(&trans);
     if (!node.InitUniqueByCreation(syncable::THEMES, root,
                                    kCurrentThemeClientTag)) {
-      error->Reset(FROM_HERE,
-                   "Could not create current theme node.",
-                   model_type());
+      LOG(ERROR) << "Could not create current theme node.";
       return false;
     }
     node.SetIsFolder(false);
@@ -77,7 +74,7 @@ bool ThemeModelAssociator::AssociateModels(SyncError* error) {
   return true;
 }
 
-bool ThemeModelAssociator::DisassociateModels(SyncError* error) {
+bool ThemeModelAssociator::DisassociateModels() {
   // We don't maintain any association state, so nothing to do.
   return true;
 }

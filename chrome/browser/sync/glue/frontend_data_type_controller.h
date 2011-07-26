@@ -15,7 +15,6 @@
 class Profile;
 class ProfileSyncService;
 class ProfileSyncFactory;
-class SyncError;
 
 namespace base { class TimeDelta; }
 namespace browser_sync {
@@ -85,11 +84,11 @@ class FrontendDataTypeController : public DataTypeController {
 
   // Cleans up state and calls callback when start fails.
   virtual void StartFailed(StartResult result,
-                           const tracked_objects::Location& location);
+      const tracked_objects::Location& from_here);
 
   // Helper method to run the stashed start callback with a given result.
   virtual void FinishStart(StartResult result,
-                           const tracked_objects::Location& location);
+      const tracked_objects::Location& from_here);
 
   // DataType specific histogram methods. Because histograms use static's, the
   // specific datatype controllers must implement this themselves.

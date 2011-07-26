@@ -1263,12 +1263,13 @@ void ProfileSyncService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
-      DataTypeManager::ConfigureResult* result =
-          Details<DataTypeManager::ConfigureResult>(details).ptr();
+      DataTypeManager::ConfigureResultWithErrorLocation* result_with_location =
+          Details<DataTypeManager::ConfigureResultWithErrorLocation>(
+              details).ptr();
 
-      DataTypeManager::ConfigureStatus status = result->status;
-      VLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: " << status;
-      if (status == DataTypeManager::ABORTED &&
+      DataTypeManager::ConfigureResult result = result_with_location->result;
+      VLOG(1) << "PSS SYNC_CONFIGURE_DONE called with result: " << result;
+      if (result == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
         VLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
         expect_sync_configuration_aborted_ = false;
@@ -1276,13 +1277,11 @@ void ProfileSyncService::Observe(int type,
       }
       // Clear out the gaia password if it is already there.
       gaia_password_ = std::string();
-      if (status != DataTypeManager::OK) {
+      if (result != DataTypeManager::OK) {
         VLOG(0) << "ProfileSyncService::Observe: Unrecoverable error detected";
-        std::string message =
-          "Sync Configuration failed while configuring " +
-          syncable::ModelTypeSetToString(result->failed_types) +
-          ": " + DataTypeManager::ConfigureStatusToString(status);
-        OnUnrecoverableError(result->location, message);
+        std::string message = StringPrintf("Sync Configuration failed with %d",
+                                            result);
+        OnUnrecoverableError(*(result_with_location->location), message);
         cached_passphrase_ = CachedPassphrase();
         return;
       }

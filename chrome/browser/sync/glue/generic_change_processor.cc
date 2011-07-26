@@ -7,7 +7,6 @@
 #include "base/tracked.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 
@@ -70,45 +69,37 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
     return;
   if (syncer_changes_.empty())
     return;
-  SyncError error = local_service_->ProcessSyncChanges(FROM_HERE,
-                                                        syncer_changes_);
+  local_service_->ProcessSyncChanges(FROM_HERE, syncer_changes_);
   syncer_changes_.clear();
-  if (error.IsSet()) {
-    error_handler()->OnUnrecoverableError(error.location(), error.message());
-  }
 }
 
-SyncError GenericChangeProcessor::GetSyncDataForType(
+bool GenericChangeProcessor::GetSyncDataForType(
     syncable::ModelType type,
     SyncDataList* current_sync_data) {
   std::string type_name = syncable::ModelTypeToString(type);
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(syncable::ModelTypeToRootTag(type))) {
-    SyncError error(FROM_HERE,
-                    "Server did not create the top-level " + type_name +
-                    " node. We might be running against an out-of-date server.",
-                    type);
-    return error;
+    LOG(ERROR) << "Server did not create the top-level " + type_name + " node."
+               << " We might be running against an out-of-date server.";
+    return false;
   }
 
   int64 sync_child_id = root.GetFirstChildId();
   while (sync_child_id != sync_api::kInvalidId) {
     sync_api::ReadNode sync_child_node(&trans);
     if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-      SyncError error(FROM_HERE,
-                      "Failed to fetch child node for type " + type_name + ".",
-                       type);
-      return error;
+      LOG(ERROR) << "Failed to fetch child node for type " + type_name + ".";
+      return false;
     }
     current_sync_data->push_back(SyncData::CreateRemoteData(
         sync_child_node.GetEntitySpecifics()));
     sync_child_id = sync_child_node.GetSuccessorId();
   }
-  return SyncError();
+  return true;
 }
 
-SyncError GenericChangeProcessor::ProcessSyncChanges(
+void GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
   sync_api::WriteTransaction trans(from_here, share_handle());
@@ -118,20 +109,17 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
        ++iter) {
     const SyncChange& change = *iter;
     DCHECK_NE(change.sync_data().GetDataType(), syncable::UNSPECIFIED);
-    syncable::ModelType type = change.sync_data().GetDataType();
-    std::string type_str = syncable::ModelTypeToString(type);
+    std::string type_str = syncable::ModelTypeToString(
+        change.sync_data().GetDataType());
     sync_api::WriteNode sync_node(&trans);
     if (change.change_type() == SyncChange::ACTION_DELETE) {
       if (change.sync_data().GetTag() == "" ||
           !sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
                                            change.sync_data().GetTag())) {
         NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to delete " + type_str + " node.",
-                        type);
-        error_handler()->OnUnrecoverableError(error.location(),
-                                              error.message());
-        return error;
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to delete " + type_str + " node.");
+        return;
       }
       sync_node.Remove();
     } else if (change.change_type() == SyncChange::ACTION_ADD) {
@@ -141,23 +129,16 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       if (!root_node.InitByTagLookup(
               syncable::ModelTypeToRootTag(change.sync_data().GetDataType()))) {
         NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to look up root node for type " + type_str,
-                        type);
-        error_handler()->OnUnrecoverableError(error.location(),
-                                              error.message());
-        return error;
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to look up root node for type " + type_str);
+        return;
       }
       if (!sync_node.InitUniqueByCreation(change.sync_data().GetDataType(),
                                           root_node,
                                           change.sync_data().GetTag())) {
-        NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to create " + type_str + " node.",
-                        type);
-        error_handler()->OnUnrecoverableError(error.location(),
-                                              error.message());
-        return error;
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to create " + type_str + " node.");
+        return;
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
@@ -166,12 +147,9 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
           !sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
                                            change.sync_data().GetTag())) {
         NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to update " + type_str + " node.",
-                        type);
-        error_handler()->OnUnrecoverableError(error.location(),
-                                              error.message());
-        return error;
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+            "Failed to update " + type_str + " node");
+        return;
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
@@ -179,15 +157,11 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       // successor, parent, etc.).
     } else {
       NOTREACHED();
-      SyncError error(FROM_HERE,
-                      "Received unset SyncChange in the change processor.",
-                      type);
-      error_handler()->OnUnrecoverableError(error.location(),
-                                            error.message());
-      return error;
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Received unset SyncChange in the change processor.");
+      return;
     }
   }
-  return SyncError();
 }
 
 bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(

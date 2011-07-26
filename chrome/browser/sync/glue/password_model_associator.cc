@@ -10,7 +10,6 @@
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
@@ -40,7 +39,7 @@ PasswordModelAssociator::PasswordModelAssociator(
 
 PasswordModelAssociator::~PasswordModelAssociator() {}
 
-bool PasswordModelAssociator::AssociateModels(SyncError* error) {
+bool PasswordModelAssociator::AssociateModels() {
   DCHECK(expected_loop_ == MessageLoop::current());
   {
     base::AutoLock lock(abort_association_pending_lock_);
@@ -54,9 +53,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
   if (!password_store_->FillAutofillableLogins(&passwords) ||
       !password_store_->FillBlacklistLogins(&passwords)) {
     STLDeleteElements(&passwords);
-    error->Reset(FROM_HERE,
-                 "Could not get the password entries.",
-                 model_type());
+    LOG(ERROR) << "Could not get the password entries.";
     return false;
   }
 
@@ -67,20 +64,16 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     if (!password_root.InitByTagLookup(kPasswordTag)) {
-      error->Reset(FROM_HERE,
-                   "Server did not create the top-level password node. We "
-                   "might be running against an out-of-date server.",
-                   model_type());
+      LOG(ERROR) << "Server did not create the top-level password node. We "
+                 << "might be running against an out-of-date server.";
       return false;
     }
 
     for (std::vector<webkit_glue::PasswordForm*>::iterator ix =
              passwords.begin();
          ix != passwords.end(); ++ix) {
-      if (IsAbortPending()) {
-        error->Reset(FROM_HERE, "Abort pending", model_type());
+      if (IsAbortPending())
         return false;
-      }
       std::string tag = MakeTag(**ix);
 
       sync_api::ReadNode node(&trans);
@@ -95,9 +88,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::PASSWORDS, tag)) {
             STLDeleteElements(&passwords);
-            error->Reset(FROM_HERE,
-                         "Failed to edit password sync node.",
-                         model_type());
+            LOG(ERROR) << "Failed to edit password sync node.";
             return false;
           }
           WriteToSyncNode(new_password, &write_node);
@@ -110,9 +101,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
         if (!node.InitUniqueByCreation(syncable::PASSWORDS,
                                        password_root, tag)) {
           STLDeleteElements(&passwords);
-          error->Reset(FROM_HERE,
-                       "Failed to create password sync node.",
-                       model_type());
+          LOG(ERROR) << "Failed to create password sync node.";
           return false;
         }
 
@@ -130,7 +119,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::ReadNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        error->Reset(FROM_HERE, "Failed to fetch child node.", model_type());
+        LOG(ERROR) << "Failed to fetch child node.";
         return false;
       }
       const sync_pb::PasswordSpecificsData& password =
@@ -155,7 +144,7 @@ bool PasswordModelAssociator::AssociateModels(SyncError* error) {
   // store, as it can post tasks to the UI thread which can itself be blocked
   // on our transaction, resulting in deadlock. (http://crbug.com/70658)
   if (!WriteToPasswordStore(&new_passwords, &updated_passwords, NULL)) {
-    error->Reset(FROM_HERE, "Failed to write passwords.", model_type());
+    LOG(ERROR) << "Failed to write passwords.";
     return false;
   }
 
@@ -180,7 +169,7 @@ bool PasswordModelAssociator::DeleteAllNodes(
   return true;
 }
 
-bool PasswordModelAssociator::DisassociateModels(SyncError* error) {
+bool PasswordModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
   return true;

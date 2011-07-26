@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
@@ -45,9 +44,6 @@ namespace browser_sync {
 static const char kBookmarkBarTag[] = "bookmark_bar";
 static const char kSyncedBookmarksTag[] = "synced_bookmarks";
 static const char kOtherBookmarksTag[] = "other_bookmarks";
-static const char kServerError[] =
-    "Server did not create top-level nodes.  Possibly we are running against "
-    "an out-of-date server?";
 
 // Bookmark comparer for map of bookmark nodes.
 class BookmarkComparer {
@@ -182,7 +178,7 @@ BookmarkModelAssociator::~BookmarkModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool BookmarkModelAssociator::DisassociateModels(SyncError* error) {
+bool BookmarkModelAssociator::DisassociateModels() {
   id_map_.clear();
   id_map_inverse_.clear();
   dirty_associations_sync_ids_.clear();
@@ -319,20 +315,20 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-bool BookmarkModelAssociator::AssociateModels(SyncError* error) {
+bool BookmarkModelAssociator::AssociateModels() {
   // Try to load model associations from persisted associations first. If that
   // succeeds, we don't need to run the complex model matching algorithm.
   if (LoadAssociations())
     return true;
 
-  DisassociateModels(error);
+  DisassociateModels();
 
   // We couldn't load model associations from persisted associations. So build
   // them.
-  return BuildAssociations(error);
+  return BuildAssociations();
 }
 
-bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
+bool BookmarkModelAssociator::BuildAssociations() {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -356,12 +352,14 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
   // and Other Bookmarks.
   if (!AssociateTaggedPermanentNode(bookmark_model_->other_node(),
                                     kOtherBookmarksTag)) {
-    error->Reset(FROM_HERE, kServerError, model_type());
+    LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
+               << "are running against an out-of-date server?";
     return false;
   }
   if (!AssociateTaggedPermanentNode(bookmark_model_->bookmark_bar_node(),
                                     kBookmarkBarTag)) {
-    error->Reset(FROM_HERE, kServerError, model_type());
+    LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
+               << "are running against an out-of-date server?";
     return false;
   }
   if (!AssociateTaggedPermanentNode(bookmark_model_->synced_node(),
@@ -370,7 +368,8 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
       // server if the command line flag is set.
       CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncedBookmarksFolder)) {
-    error->Reset(FROM_HERE, kServerError, model_type());
+    LOG(ERROR) << "Server did not create top-level synced nodes.  Possibly "
+               << "we are running against an out-of-date server?";
     return false;
   }
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
@@ -400,7 +399,6 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
 
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(sync_parent_id)) {
-      error->Reset(FROM_HERE, "Failed to lookup node.", model_type());
       return false;
     }
     // Only folder nodes are pushed on to the stack.
@@ -416,7 +414,6 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::WriteNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        error->Reset(FROM_HERE, "Failed to lookup node.", model_type());
         return false;
       }
 

@@ -7,7 +7,6 @@
 #pragma once
 
 #include <set>
-#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
@@ -37,7 +36,7 @@ class DataTypeManager {
 
   // Update NotifyDone() in data_type_manager_impl.cc if you update
   // this.
-  enum ConfigureStatus {
+  enum ConfigureResult {
     OK,                  // Configuration finished without error.
     ASSOCIATION_FAILED,  // An error occurred during model association.
     ABORTED,             // Start was aborted by calling Stop() before
@@ -48,25 +47,34 @@ class DataTypeManager {
 
   typedef std::set<syncable::ModelType> TypeSet;
 
-  // Note: location and failed_types are only filled when status is not OK.
-  struct ConfigureResult {
-    ConfigureResult();
-    ConfigureResult(ConfigureStatus status,
-                    TypeSet requested_types);
-    ConfigureResult(ConfigureStatus status,
-                    TypeSet requested_types,
-                    TypeSet failed_types,
-                    const tracked_objects::Location& location);
-    ConfigureStatus status;
+  // In case of an error the location is filled with the location the
+  // error originated from. In case of a success the error location value
+  // is to be not used.
+  // TODO(tim): We should rename this / ConfigureResult to something more
+  // flexible like SyncConfigureDoneDetails.
+  struct ConfigureResultWithErrorLocation {
+    ConfigureResult result;
     TypeSet requested_types;
-    TypeSet failed_types;
-    tracked_objects::Location location;
+    scoped_ptr<tracked_objects::Location> location;
+
+    ConfigureResultWithErrorLocation();
+    ConfigureResultWithErrorLocation(const ConfigureResult& result,
+        const tracked_objects::Location& location,
+        const TypeSet& requested_types)
+        : result(result),
+          requested_types(requested_types) {
+      this->location.reset(new tracked_objects::Location(
+          location.function_name(),
+          location.file_name(),
+          location.line_number(),
+          location.program_counter()));
+    }
+
+      ~ConfigureResultWithErrorLocation();
   };
 
-  virtual ~DataTypeManager() {}
 
-  // Convert a ConfigureStatus to string for debug purposes.
-  static std::string ConfigureStatusToString(ConfigureStatus status);
+  virtual ~DataTypeManager() {}
 
   // Begins asynchronous configuration of data types.  Any currently
   // running data types that are not in the desired_types set will be

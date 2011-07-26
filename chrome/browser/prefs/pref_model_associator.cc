@@ -116,7 +116,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
   return;
 }
 
-SyncError PrefModelAssociator::MergeDataAndStartSyncing(
+bool PrefModelAssociator::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
@@ -158,14 +158,9 @@ SyncError PrefModelAssociator::MergeDataAndStartSyncing(
   }
 
   // Push updates to sync.
-  SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
-  if (error.IsSet()) {
-    return error;
-  }
-
+  sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   models_associated_ = true;
-  return SyncError();
+  return true;
 }
 
 void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
@@ -311,15 +306,11 @@ SyncDataList PrefModelAssociator::GetAllSyncData(syncable::ModelType type)
   return current_data;
 }
 
-SyncError PrefModelAssociator::ProcessSyncChanges(
+void PrefModelAssociator::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
-  if (!models_associated_) {
-    SyncError error(FROM_HERE,
-                    "Models not yet associated.",
-                    PREFERENCES);
-    return error;
-  }
+  if (!models_associated_)
+    return;
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
   SyncChangeList::const_iterator iter;
   for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
@@ -368,7 +359,6 @@ SyncError PrefModelAssociator::ProcessSyncChanges(
 
     SendUpdateNotificationsIfNecessary(name);
   }
-  return SyncError();
 }
 
 Value* PrefModelAssociator::ReadPreferenceSpecifics(
@@ -442,9 +432,5 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     }
     changes.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
-
-  SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-  if (error.IsSet())
-    StopSyncing(PREFERENCES);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }

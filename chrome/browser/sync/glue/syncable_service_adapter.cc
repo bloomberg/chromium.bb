@@ -30,26 +30,18 @@ SyncableServiceAdapter::~SyncableServiceAdapter() {
   }
 }
 
-bool SyncableServiceAdapter::AssociateModels(SyncError* error) {
+bool SyncableServiceAdapter::AssociateModels() {
   syncing_ = true;
   SyncDataList initial_sync_data;
-  SyncError temp_error =
-      sync_processor_->GetSyncDataForType(type_, &initial_sync_data);
-  if (temp_error.IsSet()) {
-    *error = temp_error;
+  if (!sync_processor_->GetSyncDataForType(type_, &initial_sync_data)) {
     return false;
   }
-  temp_error = service_->MergeDataAndStartSyncing(type_,
-                                                  initial_sync_data,
-                                                  sync_processor_);
-  if (temp_error.IsSet()) {
-    *error = temp_error;
-    return false;
-  }
-  return true;
+  return service_->MergeDataAndStartSyncing(type_,
+                                            initial_sync_data,
+                                            sync_processor_);
 }
 
-bool SyncableServiceAdapter::DisassociateModels(SyncError* error) {
+bool SyncableServiceAdapter::DisassociateModels() {
   service_->StopSyncing(type_);
   syncing_ = false;
   return true;

@@ -8,8 +8,6 @@
 
 #include <vector>
 
-#include "chrome/browser/sync/api/sync_error.h"
-
 class SyncChange;
 
 namespace tracked_objects {
@@ -22,15 +20,8 @@ typedef std::vector<SyncChange> SyncChangeList;
 class SyncChangeProcessor {
  public:
   // Process a list of SyncChanges.
-  // Returns: A default SyncError (IsSet() == false) if no errors were
-  //          encountered, and a filled SyncError (IsSet() == true)
-  //          otherwise.
-  // Inputs:
-  //   |from_here|: allows tracking of where sync changes originate.
-  //   |change_list|: is the list of sync changes in need of processing.
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) = 0;
+  virtual void ProcessSyncChanges(const tracked_objects::Location& from_here,
+                                  const SyncChangeList& change_list) = 0;
  protected:
   virtual ~SyncChangeProcessor();
 };

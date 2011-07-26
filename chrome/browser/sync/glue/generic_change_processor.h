@@ -45,13 +45,12 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual void CommitChangesFromSyncModel() OVERRIDE;
 
   // SyncChangeProcessor implementation.
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) OVERRIDE;
+  virtual void ProcessSyncChanges(const tracked_objects::Location& from_here,
+                                  const SyncChangeList& change_list) OVERRIDE;
 
   // Fills |current_sync_data| with all the syncer data for the specified type.
-  virtual SyncError GetSyncDataForType(syncable::ModelType type,
-                                       SyncDataList* current_sync_data);
+  virtual bool GetSyncDataForType(syncable::ModelType type,
+                                  SyncDataList* current_sync_data);
 
   // Generic versions of AssociatorInterface methods. Called by
   // SyncableServiceAdapter.

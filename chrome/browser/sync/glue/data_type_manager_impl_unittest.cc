@@ -53,12 +53,12 @@ ACTION_P2(InvokeCallbackPointer, callback, argument) {
   delete callback;
 }
 
-DataTypeManager::ConfigureStatus GetStatus(
+DataTypeManager::ConfigureResult GetResult(
     const NotificationDetails& details) {
-  const DataTypeManager::ConfigureResult* result =
-      Details<const DataTypeManager::ConfigureResult>(
+  DataTypeManager::ConfigureResultWithErrorLocation* result_with_location =
+      Details<DataTypeManager::ConfigureResultWithErrorLocation>(
       details).ptr();
-  return result->status;
+  return result_with_location->result;
 }
 
 class DataTypeManagerImplTest : public testing::Test {
@@ -149,11 +149,11 @@ class DataTypeManagerImplTest : public testing::Test {
   }
 
 
-  void SetConfigureDoneExpectation(DataTypeManager::ConfigureStatus status) {
+  void SetConfigureDoneExpectation(DataTypeManager::ConfigureResult result) {
     EXPECT_CALL(
         observer_,
         Observe(int(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE), _,
-        ::testing::ResultOf(&GetStatus, status)));
+        ::testing::ResultOf(&GetResult, result)));
   }
 
   MessageLoopForUI message_loop_;
