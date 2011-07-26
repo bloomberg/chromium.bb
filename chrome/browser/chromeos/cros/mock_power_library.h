@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_MOCK_POWER_LIBRARY_H_
 #pragma once
 
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/cros/power_library.h"
 
-#include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/basictypes.h"
+#include "base/observer_list.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
+#include "third_party/cros/chromeos_power.h"
 #include "third_party/cros/chromeos_resume.h"
 
 namespace chromeos {
@@ -18,9 +20,8 @@ class PowerLibraryImpl : public PowerLibrary {
       : power_status_connection_(NULL),
         resume_status_connection_(NULL),
         status_(chromeos::PowerStatus()) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (CrosLibrary::Get()->EnsureLoaded())
       Init();
-    }
   }
 
   ~PowerLibraryImpl() {
@@ -96,7 +97,7 @@ class PowerLibraryImpl : public PowerLibrary {
 
  private:
   static void PowerStatusChangedHandler(void* object,
-      const chromeos::PowerStatus& status) {
+                                        const chromeos::PowerStatus& status) {
     PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
     power->UpdatePowerStatus(status);
   }
@@ -146,7 +147,7 @@ class PowerLibraryImpl : public PowerLibrary {
 
   ObserverList<Observer> observers_;
 
-  // A reference to the battery power api, to allow callbacks when the battery
+  // A reference to the power battery API, to allow callbacks when the battery
   // status changes.
   chromeos::PowerStatusConnection power_status_connection_;
 

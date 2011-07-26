@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
 #pragma once
 
-#include "base/memory/singleton.h"
-#include "base/observer_list.h"
-#include "base/time.h"
-#include "third_party/cros/chromeos_power.h"
+namespace base {
+class TimeDelta;
+}
 
 namespace chromeos {
 
@@ -22,17 +21,23 @@ class PowerLibrary {
    public:
     virtual void PowerChanged(PowerLibrary* obj) = 0;
     virtual void SystemResumed() = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
+
   virtual ~PowerLibrary() {}
+
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
   // Whether or not the line power is connected.
   virtual bool line_power_on() const = 0;
 
-  // Whether or not the battery is fully charged..
+  // Whether or not the battery is fully charged.
   virtual bool battery_fully_charged() const = 0;
 
-  // The percentage (0-100) of remaining battery.
+  // The percentage [0-100] of remaining battery.
   virtual double battery_percentage() const = 0;
 
   // Whether there is a battery present.
