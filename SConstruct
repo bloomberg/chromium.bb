@@ -822,11 +822,14 @@ if TARGET_NAME == 'arm' and not pre_base_env.Bit('bitcode'):
 
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
-  TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s' % TARGET_NAME
+  BUILD_TARGET_NAME = TARGET_NAME
 else:
-  TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s-to-%s' % (BUILD_NAME,
-                                                                TARGET_NAME)
-pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
+  BUILD_TARGET_NAME = '%s-to-%s' % (BUILD_NAME, TARGET_NAME)
+pre_base_env.Replace(BUILD_TARGET_NAME=BUILD_TARGET_NAME)
+# This may be changed later; see target_variant_map, below.
+pre_base_env.Replace(TARGET_VARIANT='')
+pre_base_env.Replace(TARGET_ROOT=
+    '${DESTINATION_ROOT}/${BUILD_TYPE}-${BUILD_TARGET_NAME}${TARGET_VARIANT}')
 
 # Valgrind
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
@@ -2477,21 +2480,17 @@ if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.FilterOut(CCFLAGS=optflags)
   nacl_irt_env.FilterOut(CXXFLAGS=optflags)
 
-# This needs to happen pretty early, because it affects any concretized
-# directory names.
-def AddTargetRootSuffix(env, bit_name, suffix):
-  """Add a suffix to the subdirectory of scons-out that we use.  This
-  usually does not affect correctness, but saves us triggering a
-  rebuild whenever we add or remove a build option such as --nacl_glibc.
-  """
-  if env.Bit(bit_name):
-    pathname = '%s-%s' % (env.subst('${TARGET_ROOT}'), suffix)
-    env.Replace(TARGET_ROOT=pathname)
-
-AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
-AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
-AddTargetRootSuffix(nacl_env, 'use_sandboxed_translator', 'sbtc')
-AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
+# Map certain flag bits to suffices on the build output.  This needs to
+# happen pretty early, because it affects any concretized directory names.
+target_variant_map = [
+    ('bitcode', 'pnacl'),
+    ('nacl_pic', 'pic'),
+    ('use_sandboxed_translator', 'sbtc'),
+    ('nacl_glibc', 'glibc'),
+    ]
+for variant_bit, variant_suffix in target_variant_map:
+  if nacl_env.Bit(variant_bit):
+    nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
 
 if nacl_env.Bit('irt'):
   nacl_env.Replace(PPAPI_LIBS=['ppapi'])
