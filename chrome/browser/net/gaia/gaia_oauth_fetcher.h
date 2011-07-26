@@ -43,15 +43,12 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
  public:
   // Defines steps of OAuth process performed by this class.
   typedef enum {
-    OAUTH1_REQUEST_TOKEN        = 1 << 0,
-    OAUTH1_ALL_ACCESS_TOKEN     = 1 << 1,
-    OAUTH2_SERVICE_ACCESS_TOKEN = 1 << 2,
-    USER_INFO                   = 1 << 3,
-    ALL_OAUTH_STEPS             = OAUTH1_REQUEST_TOKEN |
-                                  OAUTH1_ALL_ACCESS_TOKEN |
-                                  OAUTH2_SERVICE_ACCESS_TOKEN |
-                                  USER_INFO,
-  } AutoFetchFlags;
+    OAUTH1_REQUEST_TOKEN,
+    OAUTH1_ALL_ACCESS_TOKEN,
+    OAUTH2_SERVICE_ACCESS_TOKEN,
+    USER_INFO,
+    ALL_OAUTH_STEPS,
+  } AutoFetchLimit;
 
   GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                    net::URLRequestContextGetter* getter,
@@ -63,7 +60,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // Sets the mask of which OAuth fetch steps should be automatically kicked
   // of upon successful completition of the previous steps. By default,
   // this class will chain all steps in OAuth proccess.
-  void SetAutoFetchMask(int mask) { auto_fetch_mask_ = mask; }
+  void SetAutoFetchLimit(AutoFetchLimit limit) { auto_fetch_limit_ = limit; }
 
   // Obtains an OAuth 1 request token
   //
@@ -178,7 +175,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
       const net::URLRequestStatus& status);
 
   // Given parameters, create a OAuth v1 request URL.
-  static GURL MakeGetOAuthTokenUrl(const char* auth1LoginScope,
+  static GURL MakeGetOAuthTokenUrl(const char* oauth1_login_scope,
                                    const std::string& product_name);
 
   // Given parameters, create a OAuthGetAccessToken request body.
@@ -203,7 +200,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
                                        bool send_cookies,
                                        URLFetcher::Delegate* delegate);
 
-  bool ShouldFetch(AutoFetchFlags fetch_flag);
+  bool ShouldAutoFetch(AutoFetchLimit fetch_step);
 
   // These fields are common to GaiaOAuthFetcher, same every request
   GaiaOAuthConsumer* const consumer_;
@@ -218,7 +215,7 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   std::string request_body_;
   std::string request_headers_;
   bool fetch_pending_;
-  int auto_fetch_mask_;
+  AutoFetchLimit auto_fetch_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaOAuthFetcher);
 };

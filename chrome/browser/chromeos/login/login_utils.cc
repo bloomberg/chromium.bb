@@ -188,7 +188,7 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
                        kServiceScopeChromeOSDeviceManagement),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret) {
-    oauth_fetcher_.SetAutoFetchMask(
+    oauth_fetcher_.SetAutoFetchLimit(
         GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
   }
   virtual ~PolicyOAuthFetcher() {}
@@ -432,6 +432,8 @@ void LoginUtilsImpl::OnProfileCreated(Profile* profile, Status status) {
       // Fetch OAuth tokens. Use off-the-record profile that was used for
       // authentication step. It should already contain all needed cookies
       // that will let us skip GAIA's user authentication.
+      //
+      // TODO(rickcam) We should use an isolated App here.
       FetchOAuthTokens(authenticator_->AuthenticationProfile());
     } else {
       // We don't need authenticator instance any more, reset it so that
@@ -514,9 +516,7 @@ void LoginUtilsImpl::FetchOAuthTokens(Profile* profile) {
   // Let's first get the Oauth request token and OAuth1 token+secret.
   // One we get that, we will kick off individial requests for OAuth2 tokens for
   // all our services.
-  oauth_fetcher_->SetAutoFetchMask(
-      GaiaOAuthFetcher::OAUTH1_REQUEST_TOKEN |
-      GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
+  oauth_fetcher_->SetAutoFetchLimit(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
   oauth_fetcher_->StartGetOAuthTokenRequest();
 }
 

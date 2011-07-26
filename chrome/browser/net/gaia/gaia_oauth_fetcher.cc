@@ -60,7 +60,7 @@ GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
       service_scope_(service_scope),
       popup_(NULL),
       fetch_pending_(false),
-      auto_fetch_mask_(ALL_OAUTH_STEPS) {}
+      auto_fetch_limit_(ALL_OAUTH_STEPS) {}
 
 GaiaOAuthFetcher::~GaiaOAuthFetcher() {}
 
@@ -107,10 +107,10 @@ URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
 
 // static
 GURL GaiaOAuthFetcher::MakeGetOAuthTokenUrl(
-    const char* auth1LoginScope,
+    const char* oauth1_login_scope,
     const std::string& product_name) {
   return GURL(std::string(kGetOAuthTokenUrl) +
-      "?scope=" + auth1LoginScope +
+      "?scope=" + oauth1_login_scope +
       "&xoauth_display_name=" +
       OAuthRequestSigner::Encode(product_name));
 }
@@ -152,7 +152,7 @@ std::string GaiaOAuthFetcher::MakeOAuthWrapBridgeBody(
       "anonymous",  // oauth_consumer_key
       "anonymous",  // consumer secret
       oauth1_access_token,  // oauth_token
-      oauth1_access_token_secret, // token secret
+      oauth1_access_token_secret,  // token secret
       &signed_request);
   DCHECK(is_signed);
   return signed_request;
@@ -463,7 +463,7 @@ void GaiaOAuthFetcher::OnGetOAuthTokenFetched(const std::string& token) {
     popped_up->CloseWindow();
   }
   consumer_->OnGetOAuthTokenSuccess(token);
-  if (ShouldFetch(OAUTH1_ALL_ACCESS_TOKEN))
+  if (ShouldAutoFetch(OAUTH1_ALL_ACCESS_TOKEN))
     StartOAuthGetAccessToken(token);
 }
 
@@ -478,7 +478,7 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
       if (cookie.Name() == kOAuthTokenCookie) {
         std::string token = cookie.Value();
         consumer_->OnGetOAuthTokenSuccess(token);
-        if (ShouldFetch(OAUTH1_ALL_ACCESS_TOKEN))
+        if (ShouldAutoFetch(OAUTH1_ALL_ACCESS_TOKEN))
           StartOAuthGetAccessToken(token);
         return;
       }
@@ -497,7 +497,7 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     std::string token;
     ParseOAuthGetAccessTokenResponse(data, &token, &secret);
     consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
-    if (ShouldFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
+    if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
       StartOAuthWrapBridge(token, secret, "3600", service_scope_);
   } else {
     consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status));
@@ -513,7 +513,7 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
     consumer_->OnOAuthWrapBridgeSuccess(token, expires_in);
-    if (ShouldFetch(USER_INFO))
+    if (ShouldAutoFetch(USER_INFO))
       StartUserInfo(token);
   } else {
     consumer_->OnOAuthWrapBridgeFailure(GenerateAuthError(data, status));
@@ -553,7 +553,6 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
   }
 }
 
-bool GaiaOAuthFetcher::ShouldFetch(AutoFetchFlags fetch_flag) {
-  return (auto_fetch_mask_ & static_cast<int>(fetch_flag)) ==
-      static_cast<int>(fetch_flag);
+bool GaiaOAuthFetcher::ShouldAutoFetch(AutoFetchLimit fetch_step) {
+  return fetch_step <= auto_fetch_limit_;
 }
