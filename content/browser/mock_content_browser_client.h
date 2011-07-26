@@ -103,6 +103,9 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(RenderViewHost* rvh)  OVERRIDE;
+  virtual void GetSaveDir(TabContents* tab_contents,
+                          FilePath* website_save_dir,
+                          FilePath* download_save_dir) OVERRIDE;
   virtual void ClearCookies(RenderViewHost* rvh)  OVERRIDE;
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,

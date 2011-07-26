@@ -230,9 +230,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
                             saved_failed_items_.size());
   }
 
-  // Retrieve the preference for the directory to save pages to.
-  static FilePath GetSaveDirPreference(PrefService* prefs);
-
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
   FilePath GetSuggestedNameForSaveAs(

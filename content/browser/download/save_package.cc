@@ -22,10 +22,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/save_file.h"
@@ -1154,38 +1151,12 @@ const FilePath::CharType* SavePackage::ExtensionForMimeType(
   return FILE_PATH_LITERAL("");
 }
 
-
-
-// static.
-// Check whether the preference has the preferred directory for saving file. If
-// not, initialize it with default directory.
-FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
-  DCHECK(prefs);
-
-  if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
-    DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
-    FilePath default_save_path = prefs->GetFilePath(
-        prefs::kDownloadDefaultDirectory);
-    prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
-                                default_save_path,
-                                PrefService::UNSYNCABLE_PREF);
-  }
-
-  // Get the directory from preference.
-  FilePath save_file_path = prefs->GetFilePath(
-      prefs::kSaveFileDefaultDirectory);
-  DCHECK(!save_file_path.empty());
-
-  return save_file_path;
-}
-
 void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.
-  PrefService* prefs = tab_contents()->profile()->GetPrefs();
-  FilePath website_save_dir = GetSaveDirPreference(prefs);
-  FilePath download_save_dir = prefs->GetFilePath(
-      prefs::kDownloadDefaultDirectory);
+  FilePath website_save_dir, download_save_dir;
+  content::GetContentClient()->browser()->GetSaveDir(
+      tab_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = tab_contents()->contents_mime_type();
   std::string accept_languages =
       content::GetContentClient()->browser()->GetAcceptLangs(tab_contents());
@@ -1260,26 +1231,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
                                       &saved_main_file_path_);
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
-
-  PrefService* prefs = tab_contents()->profile()->GetPrefs();
-  StringPrefMember save_file_path;
-  save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
-#if defined(OS_POSIX)
-  std::string path_string = saved_main_directory_path_.value();
-#elif defined(OS_WIN)
-  std::string path_string = WideToUTF8(saved_main_directory_path_.value());
-#endif
-  // If user change the default saving directory, we will remember it just
-  // like IE and FireFox.
-  if (!tab_contents()->profile()->IsOffTheRecord() &&
-      save_file_path.GetValue() != path_string) {
-    save_file_path.SetValue(path_string);
-  }
-
   save_type_ = type;
-
-  prefs->SetInteger(prefs::kSaveFileType, save_type_);
-
   if (save_type_ == SavePackage::SAVE_AS_COMPLETE_HTML) {
     // Make new directory for saving complete file.
     saved_main_directory_path_ = saved_main_directory_path_.Append(

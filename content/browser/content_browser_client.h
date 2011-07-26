@@ -260,6 +260,11 @@ class ContentBrowserClient {
   // Clears browser cookies.
   virtual void ClearCookies(RenderViewHost* rvh) = 0;
 
+  // Retrieve the directories to save html pages and downloads to.
+  virtual void GetSaveDir(TabContents* tab_contents,
+                          FilePath* website_save_dir,
+                          FilePath* download_save_dir) = 0;
+
   // Asks the user for the path to save a page. The embedder calls the tab's
   // SavePackage::OnPathPicked to give the answer.
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,

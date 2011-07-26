@@ -214,6 +214,11 @@ void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
+void MockContentBrowserClient::GetSaveDir(TabContents* tab_contents,
+                                          FilePath* website_save_dir,
+                                          FilePath* download_save_dir) {
+}
+
 void MockContentBrowserClient::ChooseSavePath(
     const base::WeakPtr<SavePackage>& save_package,
     const FilePath& suggested_path,

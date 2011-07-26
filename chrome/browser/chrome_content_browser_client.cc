@@ -24,6 +24,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
@@ -742,6 +743,29 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
   remover->Remove(remove_mask);
   // BrowsingDataRemover takes care of deleting itself when done.
+}
+
+void ChromeContentBrowserClient::GetSaveDir(TabContents* tab_contents,
+                                            FilePath* website_save_dir,
+                                            FilePath* download_save_dir) {
+  PrefService* prefs = tab_contents->profile()->GetPrefs();
+
+  // Check whether the preference has the preferred directory for saving file.
+  // If not, initialize it with default directory.
+  if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
+    DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
+    FilePath default_save_path = prefs->GetFilePath(
+        prefs::kDownloadDefaultDirectory);
+    prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
+                                default_save_path,
+                                PrefService::UNSYNCABLE_PREF);
+  }
+
+  // Get the directory from preference.
+  *website_save_dir = prefs->GetFilePath(prefs::kSaveFileDefaultDirectory);
+  DCHECK(!website_save_dir->empty());
+
+  *download_save_dir = prefs->GetFilePath(prefs::kDownloadDefaultDirectory);
 }
 
 void ChromeContentBrowserClient::ChooseSavePath(
