@@ -22,13 +22,12 @@ cr.define('options', function() {
 
       $('instantConfirmCancel').onclick = function() {
         OptionsPage.closeOverlay();
+        $('instantEnabledCheckbox').checked = false;
       };
+
       $('instantConfirmOk').onclick = function() {
         OptionsPage.closeOverlay();
-        Preferences.setBooleanPref('instant.confirm_dialog_shown', true);
-        var instantEnabledCheckbox = $('instantEnableCheckbox');
-        Preferences.setBooleanPref(instantEnableCheckbox.pref, true,
-                                   instantEnableCheckbox.metric);
+        chrome.send('enableInstant');
       };
     },
   };

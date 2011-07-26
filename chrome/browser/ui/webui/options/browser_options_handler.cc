@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -122,6 +123,12 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "toggleShowBookmarksBar",
       NewCallback(this, &BrowserOptionsHandler::ToggleShowBookmarksBar));
+  web_ui_->RegisterMessageCallback(
+      "enableInstant",
+      NewCallback(this, &BrowserOptionsHandler::EnableInstant));
+  web_ui_->RegisterMessageCallback(
+      "disableInstant",
+      NewCallback(this, &BrowserOptionsHandler::DisableInstant));
 }
 
 void BrowserOptionsHandler::Initialize() {
@@ -467,6 +474,14 @@ void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
       chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
       source,
       NotificationService::NoDetails());
+}
+
+void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
+  InstantController::Enable(web_ui_->GetProfile());
+}
+
+void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
+  InstantController::Disable(web_ui_->GetProfile());
 }
 
 void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {

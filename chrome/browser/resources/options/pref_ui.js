@@ -98,6 +98,8 @@ cr.define('options', function() {
       this.addEventListener(
           'change',
           function(e) {
+            if (self.customChangeHandler(e))
+              return;
             var value = self.inverted_pref ? !self.checked : self.checked;
             switch(self.valueType) {
               case 'number':
@@ -125,6 +127,17 @@ cr.define('options', function() {
      */
     setDisabled: function(reason, disabled) {
       updateDisabledState_(this, reason, disabled);
+    },
+
+    /**
+     * This method is called first while processing an onchange event. If it
+     * returns false, regular onchange processing continues (setting the
+     * associated pref, etc). If it returns true, the rest of the onchange is
+     * not performed. I.e., this works like stopPropagation or cancelBubble.
+     * @param {Event} event Change event.
+     */
+    customChangeHandler: function(event) {
+      return false;
     },
   };
 

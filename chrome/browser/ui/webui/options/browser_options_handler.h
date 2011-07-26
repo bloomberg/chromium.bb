@@ -90,6 +90,10 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Notifies any listeners interested in this event.  |args| is ignored.
   void ToggleShowBookmarksBar(const ListValue* args);
 
+  // Enables/disables Instant.
+  void EnableInstant(const ListValue* args);
+  void DisableInstant(const ListValue* args);
+
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultWebClientState state);
 

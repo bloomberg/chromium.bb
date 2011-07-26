@@ -135,6 +135,7 @@ void InstantController::Disable(Profile* profile) {
                                 delta.InMinutes(), 1, 60 * 24 * 10, 50);
   }
 
+  service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, false);
 }
 

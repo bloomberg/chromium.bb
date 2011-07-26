@@ -71,13 +71,16 @@ cr.define('options', function() {
       $('defaultSearchEngine').onchange = this.setDefaultSearchEngine_;
 
       var self = this;
-      $('instantEnableCheckbox').onclick = function(event) {
-        if (this.checked && !self.instantConfirmDialogShown_) {
-          // Leave disabled for now. The PrefCheckbox handler already set it to
-          // true so undo that.
-          Preferences.setBooleanPref(this.pref, false, this.metric);
-          OptionsPage.navigateToPage('instantConfirm');
+      $('instantEnabledCheckbox').customChangeHandler = function(event) {
+        if (this.checked) {
+          if (self.instantConfirmDialogShown_)
+            chrome.send('enableInstant');
+          else
+            OptionsPage.navigateToPage('instantConfirm');
+        } else {
+          chrome.send('disableInstant');
         }
+        return true;
       };
 
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
