@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -111,7 +112,7 @@ class DumpSymbols {
   // Read the selected object file's debugging information, and write it
   // out to |stream|. Return true on success; if an error occurs, report it
   // and return false.
-  bool WriteSymbolFile(FILE *stream);
+  bool WriteSymbolFile(std::ostream &stream);
 
  private:
   // Used internally.

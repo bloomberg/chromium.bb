@@ -40,6 +40,7 @@
 #include <mach-o/fat.h>
 #include <stdio.h>
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -420,7 +421,7 @@ bool DumpSymbols::LoadCommandDumper::SymtabCommand(const ByteBuffer &entries,
   return true;
 }
 
-bool DumpSymbols::WriteSymbolFile(FILE *stream) {
+bool DumpSymbols::WriteSymbolFile(std::ostream &stream) {
   // Select an object file, if SetArchitecture hasn't been called to set one
   // explicitly.
   if (!selected_object_file_) {

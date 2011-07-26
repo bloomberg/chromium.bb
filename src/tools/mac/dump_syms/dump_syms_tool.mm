@@ -35,6 +35,7 @@
 #include <mach-o/arch.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <vector>
 
 #include "common/mac/dump_syms.h"
@@ -82,7 +83,7 @@ static bool Start(const Options &options) {
     }
   }
       
-  return dump_symbols.WriteSymbolFile(stdout);
+  return dump_symbols.WriteSymbolFile(std::cout);
 }
 
 //=============================================================================
