@@ -345,8 +345,14 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
                "route_id", route_id);
   if (router_.ResolveRoute(route_id)) {
+    GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+    bool need_reschedule = (stub && !stub->IsScheduled());
     router_.RemoveRoute(route_id);
     stubs_.Remove(route_id);
+    // In case the renderer is currently blocked waiting for a sync reply from
+    // the stub, we need to make sure to reschedule the GpuChannel here.
+    if (need_reschedule)
+      OnScheduled();
   }
 #endif
 
