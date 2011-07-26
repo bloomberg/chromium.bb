@@ -129,6 +129,11 @@
  */
 //#define SK_ALLOW_LARGE_PDF_SCALARS
 
+/*  Define this to provide font subsetter for font subsetting when generating
+    PDF documents.
+ */
+#define SK_SFNTLY_SUBSETTER "third_party/sfntly/src/subsetter/font_subsetter.h"
+
 /*  Define this to remove dimension checks on bitmaps. Not all blits will be
     correct yet, so this is mostly for debugging the implementation.
  */
