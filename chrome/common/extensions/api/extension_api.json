@@ -6113,29 +6113,6 @@
         "description": "Currently, no content types use resource identifiers."
       },
       {
-        "id": "ContentSettingRule",
-        "type": "object",
-        "properties": {
-          "topLevelPattern": {
-            "type": "string",
-            "description": "The pattern for the top-level frame URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
-          },
-          "embeddedPattern": {
-            "type": "string",
-            "description": "The pattern for the frame or object URL. For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
-          },
-          "resourceIdentifier": {
-            "$ref": "ResourceIdentifier",
-            "optional": true,
-            "description": "The resource identifier for the content type."
-          },
-          "setting": {
-            "type": "any",
-            "description": "The setting applied by this rule. See the description of the individual ContentSetting objects for the possible values."
-          }
-        }
-      },
-      {
         "id": "ContentSetting",
         "type": "object",
         "functions": [
