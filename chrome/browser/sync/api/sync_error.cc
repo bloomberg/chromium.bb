@@ -22,9 +22,6 @@ SyncError::SyncError(const SyncError& other) {
   Copy(other);
 }
 
-SyncError::~SyncError() {
-}
-
 SyncError& SyncError::operator=(const SyncError& other) {
   if (this == &other) {
     return *this;
