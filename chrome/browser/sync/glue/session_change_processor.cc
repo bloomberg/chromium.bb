@@ -63,14 +63,12 @@ void SessionChangeProcessor::Observe(int type,
 
   // Track which windows and/or tabs are modified.
   std::vector<TabContentsWrapper*> modified_tabs;
-  bool windows_changed = false;
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
       if (browser->profile() != profile_) {
         return;
       }
-      windows_changed = true;
       VLOG(1) << "Received BROWSER_OPENED for profile " << profile_;
       break;
     }
@@ -80,7 +78,6 @@ void SessionChangeProcessor::Observe(int type,
       if (tab->profile() != profile_) {
         return;
       }
-      windows_changed = true;
       modified_tabs.push_back(tab);
       VLOG(1) << "Received TAB_PARENTED for profile " << profile_;
       break;
@@ -105,7 +102,6 @@ void SessionChangeProcessor::Observe(int type,
       if (!tab || tab->profile() != profile_) {
         return;
       }
-      windows_changed = true;
       modified_tabs.push_back(tab);
       VLOG(1) << "Received TAB_CLOSED for profile " << profile_;
       break;
