@@ -4978,6 +4978,21 @@
    fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
+{
+   bug_90370
+   Memcheck:Leak
+   ...
+   fun:_ZN3gfx*RenderTextTest*
+}
+{
+   bug_90400
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl24GetUserStyleSheetWatcherEv
+   fun:_ZN28RenderViewHostDelegateHelper14GetWebkitPrefsEP7Profileb
+   fun:_ZN6chrome26ChromeContentBrowserClient14GetWebkitPrefsEP7Profileb
+   fun:_ZN11TabContents14GetWebkitPrefsEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
