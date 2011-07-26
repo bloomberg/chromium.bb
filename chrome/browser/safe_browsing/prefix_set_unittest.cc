@@ -113,7 +113,7 @@ class PrefixSetTest : public PlatformTest {
       char buf[1024];
       size_t nitems = std::min(payload_size - digested_size, sizeof(buf));
       ASSERT_EQ(nitems, fread(buf, 1, nitems, fp));
-      base::MD5Update(&context, &buf, nitems);
+      base::MD5Update(&context, base::StringPiece(buf, nitems));
       digested_size += nitems;
     }
     ASSERT_EQ(digested_size, payload_size);

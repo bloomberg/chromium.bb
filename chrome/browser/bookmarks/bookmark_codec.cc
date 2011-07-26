@@ -338,11 +338,14 @@ void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
 }
 
 void BookmarkCodec::UpdateChecksum(const std::string& str) {
-  base::MD5Update(&md5_context_, str.data(), str.length() * sizeof(char));
+  base::MD5Update(&md5_context_, str);
 }
 
 void BookmarkCodec::UpdateChecksum(const string16& str) {
-  base::MD5Update(&md5_context_, str.data(), str.length() * sizeof(char16));
+  base::MD5Update(&md5_context_,
+                  base::StringPiece(
+                      reinterpret_cast<const char*>(str.data()),
+                      str.length() * sizeof(str[0])));
 }
 
 void BookmarkCodec::UpdateChecksumWithUrlNode(const std::string& id,

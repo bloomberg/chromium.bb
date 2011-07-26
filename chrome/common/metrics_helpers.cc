@@ -177,7 +177,7 @@ int MetricsLogBase::GetElapsedSeconds() {
 std::string MetricsLogBase::CreateHash(const std::string& value) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
-  base::MD5Update(&ctx, value.data(), value.length());
+  base::MD5Update(&ctx, value);
 
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);

@@ -81,8 +81,9 @@ VisitedLinkCommon::Fingerprint VisitedLinkCommon::ComputeURLFingerprint(
 
   base::MD5Context ctx;
   base::MD5Init(&ctx);
-  base::MD5Update(&ctx, salt, LINK_SALT_LENGTH * sizeof(uint8));
-  base::MD5Update(&ctx, canonical_url, url_len * sizeof(char));
+  base::MD5Update(&ctx, base::StringPiece(reinterpret_cast<const char*>(salt),
+                                          LINK_SALT_LENGTH));
+  base::MD5Update(&ctx, base::StringPiece(canonical_url, url_len));
 
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);

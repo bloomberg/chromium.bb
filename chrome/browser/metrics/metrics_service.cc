@@ -1134,7 +1134,7 @@ MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
       return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
     }
 
-    base::MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+    base::MD5Update(&ctx, encoded_log);
 
     if (!base::Base64Decode(encoded_log, &decoded_log)) {
       local_list->clear();
@@ -1200,7 +1200,7 @@ void MetricsService::StoreUnsentLogsHelper(
       list->Clear();
       return;
     }
-    base::MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+    base::MD5Update(&ctx, encoded_log);
     list->Append(Value::CreateStringValue(encoded_log));
   }
 

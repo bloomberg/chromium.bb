@@ -192,7 +192,8 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
   // The file looks valid, start building the digest.
   base::MD5Context context;
   base::MD5Init(&context);
-  base::MD5Update(&context, &header, sizeof(header));
+  base::MD5Update(&context, base::StringPiece(reinterpret_cast<char*>(&header),
+                                              sizeof(header)));
 
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
@@ -201,14 +202,18 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
   read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
   if (read != index.size())
     return NULL;
-  base::MD5Update(&context, &(index[0]), index_bytes);
+  base::MD5Update(&context,
+                  base::StringPiece(reinterpret_cast<char*>(&(index[0])),
+                                    index_bytes));
 
   // Read vector of deltas.
   deltas.resize(header.deltas_size);
   read = fread(&(deltas[0]), sizeof(deltas[0]), deltas.size(), file.get());
   if (read != deltas.size())
     return NULL;
-  base::MD5Update(&context, &(deltas[0]), deltas_bytes);
+  base::MD5Update(&context,
+                  base::StringPiece(reinterpret_cast<char*>(&(deltas[0])),
+                                    deltas_bytes));
 
   base::MD5Digest calculated_digest;
   base::MD5Final(&calculated_digest, &context);
@@ -251,7 +256,8 @@ bool PrefixSet::WriteFile(const FilePath& filter_name) const {
   size_t written = fwrite(&header, sizeof(header), 1, file.get());
   if (written != 1)
     return false;
-  base::MD5Update(&context, &header, sizeof(header));
+  base::MD5Update(&context, base::StringPiece(reinterpret_cast<char*>(&header),
+                                              sizeof(header)));
 
   // As for reads, the standard guarantees the ability to access the
   // contents of the vector by a pointer to an element.
@@ -259,14 +265,19 @@ bool PrefixSet::WriteFile(const FilePath& filter_name) const {
   written = fwrite(&(index_[0]), sizeof(index_[0]), index_.size(), file.get());
   if (written != index_.size())
     return false;
-  base::MD5Update(&context, &(index_[0]), index_bytes);
+  base::MD5Update(&context,
+                  base::StringPiece(reinterpret_cast<const char*>(&(index_[0])),
+                                    index_bytes));
 
   const size_t deltas_bytes = sizeof(deltas_[0]) * deltas_.size();
   written = fwrite(&(deltas_[0]), sizeof(deltas_[0]), deltas_.size(),
                    file.get());
   if (written != deltas_.size())
     return false;
-  base::MD5Update(&context, &(deltas_[0]), deltas_bytes);
+  base::MD5Update(&context,
+                  base::StringPiece(
+                      reinterpret_cast<const char*>(&(deltas_[0])),
+                      deltas_bytes));
 
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);

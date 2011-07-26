@@ -357,8 +357,8 @@ void UserSettings::StoreHashedPassword(const string& email,
   const string salt = APEncode(string(binary_salt, sizeof(binary_salt)));
   base::MD5Context md5_context;
   base::MD5Init(&md5_context);
-  base::MD5Update(&md5_context, salt.data(), salt.size());
-  base::MD5Update(&md5_context, password.data(), password.size());
+  base::MD5Update(&md5_context, salt);
+  base::MD5Update(&md5_context, password);
   base::MD5Digest md5_digest;
   base::MD5Final(&md5_digest, &md5_context);
 
@@ -420,8 +420,8 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
     return false;
   base::MD5Context md5_context;
   base::MD5Init(&md5_context);
-  base::MD5Update(&md5_context, salt.data(), salt.size());
-  base::MD5Update(&md5_context, password.data(), password.size());
+  base::MD5Update(&md5_context, salt);
+  base::MD5Update(&md5_context, password);
   base::MD5Digest md5_digest;
   base::MD5Final(&md5_digest, &md5_context);
   return hash == GetHashFromDigest(md5_digest);

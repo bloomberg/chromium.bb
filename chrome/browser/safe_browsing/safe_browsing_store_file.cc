@@ -58,8 +58,11 @@ bool ReadArray(T* ptr, size_t nmemb, FILE* fp, base::MD5Context* context) {
   if (ret != nmemb)
     return false;
 
-  if (context)
-    base::MD5Update(context, ptr, sizeof(T) * nmemb);
+  if (context) {
+    base::MD5Update(context,
+                    base::StringPiece(reinterpret_cast<char*>(ptr),
+                                      sizeof(T) * nmemb));
+  }
   return true;
 }
 
@@ -73,8 +76,11 @@ bool WriteArray(const T* ptr, size_t nmemb, FILE* fp,
   if (ret != nmemb)
     return false;
 
-  if (context)
-    base::MD5Update(context, ptr, sizeof(T) * nmemb);
+  if (context) {
+    base::MD5Update(context,
+                    base::StringPiece(reinterpret_cast<const char*>(ptr),
+                                      sizeof(T) * nmemb));
+  }
 
   return true;
 }
