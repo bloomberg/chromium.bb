@@ -14,7 +14,6 @@
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
 #include <pthread.h>
 #endif
-#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"

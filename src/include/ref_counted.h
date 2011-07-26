@@ -5,27 +5,44 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_REF_COUNTED_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_REF_COUNTED_H_
 
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+
 namespace nacl {
 
 namespace subtle {
 
 class RefCountedBase {
  public:
-  static bool ImplementsThreadSafeReferenceCounting() { return false; }
+  static bool ImplementsThreadSafeReferenceCounting() { return true; }
 
-  bool HasOneRef() const { return ref_count_ == 1; }
+  bool HasOneRef() const {
+    nacl::ScopedNaClMutexLock ml(&mu_);
+    return (ref_count_ == 1);
+  }
 
  protected:
-  RefCountedBase() : ref_count_(0) { }
-  ~RefCountedBase() { }
+  RefCountedBase() : ref_count_(0) {
+    NaClXMutexCtor(&mu_);
+  }
+  ~RefCountedBase() {
+    NaClMutexDtor(&mu_);
+  }
 
-  void AddRef() const { ++ref_count_; }
+  void AddRef() const {
+    nacl::ScopedNaClMutexLock ml(&mu_);
+    ++ref_count_;
+  }
 
   // Returns true if the object should self-delete.
-  bool Release() const { return --ref_count_ == 0; }
+  bool Release() const {
+    nacl::ScopedNaClMutexLock ml(&mu_);
+    bool should_delete = (--ref_count_ == 0);
+    return should_delete;
+  }
 
  private:
   mutable int ref_count_;
+  mutable struct NaClMutex mu_;
 
   RefCountedBase(const RefCountedBase&);
   void operator=(const RefCountedBase&);
@@ -214,4 +231,3 @@ scoped_refptr<T> make_scoped_refptr(T* t) {
 }
 
 #endif  // NATIVE_CLIENT_SRC_INCLUDE_REF_COUNTED_H_
-

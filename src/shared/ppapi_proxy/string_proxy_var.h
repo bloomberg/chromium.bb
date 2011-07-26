@@ -24,14 +24,15 @@ class StringProxyVar : public ProxyVar {
   const std::string& contents() const { return contents_; }
 
   // Convenience function to do type checking and down-casting. This returns a
-  // shared_ptr<>, so you don't have to down-cast the raw pointer.
-  static std::tr1::shared_ptr<StringProxyVar> CastFromProxyVar(
-      const SharedProxyVar& proxy_var) {
+  // scoped_refptr<>, so you don't have to down-cast the raw pointer.
+  static scoped_refptr<StringProxyVar> CastFromProxyVar(
+      SharedProxyVar proxy_var) {
     if (proxy_var == NULL || proxy_var->pp_var_type() != PP_VARTYPE_STRING) {
-      std::tr1::shared_ptr<StringProxyVar> string_var;
+      scoped_refptr<StringProxyVar> string_var;
       return string_var;
     }
-    return std::tr1::static_pointer_cast<StringProxyVar>(proxy_var);
+    return scoped_refptr<StringProxyVar>(
+        static_cast<StringProxyVar*>(proxy_var.get()));
   }
 
  private:
@@ -40,7 +41,7 @@ class StringProxyVar : public ProxyVar {
   StringProxyVar();  // Not implemented, do not use.
 };
 
-typedef std::tr1::shared_ptr<StringProxyVar> SharedStringProxyVar;
+typedef scoped_refptr<StringProxyVar> SharedStringProxyVar;
 
 }  // namespace ppapi_proxy
 

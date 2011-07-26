@@ -48,4 +48,44 @@ NaClSyncStatus NaClXCondVarTimedWaitRelative(
 
 EXTERN_C_END
 
+#ifdef __cplusplus
+
+namespace nacl {
+
+// RAII-based lock classes.
+// TODO(sehr): replace these by chrome's AutoLock class when this doesn't cause
+// all of base to be pulled into untrusted code.
+class ScopedNaClMutexLock {
+ public:
+  explicit ScopedNaClMutexLock(struct NaClMutex* mp) : mp_(mp) {
+    NaClXMutexLock(mp_);
+  }
+
+  ~ScopedNaClMutexLock() {
+    NaClXMutexUnlock(mp_);
+  }
+ private:
+  struct NaClMutex* mp_;
+};
+
+#if defined(__native_client__) || (NACL_WINDOWS == 0)
+class ScopedPthreadMutexLock {
+ public:
+  explicit ScopedPthreadMutexLock(pthread_mutex_t* mp) : mp_(mp) {
+    pthread_mutex_lock(mp_);
+  }
+
+  ~ScopedPthreadMutexLock() {
+    pthread_mutex_unlock(mp_);
+  }
+ private:
+  pthread_mutex_t* mp_;
+};
+#endif  // defined(__native_client__) || (NACL_WINDOWS == 0)
+
+
+}  // namespace
+
+#endif  // __cplusplus
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_CHECKED_H_ */

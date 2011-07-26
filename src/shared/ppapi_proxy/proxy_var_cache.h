@@ -63,6 +63,8 @@ class ProxyVarCache {
   typedef std::map<int64_t, SharedProxyVar> ProxyVarDictionary;
   ProxyVarDictionary proxy_var_cache_;
 
+  static ProxyVarCache* cache_singleton;
+
   ProxyVarCache() {}
 };
 

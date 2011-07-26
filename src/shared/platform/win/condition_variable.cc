@@ -19,6 +19,7 @@
 #include "native_client/src/shared/platform/win/time.h"
 #include "native_client/src/shared/platform/win/condition_variable.h"
 #include "native_client/src/shared/platform/win/lock.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 
 NaCl::ConditionVariable::ConditionVariable()

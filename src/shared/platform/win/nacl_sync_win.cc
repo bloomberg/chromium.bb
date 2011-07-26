@@ -9,7 +9,6 @@
  * (based on Chrome code)
  */
 
-#ifndef __native_client__
 /* Beware: there is a delicate requirement here that the untrusted code be able
  * to include nacl_abi_* type definitions.  These headers share an include
  * guard with the exported versions, which get included first.  Unfortunately,
@@ -19,19 +18,14 @@
 #include "native_client/src/include/portability.h"
 #include <sys/types.h>
 #include <sys/timeb.h>
-#endif  /* __native_client__ */
-
-#include "native_client/src/shared/platform/nacl_sync.h"
 
 #include "native_client/src/include/nacl_macros.h"
 
-#if NACL_WINDOWS
-# include "native_client/src/shared/platform/win/condition_variable.h"
-# include "native_client/src/shared/platform/win/lock.h"
-#elif NACL_LINUX || NACL_OSX || defined(__native_client__)
-# include "native_client/src/shared/platform/linux/condition_variable.h"
-# include "native_client/src/shared/platform/linux/lock.h"
-#endif
+#include "native_client/src/shared/platform/nacl_sync.h"
+
+#include "native_client/src/shared/platform/win/condition_variable.h"
+#include "native_client/src/shared/platform/win/lock.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 /* Mutex */
 int NaClMutexCtor(struct NaClMutex *mp) {

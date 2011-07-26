@@ -10,6 +10,7 @@
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 static const uint64_t kMicrosecondsPerSecond = 1000 * 1000;
 static const uint64_t kNanosecondsPerMicrosecond = 1000;

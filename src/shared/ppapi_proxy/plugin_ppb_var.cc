@@ -47,6 +47,8 @@ PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
   PP_Var var;
   var.type = PP_VARTYPE_STRING;
   var.value.as_id = proxy_var->id();
+  // Increment the reference count for the return to the caller.
+  AddRef(var);
   DebugPrintf("PPB_Var::VarFromUtf8: as_id=%"NACL_PRId64"\n", var.value.as_id);
   return var;
 }

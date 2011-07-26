@@ -7,6 +7,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_memory.h"
+#include "native_client/src/include/ref_counted.h"
 #include "native_client/src/third_party/ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
@@ -18,16 +19,8 @@ namespace ppapi_proxy {
 //
 // Note: this class is intended to be sub-classed to handle specific content
 // types such as strings, dictionaries, or arrays.
-class ProxyVar {
+class ProxyVar : public nacl::RefCounted<ProxyVar> {
  public:
-  virtual ~ProxyVar() {}
-
-  // Add a reference to this object.
-  void Retain();
-
-  // Return true when the internal reference count is 0.
-  bool Release();
-
   // The type of this cached object.  Simple types (int, bool, etc.) are not
   // cached.
   PP_VarType pp_var_type() const { return pp_var_type_; }
@@ -42,21 +35,22 @@ class ProxyVar {
   // Subclasses should implement ctors that handle specific content data.
   explicit ProxyVar(PP_VarType pp_var_type);
 
- private:
-  PP_VarType pp_var_type_;
-  uint32_t ref_count_;
-  int64_t id_;
+  virtual ~ProxyVar() {}
 
-  // A counter for unique ids.
-  static int64_t unique_var_id_;
+ private:
+  friend class nacl::RefCounted<ProxyVar>;
+  PP_VarType pp_var_type_;
+  int64_t id_;
 
   ProxyVar();  // Not implemented - do not use.
   NACL_DISALLOW_COPY_AND_ASSIGN(ProxyVar);
+
+  // A counter for unique ids.
+  static int64_t unique_var_id;
 };
 
-typedef std::tr1::shared_ptr<ProxyVar> SharedProxyVar;
+typedef scoped_refptr<ProxyVar> SharedProxyVar;
 
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PROXY_VAR_H_
-
