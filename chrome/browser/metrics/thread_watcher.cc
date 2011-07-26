@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
@@ -426,8 +427,15 @@ void ThreadWatcherList::ParseCommandLine(
     }
   }
 
-  // Default to crashing the browser if UI or IO threads are not responsive.
-  std::string crash_on_hang_threads =  "UI,IO";
+  std::string crash_on_hang_threads;
+
+  // Default to crashing the browser if UI or IO threads are not responsive
+  // except in stable channel.
+  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE)
+    crash_on_hang_threads = "";
+  else
+    crash_on_hang_threads = "UI,IO";
+
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_threads =
         command_line.GetSwitchValueASCII(switches::kCrashOnHangThreads);
