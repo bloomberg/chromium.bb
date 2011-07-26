@@ -200,7 +200,8 @@ def BuildAndTest(options):
   cmd.append('chrome_browser_tests')
   # TODO(ncbray): enable PyAuto on every integration bot.
   # http://code.google.com/p/nativeclient/issues/detail?id=1917
-  if options.integration_bot and sys.platform.startswith('linux'):
+  if options.integration_bot and (sys.platform.startswith('linux')
+                                  or sys.platform == 'darwin'):
     cmd.append('pyauto_tests')
 
   CleanTempDir()
