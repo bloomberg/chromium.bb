@@ -135,6 +135,9 @@ deps = {
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
 
+  "src/chrome/test/data/perf/frame_rate/content":
+    "/trunk/deps/frame_rate/content@93671",
+
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 

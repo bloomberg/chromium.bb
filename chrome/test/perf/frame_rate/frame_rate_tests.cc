@@ -30,6 +30,7 @@ class FrameRateTest : public UIPerfTest {
     PathService::Get(chrome::DIR_TEST_DATA, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("perf"));
     test_path = test_path.Append(FILE_PATH_LITERAL("frame_rate"));
+    test_path = test_path.Append(FILE_PATH_LITERAL("content"));
     test_path = test_path.AppendASCII(name);
     return test_path;
   }
@@ -92,13 +93,14 @@ class FrameRateTest_Reference : public FrameRateTest {
   }
 };
 
-#define ALL_FRAME_RATE_TESTS(content) \
+#define FRAME_RATE_TEST(content) \
 TEST_F(FrameRateTest, content) { \
   RunTest(#content, ""); \
 } \
 TEST_F(FrameRateTest_Reference, content) { \
   RunTest(#content, "_ref"); \
 }
-ALL_FRAME_RATE_TESTS(blank);
+FRAME_RATE_TEST(blank);
+FRAME_RATE_TEST(googleblog);
 
 }  // namespace

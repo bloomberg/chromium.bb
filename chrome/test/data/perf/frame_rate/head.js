@@ -32,8 +32,6 @@
  *        {"time_ms":1, "y":0},
  *        ... pasted output ...
  *      ],
- *
- * @author jrt@chromium.org (Joe Tessler)
  */
 
 var __running = false;
