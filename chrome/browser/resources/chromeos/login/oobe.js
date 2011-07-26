@@ -84,16 +84,23 @@ cr.define('cr.ui', function() {
 
       newStep.classList.remove('hidden');
 
-      if (nextStepIndex > this.currentStep_) {
-        oldHeader.classList.add('left');
-        oldStep.classList.add('left');
-        newHeader.classList.remove('right');
-        newStep.classList.remove('right');
-      } else if (nextStepIndex < this.currentStep_) {
-        oldHeader.classList.add('right');
-        oldStep.classList.add('right');
-        newHeader.classList.remove('left');
-        newStep.classList.remove('left');
+      if (Oobe.isOobeUI()) {
+        // Start gliding animation for OOBE steps.
+        if (nextStepIndex > this.currentStep_) {
+          oldHeader.classList.add('left');
+          oldStep.classList.add('left');
+          newHeader.classList.remove('right');
+          newStep.classList.remove('right');
+        } else if (nextStepIndex < this.currentStep_) {
+          oldHeader.classList.add('right');
+          oldStep.classList.add('right');
+          newHeader.classList.remove('left');
+          newStep.classList.remove('left');
+        }
+      } else {
+        // Start fading animation for login display.
+        oldStep.classList.add('faded');
+        newStep.classList.remove('faded');
       }
 
       // Adjust inner container height based on new step's height.
@@ -169,11 +176,24 @@ cr.define('cr.ui', function() {
      * Should be executed on language change.
      */
     updateHeadersAndButtons_: function() {
-      $('button-strip').innerHTML = "";
+      $('button-strip').innerHTML = '';
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
         $('header-' + screenId).textContent = screen.header;
         this.appendButtons_(screen.buttons);
+      }
+    },
+
+    /**
+     * Prepares screens to use in login display.
+     */
+    prepareForLoginDisplay_ : function() {
+      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+        var screen = $(screenId);
+
+        screen.classList.add('faded');
+        screen.classList.remove('right');
+        screen.classList.remove('left');
       }
     }
   };
@@ -376,10 +396,12 @@ cr.define('cr.ui', function() {
    * Update body class to switch between OOBE UI and Login UI.
    */
   Oobe.showOobeUI = function(showOobe) {
-    if (showOobe)
+    if (showOobe) {
       document.body.classList.remove('login-display');
-    else
+    } else {
       document.body.classList.add('login-display');
+      Oobe.getInstance().prepareForLoginDisplay_();
+    }
 
     // Don't show header bar and in-pace signin button for OOBE.
     $('login-header-bar').hidden = showOobe;
@@ -390,7 +412,7 @@ cr.define('cr.ui', function() {
    * Returns true if Oobe UI is shown.
    */
   Oobe.isOobeUI = function() {
-    return document.body.classList.contains('login-display');
+    return !document.body.classList.contains('login-display');
   };
 
   // Export

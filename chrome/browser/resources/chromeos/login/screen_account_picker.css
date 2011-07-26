@@ -7,8 +7,9 @@
   -webkit-box-align: center;
   -webkit-box-pack: center;
   display: -webkit-box;
+  left: 0;
   margin: 0;
   overflow: hidden;
   padding: 0;
-  width: 1000px;  /* Same as its container */
+  width: 100%;  /* Same as its container */
 }

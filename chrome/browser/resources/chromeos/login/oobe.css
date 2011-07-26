@@ -87,12 +87,10 @@ hr.bottomshadow {
 
 .header-section.right {
   left: 50px;
-  opacity: 0;
 }
 
 .header-section.left {
   left: -20px;
-  opacity: 0;
 }
 
 .step {
@@ -106,16 +104,20 @@ hr.bottomshadow {
 
 .step.right {
   left: 100px;
-  opacity: 0;
 }
 
 .step.left {
   left: -50px;
-  opacity: 0;
 }
 
 .step.hidden {
   visibility: hidden;
+}
+
+.faded,
+.left,
+.right {
+  opacity: 0;
 }
 
 #progress {
@@ -468,9 +470,14 @@ body.login-display #oobe {
   width: 1000px;
 }
 
-body.login-display #oobe.signin,
-body.login-display #oobe.gaia-signin {
-  -webkit-margin-start: -320px;
+body.login-display #oobe hr {
+  -webkit-transition: all .8s ease;
+  width: 1000px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
+                     from 640px to full width. */
+}
+
+body.login-display #oobe.signin hr,
+body.login-display #oobe.gaia-signin hr {
   width: 640px;
 }
 
@@ -478,6 +485,10 @@ body.login-display #inner-container {
   height: 262px;
   padding: 20px 0;
   width: 1000px;
+}
+
+body.login-display .step {
+  left: 180px;  /* (1000px - 640px) / 2, make it center in oobe div */
 }
 
 body.login-display #header {
