@@ -10,9 +10,11 @@
 #include "chrome/browser/extensions/extension_app_api.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/browser/cancelable_request.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -23,6 +25,7 @@ class NotificationRegistrar;
 class PrefChangeRegistrar;
 class PrefsService;
 class Profile;
+struct WebApplicationInfo;
 
 namespace gfx {
 class Rect;
@@ -96,6 +99,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Callback for the "saveAppPageName" message.
   void HandleSaveAppPageName(const base::ListValue* args);
 
+  // Callback for the "generateAppForLink" message.
+  void HandleGenerateAppForLink(const base::ListValue* args);
+
   // Register app launcher preferences.
   static void RegisterUserPrefs(PrefService* pref_service);
 
@@ -137,6 +143,10 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // Helper that uninstalls all the default apps.
   void UninstallDefaultApps();
 
+  // Continuation for installing a bookmark app after favicon lookup.
+  void OnFaviconForApp(FaviconService::Handle handle,
+                       history::FaviconData data);
+
   // The apps are represented in the extensions model, which
   // outlives us since its owned by our containing profile.
   ExtensionService* const extensions_service_;
@@ -163,6 +173,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // When true, we ignore changes to the underlying data rather than immediately
   // refreshing. This is useful when making many batch updates to avoid flicker.
   bool ignore_changes_;
+
+  // Hold state for favicon requests.
+  CancelableRequestConsumerTSimple<WebApplicationInfo*> favicon_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };

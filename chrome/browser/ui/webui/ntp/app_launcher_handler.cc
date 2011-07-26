@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -16,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/apps_promo.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
@@ -33,8 +35,10 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/favicon_url.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/web_apps.h"
 #include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -43,6 +47,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/animation/animation.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -211,6 +216,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandlePromoSeen));
   web_ui_->RegisterMessageCallback("saveAppPageName",
       NewCallback(this, &AppLauncherHandler::HandleSaveAppPageName));
+  web_ui_->RegisterMessageCallback("generateAppForLink",
+      NewCallback(this, &AppLauncherHandler::HandleGenerateAppForLink));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -646,6 +653,60 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
   ListPrefUpdate update(prefs, prefs::kNTPAppPageNames);
   ListValue* list = update.Get();
   list->Set(static_cast<size_t>(page_index), Value::CreateStringValue(name));
+}
+
+void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
+  string16 url;
+  CHECK(args->GetString(0, &url));
+
+  string16 title;
+  CHECK(args->GetString(1, &title));
+
+  GURL launch_url(url);
+
+  scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo);
+  web_app->is_bookmark_app = true;
+  web_app->title = title;
+  web_app->app_url = launch_url;
+  WebApplicationInfo::IconInfo icon;
+  icon.url = GURL();
+  icon.width = icon.height = 16;
+  web_app->icons.push_back(icon);
+
+  Profile* profile = web_ui_->GetProfile();
+  FaviconService* favicon_service =
+      profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (!favicon_service) {
+    LOG(ERROR) << "No favicon service";
+    scoped_refptr<CrxInstaller> installer(
+        extensions_service_->MakeCrxInstaller(NULL));
+    installer->InstallWebApp(*web_app);
+    return;
+  }
+
+  // TODO(gbillock): get page thumb from thumbnail db/history svc?
+  FaviconService::Handle h = favicon_service->GetFaviconForURL(
+      launch_url, history::FAVICON, &favicon_consumer_,
+      NewCallback(this, &AppLauncherHandler::OnFaviconForApp));
+  favicon_consumer_.SetClientData(favicon_service, h, web_app.release());
+}
+
+void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
+                                         history::FaviconData data) {
+  scoped_ptr<WebApplicationInfo> web_app(
+      favicon_consumer_.GetClientDataForCurrentRequest());
+  CHECK(!web_app->icons.empty());
+  if (data.is_valid() && gfx::PNGCodec::Decode(data.image_data->front(),
+                                               data.image_data->size(),
+                                               &(web_app->icons[0].data))) {
+    web_app->icons[0].url = GURL();
+    web_app->icons[0].width = web_app->icons[0].data.width();
+    web_app->icons[0].height = web_app->icons[0].data.height();
+  }
+
+  scoped_refptr<CrxInstaller> installer(
+      extensions_service_->MakeCrxInstaller(NULL));
+  installer->InstallWebApp(*web_app);
 }
 
 // static

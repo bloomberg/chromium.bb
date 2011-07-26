@@ -44,6 +44,13 @@ class TestExtensionPrefs {
   scoped_refptr<Extension> AddExtensionWithManifest(
       const base::DictionaryValue& manifest, Extension::Location location);
 
+  // Similar to AddExtension, but takes a dictionary with manifest values
+  // and extension flags.
+  scoped_refptr<Extension> AddExtensionWithManifestAndFlags(
+      const base::DictionaryValue& manifest,
+      Extension::Location location,
+      int extra_flags);
+
   // Similar to AddExtension, this adds a new test Extension. This is useful for
   // cases when you don't need the Extension object, but just the id it was
   // assigned.

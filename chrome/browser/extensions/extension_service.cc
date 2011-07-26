@@ -1134,6 +1134,8 @@ void ExtensionService::LoadAllExtensions() {
         flags |= Extension::ALLOW_FILE_ACCESS;
       if (extension_prefs_->IsFromWebStore(info->extension_id))
         flags |= Extension::FROM_WEBSTORE;
+      if (extension_prefs_->IsFromBookmark(info->extension_id))
+        flags |= Extension::FROM_BOOKMARK;
       std::string error;
       scoped_refptr<const Extension> extension(
           extension_file_util::LoadExtension(
@@ -1305,6 +1307,8 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
       flags |= Extension::ALLOW_FILE_ACCESS;
     if (extension_prefs_->IsFromWebStore(info.extension_id))
       flags |= Extension::FROM_WEBSTORE;
+    if (extension_prefs_->IsFromBookmark(info.extension_id))
+      flags |= Extension::FROM_BOOKMARK;
     extension = Extension::Create(
         info.extension_path,
         info.extension_location,

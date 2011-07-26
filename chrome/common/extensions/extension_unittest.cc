@@ -635,6 +635,19 @@ TEST(ExtensionTest, WantsFileAccess) {
       file_url, &extension->content_scripts()[0], NULL));
 }
 
+TEST(ExtensionTest, ExtraFlags) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("app", "manifest.json", Extension::FROM_WEBSTORE);
+  EXPECT_TRUE(extension->from_webstore());
+
+  extension = LoadManifest("app", "manifest.json", Extension::FROM_BOOKMARK);
+  EXPECT_TRUE(extension->from_bookmark());
+
+  extension = LoadManifest("app", "manifest.json", Extension::NO_FLAGS);
+  EXPECT_FALSE(extension->from_bookmark());
+  EXPECT_FALSE(extension->from_webstore());
+}
+
 // Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage
 // methods of Extension for extensions with various permissions.
 class ExtensionScriptAndCaptureVisibleTest : public testing::Test {

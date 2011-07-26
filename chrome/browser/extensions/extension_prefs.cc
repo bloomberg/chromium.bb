@@ -120,6 +120,10 @@ const char kPrefInstallTime[] = "install_time";
 // Chrome Web Store.
 const char kPrefFromWebStore[] = "from_webstore";
 
+// A preference that indicates whether the extension was installed from a
+// mock App created from a bookmark.
+const char kPrefFromBookmark[] = "from_bookmark";
+
 // A preference that contains any extension-controlled preferences.
 const char kPrefPreferences[] = "preferences";
 
@@ -898,6 +902,8 @@ void ExtensionPrefs::OnExtensionInstalled(
                       Value::CreateIntegerValue(extension->location()));
   extension_dict->Set(kPrefFromWebStore,
                       Value::CreateBooleanValue(from_webstore));
+  extension_dict->Set(kPrefFromBookmark,
+                      Value::CreateBooleanValue(extension->from_bookmark()));
   extension_dict->Set(kPrefInstallTime,
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
@@ -1362,6 +1368,15 @@ bool ExtensionPrefs::IsFromWebStore(
   const DictionaryValue* dictionary = GetExtensionPref(extension_id);
   bool result = false;
   if (dictionary && dictionary->GetBoolean(kPrefFromWebStore, &result))
+    return result;
+  return false;
+}
+
+bool ExtensionPrefs::IsFromBookmark(
+    const std::string& extension_id) const {
+  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  bool result = false;
+  if (dictionary && dictionary->GetBoolean(kPrefFromBookmark, &result))
     return result;
   return false;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,13 @@ struct WebApplicationInfo {
   // attributes are derived from this manifest, and the manifest is the unique
   // ID of the application.
   GURL manifest_url;
+
+  // Setting indicating this application is artificially constructed. If set,
+  // the application was created from bookmark-style data (title, url, possibly
+  // icon), and not from an official manifest file. In that case, the app_url
+  // can be checked for the later creation of an official manifest instead of
+  // reloading the manifest_url.
+  bool is_bookmark_app;
 
   // Title of the application.
   string16 title;

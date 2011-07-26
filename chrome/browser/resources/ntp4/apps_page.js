@@ -332,7 +332,23 @@ cr.define('ntp4', function() {
       if (!title)
         title = url;
 
-      // TODO(estade): synthesize an app.
+      // Synthesize an app.
+      var data = {url: url, title: title};
+      // Make sure title is >=1 and <=45 characters for Chrome app limits.
+      if (data.title.length > 45)
+        data.title = data.title.substring(0,45);
+      if (data.title.length == 0)
+        data.title = data.url;
+      this.generateAppForLink(data);
+    },
+
+    /**
+     * Creates a new crx-less app manifest and installs it.
+     * @param {Object} data The data object describing the link. Must have |url|
+     * and |title| members.
+     */
+    generateAppForLink: function(data) {
+      chrome.send('generateAppForLink', [data.url, data.title]);
     },
 
     /** @inheritDoc */

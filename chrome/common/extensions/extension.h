@@ -179,6 +179,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // |FROM_WEBSTORE| indicates that the extension was installed from the
     // Chrome Web Store.
     FROM_WEBSTORE = 1 << 3,
+
+    // |FROM_BOOKMARK| indicates the extension was created using a mock App
+    // created from a bookmark.
+    FROM_BOOKMARK = 1 << 4,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -509,6 +513,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool wants_file_access() const { return wants_file_access_; }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
+  bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
 
   const std::string& content_security_policy() const {
     return content_security_policy_;

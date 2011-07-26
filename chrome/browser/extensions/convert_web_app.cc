@@ -99,7 +99,10 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Create the manifest
   scoped_ptr<DictionaryValue> root(new DictionaryValue);
-  root->SetString(keys::kPublicKey, GenerateKey(web_app.manifest_url));
+  if (!web_app.is_bookmark_app)
+    root->SetString(keys::kPublicKey, GenerateKey(web_app.manifest_url));
+  else
+    root->SetString(keys::kPublicKey, GenerateKey(web_app.app_url));
   root->SetString(keys::kName, UTF16ToUTF8(web_app.title));
   root->SetString(keys::kVersion, ConvertTimeToExtensionVersion(create_time));
   root->SetString(keys::kDescription, UTF16ToUTF8(web_app.description));
@@ -148,6 +151,10 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     return NULL;
   }
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
+    // Skip unfetched bitmaps.
+    if (web_app.icons[i].data.config() == SkBitmap::kNo_Config)
+      continue;
+
     FilePath icon_file = icons_dir.AppendASCII(
         StringPrintf("%i.png", web_app.icons[i].width));
     std::vector<unsigned char> image_data;
@@ -167,11 +174,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Finally, create the extension object to represent the unpacked directory.
   std::string error;
+  int extension_flags = Extension::STRICT_ERROR_CHECKS;
+  if (web_app.is_bookmark_app)
+    extension_flags |= Extension::FROM_BOOKMARK;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),
       Extension::INTERNAL,
       *root,
-      Extension::STRICT_ERROR_CHECKS,
+      extension_flags,
       &error);
   if (!extension) {
     LOG(ERROR) << error;

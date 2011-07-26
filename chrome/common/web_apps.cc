@@ -101,6 +101,7 @@ const char WebApplicationInfo::kInvalidIconURL[] =
     "an absolute URL with the same origin as the application definition.";
 
 WebApplicationInfo::WebApplicationInfo() {
+  is_bookmark_app = false;
 }
 
 WebApplicationInfo::~WebApplicationInfo() {

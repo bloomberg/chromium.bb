@@ -103,18 +103,27 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
     const DictionaryValue& manifest, Extension::Location location) {
+  return AddExtensionWithManifestAndFlags(manifest, location,
+                                          Extension::STRICT_ERROR_CHECKS);
+}
+
+scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
+    const DictionaryValue& manifest,
+    Extension::Location location,
+    int extra_flags) {
   std::string name;
   EXPECT_TRUE(manifest.GetString(extension_manifest_keys::kName, &name));
   FilePath path =  extensions_dir_.AppendASCII(name);
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(
-      path, location, manifest, Extension::STRICT_ERROR_CHECKS, &errors);
+      path, location, manifest, extra_flags, &errors);
   EXPECT_TRUE(extension);
   if (!extension)
     return NULL;
 
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-  prefs_->OnExtensionInstalled(extension, Extension::ENABLED, false);
+  prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
+                               extra_flags & Extension::FROM_WEBSTORE);
   return extension;
 }
 

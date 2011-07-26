@@ -626,6 +626,42 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsAppDraggedByUser, ExtensionPrefsAppDraggedByUser) {}
 
+class ExtensionPrefsFlags : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    {
+      base::DictionaryValue dictionary;
+      dictionary.SetString(extension_manifest_keys::kName, "from_webstore");
+      dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
+      webstore_extension_ = prefs_.AddExtensionWithManifestAndFlags(
+          dictionary, Extension::INTERNAL,
+          Extension::STRICT_ERROR_CHECKS | Extension::FROM_WEBSTORE);
+    }
+
+    {
+      base::DictionaryValue dictionary;
+      dictionary.SetString(extension_manifest_keys::kName, "from_bookmark");
+      dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
+      bookmark_extension_ = prefs_.AddExtensionWithManifestAndFlags(
+          dictionary, Extension::INTERNAL,
+          Extension::STRICT_ERROR_CHECKS | Extension::FROM_BOOKMARK);
+    }
+  }
+
+  virtual void Verify() {
+    EXPECT_TRUE(prefs()->IsFromWebStore(webstore_extension_->id()));
+    EXPECT_FALSE(prefs()->IsFromBookmark(webstore_extension_->id()));
+
+    EXPECT_TRUE(prefs()->IsFromBookmark(bookmark_extension_->id()));
+    EXPECT_FALSE(prefs()->IsFromWebStore(bookmark_extension_->id()));
+  }
+
+ private:
+  scoped_refptr<Extension> webstore_extension_;
+  scoped_refptr<Extension> bookmark_extension_;
+};
+TEST_F(ExtensionPrefsFlags, ExtensionPrefsFlags) {}
+
 namespace keys = extension_manifest_keys;
 
 class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
