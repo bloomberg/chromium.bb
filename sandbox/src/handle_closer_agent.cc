@@ -56,6 +56,13 @@ bool HandleCloserAgent::CloseHandles() {
   const int kInvalidHandleThreshold = 100;
   const size_t kHandleOffset = sizeof(HANDLE);
 
+  // Need to warm up GetUserDefaultLangID first if we're closing ALPC clients.
+  HandleMap::iterator names = handles_to_close_.find(L"ALPC Port");
+  if (names != handles_to_close_.end() &&
+    (names->second.empty() || names->second.size() == 0)) {
+    ::GetUserDefaultLangID();
+  }
+
   if (!::GetProcessHandleCount(::GetCurrentProcess(), &handle_count))
     return false;
 
