@@ -4312,12 +4312,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION" desc="Description of the 'Disable HTML5 interactive form validation' lab.">
         Disable showing validation messages and preventing form submission.
       </message>
-      <message name="IDS_FLAGS_ENABLE_COMPACT_NAVIGATION" desc="Name of the 'Compact Navigation' lab.">
-        Compact Navigation
-      </message>
-      <message name="IDS_FLAGS_ENABLE_COMPACT_NAVIGATION_DESCRIPTION" desc="Description of the 'Compact Navigation' lab.">
-        Adds a "Hide the toolbar" entry to the tabstrip's context menu. Use this to toggle between always displaying the toolbar (default) and only opening it as a drop down box as needed.
-      </message>
       <message name="IDS_COMPACT_NAVIGATION_BAR" desc="The menu item on the app menu to toggle compact navigation bar">
         Compact Navigation Bar
       </message>

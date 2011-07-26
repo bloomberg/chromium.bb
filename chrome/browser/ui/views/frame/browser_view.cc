@@ -1991,11 +1991,15 @@ void BrowserView::Init() {
     browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());
   }
 #endif
+  // TODO(stevet): Remove all of this once we clean up compact navigation. Note
+  // that we revert back to checking the pref as we've guaranteed that it will
+  // always return false, regardless of flags.
   // Only create our compact navigation classes if the switch is enabled. Note
   // that we directly check the switch and not the pref as the switch may be on
   // and the pref could be off (currently not selected in the context menu).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCompactNavigation)) {
+  // if (CommandLine::ForCurrentProcess()->HasSwitch(
+  //     switches::kEnableCompactNavigation)) {
+  if (UseCompactNavigationBar()) {
     compact_location_bar_view_host_.reset(new CompactLocationBarViewHost(this));
     compact_navigation_bar_ = new CompactNavigationBar(this);
     compact_navigation_bar_->set_id(VIEW_ID_COMPACT_NAV_BAR);

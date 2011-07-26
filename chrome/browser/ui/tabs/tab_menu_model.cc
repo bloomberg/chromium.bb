@@ -33,12 +33,9 @@ bool TabMenuModel::AreVerticalTabsEnabled() {
 }
 
 bool TabMenuModel::IsCompactNavigationModeEnabled() {
-#if defined(TOOLKIT_VIEWS)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCompactNavigation);
-#else
+  // TODO(stevet): Completely remove this once we clean up the rest of the cnav
+  // code.
   return false;
-#endif
 }
 
 

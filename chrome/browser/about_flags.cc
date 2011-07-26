@@ -251,13 +251,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kFocusExistingTabOnOpen)
   },
   {
-    "compact-navigation",
-    IDS_FLAGS_ENABLE_COMPACT_NAVIGATION,
-    IDS_FLAGS_ENABLE_COMPACT_NAVIGATION_DESCRIPTION,
-    kOsWin,  // TODO(stevet): Add other platforms when ready.
-    SINGLE_VALUE_TYPE(switches::kEnableCompactNavigation)
-  },
-  {
     "new-tab-page-4",
     IDS_FLAGS_NEW_TAB_PAGE_4_NAME,
     IDS_FLAGS_NEW_TAB_PAGE_4_DESCRIPTION,
