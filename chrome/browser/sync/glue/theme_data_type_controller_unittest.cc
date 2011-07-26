@@ -58,7 +58,7 @@ class ThemeDataTypeControllerTest : public testing::Test {
         WillRepeatedly(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels()).
+    EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillRepeatedly(Return(true));
   }
 
@@ -68,7 +68,7 @@ class ThemeDataTypeControllerTest : public testing::Test {
 
   void SetStopExpectations() {
     EXPECT_CALL(service_, DeactivateDataType(_, _));
-    EXPECT_CALL(*model_associator_, DisassociateModels());
+    EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
   MessageLoopForUI message_loop_;
@@ -116,8 +116,9 @@ TEST_F(ThemeDataTypeControllerTest, StartOk) {
 TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   SetAssociateExpectations();
-  EXPECT_CALL(*model_associator_, AssociateModels()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*model_associator_, AssociateModels(_)).
+      WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::THEMES),
+                           Return(false)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));

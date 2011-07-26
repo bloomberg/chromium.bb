@@ -74,14 +74,14 @@ class BookmarkDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels()).
+    EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillRepeatedly(Return(true));
     EXPECT_CALL(service_, ActivateDataType(_, _));
   }
 
   void SetStopExpectations() {
     EXPECT_CALL(service_, DeactivateDataType(_, _));
-    EXPECT_CALL(*model_associator_, DisassociateModels());
+    EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
   MessageLoopForUI message_loop_;
@@ -160,8 +160,9 @@ TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*model_associator_, AssociateModels(_)).
+      WillRepeatedly(DoAll(browser_sync::SetSyncError(syncable::BOOKMARKS),
+                           Return(false)));
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   bookmark_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));

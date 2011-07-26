@@ -111,7 +111,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
         WillOnce(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels()).
+    EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillOnce(Return(true));
     EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
@@ -124,7 +124,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_, CleanUpState());
     EXPECT_CALL(service_, DeactivateDataType(_, _));
-    EXPECT_CALL(*model_associator_, DisassociateModels());
+    EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
@@ -160,7 +160,7 @@ TEST_F(FrontendDataTypeControllerTest, StartFirstRun) {
       WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels()).
+  EXPECT_CALL(*model_associator_, AssociateModels(_)).
       WillOnce(Return(true));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
@@ -185,8 +185,9 @@ TEST_F(FrontendDataTypeControllerTest, StartAssociationFailed) {
       WillOnce(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels()).
-      WillOnce(Return(false));
+  EXPECT_CALL(*model_associator_, AssociateModels(_)).
+      WillOnce(DoAll(browser_sync::SetSyncError(syncable::PREFERENCES),
+                     Return(false)));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.

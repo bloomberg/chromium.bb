@@ -61,13 +61,13 @@ class TypedUrlModelAssociator
   // PerDataTypeAssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual bool AssociateModels();
+  virtual bool AssociateModels(SyncError* error);
 
   // Delete all typed url nodes.
   bool DeleteAllNodes(sync_api::WriteTransaction* trans);
 
   // Clears all associations.
-  virtual bool DisassociateModels();
+  virtual bool DisassociateModels(SyncError* error);
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.

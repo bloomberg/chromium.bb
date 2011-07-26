@@ -124,7 +124,7 @@ class AutofillDataTypeControllerTest : public testing::Test {
         WillRepeatedly(Return(true));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels()).
+    EXPECT_CALL(*model_associator_, AssociateModels(_)).
         WillRepeatedly(Return(true));
     EXPECT_CALL(service_, ActivateDataType(_, _));
     EXPECT_CALL(*change_processor_, IsRunning()).WillRepeatedly(Return(true));
@@ -132,7 +132,7 @@ class AutofillDataTypeControllerTest : public testing::Test {
 
   void SetStopExpectations() {
     EXPECT_CALL(service_, DeactivateDataType(_, _));
-    EXPECT_CALL(*model_associator_, DisassociateModels());
+    EXPECT_CALL(*model_associator_, DisassociateModels(_));
   }
 
   void WaitForEmptyDBMessageLoop() {
@@ -259,7 +259,7 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileAssociatingActivated) {
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels()).
+  EXPECT_CALL(*model_associator_, AssociateModels(_)).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*change_processor_, IsRunning()).WillRepeatedly(Return(true));
 

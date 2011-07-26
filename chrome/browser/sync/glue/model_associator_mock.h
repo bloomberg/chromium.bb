@@ -6,18 +6,24 @@
 #define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
 #pragma once
 
+#include "base/tracked.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {
+
+ACTION_P(SetSyncError, type) {
+  arg0->Reset(FROM_HERE, "test", type);
+}
 
 class ModelAssociatorMock : public AssociatorInterface {
  public:
   ModelAssociatorMock();
   virtual ~ModelAssociatorMock();
 
-  MOCK_METHOD0(AssociateModels, bool());
-  MOCK_METHOD0(DisassociateModels, bool());
+  MOCK_METHOD1(AssociateModels, bool(SyncError* error));
+  MOCK_METHOD1(DisassociateModels, bool(SyncError* error));
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool* has_nodes));
   MOCK_METHOD0(AbortAssociation, void());
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());

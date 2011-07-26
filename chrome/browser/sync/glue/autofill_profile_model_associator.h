@@ -59,10 +59,10 @@ class AutofillProfileModelAssociator
   // PerDataTypeAssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual bool AssociateModels();
+  virtual bool AssociateModels(SyncError* error);
 
   // Clears all associations.
-  virtual bool DisassociateModels();
+  virtual bool DisassociateModels(SyncError* error);
 
   // TODO(lipalani) Bug 64111.
   // The has_nodes out param is true if the sync model has nodes other

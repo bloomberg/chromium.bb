@@ -16,13 +16,15 @@ class SyncableServiceMock : public SyncableService {
   SyncableServiceMock();
   virtual ~SyncableServiceMock();
 
-  MOCK_METHOD3(MergeDataAndStartSyncing, bool(
-      syncable::ModelType, const SyncDataList&,
-      SyncChangeProcessor* sync_processor));
+  MOCK_METHOD3(MergeDataAndStartSyncing,
+               SyncError(syncable::ModelType,
+                         const SyncDataList&,
+                         SyncChangeProcessor* sync_processor));
   MOCK_METHOD1(StopSyncing, void(syncable::ModelType));
-  MOCK_CONST_METHOD1(GetAllSyncData, SyncDataList(syncable::ModelType));
+  MOCK_CONST_METHOD1(GetAllSyncData, SyncDataList(syncable::ModelType type));
   MOCK_METHOD2(ProcessSyncChanges,
-               void(const tracked_objects::Location&, const SyncChangeList&));
+               SyncError(const tracked_objects::Location&,
+                         const SyncChangeList&));
 };
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNCABLE_SERVICE_MOCK_H_

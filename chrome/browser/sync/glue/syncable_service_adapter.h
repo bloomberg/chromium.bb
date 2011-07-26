@@ -29,8 +29,8 @@ class SyncableServiceAdapter : public AssociatorInterface {
   virtual ~SyncableServiceAdapter();
 
   // AssociatorInterface implementation.
-  virtual bool AssociateModels() OVERRIDE;
-  virtual bool DisassociateModels() OVERRIDE;
+  virtual bool AssociateModels(SyncError* error) OVERRIDE;
+  virtual bool DisassociateModels(SyncError* error) OVERRIDE;
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
   virtual void AbortAssociation() OVERRIDE;
   virtual bool CryptoReadyIfNecessary() OVERRIDE;

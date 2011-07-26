@@ -11,6 +11,7 @@
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
@@ -46,13 +47,15 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
 
 TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
 
-bool TypedUrlModelAssociator::AssociateModels() {
+bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
 
   std::vector<history::URLRow> typed_urls;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
-    LOG(ERROR) << "Could not get the typed_url entries.";
+    error->Reset(FROM_HERE,
+                "Could not get the typed_url entries.",
+                model_type());
     return false;
   }
 
@@ -62,7 +65,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
        ix != typed_urls.end(); ++ix) {
     if (!history_backend_->GetVisitsForURL(ix->id(),
                                            &(visit_vectors[ix->id()]))) {
-      LOG(ERROR) << "Could not get the url's visits.";
+      error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
       return false;
     }
     // Sometimes (due to a bug elsewhere in the history or sync code, or due to
@@ -87,8 +90,10 @@ bool TypedUrlModelAssociator::AssociateModels() {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
-      LOG(ERROR) << "Server did not create the top-level typed_url node. We "
-                 << "might be running against an out-of-date server.";
+      error->Reset(FROM_HERE,
+                  "Server did not create the top-level typed_url node. We "
+                  "might be running against an out-of-date server.",
+                  model_type());
       return false;
     }
 
@@ -120,7 +125,9 @@ bool TypedUrlModelAssociator::AssociateModels() {
         if (difference & DIFF_UPDATE_NODE) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
-            LOG(ERROR) << "Failed to edit typed_url sync node.";
+            error->Reset(FROM_HERE,
+                         "Failed to edit typed_url sync node.",
+                         model_type());
             return false;
           }
           // We don't want to resurrect old visits that have been aged out by
@@ -159,7 +166,9 @@ bool TypedUrlModelAssociator::AssociateModels() {
         sync_api::WriteNode node(&trans);
         if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
                                        typed_url_root, tag)) {
-          LOG(ERROR) << "Failed to create typed_url sync node.";
+          error->Reset(FROM_HERE,
+                       "Failed to create typed_url sync node.",
+                       model_type());
           return false;
         }
 
@@ -179,7 +188,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::ReadNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        LOG(ERROR) << "Failed to fetch child node.";
+        error->Reset(FROM_HERE, "Failed to fetch child node.", model_type());
         return false;
       }
       const sync_pb::TypedUrlSpecifics& typed_url(
@@ -228,7 +237,9 @@ bool TypedUrlModelAssociator::AssociateModels() {
            ++it) {
         sync_api::WriteNode sync_node(&trans);
         if (!sync_node.InitByIdLookup(*it)) {
-          LOG(ERROR) << "Failed to fetch obsolete node.";
+          error->Reset(FROM_HERE,
+                      "Failed to fetch obsolete node.",
+                      model_type());
           return false;
         }
         sync_node.Remove();
@@ -266,7 +277,7 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
   return true;
 }
 
-bool TypedUrlModelAssociator::DisassociateModels() {
+bool TypedUrlModelAssociator::DisassociateModels(SyncError* error) {
   id_map_.clear();
   id_map_inverse_.clear();
   return true;

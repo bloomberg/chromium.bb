@@ -9,6 +9,8 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
+class SyncError;
+
 namespace sync_api {
 class BaseNode;
 }
@@ -27,10 +29,12 @@ class AssociatorInterface {
   // should be identical and corresponding. Returns true on
   // success. On failure of this step, we should abort the sync
   // operation and report an error to the user.
-  virtual bool AssociateModels() = 0;
+  // TODO(zea): return a SyncError instead of passing one in.
+  virtual bool AssociateModels(SyncError* error) = 0;
 
   // Clears all the associations between the chrome and sync models.
-  virtual bool DisassociateModels() = 0;
+  // TODO(zea): return a SyncError instead of passing one in.
+  virtual bool DisassociateModels(SyncError* error) = 0;
 
   // The has_nodes out parameter is set to true if the sync model has
   // nodes other than the permanent tagged nodes.  The method may

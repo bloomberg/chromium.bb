@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -32,8 +33,8 @@ class ExtensionModelAssociator : public AssociatorInterface {
   static syncable::ModelType model_type() { return syncable::EXTENSIONS; }
 
   // AssociatorInterface implementation.
-  virtual bool AssociateModels();
-  virtual bool DisassociateModels();
+  virtual bool AssociateModels(SyncError* error);
+  virtual bool DisassociateModels(SyncError* error);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual void AbortAssociation();
   virtual bool CryptoReadyIfNecessary();

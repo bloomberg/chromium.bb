@@ -121,9 +121,8 @@ void BackendMigrator::Observe(int type,
   if (state_ == IDLE)
     return;
 
-  DataTypeManager::ConfigureResultWithErrorLocation* result =
-      Details<DataTypeManager::ConfigureResultWithErrorLocation>(
-          details).ptr();
+  const DataTypeManager::ConfigureResult* result =
+      Details<DataTypeManager::ConfigureResult>(details).ptr();
 
   ModelTypeSet intersection;
   std::set_intersection(result->requested_types.begin(),
@@ -151,7 +150,7 @@ void BackendMigrator::Observe(int type,
     return;
   }
 
-  if (result->result != DataTypeManager::OK) {
+  if (result->status != DataTypeManager::OK) {
     // If this fails, and we're disabling types, a type may or may not be
     // disabled until the user restarts the browser.  If this wasn't an abort,
     // any failure will be reported as an unrecoverable error to the UI. If it
