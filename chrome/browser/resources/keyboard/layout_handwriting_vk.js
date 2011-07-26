@@ -195,7 +195,7 @@ var KEYS_HANDWRITING_VK = [
   ],
   [
     new SpecialKey('handwriting-space', 'SPACE', 'Spacebar'),
-    new SvgKey('handwriting-backspace', 'Backspace')
+    new SvgKey('handwriting-backspace', 'Backspace', true /* repeat */)
   ],
   [
     new SvgKey('handwriting-mic', ''),

@@ -368,14 +368,16 @@ Key.prototype = {
  * A key which displays an SVG image.
  * @param {string} className The class that provides the image.
  * @param {string} keyId The key identifier for the key.
+ * @param {boolean} opt_repeat True if the key should repeat.
  * @constructor
  * @extends {BaseKey}
  */
-function SvgKey(className, keyId) {
+function SvgKey(className, keyId, opt_repeat) {
   this.modeElements_ = {};
   this.cellType_ = 'nc';
   this.className_ = className;
   this.keyId_ = keyId;
+  this.repeat_ = opt_repeat || false;
 }
 
 SvgKey.prototype = {
