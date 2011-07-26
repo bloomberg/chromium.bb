@@ -108,8 +108,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerDestroyListener) {
   listener_.reset();
 }
 
-// Flaky: http://crbug.com/89733
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndCancel) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
