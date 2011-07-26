@@ -72,7 +72,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
         extensions_request_context_getter_;
     mutable ChromeURLRequestContextGetterMap
         app_request_context_getter_map_;
-    OffTheRecordProfileIOData* const io_data_;
+    scoped_refptr<OffTheRecordProfileIOData> io_data_;
 
     Profile* const profile_;
 
@@ -91,12 +91,12 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   virtual ~OffTheRecordProfileIOData();
 
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
-  virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
+  virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual scoped_refptr<RequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const;

@@ -46,7 +46,8 @@ OffTheRecordProfileIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
-  io_data_->ShutdownOnUIThread();
+  io_data_->AddRef();
+  io_data_.release()->ShutdownOnUIThread();
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>
@@ -55,7 +56,7 @@ GetChromeURLDataManagerBackendGetter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
   return base::Bind(&ProfileIOData::GetChromeURLDataManagerBackend,
-                    base::Unretained(io_data_));
+                    base::Unretained(io_data_.get()));
 }
 
 const content::ResourceContext&
@@ -199,11 +200,11 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   extensions_context->set_job_factory(job_factory());
 }
 
-scoped_refptr<ChromeURLRequestContext>
+scoped_refptr<ProfileIOData::RequestContext>
 OffTheRecordProfileIOData::InitializeAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
-  AppRequestContext* context = new AppRequestContext;
+  AppRequestContext* context = new AppRequestContext(app_id);
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
@@ -231,12 +232,12 @@ OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   return NULL;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+scoped_refptr<ProfileIOData::RequestContext>
 OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
     scoped_refptr<ChromeURLRequestContext> main_context,
     const std::string& app_id) const {
   // We create per-app contexts on demand, unlike the others above.
-  scoped_refptr<ChromeURLRequestContext> app_request_context =
+  scoped_refptr<RequestContext> app_request_context =
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;

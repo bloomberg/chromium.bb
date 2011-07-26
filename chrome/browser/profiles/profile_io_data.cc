@@ -272,8 +272,15 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
   profile_params_.reset(params.release());
 }
 
-ProfileIOData::AppRequestContext::AppRequestContext() {}
-ProfileIOData::AppRequestContext::~AppRequestContext() {}
+ProfileIOData::RequestContext::RequestContext() {}
+ProfileIOData::RequestContext::~RequestContext() {}
+
+ProfileIOData::AppRequestContext::AppRequestContext(const std::string& app_id)
+    : app_id_(app_id) {}
+ProfileIOData::AppRequestContext::~AppRequestContext() {
+  DCHECK(ContainsKey(profile_io_data()->app_request_context_map_, app_id_));
+  profile_io_data()->app_request_context_map_.erase(app_id_);
+}
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
     net::CookieStore* cookie_store) {
@@ -348,7 +355,10 @@ ProfileIOData::GetChromeURLDataManagerBackend() const {
 scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
-  return main_request_context_;
+  scoped_refptr<RequestContext> context = main_request_context_;
+  context->set_profile_io_data(const_cast<ProfileIOData*>(this));
+  main_request_context_ = NULL;
+  return context;
 }
 
 scoped_refptr<ChromeURLRequestContext>
@@ -363,7 +373,11 @@ ProfileIOData::GetMediaRequestContext() const {
 scoped_refptr<ChromeURLRequestContext>
 ProfileIOData::GetExtensionsRequestContext() const {
   LazyInitialize();
-  return extensions_request_context_;
+  scoped_refptr<RequestContext> context =
+      extensions_request_context_;
+  context->set_profile_io_data(const_cast<ProfileIOData*>(this));
+  extensions_request_context_ = NULL;
+  return context;
 }
 
 scoped_refptr<ChromeURLRequestContext>
@@ -375,8 +389,11 @@ ProfileIOData::GetIsolatedAppRequestContext(
   if (ContainsKey(app_request_context_map_, app_id)) {
     context = app_request_context_map_[app_id];
   } else {
-    context = AcquireIsolatedAppRequestContext(main_context, app_id);
-    app_request_context_map_[app_id] = context;
+    scoped_refptr<RequestContext> request_context =
+        AcquireIsolatedAppRequestContext(main_context, app_id);
+    request_context->set_profile_io_data(const_cast<ProfileIOData*>(this));
+    app_request_context_map_[app_id] = request_context;
+    context = request_context;
   }
   DCHECK(context);
   return context;
@@ -416,8 +433,9 @@ void ProfileIOData::LazyInitialize() const {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Create the common request contexts.
-  main_request_context_ = new ChromeURLRequestContext;
-  extensions_request_context_ = new ChromeURLRequestContext;
+  main_request_context_ = new RequestContext;
+  extensions_request_context_ = new RequestContext;
+  weak_extensions_request_context_ = extensions_request_context_->GetWeakPtr();
 
   profile_params_->appcache_service->set_request_context(main_request_context_);
 
@@ -538,7 +556,7 @@ void ProfileIOData::ShutdownOnUIThread() {
           base::Unretained(g_browser_process->resource_dispatcher_host()),
           &resource_context_));
   bool posted = BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                        new DeleteTask<ProfileIOData>(this));
+                                        new ReleaseTask<ProfileIOData>(this));
   if (!posted)
-    delete this;
+    Release();
 }
