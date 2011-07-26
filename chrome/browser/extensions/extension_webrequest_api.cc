@@ -513,16 +513,6 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (listeners.empty())
     return;
 
-  bool is_main_frame = false;
-  int64 frame_id = -1;
-  int frame_id_for_extension = -1;
-  int tab_id = -1;
-  int window_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id,
-                     &window_id, &resource_type);
-  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
-
   int http_status_code = request->GetResponseCode();
 
   std::string response_ip = request->GetSocketAddress().host();
@@ -534,9 +524,6 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   dict->SetString(keys::kUrlKey, request->url().spec());
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
-  dict->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
-  dict->SetInteger(keys::kTabIdKey, tab_id);
-  dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());

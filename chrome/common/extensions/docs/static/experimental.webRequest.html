@@ -267,22 +267,15 @@ function getFrameUrl(windowId, tabId, frameId, frameUrl) {
   return (frameUrl[windowId] || {})[tabId + "-" + frameId];
 }
 
-chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+chrome.experimental.webRequest.onBeforeRequest.addListener(
   function(d) {
     if (d.type == 'main_frame' || d.type == 'sub_frame') {
       recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);
     }
     var frameUrl = getFrameUrl(d.windowId, d.tabId, d.frameId);
     // Use the frameUrl e.g. to selectively cancel requests.
-    // Attention: The frameUrl be undefined in some cases. Requests may not
+    // Attention: The frameUrl can be undefined in some cases. Requests may not
     // originate from a frame (e.g. requests from extensions or shared workers).
-  });
-
-chrome.experimental.webRequest.onBeforeRedirect.addListener(
-  function(d) {
-    if (d.type == 'main_frame' || d.type == 'sub_frame') {
-      recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);
-    }
   });
 
 chrome.windows.onRemoved.addListener(

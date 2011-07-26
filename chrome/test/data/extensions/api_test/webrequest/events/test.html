@@ -133,15 +133,14 @@ function captureEvent(name, details) {
 
   // Check that the frameId can be used to reliably determine the URL of the
   // frame that caused requests.
-  if (name == "onBeforeRequest" || name == "onBeforeRedirect") {
+  if (name == "onBeforeRequest") {
     chrome.test.assertTrue('frameId' in details &&
                            typeof details.frameId === 'number');
     chrome.test.assertTrue('tabId' in details &&
                             typeof details.tabId === 'number');
     var key = details.tabId + "-" + details.frameId;
     if (details.type == "main_frame" || details.type == "sub_frame") {
-      tabAndFrameUrls[key] =
-          name == "onBeforeRedirect" ? details.redirectUrl : details.url;
+      tabAndFrameUrls[key] = details.url;
     }
     details.frameUrl = tabAndFrameUrls[key] || "unknown frame URL";
   }
@@ -313,9 +312,6 @@ runTests([
             redirectUrl: URL_HTTP_SIMPLE_LOAD,
             statusCode: 301,
             responseHeadersExist: true,
-            tabId: tabId,
-            type: "main_frame",
-            frameUrl: URL_HTTP_SIMPLE_LOAD,
             ip: "127.0.0.1",
             fromCache: false,
             statusLine: "HTTP/1.0 301 Moved Permanently"
