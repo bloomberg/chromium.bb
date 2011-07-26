@@ -70,7 +70,7 @@ class NativeTableWrapper {
   // Returns the bounds of the native table.
   virtual gfx::Rect GetBounds() const = 0;
 
-  // Creates an appropriate NativeButtonWrapper for the platform.
+  // Creates an appropriate NativeTableWrapper for the platform.
   static NativeTableWrapper* CreateNativeWrapper(TableView2* table);
 
  protected:

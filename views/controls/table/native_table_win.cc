@@ -901,7 +901,7 @@ LRESULT CALLBACK NativeTableWin::TableHeaderWndProc(HWND window, UINT message,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeButtonWrapper, public:
+// NativeTableWrapper, public:
 
 // static
 NativeTableWrapper* NativeTableWrapper::CreateNativeWrapper(TableView2* table) {

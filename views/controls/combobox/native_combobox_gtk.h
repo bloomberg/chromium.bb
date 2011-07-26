@@ -53,8 +53,7 @@ class NativeComboboxGtk : public NativeControlGtk,
   // The combo box's pop-up menu.
   GtkMenu* menu_;
 
-  // The preferred size from the last size_request. See
-  // NativeButtonGtk::preferred_size_ for more detail why we need this.
+  // The preferred size from the last size_request.
   gfx::Size preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeComboboxGtk);

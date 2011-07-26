@@ -19,7 +19,6 @@
 #include "ui/gfx/color_utils.h"
 #include "views/border.h"
 #include "views/controls/label.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"

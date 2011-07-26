@@ -34,8 +34,7 @@ class RadioButtonExample : public ExampleBase,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // Two groups of 3 radio buttons.
-  views::NativeRadioButton* native_radio_buttons_[3];
+  // Group of 3 radio buttons.
   views::RadioButton* radio_buttons_[3];
 
   // Control button to select radio buttons, and show the status of buttons.

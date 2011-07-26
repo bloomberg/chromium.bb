@@ -35,7 +35,6 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
-#include "views/controls/button/native_button_win.h"
 #include "views/test/test_views_delegate.h"
 #endif
 
@@ -925,27 +924,6 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////
-class ButtonTest : public NativeButton {
- public:
-  ButtonTest(ButtonListener* listener, const std::wstring& label)
-      : NativeButton(listener, label) {
-  }
-
-  HWND GetHWND() {
-    return static_cast<NativeButtonWin*>(native_wrapper_)->native_view();
-  }
-};
-
-class CheckboxTest : public NativeCheckbox {
- public:
-  explicit CheckboxTest(const std::wstring& label) : NativeCheckbox(label) {
-  }
-
-  HWND GetHWND() {
-    return static_cast<NativeCheckboxWin*>(native_wrapper_)->native_view();
-  }
-};
-
 class ScrollableTestView : public View {
  public:
   ScrollableTestView() { }
@@ -962,16 +940,10 @@ class ScrollableTestView : public View {
 class TestViewWithControls : public View {
  public:
   TestViewWithControls() {
-    button_ = new ButtonTest(NULL, L"Button");
-    checkbox_ = new CheckboxTest(L"My checkbox");
     text_field_ = new Textfield();
-    AddChildView(button_);
-    AddChildView(checkbox_);
     AddChildView(text_field_);
   }
 
-  ButtonTest* button_;
-  CheckboxTest* checkbox_;
   Textfield* text_field_;
 };
 
@@ -1024,16 +996,6 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
   ::SendMessage(view_with_controls->GetWidget()->GetNativeView(),
                 WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(250, 250));
   EXPECT_EQ(20, scroll_view->GetVisibleRect().y());
-
-  // Then the button.
-  ::SendMessage(view_with_controls->button_->GetHWND(),
-                WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(250, 250));
-  EXPECT_EQ(40, scroll_view->GetVisibleRect().y());
-
-  // Then the check-box.
-  ::SendMessage(view_with_controls->checkbox_->GetHWND(),
-                WM_MOUSEWHEEL, MAKEWPARAM(0, -20), MAKELPARAM(250, 250));
-  EXPECT_EQ(60, scroll_view->GetVisibleRect().y());
 
   // Then the text-field.
   ::SendMessage(view_with_controls->text_field_->GetTestingHandle(),
@@ -1108,7 +1070,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
       contents_ = new View;
       button1_ = new NativeTextButton(this, L"Button1");
       button2_ = new NativeTextButton(this, L"Button2");
-      checkbox_ = new NativeCheckbox(L"My checkbox");
+      checkbox_ = new Checkbox(L"My checkbox");
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
       contents_->AddChildView(button2_);
@@ -1161,7 +1123,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   View* contents_;
   NativeTextButton* button1_;
   NativeTextButton* button2_;
-  NativeCheckbox* checkbox_;
+  Checkbox* checkbox_;
   ButtonDropDown* button_drop_;
   Button* last_pressed_button_;
   MockMenuModel* mock_menu_model_;

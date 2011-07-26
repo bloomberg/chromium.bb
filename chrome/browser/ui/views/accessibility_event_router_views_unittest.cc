@@ -14,7 +14,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/controls/button/native_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/layout/grid_layout.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget.h"
@@ -137,13 +137,13 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Create a contents view with 3 buttons.
   views::View* contents = new views::View();
-  views::NativeButton* button1 = new views::NativeButton(
+  views::NativeTextButton* button1 = new views::NativeTextButton(
       NULL, ASCIIToWide(kButton1ASCII));
   contents->AddChildView(button1);
-  views::NativeButton* button2 = new views::NativeButton(
+  views::NativeTextButton* button2 = new views::NativeTextButton(
       NULL, ASCIIToWide(kButton2ASCII));
   contents->AddChildView(button2);
-  views::NativeButton* button3 = new views::NativeButton(
+  views::NativeTextButton* button3 = new views::NativeTextButton(
       NULL, ASCIIToWide(kButton3ASCII));
   contents->AddChildView(button3);
 

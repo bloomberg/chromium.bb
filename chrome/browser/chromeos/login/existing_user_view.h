@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 

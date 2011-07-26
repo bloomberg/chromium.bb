@@ -6,7 +6,6 @@
 
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
-#include "views/controls/button/native_button.h"
 #include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"
 
@@ -68,13 +67,6 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
 HRESULT NativeViewAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   if (!IsValidId(var_id))
     return E_INVALIDARG;
-
-  if (view_->GetClassName() == views::NativeButton::kViewClassName) {
-    views::NativeButton* native_button =
-        static_cast<views::NativeButton*>(view_);
-    native_button->ButtonPressed();
-    return S_OK;
-  }
 
   // The object does not support the method. This value is returned for
   // controls that do not perform actions, such as edit fields.

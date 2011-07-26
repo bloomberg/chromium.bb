@@ -395,9 +395,7 @@ class TextButton : public TextButtonBase {
 // NativeTextButton
 //
 //  A TextButton that uses the NativeTheme border and sets some properties,
-//  like ignore-minimize-size and text alignment minimum size to mimic the
-//  NativeButton class, making it easier to replace existing NativeButton
-//  instances with NativeTextButton instances.
+//  like ignore-minimize-size and text alignment minimum size.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class NativeTextButton : public TextButton {
