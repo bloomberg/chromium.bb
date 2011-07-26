@@ -25,8 +25,6 @@ class SessionManager {
   // Returns the singleton instance.
   static SessionManager* GetInstance();
 
-  std::string GetAddress();
-
   void Add(Session* session);
   bool Remove(const std::string& id);
   bool Has(const std::string& id) const;

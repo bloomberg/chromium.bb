@@ -4,31 +4,7 @@
 
 #include "chrome/test/webdriver/session_manager.h"
 
-#include "base/logging.h"
-#include "chrome/test/webdriver/utility_functions.h"
-#include "net/base/net_util.h"
-
-#if defined(OS_WIN)
-#include <Winsock2.h>
-#endif
-
 namespace webdriver {
-
-std::string SessionManager::GetAddress() {
-  std::string hostname = net::GetHostName();
-#if defined(OS_WIN)
-  if (hostname.length()) {
-    // Get the fully qualified name.
-    struct hostent* host_entry = gethostbyname(hostname.c_str());
-    if (host_entry)
-      hostname = host_entry->h_name;
-  }
-#endif
-  if (hostname.empty()) {
-    hostname = "localhost";
-  }
-  return hostname + ":" + port_ + url_base_;
-}
 
 void SessionManager::Add(Session* session) {
   base::AutoLock lock(map_lock_);

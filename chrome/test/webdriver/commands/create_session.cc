@@ -153,9 +153,12 @@ void CreateSession::ExecutePost(Response* const response) {
   }
 
   LOG(INFO) << "Created session " << session->id();
+  // Redirect to a relative URI. Although prohibited by the HTTP standard,
+  // this is what the IEDriver does. Finding the actual IP address is
+  // difficult, and returning the hostname causes perf problems with the python
+  // bindings on Windows.
   std::ostringstream stream;
-  SessionManager* session_manager = SessionManager::GetInstance();
-  stream << "http://" << session_manager->GetAddress() << "/session/"
+  stream << SessionManager::GetInstance()->url_base() << "/session/"
          << session->id();
   response->SetStatus(kSeeOther);
   response->SetValue(Value::CreateStringValue(stream.str()));
