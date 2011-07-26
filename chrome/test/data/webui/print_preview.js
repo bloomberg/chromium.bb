@@ -193,6 +193,7 @@ var fooIndex = 0;
 var barIndex = 1;
 
 // Test some basic assumptions about the print preview WebUI.
+// crbug.com/88282
 TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterList', function() {
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
@@ -291,7 +292,8 @@ PrintPreviewNoPDFWebUITest.prototype = {
 };
 
 // Test that error message is displayed when plugin doesn't exist.
-TEST_F('PrintPreviewNoPDFWebUITest', 'TestErrorMessage', function() {
+// crbug.com/90476
+TEST_F('PrintPreviewNoPDFWebUITest', 'FLAKY_TestErrorMessage', function() {
   var errorButton = $('error-button');
   assertNotEquals(null, errorButton);
   expectFalse(errorButton.disabled);
