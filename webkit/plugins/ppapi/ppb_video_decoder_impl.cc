@@ -176,6 +176,8 @@ void PPB_VideoDecoder_Impl::Destroy() {
   if (!platform_video_decoder_)
     return;
   platform_video_decoder_->Destroy();
+  platform_video_decoder_ = NULL;
+  ppp_videodecoder_ = NULL;
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(

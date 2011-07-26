@@ -81,6 +81,8 @@ void PlatformVideoDecoderImpl::Reset() {
 void PlatformVideoDecoderImpl::Destroy() {
   DCHECK(decoder_);
   decoder_->Destroy();
+  client_ = NULL;
+  decoder_ = NULL;
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfStream() {

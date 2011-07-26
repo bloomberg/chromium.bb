@@ -86,6 +86,7 @@ class GLES2DemoInstance : public pp::Instance,
   void DecodeNextNALU();
   void GetNextNALUBoundary(size_t start_pos, size_t* end_pos);
   void Render(const PP_PictureBuffer_Dev& buffer);
+  void DeleteOutstandingBitstreamBuffers();
 
   // GL-related functions.
   void InitGL();
@@ -93,6 +94,7 @@ class GLES2DemoInstance : public pp::Instance,
   void CreateGLObjects();
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
   void DeleteTexture(GLuint id);
+  void DeleteOutstandingTextures();
   void PaintFinished(int32_t result, int picture_buffer_id);
 
   // Log an error to the developer console and stderr (though the latter may be
@@ -173,8 +175,26 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
 
 GLES2DemoInstance::~GLES2DemoInstance() {
   delete video_decoder_;  // May be NULL, which is fine.
+  DeleteOutstandingBitstreamBuffers();
+  DeleteOutstandingTextures();
   delete surface_;
   delete context_;
+}
+
+void GLES2DemoInstance::DeleteOutstandingTextures() {
+  for (PictureBufferMap::iterator it = buffers_by_id_.begin();
+       it != buffers_by_id_.end(); ++it) {
+    DeleteTexture(it->second.texture_id);
+  }
+  buffers_by_id_.clear();
+}
+
+void GLES2DemoInstance::DeleteOutstandingBitstreamBuffers() {
+  for (BitstreamBufferMap::iterator it = bitstream_buffers_by_id_.begin();
+       it != bitstream_buffers_by_id_.end(); ++it) {
+    delete it->second;
+  }
+  bitstream_buffers_by_id_.clear();
 }
 
 void GLES2DemoInstance::DidChangeView(
@@ -213,6 +233,7 @@ void GLES2DemoInstance::DecoderBitstreamDone(
       bitstream_buffers_by_id_.find(bitstream_buffer_id);
   assert(it != bitstream_buffers_by_id_.end());
   delete it->second;
+  bitstream_buffers_by_id_.erase(it);
   DecodeNextNALUs();
 }
 
@@ -263,7 +284,7 @@ void GLES2DemoInstance::DecodeNextNALU() {
   size_t start_pos = encoded_data_next_pos_to_decode_;
   size_t end_pos;
   GetNextNALUBoundary(start_pos, &end_pos);
-  pp::Buffer_Dev* buffer = new pp::Buffer_Dev (this, end_pos - start_pos);
+  pp::Buffer_Dev* buffer = new pp::Buffer_Dev(this, end_pos - start_pos);
   PP_VideoBitstreamBuffer_Dev bitstream_buffer;
   int id = ++next_bitstream_buffer_id_;
   bitstream_buffer.id = id;

@@ -367,8 +367,8 @@ void RenderingHelper::RenderTexture(GLuint texture_id) {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  DCHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  DCHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
   if (!suppress_swap_to_display_) {
     int window_id = texture_id_to_surface_index_[texture_id];
     CHECK(eglMakeCurrent(egl_display_, egl_surfaces_[window_id],
@@ -376,12 +376,12 @@ void RenderingHelper::RenderTexture(GLuint texture_id) {
         << eglGetError();
     eglSwapBuffers(egl_display_, egl_surfaces_[window_id]);
   }
-  DCHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
+  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
 }
 
 void RenderingHelper::DeleteTexture(GLuint texture_id) {
   glDeleteTextures(1, &texture_id);
-  DCHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
 // State of the EglRenderingVDAClient below.  Order matters here as the test
@@ -445,7 +445,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   EglRenderingVDAClient(RenderingHelper* rendering_helper,
                         int rendering_window_id,
                         ClientStateNotification* note,
-                        std::string* encoded_data,
+                        const std::string& encoded_data,
                         int num_NALUs_per_decode,
                         int delete_decoder_state);
   virtual ~EglRenderingVDAClient();
@@ -492,12 +492,13 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
 
   RenderingHelper* rendering_helper_;
   int rendering_window_id_;
-  const std::string* encoded_data_;
+  std::string encoded_data_;
   const int num_NALUs_per_decode_;
   size_t encoded_data_next_pos_to_decode_;
   int next_bitstream_buffer_id_;
   ClientStateNotification* note_;
   scoped_refptr<OmxVideoDecodeAccelerator> decoder_;
+  std::set<int> outstanding_texture_ids_;
   int delete_decoder_state_;
   ClientState state_;
   int num_decoded_frames_;
@@ -510,7 +511,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
 EglRenderingVDAClient::EglRenderingVDAClient(RenderingHelper* rendering_helper,
                                              int rendering_window_id,
                                              ClientStateNotification* note,
-                                             std::string* encoded_data,
+                                             const std::string& encoded_data,
                                              int num_NALUs_per_decode,
                                              int delete_decoder_state)
     : rendering_helper_(rendering_helper),
@@ -562,6 +563,7 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(rendering_window_id_, &texture_id, &done);
     done.Wait();
+    CHECK(outstanding_texture_ids_.insert(texture_id).second);
     media::PictureBuffer* buffer =
         new media::PictureBuffer(id, dimensions, texture_id);
     CHECK(picture_buffers_by_id_.insert(std::make_pair(id, buffer)).second);
@@ -575,7 +577,8 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
 void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
   PictureBufferById::iterator it =
       picture_buffers_by_id_.find(picture_buffer_id);
-  DCHECK(it != picture_buffers_by_id_.end());
+  CHECK(it != picture_buffers_by_id_.end());
+  CHECK_EQ(outstanding_texture_ids_.erase(it->second->texture_id()), 1U);
   rendering_helper_->DeleteTexture(it->second->texture_id());
   delete it->second;
   picture_buffers_by_id_.erase(it);
@@ -583,7 +586,7 @@ void EglRenderingVDAClient::DismissPictureBuffer(int32 picture_buffer_id) {
 
 void EglRenderingVDAClient::PictureReady(const media::Picture& picture) {
   // We shouldn't be getting pictures delivered after Reset has completed.
-  DCHECK_LT(state_, CS_RESET);
+  CHECK_LT(state_, CS_RESET);
 
   if (decoder_deleted())
     return;
@@ -662,6 +665,12 @@ void EglRenderingVDAClient::DeleteDecoder() {
     return;
   decoder_->Destroy();
   decoder_ = NULL;
+  STLClearObject(&encoded_data_);
+  for (std::set<int>::iterator it = outstanding_texture_ids_.begin();
+       it != outstanding_texture_ids_.end(); ++it) {
+    rendering_helper_->DeleteTexture(*it);
+  }
+  outstanding_texture_ids_.clear();
   // Cascade through the rest of the states to simplify test code below.
   for (int i = state_ + 1; i < CS_MAX; ++i)
     SetState(static_cast<ClientState>(i));
@@ -670,15 +679,15 @@ void EglRenderingVDAClient::DeleteDecoder() {
 void EglRenderingVDAClient::GetRangeForNextNALUs(
     size_t start_pos, size_t* end_pos) {
   *end_pos = start_pos;
-  CHECK(LookingAtNAL(*encoded_data_, start_pos));
+  CHECK(LookingAtNAL(encoded_data_, start_pos));
   for (int i = 0; i < num_NALUs_per_decode_; ++i) {
     *end_pos += 4;
-    while (*end_pos + 3 < encoded_data_->size() &&
-           !LookingAtNAL(*encoded_data_, *end_pos)) {
+    while (*end_pos + 3 < encoded_data_.size() &&
+           !LookingAtNAL(encoded_data_, *end_pos)) {
       ++*end_pos;
     }
-    if (*end_pos + 3 >= encoded_data_->size()) {
-      *end_pos = encoded_data_->size();
+    if (*end_pos + 3 >= encoded_data_.size()) {
+      *end_pos = encoded_data_.size();
       return;
     }
   }
@@ -687,7 +696,7 @@ void EglRenderingVDAClient::GetRangeForNextNALUs(
 void EglRenderingVDAClient::DecodeNextNALUs() {
   if (decoder_deleted())
     return;
-  if (encoded_data_next_pos_to_decode_ == encoded_data_->size()) {
+  if (encoded_data_next_pos_to_decode_ == encoded_data_.size()) {
     decoder_->Flush();
     return;
   }
@@ -700,7 +709,7 @@ void EglRenderingVDAClient::DecodeNextNALUs() {
   base::SharedMemory shm;
   CHECK(shm.CreateAndMapAnonymous(end_pos - start_pos))
       << start_pos << ", " << end_pos;
-  memcpy(shm.memory(), encoded_data_->data() + start_pos, end_pos - start_pos);
+  memcpy(shm.memory(), encoded_data_.data() + start_pos, end_pos - start_pos);
   base::SharedMemoryHandle dup_handle;
   CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
@@ -797,7 +806,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
     notes[index] = note;
     EglRenderingVDAClient* client = new EglRenderingVDAClient(
         &rendering_helper, index,
-        note, &data_str, num_NALUs_per_decode,
+        note, data_str, num_NALUs_per_decode,
         delete_decoder_state);
     clients[index] = client;
 
