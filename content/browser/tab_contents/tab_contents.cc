@@ -1229,7 +1229,7 @@ void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
 }
 
 bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
-                                      const std::wstring& title) {
+                                      const string16& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
   // synthesized title, we don't want the update to count toward the "one set
   // per page of the title to history."
@@ -1239,7 +1239,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
     final_title = UTF8ToUTF16(entry->url().ExtractFileName());
     explicit_set = false;  // Don't count synthetic titles toward the set limit.
   } else {
-    TrimWhitespace(WideToUTF16Hack(title), TRIM_ALL, &final_title);
+    TrimWhitespace(title, TRIM_ALL, &final_title);
     explicit_set = true;
   }
 
@@ -1476,7 +1476,8 @@ void TabContents::UpdateState(RenderViewHost* rvh,
 }
 
 void TabContents::UpdateTitle(RenderViewHost* rvh,
-                              int32 page_id, const std::wstring& title) {
+                              int32 page_id,
+                              const string16& title) {
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
   SetNotWaitingForResponse();

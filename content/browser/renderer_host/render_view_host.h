@@ -412,7 +412,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgNavigate(const IPC::Message& msg);
   void OnMsgUpdateState(int32 page_id,
                         const std::string& state);
-  void OnMsgUpdateTitle(int32 page_id, const std::wstring& title);
+  void OnMsgUpdateTitle(int32 page_id, const string16& title);
   void OnMsgUpdateEncoding(const std::string& encoding);
   void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
   void OnMsgClose();

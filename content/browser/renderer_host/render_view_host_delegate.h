@@ -235,7 +235,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title) {}
+                           const string16& title) {}
 
   // The page's encoding was changed and should be updated.
   virtual void UpdateEncoding(RenderViewHost* render_view_host,

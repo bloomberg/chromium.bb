@@ -126,7 +126,7 @@ class InterstitialPage : public NotificationObserver,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title) OVERRIDE;
+                           const string16& title) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
 
   // Invoked with the NavigationEntry that is going to be added to the
@@ -225,7 +225,7 @@ class InterstitialPage : public NotificationObserver,
 
   // The original title of the tab that should be reverted to when the
   // interstitial is hidden.
-  std::wstring original_tab_title_;
+  string16 original_tab_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;

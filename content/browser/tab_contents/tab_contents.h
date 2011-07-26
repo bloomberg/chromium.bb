@@ -602,7 +602,7 @@ class TabContents : public PageNavigator,
   // This is used as the backend for state updates, which include a new title,
   // or the dedicated set title message. It returns true if the new title is
   // different and was therefore updated.
-  bool UpdateTitleForEntry(NavigationEntry* entry, const std::wstring& title);
+  bool UpdateTitleForEntry(NavigationEntry* entry, const string16& title);
 
   // Causes the TabContents to navigate in the right renderer to |entry|, which
   // must be already part of the entries in the navigation controller.
@@ -639,7 +639,7 @@ class TabContents : public PageNavigator,
                            const std::string& state) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::wstring& title) OVERRIDE;
+                           const string16& title) OVERRIDE;
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
                               const std::string& encoding) OVERRIDE;
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;

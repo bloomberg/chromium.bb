@@ -883,7 +883,7 @@ void RenderViewHost::OnMsgUpdateState(int32 page_id,
 }
 
 void RenderViewHost::OnMsgUpdateTitle(int32 page_id,
-                                      const std::wstring& title) {
+                                      const string16& title) {
   if (title.length() > content::kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;

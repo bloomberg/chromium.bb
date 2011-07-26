@@ -58,8 +58,6 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id, const std::wstring& title) OVERRIDE {}
   virtual ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;

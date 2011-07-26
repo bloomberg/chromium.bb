@@ -1362,10 +1362,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes.
-// TODO(darin): use a UTF-8 string to reduce data size
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTitle,
                     int32,
-                    std::wstring)
+                    string16)
 
 // Changes the icon url for the page in the UI.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateIconURL,
