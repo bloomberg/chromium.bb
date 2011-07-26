@@ -231,7 +231,7 @@ bool SubmenuView::IsShowing() {
   return host_ && host_->IsMenuHostVisible();
 }
 
-void SubmenuView::ShowAt(gfx::NativeWindow parent,
+void SubmenuView::ShowAt(Widget* parent,
                          const gfx::Rect& bounds,
                          bool do_capture) {
   if (host_) {

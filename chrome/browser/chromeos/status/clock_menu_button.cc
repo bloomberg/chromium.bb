@@ -151,20 +151,11 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 
   EnsureMenu();
 
-  // TODO(rhashimoto): Remove this workaround when WebUI provides a
-  // top-level widget on the ChromeOS login screen that is a window.
-  // The current BackgroundView class for the ChromeOS login screen
-  // creates a owning Widget that has a native GtkWindow but is not a
-  // Window.  This makes it impossible to get the NativeWindow via
-  // the views API.  This workaround casts the top-level NativeWidget
-  // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
-  gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
-
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
   menu_->RunMenuAt(
-      window,
+      source->GetWidget()->GetTopLevelWidget(),
       this,
       bounds,
       views::MenuItemView::TOPRIGHT,

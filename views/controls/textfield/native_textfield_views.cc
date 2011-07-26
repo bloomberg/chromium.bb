@@ -265,7 +265,7 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
                                                   const gfx::Point& p,
                                                   bool is_mouse_gesture) {
   UpdateContextMenu();
-  context_menu_menu_->RunMenuAt(GetWidget()->GetNativeWindow(),
+  context_menu_menu_->RunMenuAt(GetWidget(),
                                 NULL,
                                 gfx::Rect(p, gfx::Size()),
                                 views::MenuItemView::TOPLEFT,

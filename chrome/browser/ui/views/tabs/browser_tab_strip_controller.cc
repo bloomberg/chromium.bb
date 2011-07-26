@@ -64,8 +64,8 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   void RunMenuAt(const gfx::Point& point) {
-    menu_.RunMenuAt(tab_->GetWidget()->GetNativeWindow(), NULL,
-        gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT, true);
+    menu_.RunMenuAt(tab_->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+                    views::MenuItemView::TOPLEFT, true);
     // We could be gone now. Assume |this| is junk!
   }
 

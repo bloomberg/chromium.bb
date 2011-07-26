@@ -189,7 +189,7 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
 
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(menu_, &screen_point);
-  options_menu.RunMenuAt(GetWidget()->GetNativeWindow(), menu_,
+  options_menu.RunMenuAt(GetWidget(), menu_,
       gfx::Rect(screen_point, menu_->size()), views::MenuItemView::TOPLEFT,
       true);
 }

@@ -592,7 +592,7 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
-  root_->RunMenuAt(host->GetWidget()->GetNativeWindow(), host, bounds,
+  root_->RunMenuAt(host->GetWidget(), host, bounds,
       MenuItemView::TOPRIGHT, true);
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
@@ -853,10 +853,14 @@ void WrenchMenu::CreateBookmarkMenu() {
     return;
 
   model->AddObserver(this);
+
+  // TODO(oshima): Replace with views only API.
+  views::Widget* parent = views::Widget::GetWidgetForNativeWindow(
+      browser_->window()->GetNativeHandle());
   bookmark_menu_delegate_.reset(
       new BookmarkMenuDelegate(browser_->profile(),
                                NULL,
-                               browser_->window()->GetNativeHandle(),
+                               parent,
                                first_bookmark_command_id_));
   bookmark_menu_delegate_->Init(
       this, bookmark_menu_, model->bookmark_bar_node(), 0,

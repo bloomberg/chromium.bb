@@ -9,6 +9,10 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"
 #include "views/controls/menu/menu_delegate.h"
 
+namespace views {
+class Widget;
+}
+
 // Observer for the BookmarkContextMenu.
 class BookmarkContextMenuObserver {
  public:
@@ -27,7 +31,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
                             public views::MenuDelegate {
  public:
   BookmarkContextMenu(
-      gfx::NativeWindow parent_window,
+      views::Widget* parent_widget,
       Profile* profile,
       PageNavigator* page_navigator,
       const BookmarkNode* parent,
@@ -63,7 +67,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   scoped_ptr<BookmarkContextMenuControllerViews> controller_;
 
   // The parent of dialog boxes opened from the context menu.
-  gfx::NativeWindow parent_window_;
+  views::Widget* parent_widget_;
 
   // The menu itself.
   scoped_ptr<views::MenuItemView> menu_;

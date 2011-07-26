@@ -68,7 +68,7 @@ class MenuItemViewTestBase : public ViewEventTestBase,
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
     menu_->RunMenuAt(
-        source->GetWidget()->GetNativeWindow(),
+        source->GetWidget(),
         button_,
         bounds,
         views::MenuItemView::TOPLEFT,

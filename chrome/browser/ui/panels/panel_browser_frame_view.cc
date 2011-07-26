@@ -448,7 +448,7 @@ void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
   DCHECK_EQ(settings_button_, source);
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(source, &screen_point);
-  settings_menu_.RunMenuAt(source->GetWidget()->GetNativeWindow(),
+  settings_menu_.RunMenuAt(source->GetWidget(),
       settings_button_, gfx::Rect(screen_point, source->size()),
       views::MenuItemView::TOPRIGHT, true);
 }

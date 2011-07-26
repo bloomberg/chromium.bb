@@ -18,7 +18,7 @@ class MenuRunner::Holder {
   void Release();
 
   // Runs the menu.
-  void RunMenuAt(gfx::NativeWindow parent,
+  void RunMenuAt(Widget* parent,
                  MenuButton* button,
                  const gfx::Rect& bounds,
                  MenuItemView::AnchorPosition anchor,
@@ -57,7 +57,7 @@ void MenuRunner::Holder::Release() {
   }
 }
 
-void MenuRunner::Holder::RunMenuAt(gfx::NativeWindow parent,
+void MenuRunner::Holder::RunMenuAt(Widget* parent,
                                    MenuButton* button,
                                    const gfx::Rect& bounds,
                                    MenuItemView::AnchorPosition anchor,
@@ -81,7 +81,7 @@ MenuRunner::~MenuRunner() {
   holder_->Release();
 }
 
-void MenuRunner::RunMenuAt(gfx::NativeWindow parent,
+void MenuRunner::RunMenuAt(Widget* parent,
                            MenuButton* button,
                            const gfx::Rect& bounds,
                            MenuItemView::AnchorPosition anchor,

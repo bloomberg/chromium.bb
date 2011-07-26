@@ -387,19 +387,11 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
     submenu->set_minimum_preferred_width(minimum_input_method_menu_width_);
   }
 
-  // TODO(rhashimoto): Remove this workaround when WebUI provides a
-  // top-level widget on the ChromeOS login screen that is a window.
-  // The current BackgroundView class for the ChromeOS login screen
-  // creates a owning Widget that has a native GtkWindow but is not a
-  // Window.  This makes it impossible to get the NativeWindow via
-  // the views API.  This workaround casts the top-level NativeWidget
-  // to a NativeWindow that we can pass to MenuItemView::RunMenuAt().
-  gfx::NativeWindow window = GTK_WINDOW(source->GetWidget()->GetNativeView());
-
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  input_method_menu_->RunMenuAt(window, NULL, bounds, menu_alignment_, true);
+  input_method_menu_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                                NULL, bounds, menu_alignment_, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

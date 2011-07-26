@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/menu/native_menu_host_delegate.h"
 #include "views/widget/widget.h"
@@ -33,7 +32,7 @@ class MenuHost : public Widget {
   virtual ~MenuHost();
 
   // Initializes and shows the MenuHost.
-  void InitMenuHost(gfx::NativeWindow parent,
+  void InitMenuHost(Widget* parent,
                     const gfx::Rect& bounds,
                     View* contents_view,
                     bool do_capture);
@@ -56,9 +55,6 @@ class MenuHost : public Widget {
 
   // Releases a mouse grab installed by |ShowMenuHost|.
   void ReleaseMenuHostCapture();
-
-  // Returns the native window of the MenuHost.
-  gfx::NativeWindow GetMenuHostWindow();
 
  private:
   // Overridden from Widget:

@@ -10,10 +10,13 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "ui/gfx/native_widget_types.h"
 
 class PageNavigator;
 class Profile;
+
+namespace views {
+class Widget;
+}
 
 // An interface implemented by an object that performs actions on the actual
 // menu for the controller.
@@ -42,14 +45,14 @@ class BookmarkContextMenuControllerViewsDelegate {
 class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
  public:
   // Creates the bookmark context menu.
-  // |parent_window| is the window that this menu should be added to.
+  // |parent_widget| is the window that this menu should be added to.
   // |delegate| is described above.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
   BookmarkContextMenuControllerViews(
-      gfx::NativeWindow parent_window,
+      views::Widget* parent_widget,
       BookmarkContextMenuControllerViewsDelegate* delegate,
       Profile* profile,
       PageNavigator* navigator,
@@ -78,7 +81,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   // Returns true if selection_ has at least one bookmark of type url.
   bool HasURLs() const;
 
-  gfx::NativeWindow parent_window_;
+  views::Widget* parent_widget_;
   BookmarkContextMenuControllerViewsDelegate* delegate_;
   Profile* profile_;
   PageNavigator* navigator_;

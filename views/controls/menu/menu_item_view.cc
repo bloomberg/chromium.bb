@@ -171,7 +171,7 @@ string16 MenuItemView::GetAccessibleNameForMenuItem(
   return accessible_name;
 }
 
-void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
+void MenuItemView::RunMenuAt(Widget* parent,
                              MenuButton* button,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
@@ -231,7 +231,7 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
     delegate_->ExecuteCommand(result->GetCommand(), mouse_event_flags);
 }
 
-void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
+void MenuItemView::RunMenuForDropAt(Widget* parent,
                                     const gfx::Rect& bounds,
                                     AnchorPosition anchor) {
   PrepareForRun(false, false);

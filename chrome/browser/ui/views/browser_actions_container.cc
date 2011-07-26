@@ -261,8 +261,8 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
   context_menu_ = &menu;
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  context_menu_->RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
-      gfx::Rect(screen_loc, size()), views::MenuItemView::TOPLEFT, true);
+  context_menu_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+                           views::MenuItemView::TOPLEFT, true);
 
   SetButtonNotPushed();
   context_menu_ = NULL;
@@ -712,7 +712,7 @@ void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
     overflow_menu_ = new BrowserActionOverflowMenuController(
         this, chevron_, browser_action_views_, VisibleBrowserActions());
     overflow_menu_->set_observer(this);
-    overflow_menu_->RunMenu(GetWidget()->GetNativeWindow(), false);
+    overflow_menu_->RunMenu(GetWidget(), false);
   }
 }
 
@@ -1025,7 +1025,7 @@ void BrowserActionsContainer::ShowDropFolder() {
   overflow_menu_ = new BrowserActionOverflowMenuController(
       this, chevron_, browser_action_views_, VisibleBrowserActions());
   overflow_menu_->set_observer(this);
-  overflow_menu_->RunMenu(GetWidget()->GetNativeWindow(), true);
+  overflow_menu_->RunMenu(GetWidget(), true);
 }
 
 void BrowserActionsContainer::SetDropIndicator(int x_pos) {

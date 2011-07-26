@@ -18,15 +18,16 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
 #include "grit/generated_resources.h"
+#include "views/widget/widget.h"
 
 BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
-    gfx::NativeWindow parent_window,
+    views::Widget* parent_widget,
     BookmarkContextMenuControllerViewsDelegate* delegate,
     Profile* profile,
     PageNavigator* navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection)
-    : parent_window_(parent_window),
+    : parent_widget_(parent_widget),
       delegate_(delegate),
       profile_(profile),
       navigator_(navigator),
@@ -111,7 +112,8 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
         UserMetrics::RecordAction(
             UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
-      bookmark_utils::OpenAll(parent_window_, profile_, navigator_, selection_,
+      bookmark_utils::OpenAll(parent_widget_->GetNativeWindow(),
+                              profile_, navigator_, selection_,
                               initial_disposition);
       break;
     }
@@ -127,12 +129,12 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       }
 
       if (selection_[0]->is_url()) {
-        BookmarkEditor::Show(parent_window_, profile_, parent_,
-                             BookmarkEditor::EditDetails(selection_[0]),
-                             BookmarkEditor::SHOW_TREE);
+        BookmarkEditor::Show(parent_widget_->GetNativeWindow(), profile_,
+            parent_, BookmarkEditor::EditDetails(selection_[0]),
+            BookmarkEditor::SHOW_TREE);
       } else {
-        BookmarkFolderEditorController::Show(profile_, parent_window_,
-            selection_[0], -1,
+        BookmarkFolderEditorController::Show(profile_,
+            parent_widget_->GetNativeWindow(), selection_[0], -1,
             BookmarkFolderEditorController::EXISTING_BOOKMARK);
       }
       break;
@@ -157,7 +159,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 
       // TODO: this should honor the index from GetParentForNewNodes.
       BookmarkEditor::Show(
-          parent_window_, profile_,
+          parent_widget_->GetNativeWindow(), profile_,
           bookmark_utils::GetParentForNewNodes(parent_, selection_, NULL),
           BookmarkEditor::EditDetails(), BookmarkEditor::SHOW_TREE);
       break;
@@ -169,8 +171,9 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       int index;
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
-      BookmarkFolderEditorController::Show(profile_, parent_window_, parent,
-          index, BookmarkFolderEditorController::NEW_BOOKMARK);
+      BookmarkFolderEditorController::Show(profile_,
+           parent_widget_->GetNativeWindow(), parent, index,
+           BookmarkFolderEditorController::NEW_BOOKMARK);
       break;
     }
 

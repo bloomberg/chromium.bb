@@ -194,6 +194,6 @@ void AvatarMenu::RunMenu(views::MenuButton* host) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
-  root_->RunMenuAt(host->GetWidget()->GetNativeWindow(), host, bounds,
-      views::MenuItemView::TOPLEFT, true);
+  root_->RunMenuAt(host->GetWidget(), host, bounds,
+                   views::MenuItemView::TOPLEFT, true);
 }

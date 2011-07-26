@@ -1066,8 +1066,7 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
   }
 
   bookmark_menu_ = new BookmarkMenuController(
-      profile_, page_navigator_, GetWidget()->GetNativeWindow(), node,
-      start_index);
+      profile_, page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(this, false);
 }
@@ -1141,7 +1140,7 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
   bool close_on_remove =
       (parent == profile_->GetBookmarkModel()->other_node() &&
        parent->child_count() == 1);
-  BookmarkContextMenu controller(GetWidget()->GetNativeWindow(), profile_,
+  BookmarkContextMenu controller(GetWidget(), profile_,
                                  navigator, parent, nodes, close_on_remove);
   controller.RunMenuAt(p);
 }
@@ -1395,8 +1394,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
 
   drop_info_->is_menu_showing = true;
   bookmark_drop_menu_ = new BookmarkMenuController(
-      profile_, page_navigator_, GetWidget()->GetNativeWindow(), node,
-      start_index);
+      profile_, page_navigator_, GetWidget(), node, start_index);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this, true);
 }

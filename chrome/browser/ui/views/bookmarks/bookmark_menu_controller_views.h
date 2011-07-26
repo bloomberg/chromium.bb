@@ -10,7 +10,6 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "ui/gfx/native_widget_types.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
 
@@ -30,6 +29,7 @@ class OSExchangeData;
 
 namespace views {
 class MenuButton;
+class Widget;
 }  // namespace views
 
 // BookmarkMenuController is responsible for showing a menu of bookmarks,
@@ -52,7 +52,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // at |start_child_index|.
   BookmarkMenuController(Profile* profile,
                          PageNavigator* page_navigator,
-                         gfx::NativeWindow parent,
+                         views::Widget* parent,
                          const BookmarkNode* node,
                          int start_child_index);
 

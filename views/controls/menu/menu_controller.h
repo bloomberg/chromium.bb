@@ -64,7 +64,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Runs the menu at the specified location. If the menu was configured to
   // block, the selected item is returned. If the menu does not block this
   // returns NULL immediately.
-  MenuItemView* Run(gfx::NativeWindow parent,
+  MenuItemView* Run(Widget* parent,
                     MenuButton* button,
                     MenuItemView* root,
                     const gfx::Rect& bounds,
@@ -455,7 +455,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   MenuDelegate::DropPosition drop_position_;
 
   // Owner of child windows.
-  gfx::NativeWindow owner_;
+  Widget* owner_;
 
   // Indicates a possible drag operation.
   bool possible_drag_;

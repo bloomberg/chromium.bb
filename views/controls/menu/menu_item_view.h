@@ -135,12 +135,12 @@ class MenuItemView : public View {
   // whether the items have mnemonics. Mnemonics are identified by way of the
   // character following the '&'.  The anchor position is specified for non-RTL
   // languages; the opposite value will be used for RTL.
-  void RunMenuAt(gfx::NativeWindow parent,
+  void RunMenuAt(Widget* parent,
                  MenuButton* button,
                  const gfx::Rect& bounds,
                  AnchorPosition anchor,
                  bool has_mnemonics);
-  void RunMenuForDropAt(gfx::NativeWindow parent,
+  void RunMenuForDropAt(Widget* parent,
                         const gfx::Rect& bounds,
                         AnchorPosition anchor);
 

@@ -56,7 +56,7 @@ BrowserActionOverflowMenuController::~BrowserActionOverflowMenuController() {
     observer_->NotifyMenuDeleted(this);
 }
 
-bool BrowserActionOverflowMenuController::RunMenu(gfx::NativeWindow window,
+bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
                                                   bool for_drop) {
   for_drop_ = for_drop;
 
@@ -106,7 +106,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
   context_menu_model_adapter.BuildMenu(&context_menu);
 
   // This blocks until the user choses something or dismisses the menu.
-  context_menu.RunMenuAt(menu_button_->GetWidget()->GetNativeWindow(),
+  context_menu.RunMenuAt(menu_button_->GetWidget(),
       NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT, true);
 
   // The user is done with the context menu, so we can close the underlying

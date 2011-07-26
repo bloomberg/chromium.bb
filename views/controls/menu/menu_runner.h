@@ -13,6 +13,7 @@
 namespace views {
 
 class MenuButton;
+class Widget;
 
 // MenuRunner handles the lifetime of the root MenuItemView. MenuItemView runs a
 // nested message loop, which means care must be taken when the MenuItemView
@@ -30,7 +31,7 @@ class MenuRunner {
   ~MenuRunner();
 
   // Runs the menu.
-  void RunMenuAt(gfx::NativeWindow parent,
+  void RunMenuAt(Widget* parent,
                  MenuButton* button,
                  const gfx::Rect& bounds,
                  MenuItemView::AnchorPosition anchor,

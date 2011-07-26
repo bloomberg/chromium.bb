@@ -257,7 +257,7 @@ MenuController* MenuController::GetActiveInstance() {
   return active_instance_;
 }
 
-MenuItemView* MenuController::Run(gfx::NativeWindow parent,
+MenuItemView* MenuController::Run(Widget* parent,
                                   MenuButton* button,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
@@ -277,7 +277,7 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
     menu_stack_.push_back(state_);
 
     // The context menu should be owned by the same parent.
-    DCHECK(owner_ == parent);
+    DCHECK_EQ(owner_, parent);
   } else {
     showing_ = true;
   }
@@ -1066,7 +1066,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   gfx::NativeWindow window_under_mouse =
       gfx::Screen::GetWindowAtCursorScreenPoint();
-  if (window_under_mouse != owner_)
+  // TODO(oshima): Replace with views only API.
+  if (window_under_mouse != owner_->GetNativeWindow())
     return false;
 
   // The user moved the mouse outside the menu and over the owning window. See

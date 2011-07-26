@@ -511,7 +511,7 @@ void BrowserView::ShowContextMenuForView(views::View* source,
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
     // rebuild menu so it reflects current application state
     InitSystemMenu();
-    system_menu_->RunMenuAt(source->GetWidget()->GetNativeWindow(), NULL,
+    system_menu_->RunMenuAt(source->GetWidget(), NULL,
                             gfx::Rect(p, gfx::Size(0,0)),
                             views::MenuItemView::TOPLEFT,
                             true);

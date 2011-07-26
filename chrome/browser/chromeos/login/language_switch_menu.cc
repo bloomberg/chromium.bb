@@ -170,7 +170,7 @@ void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   else
     new_pt.set_x(pt.x() - reverse_offset);
 
-  menu_->RunMenuAt(button->GetWidget()->GetNativeWindow(), button,
+  menu_->RunMenuAt(button->GetWidget(), button,
       gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT, true);
 }
 

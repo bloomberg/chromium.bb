@@ -159,8 +159,8 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  menu.RunMenuAt(GetWidget()->GetNativeWindow(), NULL,
-      gfx::Rect(screen_loc ,size()), views::MenuItemView::TOPLEFT, true);
+  menu.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc ,size()),
+                 views::MenuItemView::TOPLEFT, true);
 }
 
 void PageActionImageView::OnImageLoaded(

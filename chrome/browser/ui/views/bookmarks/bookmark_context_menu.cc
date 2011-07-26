@@ -14,21 +14,22 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, public:
 
 BookmarkContextMenu::BookmarkContextMenu(
-    gfx::NativeWindow parent_window,
+    views::Widget* parent_widget,
     Profile* profile,
     PageNavigator* page_navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
     bool close_on_remove)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(new BookmarkContextMenuControllerViews(parent_window,
+          controller_(new BookmarkContextMenuControllerViews(parent_widget,
               this, profile, page_navigator, parent, selection))),
-      parent_window_(parent_window),
+      parent_widget_(parent_widget),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
       parent_node_(parent),
       observer_(NULL),
@@ -47,7 +48,7 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   // width/height don't matter here.
   views::MenuItemView::AnchorPosition anchor = base::i18n::IsRTL() ?
       views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;
-  menu_->RunMenuAt(parent_window_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
+  menu_->RunMenuAt(parent_widget_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
                    anchor, true);
 }
 

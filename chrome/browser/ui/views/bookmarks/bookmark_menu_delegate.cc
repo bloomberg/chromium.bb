@@ -26,6 +26,7 @@
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/widget/widget.h"
 
 using views::MenuItemView;
 
@@ -35,7 +36,7 @@ static const int kMaxMenuWidth = 400;
 
 BookmarkMenuDelegate::BookmarkMenuDelegate(Profile* profile,
                                            PageNavigator* navigator,
-                                           gfx::NativeWindow parent,
+                                           views::Widget* parent,
                                            int first_menu_id)
     : profile_(profile),
       page_navigator_(navigator),
@@ -117,8 +118,8 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   WindowOpenDisposition initial_disposition =
       event_utils::DispositionFromEventFlags(mouse_event_flags);
 
-  bookmark_utils::OpenAll(parent_, profile_, page_navigator_, selection,
-                          initial_disposition);
+  bookmark_utils::OpenAll(parent_->GetNativeWindow(), profile_, page_navigator_,
+                          selection, initial_disposition);
 }
 
 bool BookmarkMenuDelegate::GetDropFormats(

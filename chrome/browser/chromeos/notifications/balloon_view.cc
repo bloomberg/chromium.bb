@@ -126,9 +126,7 @@ class NotificationControlView : public views::View,
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(options_menu_button_,
                                       &screen_location);
-    gfx::NativeWindow window =
-        source->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-    menu.RunMenuAt(window,
+    menu.RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                    options_menu_button_,
                    gfx::Rect(screen_location, options_menu_button_->size()),
                    views::MenuItemView::TOPRIGHT,

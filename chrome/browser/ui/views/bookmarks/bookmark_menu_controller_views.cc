@@ -24,12 +24,13 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
+#include "views/widget/widget.h"
 
 using views::MenuItemView;
 
 BookmarkMenuController::BookmarkMenuController(Profile* profile,
                                                PageNavigator* navigator,
-                                               gfx::NativeWindow parent,
+                                               views::Widget* parent,
                                                const BookmarkNode* node,
                                                int start_child_index)
     : menu_delegate_(new BookmarkMenuDelegate(profile, navigator, parent, 1)),

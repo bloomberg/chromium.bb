@@ -78,7 +78,7 @@ class SubmenuView : public View {
 
   // Shows the menu at the specified location. Coordinates are in screen
   // coordinates. max_width gives the max width the view should be.
-  void ShowAt(gfx::NativeWindow parent,
+  void ShowAt(Widget* parent,
               const gfx::Rect& bounds,
               bool do_capture);
 
