@@ -25,6 +25,8 @@ const char kOnExtensionDisabled[] = "management.onDisabled";
 
 const char kOnFileBrowserDiskChanged[] = "fileBrowserPrivate.onDiskChanged";
 const char kOnFileChanged[] = "fileBrowserPrivate.onFileChanged";
+const char kOnFileBrowserMountCompleted[] =
+    "fileBrowserPrivate.onMountCompleted";
 
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 }  // namespace extension_event_names

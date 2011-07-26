@@ -118,24 +118,24 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
 };
 
 // Parent class for the chromium extension APIs for the file dialog.
-class FileDialogFunction
+class FileBrowserFunction
     : public AsyncExtensionFunction {
  public:
-  FileDialogFunction();
+  FileBrowserFunction();
 
  protected:
   typedef std::vector<GURL> UrlList;
   typedef std::vector<FilePath> FilePathList;
 
-  virtual ~FileDialogFunction();
+  virtual ~FileBrowserFunction();
 
   // Convert virtual paths to local paths on the file thread.
   void GetLocalPathsOnFileThread(const UrlList& file_urls,
-                                 const std::string& internal_task_id);
+                                 void* context);
 
   // Callback with converted local paths.
-  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
-      const std::string& internal_task_id) {}
+  virtual void GetLocalPathsResponseOnUIThread(
+      const FilePathList& files, void* context) {}
 
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
@@ -143,7 +143,7 @@ class FileDialogFunction
 
 // Select a single file.  Closes the dialog window.
 class SelectFileFunction
-    : public FileDialogFunction {
+    : public FileBrowserFunction {
  public:
   SelectFileFunction() {}
 
@@ -153,9 +153,9 @@ class SelectFileFunction
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // FileDialogFunction overrides.
-  virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
+  // FileBrowserFunction overrides.
+  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
+                                               void* context) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFile");
@@ -163,7 +163,7 @@ class SelectFileFunction
 
 // View multiple selected files.  Window stays open.
 class ViewFilesFunction
-    : public FileDialogFunction {
+    : public FileBrowserFunction {
  public:
   ViewFilesFunction();
 
@@ -173,9 +173,9 @@ class ViewFilesFunction
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // FileDialogFunction overrides.
+  // FileBrowserFunction overrides.
   virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
+      const FilePathList& files, void* context) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.viewFiles");
@@ -183,7 +183,7 @@ class ViewFilesFunction
 
 // Select multiple files.  Closes the dialog window.
 class SelectFilesFunction
-    : public FileDialogFunction {
+    : public FileBrowserFunction {
  public:
   SelectFilesFunction();
 
@@ -193,9 +193,9 @@ class SelectFilesFunction
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // FileDialogFunction overrides.
+  // FileBrowserFunction overrides.
   virtual void GetLocalPathsResponseOnUIThread(
-      const FilePathList& files, const std::string& internal_task_id) OVERRIDE;
+      const FilePathList& files, void* context) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFiles");
@@ -203,7 +203,7 @@ class SelectFilesFunction
 
 // Cancel file selection Dialog.  Closes the dialog window.
 class CancelFileDialogFunction
-    : public FileDialogFunction {
+    : public FileBrowserFunction {
  public:
   CancelFileDialogFunction() {}
 
@@ -217,19 +217,61 @@ class CancelFileDialogFunction
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.cancelDialog");
 };
 
-// Unmounts selected device. Expects volume's device path as an argument.
-class UnmountVolumeFunction
-    : public SyncExtensionFunction {
-  public:
-    UnmountVolumeFunction();
+// Mount a device or a file.
+class AddMountFunction
+    : public FileBrowserFunction {
+ public:
+  AddMountFunction();
 
  protected:
-  virtual ~UnmountVolumeFunction();
+  virtual ~AddMountFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+  // FileBrowserFunction overrides.
+  virtual void GetLocalPathsResponseOnUIThread(
+      const FilePathList& files, void* context) OVERRIDE;
+
+ private:
+  struct MountParamaters {
+    MountParamaters(const std::string& type,
+                    const chromeos::MountPathOptions& options)
+        :  mount_type(type), mount_options(options) {}
+    ~MountParamaters() {}
+    std::string mount_type;
+    chromeos::MountPathOptions mount_options;
+  };
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addMount");
+};
+
+// Unmounts selected device. Expects mount point path as an argument.
+class RemoveMountFunction
+    : public SyncExtensionFunction {
+ public:
+  RemoveMountFunction();
+
+ protected:
+  virtual ~RemoveMountFunction();
 
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.unmountVolume");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.removeMount");
+};
+
+class GetMountPointsFunction
+    : public AsyncExtensionFunction {
+ public:
+  GetMountPointsFunction();
+
+ protected:
+  virtual ~GetMountPointsFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getMountPoints");
 };
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.

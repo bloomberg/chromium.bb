@@ -110,6 +110,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerDestroyListener) {
 
 // Flaky: http://crbug.com/89733
 IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FLAKY_SelectFileAndCancel) {
+  // Add tmp mount point even though this test won't use it directly.
+  // We need this to make sure that at least one top-level directory exists
+  // in the file browser.
+  FilePath tmp_dir("/tmp");
+  AddMountPoint(tmp_dir);
+
   // Spawn a dialog to open a file.  The dialog will signal that it is done
   // loading via chrome.test.sendMessage('ready') in the extension JavaScript.
   ExtensionTestMessageListener msg_listener("ready", false /* will_reply */);

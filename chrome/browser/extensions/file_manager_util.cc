@@ -27,6 +27,7 @@
 // This is the "well known" url for the file manager extension from
 // browser/resources/file_manager.  In the future we may provide a way to swap
 // out this file manager for an aftermarket part, but not yet.
+const char kFileBrowserExtensionUrl[] = FILEBROWSER_URL("");
 const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
@@ -67,6 +68,11 @@ bool IsSupportedAVExtension(const char* ext) {
 }
 
 // static
+GURL FileManagerUtil::GetFileBrowserExtensionUrl() {
+  return GURL(kFileBrowserExtensionUrl);
+}
+
+// static
 GURL FileManagerUtil::GetFileBrowserUrl() {
   return GURL(kBaseFileBrowserUrl);
 }
@@ -85,6 +91,21 @@ GURL FileManagerUtil::GetMediaPlayerPlaylistUrl() {
 bool FileManagerUtil::ConvertFileToFileSystemUrl(
     Profile* profile, const FilePath& full_file_path, const GURL& origin_url,
     GURL* url) {
+  FilePath virtual_path;
+  if (!ConvertFileToRelativeFileSystemPath(profile, full_file_path,
+                                           &virtual_path)) {
+    return false;
+  }
+
+  GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
+      fileapi::kFileSystemTypeExternal);
+  *url = GURL(base_url.spec() + virtual_path.value());
+  return true;
+}
+
+// static
+bool FileManagerUtil::ConvertFileToRelativeFileSystemPath(
+    Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
   fileapi::FileSystemPathManager* path_manager =
       profile->GetFileSystemContext()->path_manager();
   fileapi::ExternalFileSystemMountPointProvider* provider =
@@ -93,13 +114,9 @@ bool FileManagerUtil::ConvertFileToFileSystemUrl(
     return false;
 
   // Find if this file path is managed by the external provider.
-  FilePath virtual_path;
-  if (!provider->GetVirtualPath(full_file_path, &virtual_path))
+  if (!provider->GetVirtualPath(full_file_path, virtual_path))
     return false;
 
-  GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
-      fileapi::kFileSystemTypeExternal);
-  *url = GURL(base_url.spec() + virtual_path.value());
   return true;
 }
 

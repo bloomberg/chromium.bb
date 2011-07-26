@@ -15,7 +15,7 @@ var fileManager;
 function init() {
   var params;
 
-  var rootPaths = ['Downloads', 'media'];
+  var rootPaths = ['Downloads', 'removable', 'archive', 'tmp'];
 
   if (document.location.search) {
     var json = decodeURIComponent(document.location.search.substr(1));

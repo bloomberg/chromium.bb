@@ -515,9 +515,24 @@ void ProfileImpl::RegisterComponentExtensions() {
       IDR_BOOKMARKS_MANIFEST));
 
 #if defined(FILE_MANAGER_EXTENSION)
+#ifndef NDEBUG
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
+    FilePath filemgr_extension_path =
+        command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath);
+    component_extensions.push_back(std::make_pair(
+        filemgr_extension_path.value(),
+        IDR_FILEMANAGER_MANIFEST));
+  } else {
     component_extensions.push_back(std::make_pair(
         FILE_PATH_LITERAL("file_manager"),
         IDR_FILEMANAGER_MANIFEST));
+  }
+#else
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("file_manager"),
+      IDR_FILEMANAGER_MANIFEST));
+#endif
 #endif
 
 #if defined(TOUCH_UI)
@@ -532,7 +547,6 @@ void ProfileImpl::RegisterComponentExtensions() {
         IDR_MOBILE_MANIFEST));
 
 #ifndef NDEBUG
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
       FilePath auth_extension_path =
           command_line->GetSwitchValuePath(switches::kAuthExtensionPath);

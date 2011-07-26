@@ -308,6 +308,7 @@ extern const char kCompressSystemFeedback[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];
 extern const char kAuthExtensionPath[];
+extern const char kFileManagerExtensionPath[];
 #endif
 #endif
 
