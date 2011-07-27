@@ -3,6 +3,14 @@
  * found in the LICENSE file.
  */
 
+h2 {
+  margin: 15px 0px 5px 0px;
+}
+
+ul, p {
+  margin: 0px;
+}
+
 .audio-stream[status='created'] {
   color: blue;
 }
@@ -13,4 +21,33 @@
 
 .audio-stream[status='error'] {
   color: red;
+}
+
+#cache-entries ul {
+  list-style-type: none;
+}
+
+.cache-entry {
+  margin: 0px 0px 5px 0px;
+}
+
+.cache-entry-controls {
+  font-size: smaller;
+}
+
+.cache-entry summary {
+  text-indent: -1em;
+}
+
+.cache-table {
+  table-layout: fixed;
+  width: 500px;
+}
+
+.cache-table thead {
+  text-align: left;
+}
+
+.cache-table tfoot {
+  text-align: right;
 }

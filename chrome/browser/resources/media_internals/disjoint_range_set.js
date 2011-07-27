@@ -125,7 +125,18 @@ cr.define('media', function() {
       });
 
       return results;
-    }
+    },
+
+    /**
+     * Finds the maximum value present in any of the contained ranges.
+     * @return {int} The maximum value contained by this DisjointRangeSet.
+     */
+    max: function() {
+      var max = -Infinity;
+      for (var start in this.ranges_)
+        max = Math.max(max, this.ranges_[start]);
+      return max;
+    },
   };
 
   return {

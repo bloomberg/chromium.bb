@@ -62,6 +62,20 @@ found in the LICENSE file.
         assertRangeEquals([[0, 8]]);
       };
 
+      function testMax() {
+        assertNull(range.max());
+        range.add(1, 6);
+        assertEquals(range.max(), 6);
+        range.add(3, 8);
+        assertEquals(range.max(), 8);
+        range.remove(2, 3);
+        assertEquals(range.max(), 8);
+        range.remove(4, 10);
+        assertEquals(range.max(), 1);
+        range.remove(1, 1);
+        assertNull(range.max());
+      };
+
       function testRemove() {
         range.add(1, 20);
         assertRangeEquals([[1, 20]]);
