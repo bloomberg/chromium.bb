@@ -251,6 +251,8 @@
                 'src/common/language.h',
                 'src/common/linux/dump_symbols.cc',
                 'src/common/linux/dump_symbols.h',
+                'src/common/linux/elf_symbols_to_module.cc',
+                'src/common/linux/elf_symbols_to_module.h',
                 'src/common/linux/file_id.cc',
                 'src/common/linux/file_id.h',
                 'src/common/linux/guid_creator.h',
