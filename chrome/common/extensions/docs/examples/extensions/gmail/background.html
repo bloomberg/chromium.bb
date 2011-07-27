@@ -16,6 +16,7 @@ var requestTimeout = 1000 * 2;  // 5 seconds
 var rotation = 0;
 var unreadCount = -1;
 var loadingAnimation = new LoadingAnimation();
+var requestTimerId;
 
 function getGmailUrl() {
   var url = "https://mail.google.com/";
@@ -109,13 +110,16 @@ function init() {
 }
 
 function scheduleRequest() {
+  if (requestTimerId) {
+    window.clearTimeout(requestTimerId);
+  }
   var randomness = Math.random() * 2;
   var exponent = Math.pow(2, requestFailureCount);
   var multiplier = Math.max(randomness * exponent, 1);
   var delay = Math.min(multiplier * pollIntervalMin, pollIntervalMax);
   delay = Math.round(delay);
 
-  window.setTimeout(startRequest, delay);
+  requestTimerId = window.setTimeout(startRequest, delay);
 }
 
 // ajax stuff
@@ -147,11 +151,13 @@ function getInboxCount(onSuccess, onError) {
       onSuccess(count);
   }
 
+  var invokedErrorCallback = false;
   function handleError() {
     ++requestFailureCount;
     window.clearTimeout(abortTimerId);
-    if (onError)
+    if (onError && !invokedErrorCallback)
       onError();
+    invokedErrorCallback = true;
   }
 
   try {
