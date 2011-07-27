@@ -5031,12 +5031,6 @@
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
 {
-   bug_90370
-   Memcheck:Leak
-   ...
-   fun:_ZN3gfx*RenderTextTest*
-}
-{
    bug_90400
    Memcheck:Leak
    fun:_Znw*

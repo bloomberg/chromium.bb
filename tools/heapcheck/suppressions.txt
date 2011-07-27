@@ -1643,12 +1643,6 @@
    fun:ProfileManagerTest_CreateProfilesAsync_Test::TestBody
 }
 {
-   bug_90370
-   Heapcheck:Leak
-   ...
-   fun:gfx::RenderTextTest*
-}
-{
    bug_90381_a
    Heapcheck:Leak
    ...

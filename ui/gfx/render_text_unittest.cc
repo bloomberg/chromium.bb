@@ -4,6 +4,7 @@
 
 #include "ui/gfx/render_text.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +15,7 @@ class RenderTextTest : public testing::Test {
 
 TEST_F(RenderTextTest, DefaultStyle) {
   // Defaults to empty text with no styles.
-  gfx::RenderText* render_text = gfx::RenderText::CreateRenderText();
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
   EXPECT_TRUE(render_text->text().empty());
   EXPECT_TRUE(render_text->style_ranges().empty());
 
@@ -37,7 +38,7 @@ TEST_F(RenderTextTest, DefaultStyle) {
 
 TEST_F(RenderTextTest, CustomDefaultStyle) {
   // Test a custom default style.
-  gfx::RenderText* render_text = gfx::RenderText::CreateRenderText();
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
   gfx::StyleRange color;
   color.foreground = SK_ColorRED;
   render_text->set_default_style(color);
@@ -63,7 +64,7 @@ TEST_F(RenderTextTest, CustomDefaultStyle) {
 }
 
 TEST_F(RenderTextTest, ApplyStyleRange) {
-  gfx::RenderText* render_text = gfx::RenderText::CreateRenderText();
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
   render_text->SetText(ASCIIToUTF16("01234"));
   EXPECT_EQ(1U, render_text->style_ranges().size());
 
@@ -143,7 +144,7 @@ TEST_F(RenderTextTest, ApplyStyleRange) {
 
 TEST_F(RenderTextTest, StyleRangesAdjust) {
   // Test that style ranges adjust to the text size.
-  gfx::RenderText* render_text = gfx::RenderText::CreateRenderText();
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
   render_text->SetText(ASCIIToUTF16("abcdef"));
   EXPECT_EQ(1U, render_text->style_ranges().size());
   EXPECT_EQ(ui::Range(0, 6), render_text->style_ranges()[0].range);
