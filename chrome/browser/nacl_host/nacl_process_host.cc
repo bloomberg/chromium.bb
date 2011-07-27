@@ -336,12 +336,7 @@ void NaClProcessHost::OpenIrtFileDone(base::PlatformFileError error_code,
         reinterpret_cast<nacl::FileDescriptor>(channel));
 #else
     nacl::FileDescriptor channel;
-    channel.fd = dup(internal_->sockets_for_sel_ldr[i]);
-    if (channel.fd < 0) {
-      LOG(ERROR) << "Failed to dup() a file descriptor";
-      delete this;
-      return;
-    }
+    channel.fd = internal_->sockets_for_sel_ldr[i];
     channel.auto_close = true;
     handles_for_sel_ldr.push_back(channel);
 #endif
