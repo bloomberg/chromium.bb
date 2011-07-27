@@ -469,6 +469,8 @@
         'browser/debugger/extension_ports_remote_service.h',
         'browser/debugger/inspectable_tab_proxy.cc',
         'browser/debugger/inspectable_tab_proxy.h',
+        'browser/debugger/remote_debugging_server.cc',
+        'browser/debugger/remote_debugging_server.h',
         '../content/browser/debugger/devtools_client_host.cc',
         '../content/browser/debugger/devtools_client_host.h',
         '../content/browser/debugger/devtools_handler.cc',

@@ -168,6 +168,7 @@ AutomationProviderList* TestingBrowserProcess::InitAutomationProviderList() {
 }
 
 void TestingBrowserProcess::InitDevToolsHttpProtocolHandler(
+    Profile* profile,
     const std::string& ip,
     int port,
     const std::string& frontend_url) {

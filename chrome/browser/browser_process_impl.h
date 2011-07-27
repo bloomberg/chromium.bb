@@ -31,11 +31,11 @@ class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
-class DevToolsHttpProtocolHandler;
 class DevToolsProtocolHandler;
 class FilePath;
 class NotificationService;
 class PluginDataRemover;
+class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 
 namespace policy{
@@ -81,6 +81,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ThumbnailGenerator* GetThumbnailGenerator();
   virtual AutomationProviderList* InitAutomationProviderList();
   virtual void InitDevToolsHttpProtocolHandler(
+      Profile* profile,
       const std::string& ip,
       int port,
       const std::string& frontend_url);
@@ -213,7 +214,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<ExtensionEventRouterForwarder>
       extension_event_router_forwarder_;
 
-  scoped_refptr<DevToolsHttpProtocolHandler> devtools_http_handler_;
+  scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 
   scoped_refptr<DevToolsProtocolHandler> devtools_legacy_handler_;
 

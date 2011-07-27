@@ -8,9 +8,11 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 
+class Profile;
+
 class DevToolsUI : public ChromeWebUI {
  public:
-  static void RegisterDevToolsDataSource();
+  static void RegisterDevToolsDataSource(Profile* profile);
 
   explicit DevToolsUI(TabContents* contents);
 

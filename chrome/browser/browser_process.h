@@ -33,6 +33,7 @@ class MetricsService;
 class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
+class Profile;
 class ProfileManager;
 class ResourceDispatcherHost;
 class SafeBrowsingService;
@@ -155,6 +156,7 @@ class BrowserProcess {
   virtual AutomationProviderList* InitAutomationProviderList() = 0;
 
   virtual void InitDevToolsHttpProtocolHandler(
+      Profile* profile,
       const std::string& ip,
       int port,
       const std::string& frontend_url) = 0;

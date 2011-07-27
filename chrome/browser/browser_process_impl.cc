@@ -20,8 +20,8 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
-#include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
+#include "chrome/browser/debugger/remote_debugging_server.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
@@ -68,7 +68,6 @@
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_http_protocol_handler.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/download/save_file_manager.h"
@@ -194,10 +193,8 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   profile_manager_.reset();
 
   // Debugger must be cleaned up before IO thread and NotificationService.
-  if (devtools_http_handler_.get()) {
-    devtools_http_handler_->Stop();
-    devtools_http_handler_ = NULL;
-  }
+  remote_debugging_server_.reset();
+
   if (devtools_legacy_handler_.get()) {
     devtools_legacy_handler_->Stop();
     devtools_legacy_handler_ = NULL;
@@ -505,15 +502,13 @@ AutomationProviderList* BrowserProcessImpl::InitAutomationProviderList() {
 }
 
 void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
+    Profile* profile,
     const std::string& ip,
     int port,
     const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
-  devtools_http_handler_ =
-      DevToolsHttpProtocolHandler::Start(ip,
-                                         port,
-                                         frontend_url,
-                                         new BrowserListTabContentsProvider());
+  remote_debugging_server_.reset(
+      new RemoteDebuggingServer(profile, ip, port, frontend_url));
 }
 
 void BrowserProcessImpl::InitDevToolsLegacyProtocolHandler(int port) {

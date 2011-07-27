@@ -88,6 +88,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual IntranetRedirectDetector* intranet_redirect_detector();
   virtual AutomationProviderList* InitAutomationProviderList();
   virtual void InitDevToolsHttpProtocolHandler(
+      Profile* profile,
       const std::string& ip,
       int port,
       const std::string& frontend_url);

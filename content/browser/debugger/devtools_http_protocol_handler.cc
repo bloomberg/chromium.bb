@@ -16,7 +16,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
@@ -207,8 +206,6 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
     return;
   }
 
-  // Make sure DevTools data source is registered.
-  DevToolsUI::RegisterDevToolsDataSource();
   Bind(request, connection_id);
   request->set_context(
       Profile::Deprecated::GetDefaultRequestContext()->GetURLRequestContext());

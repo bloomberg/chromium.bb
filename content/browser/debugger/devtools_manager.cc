@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser_process.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
