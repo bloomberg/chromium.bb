@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -24,7 +26,7 @@ class PowerLibraryImpl : public PowerLibrary {
       Init();
   }
 
-  ~PowerLibraryImpl() {
+  virtual ~PowerLibraryImpl() {
     if (power_status_connection_) {
       chromeos::DisconnectPowerStatus(power_status_connection_);
       power_status_connection_ = NULL;
@@ -35,39 +37,40 @@ class PowerLibraryImpl : public PowerLibrary {
     }
   }
 
-  void AddObserver(Observer* observer) {
+  // Begin PowerLibrary implementation.
+  virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  bool line_power_on() const {
+  virtual bool line_power_on() const OVERRIDE {
     return status_.line_power_on;
   }
 
-  bool battery_is_present() const {
-    return status_.battery_is_present;
-  }
-
-  bool battery_fully_charged() const {
+  virtual bool battery_fully_charged() const OVERRIDE {
     return status_.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED;
   }
 
-  double battery_percentage() const {
+  virtual double battery_percentage() const OVERRIDE {
     return status_.battery_percentage;
   }
 
-  base::TimeDelta battery_time_to_empty() const {
+  virtual bool battery_is_present() const OVERRIDE {
+    return status_.battery_is_present;
+  }
+
+  virtual base::TimeDelta battery_time_to_empty() const OVERRIDE {
     return base::TimeDelta::FromSeconds(status_.battery_time_to_empty);
   }
 
-  base::TimeDelta battery_time_to_full() const {
+  virtual base::TimeDelta battery_time_to_full() const OVERRIDE {
     return base::TimeDelta::FromSeconds(status_.battery_time_to_full);
   }
 
-  virtual void EnableScreenLock(bool enable) {
+  virtual void EnableScreenLock(bool enable) OVERRIDE {
     if (!CrosLibrary::Get()->EnsureLoaded())
       return;
 
@@ -83,17 +86,16 @@ class PowerLibraryImpl : public PowerLibrary {
     chromeos::EnableScreenLock(enable);
   }
 
-  virtual void RequestRestart() {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return;
-    chromeos::RequestRestart();
+  virtual void RequestRestart() OVERRIDE {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      chromeos::RequestRestart();
   }
 
-  virtual void RequestShutdown() {
-    if (!CrosLibrary::Get()->EnsureLoaded())
-      return;
-    chromeos::RequestShutdown();
+  virtual void RequestShutdown() OVERRIDE {
+    if (CrosLibrary::Get()->EnsureLoaded())
+      chromeos::RequestShutdown();
   }
+  // End PowerLibrary implementation.
 
  private:
   static void PowerStatusChangedHandler(void* object,
@@ -163,22 +165,22 @@ class PowerLibraryImpl : public PowerLibrary {
 class PowerLibraryStubImpl : public PowerLibrary {
  public:
   PowerLibraryStubImpl() {}
-  ~PowerLibraryStubImpl() {}
-  void AddObserver(Observer* observer) {}
-  void RemoveObserver(Observer* observer) {}
-  bool line_power_on() const { return false; }
-  bool battery_is_present() const { return true; }
-  bool battery_fully_charged() const { return false; }
-  double battery_percentage() const { return 50.0; }
-  base::TimeDelta battery_time_to_empty() const {
+  virtual ~PowerLibraryStubImpl() {}
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual bool line_power_on() const OVERRIDE { return false; }
+  virtual bool battery_fully_charged() const OVERRIDE { return false; }
+  virtual double battery_percentage() const OVERRIDE { return 50.0; }
+  virtual bool battery_is_present() const OVERRIDE { return true; }
+  virtual base::TimeDelta battery_time_to_empty() const OVERRIDE {
     return base::TimeDelta::FromSeconds(10 * 60);
   }
-  base::TimeDelta battery_time_to_full() const {
+  virtual base::TimeDelta battery_time_to_full() const OVERRIDE {
     return base::TimeDelta::FromSeconds(0);
   }
-  virtual void EnableScreenLock(bool enable) {}
-  virtual void RequestRestart() {}
-  virtual void RequestShutdown() {}
+  virtual void EnableScreenLock(bool enable) OVERRIDE {}
+  virtual void RequestRestart() OVERRIDE {}
+  virtual void RequestShutdown() OVERRIDE {}
 };
 
 // static
