@@ -218,6 +218,8 @@ cr.define('ntp4', function() {
    *        applications.
    */
   function getAppsCallback(data) {
+    var startTime = Date.now();
+
     // Clear any existing apps pages and dots.
     // TODO(rbyers): It might be nice to preserve animation of dots after an
     // uninstall. Could we re-use the existing page and dot elements?  It seems
@@ -279,6 +281,7 @@ cr.define('ntp4', function() {
 
     // Mark the current page
     dots[cardSlider.currentCard].classList.add('selected');
+    logEvent('apps.layout: ' + (Date.now() - startTime));
   }
 
   /**

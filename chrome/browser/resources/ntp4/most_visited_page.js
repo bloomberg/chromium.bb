@@ -263,6 +263,8 @@ cr.define('ntp4', function() {
       return this.data_;
     },
     set data(data) {
+      var startTime = Date.now();
+
       // The first time data is set, create the tiles.
       if (!this.data_) {
         this.createTiles_();
@@ -272,6 +274,7 @@ cr.define('ntp4', function() {
       }
 
       this.updateTiles_();
+      logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
 
     /** @inheritDoc */
