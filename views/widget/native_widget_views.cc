@@ -36,11 +36,10 @@ NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
 NativeWidgetViews::~NativeWidgetViews() {
   delegate_->OnNativeWidgetDestroying();
 
-  // We must prevent the NativeWidgetView from attempting to delete us.
-  if (view_) {
+  if (view_ && delete_native_view_) {
+    // We must prevent the NativeWidgetView from attempting to delete us.
     view_->set_delete_native_widget(false);
-    if (delete_native_view_)
-      delete view_;
+    delete view_;
   }
 
   delegate_->OnNativeWidgetDestroyed();

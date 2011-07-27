@@ -5032,12 +5032,6 @@
    fun:_ZN11TabContents14GetWebkitPrefsEv
 }
 {
-   bug_90484
-   Memcheck:Addr1
-   fun:_ZN5views8internal16NativeWidgetView24set_delete_native_widgetEb
-   fun:_ZN5views17NativeWidgetViewsD2Ev
-}
-{
    bug_90487
    Memcheck:Leak
    fun:_Znw*

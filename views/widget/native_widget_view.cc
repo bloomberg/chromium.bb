@@ -22,6 +22,11 @@ NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
 }
 
 NativeWidgetView::~NativeWidgetView() {
+  // Don't let NativeWidgetViews delete this again.  This must be outside
+  // the |delete_native_widget_| clause so it gets invoked for
+  // WIDGET_OWNS_NATIVE_WIDGET.  It is safe because |native_widget_| will
+  // still exist in both ways NativeWidgetView can be destroyed: by view
+  // hierarchy teardown and from the NativeWidgetViews destructor.
   native_widget_->set_delete_native_view(false);
   if (delete_native_widget_)
     delete native_widget_;
