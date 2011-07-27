@@ -201,9 +201,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
 }
 
-// Flaky. http://crbug.com/85294
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       FLAKY_SecondChangesAfterEncrAndPassphraseChange) {
+                       SecondChangesAfterEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -248,8 +247,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
+// Flaky. http://crbug.com/85294
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SecondChangesBeforeEncrAndPassphraseChange) {
+                       FLAKY_SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
