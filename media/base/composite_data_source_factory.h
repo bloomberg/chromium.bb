@@ -8,13 +8,12 @@
 #include <list>
 #include <set>
 
-#include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "media/base/filter_factories.h"
+#include "media/base/async_filter_factory_base.h"
 
 namespace media {
 
-class CompositeDataSourceFactory : public DataSourceFactory {
+class CompositeDataSourceFactory : public AsyncDataSourceFactoryBase {
  public:
   CompositeDataSourceFactory();
   virtual ~CompositeDataSourceFactory();
@@ -22,11 +21,18 @@ class CompositeDataSourceFactory : public DataSourceFactory {
   // Add factory to this composite. Ownership is transferred here.
   void AddFactory(DataSourceFactory* factory);
 
-  // DataSourceFactory methods.
-  virtual void Build(const std::string& url, const BuildCB& callback) OVERRIDE;
-  virtual DataSourceFactory* Clone() const OVERRIDE;
+  // DataSourceFactory method.
+  virtual DataSourceFactory* Clone() const;
+
+ protected:
+  // AsyncDataSourceFactoryBase methods.
+  virtual bool AllowRequests() const;
+  virtual AsyncDataSourceFactoryBase::BuildRequest* CreateRequest(
+      const std::string& url, BuildCallback* callback);
 
  private:
+  class BuildRequest;
+
   typedef std::list<DataSourceFactory*> FactoryList;
   FactoryList factories_;
 

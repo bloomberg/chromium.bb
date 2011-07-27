@@ -5,9 +5,8 @@
 #ifndef MEDIA_BASE_FILTER_FACTORIES_H_
 #define MEDIA_BASE_FILTER_FACTORIES_H_
 
-#include <string>
+#include<string>
 
-#include "base/callback.h"
 #include "base/callback_old.h"
 #include "media/base/pipeline_status.h"
 
@@ -19,12 +18,12 @@ class DataSource;
 class DataSourceFactory {
  public:
   // Ownership of the DataSource is transferred through this callback.
-  typedef base::Callback<void(PipelineStatus, DataSource*)> BuildCB;
+  typedef Callback2<PipelineStatus, DataSource*>::Type BuildCallback;
 
   virtual ~DataSourceFactory();
 
   // Builds a DataSource for |url| and returns it via |callback|.
-  virtual void Build(const std::string& url, const BuildCB& callback) = 0;
+  virtual void Build(const std::string& url, BuildCallback* callback) = 0;
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.

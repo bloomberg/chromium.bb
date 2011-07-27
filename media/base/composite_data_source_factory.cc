@@ -4,7 +4,6 @@
 
 #include "media/base/composite_data_source_factory.h"
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,74 +11,23 @@
 
 namespace media {
 
-typedef std::list<DataSourceFactory*> FactoryList;
+class CompositeDataSourceFactory::BuildRequest
+    : public AsyncDataSourceFactoryBase::BuildRequest {
+ public:
+  BuildRequest(const std::string& url, BuildCallback* callback,
+               const FactoryList& factories);
+  ~BuildRequest();
 
-static void CallNextFactory(FactoryList* factories,
-                            const std::string& url,
-                            const DataSourceFactory::BuildCB& callback);
+ protected:
+  // AsyncDataSourceFactoryBase::BuildRequest method.
+  virtual void DoStart();
 
-// Called when the first factory in |factories| completes a Build() request.
-// |factories| - The list of factories to try. Ownership is being
-//               passed to this function here.
-// |url| - The URL from the originating Build() call.
-// |callback| - The callback from the originating Build() call.
-// |status| - The status returned from the factory.
-// |data_source| - The DataSource built by the factory. NULL if
-//                 |status| is not PIPELINE_OK. Ownership is passed here.
-static void OnBuildDone(FactoryList* factories,
-                        const std::string& url,
-                        const DataSourceFactory::BuildCB& callback,
-                        PipelineStatus status,
-                        DataSource* data_source) {
-  DCHECK(factories);
-  DCHECK(!factories->empty());
+ private:
+  void CallNextFactory();
+  void OnBuildDone(PipelineStatus status, DataSource* data_source);
 
-  // Remove & destroy front factory since we are done using it now.
-  delete factories->front();
-  factories->pop_front();
-
-  if (status == PIPELINE_OK) {
-    DCHECK(data_source);
-    callback.Run(status, data_source);
-
-    // Delete the factory list and all remaining factories.
-    STLDeleteElements(factories);
-    delete factories;
-    return;
-  }
-
-  // Try the next factory if |status| indicates the factory didn't know how to
-  // build a DataSource for |url|.
-  DCHECK(!data_source);
-  if ((status == DATASOURCE_ERROR_URL_NOT_SUPPORTED) &&
-      !factories->empty()) {
-    CallNextFactory(factories, url, callback);
-    return;
-  }
-
-  // No more factories to try or a factory that could handle the
-  // request encountered an error.
-  callback.Run(status, NULL);
-
-  // Delete the factory list and all remaining factories.
-  STLDeleteElements(factories);
-  delete factories;
-}
-
-// Calls Build() on the front factory in |factories|.
-// Ownership of |factories| is passed to this method.
-static void CallNextFactory(FactoryList* factories,
-                            const std::string& url,
-                            const DataSourceFactory::BuildCB& callback) {
-  DCHECK(factories);
-  DCHECK(!factories->empty());
-
-  DataSourceFactory* factory = factories->front();
-  factory->Build(url, base::Bind(&OnBuildDone,
-                                 factories,
-                                 url,
-                                 callback));
-}
+  FactoryList factories_;
+};
 
 CompositeDataSourceFactory::CompositeDataSourceFactory() {}
 
@@ -92,25 +40,6 @@ void CompositeDataSourceFactory::AddFactory(DataSourceFactory* factory) {
   factories_.push_back(factory);
 }
 
-void CompositeDataSourceFactory::Build(const std::string& url,
-                                       const BuildCB& callback) {
-  if (factories_.empty()) {
-    callback.Run(DATASOURCE_ERROR_URL_NOT_SUPPORTED, NULL);
-    return;
-  }
-
-  // Construct the list of factories to try.
-  scoped_ptr<FactoryList> factories(new FactoryList());
-  for (FactoryList::const_iterator itr = factories_.begin();
-       itr != factories_.end();
-       ++itr) {
-    factories->push_back((*itr)->Clone());
-  }
-
-  // Start trying to build a DataSource from the factories in the list.
-  CallNextFactory(factories.release(), url, callback);
-}
-
 DataSourceFactory* CompositeDataSourceFactory::Clone() const {
   CompositeDataSourceFactory* new_factory = new CompositeDataSourceFactory();
 
@@ -121,6 +50,59 @@ DataSourceFactory* CompositeDataSourceFactory::Clone() const {
   }
 
   return new_factory;
+}
+
+bool CompositeDataSourceFactory::AllowRequests() const {
+  return !factories_.empty();
+}
+
+AsyncDataSourceFactoryBase::BuildRequest*
+CompositeDataSourceFactory::CreateRequest(const std::string& url,
+                                          BuildCallback* callback) {
+  return new BuildRequest(url, callback, factories_);
+}
+
+CompositeDataSourceFactory::BuildRequest::BuildRequest(
+    const std::string& url,
+    BuildCallback* callback,
+    const FactoryList& factories)
+    : AsyncDataSourceFactoryBase::BuildRequest(url, callback),
+      factories_(factories){
+  DCHECK(!factories.empty());
+}
+
+CompositeDataSourceFactory::BuildRequest::~BuildRequest() {}
+
+void CompositeDataSourceFactory::BuildRequest::DoStart() {
+  CallNextFactory();
+}
+
+void CompositeDataSourceFactory::BuildRequest::CallNextFactory() {
+  DCHECK(!factories_.empty());
+
+  DataSourceFactory* factory = factories_.front();
+  factories_.pop_front();
+
+  factory->Build(url(), NewCallback(this, &BuildRequest::OnBuildDone));
+}
+
+void CompositeDataSourceFactory::BuildRequest::OnBuildDone(
+    PipelineStatus status,
+    DataSource* data_source) {
+
+  if (status == PIPELINE_OK) {
+    DCHECK(data_source);
+    RequestComplete(status, data_source);
+    return;
+  }
+
+  DCHECK(!data_source);
+  if ((status == DATASOURCE_ERROR_URL_NOT_SUPPORTED) && !factories_.empty()) {
+    CallNextFactory();
+    return;
+  }
+
+  RequestComplete(status, data_source);
 }
 
 }  // namespace media

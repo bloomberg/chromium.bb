@@ -88,7 +88,7 @@ class SimpleDataSource
 
   // webkit_glue::WebDataSource implementation.
   virtual void Initialize(const std::string& url,
-                          const media::PipelineStatusCB& callback);
+                          media::PipelineStatusCallback* callback);
   virtual void CancelInitialize();
   virtual bool HasSingleOrigin();
   virtual void Abort();
@@ -133,7 +133,7 @@ class SimpleDataSource
   base::Lock lock_;
 
   // Filter callbacks.
-  media::PipelineStatusCB initialize_cb_;
+  scoped_ptr<media::PipelineStatusCallback> initialize_callback_;
 
   // Used to ensure mocks for unittests are used instead of reset in Start().
   bool keep_test_loader_;

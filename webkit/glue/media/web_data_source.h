@@ -21,7 +21,7 @@ class WebDataSource : public media::DataSource {
   // Initialize this object using |url|. This object calls |callback| when
   // initialization has completed.
   virtual void Initialize(const std::string& url,
-                          const media::PipelineStatusCB& callback) = 0;
+                          media::PipelineStatusCallback* callback) = 0;
 
   // Called to cancel initialization. The callback passed in Initialize() will
   // be destroyed and will not be called after this method returns. Once this

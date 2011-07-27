@@ -78,17 +78,17 @@ void SimpleDataSource::Stop(media::FilterCallback* callback) {
 
 void SimpleDataSource::Initialize(
     const std::string& url,
-    const media::PipelineStatusCB& callback) {
-  // Reference to prevent destruction while inside the |initialize_cb_|
+    media::PipelineStatusCallback* callback) {
+  // Reference to prevent destruction while inside the |initialize_callback_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   scoped_refptr<SimpleDataSource> destruction_guard(this);
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(state_, UNINITIALIZED);
-    DCHECK(!callback.is_null());
+    DCHECK(callback);
     state_ = INITIALIZING;
-    initialize_cb_ = callback;
+    initialize_callback_.reset(callback);
 
     // Validate the URL.
     url_ = GURL(url);
@@ -105,9 +105,9 @@ void SimpleDataSource::Initialize(
 
 void SimpleDataSource::CancelInitialize() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(!initialize_cb_.is_null());
+  DCHECK(initialize_callback_.get());
   state_ = STOPPED;
-  initialize_cb_.Reset();
+  initialize_callback_.reset();
 
   // Post a task to the render thread to cancel loading the resource.
   render_loop_->PostTask(FROM_HERE,
@@ -334,8 +334,9 @@ void SimpleDataSource::DoneInitialization_Locked(bool success) {
     url_loader_.reset();
   }
 
-  initialize_cb_.Run(status);
-  initialize_cb_.Reset();
+  scoped_ptr<media::PipelineStatusCallback> initialize_callback(
+      initialize_callback_.release());
+  initialize_callback->Run(status);
 }
 
 void SimpleDataSource::UpdateHostState() {

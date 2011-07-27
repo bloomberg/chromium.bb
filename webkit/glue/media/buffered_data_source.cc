@@ -46,6 +46,7 @@ BufferedDataSource::BufferedDataSource(
       frame_(frame),
       loader_(NULL),
       network_activity_(false),
+      initialize_callback_(NULL),
       read_callback_(NULL),
       read_position_(0),
       read_size_(0),
@@ -84,23 +85,23 @@ void BufferedDataSource::set_host(media::FilterHost* host) {
 }
 
 void BufferedDataSource::Initialize(const std::string& url,
-                                    const media::PipelineStatusCB& callback) {
-  DCHECK(!callback.is_null());
-
+                                    media::PipelineStatusCallback* callback) {
   // Saves the url.
   url_ = GURL(url);
 
   // This data source doesn't support data:// protocol so reject it.
   if (url_.SchemeIs(kDataScheme)) {
-    callback.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
+    callback->Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
+    delete callback;
     return;
   } else if (!IsProtocolSupportedForMedia(url_)) {
-    callback.Run(media::PIPELINE_ERROR_NETWORK);
+    callback->Run(media::PIPELINE_ERROR_NETWORK);
+    delete callback;
     return;
   }
 
-  DCHECK(initialize_cb_.is_null());
-  initialize_cb_ = callback;
+  DCHECK(callback);
+  initialize_callback_.reset(callback);
 
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
@@ -109,9 +110,9 @@ void BufferedDataSource::Initialize(const std::string& url,
 
 void BufferedDataSource::CancelInitialize() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(!initialize_cb_.is_null());
+  DCHECK(initialize_callback_.get());
 
-  initialize_cb_.Reset();
+  initialize_callback_.reset();
 
   render_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &BufferedDataSource::CleanupTask));
@@ -201,7 +202,7 @@ void BufferedDataSource::Abort() {
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
-  if (stopped_on_render_loop_ || initialize_cb_.is_null())
+  if (stopped_on_render_loop_ || !initialize_callback_.get())
     return;
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
@@ -378,11 +379,12 @@ void BufferedDataSource::DoneRead_Locked(int error) {
 void BufferedDataSource::DoneInitialization_Locked(
     media::PipelineStatus status) {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!initialize_cb_.is_null());
+  DCHECK(initialize_callback_.get());
   lock_.AssertAcquired();
 
-  initialize_cb_.Run(status);
-  initialize_cb_.Reset();
+  scoped_ptr<media::PipelineStatusCallback> initialize_callback(
+      initialize_callback_.release());
+  initialize_callback->Run(status);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -394,7 +396,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   int64 instance_size = loader_->instance_size();
   bool success = error == net::OK;
 
-  if (initialize_cb_.is_null()) {
+  if (!initialize_callback_.get()) {
     loader_->Stop();
     return;
   }
@@ -424,7 +426,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     return;
   }
 
-  // Reference to prevent destruction while inside the |initialize_cb_|
+  // Reference to prevent destruction while inside the |initialize_callback_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   // TODO: Review locking in this class and figure out a way to run the callback
@@ -457,7 +459,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  if (initialize_cb_.is_null()) {
+  if (!initialize_callback_.get()) {
     loader_->Stop();
     return;
   }
@@ -473,7 +475,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
     loader_->Stop();
   }
 
-  // Reference to prevent destruction while inside the |initialize_cb_|
+  // Reference to prevent destruction while inside the |initialize_callback_|
   // call. This is a temporary fix to prevent crashes caused by holding the
   // lock and running the destructor.
   // TODO: Review locking in this class and figure out a way to run the callback
@@ -489,7 +491,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
     // this object when Stop() method is ever called. Locking this method is
     // safe because |lock_| is only acquired in tasks on render thread.
     base::AutoLock auto_lock(lock_);
-    if (stop_signal_received_ || initialize_cb_.is_null())
+    if (stop_signal_received_ || !initialize_callback_.get())
       return;
 
     if (!success) {
