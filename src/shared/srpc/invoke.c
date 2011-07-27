@@ -79,6 +79,11 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   const char*        arg_types;
   const char*        ret_types;
 
+  if (NULL == channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeV: channel == NULL\n");
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
   if (NaClSrpcServiceMethodNameAndTypes(channel->client,
                                         rpc_number,
                                         &rpc_name,
@@ -323,6 +328,12 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   char const        *p;
   NaClSrpcError     rv;
 
+  if (NULL == channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeVaList: channel == NULL\n");
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
+
   if (!NaClSrpcServiceMethodNameAndTypes(channel->client,
                                          rpc_num,
                                          &rpc_name,
@@ -406,6 +417,11 @@ NaClSrpcError NaClSrpcInvokeBySignature(NaClSrpcChannel  *channel,
   va_list             out_va;
   NaClSrpcError       rv;
 
+  if (NULL == channel) {
+    NaClSrpcLog(NACL_SRPC_LOG_ERROR,
+                "NaClSrpcInvokeBySignature: channel == NULL\n");
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
   rpc_num = NaClSrpcServiceMethodIndex(channel->client, rpc_signature);
   if (kNaClSrpcInvalidMethodIndex == rpc_num) {
     /*
