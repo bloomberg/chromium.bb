@@ -84,7 +84,6 @@ extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
 extern const char kDisableNewTabFirstRun[];
 extern const char kDisablePreconnect[];
-extern const char kDisablePreLogin[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRestoreBackgroundContents[];

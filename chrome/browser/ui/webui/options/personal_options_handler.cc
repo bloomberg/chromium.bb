@@ -312,13 +312,7 @@ void PersonalOptionsHandler::OnStateChanged() {
   web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
                                   *visible);
 
-#if defined(ENABLE_AUTO_LOGIN_AFTER_M14)
-  // Pre-login is being taken out of M14, but will be put back in right after
-  // the fork.
   visible.reset(Value::CreateBooleanValue(service->AreCredentialsAvailable()));
-#else
-  visible.reset(Value::CreateBooleanValue(false));
-#endif
   web_ui_->CallJavascriptFunction("PersonalOptions.setAutoLoginVisible",
                                   *visible);
 

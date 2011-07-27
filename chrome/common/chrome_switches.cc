@@ -268,10 +268,6 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
-// Disable pre-login for services attached to a GAIA account even when the
-// GAIA credentials are available through sync.
-const char kDisablePreLogin[]               = "disable-pre-login";
-
 // Whether we should prevent the new tab page from showing the first run
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";

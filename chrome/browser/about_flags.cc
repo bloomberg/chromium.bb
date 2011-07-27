@@ -293,17 +293,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
   },
   {
-    "disable-pre-login",
-    IDS_FLAGS_PRE_LOGIN_NAME,
-    IDS_FLAGS_PRE_LOGIN_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kDisablePreLogin)
-  },
-#if defined(ENABLE_PRE_LOGIN_AFTER_M14)
-  // Pre-login is being taken out of M14, but will be put back in right after
-  // the fork.
-#endif
-  {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,
     IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,
