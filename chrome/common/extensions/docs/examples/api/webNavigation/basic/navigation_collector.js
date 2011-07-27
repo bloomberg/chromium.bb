@@ -120,8 +120,7 @@ NavigationCollector.prototype = {
   /**
    * Returns a somewhat unique ID for a given WebNavigation request.
    *
-   * @param {!{tabId: ?number, frameId: ?number, sourceTabId: ?number,
-   *     sourceFrameId: ?number, url: string}} data Information
+   * @param {!{tabId: ?number, frameId: ?number}} data Information
    *     about the navigation event we'd like an ID for.
    * @return {!string} ID created by combining the source tab ID and frame ID
    *     (or target tab/frame IDs if there's no source), as the API ensures
@@ -129,14 +128,14 @@ NavigationCollector.prototype = {
    * @private
    */
   parseId_: function(data) {
-    return data.sourceTabId ? data.sourceTabId : data.tabId +
-           '-' + data.sourceFrameId ? data.SourceFrameId : data.frameId;
+    return data.tabId + '-' + (data.frameId ? data.frameId : 0);
   },
 
 
   /**
-   * Creates an empty entry in the pending array, and prepopulates the
-   * errored and completed arrays for ease of insertion later.
+   * Creates an empty entry in the pending array if one doesn't already exist,
+   * and prepopulates the errored and completed arrays for ease of insertion
+   * later.
    *
    * @param {!string} id The request's ID, as produced by parseId_.
    * @param {!string} url The request's URL.
@@ -211,6 +210,7 @@ NavigationCollector.prototype = {
           data.url,
           data);
     } else {
+      this.prepareDataStorage_(id, data.url);
       this.pending_[id].transitionType = data.transitionType;
       this.pending_[id].transitionQualifiers =
           data.transitionQualifiers;
@@ -263,6 +263,7 @@ NavigationCollector.prototype = {
           data.url,
           data);
     } else {
+      this.prepareDataStorage_(id, data.url);
       this.errored_[data.url].push({
         duration: (data.timeStamp - this.pending_[id].start),
         openedInNewWindow: this.pending_[id].openedInNewWindow,
@@ -357,7 +358,7 @@ NavigationCollector.prototype = {
     // Convert the 'completed_' object to an array.
     for (var x in list) {
       avg = 0;
-      if (list.hasOwnProperty(x)) {
+      if (list.hasOwnProperty(x) && list[x].length) {
         list[x].forEach(function(o) {
           avg += o.duration;
         });

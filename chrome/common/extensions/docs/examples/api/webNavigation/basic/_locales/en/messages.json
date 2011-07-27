@@ -37,7 +37,7 @@
     "message": "Wha?  `onCommitted` for `%s` called, though it's not pending: %o",
     "description": "Error logged when `onCommitted` is triggered on a non-pending request."
   },
-  "errorCommittedWithoutPending": {
+  "errorCompletedWithoutPending": {
     "message": "Wha?  `onCompleted` for `%s` called, though it's not pending: %o",
     "description": "Error logged when `onCompleted` is triggered on a non-pending request."
   },
