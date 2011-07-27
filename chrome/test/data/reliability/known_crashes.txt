@@ -198,9 +198,6 @@ PREFIX: `anonymous namespace'::purecall____purecall___renderviewhost::onmessager
 # 90393
 PREFIX: webkit_glue::datasourceinitdone___base::internal::invoker3<0,base::internal::invokerstorage3<void (__cdecl*)(callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)> const &,scoped_refptr<webkit_glue::webdatasource> const &,enum media::pipelinestatus),callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)>,scoped_refptr<webkit_glue::webdatasource> >,void (__cdecl*)(callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)> const &,scoped_refptr<webkit_glue::webdatasource> const &,enum media::pipelinestatus)>::doinvoke___webkit_glue::buffereddatasource::doneinitialization_locked___webkit_glue::buffereddatasource::httpinitialstartcallback
 
-# 90553
-PREFIX: v8::internal::safepointentry::hasregisters___v8::internal::optimizedframe::iterate___v8::internal::isolate::iterate___v8::internal::isolate::iterate
-
 # 90577
 PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::pipelineimpl::ondemuxerbuilt
 
