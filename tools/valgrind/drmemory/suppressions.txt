@@ -715,5 +715,17 @@ LEAK
 *!net::SSLServerSocketNSS::InitializeSSLOptions
 *!net::SSLServerSocketNSS::Handshake
 
+# http://crbug.com/88312
+UNADDRESSABLE ACCESS
+*!base::win::ObjectWatcher::StopWatching
+*!base::win::ObjectWatcher::WillDestroyCurrentMessageLoop
+*!MessageLoop::~MessageLoop
+
+# http://crbug.com/90654
+UNINITIALIZED READ
+*!_output_s_l
+...
+*!testing_internal::DefaultPrintNonContainerTo<policy::FailedRequestParams>
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
