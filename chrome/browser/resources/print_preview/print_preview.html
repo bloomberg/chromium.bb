@@ -18,6 +18,7 @@
 <script src="page_settings.js"></script>
 <script src="copies_settings.js"></script>
 <script src="layout_settings.js"></script>
+<script src="color_settings.js"></script>
 </head>
 <body>
   <div id="sidebar">
@@ -42,20 +43,7 @@
       <hr>
       <include src="layout_settings.html"></include>
       <hr>
-      <div id="color-options" class="two-column option" aria-hidden="true"
-          aria-live="polite">
-        <h1 i18n-content="optionColor"></h1>
-        <div>
-          <div>
-            <input id="color" type="radio" name="color"/>
-            <label for="color" i18n-content="optionColor"></label>
-          </div>
-          <div>
-            <input id="bw" type="radio" name="color" checked/>
-            <label for="bw" i18n-content="optionBw"></label>
-          </div>
-        </div>
-      </div>
+      <include src="color_settings.html"></include>
       <hr>
       <div id="system-dialog-div">
         <button id="system-dialog-link" class="link-button"
