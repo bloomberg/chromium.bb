@@ -19,6 +19,7 @@ import optparse
 import os
 import pty
 import Queue
+import random
 import re
 import subprocess
 import sys
@@ -292,6 +293,8 @@ def main():
       "--reorder", action="store_true",
       help="ensure that all output from an earlier shard is printed before"
       " output from a later shard")
+  parser.add_option("--random-seed", action="store_true",
+      help="shuffle the tests with a random seed value")
   parser.disable_interspersed_args()
   (options, args) = parser.parse_args()
 
@@ -312,6 +315,10 @@ def main():
 
   gtest_args = ["--gtest_color=%s" % {
       True: "yes", False: "no"}[options.color]] + args[1:]
+
+  if options.random_seed:
+    seed = random.randint(1, 99999)
+    gtest_args.extend(["--gtest_shuffle", "--gtest_random_seed=%i" % seed])
 
   if options.runshard != None:
     # run a single shard and exit
