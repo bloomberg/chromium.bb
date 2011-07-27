@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -67,17 +66,6 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
                                   int tag,
                                   int index);
 
-  // Requests a FavIcon; we'll receive the data in the future through the
-  // GotFaviconData() callback.
-  void GetFaviconForHistoryItem(HistoryItem* item);
-
-  // Callback for GetFaviconForHistoryItem().
-  void GotFaviconData(FaviconService::Handle handle,
-                      history::FaviconData favicon);
-
-  // Cancels an outstanding favicon request.
-  void CancelFaviconRequest(HistoryItem* item);
-
   // Find the first index of the item in |menu| with the tag |tag_id|.
   int GetIndexOfMenuItemWithTag(GtkWidget* menu, int tag_id);
 
@@ -114,8 +102,6 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   Browser* browser_;
   Profile* profile_;
 
-  bool icon_experiment_on_;
-
   // The history menu. We keep this since we need to rewrite parts of it
   // periodically.
   OwnedWidgetGtk history_menu_;
@@ -123,15 +109,10 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   history::TopSites* top_sites_;
   CancelableRequestConsumer top_sites_consumer_;
 
-  GdkPixbuf* default_favicon_;
-
   TabRestoreService* tab_restore_service_;  // weak
 
   // A mapping from GtkMenuItems to HistoryItems that maintain data.
   MenuItemToHistoryMap menu_item_history_map_;
-
-  // Maps HistoryItems to favicon request Handles.
-  CancelableRequestConsumerTSimple<HistoryItem*> favicon_consumer_;
 
   NotificationRegistrar registrar_;
 };

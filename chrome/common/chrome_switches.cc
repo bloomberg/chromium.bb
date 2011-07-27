@@ -1168,11 +1168,6 @@ const char kKioskMode[]                     = "kiosk";
 // minute because it doesn't like it when we thrown hundreds of kilobytes (or
 // even megabytes) of favicon data at it.
 const char kEnableGlobalBookmarkMenu[]     = "enable-global-bookmark-menu";
-
-// An experiment to see if it's corrupted favicon data that's making unity
-// global menu bar startup slow.
-const char kEnableIconsInGlobalHistoryMenu[] =
-    "enable-icons-in-global-history-menu";
 #endif
 
 #if defined(TOOLKIT_VIEWS)

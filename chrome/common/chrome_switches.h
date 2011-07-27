@@ -339,7 +339,6 @@ extern const char kKioskMode[];
 
 #if defined(TOOLKIT_GTK)
 extern const char kEnableGlobalBookmarkMenu[];
-extern const char kEnableIconsInGlobalHistoryMenu[];
 #endif
 
 #if defined(TOOLKIT_VIEWS)
