@@ -260,7 +260,10 @@ NewTabUITest.ChromeHangInNTP
 
 # http://crbug.com/88244
 NoStartupWindowTest.NoStartupWindowBasicTest
-RunInBackgroundTest.RunInBackgroundBasicTest 
+RunInBackgroundTest.RunInBackgroundBasicTest
 
 # http://crbug.com/88254
 PPAPITest.CursorControl
+
+# Flakiness leading to leak reports. http://crbug.com/31739
+SessionHistoryTest.BasicBackForward
