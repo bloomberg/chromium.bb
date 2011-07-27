@@ -1067,6 +1067,7 @@ def PrintWorker(queue):
       job = queue.get()
       if job:
         job.Print(seek_locations)
+        sys.stdout.flush()
       else:
         break
     except IOError as ex:
