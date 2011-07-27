@@ -121,6 +121,24 @@ wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 			     configure_request->value_mask, values);
 }
 
+static const char *
+get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
+{
+	xcb_get_atom_name_cookie_t cookie;
+	xcb_get_atom_name_reply_t *reply;
+	xcb_generic_error_t *e;
+	static char buffer[64];
+
+	cookie = xcb_get_atom_name (c, atom);
+	reply = xcb_get_atom_name_reply (c, cookie, &e);
+	snprintf(buffer, sizeof buffer, "%.*s",
+		 xcb_get_atom_name_name_length (reply),
+		 xcb_get_atom_name_name (reply));
+	free(reply);
+
+	return buffer;
+}
+
 static void
 wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
 {
@@ -152,9 +170,9 @@ wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
 		reply = xcb_get_property_reply(wm->conn, props[i].cookie, &e);
 		value = xcb_get_property_value(reply);
 
-		fprintf(stderr, "property %d, type %d, format %d, "
+		fprintf(stderr, "property %s, type %d, format %d, "
 			"length %d (value_len %d), value \"%s\"\n",
-			props[i].atom,
+			get_atom_name(wm->conn, props[i].atom),
 			reply->type, reply->format,
 			xcb_get_property_value_length(reply), reply->value_len,
 			reply->type ? (char *) value : "(nil)");
@@ -233,8 +251,8 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	} else if (property_notify->atom == wm->atom.net_wm_name) {
 		fprintf(stderr, "wm_class changed\n");
 	} else {
-		fprintf(stderr, "unhandled property change: %d\n",
-			property_notify->atom);
+		fprintf(stderr, "unhandled property change: %s\n",
+			get_atom_name(wm->conn, property_notify->atom));
 	}
 }
 
