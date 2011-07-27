@@ -498,7 +498,8 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   // profile. Note that the profile may already be incognito, in which case
   // we will search the incognito version only, regardless of the value of
   // |include_incognito|.
-  Profile* profile = render_view_host->process()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host->process()->browser_context());
   browser = BrowserList::FindTabbedBrowser(profile, include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,

@@ -37,7 +37,8 @@ void ExtensionMessageHandler::RenderViewHostInitialized() {
 
 void ExtensionMessageHandler::OnPostMessage(int port_id,
                                             const std::string& message) {
-  Profile* profile = render_view_host()->process()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host()->process()->browser_context());
   if (profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->PostMessageFromRenderer(
         port_id, message);

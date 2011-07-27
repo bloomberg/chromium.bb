@@ -143,12 +143,13 @@ void ExtensionMessageService::OpenChannelToExtension(
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
+  Profile* profile = Profile::FromBrowserContext(source->browser_context());
 
   // Note: we use the source's profile here. If the source is an incognito
   // process, we will use the incognito EPM to find the right extension process,
   // which depends on whether the extension uses spanning or split mode.
   MessagePort receiver(
-      source->profile()->GetExtensionProcessManager()->GetExtensionProcess(
+      profile->GetExtensionProcessManager()->GetExtensionProcess(
           target_extension_id),
       MSG_ROUTING_CONTROL);
   TabContents* source_contents = tab_util::GetTabContentsByID(
@@ -173,10 +174,11 @@ void ExtensionMessageService::OpenChannelToTab(
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
+  Profile* profile = Profile::FromBrowserContext(source->browser_context());
 
   TabContentsWrapper* contents = NULL;
   MessagePort receiver;
-  if (ExtensionTabUtil::GetTabById(tab_id, source->profile(), true,
+  if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
     receiver.sender = contents->render_view_host();
     receiver.routing_id = contents->render_view_host()->routing_id();

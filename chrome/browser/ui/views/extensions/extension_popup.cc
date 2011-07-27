@@ -129,7 +129,7 @@ void ExtensionPopup::Observe(int type,
         if (inspect_with_devtools_) {
           // Listen for the the devtools window closing.
           registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-              Source<Profile>(extension_host_->profile()));
+              Source<content::BrowserContext>(extension_host_->profile()));
           DevToolsWindow::ToggleDevToolsWindow(
               extension_host_->render_view_host(),
               DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);

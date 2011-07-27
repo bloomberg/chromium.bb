@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,7 +122,8 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
   for (Updaters::iterator i = updaters_.begin(); i != updaters_.end(); ++i) {
     // Make sure to not send to incognito renderers.
     RenderProcessHost* process = RenderProcessHost::FromID(i->first);
-    VisitedLinkMaster* master = process->profile()->GetVisitedLinkMaster();
+    Profile* profile = Profile::FromBrowserContext(process->browser_context());
+    VisitedLinkMaster* master = profile->GetVisitedLinkMaster();
     if (master && master->shared_memory() == table_memory)
       i->second->SendVisitedLinkTable(table_memory);
   }
@@ -169,7 +170,9 @@ void VisitedLinkEventListener::Observe(int type,
 
       // Initialize support for visited links. Send the renderer process its
       // initial set of visited links.
-      VisitedLinkMaster* master = process->profile()->GetVisitedLinkMaster();
+      Profile* profile =
+          Profile::FromBrowserContext(process->browser_context());
+      VisitedLinkMaster* master = profile->GetVisitedLinkMaster();
       if (!master)
         return;
 

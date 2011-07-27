@@ -143,7 +143,8 @@ void SpellCheckHostImpl::UnsetObserver() {
 void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefService* prefs = process->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  PrefService* prefs = profile->GetPrefs();
   IPC::PlatformFileForTransit file;
 
   if (GetDictionaryFile() != base::kInvalidPlatformFileValue) {
