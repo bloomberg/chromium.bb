@@ -48,13 +48,8 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   // process of showing.
   ignore_capture_lost_ = true;
   Show();
-  if (do_capture) {
+  if (do_capture)
     native_widget_private()->SetMouseCapture();
-    // We do this to effectively disable window manager keyboard accelerators
-    // for chromeos. Such accelerators could cause cause another window to
-    // become active and confuse things.
-    native_widget_private()->SetKeyboardCapture();
-  }
   ignore_capture_lost_ = false;
 }
 
@@ -79,8 +74,6 @@ void MenuHost::SetMenuHostBounds(const gfx::Rect& bounds) {
 void MenuHost::ReleaseMenuHostCapture() {
   if (native_widget_private()->HasMouseCapture())
     native_widget_private()->ReleaseMouseCapture();
-  if (native_widget_private()->HasKeyboardCapture())
-    native_widget_private()->ReleaseKeyboardCapture();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

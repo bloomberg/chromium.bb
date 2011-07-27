@@ -125,13 +125,6 @@ class NativeWidgetPrivate : public NativeWidget {
   // Returns true if this native widget is capturing mouse events.
   virtual bool HasMouseCapture() const = 0;
 
-  // Sets or release keyboard capture.
-  virtual void SetKeyboardCapture() = 0;
-  virtual void ReleaseKeyboardCapture() = 0;
-
-  // Returns true if this native widget is capturing keyboard events.
-  virtual bool HasKeyboardCapture() const = 0;
-
   // Returns the InputMethod for this native widget.
   // Note that all widgets in a widget hierarchy share the same input method.
   // TODO(suzhe): rename to GetInputMethod() when NativeWidget implementation

@@ -10,6 +10,7 @@
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "views/controls/menu/menu_controller.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method.h"
 #include "views/views_delegate.h"
@@ -786,8 +787,14 @@ void Widget::EnableInactiveRendering() {
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
-  if (!active)
+  if (!active) {
     SaveWindowPosition();
+
+    // Close any open menus.
+    MenuController* menu_controller = MenuController::GetActiveInstance();
+    if (menu_controller)
+      menu_controller->OnWidgetActivationChanged();
+  }
 
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnWidgetActivationChanged(this, active));

@@ -112,6 +112,10 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   void OnDragEnteredScrollButton(SubmenuView* source, bool is_up);
   void OnDragExitedScrollButton(SubmenuView* source);
 
+  // Invoked once for any Widget activation change.  This allows the menu
+  // to be canceled if the window manager changes the active window.
+  void OnWidgetActivationChanged();
+
  private:
   class MenuScrollTask;
 

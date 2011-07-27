@@ -959,26 +959,6 @@ bool NativeWidgetGtk::HasMouseCapture() const {
   return GTK_WIDGET_HAS_GRAB(window_contents_) || has_pointer_grab_;
 }
 
-void NativeWidgetGtk::SetKeyboardCapture() {
-  DCHECK(!has_keyboard_grab_);
-
-  GdkGrabStatus keyboard_grab_status =
-      gdk_keyboard_grab(window_contents()->window, FALSE, GDK_CURRENT_TIME);
-  has_keyboard_grab_ = keyboard_grab_status == GDK_GRAB_SUCCESS;
-  DCHECK_EQ(GDK_GRAB_SUCCESS, keyboard_grab_status);
-}
-
-void NativeWidgetGtk::ReleaseKeyboardCapture() {
-  if (has_keyboard_grab_) {
-    has_keyboard_grab_ = false;
-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-  }
-}
-
-bool NativeWidgetGtk::HasKeyboardCapture() const {
-  return has_keyboard_grab_;
-}
-
 InputMethod* NativeWidgetGtk::GetInputMethodNative() {
   if (!input_method_.get()) {
     // Create input method when it is requested by a child view.
@@ -1816,7 +1796,6 @@ gboolean NativeWidgetGtk::OnConfigureEvent(GtkWidget* widget,
 
 void NativeWidgetGtk::HandleGtkGrabBroke() {
   ReleaseMouseCapture();
-  ReleaseKeyboardCapture();
   delegate_->OnMouseCaptureLost();
 }
 

@@ -240,18 +240,6 @@ bool NativeWidgetViews::HasMouseCapture() const {
          view_ == parent_root->capture_view();
 }
 
-void NativeWidgetViews::SetKeyboardCapture() {
-  GetParentNativeWidget()->SetKeyboardCapture();
-}
-
-void NativeWidgetViews::ReleaseKeyboardCapture() {
-  GetParentNativeWidget()->ReleaseKeyboardCapture();
-}
-
-bool NativeWidgetViews::HasKeyboardCapture() const {
-  return GetParentNativeWidget()->HasKeyboardCapture();
-}
-
 InputMethod* NativeWidgetViews::GetInputMethodNative() {
   if (!input_method_.get()) {
 #if defined(HAVE_IBUS)

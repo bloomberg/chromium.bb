@@ -366,6 +366,12 @@ MenuItemView* MenuController::Run(Widget* parent,
 }
 
 void MenuController::Cancel(ExitType type) {
+  // If the menu has already been destroyed, no further cancellation is
+  // needed.  We especially don't want to set the |exit_type_| to a lesser
+  // value.
+  if (exit_type_ == EXIT_DESTROYED)
+    return;
+
   if (!showing_) {
     // This occurs if we're in the process of notifying the delegate for a drop
     // and the delegate cancels us.
@@ -736,6 +742,11 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
   SetDropMenuItem(NULL, MenuDelegate::DROP_NONE);
   StopScrolling();
+}
+
+void MenuController::OnWidgetActivationChanged() {
+  if (!drag_in_progress_)
+    Cancel(EXIT_ALL);
 }
 
 void MenuController::SetSelection(MenuItemView* menu_item,
