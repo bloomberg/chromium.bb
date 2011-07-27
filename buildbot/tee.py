@@ -4,9 +4,90 @@
 
 """Module that handles tee-ing output to a file."""
 
+import errno
+import fcntl
 import os
-import subprocess
+import multiprocessing
+import select
 import sys
+
+
+def _output(line, output_files, complain):
+  """Print line to output_files.
+
+  Args:
+    line: Line to print.
+    output_files: List of files to print to.
+    complain: Print a warning if we get EAGAIN errors. Only one error
+              is printed per line.
+  """
+
+  for f in output_files:
+    while True:
+      try:
+        f.write(line)
+        break
+      except IOError as ex:
+        if ex.errno != errno.EAGAIN:
+          raise
+        if complain:
+          complain = False
+          flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL, 0)
+          if flags & os.O_NONBLOCK:
+            warning = 'Warning: %s/%d is non-blocking.\n' % (f.name,
+                                                             f.fileno())
+            _output(warning, output_files, complain)
+
+          warning = 'Warning: EAGAIN received for %s/%d.\n' % (f.name,
+                                                               f.fileno())
+          _output(warning, output_files, complain)
+
+        # Looks like we're in non-blocking mode. Wait for the file-handle
+        # to be ready before continuing.
+        select.select([], [f], [])
+
+
+def _tee(input_file, output_files, complain):
+  """Read lines from input_file and write to output_files."""
+  for line in iter(input_file.readline, ''):
+    _output(line, output_files, complain)
+
+
+class _TeeProcess(multiprocessing.Process):
+  """Replicate output to multiple file handles."""
+
+  def __init__(self, output_filenames, complain):
+    """Write to stdout and supplied filenames.
+
+    Args:
+      output_filenames: List of filenames to print to.
+      complain: Print a warning if we get EAGAIN errors.
+    """
+
+    self._reader_pipe, self.writer_pipe = os.pipe()
+    self._output_filenames = output_filenames
+    self._complain = complain
+    multiprocessing.Process.__init__(self)
+
+  def run(self):
+    """Main function for tee subprocess."""
+
+    # Close other end of writer pipe.
+    os.close(self.writer_pipe)
+
+    # Read from the pipe.
+    input_file = os.fdopen(self._reader_pipe, 'r', 0)
+
+    # Create list of files to write to.
+    output_files = [os.fdopen(sys.stdout.fileno(), 'w', 0)]
+    for filename in self._output_filenames:
+      output_files.append(open(filename, 'w', 0))
+
+    # Read all lines from input_file and write to output_files.
+    _tee(input_file, output_files, self._complain)
+
+    # Close input file.
+    input_file.close()
 
 
 class Tee(object):
@@ -35,12 +116,15 @@ class Tee(object):
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
     sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
-    # Create a tee subprocess and redirect stdout and stderr to it.
-    self._tee = subprocess.Popen(['tee', self._file], stdin=subprocess.PIPE,
-      close_fds=True)
-    os.dup2(self._tee.stdin.fileno(), sys.stdout.fileno())
-    os.dup2(self._tee.stdin.fileno(), sys.stderr.fileno())
-    self._tee.stdin.close()
+    # Create a tee subprocess.
+    self._tee = _TeeProcess([self._file], True)
+    self._tee.start()
+
+    # Redirect stdout and stderr to the tee subprocess.
+    writer_pipe = self._tee.writer_pipe
+    os.dup2(writer_pipe, sys.stdout.fileno())
+    os.dup2(writer_pipe, sys.stderr.fileno())
+    os.close(writer_pipe)
 
   def stop(self):
     """Restores old stdout and stderr handles and waits for tee proc to exit."""
@@ -57,4 +141,4 @@ class Tee(object):
     os.dup2(self._old_stderr_fd, sys.stderr.fileno())
     os.close(self._old_stdout_fd)
     os.close(self._old_stderr_fd)
-    self._tee.wait()
+    self._tee.join()
