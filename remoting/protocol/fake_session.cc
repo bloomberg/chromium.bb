@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,14 +203,6 @@ const std::string& FakeSession::receiver_token() {
 
 void FakeSession::set_receiver_token(const std::string& receiver_token) {
   receiver_token_ = receiver_token;
-}
-
-void FakeSession::set_shared_secret(const std::string& shared_secret) {
-  shared_secret_ = shared_secret;
-}
-
-const std::string& FakeSession::shared_secret() {
-  return shared_secret_;
 }
 
 void FakeSession::Close() {

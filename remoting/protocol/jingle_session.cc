@@ -303,17 +303,6 @@ void JingleSession::set_receiver_token(const std::string& receiver_token) {
   receiver_token_ = receiver_token;
 }
 
-void JingleSession::set_shared_secret(const std::string& secret) {
-  DCHECK(CalledOnValidThread());
-  shared_secret_ = secret;
-}
-
-const std::string& JingleSession::shared_secret() {
-  DCHECK(CalledOnValidThread());
-  return shared_secret_;
-}
-
-
 void JingleSession::Close() {
   DCHECK(CalledOnValidThread());
 
@@ -503,6 +492,7 @@ void JingleSession::OnChannelConnectorFinished(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(channel_connectors_[name], connector);
   channel_connectors_[name] = NULL;
+  delete connector;
 }
 
 void JingleSession::CreateChannels() {

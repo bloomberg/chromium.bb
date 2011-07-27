@@ -22,8 +22,6 @@ class TransportChannelSocketAdapter;
 namespace net {
 class CertVerifier;
 class StreamSocket;
-class SSLClientSocket;
-class SSLServerSocket;
 }  // namespace net
 
 namespace remoting {
@@ -31,12 +29,6 @@ namespace protocol {
 
 class JingleSession;
 
-// JingleStreamConnector creates the named datagram channel in the supplied
-// JingleSession, and uses PseudoTcp to turn it into a stream channel.  Within
-// the stream channel SSL is used to secure the protocol stream.  Finally, the
-// initiator authenticates the channel to the recipient by sending a digest
-// based on a secret shared by the two parties, and keying material derived
-// from the SSL session's master secret and nonces.
 class JingleStreamConnector : public JingleChannelConnector {
  public:
   JingleStreamConnector(JingleSession* session,
@@ -60,21 +52,13 @@ class JingleStreamConnector : public JingleChannelConnector {
   bool EstablishSSLConnection();
   void OnSSLConnect(int result);
 
-  void AuthenticateChannel();
-  void DoAuthWrite();
-  void DoAuthRead();
-  void OnAuthBytesWritten(int result);
-  void OnAuthBytesRead(int result);
-  bool HandleAuthBytesWritten(int result);
-  bool HandleAuthBytesRead(int result);
-  bool VerifyAuthBytes(const char* label, const char* auth_bytes);
-  bool GetAuthBytes(const char* label, char* out_bytes);
-
   void NotifyDone(net::StreamSocket* socket);
   void NotifyError();
 
   JingleSession* session_;
+
   std::string name_;
+
   Session::StreamChannelCallback callback_;
 
   bool initiator_;
@@ -82,15 +66,8 @@ class JingleStreamConnector : public JingleChannelConnector {
   std::string remote_cert_;
   crypto::RSAPrivateKey* local_private_key_;
 
-  scoped_refptr<net::DrainableIOBuffer> auth_write_buf_;
-  scoped_refptr<net::GrowableIOBuffer> auth_read_buf_;
-
   cricket::TransportChannel* raw_channel_;
   scoped_ptr<net::StreamSocket> socket_;
-
-  // TODO(wez): Ugly up-casts needed so we can fetch SSL keying material.
-  net::SSLClientSocket* ssl_client_socket_;
-  net::SSLServerSocket* ssl_server_socket_;
 
   // Used to verify the certificate received in SSLClientSocket.
   scoped_ptr<net::CertVerifier> cert_verifier_;
@@ -98,8 +75,6 @@ class JingleStreamConnector : public JingleChannelConnector {
   // Callback called by the TCP and SSL layers.
   net::CompletionCallbackImpl<JingleStreamConnector> tcp_connect_callback_;
   net::CompletionCallbackImpl<JingleStreamConnector> ssl_connect_callback_;
-  net::CompletionCallbackImpl<JingleStreamConnector> auth_write_callback_;
-  net::CompletionCallbackImpl<JingleStreamConnector> auth_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleStreamConnector);
 };
