@@ -8,16 +8,14 @@
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
+// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
+// datatypes into a performance test base class, once it is possible to do so.
 static const int kNumProfiles = 150;
-
-// TODO(braffert): Consider the range / resolution of these test points.
 static const int kNumBenchmarkPoints = 18;
 static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-// TODO(braffert): Move this class into its own .h/.cc files.  What should the
-// class files be named as opposed to the file containing the tests themselves?
 class AutofillSyncPerfTest
     : public TwoClientLiveAutofillSyncTest {
  public:
@@ -127,8 +125,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Add) {
   ASSERT_EQ(kNumProfiles, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("autofill", "add", dt);
 }
 
 // TCM ID - 7549835.
@@ -144,8 +141,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Update) {
   ASSERT_EQ(kNumProfiles, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("autofill", "update", dt);
 }
 
 // TCM ID - 7553678.
@@ -161,8 +157,7 @@ IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, Delete) {
   ASSERT_EQ(0, GetProfileCount(0));
   ASSERT_TRUE(AllProfilesMatch());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("autofill", "delete", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, DISABLED_Benchmark) {

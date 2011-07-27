@@ -8,16 +8,14 @@
 #include "chrome/test/live_sync/live_passwords_sync_test.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
+// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
+// datatypes into a performance test base class, once it is possible to do so.
 static const int kNumPasswords = 150;
-
-// TODO(braffert): Consider the range / resolution of these test points.
 static const int kNumBenchmarkPoints = 18;
 static const int kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                        150, 175, 200, 225, 250, 300, 350, 400,
                                        500};
 
-// TODO(braffert): Move this class into its own .h/.cc files.  What should the
-// class files be named as opposed to the file containing the tests themselves?
 class PasswordsSyncPerfTest
     : public TwoClientLivePasswordsSyncTest {
  public:
@@ -93,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Add) {
   ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("passwords", "add", dt);
 }
 
 // TCM ID - 7365093.
@@ -110,8 +107,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Update) {
   ASSERT_EQ(kNumPasswords, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("passwords", "update", dt);
 }
 
 // TCM ID - 7557852.
@@ -127,8 +123,7 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, Delete) {
   ASSERT_EQ(0, GetPasswordCount(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("passwords", "delete", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, DISABLED_Benchmark) {

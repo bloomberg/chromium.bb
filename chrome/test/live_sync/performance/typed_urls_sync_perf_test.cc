@@ -7,16 +7,14 @@
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 #include "chrome/test/live_sync/live_typed_urls_sync_test.h"
 
+// TODO(braffert): Move kNumBenchmarkPoints and kBenchmarkPoints for all
+// datatypes into a performance test base class, once it is possible to do so.
 static const size_t kNumUrls = 150;
-
-// TODO(braffert): Consider the range / resolution of these test points.
 static const size_t kNumBenchmarkPoints = 18;
 static const size_t kBenchmarkPoints[] = {1, 10, 20, 30, 40, 50, 75, 100, 125,
                                           150, 175, 200, 225, 250, 300, 350,
                                           400, 500};
 
-// TODO(braffert): Move this class into its own .h/.cc files.  What should the
-// class files be named as opposed to the file containing the tests themselves?
 class TypedUrlsSyncPerfTest
     : public TwoClientLiveTypedUrlsSyncTest {
  public:
@@ -95,8 +93,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Add) {
   ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("typed_urls", "add", dt);
 }
 
 // TCM ID - 7981755.
@@ -112,8 +109,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Update) {
   ASSERT_EQ(kNumUrls, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("typed_urls", "update", dt);
 }
 
 // TCM ID - 7651271
@@ -129,8 +125,7 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, Delete) {
   ASSERT_EQ(0U, GetTypedUrlsFromClient(0).size());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  // TODO(braffert): Compare timings against some target value.
-  VLOG(0) << std::endl << "dt: " << dt.InSecondsF() << " s";
+  SyncTimingHelper::PrintResult("typed_urls", "delete", dt);
 }
 
 IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, DISABLED_Benchmark) {

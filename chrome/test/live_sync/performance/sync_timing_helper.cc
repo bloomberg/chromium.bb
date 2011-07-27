@@ -4,6 +4,7 @@
 
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
 
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,4 +35,12 @@ base::TimeDelta SyncTimingHelper::TimeUntilQuiescence(
   base::Time start = base::Time::Now();
   EXPECT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients));
   return base::Time::Now() - start;
+}
+
+// static
+void SyncTimingHelper::PrintResult(const std::string& measurement,
+                                   const std::string& trace,
+                                   const base::TimeDelta& dt) {
+  printf("*RESULT %s: %s= %s ms\n", measurement.c_str(), trace.c_str(),
+         base::IntToString(dt.InMillisecondsF()).c_str());
 }

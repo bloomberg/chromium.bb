@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 
+#include <string>
 #include <vector>
 
 namespace base {
@@ -33,6 +34,13 @@ class SyncTimingHelper {
   // respective sync cycles.
   static base::TimeDelta TimeUntilQuiescence(
       std::vector<ProfileSyncServiceHarness*>& clients);
+
+  // Print a timing measurement in a format appropriate for the chromium perf
+  // dashboard.  Simplified version of methods defined in
+  // chrome/test/ui/ui_perf_test.{h,cc}.
+  static void PrintResult(const std::string& measurement,
+                          const std::string& trace,
+                          const base::TimeDelta& dt);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncTimingHelper);
