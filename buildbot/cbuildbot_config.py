@@ -167,7 +167,8 @@ default = {
   'use_lkgm' : False,
   'prebuilts' : True,
 
-  'use_sdk' : False,
+  'use_sdk' : True,
+  'usepkg_chroot' : True,
 }
 
 arm = {
@@ -194,7 +195,6 @@ full = {
   # Full builds are test build to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
-  'usepkg_chroot' : False,
   'usepkg_setup_board' : False,
   'usepkg_build_packages' : False,
   'chroot_replace' : True,
@@ -270,6 +270,9 @@ def add_config(name, updates):
 add_config('chromiumos-sdk', [full, {
   'board' : ['x86-generic', 'arm-generic', 'amd64-host'],
   'build_type' : constants.CHROOT_BUILDER_TYPE,
+
+  'use_sdk' : False,
+  'usepkg_chroot' : False,
 }])
 
 add_config('x86-generic-pre-flight-queue', [{
@@ -353,10 +356,6 @@ add_config('arm-generic-bin', [arm, {
 
 add_config('arm-generic-full', [arm, full, {
   'board' : 'arm-generic',
-
-  # TODO(zbehan): Remove this after sdk becomes the default. crosbug.com/17474
-  'use_sdk' : True,
-  'usepkg_chroot' : True,
 }])
 
 add_config('arm-tegra2-full', [arm, full, {
