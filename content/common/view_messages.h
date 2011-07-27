@@ -1594,9 +1594,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
                     bool /* blocked by policy */)
 
 // Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
-                    GURL /* url */,
-                    GURL /* referrer */)
+IPC_MESSAGE_ROUTED3(ViewHostMsg_DownloadUrl,
+                    GURL     /* url */,
+                    GURL     /* referrer */,
+                    string16 /* suggested_name */)
 
 // Used to go to the session history entry at the given offset (ie, -1 will
 // return the "back" item).

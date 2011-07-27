@@ -41,6 +41,7 @@ struct DownloadSaveInfo {
 
   FilePath file_path;
   linked_ptr<net::FileStream> file_stream;
+  string16 suggested_name;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TYPES_H_

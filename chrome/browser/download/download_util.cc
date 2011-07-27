@@ -288,16 +288,13 @@ void GenerateExtension(const FilePath& file_name,
   generated_extension->swap(extension);
 }
 
-void GenerateFileNameFromRequest(const GURL& url,
-                                 const std::string& content_disposition,
-                                 const std::string& referrer_charset,
-                                 const std::string& mime_type,
+void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                  FilePath* generated_name) {
-  GenerateFileNameInternal(url,
-                           content_disposition,
-                           referrer_charset,
-                           std::string(),
-                           mime_type,
+  GenerateFileNameInternal(download_item.GetURL(),
+                           download_item.content_disposition(),
+                           download_item.referrer_charset(),
+                           download_item.suggested_filename(),
+                           download_item.mime_type(),
                            generated_name);
 }
 

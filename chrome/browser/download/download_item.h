@@ -266,6 +266,7 @@ class DownloadItem : public NotificationObserver {
   const std::vector<GURL>& url_chain() const { return url_chain_; }
   const GURL& original_url() const { return url_chain_.front(); }
   const GURL& referrer_url() const { return referrer_url_; }
+  std::string suggested_filename() const { return suggested_filename_; }
   std::string content_disposition() const { return content_disposition_; }
   std::string mime_type() const { return mime_type_; }
   std::string original_mime_type() const { return original_mime_type_; }
@@ -393,6 +394,10 @@ class DownloadItem : public NotificationObserver {
 
   // The URL of the page that initiated the download.
   GURL referrer_url_;
+
+  // Suggested filename in 'download' attribute of an anchor. Details:
+  // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
+  std::string suggested_filename_;
 
   // Information from the request.
   // Content-disposition field from the header.

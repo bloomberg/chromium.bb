@@ -170,7 +170,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
-                     const GURL& referrer);
+                     const GURL& referrer,
+                     const string16& suggested_name);
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
 

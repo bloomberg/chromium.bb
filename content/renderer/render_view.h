@@ -454,6 +454,10 @@ class RenderView : public RenderWidget,
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy);
+  virtual void loadURLExternally(WebKit::WebFrame* frame,
+                                 const WebKit::WebURLRequest& request,
+                                 WebKit::WebNavigationPolicy policy,
+                                 const WebKit::WebString& suggested_name);
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,

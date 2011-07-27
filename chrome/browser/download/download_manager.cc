@@ -358,10 +358,7 @@ void DownloadManager::CheckVisitedReferrerBeforeDone(
 
   if (state.force_file_name.empty()) {
     FilePath generated_name;
-    download_util::GenerateFileNameFromRequest(download->GetURL(),
-                                               download->content_disposition(),
-                                               download->referrer_charset(),
-                                               download->mime_type(),
+    download_util::GenerateFileNameFromRequest(*download,
                                                &generated_name);
 
     // Freeze the user's preference for showing a Save As dialog.  We're going
