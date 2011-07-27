@@ -16,6 +16,7 @@ VALIDATOR: 0000000000000010: 0f ba 28 01                                  bts [%
 VALIDATOR: ERROR: Invalid base register in memory offset
 VALIDATOR: 0000000000000014: 0f ba 38 01                                  btc [%rax], 0x1
 VALIDATOR: ERROR: Invalid base register in memory offset
-VALIDATOR: Checking jump targets: 0 to 18
+VALIDATOR: Checking jump targets: 0 to 38
 VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: ERROR: 20: Bad basic block alignment.
 ***MODULE IS UNSAFE***

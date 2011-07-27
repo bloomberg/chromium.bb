@@ -11,3 +11,16 @@
 0F BA 28 01
 # btcl $0x1,(%rax)
 0F BA 38 01
+# Test legal bit commands
+# btw    $0x1,(%rsp)
+66 0F BA 24 24 01
+# btl    $0x1,(%rsp)
+0F BA 24 24 01
+# btq    $0x1,(%rsp)
+48 0F BA 24 24 01
+# btrl   $0x1,(%rsp)
+0F BA 34 24 01
+# btsl   $0x1,(%rsp)
+0F BA 2C 24 01
+# btcl   $0x1,(%rsp)
+0F BA 3C 24 01
