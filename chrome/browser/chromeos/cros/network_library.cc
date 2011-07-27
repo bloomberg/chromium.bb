@@ -3458,16 +3458,28 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
   // For enterprise 802.1X networks, always provide TPM PIN when available.
   // flimflam uses the PIN if it needs to access certificates in the TPM and
   // ignores it otherwise.
-  if (wifi->encryption() == SECURITY_8021X)
-    wifi->SetCertificatePin(GetTpmPin());
-
+  if (wifi->encryption() == SECURITY_8021X) {
+    // If the TPM initialization has not completed, GetTpmPin() will return
+    // an empty value, in which case we do not want to clear the PIN since
+    // that will cause flimflam to flag the network as unconfigured.
+    // TODO(stevenjb): We may want to delay attempting to connect, or fail
+    // immediately, rather than let the network layer attempt a connection.
+    std::string tpm_pin = GetTpmPin();
+    if (!tpm_pin.empty())
+      wifi->SetCertificatePin(tpm_pin);
+  }
   NetworkConnectStart(wifi, profile_type);
 }
 
 void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
   // flimflam needs the TPM PIN for some VPN networks to access client
-  // certificates, and ignores the PIN if it doesn't need them.
-  vpn->SetCertificateSlotAndPin(GetTpmSlot(), GetTpmPin());
+  // certificates, and ignores the PIN if it doesn't need them. Only set this
+  // if the TPM is ready (see comment in NetworkConnectStartWifi).
+  std::string tpm_pin = GetTpmPin();
+  if (!tpm_pin.empty()) {
+    std::string tpm_slot = GetTpmSlot();
+    vpn->SetCertificateSlotAndPin(tpm_slot, tpm_pin);
+  }
   NetworkConnectStart(vpn, PROFILE_NONE);
 }
 
