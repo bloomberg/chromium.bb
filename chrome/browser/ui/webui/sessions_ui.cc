@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -27,59 +28,24 @@
 
 namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// SessionsUIHTMLSource
-//
-///////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource* CreateSessionsUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUISessionsHost);
 
-class SessionsUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  SessionsUIHTMLSource()
-      : DataSource(chrome::kChromeUISessionsHost, MessageLoop::current()) {}
+  source->AddLocalizedString("sessionsTitle", IDS_SESSIONS_TITLE);
+  source->AddLocalizedString("sessionsCountFormat",
+                             IDS_SESSIONS_SESSION_COUNT_BANNER_FORMAT);
+  source->AddLocalizedString("noSessionsMessage",
+                             IDS_SESSIONS_NO_SESSIONS_MESSAGE);
+  source->AddLocalizedString("magicCountFormat",
+                             IDS_SESSIONS_MAGIC_LIST_BANNER_FORMAT);
+  source->AddLocalizedString("noMagicMessage",
+                             IDS_SESSIONS_NO_MAGIC_MESSAGE);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  ~SessionsUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(SessionsUIHTMLSource);
-};
-
-void SessionsUIHTMLSource::StartDataRequest(const std::string& path,
-                                            bool is_incognito,
-                                            int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("sessionsTitle",
-      l10n_util::GetStringUTF16(IDS_SESSIONS_TITLE));
-  localized_strings.SetString("sessionsCountFormat",
-      l10n_util::GetStringUTF16(IDS_SESSIONS_SESSION_COUNT_BANNER_FORMAT));
-  localized_strings.SetString("noSessionsMessage",
-      l10n_util::GetStringUTF16(IDS_SESSIONS_NO_SESSIONS_MESSAGE));
-
-  localized_strings.SetString("magicCountFormat",
-      l10n_util::GetStringUTF16(IDS_SESSIONS_MAGIC_LIST_BANNER_FORMAT));
-  localized_strings.SetString("noMagicMessage",
-      l10n_util::GetStringUTF16(IDS_SESSIONS_NO_MAGIC_MESSAGE));
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece sessions_html(
-      ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_SESSIONS_HTML));
-  std::string full_html =
-      jstemplate_builder::GetI18nTemplateHtml(sessions_html,
-                                              &localized_strings);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  source->set_json_path("strings.js");
+  source->add_resource_path("sessions.js", IDR_SESSIONS_JS);
+  source->set_default_resource(IDR_SESSIONS_HTML);
+  return source;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,10 +249,9 @@ void SessionsDOMHandler::UpdateUI() {
 SessionsUI::SessionsUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler((new SessionsDOMHandler())->Attach(this));
 
-  SessionsUIHTMLSource* html_source = new SessionsUIHTMLSource();
-
   // Set up the chrome://sessions/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      CreateSessionsUIHTMLSource());
 }
 
 // static

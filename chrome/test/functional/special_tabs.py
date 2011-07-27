@@ -64,7 +64,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://net-internals/help.html': {},
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
     'chrome://plugins': { 'title': 'Plug-ins' },
-    'chrome://sessions': { 'title': 'Sessions', 'CSP': False },
+    'chrome://sessions': { 'title': 'Sessions' },
     'chrome://settings': { 'title': 'Preferences - Basics' },
     'chrome://stats': { 'CSP': False },
     'chrome://sync': { 'title': 'Sync Internals', 'CSP': False },

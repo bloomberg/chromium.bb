@@ -2,11 +2,13 @@
 <html i18n-values="dir:textdirection;">
 <head>
   <meta charset="utf-8">
+  <include src="content_security_policy.html"/>
   <title i18n-content="sessionsTitle"></title>
   <link rel="stylesheet" href="sessions.css">
   <script src="chrome://resources/js/local_strings.js"></script>
   <script src="chrome://resources/js/util.js"></script>
-  <script src="sessions.js"></script>
+  <script src="chrome://sessions/sessions.js"></script>
+  <script src="chrome://sessions/strings.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <header><h1 i18n-content="sessionsTitle"></h1></header>
@@ -20,5 +22,8 @@
     <div id="magic-list"></div>
     <p id="no-magic" i18n-content="noMagicMessage" hidden></p>
   </div>
+  <script src="chrome://resources/js/i18n_template.js"></script>
+  <script src="chrome://resources/js/i18n_process.js"></script>
+  <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>
