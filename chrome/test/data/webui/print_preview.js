@@ -42,9 +42,15 @@ PrintPreviewWebUITest.prototype = {
       print: function(settings) {},
       getPrinterCapabilities: function(printerName) {},
       showSystemDialog: function() {},
-      managePrinters: function() {},
+      morePrinters: function() {},
+      signIn: function() {},
+      addCloudPrinter: function() {},
+      manageCloudPrinters: function() {},
+      manageLocalPrinters: function() {},
       closePrintPreviewTab: function() {},
       hidePreview: function() {},
+      cancelPendingPrintRequest: function() {},
+      saveLastPrinter: function(name, cloud_print_data) {},
     };
 
     // Create the actual mock and register stubs for methods expected to be
@@ -70,6 +76,7 @@ PrintPreviewWebUITest.prototype = {
 
     mockHandler.stubs().getPrinters().
         will(callFunction(function() {
+          setUseCloudPrint(false, "");
           setPrinters([{
               printerName: 'FooName',
               deviceName: 'FooDevice',
@@ -207,6 +214,52 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterList', function() {
                'barIndex=' + barIndex);
   expectEquals('BarDevice', printerList.options[barIndex].value,
                'barIndex=' + barIndex);
+});
+
+// Test that the printer list is structured correctly after calling
+// addCloudPrinters with an empty list.
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloudEmpty', function() {
+  addCloudPrinters([]);
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList);
+  expectEquals(localStrings.getString('cloudPrinters'),
+               printerList.options[0].text);
+  expectEquals(localStrings.getString('addCloudPrinter'),
+               printerList.options[1].text);
+});
+
+// Test that the printer list is structured correctly after calling
+// addCloudPrinters with a null list.
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloudNull', function() {
+  addCloudPrinters(null);
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList);
+  expectEquals(localStrings.getString('cloudPrinters'),
+               printerList.options[0].text);
+  expectEquals(localStrings.getString('signIn'),
+               printerList.options[1].text);
+});
+
+// Test that the printer list is structured correctly after attempting to add
+// individual cloud printers until no more can be added.
+TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloud', function() {
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList);
+  var printer = new Object;
+  printer['name'] = "FooCloud";
+  for (var i = 0; i < maxCloudPrinters; i++) {
+    printer['id'] = String(i);
+    addCloudPrinters([printer]);
+    expectEquals(localStrings.getString('cloudPrinters'),
+                 printerList.options[0].text);
+    expectEquals("FooCloud", printerList.options[i + 1].text);
+    expectEquals(String(i), printerList.options[i + 1].value);
+  }
+  printer['id'] = maxCloudPrinters + 1;
+  addCloudPrinters([printer]);
+  expectEquals("", printerList.options[maxCloudPrinters + 1].text);
+  expectEquals(localStrings.getString('morePrinters'),
+               printerList.options[maxCloudPrinters + 2].text);
 });
 
 /**

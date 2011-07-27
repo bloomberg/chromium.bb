@@ -647,6 +647,10 @@ function addCloudPrinters(printers) {
     } else {
       for (var i = 0; i < printers.length; i++) {
         if (!cloudPrinterAlreadyAdded(printers[i]['id'])) {
+          if (!trackCloudPrinterAdded(printers[i]['id'])) {
+            showMorePrintersOption = true;
+            break;
+          }
           var option = addDestinationListOptionAtPosition(
               lastCloudPrintOptionPos++,
               printers[i]['name'],
@@ -657,10 +661,6 @@ function addCloudPrinters(printers) {
           cloudprint.setCloudPrint(option,
                                    printers[i]['name'],
                                    printers[i]['id']);
-          if (!trackCloudPrinterAdded(printers[i]['id'])) {
-            showMorePrintersOption = true;
-            break;
-          }
         }
       }
       if (showMorePrintersOption) {
