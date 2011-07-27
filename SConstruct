@@ -774,15 +774,6 @@ def DecodePlatform(platform):
   Banner("Unrecognized platform: %s" % ( platform ))
   assert 0
 
-BUILD_NAME = GetPlatform('buildplatform')
-pre_base_env.Replace(BUILD_FULLARCH=BUILD_NAME)
-pre_base_env.Replace(BUILD_ARCHITECTURE=DecodePlatform(BUILD_NAME)['arch'])
-pre_base_env.Replace(BUILD_SUBARCH=DecodePlatform(BUILD_NAME)['subarch'])
-
-TARGET_NAME = GetPlatform('targetplatform')
-pre_base_env.Replace(TARGET_FULLARCH=TARGET_NAME)
-pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
-pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
 DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
            exclusive_groups='build_arch')
@@ -801,35 +792,50 @@ DeclareBit('target_arm', 'Tools being built will process ARM binaries',
 DeclareBit('build_x86', 'Building binaries for the x86 architecture')
 DeclareBit('target_x86', 'Tools being built will process x86 binaries')
 
-# Example: PlatformBit('build', 'x86-32') -> build_x86_32
-def PlatformBit(prefix, platform):
-  return "%s_%s" % (prefix, platform.replace('-', '_'))
 
-pre_base_env.SetBits(PlatformBit('build', BUILD_NAME))
-pre_base_env.SetBits(PlatformBit('target', TARGET_NAME))
+def MakeArchSpecificEnv():
+  env = pre_base_env.Clone()
+  BUILD_NAME = GetPlatform('buildplatform')
+  env.Replace(BUILD_FULLARCH=BUILD_NAME)
+  env.Replace(BUILD_ARCHITECTURE=DecodePlatform(BUILD_NAME)['arch'])
+  env.Replace(BUILD_SUBARCH=DecodePlatform(BUILD_NAME)['subarch'])
 
-if pre_base_env.Bit('build_x86_32') or pre_base_env.Bit('build_x86_64'):
-  pre_base_env.SetBits('build_x86')
+  TARGET_NAME = GetPlatform('targetplatform')
+  env.Replace(TARGET_FULLARCH=TARGET_NAME)
+  env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
+  env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
-if pre_base_env.Bit('target_x86_32') or pre_base_env.Bit('target_x86_64'):
-  pre_base_env.SetBits('target_x86')
+  # Example: PlatformBit('build', 'x86-32') -> build_x86_32
+  def PlatformBit(prefix, platform):
+    return "%s_%s" % (prefix, platform.replace('-', '_'))
 
-pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
+  env.SetBits(PlatformBit('build', BUILD_NAME))
+  env.SetBits(PlatformBit('target', TARGET_NAME))
 
-if TARGET_NAME == 'arm' and not pre_base_env.Bit('bitcode'):
-  # This has always been a silent default on ARM.
-  pre_base_env.SetBits('bitcode')
+  if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
+    env.SetBits('build_x86')
 
-# Determine where the object files go
-if BUILD_NAME == TARGET_NAME:
-  BUILD_TARGET_NAME = TARGET_NAME
-else:
-  BUILD_TARGET_NAME = '%s-to-%s' % (BUILD_NAME, TARGET_NAME)
-pre_base_env.Replace(BUILD_TARGET_NAME=BUILD_TARGET_NAME)
-# This may be changed later; see target_variant_map, below.
-pre_base_env.Replace(TARGET_VARIANT='')
-pre_base_env.Replace(TARGET_ROOT=
-    '${DESTINATION_ROOT}/${BUILD_TYPE}-${BUILD_TARGET_NAME}${TARGET_VARIANT}')
+  if env.Bit('target_x86_32') or env.Bit('target_x86_64'):
+    env.SetBits('target_x86')
+
+  env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
+
+  if TARGET_NAME == 'arm' and not env.Bit('bitcode'):
+    # This has always been a silent default on ARM.
+    env.SetBits('bitcode')
+
+  # Determine where the object files go
+  if BUILD_NAME == TARGET_NAME:
+    BUILD_TARGET_NAME = TARGET_NAME
+  else:
+    BUILD_TARGET_NAME = '%s-to-%s' % (BUILD_NAME, TARGET_NAME)
+  env.Replace(BUILD_TARGET_NAME=BUILD_TARGET_NAME)
+  # This may be changed later; see target_variant_map, below.
+  env.Replace(TARGET_VARIANT='')
+  env.Replace(TARGET_ROOT=
+      '${DESTINATION_ROOT}/${BUILD_TYPE}-${BUILD_TARGET_NAME}${TARGET_VARIANT}')
+  return env
+
 
 # Valgrind
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
@@ -875,7 +881,8 @@ def IrtIsBroken(env):
 
 pre_base_env.AddMethod(IrtIsBroken)
 
-BitFromArgument(pre_base_env, 'irt', default=not pre_base_env.IrtIsBroken(),
+BitFromArgument(pre_base_env, 'irt',
+                default=not MakeArchSpecificEnv().IrtIsBroken(),
                 desc='Use the integrated runtime (IRT) untrusted blob library '
                 'when running tests')
 
@@ -1834,7 +1841,7 @@ pre_base_env.Append(
 
 
 def MakeBaseTrustedEnv():
-  base_env = pre_base_env.Clone()
+  base_env = MakeArchSpecificEnv()
   base_env.Append(
     BUILD_SUBTYPE = '',
     CPPDEFINES = [
@@ -2315,7 +2322,7 @@ pre_base_env.Append(
 # NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
 # ----------------------------------------------------------
 
-nacl_env = pre_base_env.Clone(
+nacl_env = MakeArchSpecificEnv().Clone(
     tools = ['naclsdk'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
     BUILD_TYPE = 'nacl',
