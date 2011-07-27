@@ -264,11 +264,11 @@ class ShardingSupervisor(object):
         sys.stderr.write("\x1b[1;5;31m")
       sys.stderr.write("FAILED TESTS:\n")
       if self.color:
-        sys.stderr.write("\x1b[0;37m")
+        sys.stderr.write("\x1b[m")
       for line in self.failure_log:
         sys.stderr.write(line)
     if self.color:
-      sys.stderr.write("\x1b[0;37m")
+      sys.stderr.write("\x1b[m")
     return num_failed
 
 
