@@ -28,11 +28,9 @@ def Main(args):
   # them off on the main Chrome waterfall, but not on NaCl's integration bots.
   # This makes it easier to see when things have been fixed NaCl side.
   if not is_integration_bot:
-    if sys.platform == 'darwin':
-      # The following test has failed on Mac OS X 10.6.
-      # TODO(ncbray): Reenable when this issue is resolved.
-      # http://code.google.com/p/nativeclient/issues/detail?id=2091
-      tests_to_disable.append('run_ppapi_bad_browser_test')
+    # TODO(ncbray): Reenable when this issue is resolved.
+    # http://code.google.com/p/nativeclient/issues/detail?id=2091
+    tests_to_disable.append('run_ppapi_bad_browser_test')
 
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
