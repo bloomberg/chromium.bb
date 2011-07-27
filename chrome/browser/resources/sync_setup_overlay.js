@@ -214,31 +214,36 @@ cr.define('options', function() {
       }
 
       var f = $('choose-data-types-form');
-      // Must be done before we disable input elements.
-      if (!this.checkPassphraseMatch_())
-        return;
+
+      var syncAll = $('sync-select-datatypes').selectedIndex == 0;
+      var encryptAllData = this.getEncryptionRadioCheckedValue_() == 'all';
+
+      var usePassphrase;
+      var customPassphrase;
+      if (!$('sync-existing-passphrase-container').hidden) {
+        // If we were prompted for an existing passphrase, use it.
+        customPassphrase = f.passphrase.value;
+        usePassphrase = true;
+        // We allow an empty passphrase, in case the user has disabled
+        // all their encrypted datatypes. In that case, the PSS will accept
+        // the passphrase and finish configuration. If the user has enabled
+        // encrypted datatypes, the PSS will prompt again specifying that the
+        // passphrase failed.
+      } else if (!$('google-option').disabled &&
+                 this.getPassphraseRadioCheckedValue_() == 'explicit') {
+        // The user is setting a custom passphrase for the first time.
+        if (!this.checkPassphraseMatch_())
+          return;
+        customPassphrase = $('custom-passphrase').value;
+        usePassphrase = true;
+      } else {
+        // The user is not setting a custom passphrase.
+        usePassphrase = false;
+      }
 
       // Don't allow the user to tweak the settings once we send the
       // configuration to the backend.
       this.setInputElementsDisabledState_(true);
-
-      var syncAll =
-        document.getElementById('sync-select-datatypes').selectedIndex == 0;
-      var usePassphrase = this.getPassphraseRadioCheckedValue_() == 'explicit';
-      var encryptAllData = this.getEncryptionRadioCheckedValue_() == 'all';
-
-      var customPassphrase;
-      // If we were prompted for an existing passphrase, use it.
-      if (!$('sync-existing-passphrase-container').hidden)
-        customPassphrase = f.passphrase.value;
-      else
-        customPassphrase = $('custom-passphrase').value;
-
-      // If the user has not actually entered a passphrase (for example on
-      // customize when the passphrase box is hidden), we don't attempt to reset
-      // the passphrase.
-      if (customPassphrase.length == 0)
-        usePassphrase = false;
 
       // These values need to be kept in sync with where they are read in
       // SyncSetupFlow::GetDataTypeChoiceData().
