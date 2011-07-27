@@ -1914,6 +1914,7 @@
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_migration_unittest.cc',
+        'browser/webdata/web_intents_table_unittest.cc',
         'common/attributed_string_coder_mac_unittest.mm',
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',

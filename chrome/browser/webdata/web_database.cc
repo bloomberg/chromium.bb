@@ -74,6 +74,10 @@ WebAppsTable* WebDatabase::GetWebAppsTable() {
   return web_apps_table_.get();
 }
 
+WebIntentsTable* WebDatabase::GetWebIntentsTable() {
+  return web_intents_table_.get();
+}
+
 sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }
@@ -122,11 +126,12 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   logins_table_.reset(new LoginsTable(&db_, &meta_table_));
   token_service_table_.reset(new TokenServiceTable(&db_, &meta_table_));
   web_apps_table_.reset(new WebAppsTable(&db_, &meta_table_));
+  web_intents_table_.reset(new WebIntentsTable(&db_, &meta_table_));
 
   // Initialize the tables.
   if (!keyword_table_->Init() || !autofill_table_->Init() ||
       !logins_table_->Init() || !web_apps_table_->Init() ||
-      !token_service_table_->Init()) {
+      !token_service_table_->Init() || !web_intents_table_->Init() ) {
     LOG(WARNING) << "Unable to initialize the web database.";
     return sql::INIT_FAILURE;
   }
