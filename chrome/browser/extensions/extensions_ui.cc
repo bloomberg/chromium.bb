@@ -757,8 +757,9 @@ void ExtensionsDOMHandler::GetActivePagesForExtensionProcess(
       continue;
     }
 
-    result->push_back(ExtensionPage(url, process->id(), host->routing_id(),
-                                    process->profile()->IsOffTheRecord()));
+    result->push_back(
+        ExtensionPage(url, process->id(), host->routing_id(),
+                      process->browser_context()->IsOffTheRecord()));
   }
 }
 

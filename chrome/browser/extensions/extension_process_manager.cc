@@ -132,8 +132,9 @@ ExtensionHost* ExtensionProcessManager::CreateViewHost(
     const GURL& url, Browser* browser, ViewType::Type view_type) {
   // A NULL browser may only be given for pop-up views.
   DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
-  ExtensionService* service =
-      browsing_instance_->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(browsing_instance_->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   if (service) {
     const Extension* extension = service->GetExtensionByURL(url);
     if (extension)
@@ -198,8 +199,9 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
   if (!browser || browser->profile()->IsOffTheRecord()) {
-    browser = Browser::GetOrCreateTabbedBrowser(
-        browsing_instance_->profile()->GetOriginalProfile());
+    Profile* profile =
+        Profile::FromBrowserContext(browsing_instance_->browser_context());
+    browser = Browser::GetOrCreateTabbedBrowser(profile->GetOriginalProfile());
   }
 
   browser->OpenURL(extension->options_url(), GURL(), SINGLETON_TAB,
@@ -262,8 +264,9 @@ const Extension* ExtensionProcessManager::GetExtensionForSiteInstance(
   if (it != extension_ids_.end()) {
     // Look up the extension by ID, including disabled extensions in case
     // this gets called while an old process is still around.
-    ExtensionService* service =
-        browsing_instance_->profile()->GetExtensionService();
+    Profile* profile =
+        Profile::FromBrowserContext(browsing_instance_->browser_context());
+    ExtensionService* service = profile->GetExtensionService();
     return service->GetExtensionById(it->second, false);
   }
 
@@ -342,7 +345,7 @@ void ExtensionProcessManager::Observe(int type,
 
 void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
                                                      bool is_background) {
-  DCHECK_EQ(browsing_instance_->profile(), host->profile());
+  DCHECK_EQ(browsing_instance_->browser_context(), host->profile());
 
   all_hosts_.insert(host);
   if (is_background)
@@ -442,8 +445,9 @@ const Extension* IncognitoExtensionProcessManager::GetExtensionForSiteInstance(
 
 const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
     const GURL& url) {
-  ExtensionService* service =
-      browsing_instance_->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(browsing_instance_->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return NULL;
   return (url.SchemeIs(chrome::kExtensionScheme)) ?
@@ -452,8 +456,9 @@ const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
 
 bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
     const Extension* extension) {
-  ExtensionService* service =
-      browsing_instance_->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(browsing_instance_->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   return service && service->IsIncognitoEnabled(extension->id());
 }
 
@@ -467,12 +472,13 @@ void IncognitoExtensionProcessManager::Observe(
       // incognito window. Watch for new browsers and create the hosts if
       // it matches our profile.
       Browser* browser = Source<Browser>(source).ptr();
-      if (browser->profile() == browsing_instance_->profile()) {
+      if (browser->profile() == browsing_instance_->browser_context()) {
         // On Chrome OS, a login screen is implemented as a browser.
         // This browser has no extension service.  In this case,
         // service will be NULL.
-        ExtensionService* service =
-            browsing_instance_->profile()->GetExtensionService();
+        Profile* profile =
+            Profile::FromBrowserContext(browsing_instance_->browser_context());
+        ExtensionService* service = profile->GetExtensionService();
         if (service && service->is_ready())
           CreateBackgroundHosts(this, service->extensions());
       }

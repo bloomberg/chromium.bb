@@ -183,7 +183,8 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* host = i.GetCurrentValue();
-    if (extension_service_->profile()->IsSameProfile(host->profile()))
+    Profile* profile = Profile::FromBrowserContext(host->browser_context());
+    if (extension_service_->profile()->IsSameProfile(profile))
       host->Send(new ExtensionMsg_UpdatePermissions(
           extension->id(),
           active->apis(),
