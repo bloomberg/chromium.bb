@@ -1910,6 +1910,7 @@ def MakeBaseTrustedEnv():
       'tests/unittests/shared/srpc/build.scons',
       'tests/unittests/shared/imc/build.scons',
       'tests/unittests/shared/platform/build.scons',
+      'tests/unittests/trusted/platform_qualify/build.scons',
       'tests/unittests/trusted/service_runtime/build.scons',
       'installer/build.scons'
       ],

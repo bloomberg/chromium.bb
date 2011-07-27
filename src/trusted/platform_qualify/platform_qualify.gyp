@@ -16,8 +16,9 @@
     'target_conditions': [
       ['target_base=="pqlib"', {
         'sources': [
-          'nacl_os_qualify.h',
+          'kernel_version.h',
           'nacl_dep_qualify.h',
+          'nacl_os_qualify.h',
         ],
         'conditions': [
           ['OS=="linux"', {

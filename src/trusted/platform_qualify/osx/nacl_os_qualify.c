@@ -8,41 +8,26 @@
 #include <sys/utsname.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/platform_qualify/kernel_version.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
-static int ParseKernelVersion(const char *version,
-                              int *number1,
-                              int *number2) {
-  char *next;
-  *number1 = strtol(version, &next, 10);
-  if (next == NULL || *next != '.') {
-    return 0;
-  }
-  *number2 = strtol(next + 1, &next, 10);
-  if (next == NULL || *next != '.') {
-    return 0;
-  }
-  /* Ignore the rest of the version string. */
-  return 1;
-}
-
 /*
  * The 64-bit Mac kernel bug was fixed in kernel version 10.8.0, which
  * is in Mac OS X 10.6.8.
  */
-static const int kMinimumKernelMajorVersion = 10;
-static const int kMinimumKernelMinorVersion = 8;
+static const char *kMinimumKernelVersion = "10.8";
 
 static int KernelVersionIsBuggy(const char *version) {
-  int number1;
-  int number2;
-  return !ParseKernelVersion(version, &number1, &number2)
-         || number1 < kMinimumKernelMajorVersion
-         || (number1 == kMinimumKernelMajorVersion
-             && number2 < kMinimumKernelMinorVersion);
+  int res;
+  if (!NaClCompareKernelVersions(version, kMinimumKernelVersion, &res)) {
+    NaClLog(LOG_ERROR, "KernelVersionIsBuggy: "
+            "Couldn't parse kernel version: %s\n", version);
+    return 1;
+  }
+  return res < 0;
 }
 
 #endif
