@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 
+#include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/brightness_bubble.h"
-#include "chrome/browser/chromeos/volume_bubble.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "content/browser/browser_thread.h"
+#include "third_party/cros/chromeos_brightness.h"
 
 namespace chromeos {
 
