@@ -340,7 +340,7 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
 bool MinidumpGenerator::WriteStack(breakpad_thread_state_data_t state,
                                    MDMemoryDescriptor *stack_location) {
   switch (cpu_type_) {
-#ifdef HAS_PPC_SUUPORT
+#ifdef HAS_PPC_SUPPORT
     case CPU_TYPE_POWERPC:
       return WriteStackPPC(state, stack_location);
     case CPU_TYPE_POWERPC64:
