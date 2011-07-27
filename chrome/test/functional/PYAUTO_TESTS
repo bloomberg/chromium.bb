@@ -219,8 +219,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/90256
-      '-autofill.AutofillTest.testAppendCountryCodeForAggregatedPhones',
       # crbug.com/85310
       '-instant',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
@@ -253,8 +251,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/90256
-      '-autofill.AutofillTest.testAppendCountryCodeForAggregatedPhones',
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # Downloads panel stays even after declining a download.
