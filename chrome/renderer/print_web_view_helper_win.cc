@@ -118,9 +118,7 @@ void PrintWebViewHelper::PrintPageInternal(
                                    &(page_params.metafile_data_handle))) {
     page_params.data_size = 0;
   }
-  Send(new PrintHostMsg_DuplicateSection(routing_id(),
-                                         page_params.metafile_data_handle,
-                                         &page_params.metafile_data_handle));
+
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
@@ -144,7 +142,12 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
   // Release since |print_preview_context_| is the real owner.
   metafile.release();
-  PreviewPageRendered(page_number, NULL);
+  printing::Metafile* page_metafile = NULL;
+  if (print_preview_context_.IsModifiable()) {
+    page_metafile = reinterpret_cast<printing::PreviewMetafile*>(
+        print_preview_context_.metafile())->GetMetafileForCurrentPage();
+  }
+  PreviewPageRendered(page_number, page_metafile);
 }
 
 void PrintWebViewHelper::RenderPage(
@@ -263,7 +266,6 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     Metafile* metafile, base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;
-
   // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
   // Windows 2000/XP: When a page in a spooled file exceeds approximately 350
   // MB, it can fail to print and not send an error message.
@@ -286,5 +288,8 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
   }
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), shared_mem_handle);
   shared_buf.Unmap();
+
+  Send(new PrintHostMsg_DuplicateSection(routing_id(), *shared_mem_handle,
+                                         shared_mem_handle));
   return true;
 }

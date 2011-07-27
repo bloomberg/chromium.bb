@@ -74,16 +74,12 @@ var addedCloudPrinters = {};
 // The maximum number of cloud printers to allow in the dropdown.
 const maxCloudPrinters = 10;
 
-var isPipeliningSupported = false;
-
 /**
  * Window onload handler, sets up the page and starts print preview by getting
  * the printer list.
  */
 function onLoad() {
   cr.enablePlatformSpecificCSSRules();
-
-  isPipeliningSupported = !cr.isWindows;
 
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
@@ -776,7 +772,7 @@ function printPreviewFailed() {
  * Called when the PDF plugin loads its document.
  */
 function onPDFLoad() {
-  if (previewModifiable && isPipeliningSupported) {
+  if (previewModifiable) {
     setPluginPreviewPageCount();
     cr.dispatchSimpleEvent(document, 'updateSummary');
   }
@@ -830,7 +826,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
  */
 function onDidPreviewPage(pageNumber, previewUid) {
   // Refactor
-  if (!previewModifiable || !isPipeliningSupported)
+  if (!previewModifiable)
     return;
 
   var pageIndex = pageSettings.previouslySelectedPages.indexOf(pageNumber + 1);
@@ -866,7 +862,7 @@ function updatePrintPreview(jobTitle,
 
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
 
-  if (!previewModifiable || !isPipeliningSupported) {
+  if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.
     createPDFPlugin(previewUid);
   }
@@ -917,7 +913,7 @@ function createPDFPlugin(previewUid) {
   }
 
   // Get the complete preview document.
-  var dataIndex = previewModifiable && isPipeliningSupported  ? '0' : '-1';
+  var dataIndex = previewModifiable ? '0' : '-1';
 
   pdfViewer = document.createElement('embed');
   pdfViewer.setAttribute('id', 'pdf-viewer');
