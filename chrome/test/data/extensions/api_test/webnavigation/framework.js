@@ -30,6 +30,10 @@ function checkExpectations() {
 }
 
 function captureEvent(name, details) {
+  // Skip about:blank navigations
+  if ('url' in details && details.url == 'about:blank') {
+    return;
+  }
   // normalize details.
   if ('timeStamp' in details) {
     details.timeStamp = 0;

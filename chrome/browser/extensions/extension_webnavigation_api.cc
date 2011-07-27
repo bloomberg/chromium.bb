@@ -37,6 +37,8 @@ const char* kValidSchemes[] = {
   chrome::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
+  chrome::kJavaScriptScheme,
+  chrome::kDataScheme,
 };
 
 // Returns the frame ID as it will be passed to the extension:
@@ -198,6 +200,9 @@ bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
     if (scheme == kValidSchemes[i])
       return true;
   }
+  // Allow about:blank.
+  if (frame_state->second.url.spec() == chrome::kAboutBlankURL)
+    return true;
   if (allow_extension_scheme_ && scheme == chrome::kExtensionScheme)
     return true;
   return false;

@@ -6,6 +6,8 @@ chrome.tabs.create({"url": "about:blank"}, function(tab) {
   chrome.experimental.webNavigation.onBeforeNavigate.addListener(function (details) {
     if (details.tabId != tabId)
       return;
+    if (details.url != URL)
+      return;
     chrome.experimental.webNavigation.getFrame(
         {tabId: tabId, frameId: 0},
         function(details) {
