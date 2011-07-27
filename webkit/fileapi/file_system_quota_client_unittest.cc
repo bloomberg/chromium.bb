@@ -216,8 +216,8 @@ class FileSystemQuotaClientTest : public testing::Test {
         FilePath path = FilePath().AppendASCII(files[i].name);
         if (!path.empty()) {
           // TODO(dmikurube): Use QuotaFileUtil in the actual -FileUtil stack.
-          file_paths_cost +=
-              QuotaFileUtil::CreateDefault()->ComputeFilePathCost(path);
+          scoped_ptr<QuotaFileUtil> file_util(QuotaFileUtil::CreateDefault());
+          file_paths_cost += file_util->ComputeFilePathCost(path);
         }
       }
     }
