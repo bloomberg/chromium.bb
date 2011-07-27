@@ -53,7 +53,7 @@ bool StarView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void StarView::OnMouseReleased(const views::MouseEvent& event) {
-  if (HitTest(event.location()))
+  if (event.IsOnlyLeftMouseButton() && HitTest(event.location()))
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 
