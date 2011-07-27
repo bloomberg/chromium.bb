@@ -133,7 +133,7 @@ class DevtoolsNotificationBridge : public NotificationObserver {
     registrar_.reset(new NotificationRegistrar);
     registrar_->Add(notificationBridge_.get(),
                     content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-                    Source<content::BrowserContext>(host->profile()));
+                    Source<Profile>(host->profile()));
     registrar_->Add(notificationBridge_.get(),
                     chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                     Source<Profile>(host->profile()));

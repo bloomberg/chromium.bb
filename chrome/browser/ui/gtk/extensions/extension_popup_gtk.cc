@@ -100,7 +100,7 @@ void ExtensionPopupGtk::ShowPopup() {
     DevToolsWindow::OpenDevToolsWindow(host_->render_view_host());
     // Listen for the the devtools window closing.
     registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-        Source<content::BrowserContext>(host_->profile()));
+        Source<Profile>(host_->profile()));
   }
 
   // Only one instance should be showing at a time. Get rid of the old one, if

@@ -202,7 +202,7 @@ void ExtensionEventRouter::DispatchEventImpl(
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
     bool cross_incognito = restrict_to_profile &&
-        listener->process->browser_context() != restrict_to_profile;
+        listener->process->profile() != restrict_to_profile;
     const Extension* extension = service->GetExtensionById(
         listener->extension_id, false);
     // Send the event with different arguments to extensions that can't

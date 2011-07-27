@@ -135,8 +135,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         continue;
       }
       process.type = ChildProcessInfo::RENDER_PROCESS;
-      Profile* profile =
-          Profile::FromBrowserContext(render_process_host->browser_context());
+      Profile* profile = render_process_host->profile();
       ExtensionService* extension_service = profile->GetExtensionService();
 
       // The RenderProcessHost may host multiple TabContents.  Any

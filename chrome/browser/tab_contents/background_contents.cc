@@ -52,8 +52,7 @@ BackgroundContents::BackgroundContents()
 BackgroundContents::~BackgroundContents() {
   if (!render_view_host_)   // Will be null for unit tests.
     return;
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->process()->browser_context());
+  Profile* profile = render_view_host_->process()->profile();
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       Source<Profile>(profile),
@@ -93,8 +92,7 @@ void BackgroundContents::DidNavigate(
   // extent a background page will be opened but will remain at about:blank.
   url_ = params.url;
 
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host->process()->browser_context());
+  Profile* profile = render_view_host->process()->profile();
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
       Source<Profile>(profile),
@@ -149,8 +147,7 @@ gfx::NativeWindow BackgroundContents::GetDialogRootWindow() {
 }
 
 void BackgroundContents::Close(RenderViewHost* render_view_host) {
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host->process()->browser_context());
+  Profile* profile = render_view_host->process()->profile();
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
       Source<Profile>(profile),
@@ -161,8 +158,7 @@ void BackgroundContents::Close(RenderViewHost* render_view_host) {
 void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
                                         base::TerminationStatus status,
                                         int error_code) {
-  Profile* profile =
-      Profile::FromBrowserContext(rvh->process()->browser_context());
+  Profile* profile = rvh->process()->profile();
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
       Source<Profile>(profile),
@@ -186,8 +182,7 @@ RendererPreferences BackgroundContents::GetRendererPrefs(
 WebPreferences BackgroundContents::GetWebkitPrefs() {
   // TODO(rafaelw): Consider enabling the webkit_prefs.dom_paste_enabled for
   // apps.
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->process()->browser_context());
+  Profile* profile = render_view_host_->process()->profile();
   return RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
                                                       false);  // is_web_ui
 }
@@ -195,13 +190,12 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
 void BackgroundContents::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->process()->browser_context());
   delegate_view_helper_.CreateNewWindow(
       route_id,
-      profile,
+      render_view_host_->process()->profile(),
       render_view_host_->site_instance(),
-      ChromeWebUIFactory::GetInstance()->GetWebUIType(profile, url_),
+      ChromeWebUIFactory::GetInstance()->GetWebUIType(
+          render_view_host_->process()->profile(), url_),
       this,
       params.window_container_type,
       params.frame_name);

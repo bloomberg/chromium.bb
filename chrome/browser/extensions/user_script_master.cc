@@ -363,9 +363,8 @@ void UserScriptMaster::StartLoad() {
 
 void UserScriptMaster::SendUpdate(RenderProcessHost* process,
                                   base::SharedMemory* shared_memory) {
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
   // Make sure we only send user scripts to processes in our profile.
-  if (!profile_->IsSameProfile(profile))
+  if (!profile_->IsSameProfile(process->profile()))
     return;
 
   // If the process is being started asynchronously, early return.  We'll end up

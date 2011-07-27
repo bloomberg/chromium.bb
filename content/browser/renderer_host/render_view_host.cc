@@ -104,8 +104,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       save_accessibility_tree_for_testing_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
-    session_storage_namespace_ = new SessionStorageNamespace(
-        process()->browser_context()->GetWebKitContext());
+    session_storage_namespace_ =
+        new SessionStorageNamespace(process()->profile()->GetWebKitContext());
   }
 
   DCHECK(instance_);
@@ -147,7 +147,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   if (!process()->Init(renderer_accessible()))
     return false;
   DCHECK(process()->HasConnection());
-  DCHECK(process()->browser_context());
+  DCHECK(process()->profile());
 
   if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
@@ -167,7 +167,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
   params.renderer_preferences =
-      delegate_->GetRendererPrefs(process()->browser_context());
+      delegate_->GetRendererPrefs(process()->profile());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = routing_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
@@ -193,7 +193,7 @@ bool RenderViewHost::IsRenderViewLive() const {
 void RenderViewHost::SyncRendererPrefs() {
   Send(new ViewMsg_SetRendererPrefs(routing_id(),
                                     delegate_->GetRendererPrefs(
-                                        process()->browser_context())));
+                                        process()->profile())));
 }
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
@@ -1260,15 +1260,14 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
                                   bool remember,
                                   const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HostZoomMap* host_zoom_map = process()->browser_context()->GetHostZoomMap();
+  HostZoomMap* host_zoom_map = process()->profile()->GetHostZoomMap();
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
     // Notify renderers from this profile.
     for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       RenderProcessHost* render_process_host = i.GetCurrentValue();
-      if (render_process_host->browser_context() ==
-          process()->browser_context()) {
+      if (render_process_host->profile() == process()->profile()) {
         render_process_host->Send(
             new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
       }

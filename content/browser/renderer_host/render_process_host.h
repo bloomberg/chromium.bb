@@ -13,6 +13,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/time.h"
+#include "chrome/browser/profiles/profile.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -72,6 +73,12 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Returns the user browser context associated with this renderer process.
   content::BrowserContext* browser_context() const { return browser_context_; }
+
+  // Returns the profile.
+  // TEMPORARY; http://crbug.com/76788
+  Profile* profile() const {
+    return Profile::FromBrowserContext(browser_context());
+  }
 
   // Returns the unique ID for this child process. This can be used later in
   // a call to FromID() to get back to this object (this is used to avoid

@@ -94,7 +94,7 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
   if (!host)
     return;  // Teardown.
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  Profile* profile = host->profile();
   // The renderer has requested that we initialize its spellchecker. This should
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
@@ -117,8 +117,7 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
   if (!host)
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
-  SpellCheckHost* spellcheck_host = profile->GetSpellCheckHost();
+  SpellCheckHost* spellcheck_host = host->profile()->GetSpellCheckHost();
   if (spellcheck_host && spellcheck_host->GetMetrics())
     spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }

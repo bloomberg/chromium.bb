@@ -8,6 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/profiles/profile.h"
 
 class GURL;
 class SiteInstance;
@@ -68,6 +69,12 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
 
   // Get the browser context to which this BrowsingInstance belongs.
   content::BrowserContext* browser_context() { return browser_context_; }
+
+  // Returns the profile.
+  // TEMPORARY; http://crbug.com/76788
+  Profile* profile() {
+    return Profile::FromBrowserContext(browser_context());
+  }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
   // the site of the given URL.

@@ -524,8 +524,7 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
 
   virtual bool Send(IPC::Message* msg) {
     VisitCountingProfile* counting_profile =
-        static_cast<VisitCountingProfile*>(
-            Profile::FromBrowserContext(browser_context()));
+        static_cast<VisitCountingProfile*>(profile());
 
     if (msg->type() == ViewMsg_VisitedLink_Add::ID) {
       void* iter = NULL;

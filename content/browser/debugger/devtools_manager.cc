@@ -122,8 +122,7 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
-      Source<content::BrowserContext>(
-          inspected_rvh->site_instance()->GetProcess()->browser_context()),
+      Source<Profile>(inspected_rvh->site_instance()->GetProcess()->profile()),
       Details<RenderViewHost>(inspected_rvh));
 
   UnbindClientHost(inspected_rvh, host);

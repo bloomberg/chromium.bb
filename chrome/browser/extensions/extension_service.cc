@@ -1363,9 +1363,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* host = i.GetCurrentValue();
-    Profile* host_profile =
-        Profile::FromBrowserContext(host->browser_context());
-    if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile()) {
+    if (host->profile()->GetOriginalProfile() ==
+        profile_->GetOriginalProfile()) {
       host->Send(
           new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(
               extension, extension->GetActivePermissions())));
@@ -1461,10 +1460,10 @@ void ExtensionService::NotifyExtensionUnloaded(
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* host = i.GetCurrentValue();
-    Profile* host_profile =
-        Profile::FromBrowserContext(host->browser_context());
-    if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile())
+    if (host->profile()->GetOriginalProfile() ==
+        profile_->GetOriginalProfile()) {
       host->Send(new ExtensionMsg_Unloaded(extension->id()));
+    }
   }
 
   profile_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
