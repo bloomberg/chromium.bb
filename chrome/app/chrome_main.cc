@@ -843,8 +843,7 @@ int ChromeMain(int argc, char** argv) {
 #elif defined(OS_MACOSX)
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::EnableSandbox().
-  // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox(),
-  // and the GPU process, in GpuMain().
+  // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox().
   if (process_type == switches::kRendererProcess ||
       process_type == switches::kExtensionProcess ||
       process_type == switches::kNaClLoaderProcess ||
