@@ -4,6 +4,7 @@
 //
 // SRPC-abstraction wrappers around PPB_PDF functions.
 
+#include <stdlib.h>
 #include <string.h>
 #include <algorithm>
 
@@ -14,6 +15,7 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
 #include "native_client/src/third_party/ppapi/c/pp_errors.h"
 #include "native_client/src/third_party/ppapi/c/pp_rect.h"
 #include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
@@ -28,6 +30,10 @@ using ppapi_proxy::DeserializeTo;
 
 const nacl_abi_size_t kPpbPrivateFindResultBytes =
     static_cast<nacl_abi_size_t>(sizeof(PP_PrivateFindResult));
+// Limit the maximum result buffer size.
+const nacl_abi_size_t kMaxFindResultsBytes = 65536;
+const int32_t kMaxFindResults =
+    kMaxFindResultsBytes / kPpbPrivateFindResultBytes;
 
 void PpbPdfRpcServer::PPB_PDF_GetLocalizedString(
     NaClSrpcRpc* rpc,
@@ -134,10 +140,15 @@ void PpbPdfRpcServer::PPB_PDF_SearchString(
       case_sensitive ? PP_TRUE : PP_FALSE,
       &pp_results,
       &pp_result_count);
+  pp_result_count = std::min(pp_result_count, kMaxFindResults);
   *results_size = std::min(*results_size,
                            pp_result_count * kPpbPrivateFindResultBytes);
-  memcpy(results, pp_results, *results_size);
-  free(pp_results);
+  if (pp_results) {
+    memcpy(results, pp_results, *results_size);
+    // On Windows, the call to |free| must be made in the renderer's .exe,
+    // not in the .dll code. That can cause a crash in some configurations.
+    ppapi_proxy::PPBMemoryInterface()->MemFree(pp_results);
+  }
   *count = static_cast<int32_t>(pp_result_count);
 
   DebugPrintf("PPB_PDF::SearchString: count=%"NACL_PRId32"\n", *count);

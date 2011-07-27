@@ -5,6 +5,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 
@@ -25,6 +26,10 @@ namespace {
 
 const nacl_abi_size_t kPpbPrivateFindResultBytes =
     static_cast<nacl_abi_size_t>(sizeof(PP_PrivateFindResult));
+// Limit the maximum result buffer size.
+const nacl_abi_size_t kMaxFindResultsBytes = 65536;
+const int32_t kMaxFindResults =
+    kMaxFindResultsBytes / kPpbPrivateFindResultBytes;
 
 PP_Var GetLocalizedString(
     PP_Instance instance,
@@ -110,34 +115,34 @@ void SearchString(PP_Instance instance,
                   int* count) {
   DebugPrintf("PPB_PDF::SearchString: instance=%"NACL_PRIu32"\n", instance);
 
-  if (string == NULL ||
-      term == NULL ||
-      results == NULL ||
-      count == NULL)
-    return;
-  // Calculate string lengths, including terminal nulls.
-  nacl_abi_size_t string_length = utf16_length(string) + 1;
-  nacl_abi_size_t term_length = utf16_length(term) + 1;
-  const int MAX_FIND_RESULTS = 8192;
-  nacl_abi_size_t find_results_size =
-      MAX_FIND_RESULTS * kPpbPrivateFindResultBytes;
-  *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(find_results_size));
-  NaClSrpcError srpc_result =
-      PpbPdfRpcClient::PPB_PDF_SearchString(
-          GetMainSrpcChannel(),
-          instance,
-          string_length * sizeof(unsigned short),
-          reinterpret_cast<char*>(const_cast<unsigned short*>(string)),
-          term_length * sizeof(unsigned short),
-          reinterpret_cast<char*>(const_cast<unsigned short*>(term)),
-          static_cast<int32_t>(case_sensitive),
-          &find_results_size,
-          reinterpret_cast<char*>(*results),
-          reinterpret_cast<int32_t*>(count));
+  CHECK(string != NULL);
+  CHECK(term != NULL);
+  CHECK(results != NULL);
+  CHECK(count != NULL);
 
-  DebugPrintf("PPB_PDF::SearchString: %s\n", NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK)
-    *count = 0;
+  nacl_abi_size_t find_results_size = kMaxFindResultsBytes;
+  *results = reinterpret_cast<PP_PrivateFindResult*>(malloc(find_results_size));
+  *count = 0;
+
+  nacl_abi_size_t string_length = utf16_length(string);
+  nacl_abi_size_t term_length = utf16_length(term);
+  if (string_length > 0 && term_length > 0) {
+    NaClSrpcError srpc_result =
+        PpbPdfRpcClient::PPB_PDF_SearchString(
+            GetMainSrpcChannel(),
+            instance,
+            (string_length + 1) * sizeof(unsigned short),  // include NULL
+            reinterpret_cast<char*>(const_cast<unsigned short*>(string)),
+            (term_length + 1) * sizeof(unsigned short),  // include NULL
+            reinterpret_cast<char*>(const_cast<unsigned short*>(term)),
+            static_cast<int32_t>(case_sensitive),
+            &find_results_size,
+            reinterpret_cast<char*>(*results),
+            reinterpret_cast<int32_t*>(count));
+
+    DebugPrintf("PPB_PDF::SearchString: %s\n",
+        NaClSrpcErrorString(srpc_result));
+  }
 }
 
 void DidStartLoading(PP_Instance instance) {
