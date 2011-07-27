@@ -5115,6 +5115,46 @@
    fun:_Z18DispatchToFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEES5_SB_EvT_RK6Tuple2IT0_T1_E
    fun:_ZN16RunnableFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEE6Tuple2IS5_SB_EE3RunEv
 }
+{
+   bug_90640
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting14ScreenRecorder9DoCaptureEv
+   fun:_ZN8remoting14ScreenRecorder7DoStartEv
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
+{
+   bug_90642
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS0_11PendingTaskE
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+}
+{
+   bug_90644
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN2pp5proxy12_GLOBAL__N_18MemAllocEj
+   fun:_ZN5ppapi11CharSetImpl14CharSetToUTF16EPK14PPB_Memory_DevPKcjS5_26PP_CharSet_ConversionErrorPj
+   fun:_ZN2pp5proxy17PPB_CharSet_Proxy14CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   fun:_ZN5ppapi5thunk12_GLOBAL__N_114CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   ...
+   fun:_Z24PP_RunCompletionCallbackP21PP_CompletionCallbacki
+   fun:_ZN2pp5proxy12_GLOBAL__N_115CallbackWrapperE21PP_CompletionCallbacki
+   fun:_Z18DispatchToFunctionIPFv21PP_CompletionCallbackiES0_iEvT_RK6Tuple2IT0_T1_E
+   fun:_ZN16RunnableFunctionIPFv21PP_CompletionCallbackiE6Tuple2IS0_iEE3RunEv
+   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
 
 
 #-----------------------------------------------------------------------
