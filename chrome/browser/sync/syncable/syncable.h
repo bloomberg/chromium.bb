@@ -706,8 +706,6 @@ class Directory {
                            TakeSnapshotGetsMetahandlesToPurge);
 
  public:
-  class EventListenerHookup;
-
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {

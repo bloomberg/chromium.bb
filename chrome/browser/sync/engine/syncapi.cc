@@ -21,12 +21,13 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/task.h"
+#include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "base/tracked.h"
 #include "base/utf_string_conversions.h"
@@ -67,6 +68,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
@@ -114,9 +116,6 @@ static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
 #endif  // OS_CHROMEOS
 
 }  // namespace
-
-// We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(sync_api::SyncManager::SyncInternal);
 
 namespace sync_api {
 
@@ -1196,14 +1195,12 @@ class SyncManager::SyncInternal
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
-  SyncInternal(const std::string& name, SyncManager* sync_manager)
-      : name_(name),
-        sync_loop_(NULL),
+  explicit SyncInternal(const std::string& name)
+      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         parent_router_(NULL),
-        sync_manager_(sync_manager),
         registrar_(NULL),
         initialized_(false),
-        method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        setup_for_test_mode_(false),
         js_transaction_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -1237,7 +1234,7 @@ class SyncManager::SyncInternal
   }
 
   virtual ~SyncInternal() {
-    CHECK(!sync_loop_);
+    CHECK(!initialized_);
   }
 
   bool Init(const FilePath& database_location,
@@ -1569,12 +1566,25 @@ class SyncManager::SyncInternal
 
   const std::string name_;
 
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<SyncInternal> weak_ptr_factory_;
+
+  // Thread-safe handle used by
+  // HandleCalculateChangesChangeEventFromSyncApi(), which can be
+  // called from any thread.  Valid only between between calls to
+  // Init() and Shutdown().
+  //
+  // TODO(akalin): Ideally, we wouldn't need to store this; instead,
+  // we'd have another worker class which implements
+  // HandleCalculateChangesChangeEventFromSyncApi() and we'd pass it a
+  // WeakHandle when we construct it.
+  browser_sync::WeakHandle<SyncInternal> weak_handle_this_;
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
   UserShare share_;
-
-  MessageLoop* sync_loop_;
 
   // We have to lock around every observers_ access because it can get accessed
   // from any thread and added to/removed from on the core thread.
@@ -1606,12 +1616,6 @@ class SyncManager::SyncInternal
   // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
   ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
 
-  // Event listener hookup for the ServerConnectionManager.
-  scoped_ptr<EventListenerHookup> connection_manager_hookup_;
-
-  // The sync dir_manager to which we belong.
-  SyncManager* const sync_manager_;
-
   // The entity that provides us with information about which types to sync.
   // The instance is shared between the SyncManager and the Syncer.
   ModelSafeWorkerRegistrar* registrar_;
@@ -1622,8 +1626,6 @@ class SyncManager::SyncInternal
   // True if the SyncManager should be running in test mode (no sync
   // scheduler actually communicating with the server).
   bool setup_for_test_mode_;
-
-  ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
 
   // Map used to store the notification info to be displayed in
   // about:sync page.
@@ -1639,7 +1641,7 @@ const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
 SyncManager::Observer::~Observer() {}
 
 SyncManager::SyncManager(const std::string& name)
-    : data_(new SyncInternal(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))) {}
+    : data_(new SyncInternal(name)) {}
 
 bool SyncManager::Init(const FilePath& database_location,
                        const std::string& sync_server_and_path,
@@ -1750,10 +1752,13 @@ bool SyncManager::SyncInternal::Init(
     bool setup_for_test_mode) {
   CHECK(!initialized_);
 
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   VLOG(1) << "Starting SyncInternal initialization.";
 
-  sync_loop_ = MessageLoop::current();
-  DCHECK(sync_loop_);
+  weak_handle_this_ =
+      browser_sync::MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
+
   registrar_ = model_safe_worker_registrar;
   setup_for_test_mode_ = setup_for_test_mode;
 
@@ -1770,8 +1775,9 @@ bool SyncManager::SyncInternal::Init(
 
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
-  sync_loop_->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&SyncInternal::CheckServerReachable,
+                            weak_ptr_factory_.GetWeakPtr()));
 
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode_) {
@@ -1896,7 +1902,7 @@ bool SyncManager::SyncInternal::OpenDirectory() {
 }
 
 bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(share_.name.empty());
   share_.name = credentials.email;
 
@@ -1931,7 +1937,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
 
 void SyncManager::SyncInternal::UpdateCredentials(
     const SyncCredentials& credentials) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(credentials.email, share_.name);
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
@@ -1944,7 +1950,7 @@ void SyncManager::SyncInternal::UpdateCredentials(
 }
 
 void SyncManager::SyncInternal::UpdateEnabledTypes() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   syncable::ModelTypeSet enabled_types;
@@ -2211,7 +2217,11 @@ void SyncManager::Shutdown() {
 }
 
 void SyncManager::SyncInternal::Shutdown() {
-  method_factory_.RevokeAll();
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Prevent any in-flight method calls from running.  Also
+  // invalidates |weak_handle_this_|.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Automatically stops the scheduler.
   scheduler_.reset();
@@ -2221,27 +2231,12 @@ void SyncManager::SyncInternal::Shutdown() {
   }
   sync_notifier_.reset();
 
-  // TODO(akalin): NULL other member variables defensively, too.
-
-  // |this| is about to be destroyed, so we have to ensure any
-  // messages that were posted to sync_loop_ are flushed out, else
-  // they refer to garbage memory.
-  //
-  // HandleCalculateChangesChangeEventFromSyncApi is an example.
-  //
-  // TODO(akalin): Remove this monstrosity, perhaps with
-  // ObserverListTS once core thread is removed. Bug 78190.
-  {
-    CHECK(sync_loop_);
-    bool old_state = sync_loop_->NestableTasksAllowed();
-    sync_loop_->SetNestableTasksAllowed(true);
-    sync_loop_->RunAllPending();
-    sync_loop_->SetNestableTasksAllowed(old_state);
+  if (connection_manager_.get()) {
+    connection_manager_->RemoveListener(this);
   }
+  connection_manager_.reset();
 
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-
-  connection_manager_hookup_.reset();
 
   if (dir_manager()) {
     dir_manager()->FinalSaveChangesForAll();
@@ -2252,7 +2247,15 @@ void SyncManager::SyncInternal::Shutdown() {
   // handles to backing files.
   share_.dir_manager.reset();
 
-  sync_loop_ = NULL;
+  setup_for_test_mode_ = false;
+  parent_router_ = NULL;
+  registrar_ = NULL;
+
+  initialized_ = false;
+
+  // We reset this here, since only now we know it will not be
+  // accessed from other threads (since we shut down everything).
+  weak_handle_this_.Reset();
 }
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
@@ -2261,8 +2264,10 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
   // TODO(tim): This is a hack to intentionally lose a race with flimflam at
   // shutdown, so we don't cause shutdown to wait for our http request.
   // http://crosbug.com/8429
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&SyncInternal::OnIPAddressChangedImpl),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&SyncInternal::OnIPAddressChangedImpl,
+                 weak_ptr_factory_.GetWeakPtr()),
       kChromeOSNetworkChangeReactionDelayHackMsec);
 #else
   OnIPAddressChangedImpl();
@@ -2397,12 +2402,16 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
     syncable::ModelTypeBitSet model_types;
     model_types.set(mutated_model_type);
-    sync_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SyncInternal::RequestNudgeWithDataTypes,
-        TimeDelta::FromMilliseconds(nudge_delay),
-        browser_sync::NUDGE_SOURCE_LOCAL,
-        model_types,
-        FROM_HERE));
+    if (weak_handle_this_.IsInitialized()) {
+      weak_handle_this_.Call(FROM_HERE,
+                             &SyncInternal::RequestNudgeWithDataTypes,
+                             TimeDelta::FromMilliseconds(nudge_delay),
+                             browser_sync::NUDGE_SOURCE_LOCAL,
+                             model_types,
+                             FROM_HERE);
+    } else {
+      NOTREACHED();
+    }
   }
 }
 
@@ -2488,13 +2497,16 @@ void SyncManager::SyncInternal::RequestNudgeWithDataTypes(
     const TimeDelta& delay,
     browser_sync::NudgeSource source, const ModelTypeBitSet& types,
     const tracked_objects::Location& nudge_location) {
-  if (scheduler())
-     scheduler()->ScheduleNudge(delay, source, types, nudge_location);
+  if (!scheduler()) {
+    NOTREACHED();
+    return;
+  }
+  scheduler()->ScheduleNudge(delay, source, types, nudge_location);
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
     const SyncEngineEvent& event) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!HaveObservers()) {
     LOG(INFO)
         << "OnSyncEngineEvent returning because observers_.size() is zero";
