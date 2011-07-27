@@ -354,6 +354,12 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
+def GetGitRepoRevision(cwd):
+  result = RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
+                      redirect_stdout=True)
+  return result.output.strip()
+
+
 def DoesLocalBranchExist(repo_dir, branch):
   """Returns True if the local branch exists.
 

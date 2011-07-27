@@ -1,0 +1,85 @@
+# DO NOT EDIT. THIS IS A GENERATED FILE.
+# ALL MANUAL CHANGES WILL BE OVERWRITTEN.
+vars = {
+    'webkit_url':
+         'http://git.chromium.org/external/WebKit_trimmed.git',
+    'git_url':
+         'http://git.chromium.org',
+    'webkit_rev':
+         '@1ec58e4a7f6aa04324257b8de1e819b9ce8a238d',
+    'rev1':
+         '@8d35063e1836c79c9ef97bf81eb43f450dc111ac',
+    'rev2':
+         '@b2f03c74b48866eb3da5c4cab554c792a70aeda8',
+    'rev3':
+         '@cd18d4fd11fd1e4a009e93554b692cfdad12a84a',
+}
+
+deps = {
+    'src/repo1':
+        Var('git_url') + '/external/google-breakpad/src.git' + Var('rev1'),
+    'src/repo2':
+        Var('git_url') + '/chromium/support.git' + Var('rev2'),
+}
+
+deps_os = {
+    'mac':
+    {
+        'src/chrome/mac_fake_url/test/reference_build/chrome_win':
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
+    },
+    'unix':
+    {
+        'src/repo3':
+            Var('git_url') + '/chromium/deps/xz.git' + Var('rev1'),
+        'src/repo4':
+            Var('git_url') + '/chromium/deps/xz.git' + Var('rev2'),
+    },
+    'win':
+    {
+        'src/chrome/tools/test/reference_build/chrome_win':
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
+    },
+}
+
+include_rules = [
+    '+base',
+    '+build',
+    '+ipc',
+    '+unicode',
+    '+testing'
+]
+
+skip_child_includes = [
+    'breakpad',
+    'chrome_frame',
+    'native_client',
+    'o3d',
+    'pdf',
+    'sdch',
+    'skia',
+    'testing',
+    'third_party',
+    'v8'
+]
+
+hooks = [
+    {
+    'action':
+         [
+    'touch', 
+    'out1'
+],
+    'pattern':
+         'fake_pattern'
+},
+    {
+    'action':
+         [
+    'touch',
+    'out2',
+],
+    'pattern':
+         '.'
+}
+]
