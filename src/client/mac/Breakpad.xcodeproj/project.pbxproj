@@ -38,6 +38,11 @@
 		3329D4ED0FA16D820007BBC5 /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.xib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
+		4D72CA0E13DFAD5C006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA0D13DFAD5C006CABE3 /* md5.c */; };
+		4D72CA2513DFAE1C006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA0D13DFAD5C006CABE3 /* md5.c */; };
+		4D72CA2F13DFAE65006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA0D13DFAD5C006CABE3 /* md5.c */; };
+		4D72CA3813DFAE91006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA0D13DFAD5C006CABE3 /* md5.c */; };
+		4D72CA3913DFAE92006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA0D13DFAD5C006CABE3 /* md5.c */; };
 		4DBE49A6134A4F200072546A /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DBE4769134A4F080072546A /* CoreServices.framework */; };
 		4DBE49A7134A4F280072546A /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DBE4769134A4F080072546A /* CoreServices.framework */; };
 		4DBE49A8134A4F380072546A /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DBE4769134A4F080072546A /* CoreServices.framework */; };
@@ -51,9 +56,6 @@
 		8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		8B3102EB11F0D78000FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
-		8B4BDAAF12012BC5009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
-		8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
-		8B4BDAC512012D05009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		D23F4B2E12A7E13200686C8D /* minidump_generator_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */; };
 		D23F4B3312A7E17700686C8D /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2F9A41512131EF0002747C1 /* libgtest.a */; };
@@ -76,7 +78,6 @@
 		D246419112BAA52F005170D0 /* convert_UTF.c in Sources */ = {isa = PBXBuildFile; fileRef = F92C53870ECCE6C0009BE4BA /* convert_UTF.c */; };
 		D246419512BAA54C005170D0 /* file_id.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53740ECCE635009BE4BA /* file_id.cc */; };
 		D246419612BAA55A005170D0 /* macho_id.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537A0ECCE635009BE4BA /* macho_id.cc */; };
-		D246419C12BAA65F005170D0 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		D24641A012BAA67F005170D0 /* macho_walker.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537E0ECCE635009BE4BA /* macho_walker.cc */; };
 		D24641AF12BAA82D005170D0 /* macho_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537C0ECCE635009BE4BA /* macho_utilities.cc */; };
 		D24641EC12BAC6FB005170D0 /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535112426EBB009BBCE0 /* logging.cc */; };
@@ -123,7 +124,6 @@
 		D2F9A53B121383A1002747C1 /* macho_walker.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537E0ECCE635009BE4BA /* macho_walker.cc */; };
 		D2F9A53C121383A1002747C1 /* string_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53820ECCE635009BE4BA /* string_utilities.cc */; };
 		D2F9A53F121383A1002747C1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
-		D2F9A540121383A1002747C1 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		D2F9A541121383A1002747C1 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2F9A41512131EF0002747C1 /* libgtest.a */; };
 		D2F9A553121383DC002747C1 /* crash_generation_server_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D2F9A4CE121336F7002747C1 /* crash_generation_server_test.cc */; };
 		F91AF5D00FD60393009D8BE2 /* BreakpadFramework_Test.mm in Sources */ = {isa = PBXBuildFile; fileRef = F91AF5CF0FD60393009D8BE2 /* BreakpadFramework_Test.mm */; };
@@ -548,6 +548,7 @@
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = crash_report_sender.icns; path = sender/crash_report_sender.icns; sourceTree = "<group>"; };
+		4D72CA0D13DFAD5C006CABE3 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../common/md5.c; sourceTree = SOURCE_ROOT; };
 		4DBE4769134A4F080072546A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		8B31007011F0CD3C00FCF3E4 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = ../../common/mac/GTMDefines.h; sourceTree = SOURCE_ROOT; };
 		8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -555,7 +556,6 @@
 		8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B31FFF611F0C90500FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
-		8B4BDAA7120124EA009C7060 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test.cc; path = tests/minidump_generator_test.cc; sourceTree = "<group>"; };
 		D23F4B9A12A8688800686C8D /* minidump_generator_test_helper.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test_helper.cc; path = tests/minidump_generator_test_helper.cc; sourceTree = "<group>"; };
@@ -696,7 +696,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D246418412BAA4BA005170D0 /* Foundation.framework in Frameworks */,
-				D246419C12BAA65F005170D0 /* libcrypto.dylib in Frameworks */,
 				4DBE49A6134A4F200072546A /* CoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -713,7 +712,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2F9A53F121383A1002747C1 /* Foundation.framework in Frameworks */,
-				D2F9A540121383A1002747C1 /* libcrypto.dylib in Frameworks */,
 				D2F9A541121383A1002747C1 /* libgtest.a in Frameworks */,
 				4DBE49A9134A4F460072546A /* CoreServices.framework in Frameworks */,
 			);
@@ -734,7 +732,6 @@
 			files = (
 				8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */,
 				F92C56570ECD113E009BE4BA /* Carbon.framework in Frameworks */,
-				8B4BDAAF12012BC5009C7060 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -753,7 +750,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B31029411F0D54300FCF3E4 /* Foundation.framework in Frameworks */,
-				8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */,
 				D23F4B3312A7E17700686C8D /* libgtest.a in Frameworks */,
 				4DBE49A7134A4F280072546A /* CoreServices.framework in Frameworks */,
 			);
@@ -771,7 +767,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */,
-				8B4BDAC512012D05009C7060 /* libcrypto.dylib in Frameworks */,
 				D2F9A44412131F84002747C1 /* libgtest.a in Frameworks */,
 				4DBE49A8134A4F380072546A /* CoreServices.framework in Frameworks */,
 			);
@@ -842,7 +837,6 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8B4BDAA7120124EA009C7060 /* libcrypto.dylib */,
 				8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */,
 				F9C44EE40EF0A006003AEBAA /* SystemConfiguration.framework */,
 				F92C554A0ECCF530009BE4BA /* Carbon.framework */,
@@ -900,6 +894,7 @@
 				D244540A12439BA0009BBCE0 /* memory_unittest.cc */,
 				F92C53870ECCE6C0009BE4BA /* convert_UTF.c */,
 				F92C53880ECCE6C0009BE4BA /* convert_UTF.h */,
+				4D72CA0D13DFAD5C006CABE3 /* md5.c */,
 				F92C53850ECCE6AD009BE4BA /* string_conversion.cc */,
 				F92C53860ECCE6AD009BE4BA /* string_conversion.h */,
 				F92C53840ECCE68D009BE4BA /* mac */,
@@ -1648,6 +1643,7 @@
 				D246419612BAA55A005170D0 /* macho_id.cc in Sources */,
 				D24641A012BAA67F005170D0 /* macho_walker.cc in Sources */,
 				D24641AF12BAA82D005170D0 /* macho_utilities.cc in Sources */,
+				4D72CA2513DFAE1C006CABE3 /* md5.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1685,6 +1681,7 @@
 				D24641ED12BAC6FB005170D0 /* minidump.cc in Sources */,
 				D24641EE12BAC6FB005170D0 /* pathname_stripper.cc in Sources */,
 				D24641EF12BAC6FB005170D0 /* basic_code_modules.cc in Sources */,
+				4D72CA3913DFAE92006CABE3 /* md5.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1709,6 +1706,7 @@
 				F92C56430ECD10CA009BE4BA /* macho_utilities.cc in Sources */,
 				F92C56440ECD10CA009BE4BA /* macho_walker.cc in Sources */,
 				F92C56450ECD10CA009BE4BA /* MachIPC.mm in Sources */,
+				4D72CA0E13DFAD5C006CABE3 /* md5.c in Sources */,
 				F92C56460ECD10CA009BE4BA /* minidump_file_writer.cc in Sources */,
 				F92C56470ECD10CA009BE4BA /* minidump_generator.cc in Sources */,
 				F92C56480ECD10CA009BE4BA /* SimpleStringDictionary.mm in Sources */,
@@ -1751,6 +1749,7 @@
 				F93803D60F8083B7004D428B /* macho_walker.cc in Sources */,
 				F93803D70F8083B7004D428B /* string_utilities.cc in Sources */,
 				D23F4B2E12A7E13200686C8D /* minidump_generator_test.cc in Sources */,
+				4D72CA2F13DFAE65006CABE3 /* md5.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1790,6 +1789,7 @@
 				F93DE33F0F82C66B00608B94 /* string_utilities.cc in Sources */,
 				D2F9A3D51212F87C002747C1 /* exception_handler_test.cc in Sources */,
 				D244540B12439BA0009BBCE0 /* memory_unittest.cc in Sources */,
+				4D72CA3813DFAE91006CABE3 /* md5.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

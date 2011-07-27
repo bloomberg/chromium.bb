@@ -37,8 +37,6 @@ extern "C" {  // necessary for Leopard
   #include <fcntl.h>
   #include <mach-o/loader.h>
   #include <mach-o/swap.h>
-  #include <openssl/md5.h>
-  #include <openssl/sha.h>
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
@@ -57,7 +55,6 @@ MachoID::MachoID(const char *path)
    : file_(0), 
      crc_(0), 
      md5_context_(), 
-     sha1_context_(), 
      update_function_(NULL) {
   strlcpy(path_, path, sizeof(path_));
   file_ = open(path, O_RDONLY);
@@ -117,11 +114,7 @@ void MachoID::UpdateCRC(unsigned char *bytes, size_t size) {
 }
 
 void MachoID::UpdateMD5(unsigned char *bytes, size_t size) {
-  MD5_Update(&md5_context_, bytes, size);
-}
-
-void MachoID::UpdateSHA1(unsigned char *bytes, size_t size) {
-  SHA_Update(&sha1_context_, bytes, size);
+  MD5Update(&md5_context_, bytes, size);
 }
 
 void MachoID::Update(MachoWalker *walker, off_t offset, size_t size) {
@@ -225,30 +218,13 @@ bool MachoID::MD5(int cpu_type, unsigned char identifier[16]) {
   MachoWalker walker(path_, WalkerCB, this);
   update_function_ = &MachoID::UpdateMD5;
 
-  if (MD5_Init(&md5_context_)) {
-    if (!walker.WalkHeader(cpu_type))
-      return false;
+  MD5Init(&md5_context_);
 
-    MD5_Final(identifier, &md5_context_);
-    return true;
-  }
+  if (!walker.WalkHeader(cpu_type))
+    return false;
 
-  return false;
-}
-
-bool MachoID::SHA1(int cpu_type, unsigned char identifier[16]) {
-  MachoWalker walker(path_, WalkerCB, this);
-  update_function_ = &MachoID::UpdateSHA1;
-
-  if (SHA_Init(&sha1_context_)) {
-    if (!walker.WalkHeader(cpu_type))
-      return false;
-
-    SHA_Final(identifier, &sha1_context_);
-    return true;
-  }
-
-  return false;
+  MD5Final(identifier, &md5_context_);
+  return true;
 }
 
 // static

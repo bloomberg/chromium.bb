@@ -36,8 +36,8 @@
 
 #include <limits.h>
 #include <mach-o/loader.h>
-#include <openssl/md5.h>
-#include <openssl/sha.h>
+
+#include "common/md5.h"
 
 namespace MacFileUtilities {
 
@@ -65,10 +65,6 @@ class MachoID {
   // Return true on success, false otherwise
   bool MD5(int cpu_type, unsigned char identifier[16]);
 
-  // For the given |cpu_type|, return the SHA1 for the mach-o data segment(s).
-  // Return true on success, false otherwise
-  bool SHA1(int cpu_type, unsigned char identifier[16]);
-
  private:
   // Signature of class member function to be called with data read from file
   typedef void (MachoID::*UpdateFunction)(unsigned char *bytes, size_t size);
@@ -81,14 +77,10 @@ class MachoID {
   // to each byte.
   void UpdateMD5(unsigned char *bytes, size_t size);
 
-  // Update the SHA1 value by examining |size| |bytes| and applying the
-  // algorithm to each byte.
-  void UpdateSHA1(unsigned char *bytes, size_t size);
-
   // Bottleneck for update routines
   void Update(MachoWalker *walker, off_t offset, size_t size);
 
-  // The callback from the MachoWalker for CRC, MD5, and SHA1
+  // The callback from the MachoWalker for CRC and MD5
   static bool WalkerCB(MachoWalker *walker, load_command *cmd, off_t offset,
                        bool swap, void *context);
 
@@ -110,10 +102,7 @@ class MachoID {
   uint32_t crc_;
 
   // The MD5 context
-  MD5_CTX md5_context_;
-
-  // The SHA1 context
-  SHA_CTX sha1_context_;
+  MD5Context md5_context_;
 
   // The current update to call from the Update callback
   UpdateFunction update_function_;
