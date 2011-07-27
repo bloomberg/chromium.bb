@@ -562,7 +562,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 static void
 format_copyright(const char *copyright)
 {
-	int bol = 1, start, i;
+	int bol = 1, start = 0, i;
 
 	for (i = 0; copyright[i]; i++) {
 		if (bol && (copyright[i] == ' ' || copyright[i] == '\t')) {
