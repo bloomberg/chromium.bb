@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/incognito_user_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -363,29 +364,26 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
+TEST_F(PrefProviderTest, MigrateObsoleteContentSettingsPatternPref) {
   // Setup single pattern settings.
   TestingProfile profile;
   PrefService* prefs = profile.GetPrefs();
 
+  // Set obsolete preference for content settings pattern.
   DictionaryValue* settings_dictionary = new DictionaryValue();
   settings_dictionary->SetInteger("cookies", 2);
   settings_dictionary->SetInteger("images", 2);
   settings_dictionary->SetInteger("popups", 2);
-
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("http://www.example.com");
   scoped_ptr<DictionaryValue> all_settings_dictionary(new DictionaryValue());
   all_settings_dictionary->SetWithoutPathExpansion(
       pattern.ToString(), settings_dictionary);
-
-  // Set Obsolete preference.
   prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
 
-  // Test if single pattern settings are properly migrated.
   content_settings::PrefProvider provider(prefs, false);
 
-  // Validate migrated preferences
+  // Test if single pattern settings are properly migrated.
   const DictionaryValue* const_all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
   EXPECT_EQ(1U, const_all_settings_dictionary->size());
@@ -393,18 +391,100 @@ TEST_F(PrefProviderTest, MigrateSinglePatternSettings) {
   EXPECT_TRUE(const_all_settings_dictionary->HasKey(
       pattern.ToString() + "," +
       ContentSettingsPattern::Wildcard().ToString()));
-
   EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
       GURL("http://www.example.com"),
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_IMAGES,
       ""));
-
   EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
       GURL("http://www.example.com"),
       GURL("http://www.example.com"),
       CONTENT_SETTINGS_TYPE_POPUPS,
       ""));
+
+  // Change obsolete preference. This can happen if a user has enabled sync
+  // while using an old version of chrome.
+  {
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
+    DictionaryValue* mutable_patterns = update.Get();
+    DictionaryValue* mutable_settings = NULL;
+    std::string key = pattern.ToString();
+    mutable_patterns->GetDictionaryWithoutPathExpansion(key, &mutable_settings);
+    ASSERT_TRUE(mutable_settings != NULL) << "Dictionary has no key: " << key;
+    mutable_settings->SetInteger("javascript", CONTENT_SETTING_BLOCK);
+  }
+
+  // Test if the changed single pattern setting was migrated correctly.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,  provider.GetContentSetting(
+      GURL("http://www.example.com"),
+      GURL("http://www.foo.com"),
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      ""));
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, SyncObsoletePref) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+  content_settings::PrefProvider provider(prefs, false);
+
+  // Assert pre-condition.
+  const DictionaryValue* patterns =
+      prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  ASSERT_TRUE(patterns->empty());
+
+  // Simulate a user setting a content setting.
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+  ContentSettingsPattern secondary_pattern =
+      ContentSettingsPattern::Wildcard();
+  provider.SetContentSetting(primary_pattern,
+                             secondary_pattern,
+                             CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                             std::string(),
+                             CONTENT_SETTING_BLOCK);
+
+  // Test whether the obsolete preference is synced correctly.
+  patterns = prefs->GetDictionary(prefs::kContentSettingsPatterns);
+  EXPECT_EQ(1U, patterns->size());
+  DictionaryValue* settings = NULL;
+  patterns->GetDictionaryWithoutPathExpansion(primary_pattern.ToString(),
+                                              &settings);
+  ASSERT_TRUE(NULL != settings);
+  ASSERT_EQ(1U, settings->size());
+  int setting_value;
+  settings->GetInteger("javascript", &setting_value);
+  EXPECT_EQ(setting_value, CONTENT_SETTING_BLOCK);
+
+  // Simulate a sync change of the preference
+  // prefs::kContentSettingsPatternPairs.
+  {
+    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
+    DictionaryValue* mutable_pattern_pairs = update.Get();
+    DictionaryValue* mutable_settings = NULL;
+    std::string key(
+        primary_pattern.ToString() + "," + secondary_pattern.ToString());
+    mutable_pattern_pairs->GetDictionaryWithoutPathExpansion(
+        key, &mutable_settings);
+    ASSERT_TRUE(NULL != mutable_settings) << "Dictionary has no key: " << key;
+    mutable_settings->SetInteger("javascript", CONTENT_SETTING_ALLOW);
+  }
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            provider.GetContentSetting(GURL("http://www.example.com"),
+                                       GURL("http://www.example.com"),
+                                       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                       std::string()));
+  // Test whether the obsolete preference was synced correctly.
+  settings = NULL;
+  patterns->GetDictionaryWithoutPathExpansion(primary_pattern.ToString(),
+                                              &settings);
+  ASSERT_TRUE(NULL != settings) << "Dictionary has no key: "
+                                << primary_pattern.ToString();
+  ASSERT_EQ(1U, settings->size());
+  settings->GetInteger("javascript", &setting_value);
+  EXPECT_EQ(setting_value, CONTENT_SETTING_ALLOW);
 
   provider.ShutdownOnUIThread();
 }
