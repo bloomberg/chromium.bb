@@ -77,7 +77,7 @@ DESTINATION="${DESTINATION_DIR}/${FRAMEWORK_NAME}"
 # destination location.
 mkdir -p "${DESTINATION_DIR}"
 rsync -acC --delete --exclude Headers --exclude PrivateHeaders \
-    "${CURRENT_VERSION}/" "${DESTINATION}"
+    --include '*.so' "${CURRENT_VERSION}/" "${DESTINATION}"
 
 # Adjust the Mach-O LC_ID_DYLIB load command in the framework.  This does not
 # change the LC_LOAD_DYLIB load commands in anything that may have already
