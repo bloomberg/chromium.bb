@@ -20,6 +20,15 @@
           });
         }
 
+        // Off the main thread.
+        // Doing these tests first will check that the proxy is properly
+        // caching the interface pointers on the main thread on initialization.
+        addTest('TestCallOnMainThread_FromNonMainThread',
+                ['CallOnMainThreadCallback_FromNonMainThread']);
+        addTest('TestCallOnMainThread_FromNonMainThreadStress',
+                ['CallOnMainThreadCallback_ThreadStress']);
+
+        // On the main thread.
         addTest('TestGetTime');
         addTest('TestGetTimeTicks');
         addTest('TestIsMainThread_FromMainThread');
@@ -30,10 +39,7 @@
                 ['CallOnMainThreadCallback_FromMainThread']);
         addTest('TestCallOnMainThread_FromMainThreadDelayed',
                 ['CallOnMainThreadCallback_FromMainThreadDelayed']);
-        addTest('TestCallOnMainThread_FromNonMainThread',
-                ['CallOnMainThreadCallback_FromNonMainThread']);
-        addTest('TestCallOnMainThread_FromNonMainThreadStress',
-                ['CallOnMainThreadCallback_ThreadStress']);
+
       }
       //]]>
     </script>

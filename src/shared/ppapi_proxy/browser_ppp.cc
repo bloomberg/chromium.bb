@@ -41,11 +41,25 @@ namespace ppapi_proxy {
 // The following methods are the SRPC dispatchers for ppapi/c/ppp.h.
 //
 
+namespace {
+
+// PPB_GetInterface must only be called on the main thread. So as we are adding
+// off-the-main-thread support for various interfaces, we need to ensure that
+// their pointers are available on upcall thread of the the trusted proxy.
+void PPBGetInterfaces() {
+  PPBCoreInterface();
+  // TODO(all): add more interfaces here once available off the main thread.
+}
+
+}  // namespace
+
 int32_t BrowserPpp::InitializeModule(
     PP_Module module_id,
     PPB_GetInterface get_browser_interface) {
   DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
   SetPPBGetInterface(get_browser_interface, plugin_->enable_dev_interface());
+  PPBGetInterfaces();
+
   SetBrowserPppForInstance(plugin_->pp_instance(), this);
   CHECK(main_channel_ != NULL);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
