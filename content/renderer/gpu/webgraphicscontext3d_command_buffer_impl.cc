@@ -337,37 +337,6 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
   gl_->Flush();
 }
 
-void WebGraphicsContext3DCommandBufferImpl::getParentToChildLatchCHROMIUM(
-    WGC3Duint* latch_id)
-{
-  if (!context_->GetParentToChildLatch(latch_id)) {
-    LOG(ERROR) << "getLatch must only be called on child context";
-    synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = gpu::kInvalidLatchId;
-  }
-}
-
-void WebGraphicsContext3DCommandBufferImpl::getChildToParentLatchCHROMIUM(
-    WGC3Duint* latch_id)
-{
-  if (!context_->GetChildToParentLatch(latch_id)) {
-    LOG(ERROR) << "getLatch must only be called on child context";
-    synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = gpu::kInvalidLatchId;
-  }
-}
-
-void WebGraphicsContext3DCommandBufferImpl::waitLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-}
-
-void WebGraphicsContext3DCommandBufferImpl::setLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-  gl_->Flush();
-}
-
 void WebGraphicsContext3DCommandBufferImpl::
     rateLimitOffscreenContextCHROMIUM() {
   gl_->RateLimitOffscreenContextCHROMIUM();

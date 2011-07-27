@@ -292,13 +292,6 @@ void GpuCommandBufferStub::OnParseError() {
       route_id_, state.context_lost_reason);
   msg->set_unblock(true);
   Send(msg);
-  // If an error occurs, the remaining commands will not be processed.
-  // Since we may have a pending WaitLatch on a related context, we need to
-  // forcefully unblock all contexts on the same GpuChannel. However, since we
-  // don't know whether the corresponding WaitLatch is in the past or future,
-  // it may cause other side effects to simply pass the next WaitLatch on all
-  // contexts. Instead, just lose all related contexts when there's an error.
-  channel_->DestroySoon();
 }
 
 void GpuCommandBufferStub::OnFlush(int32 put_offset,

@@ -131,8 +131,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
 
  private:
   bool IsValidSharedMemoryId(int32 shm_id) {
-    return shm_id == kValidShmId || shm_id == kStartValidShmId ||
-        shm_id == gpu::kLatchSharedMemoryId;
+    return shm_id == kValidShmId || shm_id == kStartValidShmId;
   }
 
   int8 buffer_[kBufferSize];

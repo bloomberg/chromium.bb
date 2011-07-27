@@ -694,27 +694,6 @@ void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
 }
 
-void WebGraphicsContext3DInProcessImpl::getParentToChildLatchCHROMIUM(
-    WGC3Duint* latch_id)
-{
-}
-
-void WebGraphicsContext3DInProcessImpl::getChildToParentLatchCHROMIUM(
-    WGC3Duint* latch_id)
-{
-}
-
-void WebGraphicsContext3DInProcessImpl::waitLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-}
-
-void WebGraphicsContext3DInProcessImpl::setLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-  glFlush();
-}
-
 WebString WebGraphicsContext3DInProcessImpl::
     getRequestableExtensionsCHROMIUM() {
   return WebString();

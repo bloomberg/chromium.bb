@@ -307,8 +307,7 @@ class GLES2DecoderTestBase : public testing::Test {
     }
 
     virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
-      return shm_id == kSharedMemoryId || shm_id == gpu::kLatchSharedMemoryId ?
-          valid_buffer_ : invalid_buffer_;
+      return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
     }
 
     void ClearSharedMemory() {

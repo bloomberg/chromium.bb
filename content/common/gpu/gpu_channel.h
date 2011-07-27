@@ -122,11 +122,6 @@ class GpuChannel : public IPC::Channel::Listener,
   // TransportTexture to delete and detach itself.
   void DestroyTransportTexture(int32 route_id);
 
-  // A callback which is called after a Set/WaitLatch command is processed.
-  // The bool parameter will be true for SetLatch, and false for a WaitLatch
-  // that is blocked. An unblocked WaitLatch will not trigger a callback.
-  void OnLatchCallback(int route_id, bool is_set_latch);
-
  private:
   void OnDestroy();
 
@@ -181,8 +176,6 @@ class GpuChannel : public IPC::Channel::Listener,
 
   typedef IDMap<GpuSurfaceStub, IDMapOwnPointer> SurfaceMap;
   SurfaceMap surfaces_;
-
-  std::set<int32> latched_routes_;
 #endif  // defined (ENABLE_GPU)
 
   // A collection of transport textures created.

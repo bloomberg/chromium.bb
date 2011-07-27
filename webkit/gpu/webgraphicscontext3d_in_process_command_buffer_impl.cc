@@ -172,21 +172,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   CommandBufferService* GetCommandBufferService();
 
-  // Create a latch for synchronization between contexts using glSetLatch and
-  // glWaitLatch.
-  // CreateLatch will only fail if there is a generally unrecoverable
-  // error, in which case 0 is returned. Returns latch_id on success.
-  bool CreateLatch(uint32* ret_latch);
-
-  // Destroy a latch.
-  bool DestroyLatch(uint32 latch);
-
-  // All child contexts get a latch pair automatically. These latches are used
-  // for synchronization with parent context. If *this* context does not have a
-  // parent context, these methods will return false.
-  bool GetParentToChildLatch(uint32* parent_to_child_latch);
-  bool GetChildToParentLatch(uint32* child_to_parent_latch);
-
  private:
   GLInProcessContext(GLInProcessContext* parent);
 
@@ -205,9 +190,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
   scoped_ptr<Callback0::Type> context_lost_callback_;
   uint32 parent_texture_id_;
-  uint32 child_to_parent_latch_;
-  uint32 parent_to_child_latch_;
-  int32 latch_transfer_buffer_id_;
   scoped_ptr<CommandBufferService> command_buffer_;
   GpuScheduler* gpu_scheduler_;
   GLES2CmdHelper* gles2_helper_;
@@ -226,9 +208,6 @@ const int32 kCommandBufferSize = 1024 * 1024;
 // creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
 
-const uint32 kMaxLatchesPerRenderer = 2048;
-const uint32 kInvalidLatchId = 0xffffffffu;
-
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
  public:
@@ -243,73 +222,6 @@ class GLES2Initializer {
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
 };
-
-// Allocator for latches.
-class LatchAllocator {
- public:
-  static LatchAllocator* GetInstance();
-  static uint32 size() { return kMaxLatchesPerRenderer*sizeof(uint32); }
-  static const uint32_t kFreeLatch = 0xffffffffu;
-
-  LatchAllocator();
-  ~LatchAllocator();
-
-  base::SharedMemoryHandle handle() const { return shm_->handle(); }
-  base::SharedMemory* shared_memory() { return shm_.get(); }
-
-  bool AllocateLatch(uint32* latch_id);
-  bool FreeLatch(uint32 latch_id);
-
- private:
-  friend struct DefaultSingletonTraits<LatchAllocator>;
-
-  scoped_ptr<base::SharedMemory> shm_;
-  // Pointer to mapped shared memory.
-  volatile uint32* latches_;
-
-  DISALLOW_COPY_AND_ASSIGN(LatchAllocator);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-/// LatchAllocator implementation
-
-LatchAllocator* LatchAllocator::GetInstance() {
-  return Singleton<LatchAllocator>::get();
-}
-
-LatchAllocator::LatchAllocator() {
-  shm_.reset(new base::SharedMemory());
-  shm_->CreateAndMapAnonymous(size());
-
-  latches_ = static_cast<uint32*>(shm_->memory());
-  // Mark all latches as unallocated.
-  for (uint32 i = 0; i < kMaxLatchesPerRenderer; ++i)
-    latches_[i] = kFreeLatch;
-}
-
-LatchAllocator::~LatchAllocator() {
-}
-
-bool LatchAllocator::AllocateLatch(uint32* latch_id) {
-  for (uint32 i = 0; i < kMaxLatchesPerRenderer; ++i) {
-    if (latches_[i] == kFreeLatch) {
-      // mark latch as taken and blocked.
-      // 0 means waiter will block, 1 means waiter will pass.
-      latches_[i] = 0;
-      *latch_id = i;
-      return true;
-    }
-  }
-  return false;
-}
-
-bool LatchAllocator::FreeLatch(uint32 latch_id) {
-  if (latch_id < kMaxLatchesPerRenderer && latches_[latch_id] != kFreeLatch) {
-    latches_[latch_id] = kFreeLatch;
-    return true;
-  }
-  return false;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -512,9 +424,6 @@ GLInProcessContext::GLInProcessContext(GLInProcessContext* parent)
     : parent_(parent ?
           parent->AsWeakPtr() : base::WeakPtr<GLInProcessContext>()),
       parent_texture_id_(0),
-      child_to_parent_latch_(kInvalidLatchId),
-      parent_to_child_latch_(kInvalidLatchId),
-      latch_transfer_buffer_id_(-1),
       gpu_scheduler_(NULL),
       gles2_helper_(NULL),
       transfer_buffer_id_(-1),
@@ -647,26 +556,6 @@ bool GLInProcessContext::Initialize(bool onscreen,
     return false;
   }
 
-  // Register transfer buffer so that the context can access latches.
-  LatchAllocator* latch_shm = LatchAllocator::GetInstance();
-  latch_transfer_buffer_id_ = command_buffer_->RegisterTransferBuffer(
-      latch_shm->shared_memory(), LatchAllocator::size(),
-      ::gpu::kLatchSharedMemoryId);
-  if (latch_transfer_buffer_id_ != ::gpu::kLatchSharedMemoryId) {
-    Destroy();
-    return false;
-  }
-
-  // If this is a child context, setup latches for synchronization between child
-  // and parent.
-  if (parent_.get()) {
-    if (!CreateLatch(&child_to_parent_latch_) ||
-        !CreateLatch(&parent_to_child_latch_)) {
-      Destroy();
-      return false;
-    }
-  }
-
   // Create the object exposing the OpenGL API.
   gles2_implementation_ = new GLES2Implementation(
       gles2_helper_,
@@ -689,19 +578,6 @@ void GLInProcessContext::Destroy() {
   delete gles2_implementation_;
   gles2_implementation_ = NULL;
 
-  if (child_to_parent_latch_ != kInvalidLatchId) {
-    DestroyLatch(child_to_parent_latch_);
-    child_to_parent_latch_ = kInvalidLatchId;
-  }
-  if (parent_to_child_latch_ != kInvalidLatchId) {
-    DestroyLatch(parent_to_child_latch_);
-    parent_to_child_latch_ = kInvalidLatchId;
-  }
-  if (command_buffer_.get() && latch_transfer_buffer_id_ != -1) {
-    command_buffer_->DestroyTransferBuffer(latch_transfer_buffer_id_);
-    latch_transfer_buffer_id_ = -1;
-  }
-
   if (command_buffer_.get() && transfer_buffer_id_ != -1) {
     command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
     transfer_buffer_id_ = -1;
@@ -721,30 +597,6 @@ void GLInProcessContext::OnSwapBuffers() {
 void GLInProcessContext::OnContextLost() {
   if (context_lost_callback_.get())
     context_lost_callback_->Run();
-}
-
-bool GLInProcessContext::CreateLatch(uint32* ret_latch) {
-  return LatchAllocator::GetInstance()->AllocateLatch(ret_latch);
-}
-
-bool GLInProcessContext::DestroyLatch(uint32 latch) {
-  return LatchAllocator::GetInstance()->FreeLatch(latch);
-}
-
-bool GLInProcessContext::GetParentToChildLatch(uint32* parent_to_child_latch) {
-  if (parent_.get()) {
-    *parent_to_child_latch = parent_to_child_latch_;
-    return true;
-  }
-  return false;
-}
-
-bool GLInProcessContext::GetChildToParentLatch(uint32* child_to_parent_latch) {
-  if (parent_.get()) {
-    *child_to_parent_latch = child_to_parent_latch_;
-    return true;
-  }
-  return false;
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
@@ -1053,39 +905,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
   // TODO(gmam): See if we can comment this in.
   // ClearContext();
   copyTextureToCompositor(texture, parentTexture);
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::
-    getParentToChildLatchCHROMIUM(WGC3Duint* latch_id)
-{
-  ClearContext();
-  if (!context_->GetParentToChildLatch(latch_id)) {
-    LOG(ERROR) << "getLatch must only be called on child context";
-    synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = ::gpu::kInvalidLatchId;
-  }
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::
-    getChildToParentLatchCHROMIUM(WGC3Duint* latch_id)
-{
-  ClearContext();
-  if (!context_->GetChildToParentLatch(latch_id)) {
-    LOG(ERROR) << "getLatch must only be called on child context";
-    synthesizeGLError(GL_INVALID_OPERATION);
-    *latch_id = ::gpu::kInvalidLatchId;
-  }
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::waitLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::setLatchCHROMIUM(
-    WGC3Duint latch_id)
-{
-  gl_->Flush();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::

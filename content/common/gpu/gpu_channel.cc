@@ -61,28 +61,6 @@ void GpuChannel::DestroyTransportTexture(int32 route_id) {
   router_.RemoveRoute(route_id);
 }
 
-void GpuChannel::OnLatchCallback(int route_id, bool is_set_latch) {
-#if defined(ENABLE_GPU)
-  if (is_set_latch) {
-    // Wake up any waiting contexts. If they are still blocked, they will re-add
-    // themselves to the set.
-    for (std::set<int32>::iterator i = latched_routes_.begin();
-         i != latched_routes_.end(); ++i) {
-      GpuCommandBufferStub* stub = stubs_.Lookup(*i);
-      if (stub)
-        stub->scheduler()->SetScheduled(true);
-    }
-    latched_routes_.clear();
-  } else {
-    // Add route_id context to a set to be woken upon any set latch.
-    latched_routes_.insert(route_id);
-    GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
-    if (stub)
-      stub->scheduler()->SetScheduled(false);
-  }
-#endif
-}
-
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (log_messages_) {
     VLOG(1) << "received message @" << &message << " on channel @" << this
