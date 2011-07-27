@@ -101,9 +101,7 @@ function updateAuthStatus_() {
   document.getElementById('oauth2-clear-button').hidden = !oauthValid;
 
   var loginName = getEmail();
-  if (loginName) {
-    document.getElementById('current-email').innerText = loginName;
-  }
+  document.getElementById('current-email').innerText = loginName || '';
 
   var disableControls = !(loginName && oauthValid);
   var controlPanel = document.getElementById('control-panel');
@@ -141,6 +139,7 @@ function exchangedCodeForToken_() {
 
 remoting.clearOAuth2 = function() {
   remoting.oauth2.clear();
+  window.localStorage.removeItem(KEY_EMAIL_);
   updateAuthStatus_();
 }
 
