@@ -24,6 +24,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
 #include "media/base/message_loop_factory_impl.h"
@@ -237,6 +238,10 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   const char* kFixedArguments[] = {"DumpRenderTree"};
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
 
+  // Explicitly initialize the GURL library before spawning any threads.
+  // Otherwise crash may happend when different threads try to create a GURL
+  // at same time.
+  url_util::Initialize();
   webkit_support::BeforeInitialize(unit_test_mode);
   webkit_support::test_environment = new TestEnvironment(unit_test_mode);
   webkit_support::AfterInitialize(unit_test_mode);
