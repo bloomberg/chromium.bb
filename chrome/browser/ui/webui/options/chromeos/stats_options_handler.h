@@ -10,8 +10,6 @@
 
 namespace chromeos {
 
-class MetricsCrosSettingsProvider;
-
 // ChromeOS handler for "Stats/crash reporting to Google" option of the Advanced
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
@@ -28,9 +26,7 @@ class StatsOptionsHandler : public CrosOptionsPageUIHandler {
   virtual void RegisterMessages();
 
  private:
-  MetricsCrosSettingsProvider* provider() const;
   void HandleMetricsReportingCheckbox(const base::ListValue* args);
-  void SetupMetricsReportingCheckbox(bool user_changed);
 
   DISALLOW_COPY_AND_ASSIGN(StatsOptionsHandler);
 };

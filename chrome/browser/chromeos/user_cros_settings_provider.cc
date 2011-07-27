@@ -24,6 +24,8 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/ui/options/options_util.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -42,6 +44,7 @@ const char* kBooleanSettings[] = {
   kAccountsPrefAllowGuest,
   kAccountsPrefShowUserNamesOnSignIn,
   kSignedDataRoamingEnabled,
+  kStatsReportingPref
 };
 
 const char* kStringSettings[] = {
@@ -60,7 +63,8 @@ bool IsControlledBooleanSetting(const std::string& pref_path) {
   return (pref_path == kAccountsPrefAllowNewUser) ||
          (pref_path == kAccountsPrefAllowGuest) ||
          (pref_path == kAccountsPrefShowUserNamesOnSignIn) ||
-         (pref_path == kSignedDataRoamingEnabled);
+         (pref_path == kSignedDataRoamingEnabled) ||
+         (pref_path == kStatsReportingPref);
 }
 
 bool IsControlledStringSetting(const std::string& pref_path) {
@@ -82,7 +86,8 @@ void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
                                    false,
                                    PrefService::UNSYNCABLE_PREF);
   if (IsControlledBooleanSetting(pref_path)) {
-    if (pref_path == kSignedDataRoamingEnabled)
+    if (pref_path == kSignedDataRoamingEnabled ||
+        pref_path == kStatsReportingPref)
       local_state->RegisterBooleanPref(pref_path.c_str(),
                                        false,
                                        PrefService::UNSYNCABLE_PREF);
@@ -286,6 +291,10 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
 
       NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
       cros->SetCellularDataRoamingAllowed(new_value);
+    } else if (path == kStatsReportingPref) {
+      // TODO(pastarmovj): Remove this once we don't need to regenerate the
+      // consent file for the GUID anymore.
+      OptionsUtil::ResolveMetricsReportingEnabled(new_value);
     }
   }
 
@@ -305,6 +314,13 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         if (device_value != new_value)
           cros->SetCellularDataRoamingAllowed(new_value);
       }
+    } else if (path == kStatsReportingPref) {
+      bool stats_consent = (use_value == USE_VALUE_SUPPLIED) ? value : false;
+      // TODO(pastarmovj): Remove this once we don't need to regenerate the
+      // consent file for the GUID anymore.
+      VLOG(1) << "Metrics policy is being set to : " << stats_consent
+              << "(reason : " << use_value << ")";
+      OptionsUtil::ResolveMetricsReportingEnabled(stats_consent);
     }
   }
 
@@ -488,6 +504,11 @@ bool UserCrosSettingsProvider::RequestTrustedOwner(Task* callback) {
       kDeviceOwner, callback);
 }
 
+bool UserCrosSettingsProvider::RequestTrustedReportingEnabled(Task* callback) {
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
+      kStatsReportingPref, callback);
+}
+
 void UserCrosSettingsProvider::Reload() {
   UserCrosSettingsTrust::GetInstance()->Reload();
 }
@@ -521,6 +542,14 @@ bool UserCrosSettingsProvider::cached_show_users_on_signin() {
   UserCrosSettingsTrust::GetInstance();
   return g_browser_process->local_state()->GetBoolean(
       kAccountsPrefShowUserNamesOnSignIn);
+}
+
+// static
+bool UserCrosSettingsProvider::cached_reporting_enabled() {
+  // Trigger prefetching if singleton object still does not exist.
+  UserCrosSettingsTrust::GetInstance();
+  return g_browser_process->local_state()->GetBoolean(
+      kStatsReportingPref);
 }
 
 // static
@@ -597,6 +626,7 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.accounts.", true) ||
       ::StartsWithASCII(path, "cros.signed.", true) ||
+      ::StartsWithASCII(path, "cros.metrics.", true) ||
       path == kReleaseChannel;
 }
 

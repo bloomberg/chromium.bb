@@ -28,7 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #endif
 
 namespace {
@@ -175,7 +175,7 @@ bool CrashesUI::CrashReportingEnabled() {
   PrefService* prefs = g_browser_process->local_state();
   return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
 #elif defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
-  return chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+  return chromeos::UserCrosSettingsProvider::cached_reporting_enabled();
 #else
   return false;
 #endif
