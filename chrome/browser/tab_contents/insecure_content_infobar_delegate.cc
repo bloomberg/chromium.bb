@@ -38,9 +38,7 @@ InsecureContentInfoBarDelegate*
 }
 
 string16 InsecureContentInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16((type_ == DISPLAY) ?
-      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT :
-      IDS_BLOCKED_RUNNING_INSECURE_CONTENT);
+  return l10n_util::GetStringUTF16(IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT);
 }
 
 string16 InsecureContentInfoBarDelegate::GetButtonLabel(
@@ -79,10 +77,8 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  tab_contents_->tab_contents()->OpenURL(
-      GURL((type_ == DISPLAY) ?
-          "https://www.google.com/support/chrome/bin/answer.py?answer=1342710" :
-          "https://www.google.com/support/chrome/bin/answer.py?answer=1342714"),
+  tab_contents_->tab_contents()->OpenURL(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=1342714"),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       PageTransition::LINK);
   return false;

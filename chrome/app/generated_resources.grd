@@ -4590,9 +4590,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page has insecure content.
       </message>
-      <message name="IDS_BLOCKED_RUNNING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to run active mixed content.  The message is followed by a learn more link and an allow button.">
-        This page has insecure script.
-      </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
           Load Anyway
