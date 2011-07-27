@@ -12,6 +12,7 @@ import autofill_dataset_converter
 import autofill_dataset_generator
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class AutofillTest(pyauto.PyUITest):
@@ -378,17 +379,19 @@ class AutofillTest(pyauto.PyUITest):
                      msg='Profile with invalid country phone number saved.')
 
   def testCharsStrippedForAggregatedPhoneNumbers(self):
-    """Test aggregated phone numbers are cleaned (not saved "as-is")."""
+    """Test aggregated phone numbers are standardized (not saved "as-is")."""
     self._FillPhoneFormAndSubmit(
         'phonecharacters.txt', 'autofill_test_form.html', tab_index=0, windex=0)
+    us_phone = self.GetAutofillProfile()[
+        'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
+    de_phone = self.GetAutofillProfile()[
+        'profiles'][1]['PHONE_HOME_WHOLE_NUMBER']
     self.assertEqual(
-        ['14088714567',],
-        self.GetAutofillProfile()['profiles'][0]['PHONE_HOME_WHOLE_NUMBER'],
-        msg='Aggregated US phone number not cleaned.')
+        ['+1 408-871-4567',], us_phone,
+        msg='Aggregated US phone number %s not standardized.' % us_phone)
     self.assertEqual(
-        ['4940808179000',],
-        self.GetAutofillProfile()['profiles'][1]['PHONE_HOME_WHOLE_NUMBER'],
-        msg='Aggregated Germany phone number not cleaned.')
+        ['+49 40/808179000',], de_phone,
+        msg='Aggregated Germany phone number %s not standardized.' % de_phone)
 
   def testAppendCountryCodeForAggregatedPhones(self):
     """Test Autofill appends country codes to aggregated phone numbers.
@@ -410,8 +413,9 @@ class AutofillTest(pyauto.PyUITest):
         profile, 'autofill_test_form.html', tab_index=0, windex=0)
     de_phone = self.GetAutofillProfile()[
         'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
-    self.assertEqual('+49', de_phone[0][:3],
-                     msg='Country code missing from phone number.')
+    self.assertEqual(
+        '+49', de_phone[0][:3],
+        msg='Country code missing from phone number %s.' % de_phone)
 
   def testCCInfoNotStoredWhenAutocompleteOff(self):
     """Test CC info not offered to be saved when autocomplete=off for CC field.
@@ -736,6 +740,16 @@ class AutofillTest(pyauto.PyUITest):
                              'window.domAutomationController.send("done");',
                              0, 0)
     return len(list_of_dict)
+
+  def testMultiValuesInProfileSync(self):
+    """Test thet the multi-values in Autofill profiles sync correctly."""
+    creds = self.GetPrivateInfo()[test_utils.GetCredsKey(self)]
+    username = creds['username']
+    password = creds['password']
+    #login_creds = test_utils.PrepSyncLogin(self)
+    self.assertTrue(self.SignIntoSync(login_creds))
+    self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
+    self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
 
 
 if __name__ == '__main__':
