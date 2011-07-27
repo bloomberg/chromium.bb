@@ -153,12 +153,13 @@ create_shm_buffer(int width, int height, void **data_out)
 }
 
 static void
-write_png(int width, int height, void **data_out) {
+write_png(int width, int height, void *data)
+{
 	GdkPixbuf *pixbuf, *normal;
 	GError *error = NULL;
 
 	g_type_init();
-	pixbuf = gdk_pixbuf_new_from_data(*data_out, GDK_COLORSPACE_RGB, TRUE,
+	pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
 		                          8, width, height, width * 4, NULL,
 	                                  NULL);
 
@@ -192,7 +193,7 @@ int main(int argc, char *argv[])
 	screenshooter_shoot(screenshooter, output, buffer);
 	roundtrip(display);
 
-	write_png(output_width, output_height, &data);
+	write_png(output_width, output_height, data);
 
 	return 0;
 }
