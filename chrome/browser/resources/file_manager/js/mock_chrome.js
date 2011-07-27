@@ -262,6 +262,7 @@ chrome.fileBrowserPrivate = {
       OK_LABEL: 'Ok',
 
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
+      MORE_FILES: 'Show all files',
 
       SELECT_FOLDER_TITLE: 'Select a folder to open',
       SELECT_OPEN_FILE_TITLE: 'Select a file to open',

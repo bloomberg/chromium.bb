@@ -9028,6 +9028,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_DEFAULT_NEW_FOLDER_NAME" desc="The default name for a newly created folder.">
         New Folder
       </message>
+      <message name="IDS_FILE_BROWSER_MORE_FILES" desc="Link shown when there are more files available to display">
+	Show all files
+      </message>
 
      <message name="IDS_FILE_BROWSER_CONFIRM_DELETE_ONE" desc="Asks the user if they are sure they want to delete a single file.">
        Are you sure you want to delete "$1"?
