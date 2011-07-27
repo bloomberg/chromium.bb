@@ -3658,15 +3658,7 @@
    fun:_ZN8remoting14ScreenRecorder7DoStartEv
    fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN12_GLOBAL__N_118TaskClosureAdapter3RunEv
-   ...
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:*18TaskClosureAdapter3RunEv
 }
 {
    bug_72544
@@ -5114,20 +5106,6 @@
    fun:_ZL23AddDataSourceOnIOThreadRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEE
    fun:_Z18DispatchToFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEES5_SB_EvT_RK6Tuple2IT0_T1_E
    fun:_ZN16RunnableFunctionIPFvRKN4base8CallbackIFP27ChromeURLDataManagerBackendvEEE13scoped_refptrIN20ChromeURLDataManager10DataSourceEEE6Tuple2IS5_SB_EE3RunEv
-}
-{
-   bug_90640
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting12TraceContext3GetEv
-   fun:_ZN8remoting12TraceContext6tracerEv
-   fun:_ZN8remoting14ScreenRecorder9DoCaptureEv
-   fun:_ZN8remoting14ScreenRecorder7DoStartEv
-   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
    bug_90642
