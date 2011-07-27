@@ -253,7 +253,6 @@ class AdaptiveDemuxerFactory : public DemuxerFactory {
   // If any of the underlying Demuxers encounter construction errors, only the
   // first one (in manifest order) will get reported back in |cb|.
   virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
-  virtual DemuxerFactory* Clone() const OVERRIDE;
 
  private:
   scoped_ptr<DemuxerFactory> delegate_factory_;

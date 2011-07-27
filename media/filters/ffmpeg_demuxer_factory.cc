@@ -42,8 +42,4 @@ void FFmpegDemuxerFactory::Build(const std::string& url, const BuildCB& cb) {
                               base::Bind(&DataSourceFactoryDone, cb, loop_));
 }
 
-DemuxerFactory* FFmpegDemuxerFactory::Clone() const {
-  return new FFmpegDemuxerFactory(data_source_factory_->Clone(), loop_);
-}
-
 }  // namespace media

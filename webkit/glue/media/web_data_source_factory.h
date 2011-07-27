@@ -18,12 +18,13 @@ namespace webkit_glue {
 
 class WebDataSourceFactory : public media::DataSourceFactory {
  public:
-  typedef WebDataSource* (*FactoryFunction)(MessageLoop* render_loop,
-                                            WebKit::WebFrame* frame);
+  typedef base::Callback<WebDataSource*(MessageLoop*,
+                                        WebKit::WebFrame*)> FactoryFunction;
 
   WebDataSourceFactory(MessageLoop* render_loop, WebKit::WebFrame* frame,
                        FactoryFunction factory_function,
                        WebDataSourceBuildObserverHack* build_observer);
+
   virtual ~WebDataSourceFactory();
 
   // DataSourceFactory methods.
@@ -31,12 +32,17 @@ class WebDataSourceFactory : public media::DataSourceFactory {
   virtual media::DataSourceFactory* Clone() const OVERRIDE;
 
  private:
-  class BuildRequest;
+  class SharedState;
 
-  MessageLoop* render_loop_;
-  WebKit::WebFrame* frame_;
-  FactoryFunction factory_function_;
-  WebDataSourceBuildObserverHack* build_observer_;
+  // Constructor used by Clone().
+  explicit WebDataSourceFactory(
+      const scoped_refptr<SharedState>& shared_state);
+
+  // Keeps track of whether this is a factory created by Clone().
+  bool is_clone_;
+
+  // State shared between original factory and its clones.
+  scoped_refptr<SharedState> shared_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataSourceFactory);
 };

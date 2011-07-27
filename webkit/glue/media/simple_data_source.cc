@@ -4,6 +4,7 @@
 
 #include "webkit/glue/media/simple_data_source.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "media/base/filter_host.h"
@@ -33,7 +34,8 @@ media::DataSourceFactory* SimpleDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
     WebDataSourceBuildObserverHack* build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, &NewSimpleDataSource,
+  return new WebDataSourceFactory(render_loop, frame,
+                                  base::Bind(&NewSimpleDataSource),
                                   build_observer);
 }
 

@@ -42,10 +42,6 @@ class DemuxerFactory {
 
   // Builds a Demuxer for |url| and returns it via |callback|.
   virtual void Build(const std::string& url, const BuildCB& callback) = 0;
-
-  // Makes a copy of this factory.
-  // NOTE: Pending requests are not cloned.
-  virtual DemuxerFactory* Clone() const = 0;
 };
 
 }  // namespace media

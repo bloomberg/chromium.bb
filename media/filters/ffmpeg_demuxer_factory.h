@@ -25,7 +25,6 @@ class FFmpegDemuxerFactory : public DemuxerFactory {
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
-  virtual DemuxerFactory* Clone() const OVERRIDE;
 
  private:
   scoped_ptr<DataSourceFactory> data_source_factory_;

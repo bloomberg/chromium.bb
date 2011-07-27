@@ -420,6 +420,7 @@
         '../../glue/media/buffered_data_source_unittest.cc',
         '../../glue/media/buffered_resource_loader_unittest.cc',
         '../../glue/media/simple_data_source_unittest.cc',
+        '../../glue/media/web_data_source_factory_unittest.cc',
         '../../glue/mimetype_unittest.cc',
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/regular_expression_unittest.cc',

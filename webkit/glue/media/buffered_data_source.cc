@@ -4,6 +4,7 @@
 
 #include "webkit/glue/media/buffered_data_source.h"
 
+#include "base/bind.h"
 #include "media/base/filter_host.h"
 #include "net/base/net_errors.h"
 #include "webkit/glue/media/web_data_source_factory.h"
@@ -32,7 +33,8 @@ media::DataSourceFactory* BufferedDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
     WebDataSourceBuildObserverHack* build_observer) {
-  return new WebDataSourceFactory(render_loop, frame, &NewBufferedDataSource,
+  return new WebDataSourceFactory(render_loop, frame,
+                                  base::Bind(&NewBufferedDataSource),
                                   build_observer);
 }
 

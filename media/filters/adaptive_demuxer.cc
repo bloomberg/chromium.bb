@@ -857,10 +857,6 @@ AdaptiveDemuxerFactory::AdaptiveDemuxerFactory(
 
 AdaptiveDemuxerFactory::~AdaptiveDemuxerFactory() {}
 
-DemuxerFactory* AdaptiveDemuxerFactory::Clone() const {
-  return new AdaptiveDemuxerFactory(delegate_factory_->Clone());
-}
-
 // See AdaptiveDemuxerFactory's class-level comment for |url|'s format.
 bool ParseAdaptiveUrl(
     const std::string& url, int* audio_index, int* video_index,
