@@ -128,6 +128,9 @@ class FakeSession : public Session {
   virtual const std::string& receiver_token();
   virtual void set_receiver_token(const std::string& receiver_token);
 
+  virtual void set_shared_secret(const std::string& secret);
+  virtual const std::string& shared_secret();
+
   virtual void Close();
 
  public:
@@ -143,6 +146,8 @@ class FakeSession : public Session {
 
   std::string initiator_token_;
   std::string receiver_token_;
+
+  std::string shared_secret_;
 
   std::string jid_;
   bool closed_;

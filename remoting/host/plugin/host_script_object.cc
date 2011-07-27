@@ -458,6 +458,9 @@ void HostNPScriptObject::OnReceivedSupportID(
   access_code_ = support_id + access_verifier->host_secret();
   access_code_lifetime_ = lifetime;
 
+  // Tell the ChromotingHost the access code, to use as shared-secret.
+  host_->set_access_code(access_code_);
+
   // Let the caller know that life is good.
   OnStateChanged(kReceivedAccessCode);
 }

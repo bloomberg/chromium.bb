@@ -298,6 +298,9 @@ void ChromotingHost::OnNewClientSession(
   session->set_receiver_token(
       GenerateHostAuthToken(session->initiator_token()));
 
+  // Provide the Access Code as shared secret for SSL channel authentication.
+  session->set_shared_secret(access_code_);
+
   *response = protocol::SessionManager::ACCEPT;
 
   logger_->Log(logging::LOG_INFO, "Client connected: %s",

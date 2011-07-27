@@ -127,6 +127,9 @@ void ConnectionToHost::InitSession() {
   session_.reset(session_manager_->Connect(
       host_jid_, host_public_key_, client_token, candidate_config,
       NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+
+  // Set the shared-secret for securing SSL channels.
+  session_->set_shared_secret(access_code_);
 }
 
 const SessionConfig* ConnectionToHost::config() {
