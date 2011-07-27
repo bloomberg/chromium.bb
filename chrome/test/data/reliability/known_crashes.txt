@@ -190,7 +190,7 @@ PREFIX: `anonymous namespace'::invalidparameter____purecall___windowdragresponse
 REGEX: base::internal::invokerstorage1.*___browsermainparts::~browsermainparts
 
 # 89679
-PREFIX: `anonymous namespace'::invalidparameter____purecall___browserrenderprocesshost::onchannelerror___`anonymous namespace'::taskclosureadapter::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
+REGEX: `anonymous namespace'::[^_]*____purecall___browserrenderprocesshost::onchannelerror___[^:]*::taskclosureadapter::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
 
 # 89697
 PREFIX: `anonymous namespace'::purecall____purecall___renderviewhost::onmessagereceived___browserrenderprocesshost::onchannelerror___`anonymous namespace'::taskclosureadapter::run___messageloop::runtask
