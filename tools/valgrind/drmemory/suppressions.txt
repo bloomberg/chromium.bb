@@ -540,6 +540,12 @@ UNINITIALIZED READ
 ...
 CRYPT32.dll!I_CertSyncStore
 
+# We get plenty of such leak reports on unit_tests.
+# They are likely real but not very interesting since test-only
+LEAK
+...
+*!TestURLRequestContext::Init
+
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
 LEAK
