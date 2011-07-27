@@ -74,15 +74,15 @@ class PrepareFrameAndViewForPrint {
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
 
-// Struct that holds margin and content area information of a page.
-typedef struct PageSizeMargins {
+// Struct that holds margin and content area sizes of a page in points.
+struct PageSizeMargins {
   double content_width;
   double content_height;
   double margin_top;
   double margin_right;
   double margin_bottom;
   double margin_left;
-} PageSizeMargins;
+};
 
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
