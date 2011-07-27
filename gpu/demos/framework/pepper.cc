@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
-#include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/dev/graphics_3d_dev.h"
-#include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 namespace gpu {
@@ -49,21 +47,15 @@ class PluginInstance : public pp::Instance {
     demo_->InitWindowSize(size_.width(), size_.height());
 
     if (context_.is_null()) {
-      context_ = pp::Context3D_Dev(*this, 0, pp::Context3D_Dev(), NULL);
+      context_ = pp::Graphics3D_Dev(*this, 0, pp::Graphics3D_Dev(), NULL);
       if (context_.is_null())
         return;
 
+      pp::Instance::BindGraphics(context_);
       glSetCurrentContextPPAPI(context_.pp_resource());
       demo_->InitGL();
       glSetCurrentContextPPAPI(0);
-    } else {
-      // Need to recreate surface. Unbind existing surface.
-      pp::Instance::BindGraphics(pp::Surface3D_Dev());
-      context_.BindSurfaces(pp::Surface3D_Dev(), pp::Surface3D_Dev());
     }
-    surface_ = pp::Surface3D_Dev(*this, 0, NULL);
-    context_.BindSurfaces(surface_, surface_);
-    pp::Instance::BindGraphics(surface_);
 
     Paint();
   }
@@ -77,7 +69,7 @@ class PluginInstance : public pp::Instance {
     glSetCurrentContextPPAPI(context_.pp_resource());
     demo_->Draw();
     swap_pending_ = true;
-    surface_.SwapBuffers(
+    context_.SwapBuffers(
         callback_factory_.NewCallback(&PluginInstance::OnSwap));
     glSetCurrentContextPPAPI(0);
   }
@@ -93,8 +85,7 @@ class PluginInstance : public pp::Instance {
 
   pp::Module* module_;
   Demo* demo_;
-  pp::Context3D_Dev context_;
-  pp::Surface3D_Dev surface_;
+  pp::Graphics3D_Dev context_;
   pp::Size size_;
   bool swap_pending_;
   bool paint_needed_;
