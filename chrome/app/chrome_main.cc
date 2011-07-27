@@ -69,6 +69,7 @@
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -587,10 +588,6 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_MACOSX)
   chrome_main::SetUpBundleOverrides();
-
-  // We need to allocate the IO Ports before the Sandbox is initialized or
-  // the first instance of SystemMonitor is created.
-  base::SystemMonitor::AllocateSystemIOPorts();
 #endif
 
   CommandLine::Init(argc, argv);
@@ -620,6 +617,22 @@ int ChromeMain(int argc, char** argv) {
   // Must do this before any other usage of command line!
   if (HasDeprecatedArguments(command_line.GetCommandLineString()))
     return 1;
+#endif
+
+#if defined(OS_MACOSX)
+  // We need to allocate the IO Ports before the Sandbox is initialized or
+  // the first instance of SystemMonitor is created.
+  // It's important not to allocate the ports for processes which don't register
+  // with the system monitor - see crbug.com/88867.
+  if (process_type.empty() ||
+      process_type == switches::kExtensionProcess ||
+      process_type == switches::kNaClLoaderProcess ||
+      process_type == switches::kPluginProcess ||
+      process_type == switches::kRendererProcess ||
+      process_type == switches::kUtilityProcess ||
+      process_type == switches::kWorkerProcess) {
+    base::SystemMonitor::AllocateSystemIOPorts();
+  }
 #endif
 
   base::ProcessId browser_pid = base::GetCurrentProcId();
