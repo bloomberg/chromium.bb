@@ -719,7 +719,6 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_IGNORE_CF_OPTIMIZATION',
-        'SK_IGNORE_ROTATED_FREETYPE_FIX',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
