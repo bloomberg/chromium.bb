@@ -137,7 +137,8 @@ void BrowserPpp::ShutdownModule() {
   NaClSrpcError srpc_result =
       PppRpcClient::PPP_ShutdownModule(main_channel_);
   DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
-  NaClThreadJoin(&upcall_thread_);
+  if (srpc_result != NACL_SRPC_RESULT_INTERNAL)  // Nexe is still alive.
+    NaClThreadJoin(&upcall_thread_);
   ShutdownChannel();
 }
 
