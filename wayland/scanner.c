@@ -824,6 +824,7 @@ int main(int argc, char *argv[])
 	wl_list_init(&protocol.interface_list);
 	protocol.type_index = 0;
 	protocol.null_run_length = 0;
+	protocol.copyright = NULL;
 	ctx.protocol = &protocol;
 
 	ctx.filename = "<stdin>";
