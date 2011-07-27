@@ -1654,7 +1654,7 @@
         'browser/policy/policy_notifier.h',
         'browser/policy/policy_path_parser.h',
         'browser/policy/policy_path_parser_mac.mm',
-        'browser/policy/policy_path_parser_posix.cc',
+        'browser/policy/policy_path_parser_linux.cc',
         'browser/policy/policy_path_parser_win.cc',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
