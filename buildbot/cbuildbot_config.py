@@ -93,7 +93,6 @@ GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 MANIFEST_URL = 'http://git.chromium.org/chromiumos/manifest.git'
 MANIFEST_INT_URL = constants.GERRIT_INT_SSH_URL + '/chromeos/manifest-internal'
 
-# TODO(sosa): Move to manifest-versions-external once its created
 _VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_URL = constants.GERRIT_SSH_URL + _VERSIONS_SUFFIX
 
@@ -307,6 +306,18 @@ add_config('arm-generic-chrome-pre-flight-queue', [arm, {
   'manifest_version': True,
 }])
 
+add_config('arm-tegra2-chrome-pre-flight-queue', [arm, {
+  'board' : 'tegra2',
+
+  'build_type': constants.CHROME_PFQ_TYPE,
+  'important': True,
+  'uprev' : False,
+  'chrome_tests' : True,
+  'overlays': 'public',
+  'push_overlays': None,
+  'manifest_version': True,
+}])
+
 add_config('x86-pineview-bin', [{
   'board' : 'x86-pineview',
 
@@ -318,7 +329,7 @@ add_config('x86-pineview-bin', [{
 }])
 
 add_config('arm-tegra2-bin', [arm, {
-  'board' : 'tegra2_dev-board',
+  'board' : 'tegra2',
 
   'uprev' : True,
   'overlays': 'public',
@@ -346,7 +357,7 @@ add_config('arm-generic-full', [arm, full, {
 }])
 
 add_config('arm-tegra2-full', [arm, full, {
-  'board' : 'tegra2_dev-board',
+  'board' : 'tegra2',
 }])
 
 add_config('arm-tegra2-seaboard-full', [arm, full, {
