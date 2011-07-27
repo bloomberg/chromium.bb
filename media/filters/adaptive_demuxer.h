@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
 #include "media/base/filter_factories.h"
@@ -252,8 +251,8 @@ class AdaptiveDemuxerFactory : public DemuxerFactory {
   // DemuxerFactory methods.
   // If any of the underlying Demuxers encounter construction errors, only the
   // first one (in manifest order) will get reported back in |cb|.
-  virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
-  virtual DemuxerFactory* Clone() const OVERRIDE;
+  virtual void Build(const std::string& url, BuildCallback* cb);
+  virtual DemuxerFactory* Clone() const;
 
  private:
   scoped_ptr<DemuxerFactory> delegate_factory_;

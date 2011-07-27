@@ -907,20 +907,33 @@ class DemuxerAccumulator {
  public:
   // Takes ownership of |orig_cb|.
   DemuxerAccumulator(int audio_index, int video_index,
-                     int count, const DemuxerFactory::BuildCB& orig_cb)
+                     int count, DemuxerFactory::BuildCallback* orig_cb)
       : audio_index_(audio_index), video_index_(video_index),
         remaining_count_(count), orig_cb_(orig_cb),
         demuxers_(count, static_cast<Demuxer*>(NULL)),
         statuses_(count, PIPELINE_OK) {
     DCHECK_GT(remaining_count_, 0);
-    DCHECK(!orig_cb_.is_null());
+    DCHECK(orig_cb_.get());
   }
 
-  DemuxerFactory::BuildCB GetNthCallback(int n) {
-    return base::Bind(&DemuxerAccumulator::Run, base::Unretained(this), n);
+  DemuxerFactory::BuildCallback* GetNthCallback(int n) {
+    return new IndividualCallback(this, n);
   }
 
  private:
+  // Wrapper for a BuildCallback that can carry one extra piece of data: the
+  // index of this callback in the original list of outstanding requests.
+  struct IndividualCallback : public DemuxerFactory::BuildCallback {
+    IndividualCallback(DemuxerAccumulator* accumulator, int index)
+        : accumulator_(accumulator), index_(index) {}
+
+    virtual void RunWithParams(const Tuple2<PipelineStatus, Demuxer*>& params) {
+      accumulator_->Run(index_, params.a, params.b);
+    }
+    DemuxerAccumulator* accumulator_;
+    int index_;
+  };
+
   // When an individual callback is fired, it calls this method.
   void Run(int index, PipelineStatus status, Demuxer* demuxer) {
     bool fire_orig_cb = false;
@@ -974,7 +987,7 @@ class DemuxerAccumulator {
   }
 
   void CallOriginalCallback(PipelineStatus status, Demuxer* demuxer) {
-    orig_cb_.Run(status, demuxer);
+    orig_cb_->Run(status, demuxer);
 
     delete this;
   }
@@ -1000,7 +1013,7 @@ class DemuxerAccumulator {
   int audio_index_;
   int video_index_;
   int remaining_count_;
-  DemuxerFactory::BuildCB orig_cb_;
+  scoped_ptr<DemuxerFactory::BuildCallback> orig_cb_;
   base::Lock lock_;  // Guards vectors of results below.
   AdaptiveDemuxer::DemuxerVector demuxers_;
   std::vector<PipelineStatus> statuses_;
@@ -1008,11 +1021,13 @@ class DemuxerAccumulator {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DemuxerAccumulator);
 };
 
-void AdaptiveDemuxerFactory::Build(const std::string& url, const BuildCB& cb) {
+void AdaptiveDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
   std::vector<std::string> urls;
   int audio_index, video_index;
   if (!ParseAdaptiveUrl(url, &audio_index, &video_index, &urls)) {
-    cb.Run(DEMUXER_ERROR_COULD_NOT_OPEN, NULL);
+    cb->Run(Tuple2<PipelineStatus, Demuxer*>(
+        DEMUXER_ERROR_COULD_NOT_OPEN, NULL));
+    delete cb;
     return;
   }
   DemuxerAccumulator* accumulator = new DemuxerAccumulator(

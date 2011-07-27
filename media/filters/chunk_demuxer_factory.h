@@ -10,6 +10,7 @@
 
 namespace media {
 
+class ChunkDemuxer;
 class ChunkDemuxerClient;
 
 // Factory for building ChunkDemuxers. The factory will only build a
@@ -25,8 +26,8 @@ class ChunkDemuxerFactory : public DemuxerFactory {
   virtual ~ChunkDemuxerFactory();
 
   // DemuxerFactory methods.
-  virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
-  virtual DemuxerFactory* Clone() const OVERRIDE;
+  virtual void Build(const std::string& url, BuildCallback* cb);
+  virtual DemuxerFactory* Clone() const;
 
  private:
   std::string url_;

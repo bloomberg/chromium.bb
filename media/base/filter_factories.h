@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_old.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
@@ -36,12 +37,12 @@ class Demuxer;
 class DemuxerFactory {
  public:
   // Ownership of the Demuxer is transferred through this callback.
-  typedef base::Callback<void(PipelineStatus, Demuxer*)> BuildCB;
+  typedef Callback2<PipelineStatus, Demuxer*>::Type BuildCallback;
 
   virtual ~DemuxerFactory();
 
   // Builds a Demuxer for |url| and returns it via |callback|.
-  virtual void Build(const std::string& url, const BuildCB& callback) = 0;
+  virtual void Build(const std::string& url, BuildCallback* callback) = 0;
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.
