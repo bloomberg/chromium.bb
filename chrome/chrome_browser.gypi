@@ -1359,8 +1359,6 @@
         'browser/jumplist_win.h',
         'browser/keychain_mac.cc',
         'browser/keychain_mac.h',
-        'browser/language_order_table_model.cc',
-        'browser/language_order_table_model.h',
         'browser/language_usage_metrics.cc',
         'browser/language_usage_metrics.h',
         'browser/mac/authorization_util.h',
