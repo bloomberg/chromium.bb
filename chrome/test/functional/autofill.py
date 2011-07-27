@@ -12,6 +12,7 @@ import autofill_dataset_converter
 import autofill_dataset_generator
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class AutofillTest(pyauto.PyUITest):
@@ -379,7 +380,7 @@ class AutofillTest(pyauto.PyUITest):
 
   def testCharsStrippedForAggregatedPhoneNumbers(self):
     """Test aggregated phone numbers are standardized (not saved "as-is")."""
-    us_phone = self.GetAUtofillProfile()[
+    us_phone = self.GetAutofillProfile()[
         'profiles'][0]['PHONE_HOME_WHOLE_NUMBER']
     de_phone = self.GetAutofillProfile()[
         'profiles'][1]['PHONE_HOME_WHOLE_NUMBER']
