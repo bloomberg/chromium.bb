@@ -141,7 +141,7 @@
         },
       ],
     }],
-    [ 'OS=="linux" and selinux==0 and clang==0', {
+    [ 'OS=="linux" and selinux==0', {
       'targets': [
         {
           'target_name': 'chrome_sandbox',
@@ -174,7 +174,7 @@
         },
       ],
     }],
-    [ 'OS=="linux" and (selinux==1 or clang==1)', {
+    [ 'OS=="linux" and selinux==1', {
       # GYP requires that each file have at least one target defined.
       'targets': [
         {
