@@ -460,6 +460,7 @@ CRYPT32.dll!CertGetCertificateChain
 # http://code.google.com/p/drmemory/issues/detail?id=511
 UNINITIALIZED READ
 RPCRT4.dll!*
+...
 RPCRT4.dll!UuidCreate
 ole32.dll!*
 
@@ -467,6 +468,17 @@ UNINITIALIZED READ
 ole32.dll!*
 ole32.dll!*
 ole32.dll!StringFromGUID2
+
+# http://code.google.com/p/drmemory/issues/detail?id=512
+UNINITIALIZED READ
+...
+*!browser_sync::Cryptographer::PackBootstrapToken
+*!browser_sync::Cryptographer::GetBootstrapToken
+
+# http://code.google.com/p/drmemory/issues/detail?id=513
+UNINITIALIZED READ
+*!*
+*!v8*
 
 ############################
 # TODO(timurrrr): investigate these
@@ -721,7 +733,7 @@ LEAK
 *!net::SSLServerSocketNSS::InitializeSSLOptions
 *!net::SSLServerSocketNSS::Handshake
 
-# http://crbug.com/88312
+# http://crbug.com/88213
 UNADDRESSABLE ACCESS
 *!base::win::ObjectWatcher::StopWatching
 *!base::win::ObjectWatcher::WillDestroyCurrentMessageLoop
