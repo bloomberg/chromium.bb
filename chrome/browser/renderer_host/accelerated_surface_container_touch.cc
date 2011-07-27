@@ -237,8 +237,8 @@ AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
   }
 }
 
-void AcceleratedSurfaceContainerTouch::SetBitmap(
-    const SkBitmap& bitmap,
+void AcceleratedSurfaceContainerTouch::SetCanvas(
+    const SkCanvas& canvas,
     const gfx::Point& origin,
     const gfx::Size& overall_size) {
   NOTREACHED();

@@ -12,7 +12,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
-class SkBitmap;
+class SkCanvas;
 
 namespace ui {
 
@@ -59,8 +59,8 @@ class Layer {
   void SetTexture(ui::Texture* texture);
   const ui::Texture* texture() const { return texture_.get(); }
 
-  // Resets the bitmap of the texture.
-  void SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin);
+  // Resets the canvas of the texture.
+  void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
   // Draws the layer.
   void Draw();

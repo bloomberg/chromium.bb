@@ -2289,16 +2289,16 @@ class TestTexture : public ui::Texture {
   static void reset_live_count() { live_count_ = 0; }
   static int live_count() { return live_count_; }
 
-  // Bounds of the last bitmap passed to SetBitmap.
+  // Bounds of the last bitmap passed to SetCanvas.
   const gfx::Rect& bounds_of_last_paint() const {
     return bounds_of_last_paint_;
   }
 
   // ui::Texture
-  virtual void SetBitmap(const SkBitmap& bitmap,
+  virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
-  virtual void Draw(const ui::Transform& transform) OVERRIDE {}
+  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE {}
 
  private:
   // Number of live instances.
@@ -2312,9 +2312,10 @@ class TestTexture : public ui::Texture {
 // static
 int TestTexture::live_count_ = 0;
 
-void TestTexture::SetBitmap(const SkBitmap& bitmap,
+void TestTexture::SetCanvas(const SkCanvas& canvas,
                             const gfx::Point& origin,
                             const gfx::Size& overall_size) {
+  const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
   bounds_of_last_paint_.SetRect(
       origin.x(), origin.y(), bitmap.width(), bitmap.height());
 }
@@ -2645,7 +2646,7 @@ TEST_F(ViewLayerTest, DISABLED_NativeWidgetView) {
 
   // NativeWidgetView should have been added to view.
   ASSERT_EQ(1, view->child_count());
-  View* widget_view_host = view->GetChildViewAt(0);
+  View* widget_view_host = view->child_at(0);
   ASSERT_TRUE(widget_view_host->layer() != NULL);
   EXPECT_EQ(gfx::Rect(11, 22, 100, 200), widget_view_host->layer()->bounds());
 

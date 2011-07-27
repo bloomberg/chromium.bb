@@ -25,7 +25,7 @@ class TextureGL : public Texture {
  public:
   explicit TextureGL(CompositorGL* compositor);
 
-  virtual void SetBitmap(const SkBitmap& bitmap,
+  virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
 

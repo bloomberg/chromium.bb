@@ -14,7 +14,7 @@
 #include "base/string_piece.h"
 #include "base/win/scoped_comptr.h"
 #include "grit/gfx_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
@@ -44,7 +44,7 @@ struct Vertex {
 
 // D3D 10 Texture implementation. Creates a quad representing the view and
 // a texture with the bitmap data. The quad has an origin of 0,0,0 with a size
-// matching that of |SetBitmap|.
+// matching that of |SetCanvas|.
 class ViewTexture : public Texture {
  public:
   ViewTexture(CompositorWin* compositor,
@@ -52,7 +52,7 @@ class ViewTexture : public Texture {
               ID3D10Effect* effect);
 
   // Texture:
-  virtual void SetBitmap(const SkBitmap& bitmap,
+  virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
@@ -198,7 +198,7 @@ ViewTexture::ViewTexture(CompositorWin* compositor,
 ViewTexture::~ViewTexture() {
 }
 
-void ViewTexture::SetBitmap(const SkBitmap& bitmap,
+void ViewTexture::SetCanvas(const SkCanvas& canvas,
                             const gfx::Point& origin,
                             const gfx::Size& overall_size) {
   if (view_size_ != overall_size)
@@ -206,6 +206,7 @@ void ViewTexture::SetBitmap(const SkBitmap& bitmap,
   view_size_ = overall_size;
 
   scoped_array<uint32> converted_data;
+  const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
   ConvertBitmapToD3DData(bitmap, &converted_data);
   if (gfx::Size(bitmap.width(), bitmap.height()) == overall_size) {
     shader_view_.Release();

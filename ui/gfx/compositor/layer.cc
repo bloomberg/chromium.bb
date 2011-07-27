@@ -46,8 +46,8 @@ void Layer::SetTexture(ui::Texture* texture) {
     texture_ = texture;
 }
 
-void Layer::SetBitmap(const SkBitmap& bitmap, const gfx::Point& origin) {
-  texture_->SetBitmap(bitmap, origin, bounds_.size());
+void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
+  texture_->SetCanvas(canvas, origin, bounds_.size());
 }
 
 void Layer::Draw() {

@@ -762,9 +762,7 @@ void View::Paint(gfx::Canvas* canvas) {
   PaintChildren(canvas);
 
   if (layer_canvas.get()) {
-    layer()->SetBitmap(
-        layer_canvas->AsCanvasSkia()->getDevice()->accessBitmap(false),
-        layer_rect.origin());
+    layer()->SetCanvas(*layer_canvas->AsCanvasSkia(), layer_rect.origin());
     layer_helper_->set_bitmap_needs_updating(false);
   }
 }

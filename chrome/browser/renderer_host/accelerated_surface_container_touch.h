@@ -21,7 +21,7 @@ class AcceleratedSurfaceContainerTouch : public ui::TextureGL {
       uint64 surface_handle);
 
   // TextureGL implementation
-  virtual void SetBitmap(const SkBitmap& bitmap,
+  virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
 

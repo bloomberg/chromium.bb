@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/rect.h"
@@ -292,9 +292,10 @@ TextureGL::~TextureGL() {
   }
 }
 
-void TextureGL::SetBitmap(const SkBitmap& bitmap,
+void TextureGL::SetCanvas(const SkCanvas& canvas,
                           const gfx::Point& origin,
                           const gfx::Size& overall_size) {
+  const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
   // Verify bitmap pixels are contiguous.
   DCHECK_EQ(bitmap.rowBytes(),
             SkBitmap::ComputeRowBytes(bitmap.config(), bitmap.width()));

@@ -10,7 +10,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkBitmap;
+class SkCanvas;
 namespace gfx {
 class Point;
 class Rect;
@@ -33,7 +33,7 @@ struct TextureDrawParams {
 };
 
 // Textures are created by a Compositor for managing an accelerated view.
-// Any time a View with a texture needs to redraw itself it invokes SetBitmap().
+// Any time a View with a texture needs to redraw itself it invokes SetCanvas().
 // When the view is ready to be drawn Draw() is invoked.
 //
 // Texture is really a proxy to the gpu. Texture does not itself keep a copy of
@@ -42,9 +42,9 @@ struct TextureDrawParams {
 // Views own the Texture.
 class Texture : public base::RefCounted<Texture> {
  public:
-  // Sets the bitmap of this texture. The bitmaps origin is at |origin|.
+  // Sets the canvas of this texture. The origin is at |origin|.
   // |overall_size| gives the total size of texture.
-  virtual void SetBitmap(const SkBitmap& bitmap,
+  virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) = 0;
 
