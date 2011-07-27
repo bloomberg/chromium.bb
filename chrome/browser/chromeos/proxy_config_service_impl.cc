@@ -442,7 +442,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl()
     : testing_(false),
       can_post_task_(false),
       config_availability_(net::ProxyConfigService::CONFIG_UNSET),
-      use_shared_proxies_(false) {
+      use_shared_proxies_(true) {
   // Start async fetch of proxy config from settings persisted on device.
   if (CrosLibrary::Get()->EnsureLoaded()) {
     retrieve_property_op_ = SignedSettings::CreateRetrievePropertyOp(
@@ -466,7 +466,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(const ProxyConfig& init_config)
     : testing_(false),
       can_post_task_(true),
       config_availability_(net::ProxyConfigService::CONFIG_VALID),
-      use_shared_proxies_(false) {
+      use_shared_proxies_(true) {
   active_config_ = init_config;
   // Update the IO-accessible copy in |cached_config_| as well.
   cached_config_ = active_config_;
@@ -538,10 +538,12 @@ bool ProxyConfigServiceImpl::UIMakeActiveNetworkCurrent() {
 void ProxyConfigServiceImpl::UISetUseSharedProxies(bool use_shared) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  if (use_shared_proxies_ == use_shared)
+  if (use_shared_proxies_ == use_shared) {
+    VLOG(1) << "same use_shared_proxies = " << use_shared_proxies_;
     return;
+  }
   use_shared_proxies_ = use_shared;
-  VLOG(1) << "use_shared_proxies = " << use_shared_proxies_;
+  VLOG(1) << "new use_shared_proxies = " << use_shared_proxies_;
   if (active_network_.empty())
     return;
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
@@ -669,7 +671,8 @@ void ProxyConfigServiceImpl::OnSettingsOpCompleted(
 
 void ProxyConfigServiceImpl::OnNetworkManagerChanged(
     NetworkLibrary* network_lib) {
-  VLOG(1) << "OnNetworkManagerChanged";
+  VLOG(1) << "OnNetworkManagerChanged: use-shared-proxies="
+          << use_shared_proxies_;
   OnActiveNetworkChanged(network_lib, network_lib->active_network());
 }
 
@@ -679,7 +682,8 @@ void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
     return;
   VLOG(1) << "OnNetworkChanged: "
           << (network->name().empty() ? network->service_path() :
-                                        network->name());
+                                        network->name())
+          << ", use-shared-proxies=" << use_shared_proxies_;
   // We only care about active network.
   if (network == network_lib->active_network())
     OnActiveNetworkChanged(network_lib, network);
@@ -745,8 +749,14 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   std::string new_network;
   if (active_network)
     new_network = active_network->service_path();
-  if (active_network_ == new_network)
+
+  if (active_network_ == new_network) {  // Same active network.
+    VLOG(1) << "same active network: "
+            << (new_network.empty() ? "empty" :
+                (active_network->name().empty() ?
+                 new_network : active_network->name()));
     return;
+  }
 
   // If there was a previous active network, remove it as observer.
   if (!active_network_.empty())
@@ -809,7 +819,7 @@ void ProxyConfigServiceImpl::DetermineConfigFromNetwork(
   } else if (!network->proxy_config().empty() &&
              active_config_.DeserializeForNetwork(network->proxy_config())) {
     // Network is private or shared with user using shared proxies.
-    VLOG(1) << "using proxy of network, mode=" << active_config_.mode;
+    VLOG(1) << "using network proxy: " << network->proxy_config();
     available = net::ProxyConfigService::CONFIG_VALID;
   }
   IOSetProxyConfig(active_config_, available);

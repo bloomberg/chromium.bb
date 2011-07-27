@@ -245,7 +245,6 @@ class ProxyConfigServiceImpl
     testing_ = true;
     active_network_ = "test";
     UIMakeActiveNetworkCurrent();
-    use_shared_proxies_ = true;
   }
 #endif  // defined(UNIT_TEST)
 
