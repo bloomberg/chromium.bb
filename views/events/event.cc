@@ -66,7 +66,9 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
 KeyEvent::KeyEvent(ui::EventType type, ui::KeyboardCode key_code,
                    int event_flags)
     : Event(type, event_flags),
-      key_code_(key_code) {
+      key_code_(key_code),
+      character_(0),
+      unmodified_character_(0) {
 }
 
 // KeyEvent, private: ---------------------------------------------------------

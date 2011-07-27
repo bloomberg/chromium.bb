@@ -233,7 +233,9 @@ KeyEvent::KeyEvent(NativeEvent native_event)
     : Event(native_event,
             EventTypeFromNative(native_event),
             GetKeyStateFlags()),
-      key_code_(ui::KeyboardCodeForWindowsKeyCode(native_event.wParam)) {
+      key_code_(ui::KeyboardCodeForWindowsKeyCode(native_event.wParam)),
+      character_(0),
+      unmodified_character_(0) {
 }
 
 KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
@@ -244,11 +246,15 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
 }
 
 uint16 KeyEvent::GetCharacter() const {
+  if (character_)
+    return character_;
   return (native_event().message == WM_CHAR) ? key_code_ :
       GetCharacterFromKeyCode(key_code_, flags());
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
+  if (unmodified_character_)
+    return unmodified_character_;
   // Looks like there is no way to get unmodified character on Windows.
   return (native_event().message == WM_CHAR) ? key_code_ :
       GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/key_identifier_conversion_views.h"
@@ -56,6 +57,20 @@ ui::EventType GetTypeFromString(const std::string& type) {
     return ui::ET_KEY_RELEASED;
   }
   return ui::ET_UNKNOWN;
+}
+
+// Converts a hex string "U+NNNN" to uint16. Returns 0 on error.
+uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
+  int character = 0;
+  if ((key_identifier.length() == 6) &&
+      (key_identifier.substr(0, 2) == "U+") &&
+      (key_identifier.substr(2).find_first_not_of("0123456789abcdefABCDEF") ==
+       std::string::npos)) {
+    const bool result =
+        base::HexStringToInt(key_identifier.substr(2), &character);
+    DCHECK(result) << key_identifier;
+  }
+  return character;
 }
 
 }  // namespace
@@ -109,13 +124,20 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   const views::KeyEvent& prototype_event =
       KeyEventFromKeyIdentifier(identifier);
+  uint16 character = 0;
   if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
-    error_ = kUnknownOrUnsupportedKeyIdentiferError;
-    return false;
+    // Check if |identifier| is "U+NNNN" format.
+    character = UnicodeIdentifierStringToInt(identifier);
+    if (!character) {
+      error_ = kUnknownOrUnsupportedKeyIdentiferError;
+      return false;
+    }
   }
 
   bool flag = false;
-  int flags = prototype_event.flags();
+  int flags = 0;
+  if (prototype_event.key_code() != ui::VKEY_UNKNOWN)
+    flags = prototype_event.flags();
   flags |= (args->GetBoolean(kAlt, &flag) && flag) ? ui::EF_ALT_DOWN : 0;
   flags |= (args->GetBoolean(kCtrl, &flag) && flag) ? ui::EF_CONTROL_DOWN : 0;
   flags |= (args->GetBoolean(kShift, &flag) && flag) ? ui::EF_SHIFT_DOWN : 0;
@@ -132,6 +154,11 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   }
 
   views::KeyEvent event(type, prototype_event.key_code(), flags);
+  if (character) {
+    event.set_character(character);
+    event.set_unmodified_character(character);
+  }
+
   views::InputMethod* ime = widget->GetInputMethod();
   if (ime) {
     ime->DispatchKeyEvent(event);

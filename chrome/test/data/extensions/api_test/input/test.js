@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,71 @@ chrome.test.runTests([
 
   function unmappedKeyIdentifier() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'Again' };
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (!chrome.extension.lastError) {
+        chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventUnicode1() {
+    // U+00E1: LATIN SMALL LATTER A WITH ACUTE.
+    var e = { 'type': 'keydown', 'keyIdentifier': 'U+00E1' };
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (chrome.extension.lastError) {
+        // this is expected for now. See sendKeyboardEvent().
+        // chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventUnicode2() {
+    // U+043A: CYRILLIC SMALL LETTER KA
+    var e = { 'type': 'keydown',
+              'keyIdentifier': 'U+043a' };  // lower case is also ok.
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (chrome.extension.lastError) {
+        // this is expected for now. See sendKeyboardEvent().
+        // chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventBadUnicode1() {
+    var e = { 'type': 'keydown', 'keyIdentifier': 'U+' };
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (!chrome.extension.lastError) {
+        chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventBadUnicode2() {
+    var e = { 'type': 'keydown', 'keyIdentifier': 'U+1' };
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (!chrome.extension.lastError) {
+        chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventBadUnicode3() {
+    var e = { 'type': 'keydown', 'keyIdentifier': 'U+111g' };
+    chrome.experimental.input.sendKeyboardEvent(e, function() {
+      if (!chrome.extension.lastError) {
+        chrome.test.fail();
+      }
+      chrome.test.succeed();
+    });
+  },
+
+  function sendKeyboardEventBadUnicode4() {
+    var e = { 'type': 'keydown', 'keyIdentifier': 'U+11111' };
     chrome.experimental.input.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();

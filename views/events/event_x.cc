@@ -295,10 +295,15 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
             EventTypeFromNative(native_event_2),
             GetEventFlagsFromXState(native_event_2->xkey.state),
             from_native),
-      key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)) {
+      key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)),
+      character_(0),
+      unmodified_character_(0) {
 }
 
 uint16 KeyEvent::GetCharacter() const {
+  if (character_)
+    return character_;
+
   if (!native_event_2()) {
     // This event may have been created from a Gdk event.
     if (IsControlDown() || !native_event())
@@ -317,6 +322,9 @@ uint16 KeyEvent::GetCharacter() const {
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
+  if (unmodified_character_)
+    return unmodified_character_;
+
   if (!native_event_2()) {
     // This event may have been created from a Gdk event.
     if (!native_event())

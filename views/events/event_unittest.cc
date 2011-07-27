@@ -103,4 +103,17 @@ TEST_F(EventTest, KeyEvent) {
   }
 }
 
+TEST_F(EventTest, KeyEventDirectUnicode) {
+  KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_SHIFT_DOWN);
+  key.set_character(0x1234U);
+  key.set_unmodified_character(0x4321U);
+  EXPECT_EQ(0x1234U, key.GetCharacter());
+  EXPECT_EQ(0x4321U, key.GetUnmodifiedCharacter());
+  KeyEvent key2(ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_CONTROL_DOWN);
+  key2.set_character(0x4321U);
+  key2.set_unmodified_character(0x1234U);
+  EXPECT_EQ(0x4321U, key2.GetCharacter());
+  EXPECT_EQ(0x1234U, key2.GetUnmodifiedCharacter());
+}
+
 }  // namespace views

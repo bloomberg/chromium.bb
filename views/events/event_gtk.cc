@@ -169,7 +169,9 @@ KeyEvent::KeyEvent(NativeEvent native_event)
     : Event(native_event, EventTypeFromNative(native_event),
             GetFlagsFromGdkEvent(native_event)),
       key_code_(ui::KeyboardCodeFromGdkEventKey(
-                GetGdkEventKeyFromNative(native_event))) {
+                GetGdkEventKeyFromNative(native_event))),
+      character_(0),
+      unmodified_character_(0) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
