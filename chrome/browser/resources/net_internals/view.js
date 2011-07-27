@@ -96,7 +96,7 @@ View.prototype.onLoadLogFinish = function(polledData, tabData) {
 function DivView(divId) {
   View.call(this);
 
-  this.node_ = document.getElementById(divId);
+  this.node_ = $(divId);
   if (!this.node_)
     throw new Error('Element ' + divId + ' not found');
 

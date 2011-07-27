@@ -10,9 +10,9 @@ function PrerenderView(mainBoxId, prerenderEnabledSpanId, prerenderHistoryDivId,
                        prerenderActiveDivId) {
   DivView.call(this, mainBoxId);
   g_browser.addPrerenderInfoObserver(this);
-  this.prerenderEnabledSpan_ = document.getElementById(prerenderEnabledSpanId);
-  this.prerenderHistoryDiv_ = document.getElementById(prerenderHistoryDivId);
-  this.prerenderActiveDiv_ = document.getElementById(prerenderActiveDivId);
+  this.prerenderEnabledSpan_ = $(prerenderEnabledSpanId);
+  this.prerenderHistoryDiv_ = $(prerenderHistoryDivId);
+  this.prerenderActiveDiv_ = $(prerenderActiveDivId);
 }
 
 inherits(PrerenderView, DivView);

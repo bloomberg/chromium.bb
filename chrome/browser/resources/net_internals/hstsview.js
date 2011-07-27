@@ -15,18 +15,18 @@ function HSTSView(mainBoxId, queryInputId, formId, queryOutputDivId,
                   deleteInputId, deleteFormId) {
   DivView.call(this, mainBoxId);
 
-  this.queryInput_ = document.getElementById(queryInputId);
-  this.addCheck_ = document.getElementById(addCheckId);
-  this.addInput_ = document.getElementById(addInputId);
-  this.addPins_ = document.getElementById(addPinsId);
-  this.deleteInput_ = document.getElementById(deleteInputId);
-  this.queryOutputDiv_ = document.getElementById(queryOutputDivId);
+  this.queryInput_ = $(queryInputId);
+  this.addCheck_ = $(addCheckId);
+  this.addInput_ = $(addInputId);
+  this.addPins_ = $(addPinsId);
+  this.deleteInput_ = $(deleteInputId);
+  this.queryOutputDiv_ = $(queryOutputDivId);
 
-  var form = document.getElementById(formId);
+  var form = $(formId);
   form.addEventListener('submit', this.onSubmitQuery_.bind(this), false);
-  form = document.getElementById(addFormId);
+  form = $(addFormId);
   form.addEventListener('submit', this.onSubmitAdd_.bind(this), false);
-  form = document.getElementById(deleteFormId);
+  form = $(deleteFormId);
   form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
 
   g_browser.addHSTSObserver(this);

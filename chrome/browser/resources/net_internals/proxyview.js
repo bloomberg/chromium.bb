@@ -26,14 +26,13 @@ function ProxyView(mainBoxId,
   this.latestProxySourceId_ = 0;
 
   // Hook up the UI components.
-  this.originalSettingsDiv_ = document.getElementById(originalSettingsDivId);
-  this.effectiveSettingsDiv_ =
-      document.getElementById(effectiveSettingsDivId);
-  this.proxyResolverLogPre_ = document.getElementById(proxyResolverLogPreId);
-  this.badProxiesTbody_ = document.getElementById(badProxiesTbodyId);
+  this.originalSettingsDiv_ = $(originalSettingsDivId);
+  this.effectiveSettingsDiv_ = $(effectiveSettingsDivId);
+  this.proxyResolverLogPre_ = $(proxyResolverLogPreId);
+  this.badProxiesTbody_ = $(badProxiesTbodyId);
 
-  var reloadSettingsButton = document.getElementById(reloadSettingsButtonId);
-  var clearBadProxiesButton = document.getElementById(clearBadProxiesButtonId);
+  var reloadSettingsButton = $(reloadSettingsButtonId);
+  var clearBadProxiesButton = $(clearBadProxiesButtonId);
 
   clearBadProxiesButton.onclick = g_browser.sendClearBadProxies.bind(g_browser);
   reloadSettingsButton.onclick =

@@ -19,19 +19,17 @@ function SpdyView(mainBoxId, spdyEnabledSpanId,
   g_browser.addSpdyStatusObserver(this);
   g_browser.addSpdyAlternateProtocolMappingsObserver(this);
 
-  this.spdyEnabledSpan_ = document.getElementById(spdyEnabledSpanId);
-  this.spdyUseAlternateProtocolSpan_ =
-      document.getElementById(spdyUseAlternateProtocolSpanId);
-  this.spdyForceAlwaysSpan_ = document.getElementById(spdyForceAlwaysSpanId);
-  this.spdyForceOverSslSpan_ = document.getElementById(spdyForceOverSslSpanId);
-  this.spdyNextProtocolsSpan_ =
-      document.getElementById(spdyNextProtocolsSpanId);
+  this.spdyEnabledSpan_ = $(spdyEnabledSpanId);
+  this.spdyUseAlternateProtocolSpan_ = $(spdyUseAlternateProtocolSpanId);
+  this.spdyForceAlwaysSpan_ = $(spdyForceAlwaysSpanId);
+  this.spdyForceOverSslSpan_ = $(spdyForceOverSslSpanId);
+  this.spdyNextProtocolsSpan_ = $(spdyNextProtocolsSpanId);
 
   this.spdyAlternateProtocolMappingsDiv_ =
-      document.getElementById(spdyAlternateProtocolMappingsDivId);
-  this.spdySessionNoneSpan_ = document.getElementById(spdySessionNoneSpanId);
-  this.spdySessionLinkSpan_ = document.getElementById(spdySessionLinkSpanId);
-  this.spdySessionDiv_ = document.getElementById(spdySessionDivId);
+      $(spdyAlternateProtocolMappingsDivId);
+  this.spdySessionNoneSpan_ = $(spdySessionNoneSpanId);
+  this.spdySessionLinkSpan_ = $(spdySessionLinkSpanId);
+  this.spdySessionDiv_ = $(spdySessionDivId);
 }
 
 inherits(SpdyView, DivView);

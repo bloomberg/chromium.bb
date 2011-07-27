@@ -18,13 +18,11 @@ function ServiceProvidersView(tabId,
                               namespaceProvidersTbodyId) {
   DivView.call(this, mainBoxId);
 
-  var tab = document.getElementById(tabId);
+  var tab = $(tabId);
   setNodeDisplay(tab, true);
 
-  this.serviceProvidersTbody_ =
-      document.getElementById(serviceProvidersTbodyId);
-  this.namespaceProvidersTbody_ =
-      document.getElementById(namespaceProvidersTbodyId);
+  this.serviceProvidersTbody_ = $(serviceProvidersTbodyId);
+  this.namespaceProvidersTbody_ = $(namespaceProvidersTbodyId);
 
   g_browser.addServiceProvidersObserver(this);
 }

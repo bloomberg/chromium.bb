@@ -52,30 +52,26 @@ function EventsView(tableBodyId, filterInputId, filterCountId,
 
   g_browser.addLogObserver(this);
 
-  this.tableBody_ = document.getElementById(tableBodyId);
+  this.tableBody_ = $(tableBodyId);
 
-  this.filterInput_ = document.getElementById(filterInputId);
-  this.filterCount_ = document.getElementById(filterCountId);
+  this.filterInput_ = $(filterInputId);
+  this.filterCount_ = $(filterCountId);
 
   this.filterInput_.addEventListener('search',
       this.onFilterTextChanged_.bind(this), true);
 
-  document.getElementById(deleteSelectedId).onclick =
-      this.deleteSelected_.bind(this);
+  $(deleteSelectedId).onclick = this.deleteSelected_.bind(this);
 
-  document.getElementById(deleteAllId).onclick =
-      g_browser.deleteAllEvents.bind(g_browser);
+  $(deleteAllId).onclick = g_browser.deleteAllEvents.bind(g_browser);
 
-  document.getElementById(selectAllId).addEventListener(
-      'click', this.selectAll_.bind(this), true);
+  $(selectAllId).addEventListener('click', this.selectAll_.bind(this), true);
 
-  document.getElementById(sortByIdId).addEventListener(
-      'click', this.sortById_.bind(this), true);
+  $(sortByIdId).addEventListener('click', this.sortById_.bind(this), true);
 
-  document.getElementById(sortBySourceTypeId).addEventListener(
+  $(sortBySourceTypeId).addEventListener(
       'click', this.sortBySourceType_.bind(this), true);
 
-  document.getElementById(sortByDescriptionId).addEventListener(
+  $(sortByDescriptionId).addEventListener(
       'click', this.sortByDescription_.bind(this), true);
 
   // Sets sort order and filter.

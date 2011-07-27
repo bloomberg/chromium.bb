@@ -170,7 +170,7 @@ function onLoaded() {
   var anchorMap = {};
   var tabIds = categoryTabSwitcher.getAllTabIds();
   for (var i = 0; i < tabIds.length; ++i) {
-    var aNode = document.getElementById(tabIds[i]);
+    var aNode = $(tabIds[i]);
     anchorMap[aNode.hash] = tabIds[i];
   }
   // Default the empty hash to the data tab.

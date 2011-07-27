@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@
 function TestView(mainBoxId, urlInputId, formId, summaryDivId) {
   DivView.call(this, mainBoxId);
 
-  this.urlInput_ = document.getElementById(urlInputId);
-  this.summaryDiv_ = document.getElementById(summaryDivId);
+  this.urlInput_ = $(urlInputId);
+  this.summaryDiv_ = $(summaryDivId);
 
-  var form = document.getElementById(formId);
+  var form = $(formId);
   form.addEventListener('submit', this.onSubmitForm_.bind(this), false);
 
   g_browser.addConnectionTestsObserver(this);

@@ -11,14 +11,14 @@
  */
 function LogsView(mainBoxId, tableId, globalShowButtonId, globalHideButtonId,
                   refreshLogsButtonId) {
-  var tableDiv = document.getElementById(tableId);
+  var tableDiv = $(tableId);
   this.rows = [];
   this.PopulateTable(tableDiv, this.logFilterList);
-  document.getElementById(globalShowButtonId).addEventListener('click',
+  $(globalShowButtonId).addEventListener('click',
       this.onGlobalChangeVisibleClick_.bind(this, true));
-  document.getElementById(globalHideButtonId).addEventListener('click',
+  $(globalHideButtonId).addEventListener('click',
       this.onGlobalChangeVisibleClick_.bind(this, false));
-  document.getElementById(refreshLogsButtonId).addEventListener('click',
+  $(refreshLogsButtonId).addEventListener('click',
       this.onLogsRefresh_.bind(this));
   DivView.call(this, mainBoxId);
 };

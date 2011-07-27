@@ -9,7 +9,7 @@
 function HttpThrottlingView(mainBoxId, enableCheckboxId) {
   DivView.call(this, mainBoxId);
 
-  this.enableCheckbox_ = document.getElementById(enableCheckboxId);
+  this.enableCheckbox_ = $(enableCheckboxId);
   this.enableCheckbox_.onclick = this.onEnableCheckboxClicked_.bind(this);
 
   g_browser.addHttpThrottlingObserver(this);

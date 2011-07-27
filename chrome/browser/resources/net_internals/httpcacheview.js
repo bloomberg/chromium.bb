@@ -9,7 +9,7 @@
 function HttpCacheView(mainBoxId, statsDivId) {
   DivView.call(this, mainBoxId);
 
-  this.statsDiv_ = document.getElementById(statsDivId);
+  this.statsDiv_ = $(statsDivId);
 
   // Register to receive http cache info.
   g_browser.addHttpCacheInfoObserver(this);

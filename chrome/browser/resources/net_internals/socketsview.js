@@ -16,13 +16,13 @@ function SocketsView(mainBoxId, socketPoolDivId, socketPoolGroupsDivId,
   DivView.call(this, mainBoxId);
 
   g_browser.addSocketPoolInfoObserver(this);
-  this.socketPoolDiv_ = document.getElementById(socketPoolDivId);
-  this.socketPoolGroupsDiv_ = document.getElementById(socketPoolGroupsDivId);
+  this.socketPoolDiv_ = $(socketPoolDivId);
+  this.socketPoolGroupsDiv_ = $(socketPoolGroupsDivId);
 
-  var closeIdleButton = document.getElementById(closeIdleSocketsButtonId);
+  var closeIdleButton = $(closeIdleSocketsButtonId);
   closeIdleButton.onclick = this.closeIdleSockets.bind(this);
 
-  var flushSocketsButton = document.getElementById(socketPoolFlushButtonId);
+  var flushSocketsButton = $(socketPoolFlushButtonId);
   flushSocketsButton.onclick = this.flushSocketPools.bind(this);
 }
 

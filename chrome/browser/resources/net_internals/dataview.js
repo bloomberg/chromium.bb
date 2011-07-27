@@ -33,40 +33,36 @@ function DataView(mainBoxId,
                   loggingTextSpanId) {
   DivView.call(this, mainBoxId);
 
-  var securityStrippingCheckbox =
-      document.getElementById(securityStrippingCheckboxId);
+  var securityStrippingCheckbox = $(securityStrippingCheckboxId);
   securityStrippingCheckbox.onclick =
       this.onSetSecurityStripping_.bind(this, securityStrippingCheckbox);
 
-  var byteLoggingCheckbox = document.getElementById(byteLoggingCheckboxId);
+  var byteLoggingCheckbox = $(byteLoggingCheckboxId);
   byteLoggingCheckbox.onclick =
       this.onSetByteLogging_.bind(this, byteLoggingCheckbox);
 
-  this.downloadIframe_ = document.getElementById(downloadIframeId);
+  this.downloadIframe_ = $(downloadIframeId);
 
-  this.saveFileButton_ = document.getElementById(saveFileButtonId);
+  this.saveFileButton_ = $(saveFileButtonId);
   this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
-  this.saveStatusText_ = document.getElementById(dataViewSaveStatusTextId);
+  this.saveStatusText_ = $(dataViewSaveStatusTextId);
 
-  this.activelyCapturedCountBox_ =
-      document.getElementById(activelyCapturedCountId);
-  this.passivelyCapturedCountBox_ =
-      document.getElementById(passivelyCapturedCountId);
-  document.getElementById(deleteAllId).onclick =
-      g_browser.deleteAllEvents.bind(g_browser);
+  this.activelyCapturedCountBox_ = $(activelyCapturedCountId);
+  this.passivelyCapturedCountBox_ = $(passivelyCapturedCountId);
+  $(deleteAllId).onclick = g_browser.deleteAllEvents.bind(g_browser);
 
-  this.dumpDataDiv_ = document.getElementById(dumpDataDivId);
-  this.capturingTextSpan_ = document.getElementById(capturingTextSpanId);
-  this.loggingTextSpan_ = document.getElementById(loggingTextSpanId);
+  this.dumpDataDiv_ = $(dumpDataDivId);
+  this.capturingTextSpan_ = $(capturingTextSpanId);
+  this.loggingTextSpan_ = $(loggingTextSpanId);
 
-  this.loadedDiv_ = document.getElementById(loadedDivId);
-  this.loadedClientInfoText_ = document.getElementById(loadedClientInfoTextId);
+  this.loadedDiv_ = $(loadedDivId);
+  this.loadedClientInfoText_ = $(loadedClientInfoTextId);
 
-  this.loadFileElement_ = document.getElementById(loadLogFileId);
+  this.loadFileElement_ = $(loadLogFileId);
   this.loadFileElement_.onchange = this.logFileChanged.bind(this);
-  this.loadStatusText_ = document.getElementById(dataViewLoadStatusTextId);
+  this.loadStatusText_ = $(dataViewLoadStatusTextId);
 
-  var dropTarget = document.getElementById(loadLogFileDropTargetId);
+  var dropTarget = $(loadLogFileDropTargetId);
   dropTarget.ondragenter = this.onDrag.bind(this);
   dropTarget.ondragover = this.onDrag.bind(this);
   dropTarget.ondrop = this.onDrop.bind(this);
@@ -244,7 +240,7 @@ DataView.prototype.setLoadFileStatus = function(text, isLoading) {
     var loadFileElementId = this.loadFileElement_.id;
     var loadFileElementOnChange = this.loadFileElement_.onchange;
     this.loadFileElement_.outerHTML = this.loadFileElement_.outerHTML;
-    this.loadFileElement_ = document.getElementById(loadFileElementId);
+    this.loadFileElement_ = $(loadFileElementId);
     this.loadFileElement_.onchange = loadFileElementOnChange;
   }
 };

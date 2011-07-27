@@ -25,18 +25,17 @@ function DnsView(mainBoxId,
   DivView.call(this, mainBoxId);
 
   // Hook up the UI components.
-  this.cacheTbody_ = document.getElementById(cacheTbodyId);
-  this.defaultFamilySpan_ = document.getElementById(defaultFamilySpanId);
-  this.ipv6DisabledSpan_ = document.getElementById(ipv6DisabledSpanId);
+  this.cacheTbody_ = $(cacheTbodyId);
+  this.defaultFamilySpan_ = $(defaultFamilySpanId);
+  this.ipv6DisabledSpan_ = $(ipv6DisabledSpanId);
 
-  document.getElementById(enableIPv6ButtonId).onclick =
-      g_browser.enableIPv6.bind(g_browser);
+  $(enableIPv6ButtonId).onclick = g_browser.enableIPv6.bind(g_browser);
 
-  this.capacitySpan_ = document.getElementById(capacitySpanId);
-  this.ttlSuccessSpan_ = document.getElementById(ttlSuccessSpanId);
-  this.ttlFailureSpan_ = document.getElementById(ttlFailureSpanId);
+  this.capacitySpan_ = $(capacitySpanId);
+  this.ttlSuccessSpan_ = $(ttlSuccessSpanId);
+  this.ttlFailureSpan_ = $(ttlFailureSpanId);
 
-  var clearCacheButton = document.getElementById(clearCacheButtonId);
+  var clearCacheButton = $(clearCacheButtonId);
   clearCacheButton.onclick =
       g_browser.sendClearHostResolverCache.bind(g_browser);
 

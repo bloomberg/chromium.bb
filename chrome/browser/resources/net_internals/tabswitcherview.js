@@ -23,7 +23,7 @@
  * @constructor
  */
 function TabSwitcherView(tabHandleDivId) {
-  document.getElementById(tabHandleDivId).classList.add('tab-switcher-view');
+  $(tabHandleDivId).classList.add('tab-switcher-view');
   var tabHandleView = new DivView(tabHandleDivId);
 
   View.call(this);
@@ -166,6 +166,6 @@ TabEntry.prototype.setSelected = function(isSelected) {
  * Returns the DOM node that is used to select the tab.
  */
 TabEntry.prototype.getTabHandleNode = function() {
-  return document.getElementById(this.id);
+  return $(this.id);
 };
 
