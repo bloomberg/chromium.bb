@@ -1,0 +1,36 @@
+<script>
+
+var assertFalse = chrome.test.assertFalse;
+var assertTrue = chrome.test.assertTrue;
+var pass = chrome.test.callbackPass;
+
+var NO_TABS_PERMISSION =
+    "You do not have permission to use 'windows.getAll'.";
+
+chrome.test.runTests([
+  function denyRequest() {
+    chrome.experimental.permissions.request(
+      {permissions: ['tabs']},
+      pass(function(granted) {
+        // They were not granted, and there should be no error.
+        assertFalse(granted);
+        assertTrue(chrome.extension.lastError === undefined);
+
+        // Make sure they weren't granted...
+        chrome.experimental.permissions.contains(
+          {permissions: ['tabs']},
+          pass(function(result) {
+            assertFalse(result);
+        }));
+
+        try {
+          chrome.windows.getAll({populate: true}, function() {
+            chrome.test.fail("Should not have tabs API permission.");
+          });
+        } catch (e) {
+          assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+        }
+    }));
+  }
+]);
+</script>

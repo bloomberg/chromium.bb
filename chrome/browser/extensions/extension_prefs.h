@@ -187,6 +187,16 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void AddGrantedPermissions(const std::string& extension_id,
                              const ExtensionPermissionSet* permissions);
 
+  // Gets the active permission set for the specified extension. This may
+  // differ from the permissions in the manifest due to the optional
+  // permissions API. This passes ownership of the set to the caller.
+  ExtensionPermissionSet* GetActivePermissions(
+      const std::string& extension_id);
+
+  // Sets the active |permissions| for the extension with |extension_id|.
+  void SetActivePermissions(const std::string& extension_id,
+                            const ExtensionPermissionSet* permissions);
+
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
   bool IsIncognitoEnabled(const std::string& extension_id);
@@ -408,6 +418,18 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetExtensionPrefURLPatternSet(const std::string& extension_id,
                                      const std::string& pref_key,
                                      const URLPatternSet& new_value);
+
+  // Interprets |pref_key| in |extension_id|'s preferences as an
+  // ExtensionPermissionSet, and passes ownership of the set to the caller.
+  ExtensionPermissionSet* ReadExtensionPrefPermissionSet(
+      const std::string& extension_id,
+      const std::string& pref_key);
+
+  // Converts the |new_value| to its value and sets the |pref_key| pref
+  // belonging to |extension_id|.
+  void SetExtensionPrefPermissionSet(const std::string& extension_id,
+                                     const std::string& pref_key,
+                                     const ExtensionPermissionSet* new_value);
 
   // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
   // exist.

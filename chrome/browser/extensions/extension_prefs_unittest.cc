@@ -219,32 +219,32 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     ExtensionAPIPermissionSet empty_set;
     URLPatternSet empty_extent;
-    scoped_ptr<ExtensionPermissionSet> permissions;
-    scoped_ptr<ExtensionPermissionSet> granted_permissions;
+    scoped_refptr<ExtensionPermissionSet> permissions;
+    scoped_refptr<ExtensionPermissionSet> granted_permissions;
 
     // Make sure both granted api and host permissions start empty.
-    granted_permissions.reset(
-        prefs()->GetGrantedPermissions(extension_id_));
+    granted_permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions->IsEmpty());
 
-    permissions.reset(new ExtensionPermissionSet(
-        api_perm_set1_, empty_extent, empty_extent));
+    permissions = new ExtensionPermissionSet(
+        api_perm_set1_, empty_extent, empty_extent);
 
     // Add part of the api permissions.
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions.get());
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
     EXPECT_TRUE(granted_permissions->effective_hosts().is_empty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
-    granted_permissions.reset();
+    granted_permissions = NULL;
 
     // Add part of the explicit host permissions.
-    permissions.reset(new ExtensionPermissionSet(
-        empty_set, ehost_perm_set1_, empty_extent));
+    permissions = new ExtensionPermissionSet(
+        empty_set, ehost_perm_set1_, empty_extent);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
@@ -254,10 +254,10 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
               granted_permissions->effective_hosts());
 
     // Add part of the scriptable host permissions.
-    permissions.reset(new ExtensionPermissionSet(
-        empty_set, empty_extent, shost_perm_set1_));
+    permissions = new ExtensionPermissionSet(
+        empty_set, empty_extent, shost_perm_set1_);
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
@@ -271,15 +271,15 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
 
     // Add the rest of both the permissions.
-    permissions.reset(new ExtensionPermissionSet(
-       api_perm_set2_, ehost_perm_set2_, shost_perm_set2_));
+    permissions = new ExtensionPermissionSet(
+       api_perm_set2_, ehost_perm_set2_, shost_perm_set2_);
 
     std::set_union(expected_apis.begin(), expected_apis.end(),
                    api_perm_set2_.begin(), api_perm_set2_.end(),
                    std::inserter(api_permissions_, api_permissions_.begin()));
 
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions.reset(prefs()->GetGrantedPermissions(extension_id_));
+    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions.get());
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_EQ(api_permissions_, granted_permissions->apis());
@@ -294,7 +294,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    scoped_ptr<ExtensionPermissionSet> permissions(
+    scoped_refptr<ExtensionPermissionSet> permissions(
         prefs()->GetGrantedPermissions(extension_id_));
     EXPECT_TRUE(permissions.get());
     EXPECT_FALSE(permissions->HasEffectiveFullAccess());
@@ -320,6 +320,54 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
   URLPatternSet effective_permissions_;
 };
 TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
+
+// Tests the SetActivePermissions / GetActivePermissions functions.
+class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_id_ = prefs_.AddExtensionAndReturnId("test");
+
+    ExtensionAPIPermissionSet api_perms;
+    api_perms.insert(ExtensionAPIPermission::kTab);
+    api_perms.insert(ExtensionAPIPermission::kBookmark);
+    api_perms.insert(ExtensionAPIPermission::kHistory);
+
+    URLPatternSet ehosts;
+    AddPattern(&ehosts, "http://*.google.com/*");
+    AddPattern(&ehosts, "http://example.com/*");
+    AddPattern(&ehosts, "chrome://favicon/*");
+
+    URLPatternSet shosts;
+    AddPattern(&shosts, "https://*.google.com/*");
+    AddPattern(&shosts, "http://reddit.com/r/test/*");
+
+    active_perms_ = new ExtensionPermissionSet(api_perms, ehosts, shosts);
+
+    // Make sure the active permissions start empty.
+    scoped_refptr<ExtensionPermissionSet> active(
+        prefs()->GetActivePermissions(extension_id_));
+    EXPECT_TRUE(active->IsEmpty());
+
+    // Set the active permissions.
+    prefs()->SetActivePermissions(extension_id_, active_perms_.get());
+    active = prefs()->GetActivePermissions(extension_id_);
+    EXPECT_EQ(active_perms_->apis(), active->apis());
+    EXPECT_EQ(active_perms_->explicit_hosts(), active->explicit_hosts());
+    EXPECT_EQ(active_perms_->scriptable_hosts(), active->scriptable_hosts());
+    EXPECT_EQ(*active_perms_, *active);
+  }
+
+  virtual void Verify() {
+    scoped_refptr<ExtensionPermissionSet> permissions(
+        prefs()->GetActivePermissions(extension_id_));
+    EXPECT_EQ(*active_perms_, *permissions);
+  }
+
+ private:
+  std::string extension_id_;
+  scoped_refptr<ExtensionPermissionSet> active_perms_;
+};
+TEST_F(ExtensionPrefsActivePermissions, SetAndGetActivePermissions) {}
 
 // Tests the GetVersionString function.
 class ExtensionPrefsVersionString : public ExtensionPrefsTest {

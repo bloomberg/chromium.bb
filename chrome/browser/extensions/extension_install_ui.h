@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Extension;
+class ExtensionPermissionSet;
 class MessageLoop;
 class Profile;
 class InfoBarDelegate;
@@ -28,6 +29,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
     RE_ENABLE_PROMPT,
+    PERMISSIONS_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -36,6 +38,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static const int kHeadingIds[NUM_PROMPT_TYPES];
   static const int kButtonIds[NUM_PROMPT_TYPES];
   static const int kWarningIds[NUM_PROMPT_TYPES];
+  static const int kAbortButtonIds[NUM_PROMPT_TYPES];
 
   class Delegate {
    public:
@@ -64,6 +67,14 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmReEnable(Delegate* delegate, const Extension* extension);
+
+  // This is called by the extension permissions API to verify whether an
+  // extension may be granted additional permissions.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmPermissions(Delegate* delegate,
+                                  const Extension* extension,
+                                  const ExtensionPermissionSet* permissions);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon);
@@ -121,6 +132,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   // The extension we are showing the UI for.
   const Extension* extension_;
+
+  // The permissions being prompted for.
+  scoped_refptr<const ExtensionPermissionSet> permissions_;
 
   // The delegate we will call Proceed/Abort on after confirmation UI.
   Delegate* delegate_;
