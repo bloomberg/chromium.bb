@@ -46,9 +46,10 @@ menu > [disabled] {
   color: rgba(0, 0, 0, .3);
 }
 
-/* Text alpha doesn't work on Linux/GTK.
+/* Text alpha doesn't work on Linux/GTK and ChromeOs/views.
  * TODO(estade): http://crbug.com/88688. */
-html[toolkit=gtk] menu > [disabled] {
+html[toolkit=gtk] menu > [disabled],
+html[os=chromeos] menu > [disabled] {
   color: #969696;
 }
 
