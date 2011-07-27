@@ -136,6 +136,7 @@ cr.define('options.browser_options', function() {
       this.addEventListener('dragover', this.handleDragOver_.bind(this));
       this.addEventListener('drop', this.handleDrop_.bind(this));
       this.addEventListener('dragleave', this.handleDragLeave_.bind(this));
+      this.addEventListener('dragend', this.handleDragEnd_.bind(this));
     },
 
     /** @inheritDoc */
@@ -246,8 +247,18 @@ cr.define('options.browser_options', function() {
      * @param {Event} e The dragleave event
      * @private
      */
-    handleDragLeave_ : function(e) {
+    handleDragLeave_: function(e) {
       this.hideDropMarker_();
+    },
+
+    /**
+     * Handles the dragend event.
+     * @param {Event} e The dragend event
+     * @private
+     */
+    handleDragEnd_: function(e) {
+      this.draggedItem.editable = true;
+      this.draggedItem.updateEditState();
     },
 
     /*
