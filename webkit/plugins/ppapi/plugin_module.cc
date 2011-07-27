@@ -221,7 +221,7 @@ const PPB_Testing_Dev testing_interface = {
 
 const void* GetInterface(const char* name) {
   // All interfaces should be used on the main thread.
-  DCHECK(IsMainThread());
+  CHECK(IsMainThread());
 
   // Allow custom interface factories first stab at the GetInterface call.
   const void* custom_interface =
