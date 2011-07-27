@@ -81,8 +81,10 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     // Drag to invoke the menu.
     gfx::Point view_center;
     views::View::ConvertPointToScreen(button_, &view_center);
+    // The 50 is a bit arbitrary. We just need a value greater than the drag
+    // threshold.
     ui_controls::SendMouseMoveNotifyWhenDone(
-        view_center.x(), view_center.y() + button_->height(),
+        view_center.x(), view_center.y() + 50,
         CreateEventTask(this, &ButtonDropDownDragTest::Step2));
   }
 

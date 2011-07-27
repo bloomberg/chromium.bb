@@ -77,12 +77,12 @@ void FakeAMouseMotionEvent(gint x, gint y) {
     event->motion.window = gdk_window_at_pointer(&x, &y);
   }
   g_object_ref(event->motion.window);
-  event->motion.x = x;
-  event->motion.y = y;
-  gint origin_x, origin_y;
-  gdk_window_get_origin(event->motion.window, &origin_x, &origin_y);
-  event->motion.x_root = x + origin_x;
-  event->motion.y_root = y + origin_y;
+  gint window_x, window_y;
+  gdk_window_get_origin(event->motion.window, &window_x, &window_y);
+  event->motion.x = x - window_x;
+  event->motion.y = y - window_y;
+  event->motion.x_root = x;
+  event->motion.y_root = y;
 
   event->motion.device = gdk_device_get_core_pointer();
   event->type = GDK_MOTION_NOTIFY;
@@ -170,11 +170,7 @@ bool SendMouseMove(long x, long y) {
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
   bool rv = SendMouseMove(x, y);
-  // We can't rely on any particular event signalling the completion of the
-  // mouse move. Posting the task to the message loop hopefully guarantees
-  // the pointer has moved before task is run (although it may not run it as
-  // soon as it could).
-  MessageLoop::current()->PostTask(FROM_HERE, task);
+  new EventWaiter(task, GDK_MOTION_NOTIFY, 1);
   return rv;
 }
 
