@@ -42,7 +42,7 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t **argv) {
 
 // Flaky on windows, see http://crbug.com/80569.
 #if defined(OS_WIN)
-#define MAYBE_BaselineAvicapDll FLAKY_BaselineAvicapDll
+#define MAYBE_BaselineAvicapDll DISABLED_BaselineAvicapDll
 #else
 #define MAYBE_BaselineAvicapDll BaselineAvicapDll
 #endif
