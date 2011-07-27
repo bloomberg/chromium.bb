@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/language_list.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -67,7 +68,7 @@ void LanguageSwitchMenu::InitLanguageMenu() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGES_MORE)));
 
   for (int line = kLanguageMainMenuSize;
-       line != language_list_->get_languages_count(); line++) {
+       line != language_list_->languages_count(); ++line) {
     submenu->AppendMenuItemWithLabel(
         line,
         UTF16ToWide(language_list_->GetLanguageNameAt(line)));

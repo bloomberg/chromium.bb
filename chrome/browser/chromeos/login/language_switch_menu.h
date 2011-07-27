@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/language_combobox_model.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -23,6 +22,7 @@ class MenuItemView;
 
 namespace chromeos {
 
+class LanguageList;
 class ScreenObserver;
 
 class LanguageSwitchMenu : public views::ViewMenuDelegate,
