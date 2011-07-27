@@ -170,9 +170,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
             VfsBackend::OpenFile(db_file,
                                  desired_flags | SQLITE_OPEN_DELETEONCLOSE,
                                  &file_handle);
-            if (VfsBackend::FileTypeIsMainDB(desired_flags) ||
-                VfsBackend::FileTypeIsJournal(desired_flags))
-              db_tracker_->SaveIncognitoFileHandle(vfs_file_name, file_handle);
+            db_tracker_->SaveIncognitoFileHandle(vfs_file_name, file_handle);
           }
         } else {
           VfsBackend::OpenFile(db_file, desired_flags, &file_handle);

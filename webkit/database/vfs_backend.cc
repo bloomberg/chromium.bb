@@ -14,20 +14,6 @@ namespace webkit_database {
 static const int kFileTypeMask = 0x00007F00;
 
 // static
-bool VfsBackend::FileTypeIsMainDB(int desired_flags) {
-  return (desired_flags & kFileTypeMask) == SQLITE_OPEN_MAIN_DB;
-}
-
-// static
-bool VfsBackend::FileTypeIsJournal(int desired_flags) {
-  int file_type = desired_flags & kFileTypeMask;
-  return ((file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
-          (file_type == SQLITE_OPEN_TEMP_JOURNAL) ||
-          (file_type == SQLITE_OPEN_SUBJOURNAL) ||
-          (file_type == SQLITE_OPEN_MASTER_JOURNAL));
-}
-
-// static
 bool VfsBackend::OpenTypeIsReadWrite(int desired_flags) {
   return (desired_flags & SQLITE_OPEN_READWRITE) != 0;
 }

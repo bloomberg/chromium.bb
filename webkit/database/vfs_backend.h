@@ -30,8 +30,6 @@ class VfsBackend {
   static int64 GetFileSize(const FilePath& file_path);
 
   // Used to make decisions in the DatabaseDispatcherHost.
-  static bool FileTypeIsMainDB(int desired_flags);
-  static bool FileTypeIsJournal(int desired_flags);
   static bool OpenTypeIsReadWrite(int desired_flags);
 
  private:
