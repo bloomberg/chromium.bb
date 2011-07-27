@@ -62,8 +62,11 @@ void ShowInstallDialog(GtkWindow* parent,
       parent,
       GTK_DIALOG_MODAL,
       NULL);
-  GtkWidget* close_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-      GTK_STOCK_CANCEL, GTK_RESPONSE_CLOSE);
+  int cancel = ExtensionInstallUI::kAbortButtonIds[type];
+  GtkWidget* close_button = gtk_dialog_add_button(
+      GTK_DIALOG(dialog),
+      cancel > 0 ? l10n_util::GetStringUTF8(cancel).c_str(): GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CLOSE);
   gtk_dialog_add_button(
       GTK_DIALOG(dialog),
       l10n_util::GetStringUTF8(ExtensionInstallUI::kButtonIds[type]).c_str(),

@@ -275,8 +275,10 @@ std::wstring ExtensionInstallDialogView::GetDialogButtonLabel(
     case MessageBoxFlags::DIALOGBUTTON_OK:
       return UTF16ToWide(
           l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
-    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
+    case MessageBoxFlags::DIALOGBUTTON_CANCEL: {
+        int id = ExtensionInstallUI::kAbortButtonIds[type_];
+        return UTF16ToWide(l10n_util::GetStringUTF16(id > 0 ? id : IDS_CANCEL));
+      }
     default:
       NOTREACHED();
       return std::wstring();

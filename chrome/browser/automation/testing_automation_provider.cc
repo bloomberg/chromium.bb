@@ -4111,7 +4111,7 @@ ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   if (effective_perm)
     pattern_set = ext->GetEffectiveHostPermissions();
   else
-    pattern_set = ext->permission_set()->explicit_hosts();
+    pattern_set = ext->GetActivePermissions()->explicit_hosts();
 
   ListValue* permissions = new ListValue;
   for (URLPatternSet::const_iterator perm = pattern_set.begin();
@@ -4124,7 +4124,8 @@ ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
 
 ListValue* GetAPIPermissions(const Extension* ext) {
   ListValue* permissions = new ListValue;
-  std::set<std::string> perm_list = ext->permission_set()->GetAPIsAsStrings();
+  std::set<std::string> perm_list =
+      ext->GetActivePermissions()->GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
     permissions->Append(new StringValue(perm->c_str()));

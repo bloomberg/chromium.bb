@@ -71,7 +71,7 @@ var chrome = chrome || {};
       if (pendingCallbacks == 0) {
         chrome.test.succeed();
       }
-    }
+    };
   };
 
   chrome.test.runNextTest = function() {

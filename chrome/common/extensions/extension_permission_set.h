@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/extensions/url_pattern_set.h"
@@ -121,6 +122,7 @@ class ExtensionAPIPermission {
     kWebstorePrivate,
     kDevtools,
     kPlugin,
+    kPermissions,
     kEnumBoundary
   };
 
@@ -266,7 +268,8 @@ class ExtensionPermissionsInfo {
 // The ExtensionPermissionSet is an immutable class that encapsulates an
 // extension's permissions. The class exposes set operations for combining and
 // manipulating the permissions.
-class ExtensionPermissionSet {
+class ExtensionPermissionSet
+    : public base::RefCountedThreadSafe<ExtensionPermissionSet> {
  public:
   // Creates an empty permission set (e.g. default permissions).
   ExtensionPermissionSet();
@@ -286,10 +289,25 @@ class ExtensionPermissionSet {
 
   ~ExtensionPermissionSet();
 
+  // Creates a new permission set equal to |set1| - |set2|, passing ownership of
+  // the new set to the caller.
+  static ExtensionPermissionSet* CreateDifference(
+      const ExtensionPermissionSet* set1, const ExtensionPermissionSet* set2);
+
+  // Creates a new permission set equal to the intersection of |set1| and
+  // |set2|, passing ownership of the new set to the caller.
+  static ExtensionPermissionSet* CreateIntersection(
+      const ExtensionPermissionSet* set1, const ExtensionPermissionSet* set2);
+
   // Creates a new permission set equal to the union of |set1| and |set2|.
   // Passes ownership of the new set to the caller.
   static ExtensionPermissionSet* CreateUnion(
       const ExtensionPermissionSet* set1, const ExtensionPermissionSet* set2);
+
+  bool operator==(const ExtensionPermissionSet& rhs) const;
+
+  // Returns true if |set| is a subset of this.
+  bool Contains(const ExtensionPermissionSet& set) const;
 
   // Gets the API permissions in this set as a set of strings.
   std::set<std::string> GetAPIsAsStrings() const;
@@ -353,6 +371,8 @@ class ExtensionPermissionSet {
   FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionSetTest,
                            HasLessHostPrivilegesThan);
 
+  friend class base::RefCountedThreadSafe<ExtensionPermissionSet>;
+
   static std::set<std::string> GetDistinctHosts(
       const URLPatternSet& host_patterns, bool include_rcd);
 
@@ -380,9 +400,11 @@ class ExtensionPermissionSet {
   ExtensionAPIPermissionSet apis_;
 
   // The list of hosts that can be accessed directly from the extension.
+  // TODO(jstritar): Rename to "hosts_"?
   URLPatternSet explicit_hosts_;
 
   // The list of hosts that can be scripted by content scripts.
+  // TODO(jstritar): Rename to "user_script_hosts_"?
   URLPatternSet scriptable_hosts_;
 
   // The list of hosts this effectively grants access to.

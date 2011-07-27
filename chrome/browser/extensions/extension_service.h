@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
@@ -320,6 +321,10 @@ class ExtensionService
   // extension.
   void GrantPermissionsAndEnableExtension(const Extension* extension);
 
+  // Sets the |extension|'s active permissions to |permissions|.
+  void UpdateActivePermissions(const Extension* extension,
+                               const ExtensionPermissionSet* permissions);
+
   // Loads the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
@@ -405,9 +410,9 @@ class ExtensionService
   void OnExtensionInstalled(
       const Extension* extension, bool from_webstore);
 
-  // Checks if the privileges requested by |extension| have increased, and if
-  // so, disables the extension and prompts the user to approve the change.
-  void DisableIfPrivilegeIncrease(const Extension* extension);
+  // Initializes the |extension|'s active permission set and disables the
+  // extension if the privilege level has increased (e.g., due to an upgrade).
+  void InitializePermissions(const Extension* extension);
 
   // Go through each extensions in pref, unload blacklisted extensions
   // and update the blacklist state in pref.
@@ -466,6 +471,10 @@ class ExtensionService
 
   AppNotificationManager* app_notification_manager() {
     return &app_notification_manager_;
+  }
+
+  ExtensionPermissionsManager* permissions_manager() {
+    return &permissions_manager_;
   }
 
   ExtensionBrowserEventRouter* browser_event_router() {
@@ -585,7 +594,6 @@ class ExtensionService
                                             bool include_enabled,
                                             bool include_disabled,
                                             bool include_terminated) const;
-
 
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.
@@ -707,6 +715,9 @@ class ExtensionService
 
   // Keeps track of app notifications.
   AppNotificationManager app_notification_manager_;
+
+  // Keeps track of extension permissions.
+  ExtensionPermissionsManager permissions_manager_;
 
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;

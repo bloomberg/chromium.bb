@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -65,6 +66,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
                         OnSetScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateApplication, OnActivateApplication)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -149,6 +151,7 @@ void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
   }
 
   extensions_.Insert(extension);
+  extension->SetActivePermissions(params.GetActivePermissions());
 }
 
 void ExtensionDispatcher::OnUnloaded(const std::string& id) {
@@ -244,7 +247,7 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
   }
 
   const URLPatternSet& permissions =
-      extension->permission_set()->explicit_hosts();
+      extension->GetActivePermissions()->explicit_hosts();
   for (URLPatternSet::const_iterator i = permissions.begin();
        i != permissions.end(); ++i) {
     const char* schemes[] = {
@@ -263,6 +266,19 @@ void ExtensionDispatcher::InitHostPermissions(const Extension* extension) {
       }
     }
   }
+}
+
+void ExtensionDispatcher::OnUpdatePermissions(
+    const std::string& extension_id,
+    const ExtensionAPIPermissionSet& apis,
+    const URLPatternSet& explicit_hosts,
+    const URLPatternSet& scriptable_hosts) {
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension)
+    return;
+
+  extension->SetActivePermissions(
+      new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));
 }
 
 void ExtensionDispatcher::OnUpdateUserScripts(
