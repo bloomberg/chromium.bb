@@ -13,6 +13,10 @@
 
 class BrowsingInstance;
 
+namespace content {
+class BrowserContext;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // SiteInstance class
@@ -36,8 +40,8 @@ class BrowsingInstance;
 // SiteInstance is used.
 //
 // In --process-per-site, we consolidate all SiteInstances for a given site,
-// throughout the entire profile.  This ensures that only one process will be
-// dedicated to each site.
+// throughout the entire browser context.  This ensures that only one process
+// will be dedicated to each site.
 //
 // Each NavigationEntry for a TabContents points to the SiteInstance that
 // rendered it.  Each RenderViewHost also points to the SiteInstance that it is
@@ -119,18 +123,19 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   //
   // TODO(creis): This may be an argument to build a pass_refptr<T> class, as
   // Darin suggests.
-  static SiteInstance* CreateSiteInstance(Profile* profile);
+  static SiteInstance* CreateSiteInstance(
+      content::BrowserContext* browser_context);
 
   // Factory method to get the appropriate SiteInstance for the given URL, in
   // a new BrowsingInstance.  Use this instead of CreateSiteInstance when you
   // know the URL, since it allows special site grouping rules to be applied
   // (for example, to group chrome-ui pages into the same instance).
-  static SiteInstance* CreateSiteInstanceForURL(Profile* profile,
-                                                const GURL& url);
+  static SiteInstance* CreateSiteInstanceForURL(
+      content::BrowserContext* browser_context, const GURL& url);
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  static GURL GetSiteForURL(Profile* profile, const GURL& url);
+  static GURL GetSiteForURL(content::BrowserContext* context, const GURL& url);
 
   // Return whether both URLs are part of the same web site, for the purpose of
   // assigning them to processes accordingly.  The decision is currently based
@@ -139,7 +144,7 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   // the same process if they can communicate with other via JavaScript.
   // (e.g., docs.google.com and mail.google.com have DOM access to each other
   // if they both set their document.domain properties to google.com.)
-  static bool IsSameWebSite(Profile* profile,
+  static bool IsSameWebSite(content::BrowserContext* browser_context,
                             const GURL& url1, const GURL& url2);
 
   // Returns the renderer type for this URL.
@@ -158,7 +163,8 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   explicit SiteInstance(BrowsingInstance* browsing_instance);
 
   // Get the effective URL for the given actual URL.
-  static GURL GetEffectiveURL(Profile* profile, const GURL& url);
+  static GURL GetEffectiveURL(content::BrowserContext* browser_context,
+                              const GURL& url);
 
   // Returns the type of renderer process this instance belongs in, for grouping
   // purposes.

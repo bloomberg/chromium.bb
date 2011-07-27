@@ -38,8 +38,8 @@ WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
   return EmptyWebUIFactory::Get();
 }
 
-GURL MockContentBrowserClient::GetEffectiveURL(Profile* profile,
-                                               const GURL& url) {
+GURL MockContentBrowserClient::GetEffectiveURL(
+    content::BrowserContext* browser_context, const GURL& url) {
   return GURL();
 }
 
@@ -196,8 +196,9 @@ bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-WebPreferences MockContentBrowserClient::GetWebkitPrefs(Profile* profile,
-                                                        bool is_web_ui) {
+WebPreferences MockContentBrowserClient::GetWebkitPrefs(
+    content::BrowserContext* browser_context,
+    bool is_web_ui) {
   return WebPreferences();
 }
 

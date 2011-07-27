@@ -22,7 +22,6 @@ class FilePath;
 class GURL;
 class MHTMLGenerationManager;
 class PluginProcessHost;
-class Profile;
 class QuotaPermissionContext;
 class RenderViewHost;
 class ResourceDispatcherHost;
@@ -54,6 +53,7 @@ class Clipboard;
 
 namespace content {
 
+class BrowserContext;
 class ResourceContext;
 class WebUIFactory;
 
@@ -91,11 +91,12 @@ class ContentBrowserClient {
 
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.
-  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) = 0;
+  virtual GURL GetEffectiveURL(BrowserContext* browser_context,
+                               const GURL& url) = 0;
 
   // Returns whether all instances of the specified effective URL should be
   // rendered by the same process, rather than using process-per-site-instance.
-  virtual bool ShouldUseProcessPerSite(Profile* profile,
+  virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url) = 0;
 
   // Returns whether a specified URL is to be considered the same as any
@@ -242,7 +243,8 @@ class ContentBrowserClient {
   virtual bool IsFastShutdownPossible() = 0;
 
   // Returns the WebKit preferences that are used by the renderer.
-  virtual WebPreferences GetWebkitPrefs(Profile* profile, bool is_web_ui) = 0;
+  virtual WebPreferences GetWebkitPrefs(BrowserContext* browser_context,
+                                        bool is_web_ui) = 0;
 
   // Inspector setting was changed and should be persisted.
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,

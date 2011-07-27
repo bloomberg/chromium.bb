@@ -17,13 +17,13 @@ WebUI* EmptyWebUIFactory::CreateWebUIForURL(TabContents* source,
   return NULL;
 }
 
-WebUI::TypeID EmptyWebUIFactory::GetWebUIType(Profile* profile,
-                                              const GURL& url) const {
+WebUI::TypeID EmptyWebUIFactory::GetWebUIType(
+    content::BrowserContext* browser_context, const GURL& url) const {
   return WebUI::kNoWebUI;
 }
 
-bool EmptyWebUIFactory::UseWebUIForURL(Profile* profile,
-                                       const GURL& url) const {
+bool EmptyWebUIFactory::UseWebUIForURL(
+    content::BrowserContext* browser_context, const GURL& url) const {
   return false;
 }
 
@@ -31,8 +31,9 @@ bool EmptyWebUIFactory::HasWebUIScheme(const GURL& url) const {
   return false;
 }
 
-bool EmptyWebUIFactory::IsURLAcceptableForWebUI(Profile* profile,
-                                                const GURL& url) const {
+bool EmptyWebUIFactory::IsURLAcceptableForWebUI(
+    content::BrowserContext* browser_context,
+    const GURL& url) const {
   return false;
 }
 

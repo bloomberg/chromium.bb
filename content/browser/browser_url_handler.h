@@ -20,7 +20,10 @@
 #include "base/memory/singleton.h"
 
 class GURL;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 // BrowserURLHandler manages the list of all special URLs and manages
 // dispatching the URL handling to registered handlers.
@@ -30,7 +33,8 @@ class BrowserURLHandler {
   // If a handler handles |url|, it should :
   // - optionally modify |url| to the URL that should be sent to the renderer
   // If the URL is not handled by a handler, it should return false.
-  typedef bool (*URLHandler)(GURL* url, Profile* profile);
+  typedef bool (*URLHandler)(GURL* url,
+                             content::BrowserContext* browser_context);
 
   // Returns the singleton instance.
   static BrowserURLHandler* GetInstance();
@@ -39,12 +43,13 @@ class BrowserURLHandler {
   // the given URL, and modifies it in place.
   // If the original URL needs to be adjusted if the modified URL is redirected,
   // this function sets |reverse_on_redirect| to true.
-  void RewriteURLIfNecessary(GURL* url, Profile* profile,
+  void RewriteURLIfNecessary(GURL* url,
+                             content::BrowserContext* browser_context,
                              bool* reverse_on_redirect);
 
   // Reverses the rewriting that was done for |original| using the new |url|.
   bool ReverseURLRewrite(GURL* url, const GURL& original,
-                         Profile* profile);
+                         content::BrowserContext* browser_context);
 
   // Add the specified handler pair to the list of URL handlers.
   void AddHandlerPair(URLHandler handler, URLHandler reverse_handler);

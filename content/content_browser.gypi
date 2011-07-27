@@ -53,6 +53,7 @@
         'browser/appcache/chrome_appcache_service.h',
         'browser/browser_child_process_host.cc',
         'browser/browser_child_process_host.h',
+        'browser/browser_context.h',
         'browser/browser_message_filter.cc',
         'browser/browser_message_filter.h',
         'browser/browser_thread.cc',

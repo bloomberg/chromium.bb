@@ -1438,7 +1438,9 @@ std::string AboutSource::GetMimeType(const std::string& path) const {
 
 // -----------------------------------------------------------------------------
 
-void InitializeAboutDataSource(const std::string& name, Profile* profile) {
+void InitializeAboutDataSource(const std::string& name,
+                               content::BrowserContext* browser_context) {
+  Profile* profile = static_cast<Profile*>(browser_context);
   ChromeURLDataManager* manager = profile->GetChromeURLDataManager();
   for (size_t i = 0; i < arraysize(kAboutSourceNames); i++) {
     if (name == kAboutSourceNames[i]) {
@@ -1448,7 +1450,8 @@ void InitializeAboutDataSource(const std::string& name, Profile* profile) {
   }
 }
 
-bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
+bool WillHandleBrowserAboutURL(GURL* url,
+                               content::BrowserContext* browser_context) {
   // TODO(msw): Eliminate "about:*" constants and literals from code and tests,
   //            then hopefully we can remove this forced fixup.
   *url = URLFixerUpper::FixupURL(url->possibly_invalid_spec(), std::string());
@@ -1499,7 +1502,7 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   }
 
   // Initialize any potentially corresponding AboutSource handler.
-  InitializeAboutDataSource(host, profile);
+  InitializeAboutDataSource(host, browser_context);
   return true;
 }
 

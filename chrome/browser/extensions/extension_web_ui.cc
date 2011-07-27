@@ -129,7 +129,9 @@ const char ExtensionWebUI::kExtensionURLOverrides[] =
 ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
     : ChromeWebUI(tab_contents),
       url_(url) {
-  ExtensionService* service = tab_contents->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   const Extension* extension = service->GetExtensionByURL(url);
   if (!extension)
     extension = service->GetExtensionByWebExtent(url);
@@ -163,7 +165,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
         TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
     DCHECK(tab);
     extension_bookmark_manager_event_router_.reset(
-        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab));
+        new ExtensionBookmarkManagerEventRouter(profile, tab));
 
     link_transition_type_ = PageTransition::AUTO_BOOKMARK;
   }
@@ -186,10 +188,12 @@ void ExtensionWebUI::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-bool ExtensionWebUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
+bool ExtensionWebUI::HandleChromeURLOverride(
+    GURL* url, content::BrowserContext* browser_context) {
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   const DictionaryValue* overrides =
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   std::string page = url->host();
@@ -249,8 +253,9 @@ bool ExtensionWebUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
 }
 
 // static
-bool ExtensionWebUI::HandleChromeURLOverrideReverse(GURL* url,
-                                                    Profile* profile) {
+bool ExtensionWebUI::HandleChromeURLOverrideReverse(
+    GURL* url, content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   const DictionaryValue* overrides =
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   if (!overrides)
@@ -334,7 +339,9 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     // tabs for this override and get them to reload the original URL.
     for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
       TabContents* tab = (*iterator)->tab_contents();
-      if (tab->profile() != profile)
+      Profile* tab_profile =
+          Profile::FromBrowserContext(tab->browser_context());
+      if (tab_profile != profile)
         continue;
 
       GURL url = tab->GetURL();

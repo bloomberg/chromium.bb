@@ -8,11 +8,12 @@
 
 #include "content/browser/webui/web_ui.h"
 
-class Profile;
 class TabContents;
 class GURL;
 
 namespace content {
+
+class BrowserContext;
 
 // Interface for an object which controls which URLs are considered WebUI URLs
 // and creates WebUI instances for given URLs.
@@ -26,11 +27,12 @@ class WebUIFactory {
   // Gets the WebUI type for the given URL. This will return kNoWebUI if the
   // corresponding call to CreateWebUIForURL would fail, or something non-NULL
   // if CreateWebUIForURL would succeed.
-  virtual WebUI::TypeID GetWebUIType(Profile* profile,
+  virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const = 0;
 
   // Shorthand for the above, but returns a simple yes/no.
-  virtual bool UseWebUIForURL(Profile* profile, const GURL& url) const = 0;
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const = 0;
 
   // Returns true if the url has a scheme for WebUI. This differs from the above
   // in that it only checks the scheme; it is faster and can be used to
@@ -40,7 +42,7 @@ class WebUIFactory {
   // Returns true if the given URL can be loaded by Web UI system. This allows
   // URLs with WebUI types (as above) and also URLs that can be loaded by
   // normal tabs such as javascript: URLs or about:hang.
-  virtual bool IsURLAcceptableForWebUI(Profile* profile,
+  virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
                                        const GURL& url) const = 0;
 
   virtual ~WebUIFactory() {}

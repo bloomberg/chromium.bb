@@ -22,7 +22,7 @@ class URLRequestContextGetter;
 // IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {
  public:
-  explicit MockRenderProcessHost(Profile* profile);
+  explicit MockRenderProcessHost(content::BrowserContext* browser_context);
   virtual ~MockRenderProcessHost();
 
   // Provides access to all IPC messages that would have been sent to the
@@ -84,7 +84,8 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   MockRenderProcessHostFactory();
   virtual ~MockRenderProcessHostFactory();
 
-  virtual RenderProcessHost* CreateRenderProcessHost(Profile* profile) const;
+  virtual RenderProcessHost* CreateRenderProcessHost(
+      content::BrowserContext* browser_context) const OVERRIDE;
 
   // Removes the given MockRenderProcessHost from the MockRenderProcessHost list
   // without deleting it. When a test deletes a MockRenderProcessHost, we need

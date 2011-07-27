@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -270,18 +270,18 @@ class DoomEntriesHelper {
 RenderMessageFilter::RenderMessageFilter(
     int render_process_id,
     PluginService* plugin_service,
-    Profile* profile,
+    content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
     : resource_dispatcher_host_(
           content::GetContentClient()->browser()->GetResourceDispatcherHost()),
       plugin_service_(plugin_service),
-      profile_(profile),
+      browser_context_(browser_context),
       request_context_(request_context),
-      resource_context_(profile->GetResourceContext()),
+      resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
-      incognito_(profile->IsOffTheRecord()),
-      webkit_context_(profile->GetWebKitContext()),
+      incognito_(browser_context->IsOffTheRecord()),
+      webkit_context_(browser_context->GetWebKitContext()),
       render_process_id_(render_process_id) {
   DCHECK(request_context_);
 

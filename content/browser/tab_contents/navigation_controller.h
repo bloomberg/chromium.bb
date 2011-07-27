@@ -14,18 +14,19 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/navigation_types.h"
 #include "content/common/page_transition_types.h"
 
 class NavigationEntry;
-class Profile;
 class SessionStorageNamespace;
 class SiteInstance;
 class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
+class BrowserContext;
 struct LoadCommittedDetails;
 }
 
@@ -46,18 +47,24 @@ class NavigationController {
   // ---------------------------------------------------------------------------
 
   NavigationController(TabContents* tab_contents,
-                       Profile* profile,
+                       content::BrowserContext* browser_context,
                        SessionStorageNamespace* session_storage_namespace);
   ~NavigationController();
 
-  // Returns the profile for this controller. It can never be NULL.
-  Profile* profile() const {
-    return profile_;
+  // Returns the browser context for this controller. It can never be NULL.
+  content::BrowserContext* browser_context() const {
+    return browser_context_;
   }
 
-  // Sets the profile for this controller.
-  void set_profile(Profile* profile) {
-    profile_ = profile;
+  // Sets the browser context for this controller.
+  void set_browser_context(content::BrowserContext* browser_context) {
+    browser_context_ = browser_context;
+  }
+
+  // Returns the profile.
+  // TEMPORARY; http://crbug.com/76788
+  Profile* profile() const {
+    return Profile::FromBrowserContext(browser_context());
   }
 
   // Initializes this NavigationController with the given saved navigations,
@@ -319,10 +326,11 @@ class NavigationController {
 
   // Creates navigation entry and translates the virtual url to a real one.
   // Used when navigating to a new URL using LoadURL.
-  static NavigationEntry* CreateNavigationEntry(const GURL& url,
-                                                const GURL& referrer,
-                                                PageTransition::Type transition,
-                                                Profile* profile);
+  static NavigationEntry* CreateNavigationEntry(
+      const GURL& url,
+      const GURL& referrer,
+      PageTransition::Type transition,
+      content::BrowserContext* browser_context);
 
  private:
   class RestoreHelper;
@@ -410,8 +418,8 @@ class NavigationController {
 
   // ---------------------------------------------------------------------------
 
-  // The user profile associated with this controller
-  Profile* profile_;
+  // The user browser context associated with this controller.
+  content::BrowserContext* browser_context_;
 
   // List of NavigationEntry for this tab
   typedef std::vector<linked_ptr<NavigationEntry> > NavigationEntries;

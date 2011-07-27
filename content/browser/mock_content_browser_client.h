@@ -23,7 +23,8 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
   virtual void WorkerProcessHostCreated(WorkerProcessHost* host) OVERRIDE;
   virtual WebUIFactory* GetWebUIFactory() OVERRIDE;
-  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) OVERRIDE;
+  virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
+                               const GURL& url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
@@ -96,8 +97,9 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual DevToolsManager* GetDevToolsManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
-  virtual WebPreferences GetWebkitPrefs(Profile* profile,
-                                        bool is_web_ui) OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs(
+      content::BrowserContext* browser_context,
+      bool is_web_ui) OVERRIDE;
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;

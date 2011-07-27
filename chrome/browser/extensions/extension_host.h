@@ -137,7 +137,8 @@ class ExtensionHost : public RenderViewHostDelegate,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(
+      content::BrowserContext* browser_context) const OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)

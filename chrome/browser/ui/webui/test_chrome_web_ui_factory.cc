@@ -27,7 +27,8 @@ void TestChromeWebUIFactory::RemoveFactoryOverride(const std::string& host) {
 }
 
 WebUI::TypeID TestChromeWebUIFactory::GetWebUIType(
-    Profile* profile, const GURL& url) const {
+    content::BrowserContext* browser_context, const GURL& url) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIProvider* provider = GetWebUIProvider(profile, url);
   return provider ? reinterpret_cast<WebUI::TypeID>(provider) :
       ChromeWebUIFactory::GetWebUIType(profile, url);

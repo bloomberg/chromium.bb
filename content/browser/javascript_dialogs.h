@@ -9,9 +9,7 @@
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
-class ExtensionHost;
 class GURL;
-class Profile;
 class TabContents;
 
 namespace IPC {

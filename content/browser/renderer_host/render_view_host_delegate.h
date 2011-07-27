@@ -27,7 +27,6 @@ class BookmarkNode;
 struct ContextMenuParams;
 class GURL;
 struct NativeWebKeyboardEvent;
-class Profile;
 struct RendererPreferences;
 class RenderProcessHost;
 class RenderViewHost;
@@ -39,6 +38,10 @@ struct WebDropData;
 struct WebMenuItem;
 class WebKeyboardEvent;
 struct WebPreferences;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace gfx {
 class Point;
@@ -295,7 +298,8 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const = 0;
+  virtual RendererPreferences GetRendererPrefs(
+      content::BrowserContext* browser_context) const = 0;
 
   // Returns a WebPreferences object that will be used by the renderer
   // associated with the owning render view host.

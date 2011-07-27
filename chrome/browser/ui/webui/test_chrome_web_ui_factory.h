@@ -43,7 +43,7 @@ class TestChromeWebUIFactory : public ChromeWebUIFactory {
   static void RemoveFactoryOverride(const std::string& host);
 
   // ChromeWebUIFactory overrides.
-  virtual WebUI::TypeID GetWebUIType(Profile* profile,
+  virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                      const GURL& url) const OVERRIDE;
   virtual WebUI* CreateWebUIForURL(TabContents* tab_contents,
                                    const GURL& url) const OVERRIDE;

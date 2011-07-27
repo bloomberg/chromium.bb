@@ -26,7 +26,8 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
                                        int routing_id,
                                        Delegate* delegate)
     : delegate_(delegate) {
-  Profile* profile = site_instance->browsing_instance()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
 
   // TODO(rafaelw): Implement correct session storage.
   render_view_host_ = new RenderViewHost(site_instance, this, routing_id, NULL);
@@ -171,7 +172,8 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
 }
 
 RendererPreferences BackgroundContents::GetRendererPrefs(
-    Profile* profile) const {
+    content::BrowserContext* browser_context) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;

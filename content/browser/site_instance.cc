@@ -71,15 +71,16 @@ RenderProcessHost* SiteInstance::GetProcess() {
     // See if we should reuse an old process
     if (RenderProcessHost::ShouldTryToUseExistingProcessHost())
       process_ = RenderProcessHost::GetExistingProcessHost(
-          browsing_instance_->profile(), GetRendererType());
+          browsing_instance_->browser_context(), GetRendererType());
 
     // Otherwise (or if that fails), create a new one.
     if (!process_) {
       if (render_process_host_factory_) {
         process_ = render_process_host_factory_->CreateRenderProcessHost(
-            browsing_instance_->profile());
+            browsing_instance_->browser_context());
       } else {
-        process_ = new BrowserRenderProcessHost(browsing_instance_->profile());
+        process_ =
+            new BrowserRenderProcessHost(browsing_instance_->browser_context());
       }
     }
 
@@ -102,7 +103,7 @@ void SiteInstance::SetSite(const GURL& url) {
   // Remember that this SiteInstance has been used to load a URL, even if the
   // URL is invalid.
   has_site_ = true;
-  site_ = GetSiteForURL(browsing_instance_->profile(), url);
+  site_ = GetSiteForURL(browsing_instance_->browser_context(), url);
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -126,28 +127,32 @@ bool SiteInstance::HasWrongProcessForURL(const GURL& url) const {
 
   // If the effective URL is an extension (e.g., for hosted apps) but the
   // process is not (or vice versa), make sure we notice and fix it.
-  GURL effective_url = GetEffectiveURL(browsing_instance_->profile(), url);
+  GURL effective_url = GetEffectiveURL(browsing_instance_->browser_context(),
+                                       url);
   return effective_url.SchemeIs(chrome::kExtensionScheme) !=
       process_->is_extension_process();
 }
 
 /*static*/
-SiteInstance* SiteInstance::CreateSiteInstance(Profile* profile) {
-  return new SiteInstance(new BrowsingInstance(profile));
+SiteInstance* SiteInstance::CreateSiteInstance(
+    content::BrowserContext* browser_context) {
+  return new SiteInstance(new BrowsingInstance(browser_context));
 }
 
 /*static*/
-SiteInstance* SiteInstance::CreateSiteInstanceForURL(Profile* profile,
-                                                     const GURL& url) {
+SiteInstance* SiteInstance::CreateSiteInstanceForURL(
+    content::BrowserContext* browser_context, const GURL& url) {
   // This BrowsingInstance may be deleted if it returns an existing
   // SiteInstance.
-  scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(profile));
+  scoped_refptr<BrowsingInstance> instance(
+      new BrowsingInstance(browser_context));
   return instance->GetSiteInstanceForURL(url);
 }
 
 /*static*/
-GURL SiteInstance::GetSiteForURL(Profile* profile, const GURL& real_url) {
-  GURL url = GetEffectiveURL(profile, real_url);
+GURL SiteInstance::GetSiteForURL(content::BrowserContext* browser_context,
+                                 const GURL& real_url) {
+  GURL url = GetEffectiveURL(browser_context, real_url);
 
   // URLs with no host should have an empty site.
   GURL site;
@@ -181,10 +186,10 @@ GURL SiteInstance::GetSiteForURL(Profile* profile, const GURL& real_url) {
 }
 
 /*static*/
-bool SiteInstance::IsSameWebSite(Profile* profile,
+bool SiteInstance::IsSameWebSite(content::BrowserContext* browser_context,
                                  const GURL& real_url1, const GURL& real_url2) {
-  GURL url1 = GetEffectiveURL(profile, real_url1);
-  GURL url2 = GetEffectiveURL(profile, real_url2);
+  GURL url1 = GetEffectiveURL(browser_context, real_url1);
+  GURL url2 = GetEffectiveURL(browser_context, real_url2);
 
   // We infer web site boundaries based on the registered domain name of the
   // top-level page and the scheme.  We do not pay attention to the port if
@@ -209,8 +214,10 @@ bool SiteInstance::IsSameWebSite(Profile* profile,
 }
 
 /*static*/
-GURL SiteInstance::GetEffectiveURL(Profile* profile, const GURL& url) {
-  return content::GetContentClient()->browser()->GetEffectiveURL(profile, url);
+GURL SiteInstance::GetEffectiveURL(content::BrowserContext* browser_context,
+                                   const GURL& url) {
+  return content::GetContentClient()->browser()->
+      GetEffectiveURL(browser_context, url);
 }
 
 /*static*/

@@ -8,10 +8,14 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/profiles/profile.h"
 
 class GURL;
-class Profile;
 class SiteInstance;
+
+namespace content {
+class BrowserContext;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -35,7 +39,7 @@ class SiteInstance;
 // Thus, they must be rendered in the same process.
 //
 // If the process-per-site model is in use, then we ensure that there is only
-// one SiteInstance per site for the entire profile, not just for each
+// one SiteInstance per site for the entire browser context, not just for each
 // BrowsingInstance.  This reduces the number of renderer processes we create.
 // (This is currently only true if --process-per-site is specified at the
 // command line.)
@@ -55,16 +59,22 @@ class SiteInstance;
 class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
  public:
   // Create a new BrowsingInstance.
-  explicit BrowsingInstance(Profile* profile);
+  explicit BrowsingInstance(content::BrowserContext* context);
 
   // Returns whether the process-per-site model is in use (globally or just for
   // the given url), in which case we should ensure there is only one
-  // SiteInstance per site for the entire profile, not just for this
+  // SiteInstance per site for the entire browser context, not just for this
   // BrowsingInstance.
   virtual bool ShouldUseProcessPerSite(const GURL& url);
 
-  // Get the profile to which this BrowsingInstance belongs.
-  Profile* profile() { return profile_; }
+  // Get the browser context to which this BrowsingInstance belongs.
+  content::BrowserContext* browser_context() { return browser_context_; }
+
+  // Returns the profile.
+  // TEMPORARY; http://crbug.com/76788
+  Profile* profile() {
+    return Profile::FromBrowserContext(browser_context());
+  }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
   // the site of the given URL.
@@ -95,26 +105,28 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   typedef base::hash_map<std::string, SiteInstance*> SiteInstanceMap;
 
-  // Map of Profile to SiteInstanceMap, for use in the process-per-site model.
-  // process-per-site model.
-  typedef base::hash_map<Profile*, SiteInstanceMap> ProfileSiteInstanceMap;
+  // Map of BrowserContext to SiteInstanceMap, for use in the process-per-site
+  // model.
+  typedef base::hash_map<content::BrowserContext*, SiteInstanceMap>
+      ContextSiteInstanceMap;
 
   // Returns a pointer to the relevant SiteInstanceMap for this object.  If the
   // process-per-site model is in use, or if process-per-site-instance is in
   // use and |url| matches a site for which we always use one process (e.g.,
   // the new tab page), then this returns the SiteInstanceMap for the entire
-  // profile.  If not, this returns the BrowsingInstance's own private
+  // browser context.  If not, this returns the BrowsingInstance's own private
   // SiteInstanceMap.
-  SiteInstanceMap* GetSiteInstanceMap(Profile* profile, const GURL& url);
+  SiteInstanceMap* GetSiteInstanceMap(content::BrowserContext* browser_context,
+                                      const GURL& url);
 
   // Utility routine which removes the passed SiteInstance from the passed
   // SiteInstanceMap.
   bool RemoveSiteInstanceFromMap(SiteInstanceMap* map, const std::string& site,
                                  SiteInstance* site_instance);
 
-  // Common profile to which all SiteInstances in this BrowsingInstance
+  // Common browser context to which all SiteInstances in this BrowsingInstance
   // must belong.
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.  The site string should be the possibly_invalid_spec() of a GURL
@@ -124,8 +136,8 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   // This field is only used if we are not using process-per-site.
   SiteInstanceMap site_instance_map_;
 
-  // Global map of Profile to SiteInstanceMap, for process-per-site.
-  static ProfileSiteInstanceMap profile_site_instance_map_;
+  // Global map of BrowserContext to SiteInstanceMap, for process-per-site.
+  static ContextSiteInstanceMap context_site_instance_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };

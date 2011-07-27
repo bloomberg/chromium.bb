@@ -14,13 +14,16 @@
 #include "content/common/notification_registrar.h"
 #include "content/browser/site_instance.h"
 
-class WebUI;
 class InterstitialPage;
 class NavigationController;
 class NavigationEntry;
-class Profile;
-class RenderWidgetHostView;
 class RenderViewHost;
+class RenderWidgetHostView;
+class WebUI;
+
+namespace content {
+class BrowserContext;
+}
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
 // it is easy to do. But we can also have transitions of processes (and hence
@@ -87,11 +90,11 @@ class RenderViewHostManager
   virtual ~RenderViewHostManager();
 
   // For arguments, see TabContents constructor.
-  void Init(Profile* profile,
+  void Init(content::BrowserContext* browser_context,
             SiteInstance* site_instance,
             int routing_id);
 
-  // Returns the currently actuive RenderViewHost.
+  // Returns the currently active RenderViewHost.
   //
   // This will be non-NULL between Init() and Shutdown(). You may want to NULL
   // check it in many cases, however. Windows can send us messages during the

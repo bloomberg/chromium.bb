@@ -6,11 +6,12 @@
 
 #include "content/browser/child_process_security_policy.h"
 
-MockRenderProcessHost::MockRenderProcessHost(Profile* profile)
-    : RenderProcessHost(profile),
-      transport_dib_(NULL),
-      bad_msg_count_(0),
-      factory_(NULL) {
+MockRenderProcessHost::MockRenderProcessHost(
+    content::BrowserContext* browser_context)
+        : RenderProcessHost(browser_context),
+          transport_dib_(NULL),
+          bad_msg_count_(0),
+          factory_(NULL) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
@@ -127,8 +128,8 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 }
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
-    Profile* profile) const {
-  MockRenderProcessHost* host = new MockRenderProcessHost(profile);
+    content::BrowserContext* browser_context) const {
+  MockRenderProcessHost* host = new MockRenderProcessHost(browser_context);
   if (host) {
     processes_.push_back(host);
     host->SetFactory(this);

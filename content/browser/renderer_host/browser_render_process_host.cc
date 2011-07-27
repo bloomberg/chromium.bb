@@ -26,9 +26,9 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/device_orientation/message_filter.h"
@@ -151,11 +151,11 @@ namespace {
 class RendererURLRequestContextSelector
     : public ResourceMessageFilter::URLRequestContextSelector {
  public:
-  RendererURLRequestContextSelector(Profile* profile,
+  RendererURLRequestContextSelector(content::BrowserContext* browser_context,
                                     int render_child_id)
-      : request_context_(profile->GetRequestContextForRenderProcess(
+      : request_context_(browser_context->GetRequestContextForRenderProcess(
                              render_child_id)),
-        media_request_context_(profile->GetRequestContextForMedia()) {
+        media_request_context_(browser_context->GetRequestContextForMedia()) {
   }
 
   virtual net::URLRequestContext* GetRequestContext(
@@ -178,15 +178,16 @@ class RendererURLRequestContextSelector
 
 }  // namespace
 
-BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
-    : RenderProcessHost(profile),
-      visible_widgets_(0),
-      backgrounded_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
-            base::TimeDelta::FromSeconds(5),
-            this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
-      accessibility_enabled_(false),
-      is_initialized_(false) {
+BrowserRenderProcessHost::BrowserRenderProcessHost(
+    content::BrowserContext* browser_context)
+        : RenderProcessHost(browser_context),
+          visible_widgets_(0),
+          backgrounded_(true),
+          ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
+                base::TimeDelta::FromSeconds(5),
+                this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
+          accessibility_enabled_(false),
+          is_initialized_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
@@ -197,7 +198,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // requests them.
   // This is for the filesystem sandbox.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), profile->GetPath().Append(
+      id(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kNewFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
@@ -214,14 +215,14 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // This is so that we can read and move stuff out of the old filesystem
   // sandbox.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), profile->GetPath().Append(
+      id(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kOldFileSystemDirectory),
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES | base::PLATFORM_FILE_ENUMERATE);
   // This is so that we can rename the old sandbox out of the way so that we
   // know we've taken care of it.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), profile->GetPath().Append(
+      id(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kRenamedOldFileSystemDirectory),
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE);
@@ -343,57 +344,59 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new RenderMessageFilter(
           id(),
           PluginService::GetInstance(),
-          profile(),
-          profile()->GetRequestContextForRenderProcess(id()),
+          browser_context(),
+          browser_context()->GetRequestContextForRenderProcess(id()),
           widget_helper_));
   channel_->AddFilter(render_message_filter);
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       id(), ChildProcessInfo::RENDER_PROCESS,
-      &profile()->GetResourceContext(),
-      new RendererURLRequestContextSelector(profile(), id()),
+      &browser_context()->GetResourceContext(),
+      new RendererURLRequestContextSelector(browser_context(), id()),
       content::GetContentClient()->browser()->GetResourceDispatcherHost());
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost());
-  channel_->AddFilter(new AudioRendererHost(&profile()->GetResourceContext()));
+  channel_->AddFilter(
+      new AudioRendererHost(&browser_context()->GetResourceContext()));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(
-      new AppCacheDispatcherHost(&profile()->GetResourceContext(), id()));
+      new AppCacheDispatcherHost(&browser_context()->GetResourceContext(),
+                                 id()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(
-      new DOMStorageMessageFilter(id(), profile()->GetWebKitContext()));
+      new DOMStorageMessageFilter(id(), browser_context()->GetWebKitContext()));
   channel_->AddFilter(
-      new IndexedDBDispatcherHost(id(), profile()->GetWebKitContext()));
+      new IndexedDBDispatcherHost(id(), browser_context()->GetWebKitContext()));
   channel_->AddFilter(
       GeolocationDispatcherHost::New(
-          id(), profile()->GetGeolocationPermissionContext()));
+          id(), browser_context()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new GpuMessageFilter(id(), widget_helper_.get()));
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(id()));
-  channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
+  channel_->AddFilter(new PepperFileMessageFilter(id(), browser_context()));
   channel_->AddFilter(
-      new PepperMessageFilter(&profile()->GetResourceContext()));
+      new PepperMessageFilter(&browser_context()->GetResourceContext()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
-      new FileSystemDispatcherHost(&profile()->GetResourceContext()));
+      new FileSystemDispatcherHost(&browser_context()->GetResourceContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
-      new BlobMessageFilter(id(), profile()->GetBlobStorageContext()));
+      new BlobMessageFilter(id(), browser_context()->GetBlobStorageContext()));
   channel_->AddFilter(new FileUtilitiesMessageFilter(id()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      profile()->GetDatabaseTracker()));
+      browser_context()->GetDatabaseTracker()));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new RendererURLRequestContextSelector(profile(), id()),
-          &profile()->GetResourceContext());
+          new RendererURLRequestContextSelector(browser_context(), id()),
+          &browser_context()->GetResourceContext());
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(
       new WorkerMessageFilter(
           id(),
-          &profile()->GetResourceContext(),
+          &browser_context()->GetResourceContext(),
           content::GetContentClient()->browser()->GetResourceDispatcherHost(),
           NewCallbackWithReturnValue(
               widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
@@ -405,7 +408,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
   channel_->AddFilter(new QuotaDispatcherHost(
-      id(), profile()->GetQuotaManager(),
+      id(), browser_context()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
 }
 
@@ -599,7 +602,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
                                  arraysize(kSwitchNames));
 
   // Disable databases in incognito mode.
-  if (profile()->IsOffTheRecord() &&
+  if (browser_context()->IsOffTheRecord() &&
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
@@ -729,8 +732,8 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 }
 
 bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  // If we're about to be deleted, we can no longer trust that our profile is
-  // valid, so we ignore incoming messages.
+  // If we're about to be deleted, we can no longer trust that our browser
+  // context is valid, so we ignore incoming messages.
   if (deleting_soon_)
     return false;
 

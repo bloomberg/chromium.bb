@@ -11,7 +11,7 @@ class BrowserURLHandlerTest : public testing::Test {
 };
 
 // Test URL rewriter that rewrites all "foo://" URLs to "bar://bar".
-static bool FooRewriter(GURL* url, Profile* profile) {
+static bool FooRewriter(GURL* url, content::BrowserContext* browser_context) {
   if (url->scheme() == "foo") {
     *url = GURL("bar://bar");
     return true;
@@ -20,7 +20,7 @@ static bool FooRewriter(GURL* url, Profile* profile) {
 }
 
 // Test URL rewriter that rewrites all "bar://" URLs to "foo://foo".
-static bool BarRewriter(GURL* url, Profile* profile) {
+static bool BarRewriter(GURL* url, content::BrowserContext* browser_context) {
   if (url->scheme() == "bar") {
     *url = GURL("foo://foo");
     return true;

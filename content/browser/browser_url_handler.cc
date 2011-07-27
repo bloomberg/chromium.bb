@@ -11,7 +11,8 @@
 #include "googleurl/src/gurl.h"
 
 // Handles rewriting view-source URLs for what we'll actually load.
-static bool HandleViewSource(GURL* url, Profile* profile) {
+static bool HandleViewSource(GURL* url,
+                             content::BrowserContext* browser_context) {
   if (url->SchemeIs(chrome::kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
@@ -43,7 +44,8 @@ static bool HandleViewSource(GURL* url, Profile* profile) {
 }
 
 // Turns a non view-source URL into the corresponding view-source URL.
-static bool ReverseViewSource(GURL* url, Profile* profile) {
+static bool ReverseViewSource(GURL* url,
+                              content::BrowserContext* browser_context) {
   // No action necessary if the URL is already view-source:
   if (url->SchemeIs(chrome::kViewSourceScheme))
     return false;
@@ -89,11 +91,13 @@ void BrowserURLHandler::AddHandlerPair(URLHandler handler,
   url_handlers_.push_back(HandlerPair(handler, reverse_handler));
 }
 
-void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile,
-                                              bool* reverse_on_redirect) {
+void BrowserURLHandler::RewriteURLIfNecessary(
+    GURL* url,
+    content::BrowserContext* browser_context,
+    bool* reverse_on_redirect) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler handler = *url_handlers_[i].first;
-    if (handler && handler(url, profile)) {
+    if (handler && handler(url, browser_context)) {
       *reverse_on_redirect = (url_handlers_[i].second != NULL);
       return;
     }
@@ -101,17 +105,17 @@ void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile,
 }
 
 bool BrowserURLHandler::ReverseURLRewrite(
-    GURL* url, const GURL& original, Profile* profile) {
+    GURL* url, const GURL& original, content::BrowserContext* browser_context) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler reverse_rewriter = *url_handlers_[i].second;
     if (reverse_rewriter) {
       GURL test_url(original);
       URLHandler handler = *url_handlers_[i].first;
       if (!handler) {
-        if (reverse_rewriter(url, profile))
+        if (reverse_rewriter(url, browser_context))
           return true;
-      } else if (handler(&test_url, profile)) {
-        return reverse_rewriter(url, profile);
+      } else if (handler(&test_url, browser_context)) {
+        return reverse_rewriter(url, browser_context);
       }
     }
   }

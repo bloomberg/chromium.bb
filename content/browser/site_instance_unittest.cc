@@ -28,10 +28,11 @@ const char kSameAsAnyInstanceURL[] = "about:internets";
 
 class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
  public:
-  virtual bool UseWebUIForURL(Profile* profile, const GURL& url) const {
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const OVERRIDE {
     return HasWebUIScheme(url);
   }
-  virtual bool HasWebUIScheme(const GURL& url) const {
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
     return url.SchemeIs(chrome::kChromeUIScheme);
   }
 };
@@ -42,7 +43,7 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
     return &factory_;
   }
 
-  virtual bool ShouldUseProcessPerSite(Profile* profile,
+  virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                        const GURL& effective_url) OVERRIDE {
     return false;
   }
@@ -52,7 +53,8 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
            url == GURL(chrome::kAboutCrashURL);
   }
 
-  virtual GURL GetEffectiveURL(Profile* profile, const GURL& url) OVERRIDE {
+  virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
+                               const GURL& url) OVERRIDE {
     return url;
   }
 

@@ -42,7 +42,7 @@ class SharedMemory;
 class BrowserRenderProcessHost : public RenderProcessHost,
                                  public ChildProcessLauncher::Client {
  public:
-  explicit BrowserRenderProcessHost(Profile* profile);
+  explicit BrowserRenderProcessHost(content::BrowserContext* browser_context);
   virtual ~BrowserRenderProcessHost();
 
   // RenderProcessHost implementation (public portion).

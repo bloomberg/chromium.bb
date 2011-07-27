@@ -262,15 +262,16 @@ struct PossibleTestSingletonTraits : public DefaultSingletonTraits<Type> {
 
 }  // namespace
 
-WebUI::TypeID ChromeWebUIFactory::GetWebUIType(Profile* profile,
-                                               const GURL& url) const {
+WebUI::TypeID ChromeWebUIFactory::GetWebUIType(
+      content::BrowserContext* browser_context, const GURL& url) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
-bool ChromeWebUIFactory::UseWebUIForURL(Profile* profile,
-                                        const GURL& url) const {
-  return GetWebUIType(profile, url) != WebUI::kNoWebUI;
+bool ChromeWebUIFactory::UseWebUIForURL(
+    content::BrowserContext* browser_context, const GURL& url) const {
+  return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
 }
 
 bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {
@@ -281,9 +282,9 @@ bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {
 }
 
 bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     const GURL& url) const {
-  return UseWebUIForURL(profile, url) ||
+  return UseWebUIForURL(browser_context, url) ||
       // javacsript: URLs are allowed to run in Web UI pages
       url.SchemeIs(chrome::kJavaScriptScheme) ||
       // It's possible to load about:blank in a Web UI renderer.
@@ -299,8 +300,9 @@ bool ChromeWebUIFactory::IsURLAcceptableForWebUI(
 WebUI* ChromeWebUIFactory::CreateWebUIForURL(
     TabContents* tab_contents,
     const GURL& url) const {
-  WebUIFactoryFunction function = GetWebUIFactoryFunction(
-      tab_contents->profile(), url);
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(profile, url);
   if (!function)
     return NULL;
   return (*function)(tab_contents, url);

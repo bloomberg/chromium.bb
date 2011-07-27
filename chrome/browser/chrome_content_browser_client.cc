@@ -92,7 +92,8 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
   if (!site.SchemeIs(chrome::kExtensionScheme))
     return;
 
-  Profile* profile = site_instance->browsing_instance()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      site_instance->browsing_instance()->browser_context());
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
@@ -146,8 +147,8 @@ void InitRenderViewHostForExtensions(RenderViewHost* render_view_host) {
 }
 
 // Handles rewriting Web UI URLs.
-static bool HandleWebUI(GURL* url, Profile* profile) {
-  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(profile, *url))
+static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
+  if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(browser_context, *url))
     return false;
 
   // Special case the new tab page. In older versions of Chrome, the new tab
@@ -178,7 +179,7 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
 void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
     BrowserRenderProcessHost* host) {
   int id = host->id();
-  Profile* profile = host->profile();
+  Profile* profile = Profile::FromBrowserContext(host->browser_context());
   host->channel()->AddFilter(new ChromeRenderMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
   host->channel()->AddFilter(new PrintingMessageFilter());
@@ -206,8 +207,9 @@ content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {
   return ChromeWebUIFactory::GetInstance();
 }
 
-GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
-                                                 const GURL& url) {
+GURL ChromeContentBrowserClient::GetEffectiveURL(
+    content::BrowserContext* browser_context, const GURL& url) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   // Get the effective URL for the given actual URL. If the URL is part of an
   // installed app, the effective URL is an extension URL with the ID of that
   // extension as the host. This has the effect of grouping apps together in
@@ -226,14 +228,14 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(Profile* profile,
 }
 
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
-    Profile* profile,
-    const GURL& effective_url) {
+    content::BrowserContext* browser_context, const GURL& effective_url) {
   // Non-extension URLs should generally use process-per-site-instance.
   // Because we expect to use the effective URL, hosted apps URLs should have
   // an extension scheme by now.
   if (!effective_url.SchemeIs(chrome::kExtensionScheme))
     return false;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile || !profile->GetExtensionService())
     return false;
 
@@ -302,7 +304,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     RenderProcessHost* process = RenderProcessHost::FromID(child_process_id);
 
-    PrefService* prefs = process->profile()->GetPrefs();
+    Profile* profile = Profile::FromBrowserContext(process->browser_context());
+    PrefService* prefs = profile->GetPrefs();
     // Currently this pref is only registered if applied via a policy.
     if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
         prefs->GetBoolean(prefs::kDisable3DAPIs)) {
@@ -395,7 +398,8 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
 }
 
 std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
-  return tab->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+  return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
 SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
@@ -574,8 +578,9 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   }
 
   RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->browser_context());
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      DesktopNotificationServiceFactory::GetForProfile(profile);
   service->RequestPermission(
       source_origin, render_process_id, render_view_id, callback_context,
       tab_util::GetTabContentsByID(render_process_id, render_view_id));
@@ -616,8 +621,9 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
   }
 
   RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->browser_context());
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      DesktopNotificationServiceFactory::GetForProfile(profile);
   service->ShowDesktopNotification(
     params, render_process_id, render_view_id,
     worker ? DesktopNotificationService::WorkerNotification :
@@ -636,8 +642,9 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
   }
 
   RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->browser_context());
   DesktopNotificationService* service =
-      DesktopNotificationServiceFactory::GetForProfile(process->profile());
+      DesktopNotificationServiceFactory::GetForProfile(profile);
   service->CancelDesktopNotification(
       render_process_id, render_view_id, notification_id);
 }
@@ -699,20 +706,21 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
   return !browser_command_line.HasSwitch(switches::kChromeFrame);
 }
 
-WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(Profile* profile,
-                                                          bool is_web_ui) {
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_web_ui);
+WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(
+    content::BrowserContext* browser_context, bool is_web_ui) {
+  return RenderViewHostDelegateHelper::GetWebkitPrefs(browser_context,
+                                                      is_web_ui);
 }
 
 void ChromeContentBrowserClient::UpdateInspectorSetting(
     RenderViewHost* rvh, const std::string& key, const std::string& value) {
   RenderViewHostDelegateHelper::UpdateInspectorSetting(
-      rvh->process()->profile(), key, value);
+      rvh->process()->browser_context(), key, value);
 }
 
 void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
   RenderViewHostDelegateHelper::ClearInspectorSettings(
-      rvh->process()->profile());
+      rvh->process()->browser_context());
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
@@ -732,7 +740,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 }
 
 void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
-  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      rvh->site_instance()->GetProcess()->browser_context());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());
@@ -741,7 +750,8 @@ void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 }
 
 void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
-  Profile* profile = rvh->site_instance()->GetProcess()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      rvh->site_instance()->GetProcess()->browser_context());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());

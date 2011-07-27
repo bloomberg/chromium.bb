@@ -20,12 +20,15 @@ class TabContents;
 
 class ChromeWebUIFactory : public content::WebUIFactory {
  public:
-  virtual WebUI::TypeID GetWebUIType(Profile* profile, const GURL& url) const;
-  virtual bool UseWebUIForURL(Profile* profile, const GURL& url) const;
-  virtual bool HasWebUIScheme(const GURL& url) const;
-  virtual bool IsURLAcceptableForWebUI(Profile* profile, const GURL& url) const;
+  virtual WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
+                                     const GURL& url) const OVERRIDE;
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const OVERRIDE;
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
+  virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
+                                       const GURL& url) const OVERRIDE;
   virtual WebUI* CreateWebUIForURL(TabContents* tab_contents,
-                                   const GURL& url) const;
+                                   const GURL& url) const OVERRIDE;
 
   // Get the favicon for |page_url| and forward the result to the |request|
   // when loaded.

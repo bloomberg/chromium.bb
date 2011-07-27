@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/webui/web_ui_factory.h"
@@ -15,11 +15,11 @@
 #include "content/common/url_constants.h"
 
 // static
-BrowsingInstance::ProfileSiteInstanceMap
-    BrowsingInstance::profile_site_instance_map_;
+BrowsingInstance::ContextSiteInstanceMap
+    BrowsingInstance::context_site_instance_map_;
 
-BrowsingInstance::BrowsingInstance(Profile* profile)
-    : profile_(profile) {
+BrowsingInstance::BrowsingInstance(content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
@@ -37,12 +37,12 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   // process creation logic in RenderProcessHost, so we do not need to worry
   // about it here.
 
-  if (content::GetContentClient()->browser()->ShouldUseProcessPerSite(profile_,
-                                                                      url))
+  if (content::GetContentClient()->browser()->
+      ShouldUseProcessPerSite(browser_context_, url))
     return true;
 
   // DevTools pages have WebUI type but should not reuse the same host.
-  if (content::WebUIFactory::Get()->UseWebUIForURL(profile_, url) &&
+  if (content::WebUIFactory::Get()->UseWebUIForURL(browser_context_, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     return true;
   }
@@ -52,31 +52,34 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
 }
 
 BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
-    Profile* profile, const GURL& url) {
-  if (!ShouldUseProcessPerSite(SiteInstance::GetEffectiveURL(profile, url))) {
+    content::BrowserContext* browser_context, const GURL& url) {
+  if (!ShouldUseProcessPerSite(SiteInstance::GetEffectiveURL(browser_context,
+                                                             url))) {
     // Not using process-per-site, so use a map specific to this instance.
     return &site_instance_map_;
   }
 
   // Otherwise, process-per-site is in use, at least for this URL.  Look up the
-  // global map for this profile, creating an entry if necessary.
-  return &profile_site_instance_map_[profile];
+  // global map for this context, creating an entry if necessary.
+  return &context_site_instance_map_[browser_context];
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
   std::string site =
-      SiteInstance::GetSiteForURL(profile_, url).possibly_invalid_spec();
+      SiteInstance::GetSiteForURL(browser_context_, url)
+          .possibly_invalid_spec();
 
-  SiteInstanceMap* map = GetSiteInstanceMap(profile_, url);
+  SiteInstanceMap* map = GetSiteInstanceMap(browser_context_, url);
   SiteInstanceMap::iterator i = map->find(site);
   return (i != map->end());
 }
 
 SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
   std::string site =
-      SiteInstance::GetSiteForURL(profile_, url).possibly_invalid_spec();
+      SiteInstance::GetSiteForURL(browser_context_, url)
+          .possibly_invalid_spec();
 
-  SiteInstanceMap* map = GetSiteInstanceMap(profile_, url);
+  SiteInstanceMap* map = GetSiteInstanceMap(browser_context_, url);
   SiteInstanceMap::iterator i = map->find(site);
   if (i != map->end()) {
     return i->second;
@@ -100,7 +103,8 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
   // tabs are navigated there at the same time.  (We don't call SetSite or
   // register them until DidNavigate.)  If there is a previously existing
   // SiteInstance for this site, we just won't register the new one.
-  SiteInstanceMap* map = GetSiteInstanceMap(profile_, site_instance->site());
+  SiteInstanceMap* map = GetSiteInstanceMap(browser_context_,
+                                            site_instance->site());
   SiteInstanceMap::iterator i = map->find(site);
   if (i == map->end()) {
     // Not previously registered, so register it.
@@ -118,15 +122,15 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
   // comments in RegisterSiteInstance.)
 
   // We look for the site instance in both the local site_instance_map_ and also
-  // the static profile_site_instance_map_ - this is because the logic in
+  // the static context_site_instance_map_ - this is because the logic in
   // ShouldUseProcessPerSite() can produce different results over the lifetime
   // of Chrome (e.g. installation of apps with web extents can change our
   // process-per-site policy for a given domain), so we don't know which map
   // the site was put into when it was originally registered.
   if (!RemoveSiteInstanceFromMap(&site_instance_map_, site, site_instance)) {
-    // Wasn't in our local map, so look in the static per-profile map.
+    // Wasn't in our local map, so look in the static per-browser context map.
     RemoveSiteInstanceFromMap(
-        &profile_site_instance_map_[profile_], site, site_instance);
+        &context_site_instance_map_[browser_context_], site, site_instance);
   }
 }
 

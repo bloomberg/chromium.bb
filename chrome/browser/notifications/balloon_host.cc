@@ -165,7 +165,9 @@ void BalloonHost::HandleMouseDown() {
   balloon_->OnClick();
 }
 
-RendererPreferences BalloonHost::GetRendererPrefs(Profile* profile) const {
+RendererPreferences BalloonHost::GetRendererPrefs(
+    content::BrowserContext* browser_context) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;

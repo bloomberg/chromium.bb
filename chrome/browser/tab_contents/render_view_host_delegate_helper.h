@@ -29,6 +29,10 @@ class SiteInstance;
 class TabContents;
 struct ViewHostMsg_CreateWindow_Params;
 
+namespace content {
+class BrowserContext;
+}
+
 // Provides helper methods that provide common implementations of some
 // RenderViewHostDelegate::View methods.
 class RenderViewHostDelegateViewHelper : public NotificationObserver {
@@ -121,12 +125,13 @@ class RenderViewHostDelegateViewHelper : public NotificationObserver {
 // RenderViewHostDelegate methods.
 class RenderViewHostDelegateHelper {
  public:
-  static WebPreferences GetWebkitPrefs(Profile* profile, bool is_web_ui);
+  static WebPreferences GetWebkitPrefs(content::BrowserContext* browser_context,
+                                       bool is_web_ui);
 
-  static void UpdateInspectorSetting(Profile* profile,
+  static void UpdateInspectorSetting(content::BrowserContext* browser_context,
                                      const std::string& key,
                                      const std::string& value);
-  static void ClearInspectorSettings(Profile* profile);
+  static void ClearInspectorSettings(content::BrowserContext* browser_context);
 
  private:
   RenderViewHostDelegateHelper();

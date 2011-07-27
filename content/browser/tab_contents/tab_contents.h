@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -40,7 +41,6 @@ class Rect;
 
 class DownloadItem;
 class LoadNotificationDetails;
-class Profile;
 struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
@@ -80,7 +80,7 @@ class TabContents : public PageNavigator,
   // tab contentses to share the same session storage (part of the WebStorage
   // spec) space. This is useful when restoring tabs, but most callers should
   // pass in NULL which will cause a new SessionStorageNamespace to be created.
-  TabContents(Profile* profile,
+  TabContents(content::BrowserContext* browser_context,
               SiteInstance* site_instance,
               int routing_id,
               const TabContents* base_tab_contents,
@@ -102,9 +102,17 @@ class TabContents : public PageNavigator,
   NavigationController& controller() { return controller_; }
   const NavigationController& controller() const { return controller_; }
 
-  // Returns the user profile associated with this TabContents (via the
+  // Returns the user browser context associated with this TabContents (via the
   // NavigationController).
-  Profile* profile() const { return controller_.profile(); }
+  content::BrowserContext* browser_context() const {
+    return controller_.browser_context();
+  }
+
+  // Returns the profile.
+  // TEMPORARY; http://crbug.com/76788
+  Profile* profile() const {
+    return Profile::FromBrowserContext(browser_context());
+  }
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
@@ -664,7 +672,8 @@ class TabContents : public PageNavigator,
   virtual void RunBeforeUnloadConfirm(const RenderViewHost* rvh,
                                       const string16& message,
                                       IPC::Message* reply_msg) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(
+      content::BrowserContext* browser_context) const OVERRIDE;
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;

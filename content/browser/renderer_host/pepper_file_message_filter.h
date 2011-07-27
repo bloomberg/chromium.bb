@@ -18,7 +18,9 @@
 #include "ipc/ipc_platform_file.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace webkit {
 namespace ppapi {
@@ -29,7 +31,8 @@ class PepperFilePath;
 // A message filter for Pepper-specific File I/O messages.
 class PepperFileMessageFilter : public BrowserMessageFilter {
  public:
-  PepperFileMessageFilter(int child_id, Profile* profile);
+  PepperFileMessageFilter(int child_id,
+                          content::BrowserContext* browser_context);
 
   // BrowserMessageFilter methods:
   virtual void OverrideThreadForMessage(const IPC::Message& message,

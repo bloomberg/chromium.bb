@@ -493,8 +493,9 @@ class VisitCountingProfile : public TestingProfile {
 // Stub out as little as possible, borrowing from BrowserRenderProcessHost.
 class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
  public:
-  explicit VisitRelayingRenderProcessHost(Profile* profile)
-      : BrowserRenderProcessHost(profile) {
+  explicit VisitRelayingRenderProcessHost(
+      content::BrowserContext* browser_context)
+          : BrowserRenderProcessHost(browser_context) {
     NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
@@ -551,8 +552,9 @@ class VisitedLinkRenderProcessHostFactory
  public:
   VisitedLinkRenderProcessHostFactory()
       : RenderProcessHostFactory() {}
-  virtual RenderProcessHost* CreateRenderProcessHost(Profile* profile) const {
-    return new VisitRelayingRenderProcessHost(profile);
+  virtual RenderProcessHost* CreateRenderProcessHost(
+      content::BrowserContext* browser_context) const OVERRIDE {
+    return new VisitRelayingRenderProcessHost(browser_context);
   }
 
  private:

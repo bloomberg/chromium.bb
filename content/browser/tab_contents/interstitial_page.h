@@ -127,7 +127,8 @@ class InterstitialPage : public NotificationObserver,
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
                            const string16& title) OVERRIDE;
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(
+      content::BrowserContext* browser_context) const OVERRIDE;
 
   // Invoked with the NavigationEntry that is going to be added to the
   // navigation controller.

@@ -28,7 +28,6 @@
 
 struct FontDescriptor;
 class HostContentSettingsMap;
-class Profile;
 class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
@@ -38,6 +37,7 @@ struct WebScreenInfo;
 }
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 }
 
@@ -71,7 +71,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   // Create the filter.
   RenderMessageFilter(int render_process_id,
                       PluginService* plugin_service,
-                      Profile* profile,
+                      content::BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper);
 
@@ -235,9 +235,9 @@ class RenderMessageFilter : public BrowserMessageFilter {
   ResourceDispatcherHost* resource_dispatcher_host_;
   PluginService* plugin_service_;
 
-  // The Profile associated with our renderer process.  This should only be
-  // accessed on the UI thread!
-  Profile* profile_;
+  // The browser context associated with our renderer process.  This should only
+  // be accessed on the UI thread!
+  content::BrowserContext* browser_context_;
 
   // Contextual information to be used for requests created here.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

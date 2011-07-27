@@ -41,8 +41,10 @@ class ExtensionWebUI : public ChromeWebUI {
       extension_bookmark_manager_event_router();
 
   // BrowserURLHandler
-  static bool HandleChromeURLOverride(GURL* url, Profile* profile);
-  static bool HandleChromeURLOverrideReverse(GURL* url, Profile* profile);
+  static bool HandleChromeURLOverride(GURL* url,
+                                      content::BrowserContext* browser_context);
+  static bool HandleChromeURLOverrideReverse(
+      GURL* url, content::BrowserContext* browser_context);
 
   // Register and unregister a dictionary of one or more overrides.
   // Page names are the keys, and chrome-extension: URLs are the values.

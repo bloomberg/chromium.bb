@@ -860,7 +860,7 @@ class Browser : public TabHandlerDelegate,
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void OnStartDownload(TabContents* source,
                                DownloadItem* download) OVERRIDE;
-  virtual void ShowPageInfo(Profile* profile,
+  virtual void ShowPageInfo(content::BrowserContext* browser_context,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history) OVERRIDE;

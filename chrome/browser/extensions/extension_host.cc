@@ -132,7 +132,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                              ViewType::Type host_type)
     : extension_(extension),
       extension_id_(extension->id()),
-      profile_(site_instance->browsing_instance()->profile()),
+      profile_(Profile::FromBrowserContext(
+          site_instance->browsing_instance()->browser_context())),
       did_stop_loading_(false),
       document_element_available_(false),
       url_(url),
@@ -489,7 +490,9 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
   }
 }
 
-RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
+RendererPreferences ExtensionHost::GetRendererPrefs(
+    content::BrowserContext* browser_context) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   RendererPreferences preferences;
 
   TabContents* associated_contents = GetAssociatedTabContents();
@@ -503,7 +506,8 @@ RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
-  Profile* profile = render_view_host()->process()->profile();
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host()->process()->browser_context());
   WebPreferences webkit_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
                                                    false);  // is_web_ui
@@ -585,12 +589,14 @@ void ExtensionHost::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params) {
   // TODO(aa): Use the browser's profile if the extension is split mode
   // incognito.
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host()->process()->browser_context());
   TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
       route_id,
-      render_view_host()->process()->profile(),
+      profile,
       site_instance(),
       ChromeWebUIFactory::GetInstance()->GetWebUIType(
-          render_view_host()->process()->profile(), url_),
+          render_view_host()->process()->browser_context(), url_),
       this,
       params.window_container_type,
       params.frame_name);
@@ -623,17 +629,17 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
   if (!contents)
     return;
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
 
   if (disposition == NEW_POPUP) {
     // Find a browser with a matching profile for creating a popup.
     // (If none is found, NULL argument to NavigateParams is valid.)
     Browser* browser = BrowserList::FindTabbedBrowser(
-        contents->profile(),
-        false);  // Match incognito exactly.
+        profile, false);  // Match incognito exactly.
     TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
     browser::NavigateParams params(browser, wrapper);
     if (!browser)
-      params.profile = contents->profile();
+      params.profile = profile;
     // The extension_app_id parameter ends up as app_name in the Browser
     // which causes the Browser to return true for is_app().  This affects
     // among other things, whether the location bar gets displayed.
@@ -658,7 +664,7 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   // vice versa.
   TabContents* associated_contents = GetAssociatedTabContents();
   if (associated_contents &&
-      associated_contents->profile() == contents->profile()) {
+      associated_contents->browser_context() == contents->browser_context()) {
     associated_contents->AddNewContents(
         contents, disposition, initial_pos, user_gesture);
     return;
@@ -668,12 +674,11 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   // profile, try finding an open window. Again, we must make sure to find a
   // window with the correct profile.
   Browser* browser = BrowserList::FindTabbedBrowser(
-        contents->profile(),
-        false);  // Match incognito exactly.
+        profile, false);  // Match incognito exactly.
 
   // If there's no Browser open with the right profile, create a new one.
   if (!browser) {
-    browser = Browser::Create(contents->profile());
+    browser = Browser::Create(profile);
     browser->window()->Show();
   }
   browser->AddTabContents(contents, disposition, initial_pos, user_gesture);

@@ -401,7 +401,8 @@ void InterstitialPage::UpdateTitle(RenderViewHost* render_view_host,
   tab_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TITLE);
 }
 
-RendererPreferences InterstitialPage::GetRendererPrefs(Profile* profile) const {
+RendererPreferences InterstitialPage::GetRendererPrefs(
+    content::BrowserContext* browser_context) const {
   return renderer_preferences_;
 }
 

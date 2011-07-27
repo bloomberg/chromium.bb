@@ -82,12 +82,6 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   // The extra Chrome-only data associated with the delegate_.
   ChromeJavaScriptDialogExtraData* extra_data_;
 
-  // The client_ as an ExtensionHost, cached for use during notifications that
-  // may arrive after the client has entered its destructor (and is thus
-  // treated as a base Delegate). This will be NULL if the |delegate_| is not an
-  // ExtensionHost.
-  ExtensionHost* extension_host_;
-
   // Information about the message box is held in the following variables.
   int dialog_flags_;
   string16 message_text_;

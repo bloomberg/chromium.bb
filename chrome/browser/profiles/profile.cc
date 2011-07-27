@@ -100,6 +100,12 @@ Profile::Profile()
 }
 
 // static
+Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
+  // This is safe; this is the only implementation of the browser context.
+  return static_cast<Profile*>(browser_context);
+}
+
+// static
 const char* const Profile::kProfileKey = "__PROFILE__";
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)

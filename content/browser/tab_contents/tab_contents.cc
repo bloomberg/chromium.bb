@@ -16,7 +16,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_manager.h"
@@ -122,7 +122,7 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 #endif
 
 ViewMsg_Navigate_Type::Value GetNavigationType(
-    Profile* profile, const NavigationEntry& entry,
+    content::BrowserContext* browser_context, const NavigationEntry& entry,
     NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationController::RELOAD:
@@ -134,7 +134,7 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
   }
 
   if (entry.restore_type() == NavigationEntry::RESTORE_LAST_SESSION &&
-      profile->DidLastSessionExitCleanly())
+      browser_context->DidLastSessionExitCleanly())
     return ViewMsg_Navigate_Type::RESTORE;
 
   return ViewMsg_Navigate_Type::NORMAL;
@@ -153,7 +153,7 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->transition = entry.transition_type();
   params->state = entry.content_state();
   params->navigation_type =
-      GetNavigationType(controller.profile(), entry, reload_type);
+      GetNavigationType(controller.browser_context(), entry, reload_type);
   params->request_time = base::Time::Now();
 }
 
@@ -162,14 +162,14 @@ void MakeNavigateParams(const NavigationEntry& entry,
 
 // TabContents ----------------------------------------------------------------
 
-TabContents::TabContents(Profile* profile,
+TabContents::TabContents(content::BrowserContext* browser_context,
                          SiteInstance* site_instance,
                          int routing_id,
                          const TabContents* base_tab_contents,
                          SessionStorageNamespace* session_storage_namespace)
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
-          this, profile, session_storage_namespace)),
+          this, browser_context, session_storage_namespace)),
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
           TabContentsView::Create(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
@@ -198,7 +198,7 @@ TabContents::TabContents(Profile* profile,
       temporary_zoom_settings_(false),
       content_restrictions_(0) {
 
-  render_manager_.Init(profile, site_instance, routing_id);
+  render_manager_.Init(browser_context, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
   // tab contents (normally a tab from the same window).
@@ -538,7 +538,7 @@ bool TabContents::NavigateToEntry(
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
-      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(profile(),
+      browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(browser_context(),
                                                             entry.url());
   CHECK(!BindingsPolicy::is_web_ui_enabled(enabled_bindings) ||
         is_allowed_in_web_ui_renderer);
@@ -593,9 +593,10 @@ TabContents* TabContents::Clone() {
   // We create a new SiteInstance so that the new tab won't share processes
   // with the old one. This can be changed in the future if we need it to share
   // processes for some reason.
-  TabContents* tc = new TabContents(profile(),
-                                    SiteInstance::CreateSiteInstance(profile()),
-                                    MSG_ROUTING_NONE, this, NULL);
+  TabContents* tc = new TabContents(
+      browser_context(),
+      SiteInstance::CreateSiteInstance(browser_context()),
+      MSG_ROUTING_NONE, this, NULL);
   tc->controller().CopyStateFrom(controller_);
   return tc;
 }
@@ -606,7 +607,7 @@ void TabContents::ShowPageInfo(const GURL& url,
   if (!delegate_)
     return;
 
-  delegate_->ShowPageInfo(profile(), url, ssl, show_history);
+  delegate_->ShowPageInfo(browser_context(), url, ssl, show_history);
 }
 
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
@@ -720,7 +721,7 @@ void TabContents::WillClose(ConstrainedWindow* window) {
 void TabContents::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!SavePackage::IsSavableContents(contents_mime_type())) {
-    DownloadManager* dlm = profile()->GetDownloadManager();
+    DownloadManager* dlm = browser_context()->GetDownloadManager();
     const GURL& current_page_url = GetURL();
     if (dlm && current_page_url.is_valid()) {
       dlm->DownloadUrl(current_page_url, GURL(), "", this);
@@ -752,7 +753,7 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 }
 
 void TabContents::OnSaveURL(const GURL& url) {
-  DownloadManager* dlm = profile()->GetDownloadManager();
+  DownloadManager* dlm = browser_context()->GetDownloadManager();
   dlm->DownloadUrl(url, GetURL(), "", this);
 }
 
@@ -800,7 +801,7 @@ void TabContents::SystemDragEnded() {
 }
 
 double TabContents::GetZoomLevel() const {
-  HostZoomMap* zoom_map = profile()->GetHostZoomMap();
+  HostZoomMap* zoom_map = browser_context()->GetHostZoomMap();
   if (!zoom_map)
     return 0;
 
@@ -1122,7 +1123,8 @@ WebUI* TabContents::GetWebUIForCurrentState() {
 }
 
 WebUI::TypeID TabContents::GetWebUITypeForCurrentState() {
-  return content::WebUIFactory::Get()->GetWebUIType(profile(), GetURL());
+  return content::WebUIFactory::Get()->GetWebUIType(browser_context(),
+                                                    GetURL());
 }
 
 void TabContents::DidNavigateMainFramePostCommit(
@@ -1310,7 +1312,8 @@ TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
 }
 
-RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {
+RendererPreferences TabContents::GetRendererPrefs(
+    content::BrowserContext* browser_context) const {
   return renderer_preferences_;
 }
 
@@ -1686,7 +1689,7 @@ void TabContents::RunBeforeUnloadConfirm(const RenderViewHost* rvh,
 WebPreferences TabContents::GetWebkitPrefs() {
   WebPreferences web_prefs =
       content::GetContentClient()->browser()->GetWebkitPrefs(
-          render_view_host()->process()->profile(), false);
+          render_view_host()->process()->browser_context(), false);
 
   // Force accelerated compositing and 2d canvas off for chrome:, about: and
   // chrome-devtools: pages.

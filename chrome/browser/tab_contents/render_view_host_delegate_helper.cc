@@ -231,7 +231,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindowFromTabContents(
     const ViewHostMsg_CreateWindow_Params& params) {
   TabContents* new_contents = CreateNewWindow(
       route_id,
-      tab_contents->profile(),
+      Profile::FromBrowserContext(tab_contents->browser_context()),
       tab_contents->GetSiteInstance(),
       tab_contents->GetWebUITypeForCurrentState(),
       tab_contents,
@@ -301,7 +301,8 @@ RenderWidgetHostView*
 
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
-    Profile* profile, bool is_web_ui) {
+    content::BrowserContext* browser_context, bool is_web_ui) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
@@ -479,14 +480,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 }
 
 void RenderViewHostDelegateHelper::UpdateInspectorSetting(
-    Profile* profile, const std::string& key, const std::string& value) {
-  DictionaryPrefUpdate update(profile->GetPrefs(),
-                              prefs::kWebKitInspectorSettings);
+    content::BrowserContext* browser_context,
+    const std::string& key,
+    const std::string& value) {
+  DictionaryPrefUpdate update(
+      Profile::FromBrowserContext(browser_context)->GetPrefs(),
+      prefs::kWebKitInspectorSettings);
   DictionaryValue* inspector_settings = update.Get();
   inspector_settings->SetWithoutPathExpansion(key,
                                               Value::CreateStringValue(value));
 }
 
-void RenderViewHostDelegateHelper::ClearInspectorSettings(Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kWebKitInspectorSettings);
+void RenderViewHostDelegateHelper::ClearInspectorSettings(
+    content::BrowserContext* browser_context) {
+  Profile::FromBrowserContext(browser_context)->GetPrefs()->
+      ClearPref(prefs::kWebKitInspectorSettings);
 }

@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -35,10 +35,11 @@ const int kWritePermissions = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_EXCLUSIVE_WRITE |
                               base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
-PepperFileMessageFilter::PepperFileMessageFilter(int child_id,
-                                                 Profile* profile)
-    : child_id_(child_id) {
-  pepper_path_ = profile->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
+PepperFileMessageFilter::PepperFileMessageFilter(
+    int child_id, content::BrowserContext* browser_context)
+        : child_id_(child_id) {
+  pepper_path_ =
+      browser_context->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
 }
 
 PepperFileMessageFilter::~PepperFileMessageFilter() {

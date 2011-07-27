@@ -145,7 +145,7 @@ bool TabContentsDelegate::ExecuteContextMenuCommand(int command) {
   return false;
 }
 
-void TabContentsDelegate::ShowPageInfo(Profile* profile,
+void TabContentsDelegate::ShowPageInfo(content::BrowserContext* browser_context,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
                                        bool show_history) {

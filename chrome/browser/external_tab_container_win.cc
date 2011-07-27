@@ -185,7 +185,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   if (existing_contents) {
     tab_contents_.reset(existing_contents);
-    tab_contents_->controller().set_profile(profile);
+    tab_contents_->controller().set_browser_context(profile);
   } else {
     TabContents* new_contents = new TabContents(profile, NULL, MSG_ROUTING_NONE,
                                                 NULL, NULL);

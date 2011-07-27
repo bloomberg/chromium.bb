@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
@@ -110,9 +110,9 @@ bool NavigationController::check_for_repost_ = true;
 
 NavigationController::NavigationController(
     TabContents* contents,
-    Profile* profile,
+    content::BrowserContext* browser_context,
     SessionStorageNamespace* session_storage_namespace)
-    : profile_(profile),
+    : browser_context_(browser_context),
       pending_entry_(NULL),
       last_committed_entry_index_(-1),
       pending_entry_index_(-1),
@@ -123,10 +123,10 @@ NavigationController::NavigationController(
       needs_reload_(false),
       session_storage_namespace_(session_storage_namespace),
       pending_reload_(NO_RELOAD) {
-  DCHECK(profile_);
+  DCHECK(browser_context_);
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespace(
-        profile_->GetWebKitContext());
+        browser_context_->GetWebKitContext());
   }
 }
 
@@ -221,7 +221,7 @@ bool NavigationController::IsInitialNavigation() {
 // static
 NavigationEntry* NavigationController::CreateNavigationEntry(
     const GURL& url, const GURL& referrer, PageTransition::Type transition,
-    Profile* profile) {
+    content::BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
   // remove "view-source:" from the beginning of the URL to get the URL that
   // will actually be loaded. This real URL won't be shown to the user, just
@@ -229,7 +229,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &loaded_url, profile, &reverse_on_redirect);
+      &loaded_url, browser_context, &reverse_on_redirect);
 
   NavigationEntry* entry = new NavigationEntry(
       NULL,  // The site instance for tabs is sent on navigation
@@ -456,7 +456,7 @@ void NavigationController::UpdateVirtualURLToURL(
     NavigationEntry* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
   if (BrowserURLHandler::GetInstance()->ReverseURLRewrite(
-          &new_virtual_url, entry->virtual_url(), profile_)) {
+          &new_virtual_url, entry->virtual_url(), browser_context_)) {
     entry->set_virtual_url(new_virtual_url);
   }
 }
@@ -478,7 +478,7 @@ void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
   needs_reload_ = false;
 
   NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
-                                                 profile_);
+                                                 browser_context_);
 
   LoadEntry(entry);
 }

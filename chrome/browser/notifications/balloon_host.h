@@ -61,39 +61,39 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
+  virtual RendererPreferences GetRendererPrefs(
+      content::BrowserContext* browser_context) const OVERRIDE;
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type) {}
-  virtual void CreateNewFullscreenWidget(int route_id) {}
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE {}
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE {}
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture);
+                                 bool user_gesture) OVERRIDE;
   virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) {}
-  virtual void ShowCreatedFullscreenWidget(int route_id) {}
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+                                 const gfx::Rect& initial_pos) OVERRIDE {}
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE {}
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE {}
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned) {}
-  virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops) {}
+                             bool right_aligned) OVERRIDE {}
   virtual void StartDragging(const WebDropData&,
                              WebKit::WebDragOperationsMask,
                              const SkBitmap&,
-                             const gfx::Point&) {}
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
-  virtual void GotFocus() {}
-  virtual void TakeFocus(bool reverse) {}
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+                             const gfx::Point&) OVERRIDE {}
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
+  virtual void GotFocus() OVERRIDE {}
+  virtual void TakeFocus(bool reverse) OVERRIDE {}
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // Enable Web UI. This has to be called before renderer is created.
   void EnableWebUI();
