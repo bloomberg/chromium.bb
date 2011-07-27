@@ -11,6 +11,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/page_info_model.h"
+#include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -30,7 +31,7 @@ class Profile;
 
 namespace {
 
-class PageInfoBubbleGtk : public PageInfoModel::Observer,
+class PageInfoBubbleGtk : public PageInfoModelObserver,
                           public BubbleDelegateGtk {
  public:
   PageInfoBubbleGtk(gfx::NativeWindow parent,
@@ -40,7 +41,7 @@ class PageInfoBubbleGtk : public PageInfoModel::Observer,
                     bool show_history);
   virtual ~PageInfoBubbleGtk();
 
-  // PageInfoModel::Observer implementation.
+  // PageInfoModelObserver implementation.
   virtual void OnPageInfoModelChanged() OVERRIDE;
 
   // BubbleDelegateGtk implementation.

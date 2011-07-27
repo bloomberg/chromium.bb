@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/page_info_model.h"
+#include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
@@ -31,7 +32,7 @@ class FakeModel : public PageInfoModel {
   }
 };
 
-class FakeBridge : public PageInfoModel::Observer {
+class FakeBridge : public PageInfoModelObserver {
  public:
   virtual void OnPageInfoModelChanged() OVERRIDE {}
 };

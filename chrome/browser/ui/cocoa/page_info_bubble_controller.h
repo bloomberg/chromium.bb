@@ -6,8 +6,10 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/page_info_model.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+
+class PageInfoModel;
+class PageInfoModelObserver;
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the security lock icon.
@@ -17,7 +19,7 @@
   scoped_ptr<PageInfoModel> model_;
 
   // Thin bridge that pushes model-changed notifications from C++ to Cocoa.
-  scoped_ptr<PageInfoModel::Observer> bridge_;
+  scoped_ptr<PageInfoModelObserver> bridge_;
 
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int certID_;
@@ -30,7 +32,7 @@
 // controller will release itself when the bubble is closed. |parentWindow|
 // cannot be nil.
 - (id)initWithPageInfoModel:(PageInfoModel*)model
-              modelObserver:(PageInfoModel::Observer*)bridge
+              modelObserver:(PageInfoModelObserver*)bridge
                parentWindow:(NSWindow*)parentWindow;
 
 // Shows the certificate display window. Note that this will implicitly close

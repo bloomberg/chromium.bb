@@ -10,6 +10,8 @@
 #include "base/task.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/page_info_model.h"
+#include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -94,14 +96,14 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     kFramePadding * 2);
 
 // Bridge that listens for change notifications from the model.
-class PageInfoModelBubbleBridge : public PageInfoModel::Observer {
+class PageInfoModelBubbleBridge : public PageInfoModelObserver {
  public:
   PageInfoModelBubbleBridge()
       : controller_(nil),
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   }
 
-  // PageInfoModel::Observer implementation.
+  // PageInfoModelObserver implementation.
   virtual void OnPageInfoModelChanged() OVERRIDE {
     // Check to see if a layout has already been scheduled.
     if (!task_factory_.empty())
@@ -168,7 +170,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 @synthesize certID = certID_;
 
 - (id)initWithPageInfoModel:(PageInfoModel*)model
-              modelObserver:(PageInfoModel::Observer*)bridge
+              modelObserver:(PageInfoModelObserver*)bridge
                parentWindow:(NSWindow*)parentWindow {
   DCHECK(parentWindow);
 

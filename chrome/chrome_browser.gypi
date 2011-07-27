@@ -1525,6 +1525,8 @@
         'browser/oom_priority_manager.h',
         'browser/page_info_model.cc',
         'browser/page_info_model.h',
+        'browser/page_info_model_observer.h',
+        'browser/page_info_window.h',
         'browser/parsers/metadata_parser.cc',
         'browser/parsers/metadata_parser.h',
         'browser/parsers/metadata_parser_factory.h',

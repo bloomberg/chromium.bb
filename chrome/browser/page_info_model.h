@@ -15,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 
+class PageInfoModelObserver;
 class PrefService;
 class Profile;
 
@@ -22,13 +23,6 @@ class Profile;
 // info dialog/bubble.
 class PageInfoModel {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    virtual void OnPageInfoModelChanged() = 0;
-  };
-
   enum SectionInfoType {
     SECTION_INFO_IDENTITY = 0,
     SECTION_INFO_CONNECTION,
@@ -84,7 +78,7 @@ class PageInfoModel {
                 const GURL& url,
                 const NavigationEntry::SSLStatus& ssl,
                 bool show_history,
-                Observer* observer);
+                PageInfoModelObserver* observer);
   ~PageInfoModel();
 
   int GetSectionCount();
@@ -106,7 +100,7 @@ class PageInfoModel {
   // Shared initialization for default and testing constructor.
   void Init();
 
-  Observer* observer_;
+  PageInfoModelObserver* observer_;
 
   std::vector<SectionInfo> sections_;
 

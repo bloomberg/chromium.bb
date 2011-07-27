@@ -10,6 +10,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "content/browser/cert_store.h"
@@ -29,7 +30,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
                              const NavigationEntry::SSLStatus& ssl,
                              bool show_history,
-                             Observer* observer)
+                             PageInfoModelObserver* observer)
     : observer_(observer) {
   Init();
 

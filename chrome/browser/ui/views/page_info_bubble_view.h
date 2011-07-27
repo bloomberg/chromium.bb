@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/page_info_model.h"
+#include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -19,7 +20,7 @@ class Label;
 }
 
 class PageInfoBubbleView : public views::View,
-                           public PageInfoModel::Observer,
+                           public PageInfoModelObserver,
                            public BubbleDelegate,
                            public views::LinkListener,
                            public ui::AnimationDelegate {
@@ -36,10 +37,10 @@ class PageInfoBubbleView : public views::View,
 
   void set_bubble(Bubble* bubble) { bubble_ = bubble; }
 
-  // View methods:
+  // views::View methods:
   virtual gfx::Size GetPreferredSize();
 
-  // PageInfoModel::Observer methods:
+  // PageInfoModelObserver methods:
   virtual void OnPageInfoModelChanged() OVERRIDE;
 
   // BubbleDelegate methods:
@@ -51,7 +52,7 @@ class PageInfoBubbleView : public views::View,
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate.
+  // ui::AnimationDelegate methods:
   virtual void AnimationEnded(const ui::Animation* animation);
   virtual void AnimationProgressed(const ui::Animation* animation);
 
