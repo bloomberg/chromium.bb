@@ -8,14 +8,13 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/net/chrome_net_log.h"
+#include "net/base/net_log.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 namespace net {
 class URLRequest;
 }  // namespace net
 
-class IOThread;
 struct ResourceResponse;
 
 // DevToolsNetLogObserver watches the NetLog event stream and collects the
@@ -25,16 +24,16 @@ struct ResourceResponse;
 // As DevToolsNetLogObserver shares live data with objects that live on the
 // IO Thread, it must also reside on the IO Thread.  Only OnAddEntry can be
 // called from other threads.
-class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
+class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
   typedef webkit_glue::ResourceDevToolsInfo ResourceInfo;
 
  public:
-  // ThreadSafeObserver implementation:
+  // net::NetLog::ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params);
+                          net::NetLog::EventParameters* params) OVERRIDE;
 
   void OnAddURLRequestEntry(net::NetLog::EventType type,
                             const base::TimeTicks& time,
@@ -54,7 +53,7 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
                         net::NetLog::EventPhase phase,
                         net::NetLog::EventParameters* params);
 
-  static void Attach(IOThread* thread);
+  static void Attach();
   static void Detach();
 
   // Must be called on the IO thread. May return NULL if no observers
@@ -66,12 +65,12 @@ class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
  private:
   static DevToolsNetLogObserver* instance_;
 
-  explicit DevToolsNetLogObserver(ChromeNetLog* chrome_net_log);
+  explicit DevToolsNetLogObserver(net::NetLog* net_log);
   virtual ~DevToolsNetLogObserver();
 
   ResourceInfo* GetResourceInfo(uint32 id);
 
-  ChromeNetLog* chrome_net_log_;
+  net::NetLog* net_log_;
   typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
   typedef base::hash_map<uint32, int> RequestToEncodedDataLengthMap;
   typedef base::hash_map<uint32, uint32> HTTPStreamJobToSocketMap;

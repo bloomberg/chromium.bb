@@ -275,7 +275,7 @@ class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
           BrowserThread::DeleteOnUIThread>,
-      public ChromeNetLog::ThreadSafeObserver,
+      public ChromeNetLog::ThreadSafeObserverImpl,
       public ConnectionTester::Delegate {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
@@ -761,7 +761,7 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
     net::URLRequestContextGetter* context_getter)
-    : ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
+    : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES),
       handler_(handler),
       io_thread_(io_thread),
       context_getter_(context_getter),
@@ -784,8 +784,10 @@ NetInternalsMessageHandler::IOThreadImpl::CreateCallback(
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Unregister with network stack to observe events.
-  if (is_observing_log_)
-    io_thread_->net_log()->RemoveObserver(this);
+  if (is_observing_log_) {
+    is_observing_log_ = false;
+    RemoveAsObserver();
+  }
 
   // Cancel any in-progress connection tests.
   connection_tester_.reset();
@@ -824,8 +826,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   // Register with network stack to observe events.
   is_observing_log_ = true;
   ChromeNetLog::EntryList entries;
-  io_thread_->net_log()->AddObserverAndGetAllPassivelyCapturedEvents(this,
-                                                                     &entries);
+  AddAsObserverAndGetAllPassivelyCapturedEvents(io_thread_->net_log(),
+                                                &entries);
   SendPassiveLogEntries(entries);
 }
 

@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
@@ -687,6 +688,10 @@ MHTMLGenerationManager*
 
 DevToolsManager* ChromeContentBrowserClient::GetDevToolsManager() {
   return g_browser_process->devtools_manager();
+}
+
+net::NetLog* ChromeContentBrowserClient::GetNetLog() {
+  return g_browser_process->net_log();
 }
 
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {

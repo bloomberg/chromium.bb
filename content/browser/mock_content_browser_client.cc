@@ -188,6 +188,10 @@ DevToolsManager* MockContentBrowserClient::GetDevToolsManager() {
   return NULL;
 }
 
+net::NetLog* MockContentBrowserClient::GetNetLog() {
+  return NULL;
+}
+
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }

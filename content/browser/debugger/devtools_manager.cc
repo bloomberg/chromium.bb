@@ -247,8 +247,7 @@ void DevToolsManager::BindClientHost(
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableFunction(&DevToolsNetLogObserver::Attach,
-                            g_browser_process->io_thread()));
+        NewRunnableFunction(&DevToolsNetLogObserver::Attach));
   }
   inspected_rvh_to_client_host_[inspected_rvh] = client_host;
   client_host_to_inspected_rvh_[client_host] = inspected_rvh;

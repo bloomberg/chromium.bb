@@ -23,7 +23,7 @@ class PassiveLogCollector;
 // messages to a list of observers.
 //
 // All methods are thread safe, with the exception that no ChromeNetLog or
-// ChromeNetLog::ThreadSafeObserver functions may be called by an observer's
+// ChromeNetLog::ThreadSafeObserverImpl functions may be called by an observer's
 // OnAddEntry() method.  Doing so will result in a deadlock.
 //
 // By default, ChromeNetLog will attach the observer PassiveLogCollector which
@@ -54,53 +54,73 @@ class ChromeNetLog : public net::NetLog {
 
   typedef std::vector<Entry> EntryList;
 
-  // Interface for observing the events logged by the network stack.
-  class ThreadSafeObserver {
+  // Base class for observing the events logged by the network
+  // stack. This has some nice-to-have functionality for use by code
+  // within chrome/, but any net::NetLog::ThreadSafeObserver may be
+  // registered to observe the NetLog.
+  //
+  // This class uses composition rather than inheritance so that
+  // certain invariants can be maintained when subclasses of it are
+  // added as observers (through the AddAsObserver and
+  // RemoveAsObserver methods on this class).
+  class ThreadSafeObserverImpl {
    public:
-    // Constructs an observer that wants to see network events, with
-    // the specified minimum event granularity.  A ThreadSafeObserver can only
-    // observe a single ChromeNetLog at a time.
-    //
-    // Typical observers should specify LOG_BASIC.
-    //
     // Observers that need to see the full granularity of events can
     // specify LOG_ALL. However doing so will have performance consequences,
     // and may cause PassiveLogCollector to use more memory than anticipated.
-    //
-    // Observers will be called on the same thread an entry is added on,
-    // and are responsible for ensuring their own thread safety.
-    explicit ThreadSafeObserver(LogLevel log_level);
+    explicit ThreadSafeObserverImpl(LogLevel log_level);
+    virtual ~ThreadSafeObserverImpl();
 
-    virtual ~ThreadSafeObserver();
-
-    // This method will be called on the thread that the event occurs on.  It
-    // is the responsibility of the observer to handle it in a thread safe
-    // manner.
-    //
-    // It is illegal for an Observer to call any ChromeNetLog or
-    // ChromeNetLog::ThreadSafeObserver functions in response to a call to
-    // OnAddEntry.
     virtual void OnAddEntry(EventType type,
                             const base::TimeTicks& time,
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) = 0;
-    LogLevel log_level() const;
+
+    // These must be used instead of
+    // ChromeNetLog::Add/RemoveThreadSafeObserver to manage the
+    // association in this class with a given ChromeNetLog instance.
+    void AddAsObserver(ChromeNetLog* net_log);
+    void RemoveAsObserver();
+
+    void SetLogLevel(LogLevel log_level);
+
+    void AddAsObserverAndGetAllPassivelyCapturedEvents(
+        ChromeNetLog *net_log,
+        EntryList* passive_entries);
 
    protected:
     void AssertNetLogLockAcquired() const;
 
-    // Can only be called when actively observing a ChromeNetLog.
-    void SetLogLevel(LogLevel log_level);
+   private:
+    class PassThroughObserver : public ThreadSafeObserver {
+     public:
+      PassThroughObserver(ThreadSafeObserverImpl* owner, LogLevel log_level);
+      virtual ~PassThroughObserver() {}
+      virtual void OnAddEntry(EventType type,
+                              const base::TimeTicks& time,
+                              const Source& source,
+                              EventPhase phase,
+                              EventParameters* params) OVERRIDE;
 
-    // ChromeNetLog currently being observed, if any.  Set by ChromeNetLog's
-    // AddObserver and RemoveObserver methods.
+      // Can only be called when actively observing a ChromeNetLog.
+      void SetLogLevel(LogLevel log_level);
+
+     private:
+      ThreadSafeObserverImpl* owner_;
+    };
+
+    friend class PassThroughObserver;
+
+    // ChromeNetLog currently being observed. Set by
+    // AddAsObserver/RemoveAsObserver.
     ChromeNetLog* net_log_;
 
-   private:
-    friend class ChromeNetLog;
-    LogLevel log_level_;
-    DISALLOW_COPY_AND_ASSIGN(ThreadSafeObserver);
+    // The observer we register in AddAsObserver, that passes stuff
+    // through to us.
+    PassThroughObserver internal_observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ThreadSafeObserverImpl);
   };
 
   ChromeNetLog();
@@ -111,19 +131,9 @@ class ChromeNetLog : public net::NetLog {
                         const base::TimeTicks& time,
                         const Source& source,
                         EventPhase phase,
-                        EventParameters* params);
-  virtual uint32 NextID();
-  virtual LogLevel GetLogLevel() const;
-
-  void AddObserver(ThreadSafeObserver* observer);
-  void RemoveObserver(ThreadSafeObserver* observer);
-
-  // Adds |observer| and writes all passively captured events to
-  // |passive_entries|. Guarantees that no events in |passive_entries| will be
-  // sent to |observer| and all future events that have yet been sent to the
-  // PassiveLogCollector will be sent to |observer|.
-  void AddObserverAndGetAllPassivelyCapturedEvents(ThreadSafeObserver* observer,
-                                                   EntryList* passive_entries);
+                        EventParameters* params) OVERRIDE;
+  virtual uint32 NextID() OVERRIDE;
+  virtual LogLevel GetLogLevel() const OVERRIDE;
 
   void GetAllPassivelyCapturedEvents(EntryList* passive_entries);
 
@@ -135,6 +145,18 @@ class ChromeNetLog : public net::NetLog {
 
  private:
   void AddObserverWhileLockHeld(ThreadSafeObserver* observer);
+
+  // NetLog implementation
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
+
+  // Adds |observer| and writes all passively captured events to
+  // |passive_entries|. Guarantees that no events in |passive_entries| will be
+  // sent to |observer| and all future events that have yet been sent to the
+  // PassiveLogCollector will be sent to |observer|.
+  void AddObserverAndGetAllPassivelyCapturedEvents(ThreadSafeObserver* observer,
+                                                   EntryList* passive_entries);
+
 
   // Called whenever an observer is added or removed, or changes its log level.
   // Must have acquired |lock_| prior to calling.
