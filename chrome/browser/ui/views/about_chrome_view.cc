@@ -94,7 +94,6 @@ AboutChromeView::AboutChromeView(Profile* profile)
       about_dlg_background_logo_(NULL),
       about_title_label_(NULL),
       version_label_(NULL),
-      os_version_label_(NULL),
       copyright_label_(NULL),
       main_text_label_(NULL),
       main_text_label_height_(0),
@@ -131,32 +130,6 @@ AboutChromeView::~AboutChromeView() {
 void AboutChromeView::Init() {
   text_direction_is_rtl_ = base::i18n::IsRTL();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << L"Failed to initialize about window";
-    return;
-  }
-
-  current_version_ = version_info.Version();
-
-  // This code only runs as a result of the user opening the About box so
-  // doing registry access to get the version string modifier should be fine.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  std::string version_modifier =
-      chrome::VersionInfo::GetVersionStringModifier();
-  if (!version_modifier.empty())
-    version_details_ += ASCIIToUTF16(" ") + ASCIIToUTF16(version_modifier);
-
-#if !defined(GOOGLE_CHROME_BUILD)
-  version_details_ += ASCIIToUTF16(" (");
-  version_details_ += l10n_util::GetStringUTF16(
-      version_info.IsOfficialBuild() ?
-      IDS_ABOUT_VERSION_OFFICIAL : IDS_ABOUT_VERSION_UNOFFICIAL);
-  version_details_ += ASCIIToUTF16(" ");
-  version_details_ += ASCIIToUTF16(version_info.LastChange());
-  version_details_ += ASCIIToUTF16(")");
-#endif
 
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.
@@ -200,7 +173,8 @@ void AboutChromeView::Init() {
 
   // This is a text field so people can copy the version number from the dialog.
   version_label_ = new views::Textfield();
-  version_label_->SetText(ASCIIToUTF16(current_version_) + version_details_);
+  chrome::VersionInfo version_info;
+  version_label_->SetText(UTF8ToUTF16(version_info.CreateVersionString()));
   version_label_->SetReadOnly(true);
   version_label_->RemoveBorder();
   version_label_->SetTextColor(SK_ColorBLACK);
@@ -208,16 +182,6 @@ void AboutChromeView::Init() {
   version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont));
   AddChildView(version_label_);
-
-  os_version_label_ = new views::Textfield();
-  os_version_label_->SetText(UTF8ToUTF16(version_info.OSType()));
-  os_version_label_->SetReadOnly(true);
-  os_version_label_->RemoveBorder();
-  os_version_label_->SetTextColor(SK_ColorBLACK);
-  os_version_label_->SetBackgroundColor(SK_ColorWHITE);
-  os_version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont));
-  AddChildView(os_version_label_);
 
   // The copyright URL portion of the main label.
   copyright_label_ = new views::Label(
@@ -346,17 +310,6 @@ void AboutChromeView::Layout() {
                             panel_size.width() -
                                 about_dlg_background_logo_->width(),
                             sz.height());
-
-  // Then we have the version number right below it.
-  sz = os_version_label_->GetPreferredSize();
-  os_version_label_->SetBounds(
-      views::kPanelHorizMargin,
-      version_label_->y() +
-          version_label_->height() +
-          views::kRelatedControlVerticalSpacing,
-      panel_size.width() -
-          about_dlg_background_logo_->width(),
-      sz.height());
 
   // For the width of the main text label we want to use up the whole panel
   // width and remaining height, minus a little margin on each side.
@@ -709,6 +662,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       // into the next case of UPGRADE_SUCCESSFUL.
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       base::ThreadRestrictions::ScopedAllowIO allow_io;
+      chrome::VersionInfo version_info;
       scoped_ptr<Version> installed_version(
           InstallUtil::GetChromeVersion(dist, false));
       if (!installed_version.get()) {
@@ -716,7 +670,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         installed_version.reset(InstallUtil::GetChromeVersion(dist, true));
       }
       scoped_ptr<Version> running_version(
-          Version::GetVersionFromString(current_version_));
+          Version::GetVersionFromString(version_info.Version()));
       if (!installed_version.get() ||
           (installed_version->CompareTo(*running_version) <= 0)) {
         UserMetrics::RecordAction(
@@ -724,7 +678,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         std::wstring update_label_text = l10n_util::GetStringFUTF16(
             IDS_UPGRADE_ALREADY_UP_TO_DATE,
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-            ASCIIToUTF16(current_version_));
+            ASCIIToUTF16(version_info.Version()));
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(
               static_cast<wchar_t>(base::i18n::kLeftToRightMark));

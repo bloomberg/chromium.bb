@@ -95,7 +95,6 @@ class AboutChromeView : public views::DialogDelegateView,
   views::ImageView* about_dlg_background_logo_;
   views::Label* about_title_label_;
   views::Textfield* version_label_;
-  views::Textfield* os_version_label_;
   views::Label* copyright_label_;
   views::Label* main_text_label_;
   int main_text_label_height_;
@@ -134,14 +133,6 @@ class AboutChromeView : public views::DialogDelegateView,
   // available and asks it to start an upgrade.
   scoped_refptr<GoogleUpdate> google_updater_;
 #endif
-
-  // Our current version.
-  std::string current_version_;
-
-  // Additional information about the version (channel and build number).
-  // Note: the translation of 'official build' might be included in the version
-  // details.
-  string16 version_details_;
 
   // The version Google Update reports is available to us.
   std::wstring new_version_available_;
