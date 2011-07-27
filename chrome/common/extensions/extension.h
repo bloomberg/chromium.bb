@@ -16,7 +16,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_permission_set.h"
@@ -210,6 +209,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // its install source should be set to GetHigherPriorityLocation(A, B).
   static Location GetHigherPriorityLocation(Location loc1, Location loc2);
 
+  // Returns the full list of permission messages that this extension
+  // should display at install time.
+  ExtensionPermissionMessages GetPermissionMessages() const;
+
+  // Returns the full list of permission messages that this extension
+  // should display at install time. The messages are returned as strings
+  // for convenience.
+  std::vector<string16> GetPermissionMessageStrings() const;
+
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
 
@@ -367,24 +375,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static void SetScriptingWhitelist(const ScriptingWhitelist& whitelist);
   static const ScriptingWhitelist* GetScriptingWhitelist();
 
-  // Parses the host and api permissions from the specified permission |key|
-  // in the manifest |source|.
-  bool ParsePermissions(const base::DictionaryValue* source,
-                        const char* key,
-                        int flags,
-                        std::string* error,
-                        ExtensionAPIPermissionSet* api_permissions,
-                        URLPatternSet* host_permissions);
-
   bool HasAPIPermission(ExtensionAPIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
-
-  // Returns true if the extension can silently increase its permission level.
-  // Extensions that can silently increase permissions are installed through
-  // mechanisms that are implicitly trusted.
-  bool CanSilentlyIncreasePermissions() const;
 
   // Whether or not the extension is allowed permission for a URL pattern from
   // the manifest.  http, https, and chrome://favicon/ is allowed for all
@@ -405,21 +399,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether the extension effectively has all permissions (for example, by
   // having an NPAPI plugin).
   bool HasFullPermissions() const;
-
-  // Returns the full list of permission messages that this extension
-  // should display at install time.
-  ExtensionPermissionMessages GetPermissionMessages() const;
-
-  // Returns the full list of permission messages that this extension
-  // should display at install time. The messages are returned as strings
-  // for convenience.
-  std::vector<string16> GetPermissionMessageStrings() const;
-
-  // Sets the active |permissions|.
-  void SetActivePermissions(const ExtensionPermissionSet* permissions) const;
-
-  // Gets the extension's active permission set.
-  scoped_refptr<const ExtensionPermissionSet> GetActivePermissions() const;
 
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
@@ -515,11 +494,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
   const std::vector<GURL>& toolstrips() const { return toolstrips_; }
-  const ExtensionPermissionSet* optional_permission_set() const {
-    return optional_permission_set_.get();
-  }
-  const ExtensionPermissionSet* required_permission_set() const {
-    return required_permission_set_.get();
+  const ExtensionPermissionSet* permission_set() const {
+    return permission_set_.get();
   }
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
@@ -574,20 +550,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // scale it (or the empty string if the image is at its original size).
   typedef std::pair<FilePath, std::string> ImageCacheKey;
   typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
-
-  class RuntimeData {
-   public:
-    RuntimeData();
-    explicit RuntimeData(const ExtensionPermissionSet* active);
-    ~RuntimeData();
-
-    void SetActivePermissions(const ExtensionPermissionSet* active);
-    scoped_refptr<const ExtensionPermissionSet> GetActivePermissions() const;
-
-   private:
-    friend class base::RefCountedThreadSafe<RuntimeData>;
-    scoped_refptr<const ExtensionPermissionSet> active_permissions_;
-  };
 
   // Normalize the path for use by the extension. On Windows, this will make
   // sure the drive letter is uppercase.
@@ -711,15 +673,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Defines the set of URLs in the extension's web content.
   URLPatternSet extent_;
 
-  // The extension runtime data.
-  mutable base::Lock runtime_data_lock_;
-  mutable RuntimeData runtime_data_;
-
-  // The set of permissions the extension can request at runtime.
-  scoped_refptr<const ExtensionPermissionSet> optional_permission_set_;
-
-  // The extension's required / default set of permissions.
-  scoped_refptr<const ExtensionPermissionSet> required_permission_set_;
+  // The set of permissions that the extension effectively has access to.
+  scoped_ptr<ExtensionPermissionSet> permission_set_;
 
   // The icons for the extension.
   ExtensionIconSet icons_;
@@ -913,29 +868,6 @@ struct UnloadedExtensionInfo {
   const Extension* extension;
 
   UnloadedExtensionInfo(const Extension* extension, Reason reason);
-};
-
-// The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.
-struct UpdatedExtensionPermissionsInfo {
-  enum Reason {
-    ADDED,   // The permissions were added to the extension.
-    REMOVED, // The permissions were removed from the extension.
-  };
-
-  Reason reason;
-
-  // The extension who's permissions have changed.
-  const Extension* extension;
-
-  // The permissions that have changed. For Reason::ADDED, this would contain
-  // only the permissions that have added, and for Reason::REMOVED, this would
-  // only contain the removed permissions.
-  const ExtensionPermissionSet* permissions;
-
-  UpdatedExtensionPermissionsInfo(
-      const Extension* extension,
-      const ExtensionPermissionSet* permissions,
-      Reason reason);
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

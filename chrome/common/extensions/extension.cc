@@ -286,6 +286,20 @@ Extension::Location Extension::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
+ExtensionPermissionMessages Extension::GetPermissionMessages() const {
+  if (IsTrustedId(id_))
+    return ExtensionPermissionMessages();
+  else
+    return permission_set_->GetPermissionMessages();
+}
+
+std::vector<string16> Extension::GetPermissionMessageStrings() const {
+  if (IsTrustedId(id_))
+    return std::vector<string16>();
+  else
+    return permission_set_->GetWarningMessages();
+}
+
 void Extension::OverrideLaunchUrl(const GURL& override_url) {
   GURL new_url(override_url);
   if (!new_url.is_valid()) {
@@ -1188,7 +1202,6 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
     if (!IsBaseCrxKey(*key) &&
         *key != keys::kApp &&
         *key != keys::kPermissions &&
-        *key != keys::kOptionalPermissions &&
         *key != keys::kOptionsPage &&
         *key != keys::kBackground) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
@@ -1372,16 +1385,13 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
 
 bool Extension::InitFromValue(const DictionaryValue& source, int flags,
                               std::string* error) {
-  base::AutoLock auto_lock(runtime_data_lock_);
   // When strict error checks are enabled, make URL pattern parsing strict.
   URLPattern::ParseOption parse_strictness =
       (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
                                    : URLPattern::IGNORE_PORTS);
 
   // Initialize permissions with an empty, default permission set.
-  runtime_data_.SetActivePermissions(new ExtensionPermissionSet());
-  optional_permission_set_ = new ExtensionPermissionSet();
-  required_permission_set_ = new ExtensionPermissionSet();
+  permission_set_.reset(new ExtensionPermissionSet());
 
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
@@ -1901,30 +1911,104 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     }
   }
 
-  // Initialize the permissions (optional).
   ExtensionAPIPermissionSet api_permissions;
   URLPatternSet host_permissions;
-  if (!ParsePermissions(&source,
-                        keys::kPermissions,
-                        flags,
-                        error,
-                        &api_permissions,
-                        &host_permissions)) {
-    return false;
-  }
 
-  // Initialize the optional permissions (optional).
-  ExtensionAPIPermissionSet optional_api_permissions;
-  URLPatternSet optional_host_permissions;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis) &&
-      !ParsePermissions(&source,
-                        keys::kOptionalPermissions,
-                        flags,
-                        error,
-                        &optional_api_permissions,
-                        &optional_host_permissions)) {
-    return false;
+  // Initialize the permissions (optional).
+  if (source.HasKey(keys::kPermissions)) {
+    ListValue* permissions = NULL;
+    if (!source.GetList(keys::kPermissions, &permissions)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPermissions, "");
+      return false;
+    }
+
+    for (size_t i = 0; i < permissions->GetSize(); ++i) {
+      std::string permission_str;
+      if (!permissions->GetString(i, &permission_str)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidPermission, base::IntToString(i));
+        return false;
+      }
+
+      ExtensionAPIPermission* permission =
+          ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
+
+      // Only COMPONENT extensions can use private APIs.
+      // TODO(asargent) - We want a more general purpose mechanism for this,
+      // and better error messages. (http://crbug.com/54013)
+      if (!IsComponentOnlyPermission(permission)
+#ifndef NDEBUG
+           && !CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kExposePrivateExtensionApi)
+#endif
+          ) {
+        continue;
+      }
+
+      if (web_extent().is_empty() || location() == Extension::COMPONENT) {
+        // Check if it's a module permission.  If so, enable that permission.
+        if (permission != NULL) {
+          // Only allow the experimental API permission if the command line
+          // flag is present, or if the extension is a component of Chrome.
+          if (IsDisallowedExperimentalPermission(permission->id()) &&
+              location() != Extension::COMPONENT) {
+            *error = errors::kExperimentalFlagRequired;
+            return false;
+          }
+          api_permissions.insert(permission->id());
+          continue;
+        }
+      } else {
+        // Hosted apps only get access to a subset of the valid permissions.
+        if (permission != NULL && permission->is_hosted_app()) {
+          if (IsDisallowedExperimentalPermission(permission->id())) {
+            *error = errors::kExperimentalFlagRequired;
+            return false;
+          }
+          api_permissions.insert(permission->id());
+          continue;
+        }
+      }
+
+      // Check if it's a host pattern permission.
+      URLPattern pattern = URLPattern(CanExecuteScriptEverywhere() ?
+          URLPattern::SCHEME_ALL : kValidHostPermissionSchemes);
+
+      URLPattern::ParseResult parse_result = pattern.Parse(permission_str,
+                                                           parse_strictness);
+      if (parse_result == URLPattern::PARSE_SUCCESS) {
+        if (!CanSpecifyHostPermission(pattern)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidPermissionScheme, base::IntToString(i));
+          return false;
+        }
+
+        // The path component is not used for host permissions, so we force it
+        // to match all paths.
+        pattern.SetPath("/*");
+
+        if (pattern.MatchesScheme(chrome::kFileScheme) &&
+            !CanExecuteScriptEverywhere()) {
+          wants_file_access_ = true;
+          if (!(flags & ALLOW_FILE_ACCESS))
+            pattern.SetValidSchemes(
+                pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+        }
+
+        host_permissions.AddPattern(pattern);
+      }
+
+      // If it's not a host permission, then it's probably an unknown API
+      // permission. Do not throw an error so extensions can retain
+      // backwards compatability (http://crbug.com/42742).
+      // TODO(jstritar): We can improve error messages by adding better
+      // validation of API permissions here.
+      // TODO(skerner): Consider showing the reason |permission_str| is not
+      // a valid URL pattern if it is almost valid.  For example, if it has
+      // a valid scheme, and failed to parse because it has a port, show an
+      // error.
+    }
   }
 
   // Initialize background url (optional).
@@ -2310,12 +2394,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
     return false;
   }
 
-  runtime_data_.SetActivePermissions(new ExtensionPermissionSet(
-      this, api_permissions, host_permissions));
-  required_permission_set_ = new ExtensionPermissionSet(
-      this, api_permissions, host_permissions);
-  optional_permission_set_ = new ExtensionPermissionSet(
-      optional_api_permissions, optional_host_permissions, URLPatternSet());
+  permission_set_.reset(
+      new ExtensionPermissionSet(this, api_permissions, host_permissions));
 
   // Although |source| is passed in as a const, it's still possible to modify
   // it.  This is dangerous since the utility process re-uses |source| after
@@ -2493,118 +2573,6 @@ GURL Extension::GetIconURL(int size,
     return GetResourceURL(path);
 }
 
-bool Extension::ParsePermissions(const DictionaryValue* source,
-                                 const char* key,
-                                 int flags,
-                                 std::string* error,
-                                 ExtensionAPIPermissionSet* api_permissions,
-                                 URLPatternSet* host_permissions) {
-  if (source->HasKey(key)) {
-    // When strict error checks are enabled, make URL pattern parsing strict.
-    URLPattern::ParseOption parse_strictness =
-        (flags & STRICT_ERROR_CHECKS ? URLPattern::ERROR_ON_PORTS
-                                     : URLPattern::IGNORE_PORTS);
-    ListValue* permissions = NULL;
-    if (!source->GetList(key, &permissions)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPermissions, "");
-      return false;
-    }
-
-    for (size_t i = 0; i < permissions->GetSize(); ++i) {
-      std::string permission_str;
-      if (!permissions->GetString(i, &permission_str)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kInvalidPermission, base::IntToString(i));
-        return false;
-      }
-
-      ExtensionAPIPermission* permission =
-          ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
-
-      // Only COMPONENT extensions can use private APIs.
-      // TODO(asargent) - We want a more general purpose mechanism for this,
-      // and better error messages. (http://crbug.com/54013)
-      if (!IsComponentOnlyPermission(permission)
-#ifndef NDEBUG
-           && !CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kExposePrivateExtensionApi)
-#endif
-          ) {
-        continue;
-      }
-
-      if (web_extent().is_empty() || location() == Extension::COMPONENT) {
-        // Check if it's a module permission.  If so, enable that permission.
-        if (permission != NULL) {
-          // Only allow the experimental API permission if the command line
-          // flag is present, or if the extension is a component of Chrome.
-          if (IsDisallowedExperimentalPermission(permission->id()) &&
-              location() != Extension::COMPONENT) {
-            *error = errors::kExperimentalFlagRequired;
-            return false;
-          }
-          api_permissions->insert(permission->id());
-          continue;
-        }
-      } else {
-        // Hosted apps only get access to a subset of the valid permissions.
-        if (permission != NULL && permission->is_hosted_app()) {
-          if (IsDisallowedExperimentalPermission(permission->id())) {
-            *error = errors::kExperimentalFlagRequired;
-            return false;
-          }
-          api_permissions->insert(permission->id());
-          continue;
-        }
-      }
-
-      // Check if it's a host pattern permission.
-      URLPattern pattern = URLPattern(CanExecuteScriptEverywhere() ?
-          URLPattern::SCHEME_ALL : kValidHostPermissionSchemes);
-
-      URLPattern::ParseResult parse_result = pattern.Parse(permission_str,
-                                                           parse_strictness);
-      if (parse_result == URLPattern::PARSE_SUCCESS) {
-        if (!CanSpecifyHostPermission(pattern)) {
-          *error = ExtensionErrorUtils::FormatErrorMessage(
-              errors::kInvalidPermissionScheme, base::IntToString(i));
-          return false;
-        }
-
-        // The path component is not used for host permissions, so we force it
-        // to match all paths.
-        pattern.SetPath("/*");
-
-        if (pattern.MatchesScheme(chrome::kFileScheme) &&
-            !CanExecuteScriptEverywhere()) {
-          wants_file_access_ = true;
-          if (!(flags & ALLOW_FILE_ACCESS))
-            pattern.SetValidSchemes(
-                pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
-        }
-
-        host_permissions->AddPattern(pattern);
-      }
-
-      // If it's not a host permission, then it's probably an unknown API
-      // permission. Do not throw an error so extensions can retain
-      // backwards compatability (http://crbug.com/42742).
-      // TODO(jstritar): We can improve error messages by adding better
-      // validation of API permissions here.
-      // TODO(skerner): Consider showing the reason |permission_str| is not
-      // a valid URL pattern if it is almost valid.  For example, if it has
-      // a valid scheme, and failed to parse because it has a port, show an
-      // error.
-    }
-  }
-  return true;
-}
-
-bool Extension::CanSilentlyIncreasePermissions() const {
-  return location() != INTERNAL;
-}
-
 bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
   if (!pattern.match_all_urls() &&
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
@@ -2620,68 +2588,24 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
 
 bool Extension::HasAPIPermission(
     ExtensionAPIPermission::ID permission) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasAPIPermission(permission);
+  return permission_set()->HasAPIPermission(permission);
 }
 
 bool Extension::HasAPIPermission(
     const std::string& function_name) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->
-      HasAccessToFunction(function_name);
+  return permission_set()->HasAccessToFunction(function_name);
 }
 
 const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->effective_hosts();
+  return permission_set()->effective_hosts();
 }
 
 bool Extension::HasHostPermission(const GURL& url) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() != chrome::kChromeUIFaviconHost &&
       location() != Extension::COMPONENT)
     return false;
-  return runtime_data_.GetActivePermissions()->
-      HasExplicitAccessToOrigin(url);
-}
-
-bool Extension::HasEffectiveAccessToAllHosts() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasEffectiveAccessToAllHosts();
-}
-
-bool Extension::HasFullPermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions()->HasEffectiveFullAccess();
-}
-
-ExtensionPermissionMessages Extension::GetPermissionMessages() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  if (IsTrustedId(id_))
-    return ExtensionPermissionMessages();
-  else
-    return runtime_data_.GetActivePermissions()->GetPermissionMessages();
-}
-
-std::vector<string16> Extension::GetPermissionMessageStrings() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  if (IsTrustedId(id_))
-    return std::vector<string16>();
-  else
-    return runtime_data_.GetActivePermissions()->GetWarningMessages();
-}
-
-void Extension::SetActivePermissions(
-    const ExtensionPermissionSet* permissions) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  runtime_data_.SetActivePermissions(permissions);
-}
-
-scoped_refptr<const ExtensionPermissionSet>
-    Extension::GetActivePermissions() const {
-  base::AutoLock auto_lock(runtime_data_lock_);
-  return runtime_data_.GetActivePermissions();
+  return permission_set()->HasExplicitAccessToOrigin(url);
 }
 
 bool Extension::IsComponentOnlyPermission(
@@ -2713,7 +2637,6 @@ bool Extension::HasMultipleUISurfaces() const {
 bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
                                        const UserScript* script,
                                        std::string* error) const {
-  base::AutoLock auto_lock(runtime_data_lock_);
   // The gallery is special-cased as a restricted URL for scripting to prevent
   // access to special JS bindings we expose to the gallery (and avoid things
   // like extensions removing the "report abuse" link).
@@ -2738,8 +2661,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
 
   // Otherwise, see if this extension has permission to execute script
   // programmatically on pages.
-  if (runtime_data_.GetActivePermissions()->HasExplicitAccessToOrigin(
-          page_url))
+  if (permission_set()->HasExplicitAccessToOrigin(page_url))
     return true;
 
   if (error) {
@@ -2748,6 +2670,14 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   }
 
   return false;
+}
+
+bool Extension::HasEffectiveAccessToAllHosts() const {
+  return permission_set_->HasEffectiveAccessToAllHosts();
+}
+
+bool Extension::HasFullPermissions() const {
+  return permission_set_->HasEffectiveFullAccess();
 }
 
 bool Extension::ShowConfigureContextMenus() const {
@@ -2837,26 +2767,11 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
 
 ExtensionInfo::~ExtensionInfo() {}
 
-Extension::RuntimeData::RuntimeData() {}
-Extension::RuntimeData::RuntimeData(const ExtensionPermissionSet* active)
-    : active_permissions_(active) {}
-Extension::RuntimeData::~RuntimeData() {}
-
-scoped_refptr<const ExtensionPermissionSet>
-    Extension::RuntimeData::GetActivePermissions() const {
-  return active_permissions_;
-}
-
-void Extension::RuntimeData::SetActivePermissions(
-    const ExtensionPermissionSet* active) {
-  active_permissions_ = active;
-}
-
 UninstalledExtensionInfo::UninstalledExtensionInfo(
     const Extension& extension)
     : extension_id(extension.id()),
       extension_api_permissions(
-          extension.GetActivePermissions()->GetAPIsAsStrings()),
+          extension.permission_set()->GetAPIsAsStrings()),
       extension_type(extension.GetType()),
       update_url(extension.update_url()) {}
 
@@ -2869,11 +2784,3 @@ UnloadedExtensionInfo::UnloadedExtensionInfo(
   : reason(reason),
     already_disabled(false),
     extension(extension) {}
-
-UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
-    const Extension* extension,
-    const ExtensionPermissionSet* permissions,
-    Reason reason)
-    : reason(reason),
-      extension(extension),
-      permissions(permissions) {}

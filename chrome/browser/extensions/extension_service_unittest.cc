@@ -1023,8 +1023,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   expected_patterns.ClearPatterns();
   AddPattern(&expected_patterns, "http://*.google.com/*");
   AddPattern(&expected_patterns, "https://*.google.com/*");
-  EXPECT_EQ(expected_patterns,
-            extension->GetActivePermissions()->explicit_hosts());
+  EXPECT_EQ(expected_patterns, extension->permission_set()->explicit_hosts());
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
@@ -1365,7 +1364,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<ExtensionPermissionSet> known_perms(
+  scoped_ptr<ExtensionPermissionSet> known_perms(
       prefs->GetGrantedPermissions(permissions_crx));
   EXPECT_FALSE(known_perms.get());
 
@@ -1384,7 +1383,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   AddPattern(&expected_host_perms, "http://*.google.com.hk/*");
   AddPattern(&expected_host_perms, "http://www.example.com/*");
 
-  known_perms = prefs->GetGrantedPermissions(extension_id);
+  known_perms.reset(prefs->GetGrantedPermissions(extension_id));
   EXPECT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
@@ -1413,7 +1412,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   std::string extension_id = extension->id();
   ExtensionPrefs* prefs = service_->extension_prefs();
 
-  scoped_refptr<ExtensionPermissionSet> permissions(
+  scoped_ptr<ExtensionPermissionSet> permissions(
       prefs->GetGrantedPermissions(extension_id));
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
@@ -1478,7 +1477,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_TRUE(service_->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  scoped_refptr<ExtensionPermissionSet> current_perms(
+  scoped_ptr<ExtensionPermissionSet> current_perms(
       prefs->GetGrantedPermissions(extension_id));
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
@@ -1491,7 +1490,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // updating the browser to a version which recognizes additional host
   // permissions).
   host_permissions.clear();
-  current_perms = NULL;
+  current_perms.reset();
 
   host_permissions.insert("http://*.google.com/*");
   host_permissions.insert("https://*.google.com/*");
@@ -1520,7 +1519,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_TRUE(service_->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  current_perms = prefs->GetGrantedPermissions(extension_id);
+  current_perms.reset(prefs->GetGrantedPermissions(extension_id));
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
   ASSERT_FALSE(current_perms->HasEffectiveFullAccess());

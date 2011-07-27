@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
   EXPECT_EQ(extension_misc::LAUNCH_PANEL,
             installed_extension_->launch_container());
 
-  ASSERT_EQ(2u, installed_extension_->GetActivePermissions()->apis().size());
+  ASSERT_EQ(2u, installed_extension_->permission_set()->apis().size());
   EXPECT_TRUE(installed_extension_->HasAPIPermission(
       ExtensionAPIPermission::kGeolocation));
   EXPECT_TRUE(installed_extension_->HasAPIPermission(

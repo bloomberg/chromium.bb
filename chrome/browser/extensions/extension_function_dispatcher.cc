@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
-#include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
@@ -394,12 +393,6 @@ void FactoryRegistry::ResetFunctions() {
   // Experimental App API.
   RegisterFunction<AppNotifyFunction>();
   RegisterFunction<AppClearAllNotificationsFunction>();
-
-  // Permissions
-  RegisterFunction<ContainsPermissionsFunction>();
-  RegisterFunction<GetAllPermissionsFunction>();
-  RegisterFunction<RemovePermissionsFunction>();
-  RegisterFunction<RequestPermissionsFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

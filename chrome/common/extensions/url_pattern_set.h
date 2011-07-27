@@ -18,17 +18,6 @@ class URLPatternSet {
   typedef std::set<URLPattern>::const_iterator const_iterator;
   typedef std::set<URLPattern>::iterator iterator;
 
-  // Clears |out| and populates the set with |set1| - |set2|.
-  static void CreateDifference(const URLPatternSet& set1,
-                               const URLPatternSet& set2,
-                               URLPatternSet* out);
-
-  // Clears |out| and populates the set with the intersection of |set1|
-  // and |set2|.
-  static void CreateIntersection(const URLPatternSet& set1,
-                                 const URLPatternSet& set2,
-                                 URLPatternSet* out);
-
   // Clears |out| and populates the set with the union of |set1| and |set2|.
   static void CreateUnion(const URLPatternSet& set1,
                           const URLPatternSet& set2,
@@ -49,9 +38,6 @@ class URLPatternSet {
 
   void AddPattern(const URLPattern& pattern);
   void ClearPatterns();
-
-  // Returns true if the permission |set| is a subset of this.
-  bool Contains(const URLPatternSet& set) const;
 
   // Test if the extent contains a URL.
   bool MatchesURL(const GURL& url) const;

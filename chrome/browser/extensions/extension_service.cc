@@ -552,7 +552,6 @@ ExtensionService::ExtensionService(Profile* profile,
       show_extensions_prompts_(true),
       ready_(false),
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -975,13 +974,11 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
 void ExtensionService::GrantPermissions(const Extension* extension) {
   CHECK(extension);
 
-  // We only maintain the granted permissions prefs for extensions that can't
-  // silently increase their permissions.
-  if (extension->CanSilentlyIncreasePermissions())
-    return;
+  // We only maintain the granted permissions prefs for INTERNAL extensions.
+  CHECK_EQ(Extension::INTERNAL, extension->location());
 
   extension_prefs_->AddGrantedPermissions(extension->id(),
-                                          extension->GetActivePermissions());
+                                          extension->permission_set());
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
@@ -992,13 +989,6 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
   GrantPermissions(extension);
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
-}
-
-void ExtensionService::UpdateActivePermissions(
-    const Extension* extension,
-    const ExtensionPermissionSet* permissions) {
-  extension_prefs()->SetActivePermissions(extension->id(), permissions);
-  extension->SetActivePermissions(permissions);
 }
 
 void ExtensionService::LoadExtension(const FilePath& extension_path) {
@@ -1366,8 +1356,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     if (host->profile()->GetOriginalProfile() ==
         profile_->GetOriginalProfile()) {
       host->Send(
-          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(
-              extension, extension->GetActivePermissions())));
+          new ExtensionMsg_Loaded(ExtensionMsg_Loaded_Params(extension)));
     }
   }
 
@@ -1975,7 +1964,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
 
   // Check if the extension's privileges have changed and disable the
   // extension if necessary.
-  InitializePermissions(extension);
+  DisableIfPrivilegeIncrease(extension);
 
   bool disabled = Extension::UserMayDisable(extension->location()) &&
       extension_prefs_->GetExtensionState(extension->id()) ==
@@ -1996,35 +1985,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   NotifyExtensionLoaded(extension);
 }
 
-void ExtensionService::InitializePermissions(const Extension* extension) {
-  // If the extension has used the optional permissions API, it will have a
-  // custom set of active permissions defined in the extension prefs. Here,
-  // we update the extension's active permissions based on the prefs.
-  scoped_refptr<ExtensionPermissionSet> active_permissions =
-      extension_prefs()->GetActivePermissions(extension->id());
-
-  if (active_permissions.get()) {
-    // We restrict the active permissions to be within the bounds defined in the
-    // extension's manifest.
-    //  a) active permissions must be a subset of optional + default permissions
-    //  b) active permissions must contains all default permissions
-    scoped_refptr<ExtensionPermissionSet> total_permissions =
-        ExtensionPermissionSet::CreateUnion(
-            extension->required_permission_set(),
-            extension->optional_permission_set());
-
-    // Make sure the active permissions contain no more than optional + default.
-    scoped_refptr<ExtensionPermissionSet> adjusted_active =
-        ExtensionPermissionSet::CreateIntersection(
-            total_permissions.get(), active_permissions.get());
-
-    // Make sure the active permissions contain the default permissions.
-    adjusted_active = ExtensionPermissionSet::CreateUnion(
-            extension->required_permission_set(), adjusted_active.get());
-
-    UpdateActivePermissions(extension, adjusted_active);
-  }
-
+void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
   // We keep track of all permissions the user has granted each extension.
   // This allows extensions to gracefully support backwards compatibility
   // by including unknown permissions in their manifests. When the user
@@ -2051,13 +2012,13 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   bool is_extension_upgrade = old != NULL;
   bool is_privilege_increase = false;
 
-  // We only need to compare the granted permissions to the current permissions
-  // if the extension is not allowed to silently increase its permissions.
-  if (!extension->CanSilentlyIncreasePermissions()) {
+  // We only record the granted permissions for INTERNAL extensions, since
+  // they can't silently increase privileges.
+  if (extension->location() == Extension::INTERNAL) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    scoped_refptr<ExtensionPermissionSet> granted_permissions =
-        extension_prefs_->GetGrantedPermissions(extension->id());
+    scoped_ptr<ExtensionPermissionSet> granted_permissions(
+        extension_prefs_->GetGrantedPermissions(extension->id()));
     CHECK(granted_permissions.get());
 
     // Here, we check if an extension's privileges have increased in a manner
@@ -2065,8 +2026,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     // upgraded and recognized additional privileges, or an extension upgrades
     // to a version that requires additional privileges.
     is_privilege_increase =
-        granted_permissions->HasLessPrivilegesThan(
-            extension->GetActivePermissions());
+        granted_permissions->HasLessPrivilegesThan(extension->permission_set());
   }
 
   if (is_extension_upgrade) {
@@ -2418,8 +2378,7 @@ void ExtensionService::Observe(int type,
       // Loaded extensions.
       for (size_t i = 0; i < extensions_.size(); ++i) {
         process->Send(new ExtensionMsg_Loaded(
-            ExtensionMsg_Loaded_Params(
-                extensions_[i], extensions_[i]->GetActivePermissions())));
+            ExtensionMsg_Loaded_Params(extensions_[i])));
       }
       break;
     }

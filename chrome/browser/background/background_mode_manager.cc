@@ -196,14 +196,12 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
                                                 profile, this));
   background_mode_data_[profile] = bmd;
 
-  // Listen for when extensions are loaded/unloaded or add/remove the
-  // background permission so we can track the number of background apps and
-  // modify our keep-alive and launch-on-startup state appropriately.
+  // Listen for when extensions are loaded/unloaded so we can track the
+  // number of background apps and modify our keep-alive and launch-on-startup
+  // state appropriately.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  Source<Profile>(profile));
 
   // Check for the presence of background apps after all extensions have been
@@ -274,22 +272,6 @@ void BackgroundModeManager::Observe(int type,
           return;
         OnBackgroundAppUnloaded();
         OnBackgroundAppUninstalled();
-      }
-      break;
-    case chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED: {
-        UpdatedExtensionPermissionsInfo* info =
-            Details<UpdatedExtensionPermissionsInfo>(details).ptr();
-        if (!info->permissions->HasAPIPermission(
-                ExtensionAPIPermission::kBackground))
-          break;
-
-        if (info->reason == UpdatedExtensionPermissionsInfo::ADDED) {
-          OnBackgroundAppInstalled(info->extension);
-          OnBackgroundAppLoaded();
-        } else {
-          OnBackgroundAppUnloaded();
-          OnBackgroundAppUninstalled();
-        }
       }
       break;
     case content::NOTIFICATION_APP_TERMINATING:

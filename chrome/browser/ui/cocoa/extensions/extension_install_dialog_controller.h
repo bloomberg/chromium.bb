@@ -37,7 +37,6 @@ class Profile;
   scoped_nsobject<NSString> title_;
   scoped_nsobject<NSString> warnings_;
   scoped_nsobject<NSString> button_;
-  scoped_nsobject<NSString> cancel_button_;
   scoped_nsobject<NSString> subtitle_;
   SkBitmap icon_;
 }

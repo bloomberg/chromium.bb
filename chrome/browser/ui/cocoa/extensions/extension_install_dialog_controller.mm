@@ -92,9 +92,6 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
           retain]);
     button_.reset([l10n_util::GetNSString(ExtensionInstallUI::kButtonIds[type])
                    retain]);
-    int cancel_id = ExtensionInstallUI::kAbortButtonIds[type];
-    cancel_button_.reset([l10n_util::GetNSString(
-        cancel_id > 0 ? cancel_id : IDS_CANCEL) retain]);
 
     // We display the warnings as a simple text string, separated by newlines.
     if (!warnings.empty()) {
@@ -135,7 +132,6 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   [titleField_ setStringValue:title_.get()];
   [subtitleField_ setStringValue:subtitle_.get()];
   [okButton_ setTitle:button_.get()];
-  [cancelButton_ setTitle:cancel_button_.get()];
 
   NSImage* image = gfx::SkBitmapToNSImage(icon_);
   [iconView_ setImage:image];

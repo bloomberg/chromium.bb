@@ -20,7 +20,6 @@ class RenderThread;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
-struct ExtensionMsg_UpdatePermissions_Params;
 
 namespace base {
 class ListValue;
@@ -78,10 +77,6 @@ class ExtensionDispatcher : public RenderProcessObserver {
       const std::vector<std::string>& page_actions);
   void OnActivateApplication(const std::string& extension_id);
   void OnActivateExtension(const std::string& extension_id);
-  void OnUpdatePermissions(const std::string& extension_id,
-                           const ExtensionAPIPermissionSet& apis,
-                           const URLPatternSet& explicit_hosts,
-                           const URLPatternSet& scriptable_hosts);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
 
   // Update the list of active extensions that will be reported when we crash.

@@ -428,10 +428,6 @@ enum {
   // details are an Extension*, and the source is a Profile*.
   NOTIFICATION_EXTENSION_UPDATE_DISABLED,
 
-  // Sent when an extension's permissions change. The details are an
-  // UpdatedExtensionPermissionsInfo, and the source is a Profile.
-  NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
-
   // Sent when an extension is about to be installed so we can (in the case of
   // themes) alert the user with a loading dialog. The source is the download
   // manager and the details are the download url.

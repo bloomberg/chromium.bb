@@ -50,7 +50,6 @@ const char* kNaClModulesMIMEType = "mime_type";
 const char* kNaClModulesPath = "path";
 const char* kOmnibox = "omnibox";
 const char* kOmniboxKeyword = "omnibox.keyword";
-const char* kOptionalPermissions = "optional_permissions";
 const char* kOptionsPage = "options_page";
 const char* kPageAction = "page_action";
 const char* kPageActionDefaultIcon = "default_icon";

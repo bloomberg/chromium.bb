@@ -123,7 +123,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ(UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, extension->GetFullLaunchURL());
-  EXPECT_EQ(2u, extension->GetActivePermissions()->apis().size());
+  EXPECT_EQ(2u, extension->permission_set()->apis().size());
   EXPECT_TRUE(extension->HasAPIPermission("geolocation"));
   EXPECT_TRUE(extension->HasAPIPermission("notifications"));
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
@@ -167,7 +167,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, extension->GetFullLaunchURL());
   EXPECT_EQ(0u, extension->icons().map().size());
-  EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
+  EXPECT_EQ(0u, extension->permission_set()->apis().size());
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://aaronboodman.com/*",
             extension->web_extent().patterns().begin()->GetAsString());

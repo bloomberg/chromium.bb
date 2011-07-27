@@ -6,7 +6,7 @@ chrome.test.runTests([
   function experimental() {
     chrome.tabs.getSelected(null, function(tab) {
       try {
-        chrome.experimental.processes.getProcessForTab(tab.id,
+        chrome.experimental.processes.getProcessForTab(tab.id, 
                                                        function(process) {
           chrome.test.fail();
         });

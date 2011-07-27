@@ -1,14 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_permission_set.h"
 
 class ExperimentalApiTest : public ExtensionApiTest {
 public:
@@ -51,36 +46,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FaviconPermission) {
 // permissions).
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
-}
-
-// Tests that the optional permissions API works correctly.
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsGranted) {
-  // Mark all the tested APIs as granted to bypass the confirmation UI.
-  ExtensionAPIPermissionSet apis;
-  apis.insert(ExtensionAPIPermission::kTab);
-  apis.insert(ExtensionAPIPermission::kManagement);
-  apis.insert(ExtensionAPIPermission::kPermissions);
-  scoped_refptr<ExtensionPermissionSet> granted_permissions =
-      new ExtensionPermissionSet(apis, URLPatternSet(), URLPatternSet());
-
-  ExtensionPrefs* prefs =
-      browser()->profile()->GetExtensionService()->extension_prefs();
-  prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
-                               granted_permissions);
-
-  EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
-}
-
-// Tests that the optional permissions API works correctly.
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsAutoConfirm) {
-  // Rather than setting the granted permissions, set the UI autoconfirm flag
-  // and run the same tests.
-  RequestPermissionsFunction::SetAutoConfirmForTests(true);
-  EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
-}
-
-// Test that denying the optional permissions confirmation dialog works.
-IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsDeny) {
-  RequestPermissionsFunction::SetAutoConfirmForTests(false);
-  EXPECT_TRUE(RunExtensionTest("permissions/optional_deny")) << message_;
 }

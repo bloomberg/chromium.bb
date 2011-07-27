@@ -8,7 +8,6 @@
 #include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/web_apps.h"
@@ -91,9 +90,7 @@ typedef std::map<std::string, std::string> SubstitutionMap;
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
-  explicit ExtensionMsg_Loaded_Params(
-      const Extension* extension,
-      const ExtensionPermissionSet* active_permissions);
+  explicit ExtensionMsg_Loaded_Params(const Extension* extension);
 
   // A copy constructor is needed because this structure can end up getting
   // copied inside the IPC machinery on gcc <= 4.2.
@@ -101,9 +98,6 @@ struct ExtensionMsg_Loaded_Params {
 
   // Creates a new extension from the data in this object.
   scoped_refptr<Extension> ConvertToExtension() const;
-
-  // Passes ownership to the caller.
-  const ExtensionPermissionSet* GetActivePermissions() const;
 
   // The subset of the extension manifest data we send to renderers.
   scoped_ptr<DictionaryValue> manifest;
@@ -114,11 +108,6 @@ struct ExtensionMsg_Loaded_Params {
   // The path the extension was loaded from. This is used in the renderer only
   // to generate the extension ID for extensions that are loaded unpacked.
   FilePath path;
-
-  // The extension's current active permissions.
-  ExtensionAPIPermissionSet apis;
-  URLPatternSet explicit_hosts;
-  URLPatternSet scriptable_hosts;
 
   // We keep this separate so that it can be used in logging.
   std::string id;
@@ -140,14 +129,6 @@ struct ParamTraits<URLPattern> {
 template <>
 struct ParamTraits<URLPatternSet> {
   typedef URLPatternSet param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ExtensionAPIPermission::ID> {
-  typedef ExtensionAPIPermission::ID param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -232,13 +213,6 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_GetApplicationInfo,
 // Tell the renderer which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)
-
-// Tell the renderer to update an extension's permission set.
-IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdatePermissions,
-                     std::string /* extension_id*/,
-                     ExtensionAPIPermissionSet,
-                     URLPatternSet,
-                     URLPatternSet)
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,

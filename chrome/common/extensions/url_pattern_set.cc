@@ -10,29 +10,6 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
-
-// static
-void URLPatternSet::CreateDifference(const URLPatternSet& set1,
-                                     const URLPatternSet& set2,
-                                     URLPatternSet* out) {
-  out->ClearPatterns();
-  std::set_difference(set1.patterns_.begin(), set1.patterns_.end(),
-                      set2.patterns_.begin(), set2.patterns_.end(),
-                      std::inserter<std::set<URLPattern> >(
-                          out->patterns_, out->patterns_.begin()));
-}
-
-// static
-void URLPatternSet::CreateIntersection(const URLPatternSet& set1,
-                                       const URLPatternSet& set2,
-                                       URLPatternSet* out) {
-  out->ClearPatterns();
-  std::set_intersection(set1.patterns_.begin(), set1.patterns_.end(),
-                        set2.patterns_.begin(), set2.patterns_.end(),
-                        std::inserter<std::set<URLPattern> >(
-                            out->patterns_, out->patterns_.begin()));
-}
-
 // static
 void URLPatternSet::CreateUnion(const URLPatternSet& set1,
                                 const URLPatternSet& set2,
@@ -73,11 +50,6 @@ void URLPatternSet::AddPattern(const URLPattern& pattern) {
 
 void URLPatternSet::ClearPatterns() {
   patterns_.clear();
-}
-
-bool URLPatternSet::Contains(const URLPatternSet& set) const {
-  return std::includes(patterns_.begin(), patterns_.end(),
-                       set.patterns_.begin(), set.patterns_.end());
 }
 
 bool URLPatternSet::MatchesURL(const GURL& url) const {

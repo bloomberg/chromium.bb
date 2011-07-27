@@ -247,9 +247,6 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
   RegisterHostedAppPermission(
       ExtensionAPIPermission::kUnlimitedStorage, "unlimitedStorage", 0,
       ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
-      ExtensionAPIPermission::kPermissions, "permissions", 0,
-      ExtensionPermissionMessage::kNone);
 
   // Hosted app and private permissions.
   RegisterPermission(
@@ -436,62 +433,12 @@ ExtensionPermissionSet::~ExtensionPermissionSet() {
 }
 
 // static
-ExtensionPermissionSet* ExtensionPermissionSet::CreateDifference(
-    const ExtensionPermissionSet* set1,
-    const ExtensionPermissionSet* set2) {
-  scoped_refptr<ExtensionPermissionSet> empty = new ExtensionPermissionSet();
-  const ExtensionPermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const ExtensionPermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
-
-  ExtensionAPIPermissionSet apis;
-  std::set_difference(set1_safe->apis().begin(), set1_safe->apis().end(),
-                      set2_safe->apis().begin(), set2_safe->apis().end(),
-                      std::insert_iterator<ExtensionAPIPermissionSet>(
-                          apis, apis.begin()));
-
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateDifference(set1_safe->explicit_hosts(),
-                                  set2_safe->explicit_hosts(),
-                                  &explicit_hosts);
-
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateDifference(set1_safe->scriptable_hosts(),
-                                  set2_safe->scriptable_hosts(),
-                                  &scriptable_hosts);
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
-}
-
-// static
-ExtensionPermissionSet* ExtensionPermissionSet::CreateIntersection(
-    const ExtensionPermissionSet* set1,
-    const ExtensionPermissionSet* set2) {
-  scoped_refptr<ExtensionPermissionSet> empty = new ExtensionPermissionSet();
-  const ExtensionPermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const ExtensionPermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
-
-  ExtensionAPIPermissionSet apis;
-  std::set_intersection(set1_safe->apis().begin(), set1_safe->apis().end(),
-                        set2_safe->apis().begin(), set2_safe->apis().end(),
-                        std::insert_iterator<ExtensionAPIPermissionSet>(
-                            apis, apis.begin()));
-  URLPatternSet explicit_hosts;
-  URLPatternSet::CreateIntersection(set1_safe->explicit_hosts(),
-                                    set2_safe->explicit_hosts(),
-                                    &explicit_hosts);
-
-  URLPatternSet scriptable_hosts;
-  URLPatternSet::CreateIntersection(set1_safe->scriptable_hosts(),
-                                    set2_safe->scriptable_hosts(),
-                                    &scriptable_hosts);
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
-}
-// static
 ExtensionPermissionSet* ExtensionPermissionSet::CreateUnion(
     const ExtensionPermissionSet* set1,
     const ExtensionPermissionSet* set2) {
-  scoped_refptr<ExtensionPermissionSet> empty = new ExtensionPermissionSet();
-  const ExtensionPermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const ExtensionPermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
+  ExtensionPermissionSet empty;
+  const ExtensionPermissionSet* set1_safe = (set1 == NULL) ? &empty : set1;
+  const ExtensionPermissionSet* set2_safe = (set2 == NULL) ? &empty : set2;
 
   ExtensionAPIPermissionSet apis;
   std::set_union(set1_safe->apis().begin(), set1_safe->apis().end(),
@@ -500,41 +447,15 @@ ExtensionPermissionSet* ExtensionPermissionSet::CreateUnion(
                      apis, apis.begin()));
 
   URLPatternSet explicit_hosts;
+  URLPatternSet scriptable_hosts;
   URLPatternSet::CreateUnion(set1_safe->explicit_hosts(),
                              set2_safe->explicit_hosts(),
                              &explicit_hosts);
-
-  URLPatternSet scriptable_hosts;
   URLPatternSet::CreateUnion(set1_safe->scriptable_hosts(),
                              set2_safe->scriptable_hosts(),
                              &scriptable_hosts);
 
   return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
-}
-
-bool ExtensionPermissionSet::operator==(
-    const ExtensionPermissionSet& rhs) const {
-  return apis_ == rhs.apis_ &&
-      scriptable_hosts_ == rhs.scriptable_hosts_ &&
-      explicit_hosts_ == rhs.explicit_hosts_;
-}
-
-bool ExtensionPermissionSet::Contains(const ExtensionPermissionSet& set) const {
-  // Every set includes the empty set.
-  if (set.IsEmpty())
-    return true;
-
-  if (!std::includes(apis_.begin(), apis_.end(),
-                     set.apis().begin(), set.apis().end()))
-    return false;
-
-  if (!explicit_hosts().Contains(set.explicit_hosts()))
-    return false;
-
-  if (!scriptable_hosts().Contains(set.scriptable_hosts()))
-    return false;
-
-  return true;
 }
 
 std::set<std::string> ExtensionPermissionSet::GetAPIsAsStrings() const {

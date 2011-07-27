@@ -39,32 +39,22 @@
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
-  IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
+  IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE
 };
 // static
 const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-  IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
-  IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING
+  IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING
 };
 // static
 const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
-  IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
-};
-// static
-const int ExtensionInstallUI::kAbortButtonIds[NUM_PROMPT_TYPES] = {
-  0,
-  0,
-  IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON
+  IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON
 };
 // static
 const int ExtensionInstallUI::kWarningIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-  IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
-  IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
+  IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO
 };
 
 namespace {
@@ -122,7 +112,6 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
 
   // We special-case themes to not show any confirm UI. Instead they are
@@ -140,22 +129,9 @@ void ExtensionInstallUI::ConfirmReEnable(Delegate* delegate,
                                          const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
 
   ShowConfirmation(RE_ENABLE_PROMPT);
-}
-
-void ExtensionInstallUI::ConfirmPermissions(
-    Delegate* delegate,
-    const Extension* extension,
-    const ExtensionPermissionSet* permissions) {
-  DCHECK(ui_loop_ == MessageLoop::current());
-  extension_ = extension;
-  permissions_ = permissions;
-  delegate_ = delegate;
-
-  ShowConfirmation(PERMISSIONS_PROMPT);
 }
 
 void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
@@ -217,7 +193,6 @@ void ExtensionInstallUI::OnImageLoaded(
   SetIcon(image);
 
   switch (prompt_type_) {
-    case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INSTALL_PROMPT: {
       // TODO(jcivelli): http://crbug.com/44771 We should not show an install
@@ -228,7 +203,7 @@ void ExtensionInstallUI::OnImageLoaded(
           NotificationService::NoDetails());
 
       std::vector<string16> warnings =
-          permissions_->GetWarningMessages();
+          extension_->GetPermissionMessageStrings();
       ShowExtensionInstallDialog(
           profile_, delegate_, extension_, &icon_, warnings, prompt_type_);
       break;
