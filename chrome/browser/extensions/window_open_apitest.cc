@@ -171,3 +171,7 @@ class WindowOpenPanelTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpener) {
+  ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
+}
