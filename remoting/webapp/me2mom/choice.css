@@ -129,6 +129,16 @@ label {
   */
 }
 
+.error-state {
+  background-image: url('icon_warning.png');
+  background-repeat: no-repeat;
+  background-position: top left;
+  padding-left: 30px;
+  padding-top: 3px;
+  color: #900;
+  display: inline-block;
+}
+
 .expiring {
     color: #900 !important;
 }

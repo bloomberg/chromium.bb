@@ -27,6 +27,18 @@ remoting.AppMode = {
 remoting.EMAIL = 'email';
 remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
+// TODO(jamiewalch): Replace this with a proper l10n strategy.
+/** @enum {string} */
+remoting.ClientError = {
+  NO_RESPONSE: 'Failed to get response from server.',
+  INVALID_ACCESS_CODE: 'Invalid access code.',
+  MISSING_PLUGIN: 'The viewer plugin is missing or out-of-date. Please ' +
+      'upgrade to a more recent version of Chrome.',
+  OAUTH_FETCH_FAILED: 'Unable to fetch OAuth2 token. Try revoking the ' +
+      'token and authenticating again.',
+  OTHER_ERROR: 'An error occurred.'
+};
+
 /**
  * Whether or not the plugin should scale itself.
  * @type {boolean}
@@ -439,18 +451,14 @@ function updateStatistics() {
 
 function onClientStateChange_(oldState) {
   var state = remoting.session.state;
-  if (state == remoting.ClientSession.State.UNKNOWN) {
-    setClientStateMessage('Unknown');
-  } else if (state == remoting.ClientSession.State.CREATED) {
-    setClientStateMessage('Created');
+  if (state == remoting.ClientSession.State.CREATED) {
+    remoting.debug.log('Created plugin');
   } else if (state == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
-    setClientStateMessage('Incompatible Plugin Version');
-  } else if (state == remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR) {
-    setClientStateMessage('Unknown error with plugin.');
+    showConnectError_(remoting.ClientError.MISSING_PLUGIN);
   } else if (state == remoting.ClientSession.State.CONNECTING) {
-    setClientStateMessage('Connecting as ' + remoting.username);
+    remoting.debug.log('Connecting as ' + remoting.username);
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
-    setClientStateMessage('Initializing connection');
+    remoting.debug.log('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
     var split = remoting.hostJid.split('/');
     var host = null;
@@ -461,17 +469,21 @@ function onClientStateChange_(oldState) {
     setGlobalMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
   } else if (state == remoting.ClientSession.State.CLOSED) {
-    setClientStateMessage('Closed');
     if (oldState != remoting.ClientSession.State.CONNECTED) {
       // TODO(jamiewalch): This is not quite correct, as it will report
       // "Invalid access code", regardless of what actually went wrong.
       // Fix this up by having the host send a suitable error code.
-      showConnectError_(404);
+      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+    } else {
+      remoting.debug.log('Connection closed');
+      remoting.setClientMode('unconnected');
     }
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
-    setClientStateMessage('Failed');
+    remoting.debug.log('Client plugin reported connection failed');
+    showConnectError_(remoting.ClientError.OTHER_ERROR);
   } else {
-    setClientStateMessage('Bad State: ' + state);
+    remoting.debug.log('Unexpected client plugin state: ' + state);
+    showConnectError_(remoting.ClientError.OTHER_ERROR);
   }
 }
 
@@ -489,24 +501,13 @@ function startSession_() {
   });
 }
 
-function showConnectError_(responseCode, responseString) {
-  var errors = [
-    document.getElementById('no-response'),
-    document.getElementById('invalid-access-code'),
-    document.getElementById('other-connect-error')
-  ];
-  var showError = null;
-  if (responseCode == 0) {
-    showError = errors[0];
-  } else if (responseCode == 404) {
-    showError = errors[1];
-  } else {
-    showError = errors[2];
-    var responseNode = document.getElementById('server-response');
-    responseNode.innerText = responseString + ' (' + responseCode + ')';
-  }
-  setMode_(showError.id, errors);
+function showConnectError_(errorMsg) {
+  remoting.debug.log('Connection failed: ' + errorMsg);
+  var errorNode =  document.getElementById('connect-error-message');
+  errorNode.innerText = errorMsg;
   remoting.accessCode = '';
+  remoting.session.disconnect();
+  remoting.session = null;
   remoting.setClientMode('connect-failed');
 }
 
@@ -521,7 +522,15 @@ function parseServerResponse_(xhr) {
       return;
     }
   }
-  showConnectError_(xhr.status, xhr.responseText);
+  var errorMsg = remoting.ClientError.OTHER_ERROR;
+  if (xhr.status == 404) {
+    errorMsg = remoting.ClientError.INVALID_ACCESS_CODE;
+  } else if (xhr.status == 0) {
+    errorMsg = remoting.ClientError.NO_RESPONSE;
+  } else {
+    remoting.debug.log('The server responded: ' + xhr.responseText);
+  }
+  showConnectError_(errorMsg);
 }
 
 function normalizeAccessCode_(accessCode) {
@@ -549,7 +558,8 @@ remoting.doTryConnect = function() {
   // At present, only 12-digit access codes are supported, of which the first
   // 7 characters are the supportId.
   if (remoting.accessCode.length != kAccessCodeLen) {
-    showConnectError_(404);
+    remoting.debug.log('Bad access code length');
+    showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
   } else {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
     remoting.setClientMode('connecting');
@@ -562,7 +572,8 @@ remoting.tryConnect = function() {
     remoting.oauth2.refreshAccessToken(function(xhr) {
       if (remoting.oauth2.needsNewAccessToken()) {
         // Failed to get access token
-        showConnectError_(xhr.status);
+        remoting.debug.log('tryConnect: OAuth2 token fetch failed');
+        showConnectError_(remoting.ClientError.OAUTH_FETCH_FAILED);
         return;
       }
       remoting.doTryConnect();

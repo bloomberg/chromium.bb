@@ -120,7 +120,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   if (!this.isPluginVersionSupported_(this.plugin)) {
     // TODO(ajwong): Remove from parent.
     delete this.plugin;
-    this.setState_(remoting.ClientSession.BAD_PLUGIN_VERSION);
+    this.setState_(remoting.ClientSession.State.BAD_PLUGIN_VERSION);
     return;
   }
 
@@ -159,6 +159,7 @@ remoting.ClientSession.prototype.disconnect = function() {
   var plugin = document.getElementById(this.PLUGIN_ID);
   if (plugin) {
     plugin.parentNode.removeChild(plugin);
+    plugin = null;
   }
   var parameters = {
     'to': this.hostJid,
@@ -192,7 +193,7 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
   var jingleNode = iqNode.firstChild;
   var serializer = new XMLSerializer();
   var parameters = {
-    'to': iqNode.getAttribute('to') || "",
+    'to': iqNode.getAttribute('to') || '',
     'payload_xml': serializer.serializeToString(jingleNode),
     'id': iqNode.getAttribute('id') || '1',
     'type': iqNode.getAttribute('type'),
@@ -351,7 +352,7 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * @param {boolean} shouldScale If the plugin should scale itself.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.toggleScaleToFit = function (shouldScale) {
+remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
   if (shouldScale) {
     remoting.debug.log('scale to fit is turned on.');
 
@@ -388,7 +389,7 @@ remoting.ClientSession.prototype.toggleScaleToFit = function (shouldScale) {
     this.plugin.height = this.plugin.desktopHeight;
   }
   remoting.debug.log('plugin size is now: ' +
-                     this.plugin.width + " x " + this.plugin.height + '.');
+                     this.plugin.width + ' x ' + this.plugin.height + '.');
   this.plugin.setScaleToFit(shouldScale);
 };
 

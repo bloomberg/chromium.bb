@@ -176,7 +176,7 @@ found in the LICENSE file.
 
         <div id="connecting" class="mode">
           <div class="message">
-            Verifying access code...
+            Verifying access code&hellip;
             <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
                  the eventual server response not to ignore responses for any
                  subsequent requests. This should be unified with the host-side
@@ -185,17 +185,8 @@ found in the LICENSE file.
           </div>
         </div> <!-- connecting -->
 
-        <div id="connect-failed" class="mode">
-          <div id="no-response" class="message">
-            Failed to get response from server.
-          </div>
-          <div id="invalid-access-code" class="message">
-            Invalid access code.
-          </div>
-          <div id="other-connect-error" class="message">
-            An error occurred. The server response was
-            <div id="server-response"></div>.
-          </div>
+        <div id="connect-failed" class="mode message">
+          <span id="connect-error-message" class="error-state"></span>
           <div class="centered-button">
             <button type="button" class="auth-status-control big-button"
                     onclick="remoting.setClientMode('unconnected');">

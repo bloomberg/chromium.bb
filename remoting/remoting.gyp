@@ -64,6 +64,7 @@
       }],
     ],
     'remoting_it2me_files': [
+      'resources/icon_warning.png',
       'webapp/me2mom/choice.css',
       'webapp/me2mom/choice.html',
       'webapp/me2mom/client_session.js',
