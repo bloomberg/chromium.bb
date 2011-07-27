@@ -58,6 +58,11 @@ chrome.fileBrowserPrivate = {
     addListener: function(cb) { this.callbacks.push(cb) }
   },
 
+  onMountCompleted: {
+    callbacks: [],
+    addListener: function(cb) { this.callbacks.push(cb) }
+  },
+
   /**
    * Returns common tasks for a given list of files.
    */
@@ -150,12 +155,12 @@ chrome.fileBrowserPrivate = {
     }
   },
 
-  getMountPoints: function() {
+  getMountPoints: function(callback) {
     // This will work in harness.
     var path = 'filesystem:file:///persistent/media';
     var result = {};
     result[path] = {mountPath: path, type: 'file'};
-    return result;
+    callback(result);
   },
 
   removeMount: function(mountPoint) {
@@ -255,6 +260,8 @@ chrome.fileBrowserPrivate = {
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
       OK_LABEL: 'Ok',
+
+      DEFAULT_NEW_FOLDER_NAME: 'New Folder',
 
       SELECT_FOLDER_TITLE: 'Select a folder to open',
       SELECT_OPEN_FILE_TITLE: 'Select a file to open',

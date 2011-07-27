@@ -18,6 +18,8 @@
   -webkit-transition: opacity 0.25s linear;
 
   overflow: hidden;
+
+  z-index: 9999;
 }
 
 .cr-dialog-frame {

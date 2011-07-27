@@ -129,6 +129,7 @@ function FileManager(dialogDom, rootEntries, params) {
       this.onMountCompleted_.bind(this));
 
   var self = this;
+
   // The list of active mount points to distinct them from other directories.
   chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.mountPoints_ = mountPoints;
@@ -2544,7 +2545,11 @@ FileManager.prototype = {
     var self = this;
 
     function onNameSelected(name) {
-      if (!self.validateFileName_(name, promptForName)) {
+      var valid = self.validateFileName_(name, function() {
+        promptForName(name);
+      });
+
+      if (!valid) {
         // Validation failed.  User will be prompted for a new name after they
         // dismiss the validation error dialog.
         return;
@@ -2553,11 +2558,11 @@ FileManager.prototype = {
       self.createNewFolder(name);
     }
 
-    function promptForName() {
-      self.prompt.show(str('NEW_FOLDER_PROMPT'), name, onNameSelected);
+    function promptForName(suggestedName) {
+      self.prompt.show(str('NEW_FOLDER_PROMPT'), suggestedName, onNameSelected);
     }
 
-    promptForName();
+    promptForName(str('DEFAULT_NEW_FOLDER_NAME'));
   };
 
   FileManager.prototype.createNewFolder = function(name) {

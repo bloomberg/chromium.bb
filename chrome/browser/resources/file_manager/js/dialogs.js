@@ -7,6 +7,15 @@ cr.define('cr.ui.dialogs', function() {
   function BaseDialog(parentNode) {
     this.parentNode_ = parentNode;
     this.document_ = parentNode.ownerDocument;
+
+    // The DOM element from the dialog which should receive focus when the
+    // dialog is first displayed.
+    this.initialFocusElement_ = null;
+
+    // The DOM element from the parent which had focus before we were displayed,
+    // so we can restore it when we're hidden.
+    this.previousActiveElement_ = null;
+
     this.initDom_();
   }
 
@@ -18,10 +27,18 @@ cr.define('cr.ui.dialogs', function() {
   BaseDialog.OK_LABEL = 'Ok';
   BaseDialog.CANCEL_LABEL = 'Cancel';
 
+  /**
+   * Number of miliseconds animation is expected to take, plus some margin for
+   * error.
+   */
+  BaseDialog.ANIMATION_STABLE_DURATION = 500;
+
   BaseDialog.prototype.initDom_ = function() {
     var doc = this.document_;
     this.container_ = doc.createElement('div');
     this.container_.className = 'cr-dialog-container';
+    this.container_.addEventListener('keydown',
+                                     this.onContainerKeyDown_.bind(this));
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
@@ -47,10 +64,30 @@ cr.define('cr.ui.dialogs', function() {
     this.okButton_.textContent = BaseDialog.OK_LABEL;
     this.okButton_.addEventListener('click', this.onOkClick_.bind(this));
     buttons.appendChild(this.okButton_);
+
+    this.initialFocusElement_ = this.okButton_;
   };
 
   BaseDialog.prototype.onOk_ = null;
   BaseDialog.prototype.onCancel_ = null;
+
+  BaseDialog.prototype.onContainerKeyDown_ = function(event) {
+    switch (event.keyCode) {
+      case 13:  // Enter
+        if (!this.okButton_.disabled) {
+          this.onOkClick_(event);
+          event.preventDefault();
+        }
+        return;
+
+      case 27:  // Escape
+        if (!this.cancelButton_.disabled) {
+          this.onCancelClick_(event);
+          event.preventDefault();
+        }
+        return;
+    }
+  };
 
   BaseDialog.prototype.onOkClick_ = function(event) {
     this.hide();
@@ -73,6 +110,7 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   BaseDialog.prototype.show = function(message, onOk, onCancel, onShow) {
+    this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
 
     this.onOk_ = onOk;
@@ -94,6 +132,11 @@ cr.define('cr.ui.dialogs', function() {
       self.frame_.style.left = left + 'px';
       self.frame_.style.webkitTransitionProperty = 'left, top';
       self.container_.style.opacity = '1';
+      setTimeout(function() {
+        self.initialFocusElement_.focus();
+        if (onShow)
+          onShow();
+      }, BaseDialog.ANIMATE_STABLE_DURATION);
     }, 0);
   };
 
@@ -102,6 +145,12 @@ cr.define('cr.ui.dialogs', function() {
     this.frame_.style.top = (parseInt(this.frame_.style.top) + 50) + 'px';
     this.frame_.style.left = (parseInt(this.frame_.style.left) - 10) + 'px';
 
+    if (this.previousActiveElement_) {
+      this.previousActiveElement_.focus();
+    } else {
+      this.document_.body.focus();
+    }
+
     var self = this;
     setTimeout(function() {
       // Wait until the transition is done before removing the dialog.
@@ -109,9 +158,12 @@ cr.define('cr.ui.dialogs', function() {
       self.frame_.style.webkitTransitionProperty = '';
       if (onHide)
         onHide();
-    }, 500);
+    }, BaseDialog.ANIMATE_STABLE_DURATION);
   };
 
+  /**
+   * AlertDialog contains just a message and an ok button.
+   */
   function AlertDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
     this.cancelButton_.style.display = 'none';
@@ -123,20 +175,33 @@ cr.define('cr.ui.dialogs', function() {
     return BaseDialog.prototype.show.apply(this, [message, onOk, onOk, onShow]);
   };
 
+  /**
+   * ConfirmDialog contains a message, an ok button, and a cancel button.
+   */
   function ConfirmDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
   }
 
   ConfirmDialog.prototype = {__proto__: BaseDialog.prototype};
 
+  /**
+   * PromptDialog contains a message, a text input, an ok button, and a
+   * cancel button.
+   */
   function PromptDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
     this.input_ = this.document_.createElement('input');
     this.input_.setAttribute('type', 'text');
+    this.input_.addEventListener('focus', this.onInputFocus.bind(this));
+    this.initialFocusElement_ = this.input_;
     this.frame_.insertBefore(this.input_, this.text_.nextSibling);
   }
 
   PromptDialog.prototype = {__proto__: BaseDialog.prototype};
+
+  PromptDialog.prototype.onInputFocus = function(event) {
+    this.input_.select();
+  };
 
   PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
                                         onShow) {
