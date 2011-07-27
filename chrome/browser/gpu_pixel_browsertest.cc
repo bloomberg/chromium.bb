@@ -128,6 +128,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 #endif
       using_gpu_ = false;
+
+      // Allow file access from "file://" protocol. Otherwise, test fails with
+      // "Uncaught Error: SECURITY_ERR: DOM Exception 18."
+      command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     }
   }
 
