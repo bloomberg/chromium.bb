@@ -316,7 +316,7 @@
             {
               'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/MacOS/',
               'files': [
-                '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                '<(PRODUCT_DIR)/ffmpegsumo.so',
               ],
             },
           ],

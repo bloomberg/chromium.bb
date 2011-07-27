@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -106,7 +106,7 @@ class StressTest(pyauto.PyUITest):
                           'Google Chrome.app',
                           'crash_inspector',
                           'crash_report_sender',
-                          'libffmpegsumo.dylib',
+                          'ffmpegsumo.so',
                           'libplugin_carbon_interpose.dylib'])
       index = 0
       symbol_files = ['%s-%s-i386.breakpad' % (sym_file, self.chrome_version) \

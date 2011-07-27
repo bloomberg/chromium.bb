@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -54,7 +54,7 @@ for SRC_NAME in "${SRC_APP_NAME}.app" \
                 "${SRC_APP_NAME} Helper.app" \
                 "crash_inspector" \
                 "crash_report_sender.app" \
-                "libffmpegsumo.dylib" \
+                "ffmpegsumo.so" \
                 "libplugin_carbon_interpose.dylib" ; do
   # SRC_STEM is the name of the file within the DWARF directory of the .dSYM
   # bundle, which comes from the on-disk name of an executable or dylib within

@@ -502,7 +502,7 @@
                   'files': [
                     # TODO(ajwong): Find a way to share this path with
                     # ffmpeg.gyp so they don't diverge. (BUG=23602)
-                    '<(PRODUCT_DIR)/libffmpegsumo.dylib',
+                    '<(PRODUCT_DIR)/ffmpegsumo.so',
                   ],
                 },
                 {
