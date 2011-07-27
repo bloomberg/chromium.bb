@@ -48,6 +48,8 @@ cr.define('ntp4', function() {
       this.input_ = this.ownerDocument.createElement('input');
       this.input_.setAttribute('spellcheck', false);
       this.input_.value = title;
+      // Take the input out of the tab-traversal focus order.
+      this.input_.disabled = true;
       this.appendChild(this.input_);
 
       this.addEventListener('click', this.onClick_);
@@ -104,6 +106,7 @@ cr.define('ntp4', function() {
      */
     onDoubleClick_: function(e) {
       if (this.titleIsEditable_) {
+        this.input_.disabled = false;
         this.input_.focus();
         this.input_.select();
       }
@@ -143,6 +146,7 @@ cr.define('ntp4', function() {
       window.getSelection().removeAllRanges();
       this.title_ = this.input_.value;
       ntp4.saveAppPageName(this.page_, this.title_);
+      this.input_.disabled = true;
     },
 
     shouldAcceptDrag: function(e) {

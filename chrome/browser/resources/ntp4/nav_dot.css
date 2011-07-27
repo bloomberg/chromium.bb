@@ -18,11 +18,11 @@
   -webkit-box-pack: center;
 }
 
-/* TODO(estade): improve focus indicator. */
 .dot {
   box-sizing: border-box;
   cursor: pointer;
   margin-right: 10px;
+  outline: none;
   text-align: left;
   width: 80px;
   -webkit-padding-start: 2px;
@@ -65,11 +65,11 @@
   color: #b2b2b2;
 }
 
-.dot:hover input, .dot.selected input {
+.dot:focus input, .dot:hover input, .dot.selected input {
   color: #7f7f7f;
 }
 
-.dot:hover .selection-bar {
+.dot:focus .selection-bar, .dot:hover .selection-bar {
   border-color: #b2b2b2;
 }
 

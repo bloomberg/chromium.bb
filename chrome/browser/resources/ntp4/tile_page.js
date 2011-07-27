@@ -411,6 +411,10 @@ cr.define('ntp4', function() {
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
       this.dragWrapper_ = new DragWrapper(this.tileGrid_, this);
+
+      $('page-list').addEventListener(
+          CardSlider.EventType.CARD_CHANGED,
+          this.onCardChanged.bind(this));
     },
 
     get tileCount() {
@@ -500,6 +504,8 @@ cr.define('ntp4', function() {
     /**
      * Makes some calculations for tile layout. These change depending on
      * height, width, and the number of tiles.
+     * TODO(estade): optimize calls to this function. Do nothing if the page is
+     * hidden, but call before being shown.
      * @private
      */
     calculateLayoutValues_: function() {
@@ -806,6 +812,17 @@ cr.define('ntp4', function() {
       return width;
     },
 
+    /**
+     * Handle for CARD_CHANGED.
+     * @param {Event} e The card slider event.
+     */
+    onCardChanged: function(e) {
+      // When we are selected, we re-calculate the layout values. (See comment
+      // in doDrop.)
+      if (e.cardSlider.currentCardValue == this)
+        this.calculateLayoutValues_();
+    },
+
     /** Dragging **/
 
     get isCurrentDragTarget() {
@@ -887,6 +904,11 @@ cr.define('ntp4', function() {
           if (originalPage != this)
             originalPage.cleanupDrag();
           this.tileMoved(currentlyDraggingTile);
+
+          // Dropping the icon may cause topMargin to change, but changing it
+          // now would cause everything to move (annoying), so we leave it
+          // alone. The top margin will be re-calculated next time the window is
+          // resized or the page is selected.
         } else {
           this.addOutsideData(e.dataTransfer, adjustedIndex);
         }

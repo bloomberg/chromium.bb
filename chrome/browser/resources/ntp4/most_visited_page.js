@@ -57,7 +57,7 @@ cr.define('ntp4', function() {
           '<div class="color-stripe"></div>' +
           '<span class="title"></span>';
 
-      this.tabIndex = -1;
+      this.removeAttribute('tabIndex');
       this.data_ = null;
       this.removeAttribute('id');
     },
@@ -76,6 +76,7 @@ cr.define('ntp4', function() {
       var id = tileID++;
       this.setAttribute('id', 'tile' + id);
       this.data_ = data;
+      // TODO(estade): this shouldn't be focusable if the page isn't showing.
       this.tabIndex = 0;
       this.classList.remove('filler');
 
