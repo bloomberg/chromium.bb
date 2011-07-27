@@ -1044,8 +1044,13 @@ def main():
   if options.board:
     boards = options.board.split(':')
     boards = [Upgrader.HOST_BOARD if b == 'host' else b for b in boards]
+
+  # Make sure host pseudo-board is run first.
   if options.host and Upgrader.HOST_BOARD not in boards:
-    boards.append(Upgrader.HOST_BOARD)
+    boards.insert(0, Upgrader.HOST_BOARD)
+  elif Upgrader.HOST_BOARD in boards:
+    boards = [b for b in boards if b != Upgrader.HOST_BOARD]
+    boards.insert(0, Upgrader.HOST_BOARD)
 
   # Check that all boards have been setup first.
   for board in boards:
