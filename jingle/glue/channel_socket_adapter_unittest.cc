@@ -100,24 +100,20 @@ TEST_F(TransportChannelSocketAdapterTest, Write) {
   EXPECT_EQ(kTestDataSize, result);
 }
 
-// Verify that the message is still send if Write() is called while
-// socket is not open yet, and that the callback is called.
+// Verify that the message is still sent if Write() is called while
+// socket is not open yet. The result is the packet is lost.
 TEST_F(TransportChannelSocketAdapterTest, WritePending) {
   scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize))
-      .Times(2)
-      .WillOnce(Return(SOCKET_ERROR))
-      .WillOnce(Return(kTestDataSize));
+      .Times(1)
+      .WillOnce(Return(SOCKET_ERROR));
 
   EXPECT_CALL(channel_, GetError())
       .WillOnce(Return(EWOULDBLOCK));
 
   int result = target_->Write(buffer, kTestDataSize, &callback_);
-  ASSERT_EQ(net::ERR_IO_PENDING, result);
-
-  channel_.SignalWritableState(&channel_);
-  EXPECT_EQ(kTestDataSize, callback_result_);
+  ASSERT_EQ(net::OK, result);
 }
 
 }  // namespace jingle_glue

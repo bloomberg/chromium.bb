@@ -68,14 +68,18 @@ int TransportChannelSocketAdapter::Write(
   int result;
   if (channel_->writable()) {
     result = channel_->SendPacket(buffer->data(), buffer_size);
-    if (result < 0)
+    if (result < 0) {
       result = net::MapSystemError(channel_->GetError());
+
+      // If the underlying socket returns IO pending where it shouldn't we
+      // pretend the packet is dropped and return as succeeded because no
+      // writeable callback will happen.
+      if (result == net::ERR_IO_PENDING)
+        result = net::OK;
+    }
   } else {
     // Channel is not writable yet.
     result = net::ERR_IO_PENDING;
-  }
-
-  if (result == net::ERR_IO_PENDING) {
     write_callback_ = callback;
     write_buffer_ = buffer;
     write_buffer_size_ = buffer_size;
