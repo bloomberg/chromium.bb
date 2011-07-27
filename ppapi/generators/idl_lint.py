@@ -111,7 +111,7 @@ def Lint(ast):
   for filenode in ast.GetListOf('File'):
     name = filenode.GetProperty('NAME')
     if filenode.GetProperty('ERRORS') > 0:
-      ErrOut.Log('%s : Skipped due to errors.', name)
+      ErrOut.Log('%s : Skipped due to errors.' % name)
       skipList.append(filenode)
       continue
     warnings = IDLLinter().Visit(filenode, 0)
