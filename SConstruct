@@ -1298,9 +1298,17 @@ pre_base_env.AddMethod(PyAutoTester)
 # Chrome bots (because PyAuto is not expected to be available on them) and when
 # 32-bit test binaries are run on a 64-bit machine (because 32-bit python is not
 # available on 64-bit machines).
+# However, our Mac bots will have 32-bit versions of Python 2.5, even if they
+# are 64-bit machines.  Mac OS X 10.5 bots have 32-bit Python 2.5 installed as
+# part of the OS.  Mac OS X 10.6 bots have had 32-bit Python 2.5 manually
+# installed.
+# TODO(ncbray): check the architecture of the Python that we plan to run,
+# rather than the architecture of Python currently running.
 def PyAutoTesterIsBroken(env):
-  return (PPAPIBrowserTesterIsBroken(env) or
-          (env.Bit('build_x86_32') and platform.architecture()[0] == '64bit'))
+  return (PPAPIBrowserTesterIsBroken(env)
+          or (not env.Bit('host_mac')
+              and env.Bit('build_x86_32')
+              and platform.architecture()[0] == '64bit'))
 
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
