@@ -50,7 +50,7 @@ LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   controller_->set_login_status_consumer(this);
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  NotificationService::AllSources());
 }
 
