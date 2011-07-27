@@ -26,6 +26,7 @@ class ChunkDemuxerFactory : public DemuxerFactory {
 
   // DemuxerFactory methods.
   virtual void Build(const std::string& url, const BuildCB& cb) OVERRIDE;
+  virtual DemuxerFactory* Clone() const OVERRIDE;
 
  private:
   std::string url_;

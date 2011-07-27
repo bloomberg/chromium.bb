@@ -55,4 +55,8 @@ void ChunkDemuxerFactory::Build(const std::string& url, const BuildCB& cb) {
                            scoped_refptr<Demuxer>(demuxer.get())));
 }
 
+DemuxerFactory* ChunkDemuxerFactory::Clone() const {
+  return new ChunkDemuxerFactory(url_, delegate_factory_->Clone(), client_);
+}
+
 }  // namespace media
