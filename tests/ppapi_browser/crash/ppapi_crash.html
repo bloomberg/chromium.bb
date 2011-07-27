@@ -19,6 +19,10 @@
            name="nacl_module"
            src="ppapi_crash_in_callback.nmf"
            width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_on_shutdown"
+           name="nacl_module"
+           src="ppapi_crash_on_shutdown.nmf"
+           width="0" height="0" />
 
     <script type="text/javascript">
       //<![CDATA[
@@ -40,6 +44,21 @@
 
       AddTest($('crash_on_check'), 'CrashOnCheck', 'crash', 'error');
       AddTest($('crash_in_callback'), 'CrashInCallback', 'crash', 'error');
+
+      // Manual test for now: look for stdout/stderr output
+      //
+      //   --- PPP_ShutdownModule
+      //   [...] NaClSrpcRpcWait(...): EOF is received instead of response.
+      //   Probably, the other side (usually, nacl module or browser plugin)
+      //   crashed.
+      //
+      // TODO: automate this.
+      // See http://code.google.com/p/nativeclient/issues/detail?id=2057
+      var plugin = $('crash_on_shutdown');
+      tester.addTest('CrashOnShutdown', function(test) {
+        plugin.parentNode.removeChild(plugin);
+      });
+      tester.waitFor(plugin);
 
       tester.run();
       //]]>

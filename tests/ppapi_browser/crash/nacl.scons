@@ -12,7 +12,7 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-crash_types = ['on_check', 'in_callback']
+crash_types = ['on_check', 'in_callback', 'on_shutdown']
 published_files = []
 
 for crash_type in crash_types:
@@ -20,15 +20,14 @@ for crash_type in crash_types:
   env.Alias('ppapi_crash_%s${PROGSUFFIX}' % crash_type,
             ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
+  test_lib = []
+  if crash_type != 'on_shutdown':
+    test_lib = ['ppapi_test_lib']
+
   env.ComponentProgram(
       nexe,
       ['ppapi_crash_%s.cc' % crash_type],
-      EXTRA_LIBS=['${PPAPI_LIBS}',
-                  'ppapi_test_lib',
-                  'platform',  # for CHECK
-                  'pthread',
-                  'gio',
-                  ])
+      EXTRA_LIBS=['${PPAPI_LIBS}'] + test_lib + ['platform', 'pthread', 'gio'])
 
 # TODO(polina): follow ppapi_browser/bad nacl.scons to publish html only once
 # and to associate all nexes and nmf files with one target that can be
