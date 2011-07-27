@@ -110,6 +110,8 @@ class ShardRunner(threading.Thread):
         chars.write(char)
         if char == "\n" or not shard_running:
           line = chars.getvalue()
+          if not line and not shard_running:
+            break
           results = (self.test_fail.search(line) or
                      self.test_timeout.search(line))
           if results:
