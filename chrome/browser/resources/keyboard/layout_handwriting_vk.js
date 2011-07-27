@@ -202,3 +202,12 @@ var KEYS_HANDWRITING_VK = [
     new HideKeyboardKey()
   ]
 ];
+
+// Add the layout to KEYBOARDS, which is defined in common.js
+KEYBOARDS['handwriting-vk'] = {
+  'definition': KEYS_HANDWRITING_VK,
+  'aspect': 2.1,
+  // TODO(yusukes): Stop special-casing canvas when mazda's i18n keyboard
+  // code is ready.
+  'canvas': null
+};

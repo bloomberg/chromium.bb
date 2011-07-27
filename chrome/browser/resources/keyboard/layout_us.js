@@ -67,3 +67,9 @@ var KEYS_US = [
     new HideKeyboardKey()
   ]
 ];
+
+// Add layout to KEYBOARDS, which is defined in common.js
+KEYBOARDS['us'] = {
+  "definition": KEYS_US,
+  "aspect": 3.15,
+}

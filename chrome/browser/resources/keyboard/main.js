@@ -6,22 +6,6 @@
  * @fileoverview A simple virtual keyboard implementation.
  */
 
-// TODO(mazda): Support more virtual keyboards like French VK, German VK, etc.
-var KEYBOARDS = {
-  'us': {
-    'definition': KEYS_US,
-    'aspect': 3.15,
-    // No canvas.
-  },
-  'handwriting-vk': {
-    'definition': KEYS_HANDWRITING_VK,
-    'aspect': 2.1,
-    // TODO(yusukes): Stop special-casing canvas when mazda's i18n keyboard
-    // code is ready.
-    'canvas': null
-  }
-};
-
 /**
  * The keyboard layout name currently in use.
  * @type {string}

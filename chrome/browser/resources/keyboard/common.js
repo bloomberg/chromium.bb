@@ -23,6 +23,8 @@ MODE_TRANSITIONS[NUMBER_MODE + NUMBER_MODE] = KEY_MODE;
 MODE_TRANSITIONS[SYMBOL_MODE + SHIFT_MODE] = NUMBER_MODE;
 MODE_TRANSITIONS[SYMBOL_MODE + NUMBER_MODE] = KEY_MODE;
 
+var KEYBOARDS = {};
+
 /**
  * The repeat delay in milliseconds before a key starts repeating. Use the same
  * rate as Chromebook. (See chrome/browser/chromeos/language_preferences.cc)
