@@ -1669,7 +1669,11 @@ bool RenderView::runModalBeforeUnloadDialog(
 void RenderView::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParams(data);
-  params.frame_id = frame->identifier();
+
+  // frame is NULL if invoked by BlockedPlugin.
+  if (frame)
+    params.frame_id = frame->identifier();
+
   // Serializing a GURL longer than content::kMaxURLChars will fail, so don't do
   // it.  We replace it with an empty GURL so the appropriate items are disabled
   // in the context menu.
