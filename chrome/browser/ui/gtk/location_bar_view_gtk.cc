@@ -1113,8 +1113,11 @@ void LocationBarViewGtk::OnEntryBoxSizeAllocate(GtkWidget* sender,
 
 gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
                                                GdkEventButton* event) {
-  browser_->ExecuteCommand(IDC_BOOKMARK_PAGE);
-  return FALSE;
+  if (event->button == 1) {
+    browser_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+    return FALSE;
+  }
+  return TRUE;
 }
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,
