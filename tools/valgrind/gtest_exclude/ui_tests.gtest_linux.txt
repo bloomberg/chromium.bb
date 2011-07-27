@@ -15,3 +15,5 @@ OptionsUITest.CommandAgainGoesBackToOptionsTab
 OptionsUITest.TwoCommandsOneTab
 # Fails on chromeos. http://crbug.com/84294.
 PPAPITest.Transport
+# Leaking memory due to flakiness. http://crbug.com/77442
+WorkerFileSystemTest.ResolveURLHttpTests

@@ -5133,6 +5133,18 @@
    fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
+{
+   bug_90671
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNK3sql9Statement*ColumnString*
+   fun:_ZN7history11URLDatabase10FillURLRowERN3sql9StatementEPNS_6URLRowE
+   fun:_ZN7history11URLDatabase13URLEnumerator10GetNextURLEPNS_6URLRowE
+   fun:_ZN7history14HistoryBackend11IterateURLsEPN14HistoryService13URLEnumeratorE
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvPN14HistoryService13URLEnumeratorEES4_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvPN14HistoryService13URLEnumeratorEE6Tuple1IS4_EE3RunEv
+}
 
 
 #-----------------------------------------------------------------------

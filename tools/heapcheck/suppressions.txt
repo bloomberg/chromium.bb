@@ -371,6 +371,20 @@
    fun:NetTestSuite::Initialize
 }
 {
+   bug_44385
+   Heapcheck:Leak
+   ...
+   fun:net::HostCache::Set
+   fun:net::HostResolverImpl::OnJobComplete
+   fun:net::HostResolverImpl::Job::OnLookupComplete
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:*::TaskClosureAdapter::Run
+   fun:base::internal::Invoker1::DoInvoke
+   fun:base::Callback::Run
+   fun:MessageLoop::RunTask
+}
+{
    bug_44667
    Heapcheck:Leak
    fun:Callback1::Type* NewCallback
@@ -1372,20 +1386,6 @@
    Heapcheck:Leak
    ...
    fun:RenderWidgetHost::WasHidden
-}
-{
-   bug_44385
-   Heapcheck:Leak
-   ...
-   fun:net::HostCache::Set
-   fun:net::HostResolverImpl::OnJobComplete
-   fun:net::HostResolverImpl::Job::OnLookupComplete
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:::TaskClosureAdapter::Run
-   fun:base::internal::Invoker1::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
 }
 {
    bug_79651
