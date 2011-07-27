@@ -279,7 +279,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       path_manager_(path_manager),
       file_message_loop_(file_message_loop),
       profile_path_(profile_path),
-      quota_file_util_(QuotaFileUtil::GetInstance()),
+      quota_file_util_(QuotaFileUtil::CreateDefault()),
       sandbox_file_util_(
           new ObfuscatedFileSystemFileUtil(
               profile_path.Append(kNewFileSystemDirectory),

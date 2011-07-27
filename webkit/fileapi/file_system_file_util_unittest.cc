@@ -75,7 +75,7 @@ class FileSystemFileUtilTest : public testing::Test {
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
     scoped_refptr<ObfuscatedFileSystemFileUtil> file_util(
         new ObfuscatedFileSystemFileUtil(base_dir.path(),
-                                         FileSystemFileUtil::GetInstance()));
+                                         new FileSystemFileUtil()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // incognito

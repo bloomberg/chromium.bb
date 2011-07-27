@@ -68,7 +68,7 @@ class FileSystemOperationWriteTest : public testing::Test {
  public:
   FileSystemOperationWriteTest()
       : local_file_util_(
-            new LocalFileSystemFileUtil(QuotaFileUtil::GetInstance())),
+            new LocalFileSystemFileUtil(QuotaFileUtil::CreateDefault())),
         loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),

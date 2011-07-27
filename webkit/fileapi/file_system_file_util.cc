@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/file_util_proxy.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 
@@ -28,11 +27,6 @@ bool ParentExists(FileSystemOperationContext* context,
 }
 
 }  // namespace
-
-// static
-FileSystemFileUtil* FileSystemFileUtil::GetInstance() {
-  return Singleton<FileSystemFileUtil>::get();
-}
 
 PlatformFileError FileSystemFileUtil::CreateOrOpen(
     FileSystemOperationContext* unused,

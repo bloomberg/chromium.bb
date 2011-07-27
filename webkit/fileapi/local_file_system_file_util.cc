@@ -19,6 +19,9 @@ LocalFileSystemFileUtil::LocalFileSystemFileUtil(
     : underlying_file_util_(underlying_file_util) {
 }
 
+LocalFileSystemFileUtil::~LocalFileSystemFileUtil() {
+}
+
 PlatformFileError LocalFileSystemFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FilePath& file_path, int file_flags,

@@ -24,13 +24,13 @@ namespace fileapi {
 class QuotaFileUtilTest : public testing::Test {
  public:
   QuotaFileUtilTest()
-      : quota_file_util_(QuotaFileUtil::GetInstance()),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    quota_test_helper_.SetUp(data_dir_.path(), quota_file_util_);
+    quota_file_util_.reset(QuotaFileUtil::CreateDefault());
+    quota_test_helper_.SetUp(data_dir_.path(), quota_file_util_.get());
     obfuscated_test_helper_.SetUp(
         quota_test_helper_.file_system_context(), NULL);
     base_dir_ = obfuscated_test_helper_.GetOriginRootPath();
@@ -68,7 +68,7 @@ class QuotaFileUtilTest : public testing::Test {
     int64 file_path_cost = ComputeFilePathCost(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewContext(
         file_path_cost, Path(file_name), FilePath()));
-    return QuotaFileUtil::GetInstance()->EnsureFileExists(
+    return quota_file_util_->EnsureFileExists(
         context.get(), Path(file_name), created);
   }
 
@@ -76,7 +76,7 @@ class QuotaFileUtilTest : public testing::Test {
       const char* file_name, int64 size, int64 quota) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(
         quota, Path(file_name), FilePath()));
-    return QuotaFileUtil::GetInstance()->Truncate(
+    return quota_file_util_->Truncate(
         context.get(), Path(file_name), size);
   }
 
@@ -88,16 +88,20 @@ class QuotaFileUtilTest : public testing::Test {
               quota_test_helper().GetCachedOriginUsage());
   }
 
+  QuotaFileUtil* quota_file_util() const {
+    return quota_file_util_.get();
+  }
+
   const FileSystemTestOriginHelper& quota_test_helper() const {
     return quota_test_helper_;
   }
 
  private:
-  QuotaFileUtil* quota_file_util_;
   ScopedTempDir data_dir_;
   FilePath base_dir_;
   FileSystemTestOriginHelper obfuscated_test_helper_;
   FileSystemTestOriginHelper quota_test_helper_;
+  scoped_ptr<QuotaFileUtil> quota_file_util_;
   base::ScopedCallbackFactory<QuotaFileUtilTest> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtilTest);
@@ -115,21 +119,19 @@ TEST_F(QuotaFileUtilTest, CreateAndClose) {
 
   created = false;
   context.reset(NewContext(file_path_cost - 1, Path(file_name), FilePath()));
-  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-      QuotaFileUtil::GetInstance()->CreateOrOpen(
-          context.get(), Path(file_name), file_flags, &file_handle, &created));
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, quota_file_util()->CreateOrOpen(
+      context.get(), Path(file_name), file_flags, &file_handle, &created));
   ASSERT_FALSE(created);
 
   created = false;
   context.reset(NewContext(file_path_cost, Path(file_name), FilePath()));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      QuotaFileUtil::GetInstance()->CreateOrOpen(
-          context.get(), Path(file_name), file_flags, &file_handle, &created));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, quota_file_util()->CreateOrOpen(
+      context.get(), Path(file_name), file_flags, &file_handle, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext(0, FilePath(), FilePath()));
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Close(context.get(), file_handle));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, quota_file_util()->Close(
+      context.get(), file_handle));
 }
 
 TEST_F(QuotaFileUtilTest, EnsureFileExists) {
@@ -142,8 +144,8 @@ TEST_F(QuotaFileUtilTest, EnsureFileExists) {
   context.reset(NewContext(
       ComputeFilePathCost(file_name) - 1, Path(file_name), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->EnsureFileExists(
-                context.get(), Path(file_name), &created));
+      quota_file_util()->EnsureFileExists(
+          context.get(), Path(file_name), &created));
   ASSERT_FALSE(created);
 
   created = false;
@@ -198,26 +200,24 @@ TEST_F(QuotaFileUtilTest, CopyFile) {
 
   context.reset(NewContext(1020 + ComputeFilePathCost(to_file1),
                            Path(from_file), Path(to_file1)));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context.get(),
-                                               Path(from_file),
-                                               Path(to_file1)));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, quota_file_util()->Copy(
+      context.get(), Path(from_file), Path(to_file1)));
   file_path_cost += ComputeFilePathCost(to_file1);
   CheckUsage(2041, file_path_cost);
 
   context.reset(NewContext(1020 + ComputeFilePathCost(to_file2) - 1,
                            Path(from_file), Path(to_file2)));
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Copy(context.get(),
-                                               Path(from_file),
-                                               Path(to_file2)));
+            quota_file_util()->Copy(context.get(),
+                                    Path(from_file),
+                                    Path(to_file2)));
   CheckUsage(2041, file_path_cost);
 
   context.reset(NewContext(1019, Path(from_file), Path(prior_file)));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context.get(),
-                                               Path(from_file),
-                                               Path(prior_file)));
+            quota_file_util()->Copy(context.get(),
+                                    Path(from_file),
+                                    Path(prior_file)));
   CheckUsage(3060, file_path_cost);
 }
 
@@ -234,7 +234,7 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
   context.reset(NewContext(ComputeFilePathCost(from_dir),
                            Path(from_dir), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
+            quota_file_util()->CreateDirectory(context.get(),
                                                           Path(from_dir),
                                                           false, false));
   file_path_cost += ComputeFilePathCost(from_dir);
@@ -258,9 +258,9 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
                            ComputeFilePathCost(from_file2),
                            Path(from_dir), Path(to_dir1)));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Copy(context.get(),
-                                               Path(from_dir),
-                                               Path(to_dir1)));
+            quota_file_util()->Copy(context.get(),
+                                    Path(from_dir),
+                                    Path(to_dir1)));
   file_path_cost += ComputeFilePathCost(to_dir1) +
                     ComputeFilePathCost(from_file1) +
                     ComputeFilePathCost(from_file2);
@@ -272,9 +272,9 @@ TEST_F(QuotaFileUtilTest, CopyDirectory) {
                            ComputeFilePathCost(from_file2) - 1,
                            Path(from_dir), Path(to_dir2)));
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Copy(context.get(),
-                                               Path(from_dir),
-                                               Path(to_dir2)));
+            quota_file_util()->Copy(context.get(),
+                                    Path(from_dir),
+                                    Path(to_dir2)));
   int64 file_path_cost1 = file_path_cost +
       ComputeFilePathCost(to_dir2) + ComputeFilePathCost(from_file1);
   int64 file_path_cost2 = file_path_cost +
@@ -305,9 +305,9 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
 
   context.reset(NewContext(0, Path(from_file), Path(to_file)));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context.get(),
-                                               Path(from_file),
-                                               Path(to_file)));
+            quota_file_util()->Move(context.get(),
+                                    Path(from_file),
+                                    Path(to_file)));
   file_path_cost -= ComputeFilePathCost(from_file);
   file_path_cost += ComputeFilePathCost(to_file);
   CheckUsage(1020, file_path_cost);
@@ -329,18 +329,18 @@ TEST_F(QuotaFileUtilTest, MoveFile) {
                                ComputeFilePathCost(from_file) - 1 - 1,
                            Path(from_file), Path(prior_file)));
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            QuotaFileUtil::GetInstance()->Move(context.get(),
-                                               Path(from_file),
-                                               Path(prior_file)));
+            quota_file_util()->Move(context.get(),
+                                    Path(from_file),
+                                    Path(prior_file)));
   CheckUsage(2041, file_path_cost);
 
   context.reset(NewContext(ComputeFilePathCost(prior_file) -
                                ComputeFilePathCost(from_file) - 1,
                            Path(from_file), Path(prior_file)));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context.get(),
-                                               Path(from_file),
-                                               Path(prior_file)));
+            quota_file_util()->Move(context.get(),
+                                    Path(from_file),
+                                    Path(prior_file)));
   file_path_cost -= ComputeFilePathCost(from_file);
   file_path_cost += ComputeFilePathCost(prior_file);
   CheckUsage(2040, file_path_cost);
@@ -358,9 +358,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
   context.reset(NewContext(QuotaFileUtil::kNoLimit,
                            Path(from_dir), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
-                                                          Path(from_dir),
-                                                          false, false));
+            quota_file_util()->CreateDirectory(context.get(),
+                                               Path(from_dir),
+                                               false, false));
   file_path_cost += ComputeFilePathCost(from_dir);
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
@@ -371,9 +371,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
 
   context.reset(NewContext(1020, Path(from_dir), Path(to_dir1)));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context.get(),
-                                               Path(from_dir),
-                                               Path(to_dir1)));
+            quota_file_util()->Move(context.get(),
+                                    Path(from_dir),
+                                    Path(to_dir1)));
   file_path_cost -= ComputeFilePathCost(from_dir);
   file_path_cost += ComputeFilePathCost(to_dir1);
   CheckUsage(1020, file_path_cost);
@@ -381,9 +381,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
   context.reset(NewContext(QuotaFileUtil::kNoLimit,
                            Path(from_dir), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
-                                                          Path(from_dir),
-                                                          false, false));
+            quota_file_util()->CreateDirectory(context.get(),
+                                               Path(from_dir),
+                                               false, false));
   file_path_cost += ComputeFilePathCost(from_dir);
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
@@ -394,9 +394,9 @@ TEST_F(QuotaFileUtilTest, MoveDirectory) {
 
   context.reset(NewContext(1019, Path(from_dir), Path(to_dir2)));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Move(context.get(),
-                                               Path(from_dir),
-                                               Path(to_dir2)));
+            quota_file_util()->Move(context.get(),
+                                    Path(from_dir),
+                                    Path(to_dir2)));
   file_path_cost -= ComputeFilePathCost(from_dir);
   file_path_cost += ComputeFilePathCost(to_dir2);
   CheckUsage(2040, file_path_cost);
@@ -416,9 +416,9 @@ TEST_F(QuotaFileUtilTest, Remove) {
   file_path_cost += ComputeFilePathCost(file);
   context.reset(NewContext(QuotaFileUtil::kNoLimit, Path(dir), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->CreateDirectory(context.get(),
-                                                          Path(dir),
-                                                          false, false));
+            quota_file_util()->CreateDirectory(context.get(),
+                                               Path(dir),
+                                               false, false));
   file_path_cost += ComputeFilePathCost(dir);
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(dfile1, &created));
   ASSERT_TRUE(created);
@@ -438,17 +438,17 @@ TEST_F(QuotaFileUtilTest, Remove) {
 
   context.reset(NewContext(QuotaFileUtil::kNoLimit, Path(file), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Delete(context.get(),
-                                                 Path(file),
-                                                 false));
+            quota_file_util()->Delete(context.get(),
+                                      Path(file),
+                                      false));
   file_path_cost -= ComputeFilePathCost(file);
   CheckUsage(1140, file_path_cost);
 
   context.reset(NewContext(QuotaFileUtil::kNoLimit, Path(dir), FilePath()));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            QuotaFileUtil::GetInstance()->Delete(context.get(),
-                                                 Path(dir),
-                                                 true));
+            quota_file_util()->Delete(context.get(),
+                                      Path(dir),
+                                      true));
   file_path_cost = 0;
   CheckUsage(0, 0);
 }

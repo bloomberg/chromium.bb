@@ -217,7 +217,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         if (!path.empty()) {
           // TODO(dmikurube): Use QuotaFileUtil in the actual -FileUtil stack.
           file_paths_cost +=
-              QuotaFileUtil::GetInstance()->ComputeFilePathCost(path);
+              QuotaFileUtil::CreateDefault()->ComputeFilePathCost(path);
         }
       }
     }

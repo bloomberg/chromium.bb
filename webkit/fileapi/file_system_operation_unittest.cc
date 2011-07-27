@@ -156,7 +156,7 @@ class FileSystemOperationTest : public testing::Test {
   FileSystemOperationTest()
       : status_(kFileOperationStatusNotSet),
         local_file_util_(
-            new LocalFileSystemFileUtil(QuotaFileUtil::GetInstance())) {
+            new LocalFileSystemFileUtil(QuotaFileUtil::CreateDefault())) {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
   }
 

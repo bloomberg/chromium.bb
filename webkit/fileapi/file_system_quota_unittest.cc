@@ -33,7 +33,7 @@ const int kFileOperationStatusNotSet = 1;
 class FileSystemQuotaTest : public testing::Test {
  public:
   FileSystemQuotaTest()
-      : quota_file_util_(QuotaFileUtil::GetInstance()),
+      : quota_file_util_(QuotaFileUtil::CreateDefault()),
         local_file_util_(new LocalFileSystemFileUtil(quota_file_util_)),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         file_path_cost_(0),

@@ -27,7 +27,7 @@ class LocalFileSystemFileUtilTest : public testing::Test {
  public:
   LocalFileSystemFileUtilTest()
       : local_file_util_(
-            new LocalFileSystemFileUtil(FileSystemFileUtil::GetInstance())),
+            new LocalFileSystemFileUtil(new FileSystemFileUtil())),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 

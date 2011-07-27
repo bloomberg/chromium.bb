@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_QUOTA_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_QUOTA_FILE_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #pragma once
@@ -13,10 +14,20 @@ namespace fileapi {
 
 class QuotaFileUtil : public FileSystemFileUtil {
  public:
-  static QuotaFileUtil* GetInstance();
-  virtual ~QuotaFileUtil() {}
-
   static const int64 kNoLimit;
+
+  // |underlying_file_util| is owned by the instance.  It will be deleted by
+  // the owner instance.  For example, it can be instanciated as follows:
+  // FileSystemFileUtil* file_util = new QuotaFileUtil(new SomeFileUtil());
+  //
+  // To instanciate an object whose underlying file_util is FileSystemFileUtil,
+  // QuotaFileUtil::CreateDefault() can be used.
+  explicit QuotaFileUtil(FileSystemFileUtil* underlying_file_util);
+  virtual ~QuotaFileUtil();
+
+  // Creates a QuotaFileUtil instance with an underlying FileSystemFileUtil
+  // instance.
+  static QuotaFileUtil* CreateDefault();
 
   // TODO(dmikurube): Make this function variable by the constructor.
   int64 ComputeFilePathCost(const FilePath& file_path) const;
@@ -56,13 +67,9 @@ class QuotaFileUtil : public FileSystemFileUtil {
       const FilePath& path,
       int64 length) OVERRIDE;
 
-  friend struct DefaultSingletonTraits<QuotaFileUtil>;
-  DISALLOW_COPY_AND_ASSIGN(QuotaFileUtil);
-
- protected:
-  QuotaFileUtil() {}
-
  private:
+  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
+
   // TODO(dmikurube): Make these constants variable by the constructor.
   //
   // These values are based on Obfuscation DB.  See crbug.com/86114 for the
@@ -81,6 +88,8 @@ class QuotaFileUtil : public FileSystemFileUtil {
       const FilePath& dest_file_path,
       int64 allowed_bytes_growth,
       int64* growth) const;
+
+  DISALLOW_COPY_AND_ASSIGN(QuotaFileUtil);
 };
 
 }  // namespace fileapi

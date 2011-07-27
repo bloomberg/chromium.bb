@@ -70,9 +70,16 @@ class ScopedOriginUpdateHelper {
 
 }  // namespace (anonymous)
 
+QuotaFileUtil::QuotaFileUtil(FileSystemFileUtil* underlying_file_util)
+    : underlying_file_util_(underlying_file_util) {
+}
+
+QuotaFileUtil::~QuotaFileUtil() {
+}
+
 // static
-QuotaFileUtil* QuotaFileUtil::GetInstance() {
-  return Singleton<QuotaFileUtil>::get();
+QuotaFileUtil* QuotaFileUtil::CreateDefault() {
+  return new QuotaFileUtil(new FileSystemFileUtil());
 }
 
 int64 QuotaFileUtil::ComputeFilePathCost(const FilePath& file_path) const {
@@ -103,8 +110,8 @@ PlatformFileError QuotaFileUtil::CreateOrOpen(
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
   }
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
-      CreateOrOpen(fs_context, file_path, file_flags, file_handle, created);
+  base::PlatformFileError error = underlying_file_util_->CreateOrOpen(
+      fs_context, file_path, file_flags, file_handle, created);
 
   if (growth > 0) {
     if (error == base::PLATFORM_FILE_OK)
@@ -137,8 +144,8 @@ PlatformFileError QuotaFileUtil::EnsureFileExists(
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
   }
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
-      EnsureFileExists(fs_context, file_path, created);
+  base::PlatformFileError error = underlying_file_util_->EnsureFileExists(
+      fs_context, file_path, created);
 
   if (growth > 0 &&error == base::PLATFORM_FILE_OK)
     helper->NotifyUpdate(growth);
@@ -184,8 +191,8 @@ PlatformFileError QuotaFileUtil::CreateDirectory(
   }
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  error = FileSystemFileUtil::GetInstance()->
-      CreateDirectory(fs_context, file_path, exclusive, recursive);
+  error = underlying_file_util_->CreateDirectory(
+      fs_context, file_path, exclusive, recursive);
 
   if (growth > 0 && error == base::PLATFORM_FILE_OK)
     helper->NotifyUpdate(growth);
@@ -231,8 +238,8 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
   }
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
-      CopyOrMoveFile(fs_context, src_file_path, dest_file_path, copy);
+  base::PlatformFileError error = underlying_file_util_->CopyOrMoveFile(
+      fs_context, src_file_path, dest_file_path, copy);
 
   if (error == base::PLATFORM_FILE_OK) {
     // TODO(kinuko): For cross-filesystem move case, call this with -growth
@@ -259,8 +266,8 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
         ComputeFilePathCost(fs_context->src_virtual_path());
   }
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
-      DeleteFile(fs_context, file_path);
+  base::PlatformFileError error = underlying_file_util_->DeleteFile(
+      fs_context, file_path);
 
   if (error == base::PLATFORM_FILE_OK)
     helper.NotifyUpdate(growth);
@@ -281,8 +288,8 @@ base::PlatformFileError QuotaFileUtil::DeleteSingleDirectory(
   if (file_util::DirectoryExists(file_path))
     growth -= ComputeFilePathCost(fs_context->src_virtual_path());
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->
-      DeleteSingleDirectory(fs_context, file_path);
+  base::PlatformFileError error = underlying_file_util_->DeleteSingleDirectory(
+      fs_context, file_path);
 
   if (error == base::PLATFORM_FILE_OK)
     helper.NotifyUpdate(growth);
@@ -309,7 +316,7 @@ base::PlatformFileError QuotaFileUtil::Truncate(
   if (allowed_bytes_growth != kNoLimit && growth > allowed_bytes_growth)
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
 
-  base::PlatformFileError error = FileSystemFileUtil::GetInstance()->Truncate(
+  base::PlatformFileError error = underlying_file_util_->Truncate(
       fs_context, path, length);
 
   if (error == base::PLATFORM_FILE_OK)

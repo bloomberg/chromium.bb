@@ -134,7 +134,7 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
     obfuscated_file_system_file_util_ =
         new ObfuscatedFileSystemFileUtil(data_dir_.path(),
-                                         FileSystemFileUtil::GetInstance());
+                                         new FileSystemFileUtil());
     test_helper_.SetUp(data_dir_.path(),
                        false, // incognito
                        false, // unlimited quota

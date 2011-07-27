@@ -47,8 +47,10 @@ class FileSystemOperationContext;
 class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
     public base::RefCountedThreadSafe<ObfuscatedFileSystemFileUtil> {
  public:
-  // |underlying_file_util| is not owned by the instance.  It will need to be
-  // a singleton or to be deleted by someone else.
+  // |underlying_file_util| is owned by the instance.  It will be deleted by
+  // the owner instance.  For example, it can be instanciated as follows:
+  // FileSystemFileUtil* file_system_file_util =
+  //     new ObfuscatedFileSystemFileUtil(new FileSystemFileUtil());
   ObfuscatedFileSystemFileUtil(
       const FilePath& file_system_directory,
       FileSystemFileUtil* underlying_file_util);
@@ -244,7 +246,7 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   scoped_ptr<FileSystemOriginDatabase> origin_database_;
   FilePath file_system_directory_;
   base::OneShotTimer<ObfuscatedFileSystemFileUtil> timer_;
-  FileSystemFileUtil* underlying_file_util_;
+  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtil);
 };

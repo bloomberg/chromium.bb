@@ -82,7 +82,8 @@ class FileWriterDelegateTest : public PlatformTest {
   virtual void TearDown();
 
   virtual void SetUpTestHelper(const FilePath& base_dir) {
-    test_helper_.SetUp(base_dir, QuotaFileUtil::GetInstance());
+    quota_file_util_.reset(QuotaFileUtil::CreateDefault());
+    test_helper_.SetUp(base_dir, quota_file_util_.get());
   }
 
   int64 ComputeCurrentOriginUsage() {
@@ -115,6 +116,7 @@ class FileWriterDelegateTest : public PlatformTest {
 
   static net::URLRequest::ProtocolFactory Factory;
 
+  scoped_ptr<QuotaFileUtil> quota_file_util_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<Result> result_;
@@ -480,12 +482,13 @@ class FileWriterDelegateUnlimitedTest : public FileWriterDelegateTest {
 };
 
 void FileWriterDelegateUnlimitedTest::SetUpTestHelper(const FilePath& path) {
+  quota_file_util_.reset(QuotaFileUtil::CreateDefault());
   test_helper_.SetUp(
       path,
       false /* incognito */,
       true /* unlimited */,
       NULL /* quota manager proxy */,
-      QuotaFileUtil::GetInstance());
+      quota_file_util_.get());
 }
 
 TEST_F(FileWriterDelegateUnlimitedTest, WriteWithQuota) {

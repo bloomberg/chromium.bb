@@ -10,7 +10,6 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -47,7 +46,8 @@ class FileSystemOperationContext;
 //  PerformCommonCheckAndPreparationForMoveAndCopy and CopyOrMoveDirectory.
 class FileSystemFileUtil {
  public:
-  static FileSystemFileUtil* GetInstance();
+  FileSystemFileUtil() {}
+  virtual ~FileSystemFileUtil() {}
 
   // Creates or opens a file with the given flags.  It is invalid to pass NULL
   // for the callback.
@@ -239,9 +239,6 @@ class FileSystemFileUtil {
       const FilePath& root_path);
 
  protected:
-  FileSystemFileUtil() { }
-  virtual ~FileSystemFileUtil() { }
-
   // Deletes a directory and all entries under the directory.
   //
   // This method is called from Delete.  It internally calls two following
@@ -281,7 +278,6 @@ class FileSystemFileUtil {
       const FilePath& dest_file_path,
       bool copy);
 
-  friend struct DefaultSingletonTraits<FileSystemFileUtil>;
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtil);
 };
 

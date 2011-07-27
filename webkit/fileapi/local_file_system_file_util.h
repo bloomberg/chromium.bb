@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -34,9 +35,12 @@ class FileSystemOperationContext;
 // An instance of this class is created and owned by *MountPointProvider.
 class LocalFileSystemFileUtil : public FileSystemFileUtil {
  public:
-  // |underlying_file_util| is not owned by the instance.  It will need to be
-  // a singleton or to be deleted by someone else.
+  // |underlying_file_util| is owned by the instance.  It will be deleted by
+  // the owner instance.  For example, it can be instanciated as follows:
+  // FileSystemFileUtil* file_system_file_util =
+  //     new LocalFileSystemFileUtil(new FileSystemFileUtil());
   explicit LocalFileSystemFileUtil(FileSystemFileUtil* underlying_file_util);
+  virtual ~LocalFileSystemFileUtil();
 
   virtual PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
@@ -126,7 +130,7 @@ class LocalFileSystemFileUtil : public FileSystemFileUtil {
       FileSystemType type,
       const FilePath& virtual_path);
 
-  FileSystemFileUtil* underlying_file_util_;
+  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtil);
 };

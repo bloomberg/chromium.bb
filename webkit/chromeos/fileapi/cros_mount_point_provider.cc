@@ -43,7 +43,7 @@ CrosMountPointProvider::CrosMountPointProvider(
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(new fileapi::LocalFileSystemFileUtil(
-          fileapi::FileSystemFileUtil::GetInstance())) {
+          new fileapi::FileSystemFileUtil())) {
   for (size_t i = 0; i < arraysize(fixed_exposed_paths); i++) {
     mount_point_map_.insert(std::pair<std::string, FilePath>(
         std::string(fixed_exposed_paths[i].web_root_path),

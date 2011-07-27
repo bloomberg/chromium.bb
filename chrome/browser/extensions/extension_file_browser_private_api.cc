@@ -695,16 +695,11 @@ class ExecuteTasksFileSystemCallbackDispatcher
 
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
-    FilePath platform_path;
-    fileapi::FileSystemOperationContext file_system_operation_context(
-        profile_->GetFileSystemContext(),
-        external_provider->GetFileSystemFileUtil());
-    if (base::PLATFORM_FILE_OK !=
-            fileapi::FileSystemFileUtil::GetInstance()->GetFileInfo(
-                &file_system_operation_context, final_file_path, &file_info,
-                &platform_path)) {
+
+    if (!file_util::PathExists(final_file_path) ||
+        file_util::IsLink(final_file_path) ||
+        !file_util::GetFileInfo(final_file_path, &file_info))
       return false;
-    }
 
     // TODO(zelidrag): Let's just prevent all symlinks for now. We don't want a
     // USB drive content to point to something in the rest of the file system.
