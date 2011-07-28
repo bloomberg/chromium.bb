@@ -1,0 +1,18 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#offline-message-title {
+  -webkit-margin-start: 60px;
+  -webkit-margin-end: 60px;
+  display: block;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#offline-message-body {
+  -webkit-margin-start: 60px;
+  -webkit-margin-end: 60px;
+  display: block;
+}

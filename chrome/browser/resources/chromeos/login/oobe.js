@@ -34,6 +34,17 @@ cr.define('cr.ui', function() {
      */
     currentStep_: 0,
 
+    /**
+     * Gets current screen element.
+     * @type {HTMLElement}
+     */
+    get currentScreen() {
+      return $(this.screens_[this.currentStep_]);
+    },
+
+    /**
+     * Oobe keydown handler.
+     */
     oobeKeyDown: function(e) {
       var keystroke = String.fromCharCode(e.keyCode);
       switch (keystroke) {
@@ -134,6 +145,7 @@ cr.define('cr.ui', function() {
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
         this.toggleStep_(index, data);
+      $('offline-message').update();
     },
 
     /**
@@ -251,6 +263,7 @@ cr.define('cr.ui', function() {
     else
       login.GaiaSigninScreen.register();
     oobe.UserImageScreen.register();
+    login.OfflineMessageScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
 

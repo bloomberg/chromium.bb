@@ -69,6 +69,10 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CANCEL));
   localized_strings->SetString("addUserOfflineMessage",
       l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_ADD_USER_OFFLINE));
+  localized_strings->SetString("offlineMessageTitle",
+      l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
+  localized_strings->SetString("offlineMessageBody",
+      l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
 
   if (extension_driven_)
     localized_strings->SetString("authType", "ext");
