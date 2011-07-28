@@ -575,11 +575,17 @@ def main(argv):
       PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                  options.dryrun)
     elif command == 'commit' and ebuilds:
+      existing_branch = cros_build_lib.GetCurrentBranch('.')
       work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch)
       work_branch.CreateBranch()
       if not work_branch.Exists():
         cros_build_lib.Die('Unable to create stabilizing branch in %s' %
                            overlay)
+
+      # In the case of uprevving overlays that have patches applied to them,
+      # include the patched changes in the stabilizing branch.
+      if existing_branch:
+        _SimpleRunCommand('git rebase %s' % existing_branch)
 
       for ebuild in ebuilds:
         try:
