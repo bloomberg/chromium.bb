@@ -96,7 +96,7 @@ var chrome = chrome || {};
         if (!error) {
           error = "Unknown error.";
         }
-        console.error("Error during " + name + ": " + error);
+        console.error(request.errorTemplate.replace("$ERROR$", error));
         chrome.extension.lastError = {
           "message": error
         };
@@ -204,6 +204,9 @@ var chrome = chrome || {};
     // JSON.stringify doesn't support a root object which is undefined.
     if (request.args === undefined)
       request.args = null;
+
+    // Save the stack info so we can report errors when the callback is called.
+    request.errorTemplate = new Error("$ERROR$").stack;
 
     var sargs = opt_args.noStringify ?
         request.args : chromeHidden.JSON.stringify(request.args);
