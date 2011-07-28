@@ -3,128 +3,34 @@
 // found in the LICENSE file.
 
 /**
- * Each row in the filtered items list is backed by a SourceEntry. This
- * instance contains all of the data pertaining to that row, and notifies
- * its parent view (the EventsView) whenever its data changes.
+ * A SourceEntry gathers all log entries with the same source.
  *
  * @constructor
  */
-function SourceEntry(parentView, maxPreviousSourceId) {
+function SourceEntry(logEntry, maxPreviousSourceId) {
   this.maxPreviousSourceId_ = maxPreviousSourceId;
   this.entries_ = [];
-  this.parentView_ = parentView;
-  this.isSelected_ = false;
-  this.isMatchedByFilter_ = false;
+  this.description_ = '';
 
-  // Used to set CSS class for display.  Must only be modified by calling
-  // corresponding set functions.
-  this.isSelected_ = false;
-  this.isMouseOver_ = false;
   // Set to true on most net errors.
   this.isError_ = false;
+
   // If the first entry is a BEGIN_PHASE, set to false.
   // Set to true when an END_PHASE matching the first entry is encountered.
   this.isInactive_ = true;
+
+  if (logEntry.phase == LogEventPhase.PHASE_BEGIN)
+    this.isInactive_ = false;
+
+  this.update(logEntry);
 }
 
-SourceEntry.prototype.isSelected = function() {
-  return this.isSelected_;
-};
-
-/**
- * Changes |row_|'s class based on currently set flags.  Clears any previous
- * class set by this method.  This method is needed so that some styles
- * override others.
- */
-SourceEntry.prototype.updateClass_ = function() {
-  if (!this.row_)
-    return;
-
-  // Each element of this list contains a property of |this| and the
-  // corresponding class name to set if that property is true.  Entries earlier
-  // in the list take precedence.
-  var propertyNames = [
-    ['isSelected_', 'selected'],
-    ['isMouseOver_', 'mouseover'],
-    ['isError_', 'error'],
-    ['isInactive_', 'inactive']];
-
-  // Loop through |propertyNames| in order, checking if each property
-  // is true.  For the first such property found, if any, add the
-  // corresponding class to the SourceEntry's row.  Remove classes
-  // that correspond to any other property.
-  var noStyleSet = true;
-  for (var i = 0; i < propertyNames.length; ++i) {
-    var setStyle = noStyleSet && this[propertyNames[i][0]];
-    changeClassName(this.row_, propertyNames[i][1], setStyle);
-    if (setStyle)
-      noStyleSet = false;
-  }
-};
-
-SourceEntry.prototype.setInactive_ = function(isInactive) {
-  this.isInactive_ = isInactive;
-  this.updateClass_();
-};
-
-SourceEntry.prototype.setError_ = function(isError) {
-  this.isError_ = isError;
-  this.updateClass_();
-};
-
-SourceEntry.prototype.setSelectedStyles = function(isSelected) {
-  this.isSelected_ = isSelected;
-  this.getSelectionCheckbox().checked = isSelected;
-  this.updateClass_();
-};
-
-SourceEntry.prototype.setMouseoverStyle = function(isMouseOver) {
-  this.isMouseOver_ = isMouseOver;
-  this.updateClass_();
-};
-
-SourceEntry.prototype.setIsMatchedByFilter = function(isMatchedByFilter) {
-  if (this.isMatchedByFilter() == isMatchedByFilter)
-    return;  // No change.
-
-  this.isMatchedByFilter_ = isMatchedByFilter;
-
-  this.setFilterStyles(isMatchedByFilter);
-
-  if (isMatchedByFilter) {
-    this.parentView_.incrementPostfilterCount(1);
-  } else {
-    this.parentView_.incrementPostfilterCount(-1);
-    // If we are filtering an entry away, make sure it is no longer
-    // part of the selection.
-    this.setSelected(false);
-  }
-};
-
-SourceEntry.prototype.isMatchedByFilter = function() {
-  return this.isMatchedByFilter_;
-};
-
-SourceEntry.prototype.setFilterStyles = function(isMatchedByFilter) {
-  // Hide rows which have been filtered away.
-  if (isMatchedByFilter) {
-    this.row_.style.display = '';
-  } else {
-    this.row_.style.display = 'none';
-  }
-};
-
 SourceEntry.prototype.update = function(logEntry) {
-  if (logEntry.phase == LogEventPhase.PHASE_BEGIN &&
-      this.entries_.length == 0) {
-    this.setInactive_(false);
-  }
-
   // Only the last event should have the same type first event,
   if (!this.isInactive_ &&
       logEntry.phase == LogEventPhase.PHASE_END &&
       logEntry.type == this.entries_[0].type) {
-    this.setInactive_(true);
+    this.isInactive_ = true;
   }
 
   // If we have a net error code, update |this.isError_| if apporpriate.
@@ -136,7 +42,7 @@ SourceEntry.prototype.update = function(logEntry) {
       // Ignore error code caused by not finding an entry in the cache.
       if (logEntry.type != LogEventType.HTTP_CACHE_OPEN_ENTRY ||
           netErrorCode != NetError.FAILED) {
-        this.setError_(true);
+        this.isError_ = true;
       }
     }
   }
@@ -146,130 +52,64 @@ SourceEntry.prototype.update = function(logEntry) {
   var curStartEntry = this.getStartEntry_();
 
   // If we just got the first entry for this source.
-  if (prevStartEntry != curStartEntry) {
-    if (!prevStartEntry)
-      this.createRow_();
-    else
-      this.updateDescription_();
-  }
-
-  // Update filters.
-  var matchesFilter = this.matchesFilter(this.parentView_.currentFilter_);
-  this.setIsMatchedByFilter(matchesFilter);
-};
-
-SourceEntry.prototype.onCheckboxToggled_ = function() {
-  this.setSelected(this.getSelectionCheckbox().checked);
-};
-
-SourceEntry.prototype.matchesFilter = function(filter) {
-  // Safety check.
-  if (this.row_ == null)
-    return false;
-
-  if (filter.isActive && this.isInactive_)
-    return false;
-  if (filter.isInactive && !this.isInactive_)
-    return false;
-  if (filter.isError && !this.isError_)
-    return false;
-  if (filter.isNotError && this.isError_)
-    return false;
-
-  // Check source type, if needed.
-  if (filter.type) {
-    var sourceType = this.getSourceTypeString().toLowerCase();
-    if (filter.type.indexOf(sourceType) == -1)
-      return false;
-  }
-
-  // Check source ID, if needed.
-  if (filter.id) {
-    if (filter.id.indexOf(this.getSourceId() + '') == -1)
-      return false;
-  }
-
-  if (filter.text == '')
-    return true;
-
-  var filterText = filter.text;
-  var entryText = PrintSourceEntriesAsText(this.entries_).toLowerCase();
-
-  return entryText.indexOf(filterText) != -1;
-};
-
-SourceEntry.prototype.setSelected = function(isSelected) {
-  if (isSelected == this.isSelected())
-    return;
-
-  this.isSelected_ = isSelected;
-
-  this.setSelectedStyles(isSelected);
-  this.parentView_.modifySelectionArray(this, isSelected);
-  this.parentView_.onSelectionChanged();
-};
-
-SourceEntry.prototype.onClicked_ = function() {
-  this.parentView_.clearSelection();
-  this.setSelected(true);
-};
-
-SourceEntry.prototype.onMouseover_ = function() {
-  this.setMouseoverStyle(true);
-};
-
-SourceEntry.prototype.onMouseout_ = function() {
-  this.setMouseoverStyle(false);
+  if (prevStartEntry != curStartEntry)
+    this.updateDescription_();
 };
 
 SourceEntry.prototype.updateDescription_ = function() {
-  this.descriptionCell_.innerHTML = '';
-  addTextNode(this.descriptionCell_, this.getDescription());
-};
+  var e = this.getStartEntry_();
+  this.description_ = '';
+  if (!e)
+    return;
 
-SourceEntry.prototype.createRow_ = function() {
-  // Create a row.
-  var tr = addNode(this.parentView_.tableBody_, 'tr');
-  tr._id = this.getSourceId();
-  tr.style.display = 'none';
-  this.row_ = tr;
+  if (e.source.type == LogSourceType.NONE) {
+    // NONE is what we use for global events that aren't actually grouped
+    // by a "source ID", so we will just stringize the event's type.
+    this.description_ = getKeyWithValue(LogEventType, e.type);
+    return;
+  }
 
-  var selectionCol = addNode(tr, 'td');
-  var checkbox = addNode(selectionCol, 'input');
-  checkbox.type = 'checkbox';
+  if (e.params == undefined) {
+    return;
+  }
 
-  var idCell = addNode(tr, 'td');
-  idCell.style.textAlign = 'right';
+  switch (e.source.type) {
+    case LogSourceType.URL_REQUEST:
+    case LogSourceType.SOCKET_STREAM:
+    case LogSourceType.HTTP_STREAM_JOB:
+      this.description_ = e.params.url;
+      break;
+    case LogSourceType.CONNECT_JOB:
+      this.description_ = e.params.group_name;
+      break;
+    case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
+    case LogSourceType.HOST_RESOLVER_IMPL_JOB:
+      this.description_ = e.params.host;
+      break;
+    case LogSourceType.DISK_CACHE_ENTRY:
+    case LogSourceType.MEMORY_CACHE_ENTRY:
+      this.description_ = e.params.key;
+      break;
+    case LogSourceType.SPDY_SESSION:
+      if (e.params.host)
+        this.description_ = e.params.host + ' (' + e.params.proxy + ')';
+      break;
+    case LogSourceType.SOCKET:
+      if (e.params.source_dependency != undefined) {
+        var connectJobId = e.params.source_dependency.id;
+        var connectJob = g_browser.sourceTracker.getSourceEntry(connectJobId);
+        if (connectJob)
+          this.description_ = connectJob.getDescription();
+      }
+      break;
+    case LogSourceType.ASYNC_HOST_RESOLVER_REQUEST:
+    case LogSourceType.DNS_TRANSACTION:
+      this.description_ = e.params.hostname;
+      break;
+  }
 
-  var typeCell = addNode(tr, 'td');
-  var descriptionCell = addNode(tr, 'td');
-  this.descriptionCell_ = descriptionCell;
-
-  // Connect listeners.
-  checkbox.onchange = this.onCheckboxToggled_.bind(this);
-
-  var onclick = this.onClicked_.bind(this);
-  idCell.onclick = onclick;
-  typeCell.onclick = onclick;
-  descriptionCell.onclick = onclick;
-
-  tr.onmouseover = this.onMouseover_.bind(this);
-  tr.onmouseout = this.onMouseout_.bind(this);
-
-  // Set the cell values to match this source's data.
-  if (this.getSourceId() >= 0)
-    addTextNode(idCell, this.getSourceId());
-  else
-    addTextNode(idCell, '-');
-  var sourceTypeString = this.getSourceTypeString();
-  addTextNode(typeCell, sourceTypeString);
-  this.updateDescription_();
-
-  // Add a CSS classname specific to this source type (so CSS can specify
-  // different stylings for different types).
-  changeClassName(this.row_, 'source_' + sourceTypeString, true);
-
-  this.updateClass_();
+  if (this.description_ == undefined)
+    this.description_ = '';
 };
 
 /**
@@ -278,58 +118,7 @@ SourceEntry.prototype.createRow_ = function() {
  * or a hostname for a connect job, etc...
  */
 SourceEntry.prototype.getDescription = function() {
-  var e = this.getStartEntry_();
-  if (!e)
-    return '';
-
-  if (e.source.type == LogSourceType.NONE) {
-    // NONE is what we use for global events that aren't actually grouped
-    // by a "source ID", so we will just stringize the event's type.
-    return getKeyWithValue(LogEventType, e.type);
-  }
-
-  if (e.params == undefined)
-    return '';
-
-  var description = '';
-  switch (e.source.type) {
-    case LogSourceType.URL_REQUEST:
-    case LogSourceType.SOCKET_STREAM:
-    case LogSourceType.HTTP_STREAM_JOB:
-      description = e.params.url;
-      break;
-    case LogSourceType.CONNECT_JOB:
-      description = e.params.group_name;
-      break;
-    case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
-    case LogSourceType.HOST_RESOLVER_IMPL_JOB:
-      description = e.params.host;
-      break;
-    case LogSourceType.DISK_CACHE_ENTRY:
-    case LogSourceType.MEMORY_CACHE_ENTRY:
-      description = e.params.key;
-      break;
-    case LogSourceType.SPDY_SESSION:
-      if (e.params.host)
-        description = e.params.host + ' (' + e.params.proxy + ')';
-      break;
-    case LogSourceType.SOCKET:
-      if (e.params.source_dependency != undefined) {
-        var connectJobSourceEntry =
-            this.parentView_.getSourceEntry(e.params.source_dependency.id);
-        if (connectJobSourceEntry)
-          description = connectJobSourceEntry.getDescription();
-      }
-      break;
-    case LogSourceType.ASYNC_HOST_RESOLVER_REQUEST:
-    case LogSourceType.DNS_TRANSACTION:
-      description = e.params.hostname;
-      break;
-  }
-
-  if (description == undefined)
-    return '';
-  return description;
+  return this.description_;
 };
 
 /**
@@ -357,8 +146,8 @@ SourceEntry.prototype.getSourceTypeString = function() {
   return getKeyWithValue(LogSourceType, this.entries_[0].source.type);
 };
 
-SourceEntry.prototype.getSelectionCheckbox = function() {
-  return this.row_.childNodes[0].firstChild;
+SourceEntry.prototype.getSourceType = function() {
+  return this.entries_[0].source.type;
 };
 
 SourceEntry.prototype.getSourceId = function() {
@@ -373,8 +162,12 @@ SourceEntry.prototype.getMaxPreviousEntrySourceId = function() {
   return this.maxPreviousSourceId_;
 };
 
-SourceEntry.prototype.isActive = function() {
-  return !this.isInactive_;
+SourceEntry.prototype.isInactive = function() {
+  return this.isInactive_;
+};
+
+SourceEntry.prototype.isError = function() {
+  return this.isError_;
 };
 
 /**
@@ -383,10 +176,9 @@ SourceEntry.prototype.isActive = function() {
 SourceEntry.prototype.getEndTime = function() {
   if (!this.isInactive_) {
     return (new Date()).getTime();
-  }
-  else {
+  } else {
     var endTicks = this.entries_[this.entries_.length - 1].time;
-    return g_browser.convertTimeTicksToDate(endTicks).getTime();
+    return convertTimeTicksToDate(endTicks).getTime();
   }
 };
 
@@ -397,62 +189,11 @@ SourceEntry.prototype.getEndTime = function() {
  */
 SourceEntry.prototype.getDuration = function() {
   var startTicks = this.entries_[0].time;
-  var startTime = g_browser.convertTimeTicksToDate(startTicks).getTime();
+  var startTime = convertTimeTicksToDate(startTicks).getTime();
   var endTime = this.getEndTime();
   return endTime - startTime;
 };
 
-/**
- * Returns source ID of the entry whose row is currently above this one's.
- * Returns null if no such node exists.
- */
-SourceEntry.prototype.getPreviousNodeSourceId = function() {
-  if (!this.hasRow())
-    return null;
-  var prevNode = this.row_.previousSibling;
-  if (prevNode == null)
-    return null;
-  return prevNode._id;
+SourceEntry.prototype.printAsText = function() {
+  return PrintSourceEntriesAsText(this.entries_);
 };
-
-/**
- * Returns source ID of the entry whose row is currently below this one's.
- * Returns null if no such node exists.
- */
-SourceEntry.prototype.getNextNodeSourceId = function() {
-  if (!this.hasRow())
-    return null;
-  var nextNode = this.row_.nextSibling;
-  if (nextNode == null)
-    return null;
-  return nextNode._id;
-};
-
-SourceEntry.prototype.hasRow = function() {
-  return this.row_ != null;
-};
-
-/**
- * Moves current object's row before |entry|'s row.
- */
-SourceEntry.prototype.moveBefore = function(entry) {
-  if (this.hasRow() && entry.hasRow()) {
-    this.row_.parentNode.insertBefore(this.row_, entry.row_);
-  }
-};
-
-/**
- * Moves current object's row after |entry|'s row.
- */
-SourceEntry.prototype.moveAfter = function(entry) {
-  if (this.hasRow() && entry.hasRow()) {
-    this.row_.parentNode.insertBefore(this.row_, entry.row_.nextSibling);
-  }
-};
-
-SourceEntry.prototype.remove = function() {
-  this.setSelected(false);
-  this.setIsMatchedByFilter(false);
-  this.row_.parentNode.removeChild(this.row_);
-};
-

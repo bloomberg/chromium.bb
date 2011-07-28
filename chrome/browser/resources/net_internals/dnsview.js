@@ -99,7 +99,7 @@ DnsView.prototype.onHostResolverInfoChanged = function(hostResolverInfo) {
       }
     }
 
-    var expiresDate = g_browser.convertTimeTicksToDate(e.expiration);
+    var expiresDate = convertTimeTicksToDate(e.expiration);
     var expiresCell = addNode(tr, 'td');
     addTextNode(expiresCell, expiresDate.toLocaleString());
   }

@@ -38,7 +38,7 @@ function addSourceEntry_(node, sourceEntry) {
   var nobr2 = addNode(p2, 'nobr');
 
   var logEntries = sourceEntry.getLogEntries();
-  var startDate = g_browser.convertTimeTicksToDate(logEntries[0].time);
+  var startDate = convertTimeTicksToDate(logEntries[0].time);
   addTextNode(nobr2, 'Start Time: ' + startDate.toLocaleString());
 
   var pre = addNode(div, 'pre');
@@ -60,7 +60,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
   if (entries.length == 0)
     return '';
 
-  var startDate = g_browser.convertTimeTicksToDate(entries[0].orig.time);
+  var startDate = convertTimeTicksToDate(entries[0].orig.time);
   var startTime = startDate.getTime();
 
   var tablePrinter = new TablePrinter();
@@ -77,7 +77,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
       tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
 
       tablePrinter.addCell('t=');
-      var date = g_browser.convertTimeTicksToDate(entry.orig.time) ;
+      var date = convertTimeTicksToDate(entry.orig.time) ;
       var tCell = tablePrinter.addCell(date.getTime());
       tCell.alignRight = true;
       tablePrinter.addCell(' [st=');
@@ -112,7 +112,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
       // Add a continuation row for each line of text from the extra parameters.
       var extraParamsText = getTextForExtraParams(
           entry.orig,
-          g_browser.getSecurityStripping());
+          g_browser.sourceTracker.getSecurityStripping());
       var extraParamsTextLines = extraParamsText.split('\n');
 
       for (var j = 0; j < extraParamsTextLines.length; ++j) {

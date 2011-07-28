@@ -51,7 +51,8 @@ function DataView() {
 
   this.activelyCapturedCountBox_ = $(activelyCapturedCountId);
   this.passivelyCapturedCountBox_ = $(passivelyCapturedCountId);
-  $(deleteAllId).onclick = g_browser.deleteAllEvents.bind(g_browser);
+  $(deleteAllId).onclick = g_browser.sourceTracker.deleteAllSourceEntries.bind(
+      g_browser.sourceTracker);
 
   this.dumpDataDiv_ = $(dumpDataDivId);
   this.capturingTextSpan_ = $(capturingTextSpanId);
@@ -75,7 +76,7 @@ function DataView() {
   // saved.
   this.lastBlobURL_ = null;
 
-  g_browser.addLogObserver(this);
+  g_browser.sourceTracker.addObserver(this);
 }
 
 inherits(DataView, DivView);
@@ -83,7 +84,7 @@ inherits(DataView, DivView);
 /**
  * Called whenever a new event is received.
  */
-DataView.prototype.onLogEntryAdded = function(logEntry) {
+DataView.prototype.onSourceEntryUpdated = function(sourceEntry) {
   this.updateEventCounts_();
 };
 
@@ -91,14 +92,14 @@ DataView.prototype.onLogEntryAdded = function(logEntry) {
  * Called whenever some log events are deleted.  |sourceIds| lists
  * the source IDs of all deleted log entries.
  */
-DataView.prototype.onLogEntriesDeleted = function(sourceIds) {
+DataView.prototype.onSourceEntriesDeleted = function(sourceIds) {
   this.updateEventCounts_();
 };
 
 /**
  * Called whenever all log events are deleted.
  */
-DataView.prototype.onAllLogEntriesDeleted = function() {
+DataView.prototype.onAllSourceEntriesDeleted = function() {
   this.updateEventCounts_();
 };
 
@@ -122,9 +123,9 @@ DataView.prototype.onLoadLogFinish = function(data) {
  */
 DataView.prototype.updateEventCounts_ = function() {
   this.activelyCapturedCountBox_.textContent =
-      g_browser.getNumActivelyCapturedEvents()
+      g_browser.sourceTracker.getNumActivelyCapturedEvents();
   this.passivelyCapturedCountBox_.textContent =
-      g_browser.getNumPassivelyCapturedEvents();
+      g_browser.sourceTracker.getNumPassivelyCapturedEvents();
 };
 
 /**
@@ -145,7 +146,8 @@ DataView.prototype.onSetByteLogging_ = function(byteLoggingCheckbox) {
  */
 DataView.prototype.onSetSecurityStripping_ =
     function(securityStrippingCheckbox) {
-  g_browser.setSecurityStripping(securityStrippingCheckbox.checked);
+  g_browser.sourceTracker.setSecurityStripping(
+      securityStrippingCheckbox.checked);
 };
 
 DataView.prototype.onSecurityStrippingChanged = function() {

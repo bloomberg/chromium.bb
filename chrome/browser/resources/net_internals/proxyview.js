@@ -24,7 +24,6 @@ function ProxyView() {
 
   DivView.call(this, mainBoxId);
 
-  this.latestProxySourceEntries_ = null;
   this.latestProxySourceId_ = 0;
 
   // Hook up the UI components.
@@ -43,7 +42,7 @@ function ProxyView() {
   // Register to receive proxy information as it changes.
   g_browser.addProxySettingsObserver(this);
   g_browser.addBadProxiesObserver(this);
-  g_browser.addLogObserver(this);
+  g_browser.sourceTracker.addObserver(this);
 }
 
 inherits(ProxyView, DivView);
@@ -102,7 +101,7 @@ ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
   // Add a table row for each bad proxy entry.
   for (var i = 0; i < badProxies.length; ++i) {
     var entry = badProxies[i];
-    var badUntilDate = g_browser.convertTimeTicksToDate(entry.bad_until);
+    var badUntilDate = convertTimeTicksToDate(entry.bad_until);
 
     var tr = addNode(this.badProxiesTbody_, 'tr');
 
@@ -115,28 +114,22 @@ ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
   return true;
 };
 
-ProxyView.prototype.onLogEntryAdded = function(logEntry) {
-  if (logEntry.source.type != LogSourceType.INIT_PROXY_RESOLVER ||
-      this.latestProxySourceId_ > logEntry.source.id) {
+ProxyView.prototype.onSourceEntryUpdated = function(sourceEntry) {
+  if (sourceEntry.getSourceType() != LogSourceType.INIT_PROXY_RESOLVER ||
+      this.latestProxySourceId_ > sourceEntry.getSourceId()) {
     return;
   }
 
-  if (logEntry.source.id > this.latestProxySourceId_) {
-    this.latestProxySourceId_ = logEntry.source.id;
-    this.latestProxySourceEntries_ = [];
-  }
+  this.latestProxySourceId_ = sourceEntry.getSourceId();
 
-  this.latestProxySourceEntries_.push(logEntry);
   this.proxyResolverLogPre_.innerHTML = '';
-  addTextNode(this.proxyResolverLogPre_,
-              PrintSourceEntriesAsText(this.latestProxySourceEntries_));
+  addTextNode(this.proxyResolverLogPre_, sourceEntry.printAsText());
 };
 
 /**
  * Clears the display of and log entries for the last proxy lookup.
  */
 ProxyView.prototype.clearLog_ = function() {
-  this.latestProxySourceEntries_ = [];
   // Prevents display of partial logs.
   ++this.latestProxySourceId_;
 
@@ -144,11 +137,11 @@ ProxyView.prototype.clearLog_ = function() {
   addTextNode(this.proxyResolverLogPre_, 'Deleted.');
 };
 
-ProxyView.prototype.onLogEntriesDeleted = function(sourceIds) {
+ProxyView.prototype.onSourceEntriesDeleted = function(sourceIds) {
   if (sourceIds.indexOf(this.latestProxySourceId_) != -1)
     this.clearLog_();
 };
 
-ProxyView.prototype.onAllLogEntriesDeleted = function() {
+ProxyView.prototype.onAllSourceEntriesDeleted = function() {
   this.clearLog_();
 };

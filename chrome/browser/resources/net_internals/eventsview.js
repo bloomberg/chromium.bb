@@ -47,9 +47,6 @@ function EventsView() {
 
   View.call(this);
 
-  // Used for sorting entries with automatically assigned IDs.
-  this.maxReceivedSourceId_ = 0;
-
   // Initialize the sub-views.
   var leftPane = new TopMidBottomView(new DivView(topbarId),
                                       new DivView(middleboxId),
@@ -64,7 +61,7 @@ function EventsView() {
   this.splitterView_ = new ResizableVerticalSplitView(
       leftPane, this.detailsView_, new DivView(sizerId));
 
-  g_browser.addLogObserver(this);
+  g_browser.sourceTracker.addObserver(this);
 
   this.tableBody_ = $(tableBodyId);
 
@@ -76,7 +73,8 @@ function EventsView() {
 
   $(deleteSelectedId).onclick = this.deleteSelected_.bind(this);
 
-  $(deleteAllId).onclick = g_browser.deleteAllEvents.bind(g_browser);
+  $(deleteAllId).onclick = g_browser.sourceTracker.deleteAllSourceEntries.bind(
+      g_browser.sourceTracker);
 
   $(selectAllId).addEventListener('click', this.selectAll_.bind(this), true);
 
@@ -101,8 +99,8 @@ inherits(EventsView, View);
  * being displayed, removes them all in the process.
  */
 EventsView.prototype.initializeSourceList_ = function() {
-  this.currentSelectedSources_ = [];
-  this.sourceIdToEntryMap_ = {};
+  this.currentSelectedRows_ = [];
+  this.sourceIdToRowMap_ = {};
   this.tableBody_.innerHTML = '';
   this.numPrefilter_ = 0;
   this.numPostfilter_ = 0;
@@ -150,11 +148,11 @@ EventsView.prototype.onSecurityStrippingChanged = function() {
  * duration or time of first event.
  */
 EventsView.compareActive_ = function(source1, source2) {
-  if (source1.isActive() && !source2.isActive())
+  if (!source1.isInactive() && source2.isInactive())
     return -1;
-  if (!source1.isActive() && source2.isActive())
+  if (source1.isInactive() && !source2.isInactive())
     return  1;
-  if (!source1.isActive()) {
+  if (source1.isInactive()) {
     var deltaEndTime = source1.getEndTime() - source2.getEndTime();
     if (deltaEndTime != 0) {
       // The one that ended most recently (Highest end time) should be sorted
@@ -237,17 +235,19 @@ EventsView.comparisonFunctionTable_ = {
 
 EventsView.prototype.Sort_ = function() {
   var sourceEntries = [];
-  for (var id in this.sourceIdToEntryMap_) {
-    // Can only sort items with an actual row in the table.
-    if (this.sourceIdToEntryMap_[id].hasRow())
-      sourceEntries.push(this.sourceIdToEntryMap_[id]);
+  for (var id in this.sourceIdToRowMap_) {
+    sourceEntries.push(this.sourceIdToRowMap_[id].getSourceEntry());
   }
   sourceEntries.sort(this.comparisonFuncWithReversing_.bind(this));
 
+  // Reposition source rows from back to front.
   for (var i = sourceEntries.length - 2; i >= 0; --i) {
-    if (sourceEntries[i].getNextNodeSourceId() !=
-        sourceEntries[i + 1].getSourceId())
-      sourceEntries[i].moveBefore(sourceEntries[i + 1]);
+    var sourceRow = this.sourceIdToRowMap_[sourceEntries[i].getSourceId()];
+    var nextSourceId = sourceEntries[i + 1].getSourceId();
+    if (sourceRow.getNextNodeSourceId() != nextSourceId) {
+      var nextSourceRow = this.sourceIdToRowMap_[nextSourceId];
+      sourceRow.moveBefore(nextSourceRow);
+    }
   }
 };
 
@@ -404,94 +404,95 @@ EventsView.prototype.setFilter_ = function(filterText) {
   this.currentFilter_ = this.createFilter_(filterText);
 
   // Iterate through all of the rows and see if they match the filter.
-  for (var id in this.sourceIdToEntryMap_) {
-    var entry = this.sourceIdToEntryMap_[id];
+  for (var id in this.sourceIdToRowMap_) {
+    var entry = this.sourceIdToRowMap_[id];
     entry.setIsMatchedByFilter(entry.matchesFilter(this.currentFilter_));
   }
 };
 
 /**
- * Repositions |sourceEntry|'s row in the table using an insertion sort.
+ * Repositions |sourceRow|'s in the table using an insertion sort.
  * Significantly faster than sorting the entire table again, when only
  * one entry has changed.
  */
-EventsView.prototype.InsertionSort_ = function(sourceEntry) {
-  // SourceEntry that should be after |sourceEntry|, if it needs
+EventsView.prototype.InsertionSort_ = function(sourceRow) {
+  // SourceRow that should be after |sourceRow|, if it needs
   // to be moved earlier in the list.
-  var sourceEntryAfter = sourceEntry;
+  var sourceRowAfter = sourceRow;
   while (true) {
-    var prevSourceId = sourceEntryAfter.getPreviousNodeSourceId();
+    var prevSourceId = sourceRowAfter.getPreviousNodeSourceId();
     if (prevSourceId == null)
       break;
-    var prevSourceEntry = this.sourceIdToEntryMap_[prevSourceId];
-    if (this.comparisonFuncWithReversing_(sourceEntry, prevSourceEntry) >= 0)
+    var prevSourceRow = this.sourceIdToRowMap_[prevSourceId];
+    if (this.comparisonFuncWithReversing_(
+            sourceRow.getSourceEntry(),
+            prevSourceRow.getSourceEntry()) >= 0) {
       break;
-    sourceEntryAfter = prevSourceEntry;
+    }
+    sourceRowAfter = prevSourceRow;
   }
-  if (sourceEntryAfter != sourceEntry) {
-    sourceEntry.moveBefore(sourceEntryAfter);
+  if (sourceRowAfter != sourceRow) {
+    sourceRow.moveBefore(sourceRowAfter);
     return;
   }
 
-  var sourceEntryBefore = sourceEntry;
+  var sourceRowBefore = sourceRow;
   while (true) {
-    var nextSourceId = sourceEntryBefore.getNextNodeSourceId();
+    var nextSourceId = sourceRowBefore.getNextNodeSourceId();
     if (nextSourceId == null)
       break;
-    var nextSourceEntry = this.sourceIdToEntryMap_[nextSourceId];
-    if (this.comparisonFuncWithReversing_(sourceEntry, nextSourceEntry) <= 0)
+    var nextSourceRow = this.sourceIdToRowMap_[nextSourceId];
+    if (this.comparisonFuncWithReversing_(
+            sourceRow.getSourceEntry(),
+            nextSourceRow.getSourceEntry()) <= 0) {
       break;
-    sourceEntryBefore = nextSourceEntry;
+    }
+    sourceRowBefore = nextSourceRow;
   }
-  if (sourceEntryBefore != sourceEntry)
-    sourceEntry.moveAfter(sourceEntryBefore);
+  if (sourceRowBefore != sourceRow)
+    sourceRow.moveAfter(sourceRowBefore);
 };
 
-EventsView.prototype.onLogEntryAdded = function(logEntry) {
-  var id = logEntry.source.id;
+EventsView.prototype.onSourceEntryUpdated = function(sourceEntry) {
+  // Lookup the row.
+  var sourceRow = this.sourceIdToRowMap_[sourceEntry.getSourceId()];
 
-  // Lookup the source.
-  var sourceEntry = this.sourceIdToEntryMap_[id];
-
-  if (!sourceEntry) {
-    sourceEntry = new SourceEntry(this, this.maxReceivedSourceId_);
-    this.sourceIdToEntryMap_[id] = sourceEntry;
-    this.incrementPrefilterCount(1);
-    if (id > this.maxReceivedSourceId_)
-      this.maxReceivedSourceId_ = id;
+  if (!sourceRow) {
+    sourceRow = new SourceRow(this, sourceEntry);
+    this.sourceIdToRowMap_[sourceEntry.getSourceId()] = sourceRow;
   }
 
-  sourceEntry.update(logEntry);
+  sourceRow.onSourceUpdated();
 
-  if (sourceEntry.isSelected())
+  if (sourceRow.isSelected())
     this.invalidateDetailsView_();
 
   // TODO(mmenke): Fix sorting when sorting by duration.
   //               Duration continuously increases for all entries that are
   //               still active.  This can result in incorrect sorting, until
   //               Sort_ is called.
-  this.InsertionSort_(sourceEntry);
+  this.InsertionSort_(sourceRow);
 };
 
 /**
- * Returns the SourceEntry with the specified ID, if there is one.
+ * Returns the SourceRow with the specified ID, if there is one.
  * Otherwise, returns undefined.
  */
-EventsView.prototype.getSourceEntry = function(id) {
-  return this.sourceIdToEntryMap_[id];
+EventsView.prototype.getSourceRow = function(id) {
+  return this.sourceIdToRowMap_[id];
 };
 
 /**
  * Called whenever some log events are deleted.  |sourceIds| lists
  * the source IDs of all deleted log entries.
  */
-EventsView.prototype.onLogEntriesDeleted = function(sourceIds) {
+EventsView.prototype.onSourceEntriesDeleted = function(sourceIds) {
   for (var i = 0; i < sourceIds.length; ++i) {
     var id = sourceIds[i];
-    var entry = this.sourceIdToEntryMap_[id];
-    if (entry) {
-      entry.remove();
-      delete this.sourceIdToEntryMap_[id];
+    var sourceRow = this.sourceIdToRowMap_[id];
+    if (sourceRow) {
+      sourceRow.remove();
+      delete this.sourceIdToRowMap_[id];
       this.incrementPrefilterCount(-1);
     }
   }
@@ -500,7 +501,7 @@ EventsView.prototype.onLogEntriesDeleted = function(sourceIds) {
 /**
  * Called whenever all log events are deleted.
  */
-EventsView.prototype.onAllLogEntriesDeleted = function() {
+EventsView.prototype.onAllSourceEntriesDeleted = function() {
   this.initializeSourceList_();
 };
 
@@ -532,8 +533,8 @@ EventsView.prototype.onSelectionChanged = function() {
 };
 
 EventsView.prototype.clearSelection = function() {
-  var prevSelection = this.currentSelectedSources_;
-  this.currentSelectedSources_ = [];
+  var prevSelection = this.currentSelectedRows_;
+  this.currentSelectedRows_ = [];
 
   // Unselect everything that is currently selected.
   for (var i = 0; i < prevSelection.length; ++i) {
@@ -545,25 +546,25 @@ EventsView.prototype.clearSelection = function() {
 
 EventsView.prototype.deleteSelected_ = function() {
   var sourceIds = [];
-  for (var i = 0; i < this.currentSelectedSources_.length; ++i) {
-    var entry = this.currentSelectedSources_[i];
-    sourceIds.push(entry.getSourceId());
+  for (var i = 0; i < this.currentSelectedRows_.length; ++i) {
+    var sourceRow = this.currentSelectedRows_[i];
+    sourceIds.push(sourceRow.getSourceEntry().getSourceId());
   }
-  g_browser.deleteEventsBySourceId(sourceIds);
+  g_browser.sourceTracker.deleteSourceEntries(sourceIds);
 };
 
 EventsView.prototype.selectAll_ = function(event) {
-  for (var id in this.sourceIdToEntryMap_) {
-    var entry = this.sourceIdToEntryMap_[id];
-    if (entry.isMatchedByFilter()) {
-      entry.setSelected(true);
+  for (var id in this.sourceIdToRowMap_) {
+    var sourceRow = this.sourceIdToRowMap_[id];
+    if (sourceRow.isMatchedByFilter()) {
+      sourceRow.setSelected(true);
     }
   }
   event.preventDefault();
 };
 
 EventsView.prototype.unselectAll_ = function() {
-  var entries = this.currentSelectedSources_.slice(0);
+  var entries = this.currentSelectedRows_.slice(0);
   for (var i = 0; i < entries.length; ++i) {
     entries[i].setSelected(false);
   }
@@ -611,11 +612,11 @@ EventsView.prototype.sortByDescription_ = function(event) {
 };
 
 EventsView.prototype.modifySelectionArray = function(
-    sourceEntry, addToSelection) {
+    sourceRow, addToSelection) {
   // Find the index for |sourceEntry| in the current selection list.
   var index = -1;
-  for (var i = 0; i < this.currentSelectedSources_.length; ++i) {
-    if (this.currentSelectedSources_[i] == sourceEntry) {
+  for (var i = 0; i < this.currentSelectedRows_.length; ++i) {
+    if (this.currentSelectedRows_[i] == sourceRow) {
       index = i;
       break;
     }
@@ -623,16 +624,24 @@ EventsView.prototype.modifySelectionArray = function(
 
   if (index != -1 && !addToSelection) {
     // Remove from the selection.
-    this.currentSelectedSources_.splice(index, 1);
+    this.currentSelectedRows_.splice(index, 1);
   }
 
   if (index == -1 && addToSelection) {
-    this.currentSelectedSources_.push(sourceEntry);
+    this.currentSelectedRows_.push(sourceRow);
   }
 };
 
+EventsView.prototype.getSelectedSourceEntries_ = function() {
+  var sourceEntries = [];
+  for (var id in this.currentSelectedRows_) {
+    sourceEntries.push(this.currentSelectedRows_[id].getSourceEntry());
+  }
+  return sourceEntries;
+};
+
 EventsView.prototype.invalidateDetailsView_ = function() {
-  this.detailsView_.setData(this.currentSelectedSources_);
+  this.detailsView_.setData(this.getSelectedSourceEntries_());
 };
 
 EventsView.prototype.invalidateFilterCounter_ = function() {

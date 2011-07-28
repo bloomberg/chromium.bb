@@ -9,9 +9,11 @@
 <include src="httpcacheview.js"/>
 <include src="testview.js"/>
 <include src="hstsview.js"/>
-<include src="logdumputil.js"/>
+<include src="browserbridge.js"/>
+<include src="sourcetracker.js"/>
 <include src="main.js"/>
 <include src="dnsview.js"/>
+<include src="sourcerow.js"/>
 <include src="eventsview.js"/>
 <include src="detailsview.js"/>
 <include src="sourceentry.js"/>
