@@ -50,10 +50,10 @@ class UI_API SimpleMenuModel : public MenuModel {
     virtual void ExecuteCommand(int command_id) = 0;
 
     // Notifies the delegate that the menu is about to show.
-    virtual void MenuWillShow();
+    virtual void MenuWillShow(SimpleMenuModel* source);
 
     // Notifies the delegate that the menu has closed.
-    virtual void MenuClosed();
+    virtual void MenuClosed(SimpleMenuModel* source);
 
    protected:
     virtual ~Delegate() {}

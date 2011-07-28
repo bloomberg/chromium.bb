@@ -52,8 +52,8 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
-  virtual void MenuWillShow() OVERRIDE;
-  virtual void MenuClosed() OVERRIDE;
+  virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
+  virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;
 
  protected:
   void InitMenu();

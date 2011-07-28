@@ -105,7 +105,7 @@ class BrowserTabStripController::TabContextMenuContents
         tab_);
   }
 
-  virtual void MenuClosed() OVERRIDE {
+  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) OVERRIDE {
     if (controller_)
       controller_->tabstrip_->StopAllHighlighting();
   }

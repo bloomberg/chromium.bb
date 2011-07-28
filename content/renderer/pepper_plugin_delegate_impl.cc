@@ -1226,12 +1226,14 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
 void PepperPluginDelegateImpl::OnContextMenuClosed(
     const webkit_glue::CustomContextMenuContext& custom_context) {
   int request_id = custom_context.request_id;
-  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl> menu =
-      *pending_context_menus_.Lookup(request_id);
-  if (!menu) {
+  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>* menu_ptr =
+      pending_context_menus_.Lookup(request_id);
+  if (!menu_ptr) {
     NOTREACHED() << "CompleteShowContextMenu() called twice for the same menu.";
     return;
   }
+  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl> menu = *menu_ptr;
+  DCHECK(menu.get());
   pending_context_menus_.Remove(request_id);
 
   if (has_saved_context_menu_action_) {

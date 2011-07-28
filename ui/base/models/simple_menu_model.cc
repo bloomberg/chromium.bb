@@ -46,10 +46,10 @@ bool SimpleMenuModel::Delegate::GetIconForCommandId(
 void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
 }
 
-void SimpleMenuModel::Delegate::MenuWillShow() {
+void SimpleMenuModel::Delegate::MenuWillShow(SimpleMenuModel* /*source*/) {
 }
 
-void SimpleMenuModel::Delegate::MenuClosed() {
+void SimpleMenuModel::Delegate::MenuClosed(SimpleMenuModel* /*source*/) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
 
 void SimpleMenuModel::MenuWillShow() {
   if (delegate_)
-    delegate_->MenuWillShow();
+    delegate_->MenuWillShow(this);
 }
 
 void SimpleMenuModel::MenuClosed() {
@@ -315,7 +315,7 @@ void SimpleMenuModel::SetMenuModelDelegate(
 
 void SimpleMenuModel::OnMenuClosed() {
   if (delegate_)
-    delegate_->MenuClosed();
+    delegate_->MenuClosed(this);
 }
 
 int SimpleMenuModel::FlipIndex(int index) const {

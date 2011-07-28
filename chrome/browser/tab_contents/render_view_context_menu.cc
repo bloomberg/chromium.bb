@@ -1725,13 +1725,21 @@ RenderViewContextMenu::GetHandlersForLinkUrl() {
   return handlers;
 }
 
-void RenderViewContextMenu::MenuWillShow() {
+void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
+  // Ignore notifications from submenus.
+  if (source != &menu_model_)
+    return;
+
   RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(true);
 }
 
-void RenderViewContextMenu::MenuClosed() {
+void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
+  // Ignore notifications from submenus.
+  if (source != &menu_model_)
+    return;
+
   RenderWidgetHostView* view = source_tab_contents_->GetRenderWidgetHostView();
   if (view)
     view->ShowingContextMenu(false);
