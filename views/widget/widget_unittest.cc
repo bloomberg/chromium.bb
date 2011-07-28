@@ -32,6 +32,8 @@ class NativeWidgetGtkCapture : public NativeWidgetGtk {
     mouse_capture_ = true;
   }
   virtual void ReleaseMouseCapture() OVERRIDE {
+    if (mouse_capture_)
+      delegate()->OnMouseCaptureLost();
     mouse_capture_ = false;
   }
   virtual bool HasMouseCapture() const OVERRIDE {
@@ -247,6 +249,21 @@ TEST_F(WidgetTest, GrabUngrab) {
   MouseEvent released(ui::ET_MOUSE_RELEASED, 45, 45, ui::EF_LEFT_BUTTON_DOWN);
   toplevel->OnMouseEvent(released);
 
+  EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
+  EXPECT_FALSE(WidgetHasMouseCapture(child1));
+  EXPECT_FALSE(WidgetHasMouseCapture(child2));
+
+  RunPendingMessages();
+
+  // Click on child2
+  MouseEvent pressed2(ui::ET_MOUSE_PRESSED, 315, 45, ui::EF_LEFT_BUTTON_DOWN);
+  EXPECT_TRUE(toplevel->OnMouseEvent(pressed2));
+  EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
+  EXPECT_TRUE(WidgetHasMouseCapture(child2));
+  EXPECT_FALSE(WidgetHasMouseCapture(child1));
+
+  MouseEvent released2(ui::ET_MOUSE_RELEASED, 315, 45, ui::EF_LEFT_BUTTON_DOWN);
+  toplevel->OnMouseEvent(released2);
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));

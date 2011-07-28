@@ -290,6 +290,9 @@ class VIEWS_API NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // application.
   virtual void HandleGtkGrabBroke();
 
+  const internal::NativeWidgetDelegate* delegate() const { return delegate_; }
+  internal::NativeWidgetDelegate* delegate() { return delegate_; }
+
  private:
   class DropObserver;
   friend class DropObserver;

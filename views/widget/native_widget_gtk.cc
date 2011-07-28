@@ -938,6 +938,7 @@ void NativeWidgetGtk::SetMouseCapture() {
 }
 
 void NativeWidgetGtk::ReleaseMouseCapture() {
+  bool delegate_lost_capture = HasMouseCapture();
   if (GTK_WIDGET_HAS_GRAB(window_contents_))
     gtk_grab_remove(window_contents_);
   if (grab_notify_signal_id_) {
@@ -951,8 +952,9 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
     TouchFactory::GetInstance()->UngrabTouchDevices(
         GDK_WINDOW_XDISPLAY(window_contents()->window));
 #endif
-    delegate_->OnMouseCaptureLost();
   }
+  if (delegate_lost_capture)
+    delegate_->OnMouseCaptureLost();
 }
 
 bool NativeWidgetGtk::HasMouseCapture() const {
