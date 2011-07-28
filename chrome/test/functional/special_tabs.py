@@ -69,6 +69,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://stats': { 'CSP': False },
     'chrome://sync': { 'title': 'Sync Internals', 'CSP': False },
     'chrome://sync-internals': { 'title': 'Sync Internals', 'CSP': False },
+    'chrome://tasks': { 'title': 'Task Manager - Chromium' },
     'chrome://terms': { 'CSP': False },
     'chrome://textfields': { 'title': 'chrome://textfields', 'CSP': False },
     'chrome://version': { 'title': 'About Version' },
@@ -81,9 +82,6 @@ class SpecialTabsTest(pyauto.PyUITest):
 
     # crashed under debug when invoked from location bar (bug 88223).
     'chrome://devtools': { 'CSP': False },
-
-    # intermittent crash on cromeos=1 on linux
-    'chrome://tasks': { 'title': 'About Histograms' },
 
     # returns "not available" despite having an URL constant.
     'chrome://dialog': { 'CSP': False },
@@ -150,6 +148,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://cryptohome': { 'CSP': False},
     'chrome://mobilesetup': { 'CSP': False },
     'chrome://print': { 'CSP': False },
+    'chrome://tasks': {},
   }
 
   linux_special_url_tabs = {

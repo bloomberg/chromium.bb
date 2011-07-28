@@ -44,7 +44,9 @@
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_NEW_PROFILE_JS" file="resources\new_profile.js" type="BINDATA" />
       <include name="IDR_NEW_PROFILE_HTML" file="resources\new_profile.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_TASK_MANAGER_INCLUDES_JS" file="resources\task_manager\includes.js" type="BINDATA" />
+      <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar_mac.css" flattenhtml="true" type="BINDATA" />
       </if>

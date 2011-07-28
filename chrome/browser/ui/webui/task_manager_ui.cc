@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/task_manager_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -21,74 +22,38 @@
 
 namespace {
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// TaskManagerUIHTMLSource
-//
-///////////////////////////////////////////////////////////////////////////////
+// Convenience macro for AddLocalizedString() method.
+#define SET_LOCALIZED_STRING(ID) \
+  source->AddLocalizedString(#ID, IDS_TASK_MANAGER_##ID)
 
-class TaskManagerUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  TaskManagerUIHTMLSource();
+ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+  source->AddLocalizedString("CLOSE_WINDOW", IDS_CLOSE);
+  SET_LOCALIZED_STRING(TITLE);
+  SET_LOCALIZED_STRING(ABOUT_MEMORY_LINK);
+  SET_LOCALIZED_STRING(KILL);
+  SET_LOCALIZED_STRING(PROCESS_ID_COLUMN);
+  SET_LOCALIZED_STRING(PAGE_COLUMN);
+  SET_LOCALIZED_STRING(NET_COLUMN);
+  SET_LOCALIZED_STRING(CPU_COLUMN);
+  SET_LOCALIZED_STRING(PHYSICAL_MEM_COLUMN);
+  SET_LOCALIZED_STRING(SHARED_MEM_COLUMN);
+  SET_LOCALIZED_STRING(PRIVATE_MEM_COLUMN);
+  SET_LOCALIZED_STRING(GOATS_TELEPORTED_COLUMN);
+  SET_LOCALIZED_STRING(WEBCORE_IMAGE_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(WEBCORE_SCRIPTS_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(WEBCORE_CSS_CACHE_COLUMN);
+  SET_LOCALIZED_STRING(FPS_COLUMN);
+  SET_LOCALIZED_STRING(SQLITE_MEMORY_USED_COLUMN);
+  SET_LOCALIZED_STRING(JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
+  source->set_json_path("strings.js");
+  source->add_resource_path("main.js", IDR_TASK_MANAGER_JS);
+  source->add_resource_path("includes.js", IDR_TASK_MANAGER_INCLUDES_JS);
+  source->set_default_resource(IDR_TASK_MANAGER_HTML);
 
- private:
-  ~TaskManagerUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerUIHTMLSource);
-};
-
-TaskManagerUIHTMLSource::TaskManagerUIHTMLSource()
-    : DataSource(chrome::kChromeUITaskManagerHost, MessageLoop::current()) {
-}
-
-void TaskManagerUIHTMLSource::StartDataRequest(const std::string& path,
-                                             bool is_incognito,
-                                             int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("CLOSE_WINDOW",
-      l10n_util::GetStringUTF16(IDS_CLOSE));
-
-#define SET_LOCALIZED_STRING(STRINGS, ID) \
-    (STRINGS.SetString(#ID, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_##ID)))
-
-  SET_LOCALIZED_STRING(localized_strings, TITLE);
-  SET_LOCALIZED_STRING(localized_strings, ABOUT_MEMORY_LINK);
-  SET_LOCALIZED_STRING(localized_strings, KILL);
-  SET_LOCALIZED_STRING(localized_strings, PROCESS_ID_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, PAGE_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, NET_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, CPU_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, PHYSICAL_MEM_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, SHARED_MEM_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, PRIVATE_MEM_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, GOATS_TELEPORTED_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, WEBCORE_IMAGE_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, WEBCORE_SCRIPTS_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, WEBCORE_CSS_CACHE_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, FPS_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, SQLITE_MEMORY_USED_COLUMN);
-  SET_LOCALIZED_STRING(localized_strings, JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
-
-#undef SET_LOCALIZED_STRING
-
-  SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece task_manager_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_TASK_MANAGER_HTML));
-  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      task_manager_html, &localized_strings);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  return source;
 }
 
 }  // namespace
@@ -107,9 +72,8 @@ TaskManagerUI::TaskManagerUI(TabContents* contents) : ChromeWebUI(contents) {
   handler->Init();
   AddMessageHandler(handler);
 
-  TaskManagerUIHTMLSource* html_source = new TaskManagerUIHTMLSource();
-
   // Set up the chrome://taskmanager/ source.
+  ChromeWebUIDataSource* html_source = CreateTaskManagerUIHTMLSource();
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
