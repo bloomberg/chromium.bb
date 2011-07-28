@@ -388,7 +388,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   if (pending_config_mode_state_->deleted_type) {
     sync_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
-        &SyncBackendHost::Core::DeferNudgeForCleanup));
+        &SyncBackendHost::Core::DeferCleanup));
   }
 
   if (pending_config_mode_state_->added_types.none() &&
@@ -445,12 +445,6 @@ void SyncBackendHost::EncryptDataTypes(
 syncable::ModelTypeSet SyncBackendHost::GetEncryptedDataTypes() const {
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
   return core_->sync_manager()->GetEncryptedDataTypes();
-}
-
-void SyncBackendHost::RequestNudge(const tracked_objects::Location& location) {
-  sync_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoRequestNudge,
-                        location));
 }
 
 void SyncBackendHost::ActivateDataType(
@@ -638,7 +632,7 @@ SyncBackendHost::Core::Core(const std::string& name, SyncBackendHost* backend)
       sync_manager_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       parent_router_(NULL),
       processing_passphrase_(false),
-      deferred_nudge_for_cleanup_requested_(false) {
+      deferred_cleanup_requested_(false) {
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by
@@ -718,9 +712,9 @@ void SyncBackendHost::Core::DoUpdateEnabledTypes() {
 void SyncBackendHost::Core::DoStartSyncing() {
   DCHECK(MessageLoop::current() == host_->sync_thread_.message_loop());
   sync_manager_->StartSyncingNormally();
-  if (deferred_nudge_for_cleanup_requested_)
-    sync_manager_->RequestNudge(FROM_HERE);
-  deferred_nudge_for_cleanup_requested_ = false;
+  if (deferred_cleanup_requested_)
+    sync_manager_->RequestCleanupDisabledTypes();
+  deferred_cleanup_requested_ = false;
 }
 
 void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
@@ -1080,11 +1074,6 @@ void SyncBackendHost::Core::StartSavingChanges() {
       this, &Core::SaveChanges);
 }
 
-void SyncBackendHost::Core::DoRequestNudge(
-    const tracked_objects::Location& nudge_location) {
-  sync_manager_->RequestNudge(nudge_location);
-}
-
 void SyncBackendHost::Core::DoRequestClearServerData() {
   sync_manager_->RequestClearServerData();
 }
@@ -1164,9 +1153,9 @@ void SyncBackendHost::Core::DoProcessMessage(
   sync_manager_->GetJsBackend()->ProcessMessage(name, args, sender);
 }
 
-void SyncBackendHost::Core::DeferNudgeForCleanup() {
+void SyncBackendHost::Core::DeferCleanup() {
   DCHECK_EQ(MessageLoop::current(), host_->sync_thread_.message_loop());
-  deferred_nudge_for_cleanup_requested_ = true;
+  deferred_cleanup_requested_ = true;
 }
 
 }  // namespace browser_sync

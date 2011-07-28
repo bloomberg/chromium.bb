@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/tracked.h"
 #include "chrome/browser/sync/engine/syncer.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
 #include "chrome/browser/sync/util/logging.h"
 
@@ -75,6 +76,7 @@ const char* SyncScheduler::SyncSessionJob::GetPurposeString(
     ENUM_CASE(NUDGE);
     ENUM_CASE(CLEAR_USER_DATA);
     ENUM_CASE(CONFIGURATION);
+    ENUM_CASE(CLEANUP_DISABLED_TYPES);
   }
   NOTREACHED();
   return "";
@@ -252,6 +254,7 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(wait_interval_.get());
   DCHECK_NE(job.purpose, SyncSessionJob::CLEAR_USER_DATA);
+  DCHECK_NE(job.purpose, SyncSessionJob::CLEANUP_DISABLED_TYPES);
 
   SVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
            << WaitInterval::GetModeString(wait_interval_->mode)
@@ -262,7 +265,7 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
     return DROP;
 
   DCHECK(job.purpose == SyncSessionJob::NUDGE ||
-      job.purpose == SyncSessionJob::CONFIGURATION);
+         job.purpose == SyncSessionJob::CONFIGURATION);
   if (wait_interval_->mode == WaitInterval::THROTTLED)
     return SAVE;
 
@@ -282,7 +285,8 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
 SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
     const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (job.purpose == SyncSessionJob::CLEAR_USER_DATA)
+  if (job.purpose == SyncSessionJob::CLEAR_USER_DATA ||
+      job.purpose == SyncSessionJob::CLEANUP_DISABLED_TYPES)
     return CONTINUE;
 
   if (wait_interval_.get())
@@ -357,7 +361,9 @@ bool SyncScheduler::ShouldRunJob(const SyncSessionJob& job) {
 
 void SyncScheduler::SaveJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  DCHECK(job.purpose != SyncSessionJob::CLEAR_USER_DATA);
+  DCHECK_NE(job.purpose, SyncSessionJob::CLEAR_USER_DATA);
+  // TODO(sync): Should we also check that job.purpose !=
+  // CLEANUP_DISABLED_TYPES?  (See http://crbug.com/90868.)
   if (job.purpose == SyncSessionJob::NUDGE) {
     SVLOG(2) << "Saving a nudge job";
     InitOrCoalescePendingJob(job);
@@ -373,6 +379,9 @@ void SyncScheduler::SaveJob(const SyncSessionJob& job) {
                            make_linked_ptr(s), false, job.from_here);
     wait_interval_->pending_configure_job.reset(new SyncSessionJob(new_job));
   } // drop the rest.
+  // TODO(sync): Is it okay to drop the rest?  It's weird that
+  // SaveJob() only does what it says sometimes.  (See
+  // http://crbug.com/90868.)
 }
 
 // Functor for std::find_if to search by ModelSafeGroup.
@@ -389,6 +398,13 @@ void SyncScheduler::ScheduleClearUserData() {
   PostTask(FROM_HERE, "ScheduleClearUserDataImpl",
            method_factory_.NewRunnableMethod(
                &SyncScheduler::ScheduleClearUserDataImpl));
+}
+
+void SyncScheduler::ScheduleCleanupDisabledTypes() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  PostTask(FROM_HERE, "ScheduleCleanupDisabledTypes",
+           method_factory_.NewRunnableMethod(
+               &SyncScheduler::ScheduleCleanupDisabledTypesImpl));
 }
 
 void SyncScheduler::ScheduleNudge(
@@ -430,11 +446,16 @@ void SyncScheduler::ScheduleNudgeWithPayloads(
 
 void SyncScheduler::ScheduleClearUserDataImpl() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SyncSession* session = new SyncSession(session_context_.get(), this,
-      SyncSourceInfo(), ModelSafeRoutingInfo(),
-      std::vector<ModelSafeWorker*>());
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0),
-      SyncSessionJob::CLEAR_USER_DATA, session, FROM_HERE);
+  ScheduleSyncSessionJob(
+      TimeDelta::FromSeconds(0), SyncSessionJob::CLEAR_USER_DATA,
+      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
+}
+
+void SyncScheduler::ScheduleCleanupDisabledTypesImpl() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  ScheduleSyncSessionJob(
+      TimeDelta::FromSeconds(0), SyncSessionJob::CLEANUP_DISABLED_TYPES,
+      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
 }
 
 void SyncScheduler::ScheduleNudgeImpl(
@@ -452,9 +473,6 @@ void SyncScheduler::ScheduleNudgeImpl(
       << syncable::ModelTypePayloadMapToString(types_with_payloads)
       << (is_canary_job ? " (canary)" : "");
 
-  // Note we currently nudge for all types regardless of the ones incurring
-  // the nudge.  Doing different would throw off some syncer commands like
-  // CleanupDisabledTypes.  We may want to change this in the future.
   SyncSourceInfo info(source, types_with_payloads);
 
   SyncSession* session(CreateSyncSession(info));
@@ -631,7 +649,6 @@ void SyncScheduler::SetSyncerStepsForPurpose(
     SyncSessionJob::SyncSessionJobPurpose purpose,
     SyncerStep* start, SyncerStep* end) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  *end = SYNCER_END;
   switch (purpose) {
     case SyncSessionJob::CONFIGURATION:
       *start = DOWNLOAD_UPDATES;
@@ -639,13 +656,22 @@ void SyncScheduler::SetSyncerStepsForPurpose(
       return;
     case SyncSessionJob::CLEAR_USER_DATA:
       *start = CLEAR_PRIVATE_DATA;
+      *end = CLEAR_PRIVATE_DATA;
        return;
     case SyncSessionJob::NUDGE:
     case SyncSessionJob::POLL:
       *start = SYNCER_BEGIN;
+      *end = SYNCER_END;
+      return;
+    case SyncSessionJob::CLEANUP_DISABLED_TYPES:
+      *start = CLEANUP_DISABLED_TYPES;
+      *end = CLEANUP_DISABLED_TYPES;
       return;
     default:
       NOTREACHED();
+      *start = SYNCER_END;
+      *end = SYNCER_END;
+      return;
   }
 }
 
@@ -677,7 +703,7 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
   SVLOG(2) << "DoSyncSessionJob with "
            << SyncSessionJob::GetPurposeString(job.purpose) << " job";
 
-  SyncerStep begin(SYNCER_BEGIN);
+  SyncerStep begin(SYNCER_END);
   SyncerStep end(SYNCER_END);
   SetSyncerStepsForPurpose(job.purpose, &begin, &end);
 
@@ -691,6 +717,7 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
       job.session->ResetTransientState();
   }
   SVLOG(2) << "Done SyncShare looping.";
+
   FinishSyncSessionJob(job);
 }
 
@@ -732,6 +759,8 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
   UpdateCarryoverSessionState(job);
   if (IsSyncingCurrentlySilenced()) {
     SVLOG(2) << "We are currently throttled; not scheduling the next sync.";
+    // TODO(sync): Investigate whether we need to check job.purpose
+    // here; see DCHECKs in SaveJob().  (See http://crbug.com/90868.)
     SaveJob(job);
     return;  // Nothing to do.
   }
@@ -763,10 +792,12 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
 
   // TODO(tim): Old impl had special code if notifications disabled. Needed?
   if (!work_to_do) {
-    // Success implies backoff relief.  Note that if this was a "one-off" job
-    // (i.e. purpose == SyncSessionJob::CLEAR_USER_DATA), if there was
-    // work_to_do before it ran this wont have changed, as jobs like this don't
-    // run a full sync cycle.  So we don't need special code here.
+    // Success implies backoff relief.  Note that if this was a
+    // "one-off" job (i.e. purpose ==
+    // SyncSessionJob::{CLEAR_USER_DATA,CLEANUP_DISABLED_TYPES}), if
+    // there was work_to_do before it ran this wont have changed, as
+    // jobs like this don't run a full sync cycle.  So we don't need
+    // special code here.
     wait_interval_.reset();
     SVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;

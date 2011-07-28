@@ -344,13 +344,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // syncing (generally after initialization and authentication).
     void DoStartSyncing();
 
-    // Called on the SyncBackendHost sync_thread_ to nudge/pause/resume the
-    // syncer.
-    void DoRequestNudge(const tracked_objects::Location& location);
+    // Called on the SyncBackendHost sync_thread_ to clear server
+    // data.
     void DoRequestClearServerData();
 
-    // Sets |deferred_nudge_for_cleanup_requested_| to true. See comment below.
-    void DeferNudgeForCleanup();
+    // Sets |deferred_cleanup_requested_| to true. See comment below.
+    void DeferCleanup();
 
     // Called on our SyncBackendHost's |sync_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
@@ -519,7 +518,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // True when a datatype has been disabled so that we nudge once sync is
     // resumed (after configuration is finished).
-    bool deferred_nudge_for_cleanup_requested_;
+    // TODO(akalin): Remove the need for this.
+    bool deferred_cleanup_requested_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -528,9 +528,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
   virtual void HandleInitializationCompletedOnFrontendLoop(bool success);
-
-  // Posts a nudge request on the sync thread.
-  virtual void RequestNudge(const tracked_objects::Location& location);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.

@@ -93,6 +93,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   void ScheduleConfig(const syncable::ModelTypeBitSet& types,
       sync_api::ConfigureReason reason);
   void ScheduleClearUserData();
+  void ScheduleCleanupDisabledTypes();
 
   // Change status of notifications in the SyncSessionContext.
   void set_notifications_enabled(bool notifications_enabled);
@@ -143,6 +144,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
       // during initial sync or reconfiguration.  We don't run all steps of
       // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
       CONFIGURATION,
+      // The user disabled some types and we have to clean up the data
+      // for those.
+      CLEANUP_DISABLED_TYPES,
     };
     SyncSessionJob();
     SyncSessionJob(SyncSessionJobPurpose purpose, base::TimeTicks start,
@@ -296,6 +300,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
       const std::vector<ModelSafeWorker*>& workers,
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   void ScheduleClearUserDataImpl();
+  void ScheduleCleanupDisabledTypesImpl();
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

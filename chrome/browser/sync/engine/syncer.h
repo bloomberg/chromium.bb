@@ -74,8 +74,6 @@ class Syncer {
  public:
   typedef std::vector<int64> UnsyncedMetaHandles;
 
-  // The constructor may be called from a thread that is not the Syncer's
-  // dedicated thread, to allow some flexibility in the setup.
   Syncer();
   virtual ~Syncer();
 
@@ -84,8 +82,7 @@ class Syncer {
   bool ExitRequested();
   void RequestEarlyExit();
 
-  // Like SyncShare() above, but |first_step| and |last_step| are provided to
-  // perform a partial sync cycle, stopping after |last_step| is performed.
+  // Runs a sync cycle from |first_step| to |last_step|.
   virtual void SyncShare(sessions::SyncSession* session,
                          SyncerStep first_step,
                          SyncerStep last_step);

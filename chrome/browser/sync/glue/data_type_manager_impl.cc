@@ -219,7 +219,7 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
 }
 
 void DataTypeManagerImpl::DownloadReady(bool success) {
-  DCHECK(state_ == DOWNLOAD_PENDING);
+  DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
   if (!success) {
     Abort(UNRECOVERABLE_ERROR, FROM_HERE, needs_start_[0]->type());
@@ -386,7 +386,8 @@ void DataTypeManagerImpl::Stop() {
 }
 
 void DataTypeManagerImpl::FinishStop() {
-  DCHECK(state_== CONFIGURING || state_ == STOPPING || state_ == BLOCKED);
+  DCHECK(state_== CONFIGURING || state_ == STOPPING || state_ == BLOCKED ||
+         state_ == DOWNLOAD_PENDING);
   // Simply call the Stop() method on all running data types.
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {
