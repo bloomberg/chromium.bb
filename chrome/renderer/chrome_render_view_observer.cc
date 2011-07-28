@@ -92,9 +92,14 @@ static const char kPlusDotGoogleDotCom[] = "plus.google.com";
 static const char kDocsDotGoogleDotCom[] = "docs.google.com";
 static const char kSitesDotGoogleDotCom[] = "sites.google.com";
 static const char kPicasawebDotGoogleDotCom[] = "picasaweb.google.com";
+static const char kCodeDotGoogleDotCom[] = "code.google.com";
+static const char kGroupsDotGoogleDotCom[] = "groups.google.com";
+static const char kMapsDotGoogleDotCom[] = "maps.google.com";
 static const char kWWWDotYoutubeDotCom[] = "www.youtube.com";
 static const char kDotGoogleUserContentDotCom[] = ".googleusercontent.com";
 static const char kGoogleReaderPathPrefix[] = "/reader/";
+static const char kGoogleSupportPathPrefix[] = "/support/";
+static const char kGoogleIntlPathPrefix[] = "/intl/";
 static const char kDotJS[] = ".js";
 static const char kDotCSS[] = ".css";
 static const char kDotSWF[] = ".swf";
@@ -126,6 +131,16 @@ enum {
   INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
   INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
   INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
+  INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE,
+  INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE,
+  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT,
+  INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT,
+  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL,
+  INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL,
   INSECURE_CONTENT_NUM_EVENTS
 };
 
@@ -385,16 +400,27 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
                             INSECURE_CONTENT_DISPLAY,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
+  GURL frame_url(frame->document().url());
   if (EndsWith(host, kDotGoogleDotCom, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+    if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    } else if (StartsWithASCII(frame_url.path(),
+                               kGoogleIntlPathPrefix,
+                               false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    }
   }
   if (host == kWWWDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-    GURL frame_url(frame->document().url());
     if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
       UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                                 INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,
@@ -419,6 +445,18 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
   } else if (host == kPicasawebDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kCodeDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kGroupsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kMapsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
@@ -448,16 +486,27 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
                             INSECURE_CONTENT_RUN,
                             INSECURE_CONTENT_NUM_EVENTS);
   std::string host(origin.host().utf8());
+  GURL frame_url(frame->document().url());
   if (EndsWith(host, kDotGoogleDotCom, false)) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
+    if (StartsWithASCII(frame_url.path(), kGoogleSupportPathPrefix, false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    } else if (StartsWithASCII(frame_url.path(),
+                               kGoogleIntlPathPrefix,
+                               false)) {
+      UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                                INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL,
+                                INSECURE_CONTENT_NUM_EVENTS);
+    }
   }
   if (host == kWWWDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
-    GURL frame_url(frame->document().url());
     if (StartsWithASCII(frame_url.path(), kGoogleReaderPathPrefix, false)) {
       UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                                 INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,
@@ -482,6 +531,18 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   } else if (host == kPicasawebDotGoogleDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                               INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kCodeDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kGroupsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE,
+                              INSECURE_CONTENT_NUM_EVENTS);
+  } else if (host == kMapsDotGoogleDotCom) {
+    UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
+                              INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE,
                               INSECURE_CONTENT_NUM_EVENTS);
   } else if (host == kWWWDotYoutubeDotCom) {
     UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
