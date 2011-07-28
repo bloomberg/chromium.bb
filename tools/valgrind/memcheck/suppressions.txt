@@ -4426,10 +4426,6 @@
    fun:_Znw*
    fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
    fun:_ZN3IPC12ChannelProxy7ContextC2EPNS_7Channel8ListenerEPN4base16MessageLoopProxyE
-   ...
-   fun:_ZN3IPC11SyncChannel11SyncContextC1EPNS_7Channel8ListenerEPN4base16MessageLoopProxyEPNS5_13WaitableEventE
-   ...
-   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
 }
 {
    bug_82716b
