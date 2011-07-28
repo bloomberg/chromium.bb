@@ -7,13 +7,14 @@
         i18n-values="title:incrementTitle;">+</button>
     <button id="decrement"
         i18n-values="title:decrementTitle;">–</button>
-    <span id="collate-option" hidden>
+    <span id="collate-option" hidden aria-hidden="true" aria-live="polite">
       <input id="collate" type="checkbox"/>
       <label for="collate" i18n-content="optionCollate"></label>
     </span>
   </div>
   <span id="copies-hint" class="hint"
-      i18n-content="copiesInstruction"></span>
+      i18n-content="copiesInstruction" aria-hidden="true" aria-live="polite">
+  </span>
   <div id="two-sided-div">
     <input id="two-sided" type="checkbox"/>
     <label for="two-sided" i18n-content="optionTwoSided"></label>

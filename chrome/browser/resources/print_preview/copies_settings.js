@@ -183,6 +183,11 @@ cr.define('print_preview', function() {
      */
     showHideCollateOption_: function() {
       this.collateOption_.hidden = this.numberOfCopies <= 1;
+      // TODO(aayushkumar): Remove aria-hidden attribute once elements within
+      // the hidden attribute are no longer read out by a screen-reader.
+      // (Currently a bug in webkit).
+      this.collateOption_.setAttribute('aria-hidden',
+                                       this.collateOption_.hidden);
     },
 
     /**
@@ -202,6 +207,7 @@ cr.define('print_preview', function() {
         this.decrementButton_.disabled = this.numberOfCopies == this.minValue_;
         fadeOutElement(this.hint_);
       }
+      this.hint_.setAttribute('aria-hidden', this.isValid());
     }
   };
 
