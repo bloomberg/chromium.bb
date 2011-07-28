@@ -111,22 +111,10 @@ void ConnectionToHost::InitSession() {
 
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
-  session_manager->Init(
-      local_jid_, signal_strategy_.get(),
-      NewCallback(this, &ConnectionToHost::OnNewSession), NULL, "",
-      allow_nat_traversal_);
+
   session_manager_.reset(session_manager);
-
-  CandidateSessionConfig* candidate_config =
-      CandidateSessionConfig::CreateDefault();
-
-  std::string client_token =
-      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
-
-  // Initialize |session_|.
-  session_.reset(session_manager_->Connect(
-      host_jid_, host_public_key_, client_token, candidate_config,
-      NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+  session_manager_->Init(
+      local_jid_, signal_strategy_.get(), this, NULL, "", allow_nat_traversal_);
 }
 
 const SessionConfig* ConnectionToHost::config() {
@@ -152,7 +140,21 @@ void ConnectionToHost::OnJidChange(const std::string& full_jid) {
   local_jid_ = full_jid;
 }
 
-void ConnectionToHost::OnNewSession(Session* session,
+void ConnectionToHost::OnSessionManagerInitialized() {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  // After SessionManager is initialized we can try to connect to the host.
+  CandidateSessionConfig* candidate_config =
+      CandidateSessionConfig::CreateDefault();
+  std::string client_token =
+      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
+  session_.reset(session_manager_->Connect(
+      host_jid_, host_public_key_, client_token, candidate_config,
+      NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+}
+
+void ConnectionToHost::OnIncomingSession(
+    Session* session,
     SessionManager::IncomingSessionResponse* response) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // Client always rejects incoming sessions.

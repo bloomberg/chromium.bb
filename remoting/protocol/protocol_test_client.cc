@@ -81,6 +81,7 @@ class ProtocolTestConnection
 
 class ProtocolTestClient
     : public SignalStrategy::StatusObserver,
+      public SessionManager::Listener,
       public base::RefCountedThreadSafe<ProtocolTestClient> {
  public:
   ProtocolTestClient() {
@@ -98,10 +99,11 @@ class ProtocolTestClient
       SignalStrategy::StatusObserver::State state) OVERRIDE;
   virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
 
-  // callback for JingleSessionManager interface.
-  virtual void OnNewSession(
+  // SessionManager::Listener interface.
+  virtual void OnSessionManagerInitialized() OVERRIDE;
+  virtual void OnIncomingSession(
       Session* session,
-      SessionManager::IncomingSessionResponse* response);
+      SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
  private:
   typedef std::list<scoped_refptr<ProtocolTestConnection> > ConnectionsList;
@@ -275,18 +277,8 @@ void ProtocolTestClient::OnStateChange(
     std::cerr << "Connected as " << local_jid_ << std::endl;
 
     session_manager_->Init(
-        local_jid_, signal_strategy_.get(),
-        NewCallback(this, &ProtocolTestClient::OnNewSession), NULL, "", true);
+        local_jid_, signal_strategy_.get(), this, NULL, "", true);
     session_manager_->set_allow_local_ips(true);
-
-    if (host_jid_ != "") {
-      ProtocolTestConnection* connection = new ProtocolTestConnection(this);
-      connection->Init(session_manager_->Connect(
-          host_jid_, "", kDummyAuthToken,
-          CandidateSessionConfig::CreateDefault(),
-          NewCallback(connection, &ProtocolTestConnection::OnStateChange)));
-      connections_.push_back(make_scoped_refptr(connection));
-    }
   } else if (state == SignalStrategy::StatusObserver::CLOSED) {
     std::cerr << "Connection closed" << std::endl;
   }
@@ -296,7 +288,18 @@ void ProtocolTestClient::OnJidChange(const std::string& full_jid) {
   local_jid_ = full_jid;
 }
 
-void ProtocolTestClient::OnNewSession(
+void ProtocolTestClient::OnSessionManagerInitialized() {
+  if (host_jid_ != "") {
+    ProtocolTestConnection* connection = new ProtocolTestConnection(this);
+    connection->Init(session_manager_->Connect(
+        host_jid_, "", kDummyAuthToken,
+        CandidateSessionConfig::CreateDefault(),
+        NewCallback(connection, &ProtocolTestConnection::OnStateChange)));
+    connections_.push_back(make_scoped_refptr(connection));
+  }
+}
+
+void ProtocolTestClient::OnIncomingSession(
     Session* session,
     SessionManager::IncomingSessionResponse* response) {
   std::cerr << "Accepting connection from " << session->jid() << std::endl;

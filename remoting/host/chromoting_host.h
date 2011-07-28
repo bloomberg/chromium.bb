@@ -66,7 +66,8 @@ class ScreenRecorder;
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
                        public ClientSession::EventHandler,
-                       public SignalStrategy::StatusObserver {
+                       public SignalStrategy::StatusObserver,
+                       public protocol::SessionManager::Listener {
  public:
   // Factory methods that must be used to create ChromotingHost
   // instances.  Returned instance takes ownership of
@@ -120,10 +121,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   Logger* logger() { return logger_; }
 
-  // Callback for ChromotingServer.
-  void OnNewClientSession(
+  // SessionManager::Listener implementation.
+  virtual void OnSessionManagerInitialized() OVERRIDE;
+  virtual void OnIncomingSession(
       protocol::Session* session,
-      protocol::SessionManager::IncomingSessionResponse* response);
+      protocol::SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
   // Sets desired configuration for the protocol. Ownership of the
   // |config| is transferred to the object. Must be called before Start().

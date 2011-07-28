@@ -220,8 +220,7 @@ void ChromotingHost::OnStateChange(
     CHECK(key_pair.Load(config_))
         << "Failed to load server authentication data";
 
-    server->Init(local_jid_, signal_strategy_.get(),
-                 NewCallback(this, &ChromotingHost::OnNewClientSession),
+    server->Init(local_jid_, signal_strategy_.get(), this,
                  key_pair.CopyPrivateKey(), key_pair.GenerateCertificate(),
                  allow_nat_traversal_);
 
@@ -249,9 +248,17 @@ void ChromotingHost::OnJidChange(const std::string& full_jid) {
   local_jid_ = full_jid;
 }
 
-void ChromotingHost::OnNewClientSession(
-    protocol::Session* session,
-    protocol::SessionManager::IncomingSessionResponse* response) {
+void ChromotingHost::OnSessionManagerInitialized() {
+  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+  // Don't need to do anything here, just wait for incoming
+  // connections.
+}
+
+void ChromotingHost::OnIncomingSession(
+      protocol::Session* session,
+      protocol::SessionManager::IncomingSessionResponse* response) {
+  DCHECK_EQ(MessageLoop::current(), context_->network_message_loop());
+
   base::AutoLock auto_lock(lock_);
   if (state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;

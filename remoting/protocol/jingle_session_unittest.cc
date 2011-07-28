@@ -87,8 +87,9 @@ ACTION_P(QuitThreadOnCounter, counter) {
     QuitCurrentThread();
 }
 
-class MockSessionManagerCallback {
+class MockSessionManagerListener : public SessionManager::Listener {
  public:
+  MOCK_METHOD0(OnSessionManagerInitialized, void());
   MOCK_METHOD2(OnIncomingSession,
                void(Session*,
                     SessionManager::IncomingSessionResponse*));
@@ -170,21 +171,20 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
+    EXPECT_CALL(host_server_listener_, OnSessionManagerInitialized())
+        .Times(1);
     host_server_.reset(JingleSessionManager::CreateNotSandboxed());
     host_server_->set_allow_local_ips(true);
     host_server_->Init(
-        kHostJid, host_signal_strategy_.get(),
-        NewCallback(&host_server_callback_,
-                    &MockSessionManagerCallback::OnIncomingSession),
-        private_key.release(),
-        cert_der, false);
+        kHostJid, host_signal_strategy_.get(), &host_server_listener_,
+        private_key.release(), cert_der, false);
 
+    EXPECT_CALL(client_server_listener_, OnSessionManagerInitialized())
+        .Times(1);
     client_server_.reset(JingleSessionManager::CreateNotSandboxed());
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
-        kClientJid, client_signal_strategy_.get(),
-        NewCallback(&client_server_callback_,
-                    &MockSessionManagerCallback::OnIncomingSession),
+        kClientJid, client_signal_strategy_.get(), &client_server_listener_,
         NULL, "", false);
   }
 
@@ -204,7 +204,7 @@ class JingleSessionTest : public testing::Test {
   bool InitiateConnection() {
     int not_connected_peers = 2;
 
-    EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
+    EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
         .WillOnce(DoAll(
             WithArg<0>(Invoke(
                 this, &JingleSessionTest::SetHostSession)),
@@ -253,9 +253,9 @@ class JingleSessionTest : public testing::Test {
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
 
   scoped_ptr<JingleSessionManager> host_server_;
-  MockSessionManagerCallback host_server_callback_;
+  MockSessionManagerListener host_server_listener_;
   scoped_ptr<JingleSessionManager> client_server_;
-  MockSessionManagerCallback client_server_callback_;
+  MockSessionManagerListener client_server_listener_;
 
   scoped_ptr<Session> host_session_;
   MockSessionCallback host_connection_callback_;
@@ -614,7 +614,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
   CreateServerPair();
 
   // Reject incoming session.
-  EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
+  EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
       .WillOnce(SetArgumentPointee<1>(protocol::SessionManager::DECLINE));
 
   EXPECT_CALL(client_connection_callback_,

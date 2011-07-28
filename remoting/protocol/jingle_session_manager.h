@@ -47,7 +47,7 @@ class JingleSessionManager
   // SessionManager interface.
   virtual void Init(const std::string& local_jid,
                     SignalStrategy* signal_strategy,
-                    IncomingSessionCallback* incoming_session_callback,
+                    Listener* listener,
                     crypto::RSAPrivateKey* private_key,
                     const std::string& certificate,
                     bool allow_nat_traversal) OVERRIDE;
@@ -113,7 +113,7 @@ class JingleSessionManager
 
   std::string local_jid_;  // Full jid for the local side of the session.
   SignalStrategy* signal_strategy_;
-  scoped_ptr<IncomingSessionCallback> incoming_session_callback_;
+  Listener* listener_;
   std::string certificate_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   bool allow_nat_traversal_;

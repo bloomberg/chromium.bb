@@ -44,7 +44,8 @@ class SessionConfig;
 class VideoReader;
 class VideoStub;
 
-class ConnectionToHost : public SignalStrategy::StatusObserver {
+class ConnectionToHost : public SignalStrategy::StatusObserver,
+                         public SessionManager::Listener {
  public:
   enum State {
     STATE_EMPTY,
@@ -101,13 +102,11 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
       SignalStrategy::StatusObserver::State state) OVERRIDE;
   virtual void OnJidChange(const std::string& full_jid) OVERRIDE;
 
-  // Callback for chromotocol SessionManager.
-  void OnNewSession(
-      Session* connection,
-      SessionManager::IncomingSessionResponse* response);
-
-  // Callback for chromotocol Session.
-  void OnSessionStateChange(Session::State state);
+  // SessionManager::Listener interface.
+  virtual void OnSessionManagerInitialized() OVERRIDE;
+  virtual void OnIncomingSession(
+      Session* session,
+      SessionManager::IncomingSessionResponse* response) OVERRIDE;
 
   // Called when the host accepts the client authentication.
   void OnClientAuthenticated();
@@ -119,6 +118,9 @@ class ConnectionToHost : public SignalStrategy::StatusObserver {
   // Called on the jingle thread after we've successfully to XMPP server. Starts
   // P2P connection to the host.
   void InitSession();
+
+  // Callback for |session_|.
+  void OnSessionStateChange(Session::State state);
 
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
