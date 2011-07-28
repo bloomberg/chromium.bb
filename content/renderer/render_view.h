@@ -755,8 +755,7 @@ class RenderView : public RenderWidget,
 #endif
   void OnCut();
   void OnCSSInsertRequest(const std::wstring& frame_xpath,
-                          const std::string& css,
-                          const std::string& id);
+                          const std::string& css);
   void OnCustomContextMenuAction(
       const webkit_glue::CustomContextMenuContext& custom_context,
       unsigned action);

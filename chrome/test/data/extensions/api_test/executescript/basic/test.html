@@ -72,6 +72,19 @@ chrome.test.getConfig(function(config) {
         });
       },
 
+      function insertCSSTextShouldNotAffectDOM() {
+        chrome.tabs.insertCSS(tabId, {code: 'p {display: none}'}, function() {
+          chrome.tabs.executeScript(
+              tabId,
+              {code: 'document.title = document.styleSheets.length'},
+              function() {
+                chrome.tabs.get(tabId, pass(function(tab) {
+                  assertEq(tab.title, '0');
+                }));
+             });
+        });
+      },
+
       function executeJavaScriptCodeShouldFail() {
         chrome.tabs.update(tabId, { url: testFailureUrl }, function() {
           var script_file = {};
