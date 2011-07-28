@@ -23,7 +23,7 @@ vars = {
   "ffmpeg_revision": "94207",
   "sfntly_revision": "25",
   "skia_revision": "1959",
-  "v8_revision": "8695",
+  "v8_revision": "8751",
   "webrtc_revision": "232",
 }
 
