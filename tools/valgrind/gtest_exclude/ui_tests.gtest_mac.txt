@@ -1,8 +1,3 @@
-# Don't run FLAKY or FAILS ui tests under Valgrind on Mac.
-# They tend to generate way too many flaky Valgrind reports...
-*FLAKY_*
-*FAILS_*
-
 # Hangs on mac at exit, during final valgrind leak checking? (valgrind bug?)
 ErrorPageTest.DNSError_GoBack2Forward2
 # Flakily hangs on Mac

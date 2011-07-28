@@ -1,3 +1,8 @@
+# Don't run FLAKY or FAILS ui tests under Valgrind.
+# They tend to generate way too many flaky Valgrind reports.
+*FLAKY_*
+*FAILS_*
+
 # Takes too long to valgrind, causes timeouts
 BrowserTest.ThirtyFourTabs
 # FIXME: these tests hang frequently in valgrind
