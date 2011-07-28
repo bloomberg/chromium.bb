@@ -412,6 +412,10 @@ button {
   display: inline-block;
 }
 
+#bubble {
+  -webkit-transition: 0.25s opacity;
+}
+
 #login-header-bar {
   padding: 8px;
 }

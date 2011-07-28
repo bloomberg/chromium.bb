@@ -104,7 +104,7 @@ cr.define('cr.ui', function() {
       }
 
       // Adjust inner container height based on new step's height.
-      $('inner-container').style.height = newStep.offsetHeight;
+      $('inner-container').style.height = newStep.offsetHeight + 'px';
 
       if (this.currentStep_ != nextStepIndex) {
         oldStep.addEventListener('webkitTransitionEnd', function f(e) {
@@ -252,6 +252,8 @@ cr.define('cr.ui', function() {
       login.GaiaSigninScreen.register();
     oobe.UserImageScreen.register();
 
+    cr.ui.Bubble.decorate($('bubble'));
+
     $('security-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened', []);
       $('popup-overlay').hidden = false;
@@ -264,10 +266,14 @@ cr.define('cr.ui', function() {
       chrome.send('shutdownSystem');
     });
     $('add-user-button').addEventListener('click', function(e) {
-      // TODO(xiyuan): Add offline bubble.
-      this.hidden = true;
-      $('cancel-add-user-button').hidden = false;
-      chrome.send('showAddUser');
+      if (window.navigator.onLine) {
+        this.hidden = true;
+        $('cancel-add-user-button').hidden = false;
+        chrome.send('showAddUser');
+      } else {
+        $('bubble').showTextForElement($('add-user-button'),
+            localStrings.getString('addUserOfflineMessage'));
+      }
     });
     $('cancel-add-user-button').addEventListener('click', function(e) {
       this.hidden = true;

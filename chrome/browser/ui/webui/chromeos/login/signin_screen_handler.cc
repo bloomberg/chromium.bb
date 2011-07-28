@@ -67,6 +67,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
+  localized_strings->SetString("addUserOfflineMessage",
+      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_ADD_USER_OFFLINE));
 
   if (extension_driven_)
     localized_strings->SetString("authType", "ext");

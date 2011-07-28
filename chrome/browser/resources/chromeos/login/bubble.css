@@ -1,0 +1,39 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * Css based bubble.
+ */
+
+.bubble {
+  -webkit-box-shadow: 0 0px 8px rgba(0, 0, 0, 0.2);
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  margin: 10px 2px 2px 2px;
+  padding: 10px;
+  position: absolute;
+  max-width: 200px;
+}
+
+.bubble:before {
+  content: "";
+  border-color: transparent transparent rgba(0, 0, 0, 0.25) transparent;
+  border-style: solid;
+  border-width: 8px;
+  display: block;
+  left: 10px;
+  position: absolute;
+  top: -16px;
+}
+
+.bubble:after {
+  content: "";
+  border-color: transparent transparent white transparent;
+  border-style: solid;
+  border-width: 8px;
+  display: block;
+  left: 10px;
+  position: absolute;
+  top: -15px;
+}
