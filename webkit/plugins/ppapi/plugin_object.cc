@@ -130,8 +130,7 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
 
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), NULL);
-  PP_Var value_var = Var::NPVariantToPPVar(accessor.object()->instance(),
-                                           value);
+  PP_Var value_var = NPVariantToPPVar(accessor.object()->instance(), value);
   accessor.object()->ppp_class()->SetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
       result_converter.exception());
@@ -175,7 +174,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
           malloc(sizeof(NPIdentifier) * property_count));
       *count = 0;  // Will be the number of items successfully converted.
       for (uint32_t i = 0; i < property_count; ++i) {
-        if (!((*values)[i] = Var::PPVarToNPIdentifier(properties[i]))) {
+        if (!((*values)[i] = PPVarToNPIdentifier(properties[i]))) {
           // Throw an exception for the failed convertion.
           *result_converter.exception() = StringVar::StringToPPVar(
               obj->instance()->module()->pp_module(), kInvalidValueException);
@@ -290,7 +289,7 @@ PP_Var PluginObject::Create(PluginInstance* instance,
   // We can just use a normal ObjectVar to refer to this object from the
   // plugin. It will hold a ref to the underlying NPObject which will in turn
   // hold our pluginObject.
-  PP_Var obj_var(ObjectVar::NPObjectToPPVar(instance, wrapper));
+  PP_Var obj_var(NPObjectToPPVar(instance, wrapper));
 
   // Note that the ObjectVar constructor incremented the reference count, and so
   // did WebBindings::createObject above. Now that the PP_Var has taken

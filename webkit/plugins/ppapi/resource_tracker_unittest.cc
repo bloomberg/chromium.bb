@@ -10,6 +10,7 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
+#include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -181,7 +182,7 @@ TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
 
   // Make an object var.
   scoped_ptr<NPObject> npobject(NewTrackedNPObject());
-  ObjectVar::NPObjectToPPVar(instance2.get(), npobject.get());
+  NPObjectToPPVar(instance2.get(), npobject.get());
 
   EXPECT_EQ(1, g_npobjects_alive);
   EXPECT_EQ(1u, tracker().GetLiveObjectsForInstance(pp_instance2));
@@ -196,8 +197,8 @@ TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
 TEST_F(ResourceTrackerTest, ReuseVar) {
   scoped_ptr<NPObject> npobject(NewTrackedNPObject());
 
-  PP_Var pp_object1 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
-  PP_Var pp_object2 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object1 = NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object2 = NPObjectToPPVar(instance(), npobject.get());
 
   // The two results should be the same.
   EXPECT_EQ(pp_object1.value.as_id, pp_object2.value.as_id);
@@ -208,7 +209,7 @@ TEST_F(ResourceTrackerTest, ReuseVar) {
   {
     scoped_refptr<ObjectVar> check_object(ObjectVar::FromPPVar(pp_object1));
     ASSERT_TRUE(check_object.get());
-    EXPECT_EQ(instance(), check_object->instance());
+    EXPECT_EQ(instance()->pp_instance(), check_object->pp_instance());
     EXPECT_EQ(npobject.get(), check_object->np_object());
   }
 
@@ -218,7 +219,7 @@ TEST_F(ResourceTrackerTest, ReuseVar) {
 
   // Releasing the resource should free the internal ref, and so making a new
   // one now should generate a new ID.
-  PP_Var pp_object3 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object3 = NPObjectToPPVar(instance(), npobject.get());
   EXPECT_NE(pp_object1.value.as_id, pp_object3.value.as_id);
   tracker().UnrefVar(static_cast<int32_t>(pp_object3.value.as_id));
 }

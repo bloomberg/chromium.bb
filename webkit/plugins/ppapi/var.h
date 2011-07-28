@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 
 struct PP_Var;
@@ -22,7 +23,6 @@ namespace webkit {
 namespace ppapi {
 
 class ObjectVar;
-class PluginInstance;
 class StringVar;
 
 // Var -------------------------------------------------------------------------
@@ -33,26 +33,6 @@ class StringVar;
 class Var : public base::RefCounted<Var> {
  public:
   virtual ~Var();
-
-  // Returns a PP_Var that corresponds to the given NPVariant. The contents of
-  // the NPVariant will be copied unless the NPVariant corresponds to an
-  // object. This will handle all Variant types including POD, strings, and
-  // objects.
-  //
-  // The returned PP_Var will have a refcount of 1, this passing ownership of
-  // the reference to the caller. This is suitable for returning to a plugin.
-  static PP_Var NPVariantToPPVar(PluginInstance* instance,
-                                 const NPVariant* variant);
-
-  // Returns a NPIdentifier that corresponds to the given PP_Var. The contents
-  // of the PP_Var will be copied. Returns 0 if the given PP_Var is not a a
-  // string or integer type.
-  static NPIdentifier PPVarToNPIdentifier(PP_Var var);
-
-  // Returns a PP_Var corresponding to the given identifier. In the case of
-  // a string identifier, the string will be allocated associated with the
-  // given module. A returned string will have a reference count of 1.
-  static PP_Var NPIdentifierToPPVar(PP_Module module, NPIdentifier id);
 
   // Returns a string representing the given var for logging purposes.
   static std::string PPVarToLogString(PP_Var var);
@@ -87,12 +67,6 @@ class Var : public base::RefCounted<Var> {
   static void PluginAddRefPPVar(PP_Var var);
   static void PluginReleasePPVar(PP_Var var);
 
-  // Returns the PPB_Var_Deprecated interface for the plugin to use.
-  static const PPB_Var_Deprecated* GetDeprecatedInterface();
-
-  // Returns the PPB_Var interface for the plugin to use.
-  static const PPB_Var* GetInterface();
-
   virtual StringVar* AsStringVar();
   virtual ObjectVar* AsObjectVar();
 
@@ -100,18 +74,27 @@ class Var : public base::RefCounted<Var> {
   // one reference addrefed on behalf of the caller.
   virtual PP_Var GetPPVar() = 0;
 
+  // Returns the ID corresponing to the string or object if it exists already,
+  // or 0 if an ID hasn't been generated for this object (the plugin is holding
+  // no refs).
+  //
+  // Contrast to GetOrCreateVarID which creates the ID and a ref on behalf of
+  // the plugin.
+  int32 GetExistingVarID() const;
+
   PP_Module pp_module() const { return pp_module_; }
 
  protected:
   // This can only be constructed as a StringVar or an ObjectVar.
   explicit Var(PP_Module module);
 
-  // Returns the unique ID associated with this string or object. The return
-  // value will be 0 if the string or object is invalid.
+  // Returns the unique ID associated with this string or object, creating it
+  // if necessary. The return value will be 0 if the string or object is
+  // invalid.
   //
   // This function will take a reference to the var that will be passed to the
   // caller.
-  int32 GetID();
+  int32 GetOrCreateVarID();
 
  private:
   PP_Module pp_module_;
@@ -179,6 +162,11 @@ class StringVar : public Var {
 // strings.
 class ObjectVar : public Var {
  public:
+  // You should always use FromNPObject to create an ObjectVar. This function
+  // guarantees that we maintain the 1:1 mapping between NPObject and
+  // ObjectVar.
+  ObjectVar(PP_Module module, PP_Instance instance, NPObject* np_object);
+
   virtual ~ObjectVar();
 
   // Var overrides.
@@ -189,39 +177,20 @@ class ObjectVar : public Var {
   // Guaranteed non-NULL.
   NPObject* np_object() const { return np_object_; }
 
-  // Notification that the instance was deleted, the internal pointer will be
-  // NULLed out.
+  // Notification that the instance was deleted, the internal reference will be
+  // zeroed out.
   void InstanceDeleted();
 
-  // Possibly NULL if the object has outlived its instance.
-  PluginInstance* instance() const { return instance_; }
-
-  // Helper function to create a PP_Var of type object that contains the given
-  // NPObject for use byt he given module. Calling this function multiple times
-  // given the same module + NPObject results in the same PP_Var, assuming that
-  // there is still a PP_Var with a reference open to it from the previous
-  // call.
-  //
-  // The module is necessary because we can have different modules pointing to
-  // the same NPObject, and we want to keep their refs separate.
-  //
-  // If no ObjectVar currently exists corresponding to the NPObject, one is
-  // created associated with the given module.
-  static PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object);
+  // Possibly 0 if the object has outlived its instance.
+  PP_Instance pp_instance() const { return pp_instance_; }
 
   // Helper function that converts a PP_Var to an object. This will return NULL
   // if the PP_Var is not of object type or the object is invalid.
   static scoped_refptr<ObjectVar> FromPPVar(PP_Var var);
 
- protected:
-  // You should always use FromNPObject to create an ObjectVar. This function
-  // guarantees that we maintain the 1:1 mapping between NPObject and
-  // ObjectVar.
-  ObjectVar(PluginInstance* instance, NPObject* np_object);
-
  private:
-  // Possibly NULL if the object has outlived its instance.
-  PluginInstance* instance_;
+  // Possibly 0 if the object has outlived its instance.
+  PP_Instance pp_instance_;
 
   // Guaranteed non-NULL, this is the underlying object used by WebKit. We
   // hold a reference to this object.

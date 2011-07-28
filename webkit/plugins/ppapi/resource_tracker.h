@@ -22,9 +22,12 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/tracker_base.h"
 
+typedef struct NPObject NPObject;
+
 namespace webkit {
 namespace ppapi {
 
+class ObjectVar;
 class PluginInstance;
 class PluginModule;
 class Resource;
@@ -72,6 +75,18 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   bool AddRefVar(int32 var_id);
   bool UnrefVar(int32 var_id);
 
+  // Tracks all live ObjectVar. This is so we can map between instance +
+  // NPObject and get the ObjectVar corresponding to it. This Add/Remove
+  // function is called by the ObjectVar when it is created and
+  // destroyed.
+  void AddNPObjectVar(ObjectVar* object_var);
+  void RemoveNPObjectVar(ObjectVar* object_var);
+
+  // Looks up a previously registered ObjectVar for the given NPObject and
+  // instance. Returns NULL if there is no ObjectVar corresponding to the given
+  // NPObject for the given instance. See AddNPObjectVar above.
+  ObjectVar* ObjectVarForNPObject(PP_Instance instance, NPObject* np_object);
+
   // PP_Modules ----------------------------------------------------------------
 
   // Adds a new plugin module to the list of tracked module, and returns a new
@@ -109,9 +124,6 @@ class ResourceTracker : public ::ppapi::TrackerBase {
   friend class Var;
 
   typedef std::set<PP_Resource> ResourceSet;
-
-  // Indexed by the var ID.
-  typedef std::set<int32> VarSet;
 
   // Per-instance data we track.
   struct InstanceData;

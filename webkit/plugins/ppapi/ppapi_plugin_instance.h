@@ -33,7 +33,6 @@
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-typedef struct NPObject NPObject;
 struct PP_Var;
 struct PPP_Find_Dev;
 struct PPP_InputEvent;
@@ -236,18 +235,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   void HandleMessage(PP_Var message);
 
   PluginDelegate::PlatformContext3D* CreateContext3D();
-
-  // Tracks all live ObjectVar. This is so we can map between PluginModule +
-  // NPObject and get the ObjectVar corresponding to it. This Add/Remove
-  // function should be called by the ObjectVar when it is created and
-  // destroyed.
-  void AddNPObjectVar(ObjectVar* object_var);
-  void RemoveNPObjectVar(ObjectVar* object_var);
-
-  // Looks up a previously registered ObjectVar for the given NPObject and
-  // module. Returns NULL if there is no ObjectVar corresponding to the given
-  // NPObject for the given module. See AddNPObjectVar above.
-  ObjectVar* ObjectVarForNPObject(NPObject* np_object) const;
 
   // Returns true iff the plugin is a full-page plugin (i.e. not in an iframe or
   // embedded in a page).
@@ -490,11 +477,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   typedef std::set<PluginObject*> PluginObjectSet;
   PluginObjectSet live_plugin_objects_;
-
-  // Tracks all live ObjectVars used by this module so we can map NPObjects to
-  // the corresponding object. These are non-owning references.
-  typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;
-  NPObjectToObjectVarMap np_object_to_object_var_;
 
   // Classes of events that the plugin has registered for, both for filtering
   // and not. The bits are PP_INPUTEVENT_CLASS_*.

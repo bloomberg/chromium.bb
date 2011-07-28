@@ -19,6 +19,10 @@ namespace ppapi {
 
 class PluginInstance;
 
+// A PluginObject is a JS-accessible object implemented by the plugin.
+//
+// In contrast, a var of type PP_VARTYPE_OBJECT is a reference to a JS object,
+// which might be implemented by the plugin (here) or by the JS engine.
 class PluginObject {
  public:
   virtual ~PluginObject();

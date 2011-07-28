@@ -58,6 +58,8 @@ namespace {
 
 }  // namespace
 
+typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;
+
 struct ResourceTracker::InstanceData {
   InstanceData() : instance(0) {}
 
@@ -65,10 +67,14 @@ struct ResourceTracker::InstanceData {
   // destroyed, it will notify us and we'll delete all associated data.
   PluginInstance* instance;
 
-  // Resources and object vars associated with the instance.
+  // Resources associated with the instance.
   ResourceSet ref_resources;
   std::set<Resource*> assoc_resources;
-  VarSet object_vars;
+
+  // Tracks all live ObjectVars used by this module so we can map NPObjects to
+  // the corresponding object, and also release these properly if the instance
+  // goes away when there are still refs. These are non-owning references.
+  NPObjectToObjectVarMap np_object_to_object_var;
 
   // Lazily allocated function proxies for the different interfaces.
   scoped_ptr< ::ppapi::FunctionGroupBase >
@@ -159,14 +165,6 @@ int32 ResourceTracker::AddVar(Var* var) {
   int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
   live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));
 
-  // Object vars must be associated with the instance.
-  ObjectVar* object_var = var->AsObjectVar();
-  if (object_var) {
-    PP_Instance instance = object_var->instance()->pp_instance();
-    DCHECK(instance_map_.find(instance) != instance_map_.end());
-    instance_map_[instance]->object_vars.insert(new_id);
-  }
-
   return new_id;
 }
 
@@ -241,24 +239,23 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
   }
   DCHECK(data.ref_resources.empty());
 
-  // Force delete all var references.
-  VarSet::iterator cur_var = data.object_vars.begin();
-  while (cur_var != data.object_vars.end()) {
-    VarSet::iterator current = cur_var++;
-
-    // Tell the corresponding ObjectVar that the instance is gone.
-    PP_Var object_pp_var;
-    object_pp_var.type = PP_VARTYPE_OBJECT;
-    object_pp_var.value.as_id = *current;
-    scoped_refptr<ObjectVar> object_var(ObjectVar::FromPPVar(object_pp_var));
-    if (object_var.get())
-      object_var->InstanceDeleted();
+  // Force delete all var references. Need to make a copy so we can iterate over
+  // the map while deleting stuff from it.
+  NPObjectToObjectVarMap np_object_map_copy = data.np_object_to_object_var;
+  NPObjectToObjectVarMap::iterator cur_var =
+      np_object_map_copy.begin();
+  while (cur_var != np_object_map_copy.end()) {
+    NPObjectToObjectVarMap::iterator current = cur_var++;
 
     // Clear the object from the var mapping and the live instance object list.
-    live_vars_.erase(*current);
-    data.object_vars.erase(*current);
+    int32 var_id = current->second->GetExistingVarID();
+    if (var_id)
+      live_vars_.erase(var_id);
+
+    current->second->InstanceDeleted();
+    data.np_object_to_object_var.erase(current->first);
   }
-  DCHECK(data.object_vars.empty());
+  DCHECK(data.np_object_to_object_var.empty());
 
   // Clear any resources that still reference this instance.
   for (std::set<Resource*>::iterator res = data.assoc_resources.begin();
@@ -277,7 +274,7 @@ uint32 ResourceTracker::GetLiveObjectsForInstance(
   if (found == instance_map_.end())
     return 0;
   return static_cast<uint32>(found->second->ref_resources.size() +
-                             found->second->object_vars.size());
+                             found->second->np_object_to_object_var.size());
 }
 
 ::ppapi::ResourceObjectBase* ResourceTracker::GetResourceAPI(
@@ -367,17 +364,49 @@ bool ResourceTracker::UnrefVar(int32 var_id) {
       << var_id << " is not a PP_Var ID.";
   VarMap::iterator i = live_vars_.find(var_id);
   if (i != live_vars_.end()) {
-    if (!--i->second.second) {
-      ObjectVar* object_var = i->second.first->AsObjectVar();
-      if (object_var) {
-        instance_map_[object_var->instance()->pp_instance()]->object_vars.erase(
-            var_id);
-      }
+    if (!--i->second.second)
       live_vars_.erase(i);
-    }
     return true;
   }
   return false;
+}
+
+void ResourceTracker::AddNPObjectVar(ObjectVar* object_var) {
+  DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
+  InstanceData& data = *instance_map_[object_var->pp_instance()].get();
+
+  DCHECK(data.np_object_to_object_var.find(object_var->np_object()) ==
+         data.np_object_to_object_var.end()) << "ObjectVar already in map";
+  data.np_object_to_object_var[object_var->np_object()] = object_var;
+}
+
+void ResourceTracker::RemoveNPObjectVar(ObjectVar* object_var) {
+  DCHECK(instance_map_.find(object_var->pp_instance()) != instance_map_.end());
+  InstanceData& data = *instance_map_[object_var->pp_instance()].get();
+
+  NPObjectToObjectVarMap::iterator found =
+      data.np_object_to_object_var.find(object_var->np_object());
+  if (found == data.np_object_to_object_var.end()) {
+    NOTREACHED() << "ObjectVar not registered.";
+    return;
+  }
+  if (found->second != object_var) {
+    NOTREACHED() << "ObjectVar doesn't match.";
+    return;
+  }
+  data.np_object_to_object_var.erase(found);
+}
+
+ObjectVar* ResourceTracker::ObjectVarForNPObject(PP_Instance instance,
+                                                 NPObject* np_object) {
+  DCHECK(instance_map_.find(instance) != instance_map_.end());
+  InstanceData& data = *instance_map_[instance].get();
+
+  NPObjectToObjectVarMap::iterator found =
+      data.np_object_to_object_var.find(np_object);
+  if (found == data.np_object_to_object_var.end())
+    return NULL;
+  return found->second;
 }
 
 PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {

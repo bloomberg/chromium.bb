@@ -150,8 +150,7 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
   // We only handle a function called postMessage.
   if (IdentifierIsPostMessage(name) && (arg_count == 1)) {
     MessageChannel& message_channel(ToMessageChannel(np_obj));
-    PP_Var argument(Var::NPVariantToPPVar(message_channel.instance(),
-                                          &args[0]));
+    PP_Var argument(NPVariantToPPVar(message_channel.instance(), &args[0]));
     message_channel.PostMessageToNative(argument);
     return true;
   }

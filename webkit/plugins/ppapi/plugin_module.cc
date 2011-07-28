@@ -100,6 +100,7 @@
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_util_impl.h"
+#include "webkit/plugins/ppapi/ppb_var_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
@@ -322,9 +323,9 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
     return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
-    return Var::GetDeprecatedInterface();
+    return PPB_Var_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)
-    return Var::GetInterface();
+    return PPB_Var_Impl::GetVarInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_VideoDecoder_Thunk();
   if (strcmp(name, PPB_VIDEOLAYER_DEV_INTERFACE) == 0)

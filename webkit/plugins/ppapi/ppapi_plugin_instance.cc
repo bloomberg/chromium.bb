@@ -50,6 +50,7 @@
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/message_channel.h"
+#include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
@@ -1304,34 +1305,6 @@ void PluginInstance::RemovePluginObject(PluginObject* plugin_object) {
   live_plugin_objects_.erase(plugin_object);
 }
 
-void PluginInstance::AddNPObjectVar(ObjectVar* object_var) {
-  DCHECK(np_object_to_object_var_.find(object_var->np_object()) ==
-         np_object_to_object_var_.end()) << "ObjectVar already in map";
-  np_object_to_object_var_[object_var->np_object()] = object_var;
-}
-
-void PluginInstance::RemoveNPObjectVar(ObjectVar* object_var) {
-  NPObjectToObjectVarMap::iterator found =
-      np_object_to_object_var_.find(object_var->np_object());
-  if (found == np_object_to_object_var_.end()) {
-    NOTREACHED() << "ObjectVar not registered.";
-    return;
-  }
-  if (found->second != object_var) {
-    NOTREACHED() << "ObjectVar doesn't match.";
-    return;
-  }
-  np_object_to_object_var_.erase(found);
-}
-
-ObjectVar* PluginInstance::ObjectVarForNPObject(NPObject* np_object) const {
-  NPObjectToObjectVarMap::const_iterator found =
-      np_object_to_object_var_.find(np_object);
-  if (found == np_object_to_object_var_.end())
-    return NULL;
-  return found->second;
-}
-
 bool PluginInstance::IsFullPagePlugin() const {
   WebFrame* frame = container()->element().document().frame();
   return frame->view()->mainFrame()->document().isPluginDocument();
@@ -1424,14 +1397,13 @@ PP_Var PluginInstance::GetWindowObject(PP_Instance instance) {
   if (!frame)
     return PP_MakeUndefined();
 
-  return ObjectVar::NPObjectToPPVar(this, frame->windowObject());
+  return NPObjectToPPVar(this, frame->windowObject());
 }
 
 PP_Var PluginInstance::GetOwnerElementObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
-  return ObjectVar::NPObjectToPPVar(this,
-                                    container_->scriptableObjectForElement());
+  return NPObjectToPPVar(this, container_->scriptableObjectForElement());
 }
 
 PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
@@ -1471,7 +1443,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(this, &result);
+  PP_Var ret = NPVariantToPPVar(this, &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
