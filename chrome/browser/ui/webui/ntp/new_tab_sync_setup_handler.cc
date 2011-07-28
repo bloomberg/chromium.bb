@@ -65,7 +65,7 @@ void NewTabSyncSetupHandler::Observe(int type,
 
 void NewTabSyncSetupHandler::ShowSetupUI() {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
-  service->get_wizard().Step(SyncSetupWizard::GAIA_LOGIN);
+  service->get_wizard().Step(SyncSetupWizard::GetLoginState());
 }
 
 void NewTabSyncSetupHandler::HandleInitializeSyncPromo(const ListValue* args) {

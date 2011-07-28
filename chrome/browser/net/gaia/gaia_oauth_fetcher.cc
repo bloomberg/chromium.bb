@@ -450,13 +450,14 @@ void GaiaOAuthFetcher::OnCookieChanged(Profile* profile,
   const net::CookieMonster::CanonicalCookie* canonical_cookie =
       cookie_details->cookie;
   if (canonical_cookie->Name() == kOAuthTokenCookie) {
+    VLOG(1) << "OAuth1 request token cookie changed.";
     fetch_pending_ = false;
     OnGetOAuthTokenFetched(canonical_cookie->Value());
   }
 }
 
 void GaiaOAuthFetcher::OnGetOAuthTokenFetched(const std::string& token) {
-  // DCHECK (popup_);
+  VLOG(1) << "OAuth1 request token fetched.";
   if (popup_) {
     Browser* popped_up = popup_;
     popup_ = NULL;
@@ -493,6 +494,7 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     const net::URLRequestStatus& status,
     int response_code) {
   if (status.is_success() && response_code == RC_REQUEST_OK) {
+    VLOG(1) << "OAuth1 access token fetched.";
     std::string secret;
     std::string token;
     ParseOAuthGetAccessTokenResponse(data, &token, &secret);
@@ -509,6 +511,7 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     const net::URLRequestStatus& status,
     int response_code) {
   if (status.is_success() && response_code == RC_REQUEST_OK) {
+    VLOG(1) << "OAuth2 access token fetched.";
     std::string token;
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
@@ -527,6 +530,7 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   if (status.is_success() && response_code == RC_REQUEST_OK) {
     std::string email;
     ParseUserInfoResponse(data, &email);
+    VLOG(1) << "GAIA user info fetched for " << email << ".";
     consumer_->OnUserInfoSuccess(email);
   } else {
     consumer_->OnUserInfoFailure(GenerateAuthError(data, status));

@@ -51,8 +51,7 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
   if (service->IsPassphraseRequired()) {
     if (service->IsUsingSecondaryPassphrase())
       return SyncSetupWizard::ENTER_PASSPHRASE;
-    else
-      return SyncSetupWizard::GAIA_LOGIN;
+    return SyncSetupWizard::GetLoginState();
   }
 
   const GoogleServiceAuthError& error = service->GetAuthError();
@@ -61,7 +60,7 @@ SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
       error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
       error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
-    return SyncSetupWizard::GAIA_LOGIN;
+    return SyncSetupWizard::GetLoginState();
 
   NOTREACHED();
   return SyncSetupWizard::FATAL_ERROR;
@@ -211,6 +210,7 @@ void SyncSetupFlow::Focus() {
 }
 
 // A callback to notify the delegate that the dialog closed.
+// TODO(rickcam): Bug 90713: Handle OAUTH_LOGIN case here
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
@@ -320,13 +320,18 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
 // Returns true if the flow should advance to |state| based on |current_state_|.
 bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
   switch (state) {
+    case SyncSetupWizard::OAUTH_LOGIN:
+      return current_state_ == SyncSetupWizard::FATAL_ERROR ||
+             current_state_ == SyncSetupWizard::OAUTH_LOGIN ||
+             current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::GAIA_LOGIN:
       return current_state_ == SyncSetupWizard::FATAL_ERROR ||
              current_state_ == SyncSetupWizard::GAIA_LOGIN ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::GAIA_SUCCESS:
-      return current_state_ == SyncSetupWizard::GAIA_LOGIN;
-    case SyncSetupWizard::SYNC_EVERYTHING:
+      return current_state_ == SyncSetupWizard::GAIA_LOGIN ||
+             current_state_ == SyncSetupWizard::OAUTH_LOGIN;
+    case SyncSetupWizard::SYNC_EVERYTHING:  // Intentionally fall through.
     case SyncSetupWizard::CONFIGURE:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::ENTER_PASSPHRASE:
@@ -339,7 +344,7 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
-    case SyncSetupWizard::NONFATAL_ERROR:
+    case SyncSetupWizard::NONFATAL_ERROR:  // Intentionally fall through.
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE:
@@ -360,6 +365,10 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
   current_state_ = state;
 
   switch (state) {
+    case SyncSetupWizard::OAUTH_LOGIN: {
+      flow_handler_->ShowOAuthLogin();
+      break;
+    }
     case SyncSetupWizard::GAIA_LOGIN: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);

@@ -19,6 +19,9 @@ class SyncSetupWizard {
   enum State {
     // Show the Google Account login UI.
     GAIA_LOGIN = 0,
+    // Show the Gaia OAuth login UI.
+    // TODO(rickcam): After Sync with OAuth works, revisit removing this state.
+    OAUTH_LOGIN,
     // A login attempt succeeded.  This will wait for an explicit transition
     // (via Step) to the next state.
     GAIA_SUCCESS,
@@ -53,7 +56,7 @@ class SyncSetupWizard {
   ~SyncSetupWizard();
 
   // Advances the wizard to the specified state if possible, or opens a
-  // new dialog starting at |advance_state|.  If the wizard has never ran
+  // new dialog starting at |advance_state|.  If the wizard has never run
   // through to completion, it will always attempt to do so.  Otherwise, e.g
   // for a transient auth failure, it will just run as far as is necessary
   // based on |advance_state| (so for auth failure, up to GAIA_SUCCESS).
@@ -62,6 +65,10 @@ class SyncSetupWizard {
   // Whether or not a dialog is currently showing.  Useful to determine
   // if various buttons in the UI should be enabled or disabled.
   bool IsVisible() const;
+
+  // Returns either GAIA_LOGIN or OAUTH_LOGIN depending on which
+  // authentication scheme is in force.
+  static State GetLoginState();
 
   // Focus the dialog if it is already open.  Does nothing if the dialog is
   // not visible.

@@ -17,6 +17,7 @@ class DictionaryValue;
 class SyncSetupFlowHandler {
  public:
   // These functions control which part of the HTML is visible.
+  virtual void ShowOAuthLogin() = 0;
   virtual void ShowGaiaLogin(const base::DictionaryValue& args) = 0;
   virtual void ShowGaiaSuccessAndClose() = 0;
   virtual void ShowGaiaSuccessAndSettingUp() = 0;

@@ -17,20 +17,22 @@ class SyncSetupHandler : public OptionsPageUIHandler,
   virtual ~SyncSetupHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings)
+      OVERRIDE;
+  virtual void Initialize() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // SyncSetupFlowHandler implementation.
-  virtual void ShowGaiaLogin(const base::DictionaryValue& args);
-  virtual void ShowGaiaSuccessAndClose();
-  virtual void ShowGaiaSuccessAndSettingUp();
-  virtual void ShowConfigure(const base::DictionaryValue& args);
-  virtual void ShowPassphraseEntry(const base::DictionaryValue& args);
-  virtual void ShowSettingUp();
-  virtual void ShowSetupDone(const std::wstring& user);
-  virtual void SetFlow(SyncSetupFlow* flow);
-  virtual void Focus();
+  virtual void ShowOAuthLogin() OVERRIDE;
+  virtual void ShowGaiaLogin(const base::DictionaryValue& args) OVERRIDE;
+  virtual void ShowGaiaSuccessAndClose() OVERRIDE;
+  virtual void ShowGaiaSuccessAndSettingUp() OVERRIDE;
+  virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
+  virtual void ShowPassphraseEntry(const base::DictionaryValue& args) OVERRIDE;
+  virtual void ShowSettingUp() OVERRIDE;
+  virtual void ShowSetupDone(const std::wstring& user) OVERRIDE;
+  virtual void SetFlow(SyncSetupFlow* flow) OVERRIDE;
+  virtual void Focus() OVERRIDE;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings);

@@ -209,10 +209,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                                    const std::string& captcha,
                                    const std::string& access_code);
 
-  // Called when a cookie, e. g. oauth_token, changes
-  virtual void OnCookieChanged(Profile* profile,
-                               ChromeCookieDetails* cookie_details);
-
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 

@@ -18,6 +18,8 @@
 
 const char kGetInfoEmailKey[] = "email";
 
+const char kSyncOAuth2Scope[] = "https://www.googleapis.com/auth/chromesync";
+
 SigninManager::SigninManager()
     : profile_(NULL), had_two_factor_error_(false) {}
 
@@ -65,11 +67,8 @@ void SigninManager::SetUsername(const std::string& username) {
   username_ = username;
 }
 
-// Users must always sign out before they sign in again.
-void SigninManager::StartSignIn(const std::string& username,
-                                const std::string& password,
-                                const std::string& login_token,
-                                const std::string& login_captcha) {
+// static
+void SigninManager::PrepareForSignin() {
   DCHECK(username_.empty());
 #if !defined(OS_CHROMEOS)
   // The Sign out should clear the token service credentials.
@@ -77,6 +76,24 @@ void SigninManager::StartSignIn(const std::string& username,
   // set up 2-factor authentication.
   DCHECK(!profile_->GetTokenService()->AreCredentialsValid());
 #endif
+}
+
+// Users must always sign out before they sign in again.
+void SigninManager::StartOAuthSignIn() {
+  PrepareForSignin();
+  oauth_login_.reset(new GaiaOAuthFetcher(this,
+                                          profile_->GetRequestContext(),
+                                          profile_,
+                                          kSyncOAuth2Scope));
+  oauth_login_->StartGetOAuthToken();
+}
+
+// Users must always sign out before they sign in again.
+void SigninManager::StartSignIn(const std::string& username,
+                                const std::string& password,
+                                const std::string& login_token,
+                                const std::string& login_captcha) {
+  PrepareForSignin();
   username_.assign(username);
   password_.assign(password);
 
@@ -177,7 +194,7 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
 
 void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
 #if !defined(OS_CHROMEOS)
-  LOG(INFO) << "Unable to retreive the token auth.";
+  VLOG(1) << "Unable to retrieve the token auth.";
   CleanupNotificationRegistration();
 #endif
 }
@@ -200,6 +217,42 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   }
 
   SignOut();
+}
+
+void SigninManager::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
+  VLOG(1) << "SigninManager::SigninManager::OnGetOAuthTokenSuccess";
+}
+
+void SigninManager::OnGetOAuthTokenFailure() {
+  VLOG(1) << "SigninManager::OnGetOAuthTokenFailure";
+}
+
+void SigninManager::OnOAuthGetAccessTokenSuccess(const std::string& token,
+                                                 const std::string& secret) {
+  VLOG(1) << "SigninManager::OnOAuthGetAccessTokenSuccess";
+}
+
+void SigninManager::OnOAuthGetAccessTokenFailure(
+    const GoogleServiceAuthError& error) {
+  VLOG(1) << "SigninManager::OnOAuthGetAccessTokenFailure";
+}
+
+void SigninManager::OnOAuthWrapBridgeSuccess(const std::string& token,
+                                             const std::string& expires_in) {
+  VLOG(1) << "SigninManager::OnOAuthWrapBridgeSuccess";
+}
+
+void SigninManager::OnOAuthWrapBridgeFailure(
+    const GoogleServiceAuthError& error) {
+  VLOG(1) << "SigninManager::OnOAuthWrapBridgeFailure";
+}
+
+void SigninManager::OnUserInfoSuccess(const std::string& email) {
+  VLOG(1) << "SigninManager::OnUserInfoSuccess(\"" << email << "\")";
+}
+
+void SigninManager::OnUserInfoFailure(const GoogleServiceAuthError& error) {
+  VLOG(1) << "SigninManager::OnUserInfoFailure";
 }
 
 void SigninManager::Observe(int type,

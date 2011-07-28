@@ -10,7 +10,9 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
@@ -291,6 +293,14 @@ void SyncSetupHandler::RegisterMessages() {
       NewCallback(this, &SyncSetupHandler::HandleShowErrorUI));
   web_ui_->RegisterMessageCallback("SyncSetupShowSetupUI",
       NewCallback(this, &SyncSetupHandler::HandleShowSetupUI));
+}
+
+// Ideal(?) solution here would be to mimic the ClientLogin overlay.  Since
+// this UI must render an external URL, that overlay cannot be used directly.
+// The current implementation is functional, but fails asthetically.
+// TODO(rickcam): Bug 90711: Update UI for OAuth sign-in flow
+void SyncSetupHandler::ShowOAuthLogin() {
+  web_ui_->GetProfile()->GetProfileSyncService()->signin()->StartOAuthSignIn();
 }
 
 void SyncSetupHandler::ShowGaiaLogin(const DictionaryValue& args) {

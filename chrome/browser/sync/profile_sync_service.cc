@@ -190,12 +190,6 @@ void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSyncOAuth)) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_COOKIE_CHANGED,
-                   Source<Profile>(profile_));
-  }
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -596,59 +590,6 @@ void ProfileSyncService::OnBackendInitialized(bool success) {
   }
 }
 
-namespace {
-const char* CauseName(net::CookieMonster::Delegate::ChangeCause cause) {
-  switch (cause) {
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
-      return "CHANGE_COOKIE_EXPLICIT";
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE:
-      return "CHANGE_COOKIE_OVERWRITE";
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED:
-      return "CHANGE_COOKIE_EXPIRED";
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EVICTED:
-      return "CHANGE_COOKIE_EVICTED";
-    case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
-      return "CHANGE_COOKIE_EXPIRED_OVERWRITE";
-    default:
-      return "<unknown>";
-  }
-}
-}
-
-void ProfileSyncService::OnCookieChanged(Profile* profile,
-                                         ChromeCookieDetails* cookie_details) {
-  const net::CookieMonster::CanonicalCookie* canonical_cookie =
-      cookie_details->cookie;
-  if (canonical_cookie->Name() == "oauth_token") {
-    net::CookieMonster::Delegate::ChangeCause cause = cookie_details->cause;
-    LOG(INFO) << "COOKIE_CHANGED: removed="
-              << (cookie_details->removed ? "true" : "false")
-              << ", cause=" << CauseName(cause)
-              << ", Source=" << canonical_cookie->Source()
-              << ", Name=" << canonical_cookie->Name()
-              << ", Value=" << canonical_cookie->Value()
-              << ", Domain=" << canonical_cookie->Domain()
-              << ", Path=" << canonical_cookie->Path()
-              << ", DoesExpire="
-              << (canonical_cookie->DoesExpire() ? "true" : "false")
-              << ", IsPersistent="
-              << (canonical_cookie->IsPersistent() ? "true" : "false")
-              << ", IsSecure="
-              << (canonical_cookie->IsSecure() ? "true" : "false")
-              << ", IsHttpOnly="
-              << (canonical_cookie->IsHttpOnly() ? "true" : "false")
-              << ", IsDomainCookie="
-              << (canonical_cookie->IsDomainCookie() ? "true" : "false")
-              << ", IsHostCookie="
-              << (canonical_cookie->IsHostCookie() ? "true" : "false")
-              << ", IsExpired="
-              << (const_cast<net::CookieMonster::CanonicalCookie*>(
-                      canonical_cookie)->IsExpired(
-                          base::Time::NowFromSystemTime())
-                  ? "true" : "false");
-  }
-}
-
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
   VLOG(2) << "Notifying observers sync cycle completed";
@@ -662,8 +603,8 @@ void ProfileSyncService::UpdateAuthErrorState(
   // Require the user to click somewhere to run the setup wizard in the case
   // of a steady-state auth failure.
   if (WizardIsVisible()) {
-    wizard_.Step(AuthError::NONE == last_auth_error_.state() ?
-        SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GAIA_LOGIN);
+    wizard_.Step(last_auth_error_.state() == AuthError::NONE ?
+        SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GetLoginState());
   } else {
     auth_error_time_ = base::TimeTicks::Now();
   }
@@ -820,7 +761,7 @@ void ProfileSyncService::ShowLoginDialog() {
     wizard_.Focus();
     // Force the wizard to step to the login screen (which will only actually
     // happen if the transition is valid).
-    wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
+    wizard_.Step(SyncSetupWizard::GetLoginState());
     return;
   }
 
@@ -830,7 +771,7 @@ void ProfileSyncService::ShowLoginDialog() {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  ShowSyncSetup(SyncSetupWizard::GAIA_LOGIN);
+  ShowSyncSetup(SyncSetupWizard::GetLoginState());
 
   NotifyObservers();
 }
@@ -1370,11 +1311,6 @@ void ProfileSyncService::Observe(int type,
           !AreCredentialsAvailable()) {
         DisableForUser();
       }
-      break;
-    }
-    case chrome::NOTIFICATION_COOKIE_CHANGED: {
-      OnCookieChanged(Source<Profile>(source).ptr(),
-                      Details<ChromeCookieDetails>(details).ptr());
       break;
     }
     default: {

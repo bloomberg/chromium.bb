@@ -28,7 +28,7 @@ void OptionsSyncSetupHandler::ShowSetupUI() {
       service->get_wizard().Step(SyncSetupWizard::CONFIGURE);
     }
   } else {
-    service->get_wizard().Step(SyncSetupWizard::GAIA_LOGIN);
+    service->get_wizard().Step(SyncSetupWizard::GetLoginState());
   }
 
   // Show the Sync Setup page.
