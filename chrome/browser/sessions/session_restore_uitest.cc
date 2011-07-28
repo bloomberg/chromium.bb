@@ -142,7 +142,10 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
   ASSERT_TRUE(GetActiveTabURL() == url3_);
   ASSERT_TRUE(tab_proxy->GoBack());
   ASSERT_TRUE(GetActiveTabURL() == url2_);
-  ASSERT_TRUE(tab_proxy->GoBack());
+
+  // Test renderer-initiated back/forward as well.
+  GURL go_back_url("javascript:history.back();");
+  ASSERT_TRUE(tab_proxy->NavigateToURL(go_back_url));
   ASSERT_TRUE(GetActiveTabURL() == url1_);
 }
 
@@ -195,7 +198,9 @@ TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   ASSERT_TRUE(tab_proxy->GetCurrentURL(&url));
   ASSERT_EQ(cross_site_url, url);
 
-  ASSERT_TRUE(tab_proxy->GoForward());
+  // Test renderer-initiated back/forward as well.
+  GURL go_forward_url("javascript:history.forward();");
+  ASSERT_TRUE(tab_proxy->NavigateToURL(go_forward_url));
   ASSERT_TRUE(tab_proxy->GetCurrentURL(&url));
   ASSERT_EQ(url2_, url);
 }

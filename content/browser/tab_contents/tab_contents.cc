@@ -1031,6 +1031,16 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     entry->set_transition_type(entry->transition_type() |
                                PageTransition::FORWARD_BACK);
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
+
+    // If the entry is being restored and doesn't have a SiteInstance yet, fill
+    // it in now that we know. This allows us to find the entry when it commits.
+    if (!entry->site_instance() &&
+        entry->restore_type() != NavigationEntry::RESTORE_NONE) {
+      RenderViewHost* dest_rvh = render_manager_.pending_render_view_host() ?
+          render_manager_.pending_render_view_host() :
+          render_manager_.current_host();
+      entry->set_site_instance(dest_rvh->site_instance());
+    }
   }
 }
 
