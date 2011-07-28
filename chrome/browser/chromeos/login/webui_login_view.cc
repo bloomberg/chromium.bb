@@ -61,7 +61,6 @@ void WebUILoginView::Init() {
   webui_login_->tab_contents()->set_delegate(this);
 }
 
-
 std::string WebUILoginView::GetClassName() const {
   return kViewClassName;
 }
@@ -191,7 +190,7 @@ void WebUILoginView::InitStatusArea() {
   widget_params.double_buffer = true;
   widget_params.transparent = true;
   widget_params.parent = login_window->GetNativeView();
-  views::Widget* status_window_ = new views::Widget;
+  status_window_ = new views::Widget;
   status_window_->Init(widget_params);
   chromeos::WmIpc::instance()->SetWindowType(
       status_window_->GetNativeView(),

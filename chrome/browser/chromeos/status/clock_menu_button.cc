@@ -54,6 +54,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
 }
 
 ClockMenuButton::~ClockMenuButton() {
+  timer_.Stop();
   CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
