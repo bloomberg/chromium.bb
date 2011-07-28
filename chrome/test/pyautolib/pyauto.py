@@ -3496,6 +3496,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self._GetResultFromJSONRequest(cmd_dict, windex=-1)
     return self.GetEnterprisePolicyInfo()
 
+  def EnrollEnterpriseDevice(self, user, password):
+    """Enrolls an unenrolled device as an enterprise device.
+
+    Expects the device to be unenrolled with the TPM unlocked. This is
+    equivalent to pressing Ctrl-Alt-e to enroll the device from the login
+    screen.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the enrollment fails.
+    """
+    cmd_dict = {
+        'command': 'EnrollEnterpriseDevice',
+        'user': user,
+        'password': password,
+    }
+    time.sleep(5) # TODO(craigdh): Block until Install Attributes is ready.
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def GetUpdateInfo(self):
     """Gets the status of the ChromeOS updater.
 

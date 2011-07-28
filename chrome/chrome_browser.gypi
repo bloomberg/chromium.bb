@@ -484,6 +484,7 @@
         'browser/chromeos/login/enterprise_enrollment_screen.cc',
         'browser/chromeos/login/enterprise_enrollment_screen.h',
         'browser/chromeos/login/enterprise_enrollment_screen_actor.h',
+        'browser/chromeos/login/enterprise_enrollment_screen_actor.cc',
         'browser/chromeos/login/enterprise_enrollment_view.cc',
         'browser/chromeos/login/enterprise_enrollment_view.h',
         'browser/chromeos/login/eula_screen.cc',

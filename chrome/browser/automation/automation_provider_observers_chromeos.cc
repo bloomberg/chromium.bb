@@ -8,8 +8,10 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 
@@ -281,28 +283,56 @@ CloudPolicyObserver::CloudPolicyObserver(AutomationProvider* automation,
                                                           this));
 }
 
-CloudPolicyObserver::~CloudPolicyObserver() {
-}
+CloudPolicyObserver::~CloudPolicyObserver() {}
 
 void CloudPolicyObserver::OnPolicyStateChanged(
     policy::CloudPolicySubsystem::PolicySubsystemState state,
     policy::CloudPolicySubsystem::ErrorDetails error_details) {
-  if (state == policy::CloudPolicySubsystem::SUCCESS) {
-    if (automation_)
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendSuccess(NULL);
-    delete this;
-  } else if (state == policy::CloudPolicySubsystem::TOKEN_FETCHED) {
+  if (state == policy::CloudPolicySubsystem::TOKEN_FETCHED) {
     // fetched the token, now return and wait for a call with state SUCCESS
     return;
-  } else {
-    // fetch returned an error
-    if (automation_)
+  } else if (automation_) {
+    if (state == policy::CloudPolicySubsystem::SUCCESS) {
       AutomationJSONReply(automation_,
-                          reply_message_.release()).SendError(NULL);
-    delete this;
-    return;
+                          reply_message_.release()).SendSuccess(NULL);
+    } else {
+      // fetch returned an error
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendError(
+                              "Policy fetch failed.");
+    }
   }
+  delete this;
+  return;
+}
+
+EnrollmentObserver::EnrollmentObserver(AutomationProvider* automation,
+    IPC::Message* reply_message,
+    chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
+    chromeos::EnterpriseEnrollmentScreen* enrollment_screen)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      enrollment_screen_(enrollment_screen) {
+  enrollment_screen_actor->AddObserver(this);
+}
+
+EnrollmentObserver::~EnrollmentObserver() {}
+
+void EnrollmentObserver::OnEnrollmentComplete(
+    chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
+    bool succeeded) {
+  enrollment_screen_actor->RemoveObserver(this);
+  if (automation_) {
+    if (succeeded) {
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
+    } else {
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendError(
+                              "Enrollment failed.");
+    }
+  }
+  delete this;
 }
 
 SSIDConnectObserver::SSIDConnectObserver(

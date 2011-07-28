@@ -22,7 +22,11 @@
 #include "chrome/browser/browsing_data_remover.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -910,6 +914,31 @@ class CloudPolicyObserver : public policy::CloudPolicySubsystem::Observer {
       observer_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyObserver);
+};
+
+// Waits for enterprise device enrollment to complete and returns the status to
+// the automation provider.
+class EnrollmentObserver
+    : public chromeos::EnterpriseEnrollmentScreenActor::Observer {
+ public:
+  EnrollmentObserver(AutomationProvider* automation,
+      IPC::Message* reply_message,
+      chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
+      chromeos::EnterpriseEnrollmentScreen* enrollment_screen);
+
+  virtual ~EnrollmentObserver();
+
+  // chromeos::EnterpriseEnrollmentView::Observer implementation.
+  virtual void OnEnrollmentComplete(
+      chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
+      bool succeeded);
+
+ private:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  chromeos::EnterpriseEnrollmentScreen* enrollment_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentObserver);
 };
 
 // Waits for a connection success or failure for the specified

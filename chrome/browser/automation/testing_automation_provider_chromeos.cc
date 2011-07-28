@@ -15,9 +15,12 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -733,6 +736,7 @@ void TestingAutomationProvider::ConnectToPrivateNetwork(
     return;
   };
 
+  // Set up an observer (it will delete itself).
   new VirtualConnectObserver(this, reply_message, network->name());
   network_library->ConnectToVirtualNetwork(network);
 }
@@ -814,12 +818,52 @@ void TestingAutomationProvider::FetchEnterprisePolicy(
   policy::CloudPolicySubsystem* policy_subsystem =
       connector->user_cloud_policy_subsystem();
   if (policy_subsystem) {
+    // Set up an observer (it will delete itself).
     new CloudPolicyObserver(this, reply_message, connector, policy_subsystem);
     connector->FetchDevicePolicy();
   } else {
     AutomationJSONReply(this, reply_message).SendError(
         "Unable to access CloudPolicySubsystem");
   }
+}
+
+void TestingAutomationProvider::EnrollEnterpriseDevice(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  std::string user, password;
+  if (!args->GetString("user", &user) ||
+      !args->GetString("password", &password)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid or missing args.");
+    return;
+  }
+  chromeos::ExistingUserController* user_controller =
+      chromeos::ExistingUserController::current_controller();
+  if (!user_controller) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access ExistingUserController");
+    return;
+  }
+  user_controller->login_display_host()->StartWizard(
+      chromeos::WizardController::kEnterpriseEnrollmentScreenName,
+      GURL());
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  if (!wizard_controller) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access WizardController");
+    return;
+  }
+  chromeos::EnterpriseEnrollmentScreen* enroll_screen =
+      wizard_controller->GetEnterpriseEnrollmentScreen();
+  if (!enroll_screen) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access EnterpriseEnrollmentScreen");
+    return;
+  }
+  // Set up an observer (it will delete itself).
+  new EnrollmentObserver(this, reply_message, enroll_screen->GetActor(),
+                         enroll_screen);
+  enroll_screen->OnAuthSubmitted(user, password, "", "");
 }
 
 void TestingAutomationProvider::GetEnterprisePolicyInfo(

@@ -63,6 +63,7 @@ void SingleEnterpriseEnrollmentScreenHandler::ShowConfirmationScreen() {
   render_view_host->ExecuteJavascriptInWebFrame(
       string16(),
       UTF8ToUTF16("enterpriseEnrollment.showScreen('confirmation-screen');"));
+  NotifyObservers(true);
 }
 
 void SingleEnterpriseEnrollmentScreenHandler::SetController(
