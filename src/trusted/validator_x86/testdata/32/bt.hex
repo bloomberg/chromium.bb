@@ -1,0 +1,12 @@
+# Test legal bit commands
+# btw $0x1,(%esp)
+66 0f ba 24 24 01
+90 90 90 90 90
+# btl $0x1,(%esp)
+0f ba 24 24 01
+# btrl $0x1,(%esp)
+0f ba 34 24 01
+# btsl $0x1,(%esp)
+0f ba 2c 24 01
+# btcl $0x1,(%esp)
+0f ba 3c 24 01
