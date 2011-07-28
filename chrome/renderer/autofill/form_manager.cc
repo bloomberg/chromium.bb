@@ -331,7 +331,9 @@ string16 InferLabelFromTableRow(const WebFormControlElement& element) {
 string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   WebNode node = element.parentNode();
   while (!node.isNull() && node.isElementNode() &&
-         !node.to<WebElement>().hasTagName("div")) {
+         !node.to<WebElement>().hasTagName("div") &&
+         // If the element is in a table, its label most likely is too.
+         !node.to<WebElement>().hasTagName("table")) {
     node = node.parentNode();
   }
 
