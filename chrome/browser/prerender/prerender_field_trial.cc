@@ -47,13 +47,6 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
     }
   }
 
-#if defined(OS_CHROMEOS)
-  // Prerender is not enabled on CrOS by default..
-  // http://crosbug.com/12483
-  if (prerender_option == PRERENDER_OPTION_AUTO)
-    prerender_option = PRERENDER_OPTION_DISABLED;
-#endif
-
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrefetchDivisor = 1000;

@@ -124,9 +124,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/prerender_condition_network.h"
 #endif
 
 using base::Time;
@@ -1767,6 +1769,11 @@ prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
     prerender_manager_.reset(
         new prerender::PrerenderManager(
             this, g_browser_process->prerender_tracker()));
+#if defined(OS_CHROMEOS)
+    prerender_manager_->AddCondition(
+        new chromeos::PrerenderConditionNetwork(
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+#endif
   }
   return prerender_manager_.get();
 }

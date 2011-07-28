@@ -10,11 +10,13 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_history.h"
@@ -216,6 +218,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
 
 PrerenderManager::~PrerenderManager() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
+  STLDeleteElements(&prerender_conditions_);
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -694,12 +697,26 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
 
 bool PrerenderManager::is_enabled() const {
   DCHECK(CalledOnValidThread());
-  return enabled_;
+  if (!enabled_)
+    return false;
+  for (std::list<const PrerenderCondition*>::const_iterator it =
+           prerender_conditions_.begin();
+       it != prerender_conditions_.end();
+       ++it) {
+    const PrerenderCondition* condition = *it;
+    if (!condition->CanPrerender())
+      return false;
+  }
+  return true;
 }
 
 void PrerenderManager::set_enabled(bool enabled) {
   DCHECK(CalledOnValidThread());
   enabled_ = enabled;
+}
+
+void PrerenderManager::AddCondition(const PrerenderCondition* condition) {
+  prerender_conditions_.push_back(condition);
 }
 
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {

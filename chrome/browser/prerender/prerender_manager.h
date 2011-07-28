@@ -41,6 +41,7 @@ struct hash<TabContents*> {
 
 namespace prerender {
 
+class PrerenderCondition;
 class PrerenderHistory;
 class PrerenderTracker;
 
@@ -196,6 +197,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   Config& mutable_config() { return config_; }
 
   PrerenderTracker* prerender_tracker() { return prerender_tracker_; }
+
+  // Adds a condition. This is owned by the PrerenderManager.
+  void AddCondition(const PrerenderCondition* condition);
 
  protected:
   // Test that needs needs access to internal functions.
@@ -415,6 +419,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   ScopedVector<OnCloseTabContentsDeleter> on_close_tab_contents_deleters_;
 
   scoped_ptr<PrerenderHistory> prerender_history_;
+
+  std::list<const PrerenderCondition*> prerender_conditions_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
