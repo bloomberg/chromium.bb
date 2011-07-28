@@ -11,6 +11,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,8 +30,14 @@ class TabContents;
 // occurred so no further events for this frame are being sent.
 class FrameNavigationState {
  public:
+  typedef std::set<int64>::const_iterator const_iterator;
+
   FrameNavigationState();
   ~FrameNavigationState();
+
+  // Use these to iterate over all frame IDs known by this object.
+  const_iterator begin() const { return frame_ids_.begin(); }
+  const_iterator end() const { return frame_ids_.end(); }
 
   // True if navigation events for the given frame can be sent.
   bool CanSendEvents(int64 frame_id) const;
@@ -61,6 +68,13 @@ class FrameNavigationState {
   // True if the frame is marked as being in an error state.
   bool GetErrorOccurredInFrame(int64 frame_id) const;
 
+  // Marks a frame as having finished its last navigation, i.e. the onCompleted
+  // event was fired for this frame.
+  void SetNavigationCompleted(int64 frame_id);
+
+  // True if the frame is currently not navigating.
+  bool GetNavigationCompleted(int64 frame_id) const;
+
 #ifdef UNIT_TEST
   static void set_allow_extension_scheme(bool allow_extension_scheme) {
     allow_extension_scheme_ = allow_extension_scheme;
@@ -71,12 +85,19 @@ class FrameNavigationState {
   struct FrameState {
     bool error_occurred;  // True if an error has occurred in this frame.
     bool is_main_frame;  // True if this is a main frame.
+    bool is_navigating;  // True if there is a navigation going on.
     GURL url;  // URL of this frame.
   };
   typedef std::map<int64, FrameState> FrameIdToStateMap;
 
   // Tracks the state of known frames.
   FrameIdToStateMap frame_state_map_;
+
+  // Set of all known frames.
+  std::set<int64> frame_ids_;
+
+  // The current main frame.
+  int64 main_frame_id_;
 
   // If true, also allow events from chrome-extension:// URLs.
   static bool allow_extension_scheme_;
