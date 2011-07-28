@@ -156,6 +156,10 @@ class InProcessBrowserTest : public testing::Test {
   // for the tab to finish loading, and shows the browser.
   Browser* CreateBrowserForPopup(Profile* profile);
 
+  // Called from the various CreateBrowser methods to add a blank tab, wait for
+  // the navigation to complete, and show the browser's window.
+  void AddBlankTabAndShow(Browser* browser);
+
   // Returns the host resolver being used for the tests. Subclasses might want
   // to configure it inside tests.
   net::RuleBasedHostResolverProc* host_resolver() {

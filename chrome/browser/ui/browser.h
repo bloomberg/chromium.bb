@@ -82,6 +82,8 @@ class Browser : public TabHandlerDelegate,
   // enum, look at SessionService::WindowType to see if it needs to be
   // updated.
   enum Type {
+    // If you add a new type, consider updating the test
+    // BrowserTest.StartMaximized.
     TYPE_TABBED = 1,
     TYPE_POPUP = 2,
     TYPE_PANEL = 3,
