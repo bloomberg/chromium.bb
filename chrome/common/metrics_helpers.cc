@@ -372,7 +372,7 @@ int64 MetricsLogBase::GetBuildTime() {
   if (!integral_build_time) {
     Time time;
     const char* kDateTime = __DATE__ " " __TIME__ " GMT";
-    bool result = Time::FromString(kDateTime, &time);
+    bool result = Time::FromString(ASCIIToWide(kDateTime).c_str(), &time);
     DCHECK(result);
     integral_build_time = static_cast<int64>(time.ToTimeT());
   }
