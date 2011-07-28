@@ -195,6 +195,9 @@ REGEX: `anonymous namespace'::[^_]*____purecall___browserrenderprocesshost::onch
 # 89697
 PREFIX: `anonymous namespace'::purecall____purecall___renderviewhost::onmessagereceived___browserrenderprocesshost::onchannelerror___`anonymous namespace'::taskclosureadapter::run___messageloop::runtask
 
+# 90200
+SUBSTRING: resourcedispatcherhost::cancelrequestsforcontext___base::internal::invoker2<0,base::internal::invokerstorage2<void (__thiscall resourcedispatcherhost::*)(content::resourcecontext const *),base::internal::unretainedwrapper<resourcedispatcherhost>,profileiodata::resourcecontext *>,void (__thiscall resourcedispatcherhost::*)(content::resourcecontext const *)>::doinvoke
+
 # 90393
 PREFIX: webkit_glue::datasourceinitdone___base::internal::invoker3<0,base::internal::invokerstorage3<void (__cdecl*)(callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)> const &,scoped_refptr<webkit_glue::webdatasource> const &,enum media::pipelinestatus),callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)>,scoped_refptr<webkit_glue::webdatasource> >,void (__cdecl*)(callbackrunner<tuple1<webkit_glue::webdatasource *> > *,base::callback<void __cdecl(enum media::pipelinestatus,media::datasource *)> const &,scoped_refptr<webkit_glue::webdatasource> const &,enum media::pipelinestatus)>::doinvoke___webkit_glue::buffereddatasource::doneinitialization_locked___webkit_glue::buffereddatasource::httpinitialstartcallback
 
