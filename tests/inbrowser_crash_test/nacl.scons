@@ -31,14 +31,7 @@ env.AddNodeToTestSuite(
     node,
     ['chrome_browser_tests'],
     'run_inbrowser_trusted_crash_in_startup_test',
-    is_broken=
-        env.PPAPIBrowserTesterIsBroken()
-        # This test hangs the renderer process on Unix using
-        # Chromium's NaCl startup code, which suggests that the
-        # renderer is failing to close a socket that it sends to the
-        # NaCl process.  TODO(mseaborn): Investigate and fix.
-        or (env.Bit('disable_dynamic_plugin_loading') and
-            (env.Bit('host_linux') or env.Bit('host_mac'))))
+    is_broken=env.PPAPIBrowserTesterIsBroken())
 
 # This tests a crash that occurs inside a syscall handler.
 # Ultimately this should be recognised as a crash caused by untrusted code.
