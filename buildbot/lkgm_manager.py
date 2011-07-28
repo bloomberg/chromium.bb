@@ -90,6 +90,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   Vars:
     lkgm_subdir:  Subdirectory within manifest repo to store candidates.
   """
+  # Max timeout before assuming other builders have failed for Chrome PFQ.
+  # Longer as there is little to lose for Chrome PFQ waiting and arm
+  # has been slower often.
+  CHROME_LONG_MAX_TIMEOUT_SECONDS = 3600
   # Max timeout before assuming other builders have failed.
   LONG_MAX_TIMEOUT_SECONDS = 1200
   MAX_TIMEOUT_SECONDS = 300
@@ -130,10 +134,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         incr_type='branch', clobber=clobber, dry_run=dry_run)
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
-    if build_type == constants.CHROME_PFQ_TYPE:
+    self.build_type = build_type
+    if self.build_type == constants.CHROME_PFQ_TYPE:
       self.lkgm_subdir = self.CHROME_PFQ_SUBDIR
     else:
-      assert build_type, constants.PFQ_TYPE
+      assert self.build_type, constants.PFQ_TYPE
       self.lkgm_subdir = self.LKGM_SUBDIR
 
   def _RunLambdaWithTimeout(self, function_to_run, use_long_timeout=False):
@@ -141,7 +146,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     function_success = False
     start_time = time.time()
     max_timeout = self.MAX_TIMEOUT_SECONDS
-    if use_long_timeout: max_timeout = self.LONG_MAX_TIMEOUT_SECONDS
+    if use_long_timeout:
+      if self.build_type == constants.PFQ_TYPE:
+        max_timeout = self.LONG_MAX_TIMEOUT_SECONDS
+      else:
+        max_timeout = self.CHROME_LONG_MAX_TIMEOUT_SECONDS
+
     # Monitor the repo until all builders report in or we've waited too long.
     while (time.time() - start_time) < max_timeout:
       function_success = function_to_run()
