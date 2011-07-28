@@ -124,6 +124,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   virtual MHTMLGenerationManager* mhtml_generation_manager();
 
+  virtual GpuBlacklistUpdater* gpu_blacklist_updater();
+
  private:
   void CreateResourceDispatcherHost();
   void CreateMetricsService();
@@ -316,6 +318,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
+
+  scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

@@ -117,8 +117,6 @@
 #include "net/websockets/websocket_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -1979,14 +1977,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // might have shutdown because an update was available.
   profile->GetCloudPrintProxyService();
 
-  // Schedule a GPU blacklist auto update.  This also loads the current one.
-  scoped_refptr<GpuBlacklistUpdater> gpu_blacklist_updater =
-      new GpuBlacklistUpdater();
-  // Don't start auto update in tests.
-  if (parsed_command_line.GetSwitchValueASCII(switches::kUseGL) !=
-          gfx::kGLImplementationOSMesaName) {
-    gpu_blacklist_updater->StartAfterDelay();
-  }
+  // Initialize GpuDataManager and collect preliminary gpu info on FILE thread.
+  // Upon completion, it posts GpuBlacklist auto update task on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&GpuBlacklistUpdater::SetupOnFileThread));
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line);

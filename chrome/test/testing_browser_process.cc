@@ -239,6 +239,10 @@ MHTMLGenerationManager* TestingBrowserProcess::mhtml_generation_manager() {
   return NULL;
 }
 
+GpuBlacklistUpdater* TestingBrowserProcess::gpu_blacklist_updater() {
+  return NULL;
+}
+
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
   if (!local_state && notification_ui_manager_.get())
     notification_ui_manager_.reset();  // Used local_state_.

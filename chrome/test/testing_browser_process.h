@@ -116,6 +116,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
   virtual MHTMLGenerationManager* mhtml_generation_manager();
+  virtual GpuBlacklistUpdater* gpu_blacklist_updater();
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

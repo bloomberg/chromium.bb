@@ -44,7 +44,12 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 
 GpuDataManager::GpuDataManager()
     : complete_gpu_info_already_requested_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Certain tests doesn't go through the browser startup path that
+  // initializes GpuDataManager on FILE thread; therefore, it is initialized
+  // on UI thread later, and we skip the preliminary gpu info collection
+  // in such situation.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE))
+    return;
 
   GPUInfo gpu_info;
   gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
@@ -61,6 +66,7 @@ GpuDataManager::~GpuDataManager() {
 #endif
 }
 
+// static
 GpuDataManager* GpuDataManager::GetInstance() {
   return Singleton<GpuDataManager>::get();
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,8 @@
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace {
 
@@ -51,6 +54,40 @@ GpuBlacklistUpdater::GpuBlacklistUpdater()
 }
 
 GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
+
+// static
+void GpuBlacklistUpdater::SetupOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Initialize GpuDataManager instance, which collects preliminary
+  // graphics information.  This has to happen on FILE thread.
+  GpuDataManager::GetInstance();
+
+  // Skip auto updates in tests.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if ((command_line.GetSwitchValueASCII(switches::kUseGL) ==
+      gfx::kGLImplementationOSMesaName))
+    return;
+
+  // Post GpuBlacklistUpdate task on UI thread.  This has to happen
+  // after GpuDataManager is initialized, otherwise it might be
+  // initialzed on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&GpuBlacklistUpdater::SetupOnUIThread));
+}
+
+// static
+void GpuBlacklistUpdater::SetupOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Initialize GpuBlacklistUpdater, which loads the current blacklist;
+  // then Schedule a GPU blacklist auto update.
+  GpuBlacklistUpdater* updater =
+      g_browser_process->gpu_blacklist_updater();
+  DCHECK(updater);
+  updater->StartAfterDelay();
+}
 
 void GpuBlacklistUpdater::Unpack(const DictionaryValue& parsed_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
