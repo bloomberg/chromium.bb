@@ -4,32 +4,32 @@
 
 <include src="util.js"/>
 <include src="view.js"/>
-<include src="tabswitcherview.js"/>
-<include src="dataview.js"/>
-<include src="httpcacheview.js"/>
-<include src="testview.js"/>
-<include src="hstsview.js"/>
-<include src="browserbridge.js"/>
-<include src="sourcetracker.js"/>
+<include src="tab_switcher_view.js"/>
+<include src="data_view.js"/>
+<include src="http_cache_view.js"/>
+<include src="test_view.js"/>
+<include src="hsts_view.js"/>
+<include src="browser_bridge.js"/>
+<include src="source_tracker.js"/>
 <include src="main.js"/>
-<include src="dnsview.js"/>
-<include src="sourcerow.js"/>
-<include src="eventsview.js"/>
-<include src="detailsview.js"/>
-<include src="sourceentry.js"/>
-<include src="resizableverticalsplitview.js"/>
-<include src="topmidbottomview.js"/>
-<include src="timelineviewpainter.js"/>
-<include src="logviewpainter.js"/>
-<include src="loggrouper.js"/>
-<include src="proxyview.js"/>
-<include src="socketpoolwrapper.js"/>
-<include src="socketsview.js"/>
-<include src="spdyview.js"/>
-<include src="serviceprovidersview.js"/>
-<include src="httpthrottlingview.js"/>
-<include src="logsview.js"/>
-<include src="prerenderview.js"/>
+<include src="dns_view.js"/>
+<include src="source_row.js"/>
+<include src="events_view.js"/>
+<include src="details_view.js"/>
+<include src="source_entry.js"/>
+<include src="resizable_vertical_split_view.js"/>
+<include src="top_mid_bottom_view.js"/>
+<include src="timeline_view_painter.js"/>
+<include src="log_view_painter.js"/>
+<include src="log_grouper.js"/>
+<include src="proxy_view.js"/>
+<include src="socket_pool_wrapper.js"/>
+<include src="sockets_view.js"/>
+<include src="spdy_view.js"/>
+<include src="service_providers_view.js"/>
+<include src="http_throttling_view.js"/>
+<include src="logs_view.js"/>
+<include src="prerender_view.js"/>
 
 document.addEventListener('DOMContentLoaded', function () {
   $('reloaded-link').addEventListener('click', function () {
