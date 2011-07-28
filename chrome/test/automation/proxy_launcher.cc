@@ -154,7 +154,8 @@ void ProxyLauncher::CloseBrowserAndServer() {
 }
 
 void ProxyLauncher::DisconnectFromRunningBrowser() {
-  automation_proxy_.reset();
+  if (automation_proxy_.get())
+    automation_proxy_->Disconnect();
 }
 
 bool ProxyLauncher::LaunchBrowser(const LaunchState& state) {
