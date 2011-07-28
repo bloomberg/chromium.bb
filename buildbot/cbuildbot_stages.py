@@ -792,9 +792,11 @@ class BuildTargetStage(BuilderStage):
 
 class TestStage(BuilderStage):
   """Stage that performs testing steps."""
-  def __init__(self, bot_id, options, build_config, upload_url):
+  def __init__(self, bot_id, options, build_config, upload_url,
+               local_archive_path):
     super(TestStage, self).__init__(bot_id, options, build_config)
     self._upload_url = upload_url
+    self._local_archive_path = local_archive_path
 
   def _CreateTestRoot(self):
     """Returns a temporary directory for test results in chroot.
@@ -838,7 +840,7 @@ class TestStage(BuilderStage):
       finally:
         commands.ArchiveTestResults(
             self._build_root, test_results_dir, self._upload_url,
-            self._options.debug)
+            self._local_archive_path, self._options.debug)
 
 
 class TestHWStage(NonHaltingBuilderStage):

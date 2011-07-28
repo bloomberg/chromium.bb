@@ -210,6 +210,7 @@ def RunBuildStages(bot_id, options, build_config):
   archive_stage = None
   archive_url = None
   upload_url = None
+  local_archive_path = None
 
   try:
     if options.sync:
@@ -240,6 +241,14 @@ def RunBuildStages(bot_id, options, build_config):
       archive_stage = stages.ArchiveStage(bot_id, options, build_config)
       archive_url = archive_stage.GetDownloadUrl()
       upload_url = archive_stage.GetGSUploadLocation()
+      local_archive_path = archive_stage.GetLocalArchivePath()
+      if not os.path.exists(local_archive_path):
+        try:
+          # Files created in our archive dir should be publically accessible.
+          old_umask = os.umask(022)
+          os.makedirs(local_archive_path)
+        finally:
+          os.umask(old_umask)
       bg.AddStage(archive_stage)
 
     if not bg.Empty():
@@ -247,7 +256,8 @@ def RunBuildStages(bot_id, options, build_config):
       bg_started = True
 
     if options.tests:
-      stages.TestStage(bot_id, options, build_config, upload_url).Run()
+      stages.TestStage(bot_id, options, build_config, upload_url,
+                       local_archive_path).Run()
 
     if options.hw_tests:
       stages.TestHWStage(bot_id, options, build_config).Run()
