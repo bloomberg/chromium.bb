@@ -168,7 +168,7 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
     delegate->Translate();
   } else if (sender == deny_button_) {
     delegate->TranslationDeclined();
-    RemoveInfoBar();
+    RemoveSelf();
   } else if (sender == never_translate_button_) {
     delegate->NeverTranslatePageLanguage();
   } else if (sender == always_translate_button_) {

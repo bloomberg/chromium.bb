@@ -83,17 +83,16 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
 
 void ConfirmInfoBarGtk::OnOkButton(GtkWidget* widget) {
   if (delegate()->AsConfirmInfoBarDelegate()->Accept())
-    RemoveInfoBar();
+    RemoveSelf();
 }
 
 void ConfirmInfoBarGtk::OnCancelButton(GtkWidget* widget) {
   if (delegate()->AsConfirmInfoBarDelegate()->Cancel())
-    RemoveInfoBar();
+    RemoveSelf();
 }
 
 void ConfirmInfoBarGtk::OnLinkClicked(GtkWidget* widget) {
   if (delegate()->AsConfirmInfoBarDelegate()->LinkClicked(
-        gtk_util::DispositionForCurrentButtonPressEvent())) {
-    RemoveInfoBar();
-  }
+        gtk_util::DispositionForCurrentButtonPressEvent()))
+    RemoveSelf();
 }

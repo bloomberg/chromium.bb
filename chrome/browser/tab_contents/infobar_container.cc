@@ -134,7 +134,7 @@ void InfoBarContainer::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
       InfoBarRemovedDetails* removed_details =
           Details<InfoBarRemovedDetails>(details).ptr();
-      RemoveInfoBar(removed_details->first, removed_details->second);
+      HideInfoBar(removed_details->first, removed_details->second);
       break;
     }
 
@@ -142,7 +142,7 @@ void InfoBarContainer::Observe(int type,
       InfoBarReplacedDetails* replaced_details =
           Details<InfoBarReplacedDetails>(details).ptr();
       AddInfoBar(replaced_details->second->CreateInfoBar(tab_contents_),
-          RemoveInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
+          HideInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
       break;
     }
 
@@ -152,8 +152,8 @@ void InfoBarContainer::Observe(int type,
   }
 }
 
-size_t InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
-                                       bool use_animation) {
+size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
+                                     bool use_animation) {
   // Search for the infobar associated with |delegate|.  We cannot search for
   // |delegate| in |tab_contents_|, because an InfoBar remains alive until its
   // close animation completes, while the delegate is removed from the tab

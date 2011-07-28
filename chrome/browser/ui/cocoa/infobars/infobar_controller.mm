@@ -82,7 +82,7 @@ const float kAnimateCloseDuration = 0.12;
 
 // Asks the container controller to remove the infobar for this delegate.  This
 // call will trigger a notification that starts the infobar animating closed.
-- (void)removeInfoBar;
+- (void)removeSelf;
 
 // Performs final cleanup after an animation is finished or stopped, including
 // notifying the InfoBarDelegate that the infobar was closed and removing the
@@ -161,7 +161,7 @@ const float kAnimateCloseDuration = 0.12;
   if (delegate_)
     delegate_->InfoBarDismissed();
 
-  [self removeInfoBar];
+  [self removeSelf];
 }
 
 - (AnimatableView*)animatableView {
@@ -263,7 +263,7 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setVerticallyResizable:NO];
 }
 
-- (void)removeInfoBar {
+- (void)removeSelf {
   // TODO(rohitrao): This method can be called even if the infobar has already
   // been removed and |delegate_| is NULL.  Is there a way to rewrite the code
   // so that inner event loops don't cause us to try and remove the infobar
@@ -388,13 +388,13 @@ const float kAnimateCloseDuration = 0.12;
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (delegate_ &&
       delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition)) {
-    // Call |-removeInfoBar| on the outermost runloop to force a delay. As shown
-    // in <http://crbug.com/87201>, the second click event can be delivered
-    // after the animation finishes (and this gets released and deallocated),
-    // which leads to zombie messaging. Unfortnately, the order between the
-    // animation finishing and the click event being delivered is
-    // nondeterministic, so this hack is the best that can be done.
-    [self performSelector:@selector(removeInfoBar)
+    // Call |-removeSelf| on the outermost runloop to force a delay. As shown in
+    // <http://crbug.com/87201>, the second click event can be delivered after
+    // the animation finishes (and this gets released and deallocated), which
+    // leads to zombie messaging. Unfortunately, the order between the animation
+    // finishing and the click event being delivered is nondeterministic, so
+    // this hack is the best that can be done.
+    [self performSelector:@selector(removeSelf)
                withObject:nil
                afterDelay:0.0];
   }
@@ -411,13 +411,13 @@ const float kAnimateCloseDuration = 0.12;
 // Called when someone clicks on the "OK" button.
 - (IBAction)ok:(id)sender {
   if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Accept())
-    [self removeInfoBar];
+    [self removeSelf];
 }
 
 // Called when someone clicks on the "Cancel" button.
 - (IBAction)cancel:(id)sender {
   if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Cancel())
-    [self removeInfoBar];
+    [self removeSelf];
 }
 
 // Confirm infobars can have OK and/or cancel buttons, depending on
@@ -519,7 +519,7 @@ const float kAnimateCloseDuration = 0.12;
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (delegate_ &&
       delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
-    [self removeInfoBar];
+    [self removeSelf];
 }
 
 @end

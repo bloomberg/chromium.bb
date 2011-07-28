@@ -49,8 +49,8 @@ InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
       arrow_half_width_(0),
       bar_height_(0),
       bar_target_height_(kDefaultBarTargetHeight) {
-  DCHECK(owner != NULL);
-  DCHECK(delegate != NULL);
+  DCHECK(owner_ != NULL);
+  DCHECK(delegate_ != NULL);
   animation_.SetTweenType(ui::Tween::LINEAR);
 }
 
@@ -100,7 +100,7 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
   RecalculateHeights(false);
 }
 
-void InfoBar::RemoveInfoBar() {
+void InfoBar::RemoveSelf() {
   // |owner_| can be NULL here, e.g. because the user clicks the close button
   // when the infobar is already closing.
   if (delegate_ && owner_)

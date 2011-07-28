@@ -48,6 +48,9 @@ class InfoBarDelegate {
   // platform-specific.
   virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) = 0;
 
+  // Called by the TabContentsWrapper when it removes us.
+  void clear_owner() { owner_ = NULL; }
+
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
   // TabContentsWrapper when determining whether or not a delegate should be
@@ -87,9 +90,8 @@ class InfoBarDelegate {
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
  protected:
-  // Provided to subclasses as a convenience to initialize the state of this
-  // object. If |contents| is non-NULL, its active entry's unique ID will be
-  // stored using StoreActiveEntryUniqueID automatically.
+  // If |contents| is non-NULL, its active entry's unique ID will be stored
+  // using StoreActiveEntryUniqueID automatically.
   explicit InfoBarDelegate(TabContents* contents);
 
   // Store the unique id for the active entry in the specified TabContents, to
@@ -101,10 +103,17 @@ class InfoBarDelegate {
   bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const;
 
+  // Removes ourself from |owner_| if we haven't already been removed.
+  // TODO(pkasting): Move to InfoBar.
+  void RemoveSelf();
+
  private:
   // The unique id of the active NavigationEntry of the TabContents that we were
   // opened for. Used to help expire on navigations.
   int contents_unique_id_;
+
+  // TODO(pkasting): Remove.
+  TabContents* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };

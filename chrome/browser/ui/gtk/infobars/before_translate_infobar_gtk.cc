@@ -94,7 +94,7 @@ void BeforeTranslateInfoBar::OnAcceptPressed(GtkWidget* sender) {
 
 void BeforeTranslateInfoBar::OnDenyPressed(GtkWidget* sender) {
   GetDelegate()->TranslationDeclined();
-  RemoveInfoBar();
+  RemoveSelf();
 }
 
 void BeforeTranslateInfoBar::OnNeverTranslatePressed(GtkWidget* sender) {

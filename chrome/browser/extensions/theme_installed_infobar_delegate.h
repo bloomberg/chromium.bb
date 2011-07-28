@@ -14,7 +14,6 @@ class ThemeService;
 class Extension;
 class Profile;
 class SkBitmap;
-class TabContents;
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
@@ -64,9 +63,6 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   // Used to undo theme install.
   std::string previous_theme_id_;
   bool previous_using_native_theme_;
-
-  // Tab to which this info bar is associated.
-  TabContents* tab_contents_;
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;

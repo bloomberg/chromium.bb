@@ -30,9 +30,8 @@ LinkInfoBarGtk::~LinkInfoBarGtk() {
 
 void LinkInfoBarGtk::OnLinkClicked(GtkWidget* button) {
   if (GetDelegate()->LinkClicked(
-        gtk_util::DispositionForCurrentButtonPressEvent())) {
-    RemoveInfoBar();
-  }
+        gtk_util::DispositionForCurrentButtonPressEvent()))
+    RemoveSelf();
 }
 
 LinkInfoBarDelegate* LinkInfoBarGtk::GetDelegate() {

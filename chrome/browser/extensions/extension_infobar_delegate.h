@@ -15,7 +15,6 @@ class Browser;
 class Extension;
 class ExtensionHost;
 class GURL;
-class TabContentsWrapper;
 
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
 // plus monitor when the extension goes away.
@@ -68,7 +67,6 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   DelegateObserver* observer_;
 
   const Extension* extension_;
-  TabContents* tab_contents_;
   NotificationRegistrar registrar_;
 
   // Whether we are currently animating to close. This is used to ignore

@@ -80,9 +80,8 @@ class InfoBar : public ui::AnimationDelegate {
   // ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-  // Called when the user closes the infobar, forwards a removal request to our
-  // owner.
-  void RemoveInfoBar();
+  // Forwards a close request to our owner.
+  void RemoveSelf();
 
   // Changes the target height of the main ("bar") portion of the infobar.
   void SetBarTargetHeight(int height);

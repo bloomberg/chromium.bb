@@ -77,7 +77,7 @@ void LinkInfoBar::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(
       event_utils::DispositionFromEventFlags(event_flags)))
-    RemoveInfoBar();
+    RemoveSelf();
 }
 
 LinkInfoBarDelegate* LinkInfoBar::GetDelegate() {

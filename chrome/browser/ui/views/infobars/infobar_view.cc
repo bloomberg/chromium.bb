@@ -261,7 +261,7 @@ void InfoBarView::ButtonPressed(views::Button* sender,
     // dismissals.
     if (delegate() && owned())
       delegate()->InfoBarDismissed();
-    RemoveInfoBar();
+    RemoveSelf();
   }
 }
 

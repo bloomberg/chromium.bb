@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -261,7 +262,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 @end
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
-  NSWindow* window = [(NSView*)tab_contents_->GetContentNativeView() window];
+  NSWindow* window =
+      [(NSView*)owner->tab_contents()->GetContentNativeView() window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this
                                                      owner:owner

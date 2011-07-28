@@ -56,25 +56,25 @@
 }
 @end
 
-// Calls to removeInfoBar normally start an animation, which removes the infobar
+// Calls to removeSelf normally start an animation, which removes the infobar
 // completely when finished.  For testing purposes, we create a mock controller
 // which calls close: immediately, rather than kicking off an animation.
 @interface TestLinkInfoBarController : LinkInfoBarController
-- (void)removeInfoBar;
+- (void)removeSelf;
 @end
 
 @implementation TestLinkInfoBarController
-- (void)removeInfoBar {
+- (void)removeSelf {
   [self close];
 }
 @end
 
 @interface TestConfirmInfoBarController : ConfirmInfoBarController
-- (void)removeInfoBar;
+- (void)removeSelf;
 @end
 
 @implementation TestConfirmInfoBarController
-- (void)removeInfoBar {
+- (void)removeSelf {
   [self close];
 }
 @end

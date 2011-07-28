@@ -111,8 +111,7 @@ void TranslateInfoBarDelegate::Translate() {
 
 void TranslateInfoBarDelegate::RevertTranslation() {
   TranslateManager::GetInstance()->RevertTranslation(tab_contents_);
-  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-      RemoveInfoBar(this);
+  RemoveSelf();
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -146,8 +145,7 @@ void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
     prefs_.RemoveLanguageFromBlacklist(original_lang);
   } else {
     prefs_.BlacklistLanguage(original_lang);
-    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-        RemoveInfoBar(this);
+    RemoveSelf();
   }
 }
 
@@ -165,8 +163,7 @@ void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
     prefs_.RemoveSiteFromBlacklist(host);
   } else {
     prefs_.BlacklistSite(host);
-    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-        RemoveInfoBar(this);
+    RemoveSelf();
   }
 }
 
@@ -196,8 +193,7 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   std::string original_lang = GetOriginalLanguageCode();
   DCHECK(!prefs_.IsLanguageBlacklisted(original_lang));
   prefs_.BlacklistLanguage(original_lang);
-  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-      RemoveInfoBar(this);
+  RemoveSelf();
 }
 
 string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {

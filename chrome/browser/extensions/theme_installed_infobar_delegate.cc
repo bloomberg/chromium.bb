@@ -11,9 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -31,8 +31,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
       name_(new_theme->name()),
       theme_id_(new_theme->id()),
       previous_theme_id_(previous_theme_id),
-      previous_using_native_theme_(previous_using_native_theme),
-      tab_contents_(tab_contents) {
+      previous_using_native_theme_(previous_using_native_theme) {
   theme_service_->OnInfobarDisplayed();
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  Source<ThemeService>(theme_service_));
@@ -102,23 +101,8 @@ void ThemeInstalledInfoBarDelegate::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-  // If the new theme is different from what this info bar is associated
-  // with, close this info bar since it is no longer relevant.
-  if (theme_id_ != theme_service_->GetThemeID()) {
-    if (tab_contents_ && !tab_contents_->is_being_destroyed()) {
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-          RemoveInfoBar(this);
-      // The infobar is gone so there is no reason for this delegate to keep
-      // a pointer to the TabContents (the TabContents has deleted its
-      // reference to this delegate and a new delegate will be created if
-      // a new infobar is created).
-      tab_contents_ = NULL;
-      // Although it's not being used anymore, this delegate is never deleted.
-      // It can not be deleted now because it is still needed if we
-      // "undo" the theme change that triggered this notification
-      // (when InfoBar::OnBackgroundExpose() is called). This will likely
-      // be fixed when infobar delegate deletion is cleaned up for
-      // http://crbug.com/62154.
-    }
-  }
+  // If the new theme is different from what this info bar is associated with,
+  // close this info bar since it is no longer relevant.
+  if (theme_id_ != theme_service_->GetThemeID())
+    RemoveSelf();
 }

@@ -100,11 +100,13 @@ class InfoBarContainer : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Removes an InfoBar for the specified delegate, in response to a
-  // notification from the selected TabContentsWrapper. The InfoBar's
-  // disappearance will be animated if |use_animation| is true.  Returns the
-  // position within |infobars_| the infobar was previously at.
-  size_t RemoveInfoBar(InfoBarDelegate* delegate, bool use_animation);
+  // Hides an InfoBar for the specified delegate, in response to a notification
+  // from the selected TabContentsWrapper.  The InfoBar's disappearance will be
+  // animated if |use_animation| is true.  The InfoBar will call back to
+  // RemoveInfoBar() to remove itself once it's hidden (which may mean
+  // synchronously).  Returns the position within |infobars_| the infobar was
+  // previously at.
+  size_t HideInfoBar(InfoBarDelegate* delegate, bool use_animation);
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to

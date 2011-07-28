@@ -398,7 +398,7 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
       // either synchronously or asynchronously, which will then pump the queue
       // via OnInfoBarClosed().
       PendingInfoBarRequest copied_request = *i;
-      // Don't let CancelInfoBarRequestInternal() call RemoveInfoBar() on the
+      // Don't let CancelInfoBarRequestInternal() call RemoveInfoBar() with the
       // delegate that's currently calling us.  That delegate is in either
       // Accept() or Cancel(), so its owning InfoBar will call RemoveInfoBar()
       // later on in this callstack anyway; and if we do it here, and it causes

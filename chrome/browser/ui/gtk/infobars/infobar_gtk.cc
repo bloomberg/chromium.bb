@@ -192,7 +192,7 @@ void InfoBarGtk::OnCloseButton(GtkWidget* button) {
   // InfoBarDismissed(), since this can lead to us double-recording dismissals.
   if (delegate() && owned())
     delegate()->InfoBarDismissed();
-  RemoveInfoBar();
+  RemoveSelf();
 }
 
 gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,

@@ -167,7 +167,7 @@ void ExtensionDisabledInfobarDelegate::Observe(
       extension = info->extension;
   }
   if (extension == extension_)
-    tab_contents_->RemoveInfoBar(this);
+    RemoveSelf();
 }
 
 
