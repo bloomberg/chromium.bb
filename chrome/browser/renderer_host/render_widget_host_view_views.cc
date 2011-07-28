@@ -334,6 +334,16 @@ gfx::NativeCursor RenderWidgetHostViewViews::GetCursor(
 }
 
 bool RenderWidgetHostViewViews::OnMousePressed(const views::MouseEvent& event) {
+  // The special buttons on a mouse (e.g. back, forward etc.) are not correctly
+  // recognized by views Events. Ignore those events here, so that the event
+  // bubbles up the view hierarchy and the appropriate parent view can handle
+  // them.
+  if (!(event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
+                         ui::EF_RIGHT_BUTTON_DOWN |
+                         ui::EF_MIDDLE_BUTTON_DOWN))) {
+    return false;
+  }
+
   if (!host_)
     return false;
 
@@ -361,6 +371,12 @@ bool RenderWidgetHostViewViews::OnMouseDragged(const views::MouseEvent& event) {
 
 void RenderWidgetHostViewViews::OnMouseReleased(
     const views::MouseEvent& event) {
+  if (!(event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
+                         ui::EF_RIGHT_BUTTON_DOWN |
+                         ui::EF_MIDDLE_BUTTON_DOWN))) {
+    return;
+  }
+
   if (!host_)
     return;
 

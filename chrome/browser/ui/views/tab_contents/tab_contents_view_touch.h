@@ -27,6 +27,7 @@ class Point;
 }  // namespace gfx
 
 namespace views {
+class MouseEvent;
 class NativeViewHost;
 }  // namespace views
 
@@ -72,6 +73,7 @@ class TabContentsViewTouch : public TabContentsView, public views::View {
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // views::View implementation
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;

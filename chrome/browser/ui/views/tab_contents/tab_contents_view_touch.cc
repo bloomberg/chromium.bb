@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 
+#include <X11/extensions/XInput2.h>
+#undef Status
+
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
@@ -245,6 +248,47 @@ void TabContentsViewTouch::CloseTabAfterEventTracking() {
 
 void TabContentsViewTouch::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x(), y(), width(), height());
+}
+
+bool TabContentsViewTouch::OnMousePressed(const views::MouseEvent& event) {
+  if ((event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
+                        ui::EF_RIGHT_BUTTON_DOWN |
+                        ui::EF_MIDDLE_BUTTON_DOWN))) {
+    return false;
+  }
+
+  // It is necessary to look at the native event to determine what special
+  // button was pressed.
+  views::NativeEvent2 native_event = event.native_event_2();
+  if (!native_event)
+    return false;
+
+  int button = 0;
+  switch (native_event->type) {
+    case ButtonPress: {
+      button = native_event->xbutton.button;
+      break;
+    }
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      button = xievent->detail;
+      break;
+    }
+    default:
+      break;
+  }
+
+  switch (button) {
+    case 8:
+      tab_contents_->controller().GoBack();
+      return true;
+    case 9:
+      tab_contents_->controller().GoForward();
+      return true;
+  }
+
+  return false;
 }
 
 void TabContentsViewTouch::OnBoundsChanged(const gfx::Rect& previous_bounds) {
