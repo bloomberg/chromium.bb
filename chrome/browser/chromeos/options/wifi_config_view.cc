@@ -320,13 +320,13 @@ bool WifiConfigView::CanLogin() {
     return false;
 
   // Block login if certs are required but user has none.
-  if (UserCertRequired() && (!HaveUserCerts() || !IsUserCertValid()))
-      return false;
+  if (UserCertRequired() && cert_library_->GetUserCertificates().Size() == 0)
+    return false;
 
   return true;
 }
 
-bool WifiConfigView::UserCertRequired() const {
+bool WifiConfigView::UserCertRequired() {
   if (!cert_library_)
     return false;  // return false until cert_library_ is initialized.
   // Only EAP-TLS requires a user certificate.
@@ -336,23 +336,6 @@ bool WifiConfigView::UserCertRequired() const {
     return true;
   }
   return false;
-}
-
-bool WifiConfigView::HaveUserCerts() const {
-  return cert_library_->GetUserCertificates().Size() > 0;
-}
-
-bool WifiConfigView::IsUserCertValid() const {
-  if (!user_cert_combobox_ || !user_cert_combobox_->IsEnabled())
-    return false;
-  int selected = user_cert_combobox_->selected_item();
-  if (selected < 0)
-    return false;
-  // Currently only hardware-backed user certificates are valid.
-  if (cert_library_->IsHardwareBacked() &&
-      !cert_library_->GetUserCertificates().IsHardwareBackedAt(selected))
-    return false;
-  return true;
 }
 
 void WifiConfigView::UpdateDialogButtons() {
@@ -381,7 +364,8 @@ void WifiConfigView::RefreshEapFields() {
   bool certs_loading = !cert_library_->CertificatesLoaded();
   bool user_cert_enabled = (selected == EAP_METHOD_INDEX_TLS);
   user_cert_label_->SetEnabled(user_cert_enabled);
-  bool have_user_certs = !certs_loading && HaveUserCerts();
+  bool have_user_certs =
+      !certs_loading && cert_library_->GetUserCertificates().Size() > 0;
   user_cert_combobox_->SetEnabled(user_cert_enabled && have_user_certs);
   user_cert_combobox_->ModelChanged();
   user_cert_combobox_->SetSelectedItem(0);
@@ -431,21 +415,18 @@ void WifiConfigView::RefreshShareCheckbox() {
 
 void WifiConfigView::UpdateErrorLabel() {
   std::string error_msg;
-  if (UserCertRequired() && cert_library_->CertificatesLoaded()) {
-    if (!HaveUserCerts()) {
-      if (!UserManager::Get()->user_is_logged_in()) {
-        error_msg = l10n_util::GetStringUTF8(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
-      } else {
-        error_msg = l10n_util::GetStringUTF8(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
-      }
-    } else if (!IsUserCertValid()) {
+  if (UserCertRequired() &&
+      cert_library_->CertificatesLoaded() &&
+      cert_library_->GetUserCertificates().Size() == 0) {
+    if (!UserManager::Get()->user_is_logged_in()) {
       error_msg = l10n_util::GetStringUTF8(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED);
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
+    } else {
+      error_msg = l10n_util::GetStringUTF8(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT);
     }
   }
-  if (error_msg.empty() && !service_path_.empty()) {
+  if (!service_path_.empty()) {
     NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
     if (wifi && wifi->failed()) {
@@ -517,18 +498,15 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
       passphrase_textfield_->SetEnabled(true);
     }
     RefreshShareCheckbox();
-  } else if (combo_box == user_cert_combobox_) {
-    RefreshShareCheckbox();
   } else if (combo_box == eap_method_combobox_) {
     RefreshEapFields();
+    UpdateErrorLabel();
   }
   UpdateDialogButtons();
-  UpdateErrorLabel();
 }
 
 void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
   RefreshEapFields();
-  UpdateDialogButtons();
   UpdateErrorLabel();
 }
 
@@ -702,7 +680,7 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
   DCHECK(user_cert_combobox_);
   DCHECK(cert_library_);
-  if (!HaveUserCerts()) {
+  if (cert_library_->GetUserCertificates().Size() == 0) {
     return std::string();  // "None installed"
   } else {
     // Certificates are listed in the order they appear in the model.
@@ -744,7 +722,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Textfield, combobox.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0,
-                        ChildNetworkConfigView::kInputFieldMinWidth);
+                        ChildNetworkConfigView::kPassphraseWidth);
   column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
   // Password visible button
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
@@ -816,7 +794,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_ = new ComboboxWithWidth(
         new ServerCACertComboboxModel(cert_library_),
-        ChildNetworkConfigView::kInputFieldMinWidth);
+        ChildNetworkConfigView::kPassphraseWidth);
     server_ca_cert_label_->SetEnabled(false);
     server_ca_cert_combobox_->SetEnabled(false);
     server_ca_cert_combobox_->set_listener(this);
@@ -923,15 +901,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  // Create an error label.
-  layout->StartRow(0, column_view_set_id);
-  layout->SkipColumns(1);
-  error_label_ = new views::Label();
-  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  error_label_->SetColor(SK_ColorRED);
-  layout->AddView(error_label_);
-
-  // Initialize the field and checkbox values.
+  RefreshShareCheckbox();
 
   // After creating the fields, we set the values. Fields need to be created
   // first because RefreshEapFields() will enable/disable them as appropriate.
@@ -1044,7 +1014,15 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     save_credentials_checkbox_->SetChecked(save_credentials);
   }
 
-  RefreshShareCheckbox();
+  // Create an error label.
+  layout->StartRow(0, column_view_set_id);
+  layout->SkipColumns(1);
+  error_label_ = new views::Label();
+  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  error_label_->SetColor(SK_ColorRED);
+  layout->AddView(error_label_);
+
+  // Set or hide the error text.
   UpdateErrorLabel();
 }
 

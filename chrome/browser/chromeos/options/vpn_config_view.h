@@ -62,12 +62,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   // Initializes data members and create UI controls.
   void Init(VirtualNetwork* vpn);
 
-  // Set and update all control values.
   void Refresh();
-
-  // Update various controls.
-  void UpdateControls();
-  void UpdateErrorLabel();
 
   // Update state of the Login button.
   void UpdateCanLogin();
@@ -77,9 +72,6 @@ class VPNConfigView : public ChildNetworkConfigView,
 
   // Returns true if there is at least one user certificate installed.
   bool HaveUserCerts() const;
-
-  // Returns true if there is a selected user certificate and it is valid.
-  bool IsUserCertValid() const;
 
   // Get text from input field.
   const std::string GetTextFromField(views::Textfield* textfield,

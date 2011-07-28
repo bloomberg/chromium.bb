@@ -13,9 +13,7 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/browser/browser_thread.h"
 #include "crypto/nss_util.h"
-#include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/coll.h"  // icu::Collator
 
@@ -29,28 +27,10 @@ const char kRootCertificateTokenName[] = "Builtin Object Token";
 // Delay between certificate requests while waiting for TPM/PKCS#11 init.
 const int kRequestDelayMs = 500;
 
-string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
-  std::string org;
-  if (!cert->subject().organization_names.empty())
-    org = cert->subject().organization_names[0];
-  if (org.empty())
-    org = cert->subject().GetDisplayName();
-  string16 issued_by = UTF8ToUTF16(org);
-  string16 issued_to = UTF8ToUTF16(
-      x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle()));
-
-  if (hardware_backed) {
-    return l10n_util::GetStringFUTF16(
-        IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT_LONG,
-        issued_by,
-        issued_to,
-        l10n_util::GetStringUTF16(IDS_CERT_MANAGER_HARDWARE_BACKED));
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_CERT_MANAGER_KEY_FORMAT_LONG,
-        issued_by,
-        issued_to);
-  }
+string16 GetDisplayString(net::X509Certificate* cert) {
+  std::string name_or_nick =
+      x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle());
+  return UTF8ToUTF16(name_or_nick);
 }
 
 }  // namespace
@@ -71,11 +51,7 @@ class CertLibraryImpl
       observer_list_(new CertLibraryObserverList),
       request_task_(NULL),
       user_logged_in_(false),
-      certificates_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(user_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)) {
+      certificates_loaded_(false) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     net::CertDatabase::AddObserver(this);
   }
@@ -152,10 +128,6 @@ class CertLibraryImpl
     return certificates_loaded_;
   }
 
-  virtual bool IsHardwareBacked() const OVERRIDE {
-    return !tpm_token_name_.empty();
-  }
-
   virtual const CertList& GetCertificates() const OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return certs_;
@@ -195,10 +167,6 @@ class CertLibraryImpl
     }
   }
 
-  virtual const std::string& GetTpmTokenName() const OVERRIDE {
-    return tpm_token_name_;
-  }
-
  private:
   void LoadCertificates() {
     // Certificate fetch occurs on the DB thread.
@@ -221,8 +189,8 @@ class CertLibraryImpl
 
     bool operator()(const scoped_refptr<net::X509Certificate>& lhs,
                     const scoped_refptr<net::X509Certificate>& rhs) const {
-      string16 lhs_name = GetDisplayString(lhs.get(), false);
-      string16 rhs_name = GetDisplayString(rhs.get(), false);
+      string16 lhs_name = GetDisplayString(lhs.get());
+      string16 rhs_name = GetDisplayString(rhs.get());
       if (collator_ == NULL)
         return lhs_name < rhs_name;
       return l10n_util::CompareString16WithCollator(
@@ -263,9 +231,15 @@ class CertLibraryImpl
           iter->get()->os_cert_handle();
       net::CertType type = x509_certificate_model::GetType(cert_handle);
       switch (type) {
-        case net::USER_CERT:
-          user_certs_.Append(iter->get());
+        case net::USER_CERT: {
+          // Only include user certs that are in the TPM token (and hence
+          // available via PKCS#11 to flimflam and wpa_supplicant).
+          std::string cert_token_name =
+              x509_certificate_model::GetTokenName(cert_handle);
+          if (tpm_token_name_.empty() || cert_token_name == tpm_token_name_)
+            user_certs_.Append(iter->get());
           break;
+        }
         case net::SERVER_CERT:
           server_certs_.Append(iter->get());
           break;
@@ -355,9 +329,7 @@ net::X509Certificate* CertLibrary::CertList::GetCertificateAt(int index) const {
 
 string16 CertLibrary::CertList::GetDisplayStringAt(int index) const {
   net::X509Certificate* cert = GetCertificateAt(index);
-  bool hardware_backed =
-      !cert_library_->GetTpmTokenName().empty() && IsHardwareBackedAt(index);
-  return GetDisplayString(cert, hardware_backed);
+  return GetDisplayString(cert);
 }
 
 std::string CertLibrary::CertList::GetNicknameAt(int index) const {
@@ -368,13 +340,6 @@ std::string CertLibrary::CertList::GetNicknameAt(int index) const {
 std::string CertLibrary::CertList::GetPkcs11IdAt(int index) const {
   net::X509Certificate* cert = GetCertificateAt(index);
   return x509_certificate_model::GetPkcs11Id(cert->os_cert_handle());
-}
-
-bool CertLibrary::CertList::IsHardwareBackedAt(int index) const {
-  net::X509Certificate* cert = GetCertificateAt(index);
-  std::string cert_token_name =
-      x509_certificate_model::GetTokenName(cert->os_cert_handle());
-  return cert_token_name == cert_library_->GetTpmTokenName();
 }
 
 int CertLibrary::CertList::FindCertByNickname(

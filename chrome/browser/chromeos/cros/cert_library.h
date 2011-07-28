@@ -37,7 +37,7 @@ class CertLibrary {
   // Wrapper class to provide an additional interface for net::CertificateList.
   class CertList {
    public:
-    explicit CertList(CertLibrary* library) : cert_library_(library) {}
+    explicit CertList() {}
     ~CertList() {}
     void Append(net::X509Certificate* cert) { list_.push_back(cert); }
     void Clear() { list_.clear(); }
@@ -46,16 +46,15 @@ class CertLibrary {
     string16 GetDisplayStringAt(int index) const;  // User-visible name.
     std::string GetNicknameAt(int index) const;
     std::string GetPkcs11IdAt(int index) const;
-    bool IsHardwareBackedAt(int index) const;
     // Finds the index of a Certificate matching |nickname|.
     // Returns -1 if none found.
     int FindCertByNickname(const std::string& nickname) const;
     // Same as above but for a pkcs#11 id.
     int FindCertByPkcs11Id(const std::string& pkcs11_id) const;
     net::CertificateList& list() { return list_; }
+
    private:
     net::CertificateList list_;
-    CertLibrary* cert_library_;
 
     DISALLOW_COPY_AND_ASSIGN(CertList);
   };
@@ -78,12 +77,6 @@ class CertLibrary {
 
   // Returns true when the certificate list has been initiailized.
   virtual bool CertificatesLoaded() const = 0;
-
-  // Returns true if the TPM is available for hardware-backed certificates.
-  virtual bool IsHardwareBacked() const = 0;
-
-  // Returns the cached TPM token name.
-  virtual const std::string& GetTpmTokenName() const = 0;
 
   // Returns the current list of all certificates.
   virtual const CertList& GetCertificates() const = 0;

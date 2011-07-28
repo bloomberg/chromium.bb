@@ -24,7 +24,7 @@
 namespace chromeos {
 
 // static
-const int ChildNetworkConfigView::kInputFieldMinWidth = 270;
+const int ChildNetworkConfigView::kPassphraseWidth = 150;
 
 NetworkConfigView::NetworkConfigView(Network* network)
     : delegate_(NULL),
