@@ -2155,6 +2155,7 @@ void GLES2Implementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
   helper_->BufferSubData(
       mb.target, mb.offset, mb.size, mb.shm_id, mb.shm_offset);
   mapped_memory_->FreePendingToken(mb.shm_memory, helper_->InsertToken());
+  helper_->CommandBufferHelper::Flush();
   mapped_buffers_.erase(it);
 }
 
@@ -2225,6 +2226,7 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
       mt.target, mt.level, mt.xoffset, mt.yoffset, mt.width, mt.height,
       mt.format, mt.type, mt.shm_id, mt.shm_offset, GL_FALSE);
   mapped_memory_->FreePendingToken(mt.shm_memory, helper_->InsertToken());
+  helper_->CommandBufferHelper::Flush();
   mapped_textures_.erase(it);
 }
 
