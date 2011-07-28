@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "content/common/json_value_serializer.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +40,9 @@ static void EventHandledOnIOThread(
 // A mock event router that responds to events with a pre-arranged queue of
 // Tasks.
 class TestIPCSender : public IPC::Message::Sender {
-public:
+ public:
+  typedef std::list<linked_ptr<IPC::Message> > SentMessages;
+
   // Adds a Task to the queue. We will fire these in order as events are
   // dispatched.
   void PushTask(Task* task) {
@@ -48,7 +51,15 @@ public:
 
   size_t GetNumTasks() { return task_queue_.size(); }
 
-private:
+  SentMessages::const_iterator sent_begin() const {
+    return sent_messages_.begin();
+  }
+
+  SentMessages::const_iterator sent_end() const {
+    return sent_messages_.end();
+  }
+
+ private:
   // IPC::Message::Sender
   virtual bool Send(IPC::Message* message) {
     EXPECT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
@@ -57,15 +68,16 @@ private:
     MessageLoop::current()->PostTask(FROM_HERE, task_queue_.front());
     task_queue_.pop();
 
-    delete message;
+    sent_messages_.push_back(linked_ptr<IPC::Message>(message));
     return true;
   }
 
   std::queue<Task*> task_queue_;
+  SentMessages sent_messages_;
 };
 
 class ExtensionWebRequestTest : public testing::Test {
-protected:
+ protected:
   virtual void SetUp() {
     event_router_ = new ExtensionEventRouterForwarder();
     enable_referrers_.Init(
@@ -146,7 +158,6 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
@@ -198,7 +209,6 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    response->new_url = not_chosen_redirect_url;
     ipc_sender_.PushTask(
         NewRunnableFunction(&EventHandledOnIOThread,
             &profile_, extension1_id, kEventName, kEventName + "/1",
@@ -271,7 +281,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   request.Start();
   MessageLoop::current()->Run();
 
-  EXPECT_TRUE(request.is_pending());
+  EXPECT_TRUE(!request.is_pending());
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE, request.status().os_error());
   EXPECT_EQ(request_url, request.url());
@@ -283,3 +293,359 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension2_id, kEventName + "/2");
 }
+
+struct HeaderModificationTest_Header {
+  const char* name;
+  const char* value;
+};
+
+struct HeaderModificationTest_Modification {
+  enum Type {
+    SET,
+    REMOVE
+  };
+
+  int extension_id;
+  Type type;
+  const char* key;
+  const char* value;
+};
+
+struct HeaderModificationTest {
+  int before_size;
+  HeaderModificationTest_Header before[10];
+  int modification_size;
+  HeaderModificationTest_Modification modification[10];
+  int after_size;
+  HeaderModificationTest_Header after[10];
+};
+
+class ExtensionWebRequestHeaderModificationTest :
+    public testing::TestWithParam<HeaderModificationTest> {
+ protected:
+  virtual void SetUp() {
+    event_router_ = new ExtensionEventRouterForwarder();
+    enable_referrers_.Init(
+        prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
+    network_delegate_.reset(new ChromeNetworkDelegate(
+        event_router_.get(), NULL, &profile_, &enable_referrers_));
+    context_ = new TestURLRequestContext();
+    context_->set_network_delegate(network_delegate_.get());
+  }
+
+  MessageLoopForIO io_loop_;
+  TestingProfile profile_;
+  TestDelegate delegate_;
+  BooleanPrefMember enable_referrers_;
+  TestIPCSender ipc_sender_;
+  scoped_refptr<ExtensionEventRouterForwarder> event_router_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_ptr<ChromeNetworkDelegate> network_delegate_;
+  scoped_refptr<TestURLRequestContext> context_;
+};
+
+class DoNothingTask : public Task {
+  virtual ~DoNothingTask() {};
+  virtual void Run() {};
+};
+
+TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
+  std::string extension1_id("1");
+  std::string extension2_id("2");
+  std::string extension3_id("3");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  const std::string kEventName(keys::kOnBeforeSendHeaders);
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+
+  // Install two extensions that can modify headers. Extension 2 has
+  // higher precedence than extension 1.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension1_id, kEventName, kEventName + "/1", filter,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension2_id, kEventName, kEventName + "/2", filter,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING,
+      ipc_sender_factory.GetWeakPtr());
+
+  // Install one extension that observes the final headers.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension3_id, keys::kOnSendHeaders,
+      std::string(keys::kOnSendHeaders) + "/3", filter,
+      ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_HEADERS,
+      ipc_sender_factory.GetWeakPtr());
+
+  GURL request_url("http://doesnotexist/does_not_exist.html");
+  net::URLRequest request(request_url, &delegate_);
+  request.set_context(context_);
+
+  // Initialize headers available before extensions are notified of the
+  // onBeforeSendHeaders event.
+  HeaderModificationTest test = GetParam();
+  net::HttpRequestHeaders before_headers;
+  for (int i = 0; i < test.before_size; ++i)
+    before_headers.SetHeader(test.before[i].name, test.before[i].value);
+  request.SetExtraRequestHeaders(before_headers);
+
+  // Gather the modifications to the headers for the respective extensions.
+  // We assume here that all modifications of one extension are listed
+  // in a continuous block of |test.modifications_|.
+  ExtensionWebRequestEventRouter::EventResponse* response = NULL;
+  for (int i = 0; i < test.modification_size; ++i) {
+    const HeaderModificationTest_Modification& mod = test.modification[i];
+    if (response == NULL) {
+      response = new ExtensionWebRequestEventRouter::EventResponse(
+          mod.extension_id == 1 ? extension1_id : extension2_id,
+          base::Time::FromDoubleT(mod.extension_id));
+      response->request_headers.reset(new net::HttpRequestHeaders());
+      response->request_headers->MergeFrom(request.extra_request_headers());
+    }
+
+    switch (mod.type) {
+      case HeaderModificationTest_Modification::SET:
+        response->request_headers->SetHeader(mod.key, mod.value);
+        break;
+      case HeaderModificationTest_Modification::REMOVE:
+        response->request_headers->RemoveHeader(mod.key);
+        break;
+    }
+
+    // Trigger the result when this is the last modification statement or
+    // the block of modifications for the next extension starts.
+    if (i+1 == test.modification_size ||
+        mod.extension_id != test.modification[i+1].extension_id) {
+      ipc_sender_.PushTask(
+          NewRunnableFunction(&EventHandledOnIOThread,
+              &profile_, mod.extension_id == 1 ? extension1_id : extension2_id,
+              kEventName, kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
+              request.identifier(), response));
+      response = NULL;
+    }
+  }
+
+  // Don't do anything for the onSendHeaders message.
+  ipc_sender_.PushTask(new DoNothingTask);
+
+  // Note that we mess up the headers slightly:
+  // request.Start() will first add additional headers (e.g. the User-Agent)
+  // and then send an event to the extension. When we have prepared our
+  // answers to the onBeforeSendHeaders events above, these headers did not
+  // exists and are therefore not listed in the responses. This makes
+  // them seem deleted.
+  request.Start();
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(!request.is_pending());
+  // This cannot succeed as we send the request to a server that does not exist.
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
+  EXPECT_EQ(request_url, request.url());
+  EXPECT_EQ(1U, request.url_chain().size());
+  EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
+
+  // Calculate the expected headers.
+  net::HttpRequestHeaders expected_headers;
+  for (int i = 0; i < test.after_size; ++i) {
+    expected_headers.SetHeader(test.after[i].name,
+                               test.after[i].value);
+  }
+
+  // Counter for the number of observed onSendHeaders events.
+  int num_headers_observed = 0;
+
+  // Search the onSendHeaders signal in the IPC messages and check that
+  // it contained the correct headers.
+  TestIPCSender::SentMessages::const_iterator i;
+  for (i = ipc_sender_.sent_begin(); i != ipc_sender_.sent_end(); ++i) {
+    IPC::Message* message = i->get();
+    if (ExtensionMsg_MessageInvoke::ID != message->type())
+      continue;
+    ExtensionMsg_MessageInvoke::Param message_tuple;
+    ExtensionMsg_MessageInvoke::Read(message, &message_tuple);
+    ListValue& args = message_tuple.c;
+
+    std::string event_name;
+    if (!args.GetString(0, &event_name) ||
+        event_name !=  std::string(keys::kOnSendHeaders) + "/3") {
+      continue;
+    }
+
+    std::string event_arg_string;
+    ASSERT_TRUE(args.GetString(1, &event_arg_string));
+
+    Value* event_arg_value =
+        JSONStringValueSerializer(event_arg_string).Deserialize(NULL, NULL);
+    ASSERT_TRUE(event_arg_value &&
+                event_arg_value->IsType(Value::TYPE_LIST));
+
+    DictionaryValue* event_arg_dict = NULL;
+    ASSERT_TRUE(
+        static_cast<ListValue*>(event_arg_value)->GetDictionary(
+            0, &event_arg_dict));
+
+    ListValue* request_headers = NULL;
+    ASSERT_TRUE(event_arg_dict->GetList(keys::kRequestHeadersKey,
+                                        &request_headers));
+
+    net::HttpRequestHeaders observed_headers;
+    for (size_t j = 0; j < request_headers->GetSize(); ++j) {
+      DictionaryValue* header = NULL;
+      ASSERT_TRUE(request_headers->GetDictionary(j, &header));
+      std::string key;
+      std::string value;
+      ASSERT_TRUE(header->GetString(keys::kHeaderNameKey, &key));
+      ASSERT_TRUE(header->GetString(keys::kHeaderValueKey, &value));
+      observed_headers.SetHeader(key, value);
+    }
+
+    EXPECT_EQ(expected_headers.ToString(), observed_headers.ToString());
+    ++num_headers_observed;
+  }
+  EXPECT_EQ(1, num_headers_observed);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension1_id, kEventName + "/1");
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension2_id, kEventName + "/2");
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, extension3_id, std::string(keys::kOnSendHeaders) + "/3");
+};
+
+namespace {
+
+const HeaderModificationTest_Modification::Type SET =
+    HeaderModificationTest_Modification::SET;
+const HeaderModificationTest_Modification::Type REMOVE =
+    HeaderModificationTest_Modification::REMOVE;
+
+HeaderModificationTest kTests[] = {
+  // Check that extension 2 always wins when settings the same header.
+  {
+    // Headers before test.
+    2, { {"header1", "value1"},
+         {"header2", "value2"} },
+    // Modifications in test.
+    2, { {1, SET, "header1", "foo"},
+         {2, SET, "header1", "bar"} },
+    // Headers after test.
+    2, { {"header1", "bar"},
+         {"header2", "value2"} }
+  },
+  // Same as before in reverse execution order.
+  {
+    // Headers before test.
+    2, { {"header1", "value1"},
+         {"header2", "value2"} },
+    // Modifications in test.
+    2, { {2, SET, "header1", "bar"},
+         {1, SET, "header1", "foo"} },
+    // Headers after test.
+    2, { {"header1", "bar"},
+         {"header2", "value2"} }
+  },
+  // Check that two extensions can modify different headers that do not
+  // conflict.
+  {
+    // Headers before test.
+    2, { {"header1", "value1"},
+         {"header2", "value2"} },
+    // Modifications in test.
+    2, { {1, SET, "header1", "foo"},
+         {2, SET, "header2", "bar"} },
+    // Headers after test.
+    2, { {"header1", "foo"},
+         {"header2", "bar"} }
+  },
+  // Check insert/delete conflict.
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    2, { {1, SET, "header1", "foo"},
+         {2, REMOVE, "header1", NULL} },
+    // Headers after test.
+    0, { }
+  },
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    2, { {2, REMOVE, "header1", NULL},
+         {1, SET, "header1", "foo"} },
+    // Headers after test.
+    0, {}
+  },
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    2, { {1, REMOVE, "header1", NULL},
+         {2, SET, "header1", "foo"} },
+    // Headers after test.
+    1, { {"header1", "foo"} }
+  },
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    2, { {2, SET, "header1", "foo"},
+         {1, REMOVE, "header1", NULL} },
+    // Headers after test.
+    1, { {"header1", "foo"} }
+  },
+  // Check that edits are atomic (i.e. either all edit requests of an
+  // extension are executed or none).
+  {
+    // Headers before test.
+    0, { },
+    // Modifications in test.
+    3, { {1, SET, "header1", "value1"},
+         {1, SET, "header2", "value2"},
+         {2, SET, "header1", "foo"} },
+    // Headers after test.
+    1, { {"header1", "foo"} } // set(header2) is ignored
+  },
+  // Check that identical edits do not conflict (set(header2) would be ignored
+  // if set(header1) were considered a conflict).
+  {
+    // Headers before test.
+    0, { },
+    // Modifications in test.
+    3, { {1, SET, "header1", "value2"},
+         {1, SET, "header2", "foo"},
+         {2, SET, "header1", "value2"} },
+    // Headers after test.
+    2, { {"header1", "value2"},
+         {"header2", "foo"} }
+  },
+  // Check that identical deletes do not conflict (set(header2) would be ignored
+  // if delete(header1) were considered a conflict).
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    3, { {1, REMOVE, "header1", NULL},
+         {1, SET, "header2", "foo"},
+         {2, REMOVE, "header1", NULL} },
+    // Headers after test.
+    1, { {"header2", "foo"} }
+  },
+  // Check that setting a value to an identical value is not considered an
+  // edit operation that can conflict.
+  {
+    // Headers before test.
+    1, { {"header1", "value1"} },
+    // Modifications in test.
+    3, { {1, SET, "header1", "foo"},
+         {1, SET, "header2", "bar"},
+         {2, SET, "header1", "value1"} },
+    // Headers after test.
+    2, { {"header1", "foo"},
+         {"header2", "bar"} }
+  },
+};
+
+INSTANTIATE_TEST_CASE_P(
+    ExtensionWebRequest,
+    ExtensionWebRequestHeaderModificationTest,
+    ::testing::ValuesIn(kTests));
+
+} // namespace
