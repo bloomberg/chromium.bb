@@ -63,7 +63,14 @@ function validateVolume(volume, expected) {
 
 chrome.test.runTests([
   function removeMount() {
-   chrome.fileBrowserPrivate.removeMount("devicePath1");
+    // The ID of this extension.
+    var fileBrowserExtensionId = "ddammdhioacbehjngdmkjcjbnfginlla";
+    var testFileName = "tmp/test_file.zip";
+    var fileUrl = "filesystem:chrome-extension://" + fileBrowserExtensionId +
+                  "/external/" + testFileName;
+
+    chrome.fileBrowserPrivate.removeMount(fileUrl);
+ 
     // We actually check this one on C++ side. If MountLibrary.RemoveMount
     // doesn't get called, test will fail.
     chrome.test.succeed();

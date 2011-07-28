@@ -1215,13 +1215,33 @@ bool RemoveMountFunction::RunImpl() {
    return false;
   }
 
+  UrlList file_paths;
+  file_paths.push_back(GURL(mount_path));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+          &RemoveMountFunction::GetLocalPathsOnFileThread,
+          file_paths, reinterpret_cast<void*>(NULL)));
+  return true;
+}
+
+void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files, void* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!context);
+
+  if (files.size() != 1) {
+    SendResponse(false);
+    return;
+  }
+
 #ifdef OS_CHROMEOS
   chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
-      mount_path.c_str());
+      files[0].value().c_str());
 #endif
 
   SendResponse(true);
-  return true;
 }
 
 GetMountPointsFunction::GetMountPointsFunction() {

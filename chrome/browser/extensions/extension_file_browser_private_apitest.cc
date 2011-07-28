@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_mount_library.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_path_manager.h"
 
 using ::testing::_;
 using ::testing::ReturnRef;
@@ -12,7 +19,7 @@ using ::testing::StrEq;
 
 class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
  public:
-  ExtensionFileBrowserPrivateApiTest() {
+  ExtensionFileBrowserPrivateApiTest() : test_mount_point_("/tmp") {
     mount_library_mock_.SetupDefaultReplies();
 
     chromeos::CrosLibrary::Get()->GetTestApi()->SetMountLibrary(
@@ -25,6 +32,14 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
   virtual ~ExtensionFileBrowserPrivateApiTest() {
     DeleteVolumeMap();
     chromeos::CrosLibrary::Get()->GetTestApi()->SetMountLibrary(NULL, true);
+  }
+
+  void AddTmpMountPoint() {
+    fileapi::FileSystemPathManager* path_manager =
+        browser()->profile()->GetFileSystemContext()->path_manager();
+    fileapi::ExternalFileSystemMountPointProvider* provider =
+        path_manager->external_provider();
+    provider->AddMountPoint(test_mount_point_);
   }
 
  private:
@@ -92,12 +107,18 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
  protected:
   chromeos::MockMountLibrary mount_library_mock_;
   chromeos::MountLibrary::DiskMap volumes_;
+
+ private:
+  FilePath test_mount_point_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
-  EXPECT_CALL(mount_library_mock_, UnmountPath(StrEq("devicePath1")))
+  AddTmpMountPoint();
+  EXPECT_CALL(mount_library_mock_, UnmountPath(_))
+      .Times(0);
+  EXPECT_CALL(mount_library_mock_, UnmountPath(StrEq("/tmp/test_file.zip")))
       .Times(1);
 
   EXPECT_CALL(mount_library_mock_, disks())

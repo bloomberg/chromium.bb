@@ -247,14 +247,17 @@ class AddMountFunction
 
 // Unmounts selected device. Expects mount point path as an argument.
 class RemoveMountFunction
-    : public SyncExtensionFunction {
+    : public FileBrowserFunction {
  public:
   RemoveMountFunction();
 
  protected:
   virtual ~RemoveMountFunction();
 
+  // FileBrowserFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+  virtual void GetLocalPathsResponseOnUIThread(const FilePathList& files,
+      void* context) OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.removeMount");
