@@ -65,8 +65,8 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->OnAllDataSaved(download_id, size, hash);
   }
 
-  void FileSelected(const FilePath& path, int index, void* params) {
-    download_manager_->FileSelected(path, index, params);
+  void FileSelected(const FilePath& path, void* params) {
+    download_manager_->FileSelected(path, params);
   }
 
   void ContinueDownloadWithPath(DownloadItem* download, const FilePath& path) {
@@ -377,9 +377,9 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     if (kDownloadRenameCases[i].finish_before_rename) {
       OnAllDataSaved(i, 1024, std::string("fake_hash"));
       message_loop_.RunAllPending();
-      FileSelected(new_path, i, id_ptr);
+      FileSelected(new_path, id_ptr);
     } else {
-      FileSelected(new_path, i, id_ptr);
+      FileSelected(new_path, id_ptr);
       message_loop_.RunAllPending();
       OnAllDataSaved(i, 1024, std::string("fake_hash"));
     }

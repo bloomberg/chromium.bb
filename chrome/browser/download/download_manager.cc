@@ -29,14 +29,12 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_history_info.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -128,11 +126,6 @@ void DownloadManager::Shutdown() {
   STLDeleteElements(&downloads_to_delete);
 
   file_manager_ = NULL;
-
-  // Make sure the save as dialog doesn't notify us back if we're gone before
-  // it returns.
-  if (select_file_dialog_.get())
-    select_file_dialog_->ListenerDestroyed();
 
   download_history_.reset();
   download_prefs_.reset();
@@ -517,31 +510,17 @@ void DownloadManager::OnPathExistenceAvailable(
 
   if (download->save_as()) {
     // We must ask the user for the place to put the download.
-    if (!select_file_dialog_.get())
-      select_file_dialog_ = SelectFileDialog::Create(this);
-
     DownloadRequestHandle request_handle = download->request_handle();
     TabContents* contents = request_handle.GetTabContents();
-    SelectFileDialog::FileTypeInfo file_type_info;
-    FilePath::StringType extension = suggested_path.Extension();
-    if (!extension.empty()) {
-      extension.erase(extension.begin());  // drop the .
-      file_type_info.extensions.resize(1);
-      file_type_info.extensions[0].push_back(extension);
-    }
-    file_type_info.include_all_files = true;
-    gfx::NativeWindow owning_window =
-        contents ? platform_util::GetTopLevel(contents->GetNativeView()) : NULL;
+
     // |id_ptr| will be deleted in either FileSelected() or
     // FileSelectionCancelled().
     int32* id_ptr = new int32;
     *id_ptr = download_id;
-    select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
-                                    string16(),
-                                    suggested_path,
-                                    &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                    contents, owning_window,
-                                    reinterpret_cast<void*>(id_ptr));
+
+    content::GetContentClient()->browser()->ChooseDownloadPath(
+        this, contents, suggested_path, reinterpret_cast<void*>(id_ptr));
+
     FOR_EACH_OBSERVER(Observer, observers_,
                       SelectFileDialogDisplayed(download_id));
   } else {
@@ -1077,8 +1056,7 @@ int64 DownloadManager::GetTotalDownloadBytes() {
   return total_bytes;
 }
 
-void DownloadManager::FileSelected(const FilePath& path,
-                                   int index, void* params) {
+void DownloadManager::FileSelected(const FilePath& path, void* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int32* id_ptr = reinterpret_cast<int32*>(params);
@@ -1230,23 +1208,19 @@ void DownloadManager::OnCreateDownloadEntryComplete(int32 download_id,
 
 void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
   // The 'contents' may no longer exist if the user closed the tab before we
-  // get this start completion event. If it does, tell the origin TabContents
-  // to display its download shelf.
+  // get this start completion event.
   DownloadRequestHandle request_handle = download->request_handle();
   TabContents* content = request_handle.GetTabContents();
-  // If the contents no longer exists, we start the download in the last active
-  // browser. This is not ideal but better than fully hiding the download from
-  // the user.
+
+  // If the contents no longer exists, we ask the embedder to suggest another
+  // tab.
   if (!content) {
-    Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
-    if (last_active)
-      content = last_active->GetSelectedTabContents();
+    content = content::GetContentClient()->browser()->
+        GetAlternativeTabContentsToNotifyForDownload(this);
   }
 
-  if (!content)
-    return;
-
-  content->OnStartDownload(download);
+  if (content)
+    content->OnStartDownload(download);
 }
 
 // Clears the last download path, used to initialize "save as" dialogs.

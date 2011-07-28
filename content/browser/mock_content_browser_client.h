@@ -113,6 +113,12 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
                               const FilePath& suggested_path,
                               bool can_save_as_complete) OVERRIDE;
+  virtual void ChooseDownloadPath(DownloadManager* download_manager,
+                                  TabContents* tab_contents,
+                                  const FilePath& suggested_path,
+                                  void* data) OVERRIDE;
+  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload(
+      DownloadManager* download_manager) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

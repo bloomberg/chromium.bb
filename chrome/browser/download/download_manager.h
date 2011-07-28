@@ -45,7 +45,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
-#include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/browser_thread.h"
 
 class DownloadFileManager;
@@ -64,8 +63,7 @@ struct DownloadSaveInfo;
 class DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager,
                                         BrowserThread::DeleteOnUIThread>,
-      public DownloadStatusUpdaterDelegate,
-      public SelectFileDialog::Listener {
+      public DownloadStatusUpdaterDelegate {
  public:
   explicit DownloadManager(DownloadStatusUpdater* status_updater);
 
@@ -221,9 +219,9 @@ class DownloadManager
   virtual int64 GetReceivedDownloadBytes();
   virtual int64 GetTotalDownloadBytes();
 
-  // Overridden from SelectFileDialog::Listener:
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  // Called by the embedder after the save as dialog is closed.
+  void FileSelected(const FilePath& path, void* params);
+  void FileSelectionCanceled(void* params);
 
   // Returns true if this download should show the "dangerous file" warning.
   // Various factors are considered, such as the type of the file, whether a
@@ -419,10 +417,6 @@ class DownloadManager
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.
   FilePath last_download_path_;
-
-  // The "Save As" dialog box used to ask the user where a file should be
-  // saved.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   scoped_ptr<OtherDownloadManagerObserver> other_download_manager_observer_;
 

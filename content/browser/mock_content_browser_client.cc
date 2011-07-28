@@ -230,6 +230,19 @@ void MockContentBrowserClient::ChooseSavePath(
     bool can_save_as_complete) {
 }
 
+void MockContentBrowserClient::ChooseDownloadPath(
+    DownloadManager* download_manager,
+    TabContents* tab_contents,
+    const FilePath& suggested_path,
+    void* data) {
+}
+
+TabContents*
+    MockContentBrowserClient::GetAlternativeTabContentsToNotifyForDownload(
+        DownloadManager* download_manager) {
+  return NULL;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

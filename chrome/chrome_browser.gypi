@@ -831,6 +831,8 @@
         'browser/download/download_file.h',
         'browser/download/download_file_manager.cc',
         'browser/download/download_file_manager.h',
+        'browser/download/download_file_picker.cc',
+        'browser/download/download_file_picker.h',
         'browser/download/download_history.cc',
         'browser/download/download_history.h',
         'browser/download/download_item.cc',
