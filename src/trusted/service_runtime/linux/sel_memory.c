@@ -108,7 +108,7 @@ int NaCl_page_alloc_randomized(void   **p,
   uintptr_t       addr;
   int             neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
   int             tries;
-  const int       kNumTries = 0;
+  const int       kNumTries = 4;
   /*
    * linux permits 128 TB of user address space.
    */
