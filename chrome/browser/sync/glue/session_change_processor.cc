@@ -62,7 +62,7 @@ void SessionChangeProcessor::Observe(int type,
   DCHECK(profile_);
 
   // Track which windows and/or tabs are modified.
-  std::vector<TabContentsWrapper*> modified_tabs;
+  std::vector<SyncedTabDelegate*> modified_tabs;
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = Source<Browser>(source).ptr();
@@ -74,7 +74,7 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_TAB_PARENTED: {
-      TabContentsWrapper* tab = Source<TabContentsWrapper>(source).ptr();
+      SyncedTabDelegate* tab = Source<SyncedTabDelegate>(source).ptr();
       if (tab->profile() != profile_) {
         return;
       }
@@ -84,9 +84,9 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      TabContentsWrapper* tab =
+      SyncedTabDelegate* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<TabContents>(source).ptr());
+              Source<TabContents>(source).ptr())->synced_tab_delegate();
       if (tab->profile() != profile_) {
         return;
       }
@@ -96,9 +96,10 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_TAB_CLOSED: {
-      TabContentsWrapper* tab =
+      SyncedTabDelegate* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              Source<NavigationController>(source).ptr()->tab_contents())->
+              synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -108,9 +109,10 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
-      TabContentsWrapper* tab =
+      SyncedTabDelegate* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              Source<NavigationController>(source).ptr()->tab_contents())->
+              synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -120,9 +122,10 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
-      TabContentsWrapper* tab =
+      SyncedTabDelegate* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              Source<NavigationController>(source).ptr()->tab_contents())->
+              synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -132,9 +135,10 @@ void SessionChangeProcessor::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      TabContentsWrapper* tab =
+      SyncedTabDelegate* tab =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              Source<NavigationController>(source).ptr()->tab_contents());
+              Source<NavigationController>(source).ptr()->tab_contents())->
+              synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -150,7 +154,8 @@ void SessionChangeProcessor::Observe(int type,
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        modified_tabs.push_back(extension_tab_helper->tab_contents_wrapper());
+        modified_tabs.push_back(extension_tab_helper->tab_contents_wrapper()->
+            synced_tab_delegate());
       }
       VLOG(1) << "Received TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED "
               << "for profile " << profile_;

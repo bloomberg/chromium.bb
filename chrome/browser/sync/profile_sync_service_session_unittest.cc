@@ -244,16 +244,16 @@ TEST_F(ProfileSyncServiceSessionTest, MAYBE_WriteFilledSessionToNode) {
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
-  ASSERT_EQ(2, iter->second.tab()->controller().entry_count());
-  ASSERT_EQ(GURL("http://foo/1"), iter->second.tab()->controller().
+  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://foo/1"), iter->second.tab()->
           GetEntryAtIndex(0)->virtual_url());
-  ASSERT_EQ(GURL("http://foo/2"), iter->second.tab()->controller().
+  ASSERT_EQ(GURL("http://foo/2"), iter->second.tab()->
           GetEntryAtIndex(1)->virtual_url());
   iter++;
-  ASSERT_EQ(2, iter->second.tab()->controller().entry_count());
-  ASSERT_EQ(GURL("http://bar/1"), iter->second.tab()->controller().
+  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://bar/1"), iter->second.tab()->
       GetEntryAtIndex(0)->virtual_url());
-  ASSERT_EQ(GURL("http://bar/2"), iter->second.tab()->controller().
+  ASSERT_EQ(GURL("http://bar/2"), iter->second.tab()->
       GetEntryAtIndex(1)->virtual_url());
 }
 

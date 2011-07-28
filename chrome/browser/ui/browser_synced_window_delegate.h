@@ -11,7 +11,10 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 
 class Browser;
-class TabContentsWrapper;
+
+namespace browser_sync {
+class SyncedTabDelegate;
+}
 
 // A BrowserSyncedWindowDelegate is the Browser-based implementation of
 // SyncedWindowDelegate.
@@ -21,9 +24,6 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
   virtual ~BrowserSyncedWindowDelegate();
 
   // SyncedWindowDelegate:
-  virtual bool IsTabContentsWrapperPinned(
-      const TabContentsWrapper* tab) const OVERRIDE;
-  virtual TabContentsWrapper* GetTabContentsWrapperAt(int index) const OVERRIDE;
   virtual bool HasWindow() const OVERRIDE;
   virtual const SessionID& GetSessionId() const OVERRIDE;
   virtual int GetTabCount() const OVERRIDE;
@@ -31,6 +31,9 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
   virtual bool IsApp() const OVERRIDE;
   virtual bool IsTypeTabbed() const OVERRIDE;
   virtual bool IsTypePopup() const OVERRIDE;
+  virtual bool IsTabPinned(
+      const browser_sync::SyncedTabDelegate* tab) const OVERRIDE;
+  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE;
 
  private:
   Browser* browser_;

@@ -34,6 +34,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
@@ -107,6 +108,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
       infobars_enabled_(true),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          synced_tab_delegate_(new TabContentsWrapperSyncedTabDelegate(this))),
       in_destructor_(false),
       tab_contents_(contents) {
   DCHECK(contents);

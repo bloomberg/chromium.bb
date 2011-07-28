@@ -39,16 +39,21 @@ BrowserSyncedWindowDelegate::BrowserSyncedWindowDelegate(Browser* browser)
 
 BrowserSyncedWindowDelegate::~BrowserSyncedWindowDelegate() {}
 
-bool BrowserSyncedWindowDelegate::IsTabContentsWrapperPinned(
-    const TabContentsWrapper* tab) const {
-  int index = browser_->GetIndexOfController(&tab->controller());
-  DCHECK(index != TabStripModel::kNoTab);
-  return browser_->tabstrip_model()->IsTabPinned(index);
+bool BrowserSyncedWindowDelegate::IsTabPinned(
+    const browser_sync::SyncedTabDelegate* tab) const {
+  for (int i = 0; i < browser_->tabstrip_model()->count(); i++) {
+    browser_sync::SyncedTabDelegate* current =
+        browser_->tabstrip_model()->GetTabContentsAt(i)->synced_tab_delegate();
+    if (tab == current)
+      return browser_->tabstrip_model()->IsTabPinned(i);
+  }
+  NOTREACHED();
+  return false;
 }
 
-TabContentsWrapper* BrowserSyncedWindowDelegate::GetTabContentsWrapperAt(
+browser_sync::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
     int index) const {
-  return browser_->GetTabContentsWrapperAt(index);
+  return browser_->GetTabContentsWrapperAt(index)->synced_tab_delegate();
 }
 
 bool BrowserSyncedWindowDelegate::HasWindow() const {

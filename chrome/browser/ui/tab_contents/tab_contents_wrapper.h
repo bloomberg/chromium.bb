@@ -16,6 +16,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/common/notification_registrar.h"
 
 namespace prerender {
@@ -103,6 +104,10 @@ class TabContentsWrapper : public TabContentsObserver,
 
   TabContentsWrapperDelegate* delegate() const { return delegate_; }
   void set_delegate(TabContentsWrapperDelegate* d) { delegate_ = d; }
+
+  browser_sync::SyncedTabDelegate* synced_tab_delegate() const {
+    return synced_tab_delegate_.get();
+  }
 
   TabContents* tab_contents() const { return tab_contents_.get(); }
   NavigationController& controller() const {
@@ -272,6 +277,9 @@ class TabContentsWrapper : public TabContentsObserver,
 
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Helper which implements the SyncedTabDelegate interface.
+  scoped_ptr<TabContentsWrapperSyncedTabDelegate> synced_tab_delegate_;
 
   // Data for current page -----------------------------------------------------
 

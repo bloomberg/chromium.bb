@@ -10,9 +10,9 @@
 
 #include "chrome/browser/sessions/session_id.h"
 
-class TabContentsWrapper;
-
 namespace browser_sync {
+
+class SyncedTabDelegate;
 
 // A SyncedWindowDelegate is used to insulate the sync code from depending
 // directly on Browser and BrowserList.
@@ -28,13 +28,6 @@ class SyncedWindowDelegate {
       SessionID::id_type id);
 
   // Methods originating from Browser.
-
-  // Returns true iff the provided tab is currently "pinned" in the tab strip.
-  virtual bool IsTabContentsWrapperPinned(
-      const TabContentsWrapper* tab) const = 0;
-
-  // see Browser::GetTabContentsWrapperAt
-  virtual TabContentsWrapper* GetTabContentsWrapperAt(int index) const = 0;
 
   // Returns true iff this browser has a visible window representation
   // associated with it. Sometimes, if a window is being created/removed the
@@ -58,6 +51,14 @@ class SyncedWindowDelegate {
 
   // see Browser::is_type_popup
   virtual bool IsTypePopup() const = 0;
+
+  // Methods derivated from Browser
+
+  // Returns true iff the provided tab is currently "pinned" in the tab strip.
+  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const = 0;
+
+  // see Browser::GetTabContentsWrapperAt
+  virtual SyncedTabDelegate* GetTabAt(int index) const = 0;
 
  protected:
   virtual ~SyncedWindowDelegate() {}
