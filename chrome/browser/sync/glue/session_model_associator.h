@@ -28,7 +28,6 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 class Profile;
 class ProfileSyncService;
