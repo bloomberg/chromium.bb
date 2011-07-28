@@ -62,7 +62,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // detection model if necessary.  The caller takes ownership of the object.
   // This function may return NULL.
   static ClientSideDetectionService* Create(
-      const FilePath& model_dir,
       net::URLRequestContextGetter* request_context_getter);
 
   // From the URLFetcher::Delegate interface.

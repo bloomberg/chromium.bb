@@ -951,12 +951,10 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
   created_safe_browsing_detection_service_ = true;
 
 #if defined(ENABLE_SAFE_BROWSING)
-  FilePath model_file_dir;
-  if (IsSafeBrowsingDetectionServiceEnabled() &&
-      PathService::Get(chrome::DIR_USER_DATA, &model_file_dir)) {
+  if (IsSafeBrowsingDetectionServiceEnabled()) {
     safe_browsing_detection_service_.reset(
         safe_browsing::ClientSideDetectionService::Create(
-            model_file_dir, g_browser_process->system_request_context()));
+            g_browser_process->system_request_context()));
   }
 #endif
 }

@@ -7,11 +7,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -270,9 +268,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   SetModelFetchResponse("bogus model", true /* success */);
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
   EXPECT_TRUE(csd_service_.get() != NULL);
   // We delete the client-side detection service class even though the callbacks
   // haven't run yet.
@@ -284,9 +280,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponse("bogus model", true /* success */);
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   GURL url("http://a.com/");
   float score = 0.4f;  // Some random client score.
@@ -333,9 +327,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
 
 TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   SetModelFetchResponse("bogus model", true /* success */);
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
   base::Time now = base::Time::Now();
@@ -350,18 +342,14 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
 
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {
   SetModelFetchResponse("bogus model", true /* success */);
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   TestCache();
 }
 
 TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   SetModelFetchResponse("bogus model", true /* success */);
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("10.1.2.3"));
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("127.0.0.1"));
@@ -473,9 +461,7 @@ TEST_F(ClientSideDetectionServiceTest, IsBadIpAddress) {
       "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\x01\x80\x00", 16)));
   subnet->set_size(113);
 
-  ScopedTempDir tmp_dir;
-  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
-  csd_service_.reset(ClientSideDetectionService::Create(tmp_dir.path(), NULL));
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
   ClientSideDetectionService::SetBadSubnets(
       model, &(csd_service_->bad_subnets_));
   EXPECT_FALSE(csd_service_->IsBadIpAddress("blabla"));

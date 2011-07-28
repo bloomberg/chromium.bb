@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 
 #include "base/command_line.h"
-#include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/memory/scoped_ptr.h"
@@ -79,7 +78,6 @@ ClientSideDetectionService::~ClientSideDetectionService() {
 
 /* static */
 ClientSideDetectionService* ClientSideDetectionService::Create(
-    const FilePath& model_dir,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientSideDetectionService> service(
@@ -96,20 +94,6 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
       service->method_factory_.NewRunnableMethod(
           &ClientSideDetectionService::StartFetchModel),
       kInitialClientModelFetchDelayMs);
-
-  // Delete the previous-version model files.
-  // TODO(bryner): Remove this for M15 (including the model_dir argument to
-  // Create()).
-  base::FileUtilProxy::Delete(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      model_dir.AppendASCII("Safe Browsing Phishing Model"),
-      false /* not recursive */,
-      NULL /* not interested in result */);
-  base::FileUtilProxy::Delete(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      model_dir.AppendASCII("Safe Browsing Phishing Model v1"),
-      false /* not recursive */,
-      NULL /* not interested in result */);
   return service.release();
 }
 
