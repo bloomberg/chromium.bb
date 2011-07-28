@@ -1548,6 +1548,24 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_BrowserCloseAfterDownload) {
   signal.Wait();
 }
 
+// Test to make sure the 'download' attribute in anchor tag is respected.
+IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-anchor-attrib.html"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  // Create a download, wait until it's complete, and confirm
+  // we're in the expected state.
+  scoped_ptr<DownloadsObserver> observer(CreateWaiter(browser(), 1));
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer->WaitForFinished();
+
+  // Confirm the downloaded data exists.
+  FilePath downloaded_file = GetDownloadDirectory(browser());
+  downloaded_file = downloaded_file.Append(FILE_PATH_LITERAL("a_red_dot.png"));
+  EXPECT_TRUE(file_util::PathExists(downloaded_file));
+}
+
 // Test to make sure auto-open works.
 IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   ASSERT_TRUE(InitialSetup(false));
