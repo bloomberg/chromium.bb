@@ -14,7 +14,7 @@
 namespace views {
 
 // A mock InputMethod implementation for testing purpose.
-class MockInputMethod : public InputMethodBase {
+class VIEWS_API MockInputMethod : public InputMethodBase {
  public:
   MockInputMethod();
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);

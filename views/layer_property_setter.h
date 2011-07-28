@@ -6,6 +6,8 @@
 #define UI_GFX_COMPOSITOR_LAYER_PROPERTY_SETTER_H_
 #pragma once
 
+#include "views/views_api.h"
+
 namespace gfx {
 class Rect;
 }
@@ -20,7 +22,7 @@ namespace views {
 // When a property of layer needs to be changed it is set by way of
 // LayerPropertySetter. This enables LayerPropertySetter to animate property
 // changes.
-class LayerPropertySetter {
+class VIEWS_API LayerPropertySetter {
  public:
   // Creates a LayerPropertySetter that immediately sets the values on the
   // layer. Ownership returns to caller.

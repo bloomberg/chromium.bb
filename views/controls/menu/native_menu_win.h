@@ -12,12 +12,13 @@
 #include "base/task.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
+#include "views/views_api.h"
 
 namespace views {
 
 // A Windows implementation of MenuWrapper.
 // TODO(beng): rename to MenuWin once the old class is dead.
-class NativeMenuWin : public MenuWrapper {
+class VIEWS_API NativeMenuWin : public MenuWrapper {
  public:
   // Construct a NativeMenuWin, with a model and delegate. If |system_menu_for|
   // is non-NULL, the NativeMenuWin wraps the system menu for that window.
@@ -159,7 +160,7 @@ class NativeMenuWin : public MenuWrapper {
 
 // A SimpleMenuModel subclass that allows the system menu for a window to be
 // wrapped.
-class SystemMenuModel : public ui::SimpleMenuModel {
+class VIEWS_API SystemMenuModel : public ui::SimpleMenuModel {
  public:
   explicit SystemMenuModel(Delegate* delegate);
   virtual ~SystemMenuModel();

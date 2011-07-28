@@ -12,6 +12,7 @@
 #include "ui/base/animation/animation_container_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
+#include "views/views_api.h"
 
 namespace ui {
 class SlideAnimation;
@@ -38,8 +39,8 @@ class BoundsAnimatorObserver {
 // You can attach an AnimationDelegate to the individual animation for a view
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
-class BoundsAnimator : public ui::AnimationDelegate,
-                       public ui::AnimationContainerObserver {
+class VIEWS_API BoundsAnimator : public ui::AnimationDelegate,
+                                 public ui::AnimationContainerObserver {
  public:
   // If |delete_when_done| is set to true in |SetAnimationDelegate| the
   // |AnimationDelegate| must subclass this class.

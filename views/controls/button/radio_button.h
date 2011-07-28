@@ -12,7 +12,7 @@ namespace views {
 
 // A native themed class representing a radio button.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
-class RadioButton : public Checkbox {
+class VIEWS_API RadioButton : public Checkbox {
  public:
   // The button's class name.
   static const char kViewClassName[];

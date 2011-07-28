@@ -14,7 +14,7 @@ namespace views {
 
 // A native themed class representing a checkbox.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
-class Checkbox : public TextButtonBase {
+class VIEWS_API Checkbox : public TextButtonBase {
  public:
   // The button's class name.
   static const char kViewClassName[];

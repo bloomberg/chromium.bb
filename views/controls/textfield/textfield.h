@@ -20,14 +20,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/native_widget_types.h"
+#include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/view.h"
 
 #if !defined(OS_LINUX)
 #include "base/logging.h"
-#endif
-#ifdef UNIT_TEST
-#include "ui/gfx/native_widget_types.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
 #endif
 
 namespace gfx {
@@ -41,11 +39,10 @@ class Range;
 namespace views {
 
 class KeyEvent;
-class NativeTextfieldWrapper;
 class TextfieldController;
 
 // This class implements a View that wraps a native text (edit) field.
-class Textfield : public View {
+class VIEWS_API Textfield : public View {
  public:
   // The button's class name.
   static const char kViewClassName[];
@@ -204,14 +201,13 @@ class Textfield : public View {
   // Set the accessible name of the text field.
   void SetAccessibleName(const string16& name);
 
-#ifdef UNIT_TEST
+  // Provided only for testing:
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
   }
-  NativeTextfieldWrapper* native_wrapper() const {
+  NativeTextfieldWrapper* GetNativeWrapperForTesting() const {
     return native_wrapper_;
   }
-#endif
 
   // Overridden from View:
   virtual void Layout() OVERRIDE;

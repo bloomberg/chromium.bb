@@ -12,6 +12,7 @@
 #endif
 
 #include "ui/base/accessibility/accessibility_types.h"
+#include "views/views_api.h"
 
 namespace gfx {
 class Rect;
@@ -32,7 +33,7 @@ class Widget;
 //
 // The embedding app must set views_delegate to assign its ViewsDelegate
 // implementation.
-class ViewsDelegate {
+class VIEWS_API ViewsDelegate {
  public:
   virtual ~ViewsDelegate() {}
 

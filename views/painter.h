@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "views/views_api.h"
 
 namespace gfx {
 class Canvas;
@@ -20,7 +21,7 @@ namespace views {
 // Painter, as the name implies, is responsible for painting in a particular
 // region. Think of Painter as a Border or Background that can be painted
 // in any region of a View.
-class Painter {
+class VIEWS_API Painter {
  public:
   // A convenience method for painting a Painter in a particular region.
   // This translates the canvas to x/y and paints the painter.
@@ -51,7 +52,7 @@ class Painter {
 // left and right images are drawn to size at the left/right edges of the
 // region. The center is tiled in the remaining space. All images must have the
 // same height.
-class HorizontalPainter : public Painter {
+class VIEWS_API HorizontalPainter : public Painter {
  public:
   // Constructs a new HorizontalPainter loading the specified image names.
   // The images must be in the order left, right and center.

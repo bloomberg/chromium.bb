@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class ScrollBar;
 // receive notification from a scrollbar
 //
 /////////////////////////////////////////////////////////////////////////////
-class ScrollBarController {
+class VIEWS_API ScrollBarController {
  public:
 
   // Invoked by the scrollbar when the scrolling position changes
@@ -55,7 +55,7 @@ class ScrollBarController {
 // A scrollbar is either horizontal or vertical
 //
 /////////////////////////////////////////////////////////////////////////////
-class ScrollBar : public View {
+class VIEWS_API ScrollBar : public View {
  public:
   virtual ~ScrollBar();
 

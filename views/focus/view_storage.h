@@ -20,7 +20,7 @@
 
 namespace views {
 
-class ViewStorage {
+class VIEWS_API ViewStorage {
  public:
   // Returns the global ViewStorage instance.
   // It is guaranted to be non NULL.
@@ -41,9 +41,7 @@ class ViewStorage {
   // Notifies the ViewStorage that a view was removed from its parent somewhere.
   void ViewRemoved(View* removed);
 
-#ifdef UNIT_TEST
   size_t view_count() const { return view_to_ids_.size(); }
-#endif
 
  private:
   friend struct DefaultSingletonTraits<ViewStorage>;

@@ -20,8 +20,8 @@ namespace views {
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain.  Call set_focusable(true) to make it part of the
 // focus chain.
-class CustomButton : public Button,
-                     public ui::AnimationDelegate {
+class VIEWS_API CustomButton : public Button,
+                               public ui::AnimationDelegate {
  public:
   // The menu button's class name.
   static const char kViewClassName[];

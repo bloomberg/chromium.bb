@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/table_model_observer.h"
+#include "views/views_api.h"
 
 #if defined(OS_WIN)
 // TODO(port): remove the ifdef when native_control.h is ported.
@@ -80,7 +81,7 @@ enum TableTypes {
 };
 
 // Returned from SelectionBegin/SelectionEnd
-class TableSelectionIterator {
+class VIEWS_API TableSelectionIterator {
  public:
   TableSelectionIterator(TableView* view, int view_index);
   TableSelectionIterator& operator=(const TableSelectionIterator& other);
@@ -102,8 +103,8 @@ class TableSelectionIterator {
 
 #if defined(OS_WIN)
 // TODO(port): Port TableView.
-class TableView : public NativeControl,
-                  public TableModelObserver {
+class VIEWS_API TableView : public NativeControl,
+                            public TableModelObserver {
  public:
   typedef TableSelectionIterator iterator;
 

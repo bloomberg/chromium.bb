@@ -23,9 +23,12 @@
 
 namespace views {
 
+// The colors to use for enabled and disabled labels.
+static SkColor kEnabledColor;
+static SkColor kDisabledColor;
+
 // static
 const char Label::kViewClassName[] = "views/Label";
-SkColor Label::kEnabledColor, Label::kDisabledColor;
 
 const int Label::kFocusBorderPadding = 1;
 

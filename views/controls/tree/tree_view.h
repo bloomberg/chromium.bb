@@ -45,7 +45,7 @@ class TreeViewController {
 // TreeView displays hierarchical data as returned from a TreeModel. The user
 // can expand, collapse and edit the items. A Controller may be attached to
 // receive notification of selection changes and restrict editing.
-class TreeView : public NativeControl, ui::TreeModelObserver {
+class VIEWS_API TreeView : public NativeControl, ui::TreeModelObserver {
  public:
   TreeView();
   virtual ~TreeView();

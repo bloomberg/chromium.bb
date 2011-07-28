@@ -40,6 +40,8 @@
 #include "ui/gfx/icon_util.h"
 #include "views/widget/native_widget_win.h"
 
+#pragma comment(lib, "dwmapi.lib")
+
 namespace {
 
 // Macros and COM interfaces used in this file.

@@ -26,7 +26,7 @@ namespace views {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class ProgressBar : public View {
+class VIEWS_API ProgressBar : public View {
  public:
   ProgressBar();
   virtual ~ProgressBar();

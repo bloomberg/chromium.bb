@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "views/views_api.h"
 
 namespace gfx {
 class Canvas;
@@ -36,7 +37,7 @@ class View;
 // View::OnPaintBackground()
 //
 /////////////////////////////////////////////////////////////////////////////
-class Background {
+class VIEWS_API Background {
  public:
   Background();
   virtual ~Background();

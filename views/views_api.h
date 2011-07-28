@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_UI_API_H_
-#define UI_UI_API_H_
+#ifndef VIEWS_VIEWS_API_H_
+#define VIEWS_VIEWS_API_H_
 #pragma once
 
-// Defines UI_API so that funtionality implemented by the UI module can be
+// Defines VIEWS_API so that funtionality implemented by the UI module can be
 // exported to consumers.
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
-#if defined(UI_IMPLEMENTATION)
-#define UI_API __declspec(dllexport)
+#if defined(VIEWS_IMPLEMENTATION)
+#define VIEWS_API __declspec(dllexport)
 #else
-#define UI_API __declspec(dllimport)
-#endif  // defined(UI_IMPLEMENTATION)
+#define VIEWS_API __declspec(dllimport)
+#endif  // defined(VIEWS_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-#define UI_API __attribute__((visibility("default")))
+#define VIEWS_API __attribute__((visibility("default")))
 #endif
 
 #else  /// defined(COMPONENT_BUILD)
-#define UI_API
+#define VIEWS_API
 #endif
 
 #endif  // UI_UI_API_H_

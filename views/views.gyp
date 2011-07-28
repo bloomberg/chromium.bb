@@ -26,7 +26,7 @@
   'targets': [
     {
       'target_name': 'views',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -40,6 +40,9 @@
         '../ui/gfx/compositor/compositor.gyp:compositor',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+      ],
+      'defines': [
+        'VIEWS_IMPLEMENTATION',
       ],
       'sources': [
         # All .cc, .h under views, except unittests
@@ -298,6 +301,7 @@
         'view_text_utils.cc',
         'view_text_utils.h',
         'view_win.cc',
+        'views_api.h',
         'views_delegate.h',
         'widget/aero_tooltip_manager.cc',
         'widget/aero_tooltip_manager.h',
@@ -422,12 +426,14 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         'views',
       ],
@@ -513,6 +519,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -655,6 +662,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',

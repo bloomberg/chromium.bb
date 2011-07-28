@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
+#include "views/views_api.h"
 
 namespace views {
 
@@ -31,7 +32,7 @@ void SetTouchDeviceList(std::vector<unsigned int>& devices);
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
-class AcceleratorHandler : public MessageLoopForUI::Dispatcher {
+class VIEWS_API AcceleratorHandler : public MessageLoop::Dispatcher {
  public:
   AcceleratorHandler();
 

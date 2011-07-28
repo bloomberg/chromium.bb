@@ -22,7 +22,7 @@ class TouchEvent;
 // updates its internal state and optionally dispatches synthetic
 // events to the invoking view.
 //
-class GestureManager {
+class VIEWS_API GestureManager {
  public:
   virtual ~GestureManager();
 

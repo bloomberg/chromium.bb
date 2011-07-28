@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ class Event;
 
 // An interface implemented by an object to let it know that a button was
 // pressed.
-class ButtonListener {
+class VIEWS_API ButtonListener {
  public:
   virtual void ButtonPressed(Button* sender, const views::Event& event) = 0;
 
@@ -25,7 +25,7 @@ class ButtonListener {
 
 // A View representing a button. Depending on the specific type, the button
 // could be implemented by a native control or custom rendered.
-class Button : public View {
+class VIEWS_API Button : public View {
  public:
   virtual ~Button();
 

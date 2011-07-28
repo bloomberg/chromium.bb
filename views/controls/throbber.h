@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class SkBitmap;
 
 namespace views {
 
-class Throbber : public View {
+class VIEWS_API Throbber : public View {
  public:
   // |frame_time_ms| is the amount of time that should elapse between frames
   //                 (in milliseconds)
@@ -97,7 +97,7 @@ class SmoothedThrobber : public Throbber {
 //   2. working (which paints the throbber animation)
 //   3. completed (which paints a checkmark)
 //
-class CheckmarkThrobber : public Throbber {
+class VIEWS_API CheckmarkThrobber : public Throbber {
  public:
   CheckmarkThrobber();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class NativeScrollBarWrapper;
 
 // The NativeScrollBar class is a scrollbar that uses platform's
 // native control.
-class NativeScrollBar : public ScrollBar {
+class VIEWS_API NativeScrollBar : public ScrollBar {
  public:
   // The scroll-bar's class name.
   static const char kViewClassName[];

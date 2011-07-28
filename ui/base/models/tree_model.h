@@ -30,7 +30,7 @@ class TreeModelNode {
 };
 
 // Observer for the TreeModel. Notified of significant events to the model.
-class TreeModelObserver {
+class UI_API TreeModelObserver {
  public:
   // Notification that nodes were added to the specified parent.
   virtual void TreeNodesAdded(TreeModel* model,

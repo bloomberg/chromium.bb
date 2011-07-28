@@ -23,7 +23,7 @@ class NativeControlContainer;
 // wrap a new kind of control
 //
 ////////////////////////////////////////////////////////////////////////////////
-class NativeControl : public View {
+class VIEWS_API NativeControl : public View {
  public:
    enum Alignment {
      LEADING = 0,

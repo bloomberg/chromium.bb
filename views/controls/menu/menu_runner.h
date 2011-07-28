@@ -25,7 +25,7 @@ class Widget;
 //
 // TODO: this is a work around for 57890. If we fix it this class shouldn't be
 // needed.
-class MenuRunner {
+class VIEWS_API MenuRunner {
  public:
   explicit MenuRunner(MenuItemView* menu);
   ~MenuRunner();

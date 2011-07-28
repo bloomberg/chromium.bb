@@ -19,7 +19,7 @@ class NativeViewHostWrapper;
 // kept in sync with the bounds of this view as it is moved and sized.
 // Under the hood, a platform-specific NativeViewHostWrapper implementation does
 // the platform-specific work of manipulating the underlying OS widget type.
-class NativeViewHost : public View {
+class VIEWS_API NativeViewHost : public View {
  public:
   // The NativeViewHost's class name.
   static const char kViewClassName[];

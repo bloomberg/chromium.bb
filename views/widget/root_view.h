@@ -41,9 +41,9 @@ namespace internal {
 //  TODO(beng): Enforce no other callers to AddChildView/tree functions by
 //              overriding those methods as private here.
 //  TODO(beng): Clean up API further, make Widget a friend.
+//  TODO(sky): We don't really want to export this class.
 //
-class RootView : public View,
-                 public FocusTraversable {
+class VIEWS_API RootView : public View, public FocusTraversable {
  public:
   static const char kViewClassName[];
 
@@ -74,11 +74,8 @@ class RootView : public View,
   // it. Returns whether anyone consumed the event.
   bool OnKeyEvent(const KeyEvent& event);
 
-#if defined(UNIT_TEST)
-  // For unit testing purposes, we use this method to set a mock
-  // GestureManager
-  void SetGestureManager(GestureManager* g) { gesture_manager_ = g; }
-#endif
+  // Provided only for testing:
+  void SetGestureManagerForTesting(GestureManager* g) { gesture_manager_ = g; }
 
   // Focus ---------------------------------------------------------------------
 

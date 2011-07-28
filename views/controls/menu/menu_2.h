@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
+#include "views/views_api.h"
 
 namespace gfx {
 class Point;
@@ -24,7 +25,7 @@ class View;
 // WARNING: do NOT create and use Menu2 on the stack. Menu2 notifies the model
 // of selection AFTER a delay. This means that if use a Menu2 on the stack
 // ActivatedAt is never invoked.
-class Menu2 {
+class VIEWS_API Menu2 {
  public:
   // Creates a new menu populated with the contents of |model|.
   // WARNING: this populates the menu on construction by invoking methods on

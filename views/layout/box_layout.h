@@ -23,7 +23,7 @@ class View;
 // child views are always sized according to their preferred size. If the
 // host's bounds provide insufficient space, child views will be clamped.
 // Excess space will not be distributed.
-class BoxLayout : public LayoutManager {
+class VIEWS_API BoxLayout : public LayoutManager {
  public:
   enum Orientation {
     kHorizontal,

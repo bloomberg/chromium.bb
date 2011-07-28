@@ -87,8 +87,8 @@ class RootView;
 //      the Widget it is responsible for destroying the NativeWidget (from its
 //      destructor).
 //
-class Widget : public internal::NativeWidgetDelegate,
-               public FocusTraversable {
+class VIEWS_API Widget : public internal::NativeWidgetDelegate,
+                         public FocusTraversable {
  public:
   // Observers can listen to various events on the Widgets.
   class Observer {
@@ -106,7 +106,7 @@ class Widget : public internal::NativeWidgetDelegate,
     FRAME_TYPE_FORCE_NATIVE     // Force the native frame.
   };
 
-  struct InitParams {
+  struct VIEWS_API InitParams {
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
                         // Widgets of TYPE_WINDOW will have a NonClientView.

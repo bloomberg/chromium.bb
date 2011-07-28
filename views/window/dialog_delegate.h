@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class View;
 //  certain events.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class DialogDelegate : public WidgetDelegate {
+class VIEWS_API DialogDelegate : public WidgetDelegate {
  public:
   virtual DialogDelegate* AsDialogDelegate();
 
@@ -115,8 +115,8 @@ class DialogDelegate : public WidgetDelegate {
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()
 // to call View's GetWidget() for the common case where a DialogDelegate
 // implementation is-a View.
-class DialogDelegateView : public DialogDelegate,
-                           public View {
+class VIEWS_API DialogDelegateView : public DialogDelegate,
+                                     public View {
  public:
   DialogDelegateView();
   virtual ~DialogDelegateView();

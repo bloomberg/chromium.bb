@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class ViewStorage;
 // when that view wants to return focus to the last focused view which is not
 // itself and not a descandant of itself, (usually when it is being closed)
 // it calls FocusLastFocusedExternalView.
-class ExternalFocusTracker : public FocusChangeListener {
+class VIEWS_API ExternalFocusTracker : public FocusChangeListener {
  public:
   ExternalFocusTracker(View* parent_view, FocusManager* focus_manager);
 

@@ -23,7 +23,7 @@ namespace views {
 // A label is a view subclass that can display a string.
 //
 /////////////////////////////////////////////////////////////////////////////
-class Label : public View {
+class VIEWS_API Label : public View {
  public:
   enum Alignment { ALIGN_LEFT = 0,
                    ALIGN_CENTER,
@@ -230,9 +230,6 @@ class Label : public View {
   void CalculateDrawStringParams(std::wstring* paint_text,
                                  gfx::Rect* text_bounds,
                                  int* flags) const;
-
-  // The colors to use for enabled and disabled labels.
-  static SkColor kEnabledColor, kDisabledColor;
 
   string16 text_;
   GURL url_;

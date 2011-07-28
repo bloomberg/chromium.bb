@@ -23,7 +23,7 @@ namespace views {
 //  responds to events within the frame portions of the non-client area of a
 //  window. This view does _not_ contain the ClientView, but rather is a sibling
 //  of it.
-class NonClientFrameView : public View {
+class VIEWS_API NonClientFrameView : public View {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -131,7 +131,7 @@ class NonClientFrameView : public View {
 // implementations (e.g. during the switch from DWM/Aero-Glass to Vista Basic/
 // Classic rendering).
 //
-class NonClientView : public View {
+class VIEWS_API NonClientView : public View {
  public:
   // Internal class name.
   static const char kViewClassName[];

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ class FocusTraversable;
 
 // FocusSearch is an object that implements the algorithm to find the
 // next view to focus.
-class FocusSearch {
+class VIEWS_API FocusSearch {
  public:
   // The direction in which the focus traversal is going.
   // TODO (jcampan): add support for lateral (left, right) focus traversal. The

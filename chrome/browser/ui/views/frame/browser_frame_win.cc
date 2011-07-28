@@ -21,6 +21,8 @@
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 
+#pragma comment(lib, "dwmapi.lib")
+
 // static
 static const int kClientEdgeThickness = 3;
 static const int kTabDragWindowAlpha = 200;

@@ -41,9 +41,9 @@ class NativeWidgetDelegate;
 }
 
 // Widget implementation for GTK.
-class NativeWidgetGtk : public internal::NativeWidgetPrivate,
-                        public ui::ActiveWindowWatcherX::Observer,
-                        public internal::InputMethodDelegate {
+class VIEWS_API NativeWidgetGtk : public internal::NativeWidgetPrivate,
+                                  public ui::ActiveWindowWatcherX::Observer,
+                                  public internal::InputMethodDelegate {
  public:
   explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetGtk();

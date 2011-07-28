@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/views_api.h"
 
 namespace gfx{
 class Size;
@@ -18,7 +19,7 @@ class Combobox;
 class KeyEvent;
 class View;
 
-class NativeComboboxWrapper {
+class VIEWS_API NativeComboboxWrapper {
  public:
   // Updates the combobox's content from its model.
   virtual void UpdateFromModel() = 0;

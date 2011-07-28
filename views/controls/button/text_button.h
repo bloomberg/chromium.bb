@@ -31,7 +31,7 @@ namespace views {
 // focus chain.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TextButtonBorder : public Border {
+class VIEWS_API TextButtonBorder : public Border {
  public:
   TextButtonBorder();
   virtual ~TextButtonBorder();
@@ -90,7 +90,7 @@ class TextButtonBorder : public Border {
 //  states, with possible animation between states.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TextButtonNativeThemeBorder : public Border {
+class VIEWS_API TextButtonNativeThemeBorder : public Border {
  public:
    TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
   virtual ~TextButtonNativeThemeBorder();
@@ -117,7 +117,8 @@ class TextButtonNativeThemeBorder : public Border {
 //  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TextButtonBase : public CustomButton, public NativeThemeDelegate {
+class VIEWS_API TextButtonBase : public CustomButton,
+                                 public NativeThemeDelegate {
  public:
   // The menu button's class name.
   static const char kViewClassName[];
@@ -313,7 +314,7 @@ class TextButtonBase : public CustomButton, public NativeThemeDelegate {
 //  passed to SetText. To reset the cached max size invoke ClearMaxTextSize.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TextButton : public TextButtonBase {
+class VIEWS_API TextButton : public TextButtonBase {
  public:
   // The button's class name.
   static const char kViewClassName[];
@@ -398,7 +399,7 @@ class TextButton : public TextButtonBase {
 //  like ignore-minimize-size and text alignment minimum size.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class NativeTextButton : public TextButton {
+class VIEWS_API NativeTextButton : public TextButton {
  public:
   // The button's class name.
   static const char kViewClassName[];

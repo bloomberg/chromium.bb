@@ -53,7 +53,7 @@ class TableView;
 class TableViewObserver;
 class View;
 
-class TableView2 : public View, public TableModelObserver {
+class VIEWS_API TableView2 : public View, public TableModelObserver {
  public:
   typedef TableSelectionIterator iterator;
 

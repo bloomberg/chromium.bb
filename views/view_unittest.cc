@@ -295,7 +295,7 @@ TEST_F(ViewTest, TouchEvent) {
   View* root = widget->GetRootView();
 
   root->AddChildView(v1);
-  static_cast<internal::RootView*>(root)->SetGestureManager(&gm);
+  static_cast<internal::RootView*>(root)->SetGestureManagerForTesting(&gm);
   v1->AddChildView(v2);
   v2->AddChildView(v3);
 

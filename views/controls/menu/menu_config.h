@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,13 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
+#include "views/views_api.h"
 
 namespace views {
 
 // Layout type information for menu items. Use the instance() method to obtain
 // the MenuConfig for the current platform.
-struct MenuConfig {
+struct VIEWS_API MenuConfig {
   MenuConfig();
   ~MenuConfig();
 

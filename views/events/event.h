@@ -12,6 +12,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "views/native_types.h"
+#include "views/views_api.h"
 
 #if defined(USE_X11)
 typedef union _XEvent XEvent;
@@ -32,8 +33,8 @@ class RootView;
 }
 
 #if defined(OS_WIN)
-bool IsClientMouseEvent(const views::NativeEvent& native_event);
-bool IsNonClientMouseEvent(const views::NativeEvent& native_event);
+VIEWS_API bool IsClientMouseEvent(const views::NativeEvent& native_event);
+VIEWS_API bool IsNonClientMouseEvent(const views::NativeEvent& native_event);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ bool IsNonClientMouseEvent(const views::NativeEvent& native_event);
 // Events are immutable but support copy
 //
 ////////////////////////////////////////////////////////////////////////////////
-class Event {
+class VIEWS_API Event {
  public:
   // This type exists to distinguish between the NativeEvent and NativeEvent2
   // constructors.
@@ -137,7 +138,7 @@ class Event {
 // position in the screen.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class LocatedEvent : public Event {
+class VIEWS_API LocatedEvent : public Event {
  public:
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
@@ -172,7 +173,7 @@ class TouchEvent;
 // A mouse event is used for any input event related to the mouse.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class MouseEvent : public LocatedEvent {
+class VIEWS_API MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(NativeEvent native_event);
   MouseEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
@@ -244,7 +245,7 @@ class MouseEvent : public LocatedEvent {
 // TouchEvent and PlatformTouchPoint.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TouchEvent : public LocatedEvent {
+class VIEWS_API TouchEvent : public LocatedEvent {
  public:
   TouchEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
@@ -301,7 +302,7 @@ class TouchEvent : public LocatedEvent {
 //  KeyEvent encapsulates keyboard input events - key press and release.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class KeyEvent : public Event {
+class VIEWS_API KeyEvent : public Event {
  public:
   explicit KeyEvent(NativeEvent native_event);
   KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
@@ -374,7 +375,7 @@ class KeyEvent : public Event {
 // Note: e.GetOffset() > 0 means scroll up / left.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class MouseWheelEvent : public MouseEvent {
+class VIEWS_API MouseWheelEvent : public MouseEvent {
  public:
   // See |offset| for details.
   static const int kWheelDelta;
@@ -407,7 +408,7 @@ class MouseWheelEvent : public MouseEvent {
 // drop operation.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class DropTargetEvent : public LocatedEvent {
+class VIEWS_API DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const OSExchangeData& data,
                   int x,

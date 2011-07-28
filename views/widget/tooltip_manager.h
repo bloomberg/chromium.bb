@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "views/views_api.h"
 
 namespace gfx {
 class Font;
@@ -21,7 +22,7 @@ class View;
 // TooltipManager takes care of the wiring to support tooltips for Views. You
 // almost never need to interact directly with TooltipManager, rather look to
 // the various tooltip methods on View.
-class TooltipManager {
+class VIEWS_API TooltipManager {
  public:
   // Returns the height of tooltips. This should only be invoked from within
   // GetTooltipTextOrigin.

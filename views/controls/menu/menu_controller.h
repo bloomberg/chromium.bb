@@ -37,7 +37,7 @@ class View;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class MenuController : public MessageLoopForUI::Dispatcher {
+class VIEWS_API MenuController : public MessageLoop::Dispatcher {
  public:
   friend class MenuHostRootView;
   friend class MenuItemView;

@@ -48,9 +48,9 @@ class NativeWidgetDelegate;
 // This is exposed only for testing
 // Adjusts the value of |child_rect| if necessary to ensure that it is
 // completely visible within |parent_rect|.
-void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
-                               gfx::Rect* child_rect,
-                               int padding);
+VIEWS_API void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
+                                         gfx::Rect* child_rect,
+                                         int padding);
 }  // namespace internal
 
 // A Windows message reflected from other windows. This message is sent
@@ -85,10 +85,10 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //  then responsible for cleaning up after it.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class NativeWidgetWin : public ui::WindowImpl,
-                        public internal::NativeWidgetPrivate,
-                        public MessageLoopForUI::Observer,
-                        public internal::InputMethodDelegate {
+class VIEWS_API NativeWidgetWin : public ui::WindowImpl,
+                                  public internal::NativeWidgetPrivate,
+                                  public MessageLoopForUI::Observer,
+                                  public internal::InputMethodDelegate {
  public:
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetWin();

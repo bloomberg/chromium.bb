@@ -32,9 +32,9 @@ class RootView;
 //  DialogClientView also provides the ability to set an arbitrary view that is
 //  positioned beneath the buttons.
 //
-class DialogClientView : public ClientView,
-                         public ButtonListener,
-                         public FocusChangeListener {
+class VIEWS_API DialogClientView : public ClientView,
+                                   public ButtonListener,
+                                   public FocusChangeListener {
  public:
   DialogClientView(Widget* widget, View* contents_view);
   virtual ~DialogClientView();

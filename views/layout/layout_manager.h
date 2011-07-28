@@ -6,6 +6,8 @@
 #define VIEWS_LAYOUT_MANAGER_H_
 #pragma once
 
+#include "views/views_api.h"
+
 namespace gfx {
 class Size;
 }
@@ -22,7 +24,7 @@ class View;
 //   the children of a View according to implementation-specific heuristics.
 //
 /////////////////////////////////////////////////////////////////////////////
-class LayoutManager {
+class VIEWS_API LayoutManager {
  public:
   virtual ~LayoutManager();
 

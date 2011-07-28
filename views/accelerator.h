@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,11 @@
 #include "base/string16.h"
 #include "ui/base/models/accelerator.h"
 #include "views/events/event.h"
+#include "views/views_api.h"
 
 namespace views {
 
-class Accelerator : public ui::Accelerator {
+class VIEWS_API Accelerator : public ui::Accelerator {
  public:
   Accelerator() : ui::Accelerator() {}
 
@@ -59,7 +60,7 @@ class Accelerator : public ui::Accelerator {
 
 // An interface that classes that want to register for keyboard accelerators
 // should implement.
-class AcceleratorTarget {
+class VIEWS_API AcceleratorTarget {
  public:
   // This method should return true if the accelerator was processed.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;

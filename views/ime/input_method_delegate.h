@@ -6,6 +6,8 @@
 #define VIEWS_IME_INPUT_METHOD_DELEGATE_H_
 #pragma once
 
+#include "views/views_api.h"
+
 namespace views {
 
 class KeyEvent;
@@ -14,7 +16,7 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // InputMethod implementation.
-class InputMethodDelegate {
+class VIEWS_API InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 

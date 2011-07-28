@@ -109,8 +109,8 @@ class NativeComboboxViewsTest : public ViewsTestBase {
     widget_->SetContentsView(container);
     container->AddChildView(combobox_);
 
-    combobox_view_
-        = static_cast<NativeComboboxViews*>(combobox_->native_wrapper());
+    combobox_view_ = static_cast<NativeComboboxViews*>(
+        combobox_->GetNativeWrapperForTesting());
     ASSERT_TRUE(combobox_view_);
 
     input_method_ = new MockInputMethod();
