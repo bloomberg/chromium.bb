@@ -136,7 +136,11 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
   base::SharedMemory metafile_data(params.metafile_data_handle, true);
 #endif
   metafile_data.Map(params.data_size);
+#if defined(OS_MACOSX)
+  printing::PdfMetafileCg metafile;
+#else
   printing::NativeMetafile metafile;
+#endif
   metafile.InitFromData(metafile_data.memory(), params.data_size);
   printing::Image image(metafile);
   MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
