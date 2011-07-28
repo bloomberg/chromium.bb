@@ -71,6 +71,10 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   // Callback for the "clearAll" message - clears all the downloads.
   void HandleClearAll(const base::ListValue* args);
 
+  // Callback for the "openDownloadsFolder" message - opens the downloads
+  // folder.
+  void HandleOpenDownloadsFolder(const base::ListValue* args);
+
  private:
   // Send the current list of downloads to the page.
   void SendCurrentDownloads();

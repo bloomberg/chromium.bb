@@ -575,6 +575,11 @@ function clearAll() {
   return false;
 }
 
+function openDownloadsFolder() {
+  chrome.send('openDownloadsFolder');
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Chrome callbacks:
 /**
@@ -622,9 +627,14 @@ function tryDownloadUpdatedPeriodically() {
 
 // Add handlers to HTML elements.
 document.body.onload = load;
+
 var clearAllLink = $('clear-all');
 clearAllLink.onclick = function () { clearAll(''); };
 clearAllLink.oncontextmenu = function() { return false; };
+
+var openDownloadsFolderLink = $('open-downloads-folder');
+openDownloadsFolderLink.onclick = openDownloadsFolder;
+openDownloadsFolderLink.oncontextmenu = function() { return false; };
 
 $('search-link').onclick = function () {
   setSearch('');
@@ -634,4 +644,3 @@ $('search-form').onsubmit = function () {
   setSearch(this.term.value);
   return false;
 };
-

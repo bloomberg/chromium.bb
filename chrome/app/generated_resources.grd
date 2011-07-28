@@ -2313,6 +2313,10 @@ are declared in build/common.gypi.
          desc="Clear all downloads link">
         Clear all
       </message>
+      <message name="IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER"
+               desc="Open downloads folder link">
+        Open downloads folder
+      </message>
 
       <!-- Download Context Menu Items -->
       <if expr="not pp_ifdef('use_titlecase')">

@@ -17,7 +17,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
@@ -97,6 +99,8 @@ void DownloadsDOMHandler::RegisterMessages() {
       NewCallback(this, &DownloadsDOMHandler::HandleCancel));
   web_ui_->RegisterMessageCallback("clearAll",
       NewCallback(this, &DownloadsDOMHandler::HandleClearAll));
+  web_ui_->RegisterMessageCallback("openDownloadsFolder",
+      NewCallback(this, &DownloadsDOMHandler::HandleOpenDownloadsFolder));
 }
 
 void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
@@ -225,6 +229,19 @@ void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
 
 void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
   download_manager_->RemoveAllDownloads();
+}
+
+void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
+  FilePath path = download_manager_->download_prefs()->download_path();
+
+#if defined(OS_MACOSX)
+  // Must be called from the UI thread on Mac.
+  platform_util::OpenItem(path);
+#else
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&platform_util::OpenItem, path));
+#endif
 }
 
 // DownloadsDOMHandler, private: ----------------------------------------------

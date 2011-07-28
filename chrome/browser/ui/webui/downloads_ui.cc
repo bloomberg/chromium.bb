@@ -36,6 +36,8 @@ ChromeWebUIDataSource *CreateDownloadsUIHTMLSource() {
   source->AddLocalizedString("searchresultsfor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("clear_all", IDS_DOWNLOAD_LINK_CLEAR_ALL);
+  source->AddLocalizedString("open_downloads_folder",
+                             IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
 
   // Status.
   source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELED);

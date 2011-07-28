@@ -43,12 +43,20 @@ html[dir=rtl] .logo, html[dir=rtl] .form {
   font-weight: bold;
 }
 
-#downloads-summary > a {
+#downloads-actions {
   float: right;
 }
 
-html[dir=rtl] #downloads-summary > a {
+html[dir=rtl] #downloads-actions {
   float: left;
+}
+
+#downloads-actions > a {
+  margin-left: 10px;
+}
+
+#downloads-actions > a:first-child {
+  margin-left: 0;
 }
 
 #downloads-display {
@@ -195,7 +203,11 @@ html[dir=rtl] .progress {
 <div class="main">
   <div id="downloads-summary">
     <span id="downloads-summary-text" i18n-content="downloads">Downloads</span>
-    <a id="clear-all" href="" i18n-content="clear_all">Clear All</a>
+    <span id="downloads-actions">
+      <a id="open-downloads-folder" href=""
+         i18n-content="open_downloads_folder">Open downloads folder</a>
+      <a id="clear-all" href="" i18n-content="clear_all">Clear All</a>
+    </span>
   </div>
   <div id="downloads-display"></div>
 </div>
