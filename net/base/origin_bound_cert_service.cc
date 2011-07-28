@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "crypto/rsa_private_key.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/origin_bound_cert_store.h"
 #include "net/base/x509_certificate.h"
 
@@ -24,19 +23,23 @@ const int kValidityPeriodInDays = 365;
 
 }  // namespace
 
-bool OriginBoundCertService::GetOriginBoundCert(const GURL& url,
+OriginBoundCertService::OriginBoundCertService(
+    OriginBoundCertStore* origin_bound_cert_store)
+    : origin_bound_cert_store_(origin_bound_cert_store) {}
+
+OriginBoundCertService::~OriginBoundCertService() {}
+
+bool OriginBoundCertService::GetOriginBoundCert(const std::string& origin,
                                                 std::string* private_key_result,
                                                 std::string* cert_result) {
   // Check if origin bound cert already exists for this origin.
-  if (origin_bound_cert_store_->HasOriginBoundCert(url)) {
-    return origin_bound_cert_store_->GetOriginBoundCert(url,
-                                                        private_key_result,
-                                                        cert_result);
-  }
+  if (origin_bound_cert_store_->GetOriginBoundCert(origin,
+                                                   private_key_result,
+                                                   cert_result))
+    return true;
 
   // No origin bound cert exists, we have to create one.
-  std::string origin = url.GetOrigin().spec();
-  std::string subject = "CN=origin-bound certificate for " + origin;
+  std::string subject = "CN=OBC";
   scoped_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::Create(kKeySizeInBits));
   if (!key.get()) {
@@ -68,7 +71,9 @@ bool OriginBoundCertService::GetOriginBoundCert(const GURL& url,
     return false;
   }
 
-  if (!origin_bound_cert_store_->SetOriginBoundCert(url, key_out, der_cert)) {
+  if (!origin_bound_cert_store_->SetOriginBoundCert(origin,
+                                                    key_out,
+                                                    der_cert)) {
     LOG(WARNING) << "Unable to set origin bound certificate";
     return false;
   }
@@ -76,6 +81,10 @@ bool OriginBoundCertService::GetOriginBoundCert(const GURL& url,
   private_key_result->swap(key_out);
   cert_result->swap(der_cert);
   return true;
+}
+
+int OriginBoundCertService::GetCertCount() {
+  return origin_bound_cert_store_->GetCertCount();
 }
 
 }  // namespace net

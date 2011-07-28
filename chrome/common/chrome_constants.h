@@ -50,6 +50,7 @@ extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
 extern const FilePath::CharType kAppCacheDirname[];
 extern const FilePath::CharType kThemePackFilename[];
 extern const FilePath::CharType kCookieFilename[];
+extern const FilePath::CharType kOBCertFilename[];
 extern const FilePath::CharType kExtensionsCookieFilename[];
 extern const FilePath::CharType kIsolatedAppStateDirname[];
 extern const FilePath::CharType kFaviconsFilename[];
