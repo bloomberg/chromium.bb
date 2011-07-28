@@ -7,10 +7,13 @@ AudioRendererHostTest.*
 ##################################################
 # un-analyzed Dr. Memory bugs:
 
-# test fails, but no visible reason
-# http://code.google.com/p/drmemory/issues/detail?id=330
-TemplateURLTest.Suggestions
+##################################################
+# Chromium bugs:
 
 # times out on the bot
 # http://crbug.com/87887
-VideoCaptureHostTest.StartCapturePlayStop
+VideoCaptureHostTest.*
+
+# crashes on the bot due to stale pointer access
+# http://crbug.com/90585
+HttpBridgeTest.*
