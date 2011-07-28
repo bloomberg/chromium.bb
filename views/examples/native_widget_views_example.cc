@@ -7,6 +7,7 @@
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
+#include "views/test/test_views_delegate.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 #include "views/widget/native_widget_views.h"
@@ -68,9 +69,28 @@ void NativeWidgetViewsExample::CreateExampleView(views::View* container) {
   views::Widget* widget = new views::Widget;
   views::NativeWidgetViews* nwv = new views::NativeWidgetViews(widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.native_widget = nwv;
+
+  // Set parent View for widget.  Real code should use params.parent_widget
+  // but since tabs are implemented with Views instead of Widgets on Windows
+  // we have to hack the parenting.
+#if defined(OS_WIN)
+  views::TestViewsDelegate* test_views_delegate =
+      static_cast<views::TestViewsDelegate*>(
+          views::ViewsDelegate::views_delegate);
+  views::View* old_default_parent_view =
+      test_views_delegate->GetDefaultParentView();
+  test_views_delegate->set_default_parent_view(container);
+#else
   params.parent_widget = container->GetWidget();
+#endif
+
+  params.native_widget = nwv;
   widget->Init(params);
+
+#if defined(OS_WIN)
+  test_views_delegate->set_default_parent_view(old_default_parent_view);
+#endif
+
   widget->SetContentsView(new TestContentView);
   widget->SetBounds(gfx::Rect(10, 10, 300, 150));
 }
