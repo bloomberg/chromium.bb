@@ -203,3 +203,6 @@ PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::pi
 
 # 90579
 PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::ffmpegdemuxer::initialize
+
+# 90796
+REGEX: `anonymous namespace'::[^_]*____purecall___renderviewhost::onmessagereceived___browserrenderprocesshost::onchannelerror___[^:]*::taskclosureadapter::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
