@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "googleurl/src/gurl.h"
@@ -71,6 +72,56 @@ COMPILE_ASSERT(
     keep_resource_types_in_sync);
 
 #define ARRAYEND(array) (array + arraysize(array))
+
+// NetLog parameter to indicate the ID of the extension that caused an event.
+class NetLogExtensionIdParameter : public net::NetLog::EventParameters {
+ public:
+  explicit NetLogExtensionIdParameter(const std::string& extension_id)
+      : extension_id_(extension_id) {}
+  virtual ~NetLogExtensionIdParameter() {}
+
+  virtual base::Value* ToValue() const OVERRIDE {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("extension_id", extension_id_);
+    return dict;
+  }
+
+ private:
+  const std::string extension_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetLogExtensionIdParameter);
+};
+
+// NetLog parameter to indicate that an extension modified a request.
+class NetLogModificationParameter : public NetLogExtensionIdParameter {
+ public:
+  explicit NetLogModificationParameter(const std::string& extension_id)
+      : NetLogExtensionIdParameter(extension_id) {}
+  virtual ~NetLogModificationParameter() {}
+
+  virtual base::Value* ToValue() const OVERRIDE {
+    Value* parent = NetLogExtensionIdParameter::ToValue();
+    DCHECK(parent->IsType(Value::TYPE_DICTIONARY));
+    DictionaryValue* dict = static_cast<DictionaryValue*>(parent);
+    dict->Set("modified_headers", modified_headers_.DeepCopy());
+    dict->Set("deleted_headers", deleted_headers_.DeepCopy());
+    return dict;
+  }
+
+  void DeletedHeader(const std::string& key) {
+    deleted_headers_.Append(Value::CreateStringValue(key));
+  }
+
+  void ModifiedHeader(const std::string& key, const std::string& value) {
+    modified_headers_.Append(Value::CreateStringValue(key + ": " + value));
+  }
+
+ private:
+  ListValue modified_headers_;
+  ListValue deleted_headers_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetLogModificationParameter);
+};
 
 // Returns the frame ID as it will be passed to the extension:
 // 0 if the navigation happens in the main frame, or the frame ID
@@ -218,6 +269,10 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // The number of event handlers that we are awaiting a response from.
   int num_handlers_blocking;
 
+  // Pointer to NetLog to report significant changes to the request for
+  // debugging.
+  const net::BoundNetLog* net_log;
+
   // The callback to call when we get a response from all event handlers.
   net::CompletionCallback* callback;
 
@@ -238,6 +293,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   BlockedRequest()
       : event(kInvalidEvent),
         num_handlers_blocking(0),
+        net_log(NULL),
         callback(NULL),
         new_url(NULL),
         request_headers(NULL) {}
@@ -412,6 +468,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     blocked_requests_[request->identifier()].event = kOnBeforeRequest;
     blocked_requests_[request->identifier()].callback = callback;
     blocked_requests_[request->identifier()].new_url = new_url;
+    blocked_requests_[request->identifier()].net_log = &request->net_log();
     return net::ERR_IO_PENDING;
   }
   return net::OK;
@@ -458,6 +515,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     blocked_requests_[request->identifier()].event = kOnBeforeSendHeaders;
     blocked_requests_[request->identifier()].callback = callback;
     blocked_requests_[request->identifier()].request_headers = headers;
+    blocked_requests_[request->identifier()].net_log = &request->net_log();
     return net::ERR_IO_PENDING;
   }
   return net::OK;
@@ -994,8 +1052,16 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeRequestResponses(
       if (!redirected) {
         *request->new_url = (*delta)->new_url;
         redirected = true;
+        request->net_log->AddEvent(
+            net::NetLog::TYPE_CHROME_EXTENSION_REDIRECTED_REQUEST,
+            make_scoped_refptr(
+                new NetLogExtensionIdParameter((*delta)->extension_id)));
       } else {
         conflicting_extensions->push_back((*delta)->extension_id);
+        request->net_log->AddEvent(
+            net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+            make_scoped_refptr(
+                new NetLogExtensionIdParameter((*delta)->extension_id)));
       }
     }
   }
@@ -1015,6 +1081,14 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
+
+    if ((*delta)->modified_request_headers.IsEmpty() &&
+        (*delta)->deleted_request_headers.empty()) {
+      continue;
+    }
+
+    scoped_refptr<NetLogModificationParameter> log(
+        new NetLogModificationParameter((*delta)->extension_id));
 
     // Check whether any modification affects a request header that
     // has been modified differently before. As deltas is sorted by decreasing
@@ -1065,8 +1139,10 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
         // Record which keys were changed.
         net::HttpRequestHeaders::Iterator modification(
             (*delta)->modified_request_headers);
-        while (modification.GetNext())
+        while (modification.GetNext()) {
           set_headers.insert(modification.name());
+          log->ModifiedHeader(modification.name(), modification.value());
+        }
       }
 
       // Perform all deletions and record which keys were deleted.
@@ -1077,10 +1153,17 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
              ++key) {
           request->request_headers->RemoveHeader(*key);
           removed_headers.insert(*key);
+          log->DeletedHeader(*key);
         }
       }
+      request->net_log->AddEvent(
+          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS, log);
     } else {
       conflicting_extensions->push_back((*delta)->extension_id);
+      request->net_log->AddEvent(
+          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          make_scoped_refptr(
+              new NetLogExtensionIdParameter((*delta)->extension_id)));
     }
   }
 }
@@ -1115,7 +1198,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
     bool canceled = false;
     for (i = deltas.begin(); i != deltas.end(); ++i) {
-      canceled |= (*i)->cancel;
+      if ((*i)->cancel) {
+        canceled = true;
+        blocked_request.net_log->AddEvent(
+            net::NetLog::TYPE_CHROME_EXTENSION_ABORTED_REQUEST,
+            make_scoped_refptr(
+                new NetLogExtensionIdParameter((*i)->extension_id)));
+        break;
+      }
     }
 
     deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
