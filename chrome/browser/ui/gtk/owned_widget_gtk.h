@@ -37,7 +37,7 @@
 // ownership onto the user of the class.  Now the C++ object can't depend on
 // the widget being valid, since it doesn't manage its lifetime.  If the widget
 // was removed from a container, removing its only reference, it would be
-// destroyed (from the C++ object's perspective) unexpectantly destroyed.  The
+// destroyed (from the C++ object's perspective) unexpectedly destroyed.  The
 // solution is fairly simple, make sure that the C++ object owns the widget,
 // and thus it is also responsible for destroying it.  This boils down to:
 //   GtkWidget* widget = gtk_widget_new();

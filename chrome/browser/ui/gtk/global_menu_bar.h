@@ -43,6 +43,10 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   explicit GlobalMenuBar(Browser* browser);
   virtual ~GlobalMenuBar();
 
+  // Use this method to remove the GlobalMenuBar from any further notifications
+  // and command updates but not destroy the widgets.
+  virtual void Disable();
+
   GtkWidget* widget() { return menu_bar_.get(); }
 
  private:
@@ -72,7 +76,6 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_0(GlobalMenuBar, void, OnItemActivated);
 
   Browser* browser_;
-  Profile* profile_;
 
   NotificationRegistrar registrar_;
 

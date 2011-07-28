@@ -40,14 +40,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-// TODO(dimich): Enable for all platforms (crashes on Linux).
-#if defined(OS_LINUX)
-#define MAYBE_OpenAppInPanel DISABLED_OpenAppInPanel
-#else
-#define MAYBE_OpenAppInPanel OpenAppInPanel
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, MAYBE_OpenAppInPanel) {
+IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
   // Start with one browser, new Panel will create another.
   ASSERT_EQ(1u, BrowserList::size());
 
@@ -77,4 +70,3 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, MAYBE_OpenAppInPanel) {
   new_browser->CloseWindow();
   EXPECT_EQ(0, panel_manager->active_count());
 }
-

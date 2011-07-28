@@ -152,7 +152,6 @@ GlobalMenuBarCommand help_menu[] = {
 
 GlobalMenuBar::GlobalMenuBar(Browser* browser)
     : browser_(browser),
-      profile_(browser_->profile()),
       menu_bar_(gtk_menu_bar_new()),
       history_menu_(browser_),
       dummy_accel_group_(gtk_accel_group_new()),
@@ -223,12 +222,24 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
 }
 
 GlobalMenuBar::~GlobalMenuBar() {
+  Disable();
+  g_object_unref(dummy_accel_group_);
+}
+
+void GlobalMenuBar::Disable() {
   for (CommandIDMenuItemMap::const_iterator it = id_to_menu_item_.begin();
        it != id_to_menu_item_.end(); ++it) {
     browser_->command_updater()->RemoveCommandObserver(it->first, this);
   }
-
-  g_object_unref(dummy_accel_group_);
+  id_to_menu_item_.clear();
+  if (registrar_.IsRegistered(this,
+                    chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+                    NotificationService::AllSources())) {
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+        NotificationService::AllSources());
+  }
 }
 
 void GlobalMenuBar::BuildGtkMenuFrom(

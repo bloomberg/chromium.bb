@@ -742,6 +742,10 @@ void BrowserWindowGtk::Close() {
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
   titlebar_->set_window(NULL);
+
+  // We don't want GlobalMenuBar handling any notifications or commands after
+  // the window is destroyed.
+  global_menu_bar_->Disable();
   gtk_widget_destroy(window);
 }
 
