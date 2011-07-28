@@ -1179,8 +1179,6 @@ class MakefileWriter:
         extra_sources += outputs
       if int(action.get('process_outputs_as_mac_bundle_resources', False)):
         extra_mac_bundle_resources += outputs
-      if 'TEMP_DIR' in self.GetXcodeEnv(spec):
-        dirs.add('$(TEMP_DIR)')
 
       # Write the actual command.
       command = gyp.common.EncodePOSIXShellList(action['action'])
@@ -2029,7 +2027,7 @@ class MakefileWriter:
       # This is not true for static libraries, but currently the env is only
       # written for bundles:
       'TARGET_BUILD_DIR' : built_products_dir,
-      'TEMP_DIR' : os.path.join(built_products_dir, 'tmp'),
+      'TEMP_DIR' : '$(TMPDIR)',
     }
     if self.type in ('executable', 'shared_library'):
       env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
