@@ -477,8 +477,22 @@ UNINITIALIZED READ
 
 # http://code.google.com/p/drmemory/issues/detail?id=513
 UNINITIALIZED READ
+*!v8*
+
+UNINITIALIZED READ
 *!*
 *!v8*
+
+# http://code.google.com/p/drmemory/issues/detail?id=516
+UNINITIALIZED READ
+system call NtCreateKey *
+ADVAPI32.dll!RegQueryInfoKeyA
+ADVAPI32.dll!RegCreateKeyExW
+
+UNADDRESSABLE ACCESS
+system call NtCreateKey *
+ADVAPI32.dll!RegQueryInfoKeyA
+ADVAPI32.dll!RegCreateKeyExW
 
 ############################
 # TODO(timurrrr): investigate these
