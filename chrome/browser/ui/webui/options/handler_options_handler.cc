@@ -33,6 +33,7 @@ void HandlerOptionsHandler::GetLocalizedValues(
       { "handlers_site_column_header", IDS_HANDLERS_SITE_COLUMN_HEADER },
       { "handlers_remove_link", IDS_HANDLERS_REMOVE_HANDLER_LINK },
       { "handlers_none_handler", IDS_HANDLERS_NONE_HANDLER },
+      { "handlers_active_heading", IDS_HANDLERS_ACTIVE_HEADING },
       { "handlers_ignored_heading", IDS_HANDLERS_IGNORED_HEADING },
   };
   RegisterTitle(localized_strings, "handlersPage",

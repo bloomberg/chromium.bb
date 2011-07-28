@@ -5551,6 +5551,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_HANDLERS_NONE_HANDLER" desc="Text in the dropdown for handlers for a given protocol that indicates that the protocol shouldn't be handled.">
         (none)
     </message>
+    <message name="IDS_HANDLERS_ACTIVE_HEADING" desc="Header for the section of the handlers settings page that lists handlers that are active, that is, can be used to handle links.">
+        Active protocol handlers
+    </message>
     <message name="IDS_HANDLERS_IGNORED_HEADING" desc="Header for the section of the handlers settings page that lists handlers that are ignored.">
         Ignored protocol handlers
     </message>
