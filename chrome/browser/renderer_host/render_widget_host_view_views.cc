@@ -109,14 +109,7 @@ void RenderWidgetHostViewViews::InitAsPopup(
   // to tell the parent it's showing a popup so that it doesn't respond to
   // blurs.
   parent->is_showing_context_menu_ = true;
-  views::View* root_view = GetWidget()->GetRootView();
-  // TODO(fsamuel): WebKit is computing the screen coordinates incorrectly.
-  // Fixing this is a long and involved process, because WebKit needs to know
-  // how to direct an IPC at a particular View. For now, we simply convert
-  // the broken screen coordinates into relative coordinates.
-  gfx::Point p(pos.x() - root_view->GetScreenBounds().x(),
-               pos.y() - root_view->GetScreenBounds().y());
-  views::View::SetBounds(p.x(), p.y(), pos.width(), pos.height());
+  views::View::SetBoundsRect(pos);
   Show();
 
   if (NeedsInputGrab()) {
