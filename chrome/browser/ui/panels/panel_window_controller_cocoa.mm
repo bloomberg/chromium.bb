@@ -15,7 +15,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 const int kMinimumWindowSize = 1;
-static BOOL gIsMockTabContentsViewEnabled = NO;
 
 @implementation PanelWindowControllerCocoa
 
@@ -96,27 +95,13 @@ static BOOL gIsMockTabContentsViewEnabled = NO;
 
 - (NSView*)tabContentsView {
   TabContents* contents = windowShim_->browser()->GetSelectedTabContents();
-  if (contents) {
-    NSView* tabContentView = contents->GetNativeView();
-    DCHECK(tabContentView);
-    return tabContentView;
-  } else {
-    // This is the UNIT_TEST situation. In unit_tests, there is no navigation
-    // and no TabContents created. Lets make sure we are in a unit_test by
-    // checking the flag set only by the unit_tests, and then return an NSView
-    // which will mock the tab_content_view.
-    CHECK(gIsMockTabContentsViewEnabled);
-    if (!mockTabContentsView_)
-      mockTabContentsView_ = [[NSView alloc] initWithFrame:NSZeroRect];
-    return mockTabContentsView_;
-  }
+  CHECK(contents);
+  NSView* tabContentView = contents->GetNativeView();
+  CHECK(tabContentView);
+  return tabContentView;
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
   return titlebar_view_;
-}
-
-+ (void)enableMockTabContentsView {
-  gIsMockTabContentsViewEnabled = YES;
 }
 @end

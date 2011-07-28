@@ -21,14 +21,7 @@ class PanelBrowserWindowCocoa;
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
-  NSView* mockTabContentsView_;  // Weak, only not-nil in unit_tests, where
-                                 // it is inserted into the views hierarchy.
 }
-
-// Exposed for unit_test support. When called (from unit_test initialization),
-// it allows for TabContents in the associated Browser to be not initialized,
-// and substitutes the mock view instead of TabContent's one.
-+ (void)enableMockTabContentsView;
 
 // Load the browser window nib and do any Cocoa-specific initialization.
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window;

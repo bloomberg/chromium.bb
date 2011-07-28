@@ -10,12 +10,14 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PanelBrowserTest : public InProcessBrowserTest {
@@ -27,16 +29,7 @@ class PanelBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// TODO(dimich): Need to do 2 things before enabling it for Mac:
-//               a) Add NativePanelTesting::SetUpForTesting()
-//               b) Move this test into a panel_unittest.cc
-#ifdef OS_MACOSX
-#define MAYBE_CreatePanel DISABLED_CreatePanel
-#else
-#define MAYBE_CreatePanel CreatePanel
-#endif
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanel) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->active_count()); // No panels initially.
 
@@ -45,6 +38,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanel) {
                                                  gfx::Rect(),
                                                  browser()->profile());
   EXPECT_TRUE(panel_browser->is_type_panel());
+
+  TabContentsWrapper* tab_contents =
+      new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
+  panel_browser->AddTab(tab_contents, PageTransition::LINK);
+
   panel_browser->window()->Show();
   EXPECT_EQ(1, panel_manager->active_count());
 

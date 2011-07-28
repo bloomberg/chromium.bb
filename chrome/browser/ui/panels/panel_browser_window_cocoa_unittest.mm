@@ -15,7 +15,9 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Main test class.
@@ -24,7 +26,6 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
-    [PanelWindowControllerCocoa enableMockTabContentsView];
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {
@@ -32,6 +33,11 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
                                                    panel_name,
                                                    gfx::Rect(),
                                                    browser_helper_.profile());
+
+    TabContentsWrapper* tab_contents = new TabContentsWrapper(
+        new TestTabContents(browser_helper_.profile(), NULL));
+    panel_browser->AddTab(tab_contents, PageTransition::LINK);
+
     return static_cast<Panel*>(panel_browser->window());
   }
 
