@@ -85,7 +85,7 @@ deps = {
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/webdriver/python/selenium':
-        Var('git_url') + '/external/selenium/py/selenium.git@f531d35cf99dd456a1e52af343e738635dd755e4',
+        Var('git_url') + '/external/selenium/py/selenium.git@b05610b1d6530b4c79eae751666f96bcf3996e81',
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@610d3f4a4dc6a233bd95bc50cbc36174150866ee',
     'src/third_party/webrtc':
