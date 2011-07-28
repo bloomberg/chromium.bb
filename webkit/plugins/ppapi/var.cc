@@ -192,7 +192,7 @@ PP_Var ObjectVar::GetPPVar() {
 
 void ObjectVar::InstanceDeleted() {
   DCHECK(pp_instance_);
-  pp_instance_ = NULL;
+  pp_instance_ = 0;
 }
 
 // static
