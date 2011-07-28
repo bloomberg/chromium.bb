@@ -37,10 +37,6 @@ class ExtensionPermissionsManager {
   void RemovePermissions(const Extension* extension,
                          const ExtensionPermissionSet* permissions);
 
-  // Returns the list of API permissions that are supported by the optional
-  // permissions API.
-  const ExtensionPermissionSet& whitelist() const { return *whitelist_; }
-
  private:
   enum EventType {
     ADDED,
@@ -63,11 +59,7 @@ class ExtensionPermissionsManager {
                                 const ExtensionPermissionSet* changed,
                                 EventType event_type);
 
-  // Registers the list of APIs supported by the optional permissions API.
-  void RegisterWhitelist();
-
   ExtensionService* extension_service_;
-  scoped_refptr<ExtensionPermissionSet> whitelist_;
 };
 
 

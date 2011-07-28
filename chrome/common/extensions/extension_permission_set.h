@@ -126,12 +126,33 @@ class ExtensionAPIPermission {
     kEnumBoundary
   };
 
+  enum Flag {
+    kFlagNone = 0,
+
+    // Indicates if the permission can be accessed by hosted apps.
+    kFlagHostedApp = 1 << 0,
+
+    // Indicates if the permission implies full access (native code).
+    kFlagImpliesFullAccess = 1 << 1,
+
+    // Indicates if the permission implies full URL access.
+    kFlagImpliesFullURLAccess = 1 << 2,
+
+    // Indicates that the permission is private to COMPONENT extensions.
+    kFlagComponentOnly = 1 << 3,
+
+    // Indicates that the permission supports the optional permissions API.
+    kFlagSupportsOptional = 1 << 4,
+  };
+
   typedef std::set<ID> IDSet;
 
   ~ExtensionAPIPermission();
 
   // Returns the localized permission message associated with this api.
   ExtensionPermissionMessage GetMessage() const;
+
+  int flags() const { return flags_; }
 
   ID id() const { return id_; }
 
@@ -144,17 +165,31 @@ class ExtensionAPIPermission {
   const char* name() const { return name_; }
 
   // Returns true if this permission implies full access (e.g., native code).
-  bool implies_full_access() const { return implies_full_access_; }
+  bool implies_full_access() const {
+    return (flags_ & kFlagImpliesFullAccess) != 0;
+  }
 
   // Returns true if this permission implies full URL access.
-  bool implies_full_url_access() const { return implies_full_url_access_; }
+  bool implies_full_url_access() const {
+    return (flags_ & kFlagImpliesFullURLAccess) != 0;
+  }
 
   // Returns true if this permission can be accessed by hosted apps.
-  bool is_hosted_app() const { return is_hosted_app_; }
+  bool is_hosted_app() const {
+    return (flags_ & kFlagHostedApp) != 0;
+  }
 
   // Returns true if this permission can only be acquired by COMPONENT
   // extensions.
-  bool is_component_only() const { return is_component_only_; }
+  bool is_component_only() const {
+    return (flags_ & kFlagComponentOnly) != 0;
+  }
+
+  // Returns true if this permission can be added and removed via the
+  // optional permissions extension API.
+  bool supports_optional() const {
+    return (flags_ & kFlagSupportsOptional) != 0;
+  }
 
  private:
   // Instances should only be constructed from within ExtensionPermissionsInfo.
@@ -163,19 +198,13 @@ class ExtensionAPIPermission {
   explicit ExtensionAPIPermission(
       ID id,
       const char* name,
-      bool is_hosted_app,
-      bool is_component_only,
       int l10n_message_id,
       ExtensionPermissionMessage::ID message_id,
-      bool implies_full_access,
-      bool implies_full_url_access);
+      int flags);
 
   ID id_;
   const char* name_;
-  bool implies_full_access_;
-  bool implies_full_url_access_;
-  bool is_hosted_app_;
-  bool is_component_only_;
+  int flags_;
   int l10n_message_id_;
   ExtensionPermissionMessage::ID message_id_;
 };
@@ -218,36 +247,13 @@ class ExtensionPermissionsInfo {
   // Registers an |alias| for a given permission |name|.
   void RegisterAlias(const char* name, const char* alias);
 
-  // Registers a standard extension permission.
-  void RegisterExtensionPermission(
-      ExtensionAPIPermission::ID id,
-      const char* name,
-      int l10n_message_id,
-      ExtensionPermissionMessage::ID message_id);
-
-  // Registers a permission that can be accessed by hosted apps.
-  void RegisterHostedAppPermission(
-      ExtensionAPIPermission::ID id,
-      const char* name,
-      int l10n_message_id,
-      ExtensionPermissionMessage::ID message_id);
-
-  // Registers a permission accessible only by COMPONENT extensions.
-  void RegisterPrivatePermission(
-      ExtensionAPIPermission::ID id,
-      const char* name);
-
-  // Registers a permission with a custom set of attributes not satisfied
-  // by the other registration functions.
+  // Registers a permission with the specified attributes and flags.
   void RegisterPermission(
       ExtensionAPIPermission::ID id,
       const char* name,
       int l10n_message_id,
       ExtensionPermissionMessage::ID message_id,
-      bool is_hosted_app,
-      bool is_component_only,
-      bool implies_full_access,
-      bool implies_full_url_access);
+      int flags);
 
   // Maps permission ids to permissions.
   typedef std::map<ExtensionAPIPermission::ID, ExtensionAPIPermission*> IDMap;

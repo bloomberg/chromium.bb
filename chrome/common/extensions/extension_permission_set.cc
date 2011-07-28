@@ -154,18 +154,12 @@ ExtensionPermissionMessage ExtensionAPIPermission::GetMessage() const {
 ExtensionAPIPermission::ExtensionAPIPermission(
     ID id,
     const char* name,
-    bool is_hosted_app,
-    bool is_component_only,
     int l10n_message_id,
     ExtensionPermissionMessage::ID message_id,
-    bool implies_full_access,
-    bool implies_full_url_access)
+    int flags)
     : id_(id),
       name_(name),
-      implies_full_access_(implies_full_access),
-      implies_full_url_access_(implies_full_url_access),
-      is_hosted_app_(is_hosted_app),
-      is_component_only_(is_component_only),
+      flags_(flags),
       l10n_message_id_(l10n_message_id),
       message_id_(message_id) {
 }
@@ -220,124 +214,128 @@ ExtensionPermissionsInfo::~ExtensionPermissionsInfo() {
 ExtensionPermissionsInfo::ExtensionPermissionsInfo()
     : hosted_app_permission_count_(0),
       permission_count_(0) {
+  // Map the permissions flags to shorter names for convenience.
+  int none = ExtensionAPIPermission::kFlagNone;
+  int hosted_app = ExtensionAPIPermission::kFlagHostedApp;
+  int component_only = ExtensionAPIPermission::kFlagComponentOnly;
+  int full_access = ExtensionAPIPermission::kFlagImpliesFullAccess;
+  int all_urls = ExtensionAPIPermission::kFlagImpliesFullURLAccess;
+  int optional = ExtensionAPIPermission::kFlagSupportsOptional;
+
   // Hosted app permissions
-  RegisterHostedAppPermission(
+  RegisterPermission(
       ExtensionAPIPermission::kBackground, "background", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app | optional);
+  RegisterPermission(
       ExtensionAPIPermission::kClipboardRead, "clipboardRead",
       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
-      ExtensionPermissionMessage::kClipboard);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kClipboard, hosted_app | optional);
+  RegisterPermission(
       ExtensionAPIPermission::kClipboardWrite, "clipboardWrite",  0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app | optional);
+  RegisterPermission(
       ExtensionAPIPermission::kChromePrivate, "chromePrivate", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app);
+  RegisterPermission(
       ExtensionAPIPermission::kExperimental, "experimental", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app);
+  RegisterPermission(
       ExtensionAPIPermission::kGeolocation, "geolocation",
       IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
-      ExtensionPermissionMessage::kGeolocation);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kGeolocation, hosted_app);
+  RegisterPermission(
       ExtensionAPIPermission::kNotification, "notifications", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app | optional);
+  RegisterPermission(
       ExtensionAPIPermission::kUnlimitedStorage, "unlimitedStorage", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterHostedAppPermission(
+      ExtensionPermissionMessage::kNone, hosted_app);
+  RegisterPermission(
       ExtensionAPIPermission::kPermissions, "permissions", 0,
-      ExtensionPermissionMessage::kNone);
+      ExtensionPermissionMessage::kNone, hosted_app);
 
   // Hosted app and private permissions.
   RegisterPermission(
       ExtensionAPIPermission::kChromeAuthPrivate, "chromeAuthPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      true, true, false, false);
+      ExtensionPermissionMessage::kNone, hosted_app | component_only);
   RegisterPermission(
       ExtensionAPIPermission::kWebstorePrivate, "webstorePrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      true, true, false, false);
+      ExtensionPermissionMessage::kNone, hosted_app | component_only);
 
   // Extension permissions.
-  RegisterExtensionPermission(
+  RegisterPermission(
       ExtensionAPIPermission::kBookmark, "bookmarks",
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
-      ExtensionPermissionMessage::kBookmarks);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kBookmarks, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kContentSettings, "contentSettings", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, none);
+  RegisterPermission(
       ExtensionAPIPermission::kContextMenus, "contextMenus", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kCookie, "cookies", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kDebugger, "debugger",
       IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
-      ExtensionPermissionMessage::kDebugger);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kDebugger, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kFileBrowserHandler, "fileBrowserHandler", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, none);
+  RegisterPermission(
       ExtensionAPIPermission::kHistory, "history",
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
-      ExtensionPermissionMessage::kBrowsingHistory);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kBrowsingHistory, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kIdle, "idle", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
-      ExtensionAPIPermission::kInputMethodPrivate,
-      "inputMethodPrivate", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, optional);
+  RegisterPermission(
+      ExtensionAPIPermission::kInputMethodPrivate, "inputMethodPrivate", 0,
+      ExtensionPermissionMessage::kNone, none);
+  RegisterPermission(
       ExtensionAPIPermission::kManagement, "management",
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
-      ExtensionPermissionMessage::kManagement);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kManagement, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kTab, "tabs",
       IDS_EXTENSION_PROMPT_WARNING_TABS,
-      ExtensionPermissionMessage::kTabs);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kTabs, optional);
+  RegisterPermission(
       ExtensionAPIPermission::kTts, "tts", 0,
-      ExtensionPermissionMessage::kNone);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kNone, none);
+  RegisterPermission(
       ExtensionAPIPermission::kTtsEngine, "ttsEngine",
       IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
-      ExtensionPermissionMessage::kTtsEngine);
-  RegisterExtensionPermission(
+      ExtensionPermissionMessage::kTtsEngine, none);
+  RegisterPermission(
       ExtensionAPIPermission::kWebSocketProxyPrivate,
       "webSocketProxyPrivate", 0,
-      ExtensionPermissionMessage::kNone);
+      ExtensionPermissionMessage::kNone, none);
 
   // Private permissions
-  RegisterPrivatePermission(
-      ExtensionAPIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate");
-  RegisterPrivatePermission(
-      ExtensionAPIPermission::kFileBrowserPrivate, "fileBrowserPrivate");
-  RegisterPrivatePermission(
-      ExtensionAPIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate");
+  RegisterPermission(
+      ExtensionAPIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate", 0,
+      ExtensionPermissionMessage::kNone, component_only);
+  RegisterPermission(
+      ExtensionAPIPermission::kFileBrowserPrivate, "fileBrowserPrivate", 0,
+      ExtensionPermissionMessage::kNone, component_only);
+  RegisterPermission(
+      ExtensionAPIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate", 0,
+      ExtensionPermissionMessage::kNone, component_only);
 
   // Full url access permissions.
   RegisterPermission(
       ExtensionAPIPermission::kProxy, "proxy", 0,
-      ExtensionPermissionMessage::kNone, false, false, false, true);
+      ExtensionPermissionMessage::kNone, all_urls);
 
   RegisterPermission(
       ExtensionAPIPermission::kDevtools, "devtools", 0,
-      ExtensionPermissionMessage::kNone, false, false, false, true);
+      ExtensionPermissionMessage::kNone, all_urls);
 
   RegisterPermission(
       ExtensionAPIPermission::kPlugin, "plugin",
       IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
-      ExtensionPermissionMessage::kFullAccess, false, false, true, true);
-
-  RegisterPermission(
-      ExtensionAPIPermission::kDefault, "default", 0,
-      ExtensionPermissionMessage::kNone, false, false, false, false);
+      ExtensionPermissionMessage::kFullAccess, all_urls | full_access);
 
   // Register Aliases
   RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
@@ -351,51 +349,18 @@ void ExtensionPermissionsInfo::RegisterAlias(
   name_map_[alias] = name_map_[name];
 }
 
-void ExtensionPermissionsInfo::RegisterExtensionPermission(
-    ExtensionAPIPermission::ID id,
-    const char* name,
-    int l10n_message_id,
-    ExtensionPermissionMessage::ID message_id) {
-  RegisterPermission(id, name, l10n_message_id, message_id,
-                     false, false, false, false);
-}
-
-void ExtensionPermissionsInfo::RegisterHostedAppPermission(
-    ExtensionAPIPermission::ID id,
-    const char* name,
-    int l10n_message_id,
-    ExtensionPermissionMessage::ID message_id) {
-  RegisterPermission(id, name, l10n_message_id, message_id,
-                     true, false, false, false);
-}
-
-void ExtensionPermissionsInfo::RegisterPrivatePermission(
-    ExtensionAPIPermission::ID id, const char* name) {
-  RegisterPermission(id, name, 0, ExtensionPermissionMessage::kNone,
-                     false, true, false, false);
-}
-
 void ExtensionPermissionsInfo::RegisterPermission(
     ExtensionAPIPermission::ID id,
     const char* name,
     int l10n_message_id,
     ExtensionPermissionMessage::ID message_id,
-    bool is_hosted_app,
-    bool is_component_only,
-    bool implies_full_access,
-    bool implies_full_url_access) {
+    int flags) {
   CHECK(id_map_.find(id) == id_map_.end());
   CHECK(name_map_.find(name) == name_map_.end());
 
   ExtensionAPIPermission* permission =
-      new ExtensionAPIPermission(id,
-                                 name,
-                                 is_hosted_app,
-                                 is_component_only,
-                                 l10n_message_id,
-                                 message_id,
-                                 implies_full_access,
-                                 implies_full_url_access);
+      new ExtensionAPIPermission(id, name, l10n_message_id, message_id, flags);
+
   id_map_[id] = permission;
   name_map_[name] = permission;
 

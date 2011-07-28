@@ -92,12 +92,9 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
 
 ExtensionPermissionsManager::ExtensionPermissionsManager(
     ExtensionService* extension_service)
-    : extension_service_(extension_service) {
-  RegisterWhitelist();
-}
+    : extension_service_(extension_service) {}
 
-ExtensionPermissionsManager::~ExtensionPermissionsManager() {
-}
+ExtensionPermissionsManager::~ExtensionPermissionsManager() {}
 
 void ExtensionPermissionsManager::AddPermissions(
     const Extension* extension, const ExtensionPermissionSet* permissions) {
@@ -193,25 +190,6 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
   }
 }
 
-void ExtensionPermissionsManager::RegisterWhitelist() {
-  // TODO(jstritar): This could be a field on ExtensionAPIPermission.
-  ExtensionAPIPermissionSet api_whitelist;
-  api_whitelist.insert(ExtensionAPIPermission::kClipboardRead);
-  api_whitelist.insert(ExtensionAPIPermission::kClipboardWrite);
-  api_whitelist.insert(ExtensionAPIPermission::kNotification);
-  api_whitelist.insert(ExtensionAPIPermission::kBookmark);
-  api_whitelist.insert(ExtensionAPIPermission::kContextMenus);
-  api_whitelist.insert(ExtensionAPIPermission::kCookie);
-  api_whitelist.insert(ExtensionAPIPermission::kDebugger);
-  api_whitelist.insert(ExtensionAPIPermission::kHistory);
-  api_whitelist.insert(ExtensionAPIPermission::kIdle);
-  api_whitelist.insert(ExtensionAPIPermission::kTab);
-  api_whitelist.insert(ExtensionAPIPermission::kManagement);
-  api_whitelist.insert(ExtensionAPIPermission::kBackground);
-  whitelist_ = new ExtensionPermissionSet(
-      api_whitelist, URLPatternSet(), URLPatternSet());
-}
-
 bool ContainsPermissionsFunction::RunImpl() {
   DictionaryValue* args = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -252,13 +230,14 @@ bool RemovePermissionsFunction::RunImpl() {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
 
   // Make sure they're only trying to remove permissions supported by this API.
-  scoped_refptr<ExtensionPermissionSet> unsupported(
-      ExtensionPermissionSet::CreateDifference(
-          permissions.get(), &perms_manager->whitelist()));
-  if (unsupported->apis().size()) {
-    std::string api_name = info->GetByID(*unsupported->apis().begin())->name();
-    error_ = base::StringPrintf(keys::kNotWhitelistedError, api_name.c_str());
-    return false;
+  ExtensionAPIPermissionSet apis = permissions->apis();
+  for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
+       i != apis.end(); ++i) {
+    const ExtensionAPIPermission* api = info->GetByID(*i);
+    if (!api->supports_optional()) {
+      error_ = base::StringPrintf(keys::kNotWhitelistedError, api->name());
+      return false;
+    }
   }
 
   // Make sure we don't remove any required pemissions.
@@ -301,14 +280,15 @@ bool RequestPermissionsFunction::RunImpl() {
       profile()->GetExtensionService()->permissions_manager();
   ExtensionPrefs* prefs = profile()->GetExtensionService()->extension_prefs();
 
-  // Make sure only white listed permissions have been requested.
-  scoped_refptr<ExtensionPermissionSet> unsupported(
-      ExtensionPermissionSet::CreateDifference(
-          requested_permissions_.get(), &perms_manager->whitelist()));
-  if (unsupported->apis().size()) {
-    std::string api_name = info->GetByID(*unsupported->apis().begin())->name();
-    error_ = base::StringPrintf(keys::kNotWhitelistedError, api_name.c_str());
-    return false;
+  // Make sure they're only requesting permissions supported by this API.
+  ExtensionAPIPermissionSet apis = requested_permissions_->apis();
+  for (ExtensionAPIPermissionSet::const_iterator i = apis.begin();
+       i != apis.end(); ++i) {
+    const ExtensionAPIPermission* api = info->GetByID(*i);
+    if (!api->supports_optional()) {
+      error_ = base::StringPrintf(keys::kNotWhitelistedError, api->name());
+      return false;
+    }
   }
 
   // The requested permissions must be defined as optional in the manifest.
