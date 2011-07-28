@@ -200,7 +200,11 @@ bool TestServer::GetAddressList(AddressList* address_list) const {
                                HostResolver::kDefaultRetryAttempts,
                                NULL));
   HostResolver::RequestInfo info(host_port_pair_);
-  int rv = resolver->Resolve(info, address_list, NULL, NULL, BoundNetLog());
+  TestCompletionCallback callback;
+  int rv = resolver->Resolve(info, address_list, &callback, NULL,
+                             BoundNetLog());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
   if (rv != net::OK) {
     LOG(ERROR) << "Failed to resolve hostname: " << host_port_pair_.host();
     return false;
