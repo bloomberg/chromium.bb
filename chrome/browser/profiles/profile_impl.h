@@ -15,7 +15,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
-#include "chrome/browser/spellcheck_host_observer.h"
+#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 

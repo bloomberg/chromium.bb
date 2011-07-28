@@ -5,7 +5,7 @@
 // This file implements the interface defined in spellchecker_platform_engine.h
 // for the OS X platform.
 
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 
 #import <Cocoa/Cocoa.h>
 

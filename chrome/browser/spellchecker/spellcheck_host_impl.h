@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_
-#define CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HOST_IMPL_H_
+#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HOST_IMPL_H_
 #pragma once
 
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/spellcheck_host_observer.h"
+#include "chrome/browser/spellchecker/spellcheck_host.h"
+#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/url_fetcher.h"
@@ -150,4 +150,4 @@ class SpellCheckHostImpl : public SpellCheckHost,
   SpellCheckHostMetrics* metrics_;
 };
 
-#endif  // CHROME_BROWSER_SPELLCHECK_HOST_IMPL_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HOST_IMPL_H_

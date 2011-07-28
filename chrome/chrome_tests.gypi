@@ -1623,7 +1623,7 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/speech/speech_input_bubble_controller_unittest.cc',
-        'browser/spellchecker_platform_engine_unittest.cc',
+        'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
         'browser/sync/abstract_profile_sync_service_test.cc',
@@ -2247,7 +2247,7 @@
             '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
           'sources!': [
-            'browser/spellchecker_platform_engine_unittest.cc',
+            'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -2784,7 +2784,7 @@
             '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'sources': [
-            'browser/spellcheck_message_filter_browsertest.cc',
+            'browser/spellchecker/spellcheck_message_filter_browsertest.cc',
             '../content/renderer/external_popup_menu_unittest.cc',
           ],
         }, { # else: OS != "mac"

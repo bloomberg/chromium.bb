@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellchecker/spellcheck_host.h"
 
 #include "base/string_split.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/spellcheck_host_impl.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_host_impl.h"
+#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 

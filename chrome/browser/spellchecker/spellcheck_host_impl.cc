@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellcheck_host_impl.h"
+#include "chrome/browser/spellchecker/spellcheck_host_impl.h"
 
 #include <set>
 
@@ -14,9 +14,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/spellcheck_host_metrics.h"
-#include "chrome/browser/spellcheck_host_observer.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
+#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"

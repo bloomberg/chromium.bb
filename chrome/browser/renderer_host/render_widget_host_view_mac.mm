@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/renderer_host/accelerated_plugin_view_mac.h"
 #import "chrome/browser/renderer_host/text_input_client_mac.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #import "chrome/browser/ui/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/render_messages.h"

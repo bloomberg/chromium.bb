@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/spellcheck_message_filter.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"

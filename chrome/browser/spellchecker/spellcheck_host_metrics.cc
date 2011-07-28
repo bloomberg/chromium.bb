@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 
 #include "base/md5.h"
 #include "base/metrics/histogram.h"

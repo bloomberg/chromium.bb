@@ -5,7 +5,7 @@
 // If windows ever gains a platform specific spellchecker, it will be
 // implemented here.
 
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 
 namespace SpellCheckerPlatform {
 

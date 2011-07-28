@@ -5,8 +5,8 @@
 // This file defines the interface that any platform-specific spellchecker
 // needs to implement in order to be used by the browser.
 
-#ifndef CHROME_BROWSER_SPELLCHECKER_PLATFORM_ENGINE_H_
-#define CHROME_BROWSER_SPELLCHECKER_PLATFORM_ENGINE_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
+#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
 #pragma once
 
 #include <string>
@@ -95,4 +95,4 @@ void RequestTextCheck(int route_id,
 
 }  // namespace SpellCheckerPlatform
 
-#endif  // CHROME_BROWSER_SPELLCHECKER_PLATFORM_ENGINE_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECKER_PLATFORM_ENGINE_H_
