@@ -202,11 +202,14 @@ class Session {
 
   // Scroll the element's region into view and get its location relative to
   // the client's viewport. If |center| is true, the element will be centered
-  // if it is too big to fit in view.
+  // if it is too big to fit in view. If |verify_clickable_at_middle| is true,
+  // an error will be returned if the element is not clickable in the middle
+  // of the given region.
   Error* GetElementRegionInView(
       const WebElementId& element,
       const gfx::Rect& region,
       bool center,
+      bool verify_clickable_at_middle,
       gfx::Point* location);
 
   // Gets the size of the element from the given window and frame, even if
@@ -314,11 +317,17 @@ class Session {
                             const std::string& query,
                             bool find_one,
                             std::vector<WebElementId>* elements);
+  // Returns an error if the element is not clickable.
+  Error* VerifyElementIsClickable(
+      const FrameId& frame_id,
+      const WebElementId& element,
+      const gfx::Point& location);
   Error* GetElementRegionInViewHelper(
       const FrameId& frame_id,
       const WebElementId& element,
       const gfx::Rect& region,
       bool center,
+      bool verify_clickable_at_middle,
       gfx::Point* location);
 
   const std::string id_;

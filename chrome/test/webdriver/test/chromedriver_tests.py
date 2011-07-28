@@ -461,6 +461,11 @@ class MouseTest(ChromeDriverTest):
     self._driver.find_element_by_name('wrapped').click()
     self.assertTrue(self._driver.execute_script('return window.success'))
 
+  def testThrowErrorIfNotClickable(self):
+    self._driver.get(GetTestDataUrl() + '/not_clickable.html')
+    elem = self._driver.find_element_by_name('click')
+    self.assertRaises(WebDriverException, elem.click)
+
 
 class TypingTest(ChromeDriverTest):
 
@@ -819,7 +824,7 @@ class AutofillTest(ChromeDriverTest):
 
     for country_code in test_data:
       query = self._SelectOptionXpath(country_code)
-      driver.find_element_by_id('country').find_element_by_xpath(query).select()
+      driver.find_element_by_id('country').find_element_by_xpath(query).click()
       # Compare postal labels.
       actual_postal_label = driver.find_element_by_id(
           'postal-code-label').text
@@ -849,9 +854,9 @@ class AutofillTest(ChromeDriverTest):
     query_year = self._SelectOptionXpath(
         creditcard_data['CREDIT_CARD_EXP_4_DIGIT_YEAR'])
     driver.find_element_by_id('expiration-month').find_element_by_xpath(
-        query_month).select()
+        query_month).click()
     driver.find_element_by_id('expiration-year').find_element_by_xpath(
-        query_year).select()
+        query_year).click()
     driver.find_element_by_id(
         'autofill-edit-credit-card-apply-button').click()
     # Refresh the page to ensure the UI is up-to-date.

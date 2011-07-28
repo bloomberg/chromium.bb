@@ -218,9 +218,9 @@ deps = {
   # python egg is installed. We run tests directly from src, so import
   # the code into the structure expected by the tests.
   "src/third_party/webdriver/python/selenium":
-    "http://selenium.googlecode.com/svn/trunk/py/selenium@12107",
+    "http://selenium.googlecode.com/svn/trunk/py/selenium@13091",
   "src/third_party/webdriver/python/selenium/test":
-    "http://selenium.googlecode.com/svn/trunk/py/test@12107",
+    "http://selenium.googlecode.com/svn/trunk/py/test@13091",
 
   "src/third_party/libvpx":
     "/trunk/deps/third_party/libvpx@" +

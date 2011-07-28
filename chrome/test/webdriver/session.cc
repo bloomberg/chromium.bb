@@ -712,20 +712,22 @@ Error* Session::GetElementLocationInView(
     return error;
   return GetElementRegionInView(
       element, gfx::Rect(gfx::Point(0, 0), size),
-      false /* center */, location);
+      false /* center */, false /* verify_clickable_at_middle */, location);
 }
 
 Error* Session::GetElementRegionInView(
     const WebElementId& element,
     const gfx::Rect& region,
     bool center,
+    bool verify_clickable_at_middle,
     gfx::Point* location) {
   CHECK(element.is_valid());
 
   gfx::Point region_offset = region.origin();
   gfx::Size region_size = region.size();
   Error* error = GetElementRegionInViewHelper(
-      current_target_, element, region, center, &region_offset);
+      current_target_, element, region, center, verify_clickable_at_middle,
+      &region_offset);
   if (error)
     return error;
 
@@ -756,7 +758,7 @@ Error* Session::GetElementRegionInView(
 
     error = GetElementRegionInViewHelper(
         frame_id, frame_element, gfx::Rect(region_offset, region_size),
-        center, &region_offset);
+        center, verify_clickable_at_middle, &region_offset);
     if (error)
       return error;
   }
@@ -965,7 +967,9 @@ Error* Session::GetClickableLocation(const WebElementId& element,
   if (error)
     return error;
 
-  error = GetElementRegionInView(element, rect, true /* center */, location);
+  error = GetElementRegionInView(
+      element, rect, true /* center */, true /* verify_clickable_at_middle */,
+      location);
   if (error)
     return error;
   location->Offset(rect.width() / 2, rect.height() / 2);
@@ -1313,11 +1317,58 @@ Error* Session::FindElementsHelper(const FrameId& frame_id,
   return NULL;
 }
 
+Error* Session::VerifyElementIsClickable(
+    const FrameId& frame_id,
+    const WebElementId& element,
+    const gfx::Point& location) {
+  std::string jscript = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::IS_ELEMENT_CLICKABLE);
+  ListValue jscript_args;
+  jscript_args.Append(element.ToValue());
+  DictionaryValue* location_dict = new DictionaryValue();
+  location_dict->SetInteger("x", location.x());
+  location_dict->SetInteger("y", location.y());
+  jscript_args.Append(location_dict);
+  Value* unscoped_value = NULL;
+  Error* error = ExecuteScript(frame_id, jscript, &jscript_args,
+                               &unscoped_value);
+  if (error)
+    return error;
+
+  scoped_ptr<Value> value(unscoped_value);
+  if (!value->IsType(Value::TYPE_DICTIONARY)) {
+    return new Error(
+        kUnknownError,
+        "isElementClickable atom returned non-dictionary type: " +
+            JsonStringify(value.get()));
+  }
+  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+  bool clickable = false;
+  if (!dict->GetBoolean("clickable", &clickable)) {
+    return new Error(
+        kUnknownError,
+        "isElementClickable atom returned bad invalid dictionary: " +
+            JsonStringify(dict));
+  }
+  std::string message;
+  dict->GetString("message", &message);
+  if (!clickable) {
+    if (message.empty())
+      message = "element is not clickable";
+    return new Error(kUnknownError, message);
+  }
+  if (message.length()) {
+    LOG(WARNING) << message;
+  }
+  return NULL;
+}
+
 Error* Session::GetElementRegionInViewHelper(
     const FrameId& frame_id,
     const WebElementId& element,
     const gfx::Rect& region,
     bool center,
+    bool verify_clickable_at_middle,
     gfx::Point* location) {
   std::string jscript = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_LOCATION_IN_VIEW);
@@ -1336,6 +1387,7 @@ Error* Session::GetElementRegionInViewHelper(
   scoped_ptr<Value> value(unscoped_value);
   if (error)
     return error;
+
   if (!value->IsType(Value::TYPE_DICTIONARY)) {
     return new Error(
         kUnknownError,
@@ -1351,7 +1403,16 @@ Error* Session::GetElementRegionInViewHelper(
         "Location atom returned bad coordinate dictionary: " +
             JsonStringify(loc_dict));
   }
-  *location = gfx::Point(x, y);
+  gfx::Point temp_location = gfx::Point(x, y);
+
+  if (verify_clickable_at_middle) {
+    gfx::Point middle_point = temp_location;
+    middle_point.Offset(region.width() / 2, region.height() / 2);
+    error = VerifyElementIsClickable(frame_id, element, middle_point);
+    if (error)
+      return error;
+  }
+  *location = temp_location;
   return NULL;
 }
 
