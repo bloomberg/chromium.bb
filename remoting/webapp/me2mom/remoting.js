@@ -23,6 +23,7 @@ remoting.AppMode = {
     CLIENT_UNCONNECTED: 'client.unconnected',
     CLIENT_CONNECTING: 'client.connecting',
     CLIENT_CONNECT_FAILED: 'client.connect-failed',
+    CLIENT_SESSION_FINISHED: 'client.session-finished',
   HOST: 'host',
     HOST_UNSHARED: 'host.unshared',
     HOST_WAITING_FOR_CODE: 'host.waiting-for-code',
@@ -611,7 +612,7 @@ remoting.disconnect = function() {
     remoting.session.disconnect();
     remoting.session = null;
     remoting.debug.log('Disconnected.');
-    remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
+    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
     var accessCode = document.getElementById('access-code-entry');
     accessCode.value = '';
   }

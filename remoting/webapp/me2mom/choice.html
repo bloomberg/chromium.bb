@@ -197,13 +197,21 @@ found in the LICENSE file.
         <div data-ui-mode="client.connect-failed"
              class="message">
           <span id="connect-error-message" class="error-state"></span>
-          <div class="centered-button">
-            <button type="button" class="big-button"
-                    onclick="remoting.setMode('client.unconnected');">
-              OK
-            </button>
-          </div>
         </div> <!-- client.connect-failed -->
+
+        <div data-ui-mode="client.session-finished"
+             class="message">
+          You are no longer connected to the remote desktop.
+        </div> <!-- client.session-finished -->
+
+        <div data-ui-mode="client.connect-failed client.session-finished"
+             class="centered-button">
+          <button type="button" class="big-button"
+                  onclick="remoting.setMode(
+                               remoting.AppMode.CLIENT_UNCONNECTED);">
+            OK
+          </button>
+        </div>
       </div> <!-- client-panel -->
 
       <footer class="choice-footer">
