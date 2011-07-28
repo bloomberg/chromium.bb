@@ -59,7 +59,7 @@ class VIEWS_API Throbber : public View {
 // and nonoverlapping bursts of work.  SmoothedThrobber ignores small
 // pauses in the work stops and starts, and only starts its throbber after
 // a small amount of work time has passed.
-class SmoothedThrobber : public Throbber {
+class VIEWS_API SmoothedThrobber : public Throbber {
  public:
   SmoothedThrobber(int frame_delay_ms);
   SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
