@@ -466,6 +466,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables TLS origin bound certificate extension.
+const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
+
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.
 const char kEnableRemoting[]                = "enable-remoting";
@@ -492,9 +495,6 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
-
-// Enables TLS origin bound certificate extension.
-const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
 
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
