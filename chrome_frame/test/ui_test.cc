@@ -237,7 +237,8 @@ TEST_P(FullTabUITest, AltD) {
 }
 
 // Tests that the renderer has focus after navigation.
-TEST_P(FullTabUITest, RendererHasFocus) {
+// Flaky, see http://crbug.com/90791 .
+TEST_P(FullTabUITest, FLAKY_RendererHasFocus) {
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
