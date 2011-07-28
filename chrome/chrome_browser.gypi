@@ -2687,8 +2687,6 @@
         'browser/ui/collected_cookies_infobar_delegate.h',
         'browser/ui/content_settings/content_setting_bubble_model.cc',
         'browser/ui/content_settings/content_setting_bubble_model.h',
-        'browser/ui/content_settings/content_setting_combo_model.cc',
-        'browser/ui/content_settings/content_setting_combo_model.h',
         'browser/ui/content_settings/content_setting_image_model.cc',
         'browser/ui/content_settings/content_setting_image_model.h',
         'browser/ui/crypto_module_password_dialog.h',
