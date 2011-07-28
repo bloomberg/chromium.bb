@@ -185,7 +185,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   // If a non-first-profile user tries to trigger these methods sneakily,
   // forbid it.
 #if !defined(OS_CHROMEOS)
-  if (!web_ui_->GetProfile()->first_launched())
+  if (!web_ui_->GetProfile()->GetOriginalProfile()->first_launched())
     return;
 #endif
 
