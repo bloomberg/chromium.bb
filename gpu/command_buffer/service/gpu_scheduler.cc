@@ -214,8 +214,6 @@ Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
 
 void GpuScheduler::set_token(int32 token) {
   command_buffer_->SetToken(token);
-  if (!set_token_callback_.is_null())
-    set_token_callback_.Run(token);
 }
 
 bool GpuScheduler::SetGetOffset(int32 offset) {
@@ -249,12 +247,6 @@ void GpuScheduler::SetSwapBuffersCallback(
 void GpuScheduler::SetCommandProcessedCallback(
     Callback0::Type* callback) {
   command_processed_callback_.reset(callback);
-}
-
-void GpuScheduler::SetTokenCallback(
-    const base::Callback<void(int32)>& callback) {
-  DCHECK(set_token_callback_.is_null());
-  set_token_callback_ = callback;
 }
 
 GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,

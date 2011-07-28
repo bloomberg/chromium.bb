@@ -100,11 +100,6 @@ IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
 #endif
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(gpu::ReadWriteTokens)
-  IPC_STRUCT_TRAITS_MEMBER(last_token_read)
-  IPC_STRUCT_TRAITS_MEMBER(last_token_written)
-IPC_STRUCT_TRAITS_END()
-
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
@@ -458,45 +453,33 @@ IPC_MESSAGE_ROUTED1(GpuTransportTextureHostMsg_TextureUpdated,
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.
-//
-// These messages defer execution until |tokens.last_token_written| is
-// seen (using |tokens.last_token_read| as a wrap-around indicator).  The
-// implementation REQUIRES that |tokens| be the first parameter of these
-// messages.
 
 // Send input buffer for decoding.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_Decode,
-                    gpu::ReadWriteTokens, /* tokens */
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_Decode,
                     base::SharedMemoryHandle, /* input_buffer_handle */
                     int32, /* bitstream_buffer_id */
                     int32) /* size */
 
 // Sent from Renderer process to the GPU process to give the texture IDs for
-// the textures the decoder will use for output.  Delays evaluation until
-// |token.second| is seen.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
-                    gpu::ReadWriteTokens, /* tokens */
+// the textures the decoder will use for output.
+IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
                     std::vector<int32>, /* Picture buffer ID */
                     std::vector<uint32>, /* Texture ID */
                     std::vector<gfx::Size>) /* Size */
 
 // Send from Renderer process to the GPU process to recycle the given picture
 // buffer for further decoding.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
-                    gpu::ReadWriteTokens, /* tokens */
+IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_ReusePictureBuffer,
                     int32) /* Picture buffer ID */
 
 // Send flush request to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Flush,
-                    gpu::ReadWriteTokens) /* tokens */
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Flush)
 
 // Send reset request to the decoder.
-IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Reset,
-                    gpu::ReadWriteTokens) /* tokens */
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Reset)
 
 // Send destroy request to the decoder.
-IPC_SYNC_MESSAGE_ROUTED1_0(AcceleratedVideoDecoderMsg_Destroy,
-                           gpu::ReadWriteTokens) /* tokens */
+IPC_SYNC_MESSAGE_ROUTED0_0(AcceleratedVideoDecoderMsg_Destroy)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Host Messages

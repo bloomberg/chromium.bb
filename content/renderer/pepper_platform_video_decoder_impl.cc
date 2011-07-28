@@ -16,11 +16,9 @@ using media::BitstreamBuffer;
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
     VideoDecodeAccelerator::Client* client,
-    int32 command_buffer_route_id,
-    gpu::CommandBufferHelper* cmd_buffer_helper)
+    int32 command_buffer_route_id)
     : client_(client),
-      command_buffer_route_id_(command_buffer_route_id),
-      cmd_buffer_helper_(cmd_buffer_helper) {
+      command_buffer_route_id_(command_buffer_route_id) {
   DCHECK(client);
 }
 
@@ -47,7 +45,7 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& configs) {
 
   // Send IPC message to initialize decoder in GPU process.
   decoder_ = channel->CreateVideoDecoder(
-      command_buffer_route_id_, configs, cmd_buffer_helper_, this);
+      command_buffer_route_id_, configs, this);
   return true;
 }
 

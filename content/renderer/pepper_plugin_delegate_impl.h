@@ -29,10 +29,6 @@ class Point;
 class Rect;
 }
 
-namespace gpu {
-class CommandBufferHelper;
-}
-
 namespace IPC {
 struct ChannelHandle;
 }
@@ -184,8 +180,7 @@ class PepperPluginDelegateImpl
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
-      int32 command_buffer_route_id,
-      gpu::CommandBufferHelper* cmd_buffer_helper);
+      int32 command_buffer_route_id);
   virtual PpapiBroker* ConnectToPpapiBroker(
       webkit::ppapi::PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,

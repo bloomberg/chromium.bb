@@ -46,7 +46,6 @@
         'command_buffer/common/buffer.h',
         'command_buffer/common/cmd_buffer_common.h',
         'command_buffer/common/cmd_buffer_common.cc',
-        'command_buffer/common/command_buffer.cc',
         'command_buffer/common/command_buffer.h',
         'command_buffer/common/constants.h',
         'command_buffer/common/gles2_cmd_ids_autogen.h',

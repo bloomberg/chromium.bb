@@ -835,10 +835,8 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
 PepperPluginDelegateImpl::CreateVideoDecoder(
     media::VideoDecodeAccelerator::Client* client,
-    int32 command_buffer_route_id,
-    gpu::CommandBufferHelper* cmd_buffer_helper) {
-  return new PlatformVideoDecoderImpl(
-      client, command_buffer_route_id, cmd_buffer_helper);
+    int32 command_buffer_route_id) {
+  return new PlatformVideoDecoderImpl(client, command_buffer_route_id);
 }
 
 void PepperPluginDelegateImpl::NumberOfFindResultsChanged(int identifier,

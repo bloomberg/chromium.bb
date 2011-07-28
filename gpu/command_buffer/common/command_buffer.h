@@ -139,27 +139,6 @@ class CommandBuffer {
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);
 };
 
-// Synchronizing other mechanisms (such as IPC) with the CommandBuffer requires
-// inserting (writing) a token into the buffer and knowing what the last token
-// read at that point was.  ReadWriteTokens is a convenience struct for passing
-// these pairs around.  Expected usage is to compare a current token to
-// [last_token_read,last_token_written).
-class ReadWriteTokens {
- public:
-  ReadWriteTokens(int32 read, int32 written);
-  // Required to support pickling.  Use by anything else will DCHECK in InRange.
-  ReadWriteTokens();
-
-  // Return true iff |value| is in the range described by |tokens|, accounting
-  // for (up to) one wrap-around.
-  bool InRange(int32 token) const;
-
-  // These want to be private (and const) but can't in order to support
-  // pickling.
-  int32 last_token_read;
-  int32 last_token_written;
-};
-
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_COMMAND_BUFFER_H_

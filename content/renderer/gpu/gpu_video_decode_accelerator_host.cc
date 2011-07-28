@@ -7,30 +7,23 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/shared_memory.h"
 #include "base/task.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
-#include "gpu/command_buffer/client/cmd_buffer_helper.h"
-#include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_platform_file.h"
 
 using media::VideoDecodeAccelerator;
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     IPC::Message::Sender* ipc_sender,
     int32 command_buffer_route_id,
-    gpu::CommandBufferHelper* cmd_buffer_helper,
     VideoDecodeAccelerator::Client* client)
     : ipc_sender_(ipc_sender),
       command_buffer_route_id_(command_buffer_route_id),
-      cmd_buffer_helper_(cmd_buffer_helper),
       client_(client) {
   DCHECK(ipc_sender_);
-  DCHECK(cmd_buffer_helper_);
   DCHECK(client_);
   DCHECK(RenderThread::current());
   DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
@@ -39,7 +32,6 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
-  cmd_buffer_helper_ = NULL;
   ipc_sender_ = NULL;
 }
 
@@ -69,26 +61,6 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-gpu::ReadWriteTokens GpuVideoDecodeAcceleratorHost::SyncTokens() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(cmd_buffer_helper_);
-
-  // SyncTokens() is only called when creating new IPC messages.
-  // Calling SyncTokens() with a NULL command buffer means that the client is
-  // trying to send an IPC message over a channel that is no longer
-  // valid, so the error message that is sent in Send() for a null
-  // |ipc_sender| also accounts for the error case below.
-  if (!cmd_buffer_helper_)
-    return gpu::ReadWriteTokens();
-
-  // Note that the order below matters.  InsertToken() must happen before
-  // Flush() and last_token_read() should be read before InsertToken().
-  int32 read = cmd_buffer_helper_->last_token_read();
-  int32 written = cmd_buffer_helper_->InsertToken();
-  cmd_buffer_helper_->Flush();
-  return gpu::ReadWriteTokens(read, written);
-}
-
 bool GpuVideoDecodeAcceleratorHost::Initialize(
     const std::vector<uint32>& configs) {
   NOTREACHED();
@@ -99,7 +71,7 @@ void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedVideoDecoderMsg_Decode(
-      command_buffer_route_id_, SyncTokens(), bitstream_buffer.handle(),
+      command_buffer_route_id_, bitstream_buffer.handle(),
       bitstream_buffer.id(), bitstream_buffer.size()));
 }
 
@@ -117,32 +89,29 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
     sizes.push_back(buffer.size());
   }
   Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(
-      command_buffer_route_id_, SyncTokens(), buffer_ids, texture_ids, sizes));
+      command_buffer_route_id_, buffer_ids, texture_ids, sizes));
 }
 
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(
-      command_buffer_route_id_, SyncTokens(), picture_buffer_id));
+      command_buffer_route_id_, picture_buffer_id));
 }
 
 void GpuVideoDecodeAcceleratorHost::Flush() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Flush(
-      command_buffer_route_id_, SyncTokens()));
+  Send(new AcceleratedVideoDecoderMsg_Flush(command_buffer_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Reset() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Reset(
-      command_buffer_route_id_, SyncTokens()));
+  Send(new AcceleratedVideoDecoderMsg_Reset(command_buffer_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
-  Send(new AcceleratedVideoDecoderMsg_Destroy(
-      command_buffer_route_id_, SyncTokens()));
+  Send(new AcceleratedVideoDecoderMsg_Destroy(command_buffer_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {

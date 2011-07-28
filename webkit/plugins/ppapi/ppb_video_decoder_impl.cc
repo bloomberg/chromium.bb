@@ -37,15 +37,14 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       context3d_id_(0),
       flush_callback_(PP_BlockUntilComplete()),
-      reset_callback_(PP_BlockUntilComplete()) {
+      reset_callback_(PP_BlockUntilComplete()),
+      gles2_impl_(NULL) {
   ppp_videodecoder_ =
       static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
           GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
-  if (context3d_id_)
-    ResourceTracker::Get()->UnrefResource(context3d_id_);
 }
 
 PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
@@ -70,13 +69,15 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
 
   context3d_id_ = context_id;
   ResourceTracker::Get()->AddRefResource(context3d_id_);
+
   int command_buffer_route_id =
       context3d->platform_context()->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
     return PP_ERROR_FAILED;
-
   platform_video_decoder_ = instance()->delegate()->CreateVideoDecoder(
-      this, command_buffer_route_id, context3d->gles2_impl()->helper());
+      this, command_buffer_route_id);
+
+  gles2_impl_ = context3d->gles2_impl();
 
   if (!platform_video_decoder_)
     return PP_ERROR_FAILED;
@@ -95,6 +96,7 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
     copied.push_back(static_cast<uint32>(*current));
   }
 
+  FlushCommandBuffer();
   if (platform_video_decoder_->Initialize(copied)) {
     initialization_callback_ = callback;
     return PP_OK_COMPLETIONPENDING;
@@ -120,6 +122,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   CHECK(bitstream_buffer_callbacks_.insert(std::make_pair(
       bitstream_buffer->id, callback)).second);
 
+  FlushCommandBuffer();
   platform_video_decoder_->Decode(decode_buffer);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -139,12 +142,16 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
         in_buf.texture_id);
     wrapped_buffers.push_back(buffer);
   }
+
+  FlushCommandBuffer();
   platform_video_decoder_->AssignPictureBuffers(wrapped_buffers);
 }
 
 void PPB_VideoDecoder_Impl::ReusePictureBuffer(int32_t picture_buffer_id) {
   if (!platform_video_decoder_)
     return;
+
+  FlushCommandBuffer();
   platform_video_decoder_->ReusePictureBuffer(picture_buffer_id);
 }
 
@@ -156,6 +163,7 @@ int32_t PPB_VideoDecoder_Impl::Flush(PP_CompletionCallback callback) {
   // TODO(fischman,vrk): consider implications of already-outstanding callback.
   flush_callback_ = callback;
 
+  FlushCommandBuffer();
   platform_video_decoder_->Flush();
   return PP_OK_COMPLETIONPENDING;
 }
@@ -168,6 +176,7 @@ int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
   // TODO(fischman,vrk): consider implications of already-outstanding callback.
   reset_callback_ = callback;
 
+  FlushCommandBuffer();
   platform_video_decoder_->Reset();
   return PP_OK_COMPLETIONPENDING;
 }
@@ -175,7 +184,12 @@ int32_t PPB_VideoDecoder_Impl::Reset(PP_CompletionCallback callback) {
 void PPB_VideoDecoder_Impl::Destroy() {
   if (!platform_video_decoder_)
     return;
+
+  FlushCommandBuffer();
   platform_video_decoder_->Destroy();
+  gles2_impl_ = NULL;
+  if (context3d_id_)
+    ResourceTracker::Get()->UnrefResource(context3d_id_);
   platform_video_decoder_ = NULL;
   ppp_videodecoder_ = NULL;
 }
@@ -266,6 +280,14 @@ void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
     return;
 
   PP_RunAndClearCompletionCallback(&initialization_callback_, PP_OK);
+}
+
+void PPB_VideoDecoder_Impl::FlushCommandBuffer() {
+  // For the out-of-process case, |gles2_impl_| will be NULL in the renderer
+  // process. The VideoDecoder_Proxy is charged with the responsibility of
+  // doing this Flush() in the analogous places in the plugin process.
+  if (gles2_impl_)
+    gles2_impl_->Flush();
 }
 
 }  // namespace ppapi

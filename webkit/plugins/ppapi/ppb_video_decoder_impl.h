@@ -23,6 +23,12 @@ struct PP_VideoBitstreamBuffer_Dev;
 struct PPB_VideoDecoder_Dev;
 struct PPP_VideoDecoder_Dev;
 
+namespace gpu {
+namespace gles2 {
+class GLES2Implementation;
+}
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -69,6 +75,9 @@ class PPB_VideoDecoder_Impl : public Resource,
   // done.
   typedef std::map<int32, PP_CompletionCallback> CallbackById;
 
+  // Tell command buffer to process all commands it has received so far.
+  void FlushCommandBuffer();
+
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
   scoped_refptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
@@ -87,6 +96,13 @@ class PPB_VideoDecoder_Impl : public Resource,
 
   // Reference to the plugin requesting this interface.
   const PPP_VideoDecoder_Dev* ppp_videodecoder_;
+
+  // Reference to the GLES2Implementation owned by PPB_Context3D_Impl.
+  // PPB_Context3D_Impl is guaranteed to be alive for the lifetime of this
+  // class.
+  // In the out-of-process case, Context3D's gles2_impl() exists in the plugin
+  // process only, so gles2_impl_ is NULL in that case.
+  gpu::gles2::GLES2Implementation* gles2_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Impl);
 };

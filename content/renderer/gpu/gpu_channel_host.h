@@ -85,7 +85,6 @@ class GpuChannelHost : public IPC::Channel::Listener,
   GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
       int command_buffer_route_id,
       const std::vector<uint32>& configs,
-      gpu::CommandBufferHelper* cmd_buffer_helper,
       media::VideoDecodeAccelerator::Client* client);
 
   // Destroy a command buffer created by this channel.

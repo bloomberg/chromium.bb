@@ -5,7 +5,6 @@
 #if defined(ENABLE_GPU)
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
@@ -202,8 +201,6 @@ void GpuCommandBufferStub::OnInitialize(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
       scheduler_->SetScheduledCallback(
           NewCallback(channel_, &GpuChannel::OnScheduled));
-      scheduler_->SetTokenCallback(base::Bind(
-          &GpuCommandBufferStub::OnSetToken, base::Unretained(this)));
       if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
@@ -501,16 +498,6 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
   }
 }
 #endif  // defined(OS_MACOSX)
-
-void GpuCommandBufferStub::AddSetTokenCallback(
-    const base::Callback<void(int32)>& callback) {
-  set_token_callbacks_.push_back(callback);
-}
-
-void GpuCommandBufferStub::OnSetToken(int32 token) {
-  for (size_t i = 0; i < set_token_callbacks_.size(); ++i)
-    set_token_callbacks_[i].Run(token);
-}
 
 void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
   if (handle_ == gfx::kNullPluginWindow) {

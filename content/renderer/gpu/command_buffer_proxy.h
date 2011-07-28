@@ -91,7 +91,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // notified of an error later.
   scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
       const std::vector<uint32>& configs,
-      gpu::CommandBufferHelper* cmd_buffer_helper,
       media::VideoDecodeAccelerator::Client* client);
 
 #if defined(OS_MACOSX)

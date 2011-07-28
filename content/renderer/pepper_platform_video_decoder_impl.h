@@ -12,19 +12,13 @@
 #include "media/video/video_decode_accelerator.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-class GpuChannelHost;
-namespace gpu {
-class CommandBufferHelper;
-}
-
 class PlatformVideoDecoderImpl
     : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder,
       public media::VideoDecodeAccelerator::Client {
  public:
   PlatformVideoDecoderImpl(
       media::VideoDecodeAccelerator::Client* client,
-      int32 command_buffer_route_id,
-      gpu::CommandBufferHelper* cmd_buffer_helper);
+      int32 command_buffer_route_id);
 
   // PlatformVideoDecoder (a.k.a. VideoDecodeAccelerator) implementation.
   virtual bool Initialize(const std::vector<uint32>& configs) OVERRIDE;
@@ -61,9 +55,6 @@ class PlatformVideoDecoderImpl
 
   // Route ID for the command buffer associated with video decoder's context.
   int32 command_buffer_route_id_;
-
-  // Helper for the command buffer associated with video decoder's context.
-  gpu::CommandBufferHelper* cmd_buffer_helper_;
 
   // Holds a GpuVideoDecodeAcceleratorHost.
   scoped_refptr<media::VideoDecodeAccelerator> decoder_;

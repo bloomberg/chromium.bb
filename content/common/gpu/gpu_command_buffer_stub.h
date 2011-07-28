@@ -71,12 +71,6 @@ class GpuCommandBufferStub
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
 
-  // Return the current token in the underlying command buffer, or 0 if not yet
-  // initialized.
-  int32 token() const {
-    return command_buffer_.get() ? command_buffer_->GetState().token : 0;
-  }
-
 #if defined(OS_WIN)
   // Called only by the compositor window's window proc
   void OnCompositorWindowPainted();
@@ -88,11 +82,6 @@ class GpuCommandBufferStub
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
 #endif  // defined(OS_MACOSX)
-
-  // Register a callback to be Run() whenever the underlying scheduler receives
-  // a set_token() call.  The callback will be Run() with the just-set token as
-  // its only parameter.  Multiple callbacks may be registered.
-  void AddSetTokenCallback(const base::Callback<void(int32)>& callback);
 
  private:
   // Cleans up and sends reply if OnInitialize failed.
@@ -138,9 +127,6 @@ class GpuCommandBufferStub
   void ResizeCallback(gfx::Size size);
   void ReportState();
 
-  // Callback registered with GpuScheduler to receive set_token() notifications.
-  void OnSetToken(int32 token);
-
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
@@ -162,7 +148,6 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  std::vector<base::Callback<void(int32)> > set_token_callbacks_;
 
   // SetParent may be called before Initialize, in which case we need to keep
   // around the parent stub, so that Initialize can set the parent correctly.
