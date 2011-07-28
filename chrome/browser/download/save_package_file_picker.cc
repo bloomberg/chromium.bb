@@ -56,8 +56,8 @@ SavePackageFilePicker::SavePackageFilePicker(
     const FilePath& suggested_path,
     bool can_save_as_complete)
     : save_package_(save_package) {
-  DownloadPrefs* download_prefs = save_package->tab_contents()->profile()->
-      GetDownloadManager()->download_prefs();
+  DownloadPrefs* download_prefs = save_package->tab_contents()->
+      browser_context()->GetDownloadManager()->download_prefs();
   int file_type_index = SavePackageTypeToIndex(
       static_cast<SavePackage::SavePackageType>(
           download_prefs->save_file_type()));
@@ -156,7 +156,9 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
   if (save_package_) {
     TabContents* tab_contents = save_package_->tab_contents();
     SavePackage::SavePackageType save_type = kIndexToSaveType[index];
-    PrefService* prefs = tab_contents->profile()->GetPrefs();
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents->browser_context());
+    PrefService* prefs = profile->GetPrefs();
     prefs->SetInteger(prefs::kSaveFileType, save_type);
 
     StringPrefMember save_file_path;
@@ -168,7 +170,7 @@ void SavePackageFilePicker::FileSelected(const FilePath& path,
 #endif
     // If user change the default saving directory, we will remember it just
     // like IE and FireFox.
-    if (!tab_contents->profile()->IsOffTheRecord() &&
+    if (!tab_contents->browser_context()->IsOffTheRecord() &&
         save_file_path.GetValue() != path_string) {
       save_file_path.SetValue(path_string);
     }

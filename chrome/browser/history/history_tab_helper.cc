@@ -143,18 +143,22 @@ void HistoryTabHelper::OnPageContents(const GURL& url,
 void HistoryTabHelper::OnThumbnail(const GURL& url,
                                    const ThumbnailScore& score,
                                    const SkBitmap& bitmap) {
-  if (tab_contents()->profile()->IsOffTheRecord())
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  if (profile->IsOffTheRecord())
     return;
 
   // Tell History about this thumbnail
-  history::TopSites* ts = tab_contents()->profile()->GetTopSites();
+  history::TopSites* ts = profile->GetTopSites();
   if (ts)
     ts->SetPageThumbnail(url, bitmap, score);
 }
 
 HistoryService* HistoryTabHelper::GetHistoryService() {
-  if (tab_contents()->profile()->IsOffTheRecord())
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  if (profile->IsOffTheRecord())
     return NULL;
 
-  return tab_contents()->profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+  return profile->GetHistoryService(Profile::IMPLICIT_ACCESS);
 }

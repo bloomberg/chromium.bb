@@ -63,8 +63,9 @@ void ExtensionTabHelper::SetExtensionAppById(
   if (extension_app_id.empty())
     return;
 
-  ExtensionService* extension_service =
-      tab_contents()->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service || !extension_service->is_ready())
     return;
 
@@ -87,7 +88,9 @@ void ExtensionTabHelper::DidNavigateMainFramePostCommit(
   if (details.is_in_page)
     return;
 
-  ExtensionService* service = tab_contents()->profile()->GetExtensionService();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return;
 

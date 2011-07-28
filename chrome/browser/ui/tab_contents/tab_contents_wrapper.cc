@@ -160,7 +160,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   }
 
   // Set-up the showing of the omnibox search infobar if applicable.
-  if (OmniboxSearchHint::IsEnabled(contents->profile()))
+  if (OmniboxSearchHint::IsEnabled(profile()))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
@@ -367,6 +367,10 @@ const TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
       property_accessor()->GetProperty(contents->property_bag());
 
   return wrapper ? *wrapper : NULL;
+}
+
+Profile* TabContentsWrapper::profile() const {
+  return Profile::FromBrowserContext(tab_contents()->browser_context());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

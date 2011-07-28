@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,9 @@ std::wstring ToolbarModel::GetText() const {
 
   NavigationController* navigation_controller = GetNavigationController();
   if (navigation_controller) {
-    languages = navigation_controller->profile()->GetPrefs()->GetString(
-        prefs::kAcceptLanguages);
+    Profile* profile =
+        Profile::FromBrowserContext(navigation_controller->browser_context());
+    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     NavigationEntry* entry = navigation_controller->GetActiveEntry();
     if (!navigation_controller->tab_contents()->ShouldDisplayURL()) {
       // Explicitly hide the URL for this tab.

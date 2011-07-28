@@ -145,7 +145,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   wrapper->AddInfoBar(new RequestQuotaInfoBarDelegate(
       tab_contents, this,
       origin_url, requested_quota,
-      tab_contents->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      wrapper->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
       callback.release()));
 }
 

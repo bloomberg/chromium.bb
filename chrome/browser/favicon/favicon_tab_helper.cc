@@ -21,11 +21,12 @@
 #include "ui/gfx/image/image.h"
 
 FaviconTabHelper::FaviconTabHelper(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
-  favicon_handler_.reset(new FaviconHandler(tab_contents->profile(), this,
+    : TabContentsObserver(tab_contents),
+      profile_(Profile::FromBrowserContext(tab_contents->browser_context())) {
+  favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)
-    touch_icon_handler_.reset(new FaviconHandler(tab_contents->profile(), this,
+    touch_icon_handler_.reset(new FaviconHandler(profile_, this,
                                                  FaviconHandler::TOUCH));
 }
 
@@ -84,13 +85,13 @@ void FaviconTabHelper::SaveFavicon() {
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
-  HistoryService* history = tab_contents()->profile()->
+  HistoryService* history = profile_->
       GetOriginalProfile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (!history)
     return;
   history->AddPageNoVisitForBookmark(entry->url());
 
-  FaviconService* service = tab_contents()->profile()->
+  FaviconService* service = profile_->
       GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
   if (!service)
     return;
@@ -148,9 +149,9 @@ void FaviconTabHelper::NavigateToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {
   if (reload_type != NavigationController::NO_RELOAD &&
-      !tab_contents()->profile()->IsOffTheRecord()) {
+      !profile_->IsOffTheRecord()) {
     FaviconService* favicon_service =
-        tab_contents()->profile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
+        profile_->GetFaviconService(Profile::IMPLICIT_ACCESS);
     if (favicon_service)
       favicon_service->SetFaviconOutOfDateForPage(url);
   }

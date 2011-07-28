@@ -430,8 +430,9 @@ bool BrowserFeatureExtractor::GetPendingQuery(
 
 bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
   *history = NULL;
-  if (tab_ && tab_->profile()) {
-    *history = tab_->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (tab_ && tab_->browser_context()) {
+    Profile* profile = Profile::FromBrowserContext(tab_->browser_context());
+    *history = profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (*history) {
       return true;
     }
@@ -439,4 +440,5 @@ bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
   VLOG(2) << "Unable to query history.  No history service available.";
   return false;
 }
+
 };  // namespace safe_browsing

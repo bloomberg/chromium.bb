@@ -379,8 +379,7 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   }
   ListValue results;
   const ExtensionService* extension_service =
-      tab_contents_->tab_contents()->profile()->
-          GetOriginalProfile()->GetExtensionService();
+      tab_contents_->profile()->GetOriginalProfile()->GetExtensionService();
   if (!extension_service)
     return;
 

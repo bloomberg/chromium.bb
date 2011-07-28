@@ -160,7 +160,9 @@ bool BlockedPluginInfoBarDelegate::Accept() {
 bool BlockedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  tab_contents_->profile()->GetHostContentSettingsMap()->AddExceptionForURL(
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents_->browser_context());
+  profile->GetHostContentSettingsMap()->AddExceptionForURL(
       tab_contents_->GetURL(),
       tab_contents_->GetURL(),
       CONTENT_SETTINGS_TYPE_PLUGINS,

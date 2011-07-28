@@ -61,11 +61,11 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
   if (!contents)
     return NULL;
 
-  Profile* profile = contents->profile();
-  if (!profile)
+  content::BrowserContext* browser_context = contents->browser_context();
+  if (!browser_context)
     return NULL;
 
-  return profile->GetDownloadManager();
+  return browser_context->GetDownloadManager();
 }
 
 void DownloadRequestHandle::PauseRequest() const {

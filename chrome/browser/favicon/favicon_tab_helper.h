@@ -92,6 +92,8 @@ class FaviconTabHelper : public TabContentsObserver,
                             bool errored,
                             const SkBitmap& image);
 
+  Profile* profile_;
+
   scoped_ptr<FaviconHandler> favicon_handler_;
 
   // Handles downloading touchicons. It is NULL if

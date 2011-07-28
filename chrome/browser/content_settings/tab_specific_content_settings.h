@@ -265,6 +265,9 @@ class TabSpecificContentSettings : public TabContentsObserver,
   scoped_ptr<std::set<std::string> >
       blocked_resources_[CONTENT_SETTINGS_NUM_TYPES];
 
+  // The profile of the tab.
+  Profile* profile_;
+
   // Stores the blocked/allowed cookies.
   LocalSharedObjectsContainer allowed_local_shared_objects_;
   LocalSharedObjectsContainer blocked_local_shared_objects_;

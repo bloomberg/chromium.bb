@@ -573,7 +573,7 @@ void BackgroundContentsService::AddTabContents(
     const gfx::Rect& initial_pos,
     bool user_gesture) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(
-      new_contents->profile());
+      Profile::FromBrowserContext(new_contents->browser_context()));
   if (!browser)
     return;
   browser->AddTabContents(new_contents, disposition, initial_pos, user_gesture);

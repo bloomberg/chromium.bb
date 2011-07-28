@@ -106,7 +106,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     }
 
     // Don't run the phishing classifier if the tab is incognito.
-    if (tab_contents_->profile()->IsOffTheRecord()) {
+    if (tab_contents_->browser_context()->IsOffTheRecord()) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because we're browsing incognito.";
       UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",

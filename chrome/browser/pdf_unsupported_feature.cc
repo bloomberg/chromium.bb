@@ -86,7 +86,9 @@ InfoBarDelegate::Type
 }
 
 bool PDFEnableAdobeReaderInfoBarDelegate::Accept() {
-  tab_contents_->profile()->GetPrefs()->SetBoolean(
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents_->browser_context());
+  profile->GetPrefs()->SetBoolean(
       prefs::kPluginsShowSetReaderDefaultInfobar, false);
   OnNo();
   return true;
@@ -115,7 +117,9 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
   PluginUpdater* plugin_updater = PluginUpdater::GetInstance();
   plugin_updater->EnablePluginGroup(true,
       ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
-  plugin_updater->UpdatePreferences(tab_contents_->profile(), 0);
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents_->browser_context());
+  plugin_updater->UpdatePreferences(profile, 0);
 }
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {

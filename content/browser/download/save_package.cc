@@ -256,19 +256,19 @@ bool SavePackage::Init() {
   wait_state_ = START_PROCESS;
 
   // Initialize the request context and resource dispatcher.
-  Profile* profile = tab_contents()->profile();
-  if (!profile) {
+  content::BrowserContext* browser_context = tab_contents()->browser_context();
+  if (!browser_context) {
     NOTREACHED();
     return false;
   }
 
   // Create the fake DownloadItem and display the view.
   DownloadManager* download_manager =
-      tab_contents()->profile()->GetDownloadManager();
+      tab_contents()->browser_context()->GetDownloadManager();
   download_ = new DownloadItem(download_manager,
                                saved_main_file_path_,
                                page_url_,
-                               profile->IsOffTheRecord());
+                               browser_context->IsOffTheRecord());
 
   // Transfer the ownership to the download manager. We need the DownloadItem
   // to be alive as long as the Profile is alive.
@@ -813,7 +813,8 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),
-                           tab_contents()->profile()->GetResourceContext(),
+                           tab_contents()->
+                               browser_context()->GetResourceContext(),
                            this);
   } while (process_all_remaining_items && waiting_item_queue_.size());
 }

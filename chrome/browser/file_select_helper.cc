@@ -317,8 +317,11 @@ bool FileSelectObserver::OnMessageReceived(const IPC::Message& message) {
 
 void FileSelectObserver::OnRunFileChooser(
     const ViewHostMsg_RunFileChooser_Params& params) {
-  if (!file_select_helper_.get())
-    file_select_helper_.reset(new FileSelectHelper(tab_contents()->profile()));
+  if (!file_select_helper_.get()) {
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents()->browser_context());
+    file_select_helper_.reset(new FileSelectHelper(profile));
+  }
   file_select_helper_->RunFileChooser(tab_contents()->render_view_host(),
                                       tab_contents(),
                                       params);
@@ -334,8 +337,11 @@ void FileSelectObserver::OnEnumerateDirectory(int request_id,
     return;
   }
 
-  if (!file_select_helper_.get())
-    file_select_helper_.reset(new FileSelectHelper(tab_contents()->profile()));
+  if (!file_select_helper_.get()) {
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents()->browser_context());
+    file_select_helper_.reset(new FileSelectHelper(profile));
+  }
   file_select_helper_->EnumerateDirectory(request_id,
                                           tab_contents()->render_view_host(),
                                           path);

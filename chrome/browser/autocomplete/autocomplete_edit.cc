@@ -236,7 +236,7 @@ void AutocompleteEditModel::OnChanged() {
       // Start Prerender of this page instead.
       CHECK(tab->tab_contents());
       prerender::PrerenderManager* prerender_manager =
-          tab->tab_contents()->profile()->GetPrerenderManager();
+          tab->profile()->GetPrerenderManager();
       if (prerender_manager) {
         prerender_manager->AddPrerenderFromOmnibox(
             CurrentMatch().destination_url);

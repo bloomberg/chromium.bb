@@ -998,7 +998,8 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                           g_browser_process->resource_dispatcher_host(),
                           tab_contents->GetRenderProcessHost()->id(),
                           tab_contents->render_view_host()->routing_id(),
-                          &tab_contents->profile()->GetResourceContext()));
+                          &tab_contents->browser_context()->
+                              GetResourceContext()));
 }
 
 void DownloadManager::AddObserver(Observer* observer) {

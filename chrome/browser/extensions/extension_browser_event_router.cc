@@ -245,8 +245,8 @@ void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
 void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
                                                int index,
                                                bool active) {
-  DispatchEventWithTab(contents->profile(), "", events::kOnTabCreated,
-                       contents, active);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  DispatchEventWithTab(profile, "", events::kOnTabCreated, contents, active);
 
   RegisterForTabNotifications(contents);
 }
@@ -476,7 +476,8 @@ void ExtensionBrowserEventRouter::DispatchTabUpdatedEvent(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  DispatchEvent(profile, events::kOnTabUpdated, json_args);
 }
 
 ExtensionBrowserEventRouter::TabEntry* ExtensionBrowserEventRouter::GetTabEntry(

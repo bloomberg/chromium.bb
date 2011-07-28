@@ -526,7 +526,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
     return;
   }
   prerender::PrerenderManager* prerender_manager =
-      tab->profile()->GetPrerenderManager();
+      Profile::FromBrowserContext(tab->browser_context())->
+          GetPrerenderManager();
   if (prerender_manager && prerender_manager->IsTabContentsPrerendering(tab)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
             handler->render_process_host_id(),
@@ -766,7 +767,9 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 void ChromeContentBrowserClient::GetSaveDir(TabContents* tab_contents,
                                             FilePath* website_save_dir,
                                             FilePath* download_save_dir) {
-  PrefService* prefs = tab_contents->profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  PrefService* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.
   // If not, initialize it with default directory.

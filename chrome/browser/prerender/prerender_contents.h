@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
 
+class Profile;
 class RenderViewHost;
 class TabContents;
 class TabContentsWrapper;

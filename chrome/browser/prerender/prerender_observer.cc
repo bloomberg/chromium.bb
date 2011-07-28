@@ -237,7 +237,9 @@ void PrerenderObserver::DidStopLoading() {
 }
 
 PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() {
-  return tab_contents()->profile()->GetPrerenderManager();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  return profile->GetPrerenderManager();
 }
 
 bool PrerenderObserver::MaybeUsePrerenderedPage(const GURL& url,

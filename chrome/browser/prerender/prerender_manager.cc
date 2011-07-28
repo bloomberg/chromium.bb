@@ -673,8 +673,9 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     TabContents* tab_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderManager* prerender_manager =
-      tab_contents->profile()->GetPrerenderManager();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents->browser_context());
+  PrerenderManager* prerender_manager = profile->GetPrerenderManager();
   if (!prerender_manager)
     return;
   if (!prerender_manager->is_enabled())

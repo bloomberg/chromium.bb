@@ -56,9 +56,10 @@ double MilliSecondsFromTime(const base::Time& time) {
 }
 
 // Dispatches events to the extension message service.
-void DispatchEvent(Profile* profile,
+void DispatchEvent(content::BrowserContext* browser_context,
                    const char* event_name,
                    const std::string& json_args) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile, GURL());
@@ -81,7 +82,9 @@ void DispatchOnBeforeNavigate(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnBeforeNavigate, json_args);
+  DispatchEvent(tab_contents->browser_context(),
+                keys::kOnBeforeNavigate,
+                json_args);
 }
 
 // Constructs and dispatches an onCommitted event.
@@ -111,7 +114,7 @@ void DispatchOnCommitted(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnCommitted, json_args);
+  DispatchEvent(tab_contents->browser_context(), keys::kOnCommitted, json_args);
 }
 
 // Constructs and dispatches an onDOMContentLoaded event.
@@ -130,7 +133,9 @@ void DispatchOnDOMContentLoaded(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnDOMContentLoaded, json_args);
+  DispatchEvent(tab_contents->browser_context(),
+                keys::kOnDOMContentLoaded,
+                json_args);
 }
 
 // Constructs and dispatches an onCompleted event.
@@ -149,12 +154,12 @@ void DispatchOnCompleted(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnCompleted, json_args);
+  DispatchEvent(tab_contents->browser_context(), keys::kOnCompleted, json_args);
 }
 
 // Constructs and dispatches an onBeforeRetarget event.
 void DispatchOnBeforeRetarget(TabContents* tab_contents,
-                              Profile* profile,
+                              content::BrowserContext* browser_context,
                               int64 source_frame_id,
                               bool source_frame_is_main_frame,
                               TabContents* target_tab_contents,
@@ -173,7 +178,7 @@ void DispatchOnBeforeRetarget(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(profile, keys::kOnBeforeRetarget, json_args);
+  DispatchEvent(browser_context, keys::kOnBeforeRetarget, json_args);
 }
 
 // Constructs and dispatches an onErrorOccurred event.
@@ -194,7 +199,9 @@ void DispatchOnErrorOccurred(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(tab_contents->profile(), keys::kOnErrorOccurred, json_args);
+  DispatchEvent(tab_contents->browser_context(),
+                keys::kOnErrorOccurred,
+                json_args);
 }
 
 }  // namespace
@@ -389,7 +396,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   } else {
     DispatchOnBeforeRetarget(
         details->source_tab_contents,
-        details->target_tab_contents->profile(),
+        details->target_tab_contents->browser_context(),
         details->source_frame_id,
         frame_navigation_state.IsMainFrame(details->source_frame_id),
         details->target_tab_contents,
@@ -404,7 +411,7 @@ void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
     return;
 
   DispatchOnBeforeRetarget(iter->second.source_tab_contents,
-                           iter->second.target_tab_contents->profile(),
+                           iter->second.target_tab_contents->browser_context(),
                            iter->second.source_frame_id,
                            iter->second.source_frame_is_main_frame,
                            iter->second.target_tab_contents,

@@ -137,7 +137,7 @@ TabContents* GetTabContentsAt(int browser_index, int tab_index) {
 net::URLRequestContextGetter* GetRequestContext(TabContents* contents) {
   // Since we may be on the UI thread don't call GetURLRequestContext().
   // Get the request context specific to the current TabContents and app.
-  return contents->profile()->GetRequestContextForRenderProcess(
+  return contents->browser_context()->GetRequestContextForRenderProcess(
       contents->render_view_host()->process()->id());
 }
 

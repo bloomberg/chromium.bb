@@ -61,7 +61,7 @@ void AlternateNavURLFetcher::Observe(int type,
         fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_),
                                       URLFetcher::HEAD, this));
         fetcher_->set_request_context(
-            controller_->profile()->GetRequestContext());
+            controller_->browser_context()->GetRequestContext());
         fetcher_->Start();
       }
       break;

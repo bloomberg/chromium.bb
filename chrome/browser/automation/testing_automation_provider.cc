@@ -704,8 +704,9 @@ void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
     LOG(ERROR) << "Can only handle one redirect query at once.";
   } else if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    Profile* profile = Profile::FromBrowserContext(tab->browser_context());
     HistoryService* history_service =
-        tab->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
     DCHECK(history_service) << "Tab " << tab_handle << "'s profile " <<
                                "has no history service";
@@ -1344,7 +1345,7 @@ void TestingAutomationProvider::GetDownloadDirectory(
     int handle, FilePath* download_directory) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    DownloadManager* dlm = tab->profile()->GetDownloadManager();
+    DownloadManager* dlm = tab->browser_context()->GetDownloadManager();
     *download_directory = dlm->download_prefs()->download_path();
   }
 }
@@ -4297,7 +4298,8 @@ void TestingAutomationProvider::GetAutofillProfile(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContentsWrapper* tab_contents =
+      browser->GetTabContentsWrapperAt(tab_index);
   if (tab_contents) {
     PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
         ->GetPersonalDataManager();
@@ -4362,11 +4364,12 @@ void TestingAutomationProvider::FillAutofillProfile(
     return;
   }
 
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  TabContentsWrapper* tab_contents =
+      browser->GetTabContentsWrapperAt(tab_index);
 
   if (tab_contents) {
-    PersonalDataManager* pdm = tab_contents->profile()
-        ->GetPersonalDataManager();
+    PersonalDataManager* pdm =
+        tab_contents->profile()->GetPersonalDataManager();
     if (pdm) {
       if (profiles || cards) {
         // This observer will delete itself.

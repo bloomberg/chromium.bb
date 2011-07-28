@@ -140,7 +140,7 @@ NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
     : ConfirmInfoBarDelegate(contents),
       origin_(origin),
       display_name_(display_name),
-      profile_(contents->profile()),
+      profile_(Profile::FromBrowserContext(contents->browser_context())),
       process_id_(process_id),
       route_id_(route_id),
       callback_context_(callback_context),

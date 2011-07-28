@@ -201,7 +201,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetString(keys::kTitleKey, contents->GetTitle());
   result->SetBoolean(keys::kIncognitoKey,
-                     contents->profile()->IsOffTheRecord());
+                     contents->browser_context()->IsOffTheRecord());
 
   if (!is_loading) {
     NavigationEntry* entry = contents->controller().GetActiveEntry();

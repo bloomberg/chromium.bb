@@ -117,7 +117,8 @@ class TabContentsWrapper : public TabContentsObserver,
   RenderViewHost* render_view_host() const {
     return tab_contents()->render_view_host();
   }
-  Profile* profile() const { return tab_contents()->profile(); }
+
+  Profile* profile() const;
 
   // Tab Helpers ---------------------------------------------------------------
 

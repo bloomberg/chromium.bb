@@ -712,9 +712,10 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     DCHECK(tab != NULL);
     if (tab && tab->tab_contents()) {
-      DCHECK(tab->tab_contents()->profile() != NULL);
-      tab->tab_contents()->profile()->GetPrefs()->SetInteger(
-          prefs::kWebKitDefaultFontSize, font_size);
+      DCHECK(tab->tab_contents()->browser_context() != NULL);
+      Profile* profile =
+          Profile::FromBrowserContext(tab->tab_contents()->browser_context());
+      profile->GetPrefs()->SetInteger(prefs::kWebKitDefaultFontSize, font_size);
     }
   }
 }

@@ -47,9 +47,10 @@ bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
 
 TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
     : TabContentsObserver(tab),
-      allowed_local_shared_objects_(tab->profile()),
-      blocked_local_shared_objects_(tab->profile()),
-      geolocation_settings_state_(tab->profile()),
+      profile_(Profile::FromBrowserContext(tab->browser_context())),
+      allowed_local_shared_objects_(profile_),
+      blocked_local_shared_objects_(profile_),
+      geolocation_settings_state_(profile_),
       load_plugins_link_enabled_(true) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
@@ -57,7 +58,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(TabContents* tab)
 
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
                  Source<HostContentSettingsMap>(
-                     tab->profile()->GetHostContentSettingsMap()));
+                     profile_->GetHostContentSettingsMap()));
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
@@ -434,8 +435,9 @@ void TabSpecificContentSettings::DidNavigateMainFramePostCommit(
 
 void TabSpecificContentSettings::RenderViewCreated(
     RenderViewHost* render_view_host) {
-  HostContentSettingsMap* map =
-      tab_contents()->profile()->GetHostContentSettingsMap();
+  Profile* profile =
+      Profile::FromBrowserContext(tab_contents()->browser_context());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   render_view_host->Send(new ViewMsg_SetDefaultContentSettings(
       map->GetDefaultContentSettings()));
 }
@@ -472,8 +474,9 @@ void TabSpecificContentSettings::Observe(int type,
       // The active NavigationEntry is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
-    HostContentSettingsMap* map =
-        tab_contents()->profile()->GetHostContentSettingsMap();
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents()->browser_context());
+    HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
     Send(new ViewMsg_SetDefaultContentSettings(
         map->GetDefaultContentSettings()));
     Send(new ViewMsg_SetContentSettingsForCurrentURL(

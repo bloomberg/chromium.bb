@@ -161,7 +161,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
 }
 
 bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
-  return (!tab()->profile()->IsOffTheRecord() &&
+  return (!tab()->browser_context()->IsOffTheRecord() &&
           tab()->GetURL().SchemeIs(chrome::kHttpScheme));
 }
 
@@ -364,8 +364,9 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
                            IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                            UTF8ToUTF16(privacy_link)));
 
+    Profile* profile = Profile::FromBrowserContext(tab()->browser_context());
     const PrefService::Preference* pref =
-        tab()->profile()->GetPrefs()->FindPreference(
+        profile->GetPrefs()->FindPreference(
             prefs::kSafeBrowsingReportingEnabled);
 
     bool value;
@@ -509,7 +510,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 }
 
 void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
-  PrefService* pref = tab()->profile()->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(tab()->browser_context());
+  PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(prefs::kSafeBrowsingReportingEnabled, report);
 }
 
@@ -626,9 +628,9 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_ == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
 
+  Profile* profile = Profile::FromBrowserContext(tab()->browser_context());
   const PrefService::Preference* pref =
-      tab()->profile()->GetPrefs()->FindPreference(
-          prefs::kSafeBrowsingReportingEnabled);
+      profile->GetPrefs()->FindPreference(prefs::kSafeBrowsingReportingEnabled);
 
   bool value;
   if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {

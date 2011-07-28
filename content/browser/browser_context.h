@@ -89,7 +89,7 @@ class BrowserContext {
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
   // Returns true if the last time this context was open it was exited cleanly.
-  // This doesn't belong here; http://crbug.com/76788
+  // This doesn't belong here; http://crbug.com/90737
   virtual bool DidLastSessionExitCleanly() = 0;
 
   // Returns the WebKitContext assigned to this context.

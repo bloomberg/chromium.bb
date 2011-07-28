@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -157,7 +158,7 @@ void WebUI::RegisterMessageCallback(const std::string &message,
 
 Profile* WebUI::GetProfile() const {
   DCHECK(tab_contents());
-  return tab_contents()->profile();
+  return Profile::FromBrowserContext(tab_contents()->browser_context());
 }
 
 RenderViewHost* WebUI::GetRenderViewHost() const {

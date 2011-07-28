@@ -403,7 +403,7 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   if (!IsAutofillEnabled())
     return;
 
-  if (tab_contents()->profile()->IsOffTheRecord())
+  if (tab_contents()->browser_context()->IsOffTheRecord())
     return;
 
   // Don't save data that was submitted through JavaScript.
@@ -684,7 +684,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 
 void AutofillManager::OnShowAutofillDialog() {
   Browser* browser = BrowserList::GetLastActiveWithProfile(
-      tab_contents()->profile());
+      Profile::FromBrowserContext(tab_contents()->browser_context()));
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
@@ -733,8 +733,9 @@ void AutofillManager::OnServerRequestError(
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return const_cast<AutofillManager*>(this)->tab_contents()->profile()->
-      GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  Profile* profile = Profile::FromBrowserContext(
+      const_cast<AutofillManager*>(this)->tab_contents()->browser_context());
+  return profile->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void AutofillManager::DeterminePossibleFieldTypesForUpload(

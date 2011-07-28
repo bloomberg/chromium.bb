@@ -778,15 +778,16 @@ ExtensionsDOMHandler::~ExtensionsDOMHandler() {
 // ExtensionsDOMHandler, public: -----------------------------------------------
 
 ExtensionsUI::ExtensionsUI(TabContents* contents) : ChromeWebUI(contents) {
-  ExtensionService *exstension_service =
+  ExtensionService *extension_service =
       GetProfile()->GetOriginalProfile()->GetExtensionService();
 
-  ExtensionsDOMHandler* handler = new ExtensionsDOMHandler(exstension_service);
+  ExtensionsDOMHandler* handler = new ExtensionsDOMHandler(extension_service);
   AddMessageHandler(handler);
   handler->Attach(this);
 
   // Set up the chrome://extensions/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  profile->GetChromeURLDataManager()->AddDataSource(
       CreateExtensionsUIHTMLSource());
 }
 

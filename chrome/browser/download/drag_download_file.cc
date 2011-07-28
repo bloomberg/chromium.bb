@@ -117,7 +117,7 @@ void DragDownloadFile::InitiateDownload() {
   }
 #endif
 
-  download_manager_ = tab_contents_->profile()->GetDownloadManager();
+  download_manager_ = tab_contents_->browser_context()->GetDownloadManager();
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
