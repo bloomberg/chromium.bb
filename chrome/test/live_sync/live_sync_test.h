@@ -106,6 +106,14 @@ class LiveSyncTest : public InProcessBrowserTest {
   // individual sync profiles. Callee owns the object and manages its lifetime.
   Profile* verifier() WARN_UNUSED_RESULT;
 
+  // Used to determine whether the verifier profile should be updated or not.
+  bool use_verifier() WARN_UNUSED_RESULT { return use_verifier_; }
+
+  // After calling this method, changes made to a profile will no longer be
+  // reflected in the verifier profile. Note: Not all datatypes use this.
+  // TODO(rsimha): Hook up all datatypes to this mechanism.
+  void DisableVerifier();
+
   // Initializes sync clients and profiles but does not sync any of them.
   virtual bool SetupClients() WARN_UNUSED_RESULT;
 
@@ -231,6 +239,10 @@ class LiveSyncTest : public InProcessBrowserTest {
   // don't need a corresponding verifier sync client because the contents of the
   // verifier profile are strictly local, and are not meant to be synced.
   scoped_ptr<Profile> verifier_;
+
+  // Indicates whether changes to a profile should also change the verifier
+  // profile or not.
+  bool use_verifier_;
 
   // Sync integration tests need to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version

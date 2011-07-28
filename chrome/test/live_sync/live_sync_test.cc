@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -109,8 +110,10 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       test_type_(test_type),
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
+      use_verifier_(true),
       test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
+  SyncDatatypeHelper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {
       num_clients_ = 1;
@@ -247,6 +250,10 @@ Profile* LiveSyncTest::verifier() {
   return verifier_.get();
 }
 
+void LiveSyncTest::DisableVerifier() {
+  use_verifier_ = false;
+}
+
 bool LiveSyncTest::SetupClients() {
   if (num_clients_ <= 0)
     LOG(FATAL) << "num_clients_ incorrectly initialized.";
@@ -264,10 +271,13 @@ bool LiveSyncTest::SetupClients() {
     clients_.push_back(
         new ProfileSyncServiceHarness(GetProfile(i), username_, password_));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
+    ui_test_utils::WaitForBookmarkModelToLoad(
+        GetProfile(i)->GetBookmarkModel());
   }
 
   // Create the verifier profile.
   verifier_.reset(MakeProfile(FILE_PATH_LITERAL("Verifier")));
+  ui_test_utils::WaitForBookmarkModelToLoad(verifier()->GetBookmarkModel());
   return (verifier_.get() != NULL);
 }
 
