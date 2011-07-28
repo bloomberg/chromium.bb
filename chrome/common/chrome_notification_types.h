@@ -343,12 +343,6 @@ enum {
   // asynchronous initalization of a PrefService.
   NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
 
-  // Sent when a default request context has been created, so calling
-  // Profile::GetDefaultRequestContext() will not return NULL.  This is sent
-  // on the thread where Profile::GetRequestContext() is first called, which
-  // should be the UI thread.
-  NOTIFICATION_DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-
   // The state of a web resource has been changed. A resource may have been
   // added, removed, or altered. Source is WebResourceService, and the
   // details are NoDetails.

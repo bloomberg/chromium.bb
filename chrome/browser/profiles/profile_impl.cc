@@ -940,14 +940,8 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   // The first request context is always a normal (non-OTR) request context.
   // Even when Chromium is started in OTR mode, a normal profile is always
   // created first.
-  if (!default_request_context_) {
+  if (!default_request_context_)
     default_request_context_ = request_context;
-    // TODO(eroman): this isn't terribly useful anymore now that the
-    // net::URLRequestContext is constructed by the IO thread...
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-        NotificationService::AllSources(), NotificationService::NoDetails());
-  }
 
   return request_context;
 }
