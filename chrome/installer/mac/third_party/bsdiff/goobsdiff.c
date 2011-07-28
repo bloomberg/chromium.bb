@@ -34,7 +34,6 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bsdiff/bsdiff.c,v 1.1 2005/08/06 01:59:05
 #include <err.h>
 #include <fcntl.h>
 #include <lzma.h>
-#include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,6 +50,8 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bsdiff/bsdiff.c,v 1.1 2005/08/06 01:59:05
 #else
 #error Provide htole64 for this platform
 #endif
+
+#include "chrome/installer/mac/third_party/bsdiff/sha1_adapter.h"
 
 #define MIN(x,y) (((x)<(y)) ? (x) : (y))
 

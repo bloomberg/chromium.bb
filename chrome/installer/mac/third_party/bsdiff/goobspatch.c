@@ -37,7 +37,6 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bspatch/bspatch.c,v 1.1 2005/08/06 01:59:
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <openssl/sha.h>
 #include <unistd.h>
 #include <zlib.h>
 
@@ -52,6 +51,8 @@ __FBSDID("$FreeBSD: src/usr.bin/bsdiff/bspatch/bspatch.c,v 1.1 2005/08/06 01:59:
 #error Provide le64toh for this platform
 #endif
 
+#include "chrome/installer/mac/third_party/bsdiff/sha1_adapter.h"
+
 static inline off_t offtin(u_char *buf)
 {
 	return le64toh(*((off_t*)buf));
@@ -60,7 +61,7 @@ static inline off_t offtin(u_char *buf)
 static void sha1tostr(const u_char *sha1, char *sha1str)
 {
 	int i;
-	for (i = 0; i < SHA_DIGEST_LENGTH; ++i)
+	for (i = 0; i < SHA1_DIGEST_LENGTH; ++i)
 		sprintf(&sha1str[i * 2], "%02x", sha1[i]);
 }
 
@@ -374,9 +375,9 @@ int main(int argc,char * argv[])
 	off_t oldpos,newpos;
 	off_t ctrl[3];
 	off_t i;
-	u_char sha1[SHA_DIGEST_LENGTH];
-	char sha1str[SHA_DIGEST_LENGTH * 2 + 1];
-	char expected_sha1str[SHA_DIGEST_LENGTH * 2 + 1];
+	u_char sha1[SHA1_DIGEST_LENGTH];
+	char sha1str[SHA1_DIGEST_LENGTH * 2 + 1];
+	char expected_sha1str[SHA1_DIGEST_LENGTH * 2 + 1];
 
 	if(argc!=4) errx(1,"usage: %s oldfile newfile patchfile",argv[0]);
 
