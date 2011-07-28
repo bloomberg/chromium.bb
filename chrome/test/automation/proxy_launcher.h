@@ -290,7 +290,7 @@ class NamedProxyLauncher : public ProxyLauncher {
   // Otherwise, there should be an existing instance the proxy can connect to.
   NamedProxyLauncher(const std::string& channel_id,
                      bool launch_browser,
-                     bool disconnect_on_failure) OVERRIDE;
+                     bool disconnect_on_failure);
 
   virtual AutomationProxy* CreateAutomationProxy(
       int execution_timeout) OVERRIDE;
@@ -312,7 +312,7 @@ class NamedProxyLauncher : public ProxyLauncher {
 // Uses an automation proxy that communicates over an anonymous socket.
 class AnonymousProxyLauncher : public ProxyLauncher {
  public:
-  explicit AnonymousProxyLauncher(bool disconnect_on_failure) OVERRIDE;
+  explicit AnonymousProxyLauncher(bool disconnect_on_failure);
   virtual AutomationProxy* CreateAutomationProxy(
       int execution_timeout) OVERRIDE;
   virtual bool InitializeConnection(
