@@ -13,9 +13,11 @@ import sys
 import urllib
 import urlparse
 
+
 sys.path.insert(0, os.path.abspath(__file__ + '/../..'))
 import lib.cros_build_lib as cros_build_lib
 import buildbot.constants as constants
+
 
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_URL = 'http://commondatastorage.googleapis.com/chromiumos-sdk/'
@@ -23,11 +25,13 @@ SDK_DIR = os.path.join(constants.SOURCE_ROOT, 'sdks')
 SDK_VERSION_FILE = os.path.join(constants.SOURCE_ROOT,
   'src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf')
 
+
 def GetHostArch():
   """Returns a string for the host architecture"""
   out = cros_build_lib.RunCommand(['uname', '-m'],
       redirect_stdout=True).output
   return out.rstrip('\n')
+
 
 def GetLatestVersion():
   sdk_file = open(SDK_VERSION_FILE)
@@ -36,6 +40,7 @@ def GetLatestVersion():
     raise Exception('Malformed version file')
   return buf[1].strip('"')
 
+
 def GetArchStageTarball(tarballArch, version):
   """Returns the URL for a given arch/version"""
   D = { 'x86_64': 'cros-sdk-' }
@@ -43,6 +48,7 @@ def GetArchStageTarball(tarballArch, version):
     return DEFAULT_URL + D[tarballArch] + version + '.tbz2'
   except KeyError:
     sys.exit('Unsupported arch: ' + arch)
+
 
 def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
@@ -92,6 +98,14 @@ def CreateChroot(sdk_path, sdk_url, sdk_version, chroot_path, replace):
   cros_build_lib.RunCommand(cmd)
 
 
+def DeleteChroot(chroot_path):
+  """Deletes an existing chroot"""
+  cmd = [os.path.join(constants.SOURCE_ROOT, 'src/scripts/make_chroot'),
+         '--chroot', chroot_path,
+         '--delete']
+  cros_build_lib.RunCommand(cmd)
+
+
 def EnterChroot(chroot_path, additional_args):
   """Enters an existing SDK chroot"""
 
@@ -108,7 +122,7 @@ def RefreshSudoCredentials():
 
 
 def main():
-  usage="""usage: %prog [options] [--enter -- <args>]
+  usage="""usage: %prog [options] [--enter VAR1=val1 .. VARn=valn -- <args>]
 
 This script downloads and installs a CrOS SDK. If an SDK already
 exists, it will do nothing at all, and every call will be a noop.
@@ -117,16 +131,19 @@ To replace, use --replace."""
   parser = optparse.OptionParser(usage)
   parser.add_option('', '--chroot',
                     dest='chroot', default=DEFAULT_CHROOT_DIR,
-                    help=('Chroot subdirectory name [%s]' % DEFAULT_CHROOT_DIR))
+                    help=('SDK chroot dir name [%s]' % DEFAULT_CHROOT_DIR))
   parser.add_option('', '--enter',
                     action='store_true', dest='enter', default=False,
-                    help=('Enter the chroot, possibly (re)create first'))
+                    help=('Enter the SDK chroot, possibly (re)create first'))
+  parser.add_option('', '--delete',
+                    action='store_true', dest='delete', default=False,
+                    help=('Delete the current SDK chroot'))
   parser.add_option('-p', '--path',
                     dest='sdk_path', default='',
                     help=('Use sdk tarball located at this path'))
   parser.add_option('-r', '--replace',
                     action='store_true', dest='replace', default=False,
-                    help=('Replace an existing chroot'))
+                    help=('Replace an existing SDK chroot'))
   parser.add_option('-u', '--url',
                     dest='sdk_url', default='',
                     help=('Use sdk tarball located at this url'))
@@ -144,11 +161,24 @@ To replace, use --replace."""
     parser.print_help()
     sys.exit(1)
 
+  if options.delete and (options.enter or options.replace):
+    print "--delete cannot be combined with --enter or --replace"
+    parser.print_help()
+    sys.exit(1)
+
   chroot_path = os.path.join(constants.SOURCE_ROOT, options.chroot)
+
+  if options.delete and not os.path.exists(chroot_path):
+    print "Not doing anything. The chroot you want to remove doesn't exist."
+    sys.exit(0)
 
   # Request sudo credentials before we do anything else, to not ask for them
   # inside of a lengthy process.
   RefreshSudoCredentials()
+
+  if options.delete:
+    DeleteChroot(chroot_path)
+    sys.exit(0)
 
   if not os.path.exists(chroot_path) or options.replace:
     CreateChroot(options.sdk_path, options.sdk_url, options.sdk_version,
