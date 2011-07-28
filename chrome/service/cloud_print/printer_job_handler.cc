@@ -163,6 +163,13 @@ void PrinterJobHandler::CheckForJobs(const std::string& reason) {
 }
 
 bool PrinterJobHandler::UpdatePrinterInfo() {
+  if (!printer_watcher_) {
+    LOG(ERROR) << "CP_PROXY: Printer watcher is missing."
+               << "Check printer server url for printer id: "
+               << printer_info_cloud_.printer_id;
+    return false;
+  }
+
   VLOG(1) << "CP_PROXY: Update printer info, id: "
           << printer_info_cloud_.printer_id;
   // We need to update the parts of the printer info that have changed
@@ -187,7 +194,8 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     const std::string& printer_name,
     const printing::PrinterCapsAndDefaults& caps_and_defaults) {
   printing::PrinterBasicInfo printer_info;
-  printer_watcher_->GetCurrentPrinterInfo(&printer_info);
+  if (printer_watcher_)
+    printer_watcher_->GetCurrentPrinterInfo(&printer_info);
 
   std::string post_data;
   std::string mime_boundary;
