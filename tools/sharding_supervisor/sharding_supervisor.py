@@ -85,6 +85,14 @@ class ShardRunner(threading.Thread):
     self.test_fail = test_fail
     self.test_timeout = test_timeout
 
+  def SearchForFailure(self, regex, prefix, line, description):
+    results = regex.search(line)
+    if results:
+      log_line = "%s: %s%s\n" % (description, prefix, results.group(1))
+      self.supervisor.LogLineFailure(log_line)
+      return True
+    return False
+
   def run(self):
     """Runs shards and outputs the results.
 
@@ -112,11 +120,9 @@ class ShardRunner(threading.Thread):
           line = chars.getvalue()
           if not line and not shard_running:
             break
-          results = (self.test_fail.search(line) or
-                     self.test_timeout.search(line))
-          if results:
-            log_line = prefix + "".join(results.group(0)) + "\n"
-            self.supervisor.LogLineFailure(log_line)
+          if not self.SearchForFailure(
+              self.test_fail, prefix, line, "FAILED"):
+            self.SearchForFailure(self.test_timeout, prefix, line, "TIMEOUT")
           line = prefix + line
           self.supervisor.LogOutputLine(index, line)
           chars.close()
@@ -175,13 +181,13 @@ class ShardingSupervisor(object):
     test_name_regex = r"((\w+/)?\w+\.\w+(/\d+)?)"
 
     # Regex for filtering out ANSI escape codes when using color.
-    ansi_code_regex = r"(\x1b\[.*?[a-zA-Z])?"
+    ansi_code_regex = r"(?:\x1b\[.*?[a-zA-Z])?"
 
     test_fail = re.compile(
-        ansi_code_regex + "(\[\s+FAILED\s+\] )" + ansi_code_regex +
+        ansi_code_regex + "\[\s+FAILED\s+\] " + ansi_code_regex +
         test_name_regex)
     test_timeout = re.compile(
-        "(Test timeout \([0-9]+ ms\) exceeded for )" + test_name_regex)
+        "Test timeout \([0-9]+ ms\) exceeded for " + test_name_regex)
 
     workers = []
     counter = Queue.Queue()
@@ -256,7 +262,7 @@ class ShardingSupervisor(object):
       self.failed_shards.sort()
       if self.color:
         sys.stderr.write("\x1b[1;5;31m")
-      sys.stderr.write("FAILED SHARDS: %s\n" % str(self.failed_shards))
+      sys.stderr.write("SHARDS THAT FAILED: %s\n" % str(self.failed_shards))
     else:
       if self.color:
         sys.stderr.write("\x1b[1;5;32m")
@@ -264,7 +270,7 @@ class ShardingSupervisor(object):
     if self.failure_log:
       if self.color:
         sys.stderr.write("\x1b[1;5;31m")
-      sys.stderr.write("FAILED TESTS:\n")
+      sys.stderr.write("TESTS THAT DID NOT PASS:\n")
       if self.color:
         sys.stderr.write("\x1b[m")
       for line in self.failure_log:
