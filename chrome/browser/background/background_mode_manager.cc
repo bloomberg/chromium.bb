@@ -88,8 +88,8 @@ Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
   return browser;
 }
 
-bool BackgroundModeManager::BackgroundModeData::HasBackgroundApp() {
-  return (applications_->size() > 0);
+int BackgroundModeManager::BackgroundModeData::GetBackgroundAppCount() const {
+  return applications_->size();
 }
 
 void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
@@ -131,9 +131,9 @@ BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
     : status_tray_(NULL),
       status_icon_(NULL),
       context_menu_(NULL),
-      background_app_count_(0),
       in_background_mode_(false),
       keep_alive_for_startup_(false),
+      keep_alive_for_test_(false),
       current_command_id_(0) {
   // If background mode is currently disabled, just exit - don't listen for any
   // notifications.
@@ -158,8 +158,10 @@ BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
   // in the background until the user explicitly terminates it, by acting as if
   // we loaded a background app.
-  if (command_line->HasSwitch(switches::kKeepAliveForTest))
-    OnBackgroundAppLoaded();
+  if (command_line->HasSwitch(switches::kKeepAliveForTest)) {
+    keep_alive_for_test_ = true;
+    StartBackgroundMode();
+  }
 
   // Listen for the application shutting down so we can decrement our KeepAlive
   // count.
@@ -168,6 +170,8 @@ BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
+  // Remove ourselves from the application observer list (only needed by unit
+  // tests since APP_TERMINATING is what does this in a real running system).
   for (std::map<Profile*, BackgroundModeInfo>::iterator it =
        background_mode_data_.begin();
        it != background_mode_data_.end();
@@ -196,15 +200,14 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
                                                 profile, this));
   background_mode_data_[profile] = bmd;
 
-  // Listen for when extensions are loaded/unloaded or add/remove the
-  // background permission so we can track the number of background apps and
-  // modify our keep-alive and launch-on-startup state appropriately.
+  // Listen for when extensions are loaded or add the background permission so
+  // we can display a "background app installed" notification and enter
+  // "launch on login" mode on the Mac.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  Source<Profile>(profile));
+
 
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
@@ -238,17 +241,8 @@ void BackgroundModeManager::Observe(int type,
       // Extensions are loaded, so we don't need to manually keep the browser
       // process alive any more when running in no-startup-window mode.
       EndKeepAliveForStartup();
-
-      // On a Mac, we use 'login items' mechanism which has user-facing UI so we
-      // don't want to stomp on user choice every time we start and load
-      // registered extensions. This means that if a background app is removed
-      // or added while Chrome is not running, we could leave Chrome in the
-      // wrong state, but this is better than constantly forcing Chrome to
-      // launch on startup even after the user removes the LoginItem manually.
-#if !defined(OS_MACOSX)
-      EnableLaunchOnStartup(background_app_count_ > 0);
-#endif
       break;
+
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
         Extension* extension = Details<Extension>(details).ptr();
         if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
@@ -257,38 +251,17 @@ void BackgroundModeManager::Observe(int type,
           Profile* profile = Source<Profile>(source).ptr();
           if (profile->GetExtensionService()->is_ready())
             OnBackgroundAppInstalled(extension);
-          OnBackgroundAppLoaded();
         }
-      }
-      break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
-      if (BackgroundApplicationListModel::IsBackgroundApp(
-              *Details<UnloadedExtensionInfo>(details)->extension)) {
-        Details<UnloadedExtensionInfo> info =
-            Details<UnloadedExtensionInfo>(details);
-        // If we already got an unload notification when it was disabled, ignore
-        // this one.
-        // TODO(atwilson): Change BackgroundModeManager to use
-        // BackgroundApplicationListModel instead of tracking the count here.
-        if (info->already_disabled)
-          return;
-        OnBackgroundAppUnloaded();
-        OnBackgroundAppUninstalled();
       }
       break;
     case chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED: {
         UpdatedExtensionPermissionsInfo* info =
             Details<UpdatedExtensionPermissionsInfo>(details).ptr();
-        if (!info->permissions->HasAPIPermission(
-                ExtensionAPIPermission::kBackground))
-          break;
-
-        if (info->reason == UpdatedExtensionPermissionsInfo::ADDED) {
+        if (info->permissions->HasAPIPermission(
+                ExtensionAPIPermission::kBackground) &&
+            info->reason == UpdatedExtensionPermissionsInfo::ADDED) {
+          // Turned on background permission, so treat this as a new install.
           OnBackgroundAppInstalled(info->extension);
-          OnBackgroundAppLoaded();
-        } else {
-          OnBackgroundAppUnloaded();
-          OnBackgroundAppUninstalled();
         }
       }
       break;
@@ -302,6 +275,12 @@ void BackgroundModeManager::Observe(int type,
       // Shutting down, so don't listen for any more notifications so we don't
       // try to re-enter/exit background mode again.
       registrar_.RemoveAll();
+      for (std::map<Profile*, BackgroundModeInfo>::iterator it =
+               background_mode_data_.begin();
+           it != background_mode_data_.end();
+           ++it) {
+        it->second->applications_->RemoveObserver(this);
+      }
       break;
     default:
       NOTREACHED();
@@ -317,7 +296,38 @@ void BackgroundModeManager::OnApplicationDataChanged(
 }
 
 void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
-  UpdateStatusTrayIconContextMenu();
+  if (!IsBackgroundModePrefEnabled())
+    return;
+
+  // Figure out what just happened based on the count of background apps.
+  int count = GetBackgroundAppCount();
+
+  if (count == 0) {
+    // We've uninstalled our last background app, make sure we exit background
+    // mode and no longer launch on startup.
+    EnableLaunchOnStartup(false);
+    EndBackgroundMode();
+  } else {
+    // We have at least one background app running - make sure we're in
+    // background mode.
+    if (!in_background_mode_) {
+      // We're entering background mode - make sure we have launch-on-startup
+      // enabled.
+      // On a Mac, we use 'login items' mechanism which has user-facing UI so we
+      // don't want to stomp on user choice every time we start and load
+      // registered extensions. This means that if a background app is removed
+      // or added while Chrome is not running, we could leave Chrome in the
+      // wrong state, but this is better than constantly forcing Chrome to
+      // launch on startup even after the user removes the LoginItem manually.
+#if !defined(OS_MACOSX)
+      EnableLaunchOnStartup(true);
+#endif
+
+      StartBackgroundMode();
+    }
+    // List of applications changed so update the UI.
+    UpdateStatusTrayIconContextMenu();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -388,16 +398,6 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
   }
 }
 
-void BackgroundModeManager::OnBackgroundAppLoaded() {
-  // When a background app loads, increment our count and also enable
-  // KeepAlive mode if the preference is set.
-  // The count here is across all profiles since we must have background
-  // mode if there is even one.
-  background_app_count_++;
-  if (background_app_count_ == 1)
-    StartBackgroundMode();
-}
-
 void BackgroundModeManager::StartBackgroundMode() {
   // Don't bother putting ourselves in background mode if we're already there
   // or if background mode is disabled.
@@ -417,26 +417,9 @@ void BackgroundModeManager::StartBackgroundMode() {
 void BackgroundModeManager::InitStatusTrayIcon() {
   // Only initialize status tray icons for those profiles which actually
   // have a background app running.
-  for (std::map<Profile*, BackgroundModeInfo>::iterator it =
-       background_mode_data_.begin();
-       it != background_mode_data_.end();
-       ++it) {
-    if (it->second->HasBackgroundApp()) {
-      // Once we've found a profile with a background app, we know to create
-      // the icon.
-      CreateStatusTrayIcon();
-      return;
-    }
+  if (keep_alive_for_test_ || GetBackgroundAppCount() > 0) {
+    CreateStatusTrayIcon();
   }
-}
-
-void BackgroundModeManager::OnBackgroundAppUnloaded() {
-  // When a background app unloads, decrement our count and also end
-  // KeepAlive mode if appropriate.
-  background_app_count_--;
-  DCHECK_GE(background_app_count_, 0);
-  if (background_app_count_ == 0)
-    EndBackgroundMode();
 }
 
 void BackgroundModeManager::EndBackgroundMode() {
@@ -453,7 +436,8 @@ void BackgroundModeManager::EndBackgroundMode() {
 void BackgroundModeManager::EnableBackgroundMode() {
   DCHECK(IsBackgroundModePrefEnabled());
   // If background mode should be enabled, but isn't, turn it on.
-  if (background_app_count_ > 0 && !in_background_mode_) {
+  if (!in_background_mode_ &&
+      (GetBackgroundAppCount() > 0 || keep_alive_for_test_)) {
     StartBackgroundMode();
     EnableLaunchOnStartup(true);
   }
@@ -468,32 +452,41 @@ void BackgroundModeManager::DisableBackgroundMode() {
   }
 }
 
+int BackgroundModeManager::GetBackgroundAppCount() const {
+  int count = 0;
+  // Walk the BackgroundModeData for all profiles and count the number of apps.
+  for (std::map<Profile*, BackgroundModeInfo>::const_iterator it =
+       background_mode_data_.begin();
+       it != background_mode_data_.end();
+       ++it) {
+    count += it->second->GetBackgroundAppCount();
+  }
+  DCHECK(count >= 0);
+  return count;
+}
+
 void BackgroundModeManager::OnBackgroundAppInstalled(
     const Extension* extension) {
   // Background mode is disabled - don't do anything.
   if (!IsBackgroundModePrefEnabled())
     return;
 
-  // We're installing a background app. If this is the first background app
-  // being installed, make sure we are set to launch on startup.
-  if (background_app_count_ == 0)
-    EnableLaunchOnStartup(true);
+  // Special behavior for the Mac: We enable "launch-on-startup" only on new app
+  // installation rather than every time we go into background mode. This is
+  // because the Mac exposes "Open at Login" UI to the user and we don't want to
+  // clobber the user's selection on every browser launch.
+  // Other platforms enable launch-on-startup in OnApplicationListChanged().
+#if defined(OS_MACOSX)
+  EnableLaunchOnStartup(true);
+#endif
 
-  // Check if we need a status tray icon and make one if we do.
+  // Check if we need a status tray icon and make one if we do (needed so we
+  // can display the app-installed notification below).
   CreateStatusTrayIcon();
 
   // Notify the user that a background app has been installed.
   if (extension)  // NULL when called by unit tests.
     DisplayAppInstalledNotification(extension);
-}
-
-void BackgroundModeManager::OnBackgroundAppUninstalled() {
-  UpdateStatusTrayIconContextMenu();
-
-  // When uninstalling a background app, disable launch on startup if
-  // we have no more background apps.
-  if (background_app_count_ == 0)
-    EnableLaunchOnStartup(false);
 }
 
 void BackgroundModeManager::CreateStatusTrayIcon() {
@@ -536,6 +529,13 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   // then no need to continue the update.
   if (!status_icon_)
     return;
+
+  // We should only get here if we have a profile loaded, or if we're running
+  // in test mode.
+  if (background_mode_data_.empty()) {
+    DCHECK(keep_alive_for_test_);
+    return;
+  }
 
   // TODO(rlp): Add current profile color or indicator.
   // Create a context menu item for Chrome.
@@ -610,7 +610,7 @@ bool BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
 #endif
 }
 
-bool BackgroundModeManager::IsBackgroundModePrefEnabled() {
+bool BackgroundModeManager::IsBackgroundModePrefEnabled() const {
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
   return service->GetBoolean(prefs::kBackgroundModeEnabled);

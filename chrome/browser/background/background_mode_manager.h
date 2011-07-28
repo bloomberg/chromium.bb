@@ -58,7 +58,7 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppLoadUnload);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
-                           BackgroundAppInstallUninstall);
+                           BackgroundLaunchOnStartup);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppInstallUninstallWhileDisabled);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
@@ -90,8 +90,8 @@ class BackgroundModeManager
     // Browser window.
     Browser* GetBrowserWindow();
 
-    // Returns whether any of the extensions are background apps.
-    bool HasBackgroundApp();
+    // Returns the number of background apps for this profile.
+    int GetBackgroundAppCount() const;
 
     // Builds the profile specific parts of the menu. The menu passed in may
     // be a submenu in the case of multi-profiles or the main menu in the case
@@ -145,20 +145,10 @@ class BackgroundModeManager
                                           OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  // Called when an extension is loaded to manage count of background apps.
-  void OnBackgroundAppLoaded();
-
-  // Called when an extension is unloaded to manage count of background apps.
-  void OnBackgroundAppUnloaded();
-
   // Invoked when an extension is installed so we can ensure that
   // launch-on-startup is enabled if appropriate. |extension| can be NULL when
   // called from unit tests.
   void OnBackgroundAppInstalled(const Extension* extension);
-
-  // Invoked when an extension is uninstalled so we can ensure that
-  // launch-on-startup is disabled if appropriate.
-  void OnBackgroundAppUninstalled();
 
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so we can override for tests).
@@ -211,13 +201,17 @@ class BackgroundModeManager
 
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).
-  virtual bool IsBackgroundModePrefEnabled();
+  virtual bool IsBackgroundModePrefEnabled() const;
 
   // Turns off background mode if it's currently enabled.
   void DisableBackgroundMode();
 
   // Turns on background mode if it's currently disabled.
   void EnableBackgroundMode();
+
+  // Returns the number of background apps in the system (virtual to allow
+  // overriding in unit tests).
+  virtual int GetBackgroundAppCount() const;
 
   // Returns true if background mode is permanently disabled for this chrome
   // session.
@@ -242,10 +236,6 @@ class BackgroundModeManager
   // status_icon_.
   ui::SimpleMenuModel* context_menu_;
 
-  // The number of background apps currently loaded. This is the total over
-  // all profiles.
-  int background_app_count_;
-
   // Set to true when we are running in background mode. Allows us to track our
   // current background state so we can take the appropriate action when the
   // user disables/enables background mode via preferences.
@@ -255,6 +245,11 @@ class BackgroundModeManager
   // is required when running with the --no-startup-window flag, as otherwise
   // chrome would immediately exit due to having no open windows.
   bool keep_alive_for_startup_;
+
+  // Set to true when Chrome is running with the --keep-alive-for-test flag
+  // (used for testing background mode without having to install a background
+  // app).
+  bool keep_alive_for_test_;
 
   // Provides a command id for each profile as they are created.
   int current_command_id_;
