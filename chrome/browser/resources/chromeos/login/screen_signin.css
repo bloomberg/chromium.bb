@@ -10,6 +10,10 @@
   overflow: hidden;
 }
 
+#gaia-signin {
+  height: 400px;
+}
+
 #gaia-signin > iframe {
   bottom: 0;
   display: -webkit-box;
