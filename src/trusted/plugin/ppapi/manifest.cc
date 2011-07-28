@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <algorithm>
+
 #include "native_client/src/trusted/plugin/ppapi/manifest.h"
 
 #include <stdlib.h>
@@ -190,6 +192,33 @@ bool GetURLFromISADictionary(const Json::Value& dictionary,
   return true;
 }
 
+// this will probably be replaced by jvoung's version that exposes
+// is_portable checks
+bool GetKeyUrl(const Json::Value& dictionary,
+               const nacl::string& key,
+               const nacl::string& sandbox_isa,
+               nacl::string* full_url,
+               nacl::string* error_string,
+               bool* is_portable) {
+  CHECK(full_url != NULL && error_string != NULL);
+  if (!dictionary.isMember(key)) {
+    *error_string = "file key not found in manifest";
+    return false;
+  }
+  const Json::Value& isa_dict = dictionary[key];
+  if (isa_dict.isMember(sandbox_isa)) {
+    *full_url = isa_dict[sandbox_isa][kUrlKey].asString();
+    *is_portable = false;
+    return true;
+  }
+  if (isa_dict.isMember(kPortableKey)) {
+    *full_url = isa_dict[kPortableKey][kUrlKey].asString();
+    *is_portable = true;
+    return true;
+  }
+  *error_string = "neither ISA-specific nor portable representations exist";
+  return false;
+}
 
 }  // namespace
 
@@ -299,7 +328,7 @@ bool Manifest::MatchesSchema(ErrorInfo* error_info) {
 
 bool Manifest::ResolveURL(const nacl::string& relative_url,
                           nacl::string* full_url,
-                          ErrorInfo* error_info) {
+                          ErrorInfo* error_info) const {
   // The contents of the manifest are resolved relative to the manifest URL.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -340,6 +369,75 @@ bool Manifest::GetProgramURL(nacl::string* full_url,
   }
 
   return ResolveURL(nexe_url, full_url, error_info);
+}
+
+bool Manifest::GetFileKeys(std::set<nacl::string>* keys) const {
+  if (!dictionary_.isMember(kFilesKey)) {
+    // trivial success: no keys when there is no "files" section.
+    return true;
+  }
+  const Json::Value& files = dictionary_[kFilesKey];
+  CHECK(files.isObject());
+  Json::Value::Members members = files.getMemberNames();
+  for (size_t i = 0; i < members.size(); ++i) {
+    keys->insert(members[i]);
+  }
+  return true;
+}
+
+bool Manifest::ResolveKey(const nacl::string& key,
+                          nacl::string* full_url,
+                          ErrorInfo* error_info,
+                          bool* is_portable) const {
+  NaClLog(3, "Manifest::ResolveKey(%s)\n", key.c_str());
+  // key must be one of kProgramKey or kFileKey '/' file-section-key
+
+  *full_url = "";
+  if (key == kProgramKey) {
+    nacl::string error_string;
+    if (!GetKeyUrl(dictionary_, key, sandbox_isa_,
+                   full_url, &error_string, is_portable)) {
+      error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL, error_string);
+      return false;
+    }
+    return true;
+  }
+  nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
+  if (p == key.end()) {
+    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                          nacl::string("ResolveKey: invalid key, no slash: ")
+                          + key);
+    return false;
+  }
+
+  // generalize to permit other sections?
+  nacl::string prefix(key.begin(), p);
+  if (prefix != kFilesKey) {
+    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                          nacl::string("ResolveKey: invalid key: not \"files\""
+                                       " prefix: ") + key);
+    return false;
+  }
+
+  nacl::string rest(p + 1, key.end());
+
+  const Json::Value& files = dictionary_[kFilesKey];
+  CHECK(files.isObject());
+  if (!files.isMember(rest)) {
+    error_info->SetReport(
+        ERROR_MANIFEST_RESOLVE_URL,
+        nacl::string("ResolveKey: no such \"files\" entry: ") + key);
+    *is_portable = false;
+    return false;
+  }
+  nacl::string error_string;
+  if (!GetKeyUrl(files, rest, sandbox_isa_,
+                 full_url, &error_string, is_portable)) {
+    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL, error_string);
+    *full_url = "";
+    return false;
+  }
+  return true;
 }
 
 // TODO(jvoung): We won't need these if we figure out how to install llc and ld.

@@ -157,6 +157,8 @@ class PluginPpapi : public pp::InstancePrivate, public Plugin {
   // Returns true if PPAPI Dev interfaces should be allowed.
   bool enable_dev_interface() { return enable_dev_interface_; }
 
+  Manifest const* manifest() const { return manifest_.get(); }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
   // Prevent construction and destruction from outside the class:

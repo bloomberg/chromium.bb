@@ -5,7 +5,7 @@
  */
 
 /*
- * SRPC-based test for simple rpc based access to name services.
+ * Test for simple rpc based access to name services.
  */
 
 #include <assert.h>
@@ -18,11 +18,7 @@
 #include <sys/nacl_syscalls.h>
 #include <nacl/nacl_srpc.h>
 #include <sys/nacl_name_service.h>
-
-#define RNG_OUTPUT_BYTES  1024
-
-#define BYTES_PER_LINE    32
-#define BYTE_SPACING      4
+#include <nacl/nacl_srpc.h>
 
 struct StringBuffer {
   size_t  nbytes;
@@ -93,41 +89,6 @@ void StringBufferPrintf(struct StringBuffer *sb,
   }
 }
 
-void dump_output(struct StringBuffer *sb, int d, size_t nbytes) {
-  uint8_t *bytes;
-  int     got;
-  int     copied;
-  int     ix;
-
-  bytes = malloc(nbytes);
-  if (!bytes) {
-    perror("dump_output");
-    fprintf(stderr, "No memory\n");
-    return;
-  }
-  /* read output */
-  for (got = 0; got < nbytes; got += copied) {
-    copied = read(d, bytes + got, nbytes - got);
-    if (-1 == copied) {
-      perror("dump_output:read");
-      fprintf(stderr, "read failure\n");
-      break;
-    }
-    printf("read(%d, ..., %zd) -> %d\n", d, nbytes - got, copied);
-  }
-  /* hex dump it */
-  for (ix = 0; ix < got; ++ix) {
-    if (0 == (ix & (BYTES_PER_LINE-1))) {
-      StringBufferPrintf(sb, "\n%04x:", ix);
-    } else if (0 == (ix & (BYTE_SPACING-1))) {
-      StringBufferPrintf(sb, " ");
-    }
-    StringBufferPrintf(sb, "%02x", bytes[ix]);
-  }
-  StringBufferPrintf(sb, "\n");
-
-  free(bytes);
-}
 
 int EnumerateNames(struct StringBuffer *sb, NaClSrpcChannel *nschan) {
   char      buffer[1024];
@@ -172,34 +133,6 @@ void NameServiceDump(NaClSrpcRpc *rpc,
   StringBufferDtor(&sb);
 }
 
-/*
- * Dump RNG output into a string.
- */
-void RngDump(NaClSrpcRpc *rpc,
-             NaClSrpcArg **in_args,
-             NaClSrpcArg **out_args,
-             NaClSrpcClosure *done) {
-  struct StringBuffer sb;
-  NaClSrpcError rpc_result;
-  int status;
-  int rng;
-
-  StringBufferCtor(&sb);
-  rpc_result = NaClSrpcInvokeBySignature(&ns_channel, NACL_NAME_SERVICE_LOOKUP,
-                                         "SecureRandom", O_RDONLY,
-                                         &status, &rng);
-  assert(NACL_SRPC_RESULT_OK == rpc_result);
-  printf("rpc status %d\n", status);
-  assert(NACL_NAME_SERVICE_SUCCESS == status);
-  printf("rng descriptor %d\n", rng);
-
-  dump_output(&sb, rng, RNG_OUTPUT_BYTES);
-  out_args[0]->arrays.str = strdup(sb.buffer);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-  close(rng);
-  StringBufferDtor(&sb);
-}
 
 void ManifestTest(NaClSrpcRpc *rpc,
                   NaClSrpcArg **in_args,
@@ -208,6 +141,10 @@ void ManifestTest(NaClSrpcRpc *rpc,
   struct StringBuffer sb;
   int                 status;
   int                 manifest;
+  char                buffer[1024];
+  uint32_t            nbytes = sizeof buffer;
+  char                *p;
+  size_t              name_len;
 
   /* just get the descriptor for now */
   StringBufferCtor(&sb);
@@ -234,8 +171,18 @@ void ManifestTest(NaClSrpcRpc *rpc,
       StringBufferPrintf(&sb, "could not build srpc client\n");
       goto done;
     }
+    if (NACL_SRPC_RESULT_OK !=
+        NaClSrpcInvokeBySignature(&manifest_channel, NACL_NAME_SERVICE_LIST,
+                                  &nbytes, buffer)) {
+      StringBufferPrintf(&sb, "manifest list failed\n");
+      goto done;
+    }
     StringBufferDiscardOutput(&sb);
-    StringBufferPrintf(&sb, "ManifestTest: basic connectivity ok\n");
+    StringBufferPrintf(&sb, "Manifest Contents:\n");
+    for (p = buffer; p - buffer < nbytes; p += name_len + 1) {
+      name_len = strlen(p);
+      StringBufferPrintf(&sb, "%.*s\n", (int) name_len, p);
+    }
   }
  done:
   out_args[0]->arrays.str = strdup(sb.buffer);
@@ -247,7 +194,6 @@ void ManifestTest(NaClSrpcRpc *rpc,
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
   /* Export the methods as taking no arguments and returning a string. */
   { "namedump::s", NameServiceDump },
-  { "rngdump::s", RngDump },
   { "manifest_test::s", ManifestTest },
   { NULL, NULL },
 };

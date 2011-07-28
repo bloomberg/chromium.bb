@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#define NACL_LOG_MODULE_NAME "Plugin::ServiceRuntime"
+
 #include "native_client/src/trusted/plugin/service_runtime.h"
 
 #include <string.h>
@@ -11,12 +13,16 @@
 #include <map>
 #include <vector>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
@@ -27,6 +33,8 @@
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/ppapi/manifest.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -44,32 +52,263 @@ using std::vector;
 
 namespace plugin {
 
-typedef std::pair<Plugin*, nacl::string> LogCallbackData;
+PluginReverseInterface::PluginReverseInterface(
+    nacl::WeakRefAnchor* anchor,
+    Plugin* plugin)
+      : anchor_(anchor),
+        plugin_(plugin),
+        shutting_down_(false) {
+  NaClXMutexCtor(&mu_);
+  NaClXCondVarCtor(&cv_);
+}
 
-struct LogToJavaScriptConsoleResource {
- public:
-  LogToJavaScriptConsoleResource(std::string msg, Plugin* plugin_ptr)
-      : message(msg),
-        plugin(plugin_ptr) {}
-  std::string message;
-  Plugin* plugin;
-};
+PluginReverseInterface::~PluginReverseInterface() {
+  NaClMutexDtor(&mu_);
+}
 
-// Must be called on the main thread.
-void LogToJavaScriptConsole(LogToJavaScriptConsoleResource* p,
-                            int32_t err) {
-  UNREFERENCED_PARAMETER(err);
-  p->plugin->browser_interface()->AddToConsole(p->plugin->instance_id(),
-                                               p->message);
+void PluginReverseInterface::ShutDown() {
+  nacl::MutexLocker take(&mu_);
+  shutting_down_ = true;
+  NaClXCondVarBroadcast(&cv_);
 }
 
 void PluginReverseInterface::Log(nacl::string message) {
-  (void) plugin::WeakRefCallOnMainThread(
+  LogToJavaScriptConsoleResource* continuation =
+      new LogToJavaScriptConsoleResource(message);
+  CHECK(continuation != NULL);
+  NaClLog(4, "PluginReverseInterface::Log(%s)\n", message.c_str());
+  plugin::WeakRefCallOnMainThread(
       anchor_,
       0,  /* delay in ms */
-      LogToJavaScriptConsole,
-      new LogToJavaScriptConsoleResource(
-          message, plugin_));
+      this,
+      &plugin::PluginReverseInterface::Log_MainThreadContinuation,
+      continuation);
+}
+
+void PluginReverseInterface::Log_MainThreadContinuation(
+    LogToJavaScriptConsoleResource* p,
+    int32_t err) {
+  UNREFERENCED_PARAMETER(err);
+  NaClLog(4,
+          "PluginReverseInterface::Log_MainThreadContinuation(%s)\n",
+          p->message.c_str());
+  plugin_->browser_interface()->AddToConsole(plugin_->instance_id(),
+                                             p->message);
+}
+
+bool PluginReverseInterface::EnumerateManifestKeys(
+    std::set<nacl::string>* out_keys) {
+  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
+  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
+  Manifest const* mp = pplugin->manifest();
+
+  if (!mp->GetFileKeys(out_keys)) {
+    return false;
+  }
+
+  return true;
+}
+
+// TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey
+// and invoke StreamAsFile with a completion callback that invokes
+// GetPOSIXFileDesc.
+bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
+                                               int32_t* out_desc) {
+  ErrorInfo error_info;
+  bool is_portable = false;
+  bool op_complete = false;  // NB: mu_ and cv_ also controls access to this!
+  OpenManifestEntryResource* to_open =
+      new OpenManifestEntryResource(url_key, out_desc,
+                                    &error_info, &is_portable, &op_complete);
+  CHECK(to_open != NULL);
+  NaClLog(4, "PluginReverseInterface::OpenManifestEntry: %s\n",
+          url_key.c_str());
+  // This assumes we are not on the main thread.  If false, we deadlock.
+  plugin::WeakRefCallOnMainThread(
+      anchor_,
+      0,
+      this,
+      &plugin::PluginReverseInterface::OpenManifestEntry_MainThreadContinuation,
+      to_open);
+  NaClLog(4,
+          "PluginReverseInterface::OpenManifestEntry:"
+          " waiting on main thread\n");
+  bool shutting_down;
+  do {
+    nacl::MutexLocker take(&mu_);
+    for (;;) {
+      NaClLog(4,
+              "PluginReverseInterface::OpenManifestEntry:"
+              " got lock, checking shutdown and completion: (%s, %s)\n",
+              shutting_down_ ? "yes" : "no",
+              op_complete ? "yes" : "no");
+      shutting_down = shutting_down_;
+      if (op_complete || shutting_down) {
+        NaClLog(4,
+                "PluginReverseInterface::OpenManifestEntry:"
+                " done!\n");
+        break;
+      }
+      NaClXCondVarWait(&cv_, &mu_);
+    }
+  } while (0);
+  if (shutting_down) {
+    NaClLog(4,
+            "PluginReverseInterface::OpenManifestEntry:"
+            " plugin is shutting down\n");
+    return false;
+  }
+  // out_desc has the returned descriptor if successful, else -1.
+
+  // The caller is responsible for not closing *out_desc.  If it is
+  // closed prematurely, then another open could re-use the OS
+  // descriptor, confusing the opened_ map.  If the caller is going to
+  // want to make a NaClDesc object and transfer it etc., then the
+  // caller should DUP the descriptor (but remember the original
+  // value) for use by the NaClDesc object, which closes when the
+  // object is destroyed.
+  NaClLog(4,
+          "PluginReverseInterface::OpenManifestEntry:"
+          " *out_desc = %d\n",
+          *out_desc);
+  if (*out_desc == -1) {
+    // TODO(bsy,ncbray): what else should we do with the error?  This
+    // is a runtime error that may simply be a programming error in
+    // the untrusted code, or it may be something else wrong w/ the
+    // manifest.
+    NaClLog(4,
+            "OpenManifestEntry: failed for key %s, code %d (%s)\n",
+            url_key.c_str(),
+            error_info.error_code(),
+            error_info.message().c_str());
+  }
+  return true;
+}
+
+void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
+    OpenManifestEntryResource* p,
+    int32_t err) {
+  OpenManifestEntryResource *open_cont;
+  UNREFERENCED_PARAMETER(err);
+  // CallOnMainThread continuations always called with err == PP_OK.
+
+  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
+  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
+
+  NaClLog(4, "Entered OpenManifestEntry_MainThreadContinuation\n");
+
+  std::string mapped_url;
+  if (!pplugin->manifest()->ResolveKey(p->url, &mapped_url,
+                                       p->error_info, p->is_portable)) {
+    NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
+    // Failed, and error_info has the details on what happened.  Wake
+    // up requesting thread -- we are done.
+    nacl::MutexLocker take(&mu_);
+    *p->op_complete_ptr = true;  // done...
+    *p->out_desc = -1;       // but failed.
+    NaClXCondVarBroadcast(&cv_);
+    return;
+  }
+  NaClLog(4,
+          "OpenManifestEntry_MainThreadContinuation: ResolveKey: %s -> %s\n",
+          p->url.c_str(), mapped_url.c_str());
+
+  open_cont = new OpenManifestEntryResource(*p);  // copy ctor!
+  CHECK(open_cont != NULL);
+  open_cont->url = mapped_url;
+  pp::CompletionCallback stream_cc = WeakRefNewCallback(
+      anchor_,
+      this,
+      &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
+      open_cont);
+  if (!pplugin->StreamAsFile(mapped_url, stream_cc.pp_completion_callback())) {
+    NaClLog(4,
+            "OpenManifestEntry_MainThreadContinuation: StreamAsFile failed\n");
+    nacl::MutexLocker take(&mu_);
+    *p->op_complete_ptr = true;  // done...
+    *p->out_desc = -1;       // but failed.
+    p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+                             "ServiceRuntime: StreamAsFile failed");
+    NaClXCondVarBroadcast(&cv_);
+    return;
+  }
+  NaClLog(4,
+          "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
+  // p is deleted automatically
+}
+
+void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
+    OpenManifestEntryResource* p,
+    int32_t result) {
+  // TODO(bsy,sehr): remove static_cast when Plugin and PluginPpapi are fused
+  PluginPpapi* pplugin = static_cast<PluginPpapi*>(plugin_);
+
+  NaClLog(4,
+          "Entered StreamAsFile_MainThreadContinuation\n");
+
+  nacl::MutexLocker take(&mu_);
+  if (result == PP_OK) {
+    NaClLog(4, "StreamAsFile_MainThreadContinuation: GetPOSIXFileDesc(%s)\n",
+            p->url.c_str());
+    *p->out_desc = pplugin->GetPOSIXFileDesc(p->url);
+    NaClLog(4,
+            "StreamAsFile_MainThreadContinuation: PP_OK, desc %d\n",
+            *p->out_desc);
+  } else {
+    NaClLog(4,
+            "StreamAsFile_MainThreadContinuation: !PP_OK, setting desc -1\n");
+    *p->out_desc = -1;
+    p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+                             "PluginPpapi StreamAsFile failed at callback");
+  }
+  *p->op_complete_ptr = true;
+  NaClXCondVarBroadcast(&cv_);
+}
+
+bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
+  bool op_complete;
+  bool op_result;
+  CloseManifestEntryResource* to_close =
+      new CloseManifestEntryResource(desc, &op_complete, &op_result);
+
+  bool shutting_down;
+  plugin::WeakRefCallOnMainThread(
+      anchor_,
+      0,
+      this,
+      &plugin::PluginReverseInterface::
+        CloseManifestEntry_MainThreadContinuation,
+      to_close);
+  // wait for completion or surf-away.
+  do {
+    nacl::MutexLocker take(&mu_);
+    for (;;) {
+      shutting_down = shutting_down_;
+      if (op_complete || shutting_down) {
+        break;
+      }
+      NaClXCondVarWait(&cv_, &mu_);
+    }
+  } while (0);
+
+  if (shutting_down) return false;
+  // op_result true if close was successful; false otherwise (e.g., bad desc).
+  return op_result;
+}
+
+void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
+    CloseManifestEntryResource* cls,
+    int32_t err) {
+  UNREFERENCED_PARAMETER(err);
+
+  nacl::MutexLocker take(&mu_);
+  // TODO(bsy): once the plugin has a reliable way to report that the
+  // file usage is done -- and sel_ldr uses this RPC call -- we should
+  // tell the plugin that the associated resources can be freed.
+  *cls->op_result_ptr = true;
+  *cls->op_complete_ptr = true;
+  NaClXCondVarBroadcast(&cv_);
+  // cls automatically deleted
 }
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin)
@@ -79,7 +318,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin)
       subprocess_(NULL),
       async_receive_desc_(NULL),
       async_send_desc_(NULL),
-      anchor_(new nacl::WeakRefAnchor()),
+      anchor_(new nacl::WeakRefAnchor),
       rev_interface_(new PluginReverseInterface(anchor_, plugin)) {
 }
 
@@ -255,6 +494,14 @@ void ServiceRuntime::Shutdown() {
   if (subprocess_ != NULL) {
     Kill();
   }
+  rev_interface_->ShutDown();
+  anchor_->Abandon();
+  // Abandon callbacks, tell service threads to quit if they were
+  // blocked waiting for main thread operations to finish.  Note that
+  // some callbacks must still await their completion event, e.g.,
+  // CallOnMainThread must still wait for the time out, or I/O events
+  // must finish, so resources associated with pending events cannot
+  // be deallocated.
 
   // Note that this does waitpid() to get rid of any zombie subprocess.
   subprocess_.reset(NULL);
@@ -285,7 +532,6 @@ ServiceRuntime::~ServiceRuntime() {
 
   rev_interface_->Unref();
 
-  anchor_->Abandon();
   anchor_->Unref();
 }
 

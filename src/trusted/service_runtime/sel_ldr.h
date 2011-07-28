@@ -216,7 +216,9 @@ struct NaClApp {
     NACL_REVERSE_CHANNEL_INITIALIZATION_STARTED,
     NACL_REVERSE_CHANNEL_INITIALIZED
   }                               reverse_channel_initialization_state;
-  NaClSrpcChannel                 reverse_channel;
+  struct NaClSrpcChannel          reverse_channel;
+
+  struct NaClManifestProxy        *manifest_service;
 
   NaClErrorCode             module_load_status;
   int                       module_may_start;
@@ -534,7 +536,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
 int NaClSecureReverseClientInsertHandler(
-    struct NaClSecureReverseClient *self,
+    struct NaClSecureReverseClient  *self,
     void                            (*handler)(
         void                                   *handler_state,
         struct NaClThreadInterface             *thread_if,

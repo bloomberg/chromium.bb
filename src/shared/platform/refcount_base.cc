@@ -6,6 +6,7 @@
 
 #include "native_client/src/shared/platform/refcount_base.h"
 
+#include "native_client/src/include/portability.h"  // NACL_PRIxPTR etc
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 

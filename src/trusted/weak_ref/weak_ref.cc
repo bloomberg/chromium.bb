@@ -12,29 +12,19 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_sync_raii.h"
 
 namespace nacl {
 
 AnchoredResource::AnchoredResource(WeakRefAnchor* anchor)
-    : anchor_(anchor) {
+    : anchor_(anchor->Ref()) {
   NaClXMutexCtor(&mu_);
 }
 
 AnchoredResource::~AnchoredResource() {
+  anchor_->Unref();
   NaClMutexDtor(&mu_);
-  NaClLog(3, "~AnchoredResource: this 0x%"NACL_PRIxPTR"\n", (uintptr_t) this);
-}
-
-void AnchoredResource::Abandon() {
-  NaClLog(3,
-          "Entered AnchoredResource::Abandon: this 0x%"NACL_PRIxPTR"\n",
-          (uintptr_t) this);
-  NaClXMutexLock(&mu_);
-  anchor_ = NULL;
-  reset_mu();
-  NaClXMutexUnlock(&mu_);
-  Unref();
-  NaClLog(3, "Leaving AnchoredResource::Abandon\n");
+  NaClLog(4, "~AnchoredResource: this 0x%"NACL_PRIxPTR"\n", (uintptr_t) this);
 }
 
 WeakRefAnchor::WeakRefAnchor()
@@ -42,18 +32,26 @@ WeakRefAnchor::WeakRefAnchor()
   NaClXMutexCtor(&mu_);
 }
 
+WeakRefAnchor::~WeakRefAnchor() {
+  NaClMutexDtor(&mu_);
+}  // only via Unref
+
+bool WeakRefAnchor::is_abandoned() {
+  nacl::MutexLocker take(&mu_);
+  NaClLog(4, "is_abandoned: %d\n", abandoned_);
+  return abandoned_;
+}
+
 void WeakRefAnchor::Abandon() {
-  NaClLog(2,
+  NaClLog(4,
           "Entered WeakRefAnchor::Abandon: this 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) this);
-  NaClXMutexLock(&mu_);
-  for (container_type::iterator it = tracked_.begin();
-       it != tracked_.end(); ++it) {
-    (*it)->Abandon();  // eager resource release
-  }
-  abandoned_ = true;
-  NaClXMutexUnlock(&mu_);
-  NaClLog(2, "Leaving WeakRefAnchor::Abandon\n");
+  do {
+    nacl::MutexLocker take(&mu_);
+    abandoned_ = true;
+  } while (0);
+
+  NaClLog(4, "Leaving WeakRefAnchor::Abandon\n");
 }
 
 }  // namespace nacl

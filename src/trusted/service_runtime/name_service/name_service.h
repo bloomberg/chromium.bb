@@ -127,7 +127,7 @@ struct NaClNameServiceVtbl {
    * the last byte is a NUL we cannot know that there aren't more
    * entries.  (A partially written entry is only one possibility; it
    * could happen that the initial entries exactly fit the buffer, but
-   * there are more.
+   * there are more.)
    */
   size_t                        (*Enumerate)(
       struct NaClNameService  *self,

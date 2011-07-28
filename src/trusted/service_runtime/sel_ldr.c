@@ -46,8 +46,8 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
-#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 #include "native_client/src/trusted/service_runtime/name_service/default_name_service.h"
+#include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
 #include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
@@ -140,6 +140,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->reverse_client = NULL;
   nap->reverse_channel_initialization_state =
       NACL_REVERSE_CHANNEL_UNINITIALIZED;
+  nap->manifest_service = NULL;
 
   if (!NaClMutexCtor(&nap->mu)) {
     goto cleanup_dynamic_load_mutex;

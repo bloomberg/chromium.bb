@@ -7,6 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_REVERSE_SERVICE_REVERSE_SERVICE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_REVERSE_SERVICE_REVERSE_SERVICE_H_
 
+#include <set>
+
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -24,8 +26,30 @@ class DescWrapper;
 
 class ReverseInterface : public RefCountBase {
  public:
-  virtual void Log(nacl::string message) = 0;
   virtual ~ReverseInterface() {}
+
+  // debugging, messaging
+  virtual void Log(nacl::string message) = 0;
+
+  // Name service use.
+  //
+  // Some of these functions require that the actual operation be done
+  // in a different thread, so that the implementation of the
+  // interface will have to block the requesting thread.  However, on
+  // surf away, the thread switch may get cancelled, and the
+  // implementation will have to reply with a failure indication.
+
+  // The bool functions returns false if the service thread unblocked
+  // because of surf-away, shutdown, or other issues.  The plugin,
+  // when it tells sel_ldr to shut down, will also signal all threads
+  // that are waiting for main thread callbacks to wake up and abandon
+  // their vigil after the callbacks are all cancelled (by abandoning
+  // the WeakRefAnchor or by bombing their CompletionCallbackFactory).
+  // Since shutdown/surfaway is the only admissible error, we use bool
+  // as the return type.
+  virtual bool EnumerateManifestKeys(std::set<nacl::string>* keys) = 0;
+  virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc) = 0;
+  virtual bool CloseManifestEntry(int32_t desc) = 0;
 
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast

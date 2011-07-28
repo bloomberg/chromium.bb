@@ -1,0 +1,22 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+weak_ref_inputs = [
+    'weak_ref.cc',
+]
+
+env.NaClSdkLibrary('weak_ref', weak_ref_inputs)
+
+headers = [
+    'call_on_main_thread.h',
+    'weak_ref.h',
+]
+
+header_install = env.AddHeaderToSdk(headers)
+env.AddLibraryToSdk(['weak_ref'])
+
+env.Requires('weak_ref', header_install)

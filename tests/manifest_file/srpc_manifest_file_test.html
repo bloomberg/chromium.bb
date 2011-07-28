@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SRPC Name Service</title>
+    <title>SRPC Manifest File Service</title>
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
     <script type="text/javascript" src="nacltest.js"></script>
@@ -13,13 +13,8 @@ function testMethods(tester, server) {
     assertEqual('nbytes = 33\nManifestNameService\nSecureRandom\n',
                 server.namedump());
   })
-  // RNG output -- no fixed seed testing, so cannot compare output;
-  // we aren't about to run chi-squared testing in javascript...
-  // tester.addTest('rngdump', function() {
-  //   alert(server.rngdump());
-  // })
   tester.addTest('manifest_test', function() {
-    assertEqual('ManifestTest: basic connectivity ok\n',
+    assertEqual('Manifest Contents:\nnmf says hello world\n',
                 server.manifest_test());
   })
 }
@@ -28,7 +23,7 @@ function testMethods(tester, server) {
     </script>
   </head>
   <body>
-    <h1>Native Client Name Service</h1>
+    <h1>Native Client ManifestFile Service</h1>
     NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
 
     <p>
@@ -39,7 +34,8 @@ function testMethods(tester, server) {
     </p>
 
     <embed type="application/x-nacl" id="nacl_server"
-           name="nacl_module" width="0" height="0" src="srpc_nameservice.nmf" />
+           name="nacl_module" width="0" height="0"
+           src="srpc_manifest_file.nmf" />
 
     <script type="text/javascript">
       //<![CDATA[

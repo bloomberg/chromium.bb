@@ -16,6 +16,7 @@ platform_inputs = [
     'linux/nacl_threads.c',
     'linux/nacl_timestamp.c',
     'nacl_sync_checked.c',
+    'refcount_base.cc',
     ]
 
 env.NaClSdkLibrary('platform',
@@ -26,6 +27,7 @@ headers = [
     'nacl_check.h',
     'nacl_log.h',
     'nacl_threads.h',
+    'refcount_base.h',
     ]
 
 header_install = env.AddHeaderToSdk(headers)

@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <string.h>
+
 #include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -52,18 +54,26 @@ static void NaClManifestNameServiceListRpc(
 
   NaClManifestWaitForChannel_yield_mu(proxy_conn);
 
+  NaClLog(4,
+          ("NaClManifestNameServiceListRpc: nbytes %"NACL_PRIu32", dest"
+           " 0x%"NACL_PRIxPTR"\n"),
+          nbytes, (uintptr_t) dest);
   if (NACL_SRPC_RESULT_OK !=
       (srpc_error =
        NaClSrpcInvokeBySignature(&proxy_conn->client_channel,
                                  NACL_MANIFEST_LIST,
                                  &nbytes, dest))) {
-    NaClLog(1,
+    NaClLog(LOG_ERROR,
             ("Manifest list via channel 0x%"NACL_PRIxPTR" with RPC "
              NACL_MANIFEST_LIST" failed: %d\n"),
             (uintptr_t) &proxy_conn->client_channel,
             srpc_error);
     rpc->result = srpc_error;
   } else {
+    NaClLog(3,
+            "NaClManifestNameServiceListRpc, proxy returned %"NACL_PRId32
+            " bytes\n",
+            nbytes);
     out_args[0]->u.count = nbytes;
     rpc->result = NACL_SRPC_RESULT_OK;
   }
@@ -94,6 +104,8 @@ static void NaClManifestNameServiceLookupRpc(
       (struct NaClManifestProxyConnection *) rpc->channel->server_instance_data;
   char                                *name = in_args[0]->arrays.str;
   int                                 flags = in_args[1]->u.ival;
+  char                                cookie[20];
+  uint32_t                            cookie_size = sizeof cookie;
   int                                 status;
   struct NaClDesc                     *desc;
   NaClSrpcError                       srpc_error;
@@ -102,6 +114,13 @@ static void NaClManifestNameServiceLookupRpc(
 
   NaClManifestWaitForChannel_yield_mu(proxy_conn);
 
+  NaClLog(4,
+          "NaClManifestNameServiceLookupRpc: name %s, flags %d\n",
+          name, flags);
+  NaClLog(4,
+          "NaClManifestNameServiceLookupRpc: invoking %s\n",
+          NACL_MANIFEST_LOOKUP);
+
   if (NACL_SRPC_RESULT_OK !=
       (srpc_error =
        NaClSrpcInvokeBySignature(&proxy_conn->client_channel,
@@ -109,14 +128,19 @@ static void NaClManifestNameServiceLookupRpc(
                                  name,
                                  flags,
                                  &status,
-                                 &desc))) {
-    NaClLog(1,
+                                 &desc,
+                                 &cookie_size,
+                                 cookie))) {
+    NaClLog(LOG_ERROR,
             ("Manifest lookup via channel 0x%"NACL_PRIxPTR" with RPC "
              NACL_MANIFEST_LOOKUP" failed: %d\n"),
             (uintptr_t) &proxy_conn->client_channel,
             srpc_error);
     rpc->result = srpc_error;
   } else {
+    NaClLog(4,
+            "NaClManifestNameServiceLookupRpc: got cookie %.*s\n",
+            cookie_size, cookie);
     out_args[0]->u.ival = status;
     out_args[1]->u.hval = desc;
     rpc->result = NACL_SRPC_RESULT_OK;
@@ -239,6 +263,20 @@ void NaClManifestProxyConnectionDtor(struct NaClRefCount *vself) {
   NaClLog(4,
           "Entered NaClManifestProxyConnectionDtor: self 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) self);
+  NaClXMutexLock(&self->mu);
+  while (!self->channel_initialized) {
+    NaClLog(4,
+            "NaClManifestProxyConnectionDtor:"
+            " waiting for connection initialization\n");
+    NaClXCondVarWait(&self->cv, &self->mu);
+  }
+  NaClXMutexUnlock(&self->mu);
+
+  NaClLog(4, "NaClManifestProxyConnectionDtor: dtoring\n");
+
+  NaClCondVarDtor(&self->cv);
+  NaClMutexDtor(&self->mu);
+
   NaClSrpcDtor(&self->client_channel);
   NACL_VTBL(NaClSimpleServiceConnection, self) =
       &kNaClSimpleServiceConnectionVtbl;

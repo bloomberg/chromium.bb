@@ -622,7 +622,7 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap) {
            " name service\n"));
   (*NACL_VTBL(NaClNameService, nap->name_service)->
    CreateDescEntry)(nap->name_service,
-                    "manifest_proxy", NACL_ABI_O_RDWR,
+                    "ManifestNameService", NACL_ABI_O_RDWR,
                     NaClDescRef(nap->manifest_proxy->base.bound_and_cap[1]));
 
   rv = 1;

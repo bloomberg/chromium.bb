@@ -36,7 +36,7 @@ env.Publish(srpc_ns_nexe_name, 'run',
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
-    'srpc_ns_browser_test.out',
+    'srpc_nameservice_browser_test.out',
     url='srpc_nameservice_test.html',
     files=env.ExtractPublishedFiles(srpc_ns_nexe_name),
     args=['--debug', '--enable_experimental_js'])
@@ -44,4 +44,40 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_nameservice_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+# postmessage version of srpc_nameservice_test
+
+pm_ns_obj = env.ComponentObject('pm_nameservice_test.o',
+                                'pm_nameservice_test.cc')
+pm_ns_nexe_name = 'pm_nameservice_test_%s' % env.get('TARGET_FULLARCH')
+pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
+                                  pm_ns_obj,
+                                  EXTRA_LIBS=['nacl_ppapi_util',
+                                              'ppapi_cpp',
+                                              '${PPAPI_LIBS}',
+                                              'pthread',
+                                              'srpc',
+                                              'platform',
+                                              'gio',
+                                              'imc',
+                                              'imc_syscalls',
+                                              ])
+env.Publish(pm_ns_nexe_name, 'run',
+            ['pm_nameservice_test.html',
+             'pm_nameservice.nmf'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'pm_nameservice_browser_test.out',
+    url='pm_nameservice_test.html',
+    files=env.ExtractPublishedFiles(pm_ns_nexe_name),
+    args=['--debug'],
+    osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0']
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pm_nameservice_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())

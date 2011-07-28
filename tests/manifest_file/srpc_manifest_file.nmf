@@ -1,0 +1,14 @@
+{
+  "program": {
+    "x86-32": {"url": "srpc_manifest_file_test_x86-32.nexe"},
+    "x86-64": {"url": "srpc_manifest_file_test_x86-64.nexe"},
+    "arm":    {"url": "srpc_manifest_file_test_arm.nexe"}
+  },
+  "files": {
+    "nmf says hello world": {
+      "x86-32": {"url": "srpc_manifest_file_test_x86-32.nexe"},
+      "x86-64": {"url": "srpc_manifest_file_test_x86-64.nexe"},
+      "arm":    {"url": "srpc_manifest_file_test_arm.nexe"}
+    }
+  }
+}

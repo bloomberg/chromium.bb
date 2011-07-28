@@ -11,6 +11,8 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -18,6 +20,9 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 namespace {
 
@@ -26,13 +31,14 @@ void Test(NaClSrpcRpc* rpc,
           NaClSrpcArg** out_args,
           NaClSrpcClosure* done) {
   char *msg = in_args[0]->arrays.str;
+  NaClSrpcClosureRunner on_return(done);
+
   UNREFERENCED_PARAMETER(out_args);
   // use rpc->channel rather than rpc->channel->server_instance_data
   // to show that Test RPCs arrive in different channels.
   NaClLog(1, "Test: [%"NACL_PRIxPTR"] %s\n",
           reinterpret_cast<uintptr_t>(rpc->channel), msg);
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 void AddChannel(NaClSrpcRpc* rpc,
@@ -41,6 +47,7 @@ void AddChannel(NaClSrpcRpc* rpc,
                 NaClSrpcClosure* done) {
   nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
       rpc->channel->server_instance_data);
+  NaClSrpcClosureRunner on_return(done);
 
   UNREFERENCED_PARAMETER(in_args);
 
@@ -48,7 +55,6 @@ void AddChannel(NaClSrpcRpc* rpc,
   out_args[0]->u.bval = service->Start();
   NaClLog(4, "Leaving AddChannel\n");
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 void RevLog(NaClSrpcRpc* rpc,
@@ -57,15 +63,16 @@ void RevLog(NaClSrpcRpc* rpc,
             NaClSrpcClosure* done) {
   nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
       rpc->channel->server_instance_data);
-  UNREFERENCED_PARAMETER(out_args);
   char* message = in_args[0]->arrays.str;
+  NaClSrpcClosureRunner on_return(done);
+
+  UNREFERENCED_PARAMETER(out_args);
 
   if (NULL == service->reverse_interface()) {
     NaClLog(1, "Log RPC, no reverse_interface.  Message: %s\n", message);
   } else {
     service->reverse_interface()->Log(message);
   }
-  done->Run(done);
 }
 
 // Manifest name service, internal APIs.
@@ -90,17 +97,47 @@ void ManifestListRpc(NaClSrpcRpc* rpc,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args,
                      NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  NaClSrpcClosureRunner on_return(done);
+
   UNREFERENCED_PARAMETER(in_args);
-  // Placeholder.  This RPC handler will be replaced with code that
-  // actually do manifest listing.
-  //
-  // TODO(bsy) hook up to real manifest info
-  out_args[0]->u.count = SNPRINTF(out_args[0]->arrays.carr,
-                                  out_args[0]->u.count,
-                                  "This is a reply from the manifest reverse"
-                                  " service in the plugin.");
+
+  if (NULL == service->reverse_interface()) {
+    NaClLog(1, "ManifestList RPC, no reverse_interface.\n");
+    out_args[0]->u.count = 0;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
+  }
+
+  std::set<nacl::string> manifest_keys;
+  if (!service->reverse_interface()->EnumerateManifestKeys(&manifest_keys)) {
+    NaClLog(LOG_WARNING, "ManifestList RPC: EnumerateManifestKeys failed\n");
+    out_args[0]->u.count = 0;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
+  }
+  size_t sofar = 0;
+  size_t space = out_args[0]->u.count;
+  char* dest = out_args[0]->arrays.carr;
+
+  for (std::set<nacl::string>::iterator it = manifest_keys.begin();
+       it != manifest_keys.end();
+       ++it) {
+    NaClLog(3, "ManifestList RPC: appending %s\n", it->c_str());
+
+    if (sofar + it->size() + 1 > space) {
+      break;
+    }
+    strncpy(dest + sofar, it->c_str(), it->size() + 1);
+    NaClLog(3, "ManifestList RPC: %s\n", dest + sofar);
+    sofar += it->size() + 1;
+  }
+
+  NaClLog(3, "ManifestList RPC: total size %"NACL_PRIdS"\n", sofar);
+
+  out_args[0]->u.count = static_cast<nacl_abi_size_t>(sofar);
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 // NACL_MANIFEST_LOOKUP lookup:si:ihC -- look up by string name,
@@ -112,37 +149,65 @@ void ManifestLookupRpc(NaClSrpcRpc* rpc,
                        NaClSrpcClosure* done) {
   char* fname = in_args[0]->arrays.str;
   int flags = in_args[0]->u.ival;
+  int32_t posix_desc = -1;
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  NaClSrpcClosureRunner on_return(done);
 
   NaClLog(0, "ManifestLookupRpc: %s, %d\n", fname, flags);
-  out_args[0]->u.ival = 0;  // ok
-  out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
-  // Placeholder.  This RPC handler will be replaced with code that
-  // actually do lookups/URL fetches.
-  //
-  // TODO(bsy): hook up to real name resolution and return a real
-  // descriptor.
+
+  out_args[2]->u.count = 0;
+  // by default we return a failure, so no proxy handle
+  if (NULL == service->reverse_interface()) {
+    NaClLog(0, "ManifestLookupRpc: no reverse service, returning error\n");
+    // no reverse interface, all file open requests get -1.
+    out_args[0]->u.ival = 0;  // ok, but failed.
+    out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
+  }
+
+  NaClLog(0, "ManifestLookupRpc: invoking OpenManifestEntry\n");
+  if (!service->reverse_interface()->OpenManifestEntry(fname,
+                                                       &posix_desc)) {
+    NaClLog(0, "ManifestLookupRpc: OpenManifestEntry failed.\n");
+    out_args[0]->u.ival = 0;  // ok, but failed.
+    out_args[1]->u.hval = (struct NaClDesc*) NaClDescInvalidMake();
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
+  }
+  NaClLog(0,
+          "ManifestLookupRpc: OpenManifestEntry returned desc %d.\n",
+          posix_desc);
+  struct NaClHostDesc *hd = reinterpret_cast<struct NaClHostDesc*>(
+      malloc(sizeof *hd));
+  CHECK(hd != NULL);
+  CHECK(NaClHostDescPosixTake(hd, posix_desc, NACL_ABI_O_RDONLY) == 0);
+  struct NaClDescIoDesc *diod = NaClDescIoDescMake(hd);
+  CHECK(diod != NULL);
+  out_args[1]->u.hval = (struct NaClDesc *) diod;
   out_args[2]->u.count = 10;
   strncpy(out_args[2]->arrays.carr, "123456789", 10);
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 // NACL_MANIFEST_UNREF unref:C:i -- dereferences the file by object
-// proxy handle.  The file descriptor should have been closed.
+// proxy handle.  The file descriptor should have been closed on the
+// other side (it was a copy due to the sendmsg anyway).
 void ManifestUnrefRpc(NaClSrpcRpc* rpc,
                       NaClSrpcArg** in_args,
                       NaClSrpcArg** out_args,
                       NaClSrpcClosure* done) {
   char* proxy_handle = in_args[0]->arrays.carr;
+  NaClSrpcClosureRunner on_return(done);
 
-  NaClLog(0, "ManifestUnrefRpc: %s\n", proxy_handle);
+  NaClLog(0, "ManifestUnrefRpc: %.*s\n", 10, proxy_handle);
   // Placeholder.  This RPC will be replaced by real code that
   // looks up the object proxy handle to close the Pepper file object.
   //
   // TODO(bsy): replace with real code.
   out_args[0]->u.ival = 0;  // ok
   rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
 }
 
 }  // namespace

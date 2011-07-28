@@ -169,6 +169,10 @@ int NaClThreadInterfaceConstructAndStartThread(
     struct NaClThreadInterface  **out_new_thread) {
   struct NaClThreadInterface  *new_thread;
 
+  NaClLog(3,
+          "NaClThreadInterfaceConstructAndStartThread: invoking factory"
+          " function 0x%"NACL_PRIxPTR", factory data 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) factory_fn, (uintptr_t) factory_data);
   if (!(*factory_fn)(factory_data,
                      thread_fn_ptr,
                      thread_data,
@@ -181,6 +185,8 @@ int NaClThreadInterfaceConstructAndStartThread(
     new_thread = NULL;
     goto abort;
   }
+  NaClLog(3,
+          "NaClThreadInterfaceConstructAndStartThread: StartThread vfn\n");
   if (!(*NACL_VTBL(NaClThreadInterface, new_thread)->StartThread)(
           new_thread)) {
     NaClLog(3,

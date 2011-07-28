@@ -1,0 +1,76 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+srpc_mf_obj = env.ComponentObject('srpc_manifest_file_test.o',
+                                  'srpc_manifest_file_test.c')
+srpc_mf_nexe_name = 'srpc_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+srpc_mf_nexe = env.ComponentProgram(srpc_mf_nexe_name,
+                                    srpc_mf_obj,
+                                    EXTRA_LIBS=[
+                                        'srpc',
+                                        'platform',
+                                        'gio',
+                                        'imc',
+                                        'imc_syscalls',
+                                        'pthread',
+                                        '${NON_PPAPI_BROWSER_LIBS}'])
+env.Publish(srpc_mf_nexe_name, 'run',
+            ['srpc_manifest_file_test.html',
+             'srpc_manifest_file.nmf'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'srpc_mf_browser_test.out',
+    url='srpc_manifest_file_test.html',
+    files=env.ExtractPublishedFiles(srpc_mf_nexe_name),
+    args=['--debug', '--enable_experimental_js'],
+#    osenv=['NACLVERBOSITY=4']
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_srpc_manifest_file_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+# post message version
+
+pm_mf_obj = env.ComponentObject('pm_manifest_file_test.o',
+                                'pm_manifest_file_test.cc')
+pm_mf_nexe_name = 'pm_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+pm_mf_nexe = env.ComponentProgram(pm_mf_nexe_name,
+                                  pm_mf_obj,
+                                  EXTRA_LIBS=['nacl_ppapi_util',
+                                              'weak_ref',
+                                              'ppapi_cpp',
+                                              '${PPAPI_LIBS}',
+                                              'pthread',
+                                              'srpc',
+                                              'platform',
+                                              'gio',
+                                              'imc',
+                                              'imc_syscalls',
+                                              ])
+env.Publish(pm_mf_nexe_name, 'run',
+            ['pm_manifest_file_test.html',
+             'pm_manifest_file.nmf'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'pm_mf_browser_test.out',
+    url='pm_manifest_file_test.html',
+    files=env.ExtractPublishedFiles(pm_mf_nexe_name),
+    args=['--debug'],
+#    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
+    )
+
+env.AddNodeToTestSuite(node,
+                      ['chrome_browser_tests'],
+                      'run_pm_manifest_file_chrome_browser_test',
+                      is_broken=env.PPAPIBrowserTesterIsBroken())
+
