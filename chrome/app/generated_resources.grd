@@ -9281,7 +9281,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         New! Configure password sync.
       </message>
       <message name="IDS_SYNC_PASSWORD_SYNC_ATTENTION" desc="Message indicating password sync needs attention.">
-        Please update your sync passhprase.
+        Please update your sync passphrase.
       </message>
 
       <message name="IDS_SYNC_PLEASE_SIGN_IN" desc="An title for a sign in dialog.">
