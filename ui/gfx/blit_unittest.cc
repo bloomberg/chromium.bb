@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/shared_memory.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/blit.h"
@@ -133,3 +134,30 @@ TEST(Blit, ScrollCanvas) {
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
   VerifyCanvasValues<5, 5>(&canvas, scroll_diagonal_expected);
 }
+
+#if defined(OS_WIN)
+
+TEST(Blit, WithSharedMemory) {
+  const int kCanvasWidth = 5;
+  const int kCanvasHeight = 5;
+  skia::PlatformCanvas canvas;
+  base::SharedMemory shared_mem;
+  ASSERT_TRUE(shared_mem.CreateAnonymous(kCanvasWidth * kCanvasHeight));
+  base::SharedMemoryHandle section = shared_mem.handle();
+  ASSERT_TRUE(canvas.initialize(kCanvasWidth, kCanvasHeight, true, section));
+  shared_mem.Close();
+
+  uint8 initial_values[kCanvasHeight][kCanvasWidth] = {
+      { 0x00, 0x01, 0x02, 0x03, 0x04 },
+      { 0x10, 0x11, 0x12, 0x13, 0x14 },
+      { 0x20, 0x21, 0x22, 0x23, 0x24 },
+      { 0x30, 0x31, 0x32, 0x33, 0x34 },
+      { 0x40, 0x41, 0x42, 0x43, 0x44 }};
+  SetToCanvas<5, 5>(&canvas, initial_values);
+
+  // Sanity check on input.
+  VerifyCanvasValues<5, 5>(&canvas, initial_values);
+}
+
+#endif
+
