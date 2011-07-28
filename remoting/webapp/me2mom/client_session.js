@@ -325,7 +325,7 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.setState_ = function(state) {
-  var oldState = state;
+  var oldState = this.state;
   this.state = state;
   if (this.onStateChange) {
     this.onStateChange(oldState);
