@@ -227,11 +227,6 @@ void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
   policy->AddKernelObjectToClose(L"ALPC Port", NULL);
 }
 
-void AddStrictHandleClosePolicy(sandbox::TargetPolicy* policy) {
-  // This is loaded when rand_s is seeded, but not needed again.
-  policy->AddKernelObjectToClose(L"File", L"\\Device\\KsecDD");
-}
-
 // Adds the generic policy rules to a sandbox TargetPolicy.
 bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
@@ -457,8 +452,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       return 0;
   } else {
     AddPolicyForRenderer(policy);
-    if (type == ChildProcessInfo::RENDER_PROCESS)
-      AddStrictHandleClosePolicy(policy);
 
     if (type_str != switches::kRendererProcess) {
       // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
