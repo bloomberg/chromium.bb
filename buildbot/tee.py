@@ -22,30 +22,26 @@ def _output(line, output_files, complain):
     complain: Print a warning if we get EAGAIN errors. Only one error
               is printed per line.
   """
-
   for f in output_files:
-    while True:
+    offset = 0
+    while offset < len(line):
+      select.select([], [f], [])
       try:
-        f.write(line)
-        break
-      except IOError as ex:
-        if ex.errno != errno.EAGAIN:
+        offset += os.write(f.fileno(), line[offset:])
+      except OSError as ex:
+        if ex.errno == errno.EINTR:
+          continue
+        elif ex.errno != errno.EAGAIN:
           raise
-        if complain:
-          complain = False
-          flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL, 0)
-          if flags & os.O_NONBLOCK:
-            warning = 'Warning: %s/%d is non-blocking.\n' % (f.name,
+      if offset < len(line) and complain:
+        flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL, 0)
+        if flags & os.O_NONBLOCK:
+          warning = '\nWarning: %s/%d is non-blocking.\n' % (f.name,
                                                              f.fileno())
-            _output(warning, output_files, complain)
-
-          warning = 'Warning: EAGAIN received for %s/%d.\n' % (f.name,
-                                                               f.fileno())
-          _output(warning, output_files, complain)
-
-        # Looks like we're in non-blocking mode. Wait for the file-handle
-        # to be ready before continuing.
-        select.select([], [f], [])
+          _output(warning, output_files, False)
+        warning = '\nWarning: Short write for %s/%d.\n' % (f.name,
+                                                           f.fileno())
+        _output(warning, output_files, False)
 
 
 def _tee(input_file, output_files, complain):
