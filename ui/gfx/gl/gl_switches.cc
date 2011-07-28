@@ -18,6 +18,10 @@ namespace switches {
 // Stop the GPU from synchronizing on the vsync before presenting.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 
+// Turns on GPU logging (debug build only).
+const char kEnableGPUServiceLogging[]       = "enable-gpu-service-logging";
+const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
+
 // Select which implementation of GL the GPU process should use. Options are:
 //  desktop: whatever desktop OpenGL the user has installed (Linux and Mac
 //           default).
@@ -26,8 +30,9 @@ const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 //  osmesa: The OSMesa software renderer.
 const char kUseGL[]                         = "use-gl";
 
-// Turns on GPU logging (debug build only).
-const char kEnableGPUServiceLogging[]       = "enable-gpu-service-logging";
-const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
+// Inform Chrome that a GPU context will not be lost in power saving mode,
+// screen saving mode, etc.  Note that this flag does not ensure that a GPU
+// context will never be lost in any situations, say, a GPU reset.
+const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 
 }  // namespace switches

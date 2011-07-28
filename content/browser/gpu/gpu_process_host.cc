@@ -521,7 +521,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
-    switches::kUseGL,
+    switches::kDisableGLMultisampling,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
@@ -531,10 +531,11 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif
+    switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
     switches::kNoSandbox,
-    switches::kDisableGLMultisampling,
+    switches::kUseGL,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));

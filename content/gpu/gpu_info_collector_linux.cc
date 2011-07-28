@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace {
 
@@ -192,10 +194,16 @@ namespace gpu_info_collector {
 bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  // TODO(zmo): need to consider the case where we are running on top of
-  // desktop GL and GL_ARB_robustness extension is available.
-  gpu_info->can_lose_context =
-      (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGpuNoContextLost)) {
+    gpu_info->can_lose_context = false;
+  } else {
+    // TODO(zmo): need to consider the case where we are running on top
+    // of desktop GL and GL_ARB_robustness extension is available.
+    gpu_info->can_lose_context =
+        (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  }
+
   gpu_info->finalized = true;
   return CollectGraphicsInfoGL(gpu_info);
 }

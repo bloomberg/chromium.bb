@@ -21,9 +21,10 @@ extern const char kGLImplementationMockName[];
 namespace switches {
 
 extern const char kDisableGpuVsync[];
-extern const char kUseGL[];
 extern const char kEnableGPUServiceLogging[];
 extern const char kEnableGPUClientLogging[];
+extern const char kGpuNoContextLost[];
+extern const char kUseGL[];
 
 }  // namespace switches
 
