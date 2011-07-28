@@ -25,6 +25,7 @@
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -793,7 +794,8 @@ AutocompleteController::AutocompleteController(
     AutocompleteControllerDelegate* delegate)
     : delegate_(delegate),
       done_(true),
-      in_start_(false) {
+      in_start_(false),
+      profile_(profile) {
   search_provider_ = new SearchProvider(this, profile);
   providers_.push_back(search_provider_);
   // TODO(mrossetti): Remove the following and permanently modify the
@@ -839,6 +841,7 @@ void AutocompleteController::SetProfile(Profile* profile) {
     (*i)->SetProfile(profile);
   input_.Clear();  // Ensure we don't try to do a "minimal_changes" query on a
                    // different profile.
+  profile_ = profile;
 }
 
 void AutocompleteController::Start(
@@ -880,7 +883,9 @@ void AutocompleteController::Start(
   if (matches_requested == AutocompleteInput::ALL_MATCHES &&
       (text.length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "Omnibox.QueryTime." + base::IntToString(text.length());
+    std::string name = "Omnibox.QueryTime." +
+                       InstantFieldTrial::GetGroupName(profile_) +
+                       base::IntToString(text.length());
     base::Histogram* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));

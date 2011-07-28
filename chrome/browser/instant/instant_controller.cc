@@ -7,9 +7,11 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/instant/instant_delegate.h"
+#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_manager.h"
 #include "chrome/browser/instant/promo_counter.h"
@@ -49,9 +51,10 @@ InstantController::InstantController(Profile* profile,
       last_transition_type_(PageTransition::LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   PrefService* service = profile->GetPrefs();
-  if (service) {
-    // kInstantWasEnabledOnce was added after instant, set it now to make sure
-    // it is correctly set.
+  if (service &&
+      InstantFieldTrial::GetGroup(profile) == InstantFieldTrial::INACTIVE) {
+    // kInstantEnabledOnce was added after instant, set it now to make sure it
+    // is correctly set.
     service->SetBoolean(prefs::kInstantEnabledOnce, true);
   }
 }
@@ -73,6 +76,9 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterInt64Pref(prefs::kInstantEnabledTime,
                            false,
                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kInstantFieldTrialRandomDraw,
+                             base::RandInt(0, 9999),
+                             PrefService::UNSYNCABLE_PREF);
   PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 
@@ -100,7 +106,8 @@ void InstantController::RecordMetrics(Profile* profile) {
 // static
 bool InstantController::IsEnabled(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
-  return prefs->GetBoolean(prefs::kInstantEnabled);
+  return prefs->GetBoolean(prefs::kInstantEnabled) ||
+         InstantFieldTrial::IsExperimentGroup(profile);
 }
 
 // static
@@ -113,11 +120,11 @@ void InstantController::Enable(Profile* profile) {
   if (!service)
     return;
 
+  service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
   service->SetInt64(prefs::kInstantEnabledTime,
                     base::Time::Now().ToInternalValue());
-  service->SetBoolean(prefs::kInstantEnabledOnce, true);
 }
 
 // static
@@ -133,6 +140,12 @@ void InstantController::Disable(Profile* profile) {
     // Histogram from 1 minute to 10 days.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Instant.TimeToDisable.Predictive",
                                 delta.InMinutes(), 1, 60 * 24 * 10, 50);
+  }
+
+  if (InstantFieldTrial::IsExperimentGroup(profile)) {
+    UMA_HISTOGRAM_COUNTS(
+        "Instant.FieldTrialOptOut." + InstantFieldTrial::GetGroupName(profile),
+        1);
   }
 
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
@@ -377,8 +390,10 @@ void InstantController::OnAutocompleteLostFocus(
 void InstantController::OnAutocompleteGotFocus(
     TabContentsWrapper* tab_contents) {
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kPreloadInstantSearch))
+  if (!cl->HasSwitch(switches::kPreloadInstantSearch) &&
+      !InstantFieldTrial::IsExperimentGroup(tab_contents->profile())) {
     return;
+  }
 
   if (is_active_)
     return;
@@ -389,7 +404,7 @@ void InstantController::OnAutocompleteGotFocus(
     return;
 
   const TemplateURL* template_url = model->GetDefaultSearchProvider();
-  if (!template_url || !template_url->instant_url())
+  if (!template_url || !template_url->instant_url() || !template_url->id())
     return;
 
   if (tab_contents != tab_contents_)
@@ -705,7 +720,8 @@ InstantController::PreviewCondition InstantController::GetPreviewConditionFor(
     return PREVIEW_CONDITION_BLACKLISTED;
 
   const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kRestrictInstantToSearch) &&
+  if ((cl->HasSwitch(switches::kRestrictInstantToSearch) ||
+       InstantFieldTrial::IsExperimentGroup(tab_contents_->profile())) &&
       match.type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
       match.type != AutocompleteMatch::SEARCH_HISTORY &&
       match.type != AutocompleteMatch::SEARCH_SUGGEST &&

@@ -44,6 +44,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -645,6 +646,7 @@ void BrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   if (!proxy_policy_is_set)
     ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line());
+  InstantFieldTrial::Activate();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
   WarmConnectionFieldTrial();
