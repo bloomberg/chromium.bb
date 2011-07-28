@@ -74,7 +74,6 @@ label {
 
 .auth-status-control {
   /* Class used to denote controls that affect authorization status. */
-  margin: 10px auto auto 0px;
 }
 
 .auth-status-label {
@@ -114,19 +113,8 @@ label {
   padding-bottom: 20px;
 }
 
-.client-element {
-  /* Class used to denote client UI elements. */
-}
-
 .description {
   margin-bottom: 25px;
-}
-
-.display-inline {
-  /*
-    Class used to denote elements that should be displayed inline-block as
-    opposed to block.
-  */
 }
 
 .error-state {
@@ -135,6 +123,7 @@ label {
   background-position: top left;
   padding-left: 30px;
   padding-top: 3px;
+  margin-bottom: 10px;
   color: #900;
   display: inline-block;
 }
@@ -148,10 +137,6 @@ label {
 }
 
 
-.host-element {
-  /* Class used to denote host UI elements. */
-}
-
 .icon-label {
   display: inline-block;
   vertical-align: top;
@@ -159,13 +144,7 @@ label {
 
 .message {
   text-align:center;
-}
-
-.mode {
-  /*
-    Class used to denote different modes of a given UI.
-    e.g. "Connecting" is a mode of the client UI.
-  */
+  margin-bottom: 10px;
 }
 
 .waiting {

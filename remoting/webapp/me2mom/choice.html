@@ -26,7 +26,15 @@ found in the LICENSE file.
 
   <body onLoad="remoting.init();"
         onUnload="remoting.disconnect();">
-    <div id="control-panel" class="client-element host-element">
+
+    <!-- loading-mode is initially visible, but becomes hidden as soon as an
+         AppMode is selected by remoting.init. All other divs are initially
+         hidden, but are shown appropriately when the mode changes. -->
+    <section id="loading-mode" data-ui-mode="">
+      <em>Loading&hellip;</em>
+    </section> <!-- loading-mode -->
+
+    <div id="control-panel" data-ui-mode="client host" hidden>
       <span id="email-status">
         <span class="auth-status-label">Email:</span>
         <span id="current-email"></span>
@@ -53,7 +61,8 @@ found in the LICENSE file.
     </div> <!-- control-panel -->
 
     <div id="session-toolbar"
-         class="toolbar-container in-session-element"
+         data-ui-mode="in-session"
+         class="toolbar-container"
          hidden>
       <div class="toolbar-border">
         <span id="session-status-message">Initialising...</span>
@@ -77,20 +86,20 @@ found in the LICENSE file.
       </div>
     </div> <!-- session-toolbar -->
 
-    <section id="choice-mode" class="mode host-element client-element" hidden>
+    <section id="choice-mode" data-ui-mode="host client" hidden>
       <header class="choice-header">
         <img id="icon" src="chromoting128.png">
-        <h1 class="icon-label host-element">
+        <h1 data-ui-mode="host" class="icon-label">
           Chromoting&nbsp;&rsaquo;&nbsp;Share
         </h1>
-        <h1 class="icon-label client-element">
+        <h1 data-ui-mode="client" class="icon-label">
           Chromoting&nbsp;&rsaquo;&nbsp;Connect
         </h1>
         <img id="divider-top" src="dividertop.png">
       </header>
 
-      <div id="host-panel" class="host-element">
-        <div id="unshared" class="mode">
+      <div id="host-panel" data-ui-mode="host">
+        <div data-ui-mode="host.unshared">
           <div class="description">
             With Chromoting you can easily let another Chrome user see and
             control your computer.
@@ -101,15 +110,15 @@ found in the LICENSE file.
               Share this computer
             </button>
           </div>
-        </div> <!-- unshared -->
+        </div> <!-- host.unshared -->
 
-        <div id="preparing-to-share" class="mode">
+        <div data-ui-mode="host.waiting-for-code">
           <div class="message">
             Generating access code&hellip;
           </div>
-        </div> <!-- preparing-to-share -->
+        </div> <!-- host.waiting-for-code -->
 
-        <div id="ready-to-share" class="mode">
+        <div data-ui-mode="host.waiting-for-connection">
           <div class="description">
             To begin sharing your desktop, read out the access code below to the
             person who will be assisting you.
@@ -125,9 +134,9 @@ found in the LICENSE file.
           <div class="description">
             Once they enter the code your sharing session will begin.
           </div>
-        </div> <!-- ready-to-share -->
+        </div> <!-- host.waiting-for-connection -->
 
-        <div id="shared" class="mode">
+        <div data-ui-mode="host.shared">
           <div class="message">
             Your desktop is currently being shared.
           </div>
@@ -137,23 +146,23 @@ found in the LICENSE file.
               Stop sharing
             </button>
           </div>
-        </div> <!-- shared -->
+        </div> <!-- host.shared -->
 
-        <div id="share-failed" class="mode">
+        <div data-ui-mode="host.share-failed">
           <div id="unable-to-get-token" class="message">
             Unable to get access token.
           </div>
           <div class="centered-button">
-            <button type="button" class="auth-status-control big-button"
-                    onclick="remoting.setHostMode('unshared');">
+            <button type="button" class="big-button"
+                    onclick="remoting.setMode('host.unshared');">
               OK
             </button>
           </div>
-        </div> <!-- share-failed -->
+        </div> <!-- host.share-failed -->
       </div> <!-- host-panel -->
 
-      <div id="client-panel" class="client-element">
-        <div id="unconnected"  class="mode">
+      <div id="client-panel" data-ui-mode="client">
+        <div data-ui-mode="client.unconnected">
           <div class="description">
             Have the user whose computer you wish to access click
             ‘Share this computer’ and then have them read
@@ -172,9 +181,9 @@ found in the LICENSE file.
               </button>
             </form>
           </div> <!-- code-entry-row -->
-        </div> <!-- unconnected -->
+        </div> <!-- client.unconnected -->
 
-        <div id="connecting" class="mode">
+        <div data-ui-mode="client.connecting">
           <div class="message">
             Verifying access code&hellip;
             <!-- TODO(jamiewalch): Implement Cancel, being careful when ignoring
@@ -183,22 +192,24 @@ found in the LICENSE file.
                  Cancel button in the footer.
             -->
           </div>
-        </div> <!-- connecting -->
+        </div> <!-- client.connecting -->
 
-        <div id="connect-failed" class="mode message">
+        <div data-ui-mode="client.connect-failed"
+             class="message">
           <span id="connect-error-message" class="error-state"></span>
           <div class="centered-button">
-            <button type="button" class="auth-status-control big-button"
-                    onclick="remoting.setClientMode('unconnected');">
+            <button type="button" class="big-button"
+                    onclick="remoting.setMode('client.unconnected');">
               OK
             </button>
           </div>
-        </div> <!-- connect-failed -->
+        </div> <!-- client.connect-failed -->
       </div> <!-- client-panel -->
 
       <footer class="choice-footer">
         <img id="divider-bottom" src="dividerbottom.png">
-        <div id="client-footer-text" class="client-element">
+
+        <div id="client-footer-text" data-ui-mode="client.unconnected">
           Click here to
           <a class="switch-mode"
              href="#"
@@ -207,19 +218,20 @@ found in the LICENSE file.
           with another user.
         </div> <!-- client-footer-text -->
 
-        <div id="client-footer-text-cros" class="client-element">
+        <div id="client-footer-text-cros" data-ui-mode="client.unconnected">
           Currently Hosting is not supported on Chromebooks. Hosting is
           supported on Win, Mac and Linux.
         </div> <!-- client-footer-text-cros -->
 
-        <div id="host-footer-text" class="host-element">
+        <div id="host-footer-text" data-ui-mode="host.unshared">
           Click here to <a class="switch-mode"
              href="#"
              onclick="remoting.setAppMode(remoting.AppMode.CLIENT);">
             access a shared computer</a>.
         </div> <!-- host-footer-text -->
 
-        <div id="waiting-footer">
+        <div id="waiting-footer"
+             data-ui-mode="host.waiting-for-connection host.waiting-for-code">
           <img src="spinner.gif">
           <span class="waiting icon-label">waiting for connection&hellip;</span>
           <button id="cancel-button" class="big-button"
@@ -230,15 +242,10 @@ found in the LICENSE file.
       </footer>
     </section> <!-- choice-mode -->
 
-    <section id="session-mode" class="mode in-session-element client-element">
+    <section id="session-mode" data-ui-mode="in-session client" hidden>
     </section> <!-- session-mode -->
 
-
-    <section id="loading-mode">
-      <em>Loading&hellip;</em>
-    </section> <!-- loading-mode -->
-
-    <div id="host-plugin-container">
+    <div id="host-plugin-container" data-ui-mode="host" hidden>
     </div> <!-- host-plugin-container -->
 
     <section id="debug-log" hidden>

@@ -20,7 +20,15 @@ function pluginLostFocus_() {
 /** @enum {string} */
 remoting.AppMode = {
   CLIENT: 'client',
+    CLIENT_UNCONNECTED: 'client.unconnected',
+    CLIENT_CONNECTING: 'client.connecting',
+    CLIENT_CONNECT_FAILED: 'client.connect-failed',
   HOST: 'host',
+    HOST_UNSHARED: 'host.unshared',
+    HOST_WAITING_FOR_CODE: 'host.waiting-for-code',
+    HOST_WAITING_FOR_CONNECTION: 'host.waiting-for-connection',
+    HOST_SHARED: 'host.shared',
+    HOST_SHARE_FAILED: 'host.share-failed',
   IN_SESSION: 'in-session'
 };
 
@@ -55,12 +63,12 @@ var kHostSecretLen = 5;
 var kAccessCodeLen = kSupportIdLen + kHostSecretLen;
 var kDigitsPerGroup = 4;
 
-function hasClass(element, cls) {
-  return element.className.match(new RegExp('\\b' + cls + '\\b'));
+function hasClass(classes, cls) {
+  return classes.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
 }
 
 function addClass(element, cls) {
-  if (!hasClass(element, cls))
+  if (!hasClass(element.className, cls))
     element.className = element.className + ' ' + cls;
 }
 
@@ -155,13 +163,6 @@ remoting.clearOAuth2 = function() {
   updateAuthStatus_();
 }
 
-// Show the div with id |mode| and hide those with other ids in |modes|.
-function setMode_(mode, modes) {
-  for (var i = 0; i < modes.length; ++i) {
-    modes[i].hidden = (mode != modes[i].id);
-  }
-}
-
 remoting.toggleDebugLog = function() {
   var debugLog = document.getElementById('debug-log');
   if (debugLog.hidden) {
@@ -179,11 +180,7 @@ remoting.init = function() {
 
   updateAuthStatus_();
   refreshEmail_();
-  remoting.setHostMode('unshared');
-  remoting.setClientMode('unconnected');
-  setGlobalMode(getAppStartupMode());
-  document.getElementById('loading-mode').hidden = true;
-  document.getElementById('choice-mode').hidden = false;
+  remoting.setMode(getAppStartupMode());
   if (isHostModeSupported()) {
     var unsupported = document.getElementById('client-footer-text-cros');
     unsupported.parentNode.removeChild(unsupported);
@@ -195,68 +192,32 @@ remoting.init = function() {
   }
 }
 
-function setGlobalMode(mode) {
-  var elementsToShow = [];
-  var elementsToHide = [];
-  var hostElements = document.getElementsByClassName('host-element');
-  hostElements = Array.prototype.slice.apply(hostElements);
-  var clientElements = document.getElementsByClassName('client-element');
-  clientElements = Array.prototype.slice.apply(clientElements);
-  var inSessionElements =
-      document.getElementsByClassName('in-session-element');
-  inSessionElements = Array.prototype.slice.apply(inSessionElements);
-  if (mode == remoting.AppMode.HOST) {
-    elementsToShow = elementsToShow.concat(hostElements);
-    elementsToHide = elementsToHide.concat(clientElements, inSessionElements);
-  } else if (mode == remoting.AppMode.CLIENT) {
-    elementsToShow = elementsToShow.concat(clientElements);
-    elementsToHide = elementsToHide.concat(hostElements, inSessionElements);
-  } else if (mode == remoting.AppMode.IN_SESSION) {
-    elementsToShow = elementsToShow.concat(inSessionElements);
-    elementsToHide = elementsToHide.concat(hostElements, clientElements);
+/**
+ * Change the app's modal state to |mode|, which is considered to be a dotted
+ * hierachy of modes. For example, setMode('host.shared') will show any modal
+ * elements with an data-ui-mode attribute of 'host' or 'host.shared' and hide
+ * all others.
+ *
+ * @param {string} mode The new modal state, expressed as a dotted hiearchy.
+ */
+remoting.setMode = function(mode) {
+  var modes = mode.split('.');
+  for (var i = 1; i < modes.length; ++i)
+    modes[i] = modes[i - 1] + '.' + modes[i];
+  var elements = document.querySelectorAll('[data-ui-mode]');
+  for (var i = 0; i < elements.length; ++i) {
+    var element = elements[i];
+    var hidden = true;
+    for (var m = 0; m < modes.length; ++m) {
+      if (hasClass(element.getAttribute('data-ui-mode'), modes[m])) {
+        hidden = false;
+        break;
+      }
+    }
+    element.hidden = hidden;
   }
-
-  // Hide first and then show since an element may be in both lists.
-  for (var i = 0; i < elementsToHide.length; ++i) {
-    elementsToHide[i].hidden = true;
-  }
-  for (var i = 0; i < elementsToShow.length; ++i) {
-    elementsToShow[i].hidden = false;
-  }
-  document.getElementById('waiting-footer').hidden = true;
-  remoting.currentMode = mode;
-}
-
-function setGlobalModePersistent(mode) {
-  setGlobalMode(mode);
-  // TODO(ajwong): Does it make sense for "in_session" to be a peer to "host"
-  // or "client mode"?  I don't think so, but not sure how to restructure UI.
-  if (mode != remoting.AppMode.IN_SESSION) {
-    remoting.storage.setStartupMode(mode);
-  } else {
-    remoting.storage.setStartupMode(remoting.AppMode.CLIENT);
-  }
-}
-
-remoting.setHostMode = function(mode) {
-  var section = document.getElementById('host-panel');
-  var modes = section.getElementsByClassName('mode');
-  remoting.debug.log('Host mode: ' + mode);
-  setMode_(mode, modes);
-}
-
-remoting.setClientMode = function(mode) {
-  var section = document.getElementById('client-panel');
-  var modes = section.getElementsByClassName('mode');
-  remoting.debug.log('Client mode: ' + mode);
-  setMode_(mode, modes);
-}
-
-function showWaiting_() {
-  document.getElementById('client-footer-text').hidden = true;
-  document.getElementById('host-footer-text').hidden = true;
-  document.getElementById('waiting-footer').hidden = false;
-  document.getElementById('cancel-button').disabled = false;
+  remoting.debug.log('App mode: ' + mode);
+  remoting.currentMode = modes[0];
 }
 
 remoting.tryShare = function() {
@@ -274,7 +235,9 @@ remoting.tryShare = function() {
     return;
   }
 
-  showWaiting_();
+  remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
+  document.getElementById('cancel-button').disabled = false;
+  disableTimeoutCountdown_();
 
   var div = document.getElementById('host-plugin-container');
   var plugin = document.createElement('embed');
@@ -343,8 +306,7 @@ function onStateChanged_() {
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
-    remoting.setHostMode('preparing-to-share');
-    disableTimeoutCountdown_();
+    // Nothing to do here.
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
     var accessCode = plugin.accessCode;
     var accessCodeDisplay = document.getElementById('access-code-display');
@@ -363,7 +325,7 @@ function onStateChanged_() {
       remoting.timerRunning = true;
       remoting.updateAccessCodeTimeoutElement_();
       updateTimeoutStyles_();
-      remoting.setHostMode('ready-to-share');
+      remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CONNECTION);
     } else {
       // This can only happen if the access code takes more than 5m to get from
       // the cloud to the web-app, so we don't care how clean this UX is.
@@ -371,11 +333,10 @@ function onStateChanged_() {
       remoting.cancelShare();
     }
   } else if (state == plugin.CONNECTED) {
-    remoting.setHostMode('shared');
+    remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
   } else if (state == plugin.DISCONNECTED) {
-    setGlobalMode(remoting.AppMode.HOST);
-    remoting.setHostMode('unshared');
+    remoting.setMode(remoting.AppMode.HOST_UNSHARED);
     plugin.parentNode.removeChild(plugin);
   } else {
     remoting.debug.log('Unknown state -> ' + state);
@@ -394,7 +355,7 @@ function showShareError_(errorCode) {
   var errorDiv = document.getElementById(errorCode);
   errorDiv.style.display = 'block';
   remoting.debug.log('Sharing error: ' + errorCode);
-  remoting.setHostMode('share-failed');
+  remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
 }
 
 remoting.cancelShare = function() {
@@ -466,7 +427,7 @@ function onClientStateChange_(oldState) {
       host = split[0];
     }
     setClientStateMessage('Connected to', host);
-    setGlobalMode(remoting.AppMode.IN_SESSION);
+    remoting.setMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
   } else if (state == remoting.ClientSession.State.CLOSED) {
     if (oldState != remoting.ClientSession.State.CONNECTED) {
@@ -503,12 +464,14 @@ function startSession_() {
 
 function showConnectError_(errorMsg) {
   remoting.debug.log('Connection failed: ' + errorMsg);
-  var errorNode =  document.getElementById('connect-error-message');
+  var errorNode = document.getElementById('connect-error-message');
   errorNode.innerText = errorMsg;
   remoting.accessCode = '';
-  remoting.session.disconnect();
-  remoting.session = null;
-  remoting.setClientMode('connect-failed');
+  if (remoting.session) {
+    remoting.session.disconnect();
+    remoting.session = null;
+  }
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED);
 }
 
 function parseServerResponse_(xhr) {
@@ -562,7 +525,7 @@ remoting.doTryConnect = function() {
     showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
   } else {
     var supportId = remoting.accessCode.substring(0, kSupportIdLen);
-    remoting.setClientMode('connecting');
+    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     resolveSupportId(supportId);
   }
 }
@@ -597,8 +560,8 @@ remoting.cancelPendingOperation = function() {
  * @return {void} Nothing.
  */
 remoting.setAppMode = function(mode) {
-  setGlobalMode(mode);
   window.localStorage.setItem(KEY_APP_MODE_, mode);
+  remoting.setMode(getAppStartupMode());
 }
 
 /**
@@ -609,12 +572,12 @@ remoting.setAppMode = function(mode) {
 function getAppStartupMode() {
   if (isHostModeSupported()) {
     var mode = window.localStorage.getItem(KEY_APP_MODE_);
-    if (!mode) {
-      mode = remoting.AppMode.HOST;
+    if (mode == remoting.AppMode.CLIENT) {
+      return remoting.AppMode.CLIENT_UNCONNECTED;
     }
-    return mode;
+    return remoting.AppMode.HOST_UNSHARED;
   } else {
-    return remoting.AppMode.CLIENT;
+    return remoting.AppMode.CLIENT_UNCONNECTED;
   }
 }
 
@@ -648,10 +611,9 @@ remoting.disconnect = function() {
     remoting.session.disconnect();
     remoting.session = null;
     remoting.debug.log('Disconnected.');
-    remoting.setClientMode('unconnected');
+    remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
     var accessCode = document.getElementById('access-code-entry');
     accessCode.value = '';
-    setGlobalMode(remoting.AppMode.CLIENT);
   }
 }
 
