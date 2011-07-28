@@ -3441,8 +3441,14 @@ are declared in build/common.gypi.
         <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
           Import and Bind to Device...
         </message>
+        <message name="IDS_CERT_MANAGER_KEY_FORMAT_LONG" desc="A longer format for keys in the wifi / vpn config dialogs.">
+          <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$1<ex>John Doe</ex></ph>]
+        </message>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
           <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
+        </message>
+        <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT_LONG" desc="A longer format for hardware-backed keys in the wifi / vpn config dialogs.">
+          <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>] (<ph name="DEVICE">$3<ex>hardware-backed</ex></ph>)
         </message>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED" desc="A device name to be used for ChromeOS device backed keys.">
           hardware-backed
@@ -11066,17 +11072,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE" desc="In settings Internet options, a string specifying VPN user passphrase.">
         Password:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME" desc="In settings Internet options, a string specifying VPN group name.">
+        Group name:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when no user certificates are installed.">
         None installed
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when certificates are loading.">
         Loading...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
         Please install a user certificate.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, error message to display when not logged in and  user certificates are required.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when not logged in and  user certificates are required.">
         Login required for user certificate.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
+        User certificate must be hardware-backed.
       </message>
       <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
         Reconnect
