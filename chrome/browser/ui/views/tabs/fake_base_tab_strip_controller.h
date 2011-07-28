@@ -36,7 +36,6 @@ class FakeBaseTabStripController : public TabStripController {
   virtual bool IsCompatibleWith(BaseTabStrip* other) const OVERRIDE;
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
-  virtual bool SizeTabButtonToTopOfTabStrip() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_

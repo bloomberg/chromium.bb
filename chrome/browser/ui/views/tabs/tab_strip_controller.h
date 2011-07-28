@@ -85,10 +85,6 @@ class TabStripController {
   // Informs that an active tab is selected when already active (ie - clicked
   // when already active/foreground).
   virtual void ClickActiveTab(int index) = 0;
-
-  // Returns true of the new tab button should be sized such that it reaches
-  // all the way to the top of the tab strip.
-  virtual bool SizeTabButtonToTopOfTabStrip() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

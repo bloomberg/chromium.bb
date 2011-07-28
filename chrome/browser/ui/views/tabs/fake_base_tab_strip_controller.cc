@@ -79,7 +79,3 @@ void FakeBaseTabStripController::CreateNewTab() {
 
 void FakeBaseTabStripController::ClickActiveTab(int index) {
 }
-
-bool FakeBaseTabStripController::SizeTabButtonToTopOfTabStrip() {
-  return false;
-}

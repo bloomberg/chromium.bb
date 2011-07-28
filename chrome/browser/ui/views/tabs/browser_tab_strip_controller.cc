@@ -6,14 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
@@ -317,16 +315,6 @@ void BrowserTabStripController::CreateNewTab() {
 void BrowserTabStripController::ClickActiveTab(int index) {
   DCHECK(model_->active_index() == index);
   model_->ActiveTabClicked(index);
-}
-
-bool BrowserTabStripController::SizeTabButtonToTopOfTabStrip() {
-  if (browser_defaults::kSizeTabButtonToTopOfTabStrip)
-    return true;
-
-  if (browser_ && browser_->window())
-    return browser_->window()->IsMaximized();
-
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
