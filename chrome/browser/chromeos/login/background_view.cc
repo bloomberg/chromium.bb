@@ -151,7 +151,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
 
 void BackgroundView::CreateModalPopup(views::WidgetDelegate* view) {
   views::Widget* window = browser::CreateViewsWindow(
-      GetNativeWindow(), gfx::Rect(), view);
+      GetNativeWindow(), view);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

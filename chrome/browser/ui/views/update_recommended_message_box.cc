@@ -105,7 +105,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
                                              product_name)),
       std::wstring(),
       kDialogWidth);
-  browser::CreateViewsWindow(parent_window, gfx::Rect(), this)->Show();
+  browser::CreateViewsWindow(parent_window, this)->Show();
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

@@ -271,7 +271,7 @@ void ShowNativeDialog(gfx::NativeWindow parent,
                       const gfx::Size& min_size) {
   NativeDialogHost* native_dialog_host =
       new NativeDialogHost(native_dialog, flags, size, min_size);
-  browser::CreateViewsWindow(parent, gfx::Rect(), native_dialog_host);
+  browser::CreateViewsWindow(parent, native_dialog_host);
   native_dialog_host->GetWidget()->Show();
 }
 

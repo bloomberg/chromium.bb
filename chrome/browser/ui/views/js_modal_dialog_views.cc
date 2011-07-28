@@ -166,6 +166,6 @@ NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     gfx::NativeWindow parent_window) {
   JSModalDialogViews* d = new JSModalDialogViews(dialog);
 
-  browser::CreateViewsWindow(parent_window, gfx::Rect(), d);
+  browser::CreateViewsWindow(parent_window, d);
   return d;
 }

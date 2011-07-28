@@ -155,6 +155,6 @@ void ExtensionUninstallDialog::Show(
     return;
   }
 
-  browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
+  browser::CreateViewsWindow(window->GetNativeHandle(),
       new ExtensionUninstallDialogView(delegate, extension, icon))->Show();
 }

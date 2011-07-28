@@ -116,7 +116,6 @@ void BubbleWindow::TrimMargins(int margin_left, int margin_right,
 
 views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
-    const gfx::Rect& bounds,
     Style style,
     views::WidgetDelegate* widget_delegate) {
   views::Widget* window = new views::Widget;
@@ -125,7 +124,7 @@ views::Widget* BubbleWindow::Create(
   params.delegate = widget_delegate;
   params.native_widget = bubble_window;
   params.parent = GTK_WIDGET(parent);
-  params.bounds = bounds;
+  params.bounds = gfx::Rect();
   params.transparent = true;
   window->Init(params);
 

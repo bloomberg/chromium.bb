@@ -1131,7 +1131,7 @@ void BrowserView::ShowThemeInstallBubble() {
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView* view =
       new DownloadInProgressDialogView(browser_.get());
-  browser::CreateViewsWindow(GetNativeHandle(), gfx::Rect(), view)->Show();
+  browser::CreateViewsWindow(GetNativeHandle(), view)->Show();
 }
 
 void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

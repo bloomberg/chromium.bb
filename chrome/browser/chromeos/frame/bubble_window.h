@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,6 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/widget/native_widget_gtk.h"
-
-namespace gfx {
-class Rect;
-}
 
 namespace views {
 class Throbber;
@@ -31,7 +27,6 @@ class BubbleWindow : public views::NativeWidgetGtk {
   };
 
   static views::Widget* Create(gfx::NativeWindow parent,
-                               const gfx::Rect& bounds,
                                Style style,
                                views::WidgetDelegate* widget_delegate);
 

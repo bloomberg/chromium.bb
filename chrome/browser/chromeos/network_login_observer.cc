@@ -33,7 +33,7 @@ void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
   }
   if (browser) {
     views::Widget* window = browser::CreateViewsWindow(
-        browser->window()->GetNativeHandle(), gfx::Rect(), view);
+        browser->window()->GetNativeHandle(), view);
     window->SetAlwaysOnTop(true);
     window->Show();
   } else {

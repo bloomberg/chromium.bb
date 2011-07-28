@@ -511,7 +511,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
 
 void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
   views::Widget* window = browser::CreateViewsWindow(
-      owner_->delegate()->GetNativeWindow(), gfx::Rect(), view);
+      owner_->delegate()->GetNativeWindow(), view);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

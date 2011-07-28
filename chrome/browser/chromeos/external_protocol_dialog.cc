@@ -123,5 +123,5 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
     // Dialog is top level if we don't have a tab_contents associated with us.
     parent_window = NULL;
   }
-  browser::CreateViewsWindow(parent_window, gfx::Rect(), this)->Show();
+  browser::CreateViewsWindow(parent_window, this)->Show();
 }

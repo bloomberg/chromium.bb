@@ -78,8 +78,7 @@ namespace browser {
 // need to depend on our .h.
 views::Widget* ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
   views::Widget* about_chrome_window =
-      browser::CreateViewsWindow(parent, gfx::Rect(),
-                                 new AboutChromeView(profile));
+      browser::CreateViewsWindow(parent, new AboutChromeView(profile));
       about_chrome_window->Show();
   return about_chrome_window;
 }

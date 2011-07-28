@@ -133,7 +133,6 @@ void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
   views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
   views::Widget* window = browser::CreateViewsWindow(
       login_window->GetNativeWindow(),
-      gfx::Rect(),
       take_photo_dialog);
   window->SetAlwaysOnTop(true);
   window->Show();

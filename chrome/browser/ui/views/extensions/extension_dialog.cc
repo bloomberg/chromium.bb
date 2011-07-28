@@ -27,7 +27,7 @@ ExtensionDialog::ExtensionDialog(Browser* browser, ExtensionHost* host,
   AddRef();  // Balanced in DeleteDelegate();
   gfx::NativeWindow parent = browser->window()->GetNativeHandle();
   window_ = browser::CreateViewsWindow(
-      parent, gfx::Rect(), this /* views::WidgetDelegate */);
+      parent, this /* views::WidgetDelegate */);
 
   // Center the window over the browser.
   gfx::Point center = browser->window()->GetBounds().CenterPoint();

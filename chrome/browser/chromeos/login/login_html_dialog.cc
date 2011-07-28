@@ -52,8 +52,7 @@ void LoginHtmlDialog::Show() {
   HtmlDialogView* html_view =
       new HtmlDialogView(ProfileManager::GetDefaultProfile(), this);
   if (style_ & STYLE_BUBBLE) {
-    views::Widget* bubble_window = BubbleWindow::Create(
-        parent_window_, gfx::Rect(),
+    views::Widget* bubble_window = BubbleWindow::Create(parent_window_,
         static_cast<BubbleWindow::Style>(
             BubbleWindow::STYLE_XBAR | BubbleWindow::STYLE_THROBBER),
         html_view);

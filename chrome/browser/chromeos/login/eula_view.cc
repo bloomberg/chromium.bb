@@ -441,7 +441,6 @@ void EulaView::LinkClicked(views::Link* source, int event_flags) {
     tpm_info_view_ = new TpmInfoView(this);
     tpm_info_view_->Init();
     views::Widget* window = browser::CreateViewsWindow(parent_window,
-                                                       gfx::Rect(),
                                                        tpm_info_view_);
     window->SetAlwaysOnTop(true);
     window->Show();

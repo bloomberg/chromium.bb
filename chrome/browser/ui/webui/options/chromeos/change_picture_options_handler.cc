@@ -116,7 +116,6 @@ void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
   DCHECK(args && args->empty());
   views::Widget* window = browser::CreateViewsWindow(
       GetBrowserWindow(),
-      gfx::Rect(),
       new TakePhotoDialog(this));
   window->SetAlwaysOnTop(true);
   window->Show();

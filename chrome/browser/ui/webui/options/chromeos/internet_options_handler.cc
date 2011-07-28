@@ -872,9 +872,7 @@ void InternetOptionsHandler::SetActivationButtonVisibility(
 }
 
 void InternetOptionsHandler::CreateModalPopup(views::WidgetDelegate* view) {
-  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(),
-                                                     gfx::Rect(),
-                                                     view);
+  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(), view);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

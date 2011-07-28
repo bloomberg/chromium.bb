@@ -340,7 +340,7 @@ void ShowExtensionInstallDialog(
       delegate, extension, icon, permissions, type);
 
   views::Widget* window =  browser::CreateViewsWindow(
-      browser_window->GetNativeHandle(), gfx::Rect(), dialog);
+      browser_window->GetNativeHandle(), dialog);
 
   window->Show();
 }
