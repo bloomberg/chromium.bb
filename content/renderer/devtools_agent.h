@@ -36,6 +36,8 @@ class DevToolsAgent : public RenderViewObserver,
 
   WebKit::WebDevToolsAgent* GetWebAgent();
 
+  bool IsAttached();
+
  private:
   friend class DevToolsAgentFilter;
 
@@ -68,6 +70,7 @@ class DevToolsAgent : public RenderViewObserver,
 
   static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 
+  bool is_attached_;
   bool expose_v8_debugger_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);

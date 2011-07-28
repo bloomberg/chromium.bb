@@ -57,7 +57,8 @@ class WebKitClientMessageLoopImpl
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
 
 DevToolsAgent::DevToolsAgent(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view),
+      is_attached_(false) {
   agent_for_routing_id_[routing_id()] = this;
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
@@ -160,6 +161,7 @@ void DevToolsAgent::OnAttach(
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
     web_agent->attach();
+    is_attached_ = true;
     for (DevToolsRuntimeProperties::const_iterator it =
              runtime_properties.begin();
          it != runtime_properties.end(); ++it) {
@@ -171,8 +173,10 @@ void DevToolsAgent::OnAttach(
 
 void DevToolsAgent::OnDetach() {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent)
+  if (web_agent) {
     web_agent->detach();
+    is_attached_ = false;
+  }
 }
 
 void DevToolsAgent::OnFrontendLoaded() {
@@ -211,4 +215,8 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
   if (!web_view)
     return NULL;
   return web_view->devToolsAgent();
+}
+
+bool DevToolsAgent::IsAttached() {
+  return is_attached_;
 }

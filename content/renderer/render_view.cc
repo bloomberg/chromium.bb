@@ -359,6 +359,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       device_orientation_dispatcher_(NULL),
       accessibility_ack_pending_(false),
       p2p_socket_dispatcher_(NULL),
+      devtools_agent_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id) {
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
@@ -412,7 +413,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   new MHTMLGenerator(this);
 
-  new DevToolsAgent(this);
+  devtools_agent_ = new DevToolsAgent(this);
 
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {
     media_stream_impl_ = new MediaStreamImpl(
@@ -1232,6 +1233,11 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          const WebURLError& error,
                                          const std::string& html,
                                          bool replace) {
+
+  // Do not show alternate error page when DevTools is attached.
+  if (devtools_agent_->IsAttached())
+    return;
+
   std::string alt_html = !html.empty() ? html :
       content::GetContentClient()->renderer()->GetNavigationErrorHtml(
           failed_request, error);
@@ -2416,6 +2422,10 @@ void RenderView::didFailProvisionalLoad(WebFrame* frame,
         navigation_state->request_time()));
   }
 
+  // Do not show alternate error page when DevTools is attached.
+  if (devtools_agent_->IsAttached())
+    return;
+
   // Provide the user with a more helpful error page?
   if (MaybeLoadAlternateErrorPage(frame, error, replace))
     return;
@@ -2987,12 +2997,18 @@ void RenderView::SyncNavigationState() {
 
 GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
                                           ErrorPageType error_type) {
+
   if (failed_url.SchemeIsSecure()) {
     // If the URL that failed was secure, then the embedding web page was not
     // expecting a network attacker to be able to manipulate its contents.  As
     // we fetch alternate error pages over HTTP, we would be allowing a network
     // attacker to manipulate the contents of the response if we tried to use
     // the link doctor here.
+    return GURL();
+  }
+
+  if (devtools_agent_->IsAttached()) {
+    // Do not show alternate error page when DevTools is attached.
     return GURL();
   }
 

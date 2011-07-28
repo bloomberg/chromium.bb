@@ -53,6 +53,7 @@
 
 class AudioMessageFilter;
 class DeviceOrientationDispatcher;
+class DevToolsAgent;
 class ExternalPopupMenu;
 class FilePath;
 class GeolocationDispatcher;
@@ -1129,6 +1130,8 @@ class RenderView : public RenderWidget,
 
   // Dispatches all P2P socket used by the renderer.
   P2PSocketDispatcher* p2p_socket_dispatcher_;
+
+  DevToolsAgent* devtools_agent_;
 
   // Misc ----------------------------------------------------------------------
 
