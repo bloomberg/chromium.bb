@@ -225,6 +225,8 @@
       '-instant',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
+      # crbug.com/87837
+      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -280,6 +282,8 @@
       '-prefs.PrefsTest.testSessionRestore',
       # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
+      # crbug.com/87837
+      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
 
       # Deal with i18n chars.  crosbug.com/12639
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
