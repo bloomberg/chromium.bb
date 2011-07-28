@@ -158,3 +158,48 @@ WindowView.prototype.resetGeometry = function() {
   this.setGeometry(0, 0, window.innerWidth, window.innerHeight);
 };
 
+/**
+ * View that positions two views vertically. The top view should be
+ * fixed-height, and the bottom view will fill the remainder of the space.
+ *
+ *  +-----------------------------------+
+ *  |            top_view               |
+ *  +-----------------------------------+
+ *  |                                   |
+ *  |                                   |
+ *  |                                   |
+ *  |          bottom_view              |
+ *  |                                   |
+ *  |                                   |
+ *  |                                   |
+ *  |                                   |
+ *  +-----------------------------------+
+ *
+ * @constructor
+ */
+function VerticalSplitView(topView, bottomView) {
+  View.call(this);
+
+  this.topView_ = topView;
+  this.bottomView_ = bottomView;
+}
+
+inherits(VerticalSplitView, View);
+
+VerticalSplitView.prototype.setGeometry = function(left, top, width, height) {
+  VerticalSplitView.superClass_.setGeometry.call(
+      this, left, top, width, height);
+
+  var fixedHeight = this.topView_.getHeight();
+  this.topView_.setGeometry(left, top, width, fixedHeight);
+
+  this.bottomView_.setGeometry(
+      left, top + fixedHeight, width, height - fixedHeight);
+};
+
+VerticalSplitView.prototype.show = function(isVisible) {
+  VerticalSplitView.superClass_.show.call(this, isVisible);
+
+  this.topView_.show(isVisible);
+  this.bottomView_.show(isVisible);
+};

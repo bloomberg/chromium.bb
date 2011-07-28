@@ -15,26 +15,40 @@ found in the LICENSE file.
   </head>
   <body id=dataViewDropTarget>
 
-    <!-- Tab switcher for main categories. -->
-    <div id=categoryTabHandles>
-      <ul>
-        <li><a href="#data" id=dataTab>Data</a></li>
-        <li><a href="#proxy" id=proxyTab>Proxy</a></li>
-        <li><a href="#events" id=eventsTab>Events</a></li>
-        <li><a href="#dns" id=dnsTab>DNS</a></li>
-        <li><a href="#sockets" id=socketsTab>Sockets</a></li>
-        <li><a href="#spdy" id=spdyTab>SPDY</a></li>
-        <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
-        <li><a href="#httpThrottling" id=httpThrottlingTab>HTTP Throttling</a></li>
-        <!-- Tab is only shown on Windows -->
-        <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
-        <li><a href="#tests" id=testTab>Tests</a></li>
-        <li><a href="#hsts" id=hstsTab>HSTS</a></li>
-        <li><a href="#logs" id=logsTab style="display: none;">Logs</a></li>
-        <li><a href="#prerender" id=prerenderTab>Prerender</a></li>
-      </ul>
-      <div style="clear: both;"></div>
+    <div id=statusViewId>
+      <!-- We use a different status bar when in capture mode vs file mode -->
+      <div id=statusViewForCapture>
+        <!-- TODO(eroman): Move the actively captured events count to here. -->
+        Recording...
+      </div>
+
+      <div id=statusViewForFile style="display:none">
+        Displaying log file (<span id='statusViewDumpFileName'></span>)
+      </div>
     </div>
+
+    <!-- Tab switcher for main categories. -->
+    <div id=categoryTabHandles class="tab-switcher-view">
+      <a href="#data" id=dataTab>Data</a>
+      <a href="#proxy" id=proxyTab>Proxy</a>
+      <a href="#events" id=eventsTab>Events</a>
+      <a href="#dns" id=dnsTab>DNS</a>
+      <a href="#sockets" id=socketsTab>Sockets</a>
+      <a href="#spdy" id=spdyTab>SPDY</a>
+      <a href="#httpCache" id=httpCacheTab>HTTP Cache</a>
+      <a href="#httpThrottling" id=httpThrottlingTab>HTTP Throttling</a>
+      <!-- Tab is only shown on Windows -->
+      <a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a>
+      <a href="#tests" id=testTab>Tests</a>
+      <a href="#hsts" id=hstsTab>HSTS</a>
+      <!-- Tab is only shown on ChromeOS -->
+      <a href="#logs" id=logsTab style="display: none;">Logs</a>
+      <a href="#prerender" id=prerenderTab>Prerender</a>
+    </div>
+
+    <!-- Splitter Box: This is a handle to resize the vertical divider -->
+    <div id=splitterBoxForMainTabs class=splitterBox></div>
+
     <!-- Proxy info -->
     <div id=proxyTabContent>
       <h4>
@@ -413,7 +427,7 @@ found in the LICENSE file.
       <input type=button value="Delete all" id=deleteAll />
     </div>
     <!-- Splitter Box: This is a handle to resize the vertical divider -->
-    <div id=splitterBox></div>
+    <div id=splitterBoxForEventDetails class=splitterBox></div>
     <!-- Details box: This is the panel on the right which shows information -->
     <div id=detailsTabHandles>
       <table class=tabSwitcher cellspacing=0>

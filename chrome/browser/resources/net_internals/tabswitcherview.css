@@ -7,37 +7,19 @@ found in the LICENSE file.
   font-family: sans-serif;
 }
 
-.tab-switcher-view ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
 .tab-switcher-view {
-  border-bottom: 1px solid #555;
   background: #aaa;
-  overflow: hidden;
-}
-
-.tab-switcher-view li {
-  float: left;
-  -webkit-margin-start: 5px;
-}
-
-html[dir=rtl] .tab-switcher-view li {
-  float: right;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .tab-switcher-view a {
   text-decoration: none;
-  text-align: center;
   display: inline-block;
-  margin-top: 4px;
+  margin-top: 2px;
   padding: 5px 10px 3px 10px;
-  border-top-right-radius: 8px;
-  border-top-left-radius: 8px;
-  background-clip: border-box;
   background: #ccc;
+  width: 100%;
 }
 
 .tab-switcher-view a:hover {
@@ -55,7 +37,5 @@ html[dir=rtl] .tab-switcher-view li {
 }
 
 .tab-switcher-view a.selected {
-  position: relative;
-  top: 3px;
   color: black;
 }

@@ -95,7 +95,7 @@ createLogDumpAsync = function(callback) {
  *     valid data for the tab, so the tab is hidden.  Otherwise, the tab is
  *     shown.
  */
-function loadLogDump(logDump) {
+function loadLogDump(logDump, fileName) {
   // Perform minimal validity check, and abort if it fails.
   if (typeof(logDump) != 'object')
     return 'Load failed.  Top level JSON data is not an object.';
@@ -130,7 +130,7 @@ function loadLogDump(logDump) {
   // Prevent communication with the browser.  Once the constants have been
   // loaded, it's safer to continue trying to load the log, even in the case of
   // bad data.
-  g_browser.onLoadLogFile();
+  g_browser.onLoadLogFile(fileName);
 
   // Delete all events.  This will also update all logObservers.
   g_browser.deleteAllEvents();
@@ -199,7 +199,7 @@ function loadLogDump(logDump) {
  * full net-internals dump, or a NetLog dump only.  Returns a string containing
  * a log of the load.
  */
-loadLogFile = function(logFileContents) {
+loadLogFile = function(logFileContents, fileName) {
   // Try and parse the log dump as a single JSON string.  If this succeeds,
   // it's most likely a full log dump.  Otherwise, it may be a dump created by
   // --log-net-log.
@@ -221,7 +221,7 @@ loadLogFile = function(logFileContents) {
 
   if (!parsedDump)
     return 'Unable to parse log dump as JSON file.';
-  return loadLogDump(parsedDump);
+  return loadLogDump(parsedDump, fileName);
 };
 
 // End of anonymous namespace.

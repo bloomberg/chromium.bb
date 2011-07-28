@@ -52,7 +52,7 @@ function onLoaded() {
                                   'filterBox',
                                   'eventsBox',
                                   'actionBox',
-                                  'splitterBox');
+                                  'splitterBoxForEventDetails');
 
   // Create a view which will display info on the proxy setup.
   var proxyView = new ProxyView('proxyTabContent',
@@ -142,7 +142,19 @@ function onLoaded() {
                                         'prerenderActiveDiv');
 
   // Create a view which lets you tab between the different sub-views.
-  var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
+  // This view is a left (resizable) navigation bar.
+  var categoryTabSwitcher = new TabSwitcherView();
+  var tabSwitcherSplitView = new ResizableVerticalSplitView(
+      new DivView('categoryTabHandles'),
+      categoryTabSwitcher,
+      new DivView('splitterBoxForMainTabs'));
+
+  // By default the split for the left navbar will be at 50% of the entire
+  // width. This is not aesthetically pleasing, so we will shrink it.
+  // TODO(eroman): Should set this dynamically based on the largest tab
+  //               name rather than using a fixed width.
+  tabSwitcherSplitView.setLeftSplit(150);
+
   g_browser.setTabSwitcher(categoryTabSwitcher);
 
   // Populate the main tabs.  Even tabs that don't contain information for the
@@ -179,8 +191,14 @@ function onLoaded() {
   window.onhashchange = onUrlHashChange.bind(null, anchorMap,
                                              categoryTabSwitcher);
 
-  // Make this category tab widget the primary view, that fills the whole page.
-  var windowView = new WindowView(categoryTabSwitcher);
+  // Cut out a small vertical strip at the top of the window, to display
+  // a high level status (i.e. if we are capturing events, or displaying a
+  // log file). Below it we will position the main tabs and their content
+  // area.
+  var statusView = new DivView('statusViewId');
+  var verticalSplitView = new VerticalSplitView(statusView,
+                                                tabSwitcherSplitView);
+  var windowView = new WindowView(verticalSplitView);
 
   // Trigger initial layout.
   windowView.resetGeometry();
@@ -617,11 +635,21 @@ BrowserBridge.prototype.isViewingLogFile = function() {
  * not be mixed with current Chrome state.  Also hides any interactive HTML
  * elements that send messages to the browser.  Cannot be undone without
  * reloading the page.
+ *
+ * @param {String} fileName The name of the log file that has been loaded.
  */
-BrowserBridge.prototype.onLoadLogFile = function() {
+BrowserBridge.prototype.onLoadLogFile = function(fileName) {
   if (!this.isViewingLogFile_) {
     this.isViewingLogFile_ = true;
     this.setSecurityStripping(false);
+
+    // Swap out the status bar to indicate we have loaded from a file.
+    setNodeDisplay($('statusViewForCapture'), false);
+    setNodeDisplay($('statusViewForFile'), true);
+
+    // Indicate which file is being displayed.
+    $('statusViewDumpFileName').innerText = fileName;
+
     document.styleSheets[0].insertRule('.hideOnLoadLog { display: none; }');
   }
 };

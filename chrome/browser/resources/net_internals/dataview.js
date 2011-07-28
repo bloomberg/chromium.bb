@@ -196,7 +196,7 @@ DataView.prototype.loadLogFile = function(logFile) {
     this.setLoadFileStatus('Loading log...', true);
     var fileReader = new FileReader();
 
-    fileReader.onload = this.onLoadLogFile.bind(this);
+    fileReader.onload = this.onLoadLogFile.bind(this, logFile);
     fileReader.onerror = this.onLoadLogFileError.bind(this);
 
     fileReader.readAsText(logFile);
@@ -210,13 +210,13 @@ DataView.prototype.loadLogFile = function(logFile) {
 DataView.prototype.onLoadLogFileError = function(event) {
   this.loadFileElement_.value = null;
   this.setLoadFileStatus(
-      'Error ' +  getKeyWithValue(FileError, event.target.error.code) +
+      'Error ' + getKeyWithValue(FileError, event.target.error.code) +
           '.  Unable to read file.',
       false);
 };
 
-DataView.prototype.onLoadLogFile = function(event) {
-  var result = loadLogFile(event.target.result);
+DataView.prototype.onLoadLogFile = function(logFile, event) {
+  var result = loadLogFile(event.target.result, logFile.fileName);
   this.setLoadFileStatus(result, false);
 };
 

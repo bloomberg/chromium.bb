@@ -3,31 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * TabSwitcher is an implementation of View that handles tab switching.
+ * TabSwitcherView is an implementation of View that handles tab switching.
  *
- *  +-----------------------------------+
- *  | Tab1 / Tab2 / Tab3 / ..           |  <- tab handle view
- *  +-----------------------------------+
- *  |                                   |
- *  |                                   |
- *  |                                   |
- *  |   stacked tab content areas       |
- *  |   (only 1 is visible at a time)   |
- *  |                                   |
- *  |                                   |
- *  |                                   |
- *  +-----------------------------------+
+ * It is comprised of many views (tabs), only one of which is visible at a
+ * time.
  *
- * @parameter {!View} tabHandleView the view that contains the tab handles.
+ * This view represents solely the selected tab's content area -- a separate
+ * view needs to be maintained for the tab handles.
  *
  * @constructor
  */
-function TabSwitcherView(tabHandleDivId) {
-  $(tabHandleDivId).classList.add('tab-switcher-view');
-  var tabHandleView = new DivView(tabHandleDivId);
-
+function TabSwitcherView() {
   View.call(this);
-  this.tabHandleView_ = tabHandleView;
   this.tabs_ = [];
 }
 
@@ -36,23 +23,15 @@ inherits(TabSwitcherView, View);
 TabSwitcherView.prototype.setGeometry = function(left, top, width, height) {
   TabSwitcherView.superClass_.setGeometry.call(this, left, top, width, height);
 
-  this.tabHandleView_.setGeometry(
-      left, top, width, this.tabHandleView_.getHeight());
-
-  var contentTop = this.tabHandleView_.getBottom();
-  var contentHeight = height - this.tabHandleView_.getHeight();
-
   // Position each of the tabs content areas.
   for (var i = 0; i < this.tabs_.length; ++i) {
     var tab = this.tabs_[i];
-    tab.contentView.setGeometry(left, contentTop, width, contentHeight);
+    tab.contentView.setGeometry(left, top, width, height);
   }
 };
 
 TabSwitcherView.prototype.show = function(isVisible) {
   TabSwitcherView.superClass_.show.call(this, isVisible);
-
-  this.tabHandleView_.show(isVisible);
 
   var activeTab = this.findActiveTab();
   if (activeTab)

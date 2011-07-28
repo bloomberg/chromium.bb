@@ -14,19 +14,25 @@ function DetailsView(tabHandlesContainerId,
                      timelineTabId,
                      logBoxId,
                      timelineBoxId) {
-  TabSwitcherView.call(this, tabHandlesContainerId);
+  var tabSwitcher = new TabSwitcherView();
+
+  VerticalSplitView.call(this,
+                         new DivView(tabHandlesContainerId),
+                         tabSwitcher);
+
+  this.tabSwitcher_ = tabSwitcher;
 
   this.logView_ = new DetailsLogView(logBoxId);
   this.timelineView_ = new DetailsTimelineView(timelineBoxId);
 
-  this.addTab(logTabId, this.logView_, true, true);
-  this.addTab(timelineTabId, this.timelineView_, true, true);
+  this.tabSwitcher_.addTab(logTabId, this.logView_, true, true);
+  this.tabSwitcher_.addTab(timelineTabId, this.timelineView_, true, true);
 
   // Default to the log view.
-  this.switchToTab(logTabId, null);
+  this.tabSwitcher_.switchToTab(logTabId, null);
 };
 
-inherits(DetailsView, TabSwitcherView);
+inherits(DetailsView, VerticalSplitView);
 
 // The delay between updates to repaint.
 DetailsView.REPAINT_TIMEOUT_MS = 50;
@@ -39,8 +45,9 @@ DetailsView.prototype.setData = function(currentData) {
   // by the source ID.
   var sortedCurrentData = DetailsView.createSortedCopy_(currentData);
 
-  for (var i = 0; i < this.tabs_.length; ++i)
-    this.tabs_[i].contentView.setData(sortedCurrentData);
+  // TODO(eroman): Should not access private members of TabSwitcherView.
+  for (var i = 0; i < this.tabSwitcher_.tabs_.length; ++i)
+    this.tabSwitcher_.tabs_[i].contentView.setData(sortedCurrentData);
 };
 
 DetailsView.createSortedCopy_ = function(origArray) {

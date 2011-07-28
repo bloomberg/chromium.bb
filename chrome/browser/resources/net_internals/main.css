@@ -45,7 +45,7 @@ body {
   overflow: auto;
 }
 
-#splitterBox {
+.splitterBox {
   background: #bfbfbf;
   border-left: 1px inset black;
   border-right: 1px solid black;
@@ -278,4 +278,16 @@ table.styledTable,
  */
 .warningText {
   color: red;
+}
+
+#statusViewForCapture {
+  background: red;
+  color: #eee;
+  padding: 4px;
+}
+
+#statusViewForFile {
+  background: #88c;
+  color: #eee;
+  padding: 4px;
 }
