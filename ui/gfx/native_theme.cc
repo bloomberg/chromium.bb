@@ -12,10 +12,6 @@ unsigned int NativeTheme::thumb_inactive_color_ = 0xeaeaea;
 unsigned int NativeTheme::thumb_active_color_ = 0xf4f4f4;
 unsigned int NativeTheme::track_color_ = 0xd3d3d3;
 
-int NativeTheme::GetPopupListBoxMinimumRowHeight() const {
-  return 0;
-}
-
 void NativeTheme::SetScrollbarColors(unsigned inactive_color,
                                      unsigned active_color,
                                      unsigned track_color) const {

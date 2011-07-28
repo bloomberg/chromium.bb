@@ -205,8 +205,6 @@ class UI_API NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const = 0;
 
-  virtual int GetPopupListBoxMinimumRowHeight() const;
-
   // Supports theme specific colors.
   void SetScrollbarColors(unsigned inactive_color,
                           unsigned active_color,

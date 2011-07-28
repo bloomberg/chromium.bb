@@ -59,6 +59,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
@@ -97,6 +98,10 @@ using WebKit::WebView;
 
 namespace {
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
+
+#if defined(TOUCH_UI)
+static const int kPopupListBoxMinimumRowHeight = 60;
+#endif
 
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -631,6 +636,7 @@ void RenderThread::EnsureWebKitInitialized() {
 
 #ifdef TOUCH_UI
   WebRuntimeFeatures::enableTouch(true);
+  WebKit::WebPopupMenu::setMinimumRowHeight(kPopupListBoxMinimumRowHeight);
 #else
   // TODO(saintlou): in the future touch should always be enabled
   WebRuntimeFeatures::enableTouch(false);
