@@ -4414,6 +4414,17 @@
    fun:_ZN8autofill14MatchesPatternERKSbItN4base20string16_char_traitsESaItEES5_
 }
 {
+   bug_81753e
+   Memcheck:Cond
+   ...
+   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
+   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
+   fun:_ZN6icu_4612RegexMatcher4findEv
+   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
+   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
+   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
+}
+{
    bug_82716a
    Memcheck:Leak
    fun:_Znw*
@@ -4542,30 +4553,6 @@
    fun:_Z17CreateLoginPromptPN3net17AuthChallengeInfoEPNS_10URLRequestE
    fun:_ZN22ResourceDispatcherHost14OnAuthRequiredEPN3net10URLRequestEPNS0_17AuthChallengeInfoE
    fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
-}
-{
-   bug_84304_a
-   Memcheck:Cond
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
-   fun:_ZN6icu_4612RegexMatcher4findEv
-   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
-   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
-   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
-}
-{
-   bug_84304_b
-   Memcheck:Value4
-   ...
-   fun:_ZN6icu_4612RegexMatcher12MatchChunkAtEiaR10UErrorCode
-   fun:_ZN6icu_4612RegexMatcher14findUsingChunkEv
-   fun:_ZN6icu_4612RegexMatcher4findEv
-   fun:_ZN6icu_4612RegexMatcher4findExR10UErrorCode
-   fun:_ZN8autofill11MatchStringERKSbItN4base20string16_char_traitsESaItEES5_
-   fun:_ZN9FormField5MatchEPK13AutofillFieldRKSbItN4base20string16_char_traitsESaItEEi
-   fun:_ZN9FormField15MatchAndAdvanceEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
-   fun:_ZN9FormField19ParseFieldSpecificsEP15AutofillScannerRKSbItN4base20string16_char_traitsESaItEEiPPK13AutofillField
 }
 {
    bug_84770_a
