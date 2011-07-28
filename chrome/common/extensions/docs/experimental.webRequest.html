@@ -1980,7 +1980,7 @@ chrome.windows.onRemoved.addListener(
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. Frame IDs are unique within a tab.</dd>
+          <dd>0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
