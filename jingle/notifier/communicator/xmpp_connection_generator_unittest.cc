@@ -65,8 +65,6 @@ TEST_F(XmppConnectionGeneratorTest, DnsFailure) {
 }
 
 TEST_F(XmppConnectionGeneratorTest, DnsFailureSynchronous) {
-  MessageLoop message_loop;
-
   EXPECT_CALL(delegate_, OnNewSettings(_)).Times(0);
   EXPECT_CALL(delegate_, OnExhaustedSettings(_, _)).Times(1);
 
@@ -92,8 +90,6 @@ TEST_F(XmppConnectionGeneratorTest, ConnectionFailure) {
 }
 
 TEST_F(XmppConnectionGeneratorTest, ConnectionFailureSynchronous) {
-  MessageLoop message_loop;
-
   EXPECT_CALL(delegate_, OnNewSettings(_)).
       Times(5).
       WillRepeatedly(
