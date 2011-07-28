@@ -378,13 +378,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
 };
 
-#if defined(OS_MACOSX)
-// DisplaysPermissionBar is flaky on Mac, see http://crbug.com/90910 .
-#define MAYBE_DisplaysPermissionBar DISABLED_DisplaysPermissionBar
-#else  // defined(OS_MACOSX)
-#define MAYBE_DisplaysPermissionBar DisplaysPermissionBar
-#endif
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_DisplaysPermissionBar) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
 }
