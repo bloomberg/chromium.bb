@@ -4288,12 +4288,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'Print Preview' lab.">
         Enables an in-tab preview of a print operation.
       </message>
-      <message name="IDS_FLAGS_DNS_SERVER_NAME" desc="">
-        User specified DNS server address.
-      </message>
-      <message name="IDS_FLAGS_DNS_SERVER_DESCRIPTION" desc="">
-        User specified DNS server, which Chrome will use for DNS resolutions rather than the system defaults.
-      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
       </message>

@@ -195,13 +195,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNaCl)
   },
   {
-    "dns-server",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DNS_SERVER_NAME,
-    IDS_FLAGS_DNS_SERVER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDnsServer)
-  },
-  {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
