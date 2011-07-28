@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <VisualStudioToolFile
 	Name="Version Template"
 	Version="8.00"
@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Version"
 			DisplayName="Version"
-			CommandLine="$(SolutionDir)/../chrome/tools/build/win/version.bat [inputs] &quot;$(SolutionDir)/../chrome/&quot; &quot;$(IntDir)&quot; &quot;$(IntDir)/$(InputName)&quot;"
+			CommandLine="$(SolutionDir)/../chrome/tools/build/win/version.bat [inputs] &quot;$(SolutionDir)/../chrome/&quot; &quot;$(IntDir)&quot; &quot;$(IntDir)/$(InputName)&quot; &quot;$(SolutionDir)/../build/util/&quot;"
 			Outputs="$(IntDir)/$(InputName)"
 			AdditionalDependencies="$(SolutionDir)/../chrome/VERSION;$(SolutionDir)/../chrome/tools/build/win/version.bat"
 			FileExtensions="*.version"

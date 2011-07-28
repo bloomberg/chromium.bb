@@ -1,5 +1,5 @@
 @echo off
-:: Copyright (c) 2009 The Chromium Authors. All rights reserved.
+:: Copyright (c) 2011 The Chromium Authors. All rights reserved.
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
@@ -11,6 +11,7 @@ set InFile=%~1
 set SolutionDir=%~2
 set IntDir=%~3
 set OutFile=%~4
+set LastChangeDir=%~5
 set VarsBat=%IntDir%/vers-vars.bat
 
 :: Put cygwin in the path
@@ -34,26 +35,18 @@ call svn --version 2>nul 1>nul
 if errorlevel 1 goto :NO_SVN
 goto :SET_ENV
 
-
 :NO_SVN
 :: Not having svn makes it impossible to determine the current checkout revision
 :: number. On normal build, this is not an issue but for official builds, this
 :: *can't* be tolerated so issue an error instead. VS will pick it up corectly.
 set NO_SVN_LEVEL=error
 if "%OFFICIAL_BUILD%" == "0" set NO_SVN_LEVEL=warning
-echo %0(28) : %NO_SVN_LEVEL% : svn is not installed. Can't determine the revision number.
-echo set LASTCHANGE=0 >> %VarsBat%
-goto :GEN_FILE
-
+echo %0(28) : %NO_SVN_LEVEL% : svn is not installed.
 
 :SET_ENV
-call svn info | grep.exe "Revision:" | cut -d" " -f2- | sed "s/\(.*\)/set LASTCHANGE=\1/" >> %VarsBat%
-goto :GEN_FILE
+python %LastChangeDir%\lastchange.py | sed "s/\(.*\)/set \1/" >> %VarsBat%
 
-
-:GEN_FILE
 call %VarsBat%
-::echo LastChange: %LASTCHANGE%
 :: output file
 cat %InFile% | sed "s/@MAJOR@/%MAJOR%/" ^
                   | sed "s/@MINOR@/%MINOR%/" ^
