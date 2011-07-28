@@ -13,15 +13,17 @@
  *
  *  @constructor
  */
-function DnsView(mainBoxId,
-                 cacheTbodyId,
-                 clearCacheButtonId,
-                 defaultFamilySpanId,
-                 ipv6DisabledSpanId,
-                 enableIPv6ButtonId,
-                 capacitySpanId,
-                 ttlSuccessSpanId,
-                 ttlFailureSpanId) {
+function DnsView() {
+  const mainBoxId = 'dnsTabContent';
+  const cacheTbodyId = 'hostResolverCacheTbody';
+  const clearCacheButtonId = 'clearHostResolverCache';
+  const defaultFamilySpanId = 'hostResolverDefaultFamily';
+  const ipv6DisabledSpanId = 'hostResolverIPv6Disabled';
+  const enableIPv6ButtonId = 'hostResolverEnableIPv6';
+  const capacitySpanId = 'hostResolverCacheCapacity';
+  const ttlSuccessSpanId = 'hostResolverCacheTTLSuccess';
+  const ttlFailureSpanId = 'hostResolverCacheTTLFailure';
+
   DivView.call(this, mainBoxId);
 
   // Hook up the UI components.

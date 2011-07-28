@@ -6,8 +6,12 @@
  * This view displays information related to Prerendering.
  * @constructor
  */
-function PrerenderView(mainBoxId, prerenderEnabledSpanId, prerenderHistoryDivId,
-                       prerenderActiveDivId) {
+function PrerenderView() {
+  const mainBoxId = 'prerenderTabContent';
+  const prerenderEnabledSpanId = 'prerenderEnabledSpan';
+  const prerenderHistoryDivId = 'prerenderHistoryDiv';
+  const prerenderActiveDivId = 'prerenderActiveDiv';
+
   DivView.call(this, mainBoxId);
   g_browser.addPrerenderInfoObserver(this);
   this.prerenderEnabledSpan_ = $(prerenderEnabledSpanId);

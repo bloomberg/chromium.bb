@@ -12,7 +12,12 @@
  *
  *  @constructor
  */
-function TestView(mainBoxId, urlInputId, formId, summaryDivId) {
+function TestView() {
+  const mainBoxId = 'testTabContent';
+  const urlInputId = 'testUrlInput';
+  const formId = 'connectionTestsForm';
+  const summaryDivId = 'testSummary';
+
   DivView.call(this, mainBoxId);
 
   this.urlInput_ = $(urlInputId);

@@ -6,7 +6,10 @@
  * This view displays information on the HTTP cache.
  *  @constructor
  */
-function HttpCacheView(mainBoxId, statsDivId) {
+function HttpCacheView() {
+  const mainBoxId = 'httpCacheTabContent';
+  const statsDivId = 'httpCacheStats';
+
   DivView.call(this, mainBoxId);
 
   this.statsDiv_ = $(statsDivId);

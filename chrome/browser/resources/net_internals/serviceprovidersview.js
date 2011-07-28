@@ -12,10 +12,12 @@
  *
  * @constructor
  */
-function ServiceProvidersView(tabId,
-                              mainBoxId,
-                              serviceProvidersTbodyId,
-                              namespaceProvidersTbodyId) {
+function ServiceProvidersView() {
+  const tabId = 'serviceProvidersTab';
+  const mainBoxId = 'serviceProvidersTabContent';
+  const serviceProvidersTbodyId = 'serviceProvidersTbody';
+  const namespaceProvidersTbodyId = 'namespaceProvidersTbody';
+
   DivView.call(this, mainBoxId);
 
   var tab = $(tabId);

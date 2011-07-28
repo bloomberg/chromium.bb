@@ -10,9 +10,18 @@
 
  *  @constructor
  */
-function HSTSView(mainBoxId, queryInputId, formId, queryOutputDivId,
-                  addInputId, addFormId, addCheckId, addPinsId,
-                  deleteInputId, deleteFormId) {
+function HSTSView() {
+  const mainBoxId = 'hstsTabContent';
+  const queryInputId = 'hstsQueryInput';
+  const formId = 'hstsQueryForm';
+  const queryOutputDivId = 'hstsQueryOutput';
+  const addInputId = 'hstsAddInput';
+  const addFormId = 'hstsAddForm';
+  const addCheckId = 'hstsCheckInput';
+  const addPinsId = 'hstsAddPins';
+  const deleteInputId = 'hstsDeleteInput';
+  const deleteFormId = 'hstsDeleteForm';
+
   DivView.call(this, mainBoxId);
 
   this.queryInput_ = $(queryInputId);

@@ -1,0 +1,49 @@
+<!-- Proxy info -->
+<div id=proxyTabContent>
+  <h4>
+    Current proxy settings
+    <input type=button value="Re-apply settings" id=proxyReloadSettings class="hideOnLoadLog"/>
+  </h4>
+
+  <table><tr>
+
+  <td valign=top>
+  <h3>Effective settings</h3>
+  <pre id=proxyEffectiveSettings></pre>
+  </pre>
+  </td>
+
+  <td style='width: 30px'>&nbsp;</td>
+
+  <td valign=top>
+  <h3>Original settings</h3>
+  <pre id=proxyOriginalSettings></pre>
+  </td>
+
+  </tr></table>
+
+  <h4>Proxy auto-config initialization</h4>
+  <ul>
+    <li>
+      <a href='#events&q=type:INIT_PROXY_RESOLVER'>View all events</a>
+    </li>
+    <li>
+      Latest proxy resolver event:
+      <pre id=proxyResolverLog></pre>
+    </li>
+  </ul>
+
+  <h4>
+    Proxies which have failed recently, and are marked as bad
+    <input type=button value="Clear bad proxies" id=clearBadProxies class="hideOnLoadLog" />
+  </h4>
+  <table class="styledTable">
+    <thead>
+      <tr>
+        <th>Bad proxy server</th>
+        <th>Time for next retry</th>
+      </tr>
+    </thead>
+    <tbody id=badProxiesTableBody></tbody>
+  </table>
+</div>

@@ -6,7 +6,10 @@
  * This view displays information related to HTTP throttling.
  * @constructor
  */
-function HttpThrottlingView(mainBoxId, enableCheckboxId) {
+function HttpThrottlingView() {
+  const mainBoxId = 'httpThrottlingTabContent';
+  const enableCheckboxId = 'enableHttpThrottlingCheckbox';
+
   DivView.call(this, mainBoxId);
 
   this.enableCheckbox_ = $(enableCheckboxId);

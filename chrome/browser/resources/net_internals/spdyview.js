@@ -8,12 +8,18 @@
  *
  * @constructor
  */
-function SpdyView(mainBoxId, spdyEnabledSpanId,
-                  spdyUseAlternateProtocolSpanId,
-                  spdyForceAlwaysSpanId, spdyForceOverSslSpanId,
-                  spdyNextProtocolsSpanId, spdyAlternateProtocolMappingsDivId,
-                  spdySessionNoneSpanId, spdySessionLinkSpanId,
-                  spdySessionDivId) {
+function SpdyView() {
+  const mainBoxId = 'spdyTabContent';
+  const spdyEnabledSpanId = 'spdyEnabledSpan';
+  const spdyUseAlternateProtocolSpanId = 'spdyUseAlternateProtocolSpan';
+  const spdyForceAlwaysSpanId = 'spdyForceAlwaysSpan';
+  const spdyForceOverSslSpanId = 'spdyForceOverSslSpan';
+  const spdyNextProtocolsSpanId = 'spdyNextProtocolsSpan';
+  const spdyAlternateProtocolMappingsDivId = 'spdyAlternateProtocolMappingsDiv';
+  const spdySessionNoneSpanId = 'spdySessionNoneSpan';
+  const spdySessionLinkSpanId = 'spdySessionLinkSpan';
+  const spdySessionDivId = 'spdySessionDiv';
+
   DivView.call(this, mainBoxId);
   g_browser.addSpdySessionInfoObserver(this);
   g_browser.addSpdyStatusObserver(this);

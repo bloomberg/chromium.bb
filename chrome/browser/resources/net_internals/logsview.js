@@ -9,8 +9,13 @@
  *
  * @constructor
  */
-function LogsView(mainBoxId, tableId, globalShowButtonId, globalHideButtonId,
-                  refreshLogsButtonId) {
+function LogsView() {
+  const mainBoxId = 'logsTabContent';
+  const tableId = 'logTable';
+  const globalShowButtonId = 'logsGlobalShowBtn';
+  const globalHideButtonId = 'logsGlobalHideBtn';
+  const refreshLogsButtonId = 'logsRefreshBtn';
+
   var tableDiv = $(tableId);
   this.rows = [];
   this.PopulateTable(tableDiv, this.logFilterList);

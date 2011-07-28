@@ -1,0 +1,44 @@
+<!-- HSTS tab -->
+<div id=hstsTabContent>
+  <p>
+    HSTS is HTTPS Strict Transport Security: a way for sites to elect to
+    always use HTTPS. See <a href="http://dev.chromium.org/sts">
+    http://dev.chromium.org/sts</a>.</p>
+
+    <!-- This UI allows a user to query and update the browser's list of
+         HSTS domains. -->
+
+  <h4>Add domain</h4>
+
+  <p>Input a domain name to add it to the HSTS set:</p>
+  <form id=hstsAddForm>
+    Domain: <input type=text id=hstsAddInput type="url"
+             placeholder="example.com"/><br/>
+    Include subdomains: <input type="checkbox" id=hstsCheckInput /><br/>
+    Public key fingerprints: <input type=text id=hstsAddPins style="width: 25em;"/><br/>
+    <p style="font-size: small; color: gray; font-style: italic; margin-left: 2em; max-width: 40em;">(public key fingerprints are comma separated and consist of the hash function followed by a foreslash and the base64 encoded fingerprint, for example <tt>sha1/Guzek9lMwR3KeIS8wwS9gBvVtIg=</tt>)</p>
+    <input type=submit value="Add" />
+  </form>
+
+  <h4>Delete domain</h4>
+
+  <p>
+    Input a domain name to delete it from the HSTS set
+    (<i>you cannot delete preloaded entries</i>):
+  </p>
+  <form id=hstsDeleteForm>
+    Domain: <input type=text id=hstsDeleteInput type="url"
+             placeholder="example.com"/>
+    <input type=submit value="Delete" />
+  </form>
+
+  <h4>Query domain</h4>
+
+  <p>Input a domain name to query the current HSTS set:</p>
+  <form id=hstsQueryForm>
+    Domain: <input type=text id=hstsQueryInput type="url"
+             placeholder="example.com"/>
+    <input type=submit value="Query" />
+  </form>
+  <div style="margin-top: 1em; margin-left: 2em;" id=hstsQueryOutput></div>
+</div>

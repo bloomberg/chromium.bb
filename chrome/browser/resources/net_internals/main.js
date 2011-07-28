@@ -29,118 +29,6 @@ var g_browser = null;
 function onLoaded() {
   g_browser = new BrowserBridge();
 
-  // Create the view which displays events lists, and lets you select, filter
-  // and delete them.
-  var eventsView = new EventsView('eventsListTableBody',
-                                  'filterInput',
-                                  'filterCount',
-                                  'deleteSelected',
-                                  'deleteAll',
-                                  'selectAll',
-                                  'sortById',
-                                  'sortBySource',
-                                  'sortByDescription',
-
-                                  // IDs for the details view.
-                                  'detailsTabHandles',
-                                  'detailsLogTab',
-                                  'detailsTimelineTab',
-                                  'detailsLogBox',
-                                  'detailsTimelineBox',
-
-                                  // IDs for the layout boxes.
-                                  'filterBox',
-                                  'eventsBox',
-                                  'actionBox',
-                                  'splitterBoxForEventDetails');
-
-  // Create a view which will display info on the proxy setup.
-  var proxyView = new ProxyView('proxyTabContent',
-                                'proxyOriginalSettings',
-                                'proxyEffectiveSettings',
-                                'proxyReloadSettings',
-                                'badProxiesTableBody',
-                                'clearBadProxies',
-                                'proxyResolverLog');
-
-  // Create a view which will display information on the host resolver.
-  var dnsView = new DnsView('dnsTabContent',
-                            'hostResolverCacheTbody',
-                            'clearHostResolverCache',
-                            'hostResolverDefaultFamily',
-                            'hostResolverIPv6Disabled',
-                            'hostResolverEnableIPv6',
-                            'hostResolverCacheCapacity',
-                            'hostResolverCacheTTLSuccess',
-                            'hostResolverCacheTTLFailure');
-
-  // Create a view which will display save/load options to control the
-  // captured data.
-  var dataView = new DataView('dataTabContent', 'dataViewDownloadIframe',
-                              'dataViewSaveLogFile', 'dataViewSaveStatusText',
-                              'securityStrippingCheckbox',
-                              'byteLoggingCheckbox', 'passivelyCapturedCount',
-                              'activelyCapturedCount', 'dataViewDeleteAll',
-                              'dataViewDumpDataDiv',
-                              'dataViewLoadedDiv',
-                              'dataViewLoadedClientInfoText',
-                              'dataViewDropTarget',
-                              'dataViewLoadLogFile', 'dataViewLoadStatusText',
-                              'dataViewCapturingTextSpan',
-                              'dataViewLoggingTextSpan');
-
-  // Create a view which will display the results and controls for connection
-  // tests.
-  var testView = new TestView('testTabContent', 'testUrlInput',
-                              'connectionTestsForm', 'testSummary');
-
-  // Create a view which allows the user to query and alter the HSTS database.
-  var hstsView = new HSTSView('hstsTabContent',
-                              'hstsQueryInput', 'hstsQueryForm',
-                              'hstsQueryOutput',
-                              'hstsAddInput', 'hstsAddForm', 'hstsCheckInput',
-                              'hstsAddPins',
-                              'hstsDeleteInput', 'hstsDeleteForm');
-
-  var httpCacheView = new HttpCacheView('httpCacheTabContent',
-                                        'httpCacheStats');
-
-  var socketsView = new SocketsView('socketsTabContent',
-                                    'socketPoolDiv',
-                                    'socketPoolGroupsDiv',
-                                    'socketPoolCloseIdleButton',
-                                    'socketPoolFlushButton');
-
-  var spdyView = new SpdyView('spdyTabContent',
-                              'spdyEnabledSpan',
-                              'spdyUseAlternateProtocolSpan',
-                              'spdyForceAlwaysSpan',
-                              'spdyForceOverSslSpan',
-                              'spdyNextProtocolsSpan',
-                              'spdyAlternateProtocolMappingsDiv',
-                              'spdySessionNoneSpan',
-                              'spdySessionLinkSpan',
-                              'spdySessionDiv');
-
-  var serviceView = new ServiceProvidersView('serviceProvidersTab',
-                                             'serviceProvidersTabContent',
-                                             'serviceProvidersTbody',
-                                             'namespaceProvidersTbody');
-
-  var httpThrottlingView = new HttpThrottlingView(
-      'httpThrottlingTabContent', 'enableHttpThrottlingCheckbox');
-
-  var logsView = new LogsView('logsTabContent',
-                              'logTable',
-                              'logsGlobalShowBtn',
-                              'logsGlobalHideBtn',
-                              'logsRefreshBtn');
-
-  var prerenderView = new PrerenderView('prerenderTabContent',
-                                        'prerenderEnabledSpan',
-                                        'prerenderHistoryDiv',
-                                        'prerenderActiveDiv');
-
   // Create a view which lets you tab between the different sub-views.
   // This view is a left (resizable) navigation bar.
   var categoryTabSwitcher = new TabSwitcherView();
@@ -160,22 +48,22 @@ function onLoaded() {
   // Populate the main tabs.  Even tabs that don't contain information for the
   // running OS should be created, so they can load log dumps from other
   // OSes.
-  categoryTabSwitcher.addTab('eventsTab', eventsView, false, true);
-  categoryTabSwitcher.addTab('proxyTab', proxyView, false, true);
-  categoryTabSwitcher.addTab('dnsTab', dnsView, false, true);
-  categoryTabSwitcher.addTab('socketsTab', socketsView, false, true);
-  categoryTabSwitcher.addTab('spdyTab', spdyView, false, true);
-  categoryTabSwitcher.addTab('httpCacheTab', httpCacheView, false, true);
-  categoryTabSwitcher.addTab('dataTab', dataView, false, true);
-  categoryTabSwitcher.addTab('serviceProvidersTab', serviceView, false,
-                             g_browser.isPlatformWindows());
-  categoryTabSwitcher.addTab('testTab', testView, false, true);
-  categoryTabSwitcher.addTab('hstsTab', hstsView, false, true);
-  categoryTabSwitcher.addTab('httpThrottlingTab', httpThrottlingView, false,
-                             true);
-  categoryTabSwitcher.addTab('logsTab', logsView, false,
+  categoryTabSwitcher.addTab('eventsTab', new EventsView(), false, true);
+  categoryTabSwitcher.addTab('proxyTab', new ProxyView(), false, true);
+  categoryTabSwitcher.addTab('dnsTab', new DnsView(), false, true);
+  categoryTabSwitcher.addTab('socketsTab', new SocketsView(), false, true);
+  categoryTabSwitcher.addTab('spdyTab', new SpdyView(), false, true);
+  categoryTabSwitcher.addTab('httpCacheTab', new HttpCacheView(), false, true);
+  categoryTabSwitcher.addTab('dataTab', new DataView(), false, true);
+  categoryTabSwitcher.addTab('serviceProvidersTab', new ServiceProvidersView(),
+                             false, g_browser.isPlatformWindows());
+  categoryTabSwitcher.addTab('testTab', new TestView(), false, true);
+  categoryTabSwitcher.addTab('hstsTab', new HSTSView(), false, true);
+  categoryTabSwitcher.addTab('httpThrottlingTab', new HttpThrottlingView(),
+                             false, true);
+  categoryTabSwitcher.addTab('logsTab', new LogsView(), false,
                              g_browser.isChromeOS());
-  categoryTabSwitcher.addTab('prerenderTab', prerenderView, false, true);
+  categoryTabSwitcher.addTab('prerenderTab', new PrerenderView(), false, true);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.

@@ -14,23 +14,25 @@
  *   - Shows how many events have been captured.
  *  @constructor
  */
-function DataView(mainBoxId,
-                  downloadIframeId,
-                  saveFileButtonId,
-                  dataViewSaveStatusTextId,
-                  securityStrippingCheckboxId,
-                  byteLoggingCheckboxId,
-                  passivelyCapturedCountId,
-                  activelyCapturedCountId,
-                  deleteAllId,
-                  dumpDataDivId,
-                  loadedDivId,
-                  loadedClientInfoTextId,
-                  loadLogFileDropTargetId,
-                  loadLogFileId,
-                  dataViewLoadStatusTextId,
-                  capturingTextSpanId,
-                  loggingTextSpanId) {
+function DataView() {
+  const mainBoxId = 'dataTabContent';
+  const downloadIframeId = 'dataViewDownloadIframe';
+  const saveFileButtonId = 'dataViewSaveLogFile';
+  const dataViewSaveStatusTextId = 'dataViewSaveStatusText';
+  const securityStrippingCheckboxId = 'securityStrippingCheckbox';
+  const byteLoggingCheckboxId = 'byteLoggingCheckbox';
+  const passivelyCapturedCountId = 'passivelyCapturedCount';
+  const activelyCapturedCountId = 'activelyCapturedCount';
+  const deleteAllId = 'dataViewDeleteAll';
+  const dumpDataDivId = 'dataViewDumpDataDiv';
+  const loadedDivId = 'dataViewLoadedDiv';
+  const loadedClientInfoTextId = 'dataViewLoadedClientInfoText';
+  const loadLogFileDropTargetId = 'dataViewDropTarget';
+  const loadLogFileId = 'dataViewLoadLogFile';
+  const dataViewLoadStatusTextId = 'dataViewLoadStatusText';
+  const capturingTextSpanId = 'dataViewCapturingTextSpan';
+  const loggingTextSpanId = 'dataViewLoggingTextSpan';
+
   DivView.call(this, mainBoxId);
 
   var securityStrippingCheckbox = $(securityStrippingCheckboxId);

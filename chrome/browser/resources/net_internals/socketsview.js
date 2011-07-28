@@ -11,8 +11,13 @@
  *
  *  @constructor
  */
-function SocketsView(mainBoxId, socketPoolDivId, socketPoolGroupsDivId,
-                     closeIdleSocketsButtonId, socketPoolFlushButtonId) {
+function SocketsView() {
+  const mainBoxId = 'socketsTabContent';
+  const socketPoolDivId = 'socketPoolDiv';
+  const socketPoolGroupsDivId = 'socketPoolGroupsDiv';
+  const closeIdleSocketsButtonId = 'socketPoolCloseIdleButton';
+  const socketPoolFlushButtonId = 'socketPoolFlushButton';
+
   DivView.call(this, mainBoxId);
 
   g_browser.addSocketPoolInfoObserver(this);

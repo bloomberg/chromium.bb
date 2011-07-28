@@ -25,12 +25,26 @@
  *
  * @constructor
  */
-function EventsView(tableBodyId, filterInputId, filterCountId,
-                    deleteSelectedId, deleteAllId, selectAllId, sortByIdId,
-                    sortBySourceTypeId, sortByDescriptionId,
-                    tabHandlesContainerId, logTabId, timelineTabId,
-                    detailsLogBoxId, detailsTimelineBoxId,
-                    topbarId, middleboxId, bottombarId, sizerId) {
+function EventsView() {
+  const tableBodyId = 'eventsListTableBody';
+  const filterInputId = 'filterInput';
+  const filterCountId = 'filterCount';
+  const deleteSelectedId = 'deleteSelected';
+  const deleteAllId = 'deleteAll';
+  const selectAllId = 'selectAll';
+  const sortByIdId = 'sortById';
+  const sortBySourceTypeId = 'sortBySource';
+  const sortByDescriptionId = 'sortByDescription';
+  const tabHandlesContainerId = 'detailsTabHandles';
+  const logTabId = 'detailsLogTab';
+  const timelineTabId = 'detailsTimelineTab';
+  const detailsLogBoxId = 'detailsLogBox';
+  const detailsTimelineBoxId = 'detailsTimelineBox';
+  const topbarId = 'filterBox';
+  const middleboxId = 'eventsBox';
+  const bottombarId = 'actionBox';
+  const sizerId = 'splitterBoxForEventDetails';
+
   View.call(this);
 
   // Used for sorting entries with automatically assigned IDs.

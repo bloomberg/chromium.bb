@@ -1,0 +1,18 @@
+<div id=httpThrottlingTabContent>
+  <p>
+  In order to prevent Distributed Denial of Service (DDoS) attacks from
+  being perpetrated by web pages and extensions that run within Chrome, the
+  HTTP throttling mechanism keeps track of errors requesting a given URL
+  (minus the query parameters), and after a few 5xx errors in a row, starts
+  exponentially increasing an interval during which requests to the
+  given URL are disallowed.
+  </p><p>
+  You may enable or disable the feature below.  Please let us know if the
+  feature is causing problems for your web site.  More details and contact
+  information at 
+  <a href="http://dev.chromium.org/throttling">http://dev.chromium.org/throttling</a>.
+  </p>
+  <p><input id=enableHttpThrottlingCheckbox type=checkbox />
+    Throttle HTTP requests if the server has been overloaded or encountered an error.
+  </p>
+</div>

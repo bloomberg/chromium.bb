@@ -13,13 +13,15 @@
  *
  *  @constructor
  */
-function ProxyView(mainBoxId,
-                   originalSettingsDivId,
-                   effectiveSettingsDivId,
-                   reloadSettingsButtonId,
-                   badProxiesTbodyId,
-                   clearBadProxiesButtonId,
-                   proxyResolverLogPreId) {
+function ProxyView() {
+  const mainBoxId = 'proxyTabContent';
+  const originalSettingsDivId = 'proxyOriginalSettings';
+  const effectiveSettingsDivId = 'proxyEffectiveSettings';
+  const reloadSettingsButtonId = 'proxyReloadSettings';
+  const badProxiesTbodyId = 'badProxiesTableBody';
+  const clearBadProxiesButtonId = 'clearBadProxies';
+  const proxyResolverLogPreId = 'proxyResolverLog';
+
   DivView.call(this, mainBoxId);
 
   this.latestProxySourceEntries_ = null;
