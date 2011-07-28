@@ -71,6 +71,7 @@ so we include the original license below:
       <output filename="inspectorStrings_eu.js" type="js_map_format" lang="eu" />
     </if>
     <output filename="inspectorStrings_fa.js" type="js_map_format" lang="fa" />
+    <output filename="inspectorStrings_fake-bidi.js" type="js_map_format" lang="fake-bidi" />
     <output filename="inspectorStrings_fi.js" type="js_map_format" lang="fi" />
     <output filename="inspectorStrings_fil.js" type="js_map_format" lang="fil" />
     <output filename="inspectorStrings_fr.js" type="js_map_format" lang="fr" />
@@ -84,6 +85,7 @@ so we include the original license below:
     <output filename="inspectorStrings_hu.js" type="js_map_format" lang="hu" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="inspectorStrings_hy.js" type="js_map_format" lang="hy" />
+      <output filename="inspectorStrings_ia.js" type="js_map_format" lang="ia" />
     </if>
     <output filename="inspectorStrings_id.js" type="js_map_format" lang="id" />
     <output filename="inspectorStrings_it.js" type="js_map_format" lang="it" />
@@ -126,7 +128,6 @@ so we include the original license below:
     <output filename="inspectorStrings_vi.js" type="js_map_format" lang="vi" />
     <output filename="inspectorStrings_zh-CN.js" type="js_map_format" lang="zh-CN" />
     <output filename="inspectorStrings_zh-TW.js" type="js_map_format" lang="zh-TW" />
-    <output filename="inspectorStrings_fake-bidi.js" type="js_map_format" lang="fake-bidi" />
   </outputs>
   <translations>
     <if expr="pp_ifdef('use_third_party_translations')">

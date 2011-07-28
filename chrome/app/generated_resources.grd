@@ -99,6 +99,7 @@ are declared in build/common.gypi.
       <output filename="generated_resources_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="generated_resources_fa.pak" type="data_package" lang="fa" />
+    <output filename="generated_resources_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="generated_resources_fi.pak" type="data_package" lang="fi" />
     <output filename="generated_resources_fil.pak" type="data_package" lang="fil" />
     <output filename="generated_resources_fr.pak" type="data_package" lang="fr" />
@@ -112,6 +113,7 @@ are declared in build/common.gypi.
     <output filename="generated_resources_hu.pak" type="data_package" lang="hu" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="generated_resources_hy.pak" type="data_package" lang="hy" />
+      <output filename="generated_resources_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="generated_resources_id.pak" type="data_package" lang="id" />
     <output filename="generated_resources_it.pak" type="data_package" lang="it" />
@@ -154,7 +156,6 @@ are declared in build/common.gypi.
     <output filename="generated_resources_vi.pak" type="data_package" lang="vi" />
     <output filename="generated_resources_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="generated_resources_zh-TW.pak" type="data_package" lang="zh-TW" />
-    <output filename="generated_resources_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />
@@ -185,6 +186,7 @@ are declared in build/common.gypi.
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
     <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
+    <file path="../../third_party/launchpad_translations/generated_resources_ia.xtb" lang="ia" />
     <file path="resources/generated_resources_id.xtb" lang="id" />
     <file path="resources/generated_resources_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->

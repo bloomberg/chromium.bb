@@ -108,7 +108,6 @@
 <translation id="1384616079544830839"><ph name="ISSUER"/>-(e)k webgune honen nortasuna egiaztatu du.</translation>
 <translation id="1384617406392001144">Zure nabigatze-historia</translation>
 <translation id="1384721974622518101">Ba al zenekien zuzenean goiko kutxatik egin ditzakezula bilaketak?</translation>
-<translation id="1387022316521171484">Ezaugarri esperimental hauek edozein unetan aldatu, hautsi edo desager daitezke. Ez dugu inolako bermerik ematen esperimentu hauetako bat aktibatzen baduzu, eta zure nabigatzailea bat-batean suntsi daiteke. Bromak aparte, zure nabigatzaileak zure datuak ezaba ditzake, edo zure segurtasuna eta pribatutasuna arriskuak jar daitezke espero ez diren moduetan. Ibili kontuz.</translation>
 <translation id="1388866984373351434">Nabigatze-datuak</translation>
 <translation id="1398853756734560583">Maximizatu</translation>
 <translation id="1401874662068168819">Gin Yieh</translation>
@@ -518,7 +517,6 @@
 <translation id="2767649238005085901">Sakatu Enter aurrera jarraitzeko, testuinguru-menua historia ikusteko</translation>
 <translation id="2770465223704140727">Kendu zerrendatik</translation>
 <translation id="2773223079752808209">Bezeroarentzako laguntza</translation>
-<translation id="2783600004153937501">Zure administratzailek zenbait aukera desgaitu ditu.</translation>
 <translation id="2785530881066938471">Ezin izan da '<ph name="RELATIVE_PATH"/>' fitxategia kargatu eduki script-erako. Ez dauka UTF-8 kodeketa.</translation>
 <translation id="2788135150614412178">+</translation>
 <translation id="2788575669734834343">Hautatu ziurtagiri-fitxategia</translation>
@@ -571,7 +569,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="2955913368246107853">Itxi bilaketa-barra</translation>
 <translation id="2956070106555335453">Laburpena</translation>
-<translation id="2956948609882871496">Inportatu laster-markak...</translation>
 <translation id="2960316970329790041">Gelditu inportazioa</translation>
 <translation id="2961695502793809356">Egin klik aurrera jarraitzeko, mantendu sakatuta historia ikusteko</translation>
 <translation id="2972581237482394796">Be&amp;rregin</translation>
@@ -1025,18 +1022,14 @@
 <translation id="4553117311324416101">Google-k aurkitu du zure ordenagailuan software gaiztoa instala daitekeela jarraitzen baduzu. Iraganean gune hau bisitatu baduzu eta hartaz fidatzen bazara, agian duela gutxi hacker batek erasotu du. Ez zenuke jarraitu beharko, bihar berriro saia zaitezke edo beste guneren batera jo dezakezu.</translation>
 <translation id="4563210852471260509">Hasierako sarbide-hizkuntza txinera da</translation>
 <translation id="4567836003335927027">Zure datuak <ph name="WEBSITE_1"/>-(e)n</translation>
-<translation id="4568660204877256194">Esportatu laster-markak...</translation>
 <translation id="4569998400745857585">Hedapen ezkutuak dituen menua</translation>
 <translation id="4571852245489094179">Inportatu laster-markak eta ezarpenak</translation>
 <translation id="457386861538956877">Gehiago...</translation>
-<translation id="4577070033074325641">Inportatu laster-markak...</translation>
 <translation id="4585473702689066695">Ezin izan da '<ph name="NAME"/>' sarera konektatu.</translation>
-<translation id="4589279373639964403">Esportatu laster-markak...</translation>
 <translation id="4593021220803146968">&amp;Joan <ph name="URL"/> URLra</translation>
 <translation id="4608500690299898628">&amp;Bilatu...</translation>
 <translation id="4610637590575890427"><ph name="SITE"/> gunera joan nahi duzula esan nahi zenuen?</translation>
 <translation id="4610656722473172270">Google tresna-barra</translation>
-<translation id="4611079913162790275">Pasahitzen sinkronizazioak zure arreta behar du.</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> ostalariak malwarea banatzeagatik ezaguna den <ph name="ELEMENTS_HOST_NAME"/> guneko edukia dauka. Zure ordenagailua birus batez kutsa daiteke gune hau bisitatzen baduzu.</translation>
 <translation id="462288279674432182">IP mugatua:</translation>
 <translation id="4624768044135598934">Ondo egin da!</translation>
@@ -1170,7 +1163,6 @@
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="5158548125608505876">Ez sinkronizatu nire pasahitzak</translation>
 <translation id="5158983316805876233">Erabili proxy bera protokolo guztietarako</translation>
-<translation id="5167270755190684957">Google Chrome-rako gaien galeria</translation>
 <translation id="5170568018924773124">Erakutsi karpetan</translation>
 <translation id="5177526793333269655">Miniaturen ikuspegia</translation>
 <translation id="5178667623289523808">Bilatu aurrekoa</translation>
@@ -1356,7 +1348,6 @@
 <translation id="5667293444945855280">Malwarea</translation>
 <translation id="566920818739465183">Gune hau <ph name="VISIT_DATE"/> egunean bisitatu zenuen lehen aldiz.</translation>
 <translation id="5669267381087807207">Aktibatzen</translation>
-<translation id="5670032673361607750">Sinkronizazioak zure arreta behar du</translation>
 <translation id="567760371929988174">Sarbide-&amp;metodoak</translation>
 <translation id="5679279978772703611">Kudeatu gordetako pasahitzak...</translation>
 <translation id="5680966941935662618">Betetze automatikoaren ezarpenak</translation>
@@ -2209,7 +2200,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="851263357009351303">Onartu beti <ph name="HOST"/>-(e)k irudiak erakuts ditzan</translation>
 <translation id="8515737884867295000">Ziurtagirian oinarritutako autentifikazioak huts egin du</translation>
 <translation id="8525306231823319788">Pantaila osoa</translation>
-<translation id="8525552230188318924">Konfiguratu pasahitzen sinkronizazioa.</translation>
 <translation id="8534801226027872331">Kasu honetan, zure nabigatzaileari aurkeztutako ziurtagiriak erroreak ditu eta ez da ulergarria. Agian ezin da ulertu ziurtagirian dagoen nortasun-informazioa, edo ziurtagiriak konexioa segurtatzeko erabili duen beste informazioren bat. Ez zenuke jarraitu beharko.</translation>
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>
 <translation id="8546306075665861288">Irudi-katxea</translation>
@@ -2435,7 +2425,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="992543612453727859">Gehitu esaldiak aurrean</translation>
 <translation id="994289308992179865">&amp;Begizta</translation>
 <translation id="996250603853062861">Konexio segurua ezartzen...</translation>
-<translation id="1269138312169077280">Administratzaileak zenbait ezarpen desgaitu ditu.</translation>
 <translation id="1275018677838892971"><ph name="HOST_NAME"/>-(e)n dagoen webguneak &quot;phishing&quot;-a egitea leporatu dieten guneetako elementuak ditu.  Phishing egiten duten guneek informazio pertsonala edo finantzarioa eskuratzen saiatzen dira, sarritan erakunde fidagarrien itxurak eginez, esaterako bankuak direla esanez.</translation>
 <translation id="131364520783682672">Maius Blok</translation>
 <translation id="2382901536325590843">Zerbitzari-ziurtagiria ez dago DNSaren barnean.</translation>
@@ -2454,7 +2443,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="3393716657345709557">Eskatutako sarrera ez da aurkitu cachean.</translation>
 <translation id="340485819826776184">Iragarpen-zerbitzu bat darabil helbide-barran idatzitako bilaketak eta URLak osatzen laguntzeko.</translation>
 <translation id="3415261598051655619">Script-erako atzigarria:</translation>
-<translation id="3461610253915486539">Administratzaileak zenbait hobespen desgaitu ditu.</translation>
 <translation id="3528171143076753409">Zerbitzari-ziurtagiria ez da fidagarria.</translation>
 <translation id="3937609171782005782">Lagundu malware-detekzioa hobetzen, abisu hau ikusi duzun guneen datu gehiago Google-i bidaliz. Datu hauek <ph name="PRIVACY_PAGE_LINK"/> orrian ezarritakoaren arabera maneiatuko dira.</translation>
 <translation id="3956882961292411849">Datu mugikorren planari buruzko informazioa kargatzen, itxaron...</translation>
@@ -2513,10 +2501,8 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="3885155851504623709">Parrokia</translation>
 <translation id="4088820693488683766">Bilaketa-aukerak</translation>
 <translation id="4094130554533891764">Orain hurrengoak atzi daitezke:</translation>
-<translation id="4740663705480958372">P2P Pepper APIa eta P2P JavaScript APIa gaitzen ditu. APIa garapen bidean dago, eta oraindik ez dabil.</translation>
 <translation id="4841055638263130507">Mikrofono-ezarpenak</translation>
 <translation id="4856408283021169561">Ez da mikrofonorik aurkitu.</translation>
-<translation id="4857138207355690859">P2P APIa</translation>
 <translation id="5089810972385038852">Estatua</translation>
 <translation id="5095208057601539847">Probintzia</translation>
 <translation id="5185386675596372454">&quot;<ph name="EXTENSION_NAME"/>&quot; hedapenaren bertsio berriena desgaitu egin da baimen gehiago behar dituelako.</translation>
@@ -2598,7 +2584,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="7771452384635174008">Diseinua</translation>
 <translation id="8433186206711564395">Sareko ezarpenak</translation>
 <translation id="8550022383519221471">Sinkronizazio-zerbitzua ez dago eskuragarri zure domeinutik.</translation>
-<translation id="1180549724812639004">Sortu profil berria</translation>
 <translation id="1291144580684226670">Letra-tipo estandarra</translation>
 <translation id="1470719357688513792">Cookie-ezarpen berriak orria birkargatu ondoren sartuko dira indarrean.</translation>
 <translation id="1636842079139032947">Deskonektatu kontu hau...</translation>
@@ -2632,7 +2617,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="7366909168761621528">Nabigatze-datuak</translation>
 <translation id="7387829944233909572">&quot;Garbitu nabigatze-datuak&quot; koadroa</translation>
 <translation id="7452120598248906474">Zabalera finkoko letra-tipoa</translation>
-<translation id="780617032715125782">Sortu profil berria</translation>
 <translation id="8072988827236813198">Lotu fitxak</translation>
 <translation id="8205333955675906842">Sans-Serif letra-tipoa</translation>
 <translation id="8870318296973696995">Orri nagusia</translation>
@@ -2866,9 +2850,7 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="684587995079587263"><ph name="PRODUCT_NAME"/>-(e)k modu seguruan sinkronizatzen ditu zure datuak zure Google kontuarekin. Mantendu dena sinkronizatuta, edo pertsonalizatu sinkronizaziorako datu-motak eta zifratze-aukerak.</translation>
 <translation id="69375245706918574">Pertsonalizatu sinkronizazio-hobespenak</translation>
 <translation id="7104784605502674932">Baieztatu sinkronizazio-hobespenak</translation>
-<translation id="7180865173735832675">Pertsonalizatu</translation>
 <translation id="7323391064335160098">VPN euskarria</translation>
-<translation id="7420789336015002755">Karaktere baliogabea karpeta-izenean: $1</translation>
 <translation id="7424526482660971538">Hautatu neronen pasaesaldia</translation>
 <translation id="7434823369735508263">Erresuma Batuko Svorak teklatua</translation>
 <translation id="7474889694310679759">Kanadako ingeleseko teklatua</translation>
@@ -2890,7 +2872,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8432745813735585631">AEBetako Colemak teklatua</translation>
 <translation id="8448695406146523553">Zure pasaesaldia duen norbaitek soilik irakur ditzake zure datu zifratuak -- pasaesaldia ez zaio Google-i bidaltzen eta Google-k ez du gordetzen. Hura ahazten baduzu, hau egin beharko duzu:</translation>
 <translation id="8464132254133862871">Erabiltzaile-kontu hau ezin da aukeratu zerbitzu honetarako.</translation>
-<translation id="8467548439852845758">Segurtasun gehiago edukitzeko, <ph name="PRODUCT_NAME"/>-(e)k zure pasahitzak zifratu egingo ditu.</translation>
 <translation id="8628085465172583869">Zerbitzariaren ostalari-izena:</translation>
 <translation id="8666678546361132282">Ingelesa</translation>
 <translation id="8695825812785969222">Ireki &amp;kokapena...</translation>
@@ -2914,7 +2895,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="1128987120443782698">Biltegiratze-gailuaren edukiera <ph name="DEVICE_CAPACITY"/> da. Sartu gutxienez 4GBeko edukiera duen SD txartel bat edo USB memoria-arkatz bat.</translation>
 <translation id="1173894706177603556">Aldatu izena</translation>
 <translation id="1225544122210684390">Disko gogorreko gailua</translation>
-<translation id="1437399238463685286">Karaktere baliogabea fitxategi-izenean: $1</translation>
 <translation id="1725068750138367834">&amp;Fitxategi-kudeatzailea</translation>
 <translation id="1901769927849168791">SD txartela detektatu da</translation>
 <translation id="1956724372173215413">Sakatu alt+shift sarbide-metodoak txandakatzeko.</translation>
@@ -2989,10 +2969,8 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="5951823343679007761">Ez dago bateriarik</translation>
 <translation id="6878031674662373246">Gelditu kontu honen sinkronizazioa...</translation>
 <translation id="7419106976560586862">Profilaren bide-izena</translation>
-<translation id="7552723648707145905">Nabigazio konpaktua</translation>
 <translation id="7845201717638045845">Kopiatu eta itsatsiko dituzun datuak</translation>
 <translation id="8074548357564495927">Gaitu urruneko bezeroaren plugina. Abisua: Hau garatzaileen probetarako da soilik. Garatzaileen taldean eta haien zerrenda zurian ez bazaude, gaitutako interfazean ez du ezerk funtzionatuko.</translation>
-<translation id="8082103788701842156">&quot;Ezkutatu tresna-barra&quot; aukera eransten dio fitxa-barraren testuinguru-menuari. Erabili hau tresna-barra beti erakustearen (lehenetsia) eta soilik beharrezkoa denean goitibeherako koadro modura irekitzearen aukeren artean txandakatzeko.</translation>
 <translation id="8632196666436827923">Ezkutatu tresna-barra</translation>
 <translation id="8788054318005539616">Gelditu kontu honen sinkronizazioa</translation>
 <translation id="8813811964357448561">paper-orria</translation>
@@ -3001,7 +2979,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="1476822615785139447">Kudeatu inprimagailuak...</translation>
 <translation id="1486096554574027028">Bilatu pasahitzak</translation>
 <translation id="1662837784918284394">(bat ere ez)</translation>
-<translation id="2194400577068159994"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) erabili nahi al duzu <ph name="PROTOCOL"/>: estekak maneiatzeko oraindik aurrera?</translation>
 <translation id="2345435964258511234">Pantailaren freskatze-maiztasun bertikalarekiko sinkronizazioa desgaitzen du GPU bidezko errendatzea dagoenean. Horri esker, fotograma-tasa
         60 hertz-etik gora egon daiteke. Probetarako erabilgarria izan daitekeen arren, urraketak gerta daitezke bistaratzean pantailaren eguneratze azkarrak daudenean.</translation>
 <translation id="2374898461628345975">3D CSS eta web-orrien konposatze-performantzia handiagoa gaitzen du GPU (Graphics Processor Unit) hardwarea erabiliz.</translation>
@@ -3028,13 +3005,10 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
           <ph name="END_BOLD"/>
           atalera eta segurtatu zure konfigurazioa &quot;proxy-rik ez&quot; edo &quot;zuzena&quot; dela.</translation>
 <translation id="3154015489111064513">Erabili DHCP</translation>
-<translation id="3233454090437339537"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) erabili nahi al duzu <ph name="PROTOCOL"/>: estekak maneiatzeko oraindik aurrera, <ph name="REPLACED_HANDLER_TITLE"/> erabili ordez?</translation>
-<translation id="3250798078333049843">Zifratu datu guztiak</translation>
 <translation id="3317459757438853210">Bi aldeetakoa</translation>
 <translation id="3399068503715460757">Erabili IP estatikoa</translation>
 <translation id="350945665292790777">GPU bidez azeleratutako konposaketa orri guztietan erabiltzen du, ez soilik GPU bidez azeleratutako geruzak dituztenetan.</translation>
 <translation id="3529020546926570314">Hasi saioa hodeiko inprimagailuak atzitzeko...</translation>
-<translation id="3653550165444444309">Gehitu hodeiko inprimagailu bat...</translation>
 <translation id="3668823961463113931">Maneiatzaileak</translation>
 <translation id="3759371141211657149">Kudeatu maneiatzaile-ezarpenak...</translation>
 <translation id="3924129493187796992">Gehitu ostalari-izenetarako beste eredu bat</translation>
@@ -3053,7 +3027,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="5279641203372218761">Kudeatu inprimagailu lokalak...</translation>
 <translation id="532340483382036194">Web-orri batean argitaratutako manifestu-fitxategi bat erabiliz banatu diren Chromium aplikazioak instalatzea ahalbidetzen du, manifest fitxategia eta ikonoak crx fitxategi batean paketatu behar izan gabe.</translation>
 <translation id="5509519625080982753">Inprimagailu lokalak</translation>
-<translation id="5510072263871409308">Inprimagailu gehiago kargatzen</translation>
 <translation id="5607923769356613853">Joan
           <ph name="BEGIN_BOLD"/>
           Giltza menua &gt;
@@ -3072,7 +3045,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="5892507820957994680">Errendatuko den software-zerrenda lehenetsia gainidazten du eta GPU bidezko azelerazioa gaitzen du onartu gabeko sistema-konfigurazioetan.</translation>
 <translation id="6157714576637082050">Hodeiko inprimagailuak</translation>
 <translation id="6272247697534482847">Desgaitu GPU VSync</translation>
-<translation id="6468702002867725697">Zifratu kontuz ibiltzeko datuak (pasahitzak)</translation>
 <translation id="6780786534712515143">Instant gaituta dagoenean, omnibox-en URLa idatzi eta berehala kargatuko dira web-orri asko, zuk Enter sakatu baino lehen. Horrez gain, zure bilaketa-motor lehenetsiak onartzen badu, bilaketa-emaitzak istantean agertuko dira hitzak omnibox-en idazten ari zaren bitartean, eta iragarpenek zure bilaketa gidatuko dute.\n\nBilaketa-emaitzak letrak idazten ari diren bitartean ematen direnez, zure bilaketa-motor lehenetsiak emaitza horiek bilaketa-eskari modura har ditzake.\n</translation>
 <translation id="7005848115657603926">Orri-tarte baliogabea, erabili <ph name="EXAMPLE_PAGE_RANGE"/></translation>
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/>
@@ -3108,13 +3080,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
         denbora gehiegi behar izan duelako erantzuteko. Webgunea erorita egon daiteke, edo agian
         arazoak dituzu zure Internet konexioan.</translation>
 <translation id="9215535963167691630">Inprimagailu gehiago...</translation>
-<translation id="93424266670380528"><ph name="HOST_NAME"/> ostalariko zerbitzaria
-        ezin izan da aurkitu, DNS bilaketak huts egin duelako. DNSa webguneen
-        izenak Internet-helbideetara itzultzen dituen zerbitzua da. Errore hau
-        normalean Interneterako konexiorik ez dagoelako edo sarea gaizki
-        konfiguratuta dagoelako gertatzen da. Erantzun egokirik ematen ez
-        duen DNS zerbitzari batek edo <ph name="PRODUCT_NAME"/> sarera konekta dadin
-        galarazten duen suebaki batek ere eragin dezake.</translation>
 <translation id="940573721483482582">Saiatu sareen iragarpena desgaitzen hurrengo urratsak jarraituz:
         Joan
         <ph name="BEGIN_BOLD"/>
@@ -3130,7 +3095,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="1119447706177454957">Barne-errorea</translation>
 <translation id="1185611560928829188">Zerrenda magikoa (<ph name="MAGIC_COUNT"/>)</translation>
 <translation id="1707463636381878959">Partekatu sare hau beste erabiltzaile batzuekin</translation>
-<translation id="1905982276051748623">Protokoloen eta MIME moten kudeatzaileak</translation>
 <translation id="197288927597451399">Mantendu</translation>
 <translation id="271907111803265074">Datu mugikorretatik at zaude. Erosi beste plan bat <ph name="NETWORK"/> erabiltzeko.</translation>
 <translation id="2744221223678373668">Partekatuta</translation>
@@ -3162,7 +3126,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8844703966364420804">Ez dago magiarik.</translation>
 <translation id="1436784010935106834">Kendua</translation>
 <translation id="1954982207163873487">Erakutsi giltza menua</translation>
-<translation id="2232366847796264901">Segurua ez den edukia blokeatu da.</translation>
 <translation id="2440443888409942524">Pinyin sarbide-metodoa (US Dvorak teklaturako)</translation>
 <translation id="3011284594919057757">Flash-i buruz</translation>
 <translation id="3058072209957292419">IP estatikoen konfigurazio esperimentala</translation>
@@ -3173,13 +3136,11 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="642282551015776456">Izen hau ez da erabili behar fitxategi edo karpetak izendatzeko</translation>
 <translation id="6894066781028910720">Ireki fitxategi-kudeatzailea</translation>
 <translation id="7027559794548152684">Azken aldian <ph name="USER_EMAIL_ADDRESS"/> kontuarekin sinkronizatua. Kudeatu sinkronizazio-datuak <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>-en</translation>
-<translation id="732014399093750908">Segurua ez den script-a blokeatu da.</translation>
 <translation id="7460131386973988868">IP estatikoen konfigurazioa gaitzen du. Zenbaitetan huts egin dezake.</translation>
 <translation id="1243196447546764522">Blokeatu hirugarrenek cookie-ak ezar ditzaten</translation>
 <translation id="3448976534399424402">Enfokatu Giltza menua</translation>
 <translation id="3589825953300272289">Bilatu laster-markak Giltza menuan edo laster-marken barran.</translation>
 <translation id="3808873045540128170">Hilda zegok, Jokin!</translation>
-<translation id="3853566281579215874">Kargatu dena den (ez da gomendagarria)</translation>
 <translation id="4262366363486082931">Enfokatu tresnabarra</translation>
 <translation id="4882473678324857464">Enfokatu laster-markak</translation>
 <translation id="497421865427891073">Joan aurrera</translation>
@@ -3192,7 +3153,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="104086161873270383">Profil berria</translation>
 <translation id="112818052757437142">&quot;$1&quot; izeneko direktorioa jadanik existitzen da. Hautatu beste izen bat.</translation>
 <translation id="1142012852508714031">Profilaren izena</translation>
-<translation id="1267777119553169704">Ezgaitu pre- eta auto-login</translation>
 <translation id="1282227640663454719"><ph name="FORM_SIGNATURE"/> formulario-sinadura <ph name="FORM_URL"/> helbiderako da.</translation>
 <translation id="154603084978752493">Gehitu bilaketa-&amp;motor gisa...</translation>
 <translation id="1588870296199743671">Ireki esteka honekin...</translation>
@@ -3200,7 +3160,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="1834398142751010799">Profil berria</translation>
 <translation id="2065605535667375562">Profil-ikonoa</translation>
 <translation id="2189470649391435617">Aldatu tamaina eskuinera</translation>
-<translation id="2860629542417543629">Maiuskulak aktibatuta.</translation>
 <translation id="2889064240420137087">Ireki esteka honekin...</translation>
 <translation id="2951310213712249777">Aurre-errendatu omnibox-etik</translation>
 <translation id="2951809536086907720">heuristic type: <ph name="HEURISTIC_TYPE"/>\nserver type: <ph name="SERVER_TYPE"/>\nfield signature: <ph name="FIELD_SIGNATURE"/>\nform signature: <ph name="FORM_SIGNATURE"/>\nexperiment id: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
@@ -3219,7 +3178,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="434849659521617751">Direktorio bat hautatu da</translation>
 <translation id="4508345242223896011">Korritze leuna</translation>
 <translation id="4536111748245793305"><ph name="VALUE"/> profila</translation>
-<translation id="4977041425614823233">Maneiatzailearen ezarpenak...</translation>
 <translation id="5342221287123687807">Berrezarri gai lehenetsira</translation>
 <translation id="5685236799358487266">Gehitu bi&amp;laketa-motor gisa...</translation>
 <translation id="5835133142369577970">Adierazi karpeta-izen bat</translation>
@@ -3228,7 +3186,6 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="6745789064498140868">Inprimatu - <ph name="PREVIEW_TAB_TITLE"/></translation>
 <translation id="6928955981459329182">Aurre-errendatu omnibox-en emandako iradokizunak.</translation>
 <translation id="7026338066939101231">Gutxitu</translation>
-<translation id="7118654600979854368">Maneiatzaileen ezarpenak...</translation>
 <translation id="7325521623703686754">Hautatu izen bat eta avatar bat, ondoren egin klik Sortu, profil berria sortzeko.</translation>
 <translation id="7415834062450491574">Bidali atzeraelikadura Google-i.</translation>
 <translation id="7523913831415327888">$1 elementu hautatuta, $2</translation>
@@ -3246,4 +3203,36 @@ Gorde zure gako-fitxategia toki seguruan. Zure hedapenaren bertsio berriak sortz
 <translation id="8586353611925512169">Profilaren izena</translation>
 <translation id="8789464255255332543">Inprimatzea ez dago eskuragarri, inprimatzen saiatzen ari zaren orria itxi egin baita.</translation>
 <translation id="9049835026521739061">Hangul modua</translation>
+<translation id="1086573544069171115">Gehitu hodeiko inprimagailuak...</translation>
+<translation id="1335810654854159539">Zure administratzaileak zenbait hobespen desgaitu du.</translation>
+<translation id="1368725949478140659">Kargatu dena den</translation>
+<translation id="1376877080032948260">Ezabatu profila...</translation>
+<translation id="1459967076783105826">Hedapenek gehitutako bilaketa-motorrak</translation>
+<translation id="148557595510244003">Zure administratzaileak zenbait aukera desgaitu du.</translation>
+<translation id="1783075131180517613">Eguneratu zure sinkronizazio-pasaesaldia</translation>
+<translation id="2070909990982335904">Puntu batekin hasten diren izenak sistemarako erreserbatuta daude. Hautatu beste izen bat.</translation>
+<translation id="2357350991104857462">Desaktibatu aurretiazko saioa hastea</translation>
+<translation id="2562265053877774071">Zenbait hobespen hedapenen bidez ari dira kudeatzen.</translation>
+<translation id="273269537092923463">Konfiguratu <ph name="SHORT_PRODUCT_NAME"/> sinkronizazioa</translation>
+<translation id="294238750282796288">Zenbait aukera hedapenen bidez ari dira kudeatzen.</translation>
+<translation id="3714633008798122362">web calendar</translation>
+<translation id="381723870071368006">Erabili proxy partekatuak</translation>
+<translation id="3845608881815490588">Zure administratzaileak zenbait aukera desgaitu du eta beste batzuk hedapenen bidez ari dira kudeatzen.</translation>
+<translation id="409980434320521454">Sinkronizaioak huts egin du</translation>
+<translation id="4583537898417244378">Fitxategi baliogabe edo hondatua.</translation>
+<translation id="4728558894243024398">Plataforma</translation>
+<translation id="4980066111423877353">Ezabatu profila...</translation>
+<translation id="540323899562948110">Pertsonalizatu profila...</translation>
+<translation id="5887772116581657016">businessCategory</translation>
+<translation id="6186893483313227582"><ph name="VALUE"/> ikonoa</translation>
+<translation id="6231148928368101651">Panelak</translation>
+<translation id="626568068055008686">Pashitz okerra edo fitxategi hondatua.</translation>
+<translation id="6355108086588020252">Zure administratzaileak zenbait ezarpen desgaitu du.</translation>
+<translation id="6998579716604177680">Zure administratzaileak zenbait ezarpen desgaitu du eta beste batzuk hedapenen bidez ari dira kudeatzen.</translation>
+<translation id="7258264058936813500">Kargatu dena den</translation>
+<translation id="731250560645734839">Konfiguratu <ph name="SHORT_PRODUCT_NAME"/> sinkronizazioa</translation>
+<translation id="7475292478930529311">Pluginen hobespenak desgaitu dira.</translation>
+<translation id="7739677892468726004">Pertsonalizatu profila...</translation>
+<translation id="793703748056186466">Zenbait ezarpen hedapenen bidez ari dira kudeatzen.</translation>
+<translation id="8248320442525544322">incorporationCountry</translation>
 </translationbundle>

@@ -90,6 +90,7 @@
       <output filename="app_locale_settings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="app_locale_settings_fa.pak" type="data_package" lang="fa" />
+    <output filename="app_locale_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="app_locale_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="app_locale_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="app_locale_settings_fr.pak" type="data_package" lang="fr" />
@@ -103,6 +104,7 @@
     <output filename="app_locale_settings_hu.pak" type="data_package" lang="hu" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="app_locale_settings_hy.pak" type="data_package" lang="hy" />
+      <output filename="app_locale_settings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="app_locale_settings_id.pak" type="data_package" lang="id" />
     <output filename="app_locale_settings_it.pak" type="data_package" lang="it" />
@@ -145,7 +147,6 @@
     <output filename="app_locale_settings_vi.pak" type="data_package" lang="vi" />
     <output filename="app_locale_settings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="app_locale_settings_zh-TW.pak" type="data_package" lang="zh-TW" />
-    <output filename="app_locale_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="app_locale_settings_am.xtb" lang="am" />

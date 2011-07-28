@@ -131,6 +131,7 @@ below:
       <output filename="webkit_strings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="webkit_strings_fa.pak" type="data_package" lang="fa" />
+    <output filename="webkit_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="webkit_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="webkit_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="webkit_strings_fr.pak" type="data_package" lang="fr" />
@@ -144,6 +145,7 @@ below:
     <output filename="webkit_strings_hu.pak" type="data_package" lang="hu" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="webkit_strings_hy.pak" type="data_package" lang="hy" />
+      <output filename="webkit_strings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="webkit_strings_id.pak" type="data_package" lang="id" />
     <output filename="webkit_strings_it.pak" type="data_package" lang="it" />
@@ -186,7 +188,6 @@ below:
     <output filename="webkit_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="webkit_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="webkit_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
-    <output filename="webkit_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="resources/webkit_strings_am.xtb" lang="am" />

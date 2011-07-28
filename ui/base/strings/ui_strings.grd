@@ -101,6 +101,7 @@ need to be translated for each locale.-->
       <output filename="ui_strings_eu.pak" type="data_package" lang="eu" />
     </if>
     <output filename="ui_strings_fa.pak" type="data_package" lang="fa" />
+    <output filename="ui_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="ui_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="ui_strings_fil.pak" type="data_package" lang="fil" />
     <output filename="ui_strings_fr.pak" type="data_package" lang="fr" />
@@ -114,6 +115,7 @@ need to be translated for each locale.-->
     <output filename="ui_strings_hu.pak" type="data_package" lang="hu" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="ui_strings_hy.pak" type="data_package" lang="hy" />
+      <output filename="ui_strings_ia.pak" type="data_package" lang="ia" />
     </if>
     <output filename="ui_strings_id.pak" type="data_package" lang="id" />
     <output filename="ui_strings_it.pak" type="data_package" lang="it" />
@@ -156,7 +158,6 @@ need to be translated for each locale.-->
     <output filename="ui_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="ui_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="ui_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
-    <output filename="ui_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
     <file path="ui_strings_am.xtb" lang="am" />
@@ -187,6 +188,7 @@ need to be translated for each locale.-->
     <file path="ui_strings_hr.xtb" lang="hr" />
     <file path="ui_strings_hu.xtb" lang="hu" />
     <file path="../../../third_party/launchpad_translations/ui_strings_hy.xtb" lang="hy" />
+    <file path="../../../third_party/launchpad_translations/ui_strings_ia.xtb" lang="ia" />
     <file path="ui_strings_id.xtb" lang="id" />
     <file path="ui_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->

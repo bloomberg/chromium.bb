@@ -80,4 +80,7 @@
 <translation id="5947389362804196214">Asetuksiesi luku epäonnistui.\n\nJotkin toiminnot eivät välttämättä ole käytettävissä ja muutoksia asetuksiin ei tallenneta.</translation>
 <translation id="872034308864968620">Salli Chromiumin suoritus taustalla</translation>
 <translation id="8974095189086268230">Chromium OS:n toiminnan mahdollistaa <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="3296368748942286671">Pidä taustasovellukset käynnissä Chromiumin ollessa suljettu</translation>
+<translation id="4365115785552740256">Chromiumin on mahdollistanut <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> -avoimen lähdekoodin projekti sekä <ph name="BEGIN_LINK_OSS"/>muut avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS"/>.</translation>
+<translation id="8628626585870903697">Chromium ei sisällä tulostuksen esikatselua varten vaadittavaa PDF-katselusovellusta.</translation>
 </translationbundle>
