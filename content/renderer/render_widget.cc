@@ -1317,12 +1317,22 @@ COMPILE_ASSERT(int(WebKit::WebTextInputTypeText) == \
                int(ui::TEXT_INPUT_TYPE_TEXT), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextInputTypePassword) == \
                int(ui::TEXT_INPUT_TYPE_PASSWORD), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeSearch) == \
+               int(ui::TEXT_INPUT_TYPE_SEARCH), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeEmail) == \
+               int(ui::TEXT_INPUT_TYPE_EMAIL), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeNumber) == \
+               int(ui::TEXT_INPUT_TYPE_NUMBER), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeTelephone) == \
+               int(ui::TEXT_INPUT_TYPE_TELEPHONE), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeURL) == \
+               int(ui::TEXT_INPUT_TYPE_URL), mismatching_enums);
 
 ui::TextInputType RenderWidget::GetTextInputType() {
   if (webwidget_) {
     int type = webwidget_->textInputType();
     // Check the type is in the range representable by ui::TextInputType.
-    DCHECK(type <= ui::TEXT_INPUT_TYPE_PASSWORD) <<
+    DCHECK(type <= ui::TEXT_INPUT_TYPE_URL) <<
       "WebKit::WebTextInputType and ui::TextInputType not synchronized";
     return static_cast<ui::TextInputType>(type);
   }
