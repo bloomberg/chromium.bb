@@ -4,6 +4,8 @@
 
 #include "ui/gfx/gl/gl_surface.h"
 
+#include "ui/gfx/gl/gl_context.h"
+
 namespace gfx {
 
 GLSurface::GLSurface() {
@@ -21,7 +23,7 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
   return 0;
 }
 
-void GLSurface::OnMakeCurrent() {
+void GLSurface::OnMakeCurrent(GLContext* context) {
 }
 
 }  // namespace gfx

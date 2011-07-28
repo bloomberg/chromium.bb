@@ -13,6 +13,8 @@
 
 namespace gfx {
 
+class GLContext;
+
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
 class GLSurface : public base::RefCounted<GLSurface> {
@@ -48,7 +50,7 @@ class GLSurface : public base::RefCounted<GLSurface> {
   static bool InitializeOneOff();
 
   // Called after a context is made current with this surface.
-  virtual void OnMakeCurrent();
+  virtual void OnMakeCurrent(GLContext* context);
 
 #if !defined(OS_MACOSX)
   // Create a GL surface that renders directly to a view.

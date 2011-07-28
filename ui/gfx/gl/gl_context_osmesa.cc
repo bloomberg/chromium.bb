@@ -67,7 +67,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   // Row 0 is at the top.
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
-  surface->OnMakeCurrent();
+  surface->OnMakeCurrent(this);
   return true;
 }
 

@@ -95,7 +95,7 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
-  surface->OnMakeCurrent();
+  surface->OnMakeCurrent(this);
   return true;
 }
 

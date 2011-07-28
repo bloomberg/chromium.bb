@@ -3839,6 +3839,7 @@
         }],
         ['touchui==1', {
           'dependencies': [
+            '../ui/gfx/compositor/compositor.gyp:compositor',
             '../ui/gfx/gl/gl.gyp:gl',
           ],
           'sources/': [
