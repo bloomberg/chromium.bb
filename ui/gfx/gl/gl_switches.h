@@ -8,6 +8,16 @@
 #define UI_GFX_GL_GL_SWITCHES_H_
 #pragma once
 
+namespace gfx {
+
+// The GL implementation names that can be passed to --use-gl.
+extern const char kGLImplementationDesktopName[];
+extern const char kGLImplementationOSMesaName[];
+extern const char kGLImplementationEGLName[];
+extern const char kGLImplementationMockName[];
+
+}  // namespace gfx
+
 namespace switches {
 
 extern const char kDisableGpuVsync[];

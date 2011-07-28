@@ -21,6 +21,7 @@
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
 #include "sandbox/src/sandbox.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;
 
@@ -279,13 +280,17 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // desktop.
 // TODO(cpu): Lock down the sandbox more if possible.
 // TODO(apatrick): Use D3D9Ex to render windowless.
-bool AddPolicyForGPU(CommandLine*, sandbox::TargetPolicy* policy) {
+bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
 
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                           sandbox::USER_LIMITED);
-    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
+          gfx::kGLImplementationDesktopName)
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    else
+      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   } else {
     policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
                           sandbox::USER_LIMITED);

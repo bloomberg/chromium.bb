@@ -10,14 +10,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
-
-const char kGLImplementationDesktopName[] = "desktop";
-const char kGLImplementationOSMesaName[]  = "osmesa";
-const char kGLImplementationEGLName[]     = "egl";
-const char kGLImplementationMockName[]    = "mock";
 
 namespace {
 

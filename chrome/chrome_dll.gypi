@@ -694,6 +694,7 @@
             '../content/common/sandbox_policy.cc',
             '../content/common/sandbox_init_wrapper_win.cc',
             '../content/common/url_constants.cc',
+            '../ui/gfx/gl/gl_switches.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

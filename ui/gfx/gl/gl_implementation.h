@@ -10,6 +10,7 @@
 
 #include "base/native_library.h"
 #include "build/build_config.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 namespace gfx {
 
@@ -21,12 +22,6 @@ enum GLImplementation {
   kGLImplementationEGLGLES2,
   kGLImplementationMockGL
 };
-
-// The GL implementation names that can be passed to --use-gl.
-extern const char kGLImplementationDesktopName[];
-extern const char kGLImplementationOSMesaName[];
-extern const char kGLImplementationEGLName[];
-extern const char kGLImplementationMockName[];
 
 #if defined(OS_WIN)
 typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);

@@ -4,6 +4,15 @@
 
 #include "ui/gfx/gl/gl_switches.h"
 
+namespace gfx {
+
+const char kGLImplementationDesktopName[] = "desktop";
+const char kGLImplementationOSMesaName[]  = "osmesa";
+const char kGLImplementationEGLName[]     = "egl";
+const char kGLImplementationMockName[]    = "mock";
+
+}  // namespace gfx
+
 namespace switches {
 
 // Stop the GPU from synchronizing on the vsync before presenting.
