@@ -157,9 +157,9 @@ static void PPB_URLLoader_Open(SRPC_PARAMS) {
     NaClLog(1, "PPB_URLLoader_Open could not open file\n");
   }
   int result = loader->fp ? PP_OK : PP_ERROR_FAILED;
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_OPEN_CALLBACK, callback, result, 0, 0);
-  GlobalMultiMediaInterface->PushUserEvent(&event);
+  UserEvent* event =
+    MakeUserEvent(EVENT_TYPE_OPEN_CALLBACK, callback, result, 0, 0);
+  GlobalMultiMediaInterface->PushUserEvent(event);
 
   outs[0]->u.ival = PP_OK_COMPLETIONPENDING;
   NaClLog(1, "PPB_URLLoader_Open -> %d\n", outs[0]->u.ival);
@@ -196,10 +196,10 @@ static void PPB_URLLoader_ReadResponseBody(SRPC_PARAMS) {
   DataLoader* loader = GlobalLoaderResources.GetDataForHandle(handle_loader);
   char* buffer = static_cast<char*>(malloc(size));
   const int n = (int) fread(buffer, 1, size, loader->fp);
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_READ_CALLBACK, callback, n, buffer, n);
+  UserEvent* event =
+    MakeUserEvent(EVENT_TYPE_READ_CALLBACK, callback, n, buffer, n);
   NaClLog(1, "PPB_URLLoader_ReadResponseBody: push event\n");
-  GlobalMultiMediaInterface->PushUserEvent(&event);
+  GlobalMultiMediaInterface->PushUserEvent(event);
   outs[0]->u.count = 0;
   outs[1]->u.ival = PP_OK_COMPLETIONPENDING;
   rpc->result = NACL_SRPC_RESULT_OK;

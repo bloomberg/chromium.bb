@@ -254,9 +254,9 @@ static void PPB_Graphics2D_Flush(SRPC_PARAMS) {
     GlobalImageDataResources.GetDataForHandle(data_graphics2d->image_data);
   GlobalMultiMediaInterface->VideoUpdate(image_data->addr_video);
   NaClLog(1, "pushing user event for callback (%d)\n", callback_id);
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_FLUSH_CALLBACK, callback_id, 0, 0, 0);
-  GlobalMultiMediaInterface->PushUserEvent(&event);
+  UserEvent* event =
+    MakeUserEvent(EVENT_TYPE_FLUSH_CALLBACK, callback_id, 0, 0, 0);
+  GlobalMultiMediaInterface->PushUserEvent(event);
 }
 
 }  //  namespace

@@ -20,7 +20,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
+class NaClCommandLoop;
 
 // Standard helper class to tie mutex lock/unlock to a scope.
 class ScopedMutexLock {
@@ -72,38 +72,40 @@ class EmuPrimitivesSimple : public IMultimedia {
     NaClLog(LOG_FATAL, "VideoUpdate() not supported\n");
   }
 
-  virtual void PushUserEvent(PP_InputEvent* event) {
+  virtual void PushUserEvent(UserEvent* event) {
     ScopedMutexLock lock(&mutex_);
-    queue_.push(*event);
+    queue_.push(event);
     NaClSemPost(&sem_);
   }
 
-  virtual void PushDelayedUserEvent(int delay, PP_InputEvent* event) {
+  virtual void PushDelayedUserEvent(int delay, UserEvent* event) {
     // for now ignore the delay
     UNREFERENCED_PARAMETER(delay);
     PushUserEvent(event);
   }
 
-  virtual void EventPoll(PP_InputEvent* event) {
+  virtual UserEvent* EventPoll() {
+    UserEvent* event;
     ScopedMutexLock lock(&mutex_);
     if (queue_.size() > 0) {
       // This should always go through without delay
       NaClSemWait(&sem_);
-      // copy
-      *event = queue_.front();
+      event = queue_.front();
       queue_.pop();
+      return event;
     } else {
-      MakeInvalidEvent(event);
+      return 0;
     }
   }
 
-  virtual void EventGet(PP_InputEvent* event) {
+  virtual UserEvent* EventGet() {
     NaClSemWait(&sem_);
     ScopedMutexLock lock(&mutex_);
     assert(queue_.size() > 0);
     // copy
-    *event = queue_.front();
+    UserEvent* event = queue_.front();
     queue_.pop();
+    return event;
   }
 
   virtual void AudioInit16Bit(int frequency,
@@ -132,10 +134,18 @@ class EmuPrimitivesSimple : public IMultimedia {
   int video_height_;
   NaClMutex mutex_;
   NaClSemaphore sem_;
-  std::queue<PP_InputEvent> queue_;
+  std::queue<UserEvent*> queue_;
 };
 
 // Factor, so we can hide class MultimediaSDL from the outside world
 IMultimedia* MakeEmuPrimitives(int width, int heigth, const char* title) {
   return new EmuPrimitivesSimple(width, heigth, title);
+}
+
+
+void InvokeInputEventCallback(NaClCommandLoop* ncl,
+                              UserEvent* event) {
+  UNREFERENCED_PARAMETER(ncl);
+  UNREFERENCED_PARAMETER(event);
+  NaClLog(LOG_FATAL, "InputEvents not supported\n");
 }

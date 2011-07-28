@@ -136,10 +136,10 @@ void PPB_Audio_Create(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_INIT_AUDIO, 0, handle, data, 0);
+  UserEvent* event =
+    MakeUserEvent(EVENT_TYPE_INIT_AUDIO, 0, handle, data, 0);
 
-  GlobalMultiMediaInterface->PushUserEvent(&event);
+  GlobalMultiMediaInterface->PushUserEvent(event);
 }
 
 // From the PPB_Audio API
@@ -278,7 +278,7 @@ void PPB_AudioConfig_GetSampleFrameCount(SRPC_PARAMS) {
 }  //  namespace
 
 void InvokeAudioStreamCreatedCallback(NaClCommandLoop* ncl,
-                                      PP_InputEvent_User *event) {
+                                      const UserEvent *event) {
   const int handle = event->result;
   DataAudio* data = GlobalAudioDataResources.GetDataForHandle(handle);
   DataAudioConfig* config =

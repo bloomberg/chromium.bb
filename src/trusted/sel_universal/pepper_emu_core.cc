@@ -90,9 +90,9 @@ void PPB_Core_CallOnMainThread(SRPC_PARAMS) {
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 
-  PP_InputEvent event;
-  MakeUserEvent(&event, CUSTOM_EVENT_TIMER_CALLBACK, callback, result, 0, 0);
-  GlobalMultiMediaInterface->PushDelayedUserEvent(delay, &event);
+  UserEvent* event =
+    MakeUserEvent(EVENT_TYPE_TIMER_CALLBACK, callback, result, 0, 0);
+  GlobalMultiMediaInterface->PushDelayedUserEvent(delay, event);
 }
 
 // PPB_Core_AddRefResource:i:

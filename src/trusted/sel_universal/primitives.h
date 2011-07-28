@@ -7,67 +7,41 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERASAL_PRIMITIVES_H_
 
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
-
-// ppapi does not have a user defined event notion.
-// c.f. ppapi/c/pp_input_event.h
-// So we superimpose one here on the existing one "u" member.
-
-enum {
-  CUSTOM_EVENT_START = 2000,
-  CUSTOM_EVENT_OPEN_CALLBACK,
-  CUSTOM_EVENT_TERMINATION,
-  CUSTOM_EVENT_FLUSH_CALLBACK,
-  CUSTOM_EVENT_INIT_AUDIO,
-  CUSTOM_EVENT_TIMER_CALLBACK,
-  CUSTOM_EVENT_READ_CALLBACK
+enum EVENT_TYPE {
+  EVENT_TYPE_INVALID,
+  EVENT_TYPE_OPEN_CALLBACK,
+  EVENT_TYPE_TERMINATION,
+  EVENT_TYPE_FLUSH_CALLBACK,
+  EVENT_TYPE_INIT_AUDIO,
+  EVENT_TYPE_TIMER_CALLBACK,
+  EVENT_TYPE_READ_CALLBACK,
+  EVENT_TYPE_INPUT
 };
 
-// TODO(robertm): Make sel_universal work without relying on the old input
-// events. http://code.google.com/p/nativeclient/issues/detail?id=2066
-// This just defines a pretend PP_InputEvent so that sel_universal can compile.
-// sel_universal will not work until this issue is fixed.
-union PP_InputEventData {
-  struct PP_InputEvent_Key key;
-  struct PP_InputEvent_Character character;
-  struct PP_InputEvent_Mouse mouse;
-  struct PP_InputEvent_Wheel wheel;
-  char padding[64];
-};
-struct PP_InputEvent {
-  PP_InputEvent_Type type;
-  int32_t padding;
-  PP_TimeTicks time_stamp;
-  union PP_InputEventData u;
-};
-
-struct PP_InputEvent_User {
-  int callback;   // this is often the handle for a callback on the nexe side
+// NOTE: the first element has to be the type field so we can
+//       distinguish it from other event structs given that they
+//       also start with a such a field.
+struct UserEvent {
+  EVENT_TYPE type;
+  int callback;   // this is often the callback handle on the nexe side
   int result;     // this is often the result for the callback
   void* pointer;  // this is often a marshalled pp_var
   int size;       // size of the marshalled pp_var
 };
 
-
 // User Event Helpers
-bool IsUserEvent(PP_InputEvent* event);
+bool IsInputEvent(const UserEvent* event);
+bool IsInvalidEvent(const UserEvent* event);
+bool IsTerminationEvent(const UserEvent* event);
 
-void MakeUserEvent(PP_InputEvent* event,
-                   int code,
-                   int callback,
-                   int result,
-                   void* pointer,
-                   int size);
-void MakeInvalidEvent(PP_InputEvent* event);
-void MakeTerminationEvent(PP_InputEvent* event);
+UserEvent* MakeUserEvent(EVENT_TYPE type,
+                         int callback,
+                         int result,
+                         void* pointer,
+                         int size);
+UserEvent* MakeInvalidEvent();
+UserEvent* MakeTerminationEvent();
 
-bool IsInvalidEvent(PP_InputEvent* event);
-bool IsTerminationEvent(PP_InputEvent* event);
-
-// NOTE: this returns an int rather than PP_InputEvent_Type
-int GetUserEventType(PP_InputEvent* event);
-
-PP_InputEvent_User* GetUserEvent(PP_InputEvent* event);
 
 typedef void (*AUDIO_CALLBACK)(void* data, unsigned char* buffer, int length);
 
@@ -82,15 +56,15 @@ class IMultimedia {
   virtual void VideoUpdate(const void* data) = 0;
   // Inject a userevent into the event buffer.
   // NOTE: the event will be copied
-  virtual void PushUserEvent(PP_InputEvent* event) = 0;
+  virtual void PushUserEvent(UserEvent* event) = 0;
 
   // schedule a event for future delivery
-  virtual void PushDelayedUserEvent(int delay, PP_InputEvent* event) = 0;
+  virtual void PushDelayedUserEvent(int delay, UserEvent* event) = 0;
   // Get next event (non-blocking). If no event was available
   // IsInvalidEvent(event) will be true afterwards.
-  virtual void EventPoll(PP_InputEvent* event) = 0;
+  virtual UserEvent* EventPoll() = 0;
   // Get next event (blocking).
-  virtual void EventGet(PP_InputEvent* event) = 0;
+  virtual UserEvent* EventGet() = 0;
   // Get next event (blocking).
   virtual void AudioInit16Bit(int frequency,
                               int channels,

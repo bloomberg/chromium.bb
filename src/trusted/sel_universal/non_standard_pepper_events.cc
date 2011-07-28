@@ -9,53 +9,48 @@
 
 #include <string>
 
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
 #include "native_client/src/trusted/sel_universal/primitives.h"
 
-PP_InputEvent_User* GetUserEvent(PP_InputEvent* event) {
-  return reinterpret_cast<PP_InputEvent_User*>(&event->u);
-}
 
-bool IsInvalidEvent(PP_InputEvent* event) {
-  return event->type == PP_INPUTEVENT_TYPE_UNDEFINED;
+bool IsInvalidEvent(const UserEvent* event) {
+  return event->type == EVENT_TYPE_INVALID;
 }
 
 
-void MakeInvalidEvent(PP_InputEvent* event) {
-  event->type = PP_INPUTEVENT_TYPE_UNDEFINED;
+bool IsInputEvent(const UserEvent* event) {
+  return event->type == EVENT_TYPE_INPUT;
 }
 
 
-bool IsTerminationEvent(PP_InputEvent* event) {
-  return event->type == (PP_InputEvent_Type) CUSTOM_EVENT_TERMINATION;
+UserEvent* MakeInvalidEvent() {
+  UserEvent* event = new UserEvent;
+  event->type = EVENT_TYPE_INVALID;
+  return event;
 }
 
 
-void MakeTerminationEvent(PP_InputEvent* event) {
-  event->type = (PP_InputEvent_Type) CUSTOM_EVENT_TERMINATION;
+bool IsTerminationEvent(const UserEvent* event) {
+  return event->type == EVENT_TYPE_TERMINATION;
 }
 
 
-bool IsUserEvent(PP_InputEvent* event) {
-  return (int) event->type > CUSTOM_EVENT_START;
+UserEvent* MakeTerminationEvent() {
+  UserEvent* event = new UserEvent;
+  event->type = EVENT_TYPE_TERMINATION;
+  return event;
 }
 
 
-int GetUserEventType(PP_InputEvent* event) {
-  return (int) event->type;
-}
-
-
-void MakeUserEvent(PP_InputEvent* event,
-                   int code,
-                   int callback,
-                   int result,
-                   void* pointer,
-                   int size) {
-  event->type = (PP_InputEvent_Type) code;
-  PP_InputEvent_User* user = GetUserEvent(event);
-  user->callback = callback;
-  user->result = result;
-  user->pointer = pointer;
-  user->size = size;
+UserEvent* MakeUserEvent(EVENT_TYPE type,
+                         int callback,
+                         int result,
+                         void* pointer,
+                         int size) {
+  UserEvent* event = new UserEvent;
+  event->type = type;
+  event->callback = callback;
+  event->result = result;
+  event->pointer = pointer;
+  event->size = size;
+  return event;
 }

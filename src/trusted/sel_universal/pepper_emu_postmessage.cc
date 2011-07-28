@@ -39,9 +39,8 @@ void PPB_Messaging_PostMessage(SRPC_PARAMS) {
   // automatic termination mechanism used for testing
   if (GlobalQuitMessage.size() > 0 && GlobalQuitMessage == message) {
     NaClLog(LOG_INFO, "'quit message' triggered termination\n");
-    PP_InputEvent event;
-    MakeTerminationEvent(&event);
-    GlobalMultiMediaInterface->PushUserEvent(&event);
+    UserEvent* event = MakeTerminationEvent();
+    GlobalMultiMediaInterface->PushUserEvent(event);
   }
 }
 
