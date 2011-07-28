@@ -69,7 +69,6 @@
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if defined(OS_POSIX)
