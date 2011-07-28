@@ -371,6 +371,9 @@ void ExtensionWebNavigationEventRouter::Retargeting(
   const FrameNavigationState& frame_navigation_state =
       tab_observer->frame_navigation_state();
 
+  if (!frame_navigation_state.CanSendEvents(details->source_frame_id))
+    return;
+
   // If the TabContents was created as a response to an IPC from a renderer, it
   // doesn't yet have a wrapper, and we need to delay the extension event until
   // the TabContents is fully initialized.
