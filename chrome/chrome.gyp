@@ -376,7 +376,7 @@
           # the real inputs/outputs at GYP time isn't possible.
           'variables': {
             'grit_cmd': ['python', '../tools/grit/grit.py'],
-            'frontend_folder': '../content/browser/debugger/frontend',
+            'frontend_folder': 'browser/debugger/frontend',
             'grit_grd_file':
                '<(frontend_folder)/devtools_frontend_resources.grd',
           },

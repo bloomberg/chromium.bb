@@ -139,7 +139,7 @@
     "includes": [21000],
   },
   # This file is generated during the build.
-  "content/browser/debugger/frontend/devtools_frontend_resources.grd": {
+  "chrome/browser/debugger/frontend/devtools_frontend_resources.grd": {
     "includes": [21500],
   },
   "chrome/browser/resources/options_resources.grd": {

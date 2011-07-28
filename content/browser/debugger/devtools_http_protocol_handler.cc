@@ -15,21 +15,17 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/devtools_messages.h"
-#include "grit/devtools_frontend_resources.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/server/http_server_request_info.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
 
 const int kBufferSize = 16 * 1024;
 
@@ -141,9 +137,9 @@ scoped_refptr<DevToolsHttpProtocolHandler> DevToolsHttpProtocolHandler::Start(
     const std::string& ip,
     int port,
     const std::string& frontend_url,
-    TabContentsProvider* provider) {
+    Delegate* delegate) {
   scoped_refptr<DevToolsHttpProtocolHandler> http_handler =
-      new DevToolsHttpProtocolHandler(ip, port, frontend_url, provider);
+      new DevToolsHttpProtocolHandler(ip, port, frontend_url, delegate);
   http_handler->Start();
   return http_handler;
 }
@@ -181,16 +177,14 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   }
 
   // Proxy static files from chrome-devtools://devtools/*.
-  if (!Profile::Deprecated::GetDefaultRequestContext()) {
+  net::URLRequestContext* request_context = delegate_->GetURLRequestContext();
+  if (!request_context) {
     server_->Send404(connection_id);
     return;
   }
 
   if (info.path == "" || info.path == "/") {
-    const base::StringPiece frontend_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_DEVTOOLS_FRONTEND_HTML));
-    std::string response(frontend_html.data(), frontend_html.length());
+    std::string response = delegate_->GetDiscoveryPageHTML();
     server_->Send200(connection_id, response, "text/html; charset=UTF-8");
     return;
   }
@@ -207,8 +201,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   }
 
   Bind(request, connection_id);
-  request->set_context(
-      Profile::Deprecated::GetDefaultRequestContext()->GetURLRequestContext());
+  request->set_context(request_context);
   request->Start();
 }
 
@@ -275,11 +268,11 @@ struct PageInfo
 typedef std::vector<PageInfo> PageList;
 
 static PageList GeneratePageList(
-    DevToolsHttpProtocolHandler::TabContentsProvider* tab_contents_provider,
+    DevToolsHttpProtocolHandler::Delegate* delegate,
     int connection_id,
     const net::HttpServerRequestInfo& info) {
   typedef DevToolsHttpProtocolHandler::InspectableTabs Tabs;
-  Tabs inspectable_tabs = tab_contents_provider->GetInspectableTabs();
+  Tabs inspectable_tabs = delegate->GetInspectableTabs();
 
   PageList page_list;
   for (Tabs::iterator it = inspectable_tabs.begin();
@@ -309,7 +302,7 @@ static PageList GeneratePageList(
 void DevToolsHttpProtocolHandler::OnJsonRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  PageList page_list = GeneratePageList(tab_contents_provider_.get(),
+  PageList page_list = GeneratePageList(delegate_.get(),
                                         connection_id, info);
   ListValue json_pages_list;
   std::string host = info.headers["Host"];
@@ -469,11 +462,11 @@ DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
     const std::string& ip,
     int port,
     const std::string& frontend_host,
-    TabContentsProvider* provider)
+    Delegate* delegate)
     : ip_(ip),
       port_(port),
       overridden_frontend_url_(frontend_host),
-      tab_contents_provider_(provider) {
+      delegate_(delegate) {
   if (overridden_frontend_url_.empty())
       overridden_frontend_url_ = "/devtools/devtools.html";
 }

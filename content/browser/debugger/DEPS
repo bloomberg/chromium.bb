@@ -11,8 +11,5 @@ include_rules = [
   "+chrome/browser/debugger/devtools_window.h",
   "+chrome/browser/profiles/profile_manager.h",
 
-  # devtools_http_protocol_handler.cc
-  "+ui/base/resource/resource_bundle.h",
-
   # DO NOT ADD ANY MORE TO THIS LIST!!!  SEE ABOVE COMMENT
 ]

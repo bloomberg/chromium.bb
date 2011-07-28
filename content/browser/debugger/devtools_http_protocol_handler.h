@@ -20,27 +20,41 @@ class DevToolsClientHost;
 class DevToolsHttpServer;
 class TabContents;
 
+namespace net {
+class URLRequestContext;
+}
+
 class DevToolsHttpProtocolHandler
     : public net::HttpServer::Delegate,
       public net::URLRequest::Delegate,
       public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
  public:
   typedef std::vector<TabContents*> InspectableTabs;
-  class TabContentsProvider {
+  class Delegate {
    public:
-    TabContentsProvider() {}
-    virtual ~TabContentsProvider() {}
+    Delegate() {}
+    virtual ~Delegate() {}
+
+    // Should return the list of inspectable tabs. Called on the UI thread.
     virtual InspectableTabs GetInspectableTabs() = 0;
+
+    // Should return discovery page HTML that should list available tabs
+    // and provide attach links. Called on the IO thread.
+    virtual std::string GetDiscoveryPageHTML() = 0;
+
+    // Should return URL request context for issuing requests against devtools
+    // webui or NULL if no context is available. Called on the IO thread.
+    virtual net::URLRequestContext* GetURLRequestContext() = 0;
    private:
-    DISALLOW_COPY_AND_ASSIGN(TabContentsProvider);
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  // Takes ownership over |provider|.
+  // Takes ownership over |delegate|.
   static scoped_refptr<DevToolsHttpProtocolHandler> Start(
       const std::string& ip,
       int port,
       const std::string& frontend_url,
-      TabContentsProvider* provider);
+      Delegate* delegate);
 
   // Called from the main thread in order to stop protocol handler.
   // Will schedule tear down task on IO thread.
@@ -52,7 +66,7 @@ class DevToolsHttpProtocolHandler
   DevToolsHttpProtocolHandler(const std::string& ip,
                               int port,
                               const std::string& frontend_url,
-                              TabContentsProvider* provider);
+                              Delegate* delegate);
   virtual ~DevToolsHttpProtocolHandler();
   void Start();
 
@@ -107,7 +121,7 @@ class DevToolsHttpProtocolHandler
   typedef std::map<int, DevToolsClientHost*>
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
-  scoped_ptr<TabContentsProvider> tab_contents_provider_;
+  scoped_ptr<Delegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpProtocolHandler);
 };
 

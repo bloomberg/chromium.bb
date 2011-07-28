@@ -7,6 +7,9 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "grit/devtools_frontend_resources.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "ui/base/resource/resource_bundle.h"
 
 DevToolsHttpProtocolHandler::InspectableTabs
 BrowserListTabContentsProvider::GetInspectableTabs() {
@@ -18,4 +21,16 @@ BrowserListTabContentsProvider::GetInspectableTabs() {
       tabs.push_back(model->GetTabContentsAt(i)->tab_contents());
   }
   return tabs;
+}
+
+std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_DEVTOOLS_FRONTEND_HTML).as_string();
+}
+
+net::URLRequestContext*
+BrowserListTabContentsProvider::GetURLRequestContext() {
+  net::URLRequestContextGetter* getter =
+      Profile::Deprecated::GetDefaultRequestContext();
+  return getter ? getter->GetURLRequestContext() : NULL;
 }

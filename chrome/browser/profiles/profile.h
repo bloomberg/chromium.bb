@@ -146,8 +146,7 @@ class Profile : public content::BrowserContext {
     friend class AutofillDownloadManager;
     friend class ChromePluginMessageFilter;
     friend class DefaultGeolocationArbitratorDependencyFactory;
-    friend class DevToolsHttpProtocolHandler;
-    friend class DevToolsUI;
+    friend class BrowserListTabContentsProvider;
     friend class LiveSyncTest;
     friend class MetricsService;
     friend class ResolveProxyMsgHelper;
