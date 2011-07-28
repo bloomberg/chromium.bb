@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@ class MockScreenLockLibrary : public ScreenLockLibrary {
  public:
   MockScreenLockLibrary();
   virtual ~MockScreenLockLibrary();
+
+  MOCK_METHOD0(Init, void());
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
