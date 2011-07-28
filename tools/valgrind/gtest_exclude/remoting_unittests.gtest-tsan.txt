@@ -5,3 +5,4 @@ JingleSessionTest.TestControlChannel
 JingleSessionTest.TestEventChannel
 JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
+JingleSessionTest.TestSpeed

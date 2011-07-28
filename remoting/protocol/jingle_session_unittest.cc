@@ -701,7 +701,7 @@ TEST_F(JingleSessionTest, TestVideoRtpChannel) {
 
 // Send packets of different size to get the latency for sending data
 // using sockets from JingleSession.
-TEST_F(JingleSessionTest, DISABLED_TestSpeed) {
+TEST_F(JingleSessionTest, TestSpeed) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<ChannelSpeedTester> tester;
