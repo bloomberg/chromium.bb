@@ -11,6 +11,7 @@ import multiprocessing
 import select
 import sys
 
+_BUFSIZE = 1024
 
 def _output(line, output_files, complain):
   """Print line to output_files.
@@ -49,7 +50,7 @@ def _output(line, output_files, complain):
 
 def _tee(input_file, output_files, complain):
   """Read lines from input_file and write to output_files."""
-  for line in iter(input_file.readline, ''):
+  for line in iter(lambda: input_file.readline(_BUFSIZE), ''):
     _output(line, output_files, complain)
 
 
