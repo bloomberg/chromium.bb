@@ -596,16 +596,18 @@ void RenderWidgetHostViewWin::ImeUpdateTextInputState(
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
   // the responsibility to the browser.
+  bool is_enabled = (type != ui::TEXT_INPUT_TYPE_NONE &&
+      type != ui::TEXT_INPUT_TYPE_PASSWORD);
   if (text_input_type_ != type) {
     text_input_type_ = type;
-    if (type == ui::TEXT_INPUT_TYPE_TEXT)
+    if (is_enabled)
       ime_input_.EnableIME(m_hWnd);
     else
       ime_input_.DisableIME(m_hWnd);
   }
 
   // Only update caret position if the input method is enabled.
-  if (type == ui::TEXT_INPUT_TYPE_TEXT)
+  if (is_enabled)
     ime_input_.UpdateCaretRect(m_hWnd, caret_rect);
 }
 

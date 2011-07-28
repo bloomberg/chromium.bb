@@ -238,7 +238,8 @@ void GtkIMContextWrapper::UpdateInputMethodState(
 
   DCHECK(!is_in_key_event_handler_);
 
-  bool is_enabled = (type == ui::TEXT_INPUT_TYPE_TEXT);
+  bool is_enabled = (type != ui::TEXT_INPUT_TYPE_NONE &&
+      type != ui::TEXT_INPUT_TYPE_PASSWORD);
   if (is_enabled_ != is_enabled) {
     is_enabled_ = is_enabled;
     if (is_enabled)
