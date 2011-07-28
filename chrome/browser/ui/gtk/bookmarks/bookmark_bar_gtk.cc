@@ -331,8 +331,19 @@ bool BookmarkBarGtk::IsAnimating() {
 void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
   DCHECK_EQ(animation, &slide_animation_);
 
-  int max_height = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
-                   kBookmarkBarNTPHeight : kBookmarkBarHeight;
+  int max_height = 0;
+
+  if (theme_service_->UsingNativeTheme()) {
+    // Get the requisition of our single child instead of the event box itself
+    // because the event box probably already has a size request.
+    GtkRequisition req;
+    gtk_widget_size_request(ntp_padding_box_, &req);
+    max_height = req.height;
+  } else {
+    max_height = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
+                 kBookmarkBarNTPHeight : kBookmarkBarHeight;
+  }
+
   gint height =
       static_cast<gint>(animation->GetCurrentValue() *
                         (max_height - kBookmarkBarMinimumHeight)) +
@@ -943,6 +954,9 @@ void BookmarkBarGtk::Observe(int type,
       RemoveAllBookmarkButtons();
       CreateAllBookmarkButtons();
     }
+
+    // Resize the bookmark bar since the target height may have changed.
+    AnimationProgressed(&slide_animation_);
 
     UpdateEventBoxPaintability();
 
