@@ -472,14 +472,14 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
     std::string event_arg_string;
     ASSERT_TRUE(args.GetString(1, &event_arg_string));
 
-    Value* event_arg_value =
-        JSONStringValueSerializer(event_arg_string).Deserialize(NULL, NULL);
-    ASSERT_TRUE(event_arg_value &&
+    scoped_ptr<Value> event_arg_value(
+        JSONStringValueSerializer(event_arg_string).Deserialize(NULL, NULL));
+    ASSERT_TRUE(event_arg_value.get() &&
                 event_arg_value->IsType(Value::TYPE_LIST));
 
     DictionaryValue* event_arg_dict = NULL;
     ASSERT_TRUE(
-        static_cast<ListValue*>(event_arg_value)->GetDictionary(
+        static_cast<ListValue*>(event_arg_value.get())->GetDictionary(
             0, &event_arg_dict));
 
     ListValue* request_headers = NULL;
