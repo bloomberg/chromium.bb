@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/scoped_ptr.h"
 #include "base/tracked_objects.h"
 
 class BrowserThread;
@@ -126,12 +127,15 @@ class BrowserMainParts {
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();
 
+  // A/B test for warmest socket vs. most recently used socket.
+  void WarmConnectionFieldTrial();
+
   // A/B test for automatically establishing a backup TCP connection when a
   // specified timeout value is reached.
   void ConnectBackupJobsFieldTrial();
 
-  // A/B test for warmest socket vs. most recently used socket.
-  void WarmConnectionFieldTrial();
+  // A/B test for using a different host prefix in Google search suggest.
+  void SuggestPrefixFieldTrial();
 
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;

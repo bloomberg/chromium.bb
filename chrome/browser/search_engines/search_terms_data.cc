@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "content/browser/browser_thread.h"
@@ -26,6 +27,12 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   // "http://clients1.google.TLD/complete/".  The key bit we want from the
   // original Google base URL is the TLD.
 
+  // This is being temporarilly modified to (experimentally) use
+  // "http://www.google.TLD/complete/".
+  static bool www = base::FieldTrialList::TrialExists("SuggestHostPrefix") &&
+      base::FieldTrialList::FindFullName("SuggestHostPrefix") == "Www_Prefix";
+  const char* prefix = www ? "www." : "clients1.";
+
   // Start with the Google base URL.
   const GURL base_url(GoogleBaseURLValue());
   DCHECK(base_url.is_valid());
@@ -34,7 +41,7 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   // prepend "clients1.".
   const std::string base_host(base_url.host());
   GURL::Replacements repl;
-  const std::string suggest_host("clients1." +
+  const std::string suggest_host(prefix +
       (base_host.compare(0, 4, "www.") ? base_host : base_host.substr(4)));
   repl.SetHostStr(suggest_host);
 

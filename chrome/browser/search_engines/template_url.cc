@@ -8,6 +8,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -55,6 +56,8 @@ static const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 static const char kGoogleRLZParameter[] = "google:RLZ";
 // Same as kSearchTermsParameter, with no escaping.
+static const char kGoogleSearchFieldtrialParameter[] =
+    "google:searchFieldtrialParameter";
 static const char kGoogleUnescapedSearchTermsParameter[] =
     "google:unescapedSearchTerms";
 static const char kGoogleUnescapedSearchTermsParameterFull[] =
@@ -148,6 +151,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == kGoogleRLZParameter) {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
+  } else if (parameter == kGoogleSearchFieldtrialParameter) {
+    replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else {
@@ -391,6 +396,17 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         break;
       }
 
+      case GOOGLE_SEARCH_FIELDTRIAL_GROUP: {
+        static bool use_suggest_prefix =
+            base::FieldTrialList::TrialExists("SuggestHostPrefix");
+        if (use_suggest_prefix) {
+          static bool used_www = (base::FieldTrialList::FindFullName(
+              "SuggestHostPrefix") == "Www_Prefix");
+          url.insert(i->index, used_www ? "cx=w&" : "cx=c&");
+        }
+        break;
+      }
+
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
         std::string unescaped_terms;
         base::UTF16ToCodepage(terms, input_encoding.c_str(),
@@ -525,7 +541,7 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
 
 // static
 bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
- const TemplateURLRef* ref2) {
+                                 const TemplateURLRef* ref2) {
   return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
 }
 
