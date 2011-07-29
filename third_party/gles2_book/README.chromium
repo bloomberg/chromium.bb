@@ -36,4 +36,8 @@ Local Modifications:
   Initialized local variables:
     - Chapter_11/Stencil_Test/Stencil_Test.c
     - Common/Source/esShader.c
+    
+  Improvements in Chapter_11/Stencil_Test:
+    - Fixed depth and color values in Stencil Test
+    - Removed redundant glGetIntegerv in draw loop
 

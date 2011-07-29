@@ -42,10 +42,10 @@ int stInit ( ESContext *esContext )
        -0.25f,  0.25f,  0.50f,
        -0.25f,  0.75f,  0.50f,
        -0.75f,  0.75f,  0.50f,
-        0.25f,  0.25f,  0.90f, // Quad #1
-        0.75f,  0.25f,  0.90f,
-        0.75f,  0.75f,  0.90f,
-        0.25f,  0.75f,  0.90f,
+        0.25f,  0.25f,  0.50f, // Quad #1
+        0.75f,  0.25f,  0.50f,
+        0.75f,  0.75f,  0.50f,
+        0.25f,  0.75f,  0.50f,
        -0.75f, -0.75f,  0.50f, // Quad #2
        -0.25f, -0.75f,  0.50f,
        -0.25f, -0.25f,  0.50f,
@@ -118,16 +118,14 @@ void stDraw ( ESContext *esContext )
        { 1.0f, 0.0f, 0.0f, 1.0f },
        { 0.0f, 1.0f, 0.0f, 1.0f },
        { 0.0f, 0.0f, 1.0f, 1.0f },
-       { 1.0f, 1.0f, 0.0f, 0.0f }
+       { 1.0f, 1.0f, 0.0f, 1.0f }
    };
 
-   GLint   numStencilBits = 0;
    GLuint  stencilValues[NumTests] = { 
       0x7, // Result of test 0
       0x0, // Result of test 1
       0x2, // Result of test 2
-      0xff // Result of test 3.  We need to fill this
-           //  value in a run-time
+      0xfe // Result of test 3
    };
 
    // Set the viewport
@@ -214,14 +212,6 @@ void stDraw ( ESContext *esContext )
    glStencilOp( GL_INVERT, GL_KEEP, GL_KEEP );
    offset += 6;
    glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
-   
-   // Since we don't know at compile time how many stecil bits are present,
-   //   we'll query, and update the value correct value in the
-   //   stencilValues arrays for the fourth tests.  We'll use this value
-   //   later in rendering.
-   glGetIntegerv( GL_STENCIL_BITS, &numStencilBits );
-   
-   stencilValues[3] = ~(((1 << numStencilBits) - 1) & 0x1) & 0xff;
 
    // Use the stencil buffer for controlling where rendering will
    //   occur.  We diable writing to the stencil buffer so we
