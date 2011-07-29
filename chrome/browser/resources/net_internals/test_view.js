@@ -13,10 +13,10 @@
  *  @constructor
  */
 function TestView() {
-  const mainBoxId = 'testTabContent';
-  const urlInputId = 'testUrlInput';
-  const formId = 'connectionTestsForm';
-  const summaryDivId = 'testSummary';
+  const mainBoxId = 'test-view-tab-content';
+  const urlInputId = 'test-view-url-input';
+  const formId = 'test-view-connection-tests-form';
+  const summaryDivId = 'test-view-summary';
 
   DivView.call(this, mainBoxId);
 

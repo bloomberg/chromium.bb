@@ -14,9 +14,10 @@
  */
 function ServiceProvidersView() {
   const tabId = 'serviceProvidersTab';
-  const mainBoxId = 'serviceProvidersTabContent';
-  const serviceProvidersTbodyId = 'serviceProvidersTbody';
-  const namespaceProvidersTbodyId = 'namespaceProvidersTbody';
+  const mainBoxId = 'service-providers-view-tab-content';
+  const serviceProvidersTbodyId = 'service-providers-view-tbody';
+  const namespaceProvidersTbodyId =
+      'service-providers-view-namespace-providers-tbody';
 
   DivView.call(this, mainBoxId);
 

@@ -7,10 +7,10 @@
  * @constructor
  */
 function PrerenderView() {
-  const mainBoxId = 'prerenderTabContent';
-  const prerenderEnabledSpanId = 'prerenderEnabledSpan';
-  const prerenderHistoryDivId = 'prerenderHistoryDiv';
-  const prerenderActiveDivId = 'prerenderActiveDiv';
+  const mainBoxId = 'prerender-view-tab-content';
+  const prerenderEnabledSpanId = 'prerender-view-enabled-span';
+  const prerenderHistoryDivId = 'prerender-view-history-div';
+  const prerenderActiveDivId = 'prerender-view-active-div';
 
   DivView.call(this, mainBoxId);
   g_browser.addPrerenderInfoObserver(this);

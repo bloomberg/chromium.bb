@@ -12,11 +12,11 @@
  *  @constructor
  */
 function SocketsView() {
-  const mainBoxId = 'socketsTabContent';
-  const socketPoolDivId = 'socketPoolDiv';
-  const socketPoolGroupsDivId = 'socketPoolGroupsDiv';
-  const closeIdleSocketsButtonId = 'socketPoolCloseIdleButton';
-  const socketPoolFlushButtonId = 'socketPoolFlushButton';
+  const mainBoxId = 'sockets-view-tab-content';
+  const socketPoolDivId = 'sockets-view-pool-div';
+  const socketPoolGroupsDivId = 'sockets-view-pool-groups-div';
+  const closeIdleSocketsButtonId = 'sockets-view-close-idle-button';
+  const socketPoolFlushButtonId = 'sockets-view-flush-button';
 
   DivView.call(this, mainBoxId);
 

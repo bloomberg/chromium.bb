@@ -1,22 +1,22 @@
-<div id=socketsTabContent>
+<div id=sockets-view-tab-content>
   <h4>Socket pools</h4>
   <ul>
     <li class="hideOnLoadLog">
-      <input type=button value="Close idle sockets" id=socketPoolCloseIdleButton />
+      <input type=button value="Close idle sockets" id=sockets-view-close-idle-button />
     </li>
     <li class="hideOnLoadLog">
-      <input type=button value="Flush socket pools" id=socketPoolFlushButton />
+      <input type=button value="Flush socket pools" id=sockets-view-flush-button />
       <span class=warningText >May break pages with active connections</span>
     </li>
     <li><a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
     </li>
   </ul>
   <p>
-    <div id=socketPoolDiv>
+    <div id=sockets-view-pool-div>
     </div>
   </p>
   <p>
-    <div id=socketPoolGroupsDiv>
+    <div id=sockets-view-pool-groups-div>
     </div>
   </p>
 </div>

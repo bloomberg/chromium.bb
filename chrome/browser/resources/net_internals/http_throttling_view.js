@@ -7,8 +7,8 @@
  * @constructor
  */
 function HttpThrottlingView() {
-  const mainBoxId = 'httpThrottlingTabContent';
-  const enableCheckboxId = 'enableHttpThrottlingCheckbox';
+  const mainBoxId = 'http-throttling-view-tab-content';
+  const enableCheckboxId = 'http-throttling-view-enable-checkbox';
 
   DivView.call(this, mainBoxId);
 
