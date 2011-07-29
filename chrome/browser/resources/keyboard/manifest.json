@@ -17,7 +17,7 @@
       "description": "The system virtual keyboard extension",
       "type": "virtual_keyboard",
       "layouts": [
-        "us", "handwriting-vk"
+        "fr", "us", "handwriting-vk"
       ]
     }
   ]
