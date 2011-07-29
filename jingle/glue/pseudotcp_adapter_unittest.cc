@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -254,6 +255,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 class PseudoTcpAdapterTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    JingleThreadWrapper::EnsureForCurrentThread();
+
     host_socket_ = new FakeSocket();
     client_socket_ = new FakeSocket();
 

@@ -18,7 +18,7 @@ vars = {
   # revisions here, but it makes checkdeps confused. We should fix checkdeps.
   "nacl_chrome_ppapi_revision": "93797", # native_client/DEPS: chrome_ppapi_rev 
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
-  "libjingle_revision": "73",
+  "libjingle_revision": "77",
   "libvpx_revision": "90416",
   "ffmpeg_revision": "94207",
   "sfntly_revision": "25",
