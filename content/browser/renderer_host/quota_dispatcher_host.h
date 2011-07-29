@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "content/browser/browser_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "webkit/quota/quota_types.h"
 
 class GURL;
 
@@ -39,12 +39,12 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
   void OnQueryStorageUsageAndQuota(
       int request_id,
       const GURL& origin_url,
-      WebKit::WebStorageQuotaType type);
+      quota::StorageType type);
   void OnRequestStorageQuota(
       int render_view_id,
       int request_id,
       const GURL& origin_url,
-      WebKit::WebStorageQuotaType type,
+      quota::StorageType type,
       int64 requested_size);
 
   // The ID of this process.

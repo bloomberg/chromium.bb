@@ -6,13 +6,12 @@
 
 #include "base/basictypes.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "webkit/quota/quota_types.h"
 
 #define IPC_MESSAGE_START QuotaMsgStart
 
-IPC_ENUM_TRAITS(WebKit::WebStorageQuotaType)
-IPC_ENUM_TRAITS(WebKit::WebStorageQuotaError)
+IPC_ENUM_TRAITS(quota::StorageType)
+IPC_ENUM_TRAITS(quota::QuotaStatusCode)
 
 // Quota messages sent from the browser to the child process.
 
@@ -27,18 +26,18 @@ IPC_MESSAGE_CONTROL3(QuotaMsg_DidQueryStorageUsageAndQuota,
 
 IPC_MESSAGE_CONTROL2(QuotaMsg_DidFail,
                      int /* request_id */,
-                     WebKit::WebStorageQuotaError /* error */)
+                     quota::QuotaStatusCode /* error */)
 
 // Quota messages sent from the child process to the browser.
 
 IPC_MESSAGE_CONTROL3(QuotaHostMsg_QueryStorageUsageAndQuota,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     WebKit::WebStorageQuotaType /* type */)
+                     quota::StorageType /* type */)
 
 IPC_MESSAGE_CONTROL5(QuotaHostMsg_RequestStorageQuota,
                      int /* render_view_id */,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     WebKit::WebStorageQuotaType /* type */,
+                     quota::StorageType /* type */,
                      int64 /* requested_size */)

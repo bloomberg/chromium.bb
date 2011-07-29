@@ -9,13 +9,12 @@
 #include "content/common/quota_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
 #include "webkit/quota/quota_manager.h"
 
+using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
 using quota::StorageType;
-using WebKit::WebStorageQuotaError;
 
 // Created one per request to carry the request's request_id around.
 // Dispatches requests from renderer/worker to the QuotaManager and
@@ -72,8 +71,7 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
       QuotaStatusCode status, int64 usage, int64 quota) {
     DCHECK(dispatcher_host());
     if (status != quota::kQuotaStatusOk) {
-      dispatcher_host()->Send(new QuotaMsg_DidFail(
-          request_id(), static_cast<WebStorageQuotaError>(status)));
+      dispatcher_host()->Send(new QuotaMsg_DidFail(request_id(), status));
     } else {
       dispatcher_host()->Send(new QuotaMsg_DidQueryStorageUsageAndQuota(
           request_id(), usage, quota));
@@ -175,8 +173,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
   void DidFinish(QuotaStatusCode status, int64 granted_quota) {
     DCHECK(dispatcher_host());
     if (status != quota::kQuotaStatusOk) {
-      dispatcher_host()->Send(new QuotaMsg_DidFail(
-          request_id(), static_cast<WebStorageQuotaError>(status)));
+      dispatcher_host()->Send(new QuotaMsg_DidFail(request_id(), status));
     } else {
       dispatcher_host()->Send(new QuotaMsg_DidGrantStorageQuota(
           request_id(), granted_quota));
@@ -222,17 +219,17 @@ bool QuotaDispatcherHost::OnMessageReceived(
 void QuotaDispatcherHost::OnQueryStorageUsageAndQuota(
     int request_id,
     const GURL& origin,
-    WebKit::WebStorageQuotaType type) {
+    StorageType type) {
   QueryUsageAndQuotaDispatcher* dispatcher = new QueryUsageAndQuotaDispatcher(
       this, request_id);
-  dispatcher->QueryStorageUsageAndQuota(origin, static_cast<StorageType>(type));
+  dispatcher->QueryStorageUsageAndQuota(origin, type);
 }
 
 void QuotaDispatcherHost::OnRequestStorageQuota(
     int render_view_id,
     int request_id,
     const GURL& origin,
-    WebKit::WebStorageQuotaType type,
+    StorageType type,
     int64 requested_size) {
   if (quota_manager_->IsStorageUnlimited(origin)) {
     // If the origin is marked 'unlimited' we always just return ok.
@@ -240,28 +237,14 @@ void QuotaDispatcherHost::OnRequestStorageQuota(
     return;
   }
 
-  StorageType storage_type = static_cast<StorageType>(type);
-  if (storage_type != quota::kStorageTypeTemporary &&
-      storage_type != quota::kStorageTypePersistent) {
+  if (type != quota::kStorageTypeTemporary &&
+      type != quota::kStorageTypePersistent) {
     // Unsupported storage types.
-    Send(new QuotaMsg_DidFail(
-        request_id,
-        WebKit::WebStorageQuotaErrorNotSupported));
+    Send(new QuotaMsg_DidFail(request_id, quota::kQuotaErrorNotSupported));
     return;
   }
 
   RequestQuotaDispatcher* dispatcher = new RequestQuotaDispatcher(
-      this, request_id, origin, storage_type,
-      requested_size, render_view_id);
+      this, request_id, origin, type, requested_size, render_view_id);
   dispatcher->Start();
 }
-
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaTypeTemporary) == \
-               int(quota::kStorageTypeTemporary), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaTypePersistent) == \
-               int(quota::kStorageTypePersistent), mismatching_enums);
-
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorNotSupported) == \
-               int(quota::kQuotaErrorNotSupported), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorAbort) == \
-               int(quota::kQuotaErrorAbort), mismatching_enums);

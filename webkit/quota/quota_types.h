@@ -25,9 +25,8 @@ enum StorageType {
   kStorageTypeUnknown,
 };
 
-// TODO(tzik): Add assertions to
-// content/browser/renderer_host/quota_dispatcher_host.cc
-// ref) third_party/WebKit/Source/WebCore/dom/ExceptionCode.h,
+// The numbers should match with the error code defined in
+// third_party/WebKit/Source/WebCore/dom/ExceptionCode.h.
 enum QuotaStatusCode {
   kQuotaStatusOk = 0,
   kQuotaErrorNotSupported = 9,          // NOT_SUPPORTED_ERR

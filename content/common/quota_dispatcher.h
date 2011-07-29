@@ -11,8 +11,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "webkit/quota/quota_types.h"
 
 class GURL;
 
@@ -29,6 +28,14 @@ class WebStorageQuotaCallbacks;
 // per child process.  Messages are dispatched on the main child thread.
 class QuotaDispatcher : public IPC::Channel::Listener {
  public:
+  class Callback {
+   public:
+    virtual ~Callback() {}
+    virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) = 0;
+    virtual void DidGrantStorageQuota(int64 granted_quota) = 0;
+    virtual void DidFail(quota::QuotaStatusCode status) = 0;
+  };
+
   QuotaDispatcher();
   virtual ~QuotaDispatcher();
 
@@ -36,13 +43,17 @@ class QuotaDispatcher : public IPC::Channel::Listener {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   void QueryStorageUsageAndQuota(const GURL& gurl,
-                                 WebKit::WebStorageQuotaType type,
-                                 WebKit::WebStorageQuotaCallbacks* callbacks);
+                                 quota::StorageType type,
+                                 Callback* callback);
   void RequestStorageQuota(int render_view_id,
                            const GURL& gurl,
-                           WebKit::WebStorageQuotaType type,
-                           unsigned long long requested_size,
-                           WebKit::WebStorageQuotaCallbacks* callbacks);
+                           quota::StorageType type,
+                           int64 requested_size,
+                           Callback* callback);
+
+  // Creates a new Callback instance for WebStorageQuotaCallbacks.
+  static Callback* CreateWebStorageQuotaCallbacksWrapper(
+      WebKit::WebStorageQuotaCallbacks* callbacks);
 
  private:
   // Message handlers.
@@ -51,10 +62,9 @@ class QuotaDispatcher : public IPC::Channel::Listener {
                                     int64 current_quota);
   void DidGrantStorageQuota(int request_id,
                             int64 granted_quota);
-  void DidFail(int request_id,
-               WebKit::WebStorageQuotaError error);
+  void DidFail(int request_id, quota::QuotaStatusCode error);
 
-  IDMap<WebKit::WebStorageQuotaCallbacks> pending_quota_callbacks_;
+  IDMap<Callback, IDMapOwnPointer> pending_quota_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDispatcher);
 };
