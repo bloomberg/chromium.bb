@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
+#include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"

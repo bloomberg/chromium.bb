@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/glue/autofill_profile_change_processor.h"
 #include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
 

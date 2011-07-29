@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"

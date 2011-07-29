@@ -7,6 +7,12 @@
 #include <algorithm>
 
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "chrome/browser/webdata/autofill_table.h"
+#include "chrome/browser/webdata/keyword_table.h"
+#include "chrome/browser/webdata/logins_table.h"
+#include "chrome/browser/webdata/token_service_table.h"
+#include "chrome/browser/webdata/web_apps_table.h"
+#include "chrome/browser/webdata/web_intents_table.h"
 #include "content/common/notification_service.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"

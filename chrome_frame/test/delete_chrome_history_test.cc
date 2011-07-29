@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/rand_util.h"
+#include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_constants.h"
