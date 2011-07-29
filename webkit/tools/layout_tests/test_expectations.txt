@@ -6,10 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-BUGCR90673 WIN : fast/blockflow/english-lr-text.html = IMAGE 
-BUGCR90673 WIN : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE 
-BUGCR90673 WIN : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE 
-BUGCR90673 WIN : fast/text/stroking-decorations.html = IMAGE 
-BUGCR90673 WIN : fast/text/stroking.html = IMAGE 
-BUGCR90673 WIN : svg/batik/text/verticalText.svg = IMAGE 
-
