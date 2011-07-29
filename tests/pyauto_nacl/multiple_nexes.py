@@ -61,7 +61,7 @@ class NaClTest(pyauto.PyUITest):
     max_nexes = 6
     max_tabs = 6
     max_attempts = max_nexes * 10
-    num_iterations = 10
+    num_iterations = 5
     self.NavigateToURL('about:version')
     original_title = self.GetActiveTabTitle()
     for i in range(1, max_tabs):

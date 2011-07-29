@@ -49,8 +49,8 @@ class NaClTest(pyauto.PyUITest):
     """Navigate to PPAPI page and surf away asynchronously."""
     # Repeatedly (5 times) immediately surfaway
     self.surfAwayAsyncMulti(page, title_word, 5, 0, 0)
-    # Repeatedly (25 times) surfaway after a random delay (0 - 2 seconds)
-    self.surfAwayAsyncMulti(page, title_word, 25, 0.0, 2.0)
+    # Repeatedly (10 times) surfaway after a random delay (0 - 2 seconds)
+    self.surfAwayAsyncMulti(page, title_word, 10, 0.0, 2.0)
 
   def testSurfAwayAsyncSRPCHelloWorld(self):
     self.surfAwayAsync('srpc_hw.html', 'SRPC')
