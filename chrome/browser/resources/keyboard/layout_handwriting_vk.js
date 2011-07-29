@@ -69,29 +69,32 @@ HandwritingCanvas.prototype = {
 
     canvas.className = 'handwriting';
     canvas.onmousedown = function(e) {
+      var coords = canvas.getEventCoordinates(e);
       canvas.stroke_ = [];
       context.strokeStyle = HANDWRITING_CANVAS_LINE_COLOR;
       context.lineWidth = HANDWRITING_CANVAS_LINE_WIDTH;
       context.beginPath();
-      context.moveTo(e.offsetX, e.offsetY);
-      canvas.addStroke(e.offsetX, e.offsetY);
+      context.moveTo(coords.x, coords.y);
+      canvas.addStroke(coords.x, coords.y);
     };
 
     canvas.onmousemove = function(e) {
+      var coords = canvas.getEventCoordinates(e);
       if (canvas.stroke_.length == 0) {
         return;
       }
-      context.lineTo(e.offsetX, e.offsetY);
+      context.lineTo(coords.x, coords.y);
       context.stroke();
-      canvas.addStroke(e.offsetX, e.offsetY);
+      canvas.addStroke(coords.x, coords.y);
     };
     canvas.ontouchmove = canvas.onmousemove;
 
     canvas.onmouseup = function(e) {
+      var coords = canvas.getEventCoordinates(e);
       if (canvas.stroke_.length > 0) {
-        context.lineTo(e.offsetX, e.offsetY);
+        context.lineTo(coords.x, coords.y);
         context.stroke();
-        canvas.addStroke(e.offsetX, e.offsetY);
+        canvas.addStroke(coords.x, coords.y);
         if (chrome.experimental) {
           chrome.experimental.input.sendHandwritingStroke(canvas.stroke_);
         }
@@ -100,7 +103,6 @@ HandwritingCanvas.prototype = {
     };
     canvas.onmouseout = canvas.onmouseup;
 
-    // TODO(yusukes): Check if they works fine using a touch-enabled device.
     canvas.ontouchstart = canvas.onmousedown;
     canvas.ontouchenter = canvas.onmousedown;
     canvas.ontouchend = canvas.onmouseup;
@@ -144,6 +146,23 @@ HandwritingCanvas.prototype = {
         this.stroke_.push({ x: x, y: y });
       }
     }
+  },
+
+  /**
+   * Gets xy-coordinates of a mouse/touch event.
+   * @param {Object} event An event object for a mouse/touch event.
+   * @return {Object}
+   */
+  getEventCoordinates: function(event) {
+    if (event.changedTouches && event.changedTouches[0]) {
+      var touch = event.changedTouches[0];
+      return { x: touch.clientX - event.currentTarget.offsetLeft,
+            y: touch.clientY - event.currentTarget.offsetTop };
+    } else if (event.offsetX) {
+      return { x: event.offsetX, y: event.offsetY };
+    }
+    // Unexpected event. Not reached.
+    return { x: 0, y: 0 };
   },
 
   /**
