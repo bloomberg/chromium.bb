@@ -643,7 +643,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
-                                      !enabled, NULL);
+                                      !enabled);
   extension_data->SetString("id", extension->id());
   extension_data->SetString("name", extension->name());
   extension_data->SetString("description", extension->description());

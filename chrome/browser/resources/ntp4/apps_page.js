@@ -178,25 +178,15 @@ cr.define('ntp4', function() {
 
       this.className = 'app';
 
-      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
-        this.useSmallIcon_ = true;
-
       var appImg = this.ownerDocument.createElement('img');
-      appImg.src = this.useSmallIcon_ ? this.appData_.icon_small :
-                                        this.appData_.icon_big;
+      appImg.src = this.appData_.icon_big;
+      // We use a mask of the same image so CSS rules can highlight just the
+      // image when it's touched.
+      appImg.style.WebkitMaskImage = url(this.appData_.icon_big);
       // We put a click handler just on the app image - so clicking on the
       // margins between apps doesn't do anything.
       appImg.addEventListener('click', this.onClick_.bind(this));
-      if (this.useSmallIcon_) {
-        var imgDiv = this.ownerDocument.createElement('div');
-        imgDiv.setAttribute('class', 'app-icon-div');
-        imgDiv.appendChild(appImg);
-        imgDiv.addEventListener('click', this.onClick_.bind(this));
-        this.imgDiv_ = imgDiv;
-        this.appendChild(imgDiv);
-      } else {
-        this.appendChild(appImg);
-      }
+      this.appendChild(appImg);
       this.appImg_ = appImg;
 
       var appSpan = this.ownerDocument.createElement('span');
@@ -216,20 +206,8 @@ cr.define('ntp4', function() {
      *     animate.
      */
     setBounds: function(size, x, y) {
-      if (this.useSmallIcon_) {
-        this.imgDiv_.style.width = (size * APP_IMG_SIZE_FRACTION) + 'px';
-        this.imgDiv_.style.height = (size * APP_IMG_SIZE_FRACTION - 4) + 'px';
-        this.appImg_.style.width = this.appImg_.style.height = '32px';
-        var margin = (size - (size * APP_IMG_SIZE_FRACTION)) / 2;
-        this.imgDiv_.style['margin-left'] = margin + 'px';
-        this.imgDiv_.style['margin-right'] = margin + 'px';
-        this.imgDiv_.style['margin-bottom'] = '4px';
-      }
-      else {
-        this.appImg_.style.width = this.appImg_.style.height =
-            (size * APP_IMG_SIZE_FRACTION) + 'px';
-      }
-
+      this.appImg_.style.width = this.appImg_.style.height =
+          (size * APP_IMG_SIZE_FRACTION) + 'px';
       this.style.width = this.style.height = size + 'px';
 
       this.style.left = x + 'px';
