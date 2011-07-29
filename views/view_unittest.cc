@@ -2402,7 +2402,7 @@ class ViewLayerTest : public ViewsTestBase {
 
     TestTexture::reset_live_count();
 
-    Widget::set_compositor_factory(&TestCreateCompositor);
+    Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
@@ -2412,7 +2412,7 @@ class ViewLayerTest : public ViewsTestBase {
   virtual void TearDown() OVERRIDE {
     View::set_use_acceleration_when_possible(old_use_acceleration_);
     widget_->CloseNow();
-    Widget::set_compositor_factory(NULL);
+    Widget::set_compositor_factory_for_testing(NULL);
     Widget::SetPureViews(false);
   }
 

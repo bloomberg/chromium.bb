@@ -486,11 +486,9 @@ class VIEWS_API Widget : public internal::NativeWidgetDelegate,
     return non_client_view_ ? non_client_view_->client_view() : NULL;
   }
 
-#if defined(UNIT_TEST)
-  static void set_compositor_factory(ui::Compositor*(*factory)()) {
+  static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
     compositor_factory_ = factory;
   }
-#endif
   static ui::Compositor* (*compositor_factory())() {
     return compositor_factory_;
   }
