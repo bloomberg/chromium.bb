@@ -59,7 +59,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 #ifdef CHROME_V8
@@ -1108,7 +1108,7 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   // Obtain the version of the first enabled Flash plugin.
   std::vector<webkit::npapi::WebPluginInfo> info_array;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
+      GURL(), "application/x-shockwave-flash", false, NULL, &info_array, NULL);
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   for (size_t i = 0; i < info_array.size(); ++i) {

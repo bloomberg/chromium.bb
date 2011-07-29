@@ -9,7 +9,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -18,7 +17,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -243,7 +242,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
       NSString* name = SysUTF16ToNSString(
-          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it));
       if ([name length] == 0)
         name = base::SysUTF8ToNSString(*it);
       [pluginArray addObject:name];

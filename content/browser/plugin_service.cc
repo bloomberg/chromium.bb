@@ -323,7 +323,7 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
   bool found = GetPluginInfo(
       render_process_id, render_view_id, url, mime_type, &info, NULL);
   FilePath plugin_path;
-  if (found && webkit::npapi::IsPluginEnabled(info))
+  if (found)
     plugin_path = FilePath(info.path);
 
   // Now we jump back to the IO thread to finish opening the channel.
@@ -355,7 +355,6 @@ bool PluginService::GetPluginInfo(int render_process_id,
   // GetPluginInfoArray may need to load the plugins, so we need to be
   // on the FILE thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool allow_wildcard = true;
   {
     base::AutoLock auto_lock(overridden_plugins_lock_);
     for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
@@ -369,8 +368,20 @@ bool PluginService::GetPluginInfo(int render_process_id,
       }
     }
   }
-  return webkit::npapi::PluginList::Singleton()->GetPluginInfo(
-      url, mime_type, allow_wildcard, info, actual_mime_type);
+  bool allow_wildcard = true;
+  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<std::string> mime_types;
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, NULL, &plugins, &mime_types);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (webkit::npapi::IsPluginEnabled(plugins[i])) {
+      *info = plugins[i];
+      if (actual_mime_type)
+        *actual_mime_type = mime_types[i];
+      return true;
+    }
+  }
+  return false;
 }
 
 void PluginService::OnWaitableEventSignaled(

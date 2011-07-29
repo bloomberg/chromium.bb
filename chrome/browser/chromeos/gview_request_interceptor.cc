@@ -6,6 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"

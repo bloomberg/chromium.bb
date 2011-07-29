@@ -74,17 +74,10 @@ class PluginListTest : public testing::Test {
 
 TEST_F(PluginListTest, GetPlugins) {
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(false, &plugins);
+  plugin_list_.GetPlugins(&plugins);
   EXPECT_EQ(2u, plugins.size());
   EXPECT_TRUE(Contains(plugins, foo_plugin_, true));
   EXPECT_TRUE(Contains(plugins, bar_plugin_, true));
-}
-
-TEST_F(PluginListTest, GetEnabledPlugins) {
-  std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetEnabledPlugins(false, &plugins);
-  EXPECT_EQ(1u, plugins.size());
-  EXPECT_TRUE(Contains(plugins, foo_plugin_, true));
 }
 
 TEST_F(PluginListTest, GetPluginGroup) {
@@ -96,41 +89,6 @@ TEST_F(PluginListTest, GetPluginGroup) {
   EXPECT_EQ(foo_group, foo_group2);
   const PluginGroup* bar_group = plugin_list_.GetPluginGroup(bar_plugin_);
   EXPECT_FALSE(bar_group->Enabled());
-}
-
-TEST_F(PluginListTest, EnableDisablePlugin) {
-  // Disable "foo" plugin.
-  plugin_list_.DisablePlugin(foo_plugin_.path);
-  std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetEnabledPlugins(false, &plugins);
-  EXPECT_FALSE(Contains(plugins, foo_plugin_, false));
-  const PluginGroup* foo_group = plugin_list_.GetPluginGroup(foo_plugin_);
-  EXPECT_FALSE(foo_group->Enabled());
-  // Enable "bar" plugin.
-  plugin_list_.EnablePlugin(bar_plugin_.path);
-  plugin_list_.GetEnabledPlugins(false, &plugins);
-  EXPECT_TRUE(Contains(plugins, bar_plugin_, false));
-  const PluginGroup* bar_group = plugin_list_.GetPluginGroup(bar_plugin_);
-  EXPECT_TRUE(bar_group->Enabled());
-}
-
-TEST_F(PluginListTest, EnableGroup) {
-  // Disable "foo" plugin group.
-  const PluginGroup* foo_group = plugin_list_.GetPluginGroup(foo_plugin_);
-  EXPECT_TRUE(foo_group->Enabled());
-  EXPECT_TRUE(plugin_list_.EnableGroup(false, foo_group->GetGroupName()));
-  EXPECT_FALSE(foo_group->Enabled());
-  std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetEnabledPlugins(false, &plugins);
-  EXPECT_EQ(0u, plugins.size());
-  EXPECT_FALSE(Contains(plugins, foo_plugin_, false));
-  // Enable "bar" plugin group.
-  const PluginGroup* bar_group = plugin_list_.GetPluginGroup(bar_plugin_);
-  EXPECT_FALSE(bar_group->Enabled());
-  plugin_list_.EnableGroup(true, bar_group->GetGroupName());
-  EXPECT_TRUE(bar_group->Enabled());
-  plugin_list_.GetEnabledPlugins(false, &plugins);
-  EXPECT_TRUE(Contains(plugins, bar_plugin_, false));
 }
 
 TEST_F(PluginListTest, EmptyGroup) {
@@ -157,8 +115,9 @@ TEST_F(PluginListTest, DisableOutdated) {
   plugin_list_.AddPluginToLoad(plugin_3043);
   plugin_list_.AddPluginToLoad(plugin_3045);
   // Enfore the load to run.
+  plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(true, &plugins);
+  plugin_list_.GetPlugins(&plugins);
   PluginGroup* group_3043 =
       const_cast<PluginGroup*>(plugin_list_.GetPluginGroup(plugin_3043));
   const PluginGroup* group_3045 = plugin_list_.GetPluginGroup(plugin_3045);
@@ -181,8 +140,9 @@ TEST_F(PluginListTest, BadPluginDescription) {
   plugin_list_.ClearPluginsToLoad();
   plugin_list_.AddPluginToLoad(plugin_3043);
   // Now we should have them in the state we specified above.
+  plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(true, &plugins);
+  plugin_list_.GetPlugins(&plugins);
   ASSERT_TRUE(Contains(plugins, plugin_3043, true));
 }
 
@@ -204,8 +164,9 @@ TEST_F(PluginListTest, DisableAndEnableBeforeLoad) {
   plugin_list_.AddPluginToLoad(plugin_3043);
   plugin_list_.AddPluginToLoad(plugin_3045);
   // Now we should have them in the state we specified above.
+  plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(true, &plugins);
+  plugin_list_.GetPlugins(&plugins);
   plugin_3043.enabled = WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
   ASSERT_TRUE(Contains(plugins, plugin_3043, true));
   ASSERT_TRUE(Contains(plugins, plugin_3045, true));
@@ -231,8 +192,9 @@ TEST_F(PluginListTest, DisableBeforeLoad) {
 
   EXPECT_TRUE(plugin_list_.EnableGroup(false, ASCIIToUTF16(kFooGroupName)));
 
+  plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(true, &plugins);
+  plugin_list_.GetPlugins(&plugins);
   ASSERT_EQ(2u, plugins.size());
   ASSERT_EQ(WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED, plugins[0].enabled);
 }

@@ -341,7 +341,7 @@ class MetricsService::InitTask : public Task {
 
   virtual void Run() {
     std::vector<webkit::npapi::WebPluginInfo> plugins;
-    webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+    webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
     std::string hardware_class;  // Empty string by default.
 #if defined(OS_CHROMEOS)
     chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(

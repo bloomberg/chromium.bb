@@ -281,16 +281,16 @@ WebKit::WebKitClient* GetWebKitClient() {
 WebPlugin* CreateWebPlugin(WebFrame* frame,
                            const WebPluginParams& params) {
   const bool kAllowWildcard = true;
-  webkit::npapi::WebPluginInfo info;
-  std::string actual_mime_type;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfo(
-          params.url, params.mimeType.utf8(), kAllowWildcard, &info,
-          &actual_mime_type) || !webkit::npapi::IsPluginEnabled(info)) {
+  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  std::vector<std::string> mime_types;
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      params.url, params.mimeType.utf8(), kAllowWildcard,
+      NULL, &plugins, &mime_types);
+  if (plugins.empty())
     return NULL;
-  }
 
   return new WebPluginImplWithPageDelegate(
-      frame, params, info.path, actual_mime_type);
+      frame, params, plugins.front().path, mime_types.front());
 }
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,

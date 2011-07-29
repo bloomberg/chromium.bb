@@ -25,7 +25,7 @@ class PluginDataRemoverHelper : public NotificationObserver {
 
   // Binds this object to the |pref_name| preference in |prefs|, notifying
   // |observer| if the value changes.
-  // This fires off a request to the NPAPI::PluginList (via PluginDataRemover)
+  // This fires off a request to the PluginList (via PluginDataRemover)
   // on the FILE thread to get the list of installed plug-ins.
   void Init(const char* pref_name,
             PrefService* prefs,

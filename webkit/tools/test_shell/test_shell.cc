@@ -685,7 +685,9 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
 
 void GetPlugins(bool refresh,
                 std::vector<webkit::npapi::WebPluginInfo>* plugins) {
-  webkit::npapi::PluginList::Singleton()->GetPlugins(refresh, plugins);
+  if (refresh)
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
   // Don't load the forked TestNetscapePlugIn in the chromium code, use
   // the copy in webkit.org's repository instead.
   const FilePath::StringType kPluginBlackList[] = {

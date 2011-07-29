@@ -264,7 +264,7 @@ void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
 
 void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
   std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
 
   std::vector<webkit::npapi::PluginGroup> groups;
   webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);

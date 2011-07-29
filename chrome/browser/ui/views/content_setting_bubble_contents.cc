@@ -10,7 +10,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -28,7 +27,7 @@
 #include "views/controls/separator.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -206,7 +205,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::wstring name = UTF16ToWide(
-          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it));
       if (name.empty())
         name = UTF8ToWide(*it);
       layout->StartRow(0, single_column_set_id);

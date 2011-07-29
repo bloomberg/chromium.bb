@@ -79,11 +79,15 @@ static BOOL IsSupportedFileURL(const GURL& url) {
     return YES;
 
   // Check whether there is a plugin that supports the mime type. (e.g. PDF)
-  webkit::npapi::PluginList* list = webkit::npapi::PluginList::Singleton();
-  webkit::npapi::WebPluginInfo info;
-  if (!list->stale() &&
-      list->GetPluginInfo(GURL(), mime_type, false, &info, NULL)) {
-    return webkit::npapi::IsPluginEnabled(info);
+  // TODO(bauerb): This possibly uses stale information, but it's guaranteed not
+  // to do disk access.
+  bool stale = false;
+  std::vector<webkit::npapi::WebPluginInfo> info_array;
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, false, &stale, &info_array, NULL);
+  for (size_t i = 0; i < info_array.size(); ++i) {
+    if (webkit::npapi::IsPluginEnabled(info_array[i]))
+      return true;
   }
 
   return NO;

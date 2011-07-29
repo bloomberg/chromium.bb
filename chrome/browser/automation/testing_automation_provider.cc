@@ -3389,7 +3389,7 @@ void TestingAutomationProvider::GetPluginsInfo(
     return;
   }
   std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
   ListValue* items = new ListValue;
   for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator it =
            plugins.begin();

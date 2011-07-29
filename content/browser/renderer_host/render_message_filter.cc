@@ -522,16 +522,22 @@ void RenderMessageFilter::OnGetPlugins(
   // is accumulated by doing multiple reads from disk.  This effect is
   // multiplied when we have several pages requesting this operation.
   if (refresh) {
-      const base::TimeDelta threshold = base::TimeDelta::FromSeconds(
-          kPluginsRefreshThresholdInSeconds);
-      const base::TimeTicks now = base::TimeTicks::Now();
-      if (now - last_plugin_refresh_time_ < threshold)
-        refresh = false;  // Ignore refresh request; threshold not exceeded yet.
-      else
-        last_plugin_refresh_time_ = now;
+    const base::TimeDelta threshold = base::TimeDelta::FromSeconds(
+        kPluginsRefreshThresholdInSeconds);
+    const base::TimeTicks now = base::TimeTicks::Now();
+    if (now - last_plugin_refresh_time_ >= threshold) {
+      // Only refresh if the threshold hasn't been exceeded yet.
+      webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+      last_plugin_refresh_time_ = now;
+    }
   }
 
-  webkit::npapi::PluginList::Singleton()->GetEnabledPlugins(refresh, plugins);
+  std::vector<webkit::npapi::WebPluginInfo> all_plugins;
+  webkit::npapi::PluginList::Singleton()->GetPlugins(&all_plugins);
+  for (size_t i = 0; i < all_plugins.size(); ++i) {
+    if (webkit::npapi::IsPluginEnabled(all_plugins[i]))
+      plugins->push_back(all_plugins[i]);
+  }
 }
 
 void RenderMessageFilter::OnGetPluginInfo(

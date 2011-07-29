@@ -26,7 +26,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -223,7 +223,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Obtain the version of the Flash plugins.
   std::vector<webkit::npapi::WebPluginInfo> info_array;
   webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
+      GURL(), "application/x-shockwave-flash", false, NULL, &info_array, NULL);
   string16 flash_version;
   if (info_array.empty()) {
     AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");

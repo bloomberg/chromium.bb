@@ -118,10 +118,7 @@ class PluginList {
                              std::vector<WebPluginMimeType>* parsed_mime_types);
 
   // Get all the plugins.
-  void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
-
-  // Get all the enabled plugins.
-  void GetEnabledPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
+  void GetPlugins(std::vector<WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
   // the given url and mime type (including disabled plugins, for
@@ -133,19 +130,15 @@ class PluginList {
   // type).  The |info| parameter is required to be non-NULL.  The
   // list is in order of "most desirable" to "least desirable",
   // meaning that the default plugin is at the end of the list.
+  // If |use_stale| is NULL, this will load the plug-in list if necessary.
+  // If it is not NULL, the plug-in list will not be loaded, and |*use_stale|
+  // will be true iff the plug-in list was stale.
   void GetPluginInfoArray(const GURL& url,
                           const std::string& mime_type,
                           bool allow_wildcard,
+                          bool* use_stale,
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
-
-  // Returns the first item from the list returned in GetPluginInfo in |info|.
-  // Returns true if it found a match.  |actual_mime_type| may be NULL.
-  bool GetPluginInfo(const GURL& url,
-                     const std::string& mime_type,
-                     bool allow_wildcard,
-                     WebPluginInfo* info,
-                     std::string* actual_mime_type);
 
   // Get plugin info by plugin path (including disabled plugins). Returns true
   // if the plugin is found and WebPluginInfo has been filled in |info|.
@@ -203,10 +196,6 @@ class PluginList {
   // version.
   void DisableOutdatedPluginGroups();
 
-  // Returns true if the plugin list is stale, i.e. it will need to be
-  // (re)loaded on the next access.
-  bool stale() { return plugins_need_refresh_; }
-
   virtual ~PluginList();
 
  protected:
@@ -238,7 +227,7 @@ class PluginList {
   virtual void LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups);
 
   // Load all plugins from the default plugins directory
-  void LoadPlugins(bool refresh);
+  void LoadPlugins();
 
   // Load all plugins from a specific directory.
   // |plugins| is updated with loaded plugin information.
