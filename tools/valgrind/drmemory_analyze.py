@@ -78,12 +78,11 @@ class DrMemoryAnalyze:
 
       match_binary_fname = re.search("0x[0-9a-fA-F]+ <(.*)> .*!([^+]*)"
                                      "(?:\+0x[0-9a-fA-F]+)?\n", tmp_line)
-      self.ReadLine()
-      match_src_line = re.search("\s*(.*):([0-9]+)(?:\+0x[0-9a-fA-F]+)?",
-                                 self.line_)
-      if match_src_line:
+      if match_binary_fname:
         self.ReadLine()
-        if match_binary_fname:
+        match_src_line = re.search("\s*(.*):([0-9]+)(?:\+0x[0-9a-fA-F]+)?",
+                                 self.line_)
+        if match_src_line:
           binary, fname = match_binary_fname.groups()
           if re.search(CUT_STACK_BELOW, fname):
             break
@@ -102,6 +101,13 @@ class DrMemoryAnalyze:
               report_line += ":%i" % int(lineno)
           result.append(report_line + "\n")
           cnt = cnt + 1
+      else:
+        match_other = re.search("0x[0-9a-fA-F]+ (<.*>)(.*)\n", tmp_line)
+        if match_other:
+          module, other = match_other.groups()
+          result.append(" #%2i %-50s %s\n" % (cnt, module, other))
+          cnt = cnt + 1
+      self.ReadLine()
     return result
 
   def ParseReportFile(self, filename):
