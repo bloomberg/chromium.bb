@@ -19,21 +19,6 @@ class SingleEnterpriseEnrollmentScreenHandler;
 // Chrome OS login flow.
 class EnterpriseEnrollmentUI : public ChromeWebUI {
  public:
-  // This defines the interface for controllers which will be called back when
-  // something happens on the UI. It is stored in a property of the TabContents.
-  class Controller {
-   public:
-    virtual ~Controller() {}
-
-    virtual void OnAuthSubmitted(const std::string& user,
-                                 const std::string& password,
-                                 const std::string& captcha,
-                                 const std::string& access_code) = 0;
-    virtual void OnAuthCancelled() = 0;
-    virtual void OnConfirmationClosed() = 0;
-    virtual bool GetInitialUser(std::string* user) = 0;
-  };
-
   explicit EnterpriseEnrollmentUI(TabContents* contents);
   virtual ~EnterpriseEnrollmentUI();
 

@@ -66,8 +66,7 @@ void EnterpriseEnrollmentScreenHandler::RegisterMessages() {
 // EnterpriseEnrollmentScreenHandler
 //      EnterpriseEnrollmentScreenActor implementation -------------------------
 
-void EnterpriseEnrollmentScreenHandler::SetController(
-    EnterpriseEnrollmentUI::Controller* controller) {
+void EnterpriseEnrollmentScreenHandler::SetController(Controller* controller) {
   controller_ = controller;
 }
 

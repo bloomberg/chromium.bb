@@ -6,8 +6,8 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -64,7 +64,7 @@ class EnrollmentDomView : public WebPageDomView,
 }  // namespace
 
 EnterpriseEnrollmentView::EnterpriseEnrollmentView(
-    EnterpriseEnrollmentUI::Controller* controller)
+    EnterpriseEnrollmentScreenActor::Controller* controller)
     : controller_(controller), actor_(NULL) {}
 
 EnterpriseEnrollmentView::~EnterpriseEnrollmentView() {}

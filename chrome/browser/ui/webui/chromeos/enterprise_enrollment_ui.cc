@@ -39,8 +39,7 @@ class SingleEnterpriseEnrollmentScreenHandler
 
   // Overridden from EnterpriseEnrollmentScreenHandler:
   virtual void ShowConfirmationScreen() OVERRIDE;
-  virtual void SetController(
-      EnterpriseEnrollmentUI::Controller* controller_) OVERRIDE;
+  virtual void SetController(Controller* controller_) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -67,7 +66,7 @@ void SingleEnterpriseEnrollmentScreenHandler::ShowConfirmationScreen() {
 }
 
 void SingleEnterpriseEnrollmentScreenHandler::SetController(
-    EnterpriseEnrollmentUI::Controller* controller) {
+    Controller* controller) {
   EnterpriseEnrollmentScreenHandler::SetController(controller);
   if (show_when_controller_is_set_) {
     show_when_controller_is_set_ = false;

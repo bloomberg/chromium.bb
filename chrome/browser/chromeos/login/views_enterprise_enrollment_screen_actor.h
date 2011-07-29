@@ -26,8 +26,7 @@ class ViewsEnterpriseEnrollmentScreenActor
   virtual EnterpriseEnrollmentView* AllocateView() OVERRIDE;
 
   // Implements EnterpriseEnrollmentScreenActor:
-  virtual void SetController(
-      EnterpriseEnrollmentUI::Controller* controller) OVERRIDE;
+  virtual void SetController(Controller* controller) OVERRIDE;
   virtual void SetEditableUser(bool editable) OVERRIDE;
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -43,7 +42,7 @@ class ViewsEnterpriseEnrollmentScreenActor
   // Returns UI actor to be used.
   EnterpriseEnrollmentScreenActor* GetUIActor();
 
-  EnterpriseEnrollmentUI::Controller* controller_;
+  Controller* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsEnterpriseEnrollmentScreenActor);
 };

@@ -13,21 +13,20 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
-#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
 
 class ScreenObserver;
-class EnterpriseEnrollmentScreenActor;
 
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
 class EnterpriseEnrollmentScreen
     : public WizardScreen,
-      public EnterpriseEnrollmentUI::Controller,
+      public EnterpriseEnrollmentScreenActor::Controller,
       public GaiaAuthConsumer,
       public policy::CloudPolicySubsystem::Observer {
  public:
@@ -40,7 +39,7 @@ class EnterpriseEnrollmentScreen
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
 
-  // EnterpriseEnrollmentUI::Controller implementation:
+  // EnterpriseEnrollmentScreenActor::Controller implementation:
   virtual void OnAuthSubmitted(const std::string& user,
                                const std::string& password,
                                const std::string& captcha,

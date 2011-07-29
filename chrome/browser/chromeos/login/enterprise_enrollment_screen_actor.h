@@ -5,15 +5,33 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
+
+class GoogleServiceAuthError;
 
 namespace chromeos {
 
 // Interface class for the enterprise enrollment screen actor.
 class EnterpriseEnrollmentScreenActor {
  public:
+  // This defines the interface for controllers which will be called back when
+  // something happens on the UI.
+  class Controller {
+   public:
+    virtual ~Controller() {}
+
+    virtual void OnAuthSubmitted(const std::string& user,
+                                 const std::string& password,
+                                 const std::string& captcha,
+                                 const std::string& access_code) = 0;
+    virtual void OnAuthCancelled() = 0;
+    virtual void OnConfirmationClosed() = 0;
+    virtual bool GetInitialUser(std::string* user) = 0;
+  };
+
   // Used in PyAuto testing.
   class Observer {
    public:
@@ -34,8 +52,7 @@ class EnterpriseEnrollmentScreenActor {
   void RemoveObserver(Observer* obs);
 
   // Sets the controller.
-  virtual void SetController(
-      EnterpriseEnrollmentUI::Controller* controller) = 0;
+  virtual void SetController(Controller* controller) = 0;
 
   // Prepare the contents to showing.
   virtual void PrepareToShow() = 0;

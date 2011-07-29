@@ -30,7 +30,7 @@ class EnterpriseEnrollmentScreenHandler
   virtual void RegisterMessages() OVERRIDE;
 
   // Implements EnterpriseEnrollmentScreenActor:
-  virtual void SetController(EnterpriseEnrollmentUI::Controller* controller);
+  virtual void SetController(Controller* controller);
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -51,7 +51,7 @@ class EnterpriseEnrollmentScreenHandler
   virtual void Initialize() OVERRIDE;
 
   // Keeps the controller for this actor.
-  EnterpriseEnrollmentUI::Controller* controller_;
+  Controller* controller_;
 
  private:
   // Handlers for WebUI messages.

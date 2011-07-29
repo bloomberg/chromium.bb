@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
-#include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "views/view.h"
 
@@ -27,13 +27,12 @@ class Label;
 namespace chromeos {
 
 class ScreenObserver;
-class EnterpriseEnrollmentScreenActor;
 
 // Implements the UI for the enterprise enrollment screen in OOBE.
 class EnterpriseEnrollmentView : public views::View {
  public:
   explicit EnterpriseEnrollmentView(
-      EnterpriseEnrollmentUI::Controller* controller);
+      EnterpriseEnrollmentScreenActor::Controller* controller);
   virtual ~EnterpriseEnrollmentView();
 
   // Initialize view controls and layout.
@@ -48,7 +47,7 @@ class EnterpriseEnrollmentView : public views::View {
   // Overriden from views::View:
   virtual void Layout() OVERRIDE;
 
-  EnterpriseEnrollmentUI::Controller* controller_;
+  EnterpriseEnrollmentScreenActor::Controller* controller_;
 
   EnterpriseEnrollmentScreenActor* actor_;
 

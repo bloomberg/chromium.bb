@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
 #pragma once
 
-#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -26,7 +27,7 @@ class MockEnterpriseEnrollmentScreenActor
   virtual ~MockEnterpriseEnrollmentScreenActor();
 
   MOCK_METHOD1(SetController,
-               void(EnterpriseEnrollmentUI::Controller* controller));
+               void(EnterpriseEnrollmentScreenActor::Controller* controller));
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());

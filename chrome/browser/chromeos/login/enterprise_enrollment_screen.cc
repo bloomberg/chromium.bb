@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 namespace chromeos {
 
@@ -42,6 +43,20 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
 }
 
 EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
+
+void EnterpriseEnrollmentScreen::PrepareToShow() {
+  actor_->PrepareToShow();
+}
+
+void EnterpriseEnrollmentScreen::Show() {
+  is_showing_ = true;
+  actor_->Show();
+}
+
+void EnterpriseEnrollmentScreen::Hide() {
+  is_showing_ = false;
+  actor_->Hide();
+}
 
 void EnterpriseEnrollmentScreen::OnAuthSubmitted(
     const std::string& user,
@@ -306,20 +321,6 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   }
 
   NOTREACHED();
-}
-
-void EnterpriseEnrollmentScreen::PrepareToShow() {
-  actor_->PrepareToShow();
-}
-
-void EnterpriseEnrollmentScreen::Show() {
-  is_showing_ = true;
-  actor_->Show();
-}
-
-void EnterpriseEnrollmentScreen::Hide() {
-  is_showing_ = false;
-  actor_->Hide();
 }
 
 }  // namespace chromeos

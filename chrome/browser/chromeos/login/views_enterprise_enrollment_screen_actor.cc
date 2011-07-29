@@ -30,7 +30,7 @@ EnterpriseEnrollmentView* ViewsEnterpriseEnrollmentScreenActor::AllocateView() {
 //     EnterpriseEnrollmentScreenActor implementation --------------------------
 
 void ViewsEnterpriseEnrollmentScreenActor::SetController(
-    EnterpriseEnrollmentUI::Controller* controller) {
+    Controller* controller) {
   controller_ = controller;
 }
 
