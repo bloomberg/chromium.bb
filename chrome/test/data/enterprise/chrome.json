@@ -2,6 +2,7 @@
   "_comment": "This file is for enterprise testing in Linux.",
   "_comment": "Test that use this file: enterprise.py.",
   "AlternateErrorPagesEnabled": true,
+  "AlwaysAuthorizePlugins": true,
   "AuthNegotiateDelegateWhitelist": "foobar.example.com",
   "AuthSchemes": "basic,digest,ntlm,negotiate",
   "AuthServerWhitelist": "*example.com,foobar.com,*baz",
