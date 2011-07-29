@@ -71,19 +71,23 @@ tabpanel {
   width: 100%;
 }
 
+#hierarchy-section {
+  height: 25%;
+  top: 0;
+}
+
+#cert-fields-section {
+  height: 50%;
+  top: 25%;
+}
+
+#cert-field-value-section {
+  bottom: 0;
+  height: 25%;
+}
+
 /* Scrolling should be enabled on all tree views and value field. */
-#hierarchy,
-#cert-fields,
-#cert-field-value {
-  overflow: auto;
-}
-
-#hierarchy,
-#cert-field-value {
+.section-contents {
   -webkit-box-flex: 1;
-  min-height: 6em;
-}
-
-#cert-fields {
-  -webkit-box-flex: 3;
+  overflow: auto;
 }
