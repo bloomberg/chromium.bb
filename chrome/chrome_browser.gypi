@@ -1683,8 +1683,6 @@
         'browser/policy/proto/device_management_constants.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.h',
-        'browser/possible_url_model.cc',
-        'browser/possible_url_model.h',
         'browser/preferences_mac.cc',
         'browser/preferences_mac.h',
         'browser/prefs/browser_prefs.cc',
