@@ -53,8 +53,8 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                Logger* logger,
                                bool allow_nat_traversal)
     : context_(context),
-      config_(config),
       desktop_environment_(environment),
+      config_(config),
       access_verifier_(access_verifier),
       logger_(logger),
       allow_nat_traversal_(allow_nat_traversal),
@@ -62,7 +62,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       is_curtained_(false),
       is_it2me_(false) {
-  DCHECK(desktop_environment_.get());
+  DCHECK(desktop_environment_);
   desktop_environment_->set_host(this);
   logger_->SetThread(MessageLoop::current());
 }

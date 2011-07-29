@@ -83,6 +83,10 @@ HostNPScriptObject::HostNPScriptObject(NPP plugin, NPObject* parent)
 HostNPScriptObject::~HostNPScriptObject() {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
+  // Shutdown DesktopEnvironment first so that it doesn't try to post
+  // tasks on the UI thread while we are stopping the host.
+  desktop_environment_->Shutdown();
+
   // Disconnect synchronously. We cannot disconnect asynchronously
   // here because |host_context_| needs to be stopped on the plugin
   // thread, but the plugin thread may not exist after the instance
@@ -92,7 +96,9 @@ HostNPScriptObject::~HostNPScriptObject() {
   DisconnectInternal();
   disconnected_event_.Wait();
 
+  // Stop all threads.
   host_context_.Stop();
+
   if (log_debug_info_func_) {
     g_npnetscape_funcs->releaseobject(log_debug_info_func_);
   }
@@ -374,21 +380,21 @@ void HostNPScriptObject::ConnectInternal(
     return;
   }
 
-  // Create the Host.
-  DesktopEnvironment* desktop_environment =
-      DesktopEnvironment::Create(&host_context_);
-  // TODO(sergeyu): Use firewall traversal policy settings here.
-  scoped_refptr<ChromotingHost> host =
-      ChromotingHost::Create(&host_context_, host_config, desktop_environment,
-                             access_verifier.release(), logger_.get(), false);
-  host->AddStatusObserver(this);
-  host->AddStatusObserver(register_request.get());
-  host->set_it2me(true);
-
   // Nothing went wrong, so lets save the host, config and request.
-  host_ = host;
   host_config_ = host_config;
   register_request_.reset(register_request.release());
+
+  // Create DesktopEnvironment.
+  desktop_environment_.reset(DesktopEnvironment::Create(&host_context_));
+
+  // Create the Host.
+  // TODO(sergeyu): Use firewall traversal policy settings here.
+  host_ = ChromotingHost::Create(
+      &host_context_, host_config_, desktop_environment_.get(),
+      access_verifier.release(), logger_.get(), false);
+  host_->AddStatusObserver(this);
+  host_->AddStatusObserver(register_request_.get());
+  host_->set_it2me(true);
 
   // Start the Host.
   host_->Start();
@@ -466,9 +472,8 @@ void HostNPScriptObject::OnReceivedSupportID(
 }
 
 void HostNPScriptObject::OnStateChanged(State state) {
-  if (destructing_.IsSet()) {
+  if (destructing_.IsSet())
     return;
-  }
 
   if (!host_context_.IsUIThread()) {
     host_context_.PostToUIThread(
@@ -485,6 +490,9 @@ void HostNPScriptObject::OnStateChanged(State state) {
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
+  if (destructing_.IsSet())
+    return;
+
   if (!host_context_.IsUIThread()) {
     host_context_.PostToUIThread(
         FROM_HERE,
@@ -528,6 +536,7 @@ void HostNPScriptObject::PostTaskToNPThread(
                                             task);
 }
 
+// static
 void HostNPScriptObject::NPTaskSpringboard(void* task) {
   Task* real_task = reinterpret_cast<Task*>(task);
   real_task->Run();

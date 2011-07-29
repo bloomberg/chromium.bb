@@ -176,9 +176,8 @@ class SimpleHost {
     }
 
     // Construct a chromoting host.
-    scoped_refptr<ChromotingHost> host;
     logger_.reset(new remoting::Logger());
-    DesktopEnvironment* desktop_environment;
+    scoped_ptr<DesktopEnvironment> desktop_environment;
     if (fake_) {
       remoting::Capturer* capturer =
           new remoting::CapturerFake();
@@ -192,17 +191,18 @@ class SimpleHost {
           remoting::ContinueWindow::Create();
       remoting::LocalInputMonitor* local_input_monitor =
           remoting::LocalInputMonitor::Create();
-      desktop_environment =
+      desktop_environment.reset(
           new DesktopEnvironment(&context, capturer, event_executor, curtain,
                                  disconnect_window, continue_window,
-                                 local_input_monitor);
+                                 local_input_monitor));
     } else {
-      desktop_environment = DesktopEnvironment::Create(&context);
+      desktop_environment.reset(DesktopEnvironment::Create(&context));
     }
 
-    host = ChromotingHost::Create(&context, config, desktop_environment,
-                                  access_verifier.release(), logger_.get(),
-                                  false);
+    scoped_refptr<ChromotingHost> host =
+        ChromotingHost::Create(&context, config, desktop_environment.get(),
+                               access_verifier.release(), logger_.get(),
+                               false);
     host->set_it2me(is_it2me_);
 
     if (protocol_config_.get()) {

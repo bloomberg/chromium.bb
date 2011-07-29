@@ -71,8 +71,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
  public:
   // Factory methods that must be used to create ChromotingHost
   // instances.  Returned instance takes ownership of
-  // |access_verifier| and |environment|. It does NOT take ownership
-  // of |context| and |logger|.
+  // |access_verifier|. It does NOT take ownership of |context|,
+  // |environment| and |logger|, but they should not be deleted until
+  // returned host is destroyed.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 DesktopEnvironment* environment,
@@ -161,8 +162,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStopped,
   };
 
-  // Takes ownership of |access_verifier| and |environment|, and adds a
-  // reference to |config|. Does NOT take ownership of |context|.
+  // Takes ownership of |access_verifier|, and adds a reference to
+  // |config|. Caller keeps ownership of |context| and |environment|.
   ChromotingHost(ChromotingHostContext* context,
                  MutableHostConfig* config,
                  DesktopEnvironment* environment,
@@ -193,8 +194,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
+  DesktopEnvironment* desktop_environment_;
   scoped_refptr<MutableHostConfig> config_;
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<AccessVerifier> access_verifier_;
   Logger* logger_;
   bool allow_nat_traversal_;

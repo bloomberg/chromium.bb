@@ -31,6 +31,7 @@ class Location;
 namespace remoting {
 
 class ChromotingHost;
+class DesktopEnvironment;
 class MutableHostConfig;
 class RegisterSupportHostRequest;
 class SignalStrategy;
@@ -137,9 +138,11 @@ class HostNPScriptObject : public HostStatusObserver {
   scoped_ptr<HostPluginLogger> logger_;
 
   scoped_ptr<RegisterSupportHostRequest> register_request_;
-  scoped_refptr<ChromotingHost> host_;
   scoped_refptr<MutableHostConfig> host_config_;
   ChromotingHostContext host_context_;
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
+
+  scoped_refptr<ChromotingHost> host_;
   int failed_login_attempts_;
 
   base::WaitableEvent disconnected_event_;

@@ -4,6 +4,8 @@
 
 #include "remoting/host/desktop_environment.h"
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -16,6 +18,43 @@
 static const int kContinueWindowTimeoutSecs = 10 * 60;
 
 namespace remoting {
+
+// UIThreadProxy proxies DesktopEnvironment method calls to the UI
+// thread. This is neccessary so that DesktopEnvironment can be
+// deleted synchronously even while there are pending tasks on the
+// message queue.
+class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
+ public:
+  UIThreadProxy(ChromotingHostContext* context)
+      : context_(context) {
+  }
+
+  void Detach() {
+    DCHECK(context_->IsUIThread());
+    context_ = NULL;
+  }
+
+  void CallOnUIThread(const base::Closure& closure) {
+    if (context_) {
+      context_->PostToUIThread(FROM_HERE, NewRunnableMethod(
+          this, &UIThreadProxy::CallClosure, closure));
+    }
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<UIThreadProxy>;
+
+  virtual ~UIThreadProxy() { }
+
+  void CallClosure(const base::Closure& closure) {
+    if (context_)
+      closure.Run();
+  }
+
+  ChromotingHostContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(UIThreadProxy);
+};
 
 // static
 DesktopEnvironment* DesktopEnvironment::Create(ChromotingHostContext* context) {
@@ -47,30 +86,63 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       disconnect_window_(disconnect_window),
       continue_window_(continue_window),
       local_input_monitor_(local_input_monitor),
-      is_monitoring_local_inputs_(false) {
+      is_monitoring_local_inputs_(false),
+      proxy_(new UIThreadProxy(context)) {
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
 }
 
+void DesktopEnvironment::Shutdown() {
+  DCHECK(context_->IsUIThread());
+
+  MonitorLocalInputs(false);
+  ShowDisconnectWindow(false, std::string());
+  ShowContinueWindow(false);
+  StartContinueWindowTimer(false);
+
+  proxy_->Detach();
+}
+
 void DesktopEnvironment::OnConnect(const std::string& username) {
+  proxy_->CallOnUIThread(base::Bind(
+      &DesktopEnvironment::ProcessOnConnect, base::Unretained(this), username));
+}
+
+void DesktopEnvironment::OnLastDisconnect() {
+  proxy_->CallOnUIThread(base::Bind(
+      &DesktopEnvironment::ProcessOnLastDisconnect, base::Unretained(this)));
+}
+
+void DesktopEnvironment::OnPause(bool pause) {
+  proxy_->CallOnUIThread(base::Bind(
+      &DesktopEnvironment::ProcessOnPause, base::Unretained(this), pause));
+}
+
+void DesktopEnvironment::ProcessOnConnect(const std::string& username) {
+  DCHECK(context_->IsUIThread());
+
   MonitorLocalInputs(true);
   ShowDisconnectWindow(true, username);
   StartContinueWindowTimer(true);
 }
 
-void DesktopEnvironment::OnLastDisconnect() {
+void DesktopEnvironment::ProcessOnLastDisconnect() {
+  DCHECK(context_->IsUIThread());
+
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
   ShowContinueWindow(false);
   StartContinueWindowTimer(false);
 }
 
-void DesktopEnvironment::OnPause(bool pause) {
+void DesktopEnvironment::ProcessOnPause(bool pause) {
   StartContinueWindowTimer(!pause);
 }
 
 void DesktopEnvironment::MonitorLocalInputs(bool enable) {
+  DCHECK(context_->IsUIThread());
+
   if (enable == is_monitoring_local_inputs_)
     return;
   if (enable) {
@@ -83,13 +155,7 @@ void DesktopEnvironment::MonitorLocalInputs(bool enable) {
 
 void DesktopEnvironment::ShowDisconnectWindow(bool show,
                                               const std::string& username) {
-  if (!context_->IsUIThread()) {
-    context_->PostToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &DesktopEnvironment::ShowDisconnectWindow,
-                          show, username));
-    return;
-  }
+  DCHECK(context_->IsUIThread());
 
   if (show) {
     disconnect_window_->Show(host_, username);
@@ -99,12 +165,7 @@ void DesktopEnvironment::ShowDisconnectWindow(bool show,
 }
 
 void DesktopEnvironment::ShowContinueWindow(bool show) {
-  if (!context_->IsUIThread()) {
-    context_->PostToUIThread(
-        FROM_HERE,
-        NewRunnableMethod(this, &DesktopEnvironment::ShowContinueWindow, show));
-    return;
-  }
+  DCHECK(context_->IsUIThread());
 
   if (show) {
     continue_window_->Show(host_);
@@ -114,14 +175,8 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 }
 
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
-  if (context_->main_message_loop() != MessageLoop::current()) {
-    context_->main_message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &DesktopEnvironment::StartContinueWindowTimer,
-                          start));
-    return;
-  }
+  DCHECK(context_->IsUIThread());
+
   if (continue_window_timer_.IsRunning() == start)
     return;
   if (start) {
@@ -134,6 +189,8 @@ void DesktopEnvironment::StartContinueWindowTimer(bool start) {
 }
 
 void DesktopEnvironment::ContinueWindowTimerFunc() {
+  DCHECK(context_->IsUIThread());
+
   host_->PauseSession(true);
   ShowContinueWindow(true);
 }

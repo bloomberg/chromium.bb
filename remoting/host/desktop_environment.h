@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "base/timer.h"
 
 namespace remoting {
@@ -22,6 +21,7 @@ class Curtain;
 class DisconnectWindow;
 class EventExecutor;
 class LocalInputMonitor;
+class UIThreadProxy;
 
 class DesktopEnvironment {
  public:
@@ -36,6 +36,10 @@ class DesktopEnvironment {
                      ContinueWindow* continue_window,
                      LocalInputMonitor* monitor);
   virtual ~DesktopEnvironment();
+
+  // Shuts down the object and all its resources synchronously. Must
+  // be called on the UI thread.
+  void Shutdown();
 
   void set_host(ChromotingHost* host) { host_ = host; }
 
@@ -53,6 +57,10 @@ class DesktopEnvironment {
   void OnPause(bool pause);
 
  private:
+  void ProcessOnConnect(const std::string& username);
+  void ProcessOnLastDisconnect();
+  void ProcessOnPause(bool pause);
+
   void MonitorLocalInputs(bool enable);
 
   // Show or hide the Disconnect window on the UI thread.  If |show| is false,
@@ -98,13 +106,19 @@ class DesktopEnvironment {
   // Timer controlling the "continue session" dialog. The timer is started when
   // a connection is made or re-confirmed. On expiry, inputs to the host are
   // blocked and the dialog is shown.
+  //
+  // TODO(sergeyu): It is wrong that we use OneShotTimer on the UI
+  // thread of the plugin. UI thread runs MessageLoop that is compiled
+  // as part of chrome, but the timer compiled as part of the
+  // plugin. This will crash when plugin and chrome are compiled with
+  // different version of MessageLoop. See crbug.com/90785 .
   base::OneShotTimer<DesktopEnvironment> continue_window_timer_;
+
+  scoped_refptr<UIThreadProxy> proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::DesktopEnvironment);
 
 #endif  // REMOTING_HOST_DESKTOP_ENVIRONMENT_H_

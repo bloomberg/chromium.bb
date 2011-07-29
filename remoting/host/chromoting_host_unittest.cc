@@ -100,13 +100,14 @@ class ChromotingHostTest : public testing::Test {
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
-    DesktopEnvironment* desktop =
+    desktop_environment_.reset(
         new DesktopEnvironment(&context_, capturer, event_executor_, curtain_,
                                disconnect_window_, continue_window_,
-                               local_input_monitor_);
+                               local_input_monitor_));
     MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
-    host_ = ChromotingHost::Create(&context_, config_, desktop,
+    host_ = ChromotingHost::Create(&context_, config_,
+                                   desktop_environment_.get(),
                                    access_verifier, logger_.get(), false);
     credentials_.set_type(protocol::PASSWORD);
     credentials_.set_username("user");
@@ -211,6 +212,7 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<Logger> logger_;
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_refptr<ChromotingHost> host_;
   scoped_refptr<InMemoryHostConfig> config_;
   MockChromotingHostContext context_;
