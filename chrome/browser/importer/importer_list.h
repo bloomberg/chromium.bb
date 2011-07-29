@@ -15,33 +15,24 @@
 #include "content/browser/browser_thread.h"
 
 namespace importer {
+class ImporterListObserver;
 struct SourceProfile;
 }
 
 class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
  public:
-  // Any class calling DetectSourceProfiles() must implement this interface in
-  // order to be called back when the source profiles are loaded.
-  class Observer {
-   public:
-    virtual void OnSourceProfilesLoaded() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   ImporterList();
 
   // Detects the installed browsers and their associated profiles, then stores
   // their information in a list. It returns the list of description of all
   // profiles. Calls into DetectSourceProfilesWorker() on the FILE thread to do
   // the real work of detecting source profiles. |observer| must be non-NULL.
-  void DetectSourceProfiles(Observer* observer);
+  void DetectSourceProfiles(importer::ImporterListObserver* observer);
 
   // Sets the observer of this object. When the current observer is destroyed,
   // this method should be called with a NULL |observer| so it is not notified
   // after destruction.
-  void SetObserver(Observer* observer);
+  void SetObserver(importer::ImporterListObserver* observer);
 
   // DEPRECATED: This method is synchronous and performs file operations which
   // may end up blocking the current thread, which is usually the UI thread.
@@ -84,7 +75,7 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
 
   // Weak reference. Only valid after DetectSourceProfiles() is called and until
   // SourceProfilesLoaded() has returned.
-  Observer* observer_;
+  importer::ImporterListObserver* observer_;
 
   // True if |observer_| is set during the lifetime of source profile detection.
   // This hack is necessary in order to not use |observer_| != NULL as a method

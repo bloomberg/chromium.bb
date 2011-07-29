@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

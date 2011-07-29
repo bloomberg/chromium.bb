@@ -14,13 +14,14 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/page_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+class ImporterList;
 class TemplateURLService;
 
 namespace base {
@@ -30,7 +31,7 @@ class DictionaryValue;
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
-                                  public ImporterList::Observer,
+                                  public importer::ImporterListObserver,
                                   public NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
@@ -59,7 +60,7 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
 
-  // ImporterList::Observer:
+  // importer::ImporterListObserver:
   virtual void OnSourceProfilesLoaded() OVERRIDE;
 
   // NotificationObserver:

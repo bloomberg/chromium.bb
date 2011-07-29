@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"

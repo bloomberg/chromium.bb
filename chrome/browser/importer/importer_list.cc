@@ -8,6 +8,7 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,10 +114,8 @@ ImporterList::ImporterList()
       source_profiles_loaded_(false) {
 }
 
-ImporterList::~ImporterList() {
-}
-
-void ImporterList::DetectSourceProfiles(Observer* observer) {
+void ImporterList::DetectSourceProfiles(
+    importer::ImporterListObserver* observer) {
   DCHECK(observer);
   observer_ = observer;
   is_observed_ = true;
@@ -129,7 +128,7 @@ void ImporterList::DetectSourceProfiles(Observer* observer) {
       NewRunnableMethod(this, &ImporterList::DetectSourceProfilesWorker));
 }
 
-void ImporterList::SetObserver(Observer* observer) {
+void ImporterList::SetObserver(importer::ImporterListObserver* observer) {
   observer_ = observer;
 }
 
@@ -140,7 +139,7 @@ void ImporterList::DetectSourceProfilesHack() {
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
     size_t index) const {
   DCHECK(source_profiles_loaded_);
-  DCHECK(index < count());
+  DCHECK_LT(index, count());
   return *source_profiles_[index];
 }
 
@@ -154,6 +153,9 @@ const importer::SourceProfile& ImporterList::GetSourceProfileForImporterType(
   }
   NOTREACHED();
   return *(new importer::SourceProfile);
+}
+
+ImporterList::~ImporterList() {
 }
 
 void ImporterList::DetectSourceProfilesWorker() {
