@@ -43,7 +43,7 @@ void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
   // TODO: support anim_ms
   // TODO: funnel this through the Desktop.
   bounds_ = bounds;
-  layer_->set_bounds(bounds);
+  layer_->SetBounds(bounds);
 }
 
 void Window::SchedulePaint(const gfx::Rect& bounds) {
