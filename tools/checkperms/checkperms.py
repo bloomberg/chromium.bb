@@ -72,6 +72,7 @@ WHITELIST_FILES = [
     '/third_party/tcmalloc/chromium/src/pprof',
     '/tools/git/post-checkout',
     '/tools/git/post-merge',
+    '/tools/ld_bfd/ld',
 ]
 
 # File names that are always whitelisted.  (These are all autoconf spew.)
