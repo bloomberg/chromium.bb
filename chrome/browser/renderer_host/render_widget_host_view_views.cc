@@ -90,6 +90,11 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       has_composition_text_(false) {
   set_focusable(true);
   host_->SetView(this);
+
+#if defined(TOUCH_UI)
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(true);
+#endif
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {

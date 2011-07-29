@@ -7,14 +7,14 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "ui/gfx/compositor/compositor.h"
 
 namespace ui {
 
 Layer::Layer(Compositor* compositor)
     : compositor_(compositor),
       texture_(compositor->CreateTexture()),
-      parent_(NULL) {
+      parent_(NULL),
+      fills_bounds_opaquely_(false) {
 }
 
 Layer::~Layer() {
@@ -29,6 +29,9 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
+
+  if (child->fills_bounds_opaquely())
+    RecomputeHole();
 }
 
 void Layer::Remove(Layer* child) {
@@ -37,6 +40,33 @@ void Layer::Remove(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = NULL;
+
+  if (child->fills_bounds_opaquely())
+    RecomputeHole();
+}
+
+void Layer::SetTransform(const ui::Transform& transform) {
+  transform_ = transform;
+
+  if (parent() && fills_bounds_opaquely_)
+    parent()->RecomputeHole();
+}
+
+void Layer::SetBounds(const gfx::Rect& bounds) {
+  bounds_ = bounds;
+
+  if (parent() && fills_bounds_opaquely_)
+    parent()->RecomputeHole();
+}
+
+void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
+  if (fills_bounds_opaquely_ == fills_bounds_opaquely)
+    return;
+
+  fills_bounds_opaquely_ = fills_bounds_opaquely;
+
+  if (parent())
+    parent()->RecomputeHole();
 }
 
 void Layer::SetTexture(ui::Texture* texture) {
@@ -58,9 +88,58 @@ void Layer::Draw() {
         static_cast<float>(layer->bounds_.x()),
         static_cast<float>(layer->bounds_.y()));
   }
+
   // Only blend for child layers. The root layer will clobber the cleared bg.
   texture_draw_params.blend = parent_ != NULL;
+
+#if defined(OS_WIN)
   texture_->Draw(texture_draw_params);
+#else
+  hole_rect_ = hole_rect_.Intersect(
+      gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+
+  // top
+  DrawRegion(texture_draw_params, gfx::Rect(0,
+                                            0,
+                                            bounds_.width(),
+                                            hole_rect_.y()));
+  // left
+  DrawRegion(texture_draw_params, gfx::Rect(0,
+                                            hole_rect_.y(),
+                                            hole_rect_.x(),
+                                            hole_rect_.height()));
+  // right
+  DrawRegion(texture_draw_params, gfx::Rect(
+      hole_rect_.right(),
+      hole_rect_.y(),
+      bounds_.width() - hole_rect_.right(),
+      hole_rect_.height()));
+
+  // bottom
+  DrawRegion(texture_draw_params, gfx::Rect(
+      0,
+      hole_rect_.bottom(),
+      bounds_.width(),
+      bounds_.height() - hole_rect_.bottom()));
+#endif
+}
+
+void Layer::DrawRegion(const ui::TextureDrawParams& params,
+                       const gfx::Rect& region_to_draw) {
+  if (!region_to_draw.IsEmpty())
+    texture_->Draw(params, region_to_draw);
+}
+
+void Layer::RecomputeHole() {
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (children_[i]->fills_bounds_opaquely() &&
+        !children_[i]->transform().HasChange()) {
+      hole_rect_ = children_[i]->bounds();
+      return;
+    }
+  }
+  // no opaque child layers, set hole_rect_ to empty
+  hole_rect_ = gfx::Rect();
 }
 
 }  // namespace ui

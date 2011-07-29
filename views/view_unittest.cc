@@ -2298,6 +2298,10 @@ class TestTexture : public ui::Texture {
   virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
+
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds) OVERRIDE {}
+
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE {}
 
  private:
@@ -2595,7 +2599,7 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 }
 
-// Makes sure that layer persists after toggling the visibility
+// Makes sure that layer persists after toggling the visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
@@ -2612,6 +2616,108 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
 
   v1->SetVisible(true);
   EXPECT_TRUE(v1->layer());
+}
+
+// Test that a hole in a layer is correctly created regardless of whether
+// the opacity attribute is set before or after the layer is created.
+TEST_F(ViewLayerTest, ToggleOpacityWithLayer) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* parent_view = new View;
+  content_view->AddChildView(parent_view);
+  parent_view->SetPaintToLayer(true);
+  parent_view->SetBounds(0, 0, 400, 400);
+
+  View* child_view = new View;
+  child_view->SetBounds(50, 50, 100, 100);
+  parent_view->AddChildView(child_view);
+
+  // Call SetFillsBoundsOpaquely before layer is created.
+  ASSERT_TRUE(child_view->layer() == NULL);
+  child_view->SetFillsBoundsOpaquely(true);
+
+  child_view->SetPaintToLayer(true);
+  ASSERT_TRUE(child_view->layer());
+  EXPECT_EQ(
+      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
+
+  child_view->SetFillsBoundsOpaquely(false);
+  EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
+
+  // Call SetFillsBoundsOpaquely after layer is created.
+  ASSERT_TRUE(parent_view->layer());
+
+  child_view->SetFillsBoundsOpaquely(true);
+  EXPECT_EQ(
+      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
+}
+
+// Test that a hole in a layer always corresponds to the bounds of opaque
+// layers.
+TEST_F(ViewLayerTest, MultipleOpaqueLayers) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* parent_view = new View;
+  parent_view->SetPaintToLayer(true);
+  parent_view->SetBounds(0, 0, 400, 400);
+  content_view->AddChildView(parent_view);
+
+  View* child_view1 = new View;
+  child_view1->SetPaintToLayer(true);
+  child_view1->SetFillsBoundsOpaquely(true);
+  child_view1->SetBounds(50, 50, 100, 100);
+  parent_view->AddChildView(child_view1);
+
+  View* child_view2 = new View;
+  child_view2->SetPaintToLayer(true);
+  child_view2->SetBounds(150, 150, 200, 200);
+  parent_view->AddChildView(child_view2);
+
+  // Only child_view1 is opaque
+  EXPECT_EQ(
+      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
+
+  // Both child views are opaque
+  child_view2->SetFillsBoundsOpaquely(true);
+  EXPECT_TRUE(
+      gfx::Rect(50, 50, 100, 100) == parent_view->layer()->hole_rect() ||
+      gfx::Rect(150, 150, 200, 200) == parent_view->layer()->hole_rect());
+
+  // Only child_view2 is opaque
+  delete child_view1;
+  EXPECT_EQ(
+      gfx::Rect(150, 150, 200, 200), parent_view->layer()->hole_rect());
+}
+
+// Makes sure that opacity of layer persists after toggling visibilty.
+TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* parent_view = new View;
+  parent_view->SetPaintToLayer(true);
+  parent_view->SetBounds(0, 0, 400, 400);
+  content_view->AddChildView(parent_view);
+
+  parent_view->SetPaintToLayer(true);
+  parent_view->SetBounds(0, 0, 400, 400);
+
+  View* child_view = new View;
+  child_view->SetBounds(50, 50, 100, 100);
+  child_view->SetFillsBoundsOpaquely(true);
+  child_view->SetPaintToLayer(true);
+  parent_view->AddChildView(child_view);
+  EXPECT_EQ(
+       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
+
+  child_view->SetVisible(false);
+  EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
+
+  child_view->SetVisible(true);
+  EXPECT_EQ(
+      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 }
 
 // Verifies that the complete bounds of a texture are updated if the texture

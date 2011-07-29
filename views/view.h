@@ -253,6 +253,12 @@ class VIEWS_API View : public AcceleratorTarget {
   // Returns whether the view is enabled.
   virtual bool IsEnabled() const;
 
+  // This indicates that the view completely fills its bounds in an opaque
+  // color.
+  // This doesn't affect compositing but is a hint to the compositor to optimize
+  // painting.
+  void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
+
   // Transformations -----------------------------------------------------------
 
   // Methods for setting transformations for a view (e.g. rotation, scaling).

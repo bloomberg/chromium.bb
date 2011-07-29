@@ -41,11 +41,11 @@ void DefaultSetter::Uninstalled(ui::Layer* layer) {
 
 void DefaultSetter::SetTransform(ui::Layer* layer,
                                  const ui::Transform& transform) {
-  layer->set_transform(transform);
+  layer->SetTransform(transform);
 }
 
 void DefaultSetter::SetBounds(ui::Layer* layer, const gfx::Rect& bounds) {
-  layer->set_bounds(bounds);
+  layer->SetBounds(bounds);
 }
 
 // AnimatingSetter -------------------------------------------------------------

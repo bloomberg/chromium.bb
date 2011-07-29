@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/compositor/compositor.h"
 
 class SkCanvas;
 
@@ -44,12 +45,18 @@ class Layer {
   Layer* parent() { return parent_; }
 
   // The transform, relative to the parent.
-  void set_transform(const ui::Transform& transform) { transform_ = transform; }
+  void SetTransform(const ui::Transform& transform);
   const ui::Transform& transform() const { return transform_; }
 
   // The bounds, relative to the parent.
-  void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds; }
+  void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
+
+  // See description in View for details
+  void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
+  bool fills_bounds_opaquely() const { return fills_bounds_opaquely_; }
+
+  const gfx::Rect& hole_rect() const {  return hole_rect_; }
 
   // The compositor.
   const Compositor* compositor() const { return compositor_; }
@@ -62,10 +69,39 @@ class Layer {
   // Resets the canvas of the texture.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
-  // Draws the layer.
+// Draws the layer with hole if hole is non empty.
+// hole looks like:
+//
+//  layer____________________________
+//  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+//  |xxxxxxxxxxxxx top xxxxxxxxxxxxxx|
+//  |________________________________|
+//  |xxxxx|                    |xxxxx|
+//  |xxxxx|      Hole Rect     |xxxxx|
+//  |left | (not composited)   |right|
+//  |_____|____________________|_____|
+//  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+//  |xxxxxxxxxx bottom xxxxxxxxxxxxxx|
+//  |________________________________|
+//
+// Legend:
+//   composited area: x
   void Draw();
 
  private:
+  // calls Texture::Draw only if the region to be drawn is non empty
+  void DrawRegion(const ui::TextureDrawParams& params,
+                  const gfx::Rect& region_to_draw);
+
+  // A hole in a layer is an area in the layer that does not get drawn
+  // because this area is covered up with another layer which is known to be
+  // opaque.
+  // This method computes the dimension of the hole (if there is one)
+  // based on whether one of its child nodes is always opaque.
+  // Note: For simpicity's sake, currently a hole is only created if the child
+  // view has no transfrom with respect to its parent.
+  void RecomputeHole();
+
   Compositor* compositor_;
 
   scoped_refptr<ui::Texture> texture_;
@@ -77,6 +113,10 @@ class Layer {
   ui::Transform transform_;
 
   gfx::Rect bounds_;
+
+  bool fills_bounds_opaquely_;
+
+  gfx::Rect hole_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

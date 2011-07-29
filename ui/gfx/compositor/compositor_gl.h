@@ -14,6 +14,7 @@
 namespace gfx {
 class GLContext;
 class GLSurface;
+class Rect;
 }
 
 namespace ui {
@@ -30,15 +31,22 @@ class TextureGL : public Texture {
                          const gfx::Size& overall_size) OVERRIDE;
 
   // Draws the texture.
+  // TODO(pkotwicz) merge these two methods into one, this method currently
+  // doesn't make sense in the context of windows
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
+
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds) OVERRIDE;
 
  protected:
   TextureGL(CompositorGL* compositor, const gfx::Size& size);
   virtual ~TextureGL();
 
   // Actually draws the texture.
+  // Only the region defined by draw_bounds will be drawn.
   void DrawInternal(const TextureProgramGL& program,
-                    const ui::TextureDrawParams& params);
+                    const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds);
 
   unsigned int texture_id_;
   gfx::Size size_;

@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
@@ -331,11 +332,17 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
 
 void TextureGL::Draw(const ui::TextureDrawParams& params) {
   DCHECK(compositor_->program_swizzle());
-  DrawInternal(*compositor_->program_swizzle(), params);
+  Draw(params, gfx::Rect(0, 0, size_.width(), size_.height()));
 }
 
+void TextureGL::Draw(const ui::TextureDrawParams& params,
+                     const gfx::Rect& clip_bounds) {
+  DCHECK(compositor_->program_swizzle());
+  DrawInternal(*compositor_->program_swizzle(), params, clip_bounds);
+}
 void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
-                             const ui::TextureDrawParams& params) {
+                             const ui::TextureDrawParams& params,
+                             const gfx::Rect& clip_bounds) {
   if (params.blend)
     glEnable(GL_BLEND);
   else
@@ -359,21 +366,53 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
 
   t.ConcatTranslate(0, -window_size.height());
   t.ConcatScale(1, -1);
-  t.ConcatTranslate(-window_size.width()/2.0f, -window_size.height()/2.0f);
-  t.ConcatScale(2.0f/window_size.width(), 2.0f/window_size.height());
+  t.ConcatTranslate(-window_size.width() / 2.0f, -window_size.height() / 2.0f);
+  t.ConcatScale(2.0f / window_size.width(), 2.0f / window_size.height());
 
   GLfloat m[16];
   t.matrix().asColMajorf(m);
 
-  static const GLfloat vertices[] = { -1., -1., +0., +0., +1.,
-                                      +1., -1., +0., +1., +1.,
-                                      +1., +1., +0., +1., +0.,
-                                      -1., +1., +0., +0., +0. };
+  // TODO(pkotwicz) window_size != size_, fix this
+  SkRect texture_rect = SkRect::MakeXYWH(
+      clip_bounds.x(),
+      clip_bounds.y(),
+      clip_bounds.width(),
+      clip_bounds.height());
+
+  ui::Transform texture_rect_transform;
+  texture_rect_transform.ConcatScale(1.0f / size_.width(),
+                                     1.0f / size_.height());
+  SkMatrix texture_transform_matrix = texture_rect_transform.matrix();
+  texture_transform_matrix.mapRect(&texture_rect);
+
+  SkRect clip_rect = SkRect::MakeXYWH(
+      clip_bounds.x(),
+      clip_bounds.y(),
+      clip_bounds.width(),
+      clip_bounds.height());
+
+  ui::Transform clip_rect_transform;
+  clip_rect_transform.ConcatScale(2.0f / size_.width(),
+                                  2.0f / size_.height());
+  clip_rect_transform.ConcatScale(1, -1);
+  clip_rect_transform.ConcatTranslate(-1.0f, 1.0f);
+  SkMatrix clip_transform_matrix = clip_rect_transform.matrix();
+  clip_transform_matrix.mapRect(&clip_rect);
+
+  GLfloat clip_vertices[] = { clip_rect.left(), clip_rect.top(), +0.,
+                              clip_rect.right(), clip_rect.top(), +0.,
+                              clip_rect.right(), clip_rect.bottom(), +0.,
+                              clip_rect.left(), clip_rect.bottom(), +0.};
+
+  GLfloat texture_vertices[]  = { texture_rect.left(), texture_rect.bottom(),
+                                  texture_rect.right(), texture_rect.bottom(),
+                                  texture_rect.right(), texture_rect.top(),
+                                  texture_rect.left(), texture_rect.top()};
 
   glVertexAttribPointer(program.a_pos_loc(), 3, GL_FLOAT,
-                        GL_FALSE, 5 * sizeof(GLfloat), vertices);
+                        GL_FALSE, 3 * sizeof(GLfloat), clip_vertices);
   glVertexAttribPointer(program.a_tex_loc(), 2, GL_FLOAT,
-                        GL_FALSE, 5 * sizeof(GLfloat), &vertices[3]);
+                        GL_FALSE, 2 * sizeof(GLfloat), texture_vertices);
   glEnableVertexAttribArray(program.a_pos_loc());
   glEnableVertexAttribArray(program.a_tex_loc());
 

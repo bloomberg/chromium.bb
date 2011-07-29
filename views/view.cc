@@ -1205,6 +1205,16 @@ void View::PaintToLayer(const gfx::Rect& dirty_region) {
 void View::OnWillCompositeLayer() {
 }
 
+void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
+  if (!layer_helper_.get())
+    layer_helper_.reset(new internal::LayerHelper());
+
+  layer_helper_->set_fills_bounds_opaquely(fills_bounds_opaquely);
+
+  if (layer())
+    layer()->SetFillsBoundsOpaquely(fills_bounds_opaquely);
+}
+
 bool View::SetExternalTexture(ui::Texture* texture) {
   // A little heavy-handed -- it should be that each child has it's own layer.
   // The desired use case is where there are no children.
@@ -1285,7 +1295,7 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
     local_point.Offset(x(), y());
   if (layer() && parent_layer != layer()) {
     parent_layer->Add(layer());
-    layer()->set_bounds(
+    layer()->SetBounds(
         gfx::Rect(local_point.x(), local_point.y(), width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i)
@@ -1730,8 +1740,9 @@ void View::CreateLayer() {
   DCHECK(ancestor_with_layer || parent_ == NULL);
 
   layer_helper_->SetLayer(new ui::Layer(compositor));
-  layer()->set_bounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
-  layer()->set_transform(GetTransform());
+  layer()->SetFillsBoundsOpaquely(layer_helper_->fills_bounds_opaquely());
+  layer()->SetBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+  layer()->SetTransform(GetTransform());
   if (ancestor_with_layer)
     ancestor_with_layer->layer()->Add(layer());
   layer_helper_->set_bitmap_needs_updating(true);
@@ -1761,7 +1772,9 @@ void View::DestroyLayer() {
   if (!layer_helper_.get())
     return;
 
-  if (!layer_helper_->property_setter_explicitly_set() && !ShouldPaintToLayer())
+  if (!layer_helper_->property_setter_explicitly_set() &&
+      !ShouldPaintToLayer() &&
+      !layer_helper_->fills_bounds_opaquely())
     layer_helper_.reset();
   else
     layer_helper_->SetLayer(NULL);

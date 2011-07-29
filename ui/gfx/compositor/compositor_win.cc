@@ -57,6 +57,9 @@ class ViewTexture : public Texture {
                          const gfx::Size& overall_size) OVERRIDE;
   virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
 
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds) OVERRIDE;
+
  private:
   ~ViewTexture();
 
@@ -267,6 +270,11 @@ void ViewTexture::Draw(const ui::TextureDrawParams& params) {
   device_->IASetIndexBuffer(compositor_->GetTextureIndexBuffer(),
                             DXGI_FORMAT_R32_UINT, 0);
   device_->DrawIndexed(6, 0, 0);
+}
+
+void ViewTexture::Draw(const ui::TextureDrawParams& params,
+                       const gfx::Rect& clip_bounds) {
+  NOTIMPLEMENTED();
 }
 
 void ViewTexture::Errored(HRESULT result) {

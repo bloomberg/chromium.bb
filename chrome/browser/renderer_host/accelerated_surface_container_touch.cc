@@ -13,6 +13,7 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/transform.h"
 
@@ -25,7 +26,8 @@ class AcceleratedSurfaceContainerTouchEGL
                                       const gfx::Size& size,
                                       uint64 surface_handle);
   // TextureGL implementation
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds) OVERRIDE;
 
  private:
   ~AcceleratedSurfaceContainerTouchEGL();
@@ -41,7 +43,8 @@ class AcceleratedSurfaceContainerTouchGLX
                                       const gfx::Size& size,
                                       uint64 surface_handle);
   // TextureGL implementation
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
+  virtual void Draw(const ui::TextureDrawParams& params,
+                    const gfx::Rect& clip_bounds) OVERRIDE;
 
  private:
   ~AcceleratedSurfaceContainerTouchGLX();
@@ -86,7 +89,8 @@ AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
 }
 
 void AcceleratedSurfaceContainerTouchEGL::Draw(
-    const ui::TextureDrawParams& params) {
+    const ui::TextureDrawParams& params,
+    const gfx::Rect& clip_bounds) {
   DCHECK(compositor_->program_no_swizzle());
 
   ui::TextureDrawParams modified_params = params;
@@ -99,7 +103,9 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
 
   modified_params.transform = flipped;
 
-  DrawInternal(*compositor_->program_no_swizzle(), modified_params);
+  DrawInternal(*compositor_->program_no_swizzle(),
+               modified_params,
+               clip_bounds);
 }
 
 AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
@@ -198,13 +204,16 @@ AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
 }
 
 void AcceleratedSurfaceContainerTouchGLX::Draw(
-    const ui::TextureDrawParams& params) {
+    const ui::TextureDrawParams& params,
+    const gfx::Rect& clip_bounds) {
   DCHECK(compositor_->program_no_swizzle());
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
 
   glBindTexture(GL_TEXTURE_2D, texture_id_);
   glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
-  DrawInternal(*compositor_->program_no_swizzle(), params);
+  DrawInternal(*compositor_->program_no_swizzle(),
+               params,
+               clip_bounds);
   glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 

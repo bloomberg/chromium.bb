@@ -54,6 +54,12 @@ class LayerHelper {
   void set_paint_to_layer(bool value) { paint_to_layer_ = value; }
   bool paint_to_layer() const { return paint_to_layer_; }
 
+  // See description in View for details
+  void set_fills_bounds_opaquely(bool fills_bounds_opaquely) {
+    fills_bounds_opaquely_ = fills_bounds_opaquely;
+  }
+  bool fills_bounds_opaquely() const { return fills_bounds_opaquely_; }
+
   void SetPropertySetter(LayerPropertySetter* setter);
   LayerPropertySetter* property_setter() {
     return property_setter_.get();
@@ -96,6 +102,8 @@ class LayerHelper {
 
   // Is the layers bitmap out of date?
   bool bitmap_needs_updating_;
+
+  bool fills_bounds_opaquely_;
 
   // If true the bitmap is always up to date.
   bool layer_updated_externally_;

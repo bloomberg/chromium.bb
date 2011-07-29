@@ -94,7 +94,7 @@ void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
           gfx::Rect(gfx::Point(e->second.params.location.target_x,
                                e->second.params.location.target_y),
                     current_bounds.size()));
-      layer_->set_bounds(new_bounds);
+      layer_->SetBounds(new_bounds);
       break;
     }
 
@@ -106,7 +106,7 @@ void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
           e->second.params.transform.target[i]);
         SetMatrixElement(transform.matrix(), i, value);
       }
-      layer_->set_transform(transform);
+      layer_->SetTransform(transform);
       break;
     }
 
@@ -126,7 +126,7 @@ void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
           gfx::Point(e->second.params.location.target_x,
                      e->second.params.location.target_y),
           layer_->bounds().size());
-      layer_->set_bounds(new_bounds);
+      layer_->SetBounds(new_bounds);
       break;
     }
 
@@ -137,7 +137,7 @@ void LayerAnimator::AnimationEnded(const ui::Animation* animation) {
                          i,
                          e->second.params.transform.target[i]);
       }
-      layer_->set_transform(transform);
+      layer_->SetTransform(transform);
       break;
     }
 
