@@ -22,7 +22,7 @@
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
 using testing::_;
-using testing::AnyNumber;
+using testing::AtMost;
 using testing::DeleteArg;
 using testing::DoAll;
 using testing::InSequence;
@@ -230,7 +230,7 @@ class JingleSessionTest : public testing::Test {
         // Might pass through the CONNECTED state.
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::CONNECTED))
-            .Times(AnyNumber());
+            .Times(AtMost(1));
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(host_connection_callback_,
                     OnStateChange(Session::FAILED))
@@ -245,10 +245,16 @@ class JingleSessionTest : public testing::Test {
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CONNECTING))
           .Times(1);
-      EXPECT_CALL(client_connection_callback_,
-                  OnStateChange(Session::CONNECTED))
-          .Times(1)
-          .WillOnce(QuitThreadOnCounter(&not_connected_peers));
+      if (shared_secret == kTestSharedSecret) {
+        EXPECT_CALL(client_connection_callback_,
+                    OnStateChange(Session::CONNECTED))
+            .Times(1)
+            .WillOnce(QuitThreadOnCounter(&not_connected_peers));
+      } else {
+        EXPECT_CALL(client_connection_callback_,
+                    OnStateChange(Session::CONNECTED))
+            .Times(AtMost(1));
+      }
       // Expect that the connection will be closed eventually.
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CLOSED))
