@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_VALUES_TEST_UTIL_H_
-#define CHROME_TEST_VALUES_TEST_UTIL_H_
+#ifndef CHROME_TEST_BASE_VALUES_TEST_UTIL_H_
+#define CHROME_TEST_BASE_VALUES_TEST_UTIL_H_
 #pragma once
 
 #include <string>
@@ -45,4 +45,4 @@ void ExpectStringValue(const std::string& expected_str,
 
 }  // namespace test
 
-#endif  // CHROME_TEST_VALUES_TEST_UTIL_H_
+#endif  // CHROME_TEST_BASE_VALUES_TEST_UTIL_H_

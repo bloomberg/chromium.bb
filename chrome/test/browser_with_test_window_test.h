@@ -8,7 +8,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/test_browser_window.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

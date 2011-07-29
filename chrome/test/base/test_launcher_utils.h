@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_LAUNCHER_UTILS_H_
-#define CHROME_TEST_TEST_LAUNCHER_UTILS_H_
+#ifndef CHROME_TEST_BASE_TEST_LAUNCHER_UTILS_H_
+#define CHROME_TEST_BASE_TEST_LAUNCHER_UTILS_H_
 #pragma once
 
 #include <string>
@@ -37,4 +37,4 @@ int GetTestTerminationTimeout(const std::string& test_name,
 
 }  // namespace test_launcher_utils
 
-#endif  // CHROME_TEST_TEST_LAUNCHER_UTILS_H_
+#endif  // CHROME_TEST_BASE_TEST_LAUNCHER_UTILS_H_

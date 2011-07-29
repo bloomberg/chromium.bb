@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/test_launcher_utils.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_implementation.h"

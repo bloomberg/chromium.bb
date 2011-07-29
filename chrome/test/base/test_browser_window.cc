@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/test_browser_window.h"
+#include "chrome/test/base/test_browser_window.h"
 
 #include "ui/gfx/rect.h"
 

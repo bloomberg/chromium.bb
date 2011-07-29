@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_
-#define CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_
+#ifndef CHROME_TEST_BASE_TEST_URL_REQUEST_CONTEXT_GETTER_H_
+#define CHROME_TEST_BASE_TEST_URL_REQUEST_CONTEXT_GETTER_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -31,4 +31,4 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<net::URLRequestContext> context_;
 };
 
-#endif  // CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_
+#endif  // CHROME_TEST_BASE_TEST_URL_REQUEST_CONTEXT_GETTER_H_

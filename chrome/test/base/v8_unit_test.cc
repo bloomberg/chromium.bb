@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/stringprintf.h"
 #include "base/string_piece.h"
-#include "chrome/test/v8_unit_test.h"
+#include "chrome/test/base/v8_unit_test.h"
 
 V8UnitTest::V8UnitTest() {}
 

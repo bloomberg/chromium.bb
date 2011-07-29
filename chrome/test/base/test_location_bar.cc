@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/test_location_bar.h"
+#include "chrome/test/base/test_location_bar.h"
 
 TestLocationBar::TestLocationBar()
     : disposition_(CURRENT_TAB),

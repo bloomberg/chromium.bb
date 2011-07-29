@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/test/test_url_request_context_getter.h"
+#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 
 // This is a simple utility that initializes a sync notifier and

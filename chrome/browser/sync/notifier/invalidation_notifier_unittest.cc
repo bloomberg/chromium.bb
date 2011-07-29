@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/test/test_url_request_context_getter.h"
+#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/base/cert_verifier.h"

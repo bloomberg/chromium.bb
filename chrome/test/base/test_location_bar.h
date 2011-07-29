@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_LOCATION_BAR_H_
-#define CHROME_TEST_TEST_LOCATION_BAR_H_
+#ifndef CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
+#define CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
 #pragma once
 
 #include "chrome/browser/first_run/first_run.h"
@@ -57,4 +57,4 @@ class TestLocationBar : public LocationBar {
 };
 
 
-#endif  // CHROME_TEST_TEST_LOCATION_BAR_H_
+#endif  // CHROME_TEST_BASE_TEST_LOCATION_BAR_H_

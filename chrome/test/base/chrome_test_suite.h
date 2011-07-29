@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
-#define CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
+#ifndef CHROME_TEST_BASE_CHROME_TEST_SUITE_H_
+#define CHROME_TEST_BASE_CHROME_TEST_SUITE_H_
 #pragma once
 
 #include <string>
@@ -72,4 +72,4 @@ class ChromeTestSuite : public base::TestSuite {
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
-#endif  // CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
+#endif  // CHROME_TEST_BASE_CHROME_TEST_SUITE_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_BROWSER_WINDOW_H_
-#define CHROME_TEST_TEST_BROWSER_WINDOW_H_
+#ifndef CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_
+#define CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/test/test_location_bar.h"
+#include "chrome/test/base/test_location_bar.h"
 
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
@@ -124,4 +124,4 @@ class TestBrowserWindow : public BrowserWindow {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };
 
-#endif  // CHROME_TEST_TEST_BROWSER_WINDOW_H_
+#endif  // CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/process.h"
+#include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/ui/ui_test.h"
-#include "chrome/test/unit/chrome_test_suite.h"
 
 class UITestSuite : public ChromeTestSuite {
  public:

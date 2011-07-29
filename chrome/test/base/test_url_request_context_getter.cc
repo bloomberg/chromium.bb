@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/test_url_request_context_getter.h"
+#include "chrome/test/base/test_url_request_context_getter.h"
 
 #include "content/browser/browser_thread.h"
 #include "net/url_request/url_request_test_util.h"

@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/v8_unit_test.h"
+#include "chrome/test/base/v8_unit_test.h"
 #include "grit/renderer_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"

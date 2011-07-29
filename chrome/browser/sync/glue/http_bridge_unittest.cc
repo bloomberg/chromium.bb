@@ -5,7 +5,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
-#include "chrome/test/test_url_request_context_getter.h"
+#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"

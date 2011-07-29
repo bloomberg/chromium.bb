@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/values_test_util.h"
+#include "chrome/test/base/values_test_util.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
