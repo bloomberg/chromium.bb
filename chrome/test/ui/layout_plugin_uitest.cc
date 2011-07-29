@@ -11,8 +11,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/npapi_test_helper.h"
-#include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, InputUI) {
   CommandLine::ForCurrentProcess()->AppendSwitch(

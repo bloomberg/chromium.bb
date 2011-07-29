@@ -11,7 +11,7 @@
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;

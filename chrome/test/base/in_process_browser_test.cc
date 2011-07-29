@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -28,9 +28,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/testing_browser_process.h"
-#include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"

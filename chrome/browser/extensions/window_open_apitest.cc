@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
 // Disabled, http://crbug.com/64899.

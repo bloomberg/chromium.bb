@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"

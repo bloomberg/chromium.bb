@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
 // A base class for tests below.

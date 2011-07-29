@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 

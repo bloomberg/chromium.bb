@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

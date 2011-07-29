@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

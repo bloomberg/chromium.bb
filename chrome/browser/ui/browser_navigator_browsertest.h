@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_BROWSERTEST_H_
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "content/common/content_notification_types.h"
 
 class GURL;

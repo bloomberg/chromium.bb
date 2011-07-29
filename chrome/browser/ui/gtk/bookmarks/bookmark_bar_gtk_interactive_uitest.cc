@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "net/test/test_server.h"
 
 namespace {

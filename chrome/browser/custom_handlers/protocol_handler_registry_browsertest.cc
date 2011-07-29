@@ -10,8 +10,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 

@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/common/content_notification_types.h"
 
 #if defined(TOOLKIT_GTK)

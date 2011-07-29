@@ -7,7 +7,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 namespace chromeos {
 

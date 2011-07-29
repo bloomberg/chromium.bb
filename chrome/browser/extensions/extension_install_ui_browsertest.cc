@@ -10,12 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-
-namespace {
-
-}  // namespace
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
  public:

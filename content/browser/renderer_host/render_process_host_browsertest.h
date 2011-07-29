@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_PROCESS_HOST_BROWSERTEST_H_
 #pragma once
 
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 class RenderProcessHostTest : public InProcessBrowserTest {
  public:

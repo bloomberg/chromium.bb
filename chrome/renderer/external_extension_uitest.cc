@@ -10,7 +10,6 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
-#include "chrome/test/ui_test_utils.h"
 #include "net/base/escape.h"
 #include "net/test/test_server.h"
 

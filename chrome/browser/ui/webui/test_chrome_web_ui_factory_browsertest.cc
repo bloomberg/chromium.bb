@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

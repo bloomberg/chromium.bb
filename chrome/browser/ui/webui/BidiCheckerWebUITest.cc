@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 static const FilePath::CharType* kWebUIBidiCheckerLibraryJS =
     FILE_PATH_LITERAL("third_party/bidichecker/bidichecker_packaged.js");

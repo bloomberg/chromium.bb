@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/test_navigation_observer.h"
 
 class WebUIMessageHandler;

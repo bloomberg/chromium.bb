@@ -8,7 +8,7 @@
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"

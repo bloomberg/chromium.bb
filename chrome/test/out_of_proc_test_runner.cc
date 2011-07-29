@@ -22,7 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/unit/chrome_test_suite.h"
 #include "net/base/escape.h"

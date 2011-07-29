@@ -12,8 +12,8 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

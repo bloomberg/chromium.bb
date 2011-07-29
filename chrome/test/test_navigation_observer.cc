@@ -4,7 +4,7 @@
 
 #include "chrome/test/test_navigation_observer.h"
 
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestNavigationObserver::JsInjectionReadyObserver::JsInjectionReadyObserver() {

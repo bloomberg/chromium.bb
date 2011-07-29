@@ -7,8 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 

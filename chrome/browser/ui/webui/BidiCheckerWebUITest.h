@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 // Base class for BidiChecker-based tests. Preloads the BidiChecker JS library
 // for each test.

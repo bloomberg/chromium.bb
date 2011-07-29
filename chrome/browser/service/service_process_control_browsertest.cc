@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 class ServiceProcessControlBrowserTest
     : public InProcessBrowserTest {

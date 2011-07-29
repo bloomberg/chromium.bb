@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
-#define CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
+#ifndef CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
+#define CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -292,4 +292,4 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
 
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
-#endif  // CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
+#endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

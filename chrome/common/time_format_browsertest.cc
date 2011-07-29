@@ -14,7 +14,7 @@
 #include "base/test/scoped_locale.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 using base::TimeDelta;
 

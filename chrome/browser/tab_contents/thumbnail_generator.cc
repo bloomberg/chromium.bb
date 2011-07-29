@@ -354,7 +354,7 @@ void ThumbnailGenerator::Observe(int type,
 void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
   // tab_contents_ can be NULL, if StartThumbnailing() is not called, but
   // MonitorRenderer() is called. The use case is found in
-  // chrome/test/ui_test_utils.cc.
+  // chrome/test/base/ui_test_utils.cc.
   if (!tab_contents())
     return;
   UpdateThumbnailIfNecessary(tab_contents());

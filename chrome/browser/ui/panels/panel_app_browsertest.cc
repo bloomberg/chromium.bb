@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PanelAppBrowserTest : public ExtensionBrowserTest {

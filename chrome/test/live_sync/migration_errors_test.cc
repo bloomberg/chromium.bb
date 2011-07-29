@@ -7,10 +7,10 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/bookmarks_helper.h"
 #include "chrome/test/live_sync/preferences_helper.h"
-#include "chrome/test/ui_test_utils.h"
 
 class MigrationErrorsTest : public LiveSyncTest {
  public:

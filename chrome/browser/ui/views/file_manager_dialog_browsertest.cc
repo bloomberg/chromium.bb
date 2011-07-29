@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/shell_dialogs.h"  // SelectFileDialog
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/content_notification_types.h"
 #include "webkit/fileapi/file_system_context.h"

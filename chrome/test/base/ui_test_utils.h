@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_UI_TEST_UTILS_H_
-#define CHROME_TEST_UI_TEST_UTILS_H_
+#ifndef CHROME_TEST_BASE_UI_TEST_UTILS_H_
+#define CHROME_TEST_BASE_UI_TEST_UTILS_H_
 #pragma once
 
 #include <map>
@@ -597,4 +597,4 @@ bool TakeEntirePageSnapshot(RenderViewHost* rvh,
 
 }  // namespace ui_test_utils
 
-#endif  // CHROME_TEST_UI_TEST_UTILS_H_
+#endif  // CHROME_TEST_BASE_UI_TEST_UTILS_H_

@@ -6,7 +6,7 @@
 #define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
 #pragma once
 
-#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 #include "base/basictypes.h"
 #include "base/file_util.h"

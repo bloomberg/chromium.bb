@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/ui_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
