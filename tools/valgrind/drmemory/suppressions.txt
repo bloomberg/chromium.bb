@@ -483,6 +483,11 @@ UNINITIALIZED READ
 *!*
 *!v8*
 
+UNINITIALIZED READ
+<not in a module>
+...
+*!v8*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -771,8 +776,6 @@ UNINITIALIZED READ
 *!cricket::AllocationSequence::OnMessage
 *!cricket::AllocationSequence::AllocationSequence
 *!cricket::BasicPortAllocatorSession::DoAllocate
-*!cricket::BasicPortAllocatorSession::OnAllocate
-*!cricket::BasicPortAllocatorSession::OnMessage
 
 # http://crbug.com/90654
 UNINITIALIZED READ
