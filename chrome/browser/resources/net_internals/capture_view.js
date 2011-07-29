@@ -7,13 +7,13 @@
  *  @constructor
  */
 function CaptureView() {
-  const mainBoxId = 'captureTabContent';
-  const byteLoggingCheckboxId = 'byteLoggingCheckbox';
-  const passivelyCapturedCountId = 'passivelyCapturedCount';
-  const activelyCapturedCountId = 'activelyCapturedCount';
-  const deleteAllId = 'dataViewDeleteAll';
-  const tipAnchorId = 'captureViewTipAnchor';
-  const tipDivId = 'captureViewTipDiv';
+  const mainBoxId = 'capture-view-tab-content';
+  const byteLoggingCheckboxId = 'capture-view-byte-logging-checkbox';
+  const passivelyCapturedCountId = 'capture-view-passively-captured-count';
+  const activelyCapturedCountId = 'capture-view-actively-captured-count';
+  const deleteAllId = 'capture-view-delete-all';
+  const tipAnchorId = 'capture-view-tip-anchor';
+  const tipDivId = 'capture-view-tip-div';
 
   DivView.call(this, mainBoxId);
 

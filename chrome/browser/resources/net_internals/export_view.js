@@ -7,11 +7,11 @@
  *  @constructor
  */
 function ExportView() {
-  const mainBoxId = 'exportTabContent';
-  const downloadIframeId = 'dataViewDownloadIframe';
-  const saveFileButtonId = 'dataViewSaveLogFile';
-  const dataViewSaveStatusTextId = 'dataViewSaveStatusText';
-  const securityStrippingCheckboxId = 'securityStrippingCheckbox';
+  const mainBoxId = 'export-view-tab-content';
+  const downloadIframeId = 'export-view-download-iframe';
+  const saveFileButtonId = 'export-view-save-log-file';
+  const saveStatusTextId = 'export-view-save-status-text';
+  const securityStrippingCheckboxId = 'export-view-security-stripping-checkbox';
 
   DivView.call(this, mainBoxId);
 
@@ -23,7 +23,7 @@ function ExportView() {
 
   this.saveFileButton_ = $(saveFileButtonId);
   this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
-  this.saveStatusText_ = $(dataViewSaveStatusTextId);
+  this.saveStatusText_ = $(saveStatusTextId);
 
 
   // Track blob for previous log dump so it can be revoked when a new dump is

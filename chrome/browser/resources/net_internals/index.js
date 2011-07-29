@@ -34,9 +34,5 @@
 <include src="prerender_view.js"/>
 
 document.addEventListener('DOMContentLoaded', function () {
-  $('reloaded-link').addEventListener('click', function (event) {
-    history.go(0);
-    event.preventDefault();
-  });
   onLoaded();  // from main.js
 });

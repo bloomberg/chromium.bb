@@ -7,27 +7,29 @@
  *  @constructor
  */
 function ImportView() {
-  const mainBoxId = 'importTabContent';
-  const loadedDivId = 'dataViewLoadedDiv';
-  const loadedClientInfoTextId = 'dataViewLoadedClientInfoText';
-  const loadLogFileDropTargetId = 'dataViewDropTarget';
-  const loadLogFileId = 'dataViewLoadLogFile';
-  const dataViewLoadStatusTextId = 'dataViewLoadStatusText';
+  const mainBoxId = 'import-view-tab-content';
+  const loadedDivId = 'import-view-loaded-div';
+  const loadedClientInfoTextId = 'import-view-loaded-client-info-text';
+  const loadLogFileDropTargetId = 'import-view-drop-target';
+  const loadLogFileId = 'import-view-load-log-file';
+  const loadStatusTextId = 'import-view-load-status-text';
+  const reloadLinkId = 'import-view-reloaded-link';
 
   DivView.call(this, mainBoxId);
-
 
   this.loadedDiv_ = $(loadedDivId);
   this.loadedClientInfoText_ = $(loadedClientInfoTextId);
 
   this.loadFileElement_ = $(loadLogFileId);
   this.loadFileElement_.onchange = this.logFileChanged.bind(this);
-  this.loadStatusText_ = $(dataViewLoadStatusTextId);
+  this.loadStatusText_ = $(loadStatusTextId);
 
   var dropTarget = $(loadLogFileDropTargetId);
   dropTarget.ondragenter = this.onDrag.bind(this);
   dropTarget.ondragover = this.onDrag.bind(this);
   dropTarget.ondrop = this.onDrop.bind(this);
+
+  $(reloadLinkId).onclick = this.clickedReload_.bind(this);
 }
 
 inherits(ImportView, DivView);
@@ -41,6 +43,14 @@ ImportView.prototype.onLoadLogFinish = function(data) {
   setNodeDisplay(this.loadedDiv_, true);
   this.updateLoadedClientInfo();
   return true;
+};
+
+/**
+ * Called when the user clicks the "reloaded" link.
+ */
+ImportView.prototype.clickedReload_ = function() {
+  window.location.reload();
+  return false;
 };
 
 /**
