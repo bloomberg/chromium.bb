@@ -283,8 +283,7 @@ void GlobalHistoryMenu::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TOP_SITES_CHANGED) {
-    if (Source<history::TopSites>(source).ptr() == top_sites_)
-      GetTopSitesData();
+    GetTopSitesData();
   } else {
     NOTREACHED();
   }

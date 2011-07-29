@@ -294,15 +294,6 @@ enum {
   // used.
   NOTIFICATION_TOP_SITES_CHANGED,
 
-  // Thumbnails---------------------------------------------------------------
-
-  // Sent by the ThumbnailGenerator whenever a render widget host
-  // updates its backing store.  The source is the
-  // ThumbnailGenerator, and the details are the RenderWidgetHost
-  // that notified the ThumbnailGenerator that its backing store was
-  // updated.
-  NOTIFICATION_THUMBNAIL_GENERATOR_SNAPSHOT_CHANGED,
-
   // Bookmarks ---------------------------------------------------------------
 
   // Sent when the starred state of a URL changes. A URL is starred if there
@@ -330,11 +321,6 @@ enum {
   // Profile, and the details the id of the TemplateURL being removed.
   NOTIFICATION_TEMPLATE_URL_REMOVED,
 
-  // Notification triggered when a web application has been installed or
-  // uninstalled. Any application view should reload its data.  The source is
-  // the profile. No details are provided.
-  NOTIFICATION_WEB_APP_INSTALL_CHANGED,
-
   // This is sent to a pref observer when a pref is changed. The source is the
   // PrefService and the details a std::string of the changed path.
   NOTIFICATION_PREF_CHANGED,
@@ -358,12 +344,6 @@ enum {
   // is the profile.
   NOTIFICATION_OMNIBOX_OPENED_URL,
 
-  // Sent by the omnibox when it is destroyed.
-  NOTIFICATION_OMNIBOX_DESTROYED,
-
-  // Sent by the omnibox when it is focused.
-  NOTIFICATION_OMNIBOX_FOCUSED,
-
   // Sent when the main Google URL has been updated.  Some services cache
   // this value and need to update themselves when it changes.  See
   // google_util::GetGoogleURLAndUpdateIfNecessary().
@@ -381,11 +361,6 @@ enum {
   NOTIFICATION_PRINT_JOB_RELEASED,
 
   // Shutdown ----------------------------------------------------------------
-
-  // Sent on the browser IO thread when an net::URLRequestContext is released
-  // by its owning Profile.  The source is a pointer to the
-  // net::URLRequestContext.
-  NOTIFICATION_URL_REQUEST_CONTEXT_RELEASED,
 
   // Sent when WM_ENDSESSION has been received, after the browsers have been
   // closed but before browser process has been shutdown. The source/details
@@ -630,12 +605,6 @@ enum {
 
   // Upgrade notifications ---------------------------------------------------
 
-  // Sent when Chrome detects that it has been upgraded behind the scenes.
-  // NOTE: The detection mechanism is asynchronous, so this event may arrive
-  // quite some time after the upgrade actually happened. No details are
-  // expected.
-  NOTIFICATION_UPGRADE_DETECTED,
-
   // Sent when Chrome believes an update has been installed and available for
   // long enough with the user shutting down to let it take effect. See
   // upgrade_detector.cc for details on how long it waits. No details are
@@ -695,10 +664,6 @@ enum {
   // Sent when the collect cookies dialog is shown. The source is a
   // TabSpecificContentSettings object, there are no details.
   NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-
-  // Sent when the default setting for desktop notifications has changed.
-  // The source is the DesktopNotificationService, the details are None.
-  NOTIFICATION_DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
 
   // Sent when a non-default setting in the the notification content settings
   // map has changed. The source is the DesktopNotificationService, the

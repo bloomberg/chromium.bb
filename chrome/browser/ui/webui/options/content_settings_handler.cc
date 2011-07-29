@@ -281,9 +281,6 @@ void ContentSettingsHandler::Initialize() {
       this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       Source<HostContentSettingsMap>(settings_map));
   notification_registrar_.Add(
-      this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
-      NotificationService::AllSources());
-  notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       NotificationService::AllSources());
   notification_registrar_.Add(
@@ -329,11 +326,6 @@ void ContentSettingsHandler::Observe(int type,
       const std::string& pref_name = *Details<std::string>(details).ptr();
       if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
-      break;
-    }
-
-    case chrome::NOTIFICATION_DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
-      UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
 

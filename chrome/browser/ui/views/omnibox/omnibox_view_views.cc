@@ -154,9 +154,6 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_DESTROYED, Source<OmniboxViewViews>(this),
-      NotificationService::NoDetails());
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
   popup_view_.reset();

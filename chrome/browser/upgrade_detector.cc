@@ -41,11 +41,6 @@ UpgradeDetector::~UpgradeDetector() {
 
 void UpgradeDetector::NotifyUpgradeDetected() {
   upgrade_detected_time_ = base::Time::Now();
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_UPGRADE_DETECTED,
-      Source<UpgradeDetector>(this),
-      NotificationService::NoDetails());
 }
 
 void UpgradeDetector::NotifyUpgradeRecommended() {

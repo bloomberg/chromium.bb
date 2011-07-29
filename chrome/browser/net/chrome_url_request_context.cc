@@ -363,11 +363,6 @@ void ChromeURLRequestContext::set_chrome_url_data_manager_backend(
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_URL_REQUEST_CONTEXT_RELEASED,
-      Source<net::URLRequestContext>(this),
-      NotificationService::NoDetails());
 }
 
 const std::string& ChromeURLRequestContext::GetUserAgent(

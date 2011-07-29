@@ -591,9 +591,7 @@ const AutocompleteResult& AutocompleteEditModel::result() const {
 void AutocompleteEditModel::OnSetFocus(bool control_down) {
   has_focus_ = true;
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
-  NotificationService::current()->Notify(chrome::NOTIFICATION_OMNIBOX_FOCUSED,
-                                         Source<AutocompleteEditModel>(this),
-                                         NotificationService::NoDetails());
+
   InstantController* instant = controller_->GetInstant();
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
   if (instant && tab)

@@ -163,7 +163,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   // notifications.
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-                 NotificationService::AllSources());
+                 Source<AutocompleteController>(controller));
 }
 
 void AutocompleteProviderTest::

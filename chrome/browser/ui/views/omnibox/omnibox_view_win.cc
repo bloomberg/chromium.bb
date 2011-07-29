@@ -483,10 +483,6 @@ OmniboxViewWin::OmniboxViewWin(const gfx::Font& font,
 }
 
 OmniboxViewWin::~OmniboxViewWin() {
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_DESTROYED, Source<OmniboxViewWin>(this),
-      NotificationService::NoDetails());
-
   // Explicitly release the text object model now that we're done with it, and
   // before we free the library. If the library gets unloaded before this
   // released, it becomes garbage.
