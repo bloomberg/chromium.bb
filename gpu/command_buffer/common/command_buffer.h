@@ -79,7 +79,7 @@ class CommandBuffer {
   virtual State GetState() = 0;
 
   // Returns the last state without synchronizing with the service.
-  virtual State GetLastState();
+  virtual State GetLastState() = 0;
 
   // The writer calls this to update its put offset. This ensures the reader
   // sees the latest added commands, and will eventually process them. On the
@@ -127,13 +127,7 @@ class CommandBuffer {
   // Allows the reader to set the current context lost reason.
   // NOTE: if calling this in conjunction with SetParseError,
   // call this first.
-  //
-  // TODO(kbr): this temporarily has a definition (i.e., is not pure
-  // virtual) to work around a difficult interdependency with the NaCl
-  // build. Make this pure virtual and remove the body once this is
-  // defined in CommandBufferNaCl and NaCl has rolled forward. See
-  // http://crbug.com/89127 .
-  virtual void SetContextLostReason(error::ContextLostReason);
+  virtual void SetContextLostReason(error::ContextLostReason) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);
