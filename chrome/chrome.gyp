@@ -345,6 +345,14 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'devtools_frontend_resources',
+          'variables': {
+            'grit_grd_file':
+               'browser/debugger/frontend/devtools_frontend_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ]
+        },
+        {
           'action_name': 'devtools_resources',
           # This can't use ../build/grit_action.gypi because the grd file
           # is generated a build time, so the trick of using grit_info to get
@@ -355,40 +363,13 @@
           },
           'inputs': [
             '<(grit_grd_file)',
+            '<!@pymod_do_main(grit_info --inputs)',
           ],
           'outputs': [
             '<(grit_out_dir)/grit/devtools_resources.h',
             '<(grit_out_dir)/devtools_resources.pak',
             '<(grit_out_dir)/grit/devtools_resources_map.cc',
             '<(grit_out_dir)/grit/devtools_resources_map.h',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(grit_grd_file)', 'build',
-                     '-o', '<(grit_out_dir)',
-                     '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
-                     '<@(grit_defines)' ],
-          'message': 'Generating resources from <(grit_grd_file)',
-        },
-        {
-          'action_name': 'devtools_frontend_resources',
-          # This can't use ../build/grit_action.gypi because the grd file
-          # is generated a build time, so the trick of using grit_info to get
-          # the real inputs/outputs at GYP time isn't possible.
-          'variables': {
-            'grit_cmd': ['python', '../tools/grit/grit.py'],
-            'frontend_folder': 'browser/debugger/frontend',
-            'grit_grd_file':
-               '<(frontend_folder)/devtools_frontend_resources.grd',
-          },
-          'inputs': [
-            '<(grit_grd_file)',
-            '<(frontend_folder)/devtools_frontend.html',
-          ],
-          'outputs': [
-            '<(grit_out_dir)/grit/devtools_frontend_resources.h',
-            '<(grit_out_dir)/devtools_frontend_resources.pak',
-            '<(grit_out_dir)/grit/devtools_frontend_resources_map.cc',
-            '<(grit_out_dir)/grit/devtools_frontend_resources_map.h',
           ],
           'action': ['<@(grit_cmd)',
                      '-i', '<(grit_grd_file)', 'build',
