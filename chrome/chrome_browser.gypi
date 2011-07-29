@@ -1473,6 +1473,8 @@
         'browser/net/sdch_dictionary_fetcher.h',
         'browser/net/service_providers_win.cc',
         'browser/net/service_providers_win.h',
+        'browser/net/sqlite_origin_bound_cert_store.cc',
+        'browser/net/sqlite_origin_bound_cert_store.h',
         'browser/net/sqlite_persistent_cookie_store.cc',
         'browser/net/sqlite_persistent_cookie_store.h',
         'browser/net/ssl_config_service_manager.h',
