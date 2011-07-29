@@ -75,7 +75,7 @@ class ProfileImplIOData : public ProfileIOData {
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         extensions_request_context_getter_;
     mutable ChromeURLRequestContextGetterMap app_request_context_getter_map_;
-    scoped_refptr<ProfileImplIOData> io_data_;
+    ProfileImplIOData* const io_data_;
 
     Profile* const profile_;
 
@@ -107,12 +107,12 @@ class ProfileImplIOData : public ProfileIOData {
   virtual ~ProfileImplIOData();
 
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
-  virtual scoped_refptr<RequestContext> InitializeAppRequestContext(
+  virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
       const std::string& app_id) const;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireMediaRequestContext() const;
-  virtual scoped_refptr<RequestContext>
+  virtual scoped_refptr<ChromeURLRequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const;
@@ -120,7 +120,7 @@ class ProfileImplIOData : public ProfileIOData {
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
 
-  mutable scoped_refptr<RequestContext> media_request_context_;
+  mutable scoped_refptr<ChromeURLRequestContext> media_request_context_;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;

@@ -50,7 +50,7 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   }
 
  private:
-  const scoped_refptr<const ProfileIOData> profile_io_data_;
+  const ProfileIOData* const profile_io_data_;
 };
 
 // Factory that creates the ChromeURLRequestContext for extensions.
@@ -64,7 +64,7 @@ class FactoryForExtensions : public ChromeURLRequestContextFactory {
   }
 
  private:
-  const scoped_refptr<const ProfileIOData> profile_io_data_;
+  const ProfileIOData* const profile_io_data_;
 };
 
 // Factory that creates the ChromeURLRequestContext for a given isolated app.
@@ -84,7 +84,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   }
 
  private:
-  const scoped_refptr<const ProfileIOData> profile_io_data_;
+  const ProfileIOData* const profile_io_data_;
   const std::string app_id_;
   scoped_refptr<ChromeURLRequestContextGetter>
       main_request_context_getter_;
@@ -102,7 +102,7 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
   }
 
  private:
-  const scoped_refptr<const ProfileIOData> profile_io_data_;
+  const ProfileIOData* const profile_io_data_;
 };
 
 }  // namespace
@@ -115,8 +115,7 @@ ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     Profile* profile,
     ChromeURLRequestContextFactory* factory)
     : io_thread_(g_browser_process->io_thread()),
-      factory_(factory),
-      url_request_context_(NULL) {
+      factory_(factory) {
   DCHECK(factory);
   DCHECK(profile);
   RegisterPrefsObserver(profile);
@@ -126,17 +125,6 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DCHECK(registrar_.IsEmpty()) << "Probably didn't call CleanupOnUIThread";
-
-  // Either we already transformed the factory into a net::URLRequestContext, or
-  // we still have a pending factory.
-  DCHECK((factory_.get() && !url_request_context_.get()) ||
-         (!factory_.get() && url_request_context_.get()));
-
-  if (url_request_context_)
-    io_thread_->UnregisterURLRequestContextGetter(this);
-
-  // The scoped_refptr / scoped_ptr destructors take care of releasing
-  // |factory_| and |url_request_context_| now.
 }
 
 // Lazily create a ChromeURLRequestContext using our factory.
@@ -145,17 +133,15 @@ net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
 
   if (!url_request_context_) {
     DCHECK(factory_.get());
-    url_request_context_ = factory_->Create();
+    url_request_context_ = factory_->Create()->GetWeakPtr();
     factory_.reset();
-    io_thread_->RegisterURLRequestContextGetter(this);
   }
 
-  return url_request_context_;
-}
+  // Should not be NULL, unless we're trying to use the URLRequestContextGetter
+  // after the Profile has already been deleted.
+  CHECK(url_request_context_.get());
 
-void ChromeURLRequestContextGetter::ReleaseURLRequestContext() {
-  DCHECK(url_request_context_);
-  url_request_context_ = NULL;
+  return url_request_context_;
 }
 
 net::CookieStore* ChromeURLRequestContextGetter::DONTUSEME_GetCookieStore() {
@@ -352,8 +338,7 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 // ----------------------------------------------------------------------------
 
 ChromeURLRequestContext::ChromeURLRequestContext()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      is_incognito_(false) {
+    : is_incognito_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
