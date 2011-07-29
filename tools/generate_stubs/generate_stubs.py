@@ -147,6 +147,8 @@ STUB_HEADER_PREAMBLE = """// This is generated file. Do not modify directly.
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
+
 namespace %(namespace)s {
 """
 
@@ -231,6 +233,7 @@ bool %s() {
 STUB_POINTER_INITIALIZER = """  %(name)s_ptr =
     reinterpret_cast<%(return_type)s (*)(%(parameters)s)>(
       dlsym(module, "%(name)s"));
+    VLOG_IF(1, !%(name)s_ptr) << "Couldn't load %(name)s";
 """
 
 # Template for module initializer function start and end.  This template takes
@@ -295,6 +298,8 @@ UMBRELLA_INITIALIZER_INITIALIZE_FUNCTION_START = (
       if (handle != NULL) {
         module_opened = true;
         opened_libraries[cur_module] = handle;
+      } else {
+        VLOG(1) << "dlopen(" << dso_path->c_str() << ") failed";
       }
     }
 
