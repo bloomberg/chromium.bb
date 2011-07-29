@@ -6,6 +6,8 @@
 #define UI_GFX_MAC_NSIMAGE_CACHE_H_
 #pragma once
 
+#include "ui/ui_api.h"
+
 #ifdef __OBJC__
 @class NSImage;
 @class NSString;
@@ -23,7 +25,7 @@ namespace gfx {
 //   - This should only be called on the main thread.
 //   - The caller should retain the image if they want to keep it around, as
 //     the cache could have limit on size/lifetime, etc.
-NSImage* GetCachedImageWithName(NSString* name);
+UI_API NSImage* GetCachedImageWithName(NSString* name);
 
 // Clears the image cache.
 void ClearCachedImages(void);

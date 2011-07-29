@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "ui/base/keycodes/keyboard_codes_posix.h"
+#include "ui/ui_api.h"
 
 namespace ui {
 
@@ -25,10 +26,10 @@ namespace ui {
 // This function is mainly for simulating keyboard events in unit tests.
 // See third_party/WebKit/Source/WebKit/chromium/src/mac/WebInputEventFactory.mm for
 // reverse conversion.
-int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
-                                NSUInteger flags,
-                                unichar* character,
-                                unichar* characterIgnoringModifiers);
+UI_API int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
+                                       NSUInteger flags,
+                                       unichar* character,
+                                       unichar* characterIgnoringModifiers);
 
 } // namespace ui
 
