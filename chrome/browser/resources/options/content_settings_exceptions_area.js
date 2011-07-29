@@ -320,6 +320,7 @@ cr.define('options.contentSettings', function() {
      * @param {string} newSetting The setting the user chose.
      */
     finishEdit: function(newPattern, newSetting) {
+      this.resetInput();
       chrome.send('setException',
                   [this.contentType, this.mode, newPattern, newSetting]);
     },
