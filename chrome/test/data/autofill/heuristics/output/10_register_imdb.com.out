@@ -1,5 +1,5 @@
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
+EMAIL_ADDRESS | email1 | E-mail: | 
+EMAIL_ADDRESS | email2 | Confirm E-mail: | 
+UNKNOWN_TYPE | year | Year of Birth: | 
+ADDRESS_HOME_ZIP | postal | ZIP/Postal Code: | 
+ADDRESS_HOME_COUNTRY | country | Country: | US

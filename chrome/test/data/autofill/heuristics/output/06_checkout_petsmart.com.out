@@ -1,11 +1,11 @@
-ADDRESS_BILLING_COUNTRY
-NAME_FIRST
-NAME_LAST
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-UNKNOWN_TYPE
-ADDRESS_BILLING_ZIP
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
+ADDRESS_BILLING_COUNTRY | billCountry | • Country: | US
+NAME_FIRST | billFname | • First Name: | 
+NAME_LAST | billLname | • Last Name: | 
+ADDRESS_BILLING_LINE1 | billAddr1 | • Address: | 
+ADDRESS_BILLING_LINE2 | billAddr2 | Apt / Suite | 
+ADDRESS_BILLING_CITY | billCity | • City or APO/FPO: | 
+ADDRESS_BILLING_STATE | billState | • State/Province: | 
+UNKNOWN_TYPE | altBillState | • Other State/Province: | 
+ADDRESS_BILLING_ZIP | billZip | • Zip/Postal Code: | 
+PHONE_HOME_WHOLE_NUMBER | billPhone | • Telephone: | 
+EMAIL_ADDRESS | guestEmail | • Email Address: | 

@@ -1,12 +1,12 @@
-NAME_FIRST
-NAME_LAST
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-ADDRESS_HOME_ZIP
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
+NAME_FIRST | {actionForm.firstName} | First Name | 
+NAME_LAST | {actionForm.lastName} | Last Name | 
+UNKNOWN_TYPE | {actionForm.desiredSN} | NEW! Pick a username: What's new? | 
+UNKNOWN_TYPE | verifyPasswordHint | Password | Retype password
+UNKNOWN_TYPE | wlw-select_key:{actionForm.dobMonth} | Select Month | 
+UNKNOWN_TYPE | {actionForm.dobDay} | Select Month | Day (dd)
+UNKNOWN_TYPE | {actionForm.dobYear} | Select Month | Year (yyyy)
+ADDRESS_HOME_ZIP | {actionForm.zipCode} | Zip Code | 
+UNKNOWN_TYPE | wlw-select_key:{actionForm.acctSecurityQuestion} | Set a Security Question | 
+UNKNOWN_TYPE | {actionForm.acctSecurityAnswer} | Set a Security Question | Your Answer
+EMAIL_ADDRESS | {actionForm.altEMail} | Alternate Email(optional) | 
+UNKNOWN_TYPE | {actionForm.wordVerify} | Enter what you see above | 

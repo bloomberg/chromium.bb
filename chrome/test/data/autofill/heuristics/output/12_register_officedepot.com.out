@@ -1,37 +1,37 @@
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-PHONE_FAX_CITY_CODE
-PHONE_FAX_NUMBER
-PHONE_FAX_NUMBER
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
+NAME_FIRST | addrsForm[0].firstName | *First Name: | 
+NAME_MIDDLE_INITIAL | addrsForm[0].middleInitial | Middle Initial: | 
+NAME_LAST | addrsForm[0].lastName | *Last Name: | 
+COMPANY_NAME | addrsForm[0].shiptoName | Company Name | 
+ADDRESS_HOME_LINE1 | addrsForm[0].address1 | *Address | 
+ADDRESS_HOME_LINE2 | addrsForm[0].address2 | *First Name:Middle Initial:*Last Name:Company Name | 
+ADDRESS_HOME_CITY | addrsForm[0].city | *City | 
+ADDRESS_HOME_STATE | addrsForm[0].state | *State | {blank}
+ADDRESS_HOME_ZIP | addrsForm[0].postalCode1 | *Zip Code | 
+PHONE_HOME_CITY_CODE | addrsForm[0].phoneNumber1 | *Phone Number: | 
+PHONE_HOME_NUMBER | addrsForm[0].phoneNumber2 | - | 
+PHONE_HOME_NUMBER | addrsForm[0].phoneNumber3 | - | 
+UNKNOWN_TYPE | addrsForm[0].phoneNumber4 | ext. | 
+PHONE_FAX_CITY_CODE | addrsForm[0].faxNumber1 | Fax: | 
+PHONE_FAX_NUMBER | addrsForm[0].faxNumber2 | - | 
+PHONE_FAX_NUMBER | addrsForm[0].faxNumber3 | - | 
+EMAIL_ADDRESS | addrsForm[0].email | *Email Address: | 
+UNKNOWN_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |  
+CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: | 
+CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: / (mm/yyyy) |  
+CREDIT_CARD_EXP_4_DIGIT_YEAR | paymentFormInfo.creditCardExpYear | / | -1
+UNKNOWN_TYPE | paymentFormInfo.creditCardCvv | CID | 
+NAME_FIRST | addrsForm[2].firstName | *First Name: | 
+NAME_MIDDLE_INITIAL | addrsForm[2].middleInitial | Middle Initial: | 
+NAME_LAST | addrsForm[2].lastName | *Last Name: | 
+COMPANY_NAME | addrsForm[2].shiptoName | Company Name | 
+ADDRESS_HOME_LINE1 | addrsForm[2].address1 | *Address | 
+ADDRESS_HOME_LINE2 | addrsForm[2].address2 | * Indicates required field *First Name:Middle Initial:*Last Name:Company Name | 
+ADDRESS_HOME_CITY | addrsForm[2].city | *City | 
+ADDRESS_HOME_STATE | addrsForm[2].state | *State | {blank}
+ADDRESS_HOME_ZIP | addrsForm[2].postalCode1 | *Zip Code | 
+PHONE_HOME_CITY_CODE | addrsForm[2].phoneNumber1 | *Phone Number: | 
+PHONE_HOME_NUMBER | addrsForm[2].phoneNumber2 | - | 
+PHONE_HOME_NUMBER | addrsForm[2].phoneNumber3 | - | 
+UNKNOWN_TYPE | addrsForm[2].phoneNumber4 | ext. | 
+EMAIL_ADDRESS | addrsForm[2].email | *Email Address: | 
+UNKNOWN_TYPE | loginForm.loginName | *Login Name: | 

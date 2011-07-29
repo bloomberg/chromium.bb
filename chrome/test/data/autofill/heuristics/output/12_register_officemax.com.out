@@ -1,6 +1,6 @@
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_LAST
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-ADDRESS_HOME_ZIP
+UNKNOWN_TYPE | /atg/userprofiling/ProfileFormHandler.value.maxPerks | MaxPerks® ID No. | 
+NAME_FIRST | /atg/userprofiling/ProfileFormHandler.value.firstName | * First Name: | 
+NAME_LAST | /atg/userprofiling/ProfileFormHandler.value.lastName | * Last Name: | 
+EMAIL_ADDRESS | /atg/userprofiling/ProfileFormHandler.value.login | * Email Address: | 
+EMAIL_ADDRESS | /atg/userprofiling/ProfileFormHandler.confirmEmailAddress | * Confirm Email: | 
+ADDRESS_HOME_ZIP | /atg/userprofiling/ProfileFormHandler.value.zip | * Zip: | 

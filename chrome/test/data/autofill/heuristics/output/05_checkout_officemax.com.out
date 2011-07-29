@@ -1,13 +1,13 @@
-NAME_FIRST
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | fname | * First Name: | 
+NAME_LAST | lname | * Last Name: | 
+COMPANY_NAME | business | Business Name: | 
+ADDRESS_HOME_LINE1 | address | *Address line 1:(no P.O. Boxes) | 
+ADDRESS_HOME_LINE2 | address2 | Address Line 2: | 
+ADDRESS_HOME_CITY | city | *City: | 
+ADDRESS_HOME_STATE | /atg/commerce/order/purchase/ShippingGroupFormHandler.editValue.state | *State: | 
+ADDRESS_HOME_ZIP | zip | *Zip Code: | 
+PHONE_HOME_WHOLE_NUMBER | phone | *Phone number: | 
+EMAIL_ADDRESS | /atg/commerce/order/purchase/ShippingGroupFormHandler.emailAddress | *Email Address: | 
+EMAIL_ADDRESS | /atg/commerce/order/purchase/ShippingGroupFormHandler.confirmEmailAddress | *Confirm Email Address: | 
+UNKNOWN_TYPE | /atg/commerce/order/purchase/ShippingGroupFormHandler.maxPerksNumber | MaxPerks® ID: < What is this? | 
+UNKNOWN_TYPE | TaxExemptID | Tax Exempt ID: < What is this? | 

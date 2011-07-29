@@ -1,24 +1,24 @@
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | firstname | First name | 
+NAME_LAST | lastname | Last name | 
+ADDRESS_HOME_LINE1 | address1 | Street address | 
+ADDRESS_HOME_LINE2 | address2 | Street address continued. Apartment number, floor number, suite number, etc. - optional | 
+ADDRESS_HOME_CITY | city | City | 
+ADDRESS_HOME_STATE | state | State / Province | default
+ADDRESS_HOME_ZIP | zip | ZIP / Postal code | 
+ADDRESS_HOME_COUNTRY | countryId | Country or region | 1
+PHONE_HOME_CITY_CODE | dayphone1 | Primary telephone number - - | 
+PHONE_HOME_NUMBER | dayphone2 | - | 
+PHONE_HOME_NUMBER | dayphone3 | - | 
+UNKNOWN_TYPE | dayphone4 | ext.: | 
+EMAIL_ADDRESS | email | Email address | 
+EMAIL_ADDRESS | retype_email | Re-enter email address | 
+UNKNOWN_TYPE | userid | Create your eBay user ID | 
+UNKNOWN_TYPE | canned | Pick a secret question | 0
+UNKNOWN_TYPE | myanswer | Your secret answer | 
+UNKNOWN_TYPE | birthdate2 | Date of birth, Month | 0
+UNKNOWN_TYPE | birthdate1 | Date of birth, Day | 0
+UNKNOWN_TYPE | birthdate3 | Year of birth, four digit format. | 0
+UNKNOWN_TYPE | tokentext | For added security - opens in a new window or tab, please enter the verification code hidden in the image. | 
+UNKNOWN_TYPE | uword1 | Give us some word and we'll suggest some user IDs for you. Word 1 | 
+UNKNOWN_TYPE | uword2 | Word 2 | 
+UNKNOWN_TYPE | uword3 | Word 3 | 

@@ -1,24 +1,24 @@
-NAME_FIRST
-NAME_LAST
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-ADDRESS_BILLING_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
+NAME_FIRST | billFirstName | *First Name: | 
+NAME_LAST | billLastName | *Last Name: | 
+ADDRESS_BILLING_LINE1 | billAddress1 | *Street Address 1: | 
+ADDRESS_BILLING_LINE2 | billAddress2 | Street Address 2: | 
+ADDRESS_BILLING_CITY | billCity | *City: | 
+ADDRESS_BILLING_STATE | billState | *State: | AL
+ADDRESS_BILLING_ZIP | billZipCode | *Zip Code: | 
+PHONE_HOME_CITY_CODE | billDayPhonePart1 | ( | 
+PHONE_HOME_NUMBER | billDayPhonePart2 | ) | 
+PHONE_HOME_NUMBER | billDayPhonePart3 | *Day Phone: | 
+EMAIL_ADDRESS | billEmail | *Email Address: | 
+NAME_FIRST | shipFirstName | *First Name: | 
+NAME_LAST | shipLastName | *Last Name: | 
+ADDRESS_HOME_LINE1 | shipAddress1 | *Street Address 1: | 
+ADDRESS_HOME_LINE2 | shipAddress2 | Street Address 2: | 
+ADDRESS_HOME_CITY | shipCity | *City: | 
+ADDRESS_HOME_STATE | shipState | *State: | AL
+ADDRESS_HOME_ZIP | shipZipCode | *Zip Code: | 
+PHONE_HOME_CITY_CODE | shipDayPhonePart1 | ( | 
+PHONE_HOME_NUMBER | shipDayPhonePart2 | ) | 
+PHONE_HOME_NUMBER | shipDayPhonePart3 | *Day Phone: | 
+PHONE_HOME_CITY_CODE | shipNightPhonePart1 | ( | 
+PHONE_HOME_NUMBER | shipNightPhonePart2 | ) | 
+PHONE_HOME_NUMBER | shipNightPhonePart3 | Night Phone: | 

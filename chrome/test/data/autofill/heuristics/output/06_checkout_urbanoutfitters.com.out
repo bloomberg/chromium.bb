@@ -1,27 +1,27 @@
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-PHONE_HOME_WHOLE_NUMBER
-NAME_FIRST
-NAME_LAST
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-ADDRESS_BILLING_ZIP
-ADDRESS_BILLING_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
-UNKNOWN_TYPE
+UNKNOWN_TYPE | shipto | Select a Saved Shipping Addressenter a new shipping address | 
+NAME_FIRST | shippingFirstName |  | First Name
+NAME_LAST | shippingLastName |  | Last Name
+ADDRESS_HOME_LINE1 | shippingAddress |  | Street Address
+ADDRESS_HOME_LINE2 | shippingAddress2 |  | Apt / Flr / Bldg (optional)
+ADDRESS_HOME_CITY | shippingCity |  | City
+ADDRESS_HOME_STATE | shippingStates |  | 
+ADDRESS_HOME_ZIP | shippingPostalCode |  | Postal Code
+ADDRESS_HOME_COUNTRY | shippingCountries |  | 
+PHONE_HOME_WHOLE_NUMBER | shippingPhone |  | Phone
+PHONE_HOME_WHOLE_NUMBER | altShippingPhone |  | Alternate Phone (optional)
+NAME_FIRST | billingFirstName |  | First Name
+NAME_LAST | billingLastName |  | Last Name
+ADDRESS_BILLING_LINE1 | billingAddress |  | Street Address
+ADDRESS_BILLING_LINE2 | billingAddress2 |  | Apt / Flr / Bldg (optional)
+ADDRESS_BILLING_CITY | billingCity |  | City
+ADDRESS_BILLING_STATE | billingStates |  | 
+ADDRESS_BILLING_ZIP | billingPostalCode |  | Postal Code
+ADDRESS_BILLING_COUNTRY | billingCountries |  | 
+PHONE_HOME_WHOLE_NUMBER | billingPhone |  | Phone
+PHONE_HOME_WHOLE_NUMBER | altBillingPhone |  | Alternate Phone (optional)
+UNKNOWN_TYPE | savedCreditCard | enter a new credit card | 
+UNKNOWN_TYPE | payment_cardtype |  | 
+CREDIT_CARD_NUMBER | payment_acctnum |  | Card Number (no spaces or dashes)
+CREDIT_CARD_EXP_MONTH | expmonth |  | 
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expyear |  | 
+UNKNOWN_TYPE | payment_cidnew |  | CID / Security Code

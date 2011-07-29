@@ -1,27 +1,27 @@
-ADDRESS_HOME_STATE
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-UNKNOWN_TYPE
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
-ADDRESS_HOME_COUNTRY
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+ADDRESS_HOME_STATE | ctl00$CustomerHeader$ddlCountries | CountryClose Please select your location or where you receive credit card billing  statements to see pricing in your local currency.Available Languages:Save this preference | US
+UNKNOWN_TYPE | ctl00$ContentInfo$Name$cboTitle$cboTitle | Title: | 
+NAME_FIRST | ctl00$ContentInfo$Name$FName$txtFName | First Name: | 
+NAME_MIDDLE_INITIAL | ctl00$ContentInfo$Name$MName$txtMName | Middle Initial (optional): | 
+NAME_LAST | ctl00$ContentInfo$Name$LName$txtLName | Last Name: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$Name$suffix$txtSuffix | Suffix (optional): | 
+UNKNOWN_TYPE | ctl00$ContentInfo$BirthDate$txtDOB | Minorâ€™s Date of Birth: | mm/dd/yyyy
+ADDRESS_HOME_LINE1 | ctl00$ContentInfo$Address$address1$txtAddress1 | Street Address: | 
+ADDRESS_HOME_LINE2 | ctl00$ContentInfo$Address$address2$txtAddress2 | Street Address: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$Address$address3$txtAddress2 | Street Address: | 
+ADDRESS_HOME_CITY | ctl00$ContentInfo$Address$city$txtCity | City/Town/Department: | 
+ADDRESS_HOME_STATE | ctl00$ContentInfo$Address$state$txtState | State/Province/Region/County: | 
+ADDRESS_HOME_ZIP | ctl00$ContentInfo$Address$zip$txtZip | ZIP/Postal Code: | 
+ADDRESS_HOME_COUNTRY | ctl00$ContentInfo$Address$country$cboCountry | Country: | US
+PHONE_HOME_WHOLE_NUMBER | ctl00$ContentInfo$HomePhone$txtNumber$txtPhone | Home PhoneNumber: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$HomePhone$txtExt$txtPhoneExt | Ext./PIN (optional): | 
+ADDRESS_HOME_COUNTRY | ctl00$ContentInfo$HomePhone$cboCountry$cboCountry | Country: | US
+PHONE_HOME_WHOLE_NUMBER | ctl00$ContentInfo$BusinessPhone$txtNumber$txtPhone | Business/Other PhoneNumber: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$BusinessPhone$txtExt$txtPhoneExt | Ext./PIN (optional): | 
+ADDRESS_HOME_COUNTRY | ctl00$ContentInfo$BusinessPhone$cboCountry$cboCountry | Country: | US
+UNKNOWN_TYPE | ctl00$ContentInfo$HomeAirport$txtAirport | Home Airport (optional): | 
+EMAIL_ADDRESS | ctl00$ContentInfo$Email$txtEmail | E-mail Address: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$UsernamePassword$username$txtUsername | Username: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$PINPasswordReminder$PINReminder1$txtPINReminder | PIN Reminder: (cannot include any numbers) | 
+UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$Question$txtSecurity | Security Question: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$Answer$txtSecurity | Answer: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$AnswerReType$txtSecurity | Re-type Answer: | 

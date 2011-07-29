@@ -1,12 +1,12 @@
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_LAST
-UNKNOWN_TYPE
+UNKNOWN_TYPE | imembernamelive | Windows Live ID: | 
+UNKNOWN_TYPE | idomain | Domains | hotmail.com
+UNKNOWN_TYPE | isug1 | Enter a word |  Enter a word
+UNKNOWN_TYPE | isug2 | Enter another word |  Enter another word
+UNKNOWN_TYPE | isug3 | Enter another word |  Enter another word
+EMAIL_ADDRESS | imembernameeasi | Use your email address: | Example: someone@example.com
+EMAIL_ADDRESS | iAltEmail | Alternate email address: | 
+UNKNOWN_TYPE | iSQ | Question: | 0
+UNKNOWN_TYPE | iSA | Secret answer: | 
+NAME_FIRST | iFirstName | First name: | 
+NAME_LAST | iLastName | Last name: | 
+UNKNOWN_TYPE | iBirthYear | Birth year: | Example: 1990

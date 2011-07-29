@@ -1,15 +1,15 @@
-NAME_FIRST
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_STATE
-EMAIL_ADDRESS
-PHONE_HOME_WHOLE_NUMBER
-PHONE_FAX_WHOLE_NUMBER
-CREDIT_CARD_NAME
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
+NAME_FIRST | fn | Имя: | 
+NAME_LAST | ln | Фамилия: | 
+COMPANY_NAME | cm | название компании: | 
+ADDRESS_HOME_LINE1 | a1 | Адрес: | 
+ADDRESS_HOME_LINE2 | a2 | Улица: | 
+ADDRESS_HOME_CITY | ct | Город: | 
+ADDRESS_HOME_ZIP | zc | Почтовый Индекс: | 
+ADDRESS_HOME_STATE | st | область: | 
+EMAIL_ADDRESS | em | Электронной Почты: | 
+PHONE_HOME_WHOLE_NUMBER | ph | телефон: | 
+PHONE_FAX_WHOLE_NUMBER | fx | факс: | 
+CREDIT_CARD_NAME | c1 | Имя владельца карты: | 
+CREDIT_CARD_NUMBER | c2 | Номер кредитной карты: | 
+CREDIT_CARD_EXP_MONTH | c3 | Срок действия карты : | 
+CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 | Срок действия карты : | 

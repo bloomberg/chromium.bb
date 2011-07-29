@@ -1,10 +1,10 @@
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-UNKNOWN_TYPE
-EMAIL_ADDRESS
+NAME_FIRST | name$ctl00$name$_EditView$first | First NameMILast Name | 
+NAME_MIDDLE_INITIAL | name$ctl00$name$_EditView$mi | First NameMILast Name | 
+NAME_LAST | name$ctl00$name$_EditView$last | First NameMILast Name | 
+ADDRESS_HOME_LINE1 | address$ctl00$address$addressValidator$_EditView$line1 | Address Please see address guidelines. Learn More | 
+ADDRESS_HOME_LINE2 | address$ctl00$address$addressValidator$_EditView$line2 | Address Please see address guidelines. Learn More | 
+ADDRESS_HOME_CITY | address$ctl00$address$addressValidator$_EditView$city | CityState | 
+ADDRESS_HOME_STATE | address$ctl00$address$addressValidator$_EditView$region$ctl01 | CityState | 
+ADDRESS_HOME_ZIP | address$ctl00$address$addressValidator$_EditView$postal_code | Zip Code4-digit Ext. | 
+UNKNOWN_TYPE | address$ctl00$address$addressValidator$_EditView$postal_code2 | - | 
+EMAIL_ADDRESS | email$ctl07 | Email Address (used to sign into your account) | 

@@ -1,9 +1,9 @@
-NAME_FIRST
-NAME_LAST
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | tbxFirstName | First Name | 
+NAME_LAST | tbxLastName | Last Name | 
+UNKNOWN_TYPE | tbxMusicianName | Artist Name | 
+UNKNOWN_TYPE | ddlGenre | Genre | 
+UNKNOWN_TYPE | ddlLabel | Label Type | 
+EMAIL_ADDRESS | tbxEmail | Email | 
+UNKNOWN_TYPE | ddlMonth | Birthday | 
+UNKNOWN_TYPE | ddlDay |  | 
+UNKNOWN_TYPE | ddlYear |  | 

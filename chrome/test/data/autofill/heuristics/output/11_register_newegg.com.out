@@ -1,39 +1,39 @@
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+EMAIL_ADDRESS | LoginName | Email Address* | 
+EMAIL_ADDRESS | LoginName1 | Confirm Email Address* | 
+NAME_FIRST | FirstName | First Name* | 
+NAME_MIDDLE_INITIAL | BMI | MI | 
+NAME_LAST | LastName | Last Name* | 
+COMPANY_NAME | BCompany | Company Name | 
+ADDRESS_HOME_LINE1 | BAddress1 | Address* | 
+ADDRESS_HOME_LINE2 | BAddress2 | Address 2 | 
+ADDRESS_HOME_CITY | BCity | City* | 
+ADDRESS_HOME_STATE | BState | State* | AK
+ADDRESS_HOME_ZIP | BZip | Zip Code* | 
+PHONE_HOME_CITY_CODE | BNightPhone_tel1 | Shipping Phone* | 
+PHONE_HOME_NUMBER | BNightPhone_tel2 | Exchange | 
+PHONE_HOME_NUMBER | BNightPhone_tel3 | Last four digits | 
+UNKNOWN_TYPE | BNightPhone_ext1 | Ext | 
+PHONE_HOME_CITY_CODE | BDayPhone_tel1 | Daytime Phone | 
+PHONE_HOME_NUMBER | BDayPhone_tel2 | Exchange | 
+PHONE_HOME_NUMBER | BDayPhone_tel3 | Last four digits | 
+UNKNOWN_TYPE | BDayPhone_ext1 | Ext | 
+NAME_FIRST | SFirstName | First Name* | 
+NAME_MIDDLE_INITIAL | SMI | MI | 
+NAME_LAST | SLastName | Last Name* | 
+COMPANY_NAME | SCompanyName | Company Name | 
+ADDRESS_HOME_LINE1 | SAddress1 | Address* | 
+ADDRESS_HOME_LINE2 | SAddress2 | Address 2 | 
+ADDRESS_HOME_CITY | SCity | City* | 
+ADDRESS_HOME_STATE | SState | State* | AK
+ADDRESS_HOME_ZIP | SZip | Zip Code* | 
+PHONE_HOME_CITY_CODE | ShippingPhone_tel1 | Shipping Phone* | 
+PHONE_HOME_NUMBER | ShippingPhone_tel2 | ) | 
+PHONE_HOME_NUMBER | ShippingPhone_tel3 | - | 
+UNKNOWN_TYPE | ShippingPhone_ext1 | Ext | 
+UNKNOWN_TYPE | custtype | Is this purchase for personal or business use? | 200
+UNKNOWN_TYPE | Age | Age | 
+UNKNOWN_TYPE | income | Income | 0
+UNKNOWN_TYPE | education | Education | 0
+UNKNOWN_TYPE | hob | Where did you hear about Newegg.com? | 0
+UNKNOWN_TYPE | FirstPurchase | Is this your first Newegg.com purchase? | 0
+UNKNOWN_TYPE | GameHours | How many hours per week do you play PC games? | 0

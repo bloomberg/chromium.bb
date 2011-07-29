@@ -1,14 +1,14 @@
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-COMPANY_NAME
-UNKNOWN_TYPE
+EMAIL_ADDRESS | profileInformation.email | Email address* | 
+EMAIL_ADDRESS | confirmEmail | Confirm email address* | 
+UNKNOWN_TYPE | profileInformation.customerContact.title | Title | NONE
+NAME_FIRST | profileInformation.customerContact.firstName | First name* | 
+NAME_LAST | profileInformation.customerContact.lastName | Last name* | 
+ADDRESS_HOME_LINE1 | profileInformation.customerContact.address1 | Address line 1* | 
+ADDRESS_HOME_LINE2 | profileInformation.customerContact.address2 | Address line 2 | 
+ADDRESS_HOME_CITY | profileInformation.customerContact.city | City or APO/FPO* | 
+ADDRESS_HOME_STATE | profileInformation.customerContact.stateOrProvince | State/Province* | 
+ADDRESS_HOME_ZIP | profileInformation.customerContact.zipOrPostalCode | Zip/Postal code | 
+ADDRESS_HOME_COUNTRY | profileInformation.customerContact.country | Country* | US
+PHONE_HOME_WHOLE_NUMBER | profileInformation.customerContact.primaryPhone | Phone number | 
+COMPANY_NAME | profileInformation.businessName | Company name | 
+UNKNOWN_TYPE | profileInformation.currency | Preferred currency | USD

@@ -1,18 +1,18 @@
-NAME_FIRST
-NAME_MIDDLE
-NAME_LAST
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_COUNTRY
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-EMAIL_ADDRESS
+NAME_FIRST | firstName | *First (Given) Name: | 
+NAME_MIDDLE | middleName | Middle Name: | 
+NAME_LAST | lastName | *Last (Family) Name: | 
+UNKNOWN_TYPE | suffix | Generational Suffix: | 
+UNKNOWN_TYPE | otherFirstName | Other First Names: (For example, your nickname.) | 
+UNKNOWN_TYPE | otherLastName | Other Last Names: (For example, your maiden name.) | 
+UNKNOWN_TYPE | monthOfBirth | Month: | -
+UNKNOWN_TYPE | dayOfBirth | Day: | -
+UNKNOWN_TYPE | yearOfBirth | Year: | -
+ADDRESS_HOME_CITY | cityOrTownOfBirth | City or Town of Birth: | 
+ADDRESS_HOME_STATE | stateOrProvinceOfBirth | State or Province of Birth: (only if born in the US or Canada) | 
+ADDRESS_HOME_COUNTRY | countryOfBirth | Country of Birth: | 
+UNKNOWN_TYPE | studentSSNa | U.S. Social Security Number: (Why do we ask for your SSN?) | 
+UNKNOWN_TYPE | studentSSNb | - | 
+UNKNOWN_TYPE | studentSSNc | - | 
+UNKNOWN_TYPE | idCardNumber | UT Austin ID Card Number: | 
+EMAIL_ADDRESS | emailAddress | E-mail Address: | 
+EMAIL_ADDRESS | emailAddressVerify | Verify Your E-mail Address: | 

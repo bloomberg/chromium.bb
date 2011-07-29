@@ -1,24 +1,24 @@
-NAME_FULL
-ADDRESS_BILLING_COUNTRY
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-UNKNOWN_TYPE
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-UNKNOWN_TYPE
-ADDRESS_BILLING_ZIP
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
-NAME_FULL
-ADDRESS_HOME_COUNTRY
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-UNKNOWN_TYPE
-ADDRESS_HOME_ZIP
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
+NAME_FULL | BillName | Name on Account* | 
+ADDRESS_BILLING_COUNTRY | BillCountry | Country* | UNITED STATES
+ADDRESS_BILLING_LINE1 | BillStreet1 | Address * | 
+ADDRESS_BILLING_LINE2 | BillStreet2 | Address * | 
+UNKNOWN_TYPE | ddlRedoClassification | Address * | 
+ADDRESS_BILLING_CITY | BillCity | Town/City* | 
+ADDRESS_BILLING_STATE | BillState | State/Province* | 
+UNKNOWN_TYPE | BillStateOther | State/Province* | 
+ADDRESS_BILLING_ZIP | BillZip | Zip/Postal Code* | 
+PHONE_HOME_WHOLE_NUMBER | BillPhone | Phone Number* | 
+EMAIL_ADDRESS | BillEmail | Email Address* | 
+NAME_FULL | ShipName | Recipient Name* | 
+ADDRESS_HOME_COUNTRY | ShipCountry | Country* | UNITED STATES
+ADDRESS_HOME_LINE1 | ShipStreet1 | Address* | 
+ADDRESS_HOME_LINE2 | ShipStreet2 | Address* | 
+ADDRESS_HOME_CITY | ShipCity | Town/City* | 
+ADDRESS_HOME_STATE | ShipState | State/Province* | 
+UNKNOWN_TYPE | ShipStateOther | State/Province* | 
+ADDRESS_HOME_ZIP | ShipZip | Zip/Postal Code* | 
+UNKNOWN_TYPE | countdown | You have | 300
+UNKNOWN_TYPE | txtCoupon | Apply Promo Code | 
+CREDIT_CARD_NUMBER | txtCCAccount | Credit Card No.* | 
+CREDIT_CARD_EXP_MONTH | ccExp$MonthDrop | Expiration Date* | 06 (June)
+CREDIT_CARD_EXP_4_DIGIT_YEAR | ccExp$YearDrop | Expiration Date* | 2011

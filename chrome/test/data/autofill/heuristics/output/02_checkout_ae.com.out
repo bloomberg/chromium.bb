@@ -1,37 +1,37 @@
-NAME_FIRST
-NAME_LAST
-EMAIL_ADDRESS
-ADDRESS_HOME_COUNTRY
-ADDRESS_HOME_COUNTRY
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-UNKNOWN_TYPE
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-ADDRESS_HOME_COUNTRY
-ADDRESS_HOME_COUNTRY
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | firstName | Search wish lists by name | First Name
+NAME_LAST | lastName |  | Last Name
+EMAIL_ADDRESS | email | Or search wish lists by email | Email
+ADDRESS_HOME_COUNTRY | countryType | Country Type | usa
+ADDRESS_HOME_COUNTRY | country | Country, APO/FPO | US
+NAME_FIRST | firstName | First Name | 
+NAME_LAST | lastName | Last Name | 
+ADDRESS_HOME_LINE1 | address1 | Address | 
+ADDRESS_HOME_LINE2 | address2 |  | 
+ADDRESS_HOME_CITY | city | City | 
+ADDRESS_HOME_STATE | state | State | 
+ADDRESS_HOME_ZIP | zip | Zip | 
+UNKNOWN_TYPE | ccType | Card Type: | 
+CREDIT_CARD_NUMBER | ccNumber | Card Number: | 
+CREDIT_CARD_EXP_MONTH | expMonth | Expiration: | 1
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expYear |  | 2011
+UNKNOWN_TYPE | ccSecCode | Security Code: CLOSEVisa, Mastercard & Discover:The security code is a 3-digit number found on the back of the card near the signature strip.American Express:The security code is a 4-digit number found on the front right side of the card. | 
+UNKNOWN_TYPE | birthMonthBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
+UNKNOWN_TYPE | birthDayBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
+UNKNOWN_TYPE | birthYearBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
+UNKNOWN_TYPE | SSN | Last 4 digits of your social security #: CLOSEWe need the last 4 digits of your SSN for the Bill Me Later® credit check process. If you do not have an SSN, you can still pay by Credit Card or PayPal. | 
+ADDRESS_HOME_COUNTRY | countryType | Country Type | usa
+ADDRESS_HOME_COUNTRY | country | Country, APO/FPO | US
+NAME_FIRST | firstName | First Name | 
+NAME_LAST | lastName | Last Name | 
+ADDRESS_HOME_LINE1 | address1 | Address | 
+ADDRESS_HOME_LINE2 | address2 |  | 
+ADDRESS_HOME_CITY | city | City | 
+ADDRESS_HOME_STATE | state | State | 
+ADDRESS_HOME_ZIP | zip | Zip | 
+EMAIL_ADDRESS | email |  | 
+EMAIL_ADDRESS | confirmEmail |  | 
+PHONE_HOME_WHOLE_NUMBER | billingPhone |  | 
+UNKNOWN_TYPE | accessPassNumber | My AEREWARD$ # CLOSEAEREWARD$ NumberEnter the number found on the back of your AEREWARD$ card to earn rewards for your purchase.Learn More about AEREWARD$ | 
+UNKNOWN_TYPE | birthMonthBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
+UNKNOWN_TYPE | birthDayBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
+UNKNOWN_TYPE | birthYearBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 

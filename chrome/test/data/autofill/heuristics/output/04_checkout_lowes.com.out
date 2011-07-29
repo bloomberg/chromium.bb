@@ -1,17 +1,17 @@
-ADDRESS_HOME_COUNTRY
-ADDRESS_HOME_LINE1
-NAME_FIRST
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_CITY
-EMAIL_ADDRESS
-PHONE_HOME_CITY_CODE
-PHONE_HOME_NUMBER
-PHONE_HOME_NUMBER
-EMAIL_ADDRESS
-UNKNOWN_TYPE
+ADDRESS_HOME_COUNTRY | country |  | USA
+ADDRESS_HOME_LINE1 | addressField2 | Address Name: | 
+NAME_FIRST | firstName | First Name: | 
+NAME_LAST | lastName | Last Name: | 
+COMPANY_NAME | addressField1 | Company Name: | 
+ADDRESS_HOME_LINE1 | address1 | Address Line 1: | 
+ADDRESS_HOME_LINE2 | address2 | Address Line 2: | 
+ADDRESS_HOME_CITY | city | City: | 
+ADDRESS_HOME_STATE | state | State: | 
+ADDRESS_HOME_ZIP | zipCode | ZIP Code: | 
+ADDRESS_HOME_CITY | taxGeoCode | Municipality: As an additional way to make sure you receive your order, we ask that you select the name of your municipality (city, town, borough, village, etc.) followed by the county, township, or parish in which you reside. | 
+EMAIL_ADDRESS | email1 | E-mail Address: Example: xxx@domain.com | 
+PHONE_HOME_CITY_CODE | billphone1 | Contact Phone: | 
+PHONE_HOME_NUMBER | billphone2 | Contact Phone: We will contact you only about your orders and deliveries. | 
+PHONE_HOME_NUMBER | billphone3 | Contact Phone: We will contact you only about your orders and deliveries. | 
+EMAIL_ADDRESS | selfAddress | This is also my billing address. Please enter the phone number and e-mail address associated with this billing address.E-mail Address: Contact Phone: | 0
+UNKNOWN_TYPE | save-address |  | on

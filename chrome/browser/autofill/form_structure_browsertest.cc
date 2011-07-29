@@ -77,6 +77,9 @@ std::string FormStructureBrowserTest::FormStructuresToString(
          field_iter != (*iter)->end();
          ++field_iter) {
       forms_string += AutofillType::FieldTypeToString((*field_iter)->type());
+      forms_string += " | " + UTF16ToUTF8((*field_iter)->name);
+      forms_string += " | " + UTF16ToUTF8((*field_iter)->label);
+      forms_string += " | " + UTF16ToUTF8((*field_iter)->value);
       forms_string += "\n";
     }
   }

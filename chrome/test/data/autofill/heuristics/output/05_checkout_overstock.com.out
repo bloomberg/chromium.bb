@@ -1,42 +1,42 @@
-NAME_FIRST
-NAME_LAST
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-ADDRESS_BILLING_ZIP
-PHONE_HOME_WHOLE_NUMBER
-PHONE_HOME_WHOLE_NUMBER
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-UNKNOWN_TYPE
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-UNKNOWN_TYPE
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | BillingFirstName | First Name | David
+NAME_LAST | BillingLastName | Last Name | Yu
+ADDRESS_BILLING_LINE1 | BillingAddress1 | Address Line 1 | 7540 Donegal Dr
+ADDRESS_BILLING_LINE2 | BillingAddress2 | Address Line 2 | 
+ADDRESS_BILLING_CITY | BillingCity | City | Cupertino
+ADDRESS_BILLING_STATE | BillingState | State | CA
+ADDRESS_BILLING_ZIP | BillingZipCode | Zip | 95014
+PHONE_HOME_WHOLE_NUMBER | BillingDaytimePhone | Day Phone | 4088737223
+PHONE_HOME_WHOLE_NUMBER | BillingEveningPhone | Evening Phone | 
+NAME_FIRST | ShippingFirstName | First Name | 
+NAME_LAST | ShippingLastName | Last Name | 
+ADDRESS_HOME_LINE1 | lineone | Address Line 1 | 7540 Donegal Dr
+ADDRESS_HOME_LINE2 | linetwo | Address Line 2 | 
+UNKNOWN_TYPE | ShippingAddressType | Address Type | H
+ADDRESS_HOME_CITY | city | City | Cupertino
+ADDRESS_HOME_STATE | state | State | CA
+ADDRESS_HOME_ZIP | zip | Zip | 95014
+UNKNOWN_TYPE | product6496917 | Black-plated Tungsten Carbide Comfort Fit Band (8 mm) Options: 10 1 | GROUND6496917
+CREDIT_CARD_NUMBER | CC_number | Credit Card #: | 
+CREDIT_CARD_EXP_MONTH | exp_month | Expiration Date: | 0
+CREDIT_CARD_EXP_4_DIGIT_YEAR | exp_year | Expiration Date: | 
+UNKNOWN_TYPE | PromoCode | See Terms | 
+UNKNOWN_TYPE | GiftCardNumber0 | Gift Card 1: | 
+UNKNOWN_TYPE | PINNumber0 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber1 | Gift Card 2: | 
+UNKNOWN_TYPE | PINNumber1 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber2 | Gift Card 3: | 
+UNKNOWN_TYPE | PINNumber2 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber3 | Gift Card 4: | 
+UNKNOWN_TYPE | PINNumber3 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber4 | Gift Card 5: | 
+UNKNOWN_TYPE | PINNumber4 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber5 | Gift Card 6: | 
+UNKNOWN_TYPE | PINNumber5 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber6 | Gift Card 7: | 
+UNKNOWN_TYPE | PINNumber6 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber7 | Gift Card 8: | 
+UNKNOWN_TYPE | PINNumber7 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber8 | Gift Card 9: | 
+UNKNOWN_TYPE | PINNumber8 | PIN: | 
+UNKNOWN_TYPE | GiftCardNumber9 | Gift Card 10: | 
+UNKNOWN_TYPE | PINNumber9 | PIN: | 

@@ -1,8 +1,8 @@
-NAME_FULL
-COMPANY_NAME
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
+NAME_FULL | _ctl0:cphMainBody:txtName | Name | 
+COMPANY_NAME | _ctl0:cphMainBody:txtCompany | Company | 
+UNKNOWN_TYPE | _ctl0:cphMainBody:txtVendNo | Vendor Number | 
+UNKNOWN_TYPE | _ctl0:cphMainBody:txtEntity | U-Haul Shop Entity Number | 
+EMAIL_ADDRESS | _ctl0:cphMainBody:txtEmail | Email | 
+EMAIL_ADDRESS | _ctl0:cphMainBody:txtEmail0 | ReConfirm Email | 
+PHONE_HOME_WHOLE_NUMBER | _ctl0:cphMainBody:txtPhone | Phone | 
+UNKNOWN_TYPE | _ctl0:cphMainBody:txtComments | Comments: | 

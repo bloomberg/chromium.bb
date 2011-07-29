@@ -1,11 +1,11 @@
-NAME_FIRST
-NAME_LAST
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-ADDRESS_HOME_COUNTRY
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+NAME_FIRST | FirstName | First name: | 
+NAME_LAST | LastName | Last name: | 
+UNKNOWN_TYPE | UsernameSelector |  | header
+EMAIL_ADDRESS | Email |  | 
+UNKNOWN_TYPE | selection | Security question: | choosequestion
+UNKNOWN_TYPE | ownquestion | Security question: | 
+UNKNOWN_TYPE | IdentityAnswer | Answer: | 
+EMAIL_ADDRESS | SecondaryEmail | Recovery email: | 
+ADDRESS_HOME_COUNTRY | loc | Location: | US
+UNKNOWN_TYPE | Birthday | Birthday: | 
+UNKNOWN_TYPE | newaccountcaptcha | Type the characters you see in the picture below. | 

@@ -1,11 +1,11 @@
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_LAST
-COMPANY_NAME
-PHONE_HOME_WHOLE_NUMBER
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_COUNTRY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
+EMAIL_ADDRESS | FormField[1][1] | * Email Address: | 
+NAME_FIRST | FormField[2][4] | * First Name: | 
+NAME_LAST | FormField[2][5] | * Last Name: | 
+COMPANY_NAME | FormField[2][6] | * Company Name: | 
+PHONE_HOME_WHOLE_NUMBER | FormField[2][7] | * Phone Number: | 
+ADDRESS_HOME_LINE1 | FormField[2][8] | * Address Line 1: | 
+ADDRESS_HOME_LINE2 | FormField[2][9] | * Address Line 2: | 
+ADDRESS_HOME_CITY | FormField[2][10] | * Suburb/City: | 
+ADDRESS_HOME_COUNTRY | FormField[2][11] | * Country: | United States
+ADDRESS_HOME_STATE | FormField[2][12] | * State/Province: | 
+ADDRESS_HOME_ZIP | FormField[2][13] | * Zip/Postcode: | 

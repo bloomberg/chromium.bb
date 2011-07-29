@@ -1,7 +1,7 @@
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_LAST
-PHONE_HOME_WHOLE_NUMBER
-PHONE_HOME_COUNTRY_CODE
-PHONE_HOME_CITY_AND_NUMBER
+EMAIL_ADDRESS | ctl00$cphLeft$InnerLogin1$txtEmailAddress | Email Address | 
+EMAIL_ADDRESS | ctl00$cphRight$Registration1$txtEmailAddress | Email Address | 
+NAME_FIRST | ctl00$cphRight$Registration1$txtFirstName | First Name | 
+NAME_LAST | ctl00$cphRight$Registration1$txtLastName | Last Name | 
+PHONE_HOME_WHOLE_NUMBER | ctl00$cphRight$Registration1$txtCellPhone | If outside the US (Country Code/Phone Number) | 
+PHONE_HOME_COUNTRY_CODE | ctl00$cphRight$Registration1$txtCountryCode | If outside the US (Country Code/Phone Number) | 
+PHONE_HOME_CITY_AND_NUMBER | ctl00$cphRight$Registration1$txtIntPhoneNumber | If outside the US (Country Code/Phone Number) | 

@@ -1,13 +1,13 @@
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
-NAME_FULL
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-UNKNOWN_TYPE
+EMAIL_ADDRESS | email1 | Email: | 
+EMAIL_ADDRESS | email2 | Confirm                           email: | 
+UNKNOWN_TYPE | website | Website: | 
+PHONE_HOME_WHOLE_NUMBER | phone | Phone: | 
+UNKNOWN_TYPE | timezone | Time Zone: | 1
+NAME_FULL | name | Name: | 
+COMPANY_NAME | company | Company: | 
+ADDRESS_HOME_LINE1 | address | Address: | 
+ADDRESS_HOME_CITY | city | City: | 
+ADDRESS_HOME_STATE | province | State: | 
+ADDRESS_HOME_ZIP | zipCode | Zip                           code: | 
+ADDRESS_HOME_COUNTRY | country | Country: | US
+UNKNOWN_TYPE | securityCode | Enter                           the security code shown below: | 

@@ -1,20 +1,20 @@
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_MIDDLE_INITIAL
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
+NAME_FIRST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$firstname | * M.I. | 
+NAME_MIDDLE_INITIAL | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$mi | * M.I. | 
+NAME_LAST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$lastname | * | 
+COMPANY_NAME | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$address2 | Company | 
+ADDRESS_HOME_LINE1 | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$address1 | * | 
+ADDRESS_HOME_CITY | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$city | City | 
+ADDRESS_HOME_STATE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$state | State | Select Your State
+ADDRESS_HOME_ZIP | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$zip | * | 
+PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$billphone2 | * | 
+EMAIL_ADDRESS | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$email2 | * | 
+NAME_FIRST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingFirstname | * M.I. | 
+NAME_MIDDLE_INITIAL | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingMi | * M.I. | 
+NAME_LAST | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingLastname | * | 
+COMPANY_NAME | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingAddress2 | Company | 
+ADDRESS_HOME_LINE1 | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingAddress1 | * | 
+ADDRESS_HOME_CITY | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingCity | City | 
+ADDRESS_HOME_STATE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingState | State | Select Your State
+ADDRESS_HOME_ZIP | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingZip | * | 
+PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$shippingPhone | * | 
+UNKNOWN_TYPE | ctl00$ctl00$MainContentPlaceHolder$MainContentPlaceHolder$customerID | Located in the orange box on the back of your catalog. | 

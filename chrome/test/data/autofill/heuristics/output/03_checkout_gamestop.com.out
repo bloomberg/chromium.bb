@@ -1,21 +1,21 @@
-UNKNOWN_TYPE
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-ADDRESS_HOME_COUNTRY
-PHONE_HOME_WHOLE_NUMBER
+UNKNOWN_TYPE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$cHeader$searchtext |  | 
+NAME_FIRST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textFirstName | First Name: | 
+NAME_LAST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textLastName | Last Name: | 
+ADDRESS_HOME_LINE1 | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textAddressLine1 | Address 1: | 
+ADDRESS_HOME_LINE2 | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textAddressLine2 | Address 2: (optional) | 
+ADDRESS_HOME_CITY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textCity | City: | 
+ADDRESS_HOME_STATE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$ddlState | State/Province: | -1
+ADDRESS_HOME_ZIP | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textZip | Zip/Postal: | 
+ADDRESS_HOME_COUNTRY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$ddlCountry | Country: | US
+PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$textPhoneNumberDaytime | Phone Number: | 
+EMAIL_ADDRESS | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$txtEmailAddress | Purchaser's Email: | 
+EMAIL_ADDRESS | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$AddressDetails$AddressDetails$txtEmailAddressConfirm | Confirm Email: | 
+NAME_FIRST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textFirstName | First Name: | 
+NAME_LAST | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textLastName | Last Name: | 
+ADDRESS_HOME_LINE1 | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textAddressLine1 | Address 1: | 
+ADDRESS_HOME_LINE2 | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textAddressLine2 | Address 2: (optional) | 
+ADDRESS_HOME_CITY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textCity | City: | 
+ADDRESS_HOME_STATE | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$ddlState | State/Province: | -1
+ADDRESS_HOME_ZIP | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textZip | Zip/Postal: | 
+ADDRESS_HOME_COUNTRY | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$ddlCountry | Country: | US
+PHONE_HOME_WHOLE_NUMBER | ctl00$ctl00$ctl00$BaseContentPlaceHolder$mainContentPlaceHolder$MainContentPlaceHolder$aspShippingAddress$popAddressSelection$AddressDetails1$textPhoneNumberDaytime | Phone Number: | 

@@ -1,23 +1,23 @@
-NAME_FIRST
-NAME_LAST
-ADDRESS_BILLING_LINE1
-ADDRESS_BILLING_LINE2
-ADDRESS_BILLING_CITY
-ADDRESS_BILLING_STATE
-ADDRESS_BILLING_ZIP
-PHONE_HOME_WHOLE_NUMBER
-PHONE_HOME_WHOLE_NUMBER
-EMAIL_ADDRESS
-NAME_FIRST
-NAME_LAST
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_WHOLE_NUMBER
-CREDIT_CARD_NUMBER
-CREDIT_CARD_EXP_MONTH
-CREDIT_CARD_EXP_4_DIGIT_YEAR
-CREDIT_CARD_NAME
-UNKNOWN_TYPE
+NAME_FIRST | Body$BillingAddress$_firstName | First Name | 
+NAME_LAST | Body$BillingAddress$_lastName | Last Name | 
+ADDRESS_BILLING_LINE1 | Body$BillingAddress$_address1 | Address Line 1 | 
+ADDRESS_BILLING_LINE2 | Body$BillingAddress$_address2 | Address Line 2(optional) | 
+ADDRESS_BILLING_CITY | Body$BillingAddress$_city | City | 
+ADDRESS_BILLING_STATE | Body$BillingAddress$_state | State |   
+ADDRESS_BILLING_ZIP | Body$BillingAddress$_zipcode | Zip Code | 
+PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_PrimaryPhone | Primary Phone | 
+PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_Alt1Phone | Alternate Phone2(optional) | 
+EMAIL_ADDRESS | Body$NewEmailAddress2 | Email Address | 
+NAME_FIRST | Body$ShippingAddress$_firstName | First Name | 
+NAME_LAST | Body$ShippingAddress$_lastName | Last Name | 
+ADDRESS_HOME_LINE1 | Body$ShippingAddress$_address1 | Address Line 1 | 
+ADDRESS_HOME_LINE2 | Body$ShippingAddress$_address2 | Address Line 2(optional) | 
+ADDRESS_HOME_CITY | Body$ShippingAddress$_city | City | 
+ADDRESS_HOME_STATE | Body$ShippingAddress$_state | State |   
+ADDRESS_HOME_ZIP | Body$ShippingAddress$_zipcode | Zip Code | 
+PHONE_HOME_WHOLE_NUMBER | Body$ShippingAddress$_telephone | Phone Number | 
+CREDIT_CARD_NUMBER | Body$CCNumber | Card Number | 
+CREDIT_CARD_EXP_MONTH | Body$CCExpirationDateMonth | Expiration Date | 0
+CREDIT_CARD_EXP_4_DIGIT_YEAR | Body$CCExpirationDateYear | Expiration Date | 0
+CREDIT_CARD_NAME | Body$CCNameOnCard | Name on Card | 
+UNKNOWN_TYPE | Body$NewPasswordHint | Password Hint (optional) | 

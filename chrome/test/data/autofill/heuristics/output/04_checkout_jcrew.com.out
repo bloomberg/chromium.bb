@@ -1,11 +1,11 @@
-ADDRESS_HOME_COUNTRY
-NAME_FIRST
-NAME_LAST
-COMPANY_NAME
-ADDRESS_HOME_LINE1
-ADDRESS_HOME_LINE2
-ADDRESS_HOME_CITY
-ADDRESS_HOME_STATE
-ADDRESS_HOME_ZIP
-PHONE_HOME_WHOLE_NUMBER
-UNKNOWN_TYPE
+ADDRESS_HOME_COUNTRY | ADDRESS<>country_cd | country * | US
+NAME_FIRST | ADDRESS<>firstName | first name * | 
+NAME_LAST | ADDRESS<>lastName | last name * | 
+COMPANY_NAME | ADDRESS<>address3 | company/care of | 
+ADDRESS_HOME_LINE1 | ADDRESS<>address1 | address line 1 * | 
+ADDRESS_HOME_LINE2 | ADDRESS<>address2 | address line 2 | 
+ADDRESS_HOME_CITY | ADDRESS<>city | city * | 
+ADDRESS_HOME_STATE | ADDRESS<>state_cd | state/province * | 
+ADDRESS_HOME_ZIP | ADDRESS<>postal | zip code * | 
+PHONE_HOME_WHOLE_NUMBER | ADDRESS<>phone | phone number (numbers only) * | 
+UNKNOWN_TYPE | anonPasswordHint | create password hint | 

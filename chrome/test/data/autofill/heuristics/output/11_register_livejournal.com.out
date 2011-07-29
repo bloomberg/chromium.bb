@@ -1,6 +1,6 @@
-UNKNOWN_TYPE
-EMAIL_ADDRESS
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
-UNKNOWN_TYPE
+UNKNOWN_TYPE | Widget[CreateAccount]_user | Username: | 
+EMAIL_ADDRESS | Widget[CreateAccount]_email | Email Address: | 
+UNKNOWN_TYPE | Widget[CreateAccount]_gender | Gender: | 
+UNKNOWN_TYPE | Widget[CreateAccount]_bday_mm | Birthdate: | 1
+UNKNOWN_TYPE | Widget[CreateAccount]_bday_dd | Birthdate: | 
+UNKNOWN_TYPE | Widget[CreateAccount]_bday_yyyy | Birthdate: | 
