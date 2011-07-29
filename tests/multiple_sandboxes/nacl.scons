@@ -61,7 +61,10 @@ node = env.CommandTest('multidomain_test.out', test_command,
 #    executable.  Furthermore, statically-linked nacl-glibc does not
 #    work here because of validation failures which require stubout
 #    mode.
+#  * We disable this on x86-32 because it needs 2GB of address space
+#    and that might not be available given the vagaries of ASLR.
 is_broken = (env.Bit('build_arm')
+             or env.Bit('build_x86_32')
              or env.Bit('host_mac')
              or env.Bit('host_windows')
              or env.Bit('nacl_glibc'))
