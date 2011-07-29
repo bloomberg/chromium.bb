@@ -257,7 +257,7 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 # todo(jasonwkim): figure out why hg tag can not be pushed!
 if ${UTMAN_USE_MQ}; then
   readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"0d9c0424d854"}
-  readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"6951bd89b2e5"}
+  readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"96807ce74d9f"}
 
   # Vendor Revs of llvm and llvm-gcc to which the qeues apply
   # svn128002
