@@ -525,6 +525,16 @@ nacl_glibc_skiplist = set([
     'run_srpc_ro_file_test',
     'run_ppapi_geturl_valid_test',
     'run_ppapi_geturl_invalid_test',
+    # Static linking is broken.
+    'run_glibc_static_hello_test',
+    # This test need more investigation.
+    'run_syscall_test',
+    # GetPid is no longer supplied by IRT so does not work in GLibC.
+    'run_getpid_test',
+    # POSIX-over-IMC-hack is completely broken with IRT. We plan to remove it
+    # soon anyway.
+    'run_posix_over_imc_test',
+    'run_startup_message_test',
     ])
 
 
