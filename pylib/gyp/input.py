@@ -299,11 +299,19 @@ def ProcessToolsetsInDict(data):
     target_list = data['targets']
     new_target_list = []
     for target in target_list:
+      # If this target already has an explicit 'toolset', and no 'toolsets'
+      # list, don't modify it further.
+      if 'toolset' in target and 'toolsets' not in target:
+        new_target_list.append(target)
+        continue
       global multiple_toolsets
       if multiple_toolsets:
         toolsets = target.get('toolsets', ['target'])
       else:
         toolsets = ['target']
+      # Make sure this 'toolsets' definition is only processed once.
+      if 'toolsets' in target:
+        del target['toolsets']
       if len(toolsets) > 0:
         # Optimization: only do copies if more than one toolset is specified.
         for build in toolsets[1:]:
@@ -372,11 +380,17 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
                                 os.path.dirname(build_file_path))
     build_file_data['included_files'].append(included_relative)
 
+  # Do a first round of toolsets expansion so that conditions can be defined
+  # per toolset.
   ProcessToolsetsInDict(build_file_data)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
   ProcessVariablesAndConditionsInDict(build_file_data, False, variables,
                                       build_file_path)
+
+  # Since some toolsets might have been defined conditionally, perform
+  # a second round of toolsets expansion now.
+  ProcessToolsetsInDict(build_file_data)
 
   # Look at each project's target_defaults dict, and merge settings into
   # targets.
