@@ -153,6 +153,8 @@ struct UserShare {
   std::string name;
 };
 
+bool InitialSyncEndedForTypes(syncable::ModelTypeSet types, UserShare* share);
+
 // Contains everything needed to talk to and identify a user account.
 struct SyncCredentials {
   std::string email;

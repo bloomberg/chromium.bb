@@ -26,6 +26,9 @@ enum ConfigureReason {
   // Setting up sync performs an initial config to download NIGORI data, and
   // also a config to download initial data once the user selects types.
   CONFIGURE_REASON_NEW_CLIENT,
+
+  // A new datatype is enabled for syncing due to a client upgrade.
+  CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
 };
 
 } // namespace sync_api

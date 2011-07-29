@@ -1044,7 +1044,9 @@ SyncBackendHost* ProfileSyncService::GetBackendForTest() {
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
+  bool restart = false;
   if (!data_type_manager_.get()) {
+    restart = true;
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(backend_.get(),
                                         data_type_controllers_));
@@ -1078,9 +1080,19 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     }
   }
 
-  data_type_manager_->Configure(types,
-      HasSyncSetupCompleted() ? sync_api::CONFIGURE_REASON_RECONFIGURATION :
-                                sync_api::CONFIGURE_REASON_NEW_CLIENT);
+  sync_api::ConfigureReason reason = sync_api::CONFIGURE_REASON_UNKNOWN;
+  if (!HasSyncSetupCompleted()) {
+    reason = sync_api::CONFIGURE_REASON_NEW_CLIENT;
+  } else if (restart == false ||
+             sync_api::InitialSyncEndedForTypes(types, GetUserShare())) {
+    reason = sync_api::CONFIGURE_REASON_RECONFIGURATION;
+  } else {
+    DCHECK(restart);
+    reason = sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+  }
+  DCHECK(reason != sync_api::CONFIGURE_REASON_UNKNOWN);
+
+  data_type_manager_->Configure(types, reason);
 }
 
 sync_api::UserShare* ProfileSyncService::GetUserShare() const {

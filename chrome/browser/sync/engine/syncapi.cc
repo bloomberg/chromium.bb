@@ -229,6 +229,25 @@ std::string PassphraseRequiredReasonToString(
   }
 }
 
+// Helper function to determine if initial sync had ended for types.
+bool InitialSyncEndedForTypes(syncable::ModelTypeSet types,
+                              sync_api::UserShare* share) {
+  syncable::ScopedDirLookup lookup(share->dir_manager.get(),
+                                   share->name);
+  if (!lookup.good()) {
+    DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+    return false;
+  }
+
+  for (syncable::ModelTypeSet::const_iterator i = types.begin();
+       i != types.end(); ++i) {
+    if (!lookup->initial_sync_ended_for_type(*i))
+      return false;
+  }
+  return true;
+}
+
+
 UserShare::UserShare() {}
 
 UserShare::~UserShare() {}
@@ -1369,20 +1388,15 @@ class SyncManager::SyncInternal
   virtual void OnIPAddressChanged();
 
   bool InitialSyncEndedForAllEnabledTypes() {
-    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
-    if (!lookup.good()) {
-      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
-      return false;
-    }
-
+    syncable::ModelTypeSet types;
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
     for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
         i != enabled_types.end(); ++i) {
-      if (!lookup->initial_sync_ended_for_type(i->first))
-        return false;
+      types.insert(i->first);
     }
-    return true;
+
+    return InitialSyncEndedForTypes(types, &share_);
   }
 
   // SyncEngineEventListener implementation.

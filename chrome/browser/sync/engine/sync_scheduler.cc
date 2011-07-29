@@ -113,6 +113,8 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
       return GetUpdatesCallerInfo::MIGRATION;
     case sync_api::CONFIGURE_REASON_NEW_CLIENT:
       return GetUpdatesCallerInfo::NEW_CLIENT;
+    case sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
+      return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
     default:
       NOTREACHED();
   }
