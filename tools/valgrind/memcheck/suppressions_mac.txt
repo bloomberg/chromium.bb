@@ -1742,33 +1742,6 @@
    fun:new_sem_from_pool
 }
 {
-   bug_89827
-   Memcheck:Leak
-   fun:calloc
-   fun:_internal_class_createInstanceFromZone
-   fun:_internal_class_createInstance
-   fun:+[NSObject allocWithZone:]
-   fun:+[NSObject alloc]
-   fun:-[PanelWindowControllerCocoa tabContentsView]
-   fun:-[PanelWindowControllerCocoa awakeFromNib]
-   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
-   fun:loadNib
-   fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
-   fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
-   fun:-[NSWindowController loadWindow]
-   fun:-[NSWindowController window]
-   fun:-[PanelWindowControllerCocoa revealAnimatedWithFrame:]
-   fun:_ZN23PanelBrowserWindowCocoa9ShowPanelEv
-   fun:_ZN5Panel4ShowEv
-}
-{
-   bug_89889
-   Memcheck:Leak
-   ...
-   fun:+[NSObject alloc]
-   fun:-[PanelWindowControllerCocoa tabContentsView]
-}
-{
    bug_90976
    Memcheck:Addr2
    ...
