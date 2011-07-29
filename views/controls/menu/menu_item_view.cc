@@ -114,14 +114,23 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   *tooltip = UTF16ToWideHack(tooltip_);
   if (!tooltip->empty())
     return true;
-  if (GetType() != SEPARATOR) {
-    gfx::Point location(p);
-    ConvertPointToScreen(this, &location);
-    *tooltip = GetDelegate()->GetTooltipText(command_, location);
-    if (!tooltip->empty())
-      return true;
+
+  if (GetType() == SEPARATOR)
+    return false;
+
+  MenuController* controller = GetMenuController();
+  CHECK(controller);
+  if (controller->exit_type() != MenuController::EXIT_NONE) {
+    // The menu is in the process of closing. Don't attempt to query the
+    // delegate as it may no longer be valid.
+    return false;
   }
-  return false;
+
+  CHECK(GetDelegate());
+  gfx::Point location(p);
+  ConvertPointToScreen(this, &location);
+  *tooltip = GetDelegate()->GetTooltipText(command_, location);
+  return !tooltip->empty();
 }
 
 void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {

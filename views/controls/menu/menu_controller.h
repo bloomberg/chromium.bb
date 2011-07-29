@@ -84,6 +84,10 @@ class VIEWS_API MenuController : public MessageLoop::Dispatcher {
   // An alternative to Cancel(EXIT_ALL) that can be used with a OneShotTimer.
   void CancelAll() { Cancel(EXIT_ALL); }
 
+  // Returns the current exit type. This returns a value other than EXIT_NONE if
+  // the menu is being canceled.
+  ExitType exit_type() const { return exit_type_; }
+
   // Various events, forwarded from the submenu.
   //
   // NOTE: the coordinates of the events are in that of the
