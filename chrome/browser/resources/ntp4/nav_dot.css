@@ -21,17 +21,21 @@
 .dot {
   box-sizing: border-box;
   cursor: pointer;
-  margin-right: 10px;
-  outline: none;
+  max-width: 80px;
   text-align: left;
-  width: 80px;
+  -webkit-box-flex: 1;
+  -webkit-margin-end: 10px;
   -webkit-padding-start: 2px;
-  -webkit-transition: width 0.25s, margin-right 0.25s;
+  -webkit-transition: max-width 0.25s, -webkit-margin-end 0.25s;
+}
+
+.dot:last-child {
+  -webkit-margin-end: 0;
 }
 
 .dot.small {
-  margin-right: 0;
-  width: 0;
+  max-width: 0;
+  -webkit-margin-end: 0;
 }
 
 .dot .selection-bar {
@@ -48,8 +52,7 @@
   font-size: 8pt;
   font-weight: bold;
   padding-top: 0;
-  /* 10 less than the width of the dot. */
-  width: 70px;
+  width: 90%;
   -webkit-appearance: caret;
   -webkit-transition: color 0.2s;
 }

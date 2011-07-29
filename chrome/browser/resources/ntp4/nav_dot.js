@@ -229,7 +229,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onTransitionEnd_: function(e) {
-      if (e.propertyName === 'width' && this.classList.contains('small'))
+      if (e.propertyName === 'max-width' && this.classList.contains('small'))
         this.parentNode.removeChild(this);
     },
   };
