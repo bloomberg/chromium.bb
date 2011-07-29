@@ -297,12 +297,8 @@ def GetBoardPathFromCrosOverlayList(build_path, target):
   if re.match('.*?_.*', target):
     (board, variant) = target.split('_')
     cmd += ['--board', board, '--variant', variant]
-  elif re.match('.*?-\w+', target):
-    cmd += ['--board', target]
-  elif target == 'stumpy':
-    cmd += ['--board', target]
   else:
-    raise UnknownBoardFormat('Unknown format: %s' % target)
+    cmd += ['--board', target]
 
   cmd_output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          cwd=script_dir)

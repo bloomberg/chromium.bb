@@ -198,12 +198,6 @@ class TestPrebuilt(unittest.TestCase):
         prebuilt.DeterminePrebuiltConfFile(fake_path, target),
         expected_results['result'])
 
-  def testDeterminePrebuiltConfGarbage(self):
-    """Ensure an exception is raised on bad input."""
-    self.assertRaises(prebuilt.UnknownBoardFormat,
-                      prebuilt.DeterminePrebuiltConfFile,
-                      'fake_path', 'asdfasdf')
-
 
 class TestPackagesFileFiltering(unittest.TestCase):
 
