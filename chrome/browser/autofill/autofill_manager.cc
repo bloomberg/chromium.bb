@@ -1120,6 +1120,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
        iter != non_queryable_forms.end(); ++iter) {
     form_structures_.push_back(*iter);
   }
+
+  CheckForPopularForms(form_structures_.get(), tab_contents_wrapper_,
+                       tab_contents());
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) {
