@@ -1743,6 +1743,16 @@ void RenderWidgetHostViewWin::EnsureTooltip() {
     }
     ti.uFlags = TTF_TRANSPARENT;
     ti.lpszText = LPSTR_TEXTCALLBACK;
+
+    // Ensure web content tooltips are displayed for at least this amount of
+    // time, to give users a chance to read longer messages.
+    const int kMinimumAutopopDurationMs = 10 * 1000;
+    int autopop_duration_ms =
+        SendMessage(tooltip_hwnd_, TTM_GETDELAYTIME, TTDT_AUTOPOP, NULL);
+    if (autopop_duration_ms < kMinimumAutopopDurationMs) {
+      SendMessage(tooltip_hwnd_, TTM_SETDELAYTIME, TTDT_AUTOPOP,
+                  kMinimumAutopopDurationMs);
+    }
   }
 
   CRect cr;
