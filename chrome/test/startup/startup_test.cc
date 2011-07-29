@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/test_switches.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
@@ -309,14 +310,20 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     clear_profile_ = false;
     // Quit and set flags to restore session.
     UITest::TearDown();
+
     // Clear all arguments for session restore, or the number of open tabs
     // will grow with each restore.
-    launch_arguments_ = CommandLine(CommandLine::NO_PROGRAM);
+    CommandLine new_launch_arguments = CommandLine(CommandLine::NO_PROGRAM);
+    // Keep the branding switch if using a reference build.
+    if (launch_arguments_.HasSwitch(switches::kEnableChromiumBranding)) {
+      new_launch_arguments.AppendSwitch(switches::kEnableChromiumBranding);
+    }
     // The session will be restored once per cycle for numCycles test cycles,
     // and each time, UITest::SetUp will wait for |tab_count| tabs to
     // finish loading.
-    launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
+    new_launch_arguments.AppendSwitchASCII(switches::kRestoreLastSession,
                                         base::IntToString(tab_count));
+    launch_arguments_ = new_launch_arguments;
   }
   RunStartupTest(graph, trace, WARM, NOT_IMPORTANT,
                  UITestBase::DEFAULT_THEME, tab_count, nth_timed_tab);
