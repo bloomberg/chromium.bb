@@ -199,27 +199,23 @@ bool SetEnabledFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &enable));
 
-  if (!service()->GetExtensionById(extension_id, true)) {
+  const Extension* extension = service()->GetExtensionById(extension_id, true);
+  if (!extension) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoExtensionError, extension_id);
     return false;
   }
 
-  ExtensionPrefs* prefs = service()->extension_prefs();
-  Extension::State state = prefs->GetExtensionState(extension_id);
-
-  if (!Extension::UserMayDisable(
-      prefs->GetInstalledExtensionInfo(extension_id)->extension_location)) {
+  if (!Extension::UserMayDisable(extension->location())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kUserCantDisableError, extension_id);
     return false;
   }
 
-  if (state == Extension::DISABLED && enable) {
+  if (!service()->IsExtensionEnabled(extension_id) && enable)
     service()->EnableExtension(extension_id);
-  } else if (state == Extension::ENABLED && !enable) {
+  else if (service()->IsExtensionEnabled(extension_id) && !enable)
     service()->DisableExtension(extension_id);
-  }
 
   return true;
 }

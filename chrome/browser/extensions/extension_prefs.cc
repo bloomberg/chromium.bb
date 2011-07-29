@@ -892,14 +892,29 @@ void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
       Value::CreateIntegerValue(static_cast<int>(launch_type)));
 }
 
+bool ExtensionPrefs::DoesExtensionHaveState(
+    const std::string& id, Extension::State check_state) const {
+  const DictionaryValue* extension = GetExtensionPref(id);
+  int state = -1;
+  if (!extension || !extension->GetInteger(kPrefState, &state))
+    return false;
+
+  if (state < 0 || state >= Extension::NUM_STATES) {
+    LOG(ERROR) << "Bad pref 'state' for extension '" << id << "'";
+    return false;
+  }
+
+  return state == check_state;
+}
+
 bool ExtensionPrefs::IsExternalExtensionUninstalled(
     const std::string& id) const {
-  const DictionaryValue* extension = GetExtensionPref(id);
-  if (!extension)
-    return false;
-  int state = 0;
-  return extension->GetInteger(kPrefState, &state) &&
-         state == static_cast<int>(Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+  return DoesExtensionHaveState(id, Extension::EXTERNAL_EXTENSION_UNINSTALLED);
+}
+
+bool ExtensionPrefs::IsExtensionDisabled(
+    const std::string& id) const {
+  return DoesExtensionHaveState(id, Extension::DISABLED);
 }
 
 std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
@@ -984,20 +999,6 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
   } else {
     DeleteExtensionPrefs(extension_id);
   }
-}
-
-Extension::State ExtensionPrefs::GetExtensionState(
-    const std::string& extension_id) const {
-  const DictionaryValue* extension = GetExtensionPref(extension_id);
-
-  int state = -1;
-  if (!extension || !extension->GetInteger(kPrefState, &state) ||
-      state < 0 || state >= Extension::NUM_STATES) {
-    LOG(ERROR) << "Bad or missing pref 'state' for extension '"
-               << extension_id << "'";
-    return Extension::ENABLED;
-  }
-  return static_cast<Extension::State>(state);
 }
 
 void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
@@ -1506,11 +1507,11 @@ void ExtensionPrefs::InitPrefStore() {
     extension_pref_value_map_->RegisterExtension(
         *ext_id,
         GetInstallTime(*ext_id),
-        GetExtensionState(*ext_id) == Extension::ENABLED);
+        !IsExtensionDisabled(*ext_id));
     content_settings_store_->RegisterExtension(
         *ext_id,
         GetInstallTime(*ext_id),
-        GetExtensionState(*ext_id) == Extension::ENABLED);
+        !IsExtensionDisabled(*ext_id));
 
     // Set regular extension controlled prefs.
     const DictionaryValue* prefs = GetExtensionControlledPrefs(*ext_id, false);

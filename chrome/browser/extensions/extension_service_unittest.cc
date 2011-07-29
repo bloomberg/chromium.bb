@@ -1467,14 +1467,14 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
   extension = service_->disabled_extensions()->at(0);
 
-  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::DISABLED);
+  ASSERT_TRUE(prefs->IsExtensionDisabled(extension_id));
   ASSERT_FALSE(service_->IsExtensionEnabled(extension_id));
   ASSERT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
 
   // Now grant and re-enable the extension, making sure the prefs are updated.
   service_->GrantPermissionsAndEnableExtension(extension);
 
-  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::ENABLED);
+  ASSERT_FALSE(prefs->IsExtensionDisabled(extension_id));
   ASSERT_TRUE(service_->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
@@ -1510,7 +1510,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
   extension = service_->disabled_extensions()->at(0);
 
-  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::DISABLED);
+  ASSERT_TRUE(prefs->IsExtensionDisabled(extension_id));
   ASSERT_FALSE(service_->IsExtensionEnabled(extension_id));
   ASSERT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
 
@@ -2208,8 +2208,8 @@ TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
   const Extension* extension = service_->GetExtensionById(theme_crx, true);
   ASSERT_TRUE(extension);
 
-  EXPECT_EQ(Extension::ENABLED,
-            service_->extension_prefs()->GetExtensionState(extension->id()));
+  EXPECT_FALSE(
+      service_->extension_prefs()->IsExtensionDisabled(extension->id()));
   EXPECT_TRUE(service_->IsExtensionEnabled(theme_crx));
 }
 
@@ -2237,8 +2237,8 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
   const Extension* extension = service_->GetExtensionById(theme_crx, true);
   ASSERT_TRUE(extension);
 
-  EXPECT_EQ(Extension::ENABLED,
-            service_->extension_prefs()->GetExtensionState(extension->id()));
+  EXPECT_FALSE(
+      service_->extension_prefs()->IsExtensionDisabled(extension->id()));
   EXPECT_TRUE(service_->IsExtensionEnabled(extension->id()));
   EXPECT_FALSE(service_->IsIncognitoEnabled(extension->id()));
 }

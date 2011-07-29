@@ -82,6 +82,11 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // user.
   bool IsExternalExtensionUninstalled(const std::string& id) const;
 
+  // Checks whether |extension_id| is disabled. If there's no state pref for
+  // the extension, this will return false. Generally you should use
+  // ExtensionService::IsExtensionEnabled instead.
+  bool IsExtensionDisabled(const std::string& id) const;
+
   // Get the order that toolstrip URLs appear in the shelf.
   typedef std::vector<GURL> URLList;
   URLList GetShelfToolstripOrder();
@@ -104,10 +109,6 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void OnExtensionUninstalled(const std::string& extension_id,
                               const Extension::Location& location,
                               bool external_uninstall);
-
-  // Returns the state (enabled/disabled) of the given extension. Generally you
-  // should use ExtensionService::IsExtensionEnabled instead.
-  Extension::State GetExtensionState(const std::string& extension_id) const;
 
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const std::string& extension_id, Extension::State);
@@ -462,6 +463,11 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
 
   // Migrates the permissions data in the pref store.
   void MigratePermissions(const ExtensionIdSet& extension_ids);
+
+  // Checks whether there is a state pref for the extension and if so, whether
+  // it matches |check_state|.
+  bool DoesExtensionHaveState(const std::string& id,
+                              Extension::State check_state) const;
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;

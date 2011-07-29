@@ -894,13 +894,19 @@ void ExtensionService::ClearExtensionData(const GURL& extension_url) {
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
   const Extension* extension =
-      GetExtensionByIdInternal(extension_id, true, false, false);
+      GetExtensionByIdInternal(extension_id, true, false, true);
   if (extension)
     return true;
 
-  // If the extension hasn't been loaded yet, check the prefs for it.
-  return extension_prefs_->GetExtensionState(extension_id) ==
-      Extension::ENABLED;
+  extension =
+      GetExtensionByIdInternal(extension_id, false, true, false);
+  if (extension)
+    return false;
+
+  // If the extension hasn't been loaded yet, check the prefs for it. Assume
+  // enabled unless otherwise noted.
+  return !extension_prefs_->IsExtensionDisabled(extension_id) &&
+      !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 
 bool ExtensionService::IsExternalExtensionUninstalled(
@@ -1978,9 +1984,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // extension if necessary.
   InitializePermissions(extension);
 
-  bool disabled = Extension::UserMayDisable(extension->location()) &&
-      extension_prefs_->GetExtensionState(extension->id()) ==
-          Extension::DISABLED;
+  bool disabled = extension_prefs_->IsExtensionDisabled(extension->id());
   if (disabled) {
     disabled_extensions_.push_back(scoped_extension);
     // TODO(aa): This seems dodgy. It seems that AddExtension() could get called
@@ -2135,8 +2139,7 @@ void ExtensionService::OnExtensionInstalled(
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
-  bool initial_enable = IsExtensionEnabled(id);
-
+  bool initial_enable = !extension_prefs_->IsExtensionDisabled(id);
   PendingExtensionInfo pending_extension_info;
   if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
     pending_extension_manager()->Remove(id);

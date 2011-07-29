@@ -148,7 +148,7 @@ class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
 
 
-// Tests the GetExtensionState/SetExtensionState functions.
+// Tests the IsExtensionDisabled/SetExtensionState functions.
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
@@ -157,7 +157,7 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    EXPECT_EQ(Extension::DISABLED, prefs()->GetExtensionState(extension->id()));
+    EXPECT_TRUE(prefs()->IsExtensionDisabled(extension->id()));
   }
 
  private:
@@ -575,15 +575,13 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     extension_ = prefs_.AddExtension("on_extension_installed");
-    EXPECT_EQ(Extension::ENABLED,
-              prefs()->GetExtensionState(extension_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(
         extension_.get(), Extension::DISABLED, false);
   }
 
   virtual void Verify() {
-    EXPECT_EQ(Extension::DISABLED,
-              prefs()->GetExtensionState(extension_->id()));
+    EXPECT_TRUE(prefs()->IsExtensionDisabled(extension_->id()));
   }
 
  private:
@@ -599,8 +597,7 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
     EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex());
 
     extension_ = prefs_.AddExtension("on_extension_installed");
-    EXPECT_EQ(Extension::ENABLED,
-        prefs()->GetExtensionState(extension_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED, false);
   }
 
