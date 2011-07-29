@@ -70,7 +70,6 @@ BITSPLATFORM=64
 LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
 HPREFIX=BUILD/build-nacl-headers
 NACL_SYS_HEADERS= \
-      "$(HPREFIX)/sys/audio_video.h" \
       "$(HPREFIX)/sys/nacl_imc_api.h" \
       "$(HPREFIX)/sys/nacl_name_service.h" \
       "$(HPREFIX)/sys/nacl_syscalls.h"

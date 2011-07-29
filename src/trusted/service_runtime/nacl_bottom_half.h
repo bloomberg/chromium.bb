@@ -13,7 +13,6 @@
 
 #include "native_client/src/include/portability.h"  /* uintptr_t */
 #include "native_client/src/shared/platform/nacl_sync.h"
-#include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 
 struct NaClAppThread;
 struct NaClClosure;

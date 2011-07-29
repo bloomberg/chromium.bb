@@ -254,7 +254,6 @@ def SubsetNaClHeaders(input_headers, arch):
       "sys/nacl_syscalls.h",
       "bits/nacl_syscalls.h",
       "sys/nacl_name_service.h",
-      "sys/audio_video.h",
       "machine/_types.h"]
   for filename in headers:
     SetPath(result, filename, GetPath(input_headers, filename))

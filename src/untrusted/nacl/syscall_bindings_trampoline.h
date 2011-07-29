@@ -22,7 +22,6 @@ struct NaClImcMsgHdr;
 struct stat;
 struct timeval;
 struct timespec;
-union NaClMultimediaEvent;
 
 #define NACL_SYSCALL(s) ((TYPE_nacl_ ## s) NACL_SYSCALL_ADDR(NACL_sys_ ## s))
 
@@ -143,23 +142,6 @@ typedef int (*TYPE_nacl_cond_timed_wait_abs) (int condvar,
 typedef int (*TYPE_nacl_sem_create) (int32_t value);
 typedef int (*TYPE_nacl_sem_wait) (int sem);
 typedef int (*TYPE_nacl_sem_post) (int sem);
-
-/* ============================================================ */
-/* multimedia */
-/* ============================================================ */
-
-typedef int (*TYPE_nacl_multimedia_init)(int subsystems);
-typedef int (*TYPE_nacl_multimedia_shutdown)(void);
-typedef int (*TYPE_nacl_video_init)(int width, int height);
-typedef int (*TYPE_nacl_video_shutdown)(void);
-typedef int (*TYPE_nacl_video_update)(const void* data);
-typedef int (*TYPE_nacl_video_poll_event)(union NaClMultimediaEvent *event);
-/* NOTE: we cannot forward declare enums in C */
-typedef int (*TYPE_nacl_audio_init)(/*enum NaClAudioFormat*/ int format,
-                                    int desired_samples,
-                                    int *obtained_samples);
-typedef int (*TYPE_nacl_audio_shutdown)(void);
-typedef int (*TYPE_nacl_audio_stream)(const void *data, size_t *size);
 
 /* ============================================================ */
 /* misc */
