@@ -469,16 +469,20 @@ void WebPluginProxy::CreateCanvasFromHandle(
   // Create a canvas that will reference the shared bits. We have to handle
   // errors here since we're mapping a large amount of memory that may not fit
   // in our address space, or go wrong in some other way.
+  HANDLE section = chrome::GetSectionFromProcess(dib_handle,
+                                                 channel_->renderer_handle(),
+                                                 false);
   scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
   if (!canvas->initialize(
           window_rect.width(),
           window_rect.height(),
           true,
-          chrome::GetSectionFromProcess(dib_handle,
-              channel_->renderer_handle(), false))) {
-    canvas.reset();
+          section)) {
+    canvas_out->reset();
   }
   canvas_out->reset(canvas.release());
+  // The canvas does not own the section so we need to close it now.
+  CloseHandle(section);
 }
 
 void WebPluginProxy::SetWindowlessBuffers(
