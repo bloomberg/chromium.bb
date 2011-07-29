@@ -62,6 +62,11 @@ void MenuRunner::Holder::RunMenuAt(Widget* parent,
                                    const gfx::Rect& bounds,
                                    MenuItemView::AnchorPosition anchor,
                                    bool has_mnemonics) {
+  if (running_) {
+    // Ignore requests to show the menu while it's already showing. MenuItemView
+    // doesn't handle this very well (meaning it crashes).
+    return;
+  }
   running_ = true;
   menu_->RunMenuAt(parent, button, bounds, anchor, has_mnemonics);
   if (delete_after_run_) {
