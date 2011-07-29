@@ -32,9 +32,12 @@ bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
   // event distribution code works by turning all touch inputs into
   // mouse approximations.
 
+  // Conver the touch-event into a mouse-event. This mouse-event gets its
+  // location information from the native-event, so it needs to drop on the
+  // toplevel widget instead of just source->GetWidget.
   Event::FromNativeEvent2 from_native;
   MouseEvent mouseev(event, from_native);
-  source->GetWidget()->OnMouseEvent(mouseev);
+  source->GetWidget()->GetTopLevelWidget()->OnMouseEvent(mouseev);
   return true;
 }
 

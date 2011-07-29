@@ -28,7 +28,20 @@ DesktopWindowRootView::~DesktopWindowRootView() {
 // DesktopWindowRootView, internal::RootView overrides:
 
 bool DesktopWindowRootView::OnMousePressed(const MouseEvent& event) {
-  View* target = GetEventHandlerForPoint(event.location());
+  ActivateWidgetAtLocation(event.location());
+  return RootView::OnMousePressed(event);
+}
+
+ui::TouchStatus DesktopWindowRootView::OnTouchEvent(const TouchEvent& event) {
+  ActivateWidgetAtLocation(event.location());
+  return RootView::OnTouchEvent(event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowRootView, private
+
+void DesktopWindowRootView::ActivateWidgetAtLocation(const gfx::Point& point) {
+  View* target = GetEventHandlerForPoint(point);
   if (target->GetClassName() == internal::NativeWidgetView::kViewClassName) {
     internal::NativeWidgetView* native_widget_view =
         static_cast<internal::NativeWidgetView*>(target);
@@ -37,7 +50,6 @@ bool DesktopWindowRootView::OnMousePressed(const MouseEvent& event) {
   } else {
     desktop_window_view_->ActivateWidget(NULL);
   }
-  return RootView::OnMousePressed(event);
 }
 
 }  // namespace desktop

@@ -104,7 +104,8 @@ void NativeWidgetView::OnMouseExited(const MouseEvent& event) {
 }
 
 ui::TouchStatus NativeWidgetView::OnTouchEvent(const TouchEvent& event) {
-  return delegate()->OnTouchEvent(event);
+  TouchEvent e(event, this);
+  return delegate()->OnTouchEvent(e);
 }
 
 bool NativeWidgetView::OnKeyPressed(const KeyEvent& event) {

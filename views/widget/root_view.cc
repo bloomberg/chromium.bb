@@ -367,6 +367,10 @@ bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
 
 ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   TouchEvent e(event, this);
+  if (capture_view_) {
+    TouchEvent ce(e, this, capture_view_);
+    return capture_view_->OnTouchEvent(ce);
+  }
 
   // If touch_pressed_handler_ is non null, we are currently processing
   // a touch down on the screen situation. In that case we send the

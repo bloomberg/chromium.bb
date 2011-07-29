@@ -273,6 +273,7 @@ class VIEWS_API TouchEvent : public LocatedEvent {
   float force() const { return force_; }
 
  private:
+  friend class internal::NativeWidgetView;
   friend class internal::RootView;
 
   TouchEvent(const TouchEvent& model, View* root);

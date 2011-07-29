@@ -20,6 +20,11 @@ class DesktopWindowRootView : public internal::RootView {
  private:
   // Overridden from RootView:
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+
+  // Activates the widget at the specified location and deactivates the
+  // currently selected widget.
+  void ActivateWidgetAtLocation(const gfx::Point& point);
 
   DesktopWindowView* desktop_window_view_;
 
