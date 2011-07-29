@@ -16,16 +16,29 @@ namespace chromeos {
 
 class BrightnessLibraryImpl : public BrightnessLibrary {
  public:
-  BrightnessLibraryImpl() : brightness_connection_(NULL) {
-    if (CrosLibrary::Get()->EnsureLoaded())
-      Init();
-  }
+  BrightnessLibraryImpl() : brightness_connection_(NULL) {}
 
   ~BrightnessLibraryImpl() {
     if (brightness_connection_) {
       chromeos::DisconnectBrightness(brightness_connection_);
       brightness_connection_ = NULL;
     }
+  }
+
+  void Init() {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      CHECK(!brightness_connection_) << "Already intialized";
+      brightness_connection_ =
+          chromeos::MonitorBrightnessV2(&BrightnessChangedHandler, this);
+    }
+  }
+
+  void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
   }
 
   void DecreaseScreenBrightness(bool allow_off) {
@@ -38,26 +51,12 @@ class BrightnessLibraryImpl : public BrightnessLibrary {
       chromeos::IncreaseScreenBrightness();
   }
 
-  void AddObserver(Observer* observer) {
-    observers_.AddObserver(observer);
-  }
-
-  void RemoveObserver(Observer* observer) {
-    observers_.RemoveObserver(observer);
-  }
-
  private:
   static void BrightnessChangedHandler(void* object,
                                        int brightness_level,
                                        bool user_initiated) {
     BrightnessLibraryImpl* self = static_cast<BrightnessLibraryImpl*>(object);
     self->OnBrightnessChanged(brightness_level, user_initiated);
-  }
-
-  void Init() {
-    DCHECK(!brightness_connection_) << "Already intialized";
-    brightness_connection_ =
-        chromeos::MonitorBrightnessV2(&BrightnessChangedHandler, this);
   }
 
   void OnBrightnessChanged(int brightness_level, bool user_initiated) {
@@ -88,18 +87,22 @@ class BrightnessLibraryStubImpl : public BrightnessLibrary {
  public:
   BrightnessLibraryStubImpl() {}
   ~BrightnessLibraryStubImpl() {}
-  void DecreaseScreenBrightness(bool allow_off) {}
-  void IncreaseScreenBrightness() {}
+  void Init() {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
+  void DecreaseScreenBrightness(bool allow_off) {}
+  void IncreaseScreenBrightness() {}
 };
 
 // static
 BrightnessLibrary* BrightnessLibrary::GetImpl(bool stub) {
+  BrightnessLibrary* impl;
   if (stub)
-    return new BrightnessLibraryStubImpl();
+    impl = new BrightnessLibraryStubImpl();
   else
-    return new BrightnessLibraryImpl();
+    impl = new BrightnessLibraryImpl();
+  impl->Init();
+  return impl;
 }
 
 }  // namespace chromeos

@@ -17,11 +17,13 @@ class BrightnessLibrary {
 
   virtual ~BrightnessLibrary() {}
 
-  virtual void DecreaseScreenBrightness(bool allow_off) = 0;
-  virtual void IncreaseScreenBrightness() = 0;
+  virtual void Init() = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  virtual void DecreaseScreenBrightness(bool allow_off) = 0;
+  virtual void IncreaseScreenBrightness() = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
