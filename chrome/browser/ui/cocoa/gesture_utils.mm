@@ -29,7 +29,17 @@ BOOL RecognizeTwoFingerGestures() {
   // The two-finger gesture is controlled by the preference below and is boolean
   // YES for (A, C) and NO for (B).
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  return [defaults boolForKey:@"AppleEnableSwipeNavigateWithScrolls"];
+  [defaults synchronize];
+
+  // By default, the preference is not set. When it's not, the intrinsic Lion
+  // default (YES) should be returned.
+  NSDictionary* prefs = [defaults dictionaryRepresentation];
+  NSNumber* value = [prefs objectForKey:@"AppleEnableSwipeNavigateWithScrolls"];
+  if (!value)
+    return YES;
+
+  // If the preference is set, return the value.
+  return [value boolValue];
 }
 
 // On Lion, returns YES if the scroll direction is "natural"/inverted. All other
@@ -39,11 +49,16 @@ BOOL IsScrollDirectionInverted() {
     return NO;
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  // The defaults must be synchronized here otherwise a stale value will be
-  // returned for an indeterminate amount of time. For some reason, this is
-  // not necessary in |-recognizeTwoFingerGestures|.
   [defaults synchronize];
-  return [defaults boolForKey:@"com.apple.swipescrolldirection"];
+
+  // By default, the preference is not set. When it's not, the intrinsic Lion
+  // default (YES) should be returned.
+  NSDictionary* prefs = [defaults dictionaryRepresentation];
+  NSNumber* value = [prefs objectForKey:@"com.apple.swipescrolldirection"];
+  if (!value)
+    return YES;
+
+  return [value boolValue];
 }
 
 }  // namespace gesture_utils
