@@ -1,8 +1,9 @@
 # Following tests create real libjingle connections, and libjingle has
 # hardcoded timeouts, so these tests fail under TSan.
 JingleSessionTest.Connect
+JingleSessionTest.ConnectBadChannelAuth
 JingleSessionTest.TestControlChannel
 JingleSessionTest.TestEventChannel
+JingleSessionTest.TestSpeed
 JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
-JingleSessionTest.TestSpeed

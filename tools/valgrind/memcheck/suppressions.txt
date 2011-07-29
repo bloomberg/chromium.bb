@@ -3774,7 +3774,7 @@
    fun:_ZN5views6Widget21OnNativeWidgetCreatedEv
    ...
    fun:_ZN*TabContentsView*CreateView*
-   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN11TabContentsC2EPN7content14BrowserContextEP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
    fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
@@ -4148,8 +4148,8 @@
    bug_79652
    Memcheck:Leak
    ...
-   fun:_ZN8chromeos14AudioMixerAlsa19InitializeAlsaMixerEv
-   fun:_ZN8chromeos14AudioMixerAlsa6DoInitEP14CallbackRunnerI6Tuple1IbEE
+   fun:_ZN8chromeos14AudioMixerAlsa15ConnectInternalEv
+   fun:_ZN8chromeos14AudioMixerAlsa7ConnectEv
 }
 {
    bug_79654_a
@@ -5154,7 +5154,14 @@
    fun:_ZN18BrowserProcessImpl21gpu_blacklist_updaterEv
    fun:_ZN19GpuBlacklistUpdater15SetupOnUIThreadEv
 }
-
+{
+   bug_90967
+   Memcheck:Addr4
+   fun:_ZN6webkit5ppapi9ObjectVar15InstanceDeletedEv
+   fun:_ZN6webkit5ppapi15ResourceTracker19CleanupInstanceDataEib
+   fun:_ZN6webkit5ppapi15ResourceTracker15InstanceDeletedEi
+   fun:_ZN6webkit5ppapi14PluginInstanceD0Ev
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
