@@ -1914,6 +1914,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point {
   point = [[self view] convertPoint:point
                            fromView:[[[self view] window] contentView]];
+
+  // If there's a hover button, return it if the point is within its bounds.
+  // Since the logic in -buttonForDroppingOnAtPoint:fromArray: only matches a
+  // button when the point is over the middle half, this is needed to prevent
+  // the button's folder being closed if the mouse temporarily leaves the
+  // middle half but is still within the button bounds.
+  if (hoverButton_ && NSPointInRect(point, [hoverButton_ frame]))
+     return hoverButton_.get();
+
   BookmarkButton* button = [self buttonForDroppingOnAtPoint:point
                                                   fromArray:buttons_.get()];
   // One more chance -- try "Other Bookmarks" and "off the side" (if visible).
@@ -2300,6 +2309,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     return;
   // Else open a new one if it makes sense to do so.
   if ([sender bookmarkNode]->is_folder()) {
+    // Update |hoverButton_| so that it corresponds to the open folder.
+    hoverButton_.reset([sender retain]);
     [folderTarget_ openBookmarkFolderFromButton:sender];
   } else {
     // We're over a non-folder bookmark so close any old folders.
