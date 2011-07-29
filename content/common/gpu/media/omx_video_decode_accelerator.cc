@@ -280,6 +280,12 @@ void OmxVideoDecodeAccelerator::Decode(
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(!free_input_buffers_.empty());
 
+  if (current_state_change_ == RESETTING ||
+      !queued_bitstream_buffers_.empty()) {
+    queued_bitstream_buffers_.push_back(bitstream_buffer);
+    return;
+  }
+
   RETURN_ON_FAILURE(current_state_change_ == NO_TRANSITION &&
                     (client_state_ == OMX_StateIdle ||
                      client_state_ == OMX_StateExecuting),
@@ -315,7 +321,6 @@ void OmxVideoDecodeAccelerator::Decode(
   OMX_ERRORTYPE result = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
   RETURN_ON_OMX_FAILURE(result, "OMX_EmptyThisBuffer() failed",
                         PLATFORM_FAILURE,);
-
   input_buffers_at_component_++;
 }
 
@@ -505,8 +510,22 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInResetting() {
   DCHECK_EQ(client_state_, OMX_StatePause);
   client_state_ = OMX_StateExecuting;
   current_state_change_ = NO_TRANSITION;
-  if (client_)
-    client_->NotifyResetDone();
+  if (!client_)
+    return;
+
+  // Drain queued bitstream & picture buffers that were held away from the
+  // decoder during the reset.
+  BitstreamBufferList buffers;
+  buffers.swap(queued_bitstream_buffers_);
+  for (size_t i = 0; i < buffers.size(); ++i)
+    Decode(buffers[i]);
+  // Ensure the Decode() calls above didn't end up re-enqueuing.
+  DCHECK(queued_bitstream_buffers_.empty());
+  for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
+    ReusePictureBuffer(queued_picture_buffer_ids_[i]);
+  queued_picture_buffer_ids_.clear();
+
+  client_->NotifyResetDone();
 }
 
 // Alert: HORROR ahead!  OMX shutdown is an asynchronous dance but our clients
@@ -732,18 +751,22 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     saw_eos_during_flush_ = true;
   }
 
+  DCHECK(buffer->pAppPrivate);
+  media::Picture* picture =
+      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
+  int picture_buffer_id = picture->picture_buffer_id();
+
   // During the transition from Executing to Idle, and during port-flushing, all
   // pictures are sent back through here.  Avoid giving them to the client.
   // Also avoid sending the (fake) EOS buffer to the client.
   if ((current_state_change_ != NO_TRANSITION &&
        current_state_change_ != FLUSHING) ||
       saw_eos_during_flush_) {
+    if (current_state_change_ == RESETTING)
+      queued_picture_buffer_ids_.push_back(picture_buffer_id);
     return;
   }
 
-  CHECK(buffer->pAppPrivate);
-  media::Picture* picture =
-      reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
   // See Decode() for an explanation of this abuse of nTimeStamp.
   picture->set_bitstream_buffer_id(buffer->nTimeStamp);
   if (client_)

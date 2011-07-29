@@ -173,6 +173,18 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // TODO(fischman): do away with this madness.
   std::set<OMX_BUFFERHEADERTYPE*> fake_output_buffers_;
 
+  // Encoded bitstream buffers awaiting decode, queued while the decoder was
+  // Resetting and thus unable to accept them.  This will be empty most of the
+  // time, is populated when Decode()'s are received between Reset() is called
+  // and NotifyResetDone() is sent, and is drained right before
+  // NotifyResetDone() is sent.
+  typedef std::vector<media::BitstreamBuffer> BitstreamBufferList;
+  BitstreamBufferList queued_bitstream_buffers_;
+  // Available output picture buffers released during Reset() and awaiting
+  // re-use once Reset is done.  Is empty most of the time and drained right
+  // before NotifyResetDone is sent.
+  std::vector<int> queued_picture_buffer_ids_;
+
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to this object *MUST* be executed in message_loop_.
   Client* client_;
