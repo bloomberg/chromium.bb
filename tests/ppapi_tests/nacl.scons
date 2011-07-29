@@ -21,29 +21,42 @@ ppapi_tests_sources = [
 
     # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
     # Add/uncomment PPAPI interfaces below when they get proxied.
+    # Not yet proxied.
+    #'test_broker.cc',
+    # Not yet proxied.
     #'test_buffer.cc',
+    # Not yet proxied.
     #'test_char_set.cc',
+    'test_cursor_control.cc',
+    # Fails in DeleteDirectoryRecursively.
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2107
     #'test_directory_reader.cc',
-    #'test_file_io.cc',
-    #'test_file_ref.cc',
-    #'test_file_system.cc',
+    'test_file_io.cc',
+    'test_file_ref.cc',
+    'test_file_system.cc',
     'test_memory.cc',
     'test_graphics_2d.cc',
     'test_image_data.cc',
     'test_paint_aggregator.cc',
     # test_post_message.cc relies on synchronous scripting, which is not
     # available for untrusted tests.
+    # Does not compile under nacl (uses private interface ExecuteScript).
     #'test_post_message.cc',
     'test_scrollbar.cc',
+    # Not yet proxied.
     #'test_transport.cc',
+    # Not yet proxied.
     #'test_uma.cc',
     # Activating the URL loader test requires a test httpd that
     # understands HTTP POST, which our current httpd.py doesn't.
     # It also requires deactivating the tests that use FileIOTrusted
     # when running in NaCl.
     #'test_url_loader.cc',
+    # Does not compile under nacl (uses VarPrivate).
     #'test_url_util.cc',
+    # Not yet proxied.
     #'test_video_decoder.cc',
+    'test_var.cc',
 
     # Deprecated test cases.
     #'test_instance_deprecated.cc',
@@ -52,10 +65,19 @@ ppapi_tests_sources = [
     #'test_var_deprecated.cc'
     ]
 
-ppapi_tests_objs = [env.ComponentObject(
-    os.path.splitext(file)[0],
-    os.path.join('${MAIN_DIR}/src/third_party/ppapi/tests', file)
-    ) for file in ppapi_tests_sources]
+# Pepper code has small issues like extra commas at the end of enums.
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+# This abstracts away that we are including sources from another
+# directory. It is also necessary to work around a scons bug that
+# causes object files to end up in the wrong directory.
+def MakeComponentObject(src):
+  return env.ComponentObject(
+      os.path.splitext(src)[0],
+      os.path.join('${MAIN_DIR}/src/third_party/ppapi/tests', src))
+
+ppapi_tests_objs = [MakeComponentObject(src) for src in ppapi_tests_sources]
 
 ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
                                         ppapi_tests_objs,
@@ -67,6 +89,9 @@ ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
 # To run, load page with mode=nacl search string:
 # http://localhost:5103/scons-out/nacl-x86-32/staging/test_case.html?mode=nacl
 # http://localhost:5103/scons-out/nacl-x86-64/staging/test_case.html?mode=nacl
+
+# NOTE: This test is also run as part of the pyauto suite.
+#       See pyauto_nacl/nacl.scons.
 
 env.Publish(ppapi_tests_target, 'run',
             ['${MAIN_DIR}/src/third_party/ppapi/tests/test_url_loader_data/*'],
