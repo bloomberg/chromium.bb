@@ -58,7 +58,7 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
 
 TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   PanelManager* manager = PanelManager::GetInstance();
-  EXPECT_EQ(0, manager->active_count());  // No panels initially.
+  EXPECT_EQ(0, manager->num_panels());  // No panels initially.
 
   Panel* panel = CreateTestPanel("Test Panel");
   EXPECT_TRUE(panel);
@@ -67,7 +67,7 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
 
   EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
-  EXPECT_EQ(1, manager->active_count());
+  EXPECT_EQ(1, manager->num_panels());
 
   // Window should not load before Show()
   EXPECT_FALSE([native_window->controller_ isWindowLoaded]);
@@ -84,7 +84,7 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   EXPECT_EQ(NO, [[native_window->controller_ window] isReleasedWhenClosed]);
 
   panel->Close();
-  EXPECT_EQ(0, manager->active_count());
+  EXPECT_EQ(0, manager->num_panels());
   // Close() destroys the controller, which destroys the NSWindow. CocoaTest
   // base class verifies that there is no remaining open windows after the test.
   EXPECT_FALSE(native_window->controller_);
@@ -95,7 +95,7 @@ TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
-  EXPECT_EQ(3, manager->active_count());
+  EXPECT_EQ(3, manager->num_panels());
 
   panel1->Show();
   panel2->Show();
@@ -116,15 +116,15 @@ TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
   panel2->Close();
   bounds3 = panel3->GetBounds();
   EXPECT_EQ(bounds2, bounds3);
-  EXPECT_EQ(2, manager->active_count());
+  EXPECT_EQ(2, manager->num_panels());
 
   // After panel1 is closed, panel3 should take its place.
   panel1->Close();
   EXPECT_EQ(bounds1, panel3->GetBounds());
-  EXPECT_EQ(1, manager->active_count());
+  EXPECT_EQ(1, manager->num_panels());
 
   panel3->Close();
-  EXPECT_EQ(0, manager->active_count());
+  EXPECT_EQ(0, manager->num_panels());
 }
 
 // Same test as AssignedBounds, but checks actual bounds on native OS windows.
@@ -133,7 +133,7 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
-  EXPECT_EQ(3, manager->active_count());
+  EXPECT_EQ(3, manager->num_panels());
 
   panel1->Show();
   panel2->Show();
@@ -162,7 +162,7 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
   EXPECT_EQ(bounds2.size.width, bounds3.size.width);
   EXPECT_EQ(bounds2.size.height, bounds3.size.height);
-  EXPECT_EQ(2, manager->active_count());
+  EXPECT_EQ(2, manager->num_panels());
 
   // After panel1 is closed, panel3 should take its place.
   panel1->Close();
@@ -171,10 +171,10 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(bounds1.origin.y, bounds3.origin.y);
   EXPECT_EQ(bounds1.size.width, bounds3.size.width);
   EXPECT_EQ(bounds1.size.height, bounds3.size.height);
-  EXPECT_EQ(1, manager->active_count());
+  EXPECT_EQ(1, manager->num_panels());
 
   panel3->Close();
-  EXPECT_EQ(0, manager->active_count());
+  EXPECT_EQ(0, manager->num_panels());
 }
 
 // Verify the titlebar is being created.
@@ -241,9 +241,9 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
   PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
   EXPECT_TRUE(titlebar);
 
-  EXPECT_EQ(1, manager->active_count());
+  EXPECT_EQ(1, manager->num_panels());
   // Simulate clicking Close Button. This should close the Panel as well.
   [titlebar simulateCloseButtonClick];
-  EXPECT_EQ(0, manager->active_count());
+  EXPECT_EQ(0, manager->num_panels());
 }
 

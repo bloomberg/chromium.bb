@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
 
   // No Panels initially.
   PanelManager* panel_manager = PanelManager::GetInstance();
-  EXPECT_EQ(0, panel_manager->active_count()); // No panels initially.
+  EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
   LoadAndLaunchExtension("app_with_panel_container");
 
@@ -65,8 +65,8 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
   EXPECT_TRUE(new_browser->is_type_panel());
 
   // Now also check that PanelManager has one new Panel under management.
-  EXPECT_EQ(1, panel_manager->active_count());
+  EXPECT_EQ(1, panel_manager->num_panels());
 
   new_browser->CloseWindow();
-  EXPECT_EQ(0, panel_manager->active_count());
+  EXPECT_EQ(0, panel_manager->num_panels());
 }

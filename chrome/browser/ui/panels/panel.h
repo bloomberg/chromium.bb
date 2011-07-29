@@ -156,6 +156,7 @@ class Panel : public BrowserWindow {
   NativePanel* native_panel() { return native_panel_; }
 #endif
 
+  Browser* browser() const { return browser_; }
   ExpansionState expansion_state() const { return expansion_state_; }
 
  protected:

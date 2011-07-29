@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_MANAGER_H_
 #pragma once
 
-#include <deque>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,15 +30,10 @@ class PanelManager {
   // later.
   Panel* CreatePanel(Browser* browser);
 
-  // Removes the given panel. Both active and pending panel lists are checked.
-  // If an active panel is removed, pending panels could be displayed if space
-  // allows.
   void Remove(Panel* panel);
+  void RemoveAll();
 
-  // Removes all active panels. Pending panels will be processed for display.
-  void RemoveAllActive();
-
-  // Drags the given active panel.
+  // Drags the given panel.
   void StartDragging(Panel* panel);
   void Drag(int delta_x);
   void EndDragging(bool cancelled);
@@ -51,14 +45,18 @@ class PanelManager {
   // Brings up or down the title-bar for all minimized panels.
   void BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up);
 
-  // Returns the number of active panels.
-  int active_count() const { return active_panels_.size(); }
+  int num_panels() const { return panels_.size(); }
 
  private:
-  typedef std::vector<Panel*> ActivePanels;
-  typedef std::deque<Panel*> PendingPanels;
+  friend class PanelBrowserTest;
+
+  typedef std::vector<Panel*> Panels;
 
   PanelManager();
+
+  // Applies the new work area. This is called by OnDisplayChanged and the test
+  // code.
+  void SetWorkArea(const gfx::Rect& work_area);
 
   // Handles all the panels that're delayed to be removed.
   void DelayedRemove();
@@ -69,10 +67,7 @@ class PanelManager {
   // Rearranges the positions of the panels starting from the given iterator.
   // This is called when the display space has been changed, i.e. working
   // area being changed or a panel being closed.
-  void Rearrange(ActivePanels::iterator iter_to_start);
-
-  // Checks the pending panels to see if we show them when we have more space.
-  void ProcessPending();
+  void Rearrange(Panels::iterator iter_to_start);
 
   // Computes the bounds for next panel.
   // |allow_size_change| is used to indicate if the panel size can be changed to
@@ -80,19 +75,19 @@ class PanelManager {
   // Returns true if computed bounds are within the displayable area.
   bool ComputeBoundsForNextPanel(gfx::Rect* bounds, bool allow_size_change);
 
+  // Finds one panel to close so that we may have space for the new panel
+  // created by |extension|.
+  void FindAndClosePanelOnOverflow(const Extension* extension);
+
   // Help functions to drag the given panel.
   void DragLeft();
   void DragRight();
 
-  // Stores the active panels.
-  ActivePanels active_panels_;
-
-  // Stores the panels that are pending to show.
-  PendingPanels pending_panels_;
+  Panels panels_;
 
   // Stores the panels that are pending to remove. We want to delay the removal
   // when we're in the process of the dragging.
-  std::vector<Panel*> panels_pending_to_remove_;
+  Panels panels_pending_to_remove_;
 
   // Current work area used in computing the panel bounds.
   gfx::Rect work_area_;

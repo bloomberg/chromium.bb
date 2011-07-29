@@ -55,15 +55,17 @@ PanelManager::PanelManager()
 }
 
 PanelManager::~PanelManager() {
-  DCHECK(active_panels_.empty());
-  DCHECK(pending_panels_.empty());
+  DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
 }
 
 void PanelManager::OnDisplayChanged() {
   scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
-  gfx::Rect work_area = info_provider->GetPrimaryMonitorWorkArea();
+  SetWorkArea(info_provider->GetPrimaryMonitorWorkArea());
+}
+
+void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
   if (work_area == work_area_)
     return;
   work_area_ = work_area;
@@ -74,32 +76,42 @@ void PanelManager::OnDisplayChanged() {
   max_width_ = static_cast<int>(work_area.width() * kPanelMaxWidthFactor);
   max_height_ = static_cast<int>(work_area.height() * kPanelMaxHeightFactor);
 
-  Rearrange(active_panels_.begin());
+  Rearrange(panels_.begin());
+}
+
+void PanelManager::FindAndClosePanelOnOverflow(const Extension* extension) {
+  Panel* panel_to_close = NULL;
+
+  // Try to find the left-most panel invoked from the same extension and close
+  // it.
+  for (Panels::reverse_iterator iter = panels_.rbegin();
+       iter != panels_.rend(); ++iter) {
+    if (extension == Panel::GetExtension((*iter)->browser_)) {
+      panel_to_close = *iter;
+      break;
+    }
+  }
+
+  // If none is found, just pick the left-most panel.
+  if (!panel_to_close)
+    panel_to_close = panels_.back();
+
+  panel_to_close->Close();
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
+  const Extension* extension = NULL;
   gfx::Rect bounds = browser->override_bounds();
-  bool is_within_bounds = ComputeBoundsForNextPanel(&bounds, true);
+  while (!ComputeBoundsForNextPanel(&bounds, true)) {
+    if (!extension)
+      extension = Panel::GetExtension(browser);
+    FindAndClosePanelOnOverflow(extension);
+  }
 
   Panel* panel = new Panel(browser, bounds);
-  if (is_within_bounds)
-    active_panels_.push_back(panel);
-  else
-    pending_panels_.push_back(panel);
+  panels_.push_back(panel);
 
   return panel;
-}
-
-void PanelManager::ProcessPending() {
-  while (!pending_panels_.empty()) {
-    Panel* panel = pending_panels_.front();
-    gfx::Rect bounds = panel->GetBounds();
-    if (ComputeBoundsForNextPanel(&bounds, true)) {
-      // TODO(jianli): More work to support displaying pending panels.
-      active_panels_.push_back(panel);
-      pending_panels_.pop_front();
-    }
-  }
 }
 
 void PanelManager::Remove(Panel* panel) {
@@ -119,28 +131,18 @@ void PanelManager::DelayedRemove() {
 }
 
 void PanelManager::DoRemove(Panel* panel) {
-  // Checks the active panel list.
-  ActivePanels::iterator iter =
-      find(active_panels_.begin(), active_panels_.end(), panel);
-  if (iter == active_panels_.end()) {
-    // Checks the pending panel list.
-    PendingPanels::iterator iter2 =
-        find(pending_panels_.begin(), pending_panels_.end(), panel);
-    if (iter2 != pending_panels_.end())
-      pending_panels_.erase(iter2);
+  Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
+  if (iter == panels_.end())
     return;
-  }
 
   gfx::Rect bounds = (*iter)->GetBounds();
   current_x_ = bounds.x() + bounds.width();
-  Rearrange(active_panels_.erase(iter));
-
-  ProcessPending();
+  Rearrange(panels_.erase(iter));
 }
 
 void PanelManager::StartDragging(Panel* panel) {
-  for (size_t i = 0; i < active_panels_.size(); ++i) {
-    if (active_panels_[i] == panel) {
+  for (size_t i = 0; i < panels_.size(); ++i) {
+    if (panels_[i] == panel) {
       dragging_panel_index_ = i;
       dragging_panel_bounds_ = panel->GetBounds();
       dragging_panel_original_x_ = dragging_panel_bounds_.x();
@@ -156,7 +158,7 @@ void PanelManager::Drag(int delta_x) {
     return;
 
   // Moves this panel to the dragging position.
-  Panel* dragging_panel = active_panels_[dragging_panel_index_];
+  Panel* dragging_panel = panels_[dragging_panel_index_];
   gfx::Rect new_bounds(dragging_panel->GetBounds());
   new_bounds.set_x(new_bounds.x() + delta_x);
   dragging_panel->SetPanelBounds(new_bounds);
@@ -169,7 +171,7 @@ void PanelManager::Drag(int delta_x) {
 }
 
 void PanelManager::DragLeft() {
-  Panel* dragging_panel = active_panels_[dragging_panel_index_];
+  Panel* dragging_panel = panels_[dragging_panel_index_];
 
   // This is the left corner of the dragging panel. We use it to check against
   // all the panels on its left.
@@ -181,8 +183,8 @@ void PanelManager::DragLeft() {
 
   // Checks the panels to the left of the dragging panel.
   size_t current_panel_index = dragging_panel_index_ + 1;
-  for (; current_panel_index < active_panels_.size(); ++current_panel_index) {
-    Panel* current_panel = active_panels_[current_panel_index];
+  for (; current_panel_index < panels_.size(); ++current_panel_index) {
+    Panel* current_panel = panels_[current_panel_index];
 
     // Current panel will only be affected if the left corner of dragging
     // panel goes beyond the middle position of the current panel.
@@ -198,7 +200,7 @@ void PanelManager::DragLeft() {
 
     // Updates the index of current panel since it has been moved to the
     // position of previous panel.
-    active_panels_[current_panel_index - 1] = current_panel;
+    panels_[current_panel_index - 1] = current_panel;
   }
 
   // Updates the position and index of dragging panel as the result of moving
@@ -207,12 +209,12 @@ void PanelManager::DragLeft() {
     dragging_panel_bounds_.set_x(current_panel_right_boundary -
                                  dragging_panel_bounds_.width());
     dragging_panel_index_ = current_panel_index - 1;
-    active_panels_[dragging_panel_index_] = dragging_panel;
+    panels_[dragging_panel_index_] = dragging_panel;
   }
 }
 
 void PanelManager::DragRight() {
-  Panel* dragging_panel = active_panels_[dragging_panel_index_];
+  Panel* dragging_panel = panels_[dragging_panel_index_];
 
   // This is the right corner of the dragging panel. We use it to check against
   // all the panels on its right.
@@ -225,7 +227,7 @@ void PanelManager::DragRight() {
   // Checks the panels to the right of the dragging panel.
   int current_panel_index = static_cast<int>(dragging_panel_index_) - 1;
   for (; current_panel_index >= 0; --current_panel_index) {
-    Panel* current_panel = active_panels_[current_panel_index];
+    Panel* current_panel = panels_[current_panel_index];
 
     // Current panel will only be affected if the right corner of dragging
     // panel goes beyond the middle position of the current panel.
@@ -241,7 +243,7 @@ void PanelManager::DragRight() {
 
     // Updates the index of current panel since it has been moved to the
     // position of previous panel.
-    active_panels_[current_panel_index + 1] = current_panel;
+    panels_[current_panel_index + 1] = current_panel;
   }
 
   // Updates the position and index of dragging panel as the result of moving
@@ -249,7 +251,7 @@ void PanelManager::DragRight() {
   if (current_panel_index != static_cast<int>(dragging_panel_index_) - 1) {
     dragging_panel_bounds_.set_x(current_panel_left_boundary);
     dragging_panel_index_ = current_panel_index + 1;
-    active_panels_[dragging_panel_index_] = dragging_panel;
+    panels_[dragging_panel_index_] = dragging_panel;
   }
 }
 
@@ -258,9 +260,9 @@ void PanelManager::EndDragging(bool cancelled) {
 
   if (cancelled) {
     Drag(dragging_panel_original_x_ -
-         active_panels_[dragging_panel_index_]->GetBounds().x());
+         panels_[dragging_panel_index_]->GetBounds().x());
   } else {
-    active_panels_[dragging_panel_index_]->SetPanelBounds(
+    panels_[dragging_panel_index_]->SetPanelBounds(
         dragging_panel_bounds_);
   }
 
@@ -271,8 +273,8 @@ void PanelManager::EndDragging(bool cancelled) {
 
 bool PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels(
     int mouse_x, int mouse_y) const {
-  for (ActivePanels::const_iterator iter = active_panels_.begin();
-       iter != active_panels_.end(); ++iter) {
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
     if ((*iter)->ShouldBringUpTitleBar(mouse_x, mouse_y))
       return true;
   }
@@ -280,8 +282,8 @@ bool PanelManager::ShouldBringUpTitleBarForAllMinimizedPanels(
 }
 
 void PanelManager::BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up) {
-  for (ActivePanels::const_iterator iter = active_panels_.begin();
-       iter != active_panels_.end(); ++iter) {
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
 
     // Skip any panel that is drawing the attention.
@@ -298,12 +300,11 @@ void PanelManager::BringUpOrDownTitleBarForAllMinimizedPanels(bool bring_up) {
   }
 }
 
-void PanelManager::Rearrange(ActivePanels::iterator iter_to_start) {
-  if (iter_to_start == active_panels_.end())
+void PanelManager::Rearrange(Panels::iterator iter_to_start) {
+  if (iter_to_start == panels_.end())
     return;
 
-  for (ActivePanels::iterator iter = iter_to_start;
-       iter != active_panels_.end(); ++iter) {
+  for (Panels::iterator iter = iter_to_start; iter != panels_.end(); ++iter) {
     gfx::Rect new_bounds((*iter)->GetBounds());
     ComputeBoundsForNextPanel(&new_bounds, false);
     if (new_bounds != (*iter)->GetBounds())
@@ -346,13 +347,12 @@ bool PanelManager::ComputeBoundsForNextPanel(gfx::Rect* bounds,
   return true;
 }
 
-void PanelManager::RemoveAllActive() {
+void PanelManager::RemoveAll() {
   // This should not be called when we're in the process of dragging.
   DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
 
   // Start from the bottom to avoid reshuffling.
-  for (int i = static_cast<int>(active_panels_.size()) -1; i >= 0; --i)
-    active_panels_[i]->Close();
-
-  ProcessPending();
+  for (Panels::reverse_iterator iter = panels_.rbegin();
+       iter != panels_.rend(); ++iter)
+    (*iter)->Close();
 }
