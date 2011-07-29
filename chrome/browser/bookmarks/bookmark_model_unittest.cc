@@ -25,7 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/model_test_utils.h"
+#include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

@@ -35,7 +35,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
-#include "chrome/test/bookmark_load_observer.h"
+#include "chrome/test/base/bookmark_load_observer.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"

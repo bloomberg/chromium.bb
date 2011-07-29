@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
-#define CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
+#ifndef CHROME_TEST_BASE_BOOKMARK_LOAD_OBSERVER_H_
+#define CHROME_TEST_BASE_BOOKMARK_LOAD_OBSERVER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -43,4 +43,4 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
 };
 
-#endif  // CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
+#endif  // CHROME_TEST_BASE_BOOKMARK_LOAD_OBSERVER_H_

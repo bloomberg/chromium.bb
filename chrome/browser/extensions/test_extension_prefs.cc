@@ -19,7 +19,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
-#include "chrome/test/signaling_task.h"
+#include "chrome/test/base/signaling_task.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

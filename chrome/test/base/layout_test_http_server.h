@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_LAYOUT_TEST_HTTP_SERVER_H_
-#define CHROME_TEST_LAYOUT_TEST_HTTP_SERVER_H_
+#ifndef CHROME_TEST_BASE_LAYOUT_TEST_HTTP_SERVER_H_
+#define CHROME_TEST_BASE_LAYOUT_TEST_HTTP_SERVER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -40,4 +40,4 @@ class LayoutTestHttpServer {
   DISALLOW_COPY_AND_ASSIGN(LayoutTestHttpServer);
 };
 
-#endif  // CHROME_TEST_LAYOUT_TEST_HTTP_SERVER_H_
+#endif  // CHROME_TEST_BASE_LAYOUT_TEST_HTTP_SERVER_H_

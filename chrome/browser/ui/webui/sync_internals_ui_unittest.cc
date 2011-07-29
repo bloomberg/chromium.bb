@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/js_event_details.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/profile_mock.h"
+#include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"

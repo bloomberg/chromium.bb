@@ -20,7 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/signaling_task.h"
+#include "chrome/test/base/signaling_task.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"

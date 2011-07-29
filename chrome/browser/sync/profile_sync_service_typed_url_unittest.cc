@@ -30,7 +30,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/test/profile_mock.h"
+#include "chrome/test/base/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "content/common/notification_service.h"

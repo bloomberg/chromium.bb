@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/test/profile_mock.h"
+#include "chrome/test/base/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

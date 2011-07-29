@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_THREAD_OBSERVER_HELPER_H__
-#define CHROME_TEST_THREAD_OBSERVER_HELPER_H__
+#ifndef CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_
+#define CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -67,4 +67,4 @@ class DBThreadObserverHelper : public DBThreadObserverHelperBase {
   DBThreadObserverHelper() : DBThreadObserverHelperBase(BrowserThread::DB) {}
 };
 
-#endif  // CHROME_TEST_THREAD_OBSERVER_HELPER_H__
+#endif  // CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_

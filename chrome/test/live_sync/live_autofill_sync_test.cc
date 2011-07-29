@@ -14,9 +14,8 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/thread_observer_helper.h"
+#include "chrome/test/base/thread_observer_helper.h"
 #include "webkit/glue/form_field.h"
-
 
 using base::WaitableEvent;
 using testing::_;

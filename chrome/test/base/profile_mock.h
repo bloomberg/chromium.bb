@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_PROFILE_MOCK_H__
-#define CHROME_TEST_PROFILE_MOCK_H__
+#ifndef CHROME_TEST_BASE_PROFILE_MOCK_H_
+#define CHROME_TEST_BASE_PROFILE_MOCK_H_
 #pragma once
 
 #include "chrome/test/testing_profile.h"
@@ -25,4 +25,4 @@ class ProfileMock : public TestingProfile {
   MOCK_METHOD0(GetProfileSyncService, ProfileSyncService*());
 };
 
-#endif  // CHROME_TEST_PROFILE_MOCK_H__
+#endif  // CHROME_TEST_BASE_PROFILE_MOCK_H_

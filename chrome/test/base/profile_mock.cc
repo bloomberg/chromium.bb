@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/profile_mock.h"
+#include "chrome/test/base/profile_mock.h"
 
 ProfileMock::ProfileMock() {}
 

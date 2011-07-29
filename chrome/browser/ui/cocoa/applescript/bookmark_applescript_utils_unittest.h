@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/test/model_test_utils.h"
+#include "chrome/test/base/model_test_utils.h"
 #include "testing/platform_test.h"
 
 class BookmarkModel;

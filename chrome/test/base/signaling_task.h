@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // A simple callback that you can use to wait for events on a thread.
 
-#ifndef CHROME_TEST_SIGNALING_TASK_H_
-#define CHROME_TEST_SIGNALING_TASK_H_
+#ifndef CHROME_TEST_BASE_SIGNALING_TASK_H_
+#define CHROME_TEST_BASE_SIGNALING_TASK_H_
 #pragma once
 
 #include "base/task.h"
@@ -25,4 +25,4 @@ class SignalingTask : public Task {
   base::WaitableEvent* event_;
 };
 
-#endif  // CHROME_TEST_SIGNALING_TASK_H_
+#endif  // CHROME_TEST_BASE_SIGNALING_TASK_H_

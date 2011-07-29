@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/test/profile_mock.h"
+#include "chrome/test/base/profile_mock.h"
 #include "content/browser/browser_thread.h"
 
 using base::WaitableEvent;

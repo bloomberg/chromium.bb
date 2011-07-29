@@ -9,7 +9,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/layout_test_http_server.h"
+#include "chrome/test/base/layout_test_http_server.h"
 #include "chrome/test/ui/ui_test.h"
 
 namespace {

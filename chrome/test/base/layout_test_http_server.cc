@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/layout_test_http_server.h"
+#include "chrome/test/base/layout_test_http_server.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"

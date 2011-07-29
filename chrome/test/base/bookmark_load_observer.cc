@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/bookmark_load_observer.h"
+#include "chrome/test/base/bookmark_load_observer.h"
 
 #include "base/message_loop.h"
 

@@ -27,7 +27,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
-#include "chrome/test/thread_observer_helper.h"
+#include "chrome/test/base/thread_observer_helper.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
