@@ -543,6 +543,8 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
                                           int response_code,
                                           const net::ResponseCookies& cookies,
                                           const std::string& data) {
+  // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
+  scoped_ptr<URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
   if (StartsWithASCII(url.spec(), kGetOAuthTokenUrl, true)) {
     OnGetOAuthTokenUrlFetched(cookies, status, response_code);
