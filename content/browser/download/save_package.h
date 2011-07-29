@@ -211,6 +211,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
                                     const std::string& data,
                                     int32 status);
 
+  // Convenience function.
+  DownloadManager* GetDownloadManager();
+
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
   // in_progress_items_ is map of all saving job in in-progress state.

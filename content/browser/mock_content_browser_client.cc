@@ -219,30 +219,6 @@ void MockContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 void MockContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
-void MockContentBrowserClient::GetSaveDir(TabContents* tab_contents,
-                                          FilePath* website_save_dir,
-                                          FilePath* download_save_dir) {
-}
-
-void MockContentBrowserClient::ChooseSavePath(
-    const base::WeakPtr<SavePackage>& save_package,
-    const FilePath& suggested_path,
-    bool can_save_as_complete) {
-}
-
-void MockContentBrowserClient::ChooseDownloadPath(
-    DownloadManager* download_manager,
-    TabContents* tab_contents,
-    const FilePath& suggested_path,
-    void* data) {
-}
-
-TabContents*
-    MockContentBrowserClient::GetAlternativeTabContentsToNotifyForDownload(
-        DownloadManager* download_manager) {
-  return NULL;
-}
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

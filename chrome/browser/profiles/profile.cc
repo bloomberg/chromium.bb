@@ -17,6 +17,7 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -450,8 +451,11 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual DownloadManager* GetDownloadManager() {
     if (!download_manager_.get()) {
+      download_manager_delegate_.reset(new ChromeDownloadManagerDelegate());
       scoped_refptr<DownloadManager> dlm(
-          new DownloadManager(g_browser_process->download_status_updater()));
+          new DownloadManager(download_manager_delegate_.get(),
+                              g_browser_process->download_status_updater()));
+      download_manager_delegate_->set_download_manager(dlm);
       dlm->Init(this);
       download_manager_.swap(dlm);
     }
@@ -779,6 +783,10 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
   OffTheRecordProfileIOData::Handle io_data_;
+
+  // Used so that Chrome code can influence how content module's DownloadManager
+  // functions.
+  scoped_ptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;

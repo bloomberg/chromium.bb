@@ -293,7 +293,9 @@ class DownloadItem : public NotificationObserver {
 
   bool auto_opened() { return auto_opened_; }
   const FilePath& target_name() const { return state_info_.target_name; }
-  bool save_as() const { return state_info_.prompt_user_for_save_location; }
+  bool prompt_user_for_save_location() const {
+    return state_info_.prompt_user_for_save_location;
+  }
   bool is_otr() const { return is_otr_; }
   bool is_extension_install() const {
     return state_info_.is_extension_install;

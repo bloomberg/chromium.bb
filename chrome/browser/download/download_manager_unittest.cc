@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/mock_download_manager.h"
+#include "chrome/browser/download/mock_download_manager_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -42,7 +43,9 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadManagerTest()
       : profile_(new TestingProfile()),
-        download_manager_(new MockDownloadManager(&download_status_updater_)),
+        download_manager_delegate_(new MockDownloadManagerDelegate()),
+        download_manager_(new MockDownloadManager(
+            download_manager_delegate_.get(), &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
     download_manager_->Init(profile_.get());
@@ -87,6 +90,7 @@ class DownloadManagerTest : public testing::Test {
  protected:
   DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;

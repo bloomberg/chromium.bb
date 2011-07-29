@@ -25,6 +25,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -1270,8 +1271,11 @@ void ProfileImpl::CreatePasswordStore() {
 
 DownloadManager* ProfileImpl::GetDownloadManager() {
   if (!created_download_manager_) {
+    download_manager_delegate_.reset(new ChromeDownloadManagerDelegate());
     scoped_refptr<DownloadManager> dlm(
-        new DownloadManager(g_browser_process->download_status_updater()));
+        new DownloadManager(download_manager_delegate_.get(),
+                            g_browser_process->download_status_updater()));
+    download_manager_delegate_->set_download_manager(dlm);
     dlm->Init(this);
     created_download_manager_ = true;
     download_manager_.swap(dlm);

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback_old.h"
-#include "base/memory/weak_ptr.h"
 #include "content/common/content_client.h"
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
@@ -18,7 +17,6 @@ class BrowserRenderProcessHost;
 class BrowserURLHandler;
 class CommandLine;
 class DevToolsManager;
-class DownloadManager;
 class FilePath;
 class GURL;
 class MHTMLGenerationManager;
@@ -28,7 +26,6 @@ class RenderViewHost;
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class SSLClientAuthHandler;
-class SavePackage;
 class SkBitmap;
 class TabContents;
 class WorkerProcessHost;
@@ -264,31 +261,6 @@ class ContentBrowserClient {
 
   // Clears browser cookies.
   virtual void ClearCookies(RenderViewHost* rvh) = 0;
-
-  // Retrieve the directories to save html pages and downloads to.
-  virtual void GetSaveDir(TabContents* tab_contents,
-                          FilePath* website_save_dir,
-                          FilePath* download_save_dir) = 0;
-
-  // Asks the user for the path to save a page. The embedder calls
-  // SavePackage::OnPathPicked to give the answer.
-  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
-                              const FilePath& suggested_path,
-                              bool can_save_as_complete) = 0;
-
-  // Asks the user for the path for a download. The embedder calls
-  // DownloadManager::FileSelected or DownloadManager::FileSelectionCanceled to
-  // give the answer.
-  virtual void ChooseDownloadPath(DownloadManager* download_manager,
-                                  TabContents* tab_contents,
-                                  const FilePath& suggested_path,
-                                  void* data) = 0;
-
-  // Called when the download system wants to alert a TabContents that a
-  // download has started, but the TabContents has gone away. This lets an
-  // embedder return an alternative TabContents. The embedder can return NULL.
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload(
-      DownloadManager* download_manager) = 0;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.

@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
+#include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_handle.h"
 #include "chrome/browser/download/download_safe_browsing_client.h"
@@ -34,7 +35,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -48,11 +48,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-DownloadManager::DownloadManager(DownloadStatusUpdater* status_updater)
+DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
+                                 DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       profile_(NULL),
       file_manager_(NULL),
-      status_updater_(status_updater->AsWeakPtr()) {
+      status_updater_(status_updater->AsWeakPtr()),
+      delegate_(delegate) {
   if (status_updater_)
     status_updater_->AddDelegate(this);
 }
@@ -387,7 +389,7 @@ void DownloadManager::CheckVisitedReferrerBeforeDone(
 
   if (!state.prompt_user_for_save_location && state.force_file_name.empty()) {
     state.is_dangerous_file =
-        IsDangerous(*download, state, visited_referrer_before);
+        IsDangerousFile(*download, state, visited_referrer_before);
   }
 
   // We need to move over to the download thread because we don't want to stat
@@ -508,7 +510,7 @@ void DownloadManager::OnPathExistenceAvailable(
 
   FilePath suggested_path = download->suggested_path();
 
-  if (download->save_as()) {
+  if (download->prompt_user_for_save_location()) {
     // We must ask the user for the place to put the download.
     DownloadRequestHandle request_handle = download->request_handle();
     TabContents* contents = request_handle.GetTabContents();
@@ -518,7 +520,7 @@ void DownloadManager::OnPathExistenceAvailable(
     int32* id_ptr = new int32;
     *id_ptr = download_id;
 
-    content::GetContentClient()->browser()->ChooseDownloadPath(
+    delegate_->ChooseDownloadPath(
         this, contents, suggested_path, reinterpret_cast<void*>(id_ptr));
 
     FOR_EACH_OBSERVER(Observer, observers_,
@@ -1071,7 +1073,7 @@ void DownloadManager::FileSelected(const FilePath& path, void* params) {
   VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
             << " download = " << download->DebugString(true);
 
-  if (download->save_as())
+  if (download->prompt_user_for_save_location())
     last_download_path_ = path.DirName();
 
   // Make sure the initial file name is set only once.
@@ -1098,9 +1100,9 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 }
 
 // TODO(phajdan.jr): This is apparently not being exercised in tests.
-bool DownloadManager::IsDangerous(const DownloadItem& download,
-                                  const DownloadStateInfo& state,
-                                  bool visited_referrer_before) {
+bool DownloadManager::IsDangerousFile(const DownloadItem& download,
+                                      const DownloadStateInfo& state,
+                                      bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool auto_open = ShouldOpenFileBasedOnExtension(state.suggested_path);
@@ -1215,10 +1217,8 @@ void DownloadManager::ShowDownloadInBrowser(DownloadItem* download) {
 
   // If the contents no longer exists, we ask the embedder to suggest another
   // tab.
-  if (!content) {
-    content = content::GetContentClient()->browser()->
-        GetAlternativeTabContentsToNotifyForDownload(this);
-  }
+  if (!content)
+    content = delegate_->GetAlternativeTabContentsToNotifyForDownload(this);
 
   if (content)
     content->OnStartDownload(download);

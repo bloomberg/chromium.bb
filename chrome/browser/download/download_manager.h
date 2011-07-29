@@ -49,6 +49,7 @@
 
 class DownloadFileManager;
 class DownloadHistory;
+class DownloadManagerDelegate;
 class DownloadPrefs;
 class DownloadStatusUpdater;
 class GURL;
@@ -65,7 +66,8 @@ class DownloadManager
                                         BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate {
  public:
-  explicit DownloadManager(DownloadStatusUpdater* status_updater);
+  DownloadManager(DownloadManagerDelegate* delegate,
+                  DownloadStatusUpdater* status_updater);
 
   // Shutdown the download manager. Must be called before destruction.
   void Shutdown();
@@ -227,9 +229,9 @@ class DownloadManager
   // Various factors are considered, such as the type of the file, whether a
   // user action initiated the download, and whether the user has explicitly
   // marked the file type as "auto open".
-  bool IsDangerous(const DownloadItem& download,
-                   const DownloadStateInfo& state,
-                   bool visited_referrer_before);
+  bool IsDangerousFile(const DownloadItem& download,
+                       const DownloadStateInfo& state,
+                       bool visited_referrer_before);
 
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
@@ -260,6 +262,8 @@ class DownloadManager
   // Get the download item from the history map.  Useful after the item has
   // been removed from the active map, or was retrieved from the history DB.
   DownloadItem* GetDownloadItem(int id);
+
+  DownloadManagerDelegate* delegate() const { return delegate_; }
 
  private:
   // For testing.
@@ -419,6 +423,9 @@ class DownloadManager
   FilePath last_download_path_;
 
   scoped_ptr<OtherDownloadManagerObserver> other_download_manager_observer_;
+
+  // Allows an embedder to control behavior. Guaranteed to outlive this object.
+  DownloadManagerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManager);
 };

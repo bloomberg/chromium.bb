@@ -21,6 +21,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_manager_delegate.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
@@ -263,16 +264,14 @@ bool SavePackage::Init() {
   }
 
   // Create the fake DownloadItem and display the view.
-  DownloadManager* download_manager =
-      tab_contents()->browser_context()->GetDownloadManager();
-  download_ = new DownloadItem(download_manager,
+  download_ = new DownloadItem(GetDownloadManager(),
                                saved_main_file_path_,
                                page_url_,
                                browser_context->IsOffTheRecord());
 
   // Transfer the ownership to the download manager. We need the DownloadItem
   // to be alive as long as the Profile is alive.
-  download_manager->SavePageAsDownloadStarted(download_);
+  GetDownloadManager()->SavePageAsDownloadStarted(download_);
 
   tab_contents()->OnStartDownload(download_);
 
@@ -1156,7 +1155,7 @@ void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
-  content::GetContentClient()->browser()->GetSaveDir(
+  GetDownloadManager()->delegate()->GetSaveDir(
       tab_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = tab_contents()->contents_mime_type();
   std::string accept_languages =
@@ -1219,7 +1218,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (!tab_contents())
     return;
 
-  content::GetContentClient()->browser()->ChooseSavePath(
+  GetDownloadManager()->delegate()->ChooseSavePath(
       AsWeakPtr(), suggested_path, can_save_as_complete);
 }
 
@@ -1263,4 +1262,8 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
          contents_mime_type == "text/plain" ||
          contents_mime_type == "text/css" ||
          net::IsSupportedJavascriptMimeType(contents_mime_type.c_str());
+}
+
+DownloadManager* SavePackage::GetDownloadManager() {
+  return tab_contents()->browser_context()->GetDownloadManager();;
 }

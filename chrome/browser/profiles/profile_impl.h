@@ -19,6 +19,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class ChromeDownloadManagerDelegate;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class PrefService;
@@ -234,6 +235,7 @@ class ProfileImpl : public Profile,
       geolocation_permission_context_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
+  scoped_ptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;

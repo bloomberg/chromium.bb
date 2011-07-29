@@ -106,19 +106,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(RenderViewHost* rvh)  OVERRIDE;
-  virtual void GetSaveDir(TabContents* tab_contents,
-                          FilePath* website_save_dir,
-                          FilePath* download_save_dir) OVERRIDE;
   virtual void ClearCookies(RenderViewHost* rvh)  OVERRIDE;
-  virtual void ChooseSavePath(const base::WeakPtr<SavePackage>& save_package,
-                              const FilePath& suggested_path,
-                              bool can_save_as_complete) OVERRIDE;
-  virtual void ChooseDownloadPath(DownloadManager* download_manager,
-                                  TabContents* tab_contents,
-                                  const FilePath& suggested_path,
-                                  void* data) OVERRIDE;
-  virtual TabContents* GetAlternativeTabContentsToNotifyForDownload(
-      DownloadManager* download_manager) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;

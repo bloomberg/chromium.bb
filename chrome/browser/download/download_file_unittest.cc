@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/mock_download_manager.h"
+#include "chrome/browser/download/mock_download_manager_delegate.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +43,9 @@ class DownloadFileTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    download_manager_ = new MockDownloadManager(&download_status_updater_);
+    download_manager_delegate_.reset(new MockDownloadManagerDelegate());
+    download_manager_ = new MockDownloadManager(
+        download_manager_delegate_.get(), &download_status_updater_);
   }
 
   virtual void TearDown() {
@@ -95,6 +98,7 @@ class DownloadFileTest : public testing::Test {
   ScopedTempDir temp_dir_;
 
   DownloadStatusUpdater download_status_updater_;
+  scoped_ptr<MockDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
 
   linked_ptr<net::FileStream> file_stream_;

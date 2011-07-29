@@ -13,8 +13,9 @@ class DownloadItem;
 
 class MockDownloadManager : public DownloadManager {
  public:
-  explicit MockDownloadManager(DownloadStatusUpdater* updater)
-      : DownloadManager(updater) {
+  explicit MockDownloadManager(DownloadManagerDelegate* delegate,
+                               DownloadStatusUpdater* updater)
+      : DownloadManager(delegate, updater) {
   }
 
   // Override some functions.

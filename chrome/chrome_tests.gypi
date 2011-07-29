@@ -1403,6 +1403,8 @@
         'browser/download/download_status_updater_unittest.cc',
         'browser/download/download_util_unittest.cc',
         'browser/download/mock_download_manager.h',
+        'browser/download/mock_download_manager_delegate.cc',
+        'browser/download/mock_download_manager_delegate.h',
         'browser/enumerate_modules_model_unittest_win.cc',
         'browser/extensions/apps_promo_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
