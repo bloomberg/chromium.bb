@@ -1111,6 +1111,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     self.options.clobber = False
     self.options.url = self.url
     self.options.buildnumber = 1234
+    self.options.chrome_rev = None
 
     self.failException = Exception("FailStage needs to fail.")
 

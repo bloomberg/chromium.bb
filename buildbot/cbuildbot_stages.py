@@ -255,6 +255,11 @@ class BuilderStage(object):
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
     self._ExtractVariables()
     repo_dir = os.path.join(self._build_root, '.repo')
+    if self._options.chrome_rev:
+      self._chrome_rev = self._options.chrome_rev
+    else:
+      self._chrome_rev = self._build_config['chrome_rev']
+
     if not self._options.clobber and os.path.isdir(repo_dir):
       self._ExtractOverlays()
 
@@ -636,7 +641,7 @@ class LKGMSyncStage(ManifestVersionedSyncStage):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['overlays'],
-          self._prebuilt_type, self._options.chrome_rev,
+          self._prebuilt_type, self._chrome_rev,
           self._options.buildnumber,
           ['--set-version', lkgm_manager.LKGMManager.GetLKGMVersion(),
            '--sync-binhost-conf', '--sync-host', '--skip-upload'])
@@ -743,17 +748,17 @@ class UprevStage(BuilderStage):
   def _PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
-    if self._options.chrome_rev:
+    if self._chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._tracking_branch,
-          self._options.chrome_rev, self._build_config['board'])
+          self._chrome_rev, self._build_config['board'])
 
     # Perform other uprevs.
     if self._build_config['uprev']:
       commands.UprevPackages(self._build_root,
                              self._build_config['board'],
                              BuilderStage.overlays)
-    elif self._options.chrome_rev and not chrome_atom_to_build:
+    elif self._chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
 
@@ -1063,7 +1068,7 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
             if not builder_config['master']:
               commands.UploadPrebuilts(
                   self._build_root, builder_board, overlay_config,
-                  self._prebuilt_type, self._options.chrome_rev,
+                  self._prebuilt_type, self._chrome_rev,
                   self._options.buildnumber, extra_args + ['--skip-upload'])
 
         # Master pfq should upload host preflight prebuilts.
@@ -1084,7 +1089,7 @@ class UploadPrebuiltsStage(NonHaltingBuilderStage):
     # Upload prebuilts.
     commands.UploadPrebuilts(
         self._build_root, board, overlay_config, prebuilt_type,
-        self._options.chrome_rev, self._options.buildnumber, extra_args)
+        self._chrome_rev, self._options.buildnumber, extra_args)
 
 
 class PublishUprevChangesStage(NonHaltingBuilderStage):

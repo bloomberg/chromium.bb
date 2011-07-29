@@ -208,6 +208,15 @@ full = {
   'factory_test_mod' : True,
 }
 
+chrome_pfq = {
+  'build_type': constants.CHROME_PFQ_TYPE,
+  'important': True,
+  'uprev' : False,
+  'chrome_tests' : True,
+  'overlays': 'public',
+  'manifest_version': True,
+}
+
 internal = {
   'overlays' : 'both',
   'git_url' : MANIFEST_INT_URL,
@@ -286,32 +295,30 @@ add_config('x86-generic-commit-queue', [{
   'manifest_version': True,
 }])
 
-add_config('x86-generic-chrome-pre-flight-queue', [{
+add_config('x86-generic-tot-chrome-pre-flight-queue', [chrome_pfq, {
   'board' : 'x86-generic',
   'master' : True,
-
-  'build_type': constants.CHROME_PFQ_TYPE,
-  'important': True,
-  'uprev' : False,
-  'chrome_tests' : True,
-  'overlays': 'public',
   'push_overlays': 'public',
-  'manifest_version': True,
-
+  'chrome_rev': constants.CHROME_REV_TOT,
   'hw_tests' : [('desktopui_PyAutoFunctionalTests', 'CONTINUOUS')],
   'remote_ip' : '172.22.75.211',
 }])
 
-add_config('arm-generic-chrome-pre-flight-queue', [arm, {
+add_config('arm-generic-tot-chrome-pre-flight-queue', [chrome_pfq, {
   'board' : 'arm-generic',
+  'chrome_rev': constants.CHROME_REV_TOT,
+}])
 
-  'build_type': constants.CHROME_PFQ_TYPE,
-  'important': True,
-  'uprev' : False,
-  'chrome_tests' : True,
-  'overlays': 'public',
-  'push_overlays': None,
-  'manifest_version': True,
+add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
+  'board' : 'x86-generic',
+  'master' : True,
+  'push_overlays': 'public',
+  'chrome_rev': constants.CHROME_REV_LATEST,
+}])
+
+add_config('arm-generic-chrome-pre-flight-queue', [chrome_pfq, arm, {
+  'board' : 'arm-generic',
+  'chrome_rev': constants.CHROME_REV_LATEST,
 }])
 
 add_config('x86-pineview-bin', [{
