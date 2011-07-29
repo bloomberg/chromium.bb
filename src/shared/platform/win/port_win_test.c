@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -25,14 +25,17 @@ int loop_ffs(int v) {
 }
 
 /*
- * This exhaustively tests all 32-bit numbers, so will take a while
- * (about a minute on current machines).
+ * Selectively test FFS by checking every bit while enabling every other bit.
  */
 int TestFFS() {
   unsigned int errors = 0;
   uint32_t x;
+  uint32_t bits;
 
-  for (x = 1; 0 != x; ++x) {
+  bits = 0;
+  for (x = 0; x <= 32; ++x) {
+    bits <<= 1;
+    if (x & 1) bits |= 1;
     if (loop_ffs(x) != ffs(x)) {
       printf("ERROR: differs at %d (0x%x)\n", x, x);
       errors = 1;  /* if fail everywhere, errors would be UINT_MAX */
