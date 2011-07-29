@@ -63,7 +63,7 @@ class ChromeOSLongTerm(pyauto.PyUITest):
         self.ActivateTab(long_index[0], long_index[1])
         self.ReloadActiveTab(long_index[1])
 
-  def _ConfigureNewWindow(self, pages):
+  def _ConfigureNewWindow(self, pages, incognito=False):
     """Setups a windows with multiple tabs running.
 
     This method acts as a state machine.  If a window containing a tab with the
@@ -73,10 +73,13 @@ class ChromeOSLongTerm(pyauto.PyUITest):
     Args:
       pages: The list of urls to load.
     """
-    flash_index = self._ActivateTabWithURL(pages[0])
-    if not flash_index:
-      # This means the flash pages do not exist, load them
-      self.OpenNewBrowserWindow(True)
+    page_index = self._ActivateTabWithURL(pages[0])
+    if not page_index:
+      # This means the pages do not exist, load them
+      if incognito:
+        self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+      else:
+        self.OpenNewBrowserWindow(True)
       for url in pages:
         self.AppendTab(pyauto.GURL(url), self.GetBrowserWindowCount() - 1)
       # Cycle through the pages to make sure they render
@@ -86,7 +89,7 @@ class ChromeOSLongTerm(pyauto.PyUITest):
         # Give the plugin time to activate
         time.sleep(1.5)
     else:
-      self.CloseBrowserWindow(flash_index[1])
+      self.CloseBrowserWindow(page_index[1])
 
   def testLongTerm(self):
     """Main entry point for the long term tests.
@@ -101,11 +104,16 @@ class ChromeOSLongTerm(pyauto.PyUITest):
        'http://www.craftymind.com/factory/guimark2/FlashChartingTest.swf',
        'http://www.craftymind.com/factory/guimark2/FlashGamingTest.swf',
        'http://www.craftymind.com/factory/guimark2/FlashTextTest.swf']
+
+    incognito_pages = ['http://www.msn.com', 'http://www.ebay.com',
+                       'http://www.bu.edu', 'http://www.youtube.com']
+
     start_time = time.time()
     self._SetupLongTermWindow(long_term_pages)
     timers = timer_queue.TimerQueue()
-    timers.AddTimer(self._ConfigureNewWindow, 15, args=flash_pages)
-    timers.AddTimer(self._RefreshLongTermWindow, 45, args=long_term_pages)
+    timers.AddTimer(self._ConfigureNewWindow, 90, args=(flash_pages,))
+    timers.AddTimer(self._RefreshLongTermWindow, 30, args=(long_term_pages,))
+    timers.AddTimer(self._ConfigureNewWindow, 15, args=(incognito_pages, True))
     timers.start()
     try:
       while True:

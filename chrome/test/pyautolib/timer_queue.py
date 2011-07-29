@@ -19,7 +19,7 @@ class TimerQueue(threading.Thread):
       print('foo : %s' % word)
 
     timers = TimerQueue()
-    timers.addTimer(self._fooPrinter, 15, args='hello')
+    timers.addTimer(self._fooPrinter, 15, args=('hello',))
     timers.start()
 
   >> hello will be printed after 15 seconds
@@ -36,7 +36,7 @@ class TimerQueue(threading.Thread):
     self.wait_time = 1
     self.timers = []
 
-  def AddTimer(self, method, interval, args=[]):
+  def AddTimer(self, method, interval, args=()):
     """Adds a timer to the queue.
 
     Args:
@@ -78,7 +78,8 @@ class TimerQueue(threading.Thread):
       self.timer_queue_lock.acquire()
       for timer in self.timers:
         if timer['next time'] <= now:
-          timer['method'](timer['args'])
+          # Use * to break the list into separate arguments
+          timer['method'](*timer['args'])
           timer['next time'] += timer['interval']
       self.timer_queue_lock.release()
       if self.terminate:
