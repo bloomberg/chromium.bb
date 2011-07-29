@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/sad_tab_view.h"
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/url_constants.h"
@@ -17,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "views/controls/link.h"
@@ -47,21 +49,31 @@ static const int kTitleFontSizeDelta = 2;
 static const int kMessageFontSizeDelta = 1;
 #endif
 
-// static
-SkBitmap* SadTabView::sad_tab_bitmap_ = NULL;
-gfx::Font* SadTabView::title_font_ = NULL;
-gfx::Font* SadTabView::message_font_ = NULL;
-std::wstring SadTabView::title_;
-std::wstring SadTabView::message_;
-int SadTabView::title_width_;
-
 SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
     : tab_contents_(tab_contents),
       learn_more_link_(NULL),
-      kind_(kind) {
+      kind_(kind),
+      painted_(false) {
   DCHECK(tab_contents);
 
-  InitClass(kind);
+  // Sometimes the user will never see this tab, so keep track of the total
+  // number of creation events to compare to display events.
+  UMA_HISTOGRAM_COUNTS("SadTab.Created", kind);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  title_font_ = new gfx::Font(
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kTitleFontSizeDelta,
+                                                      gfx::Font::BOLD));
+  message_font_ = new gfx::Font(
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kMessageFontSizeDelta));
+  sad_tab_bitmap_ = rb.GetBitmapNamed(
+      kind == CRASHED ? IDR_SAD_TAB : IDR_KILLED_TAB);
+
+  title_ = l10n_util::GetStringUTF16(
+      kind == CRASHED ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE);
+  title_width_ = title_font_->GetStringWidth(title_);
+  message_ = l10n_util::GetStringUTF16(
+      kind == CRASHED ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE);
 
   if (tab_contents != NULL) {
     learn_more_link_ =
@@ -76,6 +88,11 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
 SadTabView::~SadTabView() {}
 
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
+  if (!painted_) {
+    // User actually saw the error, keep track for user experience stats.
+    UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
+    painted_ = true;
+  }
   SkPaint paint;
   SkSafeUnref(paint.setShader(
       gfx::CreateGradientShader(
@@ -90,12 +107,12 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
 
   canvas->DrawBitmapInt(*sad_tab_bitmap_, icon_bounds_.x(), icon_bounds_.y());
 
-  canvas->DrawStringInt(WideToUTF16Hack(title_), *title_font_, kTitleColor,
+  canvas->DrawStringInt(title_, *title_font_, kTitleColor,
                         title_bounds_.x(), title_bounds_.y(),
                         title_bounds_.width(), title_bounds_.height(),
                         gfx::Canvas::TEXT_ALIGN_CENTER);
 
-  canvas->DrawStringInt(WideToUTF16Hack(message_), *message_font_,
+  canvas->DrawStringInt(message_, *message_font_,
                         kMessageColor, message_bounds_.x(), message_bounds_.y(),
                         message_bounds_.width(), message_bounds_.height(),
                         kMessageFlags);
@@ -119,7 +136,7 @@ void SadTabView::Layout() {
 
   int message_width = static_cast<int>(width() * kMessageSize);
   int message_height = 0;
-  gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(message_),
+  gfx::CanvasSkia::SizeStringInt(message_,
                                  *message_font_, &message_width,
                                  &message_height, kMessageFlags);
   int message_x = (width() - message_width) / 2;
@@ -142,28 +159,5 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
     tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
-  }
-}
-
-// static
-void SadTabView::InitClass(Kind kind) {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    title_font_ = new gfx::Font(
-        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kTitleFontSizeDelta,
-                                                        gfx::Font::BOLD));
-    message_font_ = new gfx::Font(
-        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kMessageFontSizeDelta));
-    sad_tab_bitmap_ = rb.GetBitmapNamed(
-        kind == CRASHED ? IDR_SAD_TAB : IDR_KILLED_TAB);
-
-    title_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        kind == CRASHED ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
-    title_width_ = title_font_->GetStringWidth(WideToUTF16Hack(title_));
-    message_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        kind == CRASHED ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
-
-    initialized = true;
   }
 }

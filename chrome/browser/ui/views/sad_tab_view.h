@@ -7,12 +7,17 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/gfx/font.h"
+#include "base/string16.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
 
 class SkBitmap;
 class TabContents;
+
+namespace gfx {
+class Font;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -25,31 +30,31 @@ class TabContents;
 class SadTabView : public views::View,
                    public views::LinkListener {
  public:
+  // NOTE: Do not remove or reorder the elements in this enum, and only add new
+  // items at the end. We depend on these specific values in a histogram.
   enum Kind {
-    CRASHED,  // The tab crashed.  Display the "Aw, Snap!" page.
-    KILLED    // The tab was killed.  Display the killed tab page.
+    CRASHED = 0,  // Tab crashed.  Display the "Aw, Snap!" page.
+    KILLED        // Tab killed.  Display the "He's dead, Jim!" tab page.
   };
 
   SadTabView(TabContents* tab_contents, Kind kind);
   virtual ~SadTabView();
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
-  static void InitClass(Kind kind);
-
   // Assorted resources for display.
-  static SkBitmap* sad_tab_bitmap_;
-  static gfx::Font* title_font_;
-  static gfx::Font* message_font_;
-  static std::wstring title_;
-  static std::wstring message_;
-  static int title_width_;
+  SkBitmap* sad_tab_bitmap_;
+  gfx::Font* title_font_;
+  gfx::Font* message_font_;
+  string16 title_;
+  string16 message_;
+  int title_width_;
 
   TabContents* tab_contents_;
   views::Link* learn_more_link_;
@@ -62,6 +67,7 @@ class SadTabView : public views::View,
   gfx::Rect link_bounds_;
 
   Kind kind_;
+  bool painted_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };
