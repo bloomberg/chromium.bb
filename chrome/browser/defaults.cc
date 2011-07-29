@@ -18,7 +18,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
 const int kMiniTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
-const bool kRestorePopups = true;
+const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = false;
 const bool kShowExitMenuItem = true;
 const bool kOSSupportsOtherBrowsers = false;
