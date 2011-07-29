@@ -97,6 +97,7 @@ void SystemKeyEventListener::Stop() {
 #else
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
 #endif
+  audio_handler_->Disconnect();
   stopped_ = true;
 }
 
@@ -108,6 +109,7 @@ void SystemKeyEventListener::RemoveCapsLockObserver(
     CapsLockObserver* observer) {
   caps_lock_observers_.RemoveObserver(observer);
 }
+
 
 void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
                                               GdkWindow* window) {
@@ -162,22 +164,24 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
            True, GrabModeAsync, GrabModeAsync);
 }
 
-void SystemKeyEventListener::OnVolumeMute() {
-  if (!audio_handler_->IsInitialized())
-    return;
+// TODO(davej): Move the ShowBubble() calls in to AudioHandler so that this
+// function returns faster without blocking on GetVolumePercent(), and still
+// guarantees that the volume displayed will be that after the adjustment.
 
+// TODO(davej): The IsMute() check can also be made non-blocking by changing to
+// an AdjustVolumeByPercentOrUnmute() function which can do the steps off of
+// this thread when ShowBubble() is moved in to AudioHandler.
+
+void SystemKeyEventListener::OnVolumeMute() {
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
-  audio_handler_->SetMuted(true);
+  audio_handler_->SetMute(true);
   VolumeBubble::GetInstance()->ShowBubble(0);
   BrightnessBubble::GetInstance()->HideBubble();
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
-  if (!audio_handler_->IsInitialized())
-    return;
-
-  if (audio_handler_->IsMuted()) {
+  if (audio_handler_->IsMute()) {
     VolumeBubble::GetInstance()->ShowBubble(0);
   } else {
     audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
@@ -188,14 +192,10 @@ void SystemKeyEventListener::OnVolumeDown() {
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
-  if (!audio_handler_->IsInitialized())
-    return;
-
-  if (audio_handler_->IsMuted())
-    audio_handler_->SetMuted(false);
+  if (audio_handler_->IsMute())
+    audio_handler_->SetMute(false);
   else
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
-
   VolumeBubble::GetInstance()->ShowBubble(
       audio_handler_->GetVolumePercent());
   BrightnessBubble::GetInstance()->HideBubble();

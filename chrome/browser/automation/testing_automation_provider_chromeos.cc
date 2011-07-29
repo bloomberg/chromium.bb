@@ -970,7 +970,7 @@ void TestingAutomationProvider::GetVolumeInfo(DictionaryValue* args,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
   return_value->SetDouble("volume", audio_handler->GetVolumePercent());
-  return_value->SetBoolean("is_mute", audio_handler->IsMuted());
+  return_value->SetBoolean("is_mute", audio_handler->IsMute());
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
@@ -998,6 +998,6 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
   }
 
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
-  audio_handler->SetMuted(mute);
+  audio_handler->SetMute(mute);
   reply.SendSuccess(NULL);
 }
