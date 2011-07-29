@@ -351,7 +351,6 @@
         'browser/renderer_host/render_widget_host_view.h',
         'browser/renderer_host/resource_dispatcher_host.cc',
         'browser/renderer_host/resource_dispatcher_host.h',
-        'browser/renderer_host/resource_dispatcher_host_delegate.cc',
         'browser/renderer_host/resource_dispatcher_host_delegate.h',
         'browser/renderer_host/resource_dispatcher_host_login_delegate.cc',
         'browser/renderer_host/resource_dispatcher_host_login_delegate.h',
