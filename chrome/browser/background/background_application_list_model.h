@@ -117,11 +117,17 @@ class BackgroundApplicationListModel : public NotificationObserver {
   // or removed.
   void SendApplicationListChangedNotifications();
 
-  // Invoked by Observe for EXTENSION_LOADED notifications.
-  void OnExtensionLoaded(Extension* extension);
+  // Invoked by Observe for NOTIFICATION_EXTENSION_LOADED.
+  void OnExtensionLoaded(const Extension* extension);
 
-  // Invoked by Observe for EXTENSION_UNLOADED notifications.
+  // Invoked by Observe for NOTIFICATION_EXTENSION_UNLOADED.
   void OnExtensionUnloaded(const Extension* extension);
+
+  // Invoked by Observe for NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED.
+  void OnExtensionPermissionsUpdated(
+      const Extension* extension,
+      UpdatedExtensionPermissionsInfo::Reason reason,
+      const ExtensionPermissionSet* permissions);
 
   // Refresh the list of background applications and generate notifications.
   void Update();

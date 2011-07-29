@@ -162,6 +162,9 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSIONS_READY,
                  Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+                 Source<Profile>(profile));
   ExtensionService* service = profile->GetExtensionService();
   if (service && service->is_ready())
     Update();
@@ -268,6 +271,12 @@ void BackgroundApplicationListModel::Observe(
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       OnExtensionUnloaded(Details<UnloadedExtensionInfo>(details)->extension);
       break;
+    case chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED:
+      OnExtensionPermissionsUpdated(
+          Details<UpdatedExtensionPermissionsInfo>(details)->extension,
+          Details<UpdatedExtensionPermissionsInfo>(details)->reason,
+          Details<UpdatedExtensionPermissionsInfo>(details)->permissions);
+      break;
     default:
       NOTREACHED() << "Received unexpected notification";
   }
@@ -279,7 +288,8 @@ void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
                                                                    profile_));
 }
 
-void BackgroundApplicationListModel::OnExtensionLoaded(Extension* extension) {
+void BackgroundApplicationListModel::OnExtensionLoaded(
+    const Extension* extension) {
   // We only care about extensions that are background applications
   if (!IsBackgroundApp(*extension))
     return;
@@ -292,6 +302,27 @@ void BackgroundApplicationListModel::OnExtensionUnloaded(
     return;
   Update();
   DissociateApplicationData(extension);
+}
+
+void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
+    const Extension* extension,
+    UpdatedExtensionPermissionsInfo::Reason reason,
+    const ExtensionPermissionSet* permissions) {
+  if (permissions->HasAPIPermission(ExtensionAPIPermission::kBackground)) {
+    switch (reason) {
+      case UpdatedExtensionPermissionsInfo::ADDED:
+        DCHECK(IsBackgroundApp(*extension));
+        OnExtensionLoaded(extension);
+        break;
+      case UpdatedExtensionPermissionsInfo::REMOVED:
+        DCHECK(!IsBackgroundApp(*extension));
+        Update();
+        DissociateApplicationData(extension);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 }
 
 void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {

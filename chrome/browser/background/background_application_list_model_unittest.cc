@@ -69,9 +69,38 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name,
   return extension;
 }
 
+namespace {
+std::string GenerateUniqueExtensionName() {
+  static int uniqueness = 0;
+  std::ostringstream output;
+  output << "Unique Named Extension " << uniqueness;
+  ++uniqueness;
+  return output.str();
+}
+
+void AddBackgroundPermission(ExtensionService* service,
+                             Extension* extension) {
+  if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) return;
+
+  static scoped_refptr<Extension> temporary =
+      CreateExtension(GenerateUniqueExtensionName(), true);
+  scoped_refptr<const ExtensionPermissionSet> permissions =
+      temporary->GetActivePermissions();
+  ExtensionPermissionsManager(service).AddPermissions(
+      extension, permissions.get());
+}
+
+void RemoveBackgroundPermission(ExtensionService* service,
+                                Extension* extension) {
+  if (!BackgroundApplicationListModel::IsBackgroundApp(*extension)) return;
+  ExtensionPermissionsManager(service).RemovePermissions(
+      extension, extension->GetActivePermissions());
+}
+}  // namespace
+
 // With minimal test logic, verifies behavior over an explicit set of
 // extensions, of which some are Background Apps and others are not.
-TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
+TEST_F(BackgroundApplicationListModelTest, ExplicitTest) {
   InitializeAndLoadEmptyExtensionService();
   ExtensionService* service = profile_->GetExtensionService();
   ASSERT_TRUE(service);
@@ -90,6 +119,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
   ASSERT_TRUE(service->extensions() != NULL);
   ASSERT_EQ(0U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
+
   // Add alternating Extensions and Background Apps
   ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext1));
   service->AddExtension(ext1);
@@ -111,6 +141,7 @@ TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
   service->AddExtension(ext3);
   ASSERT_EQ(5U, service->extensions()->size());
   ASSERT_EQ(2U, model->size());
+
   // Remove in FIFO order.
   ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext1));
   service->UninstallExtension(ext1->id(), false, NULL);
@@ -134,21 +165,147 @@ TEST_F(BackgroundApplicationListModelTest, LoadExplicitExtensions) {
   ASSERT_EQ(0U, model->size());
 }
 
+// With minimal test logic, verifies behavior with dynamic permissions.
+TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
+  InitializeAndLoadEmptyExtensionService();
+  ExtensionService* service = profile_->GetExtensionService();
+  ASSERT_TRUE(service);
+  ASSERT_TRUE(service->is_ready());
+  ASSERT_TRUE(service->extensions());
+  ASSERT_TRUE(service->extensions()->empty());
+  scoped_ptr<BackgroundApplicationListModel> model(
+      new BackgroundApplicationListModel(profile_.get()));
+  ASSERT_EQ(0U, model->size());
+
+  scoped_refptr<Extension> ext = CreateExtension("extension", false);
+  scoped_refptr<Extension> bgapp = CreateExtension("application", true);
+  ASSERT_TRUE(service->extensions() != NULL);
+  ASSERT_EQ(0U, service->extensions()->size());
+  ASSERT_EQ(0U, model->size());
+
+  // Add one (non-background) extension and one background application
+  ASSERT_FALSE(BackgroundApplicationListModel::IsBackgroundApp(*ext));
+  service->AddExtension(ext);
+  ASSERT_EQ(1U, service->extensions()->size());
+  ASSERT_EQ(0U, model->size());
+  ASSERT_TRUE(BackgroundApplicationListModel::IsBackgroundApp(*bgapp));
+  service->AddExtension(bgapp);
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+
+  // Change permissions back and forth
+  AddBackgroundPermission(service, ext.get());
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(2U, model->size());
+  RemoveBackgroundPermission(service, bgapp.get());
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+  RemoveBackgroundPermission(service, ext.get());
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(0U, model->size());
+  AddBackgroundPermission(service, bgapp.get());
+  ASSERT_EQ(2U, service->extensions()->size());
+  ASSERT_EQ(1U, model->size());
+}
+
 typedef std::set<scoped_refptr<Extension> > ExtensionCollection;
 
 namespace {
-std::string GenerateUniqueExtensionName() {
-  static int uniqueness = 0;
-  std::ostringstream output;
-  output << "Unique Named Extension " << uniqueness;
-  ++uniqueness;
-  return output.str();
+void AddExtension(ExtensionService* service,
+                  ExtensionCollection* extensions,
+                  BackgroundApplicationListModel* model,
+                  size_t* expected,
+                  size_t* count) {
+  bool create_background = false;
+  if (rand() % 2) {
+    create_background = true;
+    ++*expected;
+  }
+  scoped_refptr<Extension> extension =
+      CreateExtension(GenerateUniqueExtensionName(), create_background);
+  ASSERT_EQ(BackgroundApplicationListModel::IsBackgroundApp(*extension),
+            create_background);
+  extensions->insert(extension);
+  ++*count;
+  ASSERT_EQ(*count, extensions->size());
+  service->AddExtension(extension);
+  ASSERT_EQ(*count, service->extensions()->size());
+  ASSERT_EQ(*expected, model->size());
 }
+
+void RemoveExtension(ExtensionService* service,
+                     ExtensionCollection* extensions,
+                     BackgroundApplicationListModel* model,
+                     size_t* expected,
+                     size_t* count) {  // Maybe remove an extension.
+  ExtensionCollection::iterator cursor = extensions->begin();
+  if (cursor == extensions->end()) {
+    // Nothing to remove.  Just verify accounting.
+    ASSERT_EQ(0U, *count);
+    ASSERT_EQ(0U, *expected);
+    ASSERT_EQ(0U, service->extensions()->size());
+    ASSERT_EQ(0U, model->size());
+  } else {
+    // Randomly select which extension to remove
+    if (extensions->size() > 1) {
+      int offset = rand() % (extensions->size() - 1);
+      for (int index = 0; index < offset; ++index)
+        ++cursor;
+    }
+    scoped_refptr<Extension> extension = cursor->get();
+    std::string id = extension->id();
+    if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
+      --*expected;
+    extensions->erase(cursor);
+    --*count;
+    ASSERT_EQ(*count, extensions->size());
+    service->UninstallExtension(extension->id(), false, NULL);
+    ASSERT_EQ(*count, service->extensions()->size());
+    ASSERT_EQ(*expected, model->size());
+  }
 }
+
+void TogglePermission(ExtensionService* service,
+                                ExtensionCollection* extensions,
+                                BackgroundApplicationListModel* model,
+                                size_t* expected,
+                                size_t* count) {
+  ExtensionCollection::iterator cursor = extensions->begin();
+  if (cursor == extensions->end()) {
+    // Nothing to toggle.  Just verify accounting.
+    ASSERT_EQ(0U, *count);
+    ASSERT_EQ(0U, *expected);
+    ASSERT_EQ(0U, service->extensions()->size());
+    ASSERT_EQ(0U, model->size());
+  } else {
+    // Randomly select which extension to toggle.
+    if (extensions->size() > 1) {
+      int offset = rand() % (extensions->size() - 1);
+      for (int index = 0; index < offset; ++index)
+        ++cursor;
+    }
+    scoped_refptr<Extension> extension = cursor->get();
+    std::string id = extension->id();
+    if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
+      --*expected;
+      ASSERT_EQ(*count, extensions->size());
+      RemoveBackgroundPermission(service, extension);
+      ASSERT_EQ(*count, service->extensions()->size());
+      ASSERT_EQ(*expected, model->size());
+    } else {
+      ++*expected;
+      ASSERT_EQ(*count, extensions->size());
+      AddBackgroundPermission(service, extension);
+      ASSERT_EQ(*count, service->extensions()->size());
+      ASSERT_EQ(*expected, model->size());
+    }
+  }
+}
+}  // namespace
 
 // Verifies behavior with a pseudo-randomly generated set of actions: Adding and
 // removing extensions, of which some are Background Apps and others are not.
-TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
+TEST_F(BackgroundApplicationListModelTest, RandomTest) {
   InitializeAndLoadEmptyExtensionService();
   ExtensionService* service = profile_->GetExtensionService();
   ASSERT_TRUE(service);
@@ -165,49 +322,19 @@ TEST_F(BackgroundApplicationListModelTest, LoadRandomExtension) {
   size_t expected = 0;
   srand(RANDOM_SEED);
   for (int index = 0; index < kIterations; ++index) {
-    if (rand() % 2) {  // Add an extension
-      std::string name = GenerateUniqueExtensionName();
-      bool create_background = false;
-      if (rand() % 2) {
-        create_background = true;
-        ++expected;
-      }
-      scoped_refptr<Extension> extension =
-          CreateExtension(name, create_background);
-      ASSERT_EQ(BackgroundApplicationListModel::IsBackgroundApp(*extension),
-                create_background);
-      extensions.insert(extension);
-      ++count;
-      ASSERT_EQ(count, extensions.size());
-      service->AddExtension(extension);
-      ASSERT_EQ(count, service->extensions()->size());
-      ASSERT_EQ(expected, model->size());
-    } else {  // Maybe remove an extension.
-      ExtensionCollection::iterator cursor = extensions.begin();
-      if (cursor == extensions.end()) {
-        // Nothing to remove.  Just verify accounting.
-        ASSERT_EQ(0U, count);
-        ASSERT_EQ(0U, expected);
-        ASSERT_EQ(0U, service->extensions()->size());
-        ASSERT_EQ(0U, model->size());
-      } else {
-        // Randomly select which extension to remove
-        if (extensions.size() > 1) {
-          int offset = rand() % (extensions.size() - 1);
-          for (int index = 0; index < offset; ++index)
-            ++cursor;
-        }
-        scoped_refptr<Extension> extension = cursor->get();
-        std::string id = extension->id();
-        if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
-          --expected;
-        extensions.erase(cursor);
-        --count;
-        ASSERT_EQ(count, extensions.size());
-        service->UninstallExtension(extension->id(), false, NULL);
-        ASSERT_EQ(count, service->extensions()->size());
-        ASSERT_EQ(expected, model->size());
-      }
+    switch (rand() % 3) {
+      case 0:
+        AddExtension(service, &extensions, model.get(), &expected, &count);
+        break;
+      case 1:
+        RemoveExtension(service, &extensions, model.get(), &expected, &count);
+        break;
+      case 2:
+        TogglePermission(service, &extensions, model.get(), &expected, &count);
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
   }
 }
