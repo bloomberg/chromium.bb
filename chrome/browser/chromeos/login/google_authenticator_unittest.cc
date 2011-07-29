@@ -558,7 +558,6 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   TestingProfile profile;
 
   MockFactory<MockFetcher> factory;
-  URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
@@ -568,7 +567,6 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   auth->AuthenticateToLogin(
       &profile, username_, password_, std::string(), std::string());
 
-  URLFetcher::set_factory(NULL);
   message_loop_ui_.RunAllPending();
 }
 
@@ -595,7 +593,6 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLoginFailure) {
   TestingProfile profile;
 
   MockFactory<HostedFetcher> factory_invalid;
-  URLFetcher::set_factory(&factory_invalid);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_user_manager(user_manager_.get());
@@ -612,7 +609,6 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLoginFailure) {
 
   // Run the UI thread until we exit it gracefully.
   message_loop_ui_.Run();
-  URLFetcher::set_factory(NULL);
 }
 
 TEST_F(GoogleAuthenticatorTest, CancelLogin) {
@@ -643,7 +639,6 @@ TEST_F(GoogleAuthenticatorTest, CancelLogin) {
   // and then come back on the UI thread after a small delay.  They expect to
   // be canceled before they come back, and the test will fail if they are not.
   MockFactory<ExpectCanceledFetcher> factory;
-  URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   // For when |auth| tries to load the localaccount file.
@@ -657,8 +652,6 @@ TEST_F(GoogleAuthenticatorTest, CancelLogin) {
 
   // Post a task to cancel the login attempt.
   CancelLogin(auth.get());
-
-  URLFetcher::set_factory(NULL);
 
   // Run the UI thread until we exit it gracefully.
   message_loop_ui_.Run();
@@ -692,7 +685,6 @@ TEST_F(GoogleAuthenticatorTest, CancelLoginAlreadyGotLocalaccount) {
   // and then come back on the UI thread after a small delay.  They expect to
   // be canceled before they come back, and the test will fail if they are not.
   MockFactory<ExpectCanceledFetcher> factory;
-  URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   // This time, instead of allowing |auth| to go get the localaccount file
@@ -707,8 +699,6 @@ TEST_F(GoogleAuthenticatorTest, CancelLoginAlreadyGotLocalaccount) {
 
   // Post a task to cancel the login attempt.
   CancelLogin(auth.get());
-
-  URLFetcher::set_factory(NULL);
 
   // Run the UI thread until we exit it gracefully.
   message_loop_ui_.Run();

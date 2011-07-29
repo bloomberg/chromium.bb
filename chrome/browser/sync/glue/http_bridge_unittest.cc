@@ -7,7 +7,7 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/test/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

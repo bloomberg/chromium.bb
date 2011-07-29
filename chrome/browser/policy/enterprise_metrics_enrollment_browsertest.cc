@@ -12,7 +12,7 @@
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -35,9 +35,6 @@ class EnterpriseMetricsEnrollmentTest : public WizardInProcessBrowserTest {
     WizardInProcessBrowserTest::SetUpOnMainThread();
 
     ASSERT_TRUE(controller() != NULL);
-
-    // Use mock URLFetchers.
-    URLFetcher::set_factory(&factory_);
 
     screen_ = controller()->GetEnterpriseEnrollmentScreen();
 

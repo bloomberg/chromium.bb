@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "content/common/url_fetcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -25,9 +26,9 @@ struct TestURLResponse {
 };
 
 // Creates mock URLFetchers whose behavior can be controlled in tests. To do so
-// specify this factory with URLFetcher::set_factory, and set mock expectations
-// on the method |Intercept|.
-class TestingPolicyURLFetcherFactory : public URLFetcher::Factory {
+// set mock expectations on the method |Intercept|.
+class TestingPolicyURLFetcherFactory : public URLFetcher::Factory,
+                                       public ScopedURLFetcherFactory {
  public:
   explicit TestingPolicyURLFetcherFactory(EventLogger* logger);
   virtual ~TestingPolicyURLFetcherFactory();

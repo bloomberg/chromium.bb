@@ -32,8 +32,8 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer_mock.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/test_url_fetcher_factory.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -147,8 +147,6 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
  protected:
   virtual void SetUp() {
-    URLFetcher::set_factory(&url_fetcher_factory_);
-
     // Access the TranslateManager singleton so it is created before we call
     // RenderViewHostTestHarness::SetUp() to match what's done in Chrome, where
     // the TranslateManager is created before the TabContents.  This matters as
@@ -176,8 +174,6 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
         Source<TabContentsWrapper>(contents_wrapper()));
 
     TabContentsWrapperTestHarness::TearDown();
-
-    URLFetcher::set_factory(NULL);
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {

@@ -15,8 +15,8 @@
 #include "chrome/test/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
-#include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -157,13 +157,11 @@ void GoogleURLTrackerTest::SetUp() {
   MessageLoop::current()->RunAllPending();
   testing_browser_process_.get()->SetGoogleURLTracker(tracker);
 
-  URLFetcher::set_factory(&fetcher_factory_);
   g_browser_process->google_url_tracker()->infobar_creator_ =
       &CreateTestInfobar;
 }
 
 void GoogleURLTrackerTest::TearDown() {
-  URLFetcher::set_factory(NULL);
   testing_browser_process_.get()->SetGoogleURLTracker(NULL);
   network_change_notifier_.reset();
 }

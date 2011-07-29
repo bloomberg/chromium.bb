@@ -27,7 +27,7 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -68,10 +68,6 @@ class AutofillTest : public InProcessBrowserTest {
   AutofillTest() {
     set_show_window(true);
     EnableDOMAutomation();
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    URLFetcher::set_factory(&url_fetcher_factory_);
   }
 
   void CreateTestProfile() {

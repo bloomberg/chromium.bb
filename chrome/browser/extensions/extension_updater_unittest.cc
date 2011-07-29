@@ -27,7 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "libxml/globals.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -337,7 +337,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Set up and start the updater.
     TestURLFetcherFactory factory;
-    URLFetcher::set_factory(&factory);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), 60*60*24);
@@ -390,7 +389,6 @@ class ExtensionUpdaterTest : public testing::Test {
     io_thread.Start();
 
     TestURLFetcherFactory factory;
-    URLFetcher::set_factory(&factory);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), 60*60*24);
@@ -579,7 +577,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
-    URLFetcher::set_factory(&factory);
     scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     ExtensionUpdater updater(service.get(),
                              service->extension_prefs(),
@@ -659,7 +656,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
-    URLFetcher::set_factory(&factory);
     scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
     ExtensionUpdater updater(service.get(), service->extension_prefs(),
                              service->pref_service(),
@@ -714,8 +710,6 @@ class ExtensionUpdaterTest : public testing::Test {
     // because of ImportantFileWriter.
     file_thread.Start();
     service.reset();
-
-    URLFetcher::set_factory(NULL);
   }
 
   static void TestBlacklistDownloading() {
@@ -727,7 +721,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
-    URLFetcher::set_factory(&factory);
     ServiceForBlacklistTests service;
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
@@ -764,8 +757,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     EXPECT_EQ(version, service.pref_service()->
       GetString(prefs::kExtensionBlacklistUpdateVersion));
-
-    URLFetcher::set_factory(NULL);
   }
 
   // Two extensions are updated.  If |updates_start_running| is true, the
@@ -781,7 +772,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
-    URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
@@ -911,7 +901,6 @@ class ExtensionUpdaterTest : public testing::Test {
     BrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
     TestURLFetcherFactory factory;
-    URLFetcher::set_factory(&factory);
 
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
@@ -1198,7 +1187,6 @@ TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
 
     ServiceForManifestTests service;
     TestURLFetcherFactory factory;
-    URLFetcher::set_factory(&factory);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
@@ -1220,7 +1208,6 @@ TEST(ExtensionUpdaterTest, TestCheckSoon) {
 
     ServiceForManifestTests service;
     TestURLFetcherFactory factory;
-    URLFetcher::set_factory(&factory);
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);

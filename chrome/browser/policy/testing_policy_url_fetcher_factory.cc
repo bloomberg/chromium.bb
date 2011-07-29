@@ -92,9 +92,10 @@ void TestingPolicyURLFetcher::Respond() {
 
 TestingPolicyURLFetcherFactory::TestingPolicyURLFetcherFactory(
     EventLogger* logger)
-        : logger_(logger),
-          scheduler_(new LoggingWorkScheduler(logger)),
-          ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      logger_(logger),
+      scheduler_(new LoggingWorkScheduler(logger)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 TestingPolicyURLFetcherFactory::~TestingPolicyURLFetcherFactory() {

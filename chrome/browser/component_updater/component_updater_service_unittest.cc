@@ -16,7 +16,7 @@
 #include "chrome/test/test_url_request_context_getter.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_service.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

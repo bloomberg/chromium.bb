@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 
 TokenAvailableTracker::TokenAvailableTracker() {}
 
@@ -71,8 +71,6 @@ void TokenServiceTestHarness::SetUp() {
                              Source<TokenService>(&service_));
 
   service_.Initialize("test", profile_.get());
-
-  URLFetcher::set_factory(NULL);
 }
 
 void TokenServiceTestHarness::TearDown() {
@@ -191,7 +189,6 @@ TEST_F(TokenServiceTest, ResetSimple) {
 
 TEST_F(TokenServiceTest, ResetComplex) {
   TestURLFetcherFactory factory;
-  URLFetcher::set_factory(&factory);
   service_.StartFetchingTokens();
   // You have to call delegates by hand with the test fetcher,
   // Let's pretend only one returned.
@@ -220,14 +217,15 @@ TEST_F(TokenServiceTest, ResetComplex) {
 }
 
 TEST_F(TokenServiceTest, FullIntegration) {
-  MockFactory<MockFetcher> factory;
   std::string result = "SID=sid\nLSID=lsid\nAuth=auth\n";
-  factory.set_results(result);
-  URLFetcher::set_factory(&factory);
-  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
-  EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
-  service_.StartFetchingTokens();
-  URLFetcher::set_factory(NULL);
+
+  {
+    MockFactory<MockFetcher> factory;
+    factory.set_results(result);
+    EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kSyncService));
+    EXPECT_FALSE(service_.HasTokenForService(GaiaConstants::kTalkService));
+    service_.StartFetchingTokens();
+  }
 
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kSyncService));
   EXPECT_TRUE(service_.HasTokenForService(GaiaConstants::kTalkService));

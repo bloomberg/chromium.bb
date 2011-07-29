@@ -11,8 +11,8 @@
 // temporary situation.  We will work on allowing support for multiple "io"
 // threads per process.
 
-#ifndef CONTENT_COMMON_NET_URL_FETCHER_H_
-#define CONTENT_COMMON_NET_URL_FETCHER_H_
+#ifndef CONTENT_COMMON_URL_FETCHER_H_
+#define CONTENT_COMMON_URL_FETCHER_H_
 #pragma once
 
 #include <string>
@@ -117,20 +117,10 @@ class URLFetcher {
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
   URLFetcher(const GURL& url, RequestType request_type, Delegate* d);
-
   virtual ~URLFetcher();
 
-  // Sets the factory used by the static method Create to create a URLFetcher.
-  // URLFetcher does not take ownership of |factory|. A value of NULL results
-  // in a URLFetcher being created directly.
-#if defined(UNIT_TEST)
-  static void set_factory(Factory* factory) {
-    factory_ = factory;
-  }
-#endif
-
   // Normally interception is disabled for URLFetcher, but you can use this
-  // to enable it for tests. Also see the set_factory method for another way
+  // to enable it for tests. Also see ScopedURLFetcherFactory for another way
   // of testing code that uses an URLFetcher.
   static void enable_interception_for_tests(bool enabled) {
     g_interception_enabled = enabled;
@@ -295,12 +285,24 @@ class URLFetcher {
   virtual ResponseDestinationType GetResponseDestinationForTesting() const;
 
  private:
-  friend class URLFetcherTest;
+  friend class ScopedURLFetcherFactory;
   friend class TestURLFetcher;
+  friend class URLFetcherTest;
 
   // Only used by URLFetcherTest, returns the number of URLFetcher::Core objects
   // actively running.
   static int GetNumFetcherCores();
+
+  static Factory* factory() { return factory_; }
+
+  // Sets the factory used by the static method Create to create a URLFetcher.
+  // URLFetcher does not take ownership of |factory|. A value of NULL results
+  // in a URLFetcher being created directly.
+  //
+  // NOTE: for safety, this should only be used through ScopedURLFetcherFactory!
+  static void set_factory(Factory* factory) {
+    factory_ = factory;
+  }
 
   class Core;
   scoped_refptr<Core> core_;
@@ -315,4 +317,4 @@ class URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(URLFetcher);
 };
 
-#endif  // CONTENT_COMMON_NET_URL_FETCHER_H_
+#endif  // CONTENT_COMMON_URL_FETCHER_H_

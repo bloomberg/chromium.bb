@@ -12,7 +12,7 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -28,8 +28,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
         Source<Profile>(profile_.get()));
     google_login_failure_.ListenFor(chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                                     Source<Profile>(profile_.get()));
-
-    URLFetcher::set_factory(&factory_);
   }
 
   void SimulateValidResponse() {

@@ -6,7 +6,7 @@
 
 #include "content/browser/browser_thread.h"
 #include "content/browser/speech/speech_recognizer.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -75,12 +75,10 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
 
   // testing::Test methods.
   virtual void SetUp() {
-    URLFetcher::set_factory(&url_fetcher_factory_);
     AudioInputController::set_factory(&audio_input_controller_factory_);
   }
 
   virtual void TearDown() {
-    URLFetcher::set_factory(NULL);
     AudioInputController::set_factory(NULL);
   }
 

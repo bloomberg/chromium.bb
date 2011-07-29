@@ -20,7 +20,7 @@
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -152,8 +152,6 @@ void SearchProviderTest::SetUp() {
 
   provider_ = new SearchProvider(this, &profile_);
 
-  URLFetcher::set_factory(&test_factory_);
-
   // Prevent the Instant field trial from kicking in.
   PrefService* service = profile_.GetPrefs();
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
@@ -208,8 +206,6 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
 
 void SearchProviderTest::TearDown() {
   message_loop_.RunAllPending();
-
-  URLFetcher::set_factory(NULL);
 
   // Shutdown the provider before the profile.
   provider_ = NULL;

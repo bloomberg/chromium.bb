@@ -4,7 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/speech/speech_recognition_request.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,15 +25,6 @@ class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
                                     const SpeechInputResultArray& result) {
     error_ = error;
     result_ = result;
-  }
-
-  // testing::Test methods.
-  virtual void SetUp() {
-    URLFetcher::set_factory(&url_fetcher_factory_);
-  }
-
-  virtual void TearDown() {
-    URLFetcher::set_factory(NULL);
   }
 
  protected:

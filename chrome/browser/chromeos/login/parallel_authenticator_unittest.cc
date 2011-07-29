@@ -570,7 +570,6 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   ExpectLoginSuccess(username_, password_, result_, false);
 
   MockFactory<SuccessFetcher> factory;
-  URLFetcher::set_factory(&factory);
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,
@@ -613,7 +612,6 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   ExpectLoginFailure(failure);
 
   MockFactory<CaptchaFetcher> factory;
-  URLFetcher::set_factory(&factory);
   TestingProfile profile;
 
   auth_->RetryAuth(&profile,

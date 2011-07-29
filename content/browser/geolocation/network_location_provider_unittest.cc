@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/network_location_provider.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,7 +115,6 @@ MockDeviceDataProviderImpl<DataType>::instance_ = NULL;
 class GeolocationNetworkProviderTest : public testing::Test {
  public:
   virtual void SetUp() {
-    URLFetcher::set_factory(&url_fetcher_factory_);
     access_token_store_ = new FakeAccessTokenStore;
     gateway_data_provider_ =
         MockDeviceDataProviderImpl<GatewayData>::CreateInstance();
@@ -129,7 +128,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
     WifiDataProvider::ResetFactory();
     RadioDataProvider::ResetFactory();
     GatewayDataProvider::ResetFactory();
-    URLFetcher::set_factory(NULL);
   }
 
   LocationProviderBase* CreateProvider(bool set_permission_granted) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_
-#define CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_
+#ifndef CONTENT_TEST_TEST_URL_FETCHER_FACTORY_H_
+#define CONTENT_TEST_TEST_URL_FETCHER_FACTORY_H_
 #pragma once
 
 #include <list>
@@ -11,9 +11,21 @@
 #include <string>
 #include <utility>
 
+#include "base/threading/non_thread_safe.h"
 #include "content/common/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_status.h"
+
+// Changes URLFetcher's Factory for the lifetime of the object.
+// Note that this scoper cannot be nested (to make it even harder to misuse).
+class ScopedURLFetcherFactory : public base::NonThreadSafe {
+ public:
+  explicit ScopedURLFetcherFactory(URLFetcher::Factory* factory);
+  virtual ~ScopedURLFetcherFactory();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedURLFetcherFactory);
+};
 
 // TestURLFetcher and TestURLFetcherFactory are used for testing consumers of
 // URLFetcher. TestURLFetcherFactory is a URLFetcher::Factory that creates
@@ -26,9 +38,8 @@
 //   MessageLoopForUI message_loop;
 //   // And io_thread to release URLRequestContextGetter in URLFetcher::Core.
 //   BrowserThread io_thread(BrowserThread::IO, &message_loop);
-//   // Create and register factory.
+//   // Create factory (it automatically sets itself as URLFetcher's factory).
 //   TestURLFetcherFactory factory;
-//   URLFetcher::set_factory(&factory);
 //   // Do something that triggers creation of a URLFetcher.
 //   TestURLFetcher* fetcher = factory.GetFetcherByID(expected_id);
 //   DCHECK(fetcher);
@@ -36,8 +47,6 @@
 //   fetcher->delegate()->OnURLFetchComplete(...);
 //   // Make sure consumer of URLFetcher does the right thing.
 //   ...
-//   // Reset factory.
-//   URLFetcher::set_factory(NULL);
 //
 // Note: if you don't know when your request objects will be created you
 // might want to use the FakeUrlFetcher and FakeUrlFetcherFactory classes
@@ -118,7 +127,8 @@ class TestURLFetcher : public URLFetcher {
 
 // Simple URLFetcher::Factory method that creates TestURLFetchers. All fetchers
 // are registered in a map by the id passed to the create method.
-class TestURLFetcherFactory : public URLFetcher::Factory {
+class TestURLFetcherFactory : public URLFetcher::Factory,
+                              public ScopedURLFetcherFactory {
  public:
   TestURLFetcherFactory();
   virtual ~TestURLFetcherFactory();
@@ -157,7 +167,6 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
 //
 // Example usage:
 //  FakeURLFetcherFactory factory;
-//  URLFetcher::set_factory(&factory);
 //
 //  // You know that class SomeService will request url http://a.com/ and you
 //  // want to test the service class by returning an error.
@@ -171,7 +180,8 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
 //  SomeService service;
 //  service.Run();  // Will eventually request these two URLs.
 
-class FakeURLFetcherFactory : public URLFetcher::Factory {
+class FakeURLFetcherFactory : public URLFetcher::Factory,
+                              public ScopedURLFetcherFactory {
  public:
   FakeURLFetcherFactory();
   // FakeURLFetcherFactory that will delegate creating URLFetcher for unknown
@@ -224,4 +234,4 @@ class URLFetcherFactory : public URLFetcher::Factory {
 
 };
 
-#endif  // CONTENT_COMMON_TEST_URL_FETCHER_FACTORY_H_
+#endif  // CONTENT_TEST_TEST_URL_FETCHER_FACTORY_H_

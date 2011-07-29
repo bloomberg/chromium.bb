@@ -16,7 +16,7 @@
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,7 +121,6 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   // Create and register factory.
   AutofillDownloadTestHelper helper;
   TestURLFetcherFactory factory;
-  URLFetcher::set_factory(&factory);
 
   FormData form;
   form.method = ASCIIToUTF16("post");
@@ -363,9 +362,6 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
                                                           FieldTypeSet()));
   fetcher = factory.GetFetcherByID(5);
   EXPECT_EQ(NULL, fetcher);
-
-  // Make sure consumer of URLFetcher does the right thing.
-  URLFetcher::set_factory(NULL);
 }
 
 TEST_F(AutofillDownloadTest, CacheQueryTest) {
@@ -373,7 +369,6 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   AutofillDownloadTestHelper helper;
   // Create and register factory.
   TestURLFetcherFactory factory;
-  URLFetcher::set_factory(&factory);
   helper.InitContextGetter();
 
   FormData form;
@@ -545,8 +540,5 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
                                           std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
   EXPECT_EQ(responses[0], helper.responses_.front().response);
-
-  // Make sure consumer of URLFetcher does the right thing.
-  URLFetcher::set_factory(NULL);
 }
 

@@ -16,8 +16,8 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
@@ -50,7 +50,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
     file_thread_.reset(new BrowserThread(BrowserThread::FILE, &msg_loop_));
 
     factory_.reset(new FakeURLFetcherFactory());
-    URLFetcher::set_factory(factory_.get());
 
     browser_thread_.reset(new BrowserThread(BrowserThread::UI, &msg_loop_));
   }
@@ -58,7 +57,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
   virtual void TearDown() {
     msg_loop_.RunAllPending();
     csd_service_.reset();
-    URLFetcher::set_factory(NULL);
     file_thread_.reset();
     browser_thread_.reset();
   }

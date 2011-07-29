@@ -14,6 +14,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/http_return.h"
 #include "content/common/url_fetcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
 // Responds as though ClientLogin returned from the server.
@@ -37,10 +38,13 @@ class MockFetcher : public URLFetcher {
 };
 
 template<typename T>
-class MockFactory : public URLFetcher::Factory {
+class MockFactory : public URLFetcher::Factory,
+                    public ScopedURLFetcherFactory {
  public:
   MockFactory()
-      : success_(true) {}
+      : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        success_(true) {
+  }
   ~MockFactory() {}
   URLFetcher* CreateURLFetcher(int id,
                                const GURL& url,

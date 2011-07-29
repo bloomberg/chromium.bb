@@ -16,7 +16,7 @@
 #include "chrome/test/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +81,6 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   FakeURLFetcherFactory test_factory_;
   test_factory_.SetFakeResponse(k_mock_url + "/time?command=get_time", "",
       false);
-  URLFetcher::set_factory(&test_factory_);
 
   TestingProfile profile;
   profile.CreateRequestContext();
@@ -107,7 +106,6 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
                      credentials,
                      true);
   backend.Shutdown(false);
-  URLFetcher::set_factory(NULL);
 }
 
 TEST_F(SyncBackendHostTest, MakePendingConfigModeState) {

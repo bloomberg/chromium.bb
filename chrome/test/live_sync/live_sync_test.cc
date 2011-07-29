@@ -29,8 +29,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/test_url_fetcher_factory.h"
 #include "content/common/url_fetcher.h"
+#include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
@@ -321,10 +321,6 @@ void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
 
 void LiveSyncTest::TearDownInProcessBrowserTestFixture() {
   mock_host_resolver_override_.reset();
-
-  // Switch back to using the default URLFetcher factory. This is a no-op if
-  // a fake factory wasn't used.
-  URLFetcher::set_factory(NULL);
 }
 
 void LiveSyncTest::ReadPasswordFile() {
@@ -356,7 +352,6 @@ void LiveSyncTest::SetupMockGaiaResponses() {
   factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
   factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
   factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
-  URLFetcher::set_factory(factory_.get());
 }
 
 // Start up a local sync server based on the value of server_type_, which

@@ -2,13 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/test_url_fetcher_factory.h"
+#include "content/test/test_url_fetcher_factory.h"
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/url_request/url_request_status.h"
+
+ScopedURLFetcherFactory::ScopedURLFetcherFactory(URLFetcher::Factory* factory) {
+  DCHECK(!URLFetcher::factory());
+  URLFetcher::set_factory(factory);
+}
+
+ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
+  DCHECK(URLFetcher::factory());
+  URLFetcher::set_factory(NULL);
+}
 
 TestURLFetcher::TestURLFetcher(int id,
                                const GURL& url,
@@ -62,7 +72,9 @@ bool TestURLFetcher::GetResponseAsFilePath(
   return true;
 }
 
-TestURLFetcherFactory::TestURLFetcherFactory() {}
+TestURLFetcherFactory::TestURLFetcherFactory()
+    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+}
 
 TestURLFetcherFactory::~TestURLFetcherFactory() {}
 
@@ -146,10 +158,15 @@ class FakeURLFetcher : public URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
 };
 
-FakeURLFetcherFactory::FakeURLFetcherFactory() {}
+FakeURLFetcherFactory::FakeURLFetcherFactory()
+    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+}
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
-    URLFetcher::Factory* default_factory) : default_factory_(default_factory) {}
+    URLFetcher::Factory* default_factory)
+    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      default_factory_(default_factory) {
+}
 
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
 
