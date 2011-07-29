@@ -879,6 +879,27 @@ class TestHWStage(NonHaltingBuilderStage):
                              internal_test=False)
 
 
+class TestSDKStage(BuilderStage):
+  """Stage that performs testing an SDK created in a previous stage"""
+  def _PerformStage(self):
+    tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
+    board_location = os.path.join(self._build_root, 'chroot/build/amd64-host')
+
+    # Create a tarball of the latest SDK.
+    cmd = ['sudo', 'tar', '-jcf', tarball_location]
+    excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
+                      'tmp')
+    for path in excluded_paths:
+      cmd.append('--exclude=%s/*' % path)
+    cmd.append('.')
+    cros_lib.RunCommand(cmd, cwd=board_location)
+
+    # Build a new SDK using the tarball.
+    cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot', '--replace',
+           '--path', tarball_location]
+    cros_lib.RunCommand(cmd, cwd=self._build_root)
+
+
 class RemoteTestStatusStage(BuilderStage):
   """Stage that performs testing steps."""
   def _PerformStage(self):

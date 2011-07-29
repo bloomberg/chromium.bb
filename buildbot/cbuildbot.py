@@ -224,6 +224,7 @@ def RunBuildStages(bot_id, options, build_config):
       stages.BuildBoardStage(bot_id, options, build_config).Run()
 
     if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
+      stages.TestSDKStage(bot_id, options, build_config).Run()
       stages.UploadPrebuiltsStage(bot_id, options, build_config).Run()
       stages.Results.Report(sys.stdout)
       return stages.Results.Success()
