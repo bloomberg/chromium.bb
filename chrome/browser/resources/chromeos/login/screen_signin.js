@@ -33,6 +33,7 @@ cr.define('login', function() {
     /** @inheritDoc */
     decorate: function() {
       $('email').addEventListener('keydown', this.handleKeyDown_.bind(this));
+      $('email').addEventListener('blur', this.handleEmailBlur_);
       $('password').addEventListener('keydown', this.handleKeyDown_.bind(this));
       $('signin-button-in-place').addEventListener('click',
           this.handleSigninClick_.bind(this));
@@ -143,6 +144,16 @@ cr.define('login', function() {
           this.handleSigninClick_();
         }
       }
+    },
+
+    /**
+     * Handles blur event of email field.
+     * @private
+     */
+    handleEmailBlur_: function(e) {
+      var emailElement = $('email');
+      if (emailElement.value.indexOf('@') == -1)
+        emailElement.value += '@gmail.com';
     }
   };
 

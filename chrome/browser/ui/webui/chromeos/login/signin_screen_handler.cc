@@ -19,6 +19,8 @@
 
 namespace {
 
+const char kDefaultDomain[] = "@gmail.com";
+
 // Account picker screen id.
 const char kAccountPickerScreen[] = "account-picker";
 // Sign in screen id.
@@ -34,6 +36,17 @@ const char kKeyName[] = "name";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyImageUrl[] = "imageUrl";
+
+// Sanitize emails. Currently, it only ensures all emails have a domain.
+std::string SanitizeEmail(const std::string& email) {
+  std::string sanitized(email);
+
+  // Apply a default domain if necessary.
+  if (sanitized.find('@') == std::string::npos)
+    sanitized += kDefaultDomain;
+
+  return sanitized;
+}
 
 }  // namespace
 
@@ -149,6 +162,7 @@ void SigninScreenHandler::HandleCompleteLogin(const base::ListValue* args) {
     return;
   }
 
+  username = SanitizeEmail(username);
   delegate_->CompleteLogin(username, password);
 }
 
@@ -161,6 +175,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
     return;
   }
 
+  username = SanitizeEmail(username);
   delegate_->Login(username, password);
 }
 
