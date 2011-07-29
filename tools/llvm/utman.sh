@@ -185,8 +185,7 @@ readonly PNACL_SDK_ROOT="${PNACL_TOOLCHAIN_ROOT}/sdk"
 readonly PNACL_SDK_INCLUDE="${PNACL_SDK_ROOT}/include"
 readonly PNACL_SDK_LIB="${PNACL_SDK_ROOT}/lib"
 
-# The pattern `lib-${platform}' is implicit in verify(),
-# libehsupport(), and sdk().
+# The pattern `lib-${platform}' is implicit in verify() and sdk().
 readonly PNACL_LIB_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib"
 readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-arm"
 readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-x86-32"
@@ -349,7 +348,6 @@ STD_ENV_FOR_NEWLIB=(
   AS_FOR_TARGET="${ILLEGAL_TOOL}"
   LD_FOR_TARGET="${ILLEGAL_TOOL}"
   STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
-
 
 # The gold plugin that we use is documented at
 # http://llvm.org/docs/GoldPlugin.html
@@ -764,13 +762,13 @@ libs() {
   libs-clean
   libc
 
-  # Build native versions of libgcc
-  # TODO(robertm): change these to bitcode libs
   build-compiler-rt
-  # NOTE: this currently depends on "llvm-gcc arm"
-  build-libgcc_eh-bitcode arm
 
-  libehsupport
+  # NOTE: this currently depends on "llvm-gcc arm"
+  build-libgcc_eh arm
+  build-libgcc_eh x86-32
+  build-libgcc_eh x86-64
+
   libstdcpp
 }
 
@@ -1439,15 +1437,19 @@ llvm-gcc-make() {
   spopd
 }
 
-#+ build-libgcc_eh-bitcode - build/install bitcode version of libgcc_eh
-build-libgcc_eh-bitcode() {
+#+ build-libgcc_eh - build/install libgcc_eh
+build-libgcc_eh() {
+  # TODO(pdox): This process needs some major renovation.
+  # We are using the llvm-gcc ARM build directory, but varying '-arch'
+  # to get different versions of libgcc_eh.
+
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
-  local target=$1
+  local arch=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC}-${target}"
+  local objdir="${TC_BUILD_LLVM_GCC}-arm"
   spushd ${objdir}/gcc
-  StepBanner "bitcode libgcc_eh" "cleaning"
+  StepBanner "libgcc_eh-${arch}" "cleaning"
   RunWithLog libgcc_eh.clean \
       env -i PATH=/usr/bin/:/bin \
              make clean-target-libgcc
@@ -1459,22 +1461,23 @@ build-libgcc_eh-bitcode() {
   #       'ATTRIBUTE_UNUSED' which is used to mark unused function
   #       parameters.
   #       The arguments were gleaned from build logs.
-  StepBanner "bitcode libgcc_eh" "building"
-  RunWithLog libgcc_eh.bitcode.make \
+  StepBanner "libgcc_eh-${arch}" "building"
+  local flags
+  flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
+  flags+=" -DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc"
+  flags+=" -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE "
+  RunWithLog libgcc_eh.${arch}.make \
        env -i PATH=/usr/bin/:/bin \
               "${STD_ENV_FOR_LIBSTDCPP[@]}" \
               "INCLUDES=-I${srcdir}/include -I${srcdir}/gcc -I." \
-              "LIBGCC2_CFLAGS=-DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc  -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE " \
+              "LIBGCC2_CFLAGS=${flags}" \
               "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
               make ${MAKE_OPTS} -f libgcc.mk libgcc_eh.a
-
-  StepBanner "bitcode libgcc_eh" "installing"
-  # removed the old native versions of libgcc_eh if any
-  rm -f "${PNACL_ROOT}"/libs-*/libgcc_eh.a
-  # install the new bitcode version
-  mkdir -p "${PNACL_LIB_ROOT}"
-  cp libgcc_eh.a "${PNACL_LIB_ROOT}"
   spopd
+
+  StepBanner "libgcc_eh-${arch}" "installing"
+  mkdir -p "${PNACL_LIB_ROOT}-${arch}"
+  cp ${objdir}/gcc/libgcc_eh.a "${PNACL_LIB_ROOT}-${arch}"
 }
 
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
@@ -2820,43 +2823,6 @@ sdk-verify() {
     done
   done
 }
-
-libehsupport() {
-  libehsupport-clean
-  libehsupport-install
-}
-
-libehsupport-clean() {
-  rm -rf "${PNACL_LIB_ROOT}"*/libehsupport*
-}
-
-libehsupport-install() {
-  local extra_flags=""
-  local scons_extra=""
-  if ${LIBMODE_GLIBC}; then
-    extra_flags="--nacl_glibc"
-    scons_extra="-glibc"
-  fi
-
-  for platform in x86-32 x86-64 arm; do
-    if [ "${platform}" == "arm" ] && ${LIBMODE_GLIBC}; then
-      continue
-    fi
-
-    StepBanner "LIBEHSUPPORT" "Make/Install ${platform} ehsupport"
-    RunWithLog "libehsupport.${platform}" \
-        "${SCONS_COMMON[@]}" \
-        ${extra_flags} \
-        platform=${platform} \
-        libehsupport
-
-    local sconsdir="scons-out/nacl-${platform}-pnacl${scons_extra}"
-    cp "${sconsdir}"/obj/src/untrusted/ehsupport/libehsupport.* \
-       "${PNACL_LIB_ROOT}-${platform}"
-
-  done
-}
-
 
 newlib-nacl-headers-clean() {
   # Clean the include directory and revert it to its pure state

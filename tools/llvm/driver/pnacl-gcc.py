@@ -109,14 +109,14 @@ EXTRA_ENV = {
 
   'LD_ARGS_newlib_static':
     '-l:crt1.o -l:nacl_startup.bc ${ld_inputs} ' +
-    '--start-group -lgcc_eh -lgcc -lehsupport -lc -lnacl ' +
+    '--start-group -lgcc_eh -lgcc -lc -lnacl ' +
     '${LIBSTDCPP} -l:libcrt_platform.a --end-group',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
     '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
-    '--start-group -lgcc -lgcc_eh -lehsupport -lc ' +
+    '--start-group -lgcc -lgcc_eh -lc ' +
     '--end-group -l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared':
@@ -131,7 +131,7 @@ EXTRA_ENV = {
   'LD_ARGS_glibc_dynamic':
     '--eh-frame-hdr -l:crt1.o -l:crti.o ' +
     '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh -lehsupport ' +
+    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
     # When shared libgcc is ready, use this instead:
     # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
     # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
