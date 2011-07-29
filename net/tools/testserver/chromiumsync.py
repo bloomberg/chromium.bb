@@ -958,7 +958,7 @@ class TestServer(object):
         print 'Unrecognizable sync request!'
         return (400, None)  # Bad request.
       return (200, response.SerializeToString())
-    except MigrationDoneError as error:
+    except MigrationDoneError, error:
       print_context('<-')
       print 'MIGRATION_DONE: <%s>' % (ShortDatatypeListSummary(error.datatypes))
       response = sync_pb2.ClientToServerResponse()
@@ -967,7 +967,7 @@ class TestServer(object):
       response.migrated_data_type_id[:] = [
           SyncTypeToProtocolDataTypeId(x) for x in error.datatypes]
       return (200, response.SerializeToString())
-    except StoreBirthdayError as error:
+    except StoreBirthdayError, error:
       print_context('<-')
       print 'NOT_MY_BIRTHDAY'
       response = sync_pb2.ClientToServerResponse()
