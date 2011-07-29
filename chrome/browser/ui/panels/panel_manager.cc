@@ -86,7 +86,7 @@ void PanelManager::FindAndClosePanelOnOverflow(const Extension* extension) {
   // it.
   for (Panels::reverse_iterator iter = panels_.rbegin();
        iter != panels_.rend(); ++iter) {
-    if (extension == Panel::GetExtension((*iter)->browser_)) {
+    if (extension == Panel::GetExtension((*iter)->browser())) {
       panel_to_close = *iter;
       break;
     }

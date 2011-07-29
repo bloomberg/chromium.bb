@@ -156,7 +156,7 @@ class Panel : public BrowserWindow {
   NativePanel* native_panel() { return native_panel_; }
 #endif
 
-  Browser* browser() const { return browser_; }
+  Browser* browser() const;
   ExpansionState expansion_state() const { return expansion_state_; }
 
  protected:
@@ -173,8 +173,6 @@ class Panel : public BrowserWindow {
   // * SetBounds() is called by the API to try to change the bounds, which is
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
-
-  Browser* browser_;  // Weak, owned by native_panel.
 
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.

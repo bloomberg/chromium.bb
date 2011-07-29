@@ -276,10 +276,6 @@ bool PanelBrowserView::IsDrawingAttention() const {
   return is_drawing_attention_;
 }
 
-void PanelBrowserView::DestroyPanelBrowser() {
-  DestroyBrowser();
-}
-
 void PanelBrowserView::StopDrawingAttention() {
   if (!is_drawing_attention_)
     return;
@@ -299,6 +295,14 @@ void PanelBrowserView::StopDrawingAttention() {
     panel_->SetExpansionState(Panel::EXPANDED);
 
   GetFrameView()->SchedulePaint();
+}
+
+Browser* PanelBrowserView::GetPanelBrowser() const {
+  return browser();
+}
+
+void PanelBrowserView::DestroyPanelBrowser() {
+  DestroyBrowser();
 }
 
 NativePanelTesting* PanelBrowserView::GetNativePanelTesting() {

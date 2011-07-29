@@ -169,6 +169,10 @@ bool PanelBrowserWindowGtk::IsDrawingAttention() const {
   return false;
 }
 
+Browser* PanelBrowserWindowGtk::GetPanelBrowser() const {
+  return browser();
+}
+
 void PanelBrowserWindowGtk::DestroyPanelBrowser() {
   DestroyBrowser();
 }

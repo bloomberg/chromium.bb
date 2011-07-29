@@ -27,8 +27,7 @@ const Extension* Panel::GetExtension(Browser* browser) {
 }
 
 Panel::Panel(Browser* browser, const gfx::Rect& bounds)
-    : browser_(browser),
-      native_panel_(NULL),
+    : native_panel_(NULL),
       expansion_state_(EXPANDED) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
 }
@@ -275,24 +274,25 @@ bool Panel::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* Panel::GetDownloadShelf() {
-  Profile* profile = browser_->GetProfile();
-  Browser* browser = Browser::GetTabbedBrowser(profile, true);
+  Browser* panel_browser = native_panel_->GetPanelBrowser();
+  Profile* profile = panel_browser->GetProfile();
+  Browser* tabbed_browser = Browser::GetTabbedBrowser(profile, true);
 
-  if (!browser) {
+  if (!tabbed_browser) {
     // Set initial bounds so window will not be positioned at an offset
     // to this panel as panels are at the bottom of the screen.
     gfx::Rect window_bounds;
     bool maximized;
-    WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
-                                        browser_, &window_bounds, &maximized);
+    WindowSizer::GetBrowserWindowBounds(
+        std::string(), gfx::Rect(), panel_browser, &window_bounds, &maximized);
     Browser::CreateParams params(Browser::TYPE_TABBED, profile);
     params.initial_bounds = window_bounds;
-    browser = Browser::CreateWithParams(params);
-    browser->NewTab();
+    tabbed_browser = Browser::CreateWithParams(params);
+    tabbed_browser->NewTab();
   }
 
-  browser->window()->Show();  // Ensure download shelf is visible.
-  return browser->window()->GetDownloadShelf();
+  tabbed_browser->window()->Show();  // Ensure download shelf is visible.
+  return tabbed_browser->window()->GetDownloadShelf();
 }
 
 void Panel::ShowRepostFormWarningDialog(TabContents* tab_contents) {
@@ -413,6 +413,10 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   NOTIMPLEMENTED();
 }
 #endif
+
+Browser* Panel::browser() const {
+  return native_panel_->GetPanelBrowser();
+}
 
 void Panel::DestroyBrowser() {
   native_panel_->DestroyPanelBrowser();

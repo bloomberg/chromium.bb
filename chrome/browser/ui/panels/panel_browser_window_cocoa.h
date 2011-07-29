@@ -45,11 +45,12 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void DrawAttention() OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
+  virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
   virtual NativePanelTesting* GetNativePanelTesting() OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
-  Browser* browser() { return browser_.get(); }
+  Browser* browser() const { return browser_.get(); }
 
  private:
   friend class PanelBrowserWindowCocoaTest;

@@ -147,6 +147,10 @@ bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
   return false;
 }
 
+Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {
+  return browser();
+}
+
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
   controller_ = NULL;
