@@ -5072,6 +5072,29 @@
    fun:_ZN20ChromeURLDataManager10DataSource22SendResponseOnIOThreadEi13scoped_refptrI16RefCountedMemoryE
 }
 {
+   bug_90496d
+   Memcheck:Leak
+   ...
+   fun:_ZN20AsyncResourceHandler17OnResponseStartedEiP16ResourceResponse
+   fun:_ZN24CrossSiteResourceHandler14ResumeResponseEv
+   fun:_ZN22ResourceDispatcherHost12OnSwapOutACKERK22ViewMsg_SwapOut_Params
+   fun:_ZN18RenderWidgetHelper21OnCrossSiteSwapOutACKERK22ViewMsg_SwapOut_Params
+}
+{
+   bug_90496e
+   Memcheck:Leak
+   ...
+   fun:_ZN14SharedIOBuffer4InitEv
+   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN24CrossSiteResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22OfflineResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22ResourceDispatcherHost4ReadEPN3net10URLRequestEPi
+   fun:_ZN22ResourceDispatcherHost12StartReadingEPN3net10URLRequestE
+   fun:_ZN22ResourceDispatcherHost13ResumeRequestERK15GlobalRequestID
+}
+{
    bug_90521_a
    Memcheck:Leak
    fun:_Znw*
