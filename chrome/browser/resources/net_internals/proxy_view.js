@@ -14,13 +14,13 @@
  *  @constructor
  */
 function ProxyView() {
-  const mainBoxId = 'proxyTabContent';
-  const originalSettingsDivId = 'proxyOriginalSettings';
-  const effectiveSettingsDivId = 'proxyEffectiveSettings';
-  const reloadSettingsButtonId = 'proxyReloadSettings';
-  const badProxiesTbodyId = 'badProxiesTableBody';
-  const clearBadProxiesButtonId = 'clearBadProxies';
-  const proxyResolverLogPreId = 'proxyResolverLog';
+  const mainBoxId = 'proxy-view-tab-content';
+  const originalSettingsDivId = 'proxy-view-original-settings';
+  const effectiveSettingsDivId = 'proxy-view-effective-settings';
+  const reloadSettingsButtonId = 'proxy-view-reload-settings';
+  const badProxiesTbodyId = 'proxy-view-bad-proxies-tbody';
+  const clearBadProxiesButtonId = 'proxy-view-clear-bad-proxies';
+  const proxyResolverLogPreId = 'proxy-view-resolver-log';
 
   DivView.call(this, mainBoxId);
 

@@ -14,15 +14,15 @@
  *  @constructor
  */
 function DnsView() {
-  const mainBoxId = 'dnsTabContent';
-  const cacheTbodyId = 'hostResolverCacheTbody';
-  const clearCacheButtonId = 'clearHostResolverCache';
-  const defaultFamilySpanId = 'hostResolverDefaultFamily';
-  const ipv6DisabledSpanId = 'hostResolverIPv6Disabled';
-  const enableIPv6ButtonId = 'hostResolverEnableIPv6';
-  const capacitySpanId = 'hostResolverCacheCapacity';
-  const ttlSuccessSpanId = 'hostResolverCacheTTLSuccess';
-  const ttlFailureSpanId = 'hostResolverCacheTTLFailure';
+  const mainBoxId = 'dns-view-tab-content';
+  const cacheTbodyId = 'dns-view-cache-tbody';
+  const clearCacheButtonId = 'dns-view-clear-cache';
+  const defaultFamilySpanId = 'dns-view-default-family';
+  const ipv6DisabledSpanId = 'dns-view-ipv6-disabled';
+  const enableIPv6ButtonId = 'dns-view-enable-ipv6';
+  const capacitySpanId = 'dns-view-cache-capacity';
+  const ttlSuccessSpanId = 'dns-view-cache-ttl-success';
+  const ttlFailureSpanId = 'dns-view-cache-ttl-failure';
 
   DivView.call(this, mainBoxId);
 

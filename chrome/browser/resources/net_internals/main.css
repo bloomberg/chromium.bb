@@ -43,29 +43,24 @@ body {
 }
 
 /* TODO(eroman): make this a classname instead */
-#detailsLogBox,
-#detailsTimelineBox,
-#httpCacheTabContent,
-#proxyTabContent,
+#events-view-details-log-box,
+#events-view-details-timeline-box,
+#http-cache-view-tab-content,
+#proxy-view-tab-content,
 #capture-view-tab-content,
 #import-view-tab-content,
 #export-view-tab-content,
-#dnsTabContent,
+#dns-view-tab-content,
 #socketsTabContent,
 #spdyTabContent,
 #serviceProvidersTabContent,
 #testTabContent,
-#hstsTabContent,
+#hsts-view-tab-content,
 #httpThrottlingTabContent,
 #prerenderTabContent,
 #logs-view-tab-content {
   overflow: auto;
   padding: 10px;
-}
-
-#proxyTabContent td,
-#proxyTabContent th {
-  font-size: 12px;
 }
 
 /*

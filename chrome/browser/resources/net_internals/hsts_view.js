@@ -11,16 +11,16 @@
  *  @constructor
  */
 function HSTSView() {
-  const mainBoxId = 'hstsTabContent';
-  const queryInputId = 'hstsQueryInput';
-  const formId = 'hstsQueryForm';
-  const queryOutputDivId = 'hstsQueryOutput';
-  const addInputId = 'hstsAddInput';
-  const addFormId = 'hstsAddForm';
-  const addCheckId = 'hstsCheckInput';
-  const addPinsId = 'hstsAddPins';
-  const deleteInputId = 'hstsDeleteInput';
-  const deleteFormId = 'hstsDeleteForm';
+  const mainBoxId = 'hsts-view-tab-content';
+  const queryInputId = 'hsts-view-query-input';
+  const formId = 'hsts-view-query-form';
+  const queryOutputDivId = 'hsts-view-query-output';
+  const addInputId = 'hsts-view-add-input';
+  const addFormId = 'hsts-view-add-form';
+  const addCheckId = 'hsts-view-check-input';
+  const addPinsId = 'hsts-view-add-pins';
+  const deleteInputId = 'hsts-view-delete-input';
+  const deleteFormId = 'hsts-view-delete-form';
 
   DivView.call(this, mainBoxId);
 

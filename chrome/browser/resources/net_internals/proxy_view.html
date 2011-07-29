@@ -1,15 +1,25 @@
 <!-- Proxy info -->
-<div id=proxyTabContent>
+
+<style>
+
+#proxy-view-tab-content td,
+#proxy-view-tab-content th {
+  font-size: 12px;
+}
+
+</style>
+
+<div id=proxy-view-tab-content>
   <h4>
     Current proxy settings
-    <input type=button value="Re-apply settings" id=proxyReloadSettings class="hideOnLoadLog"/>
+    <input type=button value="Re-apply settings" id=proxy-view-reload-settings class="hideOnLoadLog"/>
   </h4>
 
   <table><tr>
 
   <td valign=top>
   <h3>Effective settings</h3>
-  <pre id=proxyEffectiveSettings></pre>
+  <pre id=proxy-view-effective-settings></pre>
   </pre>
   </td>
 
@@ -17,7 +27,7 @@
 
   <td valign=top>
   <h3>Original settings</h3>
-  <pre id=proxyOriginalSettings></pre>
+  <pre id=proxy-view-original-settings></pre>
   </td>
 
   </tr></table>
@@ -29,13 +39,13 @@
     </li>
     <li>
       Latest proxy resolver event:
-      <pre id=proxyResolverLog></pre>
+      <pre id=proxy-view-resolver-log></pre>
     </li>
   </ul>
 
   <h4>
     Proxies which have failed recently, and are marked as bad
-    <input type=button value="Clear bad proxies" id=clearBadProxies class="hideOnLoadLog" />
+    <input type=button value="Clear bad proxies" id=proxy-view-clear-bad-proxies class="hideOnLoadLog" />
   </h4>
   <table class="styledTable">
     <thead>
@@ -44,6 +54,6 @@
         <th>Time for next retry</th>
       </tr>
     </thead>
-    <tbody id=badProxiesTableBody></tbody>
+    <tbody id=proxy-view-bad-proxies-tbody></tbody>
   </table>
 </div>

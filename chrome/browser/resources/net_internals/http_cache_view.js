@@ -7,8 +7,8 @@
  *  @constructor
  */
 function HttpCacheView() {
-  const mainBoxId = 'httpCacheTabContent';
-  const statsDivId = 'httpCacheStats';
+  const mainBoxId = 'http-cache-view-tab-content';
+  const statsDivId = 'http-cache-view-cache-stats';
 
   DivView.call(this, mainBoxId);
 

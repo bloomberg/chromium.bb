@@ -27,23 +27,23 @@
  */
 function EventsView() {
   const tableBodyId = 'events-view-source-list-tbody';
-  const filterInputId = 'filterInput';
-  const filterCountId = 'filterCount';
-  const deleteSelectedId = 'deleteSelected';
-  const deleteAllId = 'deleteAll';
-  const selectAllId = 'selectAll';
-  const sortByIdId = 'sortById';
-  const sortBySourceTypeId = 'sortBySource';
-  const sortByDescriptionId = 'sortByDescription';
+  const filterInputId = 'events-view-filter-input';
+  const filterCountId = 'events-view-filter-count';
+  const deleteSelectedId = 'events-view-delete-selected';
+  const deleteAllId = 'events-view-delete-all';
+  const selectAllId = 'events-view-select-all';
+  const sortByIdId = 'events-view-sort-by-id';
+  const sortBySourceTypeId = 'events-view-sort-by-source';
+  const sortByDescriptionId = 'events-view-sort-by-description';
   const tabHandlesContainerId = 'events-view-details-tab-handles';
-  const logTabId = 'detailsLogTab';
-  const timelineTabId = 'detailsTimelineTab';
-  const detailsLogBoxId = 'detailsLogBox';
-  const detailsTimelineBoxId = 'detailsTimelineBox';
+  const logTabId = 'events-view-details-log-tab';
+  const timelineTabId = 'events-view-details-timeline-tab';
+  const detailsLogBoxId = 'events-view-details-log-box';
+  const detailsTimelineBoxId = 'events-view-details-timeline-box';
   const topbarId = 'events-view-filter-box';
   const middleboxId = 'events-view-source-list';
   const bottombarId = 'events-view-action-box';
-  const sizerId = 'splitterBoxForEventDetails';
+  const sizerId = 'events-view-splitter-box';
 
   View.call(this);
 
