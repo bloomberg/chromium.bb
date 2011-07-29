@@ -26,6 +26,7 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32 host_route_id,
     GpuCommandBufferStub* stub)
     : sender_(sender),
+      init_done_msg_(NULL),
       host_route_id_(host_route_id),
       stub_(stub),
       video_decode_accelerator_(NULL) {
@@ -92,10 +93,15 @@ void GpuVideoDecodeAccelerator::NotifyError(
   }
 }
 
-void GpuVideoDecodeAccelerator::Initialize(const std::vector<uint32>& configs) {
+void GpuVideoDecodeAccelerator::Initialize(
+    const std::vector<uint32>& configs,
+    IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
+  DCHECK(!init_done_msg_);
+  DCHECK(init_done_msg);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   DCHECK(stub_ && stub_->scheduler());
+  init_done_msg_ = init_done_msg;
   OmxVideoDecodeAccelerator* omx_decoder = new OmxVideoDecodeAccelerator(this);
   omx_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
@@ -167,8 +173,9 @@ void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
 }
 
 void GpuVideoDecodeAccelerator::NotifyInitializeDone() {
-  if (!Send(new AcceleratedVideoDecoderHostMsg_InitializeDone(host_route_id_)))
-    LOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_InitializeDone) failed";
+  if (!Send(init_done_msg_))
+    LOG(ERROR) << "Send(init_done_msg_) failed";
+  init_done_msg_ = NULL;
 }
 
 void GpuVideoDecodeAccelerator::NotifyFlushDone() {

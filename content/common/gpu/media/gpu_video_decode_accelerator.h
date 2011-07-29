@@ -43,8 +43,10 @@ class GpuVideoDecodeAccelerator
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
 
-  // Initialize the accelerator with the given configuration.
-  void Initialize(const std::vector<uint32>& configs);
+  // Initialize the accelerator with the given configuration and send the
+  // |init_done_msg| when done.
+  void Initialize(const std::vector<uint32>& configs,
+                  IPC::Message* init_done_msg);
 
  private:
 
@@ -62,6 +64,11 @@ class GpuVideoDecodeAccelerator
 
   // Pointer to the IPC message sender.
   IPC::Message::Sender* sender_;
+
+  // Message to Send() when initialization is done.  Is only non-NULL during
+  // initialization and is owned by the IPC channel underlying the
+  // GpuCommandBufferStub.
+  IPC::Message* init_done_msg_;
 
   // Route ID to communicate with the host.
   int32 host_route_id_;

@@ -283,8 +283,11 @@ PP_Resource ResourceCreationImpl::CreateURLRequestInfo(PP_Instance instance) {
   return ReturnResource(new PPB_URLRequestInfo_Impl(instance_));
 }
 
-PP_Resource ResourceCreationImpl::CreateVideoDecoder(PP_Instance instance) {
-  return ReturnResource(new PPB_VideoDecoder_Impl(instance_));
+PP_Resource ResourceCreationImpl::CreateVideoDecoder(
+    PP_Instance instance,
+    PP_Resource context3d_id,
+    const PP_VideoConfigElement* config) {
+  return PPB_VideoDecoder_Impl::Create(instance_, context3d_id, config);
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,

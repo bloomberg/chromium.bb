@@ -43,8 +43,6 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
                         OnBitstreamBufferProcessed)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                         OnProvidePictureBuffer)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_InitializeDone,
-                        OnInitializeDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_PictureReady,
                         OnPictureReady)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_FlushDone,
@@ -141,11 +139,6 @@ void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   client_->DismissPictureBuffer(picture_buffer_id);
-}
-
-void GpuVideoDecodeAcceleratorHost::OnInitializeDone() {
-  DCHECK(CalledOnValidThread());
-  client_->NotifyInitializeDone();
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(

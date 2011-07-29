@@ -51,36 +51,42 @@ PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
   return this;
 }
 
-int32_t PPB_VideoDecoder_Impl::Initialize(
-    PP_Resource context_id,
-    const PP_VideoConfigElement* decoder_config,
-    PP_CompletionCallback callback) {
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
+// static
+PP_Resource PPB_VideoDecoder_Impl::Create(PluginInstance* instance,
+                                          PP_Resource context3d_id,
+                                          const PP_VideoConfigElement* config) {
+  scoped_refptr<PPB_VideoDecoder_Impl> decoder(
+      new PPB_VideoDecoder_Impl(instance));
+  if (decoder->Init(context3d_id, config))
+    return decoder->GetReference();
+  return 0;
+}
 
-  if (!instance())
-    return PP_ERROR_FAILED;
+bool PPB_VideoDecoder_Impl::Init(PP_Resource context3d_id,
+                                 const PP_VideoConfigElement* config) {
+  if (!instance() || !context3d_id || !config)
+    return false;
 
-  EnterResourceNoLock<PPB_Context3D_API> enter(context_id, true);
+  EnterResourceNoLock<PPB_Context3D_API> enter(context3d_id, true);
   if (enter.failed())
-    return PP_ERROR_BADRESOURCE;
+    return false;
   PPB_Context3D_Impl* context3d =
       static_cast<PPB_Context3D_Impl*>(enter.object());
 
-  context3d_id_ = context_id;
+  context3d_id_ = context3d_id;
   ResourceTracker::Get()->AddRefResource(context3d_id_);
 
   int command_buffer_route_id =
       context3d->platform_context()->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
-    return PP_ERROR_FAILED;
+    return false;
   platform_video_decoder_ = instance()->delegate()->CreateVideoDecoder(
       this, command_buffer_route_id);
 
   gles2_impl_ = context3d->gles2_impl();
 
   if (!platform_video_decoder_)
-    return PP_ERROR_FAILED;
+    return false;
 
   std::vector<uint32> copied;
   // TODO(fischman,vrk): this is completely broken in that it fails to account
@@ -91,18 +97,13 @@ int32_t PPB_VideoDecoder_Impl::Initialize(
   // VideoAttributeKey have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
   // merge PP_VideoAttributeDictionary and VideoAttributeKey.
-  for (const PP_VideoConfigElement* current = decoder_config;
+  for (const PP_VideoConfigElement* current = config;
        *current != PP_VIDEOATTR_DICTIONARY_TERMINATOR; ++current) {
     copied.push_back(static_cast<uint32>(*current));
   }
 
   FlushCommandBuffer();
-  if (platform_video_decoder_->Initialize(copied)) {
-    initialization_callback_ = callback;
-    return PP_OK_COMPLETIONPENDING;
-  } else {
-    return PP_ERROR_FAILED;
-  }
+  return platform_video_decoder_->Initialize(copied);
 }
 
 int32_t PPB_VideoDecoder_Impl::Decode(
@@ -276,10 +277,7 @@ void PPB_VideoDecoder_Impl::NotifyFlushDone() {
 }
 
 void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
-  if (initialization_callback_.func == NULL)
-    return;
-
-  PP_RunAndClearCompletionCallback(&initialization_callback_, PP_OK);
+  NOTREACHED() << "PlatformVideoDecoder::Initialize() is synchronous!";
 }
 
 void PPB_VideoDecoder_Impl::FlushCommandBuffer() {

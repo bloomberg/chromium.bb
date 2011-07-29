@@ -38,16 +38,17 @@ class PPB_VideoDecoder_Impl : public Resource,
                               public ::ppapi::thunk::PPB_VideoDecoder_API,
                               public media::VideoDecodeAccelerator::Client {
  public:
-  explicit PPB_VideoDecoder_Impl(PluginInstance* instance);
   virtual ~PPB_VideoDecoder_Impl();
+  // See PPB_VideoDecoder_Dev::Create.  Returns 0 on failure to create &
+  // initialize.
+  static PP_Resource Create(PluginInstance* instance,
+                            PP_Resource context3d_id,
+                            const PP_VideoConfigElement* config);
 
   // ResourceObjectBase overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
-  virtual int32_t Initialize(PP_Resource context_id,
-                             const PP_VideoConfigElement* dec_config,
-                             PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          PP_CompletionCallback callback) OVERRIDE;
   virtual void AssignPictureBuffers(
@@ -75,6 +76,11 @@ class PPB_VideoDecoder_Impl : public Resource,
   // done.
   typedef std::map<int32, PP_CompletionCallback> CallbackById;
 
+  explicit PPB_VideoDecoder_Impl(PluginInstance* instance);
+
+  // Initialize the underlying decoder and return success status.
+  bool Init(PP_Resource context_id, const PP_VideoConfigElement* dec_config);
+
   // Tell command buffer to process all commands it has received so far.
   void FlushCommandBuffer();
 
@@ -89,7 +95,6 @@ class PPB_VideoDecoder_Impl : public Resource,
   // for reference counting to keep it alive for the lifetime of |*this|.
   PP_Resource context3d_id_;
 
-  PP_CompletionCallback initialization_callback_;
   PP_CompletionCallback flush_callback_;
   PP_CompletionCallback reset_callback_;
   CallbackById bitstream_buffer_callbacks_;

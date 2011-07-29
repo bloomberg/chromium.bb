@@ -23,19 +23,15 @@ class Instance;
 // C++ version of the PPB_VideoDecoder_Dev interface.
 class VideoDecoder_Dev : public Resource {
  public:
-  // Constructor for the video decoder. Calls the Create on the
-  // PPB_VideoDecoder_Dev interface.
-  //
-  // Parameters:
-  //  |instance| is the pointer to the plug-in instance.
-  explicit VideoDecoder_Dev(const Instance& instance);
+  // See PPB_VideoDecoder_Dev::Create.
+  explicit VideoDecoder_Dev(const Instance& instance,
+                            const Context3D_Dev& context,
+                            const PP_VideoConfigElement* config);
+
   explicit VideoDecoder_Dev(PP_Resource resource);
   virtual ~VideoDecoder_Dev();
 
   // PPB_VideoDecoder_Dev implementation.
-  int32_t Initialize(const PP_VideoConfigElement* config,
-                     const Context3D_Dev& context,
-                     CompletionCallback callback);
   void AssignPictureBuffers(const std::vector<PP_PictureBuffer_Dev>& buffers);
   int32_t Decode(const PP_VideoBitstreamBuffer_Dev& bitstream_buffer,
                  CompletionCallback callback);

@@ -213,16 +213,12 @@ void GLES2DemoInstance::DidChangeView(
 }
 
 void GLES2DemoInstance::InitializeDecoder() {
-  assert(!video_decoder_);
-  video_decoder_ = new pp::VideoDecoder_Dev(*this);
-
   PP_VideoConfigElement configs = PP_VIDEOATTR_DICTIONARY_TERMINATOR;
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&GLES2DemoInstance::DecoderInitDone);
-  video_decoder_->Initialize(&configs, *context_, cb);
-}
 
-void GLES2DemoInstance::DecoderInitDone(int32_t result) {
+  assert(!video_decoder_);
+  video_decoder_ = new pp::VideoDecoder_Dev(*this, *context_, &configs);
+  assert(!video_decoder_->is_null());
+
   DecodeNextNALUs();
 }
 

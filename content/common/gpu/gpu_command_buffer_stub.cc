@@ -87,8 +87,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetTransferBuffer,
                                     OnGetTransferBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateVideoDecoder,
-                        OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
+                                    OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyVideoDecoder,
                         OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
@@ -547,10 +547,11 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    const std::vector<uint32>& configs) {
+    const std::vector<uint32>& configs,
+    IPC::Message* reply_message) {
   video_decoder_.reset(
       new GpuVideoDecodeAccelerator(this, route_id_, this));
-  video_decoder_->Initialize(configs);
+  video_decoder_->Initialize(configs, reply_message);
 }
 
 void GpuCommandBufferStub::OnDestroyVideoDecoder() {

@@ -46,7 +46,7 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<uint32>& configs) {
   // Send IPC message to initialize decoder in GPU process.
   decoder_ = channel->CreateVideoDecoder(
       command_buffer_route_id_, configs, this);
-  return true;
+  return decoder_.get() != NULL;
 }
 
 void PlatformVideoDecoderImpl::Decode(const BitstreamBuffer& bitstream_buffer) {
@@ -112,8 +112,7 @@ void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
 }
 
 void PlatformVideoDecoderImpl::NotifyInitializeDone() {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
-  client_->NotifyInitializeDone();
+  NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(

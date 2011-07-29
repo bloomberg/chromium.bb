@@ -386,8 +386,8 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
                            uint32 /* size */)
 
 // Create and initialize a hardware video decoder.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_CreateVideoDecoder,
-                    std::vector<uint32> /* configs */)
+IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_CreateVideoDecoder,
+                           std::vector<uint32> /* configs */)
 
 // Release all resources held by the hardware video decoder associated with this
 // stub.
@@ -495,9 +495,6 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
 IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                     int32, /* Number of video frames to generate */
                     gfx::Size) /* Requested size of buffer */
-
-// Notify client that decoder has been initialized.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_InitializeDone)
 
 // Decoder reports that a picture is ready and buffer does not need to be passed
 // back to the decoder.

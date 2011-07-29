@@ -16,28 +16,18 @@ namespace {
 
 typedef EnterResource<PPB_VideoDecoder_API> EnterVideoDecoder;
 
-PP_Resource Create(PP_Instance instance) {
+PP_Resource Create(PP_Instance instance,
+                   PP_Resource context_3d,
+                   const PP_VideoConfigElement* config) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateVideoDecoder(instance);
+  return enter.functions()->CreateVideoDecoder(instance, context_3d, config);
 }
 
 PP_Bool IsVideoDecoder(PP_Resource resource) {
   EnterVideoDecoder enter(resource, false);
   return PP_FromBool(enter.succeeded());
-}
-
-int32_t Initialize(PP_Resource video_decoder,
-                   PP_Resource context_id,
-                   const PP_VideoConfigElement* decoder_config,
-                   PP_CompletionCallback callback) {
-  EnterVideoDecoder enter(video_decoder, true);
-  if (enter.failed())
-    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
-  int32_t result =
-      enter.object()->Initialize(context_id, decoder_config, callback);
-  return MayForceCallback(callback, result);
 }
 
 int32_t Decode(PP_Resource video_decoder,
@@ -90,7 +80,6 @@ void Destroy(PP_Resource video_decoder) {
 const PPB_VideoDecoder_Dev g_ppb_videodecoder_thunk = {
   &Create,
   &IsVideoDecoder,
-  &Initialize,
   &Decode,
   &AssignPictureBuffers,
   &ReusePictureBuffer,

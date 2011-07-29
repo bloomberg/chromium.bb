@@ -9,15 +9,13 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_14 "PPB_VideoDecoder(Dev);0.14"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_14
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_15 "PPB_VideoDecoder(Dev);0.15"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_15
 
 // Video decoder interface.
 //
 // Typical usage:
-// - Use Create() to get a new PPB_VideoDecoder_Dev resource.
-// - Call Initialize() to create the underlying resources in the GPU process and
-//   configure the decoder there.
+// - Use Create() to create & configure a new PPB_VideoDecoder_Dev resource.
 // - Call Decode() to decode some video data.
 // - Receive ProvidePictureBuffers callback
 //   - Supply the decoder with textures using AssignPictureBuffers.
@@ -32,14 +30,17 @@
 // See PPP_VideoDecoder_Dev for the notifications the decoder may send the
 // plugin.
 struct PPB_VideoDecoder_Dev {
-  // Creates a video decoder. Initialize() must be called afterwards to
-  // set its configuration.
+  // Creates & initializes a video decoder.
   //
   // Parameters:
   //   |instance| pointer to the plugin instance.
+  //   |context_3d| a PPB_Context3D_Dev resource in which decoding will happen.
+  //   |decoder_config| the configuration to use to initialize the decoder.
   //
   // The created decoder is returned as PP_Resource. 0 means failure.
-  PP_Resource (*Create)(PP_Instance instance);
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_Resource context,
+                        const PP_VideoConfigElement* decoder_config);
 
   // Tests whether |resource| is a video decoder created through Create
   // function of this interface.
@@ -49,21 +50,6 @@ struct PPB_VideoDecoder_Dev {
   //
   // Returns true if is a video decoder, false otherwise.
   PP_Bool (*IsVideoDecoder)(PP_Resource resource);
-
-  // Initializes the video decoder with requested configuration.
-  //
-  // Parameters:
-  //   |video_decoder| is the previously created handle to the decoder resource.
-  //   |context| the GL context in which decoding will happen. This should be a
-  //   resource of type PPB_Context3D_Dev.
-  //   |decoder_config| the configuration to use to initialize the decoder.
-  //   |callback| called after initialization is complete.
-  //
-  // Returns an error code from pp_errors.h.
-  int32_t (*Initialize)(PP_Resource video_decoder,
-                        PP_Resource context,
-                        const PP_VideoConfigElement* decoder_config,
-                        struct PP_CompletionCallback callback);
 
   // Dispatches bitstream buffer to the decoder.
   //

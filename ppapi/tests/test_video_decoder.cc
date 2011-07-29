@@ -15,30 +15,22 @@ REGISTER_TEST_CASE(VideoDecoder);
 bool TestVideoDecoder::Init() {
   video_decoder_interface_ = reinterpret_cast<PPB_VideoDecoder_Dev const*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VIDEODECODER_DEV_INTERFACE));
-  var_interface_ = reinterpret_cast<PPB_Var const*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  return video_decoder_interface_ && var_interface_ && InitTestingInterface();
+  return video_decoder_interface_ && InitTestingInterface();
 }
 
 void TestVideoDecoder::RunTest() {
-  RUN_TEST(CreateAndInitialize);
+  RUN_TEST(CreateFailure);
 }
 
 void TestVideoDecoder::QuitMessageLoop() {
   testing_interface_->QuitMessageLoop(instance_->pp_instance());
 }
 
-std::string TestVideoDecoder::TestCreateAndInitialize() {
+std::string TestVideoDecoder::TestCreateFailure() {
   PP_Resource decoder = video_decoder_interface_->Create(
-      instance_->pp_instance());
-  if (decoder == 0)
-    return "Create: error creating the decoder";
-
-  int32_t pp_error = video_decoder_interface_->Initialize(
-      decoder, 0, NULL, PP_BlockUntilComplete());
-  pp::Module::Get()->core()->ReleaseResource(decoder);
-  if (pp_error != PP_ERROR_BADARGUMENT)
-    return "Initialize: error detecting null callback";
+      instance_->pp_instance(), 0, NULL);
+  if (decoder != 0)
+    return "Create: error detecting invalid context & configs";
 
   PASS();
 }

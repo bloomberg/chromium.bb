@@ -14,9 +14,6 @@ class PPB_VideoDecoder_API {
  public:
   virtual ~PPB_VideoDecoder_API() {}
 
-  virtual int32_t Initialize(PP_Resource context_id,
-                             const PP_VideoConfigElement* decoder_config,
-                             PP_CompletionCallback callback) = 0;
   virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
                          PP_CompletionCallback callback) = 0;
   virtual void AssignPictureBuffers(uint32_t no_of_buffers,
