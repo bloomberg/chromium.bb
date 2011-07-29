@@ -4,287 +4,187 @@
 
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
 
-#include <cmath>
 #include <unistd.h>
+
+#include <algorithm>
+#include <cmath>
 
 #include <alsa/asoundlib.h>
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 
-namespace chromeos {
-
-// Connect to the ALSA mixer using their simple element API.  Init is performed
-// asynchronously on the worker thread.
-//
-// To get a wider range and finer control over volume levels, first the Master
-// level is set, then if the PCM element exists, the total level is refined by
-// adjusting that as well.  If the PCM element has more volume steps, it allows
-// for finer granularity in the total volume.
-
 typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
+
+using std::max;
+using std::min;
+
+namespace chromeos {
 
 namespace {
 
-const char kMasterVolume[] = "Master";
-const char kPCMVolume[] = "PCM";
-const double kDefaultMinVolume = -90.0;
-const double kDefaultMaxVolume = 0.0;
-const double kPrefVolumeInvalid = -999.0;
+// Name of the ALSA card to which we connect.
+const char kCardName[] = "default";
+
+// Mixer element names.
+const char kMasterElementName[] = "Master";
+const char kPCMElementName[] = "PCM";
+
+// Default minimum and maximum volume (before we've loaded the actual range from
+// ALSA), in decibels.
+const double kDefaultMinVolumeDb = -90.0;
+const double kDefaultMaxVolumeDb = 0.0;
+
+// Default value assigned to the pref when it's first created, in decibels.
+const double kDefaultVolumeDb = -10.0;
+
+// Values used for muted preference.
 const int kPrefMuteOff = 0;
 const int kPrefMuteOn = 1;
-const int kPrefMuteInvalid = 2;
-
-// Maximum number of times that we'll attempt to initialize the mixer.
-// We'll fail until the ALSA modules have been loaded; see
-// http://crosbug.com/13162.
-const int kMaxInitAttempts = 20;
 
 // Number of seconds that we'll sleep between each initialization attempt.
 const int kInitRetrySleepSec = 1;
 
 }  // namespace
 
-// static
-const double AudioMixer::kSilenceDb = -200.0;
-
 AudioMixerAlsa::AudioMixerAlsa()
-    : min_volume_(kDefaultMinVolume),
-      max_volume_(kDefaultMaxVolume),
-      save_volume_(0),
-      mixer_state_(UNINITIALIZED),
+    : min_volume_db_(kDefaultMinVolumeDb),
+      max_volume_db_(kDefaultMaxVolumeDb),
+      volume_db_(kDefaultVolumeDb),
+      is_muted_(false),
+      apply_is_pending_(true),
       alsa_mixer_(NULL),
-      elem_master_(NULL),
-      elem_pcm_(NULL),
+      element_master_(NULL),
+      element_pcm_(NULL),
       prefs_(NULL),
-      done_event_(true, false) {
+      disconnected_event_(true, false) {
 }
 
 AudioMixerAlsa::~AudioMixerAlsa() {
-  if (thread_ != NULL) {
-    {
-      base::AutoLock lock(mixer_state_lock_);
-      mixer_state_ = SHUTTING_DOWN;
-      thread_->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &AudioMixerAlsa::FreeAlsaMixer));
-    }
-    done_event_.Wait();
+  if (!thread_.get())
+    return;
+  DCHECK(MessageLoop::current() != thread_->message_loop());
 
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    // A ScopedAllowIO object is required to join the thread when calling Stop.
-    // The worker thread should be idle at this time.
-    // See http://crosbug.com/11110 for discussion.
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
-    thread_->message_loop()->AssertIdle();
+  thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &AudioMixerAlsa::Disconnect));
+  disconnected_event_.Wait();
 
-    thread_->Stop();
-    thread_.reset();
-  }
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+  thread_->Stop();
+  thread_.reset();
 }
 
-void AudioMixerAlsa::Init(InitDoneCallback* callback) {
-  DCHECK(callback);
-  if (!InitThread()) {
-    callback->Run(false);
-    delete callback;
-    return;
+void AudioMixerAlsa::Init() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prefs_ = g_browser_process->local_state();
+  volume_db_ = prefs_->GetDouble(prefs::kAudioVolume);
+  is_muted_ = prefs_->GetInteger(prefs::kAudioMute);
+
+  thread_.reset(new base::Thread("AudioMixerAlsa"));
+  CHECK(thread_->Start());
+  thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &AudioMixerAlsa::Connect));
+}
+
+bool AudioMixerAlsa::IsInitialized() {
+  base::AutoLock lock(lock_);
+  return alsa_mixer_ != NULL;
+}
+
+void AudioMixerAlsa::GetVolumeLimits(double* min_volume_db,
+                                     double* max_volume_db) {
+  base::AutoLock lock(lock_);
+  if (min_volume_db)
+    *min_volume_db = min_volume_db_;
+  if (max_volume_db)
+    *max_volume_db = max_volume_db_;
+}
+
+double AudioMixerAlsa::GetVolumeDb() {
+  base::AutoLock lock(lock_);
+  return volume_db_;
+}
+
+void AudioMixerAlsa::SetVolumeDb(double volume_db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::AutoLock lock(lock_);
+  if (isnan(volume_db)) {
+    LOG(WARNING) << "Got request to set volume to NaN";
+    volume_db = min_volume_db_;
+  } else {
+    volume_db = min(max(volume_db, min_volume_db_), max_volume_db_);
   }
-  InitPrefs();
 
-  {
-    base::AutoLock lock(mixer_state_lock_);
-    if (mixer_state_ == SHUTTING_DOWN)
-      return;
-
-    // Post the task of starting up, which may block on the order of ms,
-    // so best not to do it on the caller's thread.
+  prefs_->SetDouble(prefs::kAudioVolume, volume_db);
+  volume_db_ = volume_db;
+  if (!apply_is_pending_)
     thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::DoInit, callback));
-  }
+        NewRunnableMethod(this, &AudioMixerAlsa::ApplyState));
 }
 
-bool AudioMixerAlsa::InitSync() {
-  if (!InitThread())
-    return false;
-  InitPrefs();
-  return InitializeAlsaMixer();
+bool AudioMixerAlsa::IsMuted() {
+  base::AutoLock lock(lock_);
+  return is_muted_;
 }
 
-double AudioMixerAlsa::GetVolumeDb() const {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
-    return kSilenceDb;
-
-  return DoGetVolumeDb_Locked();
-}
-
-bool AudioMixerAlsa::GetVolumeLimits(double* vol_min, double* vol_max) {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
-    return false;
-  if (vol_min)
-    *vol_min = min_volume_;
-  if (vol_max)
-    *vol_max = max_volume_;
-  return true;
-}
-
-void AudioMixerAlsa::SetVolumeDb(double vol_db) {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
-    return;
-
-  if (vol_db < kSilenceDb || isnan(vol_db)) {
-    if (isnan(vol_db))
-      LOG(WARNING) << "Got request to set volume to NaN";
-    vol_db = kSilenceDb;
-  }
-
-  DoSetVolumeDb_Locked(vol_db);
-  prefs_->SetDouble(prefs::kAudioVolume, vol_db);
-}
-
-bool AudioMixerAlsa::IsMute() const {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
-    return false;
-  return GetElementMuted_Locked(elem_master_);
-}
-
-// To indicate the volume is not valid yet, a very low volume value is stored.
-// We compare against a slightly higher value in case of rounding errors.
-static bool PrefVolumeValid(double volume) {
-  return (volume > kPrefVolumeInvalid + 0.1);
-}
-
-void AudioMixerAlsa::SetMute(bool mute) {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
-    return;
-
-  // Set volume to minimum on mute, since switching the element off does not
-  // always mute as it should.
-
-  // TODO(davej): Remove save_volume_ and setting volume to minimum if
-  // switching the element off can be guaranteed to mute it.  Currently mute
-  // is done by setting the volume to min_volume_.
-
-  bool old_value = GetElementMuted_Locked(elem_master_);
-
-  if (old_value != mute) {
-    if (mute) {
-      save_volume_ = DoGetVolumeDb_Locked();
-      DoSetVolumeDb_Locked(min_volume_);
-    } else {
-      DoSetVolumeDb_Locked(save_volume_);
-    }
-  }
-
-  SetElementMuted_Locked(elem_master_, mute);
-  prefs_->SetInteger(prefs::kAudioMute, mute ? kPrefMuteOn : kPrefMuteOff);
-}
-
-AudioMixer::State AudioMixerAlsa::GetState() const {
-  base::AutoLock lock(mixer_state_lock_);
-  // If we think it's ready, verify it is actually so.
-  if ((mixer_state_ == READY) && (alsa_mixer_ == NULL))
-    mixer_state_ = IN_ERROR;
-  return mixer_state_;
+void AudioMixerAlsa::SetMuted(bool muted) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prefs_->SetInteger(prefs::kAudioMute, muted ? kPrefMuteOn : kPrefMuteOff);
+  base::AutoLock lock(lock_);
+  is_muted_ = muted;
+  if (!apply_is_pending_)
+    thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &AudioMixerAlsa::ApplyState));
 }
 
 // static
 void AudioMixerAlsa::RegisterPrefs(PrefService* local_state) {
+  // TODO(derat): Store audio volume percent instead of decibels.
   if (!local_state->FindPreference(prefs::kAudioVolume))
     local_state->RegisterDoublePref(prefs::kAudioVolume,
-                                    kPrefVolumeInvalid,
+                                    kDefaultVolumeDb,
                                     PrefService::UNSYNCABLE_PREF);
   if (!local_state->FindPreference(prefs::kAudioMute))
     local_state->RegisterIntegerPref(prefs::kAudioMute,
-                                     kPrefMuteInvalid,
+                                     kPrefMuteOff,
                                      PrefService::UNSYNCABLE_PREF);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Private functions follow
+void AudioMixerAlsa::Connect() {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(!alsa_mixer_);
 
-void AudioMixerAlsa::DoInit(InitDoneCallback* callback) {
-  bool success = false;
-  for (int num_attempts = 0; num_attempts < kMaxInitAttempts; ++num_attempts) {
-    success = InitializeAlsaMixer();
-    if (success) {
-      break;
-    } else {
-      // If the destructor has reset the state, give up.
-      {
-        base::AutoLock lock(mixer_state_lock_);
-        if (mixer_state_ != INITIALIZING)
-          break;
-      }
-      sleep(kInitRetrySleepSec);
-    }
-  }
+  if (disconnected_event_.IsSignaled())
+    return;
 
-  if (success) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::RestoreVolumeMuteOnUIThread));
-  }
-
-  if (callback) {
-    callback->Run(success);
-    delete callback;
+  if (!ConnectInternal()) {
+    thread_->message_loop()->PostDelayedTask(FROM_HERE,
+        NewRunnableMethod(this, &AudioMixerAlsa::Connect),
+        kInitRetrySleepSec * 1000);
   }
 }
 
-bool AudioMixerAlsa::InitThread() {
-  base::AutoLock lock(mixer_state_lock_);
-
-  if (mixer_state_ != UNINITIALIZED)
-    return false;
-
-  if (thread_ == NULL) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    thread_.reset(new base::Thread("AudioMixerAlsa"));
-    if (!thread_->Start()) {
-      thread_.reset();
-      return false;
-    }
-  }
-
-  mixer_state_ = INITIALIZING;
-  return true;
-}
-
-void AudioMixerAlsa::InitPrefs() {
-  prefs_ = g_browser_process->local_state();
-}
-
-bool AudioMixerAlsa::InitializeAlsaMixer() {
-  // We can block; make sure that we're not on the UI thread.
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != INITIALIZING)
-    return false;
-
+bool AudioMixerAlsa::ConnectInternal() {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
   int err;
   snd_mixer_t* handle = NULL;
-  const char* card = "default";
 
   if ((err = snd_mixer_open(&handle, 0)) < 0) {
-    LOG(ERROR) << "ALSA mixer " << card << " open error: " << snd_strerror(err);
+    LOG(WARNING) << "ALSA mixer open error: " << snd_strerror(err);
     return false;
   }
 
-  if ((err = snd_mixer_attach(handle, card)) < 0) {
-    LOG(ERROR) << "ALSA Attach to card " << card << " failed: "
-               << snd_strerror(err);
+  if ((err = snd_mixer_attach(handle, kCardName)) < 0) {
+    LOG(WARNING) << "ALSA Attach to card " << kCardName << " failed: "
+                 << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
@@ -294,7 +194,7 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
   // If it fails, we can still try to use the mixer as best we can.
   snd_pcm_t* pcm_out_handle;
   if ((err = snd_pcm_open(&pcm_out_handle,
-                          card,
+                          kCardName,
                           SND_PCM_STREAM_PLAYBACK,
                           0)) >= 0) {
     snd_pcm_close(pcm_out_handle);
@@ -303,141 +203,119 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
   }
 
   if ((err = snd_mixer_selem_register(handle, NULL, NULL)) < 0) {
-    LOG(ERROR) << "ALSA mixer register error: " << snd_strerror(err);
+    LOG(WARNING) << "ALSA mixer register error: " << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
 
   if ((err = snd_mixer_load(handle)) < 0) {
-    LOG(ERROR) << "ALSA mixer " << card << " load error: %s"
-               << snd_strerror(err);
+    LOG(WARNING) << "ALSA mixer " << kCardName << " load error: %s"
+                 << snd_strerror(err);
     snd_mixer_close(handle);
     return false;
   }
 
-  VLOG(1) << "Opened ALSA mixer " << card << " OK";
+  VLOG(1) << "Opened ALSA mixer " << kCardName << " OK";
 
-  elem_master_ = FindElementWithName_Locked(handle, kMasterVolume);
-  if (elem_master_) {
-    alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
-    alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
+  double min_volume_db = kDefaultMinVolumeDb;
+  double max_volume_db = kDefaultMaxVolumeDb;
+
+  element_master_ = FindElementWithName(handle, kMasterElementName);
+  if (element_master_) {
+    alsa_long_t long_low = static_cast<alsa_long_t>(kDefaultMinVolumeDb * 100);
+    alsa_long_t long_high = static_cast<alsa_long_t>(kDefaultMaxVolumeDb * 100);
     err = snd_mixer_selem_get_playback_dB_range(
-        elem_master_, &long_lo, &long_hi);
+        element_master_, &long_low, &long_high);
     if (err != 0) {
       LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed "
-                   << "for master: " << snd_strerror(err);
+                   << "for " << kMasterElementName << ": " << snd_strerror(err);
       snd_mixer_close(handle);
       return false;
     }
-    min_volume_ = static_cast<double>(long_lo) / 100.0;
-    max_volume_ = static_cast<double>(long_hi) / 100.0;
+    min_volume_db = static_cast<double>(long_low) / 100.0;
+    max_volume_db = static_cast<double>(long_high) / 100.0;
   } else {
-    LOG(ERROR) << "Cannot find 'Master' ALSA mixer element on " << card;
+    LOG(WARNING) << "Cannot find " << kMasterElementName
+                 << " ALSA mixer element on " << kCardName;
     snd_mixer_close(handle);
     return false;
   }
 
-  elem_pcm_ = FindElementWithName_Locked(handle, kPCMVolume);
-  if (elem_pcm_) {
-    alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
-    alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
-    err = snd_mixer_selem_get_playback_dB_range(elem_pcm_, &long_lo, &long_hi);
+  element_pcm_ = FindElementWithName(handle, kPCMElementName);
+  if (element_pcm_) {
+    alsa_long_t long_low = static_cast<alsa_long_t>(kDefaultMinVolumeDb * 100);
+    alsa_long_t long_high = static_cast<alsa_long_t>(kDefaultMaxVolumeDb * 100);
+    err = snd_mixer_selem_get_playback_dB_range(
+        element_pcm_, &long_low, &long_high);
     if (err != 0) {
-      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for PCM: "
-                   << snd_strerror(err);
+      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for "
+                   << kPCMElementName << ": " << snd_strerror(err);
       snd_mixer_close(handle);
       return false;
     }
-    min_volume_ += static_cast<double>(long_lo) / 100.0;
-    max_volume_ += static_cast<double>(long_hi) / 100.0;
+    min_volume_db += static_cast<double>(long_low) / 100.0;
+    max_volume_db += static_cast<double>(long_high) / 100.0;
   }
 
-  VLOG(1) << "ALSA volume range is " << min_volume_ << " dB to "
-          << max_volume_ << " dB";
+  VLOG(1) << "ALSA volume range is " << min_volume_db << " dB to "
+          << max_volume_db << " dB";
+  {
+    base::AutoLock lock(lock_);
+    alsa_mixer_ = handle;
+    min_volume_db_ = min_volume_db;
+    max_volume_db_ = max_volume_db;
+    volume_db_ = min(max(volume_db_, min_volume_db_), max_volume_db_);
+  }
 
-  alsa_mixer_ = handle;
-  mixer_state_ = READY;
+  ApplyState();
   return true;
 }
 
-void AudioMixerAlsa::FreeAlsaMixer() {
+void AudioMixerAlsa::Disconnect() {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
   if (alsa_mixer_) {
     snd_mixer_close(alsa_mixer_);
     alsa_mixer_ = NULL;
   }
-  done_event_.Signal();
+  disconnected_event_.Signal();
 }
 
-void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
-  base::AutoLock lock(mixer_state_lock_);
-  if (mixer_state_ != READY)
+void AudioMixerAlsa::ApplyState() {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  if (!alsa_mixer_)
     return;
 
-  // If volume or mute are invalid, set them now to the current actual values.
-  if (!PrefVolumeValid(pref_volume))
-    pref_volume = DoGetVolumeDb_Locked();
-  bool mute = false;
-  if (pref_mute == kPrefMuteInvalid)
-    mute = GetElementMuted_Locked(elem_master_);
-  else
-    mute = (pref_mute == kPrefMuteOn) ? true : false;
-
-  VLOG(1) << "Setting volume to " << pref_volume << " and mute to " << mute;
-
-  if (mute) {
-    save_volume_ = pref_volume;
-    DoSetVolumeDb_Locked(min_volume_);
-  } else {
-    DoSetVolumeDb_Locked(pref_volume);
-  }
-
-  SetElementMuted_Locked(elem_master_, mute);
-}
-
-void AudioMixerAlsa::RestoreVolumeMuteOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // This happens during init, so set the volume off the UI thread.
-  int mute = prefs_->GetInteger(prefs::kAudioMute);
-  double vol = prefs_->GetDouble(prefs::kAudioVolume);
+  bool should_mute = false;
+  double new_volume_db = 0;
   {
-    base::AutoLock lock(mixer_state_lock_);
-    if (mixer_state_ == SHUTTING_DOWN)
-      return;
-    thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute, vol, mute));
+    base::AutoLock lock(lock_);
+    should_mute = is_muted_;
+    new_volume_db = should_mute ? min_volume_db_ : volume_db_;
+    apply_is_pending_ = false;
   }
-}
 
-double AudioMixerAlsa::DoGetVolumeDb_Locked() const {
-  double vol_total = 0.0;
-  if (!GetElementVolume_Locked(elem_master_, &vol_total))
-    return 0.0;
+  if (element_pcm_) {
+    // If a PCM volume slider exists, then first set the Master volume to the
+    // nearest volume >= requested volume, then adjust PCM volume down to get
+    // closer to the requested volume.
+    SetElementVolume(element_master_, new_volume_db, 0.9999f);
 
-  double vol_pcm = 0.0;
-  if (elem_pcm_ && GetElementVolume_Locked(elem_pcm_, &vol_pcm))
-    vol_total += vol_pcm;
-
-  return vol_total;
-}
-
-void AudioMixerAlsa::DoSetVolumeDb_Locked(double vol_db) {
-  double actual_vol = 0.0;
-
-  // If a PCM volume slider exists, then first set the Master volume to the
-  // nearest volume >= requested volume, then adjust PCM volume down to get
-  // closer to the requested volume.
-  if (elem_pcm_) {
-    SetElementVolume_Locked(elem_master_, vol_db, &actual_vol, 0.9999f);
-    SetElementVolume_Locked(elem_pcm_, vol_db - actual_vol, NULL, 0.5f);
+    double pcm_volume_db = 0.0;
+    double master_volume_db = 0.0;
+    if (GetElementVolume(element_master_, &master_volume_db))
+      pcm_volume_db = new_volume_db - master_volume_db;
+    SetElementVolume(element_pcm_, pcm_volume_db, 0.5f);
   } else {
-    SetElementVolume_Locked(elem_master_, vol_db, NULL, 0.5f);
+    SetElementVolume(element_master_, new_volume_db, 0.5f);
   }
+
+  SetElementMuted(element_master_, should_mute);
 }
 
-snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName_Locked(
-    snd_mixer_t* handle,
-    const char* element_name) const {
-  snd_mixer_selem_id_t* sid;
+snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
+    snd_mixer_t* handle, const char* element_name) const {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  snd_mixer_selem_id_t* sid = NULL;
 
   // Using id_malloc/id_free API instead of id_alloca since the latter gives the
   // warning: the address of 'sid' will always evaluate as 'true'.
@@ -446,118 +324,92 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName_Locked(
 
   snd_mixer_selem_id_set_index(sid, 0);
   snd_mixer_selem_id_set_name(sid, element_name);
-  snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
-  if (!elem) {
-    LOG(ERROR) << "ALSA unable to find simple control "
-               << snd_mixer_selem_id_get_name(sid);
+  snd_mixer_elem_t* element = snd_mixer_find_selem(handle, sid);
+  if (!element) {
+    LOG(WARNING) << "ALSA unable to find simple control "
+                 << snd_mixer_selem_id_get_name(sid);
   }
 
   snd_mixer_selem_id_free(sid);
-  return elem;
+  return element;
 }
 
-bool AudioMixerAlsa::GetElementVolume_Locked(snd_mixer_elem_t* elem,
-                                             double* current_vol) const {
-  alsa_long_t long_vol = 0;
+bool AudioMixerAlsa::GetElementVolume(snd_mixer_elem_t* element,
+                                      double* current_volume_db) {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  alsa_long_t long_volume = 0;
   int alsa_result = snd_mixer_selem_get_playback_dB(
-      elem, static_cast<snd_mixer_selem_channel_id_t>(0), &long_vol);
+      element, static_cast<snd_mixer_selem_channel_id_t>(0), &long_volume);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_get_playback_dB() failed: "
                  << snd_strerror(alsa_result);
     return false;
   }
-
-  *current_vol = static_cast<double>(long_vol) / 100.0;
+  *current_volume_db = static_cast<double>(long_volume) / 100.0;
   return true;
 }
 
-bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
-                                             double new_vol,
-                                             double* actual_vol,
-                                             double rounding_bias) {
-  alsa_long_t vol_lo = 0;
-  alsa_long_t vol_hi = 0;
-  int alsa_result =
-      snd_mixer_selem_get_playback_volume_range(elem, &vol_lo, &vol_hi);
+bool AudioMixerAlsa::SetElementVolume(snd_mixer_elem_t* element,
+                                      double new_volume_db,
+                                      double rounding_bias) {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  alsa_long_t volume_low = 0;
+  alsa_long_t volume_high = 0;
+  int alsa_result = snd_mixer_selem_get_playback_volume_range(
+      element, &volume_low, &volume_high);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_get_playback_volume_range() failed: "
                  << snd_strerror(alsa_result);
     return false;
   }
-  alsa_long_t vol_range = vol_hi - vol_lo;
-  if (vol_range <= 0)
+  alsa_long_t volume_range = volume_high - volume_low;
+  if (volume_range <= 0)
     return false;
 
-  alsa_long_t db_lo_int = 0;
-  alsa_long_t db_hi_int = 0;
+  alsa_long_t db_low_int = 0;
+  alsa_long_t db_high_int = 0;
   alsa_result =
-      snd_mixer_selem_get_playback_dB_range(elem, &db_lo_int, &db_hi_int);
+      snd_mixer_selem_get_playback_dB_range(element, &db_low_int, &db_high_int);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed: "
                  << snd_strerror(alsa_result);
     return false;
   }
 
-  double db_lo = static_cast<double>(db_lo_int) / 100.0;
-  double db_hi = static_cast<double>(db_hi_int) / 100.0;
-  double db_step = static_cast<double>(db_hi - db_lo) / vol_range;
+  double db_low = static_cast<double>(db_low_int) / 100.0;
+  double db_high = static_cast<double>(db_high_int) / 100.0;
+  double db_step = static_cast<double>(db_high - db_low) / volume_range;
   if (db_step <= 0.0)
     return false;
 
-  if (new_vol < db_lo)
-    new_vol = db_lo;
+  if (new_volume_db < db_low)
+    new_volume_db = db_low;
 
-  alsa_long_t value = static_cast<alsa_long_t>(rounding_bias +
-      (new_vol - db_lo) / db_step) + vol_lo;
-  alsa_result = snd_mixer_selem_set_playback_volume_all(elem, value);
+  alsa_long_t value = static_cast<alsa_long_t>(
+      rounding_bias + (new_volume_db - db_low) / db_step) + volume_low;
+  alsa_result = snd_mixer_selem_set_playback_volume_all(element, value);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_set_playback_volume_all() failed: "
                  << snd_strerror(alsa_result);
     return false;
   }
 
-  VLOG(1) << "Set volume " << snd_mixer_selem_get_name(elem)
-          << " to " << new_vol << " ==> " << (value - vol_lo) * db_step + db_lo
-          << " dB";
+  VLOG(1) << "Set volume " << snd_mixer_selem_get_name(element)
+          << " to " << new_volume_db << " ==> "
+          << (value - volume_low) * db_step + db_low << " dB";
 
-  if (actual_vol) {
-    alsa_long_t volume = vol_lo;
-    alsa_result = snd_mixer_selem_get_playback_volume(
-        elem, static_cast<snd_mixer_selem_channel_id_t>(0), &volume);
-    if (alsa_result != 0) {
-      LOG(WARNING) << "snd_mixer_selem_get_playback_volume() failed: "
-                   << snd_strerror(alsa_result);
-      return false;
-    }
-    *actual_vol = db_lo + (volume - vol_lo) * db_step;
-
-    VLOG(1) << "Actual volume " << snd_mixer_selem_get_name(elem)
-            << " now " << *actual_vol << " dB";
-  }
   return true;
 }
 
-bool AudioMixerAlsa::GetElementMuted_Locked(snd_mixer_elem_t* elem) const {
-  int enabled = 0;
-  int alsa_result = snd_mixer_selem_get_playback_switch(
-      elem, static_cast<snd_mixer_selem_channel_id_t>(0), &enabled);
-  if (alsa_result != 0) {
-    LOG(WARNING) << "snd_mixer_selem_get_playback_switch() failed: "
-                 << snd_strerror(alsa_result);
-    return false;
-  }
-  return (enabled) ? false : true;
-}
-
-void AudioMixerAlsa::SetElementMuted_Locked(snd_mixer_elem_t* elem, bool mute) {
-  int enabled = mute ? 0 : 1;
-  int alsa_result = snd_mixer_selem_set_playback_switch_all(elem, enabled);
+void AudioMixerAlsa::SetElementMuted(snd_mixer_elem_t* element, bool mute) {
+  DCHECK(MessageLoop::current() == thread_->message_loop());
+  int alsa_result = snd_mixer_selem_set_playback_switch_all(element, !mute);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_set_playback_switch_all() failed: "
                  << snd_strerror(alsa_result);
   } else {
-    VLOG(1) << "Set playback switch " << snd_mixer_selem_get_name(elem)
-            << " to " << enabled;
+    VLOG(1) << "Set playback switch " << snd_mixer_selem_get_name(element)
+            << " to " << mute;
   }
 }
 

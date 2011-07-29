@@ -129,10 +129,6 @@ void InProcessBrowserTest::SetUp() {
   // Make sure that the log directory exists.
   FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   file_util::CreateDirectory(log_dir);
-
-  // Disable audio mixer as it can cause hang.
-  // see http://crosbug.com/17058.
-  chromeos::AudioHandler::Disable();
 #endif  // defined(OS_CHROMEOS)
 
   SandboxInitWrapper sandbox_wrapper;

@@ -21,71 +21,41 @@ class AudioHandler {
  public:
   static AudioHandler* GetInstance();
 
-  // Get volume level in our internal 0-100% range, 0 being pure silence.
-  // Returns default of 0 on error.  This function will block until the volume
-  // is retrieved or fails.  Blocking call.
+  // Is the mixer initialized?
+  // TODO(derat): All of the volume-percent methods will produce "interesting"
+  // results before the mixer is initialized, since the driver's volume range
+  // isn't known at that point.  This could be avoided if AudioMixer objects
+  // instead took percentages and did their own conversions to decibels.
+  bool IsInitialized();
+
+  // Gets volume level in our internal 0-100% range, 0 being pure silence.
   double GetVolumePercent();
 
-  // Set volume level from 0-100%.  Volumes above 100% are OK and boost volume,
-  // although clipping will occur more at higher volumes.  Volume gets quieter
-  // as the percentage gets lower, and then switches to silence at 0%.
+  // Sets volume level from 0-100%.
   void SetVolumePercent(double volume_percent);
 
-  // Adjust volume up (positive percentage) or down (negative percentage),
-  // capping at 100%.  GetVolumePercent() will be accurate after this
-  // blocking call.
+  // Adjusts volume up (positive percentage) or down (negative percentage).
   void AdjustVolumeByPercent(double adjust_by_percent);
 
-  // Just returns true if mute, false if not or an error occurred.
-  // Blocking call.
-  bool IsMute();
+  // Is the volume currently muted?
+  bool IsMuted();
 
-  // Mutes all audio.  Non-blocking call.
-  void SetMute(bool do_mute);
-
-  // Disconnects from mixer.  Called during shutdown.
-  void Disconnect();
+  // Mutes or unmutes all audio.
+  void SetMuted(bool do_mute);
 
  private:
-  enum MixerType {
-    MIXER_TYPE_ALSA = 0,
-    MIXER_TYPE_NONE,
-  };
-
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
 
-  friend class ::InProcessBrowserTest;
-  // Disable audio in browser tests. This is a workaround for the bug
-  // crosbug.com/17058. Remove this once it's fixed.
-  static void Disable();
-
-  // Connect to the current mixer_type_.
-  bool TryToConnect(bool async);
-
-  void OnMixerInitialized(bool success);
-
   AudioHandler();
   virtual ~AudioHandler();
-  bool VerifyMixerConnection();
 
   // Conversion between our internal scaling (0-100%) and decibels.
   double VolumeDbToPercent(double volume_db) const;
   double PercentToVolumeDb(double volume_percent) const;
 
   scoped_ptr<AudioMixer> mixer_;
-
-  bool connected_;
-  int reconnect_tries_;
-
-  // The min and max volume in decibels, limited to the maximum range of the
-  // audio system being used.
-  double max_volume_db_;
-  double min_volume_db_;
-
-  // Which mixer is being used, ALSA or none.
-  MixerType mixer_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

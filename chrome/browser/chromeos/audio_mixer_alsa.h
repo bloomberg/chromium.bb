@@ -21,87 +21,93 @@ struct _snd_mixer;
 
 namespace chromeos {
 
+// Simple wrapper around ALSA's mixer functions.
+// Interaction with ALSA takes place on a background thread.
 class AudioMixerAlsa : public AudioMixer {
  public:
   AudioMixerAlsa();
   virtual ~AudioMixerAlsa();
 
-  // Implementation of AudioMixer
-  virtual void Init(InitDoneCallback* callback);
-  virtual bool InitSync();
-  virtual double GetVolumeDb() const;
-  virtual bool GetVolumeLimits(double* vol_min, double* vol_max);
-  virtual void SetVolumeDb(double vol_db);
-  virtual bool IsMute() const;
-  virtual void SetMute(bool mute);
-  virtual State GetState() const;
+  // AudioMixer implementation.
+  virtual void Init();
+  virtual bool IsInitialized();
+  virtual void GetVolumeLimits(double* min_volume_db, double* max_volume_db);
+  virtual double GetVolumeDb();
+  virtual void SetVolumeDb(double volume_db);
+  virtual bool IsMuted();
+  virtual void SetMuted(bool muted);
 
-  // Registers volume and mute in preferences
+  // Registers volume and mute preferences.
+  // TODO(derat): Move prefs into AudioHandler.
   static void RegisterPrefs(PrefService* local_state);
 
  private:
-  // Called to do initialization in background from worker thread.
-  void DoInit(InitDoneCallback* callback);
+  // Tries to connect to ALSA.  On failure, posts a delayed Connect() task to
+  // try again.
+  void Connect();
 
-  // Helper functions to get our message loop thread and prefs initialized.
-  bool InitThread();
-  void InitPrefs();
+  // Helper method called by Connect().  On success, initializes
+  // |min_volume_db_|, |max_volume_db_|, |alsa_mixer_|, and |element_*| and
+  // returns true.
+  bool ConnectInternal();
 
-  // Try to connect to the ALSA mixer through their simple controls interface,
-  // and cache mixer handle and mixer elements we'll be using.
-  bool InitializeAlsaMixer();
-  void FreeAlsaMixer();
-  void DoSetVolumeMute(double pref_volume, int pref_mute);
+  // Disconnects from ALSA if currently connected and signals
+  // |disconnected_event_|.
+  void Disconnect();
 
-  // Access to PrefMember variables must be done on UI thread.
-  void RestoreVolumeMuteOnUIThread();
+  // Updates |alsa_mixer_| for current values of |volume_db_| and |is_muted_|.
+  // No-op if not connected.
+  void ApplyState();
 
-  // All these internal volume commands must be called with the lock held.
-  double DoGetVolumeDb_Locked() const;
-  void DoSetVolumeDb_Locked(double vol_db);
+  // Finds the element named |element_name|.  Returns NULL on failure.
+  _snd_mixer_elem* FindElementWithName(_snd_mixer* handle,
+                                       const char* element_name) const;
 
-  _snd_mixer_elem* FindElementWithName_Locked(_snd_mixer* handle,
-                                              const char* element_name) const;
+  // Queries |element|'s current volume, copying it to |new_volume_db|.
+  // Returns true on success.
+  bool GetElementVolume(_snd_mixer_elem* element, double* current_volume_db);
 
-  bool GetElementVolume_Locked(_snd_mixer_elem* elem,
-                               double* current_vol) const;
+  // Sets |element|'s volume.  Since volume is done in steps, we may not get the
+  // exact volume asked for.  |rounding_bias| is added in before rounding to the
+  // nearest volume step (use 0.5 to round to nearest).
+  bool SetElementVolume(_snd_mixer_elem* element,
+                        double new_volume_db,
+                        double rounding_bias);
 
-  // Since volume is done in steps, we may not get the exact volume asked for,
-  // so actual_vol will contain the true volume that was set.  This information
-  // can be used to further refine the volume by adjust a different mixer
-  // element.  The rounding_bias is added in before rounding to the nearest
-  // volume step (use 0.5 to round to nearest).
-  bool SetElementVolume_Locked(_snd_mixer_elem* elem,
-                               double new_vol,
-                               double* actual_vol,
-                               double rounding_bias);
+  // Mutes or unmutes |element|.
+  void SetElementMuted(_snd_mixer_elem* element, bool mute);
 
-  // In ALSA, the mixer element's 'switch' is turned off to mute.
-  // GetElementMuted_Locked() returns false on failure.
-  bool GetElementMuted_Locked(_snd_mixer_elem* elem) const;
-  void SetElementMuted_Locked(_snd_mixer_elem* elem, bool mute);
+  // Guards |min_volume_db_|, |max_volume_db_|, |volume_db_|, |is_muted_|, and
+  // |apply_is_pending_|.
+  base::Lock lock_;
 
-  // Volume range limits are computed once during InitializeAlsaMixer.
-  double min_volume_;
-  double max_volume_;
+  // Volume range limits are computed once in ConnectInternal().
+  double min_volume_db_;
+  double max_volume_db_;
 
-  // Muting is done by setting volume to minimum, so we must save the original.
-  // This is the only state information kept in this object.  In some cases,
-  // ALSA can report it has a volume switch and we can turn it off, but it has
-  // no effect.
-  double save_volume_;
+  // Most recently requested volume, in decibels.  This variable is updated
+  // immediately by GetVolumeDb(); the actual mixer volume is updated later on
+  // |thread_| by ApplyState().
+  double volume_db_;
 
-  mutable base::Lock mixer_state_lock_;
-  mutable State mixer_state_;
+  // Most recently requested muting state.
+  bool is_muted_;
 
-  // Cached contexts for use in ALSA calls.
+  // Is there already a pending call to ApplyState() scheduled on |thread_|?
+  bool apply_is_pending_;
+
+  // Cached context for use in ALSA calls.  NULL if not connected.
   _snd_mixer* alsa_mixer_;
-  _snd_mixer_elem* elem_master_;
-  _snd_mixer_elem* elem_pcm_;
+  _snd_mixer_elem* element_master_;
+  _snd_mixer_elem* element_pcm_;
 
   PrefService* prefs_;
-  base::WaitableEvent done_event_;
 
+  // Signalled after Disconnect() finishes (which is itself invoked by the
+  // d'tor).
+  base::WaitableEvent disconnected_event_;
+
+  // Background thread used for interacting with ALSA.
   scoped_ptr<base::Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMixerAlsa);
