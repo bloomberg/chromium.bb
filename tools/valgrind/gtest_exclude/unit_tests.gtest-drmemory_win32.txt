@@ -17,3 +17,7 @@ VideoCaptureHostTest.*
 # crashes on the bot due to stale pointer access
 # http://crbug.com/90585
 HttpBridgeTest.*
+
+# crashes on the bot with corresponding UNADDR reports
+# http://crbug.com/90980
+FirefoxImporterTest.Firefox3NSS3Decryptor
