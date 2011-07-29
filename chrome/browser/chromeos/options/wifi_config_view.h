@@ -86,7 +86,13 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetEapAnonymousIdentity() const;
 
   // Returns true if the EAP method requires a user certificate.
-  bool UserCertRequired();
+  bool UserCertRequired() const;
+
+  // Returns true if at least one user certificate is installed.
+  bool HaveUserCerts() const;
+
+  // Returns true if there is a selected user certificate and it is valid.
+  bool IsUserCertValid() const;
 
   // Updates state of the Login button.
   void UpdateDialogButtons();

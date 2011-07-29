@@ -126,8 +126,8 @@ class ChildNetworkConfigView : public views::View {
   // post-construction after the view has a parent window.
   virtual void InitFocus() = 0;
 
-  // Width of passphrase fields.
-  static const int kPassphraseWidth;
+  // Minimum with of input fields / combo boxes.
+  static const int kInputFieldMinWidth;
 
  protected:
   std::string service_path_;
