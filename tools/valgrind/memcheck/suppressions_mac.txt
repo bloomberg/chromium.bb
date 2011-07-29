@@ -1605,7 +1605,7 @@
    fun:_ZN2ui14ResourceBundle18InitSharedInstanceERKSs
 }
 {
-   bug_80239
+   bug_80239_a
    Memcheck:Addr4
    ...
    fun:CGLCreateContext
@@ -1617,6 +1617,18 @@
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+}
+{
+   bug_80239_b
+   Memcheck:Addr1
+   ...
+   fun:CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext
+   fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
+   fun:_ZN23RenderWidgetHostViewMac30AllocateFakePluginWindowHandleEbb
+   fun:_ZN23RenderWidgetHostViewMac21GetCompositingSurfaceEv
+   fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
 }
 {
    bug_80811
@@ -1755,4 +1767,26 @@
    ...
    fun:+[NSObject alloc]
    fun:-[PanelWindowControllerCocoa tabContentsView]
+}
+{
+   bug_90976
+   Memcheck:Addr2
+   ...
+   fun:_CFPropertyListCreateFromXMLData
+   fun:CFPropertyListCreateFromStream
+   fun:+[CFXPreferencesPropertyListSource createPlistFromFile:statInfo:]
+   fun:-[CFXPreferencesPropertyListSource synchronize]
+   fun:CFPreferencesSynchronize
+   fun:_CSBackupSettingsIsPathExcluded
+   fun:CSBackupIsItemExcluded
+   fun:pager_open_journal
+   fun:pager_write
+   fun:sqlite3PagerWrite
+   fun:newDatabase
+   fun:sqlite3BtreeBeginTrans
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
 }

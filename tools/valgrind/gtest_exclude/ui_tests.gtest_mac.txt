@@ -92,6 +92,7 @@ ResourceDispatcherTest.RespectNoSniffDirective
 
 # Valgrind internal error: received SIGSEGV. http://crbug.com/51716
 AutomatedUITestBase.IncognitoWindow
+AutomatedUITestBase.FindInPage
 AutomatedUITestBase.Navigate
 AutomatedUITestBase.ShowDownloads
 AutomationProxyTest.AcceleratorDownloads
@@ -99,12 +100,15 @@ AutomationProxyTest.AcceleratorExtensions
 AutomationProxyTest.ActivateTab
 AutomationProxyTest.BlockedPopupTest
 AutomationProxyTest.GetActiveTabIndex
+AutomationProxyTest.GetBrowserWindowCount
 AutomationProxyTest.GetCurrentURL
 AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest2.GetTabTitle
 AutomationProxyTest4.NumberValueIsEchoedByDomAutomationController
+AutomationProxyTest4.StringValueIsEchoedByDomAutomationController
 AutomatedUITestBase.OpenNewTab
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
+DOMStorageTest.EventLayoutTests
 ErrorPageTest.IFrameDNSError_Basic
 ExtensionProxyUITest.EnableDisable
 IFrameTest.Crash
@@ -115,10 +119,13 @@ OutOfProcessPPAPITest.Broker
 OutOfProcessPPAPITest.CharSet
 OutOfProcessPPAPITest.Core
 OutOfProcessPPAPITest.Memory
+OutOfProcessPPAPITest.PaintAggregator
 OutOfProcessPPAPITest.URLUtil
 PPAPITest.Buffer
 PPAPITest.FileIO
 PPAPITest.FileRef
+PPAPITest.FileSystem
+PPAPITest.Graphics2D
 PPAPITest.Graphics2SD
 PPAPITest.ImageData
 PPAPITest.Instance
@@ -135,6 +142,7 @@ ResourceDispatcherTest.ContentDispositionEmpty
 ResourceDispatcherTest.ContentDispositionInline
 ResourceDispatcherTest.SyncXMLHttpRequest
 ResourceDispatcherTest.SniffNoContentTypeNoData
+SearchProviderTest.TestIsSearchProviderInstalledWithException
 SessionHistoryTest.BasicBackForward
 SessionHistoryTest.LocationChangeInSubframe
 ShowModalDialogTest.BasicTest

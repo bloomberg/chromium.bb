@@ -1820,14 +1820,9 @@
    bug_32273_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
-   fun:_ZN3IPC11SyncChannel15SendWithTimeoutEPNS_7MessageEi
-   fun:_ZN3IPC11SyncChannel4SendEPNS_7MessageE
+   ...
    fun:_ZN24BrowserRenderProcessHost4SendEPN3IPC7MessageE
    fun:_ZN16RenderWidgetHost4SendEPN3IPC7MessageE
-   fun:_ZN14RenderViewHost27ExecuteJavascriptInWebFrame*
-   fun:_ZN5WebUI17ExecuteJavascript*
-   fun:_ZN5WebUI22CallJavascriptFunction*
 }
 {
    bug_32356
@@ -5184,6 +5179,15 @@
    fun:_ZN6webkit5ppapi15ResourceTracker19CleanupInstanceDataEib
    fun:_ZN6webkit5ppapi15ResourceTracker15InstanceDeletedEi
    fun:_ZN6webkit5ppapi14PluginInstanceD0Ev
+}
+{
+   bug_90973
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net9HttpCache11CreateEntryERKSsPPNS0_11ActiveEntryEPNS0_11TransactionE
+   fun:_ZN3net9HttpCache11Transaction13DoCreateEntryEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
 }
 
 #-----------------------------------------------------------------------
