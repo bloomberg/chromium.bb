@@ -26,6 +26,15 @@
   -webkit-mask-size: 100% 100%;
 }
 
+.app-icon-div {
+  border: 1px solid gray;
+  border-radius: 4px;
+  cursor: pointer;
+  display: -webkit-box;
+  vertical-align: middle;
+  -webkit-box-align: center;
+}
+
 .app-context-menu > button:first-child {
   font-weight: bold;
 }

@@ -87,7 +87,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
       DictionaryValue* icon_info = new DictionaryValue();
       Extension::Icons size = static_cast<Extension::Icons>(icon_iter->first);
       GURL url = ExtensionIconSource::GetIconURL(
-          &extension, size, ExtensionIconSet::MATCH_EXACTLY, false);
+          &extension, size, ExtensionIconSet::MATCH_EXACTLY, false, NULL);
       icon_info->SetInteger(kSizeKey, icon_iter->first);
       icon_info->SetString(kUrlKey, url.spec());
       icon_list->Append(icon_info);
