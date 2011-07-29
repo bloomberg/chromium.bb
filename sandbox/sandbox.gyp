@@ -132,12 +132,20 @@
     ],
   },
   'conditions': [
-    [ 'os_posix == 1 and OS != "mac" and OS != "linux"', {
-      # GYP requires that each file have at least one target defined.
+    [ 'OS!="win" and OS!="mac"', {
       'targets': [
         {
           'target_name': 'sandbox',
-          'type': 'settings',
+          'type': 'static_library',
+          'conditions': [
+            # Only compile in the seccomp code for the flag combination
+            # where we support it.
+            [ 'OS=="linux" and target_arch!="arm" and toolkit_views==0 and selinux==0', {
+              'dependencies': [
+                '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
+              ],
+            }],
+          ],
         },
       ],
     }],
@@ -160,26 +168,6 @@
           'include_dirs': [
             '..',
           ],
-        },
-        {
-          'target_name': 'sandbox',
-          'type': 'static_library',
-          'conditions': [
-            ['target_arch!="arm"', {
-               'dependencies': [
-                 '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
-               ]},
-            ],
-          ],
-        },
-      ],
-    }],
-    [ 'OS=="linux" and selinux==1', {
-      # GYP requires that each file have at least one target defined.
-      'targets': [
-        {
-          'target_name': 'sandbox',
-          'type': 'settings',
         },
       ],
     }],
