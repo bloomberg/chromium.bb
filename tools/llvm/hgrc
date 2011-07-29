@@ -1,0 +1,11 @@
+[paths]
+default = https://code.google.com/p/nacl-llvm-branches.upstream
+
+[web]
+push_ssl = false
+allow_push = *
+
+[merge-tools]
+kdiff3.executable = /usr/bin/kdiff3
+kdiff3.args = --auto --base $base $local $other -o $output
+kdiff3.priority = 0

@@ -41,6 +41,13 @@ source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
+# Use upstream merging repository
+readonly UTMAN_UPSTREAM=${UTMAN_UPSTREAM:-false}
+readonly UTMAN_UPSTREAM_SKIP_UPDATE=${UTMAN_UPSTREAM_SKIP_UPDATE:-false}
+if ${UTMAN_UPSTREAM}; then
+  UTMAN_USE_MQ=false
+fi
+
 # Set to false to go back to compiling with the old pnacl-sfi branch
 readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-true}
 readonly UTMAN_RESET_MQ=${UTMAN_RESET_MQ:-true}
@@ -128,8 +135,15 @@ readonly TC_SRC="${NACL_ROOT}/hg"
 readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 
 # The location of sources (absolute)
-readonly TC_SRC_LLVM="${TC_SRC}/llvm/llvm-trunk"
-readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc/llvm-gcc-4.2"
+
+if ${UTMAN_UPSTREAM}; then
+  readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
+  readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
+  readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
+else
+  readonly TC_SRC_LLVM="${TC_SRC}/llvm/llvm-trunk"
+  readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc/llvm-gcc-4.2"
+fi
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
@@ -226,8 +240,12 @@ fi
 
 # Current milestones in each repo
 # hg-update-pnacl-sfi uses these
-readonly LLVM_REV=9ca0d1b53734
-readonly LLVM_GCC_REV=e093fe8c5603
+if ${UTMAN_UPSTREAM}; then
+  readonly UPSTREAM_REV=pnacl-sfi # Update to head of pnacl-sfi
+else
+  readonly LLVM_REV=9ca0d1b53734
+  readonly LLVM_GCC_REV=e093fe8c5603
+fi
 # hg-update-non-llvm uses these
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=14dd509248e5
@@ -238,25 +256,35 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 # version of llvm and llvm-gcc
 # Mercurial Queues Repos for Merges
 # todo(jasonwkim): figure out why hg tag can not be pushed!
-readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"0d9c0424d854"}
-readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"6951bd89b2e5"}
+if ${UTMAN_USE_MQ}; then
+  readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"0d9c0424d854"}
+  readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"6951bd89b2e5"}
 
-# Vendor Revs of llvm and llvm-gcc to which the qeues apply
-# svn128002
-readonly LLVM_QPARENT_REV=${LLVM_QPARENT_REV:-"1dd4ed44a6f8"}
-# svn126872
-readonly LLVM_GCC_QPARENT_REV=${LLVM_GCC_QPARENT_REV:-"3cde3ed75a27"}
+  # Vendor Revs of llvm and llvm-gcc to which the qeues apply
+  # svn128002
+  readonly LLVM_QPARENT_REV=${LLVM_QPARENT_REV:-"1dd4ed44a6f8"}
+  # svn126872
+  readonly LLVM_GCC_QPARENT_REV=${LLVM_GCC_QPARENT_REV:-"3cde3ed75a27"}
+fi
 
 
 # Repositories
-readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc-trunk"
-readonly REPO_LLVM="nacl-llvm-branches.llvm-trunk"
+if ${UTMAN_UPSTREAM}; then
+  readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
+else
+  readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc-trunk"
+  readonly REPO_LLVM="nacl-llvm-branches.llvm-trunk"
+fi
+
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 readonly REPO_GOOGLE_PERFTOOLS="nacl-llvm-branches.google-perftools"
-readonly REPO_LLVM_MQ_PATCHES="nacl-llvm-branches.llvm-mq-patches"
-readonly REPO_LLVM_GCC_MQ_PATCHES="nacl-llvm-branches.llvm-gcc-mq-patches"
+
+if ${UTMAN_USE_MQ}; then
+  readonly REPO_LLVM_MQ_PATCHES="nacl-llvm-branches.llvm-mq-patches"
+  readonly REPO_LLVM_GCC_MQ_PATCHES="nacl-llvm-branches.llvm-gcc-mq-patches"
+fi
 
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
@@ -369,8 +397,10 @@ hg-update-non-llvm() {
   hg-update-binutils
   hg-update-compiler-rt
   hg-update-google-perftools
-  hg-update-llvm-mq-patches
-  hg-update-llvm-gcc-mq-patches
+  if ${UTMAN_USE_MQ}; then
+    hg-update-llvm-mq-patches
+    hg-update-llvm-gcc-mq-patches
+  fi
 }
 
 hg-assert-safe-to-update() {
@@ -495,6 +525,10 @@ hg-update-llvm() {
   hg-update-common "llvm" ${LLVM_REV} "${TC_SRC_LLVM}"
 }
 
+hg-update-upstream() {
+  hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
+}
+
 #@ hg-update-newlib      - Update NEWLIB To the stable revision
 hg-update-newlib() {
   # Clean the headers first, so that sanity checks inside
@@ -606,52 +640,62 @@ hg-pull-llvm-mq-patches() {
 #@                          (skips repos which are already checked out)
 hg-checkout-all() {
   StepBanner "HG-CHECKOUT-ALL"
-  hg-checkout-llvm-gcc
-  hg-checkout-llvm
+  if ${UTMAN_UPSTREAM}; then
+    hg-checkout-upstream
+  else
+    hg-checkout-llvm-gcc
+    hg-checkout-llvm
+  fi
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
   hg-checkout-google-perftools
-  hg-checkout-llvm-mq-patches
-  hg-checkout-llvm-gcc-mq-patches
+  if ${UTMAN_USE_MQ}; then
+    hg-checkout-llvm-mq-patches
+    hg-checkout-llvm-gcc-mq-patches
+  fi
 }
 
 hg-checkout-llvm-gcc() {
-  hg-check-if-using-old-repo ${TC_SRC_LLVM_GCC}
-  hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
+  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
+  hg-checkout "${REPO_LLVM_GCC}" "${TC_SRC_LLVM_GCC}" ${LLVM_GCC_REV}
 }
 
 hg-checkout-llvm() {
-  hg-check-if-using-old-repo  ${TC_SRC_LLVM}
-  hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
+  hg-check-if-using-old-repo  "${TC_SRC_LLVM}"
+  hg-checkout ${REPO_LLVM} "${TC_SRC_LLVM}" ${LLVM_REV}
+}
+
+hg-checkout-upstream() {
+  hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
 }
 
 hg-checkout-binutils() {
-  hg-checkout ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
+  hg-checkout ${REPO_BINUTILS} "${TC_SRC_BINUTILS}" ${BINUTILS_REV}
 }
 
 hg-checkout-newlib() {
-  hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+  hg-checkout ${REPO_NEWLIB} "${TC_SRC_NEWLIB}" ${NEWLIB_REV}
   newlib-nacl-headers
 }
 
 hg-checkout-compiler-rt() {
-  hg-checkout ${REPO_COMPILER_RT}   ${TC_SRC_COMPILER_RT}   ${COMPILER_RT_REV}
+  hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
 
 hg-checkout-google-perftools() {
-  hg-checkout ${REPO_GOOGLE_PERFTOOLS} ${TC_SRC_GOOGLE_PERFTOOLS} \
+  hg-checkout ${REPO_GOOGLE_PERFTOOLS} "${TC_SRC_GOOGLE_PERFTOOLS}" \
     ${GOOGLE_PERFTOOLS_REV}
 }
 
 hg-checkout-llvm-mq-patches() {
-  hg-checkout ${REPO_LLVM_MQ_PATCHES}     ${TC_SRC_LLVM_MQ_PATCHES}   \
-     ${LLVM_MQ_REV}
+  hg-checkout ${REPO_LLVM_MQ_PATCHES} "${TC_SRC_LLVM_MQ_PATCHES}" \
+    ${LLVM_MQ_REV}
 }
 
 hg-checkout-llvm-gcc-mq-patches() {
-  hg-checkout ${REPO_LLVM_GCC_MQ_PATCHES}     ${TC_SRC_LLVM_GCC_MQ_PATCHES}  \
-     ${LLVM_GCC_MQ_REV}
+  hg-checkout ${REPO_LLVM_GCC_MQ_PATCHES} "${TC_SRC_LLVM_GCC_MQ_PATCHES}" \
+    ${LLVM_GCC_MQ_REV}
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -751,6 +795,11 @@ everything() {
   if ${UTMAN_USE_MQ}; then
     StepBanner "Updating hg sources via MQ=${UTMAN_USE_MQ}";
     setup-hg-mq
+  elif ${UTMAN_UPSTREAM}; then
+    if ! ${UTMAN_UPSTREAM_SKIP_UPDATE}; then
+      StepBanner "Updating upstreaming repository"
+      hg-update-upstream
+    fi
   else
     StepBanner "Updating all hg sources"
     hg-update-llvm-pnacl-sfi

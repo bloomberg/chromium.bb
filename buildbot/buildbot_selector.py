@@ -87,16 +87,16 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
     # PNaCl Spec
     'lucid_64-newlib-arm_qemu-pnacl-spec':
-        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-arm',
+        'bash buildbot/buildbot_spec2k.sh pnacl-arm',
     'lucid_64-newlib-x86_32-pnacl-spec':
-      'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8632',
+      'bash buildbot/buildbot_spec2k.sh pnacl-x8632',
     'lucid_64-newlib-x86_64-pnacl-spec':
-      'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-x8664',
+      'bash buildbot/buildbot_spec2k.sh pnacl-x8664',
     # NaCl Spec
     'lucid_64-newlib-x86_32-spec':
-      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl-x8632',
+      'bash buildbot/buildbot_spec2k.sh nacl-x8632',
     'lucid_64-newlib-x86_64-spec':
-      'bash buildbot/buildbot_pnacl2.sh mode-spec-nacl-x8664',
+      'bash buildbot/buildbot_spec2k.sh nacl-x8664',
 
     # Valgrind bots.
     'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
@@ -160,7 +160,7 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl1.sh mode-trybot',
     # Pnacl spec2k trybots
     'nacl-lucid64-pnacl2':
-        'bash buildbot/buildbot_pnacl2.sh mode-spec-pnacl-trybot',
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot',
 
     # Toolchain glibc.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
@@ -202,6 +202,11 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-mac-pnacl-x86_32-newlib':
         'bash buildbot/buildbot_toolchain_arm_untrusted.sh mac 32 newlib',
 
+    # PNaCl LLVM Merging bots
+    'pnacl-merge-slow':
+        'bash buildbot/buildbot_pnacl_merge.sh slow-bot',
+    'pnacl-merge-fast':
+        'bash buildbot/buildbot_pnacl_merge.sh fast-bot',
 }
 
 

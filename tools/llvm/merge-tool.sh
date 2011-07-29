@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 ######################################################################
 #
@@ -19,131 +19,113 @@ if [[ $(basename $(pwd)) != "native_client" ]] ; then
 fi
 
 source tools/llvm/common-tools.sh
+readonly NACL_ROOT="$(pwd)"
+SetScriptPath "${NACL_ROOT}/tools/llvm/merge-tool.sh"
+SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
+readonly SCRIPT_PATH="$0"
 ######################################################################
 
 # Location of the mercurial repositories
 # These should match the values in utman.sh
 readonly TC_SRC="$(pwd)/hg"
-readonly TC_SRC_LLVM="${TC_SRC}/llvm"
-readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc"
+readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 
-# Location of the upstream LLVM repository
-readonly MASTER_LLVM_BASE="http://llvm.org/svn/llvm-project"
-readonly MASTER_LLVM_URL="${MASTER_LLVM_BASE}/llvm/trunk"
-readonly MASTER_LLVM_GCC_URL="${MASTER_LLVM_BASE}/llvm-gcc-4.2/trunk"
-
-readonly MASTER_LLVM="${TC_SRC}/master-llvm"
-readonly MASTER_LLVM_GCC="${TC_SRC}/master-llvm-gcc"
+readonly PREDIFF="${TC_SRC}/prediff"
+readonly POSTDIFF="${TC_SRC}/postdiff"
 
 
-BASEDIR="$(pwd)"
+# These variables should be set to the directories containing svn checkouts
+# of the upstream LLVM and LLVM-GCC repositories, respectively. These variables
+# must be specified in the environment to this script.
+readonly MASTER_LLVM=${MASTER_LLVM:-}
+readonly MASTER_LLVM_GCC=${MASTER_LLVM_GCC:-}
+
+# TODO(pdox): Refactor repository checkout into a separate script
+#             so that we don't need to invoke utman.
 utman() {
-  pushd "${BASEDIR}" > /dev/null
-  tools/llvm/utman.sh "$@"
-  popd > /dev/null
+  UTMAN_UPSTREAM=true "${NACL_ROOT}"/tools/llvm/utman.sh "$@"
 }
-hg-pull-llvm() { utman hg-pull-llvm "$@" ; }
-hg-pull-llvm-gcc() { utman hg-pull-llvm-gcc "$@" ; }
-hg-checkout-llvm() { utman hg-checkout-llvm "$@" ; }
-hg-checkout-llvm-gcc() { utman hg-checkout-llvm-gcc "$@" ; }
+hg-checkout-upstream() { utman hg-checkout-upstream "$@" ; }
 
-#@ all                   - Do LLVM and LLVM-GCC merge (all steps)
-all() {
+check-svn-repos() {
+  if [ -z "${MASTER_LLVM}" ] ||
+     [ -z "${MASTER_LLVM_GCC}" ]; then
+    Fatal "You must set environmental variables MASTER_LLVM and MASTER_LLVM_GCC"
+  fi
+  MERGE_REVISION=$(get-merge-revision)
+  Banner "MERGE REVISION: ${MERGE_REVISION}"
+}
+
+#@ auto                  - Non-interactive merge
+auto() {
+  INTERACTIVE_MERGE=false
+  export DISPLAY=""
+  merge-all
+}
+
+#@ manual                - Interactive merge
+manual() {
+  INTERACTIVE_MERGE=true
+  merge-all
+}
+
+#+ merge-all             - Merge all the things
+merge-all() {
+  hg-checkout-upstream
   assert-clean
+  setup-hgrc
 
-  checkout-all
-  choose-revision
+  generate-pre-diff
 
-  update-llvm-gcc-vendor
-  merge-llvm-gcc
-  diff-diff-llvm-gcc
+  commit-vendor
+  hg-merge
 
-  update-llvm-vendor
-  merge-llvm
-  diff-diff-llvm
+  generate-post-diff
+
+  if ${INTERACTIVE_MERGE}; then
+    vim-diff-diff
+  else
+    dump-diff-diff
+  fi
 
   echo "********************************************************************"
   echo "The llvm and llvm-gcc working directories are now in a merged state."
   echo "Before you commit and push, you should build PNaCl and run all tests."
-  echo "For example:"
-  echo "  tools/llvm/utman.sh clean"
-  echo "  tools/llvm/utman.sh all"
-  echo "  tools/llvm/utman.sh test-all"
-  echo "  tests/spec2k/bot_spec.sh 2 <spec-dir>"
-  echo "  tests/spec2k/bot_spec.sh 3 <spec-dir>"
   echo ""
   echo "Expect lots of bugs. You may need to fix and rebuild several times."
   echo "When you are confident all tests are passing, you can commit and push"
-  echo "the merged working directories with:"
+  echo "the merged working directory with:"
   echo "  tools/llvm/merge-tool.sh final-commit"
   echo "********************************************************************"
 }
 
+setup-hgrc() {
+  cp "${NACL_ROOT}/tools/llvm/hgrc" \
+     "${TC_SRC_UPSTREAM}/.hg/hgrc"
+}
+
 assert-clean() {
-  if [ -d "${MASTER_LLVM}" ]; then
-    svn-assert-no-changes "${MASTER_LLVM}"
-  fi
+  svn-assert-no-changes "${MASTER_LLVM}"
+  svn-assert-no-changes "${MASTER_LLVM_GCC}"
 
-  if [ -d "${MASTER_LLVM_GCC}" ]; then
-    svn-assert-no-changes "${MASTER_LLVM_GCC}"
-  fi
-
-  if [ -d "${TC_SRC_LLVM}" ]; then
-    hg-assert-no-changes "${TC_SRC_LLVM}"
-    hg-assert-no-outgoing "${TC_SRC_LLVM}"
-  fi
-
-  if [ -d "${TC_SRC_LLVM_GCC}" ]; then
-    hg-assert-no-changes "${TC_SRC_LLVM_GCC}"
-    hg-assert-no-outgoing "${TC_SRC_LLVM_GCC}"
-  fi
+  hg-assert-no-changes "${TC_SRC_UPSTREAM}"
+  hg-assert-no-outgoing "${TC_SRC_UPSTREAM}"
 }
 
 #@ clean                 - Clean/revert mercurial repositories
 clean() {
   StepBanner "CLEAN - Cleaning repositories"
-  Banner "WARNING: All local changes to hg/llvm and hg/llvm-gcc will be erased"
-  if ! confirm-yes "Are you sure you want to do this?" ; then
-    echo "Cancelled"
-    exit -1
-  fi
-  if ! confirm-yes "Are you really, really sure you want do this?" ; then
-    echo "Cancelled"
-    exit -1
-  fi
-  clean-llvm
-  clean-llvm-gcc
+  clean-upstream
 }
 
-#+ clean-llvm
-clean-llvm() {
-  StepBanner "CLEAN" "Cleaning hg llvm repository"
-  rm -rf "${TC_SRC_LLVM}"
+#+ clean-upstream
+clean-upstream() {
+  StepBanner "CLEAN" "Cleaning hg upstream repository"
+  rm -rf "${TC_SRC_UPSTREAM}"
 }
 
-#+ clean-llvm-gcc
-clean-llvm-gcc() {
-  StepBanner "CLEAN" "Cleaning hg llvm-gcc repository"
-  rm -rf "${TC_SRC_LLVM_GCC}"
-}
-
-#@ checkout-all          - Checkout repositories
-checkout-all() {
-  StepBanner "checkout-all - Checkout all repositories"
-
-  # Checkout LLVM repositories
-  StepBanner "checkout-all" "Checking out SVN repositories"
-  svn-checkout "${MASTER_LLVM_URL}" "${MASTER_LLVM}"
-  svn-checkout "${MASTER_LLVM_GCC_URL}" "${MASTER_LLVM_GCC}"
-
-  # Checkout the hg repositories
-  StepBanner "checkout-all" "Checking out HG repositories"
-  hg-checkout-llvm
-  hg-checkout-llvm-gcc
-}
-
-#+ get-revision       -  Get the current SVN revision
-get-revision() {
+#+ get-merge-revision    - Get the current SVN revision
+get-merge-revision() {
   local llvm_rev=$(svn-get-revision "${MASTER_LLVM}")
   local llvm_gcc_rev=$(svn-get-revision "${MASTER_LLVM_GCC}")
 
@@ -155,213 +137,93 @@ get-revision() {
   echo "${llvm_rev}"
 }
 
-#@ choose-revision       - Choose LLVM revision
-choose-revision() {
-  StepBanner "choose-revision - Choose LLVM Revision"
-  echo
-  echo "Go to http://google1.osuosl.org:8011/ for LLVM build status"
-  echo
-  local rev
-  while true; do
-    echo -n "Please enter an LLVM revision (or 'tip'): "
-    read rev
-    if [[ "$rev" == "tip" ]]; then
-      break
-    fi
-    if [[ "$rev" =~ ^[0-9]+$ ]]; then
-      break
-    fi
-    echo "Invalid input."
-  done
-
-  # Update the SVN repositories to ${rev}
-  StepBanner "choose-revision" "Updating LLVM repository to ${rev}"
-  svn-update "${MASTER_LLVM}" "${rev}"
-  svn-update "${MASTER_LLVM_GCC}" "${rev}"
+#+ generate-pre-diff     - Generate vendor:pnacl-sfi diff prior to merge
+generate-pre-diff() {
+  spushd "${TC_SRC_UPSTREAM}"
+  hg diff -r vendor:pnacl-sfi &> "${PREDIFF}"
+  spopd
 }
 
-#@ update-llvm-vendor    - Apply update to vendor branch for llvm
-update-llvm-vendor() {
-  local fnid="update-llvm-vendor"
-  StepBanner "${fnid} - Freshen hg 'vendor' branch"
+#+ generate-post-diff    - Generate vendor:pnacl-sfi diff after merge
+generate-post-diff() {
+  spushd "${TC_SRC_UPSTREAM}"
+  hg diff -r vendor &> "${POSTDIFF}"
+  spopd
+}
 
-  StepBanner "${fnid}" "Verifying repository state"
-  svn-assert-no-changes "${MASTER_LLVM}"
-  hg-assert-no-changes "${TC_SRC_LLVM}"
-  hg-assert-no-outgoing "${TC_SRC_LLVM}"
+#@ commit-vendor         - Apply new commit to vendor branch
+commit-vendor() {
+  local stepid="commit-vendor"
+  StepBanner "Committing vendor"
 
-  StepBanner "${fnid}" "hg pull (llvm)"
-  hg-pull-llvm
+  StepBanner "${stepid}" "Switching to hg vendor branch"
 
-  StepBanner "${fnid}" "switch to hg branch vendor (llvm)"
-  hg-update "${TC_SRC_LLVM}" vendor
-  StepBanner "${fnid}" "Delete existing vendor source"
-  rm -rf "${TC_SRC_LLVM}/llvm-trunk"
+  hg-update "${TC_SRC_UPSTREAM}" vendor
 
-  StepBanner "${fnid}" "Exporting svn to hg (llvm)"
-  RunWithLog "${fnid}" \
-    svn export "${MASTER_LLVM}" "${TC_SRC_LLVM}/llvm-trunk"
+  StepBanner "${stepid}" "Exporting svn to hg"
+  rm -rf "${TC_SRC_UPSTREAM}/llvm"
+  svn export "${MASTER_LLVM}" "${TC_SRC_UPSTREAM}/llvm"
 
-  StepBanner "${fnid}" "Updating hg file list (llvm)"
-  spushd "${TC_SRC_LLVM}"
-  RunWithLog "${fnid}" hg add
-  RunWithLog "${fnid}" hg remove -A
+  rm -rf "${TC_SRC_UPSTREAM}/llvm-gcc"
+  svn export "${MASTER_LLVM_GCC}" "${TC_SRC_UPSTREAM}/llvm-gcc"
+
+  StepBanner "${stepid}" "Updating hg file list"
+  spushd "${TC_SRC_UPSTREAM}"
+  hg add
+  hg remove -A
   spopd
 
-  hg-status-check LLVM "${TC_SRC_LLVM}"
-
-  local rev=$(get-revision)
-  StepBanner "${fnid} - Commit hg 'vendor' branch (llvm)"
-  hg-commit "${TC_SRC_LLVM}" "Updating vendor to r${rev}"
+  StepBanner "${stepid}" "Committing vendor branch"
+  hg-commit "${TC_SRC_UPSTREAM}" "Updating vendor to r${MERGE_REVISION}"
 }
 
-#@ update-llvm-gcc-vendor - Apply update to vendor branch for llvm-gcc
-update-llvm-gcc-vendor() {
-  local fnid="update-llvm-gcc-vendor"
-  StepBanner "${fnid}" "hg pull (llvm-gcc)"
-  hg-pull-llvm-gcc
+#@ hg-merge              - Merge and resolve conflicts for llvm
+hg-merge() {
+  StepBanner "hg-merge - Merge and resolve conflicts"
 
-  StepBanner "${fnid}" "Verifying repository state"
-  svn-assert-no-changes "${MASTER_LLVM_GCC}"
-  hg-assert-no-changes "${TC_SRC_LLVM_GCC}"
-  hg-assert-no-outgoing "${TC_SRC_LLVM_GCC}"
+  StepBanner "hg-merge" "Switching to pnacl-sfi branch"
+  hg-update "${TC_SRC_UPSTREAM}" pnacl-sfi
+  hg-assert-no-changes "${TC_SRC_UPSTREAM}"
 
-  StepBanner "${fnid}" "switch to hg branch vendor (llvm-gcc)"
-  hg-update "${TC_SRC_LLVM_GCC}" vendor
-
-  StepBanner "${fnid}" "Delete existing vendor source"
-  rm -rf "${TC_SRC_LLVM_GCC}/llvm-gcc-4.2"
-
-  StepBanner "${fnid}" "Exporting svn to hg (llvm-gcc)"
-  RunWithLog "${fnid}" \
-    svn export "${MASTER_LLVM_GCC}" "${TC_SRC_LLVM_GCC}/llvm-gcc-4.2"
-
-  StepBanner "${fnid}" "Updating hg file list (llvm-gcc)"
-  spushd "${TC_SRC_LLVM_GCC}"
-  RunWithLog "${fnid}" hg add
-  RunWithLog "${fnid}" hg remove -A
-  spopd
-
-  hg-status-check LLVM-GCC "${TC_SRC_LLVM_GCC}"
-
-  local rev=$(get-revision)
-  StepBanner "${fnid} - Commit hg 'vendor' branch (llvm-gcc)"
-  hg-commit "${TC_SRC_LLVM_GCC}" "Updating vendor to r${rev}"
-}
-
-#@ merge-llvm-gcc        - Merge and resolve conflicts for llvm-gcc
-merge-llvm-gcc() {
-  StepBanner "merge-llvm-gcc - Merge and resolve conflicts"
-
-  StepBanner "merge-llvm-gcc" "Switch to pnacl-sfi branch"
-  hg-assert-no-changes "${TC_SRC_LLVM_GCC}"
-  hg-update "${TC_SRC_LLVM_GCC}" pnacl-sfi
-
-  StepBanner "merge-llvm-gcc" "Merging vendor into pnacl-sfi"
-  spushd "${TC_SRC_LLVM_GCC}"
+  StepBanner "hg-merge" "Merging vendor into pnacl-sfi"
+  spushd "${TC_SRC_UPSTREAM}"
   hg merge -r vendor
   spopd
 }
 
-#@ merge-llvm            - Merge and resolve conflicts for llvm
-merge-llvm() {
-  StepBanner "merge-llvm - Merge and resolve conflicts"
-
-  StepBanner "merge-llvm" "Switch to pnacl-sfi branch"
-  hg-assert-no-changes "${TC_SRC_LLVM}"
-  hg-update "${TC_SRC_LLVM}" pnacl-sfi
-
-  StepBanner "merge-llvm" "Merging vendor into pnacl-sfi"
-  spushd "${TC_SRC_LLVM}"
-  hg merge -r vendor
-  spopd
+#@ vim-diff-diff         - Review diff-diff using vim
+vim-diff-diff() {
+  vimdiff "${PREDIFF}" "${POSTDIFF}"
 }
 
-#@ diff-diff-llvm        - Review diff-diff
-diff-diff-llvm() {
-  (
-    echo "Type 'q' to exit less"
-    echo "---------------------------------------------------"
-    tools/llvm/diff-diff.py "${TC_SRC_LLVM}"
-  ) 2>&1 | less
-
-  if ! confirm-yes "Does the diff-diff for LLVM look correct"; then
-    echo "Cancelling."
-    echo "hg repositories remain in uncommitted state."
-    echo "Use 'tools/llvm/merge-tool.sh clean' to clean them"
-    exit -1
-  fi
-}
-
-#@ diff-diff-llvm-gcc    - Review diff-diff
-diff-diff-llvm-gcc() {
-  (
-    echo "Type 'q' to exit less"
-    echo "---------------------------------------------------"
-    tools/llvm/diff-diff.py "${TC_SRC_LLVM_GCC}"
-  ) 2>&1 | less
-
-  if ! confirm-yes "Does the diff-diff for LLVM-GCC look correct"; then
-    echo "Cancelling."
-    echo "hg repositories remain in uncommitted state."
-    echo "Use 'tools/llvm/merge-tool.sh clean' to clean them"
-    exit -1
-  fi
+#@ dump-diff-diff        - Review diff-diff
+dump-diff-diff() {
+  diff "${PREDIFF}" "${POSTDIFF}"
 }
 
 final-commit() {
   StepBanner "final-commit" "Committing and pushing merge"
-  hg-assert-is-merge "${TC_SRC_LLVM}"
-  hg-assert-is-merge "${TC_SRC_LLVM_GCC}"
-  hg-assert-branch "${TC_SRC_LLVM}" pnacl-sfi
-  hg-assert-branch "${TC_SRC_LLVM_GCC}" pnacl-sfi
+  hg-assert-is-merge "${TC_SRC_UPSTREAM}"
+  hg-assert-branch "${TC_SRC_UPSTREAM}" pnacl-sfi
 
-  Banner "CAUTION: This step will COMMIT and PUSH changes to the repository."
-  echo
-  if ! confirm-yes "Is the merged working directory passing all tests?" ; then
-    echo "Cancelled"
-    exit -1
+  if ${INTERACTIVE_MERGE}; then
+    Banner "CAUTION: This step will COMMIT and PUSH changes to the repository."
+    echo
+    if ! confirm-yes "Is the merged working directory passing all tests?" ; then
+      echo "Cancelled"
+      exit -1
+    fi
+    if ! confirm-yes "Are you really sure you want to do this?" ; then
+      echo "Cancelled"
+      exit -1
+    fi
   fi
-  if ! confirm-yes "Are you really sure you want to do this?" ; then
-    echo "Cancelled"
-    exit -1
-  fi
 
-  local rev=$(get-revision)
+  StepBanner "final-commit" "Committing pnacl-sfi branch"
+  hg-commit "${TC_SRC_UPSTREAM}" "Merged up to r${MERGE_REVISION}"
 
-  StepBanner "final-commit - Committing hg pnacl-sfi branch (llvm)"
-  hg-commit "${TC_SRC_LLVM}" "Merged up to r${rev}"
-
-  StepBanner "final-commit - Committing hg pnacl-sfi branch (llvm-gcc)"
-  hg-commit "${TC_SRC_LLVM_GCC}" "Merged up to r${rev}"
-
-  StepBanner "final-commit - Pushing (llvm)"
-  hg-push "${TC_SRC_LLVM}"
-
-  StepBanner "final-commit - Pushing (llvm-gcc)"
-  hg-push "${TC_SRC_LLVM_GCC}"
-}
-
-#+ hg-status-check <name> <repo>   - Allow the user to check hg status for problems
-hg-status-check() {
-  local name="$1"
-  local repo="$2"
-  spushd "${repo}"
-  (
-    echo "Please verify hg status for ${name}:"
-    echo "Hit q to exit 'less'"
-    echo "---------------------------------------------------"
-    hg status
-    echo "---------------------------------------------------"
-  ) 2>&1 | less
-  spopd
-
-  if ! confirm-yes "Does the status for ${name} look correct"; then
-    echo "Cancelling vendor update."
-    echo "hg repositories remain in uncommitted state."
-    echo "Use 'tools/llvm/merge-tool.sh clean' to clean them"
-    exit -1
-  fi
+  StepBanner "final-commit" "Pushing to hg/upstream"
+  hg-push "${TC_SRC_UPSTREAM}"
 }
 
 #@ help                  - Usage information.
@@ -377,4 +239,5 @@ if [ "$(type -t $1)" != "function" ]; then
   exit 1
 fi
 
+check-svn-repos
 "$@"
