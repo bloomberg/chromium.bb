@@ -47,7 +47,11 @@ class ChromotingHostContext {
   void SetUITaskPostFunction(const base::Callback<void(
       const tracked_objects::Location& from_here, Task* task)>& poster);
 
-  void PostToUIThread(const tracked_objects::Location& from_here, Task* task);
+  void PostTaskToUIThread(const tracked_objects::Location& from_here,
+                          Task* task);
+  void PostDelayedTaskToUIThread(const tracked_objects::Location& from_here,
+                                 Task* task,
+                                 int delay_ms);
   bool IsUIThread() const;
 
  private:
@@ -76,7 +80,5 @@ class ChromotingHostContext {
 };
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::ChromotingHostContext);
 
 #endif  // REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_

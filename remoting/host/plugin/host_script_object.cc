@@ -476,7 +476,7 @@ void HostNPScriptObject::OnStateChanged(State state) {
     return;
 
   if (!host_context_.IsUIThread()) {
-    host_context_.PostToUIThread(
+    host_context_.PostTaskToUIThread(
         FROM_HERE,
         NewRunnableMethod(this, &HostNPScriptObject::OnStateChanged, state));
     return;
@@ -494,7 +494,7 @@ void HostNPScriptObject::LogDebugInfo(const std::string& message) {
     return;
 
   if (!host_context_.IsUIThread()) {
-    host_context_.PostToUIThread(
+    host_context_.PostTaskToUIThread(
         FROM_HERE,
         NewRunnableMethod(this, &HostNPScriptObject::LogDebugInfo, message));
     return;
@@ -531,9 +531,7 @@ void HostNPScriptObject::PostTaskToNPThread(
   // appropriate signature.
 
   // Can be called from any thread.
-  g_npnetscape_funcs->pluginthreadasynccall(plugin_,
-                                            &NPTaskSpringboard,
-                                            task);
+  g_npnetscape_funcs->pluginthreadasynccall(plugin_, &NPTaskSpringboard, task);
 }
 
 // static

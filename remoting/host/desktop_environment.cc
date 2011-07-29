@@ -15,7 +15,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
 
-static const int kContinueWindowTimeoutSecs = 10 * 60;
+static const int kContinueWindowTimeoutMs = 10 * 60 * 1000;
 
 namespace remoting {
 
@@ -34,10 +34,20 @@ class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
     context_ = NULL;
   }
 
-  void CallOnUIThread(const base::Closure& closure) {
+  void CallOnUIThread(const tracked_objects::Location& from_here,
+                      const base::Closure& closure) {
     if (context_) {
-      context_->PostToUIThread(FROM_HERE, NewRunnableMethod(
+      context_->PostTaskToUIThread(from_here, NewRunnableMethod(
           this, &UIThreadProxy::CallClosure, closure));
+    }
+  }
+
+  void CallOnUIThreadDelayed(const tracked_objects::Location& from_here,
+                             const base::Closure& closure,
+                             int delay_ms) {
+    if (context_) {
+      context_->PostDelayedTaskToUIThread(from_here, NewRunnableMethod(
+          this, &UIThreadProxy::CallClosure, closure), delay_ms);
     }
   }
 
@@ -87,6 +97,7 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       continue_window_(continue_window),
       local_input_monitor_(local_input_monitor),
       is_monitoring_local_inputs_(false),
+      continue_timer_started_(false),
       proxy_(new UIThreadProxy(context)) {
 }
 
@@ -105,17 +116,17 @@ void DesktopEnvironment::Shutdown() {
 }
 
 void DesktopEnvironment::OnConnect(const std::string& username) {
-  proxy_->CallOnUIThread(base::Bind(
+  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnConnect, base::Unretained(this), username));
 }
 
 void DesktopEnvironment::OnLastDisconnect() {
-  proxy_->CallOnUIThread(base::Bind(
+  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnLastDisconnect, base::Unretained(this)));
 }
 
 void DesktopEnvironment::OnPause(bool pause) {
-  proxy_->CallOnUIThread(base::Bind(
+  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnPause, base::Unretained(this), pause));
 }
 
@@ -177,19 +188,25 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
   DCHECK(context_->IsUIThread());
 
-  if (continue_window_timer_.IsRunning() == start)
-    return;
-  if (start) {
-    continue_window_timer_.Start(
-        base::TimeDelta::FromSeconds(kContinueWindowTimeoutSecs),
-        this, &DesktopEnvironment::ContinueWindowTimerFunc);
-  } else {
-    continue_window_timer_.Stop();
+  if (start && ! continue_timer_started_) {
+    continue_timer_target_time_ = base::Time::Now() +
+        base::TimeDelta::FromMilliseconds(kContinueWindowTimeoutMs);
+    proxy_->CallOnUIThreadDelayed(
+        FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
+                              base::Unretained(this)),
+        kContinueWindowTimeoutMs);
   }
+
+  continue_timer_started_ = start;
 }
 
 void DesktopEnvironment::ContinueWindowTimerFunc() {
   DCHECK(context_->IsUIThread());
+
+  // This function may be called prematurely if timer was stopped and
+  // then started again. In that case we just ignore this call.
+  if (continue_timer_target_time_ > base::Time::Now())
+    return;
 
   host_->PauseSession(true);
   ShowContinueWindow(true);

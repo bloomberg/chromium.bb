@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
@@ -62,9 +63,21 @@ void ChromotingHostContext::SetUITaskPostFunction(const base::Callback<void(
   ui_main_thread_id_ = base::PlatformThread::CurrentId();
 }
 
-void ChromotingHostContext::PostToUIThread(
+void ChromotingHostContext::PostTaskToUIThread(
     const tracked_objects::Location& from_here, Task* task) {
   ui_poster_.Run(from_here, task);
+}
+
+void ChromotingHostContext::PostDelayedTaskToUIThread(
+    const tracked_objects::Location& from_here,
+    Task* task,
+    int delay_ms) {
+  // Post delayed task on the main thread that will post task on UI
+  // thread. It is safe to use base::Unretained() here because
+  // ChromotingHostContext owns |main_thread_|.
+  main_message_loop()->PostDelayedTask(from_here, base::Bind(
+      &ChromotingHostContext::PostTaskToUIThread, base::Unretained(this),
+      from_here, task), delay_ms);
 }
 
 bool ChromotingHostContext::IsUIThread() const {

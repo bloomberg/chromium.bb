@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/time.h"
 
 namespace remoting {
 
@@ -103,16 +104,9 @@ class DesktopEnvironment {
 
   bool is_monitoring_local_inputs_;
 
-  // Timer controlling the "continue session" dialog. The timer is started when
-  // a connection is made or re-confirmed. On expiry, inputs to the host are
-  // blocked and the dialog is shown.
-  //
-  // TODO(sergeyu): It is wrong that we use OneShotTimer on the UI
-  // thread of the plugin. UI thread runs MessageLoop that is compiled
-  // as part of chrome, but the timer compiled as part of the
-  // plugin. This will crash when plugin and chrome are compiled with
-  // different version of MessageLoop. See crbug.com/90785 .
-  base::OneShotTimer<DesktopEnvironment> continue_window_timer_;
+  // Timer controlling the "continue session" dialog.
+  bool continue_timer_started_;
+  base::Time continue_timer_target_time_;
 
   scoped_refptr<UIThreadProxy> proxy_;
 
