@@ -49,6 +49,8 @@ class JingleSession : public protocol::Session,
   virtual void set_initiator_token(const std::string& initiator_token) OVERRIDE;
   virtual const std::string& receiver_token() OVERRIDE;
   virtual void set_receiver_token(const std::string& receiver_token) OVERRIDE;
+  virtual void set_shared_secret(const std::string& secret) OVERRIDE;
+  virtual const std::string& shared_secret() OVERRIDE;
   virtual void Close() OVERRIDE;
 
  private:
@@ -113,7 +115,8 @@ class JingleSession : public protocol::Session,
                            JingleChannelConnector* connector);
 
   // Called by JingleChannelConnector when it has finished connecting
-  // the channel and needs to be destroyed.
+  // the channel, to remove itself from the table of pending connectors.  The
+  // connector assumes responsibility for destroying itself after this call.
   void OnChannelConnectorFinished(const std::string& name,
                                   JingleChannelConnector* connector);
 
@@ -151,6 +154,10 @@ class JingleSession : public protocol::Session,
   // session. Generated on the client and sent to the host in the
   // session-initiate message (encrypted with the host's key).
   std::string master_key_;
+
+  // Shared secret to use in channel authentication.  This is currently only
+  // used in IT2Me.
+  std::string shared_secret_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;

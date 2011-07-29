@@ -92,6 +92,10 @@ class Session : public base::NonThreadSafe {
   virtual const std::string& receiver_token() = 0;
   virtual void set_receiver_token(const std::string& receiver_token) = 0;
 
+  // A shared secret to use to mutually-authenticate the SSL channels.
+  virtual void set_shared_secret(const std::string& secret) = 0;
+  virtual const std::string& shared_secret() = 0;
+
   // Closes connection. Callbacks are guaranteed not to be called
   // after this method returns. Must be called before the object is
   // destroyed, unless the state is set to FAILED or CLOSED.

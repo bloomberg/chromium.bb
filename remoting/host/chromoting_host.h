@@ -135,6 +135,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void set_it2me(bool is_it2me) {
     is_it2me_ = is_it2me;
   }
+  void set_access_code(const std::string& access_code) {
+    access_code_ = access_code;
+  }
 
   // Notify all active client sessions that local input has been detected, and
   // that remote input should be ignored for a short time.
@@ -225,6 +228,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Whether or not the host is running in "IT2Me" mode, in which connections
   // are pre-authenticated, and hence the local login challenge can be bypassed.
   bool is_it2me_;
+
+  std::string access_code_;
 
   // Stores list of tasks that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.

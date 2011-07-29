@@ -22,8 +22,10 @@
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::DeleteArg;
 using testing::DoAll;
+using testing::InSequence;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Return;
@@ -62,6 +64,9 @@ const char kTestHostPublicKey[] =
     "iAvjrvkNDlfiEk7tiY7YzD9zTi3146GX6KLz5GQAd/3I8I5QW3ftF1s/m93AHuc383GZ"
     "A78Oi+IbcJf/jJUZO119VNnRKGiPsf5GZIoHyXX8O5OUQk5soKdQPeK1FwWkeZu6fuXl"
     "QoU12I6podD6xMFa/PA/xefMwcpmuWTRhcso9bp10zVFGQIDAQAB";
+
+const char kTestSharedSecret[] = "1234-1234-5678";
+const char kTestSharedSecretBad[] = "0000-0000-0001";
 
 void QuitCurrentThread() {
   MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
@@ -117,6 +122,7 @@ class JingleSessionTest : public testing::Test {
                     &MockSessionCallback::OnStateChange));
 
     session->set_config(SessionConfig::CreateDefault());
+    session->set_shared_secret(kTestSharedSecret);
   }
 
  protected:
@@ -126,11 +132,6 @@ class JingleSessionTest : public testing::Test {
   virtual void TearDown() {
     CloseSessions();
     CloseSessionManager();
-  }
-
-  void CreateServerPair() {
-    // Sessions must be initialized on the jingle thread.
-    DoCreateServerPair();
   }
 
   void CloseSessions() {
@@ -144,7 +145,7 @@ class JingleSessionTest : public testing::Test {
     }
   }
 
-  void DoCreateServerPair() {
+  void CreateServerPair() {
     FilePath certs_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
     certs_dir = certs_dir.AppendASCII("net");
@@ -201,7 +202,7 @@ class JingleSessionTest : public testing::Test {
     client_signal_strategy_.reset();
   }
 
-  bool InitiateConnection() {
+  bool InitiateConnection(const char* shared_secret) {
     int not_connected_peers = 2;
 
     EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
@@ -210,37 +211,57 @@ class JingleSessionTest : public testing::Test {
                 this, &JingleSessionTest::SetHostSession)),
             SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
-    base::WaitableEvent host_connected_event(true, false);
-    EXPECT_CALL(host_connection_callback_,
-                OnStateChange(Session::CONNECTING))
-        .Times(1);
-    EXPECT_CALL(host_connection_callback_,
-                OnStateChange(Session::CONNECTED))
-        .Times(1)
-        .WillOnce(QuitThreadOnCounter(&not_connected_peers));
-    // Expect that the connection will be closed eventually.
-    EXPECT_CALL(host_connection_callback_,
-                OnStateChange(Session::CLOSED))
-        .Times(1);
+    {
+      InSequence dummy;
 
-    base::WaitableEvent client_connected_event(true, false);
-    EXPECT_CALL(client_connection_callback_,
-                OnStateChange(Session::CONNECTING))
-        .Times(1);
-    EXPECT_CALL(client_connection_callback_,
-                OnStateChange(Session::CONNECTED))
-        .Times(1)
-        .WillOnce(QuitThreadOnCounter(&not_connected_peers));
-    // Expect that the connection will be closed eventually.
-    EXPECT_CALL(client_connection_callback_,
-                OnStateChange(Session::CLOSED))
-        .Times(1);
+      EXPECT_CALL(host_connection_callback_,
+                  OnStateChange(Session::CONNECTING))
+          .Times(1);
+      if (shared_secret == kTestSharedSecret) {
+        EXPECT_CALL(host_connection_callback_,
+                    OnStateChange(Session::CONNECTED))
+            .Times(1)
+            .WillOnce(QuitThreadOnCounter(&not_connected_peers));
+        // Expect that the connection will be closed eventually.
+        EXPECT_CALL(host_connection_callback_,
+                    OnStateChange(Session::CLOSED))
+            .Times(1);
+      } else {
+        // Might pass through the CONNECTED state.
+        EXPECT_CALL(host_connection_callback_,
+                    OnStateChange(Session::CONNECTED))
+            .Times(AnyNumber());
+        // Expect that the connection will be closed eventually.
+        EXPECT_CALL(host_connection_callback_,
+                    OnStateChange(Session::FAILED))
+            .Times(1)
+            .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
+      }
+    }
+
+    {
+      InSequence dummy;
+
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::CONNECTING))
+          .Times(1);
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::CONNECTED))
+          .Times(1)
+          .WillOnce(QuitThreadOnCounter(&not_connected_peers));
+      // Expect that the connection will be closed eventually.
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::CLOSED))
+          .Times(1);
+    }
 
     client_session_.reset(client_server_->Connect(
         kHostJid, kTestHostPublicKey, kTestToken,
         CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockSessionCallback::OnStateChange)));
+
+    client_session_->set_shared_secret(shared_secret);
 
     return RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms());
   }
@@ -617,13 +638,17 @@ TEST_F(JingleSessionTest, RejectConnection) {
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
       .WillOnce(SetArgumentPointee<1>(protocol::SessionManager::DECLINE));
 
-  EXPECT_CALL(client_connection_callback_,
-              OnStateChange(Session::CONNECTING))
-      .Times(1);
-  EXPECT_CALL(client_connection_callback_,
-              OnStateChange(Session::CLOSED))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(client_connection_callback_,
+                OnStateChange(Session::CONNECTING))
+        .Times(1);
+    EXPECT_CALL(client_connection_callback_,
+                OnStateChange(Session::CLOSED))
+        .Times(1)
+        .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
+  }
 
   client_session_.reset(client_server_->Connect(
       kHostJid, kTestHostPublicKey, kTestToken,
@@ -637,13 +662,19 @@ TEST_F(JingleSessionTest, RejectConnection) {
 // Verify that we can connect two endpoints.
 TEST_F(JingleSessionTest, Connect) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+}
+
+// Verify that we can't connect two endpoints with mismatched secrets.
+TEST_F(JingleSessionTest, ConnectBadChannelAuth) {
+  CreateServerPair();
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecretBad));
 }
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(host_session_.get(), client_session_.get(),
                            kMessageSize, kMessages));
@@ -658,7 +689,7 @@ TEST_F(JingleSessionTest, TestControlChannel) {
 // Verify that data can be transmitted over the video channel.
 TEST_F(JingleSessionTest, TestVideoChannel) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(host_session_.get(), client_session_.get(),
                            kMessageSize, kMessageSize));
@@ -673,7 +704,7 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(host_session_.get(), client_session_.get(),
                            kMessageSize, kMessageSize));
@@ -688,7 +719,7 @@ TEST_F(JingleSessionTest, TestEventChannel) {
 // Verify that data can be transmitted over the video RTP channel.
 TEST_F(JingleSessionTest, TestVideoRtpChannel) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<UDPChannelTester> tester(
       new UDPChannelTester(host_session_.get(), client_session_.get()));
   tester->Start(ChannelTesterBase::VIDEO_RTP);
@@ -703,7 +734,7 @@ TEST_F(JingleSessionTest, TestVideoRtpChannel) {
 // using sockets from JingleSession.
 TEST_F(JingleSessionTest, TestSpeed) {
   CreateServerPair();
-  ASSERT_TRUE(InitiateConnection());
+  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<ChannelSpeedTester> tester;
 
   tester = new ChannelSpeedTester(host_session_.get(),
