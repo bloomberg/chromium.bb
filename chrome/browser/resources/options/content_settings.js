@@ -65,8 +65,8 @@ cr.define('options', function() {
   };
 
   ContentSettings.updateHandlersEnabledRadios = function(enabled) {
-    var selector = '#handlers-section input[type=radio][value=' +
-        (enabled ? 'allow' : 'block') + ']';
+    var selector = '#content-settings-page input[type=radio][value=' +
+        (enabled ? 'allow' : 'block') + '].handler-radio';
     document.querySelector(selector).checked = true;
   };
 
