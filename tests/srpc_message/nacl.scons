@@ -19,7 +19,6 @@ srpc_message_nexe = env.ComponentProgram('srpc_message', 'srpc_message.c',
 node = env.CommandSelLdrTestNacl(
     'srpc_message_test.out',
     srpc_message_nexe,
-    loader='sel_ldr',
     exit_status='0'
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_test')

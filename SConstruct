@@ -1006,19 +1006,18 @@ def SConstructAbsPath(env, path):
 pre_base_env.AddMethod(SConstructAbsPath)
 
 
-def GetSelLdr(env, loader='sel_ldr'):
+def GetSelLdr(env):
   sel_ldr = ARGUMENTS.get('force_sel_ldr')
   if sel_ldr:
-    return env.SConstructAbsPath(sel_ldr)
+    return env.File(env.SConstructAbsPath(sel_ldr))
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
     return None
 
   trusted_env = env['TRUSTED_ENV']
-  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
-                             loader)
-  return sel_ldr
+  return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+
 
 def GetIrtNexe(env, irt_name='irt'):
   image = ARGUMENTS.get('force_irt')
@@ -1366,13 +1365,12 @@ pre_base_env.AddMethod(DemoSelLdrNacl)
 # ----------------------------------------------------------
 def CommandGdbTestNacl(env, name, command,
                        gdb_flags=[],
-                       loader='sel_ldr',
                        input=None,
                        **extra):
   """Runs a test under NaCl GDB."""
 
 
-  sel_ldr = GetSelLdr(env, loader);
+  sel_ldr = GetSelLdr(env)
   if not sel_ldr:
     print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
@@ -1405,15 +1403,26 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
     sel_universal_flags.append('--command_prefix')
     sel_universal_flags.append(GetEmulator(env))
 
+  if 'TRUSTED_ENV' not in env:
+    return []
+  sel_universal = env['TRUSTED_ENV'].File(
+      '${STAGING_DIR}/${PROGPREFIX}sel_universal${PROGSUFFIX}')
+
+  # Point to sel_ldr using an environment variable.
+  sel_ldr = GetSelLdr(env)
+  if sel_ldr is None:
+    print 'WARNING: no sel_ldr found. Skipping test %s' % name
+    return []
+  kwargs.setdefault('osenv', []).append('NACL_SEL_LDR=' + sel_ldr.abspath)
+
   node = CommandSelLdrTestNacl(env,
                                name,
                                nexe,
-                               loader='sel_universal',
+                               loader=sel_universal,
                                sel_ldr_flags=sel_universal_flags,
                                **kwargs)
-  # sel_universal locates sel_ldr via /proc/self/exe on Linux.
   if not env.Bit('built_elsewhere'):
-    env.Depends(node, GetSelLdr(env))
+    env.Depends(node, sel_ldr)
   return node
 
 pre_base_env.AddMethod(SelUniversalTest)
@@ -1454,7 +1463,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
                           args = None,
                           log_verbosity=2,
                           sel_ldr_flags=None,
-                          loader='sel_ldr',
+                          loader=None,
                           size='medium',
                           # True for *.nexe statically linked with glibc
                           glibc_static=False,
@@ -1472,10 +1481,11 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if args is not None:
     command += args
 
-  sel_ldr = GetSelLdr(env, loader);
-  if not sel_ldr:
-    print 'WARNING: no sel_ldr found. Skipping test %s' % name
-    return []
+  if loader is None:
+    loader = GetSelLdr(env)
+    if loader is None:
+      print 'WARNING: no sel_ldr found. Skipping test %s' % name
+      return []
 
   # Avoid problems with [] as default arguments
   if sel_ldr_flags is None:
@@ -1506,7 +1516,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if env.Bit('tests_use_irt') or (env.Bit('irt') and uses_ppapi):
     sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
-  command = [sel_ldr] + sel_ldr_flags + ['--'] + command
+  command = [loader] + sel_ldr_flags + ['--'] + command
 
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
