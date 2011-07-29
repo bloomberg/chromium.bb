@@ -378,7 +378,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 - (void)addFolderNodes:(const BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation {
-  if (!model_->is_root(parent))  {
+  if (!model_->is_root_node(parent))  {
     NSString* title = base::SysUTF16ToNSString(parent->GetTitle());
     NSMenu* menu = [button menu];
     NSMenuItem* item = [menu addItemWithTitle:title

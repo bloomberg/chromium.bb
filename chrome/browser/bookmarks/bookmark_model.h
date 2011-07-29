@@ -196,6 +196,19 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns the 'synced' node. This is NULL until loaded.
   const BookmarkNode* synced_node() { return synced_node_; }
 
+  bool is_root_node(const BookmarkNode* node) const { return node == &root_; }
+
+  // Returns whether the given |node| is one of the permanent nodes - root node,
+  // 'bookmark bar' node, 'other' node or 'synced' node.
+  bool is_permanent_node(const BookmarkNode* node) const {
+    return node == &root_ ||
+           node == bookmark_bar_node_ ||
+           node == other_node_ ||
+           node == synced_node_;
+  }
+
+  Profile* profile() const { return profile_; }
+
   // Returns the parent the last node was added to. This never returns NULL
   // (as long as the model is loaded).
   const BookmarkNode* GetParentForNewNodes();
@@ -301,27 +314,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
       const string16& text,
       size_t max_count,
       std::vector<bookmark_utils::TitleMatch>* matches);
-
-  Profile* profile() const { return profile_; }
-
-  bool is_root(const BookmarkNode* node) const { return node == &root_; }
-  bool is_bookmark_bar_node(const BookmarkNode* node) const {
-    return node == bookmark_bar_node_;
-  }
-  bool is_synced_bookmarks_node(const BookmarkNode* node) const {
-    return node == synced_node_;
-  }
-  bool is_other_bookmarks_node(const BookmarkNode* node) const {
-    return node == other_node_;
-  }
-  // Returns whether the given node is one of the permanent nodes - root node,
-  // bookmark bar node or other bookmarks node.
-  bool is_permanent_node(const BookmarkNode* node) const {
-    return is_root(node) ||
-           is_bookmark_bar_node(node) ||
-           is_other_bookmarks_node(node) ||
-           is_synced_bookmarks_node(node);
-  }
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up

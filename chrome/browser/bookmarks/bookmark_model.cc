@@ -194,7 +194,7 @@ void BookmarkModel::EndImportMode() {
 }
 
 void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
-  if (!loaded_ || !IsValidIndex(parent, index, false) || is_root(parent)) {
+  if (!loaded_ || !IsValidIndex(parent, index, false) || is_root_node(parent)) {
     NOTREACHED();
     return;
   }
@@ -205,7 +205,7 @@ void BookmarkModel::Move(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
                          int index) {
   if (!loaded_ || !node || !IsValidIndex(new_parent, index, true) ||
-      is_root(new_parent) || is_permanent_node(node)) {
+      is_root_node(new_parent) || is_permanent_node(node)) {
     NOTREACHED();
     return;
   }
@@ -244,7 +244,7 @@ void BookmarkModel::Copy(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
                          int index) {
   if (!loaded_ || !node || !IsValidIndex(new_parent, index, true) ||
-      is_root(new_parent) || is_permanent_node(node)) {
+      is_root_node(new_parent) || is_permanent_node(node)) {
     NOTREACHED();
     return;
   }
@@ -400,7 +400,7 @@ const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
                                              const string16& title) {
-  if (!loaded_ || parent == &root_ || !IsValidIndex(parent, index, true)) {
+  if (!loaded_ || is_root_node(parent) || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();
     return NULL;
@@ -427,7 +427,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     const string16& title,
     const GURL& url,
     const Time& creation_time) {
-  if (!loaded_ || !url.is_valid() || is_root(parent) ||
+  if (!loaded_ || !url.is_valid() || is_root_node(parent) ||
       !IsValidIndex(parent, index, true)) {
     NOTREACHED();
     return NULL;
@@ -452,7 +452,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
 }
 
 void BookmarkModel::SortChildren(const BookmarkNode* parent) {
-  if (!parent || !parent->is_folder() || is_root(parent) ||
+  if (!parent || !parent->is_folder() || is_root_node(parent) ||
       parent->child_count() <= 1) {
     return;
   }
@@ -832,5 +832,5 @@ BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* other_node = CreatePermanentNode(BookmarkNode::OTHER_NODE);
   BookmarkNode* synced_node = CreatePermanentNode(BookmarkNode::SYNCED);
   return new BookmarkLoadDetails(bb_node, other_node, synced_node,
-                                 new BookmarkIndex(profile()), next_node_id_);
+                                 new BookmarkIndex(profile_), next_node_id_);
 }
