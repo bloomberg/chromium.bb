@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -703,6 +704,10 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
+  // Screen locker needs new Authenticator instance each time.
+  if (ScreenLocker::default_screen_locker())
+    authenticator_ = NULL;
+
   if (authenticator_ == NULL) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
       authenticator_ = new ParallelAuthenticator(consumer);
