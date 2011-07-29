@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Wrapper for invoking the BFD loader
+
+A simple script to invoke the bfd loader instead of gold, removing
+threading command line options that the bfd loader doesn't support.
+Because this script is invoked from gcc via the -B flag, it needs
+to be in a file named "ld".
+"""
+
+import os
+import subprocess
+import sys
+
+# TODO(bradchen): Delete this script when Gold supports -Ttext properly.
+# It should be fixed by this patch:
+# http://sourceware.org/ml/binutils/2011-07/msg00206.html
+def main():
+  LD_BFD = "/usr/bin/ld.bfd"
+  if not (os.path.exists(LD_BFD) and os.access(LD_BFD, os.X_OK)):
+    # Can't find the BFD loader, so invoke the unmodified argv
+    args = sys.argv
+    args[0] = "ld"
+    print "ld_bfd/ld: using ld"
+    sys.exit(subprocess.call(args))
+  # found the BFD loader, so use it
+  args = list()
+  args.append("/usr/bin/ld.bfd")
+  for arg in sys.argv[1:]:
+    if arg == "-Wl,--threads":
+      continue
+    if arg == "-Wl,--thread-count=4":
+      continue
+    args.append(arg)
+  print("ld_bfd/ld: exec ", args)
+  sys.exit(subprocess.call(args))
+
+if __name__ == "__main__":
+  main()
