@@ -354,6 +354,10 @@ Key.prototype = {
 
   /** @inheritDoc */
   makeDOM: function(mode) {
+    if (!this.modes_[mode]) {
+      return null;
+    }
+
     this.modeElements_[mode] = document.createElement('div');
     this.modeElements_[mode].className = 'key';
     addContent(this.modeElements_[mode], this.modes_[mode].display);
@@ -607,7 +611,10 @@ Row.prototype = {
     for (var j = 0; j < this.keys_.length; ++j) {
       var key = this.keys_[j];
       for (var i = 0; i < MODES.length; ++i) {
-        this.modeElements_[MODES[i]].appendChild(key.makeDOM(MODES[i]));
+        var keyDom = key.makeDOM(MODES[i]);
+        if (keyDom) {
+          this.modeElements_[MODES[i]].appendChild(keyDom);
+        }
       }
     }
 
