@@ -770,11 +770,41 @@ UNADDRESSABLE ACCESS
 *!base::win::ObjectWatcher::WillDestroyCurrentMessageLoop
 *!MessageLoop::~MessageLoop
 
+# http://crbug.com/89785
+UNINITIALIZED READ
+*!_output_s_l
+...
+*!cricket::Port::ToString
+*!cricket::Port::Port
+*!cricket::UDPPort::UDPPort
+*!cricket::UDPPort::Create
+*!cricket::AllocationSequence::CreateUDPPorts
+*!cricket::AllocationSequence::OnMessage
+*!cricket::AllocationSequence::AllocationSequence
+*!cricket::BasicPortAllocatorSession::DoAllocate
+*!cricket::BasicPortAllocatorSession::OnAllocate
+*!cricket::BasicPortAllocatorSession::OnMessage
+
 # http://crbug.com/90654
 UNINITIALIZED READ
 *!_output_s_l
 ...
 *!testing_internal::DefaultPrintNonContainerTo<policy::FailedRequestParams>
+
+# http://crbug.com/90961
+LEAK
+*!operator new
+*!cricket::Connection::Ping
+*!cricket::P2PTransportChannel::OnPing
+*!cricket::P2PTransportChannel::OnMessage
+*!talk_base::MessageQueue::Dispatch
+*!talk_base::Thread::ProcessMessages
+*!talk_base::Thread::Run
+*!remoting::`anonymous namespace'::JingleMessagePump::Run
+...
+*!remoting::protocol::`anonymous namespace'::RunMessageLoopWithTimeout
+*!remoting::protocol::JingleSessionTest::InitiateConnection
+*!remoting::protocol::JingleSessionTest_ConnectBadChannelAuth_Test::TestBody
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
