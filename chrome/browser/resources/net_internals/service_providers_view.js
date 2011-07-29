@@ -13,7 +13,7 @@
  * @constructor
  */
 function ServiceProvidersView() {
-  const tabId = 'serviceProvidersTab';
+  const tabId = 'tab-handle-service-providers';
   const mainBoxId = 'service-providers-view-tab-content';
   const serviceProvidersTbodyId = 'service-providers-view-tbody';
   const namespaceProvidersTbodyId =

@@ -9,16 +9,17 @@
  * @constructor
  */
 function SpdyView() {
-  const mainBoxId = 'spdyTabContent';
-  const spdyEnabledSpanId = 'spdyEnabledSpan';
-  const spdyUseAlternateProtocolSpanId = 'spdyUseAlternateProtocolSpan';
-  const spdyForceAlwaysSpanId = 'spdyForceAlwaysSpan';
-  const spdyForceOverSslSpanId = 'spdyForceOverSslSpan';
-  const spdyNextProtocolsSpanId = 'spdyNextProtocolsSpan';
-  const spdyAlternateProtocolMappingsDivId = 'spdyAlternateProtocolMappingsDiv';
-  const spdySessionNoneSpanId = 'spdySessionNoneSpan';
-  const spdySessionLinkSpanId = 'spdySessionLinkSpan';
-  const spdySessionDivId = 'spdySessionDiv';
+  const mainBoxId = 'spdy-view-tab-content';
+  const spdyEnabledSpanId = 'spdy-view-enabled-span';
+  const spdyUseAlternateProtocolSpanId = 'spdy-view-alternate-protocol-span';
+  const spdyForceAlwaysSpanId = 'spdy-view-force-always-span';
+  const spdyForceOverSslSpanId = 'spdy-view-force-over-ssl-span';
+  const spdyNextProtocolsSpanId = 'spdy-view-next-protocols-span';
+  const spdyAlternateProtocolMappingsDivId =
+      'spdy-view-alternate-protocol-mappings-div';
+  const spdySessionNoneSpanId = 'spdy-view-session-none-span';
+  const spdySessionLinkSpanId = 'spdy-view-session-link-span';
+  const spdySessionDivId = 'spdy-view-session-div';
 
   DivView.call(this, mainBoxId);
   g_browser.addSpdySessionInfoObserver(this);

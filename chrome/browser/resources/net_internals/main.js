@@ -58,9 +58,9 @@ onLoaded = function() {
   // This view is a left (resizable) navigation bar.
   categoryTabSwitcher = new TabSwitcherView();
   var tabSwitcherSplitView = new ResizableVerticalSplitView(
-      new DivView('categoryTabHandles'),
+      new DivView('category-tab-handles'),
       categoryTabSwitcher,
-      new DivView('splitterBoxForMainTabs'));
+      new DivView('splitter-box-for-main-tabs'));
 
   // By default the split for the left navbar will be at 50% of the entire
   // width. This is not aesthetically pleasing, so we will shrink it.
@@ -71,24 +71,31 @@ onLoaded = function() {
   // Populate the main tabs.  Even tabs that don't contain information for the
   // running OS should be created, so they can load log dumps from other
   // OSes.
-  categoryTabSwitcher.addTab('eventsTab', new EventsView(), false, true);
-  categoryTabSwitcher.addTab('proxyTab', new ProxyView(), false, true);
-  categoryTabSwitcher.addTab('dnsTab', new DnsView(), false, true);
-  categoryTabSwitcher.addTab('socketsTab', new SocketsView(), false, true);
-  categoryTabSwitcher.addTab('spdyTab', new SpdyView(), false, true);
-  categoryTabSwitcher.addTab('httpCacheTab', new HttpCacheView(), false, true);
-  categoryTabSwitcher.addTab('importTab', new ImportView(), false, true);
-  categoryTabSwitcher.addTab('exportTab', new ExportView(), false, true);
-  categoryTabSwitcher.addTab('captureTab', new CaptureView(), false, true);
-  categoryTabSwitcher.addTab('serviceProvidersTab', new ServiceProvidersView(),
-                             false, cr.isWindows);
-  categoryTabSwitcher.addTab('testTab', new TestView(), false, true);
-  categoryTabSwitcher.addTab('hstsTab', new HSTSView(), false, true);
-  categoryTabSwitcher.addTab('httpThrottlingTab', new HttpThrottlingView(),
+  categoryTabSwitcher.addTab('tab-handle-events', new EventsView(),
                              false, true);
-  categoryTabSwitcher.addTab('logsTab', new LogsView(), false,
+  categoryTabSwitcher.addTab('tab-handle-proxy', new ProxyView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-dns', new DnsView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-sockets', new SocketsView(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-spdy', new SpdyView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-http-cache', new HttpCacheView(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-import', new ImportView(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-export', new ExportView(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-capture', new CaptureView(),
+                             false, true);
+  categoryTabSwitcher.addTab('tab-handle-service-providers',
+                             new ServiceProvidersView(), false, cr.isWindows);
+  categoryTabSwitcher.addTab('tab-handle-tests', new TestView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-hsts', new HSTSView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-http-throttling',
+                             new HttpThrottlingView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-hsts', new LogsView(), false,
                              cr.isChromeOS);
-  categoryTabSwitcher.addTab('prerenderTab', new PrerenderView(), false, true);
+  categoryTabSwitcher.addTab('tab-handle-prerender', new PrerenderView(),
+                             false, true);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -99,7 +106,7 @@ onLoaded = function() {
     anchorMap[aNode.hash] = tabIds[i];
   }
   // Default the empty hash to the data tab.
-  anchorMap['#'] = anchorMap[''] = 'exportTab';
+  anchorMap['#'] = anchorMap[''] = 'tab-handle-export';
 
   window.onhashchange = onUrlHashChange.bind(null, anchorMap);
 

@@ -12,9 +12,9 @@
 function LogsView() {
   const mainBoxId = 'logs-view-tab-content';
   const tableId = 'logs-view-log-table';
-  const globalShowButtonId = 'logsGlobalShowBtn';
-  const globalHideButtonId = 'logsGlobalHideBtn';
-  const refreshLogsButtonId = 'logsRefreshBtn';
+  const globalShowButtonId = 'logs-view-global-show-btn';
+  const globalHideButtonId = 'logs-view-global-hide-btn';
+  const refreshLogsButtonId = 'logs-view-refresh-btn';
 
   var tableDiv = $(tableId);
   this.rows = [];
