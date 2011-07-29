@@ -176,6 +176,15 @@ void* test_nacl_file_thread(void* user_data) {
 // this function, LoadUrl() has been invoked for each file to be tested, and
 // that the completion callback has been reached.
 void test_nacl_file() {
+  const char *nacl_enable_ppapi_dev = getenv("NACL_ENABLE_PPAPI_DEV");
+  int enabled = 0;
+  // Skip test if NACL_ENABLE_PPAPI_DEV is unset or set to 0.
+  if (NULL != nacl_enable_ppapi_dev)
+    enabled = strtol(nacl_enable_ppapi_dev, (char **) 0, 0);
+  if (enabled == 0) {
+    DebugPrintf("Skipping NaCl File test, NACL_ENABLE_PPAPI_DEV not set.\n");
+    return;
+  }
   const int kNumThreads = 8;
   pthread_t thread[kNumThreads];
   ThreadInfo info;

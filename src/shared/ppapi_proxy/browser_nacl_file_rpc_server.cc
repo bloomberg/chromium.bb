@@ -74,9 +74,10 @@ void NaClFileRpcServer::GetFileDesc(
         NACL_ABI_O_RDONLY));
     if (desc_wrapper.get() == NULL)
       return;
-    *file_desc = desc_wrapper->desc();
-    rpc->result = NACL_SRPC_RESULT_OK;
   } else {
     DebugPrintf("NaClFile::GetFileDesc is disabled (and experimental.)\n");
+    // Return invalid descriptor (from factory.MakeInvalid() above.)
   }
+  *file_desc = desc_wrapper->desc();
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
