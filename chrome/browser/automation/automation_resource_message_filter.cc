@@ -138,7 +138,10 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
   }
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AutomationResourceMessageFilter, message)
+  bool deserialize_success = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(AutomationResourceMessageFilter,
+                           message,
+                           deserialize_success)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetFilteredInet,
                         OnSetFilteredInet)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetFilteredInetHitCount,
@@ -148,7 +151,13 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesHostResponse,
                         OnGetCookiesHostResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (!deserialize_success) {
+    LOG(ERROR) << "Failed to deserialize IPC message. "
+               << "Closing the automation channel.";
+    channel_->Close();
+  }
 
   return handled;
 }

@@ -271,11 +271,18 @@ void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
     return;
   }
 
-  IPC_BEGIN_MESSAGE_MAP(URLRequestAutomationJob, message)
+  bool deserialize_success = false;
+  IPC_BEGIN_MESSAGE_MAP_EX(URLRequestAutomationJob,
+                           message,
+                           deserialize_success)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestStarted, OnRequestStarted)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestData, OnDataAvailable)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestEnd, OnRequestEnd)
-  IPC_END_MESSAGE_MAP()
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (!deserialize_success) {
+    LOG(ERROR) << "Failed to deserialize IPC message.";
+  }
 }
 
 void URLRequestAutomationJob::OnRequestStarted(
