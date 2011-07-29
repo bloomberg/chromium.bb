@@ -85,13 +85,10 @@ class RepoRepository(object):
   """
   DEFAULT_MANIFEST = 'default'
 
-  def __init__(self, repo_url, directory, branch=None, clobber=False):
+  def __init__(self, repo_url, directory, branch=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
-
-    if clobber or not os.path.exists(os.path.join(self.directory, '.repo')):
-      ClearBuildRoot(self.directory)
 
   def Initialize(self):
     """Initializes a repository."""

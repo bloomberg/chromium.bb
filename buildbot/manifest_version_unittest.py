@@ -110,6 +110,11 @@ class HelperMethodsTest(unittest.TestCase):
 
       manifest_version._PrepForChanges(git_dir, dry_run=False)
 
+      # This should not error out if we are running with dry_run=False for
+      # prep for changes.
+      cros_lib.RunCommand(['git', 'show', manifest_version._PUSH_BRANCH],
+                          cwd=git_dir)
+
       # Change something.
       cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
                           input='TEST USER <test_user@chromium.org>')

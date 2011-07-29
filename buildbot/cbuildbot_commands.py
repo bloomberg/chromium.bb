@@ -91,6 +91,31 @@ def _WipeOldOutput(buildroot):
   cros_lib.OldRunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
 
 
+def GetInput(prompt):
+  """Helper function to grab input from a user.   Makes testing easier."""
+  return raw_input(prompt)
+
+
+def ValidateClobber(buildroot):
+  """Do due diligence if user wants to clobber buildroot.
+
+    buildroot: buildroot that's potentially clobbered.
+  Returns: True if the clobber is ok.
+  """
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  if cwd.startswith(buildroot):
+    cros_lib.Die('You are trying to clobber this chromite checkout!')
+
+  if os.path.exists(buildroot):
+    cros_lib.Warning('This will delete %s' % buildroot)
+    prompt = ('\nDo you want to continue (yes/NO)? ')
+    response = GetInput(prompt).lower()
+    if response != 'yes':
+      return False
+
+    return True
+
+
 # =========================== Main Commands ===================================
 
 

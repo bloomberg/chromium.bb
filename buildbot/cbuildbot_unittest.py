@@ -8,12 +8,15 @@
 
 import mox
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 
 import constants
 sys.path.append(constants.SOURCE_ROOT)
 import chromite.buildbot.cbuildbot as cbuildbot
+import chromite.buildbot.cbuildbot_commands as commands
 import chromite.buildbot.cbuildbot_config as config
 import chromite.lib.cros_build_lib as cros_lib
 
@@ -34,6 +37,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
+    self.buildroot = tempfile.mkdtemp()
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-pre-flight-queue'
     self.build_config = config.config[self.bot_id]
@@ -42,8 +46,9 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
     # Use the cbuildbot parser to create properties and populate default values.
     self.parser = cbuildbot._CreateParser()
-    (self.options, _) = self.parser.parse_args(['-r', '.', '--buildbot',
-                                                '--debug'])
+    (self.options, _) = self.parser.parse_args(['-r', self.buildroot,
+                                                '--buildbot', '--debug'])
+    self.options.clean = False
     self.options.resume = False
     self.options.sync = False
     self.options.build = False
@@ -57,10 +62,15 @@ class RunBuildStagesTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
     cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
 
+  def tearDown(self):
+    if os.path.exists(self.buildroot):
+      shutil.rmtree(self.buildroot)
+
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
 
     self.build_config['chromeos_official'] = True
+
 
 
     # Clean up before
@@ -154,29 +164,25 @@ class InterfaceTest(mox.MoxTestBase):
   def testValidateClobberUserDeclines_1(self):
     """Test case where user declines in prompt."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
-    self.mox.StubOutWithMock(sys, 'exit')
+    self.mox.StubOutWithMock(commands, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cbuildbot._GetInput(mox.IgnoreArg()).AndReturn('No')
-    sys.exit(0)
+    commands.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()
-    cbuildbot._ValidateClobber(self._BUILD_ROOT)
+    self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
     self.mox.VerifyAll()
 
   def testValidateClobberUserDeclines_2(self):
     """Test case where user does not enter the full 'yes' pattern."""
     self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
-    self.mox.StubOutWithMock(sys, 'exit')
+    self.mox.StubOutWithMock(commands, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cbuildbot._GetInput(mox.IgnoreArg()).AndReturn('y')
-    sys.exit(0)
+    commands.GetInput(mox.IgnoreArg()).AndReturn('y')
 
     self.mox.ReplayAll()
-    cbuildbot._ValidateClobber(self._BUILD_ROOT)
+    self.assertFalse(commands.ValidateClobber(self._BUILD_ROOT))
     self.mox.VerifyAll()
 
   def testValidateClobberProtectRunningChromite(self):
@@ -186,7 +192,7 @@ class InterfaceTest(mox.MoxTestBase):
     buildroot = os.path.dirname(cwd)
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ValidateClobber, buildroot)
+    self.assertRaises(Exception, commands.ValidateClobber, buildroot)
     self.mox.VerifyAll()
 
 
@@ -220,7 +226,7 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.StubOutWithMock(cros_lib, 'IsInsideChroot')
     self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
     self.mox.StubOutWithMock(sys, 'exit')
-    self.mox.StubOutWithMock(cbuildbot, '_GetInput')
+    self.mox.StubOutWithMock(commands, 'GetInput')
     self.mox.StubOutWithMock(cros_lib, 'FindRepoDir')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWrapper')
     self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWithSudoProcess')
@@ -278,7 +284,7 @@ class FullInterfaceTest(unittest.TestCase):
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
     os.path.exists(self.external_marker).InAnyOrder().AndReturn(False)
-    cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
+    commands.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
 
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
@@ -287,7 +293,7 @@ class FullInterfaceTest(unittest.TestCase):
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
     os.path.exists(self.external_marker).InAnyOrder().AndReturn(True)
-    (cbuildbot._GetInput(mox.IgnoreArg()).InAnyOrder()
+    (commands.GetInput(mox.IgnoreArg()).InAnyOrder()
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()
@@ -295,15 +301,15 @@ class FullInterfaceTest(unittest.TestCase):
 
   def testValidateClobberForClobberOption(self):
     """Test that we ask for clobber confirmation for trybot runs."""
-    self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
-    cbuildbot._ValidateClobber(self._BUILD_ROOT)
+    self.mox.StubOutWithMock(commands, 'ValidateClobber')
+    commands.ValidateClobber(self._BUILD_ROOT)
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber',
                     'x86-generic-pre-flight-queue'])
 
   def testNoClobberConfirmationForBuildBotBuilds(self):
     """Test that we don't ask for clobber confirmation for --buildbot runs."""
-    self.mox.StubOutWithMock(cbuildbot, '_ValidateClobber')
+    self.mox.StubOutWithMock(commands, 'ValidateClobber')
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber', '--buildbot',
                     'x86-generic-pre-flight-queue'])

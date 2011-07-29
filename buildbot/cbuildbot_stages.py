@@ -455,6 +455,24 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
     return Results.FORGIVEN, None
 
 
+class CleanUpStage(BuilderStage):
+  """Stages that cleans up build artifacts from previous runs.
+
+  This stage cleans up previous KVM state, temporary git commits, and
+  clobbers.
+  """
+  def _PerformStage(self):
+    if not self._options.buildbot and self._options.clobber:
+      if not commands.ValidateClobber(self._build_root):
+        sys.exit(0)
+
+    if self._options.clobber or not os.path.exists(
+        os.path.join(self._build_root, '.repo')):
+      repository.ClearBuildRoot(self._build_root)
+    else:
+      commands.PreFlightRinse(self._build_root)
+
+
 class SyncStage(BuilderStage):
   """Stage that performs syncing for the builder."""
 
@@ -519,7 +537,6 @@ class ManifestVersionedSyncStage(BuilderStage):
             branch=self._tracking_branch,
             build_name=self._bot_id,
             incr_type=increment,
-            clobber=self._options.clobber,
             dry_run=self._options.debug)
 
   def GetNextManifest(self):
@@ -575,7 +592,6 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         branch=self._tracking_branch,
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
-        clobber=self._options.clobber,
         dry_run=self._options.debug)
 
   def GetNextManifest(self):

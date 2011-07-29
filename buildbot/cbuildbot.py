@@ -163,6 +163,8 @@ def RunBuildStages(bot_id, options, build_config):
   """Run the requested build stages."""
   completed_stages_file = os.path.join(options.buildroot, '.completed_stages')
 
+  if options.clean: stages.CleanUpStage(bot_id, options, build_config).Run()
+
   if options.resume and os.path.exists(completed_stages_file):
     with open(completed_stages_file, 'r') as load_file:
       stages.Results.RestoreCompletedStages(load_file)
@@ -200,8 +202,6 @@ def RunBuildStages(bot_id, options, build_config):
 
   if _IsIncrementalBuild(options.buildroot, options.clobber):
     _CheckBuildRootBranch(options.buildroot, tracking_branch)
-    if options.clean:
-      commands.PreFlightRinse(options.buildroot)
 
   build_and_test_success = False
   prebuilts = options.prebuilts and build_config['prebuilts']
@@ -313,36 +313,11 @@ def RunBuildStages(bot_id, options, build_config):
   return stages.Results.Success()
 
 
-# Input validation functions
-
-
-def _GetInput(prompt):
-  """Helper function that makes testing easier."""
-  return raw_input(prompt)
-
-
-def _ValidateClobber(buildroot):
-  """Do due diligence if user wants to clobber buildroot.
-
-    buildroot: buildroot that's potentially clobbered.
-  """
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  if cwd.startswith(buildroot):
-    cros_lib.Die('You are trying to clobber this chromite checkout!')
-
-  if os.path.exists(buildroot):
-    cros_lib.Warning('This will delete %s' % buildroot)
-    prompt = ('\nDo you want to continue (yes/NO)? ')
-    response = _GetInput(prompt).lower()
-    if response != 'yes':
-      sys.exit(0)
-
-
 def _ConfirmBuildRoot(buildroot):
   """Confirm with user the inferred buildroot, and mark it as confirmed."""
   cros_lib.Warning('Using default directory %s as buildroot' % buildroot)
   prompt = ('\nDo you want to continue (yes/NO)? ')
-  response = _GetInput(prompt).lower()
+  response = commands.GetInput(prompt).lower()
   if response != 'yes':
     print('Please specify a buildroot with the --buildroot option.')
     sys.exit(0)
@@ -662,9 +637,6 @@ def main(argv=None):
       # to using this directory.
       if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
         _ConfirmBuildRoot(options.buildroot)
-
-  if not options.buildbot and options.clobber:
-    _ValidateClobber(options.buildroot)
 
   if options.buildbot:
     _RunBuildStagesWrapper(bot_id, options, build_config)

@@ -120,8 +120,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return version
 
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
-               build_name, build_type, clobber=False,
-               dry_run=True):
+               build_name, build_type, dry_run=True):
     """Initialize an LKGM Manager.
 
     Args:
@@ -131,7 +130,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     super(LKGMManager, self).__init__(
         source_dir=source_dir, checkout_repo=checkout_repo,
         manifest_repo=manifest_repo, branch=branch, build_name=build_name,
-        incr_type='branch', clobber=clobber, dry_run=dry_run)
+        incr_type='branch', dry_run=dry_run)
 
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type

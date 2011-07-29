@@ -88,12 +88,13 @@ def _PrepForChanges(git_repo, dry_run):
 
       remote, branch = cros_lib.GetPushBranch('master', cwd=git_repo)
       cros_lib.RunCommand(['git', 'remote', 'update'], cwd=git_repo)
-
-      # For debug users we want to keep previous commit history and cannot rely
-      # on sync to pick up new changes.
-      if not dry_run:
+      if not cros_lib.DoesLocalBranchExist(git_repo, _PUSH_BRANCH):
         cros_lib.RunCommand(['git', 'checkout', '-b', _PUSH_BRANCH, '-t',
                              '/'.join([remote, branch])], cwd=git_repo)
+      else:
+        # If the branch exists, we must be dry run.   Checkout to branch.
+        assert dry_run, 'Failed to previously delete push branch.'
+        cros_lib.RunCommand(['git', 'checkout', _PUSH_BRANCH], cwd=git_repo)
 
     cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
                         cwd=git_repo)
@@ -123,7 +124,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   raises: GitCommandException
   """
   try:
-    #TODO(sosa): Move to using cros_lib.GitPushWithRetry.
+    # TODO(sosa): Move to using cros_lib.GitPushWithRetry.
     remote, push_branch = cros_lib.GetPushBranch(_PUSH_BRANCH, cwd=git_repo)
     cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
     cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
@@ -347,7 +348,7 @@ class BuildSpecsManager(object):
     return cls._TMP_MANIFEST_DIR
 
   def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
-               build_name, incr_type, clobber=False, dry_run=True):
+               build_name, incr_type, dry_run=True):
     """Initializes a build specs manager.
     Args:
       source_dir: Directory to which we checkout out source code.
@@ -359,7 +360,7 @@ class BuildSpecsManager(object):
       dry_run: Whether we actually commit changes we make or not.
     """
     self.cros_source = repository.RepoRepository(
-        checkout_repo, source_dir, branch=branch, clobber=clobber)
+        checkout_repo, source_dir, branch=branch)
     self.manifest_repo = manifest_repo
     self.branch = branch
     self.build_name = build_name
