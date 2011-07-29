@@ -183,7 +183,7 @@ SourceRow.prototype.matchesFilter = function(filter) {
     return true;
 
   var filterText = filter.text;
-  var entryText = this.sourceEntry_.PrintEntriesAsText().toLowerCase();
+  var entryText = this.sourceEntry_.printAsText().toLowerCase();
 
   return entryText.indexOf(filterText) != -1;
 };
