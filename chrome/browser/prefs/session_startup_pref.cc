@@ -15,6 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
+#ifdef OS_MACOSX
+#include "chrome/browser/ui/cocoa/window_restore_utils.h"
+#endif
+
 namespace {
 
 // For historical reasons the enum and value registered in the prefs don't line
@@ -39,6 +43,12 @@ SessionStartupPref::Type PrefValueToType(int pref_value) {
     case kPrefValueURLs:  return SessionStartupPref::URLS;
     default:              return SessionStartupPref::DEFAULT;
   }
+}
+
+bool TypeIsDefaultValue(PrefService* prefs) {
+  const PrefService::Preference* pref_restore =
+      prefs->FindPreference(prefs::kRestoreOnStartup);
+  return pref_restore->IsDefaultValue();
 }
 
 }  // namespace
@@ -95,6 +105,17 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
+
+#ifdef OS_MACOSX
+  if (TypeIsDefaultValue(prefs)) {
+    // |DEFAULT| really means "Don't restore".  The actual default value could
+    // change, so explicitly set both.
+    if (restore_utils::IsWindowRestoreEnabled())
+      pref.type = SessionStartupPref::LAST;
+    else
+      pref.type = SessionStartupPref::DEFAULT;
+  }
+#endif
 
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.

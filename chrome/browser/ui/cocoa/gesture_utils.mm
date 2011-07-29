@@ -40,7 +40,7 @@ BOOL IsScrollDirectionInverted() {
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   // The defaults must be synchronized here otherwise a stale value will be
-  // returned for an indeterminante amount of time. For some reason, this is
+  // returned for an indeterminate amount of time. For some reason, this is
   // not necessary in |-recognizeTwoFingerGestures|.
   [defaults synchronize];
   return [defaults boolForKey:@"com.apple.swipescrolldirection"];

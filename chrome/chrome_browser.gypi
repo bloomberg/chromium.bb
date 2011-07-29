@@ -2676,6 +2676,8 @@
         'browser/ui/cocoa/view_id_util.h',
         'browser/ui/cocoa/view_id_util.mm',
         'browser/ui/cocoa/view_resizer.h',
+        'browser/ui/cocoa/window_restore_utils.h',
+        'browser/ui/cocoa/window_restore_utils.mm',
         'browser/ui/cocoa/window_size_autosaver.h',
         'browser/ui/cocoa/window_size_autosaver.mm',
         'browser/ui/cocoa/wrench_menu/menu_tracked_button.h',
