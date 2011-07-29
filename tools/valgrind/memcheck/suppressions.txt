@@ -4977,6 +4977,13 @@
    fun:_ZN8appcache19AppCacheStorageImpl23RunOnePendingSimpleTaskEv
 }
 {
+   bug_90215_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePathPN4base16MessageLoopProxyE
+   fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPKN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
+}
+{
    bug_90240
    Memcheck:Leak
    fun:_Znw*
